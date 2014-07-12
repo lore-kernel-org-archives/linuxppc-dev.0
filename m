@@ -1,13 +1,13 @@
 Return-Path: <fabf@skynet.be>
 Received: from mailrelay003.isp.belgacom.be (mailrelay003.isp.belgacom.be
  [195.238.6.53])
- by lists.ozlabs.org (Postfix) with ESMTP id 5C1471A01C3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 21:36:38 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3617F1A01C3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 21:36:39 +1000 (EST)
 From: Fabian Frederick <fabf@skynet.be>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7] powerpc/powernv: replace sscanf %lx by kstrtoul 16
-Date: Sat, 12 Jul 2014 13:36:16 +0200
-Message-Id: <1405164980-9525-4-git-send-email-fabf@skynet.be>
+Subject: [PATCH 5/7] hugetlb: replace sscanf by kstrtoul
+Date: Sat, 12 Jul 2014 13:36:18 +0200
+Message-Id: <1405164980-9525-6-git-send-email-fabf@skynet.be>
 In-Reply-To: <1405164980-9525-1-git-send-email-fabf@skynet.be>
 References: <1405164980-9525-1-git-send-email-fabf@skynet.be>
 Cc: Fabian Frederick <fabf@skynet.be>, paulus@samba.org,
@@ -26,25 +26,21 @@ See checkpatch warning
 
 Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- arch/powerpc/platforms/powernv/subcore.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/hugetlbpage.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/subcore.c b/arch/powerpc/platforms/powernv/subcore.c
-index 894ecb3..79721b2 100644
---- a/arch/powerpc/platforms/powernv/subcore.c
-+++ b/arch/powerpc/platforms/powernv/subcore.c
-@@ -337,9 +337,9 @@ static ssize_t __used store_subcores_per_core(struct device *dev,
- 
- 	/* We are serialised by the attribute lock */
- 
--	rc = sscanf(buf, "%lx", &val);
--	if (rc != 1)
--		return -EINVAL;
-+	rc = kstrtoul(buf, 16, &val);
-+	if (rc)
-+		return rc;
- 
- 	switch (val) {
- 	case 1:
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 7e70ae9..9118313 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -350,7 +350,7 @@ static int __init do_gpage_early_setup(char *param, char *val,
+ 		size = memparse(val, NULL);
+ 	} else if (strcmp(param, "hugepages") == 0) {
+ 		if (size != 0) {
+-			if (sscanf(val, "%lu", &npages) <= 0)
++			if (kstrtoul(val, 0, &npages))
+ 				npages = 0;
+ 			gpage_npages[shift_to_mmu_psize(__ffs(size))] = npages;
+ 			size = 0;
 -- 
 1.9.1
