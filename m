@@ -1,13 +1,13 @@
 Return-Path: <fabf@skynet.be>
 Received: from mailrelay003.isp.belgacom.be (mailrelay003.isp.belgacom.be
  [195.238.6.53])
- by lists.ozlabs.org (Postfix) with ESMTP id 3384A1A01C2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 21:36:39 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 92C2C1A01C7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 21:36:41 +1000 (EST)
 From: Fabian Frederick <fabf@skynet.be>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7] powerpc/sysfs: replace sscanf by kstrtol
-Date: Sat, 12 Jul 2014 13:36:17 +0200
-Message-Id: <1405164980-9525-5-git-send-email-fabf@skynet.be>
+Subject: [PATCH 6/7]  powerpc/cell: replace sscanf by kstrtouint
+Date: Sat, 12 Jul 2014 13:36:19 +0200
+Message-Id: <1405164980-9525-7-git-send-email-fabf@skynet.be>
 In-Reply-To: <1405164980-9525-1-git-send-email-fabf@skynet.be>
 References: <1405164980-9525-1-git-send-email-fabf@skynet.be>
 Cc: Fabian Frederick <fabf@skynet.be>, paulus@samba.org,
@@ -26,28 +26,24 @@ See checkpatch warning
 
 Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- arch/powerpc/kernel/sysfs.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/cbe_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 67fd2fd..4293e4f 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -43,12 +43,11 @@ static ssize_t store_smt_snooze_delay(struct device *dev,
- 				      size_t count)
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, dev);
--	ssize_t ret;
- 	long snooze;
-+	int rc = kstrtol(buf, 0, &snooze);
+diff --git a/arch/powerpc/platforms/cell/cbe_thermal.c b/arch/powerpc/platforms/cell/cbe_thermal.c
+index 2c15ff0..d71c3c4 100644
+--- a/arch/powerpc/platforms/cell/cbe_thermal.c
++++ b/arch/powerpc/platforms/cell/cbe_thermal.c
+@@ -129,9 +129,9 @@ static ssize_t store_throttle(struct cbe_pmd_regs __iomem *pmd_regs, const char
+ 	u64 new_value;
+ 	int ret;
  
--	ret = sscanf(buf, "%ld", &snooze);
--	if (ret != 1)
--		return -EINVAL;
-+	if (rc)
-+		return rc;
+-	ret = sscanf(buf, "%u", &temp);
++	ret = kstrtouint(buf, 0, &temp);
  
- 	per_cpu(smt_snooze_delay, cpu->dev.id) = snooze;
- 	return count;
+-	if (ret != 1 || temp < TEMP_MIN || temp > TEMP_MAX)
++	if (ret || temp < TEMP_MIN || temp > TEMP_MAX)
+ 		return -EINVAL;
+ 
+ 	new_value = temp_to_reg(temp);
 -- 
 1.9.1
