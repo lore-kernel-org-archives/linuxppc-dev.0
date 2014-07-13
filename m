@@ -1,25 +1,23 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-vc0-x233.google.com (mail-vc0-x233.google.com
- [IPv6:2607:f8b0:400c:c03::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF3941A0169
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2014 16:03:03 +1000 (EST)
-Received: by mail-vc0-f179.google.com with SMTP id id10so4942787vcb.24
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 23:02:59 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1404789011.16156.39.camel@pasglop>
-References: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
- <53BB5F9A.2060105@roeck-us.net> <1404789011.16156.39.camel@pasglop>
-Date: Sun, 13 Jul 2014 02:02:59 -0400
-Message-ID: <CAPDOMVio1ha+inJRRdCebEoxSpTTg=s974FBc_B112UPFaAaMQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
-From: Nick Krause <xerofoify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B60C1A007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2014 22:31:29 +1000 (EST)
+Date: Sun, 13 Jul 2014 14:29:50 +0200
+From: Oleg Nesterov <oleg@redhat.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Guenter Roeck <linux@roeck-us.net>
+Subject: Re: bit fields && data tearing
+Message-ID: <20140713122950.GA16995@redhat.com>
+References: <20140712181328.GA8738@redhat.com>
+ <20140712205130.GA16437@redhat.com> <1405208082.20996.54.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1405208082.20996.54.camel@pasglop>
+Cc: Jakub Jelinek <jakub@redhat.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Dan <opendtv@yahoo.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 7, 2014 at 11:10 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2014-07-07 at 20:03 -0700, Guenter Roeck wrote:
->> ping ...
->>
->> Ben, I know this is not perfect, but on the other side it is simple
->> and would be easy to backport. With this in place, a complete/clean
->> fix would not be as urgent. Any chance to get it applied ?
+On 07/13, Benjamin Herrenschmidt wrote:
 >
-> Yes, that definitely helps, I'll include it as a band aid.
+> On Sat, 2014-07-12 at 22:51 +0200, Oleg Nesterov wrote:
+> > OK, looks like this is compiler bug,
+> >
+> > https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52080
+> >
+> > Thanks to Dan who informed me privately.
 >
-> Cheers,
-> Ben.
->
->> Nick, this doesn't fix the allyesconfig build - it still fails with
->> relocation errors. But it does fix the allmodconfig build.
->>
->> Thanks,
->> Guenter
->>
->> On 06/30/2014 11:45 AM, Guenter Roeck wrote:
->> > powerpc:allmodconfig has been failing for some time with the following
->> > error.
->> >
->> > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
->> > arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
->> > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
->> >
->> > A number of attempts to fix the problem by moving around code have been
->> > unsuccessful and resulted in failed builds for some configurations and
->> > the discovery of toolchain bugs.
->> >
->> > Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
->> > While this is less than perfect, it avoids substantial code changes
->> > which would otherwise be necessary just to make COMPILE_TEST builds
->> > happy and might have undesired side effects.
->> >
->> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->> > ---
->> >   arch/powerpc/Kconfig | 3 ++-
->> >   1 file changed, 2 insertions(+), 1 deletion(-)
->> >
->> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> > index bd6dd6e..fefe7c8 100644
->> > --- a/arch/powerpc/Kconfig
->> > +++ b/arch/powerpc/Kconfig
->> > @@ -414,7 +414,7 @@ config KEXEC
->> >   config CRASH_DUMP
->> >     bool "Build a kdump crash kernel"
->> >     depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
->> > -   select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
->> > +   select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
->> >     help
->> >       Build a kernel suitable for use as a kdump capture kernel.
->> >       The same kernel binary can be used as production kernel and dump
->> > @@ -1017,6 +1017,7 @@ endmenu
->> >   if PPC64
->> >   config RELOCATABLE
->> >     bool "Build a relocatable kernel"
->> > +   depends on !COMPILE_TEST
->> >     select NONSTATIC_KERNEL
->> >     help
->> >       This builds a kernel image that is capable of running anywhere
->> >
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
->
-Thanks for applying the patch. Works for me too.Sorry about the late
-reply working on other build
-issues and fix me messages.
-Nick
+> So yes, there's is this compiler bug which means a bitfield
+> access can cause a r-m-w access to a neighbouring field
+
+Thanks. So I can forward this all back to bugzilla.
+
+> but
+> in general, I would be weary of bitfields anyway since accessing
+> them isn't going to be atomic anyway... it's too easy to get things
+> wrong and in most cases the benefit is yet to be demonstrated.
+
+Sure, bit fields should be used with care. But the same arguments apply
+to bitmasks, they are often used without "atomic" set/clear_bit.
+
+> In your example, I don't see the point of the bitfield.
+
+This is just test-case. The real code has more adjacent bit fields, only
+the tracee can modify them, and only debugger can change ->freeze_stop.
+
+Thanks,
+
+Oleg.
