@@ -1,24 +1,32 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE3C01A0156
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2014 23:15:22 +1000 (EST)
-Message-ID: <53C2865B.5040200@hurleysoftware.com>
-Date: Sun, 13 Jul 2014 09:15:07 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oleg Nesterov <oleg@redhat.com>
-Subject: Re: bit fields && data tearing
-References: <20140712181328.GA8738@redhat.com>	
- <20140712205130.GA16437@redhat.com> <1405208082.20996.54.camel@pasglop>
-In-Reply-To: <1405208082.20996.54.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Dan <opendtv@yahoo.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 381041A0150
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 06:02:02 +1000 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id bj1so769595pad.21
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2014 13:02:00 -0700 (PDT)
+From: Andy Lutomirski <luto@amacapital.net>
+To: 
+Subject: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+Date: Sun, 13 Jul 2014 13:01:52 -0700
+Message-Id: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ user-mode-linux-devel@lists.sourceforge.net, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,250 +36,519 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/12/2014 07:34 PM, Benjamin Herrenschmidt wrote:
-> On Sat, 2014-07-12 at 22:51 +0200, Oleg Nesterov wrote:
->> OK, looks like this is compiler bug,
->>
->> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52080
->>
->> Thanks to Dan who informed me privately.
->
-> So yes, there's is this compiler bug which means a bitfield
-> access can cause a r-m-w access to a neighbouring field but
-> in general, I would be weary of bitfields anyway since accessing
-> them isn't going to be atomic anyway... it's too easy to get things
-> wrong and in most cases the benefit is yet to be demonstrated.
+The core mm code will provide a default gate area based on
+FIXADDR_USER_START and FIXADDR_USER_END if
+!defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
 
-I'm not sure I understand your point here, Ben.
+This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+64-bit UML, and x86_32 have their own code just to disable it.  arm,
+32-bit UML, and x86_64 have gate areas, but they have their own
+implementations.
 
-Suppose that two different spinlocks are used independently to
-protect r-m-w access to adjacent data. In Oleg's example,
-suppose spinlock 1 is used for access to the bitfield and
-spinlock 2 is used for access to freeze_stop.
+This gets rid of the default and moves the code into ia64.
 
-What would prevent an accidental write to freeze_stop from the
-kt_1 thread?
+This should save some code on architectures without a gate area: it's
+now possible to inline the gate_area functions in the default case.
 
-Regards,
-Peter Hurley
+Acked-by: Will Deacon <will.deacon@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Nathan Lynch <Nathan_Lynch@mentor.com>
+Cc: x86@kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: linux-mm@kvack.org
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
 
-> In your example, I don't see the point of the bitfield.
->
-> Cheers,
-> Ben.
->
->> On 07/12, Oleg Nesterov wrote:
->>>
->>> Hello,
->>>
->>> I am not sure I should ask here, but since Documentation/memory-barriers.txt
->>> mentions load/store tearing perhaps my question is not completely off-topic...
->>>
->>> I am fighting with mysterious RHEL bug, it can be reproduced on ppc and s390
->>> but not on x86. Finally I seem to understand the problem, and I even wrote the
->>> stupid kernel module to ensure, see it below at the end.
->>>
->>> It triggers the problem immediately, kt_2() sees the wrong value in freeze_stop.
->>> (If I turn ->freeze_stop int "long", the problem goes away).
->>>
->>> So the question is: is this gcc bug or the code below is buggy?
->>>
->>> If it is buggy, then probably memory-barriers.txt could mention that you should
->>> be carefull with bit fields, even ACCESS_ONCE() obviously can't help.
->>>
->>> Or this just discloses my ignorance and you need at least aligned(long) after a
->>> bit field to be thread-safe ? I thought that compiler should take care and add
->>> the necessary alignment if (say) CPU can't update a single byte/uint.
->>>
->>> gcc version 4.4.7 20120313 (Red Hat 4.4.7-9) (GCC). Asm:
->>>
->>> 	0000000000000000 <.kt_2>:
->>> 	   0:	7c 08 02 a6 	mflr    r0
->>> 	   4:	fb 81 ff e0 	std     r28,-32(r1)
->>> 	   8:	fb a1 ff e8 	std     r29,-24(r1)
->>> 	   c:	fb c1 ff f0 	std     r30,-16(r1)
->>> 	  10:	fb e1 ff f8 	std     r31,-8(r1)
->>> 	  14:	eb c2 00 00 	ld      r30,0(r2)
->>> 	  18:	f8 01 00 10 	std     r0,16(r1)
->>> 	  1c:	f8 21 ff 71 	stdu    r1,-144(r1)
->>> 	  20:	7c 7d 1b 78 	mr      r29,r3
->>> 	  24:	3b e0 00 00 	li      r31,0
->>> 	  28:	78 3c 04 64 	rldicr  r28,r1,0,49
->>> 	  2c:	3b 9c 00 80 	addi    r28,r28,128
->>> 	  30:	48 00 00 2c 	b       5c <.kt_2+0x5c>
->>> 	  34:	60 00 00 00 	nop
->>> 	  38:	60 00 00 00 	nop
->>> 	  3c:	60 00 00 00 	nop
->>> 	  40:	93 fd 00 04 	stw     r31,4(r29)
->>> 	  44:	e8 9d 00 06 	lwa     r4,4(r29)
->>> 	  48:	7f 84 f8 00 	cmpw    cr7,r4,r31
->>> 	  4c:	40 de 00 4c 	bne-    cr7,98 <.kt_2+0x98>
->>> 	  50:	e8 1c 00 00 	ld      r0,0(r28)
->>> 	  54:	78 09 f7 e3 	rldicl. r9,r0,62,63
->>> 	  58:	40 c2 00 54 	bne-    ac <.kt_2+0xac>
->>> 	  5c:	48 00 00 01 	bl      5c <.kt_2+0x5c>
->>> 	  60:	60 00 00 00 	nop
->>> 	  64:	3b ff 00 01 	addi    r31,r31,1
->>> 	  68:	2f a3 00 00 	cmpdi   cr7,r3,0
->>> 	  6c:	7f ff 07 b4 	extsw   r31,r31
->>> 	  70:	41 9e ff d0 	beq+    cr7,40 <.kt_2+0x40>
->>> 	  74:	38 21 00 90 	addi    r1,r1,144
->>> 	  78:	38 60 00 00 	li      r3,0
->>> 	  7c:	e8 01 00 10 	ld      r0,16(r1)
->>> 	  80:	eb 81 ff e0 	ld      r28,-32(r1)
->>> 	  84:	eb a1 ff e8 	ld      r29,-24(r1)
->>> 	  88:	eb c1 ff f0 	ld      r30,-16(r1)
->>> 	  8c:	eb e1 ff f8 	ld      r31,-8(r1)
->>> 	  90:	7c 08 03 a6 	mtlr    r0
->>> 	  94:	4e 80 00 20 	blr
->>> 	  98:	e8 7e 80 28 	ld      r3,-32728(r30)
->>> 	  9c:	7f e5 fb 78 	mr      r5,r31
->>> 	  a0:	48 00 00 01 	bl      a0 <.kt_2+0xa0>
->>> 	  a4:	60 00 00 00 	nop
->>> 	  a8:	4b ff ff a8 	b       50 <.kt_2+0x50>
->>> 	  ac:	48 00 00 01 	bl      ac <.kt_2+0xac>
->>> 	  b0:	60 00 00 00 	nop
->>> 	  b4:	4b ff ff a8 	b       5c <.kt_2+0x5c>
->>> 	  b8:	60 00 00 00 	nop
->>> 	  bc:	60 00 00 00 	nop
->>>
->>> 	00000000000000c0 <.kt_1>:
->>> 	  c0:	7c 08 02 a6 	mflr    r0
->>> 	  c4:	fb 81 ff e0 	std     r28,-32(r1)
->>> 	  c8:	fb a1 ff e8 	std     r29,-24(r1)
->>> 	  cc:	fb c1 ff f0 	std     r30,-16(r1)
->>> 	  d0:	fb e1 ff f8 	std     r31,-8(r1)
->>> 	  d4:	eb c2 00 00 	ld      r30,0(r2)
->>> 	  d8:	f8 01 00 10 	std     r0,16(r1)
->>> 	  dc:	f8 21 ff 71 	stdu    r1,-144(r1)
->>> 	  e0:	7c 7d 1b 78 	mr      r29,r3
->>> 	  e4:	3b e0 00 00 	li      r31,0
->>> 	  e8:	78 3c 04 64 	rldicr  r28,r1,0,49
->>> 	  ec:	3b 9c 00 80 	addi    r28,r28,128
->>> 	  f0:	48 00 00 38 	b       128 <.kt_1+0x68>
->>> 	  f4:	60 00 00 00 	nop
->>> 	  f8:	60 00 00 00 	nop
->>> 	  fc:	60 00 00 00 	nop
->>> 	 100:	e8 1d 00 00 	ld      r0,0(r29)
->>> 	 104:	79 20 e8 0e 	rldimi  r0,r9,61,0
->>> 	 108:	f8 1d 00 00 	std     r0,0(r29)
->>> 	 10c:	80 1d 00 00 	lwz     r0,0(r29)
->>> 	 110:	54 00 1f 7e 	rlwinm  r0,r0,3,29,31
->>> 	 114:	7f 80 f8 00 	cmpw    cr7,r0,r31
->>> 	 118:	40 de 00 6c 	bne-    cr7,184 <.kt_1+0xc4>
->>> 	 11c:	e8 1c 00 00 	ld      r0,0(r28)
->>> 	 120:	78 09 f7 e3 	rldicl. r9,r0,62,63
->>> 	 124:	40 c2 00 70 	bne-    194 <.kt_1+0xd4>
->>> 	 128:	48 00 00 01 	bl      128 <.kt_1+0x68>
->>> 	 12c:	60 00 00 00 	nop
->>> 	 130:	3b ff 00 01 	addi    r31,r31,1
->>> 	 134:	2f a3 00 00 	cmpdi   cr7,r3,0
->>> 	 138:	7f ff 07 b4 	extsw   r31,r31
->>> 	 13c:	2f 1f 00 07 	cmpwi   cr6,r31,7
->>> 	 140:	7b e9 07 60 	clrldi  r9,r31,61
->>> 	 144:	40 9e 00 1c 	bne-    cr7,160 <.kt_1+0xa0>
->>> 	 148:	40 9a ff b8 	bne+    cr6,100 <.kt_1+0x40>
->>> 	 14c:	39 20 00 00 	li      r9,0
->>> 	 150:	3b e0 00 00 	li      r31,0
->>> 	 154:	4b ff ff ac 	b       100 <.kt_1+0x40>
->>> 	 158:	60 00 00 00 	nop
->>> 	 15c:	60 00 00 00 	nop
->>> 	 160:	38 21 00 90 	addi    r1,r1,144
->>> 	 164:	38 60 00 00 	li      r3,0
->>> 	 168:	e8 01 00 10 	ld      r0,16(r1)
->>> 	 16c:	eb 81 ff e0 	ld      r28,-32(r1)
->>> 	 170:	eb a1 ff e8 	ld      r29,-24(r1)
->>> 	 174:	eb c1 ff f0 	ld      r30,-16(r1)
->>> 	 178:	eb e1 ff f8 	ld      r31,-8(r1)
->>> 	 17c:	7c 08 03 a6 	mtlr    r0
->>> 	 180:	4e 80 00 20 	blr
->>> 	 184:	e8 7e 80 30 	ld      r3,-32720(r30)
->>> 	 188:	48 00 00 01 	bl      188 <.kt_1+0xc8>
->>> 	 18c:	60 00 00 00 	nop
->>> 	 190:	4b ff ff 8c 	b       11c <.kt_1+0x5c>
->>> 	 194:	48 00 00 01 	bl      194 <.kt_1+0xd4>
->>> 	 198:	60 00 00 00 	nop
->>> 	 19c:	4b ff ff 8c 	b       128 <.kt_1+0x68>
->>>
->>> Unfortunately it tells me nothing, I do not know ppc.
->>>
->>> Oleg.
->>>
->>> --------------------------------------------------------------------------------
->>> #include <linux/module.h>
->>> #include <linux/kernel.h>
->>> #include <linux/kthread.h>
->>>
->>> struct utrace {
->>> 	unsigned int resume:3;
->>> 	int freeze_stop;
->>> };
->>>
->>> static int kt_1(void *arg)
->>> {
->>> 	struct utrace *u = arg;
->>> 	int r = 0;
->>>
->>> 	while (!kthread_should_stop()) {
->>> 		if (++r == 7)
->>> 			r = 0;
->>>
->>> 		u->resume = r;
->>> 		barrier();
->>> 		if (u->resume != r)
->>> 			printk(KERN_CRIT "BUG! bitfield\n");
->>>
->>> 		if (need_resched())
->>> 			schedule();
->>> 	}
->>>
->>> 	return 0;
->>> }
->>>
->>> static int kt_2(void *arg)
->>> {
->>> 	struct utrace *u = arg;
->>> 	int f = 0;
->>>
->>> 	while (!kthread_should_stop()) {
->>> 		u->freeze_stop = ++f;
->>> 		barrier();
->>> 		if (u->freeze_stop != f)
->>> 			printk(KERN_CRIT "BUG! freeze_stop %d != %d\n", u->freeze_stop, f);
->>>
->>> 		if (need_resched())
->>> 			schedule();
->>> 	}
->>>
->>> 	return 0;
->>> }
->>>
->>> static struct task_struct *t_1, *t_2;
->>>
->>> static struct utrace utrace;
->>>
->>> static int __init mod_init(void)
->>> {
->>> 	WARN_ON(IS_ERR(t_1 = kthread_run(kt_1, &utrace, "kt_1")));
->>> 	WARN_ON(IS_ERR(t_2 = kthread_run(kt_2, &utrace, "kt_2")));
->>>
->>> 	return 0;
->>> }
->>>
->>> static void __exit mod_exit(void)
->>> {
->>> 	kthread_stop(t_1);
->>> 	kthread_stop(t_2);
->>> }
->>>
->>> MODULE_LICENSE("GPL");
->>> module_init(mod_init);
->>> module_exit(mod_exit);
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+It would be nice to get this into some tree that's in -next and that
+people can base on.
+
+Changes from v1 and v2: Nothing except Will Deacon's ack and splitting
+this out from the larger series.
+
+ arch/arm64/include/asm/page.h      |  3 ---
+ arch/arm64/kernel/vdso.c           | 19 -------------------
+ arch/ia64/include/asm/page.h       |  2 ++
+ arch/ia64/mm/init.c                | 26 ++++++++++++++++++++++++++
+ arch/powerpc/include/asm/page.h    |  3 ---
+ arch/powerpc/kernel/vdso.c         | 16 ----------------
+ arch/s390/include/asm/page.h       |  2 --
+ arch/s390/kernel/vdso.c            | 15 ---------------
+ arch/sh/include/asm/page.h         |  5 -----
+ arch/sh/kernel/vsyscall/vsyscall.c | 15 ---------------
+ arch/tile/include/asm/page.h       |  6 ------
+ arch/tile/kernel/vdso.c            | 15 ---------------
+ arch/um/include/asm/page.h         |  5 +++++
+ arch/x86/include/asm/page.h        |  1 -
+ arch/x86/include/asm/page_64.h     |  2 ++
+ arch/x86/um/asm/elf.h              |  1 -
+ arch/x86/um/mem_64.c               | 15 ---------------
+ arch/x86/vdso/vdso32-setup.c       | 19 +------------------
+ include/linux/mm.h                 | 17 ++++++++++++-----
+ mm/memory.c                        | 38 --------------------------------------
+ mm/nommu.c                         |  5 -----
+ 21 files changed, 48 insertions(+), 182 deletions(-)
+
+diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
+index 46bf666..992710f 100644
+--- a/arch/arm64/include/asm/page.h
++++ b/arch/arm64/include/asm/page.h
+@@ -28,9 +28,6 @@
+ #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
+ #define PAGE_MASK		(~(PAGE_SIZE-1))
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_ARM64_64K_PAGES
+diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
+index 50384fe..f630626 100644
+--- a/arch/arm64/kernel/vdso.c
++++ b/arch/arm64/kernel/vdso.c
+@@ -187,25 +187,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ }
+ 
+ /*
+- * We define AT_SYSINFO_EHDR, so we need these function stubs to keep
+- * Linux happy.
+- */
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-/*
+  * Update the vDSO data page to keep in sync with kernel timekeeping.
+  */
+ void update_vsyscall(struct timekeeper *tk)
+diff --git a/arch/ia64/include/asm/page.h b/arch/ia64/include/asm/page.h
+index f1e1b2e..1f1bf14 100644
+--- a/arch/ia64/include/asm/page.h
++++ b/arch/ia64/include/asm/page.h
+@@ -231,4 +231,6 @@ get_order (unsigned long size)
+ #define PERCPU_ADDR		(-PERCPU_PAGE_SIZE)
+ #define LOAD_OFFSET		(KERNEL_START - KERNEL_TR_PAGE_SIZE)
+ 
++#define __HAVE_ARCH_GATE_AREA	1
++
+ #endif /* _ASM_IA64_PAGE_H */
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 25c3502..35efaa3 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -278,6 +278,32 @@ setup_gate (void)
+ 	ia64_patch_gate();
+ }
+ 
++static struct vm_area_struct gate_vma;
++
++static int __init gate_vma_init(void)
++{
++	gate_vma.vm_mm = NULL;
++	gate_vma.vm_start = FIXADDR_USER_START;
++	gate_vma.vm_end = FIXADDR_USER_END;
++	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
++	gate_vma.vm_page_prot = __P101;
++
++	return 0;
++}
++__initcall(gate_vma_init);
++
++struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return &gate_vma;
++}
++
++int in_gate_area_no_mm(unsigned long addr)
++{
++	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
++		return 1;
++	return 0;
++}
++
+ void ia64_mmu_init(void *my_cpu_data)
+ {
+ 	unsigned long pta, impl_va_bits;
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 32e4e21..26fe1ae 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -48,9 +48,6 @@ extern unsigned int HPAGE_SHIFT;
+ #define HUGE_MAX_HSTATE		(MMU_PAGE_COUNT-1)
+ #endif
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ /*
+  * Subtle: (1 << PAGE_SHIFT) is an int, not an unsigned long. So if we
+  * assign PAGE_MASK to a larger type it gets extended the way we want
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ce74c33..f174351 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -840,19 +840,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ arch_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
+index 114258e..7b2ac6e 100644
+--- a/arch/s390/include/asm/page.h
++++ b/arch/s390/include/asm/page.h
+@@ -162,6 +162,4 @@ static inline int devmem_is_allowed(unsigned long pfn)
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+-
+ #endif /* _S390_PAGE_H */
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index 6136490..0bbb7e0 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -316,18 +316,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ early_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
+index 15d9703..fe20d14 100644
+--- a/arch/sh/include/asm/page.h
++++ b/arch/sh/include/asm/page.h
+@@ -186,11 +186,6 @@ typedef struct page *pgtable_t;
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-/* vDSO support */
+-#ifdef CONFIG_VSYSCALL
+-#define __HAVE_ARCH_GATE_AREA
+-#endif
+-
+ /*
+  * Some drivers need to perform DMA into kmalloc'ed buffers
+  * and so we have to increase the kmalloc minalign for this.
+diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
+index 5ca5797..ea2aa13 100644
+--- a/arch/sh/kernel/vsyscall/vsyscall.c
++++ b/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -92,18 +92,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+diff --git a/arch/tile/include/asm/page.h b/arch/tile/include/asm/page.h
+index 6727680..a213a8d 100644
+--- a/arch/tile/include/asm/page.h
++++ b/arch/tile/include/asm/page.h
+@@ -39,12 +39,6 @@
+ #define HPAGE_MASK	(~(HPAGE_SIZE - 1))
+ 
+ /*
+- * We do define AT_SYSINFO_EHDR to support vDSO,
+- * but don't use the gate mechanism.
+- */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+-/*
+  * If the Kconfig doesn't specify, set a maximum zone order that
+  * is enough so that we can create huge pages from small pages given
+  * the respective sizes of the two page types.  See <linux/mmzone.h>.
+diff --git a/arch/tile/kernel/vdso.c b/arch/tile/kernel/vdso.c
+index 1533af2..5bc51d7 100644
+--- a/arch/tile/kernel/vdso.c
++++ b/arch/tile/kernel/vdso.c
+@@ -121,21 +121,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 	return NULL;
+ }
+ 
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+-
+ int setup_vdso_pages(void)
+ {
+ 	struct page **pagelist;
+diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
+index 5ff53d9..71c5d13 100644
+--- a/arch/um/include/asm/page.h
++++ b/arch/um/include/asm/page.h
+@@ -119,4 +119,9 @@ extern unsigned long uml_physmem;
+ #include <asm-generic/getorder.h>
+ 
+ #endif	/* __ASSEMBLY__ */
++
++#ifdef CONFIG_X86_32
++#define __HAVE_ARCH_GATE_AREA 1
++#endif
++
+ #endif	/* __UM_PAGE_H */
+diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
+index 775873d..802dde3 100644
+--- a/arch/x86/include/asm/page.h
++++ b/arch/x86/include/asm/page.h
+@@ -70,7 +70,6 @@ extern bool __virt_addr_valid(unsigned long kaddr);
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif	/* __KERNEL__ */
+diff --git a/arch/x86/include/asm/page_64.h b/arch/x86/include/asm/page_64.h
+index 0f1ddee..f408caf 100644
+--- a/arch/x86/include/asm/page_64.h
++++ b/arch/x86/include/asm/page_64.h
+@@ -39,4 +39,6 @@ void copy_page(void *to, void *from);
+ 
+ #endif	/* !__ASSEMBLY__ */
+ 
++#define __HAVE_ARCH_GATE_AREA 1
++
+ #endif /* _ASM_X86_PAGE_64_H */
+diff --git a/arch/x86/um/asm/elf.h b/arch/x86/um/asm/elf.h
+index 0feee2f..25a1022 100644
+--- a/arch/x86/um/asm/elf.h
++++ b/arch/x86/um/asm/elf.h
+@@ -216,6 +216,5 @@ extern long elf_aux_hwcap;
+ #define ELF_HWCAP (elf_aux_hwcap)
+ 
+ #define SET_PERSONALITY(ex) do ; while(0)
+-#define __HAVE_ARCH_GATE_AREA 1
+ 
+ #endif
+diff --git a/arch/x86/um/mem_64.c b/arch/x86/um/mem_64.c
+index c6492e7..f8fecad 100644
+--- a/arch/x86/um/mem_64.c
++++ b/arch/x86/um/mem_64.c
+@@ -9,18 +9,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
+index e4f7781..e904c27 100644
+--- a/arch/x86/vdso/vdso32-setup.c
++++ b/arch/x86/vdso/vdso32-setup.c
+@@ -115,23 +115,6 @@ static __init int ia32_binfmt_init(void)
+ 	return 0;
+ }
+ __initcall(ia32_binfmt_init);
+-#endif
+-
+-#else  /* CONFIG_X86_32 */
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
++#endif /* CONFIG_SYSCTL */
+ 
+ #endif	/* CONFIG_X86_64 */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index e03dd29..8981cc8 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2014,13 +2014,20 @@ static inline bool kernel_page_present(struct page *page) { return true; }
+ #endif /* CONFIG_HIBERNATION */
+ #endif
+ 
++#ifdef __HAVE_ARCH_GATE_AREA
+ extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
+-#ifdef	__HAVE_ARCH_GATE_AREA
+-int in_gate_area_no_mm(unsigned long addr);
+-int in_gate_area(struct mm_struct *mm, unsigned long addr);
++extern int in_gate_area_no_mm(unsigned long addr);
++extern int in_gate_area(struct mm_struct *mm, unsigned long addr);
+ #else
+-int in_gate_area_no_mm(unsigned long addr);
+-#define in_gate_area(mm, addr) ({(void)mm; in_gate_area_no_mm(addr);})
++static inline struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return NULL;
++}
++static inline int in_gate_area_no_mm(unsigned long addr) { return 0; }
++static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
++{
++	return 0;
++}
+ #endif	/* __HAVE_ARCH_GATE_AREA */
+ 
+ #ifdef CONFIG_SYSCTL
+diff --git a/mm/memory.c b/mm/memory.c
+index d67fd9f..099d234 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3399,44 +3399,6 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+ }
+ #endif /* __PAGETABLE_PMD_FOLDED */
+ 
+-#if !defined(__HAVE_ARCH_GATE_AREA)
+-
+-#if defined(AT_SYSINFO_EHDR)
+-static struct vm_area_struct gate_vma;
+-
+-static int __init gate_vma_init(void)
+-{
+-	gate_vma.vm_mm = NULL;
+-	gate_vma.vm_start = FIXADDR_USER_START;
+-	gate_vma.vm_end = FIXADDR_USER_END;
+-	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
+-	gate_vma.vm_page_prot = __P101;
+-
+-	return 0;
+-}
+-__initcall(gate_vma_init);
+-#endif
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	return &gate_vma;
+-#else
+-	return NULL;
+-#endif
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
+-		return 1;
+-#endif
+-	return 0;
+-}
+-
+-#endif	/* __HAVE_ARCH_GATE_AREA */
+-
+ static int __follow_pte(struct mm_struct *mm, unsigned long address,
+ 		pte_t **ptepp, spinlock_t **ptlp)
+ {
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 4a852f6..a881d96 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1981,11 +1981,6 @@ error:
+ 	return -ENOMEM;
+ }
+ 
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
+ 	BUG();
+-- 
+1.9.3
