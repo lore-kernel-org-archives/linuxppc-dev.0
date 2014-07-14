@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C3731A0149
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 08:25:44 +1000 (EST)
-Message-ID: <1405290324.20996.71.camel@pasglop>
-Subject: Re: bit fields && data tearing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Hurley <peter@hurleysoftware.com>
-Date: Mon, 14 Jul 2014 08:25:24 +1000
-In-Reply-To: <53C2865B.5040200@hurleysoftware.com>
-References: <20140712181328.GA8738@redhat.com>
- <20140712205130.GA16437@redhat.com> <1405208082.20996.54.camel@pasglop>
- <53C2865B.5040200@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1AFF01A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 12:18:37 +1000 (EST)
+Message-ID: <53C33C6D.8020103@huawei.com>
+Date: Mon, 14 Jul 2014 10:11:57 +0800
+From: Yijing Wang <wangyijing@huawei.com>
+MIME-Version: 1.0
+To: Alexander Gordeev <agordeev@redhat.com>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] PCI/MSI: Remove arch_msi_check_device()
+References: <cover.1405160163.git.agordeev@redhat.com>
+ <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
+In-Reply-To: <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jakub Jelinek <jakub@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Dan <opendtv@yahoo.com>, "Paul
- E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +24,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2014-07-13 at 09:15 -0400, Peter Hurley wrote:
-> 
-> I'm not sure I understand your point here, Ben.
-> 
-> Suppose that two different spinlocks are used independently to
-> protect r-m-w access to adjacent data. In Oleg's example,
-> suppose spinlock 1 is used for access to the bitfield and
-> spinlock 2 is used for access to freeze_stop.
-> 
-> What would prevent an accidental write to freeze_stop from the
-> kt_1 thread?
+>  /**
+> - * pci_msi_check_device - check whether MSI may be enabled on a device
+> + * msi_check_device - check whether MSI may be enabled on a device
+>   * @dev: pointer to the pci_dev data structure of MSI device function
+>   * @nvec: how many MSIs have been requested ?
+> - * @type: are we checking for MSI or MSI-X ?
+>   *
+>   * Look at global flags, the device itself, and its parent buses
+>   * to determine if MSI/-X are supported for the device. If MSI/-X is
+>   * supported return 0, else return an error code.
+>   **/
+> -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +static int msi_check_device(struct pci_dev *dev, int nvec)
+>  {
+>  	struct pci_bus *bus;
+> -	int ret;
+>  
+>  	/* MSI must be globally enabled and supported by the device */
+> -	if (!pci_msi_enable || !dev || dev->no_msi)
+> +	if (!pci_msi_enable)
+> +		return -EINVAL;
+> +
+> +	if (!dev || dev->no_msi || dev->current_state != PCI_D0)
+>  		return -EINVAL;
+>  
+>  	/*
+> @@ -846,10 +837,6 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
+>  		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
+>  			return -EINVAL;
+>  
+> -	ret = arch_msi_check_device(dev, nvec, type);
+> -	if (ret)
+> -		return ret;
+> -
 
-My point was to be weary of bitfields in general because access
-to them is always R-M-W, never atomic and that seem to escape
-people regularily :-) (Among other problems such as endian etc...)
+Move the arch_msi_check_device() into arch_msi_setup_irq(), make we can not detect whether the device in this platform
+supports MSI or MSI-X aeap. If we delay this, maybe we will do a lot unnecessary working for MSI/MSI-X setup.
 
-As for Oleg's example, it *should* have worked because the bitfield and
-the adjacent freeze_stop should have been accessed using load/stores
-that don't actually overlap, but the compiler bug causes the bitfield
-access to not properly use the basic type of the bitfield, but escalate
-to a full 64-bit R-M-W instead, thus incorrectly R-M-W'ing the field
-next door.
+Thanks!
+Yijing.
 
-Cheers,
-Ben.
+>  	return 0;
+>  }
+>  
+> @@ -954,13 +941,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+>  	int status, nr_entries;
+>  	int i, j;
+>  
+> -	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
+> -		return -EINVAL;
+> -
+> -	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
+> +	status = msi_check_device(dev, nvec);
+>  	if (status)
+>  		return status;
+>  
+> +	if (!entries)
+> +		return -EINVAL;
+> +
+>  	nr_entries = pci_msix_vec_count(dev);
+>  	if (nr_entries < 0)
+>  		return nr_entries;
+> @@ -1085,8 +1072,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+>  	int nvec;
+>  	int rc;
+>  
+> -	if (dev->current_state != PCI_D0)
+> -		return -EINVAL;
+> +	rc = msi_check_device(dev, minvec);
+> +	if (rc)
+> +		return rc;
+>  
+>  	WARN_ON(!!dev->msi_enabled);
+>  
+> @@ -1109,17 +1097,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+>  		nvec = maxvec;
+>  
+>  	do {
+> -		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
+> -		if (rc < 0) {
+> -			return rc;
+> -		} else if (rc > 0) {
+> -			if (rc < minvec)
+> -				return -ENOSPC;
+> -			nvec = rc;
+> -		}
+> -	} while (rc);
+> -
+> -	do {
+>  		rc = msi_capability_init(dev, nvec);
+>  		if (rc < 0) {
+>  			return rc;
+> diff --git a/include/linux/msi.h b/include/linux/msi.h
+> index 92a2f99..3b873bc 100644
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -59,7 +59,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+>  void arch_teardown_msi_irq(unsigned int irq);
+>  int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+>  void arch_teardown_msi_irqs(struct pci_dev *dev);
+> -int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
+>  void arch_restore_msi_irqs(struct pci_dev *dev);
+>  
+>  void default_teardown_msi_irqs(struct pci_dev *dev);
+> @@ -76,8 +75,6 @@ struct msi_chip {
+>  	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
+>  			 struct msi_desc *desc);
+>  	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
+> -	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
+> -			    int nvec, int type);
+>  };
+>  
+>  #endif /* LINUX_MSI_H */
+> 
+
+
+-- 
+Thanks!
+Yijing
