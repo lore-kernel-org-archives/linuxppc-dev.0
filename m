@@ -1,22 +1,36 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04BAE1A014F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 19:54:55 +1000 (EST)
-Date: Mon, 14 Jul 2014 11:55:39 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH 2/2] PCI/MSI: Remove arch_msi_check_device()
-Message-ID: <20140714095538.GA15981@dhcp-26-207.brq.redhat.com>
-References: <cover.1405160163.git.agordeev@redhat.com>
- <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
- <53C33C6D.8020103@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 723611A014F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 23:02:02 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 14 Jul 2014 18:31:56 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 378423940043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 18:31:54 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6ED2D7T40567022
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 18:32:13 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6ED1qmg025511
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 18:31:52 +0530
+Date: Mon, 14 Jul 2014 23:01:49 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Bugfix: powerpc/eeh: Wrong place to call pci_get_slot()
+Message-ID: <20140714130149.GA4752@shangw>
+References: <1405325963-1664-1-git-send-email-qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53C33C6D.8020103@huawei.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+In-Reply-To: <1405325963-1664-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,139 +40,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2014 at 10:11:57AM +0800, Yijing Wang wrote:
-> >  /**
-> > - * pci_msi_check_device - check whether MSI may be enabled on a device
-> > + * msi_check_device - check whether MSI may be enabled on a device
-> >   * @dev: pointer to the pci_dev data structure of MSI device function
-> >   * @nvec: how many MSIs have been requested ?
-> > - * @type: are we checking for MSI or MSI-X ?
-> >   *
-> >   * Look at global flags, the device itself, and its parent buses
-> >   * to determine if MSI/-X are supported for the device. If MSI/-X is
-> >   * supported return 0, else return an error code.
-> >   **/
-> > -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-> > +static int msi_check_device(struct pci_dev *dev, int nvec)
-> >  {
-> >  	struct pci_bus *bus;
-> > -	int ret;
-> >  
-> >  	/* MSI must be globally enabled and supported by the device */
-> > -	if (!pci_msi_enable || !dev || dev->no_msi)
-> > +	if (!pci_msi_enable)
-> > +		return -EINVAL;
-> > +
-> > +	if (!dev || dev->no_msi || dev->current_state != PCI_D0)
-> >  		return -EINVAL;
-> >  
-> >  	/*
-> > @@ -846,10 +837,6 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-> >  		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
-> >  			return -EINVAL;
-> >  
-> > -	ret = arch_msi_check_device(dev, nvec, type);
-> > -	if (ret)
-> > -		return ret;
-> > -
-> 
-> Move the arch_msi_check_device() into arch_msi_setup_irq(), make we can not detect whether the device in this platform
-> supports MSI or MSI-X aeap. If we delay this, maybe we will do a lot unnecessary working for MSI/MSI-X setup.
+On Mon, Jul 14, 2014 at 04:19:23AM -0400, Mike Qiu wrote:
+>[  121.133381] WARNING: at drivers/pci/search.c:223
+>[  121.133422] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc3+ #72
+>[  121.133424] task: c000000001367af0 ti: c000000001444000 task.ti: c000000001444000
+>[  121.133425] NIP: c000000000497b70 LR: c000000000037530 CTR: 000000003003d114
+>[  121.133427] REGS: c000000001446fa0 TRAP: 0700   Not tainted  (3.16.0-rc3+)
+>[  121.133428] MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 48002422  XER: 20000000
+>[  121.133433] CFAR: c00000000003752c SOFTE: 0
+>GPR00: c000000000037530 c000000001447220 c000000001448c30 c0000003bca1dc00
+>GPR04: 0000000000000000 c000000000066064 9000000000009032 0000000000000008
+>GPR08: 0000000000000007 0000000000000001 0000000000000100 000000003003d200
+>GPR12: 0000000044002482 c00000000fee0000 0000000000000000 c0000000015e8830
+>GPR16: c0000000015e8c30 0000000000000000 c0000000015e8430 c0000000015e8030
+>GPR20: c000000001348c30 c000000001482180 0000000000000000 0000000000000000
+>GPR24: 0000000000200200 c0000003bc243500 c0000003feff4070 c0000003bcec3000
+>GPR28: c0000000014cac00 c0000003bca1dc00 0000000000000000 0000000000000000
+>[  121.133454] NIP [c000000000497b70] .pci_get_slot+0x40/0x110
+>[  121.133457] LR [c000000000037530] .eeh_pe_loc_get+0x150/0x190
+>[  121.133458] Call Trace:
+>[  121.133461] [c000000001447220] [c000000000721730] .of_get_property+0x30/0x60 (unreliable)
+>[  121.133464] [c0000000014472b0] [c000000000037530] .eeh_pe_loc_get+0x150/0x190
+>[  121.133466] [c000000001447340] [c000000000034684] .eeh_dev_check_failure+0x1b4/0x550
+>[  121.133468] [c0000000014473f0] [c000000000034ab0] .eeh_check_failure+0x90/0xf0
+>[  121.133493] [c000000001447490] [d000000002c03e84] .lpfc_sli_check_eratt+0x504/0x7c0 [lpfc]
+>[  121.133501] [c000000001447520] [d000000002c041a4] .lpfc_poll_eratt+0x64/0x100 [lpfc]
+>[  121.133504] [c0000000014475a0] [c0000000000b45b4] .call_timer_fn+0x64/0x190
+>[  121.133506] [c000000001447650] [c0000000000b4d1c] .run_timer_softirq+0x2cc/0x3e0
+>[  121.133508] [c000000001447760] [c0000000000a90c8] .__do_softirq+0x198/0x3c0
+>[  121.133510] [c000000001447880] [c0000000000a9658] .irq_exit+0xc8/0x110
+>[  121.133513] [c000000001447900] [c00000000001e010] .timer_interrupt+0xa0/0xe0
+>[  121.133515] [c000000001447980] [c0000000000026d8] decrementer_common+0x158/0x180
+>[  121.133518] --- Exception: 901 at .arch_local_irq_restore+0x74/0x90
+>
+>pci_get_slot() should not be used in interrupt. But eeh subsystem do
+>the error checking in interrupt in this situation.
+>
+>This patch is to solve this issue.
+>
 
-A traditional approach for a function is first to make sanity check and
-then allocate resources. I do not see a reason to keep these two steps
-in separate functions: arch_msi_check_device() and arch_setup_msi_irq().
+The commit log has been clear enough, but the following message might
+be better. I'm not good at writing good commit log as well:
 
-Just make checks within arch_setup_msi_irq() and bail out early would be as
-cheap as it is now, but more natural and would deflate the interface.
+---
 
-Moreover, some platforms duplicate checks in arch_msi_check_device() and
-arch_setup_msi_irq(), which does not add to readability.
+pci_get_slot() is called with hold of PCI bus semaphore and it's not
+safe to be called in interrupt context. However, we possibly checks
+EEH error and calls the function in interrupt context. To avoid using
+pci_get_slot(), we turn into device tree for fetching location code.
+Otherwise, we might run into WARN_ON() as following messages indicate:
 
-> Thanks!
-> Yijing.
-> 
-> >  	return 0;
-> >  }
-> >  
-> > @@ -954,13 +941,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
-> >  	int status, nr_entries;
-> >  	int i, j;
-> >  
-> > -	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
-> > -		return -EINVAL;
-> > -
-> > -	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
-> > +	status = msi_check_device(dev, nvec);
-> >  	if (status)
-> >  		return status;
-> >  
-> > +	if (!entries)
-> > +		return -EINVAL;
-> > +
-> >  	nr_entries = pci_msix_vec_count(dev);
-> >  	if (nr_entries < 0)
-> >  		return nr_entries;
-> > @@ -1085,8 +1072,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
-> >  	int nvec;
-> >  	int rc;
-> >  
-> > -	if (dev->current_state != PCI_D0)
-> > -		return -EINVAL;
-> > +	rc = msi_check_device(dev, minvec);
-> > +	if (rc)
-> > +		return rc;
-> >  
-> >  	WARN_ON(!!dev->msi_enabled);
-> >  
-> > @@ -1109,17 +1097,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
-> >  		nvec = maxvec;
-> >  
-> >  	do {
-> > -		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
-> > -		if (rc < 0) {
-> > -			return rc;
-> > -		} else if (rc > 0) {
-> > -			if (rc < minvec)
-> > -				return -ENOSPC;
-> > -			nvec = rc;
-> > -		}
-> > -	} while (rc);
-> > -
-> > -	do {
-> >  		rc = msi_capability_init(dev, nvec);
-> >  		if (rc < 0) {
-> >  			return rc;
-> > diff --git a/include/linux/msi.h b/include/linux/msi.h
-> > index 92a2f99..3b873bc 100644
-> > --- a/include/linux/msi.h
-> > +++ b/include/linux/msi.h
-> > @@ -59,7 +59,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
-> >  void arch_teardown_msi_irq(unsigned int irq);
-> >  int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-> >  void arch_teardown_msi_irqs(struct pci_dev *dev);
-> > -int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
-> >  void arch_restore_msi_irqs(struct pci_dev *dev);
-> >  
-> >  void default_teardown_msi_irqs(struct pci_dev *dev);
-> > @@ -76,8 +75,6 @@ struct msi_chip {
-> >  	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
-> >  			 struct msi_desc *desc);
-> >  	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
-> > -	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
-> > -			    int nvec, int type);
-> >  };
-> >  
-> >  #endif /* LINUX_MSI_H */
-> > 
-> 
-> 
-> -- 
-> Thanks!
-> Yijing
-> 
+ WARNING: at drivers/pci/search.c:223
+ CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc3+ #72
+ task: c000000001367af0 ti: c000000001444000 task.ti: c000000001444000
+ NIP: c000000000497b70 LR: c000000000037530 CTR: 000000003003d114
+ REGS: c000000001446fa0 TRAP: 0700   Not tainted  (3.16.0-rc3+)
+ MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 48002422  XER: 20000000
+ CFAR: c00000000003752c SOFTE: 0
+   :
+ NIP [c000000000497b70] .pci_get_slot+0x40/0x110
+ LR [c000000000037530] .eeh_pe_loc_get+0x150/0x190
+ Call Trace:
+   .of_get_property+0x30/0x60 (unreliable)
+   .eeh_pe_loc_get+0x150/0x190
+   .eeh_dev_check_failure+0x1b4/0x550
+   .eeh_check_failure+0x90/0xf0
+   .lpfc_sli_check_eratt+0x504/0x7c0 [lpfc]
+   .lpfc_poll_eratt+0x64/0x100 [lpfc]
+   .call_timer_fn+0x64/0x190
+   .run_timer_softirq+0x2cc/0x3e0
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+
+>Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/eeh_pe.c | 29 ++++++++++++++++++++++++++---
+> 1 file changed, 26 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>index fbd01eb..6f4bfee 100644
+>--- a/arch/powerpc/kernel/eeh_pe.c
+>+++ b/arch/powerpc/kernel/eeh_pe.c
+>@@ -792,6 +792,28 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
+> }
+>
+> /**
+>+ * __dn_get_pdev - Retrieve the pci_dev from device_node by bus/devfn
+>+ * @dn: device_node of the pci_dev
+>+ * @data: the pci device's bus/devfn
+>+ *
+>+ * Retrieve the pci_dev using the given device_node and bus/devfn.
+>+ */
+>+void *__dn_get_pdev(struct device_node *dn, void *data)
+>+{
+
+The function isn't necessarily public. "static" is enough, I think.
+I don't think we need this actually. Please refer to more comments
+below.
+
+>+	struct pci_dn *pdn = PCI_DN(dn);
+>+	int busno = *((int *)data) >> 8;
+>+	int devfn = *((int *)data) & 0xff;
+>+
+>+	if (!pdn)
+>+		return NULL;
+>+
+>+	if (pdn->busno == busno && pdn->devfn == devfn)
+>+		return pdn->pcidev;
+>+
+>+	return NULL;
+>+}
+>+
+>+/**
+>  * eeh_pe_loc_get - Retrieve location code binding to the given PE
+>  * @pe: EEH PE
+>  *
+>@@ -807,6 +829,7 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+> 	struct pci_dev *pdev;
+> 	struct device_node *dn;
+> 	const char *loc;
+>+	int bdevfn;
+>
+> 	if (!bus)
+> 		return "N/A";
+>@@ -823,7 +846,9 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+> 		if (loc)
+> 			return loc;
+>
+>-		pdev = pci_get_slot(bus, 0x0);
+>+		/* Get the root port */
+>+		bdevfn = (bus->number) << 8 || 0x0;
+>+		pdev = traverse_pci_devices(hose->dn, __dn_get_pdev, &bdevfn);
+
+We needn't search pdev from device-tree and then translate it to
+device-node. Root port is the only child hooked to root bus's
+device node (it's also PHB's device-node). So I guess you can
+just have something:
+
+		/* Check PHB's device node */
+		dn = pci_bus_to_OF_node(bus);
+		if (unlikely(!dn)) {
+			loc = "N/A";
+			goto out;
+		}
+		loc = of_get_property(hose->dn,
+ 				      "ibm,loc-code", NULL);
+		if (loc)
+			return loc;
+		loc = of_get_property(hose->dn,
+				      "ibm,io-base-loc-code", NULL);
+		if (loc)
+			return loc;
+
+		/* Check root port */
+		dn = dn->child;	
+> 	} else {
+> 		pdev = bus->self;
+
+Here, we needn't grab the bridge as well:
+
+		dn = pci_bus_to_OF_node(bus);
+> 	}
+
+Then check the device-node of bridge (or root port):
+
+	if (unlikely(!dn)) {
+		loc = "N/A";
+		goto out;
+	}
+
+        loc = of_get_property(dn, "ibm,loc-code", NULL);
+        if (!loc)
+                loc = of_get_property(dn, "ibm,slot-location-code", NULL);
+        if (!loc)
+                loc = "N/A";
+
+>@@ -846,8 +871,6 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+> 		loc = "N/A";
+>
+> out:
+>-	if (pci_is_root_bus(bus) && pdev)
+>-		pci_dev_put(pdev);
+> 	return loc;
+> }
+
+Thanks,
+Gavin
