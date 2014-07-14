@@ -1,19 +1,37 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by lists.ozlabs.org (Postfix) with ESMTP id E4E101A0006
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 02:08:56 +1000 (EST)
-Date: Mon, 14 Jul 2014 21:35:26 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: hongbo.zhang@freescale.com
-Subject: Re: [PATCH v5 0/3] DMA: Freescale: driver cleanups and enhancements
-Message-ID: <20140714160526.GL2296@intel.com>
-References: <1400659383-6555-1-git-send-email-hongbo.zhang@freescale.com>
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-vc0-x22d.google.com (mail-vc0-x22d.google.com
+ [IPv6:2607:f8b0:400c:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6DF711A013F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 03:17:55 +1000 (EST)
+Received: by mail-vc0-f173.google.com with SMTP id hy10so3958569vcb.18
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jul 2014 10:17:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1400659383-6555-1-git-send-email-hongbo.zhang@freescale.com>
-Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <53BBDEE6.1080800@hitachi.com>
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <53BBDEE6.1080800@hitachi.com>
+Date: Mon, 14 Jul 2014 10:17:52 -0700
+Message-ID: <CA+8MBbJH3EfiGctxLpXScGEtvBNXkNVYEnyahihnCie1FgO+9Q@mail.gmail.com>
+Subject: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find blacklist"
+ error on ia64 and ppc64
+From: Tony Luck <tony.luck@gmail.com>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, sparse@chrisli.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ akataria@vmware.com, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
+ Thomas Gleixner <tglx@linutronix.de>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,65 +41,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2014 at 04:03:00PM +0800, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> 
-> Hi Dan,
-> Please have a look at this 3/3 as Vinod mentioned.
-> 
-> Hi Vinod Koul,
-> Please have a look at the v5 patch set.
+On Tue, Jul 8, 2014 at 5:07 AM, Masami Hiramatsu
+<masami.hiramatsu.pt@hitachi.com> wrote:
+> Ping?
+>
+> This patch can be applied without 1/2, and will fix ia64/ppc64 problem.
 
-I dont see any objection, so applying all 3 with subject changed to reflect
-correct subsystem name
+Is somebody going to push this upstream? Another week has gone by,
+we are at -rc5, and I'm still seeing the
 
--- 
-~Vinod
+  Failed to find blacklist a00000010133b150
 
-> 
-> v4 -> v5 changes:
->  - since previous 5 of 8 patches have been merged by Vinod, this iteration oly
->    inludes the last 3 patches of v4.
->  - patches order is changed for being reviewed and merged easier.
->  - remove the .prepare functions, and use the suspend_late and resume_early in
->    the suspend-and-resume patch.
-> 
-> v3 -> v4 changes:
->  - Fixed a typo in [2/8] commit message.
->  - There was a potential double call of list_del() when apply [4/8] only,
->    although this defect is removed again in later [6/8]. This version 
->    eliminates this problem by updating [4/8] and [6/8] slightly.
->  - Updated [8/8] to use register access method introduced by [2/8]
-> 
-> v2 -> v3 change:
-> Only add "chan->pm_state = RUNNING" for patch[8/8].
-> 
-> v1 -> v2 change:
-> The only one change is introducing a new patch[1/7] to remove the unnecessary
-> macro FSL_DMA_LD_DEBUG, thus the total patches number is 8 now (was 7)
-> 
-> v1 notes:
-> Note that patch 2~6 had beed sent out for upstream before, but were together
-> with other storage patches at that time, that was not easy for being reviewed
-> and merged, so I send them separately this time.
-> 
-> Hongbo Zhang (3):
->   DMA: Freescale: use spin_lock_bh instead of spin_lock_irqsave
->   DMA: Freescale: add suspend resume functions for DMA driver
->   DMA: Freescale: change descriptor release process for supporting
->     async_tx
-> 
->  drivers/dma/fsldma.c |  297 ++++++++++++++++++++++++++++++++++++++------------
->  drivers/dma/fsldma.h |   32 +++++-
->  2 files changed, 260 insertions(+), 69 deletions(-)
-> 
-> -- 
-> 1.7.9.5
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe dmaengine" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+messages on ia64.
 
--- 
+-Tony
