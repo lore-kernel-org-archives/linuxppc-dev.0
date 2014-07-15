@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCC61A01A4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BE5C1A01A7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:55 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Tue, 15 Jul 2014 19:24:54 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 11DD83578055
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 138272CE8056
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:52 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F9OZCT7012810
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:35 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F929q811207094
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:02:09 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F9OpTD005043
+ s6F9OpEM005031
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:51 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 13/16] powerpc/iommu: Implement put_page() if TCE had
- non-zero value
-Date: Tue, 15 Jul 2014 19:24:37 +1000
-Message-Id: <1405416280-12318-14-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v1 12/16] powerpc/powernv: Return non-zero TCE from
+ pnv_tce_build
+Date: Tue, 15 Jul 2014 19:24:36 +1000
+Message-Id: <1405416280-12318-13-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1405416280-12318-1-git-send-email-aik@ozlabs.ru>
 References: <1405416280-12318-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -39,36 +39,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guests might put new TCEs without clearing them first and the PAPR spec
-allows that.
-
-This adds put_page() for TCEs which we just replaced.
+This returns old TCE values to the caller if requested.
+The caller is expectded to call put_page() for them.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kernel/iommu.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/pci.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index ae57910..25fda58 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1054,11 +1054,11 @@ int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index e002c66..a9165a5 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -575,6 +575,7 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 	u64 proto_tce;
+ 	__be64 *tcep, *tces;
+ 	u64 rpn;
++	long i;
  
- 	spin_lock(&(pool->lock));
+ 	proto_tce = TCE_PCI_READ; // Read allowed
  
--	oldtce = ppc_md.tce_get(tbl, entry);
--	/* Add new entry if it is not busy */
--	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
--		ret = ppc_md.tce_build(tbl, entry, 1, hwaddr, NULL,
--				direction, NULL);
-+	ret = ppc_md.tce_build(tbl, entry, 1, hwaddr, &oldtce,
-+			direction, NULL);
-+
-+	if (oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))
-+		put_page(pfn_to_page(__pa(oldtce)));
+@@ -584,9 +585,13 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+ 	rpn = __pa(uaddr) >> tbl->it_page_shift;
  
- 	spin_unlock(&(pool->lock));
+-	while (npages--)
+-		*(tcep++) = cpu_to_be64(proto_tce |
+-				(rpn++ << tbl->it_page_shift));
++	for (i = 0; i < npages; i++) {
++		unsigned long oldtce = xchg(tcep, cpu_to_be64(proto_tce |
++				(rpn++ << tbl->it_page_shift)));
++		if (old_tces)
++			old_tces[i] = (unsigned long) __va(oldtce);
++		tcep++;
++	}
+ 
+ 	pnv_tce_invalidate(tbl, tces, tcep - 1, rm);
  
 -- 
 2.0.0
