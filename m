@@ -1,31 +1,35 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B30EE1A019B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:01:05 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 15 Jul 2014 17:01:05 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 69E812BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:00:59 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F6cHD4983460
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 16:38:17 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F70wn2000410
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:00:58 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] Bug fix for VFIO EEH
-Date: Tue, 15 Jul 2014 17:00:54 +1000
-Message-Id: <1405407656-3751-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 247BE1A0149
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:40:37 +1000 (EST)
+Message-ID: <1405408602.9343.75.camel@pasglop>
+Subject: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find blacklist"
+ error on ia64 and ppc64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 15 Jul 2014 17:16:42 +1000
+In-Reply-To: <1405394370.17767.7.camel@concordia>
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <1405394370.17767.7.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, akataria@vmware.com,
+ linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+ Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Those 2 patches are bug fix for VFIO EEH support, which isn't merged yet though
-all reviewers gave their ack. So I'm sending this to avoid revert or something
-like that.
+On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
 
-The problem is that dma_offset/iommu_table_base
-are sharing same memory location. When disabling bypass mode, we missed to restore
-iommu_table_base. EEH is utilizing that to translate IOMMU group ID to PE. The
-patches fix the issue.
+> > Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> > Reported-by: Tony Luck <tony.luck@gmail.com>
+> > Tested-by: Tony Luck <tony.luck@intel.com>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+> 
+> Ben, can you take this in your tree?
 
-Another issue is that we're searching all online PCI devices for translating
-IOMMU group ID to PE. That's incorrect since we're uncertain that one speicific
-device (except those in current IOMMU group) is running in bypassed mode or
-not. So we should have search current IOMMU group.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-It should be applied on top of unmerged VFIO EEH support patchset:
+That looks more like generic material. Do we have a kprobes maintainer ?
+Andrew, do you want to take this ?
 
-http://patchwork.ozlabs.org/patch/357665/
+I'm happy to put it in powerpc and send it to Linus tomorrow if nobody
+cares :-)
 
-Gavin Shan (2):
-  powerpc/powernv: Fix IOMMU table for VFIO dev
-  powerpc/eeh: Fetch IOMMU table in reliable way
-
- arch/powerpc/kernel/eeh.c                 | 33 ++++++++++++++++++++-----------
- arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++++---------
- 2 files changed, 43 insertions(+), 20 deletions(-)
-
--- 
-1.8.3.2
+Cheers,
+Ben.
