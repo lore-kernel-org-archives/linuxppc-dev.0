@@ -1,25 +1,37 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-la0-f41.google.com (mail-la0-f41.google.com
+ [209.85.215.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 539881A0016
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 23:54:27 +1000 (EST)
-Message-ID: <53C53288.0@hurleysoftware.com>
-Date: Tue, 15 Jul 2014 09:54:16 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC2061A0199
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 00:47:50 +1000 (EST)
+Received: by mail-la0-f41.google.com with SMTP id s18so738552lam.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 07:47:46 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oleg Nesterov <oleg@redhat.com>
-Subject: Re: bit fields && data tearing
-References: <20140712181328.GA8738@redhat.com>	
- <20140712205130.GA16437@redhat.com> <1405208082.20996.54.camel@pasglop>	
- <53C2865B.5040200@hurleysoftware.com> <1405290324.20996.71.camel@pasglop>
-In-Reply-To: <1405290324.20996.71.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Dan <opendtv@yahoo.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+In-Reply-To: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
+References: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Tue, 15 Jul 2014 07:47:26 -0700
+Message-ID: <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
+Subject: Re: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+To: Andy Lutomirski <luto@amacapital.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390@vger.kernel.org, Richard Weinberger <richard@nod.at>,
+ X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, user-mode-linux-devel@lists.sourceforge.net,
+ Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2014 06:25 PM, Benjamin Herrenschmidt wrote:
-> On Sun, 2014-07-13 at 09:15 -0400, Peter Hurley wrote:
->>
->> I'm not sure I understand your point here, Ben.
->>
->> Suppose that two different spinlocks are used independently to
->> protect r-m-w access to adjacent data. In Oleg's example,
->> suppose spinlock 1 is used for access to the bitfield and
->> spinlock 2 is used for access to freeze_stop.
->>
->> What would prevent an accidental write to freeze_stop from the
->> kt_1 thread?
+On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+> The core mm code will provide a default gate area based on
+> FIXADDR_USER_START and FIXADDR_USER_END if
+> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
 >
-> My point was to be weary of bitfields in general because access
-> to them is always R-M-W, never atomic and that seem to escape
-> people regularily :-) (Among other problems such as endian etc...)
+> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
+> 32-bit UML, and x86_64 have gate areas, but they have their own
+> implementations.
 >
-> As for Oleg's example, it *should* have worked because the bitfield and
-> the adjacent freeze_stop should have been accessed using load/stores
-> that don't actually overlap, but the compiler bug causes the bitfield
-> access to not properly use the basic type of the bitfield, but escalate
-> to a full 64-bit R-M-W instead, thus incorrectly R-M-W'ing the field
-> next door.
+> This gets rid of the default and moves the code into ia64.
+>
+> This should save some code on architectures without a gate area: it's
+> now possible to inline the gate_area functions in the default case.
 
-Yeah, ok, so just a generic heads-up about non-atomicity of bitfields,
-and not something specific to Oleg's example. Thanks.
+Can one of you pull this somewhere?  Otherwise I can put it somewhere
+stable and ask for -next inclusion, but that seems like overkill for a
+single patch.
 
-Jonathan Corbet wrote a LWN article about this back in 2012:
-http://lwn.net/Articles/478657/
-
-I guess it's fixed in gcc 4.8, but too bad there's not a workaround for
-earlier compilers (akin to -fstrict_volatile_bitfields without requiring
-the volatile keyword).
-
-Regards,
-Peter Hurley
+--Andy
