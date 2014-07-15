@@ -1,30 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2683E1A0A1D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CA451A09B5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:52 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 15 Jul 2014 19:39:51 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2431E2BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:50 +1000 (EST)
+ Tue, 15 Jul 2014 19:39:49 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F3482BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:47 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F9H7u158654880
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:17:07 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F9N1oo63635506
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:23:01 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F9dnur009024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:49 +1000
+ s6F9dkak008901
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:47 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH QEMU 06/12] spapr: Add "ddw" machine option
-Date: Tue, 15 Jul 2014 19:39:38 +1000
-Message-Id: <1405417184-14333-7-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH QEMU 01/12] spapr_iommu: Disable in-kernel IOMMU tables for
+ >4GB windows
+Date: Tue, 15 Jul 2014 19:39:33 +1000
+Message-Id: <1405417184-14333-2-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1405417184-14333-1-git-send-email-aik@ozlabs.ru>
 References: <1405417184-14333-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -38,66 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This option will enable Dynamic DMA windows (DDW) support for pseries
-machine.
+The existing KVM_CREATE_SPAPR_TCE ioctl only support 4G windows max.
+We are going to add huge DMA windows support so this will create small
+window and unexpectedly fail later.
+
+This disables KVM_CREATE_SPAPR_TCE for windows bigger that 4GB. Since
+those windows are normally mapped at the boot time, there will be no
+performance impact.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- hw/ppc/spapr.c | 15 +++++++++++++++
- vl.c           |  4 ++++
- 2 files changed, 19 insertions(+)
+ hw/ppc/spapr_iommu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-index d01978f..fec295b 100644
---- a/hw/ppc/spapr.c
-+++ b/hw/ppc/spapr.c
-@@ -100,6 +100,7 @@ struct sPAPRMachineState {
- 
-     /*< public >*/
-     char *kvm_type;
-+    bool ddw_supported;
- };
- 
- sPAPREnvironment *spapr;
-@@ -1570,10 +1571,24 @@ static void spapr_set_kvm_type(Object *obj, const char *value, Error **errp)
-     sm->kvm_type = g_strdup(value);
- }
- 
-+static bool spapr_machine_get_ddw(Object *obj, Error **errp)
-+{
-+    sPAPRMachineState *sms = SPAPR_MACHINE(obj);
-+    return sms->ddw_supported;
-+}
-+
-+static void spapr_machine_set_ddw(Object *obj, bool value, Error **errp)
-+{
-+    sPAPRMachineState *sms = SPAPR_MACHINE(obj);
-+    sms->ddw_supported = value;
-+}
-+
- static void spapr_machine_initfn(Object *obj)
+diff --git a/hw/ppc/spapr_iommu.c b/hw/ppc/spapr_iommu.c
+index f6e32a4..36f5d27 100644
+--- a/hw/ppc/spapr_iommu.c
++++ b/hw/ppc/spapr_iommu.c
+@@ -113,11 +113,11 @@ static MemoryRegionIOMMUOps spapr_iommu_ops = {
+ static int spapr_tce_table_realize(DeviceState *dev)
  {
-     object_property_add_str(obj, "kvm-type",
-                             spapr_get_kvm_type, spapr_set_kvm_type, NULL);
-+    object_property_add_bool(obj, "ddw", spapr_machine_get_ddw,
-+                             spapr_machine_set_ddw, NULL);
- }
+     sPAPRTCETable *tcet = SPAPR_TCE_TABLE(dev);
++    uint64_t window_size = tcet->nb_table << tcet->page_shift;
  
- static void spapr_machine_class_init(ObjectClass *oc, void *data)
-diff --git a/vl.c b/vl.c
-index 6e084c2..a615fb1 100644
---- a/vl.c
-+++ b/vl.c
-@@ -383,6 +383,10 @@ static QemuOptsList qemu_machine_opts = {
-             .name = "kvm-type",
-             .type = QEMU_OPT_STRING,
-             .help = "Specifies the KVM virtualization mode (HV, PR)",
-+        }, {
-+            .name = "ddw",
-+            .type = QEMU_OPT_BOOL,
-+            .help = "Enable Dynamic DMA windows support (pseries only)",
-         },{
-             .name = PC_MACHINE_MAX_RAM_BELOW_4G,
-             .type = QEMU_OPT_SIZE,
+-    if (kvm_enabled()) {
++    if (kvm_enabled() && !(window_size >> 32)) {
+         tcet->table = kvmppc_create_spapr_tce(tcet->liobn,
+-                                              tcet->nb_table <<
+-                                              tcet->page_shift,
++                                              window_size,
+                                               &tcet->fd,
+                                               tcet->vfio_accel);
+     }
 -- 
 2.0.0
