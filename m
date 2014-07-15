@@ -1,35 +1,32 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 3D2F31A0168
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 12:24:59 +1000 (EST)
-Message-ID: <53C490F1.4020402@hitachi.com>
-Date: Tue, 15 Jul 2014 11:24:49 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <1404276081.7254.1.camel@concordia>
- <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
- <53BBDEE6.1080800@hitachi.com>
- <CA+8MBbJH3EfiGctxLpXScGEtvBNXkNVYEnyahihnCie1FgO+9Q@mail.gmail.com>
- <1405390262.17767.5.camel@concordia>
-In-Reply-To: <1405390262.17767.5.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, sparse@chrisli.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- akataria@vmware.com, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
- Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
- Thomas Gleixner <tglx@linutronix.de>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E966A1A0157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 12:33:59 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Tue, 15 Jul 2014 08:03:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 60B8E1258056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 08:03:40 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F2YCrI58786026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 08:04:12 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6F2Xq8I015684
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 08:03:53 +0530
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] Bugfix: powerpc/eeh: Wrong place to call pci_get_slot()
+Date: Mon, 14 Jul 2014 22:33:48 -0400
+Message-Id: <1405391628-1680-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: benh@au1.ibm.com, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
+ gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,36 +36,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/07/15 11:11), Michael Ellerman wrote:
-> On Mon, 2014-07-14 at 10:17 -0700, Tony Luck wrote:
->> On Tue, Jul 8, 2014 at 5:07 AM, Masami Hiramatsu
->> <masami.hiramatsu.pt@hitachi.com> wrote:
->>> Ping?
->>>
->>> This patch can be applied without 1/2, and will fix ia64/ppc64 problem.
->>
->> Is somebody going to push this upstream? Another week has gone by,
->> we are at -rc5, and I'm still seeing the
->>
->>   Failed to find blacklist a00000010133b150
->>
->> messages on ia64.
-> 
-> I don't see those messages on ppc64, I don't know where the original report
-> that it was broken on ppc64 came from. So I'm a bit lukewarm on the patch.
+pci_get_slot() is called with hold of PCI bus semaphore and it's not
+safe to be called in interrupt context. However, we possibly checks
+EEH error and calls the function in interrupt context. To avoid using
+pci_get_slot(), we turn into device tree for fetching location code.
+Otherwise, we might run into WARN_ON() as following messages indicate:
 
-Right, on ppc64(ABIv1) it may be silently failed. Because each function
-descriptor has another entry on kallsyms, original code can't detect
-that. On the other hand, ia64's function descriptors have no entries,
-so it can detect the failure on boot.
+ WARNING: at drivers/pci/search.c:223
+ CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc3+ #72
+ task: c000000001367af0 ti: c000000001444000 task.ti: c000000001444000
+ NIP: c000000000497b70 LR: c000000000037530 CTR: 000000003003d114
+ REGS: c000000001446fa0 TRAP: 0700   Not tainted  (3.16.0-rc3+)
+ MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 48002422  XER: 20000000
+ CFAR: c00000000003752c SOFTE: 0
+   :
+ NIP [c000000000497b70] .pci_get_slot+0x40/0x110
+ LR [c000000000037530] .eeh_pe_loc_get+0x150/0x190
+ Call Trace:
+   .of_get_property+0x30/0x60 (unreliable)
+   .eeh_pe_loc_get+0x150/0x190
+   .eeh_dev_check_failure+0x1b4/0x550
+   .eeh_check_failure+0x90/0xf0
+   .lpfc_sli_check_eratt+0x504/0x7c0 [lpfc]
+   .lpfc_poll_eratt+0x64/0x100 [lpfc]
+   .call_timer_fn+0x64/0x190
+   .run_timer_softirq+0x2cc/0x3e0
 
-This patch adds new detection code using kernel_text_address() and
-translates function descriptor to function entry.
+Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+---
+ Changelog[v2]:
+	Check the child device_node of root bus for root port
+	directly instead of search pdev from device-tree and
+	then translate it to device-node
 
-Thank you,
+ arch/powerpc/kernel/eeh_pe.c | 24 ++++++------------------
+ 1 file changed, 6 insertions(+), 18 deletions(-)
 
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index fbd01eb..f96c10f 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -802,7 +802,6 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
+  */
+ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ {
+-	struct pci_controller *hose;
+ 	struct pci_bus *bus = eeh_pe_bus_get(pe);
+ 	struct pci_dev *pdev;
+ 	struct device_node *dn;
+@@ -811,29 +810,20 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ 	if (!bus)
+ 		return "N/A";
+ 
++	dn = pci_bus_to_OF_node(bus);
+ 	/* PHB PE or root PE ? */
+-	if (pci_is_root_bus(bus)) {
+-		hose = pci_bus_to_host(bus);
+-		loc = of_get_property(hose->dn,
+-				"ibm,loc-code", NULL);
++	if (dn && pci_is_root_bus(bus)) {
++		loc = of_get_property(dn, "ibm,loc-code", NULL);
+ 		if (loc)
+ 			return loc;
+-		loc = of_get_property(hose->dn,
+-				"ibm,io-base-loc-code", NULL);
++		loc = of_get_property(dn, "ibm,io-base-loc-code", NULL);
+ 		if (loc)
+ 			return loc;
+ 
+-		pdev = pci_get_slot(bus, 0x0);
+-	} else {
+-		pdev = bus->self;
+-	}
+-
+-	if (!pdev) {
+-		loc = "N/A";
+-		goto out;
++		/* Check the root port */
++		dn = dn->child;
+ 	}
+ 
+-	dn = pci_device_to_OF_node(pdev);
+ 	if (!dn) {
+ 		loc = "N/A";
+ 		goto out;
+@@ -846,8 +836,6 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ 		loc = "N/A";
+ 
+ out:
+-	if (pci_is_root_bus(bus) && pdev)
+-		pci_dev_put(pdev);
+ 	return loc;
+ }
+ 
 -- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+1.8.1.4
