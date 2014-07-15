@@ -1,22 +1,33 @@
-Return-Path: <vincent@bernat.im>
-Received: from bart.luffy.cx (unknown [IPv6:2a01:4f8:130:64e3::7])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D0DC1A1F63
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:48:23 +1000 (EST)
-From: Vincent Bernat <vincent@bernat.im>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH] ppc/xmon: use isxdigit/isspace/isalnum from ctype.h
-References: <1405409302-5299-1-git-send-email-vincent@bernat.im>
- <063D6719AE5E284EB5DD2968C1650D6D17272643@AcuExch.aculab.com>
-Date: Tue, 15 Jul 2014 11:38:51 +0200
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D17272643@AcuExch.aculab.com>
- (David Laight's message of "Tue, 15 Jul 2014 08:55:07 +0000")
-Message-ID: <m3pph7x8pg.fsf@neo.luffy.cx>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 563421A36B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:09:20 +1000 (EST)
+Message-ID: <53C4FDC8.9050801@hitachi.com>
+Date: Tue, 15 Jul 2014 19:09:12 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <1405394370.17767.7.camel@concordia> <1405408602.9343.75.camel@pasglop>
+In-Reply-To: <1405408602.9343.75.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- =E2=9D=A6 15 juillet 2014 08:55 GMT, David Laight <David.Laight@ACULAB.COM=
->=C2=A0:
+(2014/07/15 16:16), Benjamin Herrenschmidt wrote:
+> On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
+> 
+>>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+>>> Reported-by: Tony Luck <tony.luck@gmail.com>
+>>> Tested-by: Tony Luck <tony.luck@intel.com>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>
+>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+>>
+>> Ben, can you take this in your tree?
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> That looks more like generic material. Do we have a kprobes maintainer ?
+> Andrew, do you want to take this ?
 
->> Use linux/ctype.h instead of defining custom versions of
->> isxdigit/isspace/isalnum.
->
-> ...
->> -#define isspace(c)	(c =3D=3D ' ' || c =3D=3D '\t' || c =3D=3D 10 || c =
-=3D=3D 13 || c =3D=3D 0)
->
-> That is different from the version in linux/ctype.h
-> Especially for 'c =3D=3D 0', but probably also vertical tab and form feed.
+Yeah, I usually use Ingo's tip tree for kprobes maintenance.
+Ingo, could you pull this as urgent-for-linus patch?
 
-OK. Looking more carefully, the one in ctype.h is 9-13 (11 is vertical
-tab, 12 is form feed), 32 and 160 (non-breaking space, not ASCII).
+> I'm happy to put it in powerpc and send it to Linus tomorrow if nobody
+> cares :-)
 
-For isxdigit, this is the same. For isalnum, the one in ctype.h does
-accept non ASCII chars from 223.
+Thank you!
 
-Also, in xmon.c, isxdigit is defined twice.
---=20
-Parenthesise to avoid ambiguity.
-            - The Elements of Programming Style (Kernighan & Plauger)
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
