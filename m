@@ -1,31 +1,36 @@
-Return-Path: <rth7680@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10C951A0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 01:02:45 +1000 (EST)
-Received: by mail-ie0-f178.google.com with SMTP id tp5so4468214ieb.23
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 08:02:41 -0700 (PDT)
-Sender: Richard Henderson <rth7680@gmail.com>
-Message-ID: <53C5428E.5050400@twiddle.net>
-Date: Tue, 15 Jul 2014 08:02:38 -0700
-From: Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04A531A01A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 01:06:52 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 15 Jul 2014 20:36:50 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 24A89394004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:36:47 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6FF744s61210754
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:37:05 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6FF6iYm015678
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:36:45 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] powerpc: subpage_protect: Increase the array size to take
+ care of 64TB
+In-Reply-To: <1405435950-24187-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1405435950-24187-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 15 Jul 2014 20:36:44 +0530
+Message-ID: <87zjgaacfv.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Peter Hurley <peter@hurleysoftware.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oleg Nesterov <oleg@redhat.com>
-Subject: Re: bit fields && data tearing
-References: <20140712181328.GA8738@redhat.com>	
- <20140712205130.GA16437@redhat.com> <1405208082.20996.54.camel@pasglop>	
- <53C2865B.5040200@hurleysoftware.com> <1405290324.20996.71.camel@pasglop>
- <53C53288.0@hurleysoftware.com>
-In-Reply-To: <53C53288.0@hurleysoftware.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Dan <opendtv@yahoo.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,17 +40,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2014 06:54 AM, Peter Hurley wrote:
-> 
-> Jonathan Corbet wrote a LWN article about this back in 2012:
-> http://lwn.net/Articles/478657/
-> 
-> I guess it's fixed in gcc 4.8, but too bad there's not a workaround for
-> earlier compilers (akin to -fstrict_volatile_bitfields without requiring
-> the volatile keyword)
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
->From the gcc pr, it looks like the patch was backported to 4.7.
-But we didn't fix it in versions earlier than that.
+> We now support TASK_SIZE of 16TB, hence the array should be 8.
 
+should be                     ^^^ 64TB   
 
-r~
+>
+> Fixes the below crash:
+
+-aneesh
