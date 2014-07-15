@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 156711A03EC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 697C51A01E0
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:42 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Tue, 15 Jul 2014 19:25:41 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 93C1B2BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:39 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F98rxx66584586
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:08:53 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F9PcoT006344
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:39 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B93053578057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:38 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F9PMw99503130
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:22 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6F9Pb2o022313
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:38 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 05/13] KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_64 capability
- number
-Date: Tue, 15 Jul 2014 19:25:25 +1000
-Message-Id: <1405416333-12477-6-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v1 03/13] KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64
+ permanently
+Date: Tue, 15 Jul 2014 19:25:23 +1000
+Message-Id: <1405416333-12477-4-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1405416333-12477-1-git-send-email-aik@ozlabs.ru>
 References: <1405416333-12477-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -39,24 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a capability number for 64-bit TCE tables support.
+It does not make much sense to have KVM in book3s-64 and
+not to have IOMMU bits for PCI pass through support as it costs little
+and allows VFIO to function on book3s KVM.
+
+Having IOMMU_API always enabled makes it unnecessary to have a lot of
+"#ifdef IOMMU_API" in arch/powerpc/kvm/book3s_64_vio*. With those
+ifdef's we could have only user space emulated devices accelerated
+(but not VFIO) which do not seem to be very useful.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/uapi/linux/kvm.h | 1 +
+ arch/powerpc/kvm/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 3048c86..65c2689 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -759,6 +759,7 @@ struct kvm_ppc_smmu_info {
- #define KVM_CAP_ARM_PSCI_0_2 102
- #define KVM_CAP_PPC_FIXUP_HCALL 103
- #define KVM_CAP_SPAPR_TCE_VFIO 104
-+#define KVM_CAP_SPAPR_TCE_64 105
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index d7a16ac6..301fa6b 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -63,6 +63,7 @@ config KVM_BOOK3S_64
+ 	select KVM_BOOK3S_64_HANDLER
+ 	select KVM
+ 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
++	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
+ 	---help---
+ 	  Support running unmodified book3s_64 and book3s_32 guest kernels
+ 	  in virtual machines on book3s_64 host processors.
 -- 
 2.0.0
