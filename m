@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 648E61A09B5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 703CF1A0A36
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:51 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Tue, 15 Jul 2014 19:39:51 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 23A4E2BB0059
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B711D2BB0052
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:48 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F9H5qt57540846
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:17:05 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F9dlid013544
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:47 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F9dWG91049018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:32 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6F9dm8q026346
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:39:48 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH QEMU 02/12] spapr_pci: Make find_phb()/find_dev() public
-Date: Tue, 15 Jul 2014 19:39:34 +1000
-Message-Id: <1405417184-14333-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH QEMU 04/12] linux headers update for DDW
+Date: Tue, 15 Jul 2014 19:39:36 +1000
+Message-Id: <1405417184-14333-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1405417184-14333-1-git-send-email-aik@ozlabs.ru>
 References: <1405417184-14333-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -38,109 +38,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes find_phb()/find_dev() public and changed its names
-to spapr_pci_find_phb()/spapr_pci_find_dev() as they are going to
-be used from other parts of QEMU such as VFIO DDW (dynamic DMA window)
-or VFIO PCI error injection or VFIO EEH handling - in all these
-cases there are RTAS calls which are addressed to BUID+config_addr
-in IEEE1275 format.
-
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- hw/ppc/spapr_pci.c          | 22 +++++++++++-----------
- include/hw/pci-host/spapr.h |  4 ++++
- 2 files changed, 15 insertions(+), 11 deletions(-)
+ linux-headers/linux/vfio.h | 37 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
-diff --git a/hw/ppc/spapr_pci.c b/hw/ppc/spapr_pci.c
-index 9ed39a9..230b59c 100644
---- a/hw/ppc/spapr_pci.c
-+++ b/hw/ppc/spapr_pci.c
-@@ -47,7 +47,7 @@
- #define RTAS_TYPE_MSI           1
- #define RTAS_TYPE_MSIX          2
+diff --git a/linux-headers/linux/vfio.h b/linux-headers/linux/vfio.h
+index 26c218e..f0aa97d 100644
+--- a/linux-headers/linux/vfio.h
++++ b/linux-headers/linux/vfio.h
+@@ -448,13 +448,48 @@ struct vfio_iommu_type1_dma_unmap {
+  */
+ struct vfio_iommu_spapr_tce_info {
+ 	__u32 argsz;
+-	__u32 flags;			/* reserved for future use */
++	__u32 flags;
++#define VFIO_IOMMU_SPAPR_TCE_FLAG_DDW	1 /* Support dynamic windows */
+ 	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
+ 	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
+ };
  
--static sPAPRPHBState *find_phb(sPAPREnvironment *spapr, uint64_t buid)
-+sPAPRPHBState *spapr_pci_find_phb(sPAPREnvironment *spapr, uint64_t buid)
- {
-     sPAPRPHBState *sphb;
+ #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
  
-@@ -61,10 +61,10 @@ static sPAPRPHBState *find_phb(sPAPREnvironment *spapr, uint64_t buid)
-     return NULL;
- }
- 
--static PCIDevice *find_dev(sPAPREnvironment *spapr, uint64_t buid,
--                           uint32_t config_addr)
-+PCIDevice *spapr_pci_find_dev(sPAPREnvironment *spapr, uint64_t buid,
-+                              uint32_t config_addr)
- {
--    sPAPRPHBState *sphb = find_phb(spapr, buid);
-+    sPAPRPHBState *sphb = spapr_pci_find_phb(spapr, buid);
-     PCIHostState *phb = PCI_HOST_BRIDGE(sphb);
-     int bus_num = (config_addr >> 16) & 0xFF;
-     int devfn = (config_addr >> 8) & 0xFF;
-@@ -95,7 +95,7 @@ static void finish_read_pci_config(sPAPREnvironment *spapr, uint64_t buid,
-         return;
-     }
- 
--    pci_dev = find_dev(spapr, buid, addr);
-+    pci_dev = spapr_pci_find_dev(spapr, buid, addr);
-     addr = rtas_pci_cfgaddr(addr);
- 
-     if (!pci_dev || (addr % size) || (addr >= pci_config_size(pci_dev))) {
-@@ -162,7 +162,7 @@ static void finish_write_pci_config(sPAPREnvironment *spapr, uint64_t buid,
-         return;
-     }
- 
--    pci_dev = find_dev(spapr, buid, addr);
-+    pci_dev = spapr_pci_find_dev(spapr, buid, addr);
-     addr = rtas_pci_cfgaddr(addr);
- 
-     if (!pci_dev || (addr % size) || (addr >= pci_config_size(pci_dev))) {
-@@ -281,9 +281,9 @@ static void rtas_ibm_change_msi(PowerPCCPU *cpu, sPAPREnvironment *spapr,
-     }
- 
-     /* Fins sPAPRPHBState */
--    phb = find_phb(spapr, buid);
-+    phb = spapr_pci_find_phb(spapr, buid);
-     if (phb) {
--        pdev = find_dev(spapr, buid, config_addr);
-+        pdev = spapr_pci_find_dev(spapr, buid, config_addr);
-     }
-     if (!phb || !pdev) {
-         rtas_st(rets, 0, RTAS_OUT_PARAM_ERROR);
-@@ -377,9 +377,9 @@ static void rtas_ibm_query_interrupt_source_number(PowerPCCPU *cpu,
-     spapr_pci_msi *msi;
- 
-     /* Find sPAPRPHBState */
--    phb = find_phb(spapr, buid);
-+    phb = spapr_pci_find_phb(spapr, buid);
-     if (phb) {
--        pdev = find_dev(spapr, buid, config_addr);
-+        pdev = spapr_pci_find_dev(spapr, buid, config_addr);
-     }
-     if (!phb || !pdev) {
-         rtas_st(rets, 0, RTAS_OUT_PARAM_ERROR);
-@@ -553,7 +553,7 @@ static void spapr_phb_realize(DeviceState *dev, Error **errp)
-         return;
-     }
- 
--    if (find_phb(spapr, sphb->buid)) {
-+    if (spapr_pci_find_phb(spapr, sphb->buid)) {
-         error_setg(errp, "PCI host bridges must have unique BUIDs");
-         return;
-     }
-diff --git a/include/hw/pci-host/spapr.h b/include/hw/pci-host/spapr.h
-index 32f0aa7..14c2ab0 100644
---- a/include/hw/pci-host/spapr.h
-+++ b/include/hw/pci-host/spapr.h
-@@ -122,4 +122,8 @@ void spapr_pci_msi_init(sPAPREnvironment *spapr, hwaddr addr);
- 
- void spapr_pci_rtas_init(void);
- 
-+sPAPRPHBState *spapr_pci_find_phb(sPAPREnvironment *spapr, uint64_t buid);
-+PCIDevice *spapr_pci_find_dev(sPAPREnvironment *spapr, uint64_t buid,
-+                              uint32_t config_addr);
++/*
++ * Dynamic DMA windows
++ */
++struct vfio_iommu_spapr_tce_query {
++	__u32 argsz;
++	/* out */
++	__u32 windows_available;
++	__u32 page_size_mask;
++};
++#define VFIO_IOMMU_SPAPR_TCE_QUERY	_IO(VFIO_TYPE, VFIO_BASE + 17)
 +
- #endif /* __HW_SPAPR_PCI_H__ */
++struct vfio_iommu_spapr_tce_create {
++	__u32 argsz;
++	/* in */
++	__u32 page_shift;
++	__u32 window_shift;
++	/* out */
++	__u64 start_addr;
++
++};
++#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 18)
++
++struct vfio_iommu_spapr_tce_remove {
++	__u32 argsz;
++	/* in */
++	__u64 start_addr;
++};
++#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 19)
++
++struct vfio_iommu_spapr_tce_reset {
++	__u32 argsz;
++};
++#define VFIO_IOMMU_SPAPR_TCE_RESET	_IO(VFIO_TYPE, VFIO_BASE + 20)
++
+ /* ***************************************************************** */
+ 
+ #endif /* VFIO_H */
 -- 
 2.0.0
