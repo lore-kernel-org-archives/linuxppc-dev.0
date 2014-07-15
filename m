@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FB4E1A02DD
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9C731A032A
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 22:22:35 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3] powerpc/powernv: Switch powernv drivers to use
+Subject: [PATCH 3/3] powerpc/pseries: Switch pseries drivers to use
  machine_xxx_initcall()
-Date: Tue, 15 Jul 2014 22:22:24 +1000
-Message-Id: <1405426945-19058-2-git-send-email-mpe@ellerman.id.au>
+Date: Tue, 15 Jul 2014 22:22:25 +1000
+Message-Id: <1405426945-19058-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1405426945-19058-1-git-send-email-mpe@ellerman.id.au>
 References: <1405426945-19058-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,171 +21,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A lot of the code in platforms/powernv is using non-machine initcalls.
-That means if a kernel built with powernv support runs on another
-platform, for example pseries, the initcalls will still run.
+A lot of the code in platforms/pseries is using non-machine initcalls.
+That means if a kernel built with pseries support runs on another
+platform, for example powernv, the initcalls will still run.
 
-That is usually OK, because the initcalls will check for something in
-the device tree or elsewhere before doing anything, so on other
-platforms they will usually just return.
+Most of these cases are OK, though sometimes only due to luck. Some were
+having more effect:
 
-But it's fishy for powernv code to be running on other platforms, so
-switch them all to be machine initcalls. If we want any of them to run
-on other platforms in future they should move to sysdev.
+ * hcall_inst_init
+  - Checking FW_FEATURE_LPAR which is set on ps3 & celleb.
+ * mobility_sysfs_init
+  - created sysfs files unconditionally
+  - but no effect due to ENOSYS from rtas_ibm_suspend_me()
+ * apo_pm_init
+  - created sysfs, allows write
+  - nothing checks the value written to though
+ * alloc_dispatch_log_kmem_cache
+  - creating kmem_cache on non-pseries machines
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c        | 6 +-----
- arch/powerpc/platforms/powernv/opal-async.c         | 3 ++-
- arch/powerpc/platforms/powernv/opal-lpc.c           | 2 +-
- arch/powerpc/platforms/powernv/opal-memory-errors.c | 3 ++-
- arch/powerpc/platforms/powernv/opal-xscom.c         | 2 +-
- arch/powerpc/platforms/powernv/opal.c               | 9 +++++----
- arch/powerpc/platforms/powernv/pci.c                | 3 +--
- arch/powerpc/platforms/powernv/rng.c                | 2 +-
- 8 files changed, 14 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/pseries/dtl.c         | 3 ++-
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 8 ++------
+ arch/powerpc/platforms/pseries/hvCall_inst.c | 2 +-
+ arch/powerpc/platforms/pseries/mobility.c    | 3 ++-
+ arch/powerpc/platforms/pseries/msi.c         | 3 +--
+ arch/powerpc/platforms/pseries/power.c       | 5 +++--
+ arch/powerpc/platforms/pseries/ras.c         | 2 +-
+ arch/powerpc/platforms/pseries/reconfig.c    | 5 +----
+ arch/powerpc/platforms/pseries/rng.c         | 2 +-
+ arch/powerpc/platforms/pseries/setup.c       | 2 +-
+ arch/powerpc/platforms/pseries/suspend.c     | 5 ++---
+ 11 files changed, 17 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 56a206f32f77..998bcc18a491 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -398,9 +398,6 @@ static int __init eeh_powernv_init(void)
- {
- 	int ret = -EINVAL;
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index 7d61498e45c0..1062f71f5a85 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -29,6 +29,7 @@
+ #include <asm/lppaca.h>
+ #include <asm/debug.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/machdep.h>
  
--	if (!machine_is(powernv))
--		return ret;
+ struct dtl {
+ 	struct dtl_entry	*buf;
+@@ -391,4 +392,4 @@ err_remove_dir:
+ err:
+ 	return rc;
+ }
+-arch_initcall(dtl_init);
++machine_arch_initcall(pseries, dtl_init);
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 0bec0c02c5e7..476a5d8b0b36 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -743,10 +743,7 @@ static struct eeh_ops pseries_eeh_ops = {
+  */
+ static int __init eeh_pseries_init(void)
+ {
+-	int ret = -EINVAL;
 -
- 	ret = eeh_ops_register(&powernv_eeh_ops);
+-	if (!machine_is(pseries))
+-		return ret;
++	int ret;
+ 
+ 	ret = eeh_ops_register(&pseries_eeh_ops);
  	if (!ret)
- 		pr_info("EEH: PowerNV platform initialized\n");
-@@ -409,5 +406,4 @@ static int __init eeh_powernv_init(void)
+@@ -757,5 +754,4 @@ static int __init eeh_pseries_init(void)
  
  	return ret;
  }
 -
--early_initcall(eeh_powernv_init);
-+machine_early_initcall(powernv, eeh_powernv_init);
-diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
-index 32e2adfa5320..e462ab947d16 100644
---- a/arch/powerpc/platforms/powernv/opal-async.c
-+++ b/arch/powerpc/platforms/powernv/opal-async.c
-@@ -20,6 +20,7 @@
- #include <linux/wait.h>
- #include <linux/gfp.h>
- #include <linux/of.h>
-+#include <asm/machdep.h>
- #include <asm/opal.h>
+-early_initcall(eeh_pseries_init);
++machine_early_initcall(pseries, eeh_pseries_init);
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index cf4e7736e4f1..19f15310facf 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -162,4 +162,4 @@ static int __init hcall_inst_init(void)
  
- #define N_ASYNC_COMPLETIONS	64
-@@ -201,4 +202,4 @@ out_opal_node:
- out:
- 	return err;
+ 	return 0;
  }
--subsys_initcall(opal_async_comp_init);
-+machine_subsys_initcall(powernv, opal_async_comp_init);
-diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-index f04b4d8aca5a..ad4b31df779a 100644
---- a/arch/powerpc/platforms/powernv/opal-lpc.c
-+++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-@@ -324,7 +324,7 @@ static int opal_lpc_init_debugfs(void)
- 	rc |= opal_lpc_debugfs_create_type(root, "fw", OPAL_LPC_FW);
- 	return rc;
- }
--device_initcall(opal_lpc_init_debugfs);
-+machine_device_initcall(powernv, opal_lpc_init_debugfs);
- #endif  /* CONFIG_DEBUG_FS */
- 
- void opal_lpc_init(void)
-diff --git a/arch/powerpc/platforms/powernv/opal-memory-errors.c b/arch/powerpc/platforms/powernv/opal-memory-errors.c
-index b17a34b695ef..43db2136dbff 100644
---- a/arch/powerpc/platforms/powernv/opal-memory-errors.c
-+++ b/arch/powerpc/platforms/powernv/opal-memory-errors.c
-@@ -27,6 +27,7 @@
- #include <linux/mm.h>
+-__initcall(hcall_inst_init);
++machine_device_initcall(pseries, hcall_inst_init);
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index bde7ebad3949..d146fef038b8 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
  #include <linux/slab.h>
  
 +#include <asm/machdep.h>
- #include <asm/opal.h>
- #include <asm/cputable.h>
+ #include <asm/rtas.h>
+ #include "pseries.h"
  
-@@ -143,4 +144,4 @@ static int __init opal_mem_err_init(void)
- 	}
+@@ -362,4 +363,4 @@ static int __init mobility_sysfs_init(void)
+ 
+ 	return rc;
+ }
+-device_initcall(mobility_sysfs_init);
++machine_device_initcall(pseries, mobility_sysfs_init);
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 0c882e83c4ce..b3486dd041df 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -532,5 +532,4 @@ static int rtas_msi_init(void)
+ 
  	return 0;
  }
--subsys_initcall(opal_mem_err_init);
-+machine_subsys_initcall(powernv, opal_mem_err_init);
-diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
-index 4cd2ea6c0dbe..7634d1c62299 100644
---- a/arch/powerpc/platforms/powernv/opal-xscom.c
-+++ b/arch/powerpc/platforms/powernv/opal-xscom.c
-@@ -130,4 +130,4 @@ static int opal_xscom_init(void)
- 		scom_init(&opal_scom_controller);
- 	return 0;
- }
--arch_initcall(opal_xscom_init);
-+machine_arch_initcall(powernv, opal_xscom_init);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 199975613fe9..6ef2e5c5bc64 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -22,6 +22,8 @@
- #include <linux/kobject.h>
- #include <linux/delay.h>
- #include <linux/memblock.h>
-+
+-arch_initcall(rtas_msi_init);
+-
++machine_arch_initcall(pseries, rtas_msi_init);
+diff --git a/arch/powerpc/platforms/pseries/power.c b/arch/powerpc/platforms/pseries/power.c
+index 6d6266236446..c26eadde434c 100644
+--- a/arch/powerpc/platforms/pseries/power.c
++++ b/arch/powerpc/platforms/pseries/power.c
+@@ -25,6 +25,7 @@
+ #include <linux/string.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
 +#include <asm/machdep.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
- #include <asm/mce.h>
-@@ -200,8 +202,7 @@ static int __init opal_register_exception_handlers(void)
+ 
+ unsigned long rtas_poweron_auto; /* default and normal state is 0 */
+ 
+@@ -71,11 +72,11 @@ static int __init pm_init(void)
+ 		return -ENOMEM;
+ 	return sysfs_create_group(power_kobj, &attr_group);
+ }
+-core_initcall(pm_init);
++machine_core_initcall(pseries, pm_init);
+ #else
+ static int __init apo_pm_init(void)
+ {
+ 	return (sysfs_create_file(power_kobj, &auto_poweron_attr.attr));
+ }
+-__initcall(apo_pm_init);
++machine_device_initcall(pseries, apo_pm_init);
+ #endif
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 9c5778e6ed4b..dff05b9eb946 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -71,7 +71,7 @@ static int __init init_ras_IRQ(void)
  
  	return 0;
  }
+-subsys_initcall(init_ras_IRQ);
++machine_subsys_initcall(pseries, init_ras_IRQ);
+ 
+ #define EPOW_SHUTDOWN_NORMAL				1
+ #define EPOW_SHUTDOWN_ON_UPS				2
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 0435bb65d0aa..982165955c40 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -445,13 +445,10 @@ static int proc_ppc64_create_ofdt(void)
+ {
+ 	struct proc_dir_entry *ent;
+ 
+-	if (!machine_is(pseries))
+-		return 0;
 -
--early_initcall(opal_register_exception_handlers);
-+machine_early_initcall(powernv, opal_register_exception_handlers);
- 
- int opal_notifier_register(struct notifier_block *nb)
- {
-@@ -368,7 +369,7 @@ static int __init opal_message_init(void)
- 	}
- 	return 0;
- }
--early_initcall(opal_message_init);
-+machine_early_initcall(powernv, opal_message_init);
- 
- int opal_get_chars(uint32_t vtermno, char *buf, int count)
- {
-@@ -630,7 +631,7 @@ static int __init opal_init(void)
+ 	ent = proc_create("powerpc/ofdt", S_IWUSR, NULL, &ofdt_fops);
+ 	if (ent)
+ 		proc_set_size(ent, 0);
  
  	return 0;
  }
--subsys_initcall(opal_init);
-+machine_subsys_initcall(powernv, opal_init);
- 
- void opal_shutdown(void)
- {
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index f91a4e5d872e..493570c2e963 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -842,5 +842,4 @@ static int __init tce_iommu_bus_notifier_init(void)
- 	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
- 	return 0;
- }
--
--subsys_initcall_sync(tce_iommu_bus_notifier_init);
-+machine_subsys_initcall_sync(powernv, tce_iommu_bus_notifier_init);
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-index 1cb160dc1609..80db43944afe 100644
---- a/arch/powerpc/platforms/powernv/rng.c
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -123,4 +123,4 @@ static __init int rng_init(void)
+-__initcall(proc_ppc64_create_ofdt);
++machine_device_initcall(pseries, proc_ppc64_create_ofdt);
+diff --git a/arch/powerpc/platforms/pseries/rng.c b/arch/powerpc/platforms/pseries/rng.c
+index 72a102758d4e..e09608770909 100644
+--- a/arch/powerpc/platforms/pseries/rng.c
++++ b/arch/powerpc/platforms/pseries/rng.c
+@@ -42,4 +42,4 @@ static __init int rng_init(void)
  
  	return 0;
  }
 -subsys_initcall(rng_init);
-+machine_subsys_initcall(powernv, rng_init);
++machine_subsys_initcall(pseries, rng_init);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index f2f40e64658f..cfe8a6389a51 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -351,7 +351,7 @@ static int alloc_dispatch_log_kmem_cache(void)
+ 
+ 	return alloc_dispatch_logs();
+ }
+-early_initcall(alloc_dispatch_log_kmem_cache);
++machine_early_initcall(pseries, alloc_dispatch_log_kmem_cache);
+ 
+ static void pseries_lpar_idle(void)
+ {
+diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
+index b87b97849d4c..e76aefae2aa2 100644
+--- a/arch/powerpc/platforms/pseries/suspend.c
++++ b/arch/powerpc/platforms/pseries/suspend.c
+@@ -265,7 +265,7 @@ static int __init pseries_suspend_init(void)
+ {
+ 	int rc;
+ 
+-	if (!machine_is(pseries) || !firmware_has_feature(FW_FEATURE_LPAR))
++	if (!firmware_has_feature(FW_FEATURE_LPAR))
+ 		return 0;
+ 
+ 	suspend_data.token = rtas_token("ibm,suspend-me");
+@@ -280,5 +280,4 @@ static int __init pseries_suspend_init(void)
+ 	suspend_set_ops(&pseries_suspend_ops);
+ 	return 0;
+ }
+-
+-__initcall(pseries_suspend_init);
++machine_device_initcall(pseries, pseries_suspend_init);
 -- 
 1.9.1
