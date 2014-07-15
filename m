@@ -1,32 +1,33 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 261131A014D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 15:42:47 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8089D1A0157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:01:03 +1000 (EST)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Tue, 15 Jul 2014 15:42:46 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0108C2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 15:42:44 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F5K0v323134230
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 15:20:01 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F5ggU6020392
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 15:42:42 +1000
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 15 Jul 2014 17:01:01 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9AE243578053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:00:59 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6F70h6711731300
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:00:43 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6F70xL9031872
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:00:59 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] powerpc/eeh: Wrong place to call pci_get_slot()
-Date: Tue, 15 Jul 2014 01:42:22 -0400
-Message-Id: <1405402942-3128-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-Cc: benh@kernelcrashing.org, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- gwshan@linux.vnet.ibm.com, Stable@vger.kernel.org
+Subject: [PATCH 1/2] powerpc/powernv: Fix IOMMU table for VFIO dev
+Date: Tue, 15 Jul 2014 17:00:55 +1000
+Message-Id: <1405407656-3751-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1405407656-3751-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1405407656-3751-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,118 +37,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pci_get_slot() is called with hold of PCI bus semaphore and it's not
-safe to be called in interrupt context. However, we possibly checks
-EEH error and calls the function in interrupt context. To avoid using
-pci_get_slot(), we turn into device tree for fetching location code.
-Otherwise, we might run into WARN_ON() as following messages indicate:
+On PHB3, PCI devices can bypass IOMMU for DMA access. If we pass
+through one PCI device, whose hose driver ever enable the bypass
+mode, pdev->dev.archdata.dma_data.iommu_table_base isn't IOMMU
+table. However, EEH needs access the IOMMU table when the device
+is owned by guest.
 
- WARNING: at drivers/pci/search.c:223
- CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.16.0-rc3+ #72
- task: c000000001367af0 ti: c000000001444000 task.ti: c000000001444000
- NIP: c000000000497b70 LR: c000000000037530 CTR: 000000003003d114
- REGS: c000000001446fa0 TRAP: 0700   Not tainted  (3.16.0-rc3+)
- MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 48002422  XER: 20000000
- CFAR: c00000000003752c SOFTE: 0
-   :
- NIP [c000000000497b70] .pci_get_slot+0x40/0x110
- LR [c000000000037530] .eeh_pe_loc_get+0x150/0x190
- Call Trace:
-   .of_get_property+0x30/0x60 (unreliable)
-   .eeh_pe_loc_get+0x150/0x190
-   .eeh_dev_check_failure+0x1b4/0x550
-   .eeh_check_failure+0x90/0xf0
-   .lpfc_sli_check_eratt+0x504/0x7c0 [lpfc]
-   .lpfc_poll_eratt+0x64/0x100 [lpfc]
-   .call_timer_fn+0x64/0x190
-   .run_timer_softirq+0x2cc/0x3e0
+The patch fixes pdev->dev.archdata.dma_data.iommu_table when
+passing through the device to guest in pnv_pci_ioda2_set_bypass().
 
-Cc: Stable@vger.kernel.org
-Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- Changelog[v3]:
-	Remove unused variables
-	Code refactoring for eeh_pe_loc_get()
+ arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++++++---------
+ 1 file changed, 21 insertions(+), 9 deletions(-)
 
- Changelog[v2]:
-	Check the child device_node of root bus for root port
-	directly instead of search pdev from device-tree and
-	then translate it to device-node
-
- arch/powerpc/kernel/eeh_pe.c | 46 +++++++++++++-------------------------------
- 1 file changed, 13 insertions(+), 33 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index fbd01eb..94802d2 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -802,53 +802,33 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
-  */
- const char *eeh_pe_loc_get(struct eeh_pe *pe)
- {
--	struct pci_controller *hose;
- 	struct pci_bus *bus = eeh_pe_bus_get(pe);
--	struct pci_dev *pdev;
--	struct device_node *dn;
--	const char *loc;
-+	struct device_node *dn = pci_bus_to_OF_node(bus);
-+	const char *loc = NULL;
- 
--	if (!bus)
--		return "N/A";
-+	if (!dn)
-+		goto out;
- 
- 	/* PHB PE or root PE ? */
- 	if (pci_is_root_bus(bus)) {
--		hose = pci_bus_to_host(bus);
--		loc = of_get_property(hose->dn,
--				"ibm,loc-code", NULL);
--		if (loc)
--			return loc;
--		loc = of_get_property(hose->dn,
--				"ibm,io-base-loc-code", NULL);
-+		loc = of_get_property(dn, "ibm,loc-code", NULL);
-+		if (!loc)
-+			loc = of_get_property(dn, "ibm,io-base-loc-code", NULL);
- 		if (loc)
--			return loc;
--
--		pdev = pci_get_slot(bus, 0x0);
--	} else {
--		pdev = bus->self;
--	}
--
--	if (!pdev) {
--		loc = "N/A";
--		goto out;
--	}
-+			goto out;
- 
--	dn = pci_device_to_OF_node(pdev);
--	if (!dn) {
--		loc = "N/A";
--		goto out;
-+		/* Check the root port */
-+		dn = dn->child;
-+		if (!dn)
-+			goto out;
- 	}
- 
- 	loc = of_get_property(dn, "ibm,loc-code", NULL);
- 	if (!loc)
- 		loc = of_get_property(dn, "ibm,slot-location-code", NULL);
--	if (!loc)
--		loc = "N/A";
- 
- out:
--	if (pci_is_root_bus(bus) && pdev)
--		pci_dev_put(pdev);
--	return loc;
-+	return loc ? loc : "N/A";
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index de19ede..93fd815 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -494,14 +494,22 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+ 	return 0;
  }
  
- /**
+-static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
++static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
++				   struct pci_bus *bus,
++				   bool add_to_iommu_group)
+ {
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		set_iommu_table_base_and_group(&dev->dev, &pe->tce32_table);
++		if (add_to_iommu_group)
++			set_iommu_table_base_and_group(&dev->dev,
++						       &pe->tce32_table);
++		else
++			set_iommu_table_base(&dev->dev, &pe->tce32_table);
++
+ 		if (dev->subordinate)
+-			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
++			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
++					       add_to_iommu_group);
+ 	}
+ }
+ 
+@@ -677,7 +685,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	if (pe->pdev)
+ 		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
+ 	else
+-		pnv_ioda_setup_bus_dma(pe, pe->pbus);
++		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
+ 
+ 	return;
+  fail:
+@@ -713,11 +721,15 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+ 						     0);
+ 
+ 		/*
+-		 * We might want to reset the DMA ops of all devices on
+-		 * this PE. However in theory, that shouldn't be necessary
+-		 * as this is used for VFIO/KVM pass-through and the device
+-		 * hasn't yet been returned to its kernel driver
++		 * EEH needs the mapping between IOMMU table and group
++		 * of those VFIO/KVM pass-through devices. We can postpone
++		 * resetting DMA ops until the DMA mask is configured in
++		 * host side.
+ 		 */
++		if (pe->pdev)
++			set_iommu_table_base(&pe->pdev->dev, tbl);
++		else
++			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+ 	}
+ 	if (rc)
+ 		pe_err(pe, "OPAL error %lld configuring bypass window\n", rc);
+@@ -805,7 +817,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	if (pe->pdev)
+ 		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
+ 	else
+-		pnv_ioda_setup_bus_dma(pe, pe->pbus);
++		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
+ 
+ 	/* Also create a bypass window */
+ 	pnv_pci_ioda2_setup_bypass_pe(phb, pe);
 -- 
-1.8.1.4
+1.8.3.2
