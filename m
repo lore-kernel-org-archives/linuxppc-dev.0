@@ -1,20 +1,14 @@
-Return-Path: <bernat@luffy.cx>
-Received: from bart.luffy.cx (unknown [IPv6:2a01:4f8:130:64e3::7])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E15F1A014E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 21:44:13 +1000 (EST)
-From: Vincent Bernat <vincent@bernat.im>
-To: David Laight <David.Laight@ACULAB.COM>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] ppc/xmon: use isspace/isxdigit/isalnum from linux/ctype.h
-Date: Tue, 15 Jul 2014 13:43:47 +0200
-Message-Id: <1405424627-31411-1-git-send-email-vincent@bernat.im>
-In-Reply-To: <m3pph7x8pg.fsf@neo.luffy.cx>
-References: <m3pph7x8pg.fsf@neo.luffy.cx>
-Cc: Vincent Bernat <vincent@bernat.im>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B3CD1A02DD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 22:22:35 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc: Add machine_early_initcall()
+Date: Tue, 15 Jul 2014 22:22:23 +1000
+Message-Id: <1405426945-19058-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-isxdigit() macro definition is the same.
-
-isalnum() from linux/ctype.h will accept additional latin non-ASCII
-characters. This is harmless since this macro is used in scanhex() which
-parses user input.
-
-isspace() from linux/ctype.h will accept vertical tab and form feed but
-not NULL. The use of this macro is modified to accept NULL as
-well. Additional characters are harmless since this macro is also only
-used in scanhex().
-
-Signed-off-by: Vincent Bernat <vincent@bernat.im>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ arch/powerpc/include/asm/machdep.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index d199bfa2f1fa..55d9b48774b7 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/bug.h>
-+#include <linux/ctype.h>
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index f92b0b54e921..5c7e74ddee4c 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -366,6 +366,7 @@ static inline void log_error(char *buf, unsigned int err_type, int fatal)
+ 	} \
+ 	__define_initcall(__machine_initcall_##mach##_##fn, id);
  
- #include <asm/ptrace.h>
- #include <asm/string.h>
-@@ -177,14 +178,6 @@ extern void xmon_leave(void);
- #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
- #endif
- 
--#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
--			 || ('a' <= (c) && (c) <= 'f') \
--			 || ('A' <= (c) && (c) <= 'F'))
--#define isalnum(c)	(('0' <= (c) && (c) <= '9') \
--			 || ('a' <= (c) && (c) <= 'z') \
--			 || ('A' <= (c) && (c) <= 'Z'))
--#define isspace(c)	(c == ' ' || c == '\t' || c == 10 || c == 13 || c == 0)
--
- static char *help_string = "\
- Commands:\n\
-   b	show breakpoints\n\
-@@ -2121,9 +2114,6 @@ static void dump_pacas(void)
- }
- #endif
- 
--#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
--			 || ('a' <= (c) && (c) <= 'f') \
--			 || ('A' <= (c) && (c) <= 'F'))
- static void
- dump(void)
- {
-@@ -2526,7 +2516,7 @@ scanhex(unsigned long *vp)
- 		int i;
- 		for (i=0; i<63; i++) {
- 			c = inchar();
--			if (isspace(c)) {
-+			if (isspace(c) || c == '\0') {
- 				termch = c;
- 				break;
- 			}
++#define machine_early_initcall(mach, fn)	__define_machine_initcall(mach, fn, early)
+ #define machine_core_initcall(mach, fn)		__define_machine_initcall(mach, fn, 1)
+ #define machine_core_initcall_sync(mach, fn)	__define_machine_initcall(mach, fn, 1s)
+ #define machine_postcore_initcall(mach, fn)	__define_machine_initcall(mach, fn, 2)
 -- 
-2.0.1
+1.9.1
