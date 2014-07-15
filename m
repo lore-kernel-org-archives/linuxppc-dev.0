@@ -1,14 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DB371A01EC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:25:03 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 690FD1A0B92
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 21:15:44 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Move bad_stack() below the fwnmi_data_area
-Date: Tue, 15 Jul 2014 20:25:02 +1000
-Message-Id: <1405419902-6130-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 1/3] powerpc: Update comments in irqflags.h
+Date: Tue, 15 Jul 2014 21:15:36 +1000
+Message-Id: <1405422938-27608-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,157 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the allmodconfig build is failing because we run out of
-space between altivec_assist() at 0x5700 and the fwnmi_data_area at
-0x7000.
+The comment on TRACE_ENABLE_INTS is incorrect, and appears to have
+always been incorrect since the code was merged. It probably came from
+an original out-of-tree patch.
 
-Fixing it permanently will take some more work, but a quick fix is to
-move bad_stack() below the fwnmi_data_area. That gives us just enough
-room with everything enabled.
-
-bad_stack() is called from the common exception handlers, but it's a
-non-conditional branch, so we have plenty of scope to move it further
-way.
+Replace it with something that's correct. Also propagate the message to
+RECONCILE_IRQ_STATE(), because it's potentially subtle.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 120 +++++++++++++++++------------------
- 1 file changed, 60 insertions(+), 60 deletions(-)
+ arch/powerpc/include/asm/irqflags.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index b859b3665be6..647d6c75ed62 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -953,66 +953,6 @@ ppc64_runlatch_on_trampoline:
- 	b	__ppc64_runlatch_on
+diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
+index e20eb95429a8..f2149066fe5d 100644
+--- a/arch/powerpc/include/asm/irqflags.h
++++ b/arch/powerpc/include/asm/irqflags.h
+@@ -32,9 +32,8 @@
+ #endif
  
  /*
-- * Here we have detected that the kernel stack pointer is bad.
-- * R9 contains the saved CR, r13 points to the paca,
-- * r10 contains the (bad) kernel stack pointer,
-- * r11 and r12 contain the saved SRR0 and SRR1.
-- * We switch to using an emergency stack, save the registers there,
-- * and call kernel_bad_stack(), which panics.
-- */
--bad_stack:
--	ld	r1,PACAEMERGSP(r13)
--	subi	r1,r1,64+INT_FRAME_SIZE
--	std	r9,_CCR(r1)
--	std	r10,GPR1(r1)
--	std	r11,_NIP(r1)
--	std	r12,_MSR(r1)
--	mfspr	r11,SPRN_DAR
--	mfspr	r12,SPRN_DSISR
--	std	r11,_DAR(r1)
--	std	r12,_DSISR(r1)
--	mflr	r10
--	mfctr	r11
--	mfxer	r12
--	std	r10,_LINK(r1)
--	std	r11,_CTR(r1)
--	std	r12,_XER(r1)
--	SAVE_GPR(0,r1)
--	SAVE_GPR(2,r1)
--	ld	r10,EX_R3(r3)
--	std	r10,GPR3(r1)
--	SAVE_GPR(4,r1)
--	SAVE_4GPRS(5,r1)
--	ld	r9,EX_R9(r3)
--	ld	r10,EX_R10(r3)
--	SAVE_2GPRS(9,r1)
--	ld	r9,EX_R11(r3)
--	ld	r10,EX_R12(r3)
--	ld	r11,EX_R13(r3)
--	std	r9,GPR11(r1)
--	std	r10,GPR12(r1)
--	std	r11,GPR13(r1)
--BEGIN_FTR_SECTION
--	ld	r10,EX_CFAR(r3)
--	std	r10,ORIG_GPR3(r1)
--END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
--	SAVE_8GPRS(14,r1)
--	SAVE_10GPRS(22,r1)
--	lhz	r12,PACA_TRAP_SAVE(r13)
--	std	r12,_TRAP(r1)
--	addi	r11,r1,INT_FRAME_SIZE
--	std	r11,0(r1)
--	li	r12,0
--	std	r12,0(r11)
--	ld	r2,PACATOC(r13)
--	ld	r11,exception_marker@toc(r2)
--	std	r12,RESULT(r1)
--	std	r11,STACK_FRAME_OVERHEAD-16(r1)
--1:	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	kernel_bad_stack
--	b	1b
--
--/*
-  * Here r13 points to the paca, r9 contains the saved CR,
-  * SRR0 and SRR1 are saved in r11 and r12,
-  * r9 - r13 are saved in paca->exgen.
-@@ -1636,3 +1576,63 @@ handle_dabr_fault:
- 	li	r5,SIGSEGV
- 	bl	bad_page_fault
- 	b	ret_from_except
-+
-+/*
-+ * Here we have detected that the kernel stack pointer is bad.
-+ * R9 contains the saved CR, r13 points to the paca,
-+ * r10 contains the (bad) kernel stack pointer,
-+ * r11 and r12 contain the saved SRR0 and SRR1.
-+ * We switch to using an emergency stack, save the registers there,
-+ * and call kernel_bad_stack(), which panics.
-+ */
-+bad_stack:
-+	ld	r1,PACAEMERGSP(r13)
-+	subi	r1,r1,64+INT_FRAME_SIZE
-+	std	r9,_CCR(r1)
-+	std	r10,GPR1(r1)
-+	std	r11,_NIP(r1)
-+	std	r12,_MSR(r1)
-+	mfspr	r11,SPRN_DAR
-+	mfspr	r12,SPRN_DSISR
-+	std	r11,_DAR(r1)
-+	std	r12,_DSISR(r1)
-+	mflr	r10
-+	mfctr	r11
-+	mfxer	r12
-+	std	r10,_LINK(r1)
-+	std	r11,_CTR(r1)
-+	std	r12,_XER(r1)
-+	SAVE_GPR(0,r1)
-+	SAVE_GPR(2,r1)
-+	ld	r10,EX_R3(r3)
-+	std	r10,GPR3(r1)
-+	SAVE_GPR(4,r1)
-+	SAVE_4GPRS(5,r1)
-+	ld	r9,EX_R9(r3)
-+	ld	r10,EX_R10(r3)
-+	SAVE_2GPRS(9,r1)
-+	ld	r9,EX_R11(r3)
-+	ld	r10,EX_R12(r3)
-+	ld	r11,EX_R13(r3)
-+	std	r9,GPR11(r1)
-+	std	r10,GPR12(r1)
-+	std	r11,GPR13(r1)
-+BEGIN_FTR_SECTION
-+	ld	r10,EX_CFAR(r3)
-+	std	r10,ORIG_GPR3(r1)
-+END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
-+	SAVE_8GPRS(14,r1)
-+	SAVE_10GPRS(22,r1)
-+	lhz	r12,PACA_TRAP_SAVE(r13)
-+	std	r12,_TRAP(r1)
-+	addi	r11,r1,INT_FRAME_SIZE
-+	std	r11,0(r1)
-+	li	r12,0
-+	std	r12,0(r11)
-+	ld	r2,PACATOC(r13)
-+	ld	r11,exception_marker@toc(r2)
-+	std	r12,RESULT(r1)
-+	std	r11,STACK_FRAME_OVERHEAD-16(r1)
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	kernel_bad_stack
-+	b	1b
+- * Most of the CPU's IRQ-state tracing is done from assembly code; we
+- * have to call a C function so call a wrapper that saves all the
+- * C-clobbered registers.
++ * These are calls to C code, so the caller must be prepared for volatiles to
++ * be clobbered.
+  */
+ #define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(trace_hardirqs_on)
+ #define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(trace_hardirqs_off)
+@@ -42,6 +41,9 @@
+ /*
+  * This is used by assembly code to soft-disable interrupts first and
+  * reconcile irq state.
++ *
++ * NB: This may call C code, so the caller must be prepared for volatiles to
++ * be clobbered.
+  */
+ #define RECONCILE_IRQ_STATE(__rA, __rB)		\
+ 	lbz	__rA,PACASOFTIRQEN(r13);	\
 -- 
 1.9.1
