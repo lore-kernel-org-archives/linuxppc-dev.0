@@ -1,35 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bernat@luffy.cx>
+Received: from bart.luffy.cx (unknown [IPv6:2a01:4f8:130:64e3::7])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 247BE1A0149
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:40:37 +1000 (EST)
-Message-ID: <1405408602.9343.75.camel@pasglop>
-Subject: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find blacklist"
- error on ia64 and ppc64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 15 Jul 2014 17:16:42 +1000
-In-Reply-To: <1405394370.17767.7.camel@concordia>
-References: <1404276081.7254.1.camel@concordia>
- <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
- <1405394370.17767.7.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, akataria@vmware.com,
- linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
- Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB39B1A0157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 17:38:23 +1000 (EST)
+From: Vincent Bernat <vincent@bernat.im>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ppc/xmon: use isxdigit/isspace/isalnum from ctype.h
+Date: Tue, 15 Jul 2014 09:28:22 +0200
+Message-Id: <1405409302-5299-1-git-send-email-vincent@bernat.im>
+Cc: Vincent Bernat <vincent@bernat.im>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
+Use linux/ctype.h instead of defining custom versions of
+isxdigit/isspace/isalnum.
 
-> > Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> > Reported-by: Tony Luck <tony.luck@gmail.com>
-> > Tested-by: Tony Luck <tony.luck@intel.com>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
-> 
-> Ben, can you take this in your tree?
+Signed-off-by: Vincent Bernat <vincent@bernat.im>
+---
+ arch/powerpc/xmon/xmon.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-That looks more like generic material. Do we have a kprobes maintainer ?
-Andrew, do you want to take this ?
-
-I'm happy to put it in powerpc and send it to Linus tomorrow if nobody
-cares :-)
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index d199bfa2f1fa..c0c31a47c469 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -24,6 +24,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/bug.h>
++#include <linux/ctype.h>
+ 
+ #include <asm/ptrace.h>
+ #include <asm/string.h>
+@@ -177,14 +178,6 @@ extern void xmon_leave(void);
+ #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
+ #endif
+ 
+-#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
+-			 || ('a' <= (c) && (c) <= 'f') \
+-			 || ('A' <= (c) && (c) <= 'F'))
+-#define isalnum(c)	(('0' <= (c) && (c) <= '9') \
+-			 || ('a' <= (c) && (c) <= 'z') \
+-			 || ('A' <= (c) && (c) <= 'Z'))
+-#define isspace(c)	(c == ' ' || c == '\t' || c == 10 || c == 13 || c == 0)
+-
+ static char *help_string = "\
+ Commands:\n\
+   b	show breakpoints\n\
+@@ -2121,9 +2114,6 @@ static void dump_pacas(void)
+ }
+ #endif
+ 
+-#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
+-			 || ('a' <= (c) && (c) <= 'f') \
+-			 || ('A' <= (c) && (c) <= 'F'))
+ static void
+ dump(void)
+ {
+-- 
+2.0.1
