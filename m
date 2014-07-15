@@ -1,32 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A64921A01C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:25 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE3991A018E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:40 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 15 Jul 2014 19:25:25 +1000
+ Tue, 15 Jul 2014 19:25:40 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4DF6F3578057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:53 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9C5BF2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:36 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6F9Ob0t7274972
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:37 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6F9Oqum021170
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:24:53 +1000
+ s6F9PKMD11534638
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:20 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6F9PZvG025944
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 19:25:36 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 15/16] vfio: Use it_page_size
-Date: Tue, 15 Jul 2014 19:24:39 +1000
-Message-Id: <1405416280-12318-16-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1405416280-12318-1-git-send-email-aik@ozlabs.ru>
-References: <1405416280-12318-1-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v1 00/13] powerpc: kvm: Enable in-kernel acceleration for VFIO
+Date: Tue, 15 Jul 2014 19:25:20 +1000
+Message-Id: <1405416333-12477-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,89 +36,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes use of the it_page_size from the iommu_table struct
-as page size can differ.
+This enables in-kernel acceleration of TCE hypercalls (H_PUT_TCE,
+H_PUT_TCE_INDIRECT, H_STUFF_TCE). This implements acceleration
+for both real and virtual modes.
 
-This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
-as recently introduced IOMMU_PAGE_XXX macros do not include
-IOMMU_PAGE_SHIFT.
+This was made on top of both:
+[PATCH v1 00/16] powernv: vfio: Add Dynamic DMA windows (DDW)
+[PATCH v1 0/7] powerpc/iommu: kvm: Enable MultiTCE support
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index ff2bb92..808c7d3 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -97,7 +97,7 @@ static int tce_iommu_enable(struct tce_container *container)
- 		return -ENXIO;
- 
- 	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
- 	locked = current->mm->locked_vm + npages;
- 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
- 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-@@ -137,7 +137,7 @@ static void tce_iommu_disable(struct tce_container *container)
- 
- 	down_write(&current->mm->mmap_sem);
- 	current->mm->locked_vm -= (tbl->it_size <<
--			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+			tbl->it_page_shift) >> PAGE_SHIFT;
- 	up_write(&current->mm->mmap_sem);
- }
- 
-@@ -210,8 +210,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (info.argsz < minsz)
- 			return -EINVAL;
- 
--		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
--		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
-+		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
-+		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
- 		info.flags = 0;
- 
- 		if (copy_to_user((void __user *)arg, &info, minsz))
-@@ -264,17 +264,17 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (ret)
- 			return ret;
- 
--		for (i = 0; i < (param.size >> IOMMU_PAGE_SHIFT_4K); ++i) {
-+		for (i = 0; i < (param.size >> tbl->it_page_shift); ++i) {
- 			ret = iommu_put_tce_user_mode(tbl,
--					(param.iova >> IOMMU_PAGE_SHIFT_4K) + i,
-+					(param.iova >> tbl->it_page_shift) + i,
- 					tce);
- 			if (ret)
- 				break;
--			tce += IOMMU_PAGE_SIZE_4K;
-+			tce += IOMMU_PAGE_SIZE(tbl);
- 		}
- 		if (ret)
- 			iommu_clear_tces_and_put_pages(tbl,
--					param.iova >> IOMMU_PAGE_SHIFT_4K, i);
-+					param.iova >> tbl->it_page_shift, i);
- 
- 		iommu_flush_tce(tbl);
- 
-@@ -315,13 +315,13 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		BUG_ON(!tbl->it_group);
- 
- 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.size >> tbl->it_page_shift);
- 		if (ret)
- 			return ret;
- 
- 		ret = iommu_clear_tces_and_put_pages(tbl,
--				param.iova >> IOMMU_PAGE_SHIFT_4K,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.iova >> tbl->it_page_shift,
-+				param.size >> tbl->it_page_shift);
- 		iommu_flush_tce(tbl);
- 
- 		return ret;
+Alexey Kardashevskiy (13):
+  KVM: PPC: Account TCE pages in locked_vm
+  KVM: PPC: Rework kvmppc_spapr_tce_table to support variable page size
+  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
+  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_64 capability number
+  KVM: PPC: Add @offset to kvmppc_spapr_tce_table
+  KVM: PPC: Add support for 64bit TCE windows
+  KVM: PPC: Add hugepage support for IOMMU in-kernel handling
+  KVM: PPC: Add page_shift support for in-kernel H_PUT_TCE/etc handlers
+  KVM: PPC: Fix kvmppc_gpa_to_hva_and_get() to return host physical
+    address
+  KVM: PPC: Associate IOMMU group with guest copy of TCE table
+  KVM: PPC: vfio kvm device: support spapr tce
+  KVM: PPC: Add support for IOMMU in-kernel handling
+
+ Documentation/virtual/kvm/api.txt          |  51 ++++
+ Documentation/virtual/kvm/devices/vfio.txt |  20 +-
+ arch/powerpc/include/asm/kvm_host.h        |  41 ++-
+ arch/powerpc/include/asm/kvm_ppc.h         |   9 +-
+ arch/powerpc/include/uapi/asm/kvm.h        |   9 +
+ arch/powerpc/kernel/iommu.c                |   6 +-
+ arch/powerpc/kvm/Kconfig                   |   2 +
+ arch/powerpc/kvm/Makefile                  |   3 +
+ arch/powerpc/kvm/book3s_64_vio.c           | 389 +++++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_64_vio_hv.c        | 177 ++++++++++++-
+ arch/powerpc/kvm/book3s_hv.c               |   3 +
+ arch/powerpc/kvm/powerpc.c                 |  25 +-
+ include/uapi/linux/kvm.h                   |  12 +
+ virt/kvm/vfio.c                            |  69 +++++
+ 14 files changed, 775 insertions(+), 41 deletions(-)
+
 -- 
 2.0.0
