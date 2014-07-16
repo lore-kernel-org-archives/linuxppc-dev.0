@@ -2,29 +2,29 @@ Return-Path: <yan@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF12C1A0245
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:49 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBDA1A024A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:52 +1000 (EST)
 Received: from /spool/local
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <yan@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 22:24:49 +1000
+ Wed, 16 Jul 2014 22:24:52 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F0D472BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:46 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 63C793578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:49 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6GC7wXm45744380
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:07:59 +1000
+ s6GC81JP19660800
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:08:01 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6GCOkP7014830
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:46 +1000
+ s6GCOmLM014887
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:48 +1000
 From: Guo Chao <yan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/6] powerpc/powernv: Handle compound PE
-Date: Wed, 16 Jul 2014 20:24:33 +0800
-Message-Id: <1405513475-24220-5-git-send-email-yan@linux.vnet.ibm.com>
+Subject: [PATCH v2 6/6] powerpc/powernv: Handle compound PE in config accessors
+Date: Wed, 16 Jul 2014 20:24:35 +0800
+Message-Id: <1405513475-24220-7-git-send-email-yan@linux.vnet.ibm.com>
 In-Reply-To: <1405513475-24220-1-git-send-email-yan@linux.vnet.ibm.com>
 References: <1405513475-24220-1-git-send-email-yan@linux.vnet.ibm.com>
 Cc: yan@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
@@ -39,193 +39,144 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-The patch introduces 3 PHB callbacks: compound PE state retrieval,
-force freezing and unfreezing compound PE. The PCI config accessors
-and PowerNV EEH backend can use them in subsequent patches.
-
-We don't export the capability of compound PE to EEH core, which
-helps avoiding more complexity to EEH core.
+The PCI config accessors check for PE frozen state and clear it if
+EEH isn't functional. The patch handles compound PE in config accessors
+if PHB supports it. For consistency, all PEs will be put into frozen
+state if any one in compound group gets frozen by hardware.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 143 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h      |   3 +
- 2 files changed, 146 insertions(+)
+ arch/powerpc/platforms/powernv/pci.c | 89 ++++++++++++++++++++++++------------
+ 1 file changed, 60 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index cc3c59b..6d262f7 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -347,6 +347,146 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
- 	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 02f4bd9..353e35b 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -319,43 +319,52 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ {
+ 	unsigned long flags, rc;
+-	int has_diag;
++	int has_diag, ret = 0;
+ 
+ 	spin_lock_irqsave(&phb->lock, flags);
+ 
++	/* Fetch PHB diag-data */
+ 	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+ 					 PNV_PCI_DIAG_BUF_SIZE);
+ 	has_diag = (rc == OPAL_SUCCESS);
+ 
+-	rc = opal_pci_eeh_freeze_set(phb->opal_id, pe_no,
+-				     OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+-	if (rc) {
+-		pr_warning("PCI %d: Failed to clear EEH freeze state"
+-			   " for PE#%d, err %ld\n",
+-			   phb->hose->global_number, pe_no, rc);
+-
+-		/* For now, let's only display the diag buffer when we fail to clear
+-		 * the EEH status. We'll do more sensible things later when we have
+-		 * proper EEH support. We need to make sure we don't pollute ourselves
+-		 * with the normal errors generated when probing empty slots
+-		 */
+-		if (has_diag)
+-			pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
+-		else
+-			pr_warning("PCI %d: No diag data available\n",
+-				   phb->hose->global_number);
++	/* If PHB supports compound PE, to handle it */
++	if (phb->unfreeze_pe) {
++		ret = phb->unfreeze_pe(phb,
++				       pe_no,
++				       OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++	} else {
++		rc = opal_pci_eeh_freeze_set(phb->opal_id,
++					     pe_no,
++					     OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++		if (rc) {
++			pr_warn("%s: Failure %ld clearing frozen "
++				"PHB#%x-PE#%x\n",
++				__func__, rc, phb->hose->global_number,
++				pe_no);
++			ret = -EIO;
++		}
+ 	}
+ 
++	/*
++	 * For now, let's only display the diag buffer when we fail to clear
++	 * the EEH status. We'll do more sensible things later when we have
++	 * proper EEH support. We need to make sure we don't pollute ourselves
++	 * with the normal errors generated when probing empty slots
++	 */
++	if (has_diag && ret)
++		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
++
+ 	spin_unlock_irqrestore(&phb->lock, flags);
  }
  
-+static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
-+{
-+	struct pnv_ioda_pe *pe = &phb->ioda.pe_array[pe_no];
-+	struct pnv_ioda_pe *slave;
-+	s64 rc;
-+
-+	/* Fetch master PE */
-+	if (pe->flags & PNV_IODA_PE_SLAVE) {
-+		pe = pe->master;
-+		WARN_ON(!pe || !(pe->flags & PNV_IODA_PE_MASTER));
-+		pe_no = pe->pe_number;
-+	}
-+
-+	/* Freeze master PE */
-+	rc = opal_pci_eeh_freeze_set(phb->opal_id,
-+				     pe_no,
-+				     OPAL_EEH_ACTION_SET_FREEZE_ALL);
-+	if (rc != OPAL_SUCCESS) {
-+		pr_warn("%s: Failure %lld freezing PHB#%x-PE#%x\n",
-+			__func__, rc, phb->hose->global_number, pe_no);
-+		return;
-+	}
-+
-+	/* Freeze slave PEs */
-+	if (!(pe->flags & PNV_IODA_PE_MASTER))
-+		return;
-+
-+	list_for_each_entry(slave, &pe->slaves, list) {
-+		rc = opal_pci_eeh_freeze_set(phb->opal_id,
-+					     slave->pe_number,
-+					     OPAL_EEH_ACTION_SET_FREEZE_ALL);
-+		if (rc != OPAL_SUCCESS)
-+			pr_warn("%s: Failure %lld freezing PHB#%x-PE#%x\n",
-+				__func__, rc, phb->hose->global_number,
-+				slave->pe_number);
-+	}
-+}
-+
-+int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
-+{
-+	struct pnv_ioda_pe *pe, *slave;
-+	s64 rc;
-+
-+	/* Find master PE */
-+	pe = &phb->ioda.pe_array[pe_no];
-+	if (pe->flags & PNV_IODA_PE_SLAVE) {
-+		pe = pe->master;
-+		WARN_ON(!pe || !(pe->flags & PNV_IODA_PE_MASTER));
-+		pe_no = pe->pe_number;
-+	}
-+
-+	/* Clear frozen state for master PE */
-+	rc = opal_pci_eeh_freeze_set(phb->opal_id, pe_no, opt);
-+	if (rc != OPAL_SUCCESS) {
-+		pr_warn("%s: Failure %lld clear %d on PHB#%x-PE#%x\n",
-+			__func__, rc, opt, phb->hose->global_number, pe_no);
-+		return -EIO;
-+	}
-+
-+	if (!(pe->flags & PNV_IODA_PE_MASTER))
-+		return 0;
-+
-+	/* Clear frozen state for slave PEs */
-+	list_for_each_entry(slave, &pe->slaves, list) {
-+		rc = opal_pci_eeh_freeze_set(phb->opal_id,
-+					     slave->pe_number,
-+					     opt);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("%s: Failure %lld clear %d on PHB#%x-PE#%x\n",
-+				__func__, rc, opt, phb->hose->global_number,
-+				slave->pe_number);
-+			return -EIO;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
-+{
-+	struct pnv_ioda_pe *slave, *pe;
-+	u8 fstate, state;
-+	__be16 pcierr;
-+	s64 rc;
-+
-+	/* Sanity check on PE number */
-+	if (pe_no < 0 || pe_no >= phb->ioda.total_pe)
-+		return OPAL_EEH_STOPPED_PERM_UNAVAIL;
-+
+ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+ 				     struct device_node *dn)
+ {
+-	s64	rc;
+ 	u8	fstate;
+ 	__be16	pcierr;
+-	u32	pe_no;
++	int	pe_no;
++	s64	rc;
+ 
+ 	/*
+ 	 * Get the PE#. During the PCI probe stage, we might not
+@@ -370,20 +379,42 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+ 			pe_no = phb->ioda.reserved_pe;
+ 	}
+ 
+-	/* Read freeze status */
+-	rc = opal_pci_eeh_freeze_status(phb->opal_id, pe_no, &fstate, &pcierr,
+-					NULL);
+-	if (rc) {
+-		pr_warning("%s: Can't read EEH status (PE#%d) for "
+-			   "%s, err %lld\n",
+-			   __func__, pe_no, dn->full_name, rc);
+-		return;
 +	/*
-+	 * Fetch the master PE and the PE instance might be
-+	 * not initialized yet.
++	 * Fetch frozen state. If the PHB support compound PE,
++	 * we need handle that case.
 +	 */
-+	pe = &phb->ioda.pe_array[pe_no];
-+	if (pe->flags & PNV_IODA_PE_SLAVE) {
-+		pe = pe->master;
-+		WARN_ON(!pe || !(pe->flags & PNV_IODA_PE_MASTER));
-+		pe_no = pe->pe_number;
-+	}
-+
-+	/* Check the master PE */
-+	rc = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
-+					&state, &pcierr, NULL);
-+	if (rc != OPAL_SUCCESS) {
-+		pr_warn("%s: Failure %lld getting "
-+			"PHB#%x-PE#%x state\n",
-+			__func__, rc,
-+			phb->hose->global_number, pe_no);
-+		return OPAL_EEH_STOPPED_TEMP_UNAVAIL;
-+	}
-+
-+	/* Check the slave PE */
-+	if (!(pe->flags & PNV_IODA_PE_MASTER))
-+		return state;
-+
-+	list_for_each_entry(slave, &pe->slaves, list) {
++	if (phb->get_pe_state) {
++		fstate = phb->get_pe_state(phb, pe_no);
++	} else {
 +		rc = opal_pci_eeh_freeze_status(phb->opal_id,
-+						slave->pe_number,
++						pe_no,
 +						&fstate,
 +						&pcierr,
 +						NULL);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("%s: Failure %lld getting "
-+				"PHB#%x-PE#%x state\n",
-+				__func__, rc,
-+				phb->hose->global_number, slave->pe_number);
-+			return OPAL_EEH_STOPPED_TEMP_UNAVAIL;
++		if (rc) {
++			pr_warn("%s: Failure %lld getting PHB#%x-PE#%x state\n",
++				__func__, rc, phb->hose->global_number, pe_no);
++			return;
 +		}
+ 	}
 +
+ 	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
+ 		(PCI_DN(dn)->busno << 8) | (PCI_DN(dn)->devfn),
+ 		pe_no, fstate);
+-	if (fstate != 0)
++
++	/* Clear the frozen state if applicable */
++	if (fstate == OPAL_EEH_STOPPED_MMIO_FREEZE ||
++	    fstate == OPAL_EEH_STOPPED_DMA_FREEZE  ||
++	    fstate == OPAL_EEH_STOPPED_MMIO_DMA_FREEZE) {
 +		/*
-+		 * Override the result based on the ascending
-+		 * priority.
++		 * If PHB supports compound PE, freeze it for
++		 * consistency.
 +		 */
-+		if (fstate > state)
-+			state = fstate;
++		if (phb->freeze_pe)
++			phb->freeze_pe(phb, pe_no);
++
+ 		pnv_pci_handle_eeh_config(phb, pe_no);
 +	}
-+
-+	return state;
-+}
-+
- /* Currently those 2 are only used when MSIs are enabled, this will change
-  * but in the meantime, we need to protect them to avoid warnings
-  */
-@@ -1626,6 +1766,9 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ }
  
- 
- 	phb->hose->ops = &pnv_pci_ops;
-+	phb->get_pe_state = pnv_ioda_get_pe_state;
-+	phb->freeze_pe = pnv_ioda_freeze_pe;
-+	phb->unfreeze_pe = pnv_ioda_unfreeze_pe;
- #ifdef CONFIG_EEH
- 	phb->eeh_ops = &ioda_eeh_ops;
- #endif
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index def7171..b160e6b 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -128,6 +128,9 @@ struct pnv_phb {
- 	int (*init_m64)(struct pnv_phb *phb);
- 	void (*alloc_m64_pe)(struct pnv_phb *phb);
- 	int (*pick_m64_pe)(struct pnv_phb *phb, struct pci_bus *bus, int all);
-+	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
-+	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
-+	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
- 
- 	union {
- 		struct {
+ int pnv_pci_cfg_read(struct device_node *dn,
 -- 
 1.9.1
