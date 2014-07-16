@@ -2,29 +2,29 @@ Return-Path: <yan@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A42A1A01E9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:46 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BF06E1A0223
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:48 +1000 (EST)
 Received: from /spool/local
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <yan@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 22:24:45 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4ABF12BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:44 +1000 (EST)
+ Wed, 16 Jul 2014 22:24:48 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 79DB92BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:45 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6GCORld11731230
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:28 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6GC21EG1180148
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:02:01 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6GCOhl2014760
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:43 +1000
+ s6GCOiaW014805
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:24:45 +1000
 From: Guo Chao <yan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/6] powerpc/powernv: Allow to freeze PE
-Date: Wed, 16 Jul 2014 20:24:31 +0800
-Message-Id: <1405513475-24220-3-git-send-email-yan@linux.vnet.ibm.com>
+Subject: [PATCH v2 3/6] powerpc/powernv: Split ioda_eeh_get_state()
+Date: Wed, 16 Jul 2014 20:24:32 +0800
+Message-Id: <1405513475-24220-4-git-send-email-yan@linux.vnet.ibm.com>
 In-Reply-To: <1405513475-24220-1-git-send-email-yan@linux.vnet.ibm.com>
 References: <1405513475-24220-1-git-send-email-yan@linux.vnet.ibm.com>
 Cc: yan@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
@@ -39,132 +39,255 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-For compound PE, all PEs should be frozen if any one in the group
-becomes frozen. Unfortunately, hardware doesn't always do that
-automatically with help of PELTV. So we have to flirt with
-PESTA/B a bit to freeze all PEs for the case.
-
-The patch sychronizes with firmware hearder and change the name
-of opal_pci_eeh_freeze_clear() to opal_pci_eeh_freeze_set() to
-reflect its usage: the API can be used to clear or set frozen
-state for the specified PE.
+Function ioda_eeh_get_state() is used to fetch EEH state for PHB
+or PE. We're going to support compound PE and the function becomes
+more complicated with that. The patch splits the function into two
+functions for PHB and PE cases separately to improve readability.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h                | 9 +++++----
- arch/powerpc/platforms/powernv/eeh-ioda.c      | 6 +++---
- arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c      | 4 ++--
- arch/powerpc/platforms/powernv/pci.c           | 4 ++--
- 5 files changed, 13 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 186 +++++++++++++++++-------------
+ 1 file changed, 105 insertions(+), 81 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ae885cc..edbfe1c 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -84,7 +84,7 @@ struct opal_sg_list {
- #define OPAL_PCI_EEH_FREEZE_STATUS		23
- #define OPAL_PCI_SHPC				24
- #define OPAL_CONSOLE_WRITE_BUFFER_SPACE		25
--#define OPAL_PCI_EEH_FREEZE_CLEAR		26
-+#define OPAL_PCI_EEH_FREEZE_SET			26
- #define OPAL_PCI_PHB_MMIO_ENABLE		27
- #define OPAL_PCI_SET_PHB_MEM_WINDOW		28
- #define OPAL_PCI_MAP_PE_MMIO_WINDOW		29
-@@ -167,7 +167,8 @@ enum OpalFreezeState {
- 	OPAL_EEH_STOPPED_PERM_UNAVAIL = 6
- };
- 
--enum OpalEehFreezeActionToken {
-+enum OpalPciFreezeActionToken {
-+	OPAL_EEH_ACTION_SET_FREEZE_ALL = 0,
- 	OPAL_EEH_ACTION_CLEAR_FREEZE_MMIO = 1,
- 	OPAL_EEH_ACTION_CLEAR_FREEZE_DMA = 2,
- 	OPAL_EEH_ACTION_CLEAR_FREEZE_ALL = 3
-@@ -762,8 +763,8 @@ int64_t opal_pci_eeh_freeze_status(uint64_t phb_id, uint64_t pe_number,
- 				   uint8_t *freeze_state,
- 				   __be16 *pci_error_type,
- 				   __be64 *phb_status);
--int64_t opal_pci_eeh_freeze_clear(uint64_t phb_id, uint64_t pe_number,
--				  uint64_t eeh_action_token);
-+int64_t opal_pci_eeh_freeze_set(uint64_t phb_id, uint64_t pe_number,
-+				uint64_t eeh_action_token);
- int64_t opal_pci_shpc(uint64_t phb_id, uint64_t shpc_action, uint8_t *state);
- 
- 
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index f6abdb1..b3b4bc2 100644
+index b3b4bc2..dd20ba8 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
 +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -210,7 +210,7 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- 		ret = 0;
+@@ -255,130 +255,154 @@ static void ioda_eeh_phb_diag(struct pci_controller *hose)
+ 	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
+ }
+ 
+-/**
+- * ioda_eeh_get_state - Retrieve the state of PE
+- * @pe: EEH PE
+- *
+- * The PE's state should be retrieved from the PEEV, PEST
+- * IODA tables. Since the OPAL has exported the function
+- * to do it, it'd better to use that.
+- */
+-static int ioda_eeh_get_state(struct eeh_pe *pe)
++static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
+ {
+-	s64 ret = 0;
++	struct pnv_phb *phb = pe->phb->private_data;
+ 	u8 fstate;
+ 	__be16 pcierr;
+-	u32 pe_no;
+-	int result;
+-	struct pci_controller *hose = pe->phb;
+-	struct pnv_phb *phb = hose->private_data;
++	s64 rc;
++	int result = 0;
++
++	rc = opal_pci_eeh_freeze_status(phb->opal_id,
++					pe->addr,
++					&fstate,
++					&pcierr,
++					NULL);
++	if (rc != OPAL_SUCCESS) {
++		pr_warn("%s: Failure %lld getting PHB#%x state\n",
++			__func__, rc, phb->hose->global_number);
++                return EEH_STATE_NOT_SUPPORT;
++        }
+ 
+ 	/*
+-	 * Sanity check on PE address. The PHB PE address should
+-	 * be zero.
++	 * Check PHB state. If the PHB is frozen for the
++	 * first time, to dump the PHB diag-data.
+ 	 */
+-	if (pe->addr < 0 || pe->addr >= phb->ioda.total_pe) {
+-		pr_err("%s: PE address %x out of range [0, %x] "
+-		       "on PHB#%x\n",
+-		       __func__, pe->addr, phb->ioda.total_pe,
+-		       hose->global_number);
+-		return EEH_STATE_NOT_SUPPORT;
++	if (be16_to_cpu(pcierr) != OPAL_EEH_PHB_ERROR) {
++		result = (EEH_STATE_MMIO_ACTIVE  |
++			  EEH_STATE_DMA_ACTIVE   |
++			  EEH_STATE_MMIO_ENABLED |
++			  EEH_STATE_DMA_ENABLED);
++	} else if (!(pe->state & EEH_PE_ISOLATED)) {
++		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
++		ioda_eeh_phb_diag(phb->hose);
+ 	}
+ 
++	return result;
++}
++
++static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
++{
++	struct pnv_phb *phb = pe->phb->private_data;
++	u8 fstate;
++	__be16 pcierr;
++	s64 rc;
++	int result;
++
+ 	/*
+-	 * If we're in middle of PE reset, return normal
+-	 * state to keep EEH core going. For PHB reset, we
+-	 * still expect to have fenced PHB cleared with
+-	 * PHB reset.
++	 * We don't clobber hardware frozen state until PE
++	 * reset is completed. In order to keep EEH core
++	 * moving forward, we have to return operational
++	 * state during PE reset.
+ 	 */
+-	if (!(pe->type & EEH_PE_PHB) &&
+-	    (pe->state & EEH_PE_RESET)) {
+-		result = (EEH_STATE_MMIO_ACTIVE |
+-			  EEH_STATE_DMA_ACTIVE |
++	if (pe->state & EEH_PE_RESET) {
++		result = (EEH_STATE_MMIO_ACTIVE  |
++			  EEH_STATE_DMA_ACTIVE   |
+ 			  EEH_STATE_MMIO_ENABLED |
+ 			  EEH_STATE_DMA_ENABLED);
+ 		return result;
+ 	}
+ 
+-	/* Retrieve PE status through OPAL */
+-	pe_no = pe->addr;
+-	ret = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
+-			&fstate, &pcierr, NULL);
+-	if (ret) {
+-		pr_err("%s: Failed to get EEH status on "
+-		       "PHB#%x-PE#%x\n, err=%lld\n",
+-		       __func__, hose->global_number, pe_no, ret);
++	/* Fetch state from hardware */
++	rc = opal_pci_eeh_freeze_status(phb->opal_id,
++					pe->addr,
++					&fstate,
++					&pcierr,
++					NULL);
++	if (rc != OPAL_SUCCESS) {
++		pr_warn("%s: Failure %lld getting PHB#%x-PE%x state\n",
++			__func__, rc, phb->hose->global_number, pe->addr);
+ 		return EEH_STATE_NOT_SUPPORT;
+ 	}
+ 
+-	/* Check PHB status */
+-	if (pe->type & EEH_PE_PHB) {
+-		result = 0;
+-		result &= ~EEH_STATE_RESET_ACTIVE;
+-
+-		if (be16_to_cpu(pcierr) != OPAL_EEH_PHB_ERROR) {
+-			result |= EEH_STATE_MMIO_ACTIVE;
+-			result |= EEH_STATE_DMA_ACTIVE;
+-			result |= EEH_STATE_MMIO_ENABLED;
+-			result |= EEH_STATE_DMA_ENABLED;
+-		} else if (!(pe->state & EEH_PE_ISOLATED)) {
+-			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+-			ioda_eeh_phb_diag(hose);
+-		}
+-
+-		return result;
+-	}
+-
+-	/* Parse result out */
+-	result = 0;
++	/* Figure out state */
+ 	switch (fstate) {
+ 	case OPAL_EEH_STOPPED_NOT_FROZEN:
+-		result &= ~EEH_STATE_RESET_ACTIVE;
+-		result |= EEH_STATE_MMIO_ACTIVE;
+-		result |= EEH_STATE_DMA_ACTIVE;
+-		result |= EEH_STATE_MMIO_ENABLED;
+-		result |= EEH_STATE_DMA_ENABLED;
++		result = (EEH_STATE_MMIO_ACTIVE  |
++			  EEH_STATE_DMA_ACTIVE   |
++			  EEH_STATE_MMIO_ENABLED |
++			  EEH_STATE_DMA_ENABLED);
  		break;
- 	case EEH_OPT_THAW_MMIO:
--		ret = opal_pci_eeh_freeze_clear(phb->opal_id, pe_no,
-+		ret = opal_pci_eeh_freeze_set(phb->opal_id, pe_no,
- 				OPAL_EEH_ACTION_CLEAR_FREEZE_MMIO);
- 		if (ret) {
- 			pr_warning("%s: Failed to enable MMIO for "
-@@ -221,7 +221,7 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- 
+ 	case OPAL_EEH_STOPPED_MMIO_FREEZE:
+-		result &= ~EEH_STATE_RESET_ACTIVE;
+-		result |= EEH_STATE_DMA_ACTIVE;
+-		result |= EEH_STATE_DMA_ENABLED;
++		result = (EEH_STATE_DMA_ACTIVE |
++			  EEH_STATE_DMA_ENABLED);
  		break;
- 	case EEH_OPT_THAW_DMA:
--		ret = opal_pci_eeh_freeze_clear(phb->opal_id, pe_no,
-+		ret = opal_pci_eeh_freeze_set(phb->opal_id, pe_no,
- 				OPAL_EEH_ACTION_CLEAR_FREEZE_DMA);
- 		if (ret) {
- 			pr_warning("%s: Failed to enable DMA for "
-@@ -809,7 +809,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 					hose->global_number, frozen_pe_no);
- 				pr_info("EEH: PHB location: %s\n",
- 					eeh_pe_loc_get(phb_pe));
--				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
-+				opal_pci_eeh_freeze_set(phb->opal_id, frozen_pe_no,
- 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 				ret = EEH_NEXT_ERR_NONE;
- 			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 4abbff2..abf5ffa 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -85,7 +85,7 @@ OPAL_CALL(opal_set_xive,			OPAL_SET_XIVE);
- OPAL_CALL(opal_get_xive,			OPAL_GET_XIVE);
- OPAL_CALL(opal_register_exception_handler,	OPAL_REGISTER_OPAL_EXCEPTION_HANDLER);
- OPAL_CALL(opal_pci_eeh_freeze_status,		OPAL_PCI_EEH_FREEZE_STATUS);
--OPAL_CALL(opal_pci_eeh_freeze_clear,		OPAL_PCI_EEH_FREEZE_CLEAR);
-+OPAL_CALL(opal_pci_eeh_freeze_set,		OPAL_PCI_EEH_FREEZE_SET);
- OPAL_CALL(opal_pci_shpc,			OPAL_PCI_SHPC);
- OPAL_CALL(opal_pci_phb_mmio_enable,		OPAL_PCI_PHB_MMIO_ENABLE);
- OPAL_CALL(opal_pci_set_phb_mem_window,		OPAL_PCI_SET_PHB_MEM_WINDOW);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 2b659d9..cc3c59b 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -423,8 +423,8 @@ static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 				pe->pe_number, OPAL_ADD_PE_TO_DOMAIN);
- 	if (rc)
- 		pe_warn(pe, "OPAL error %d adding self to PELTV\n", rc);
--	opal_pci_eeh_freeze_clear(phb->opal_id, pe->pe_number,
--				  OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
-+	opal_pci_eeh_freeze_set(phb->opal_id, pe->pe_number,
-+				OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+ 	case OPAL_EEH_STOPPED_DMA_FREEZE:
+-		result &= ~EEH_STATE_RESET_ACTIVE;
+-		result |= EEH_STATE_MMIO_ACTIVE;
+-		result |= EEH_STATE_MMIO_ENABLED;
++		result = (EEH_STATE_MMIO_ACTIVE |
++			  EEH_STATE_MMIO_ENABLED);
+ 		break;
+ 	case OPAL_EEH_STOPPED_MMIO_DMA_FREEZE:
+-		result &= ~EEH_STATE_RESET_ACTIVE;
++		result = 0;
+ 		break;
+ 	case OPAL_EEH_STOPPED_RESET:
+-		result |= EEH_STATE_RESET_ACTIVE;
++		result = EEH_STATE_RESET_ACTIVE;
+ 		break;
+ 	case OPAL_EEH_STOPPED_TEMP_UNAVAIL:
+-		result |= EEH_STATE_UNAVAILABLE;
++		result = EEH_STATE_UNAVAILABLE;
+ 		break;
+ 	case OPAL_EEH_STOPPED_PERM_UNAVAIL:
+-		result |= EEH_STATE_NOT_SUPPORT;
++		result = EEH_STATE_NOT_SUPPORT;
+ 		break;
+ 	default:
+-		pr_warning("%s: Unexpected EEH status 0x%x "
+-			   "on PHB#%x-PE#%x\n",
+-			   __func__, fstate, hose->global_number, pe_no);
++		result = EEH_STATE_NOT_SUPPORT;
++		pr_warn("%s: Invalid PHB#%x-PE#%x state %x\n",
++			__func__, phb->hose->global_number,
++			pe->addr, fstate);
+ 	}
  
- 	/* Add to all parents PELT-V */
- 	while (parent) {
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index f91a4e5..02f4bd9 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -327,8 +327,8 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
- 					 PNV_PCI_DIAG_BUF_SIZE);
- 	has_diag = (rc == OPAL_SUCCESS);
+-	/* Dump PHB diag-data for frozen PE */
+-	if (result != EEH_STATE_NOT_SUPPORT &&
+-	    (result & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) !=
+-	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE) &&
++	/*
++	 * If the PE is switching to frozen state for the
++	 * first time, to dump the PHB diag-data.
++	 */
++	if (!(result & EEH_STATE_NOT_SUPPORT) &&
++	    !(result & EEH_STATE_UNAVAILABLE) &&
++	    !(result & EEH_STATE_MMIO_ACTIVE) &&
++	    !(result & EEH_STATE_DMA_ACTIVE)  &&
+ 	    !(pe->state & EEH_PE_ISOLATED)) {
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+-		ioda_eeh_phb_diag(hose);
++		ioda_eeh_phb_diag(phb->hose);
+ 	}
  
--	rc = opal_pci_eeh_freeze_clear(phb->opal_id, pe_no,
--				       OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
-+	rc = opal_pci_eeh_freeze_set(phb->opal_id, pe_no,
-+				     OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 	if (rc) {
- 		pr_warning("PCI %d: Failed to clear EEH freeze state"
- 			   " for PE#%d, err %ld\n",
+ 	return result;
+ }
+ 
++/**
++ * ioda_eeh_get_state - Retrieve the state of PE
++ * @pe: EEH PE
++ *
++ * The PE's state should be retrieved from the PEEV, PEST
++ * IODA tables. Since the OPAL has exported the function
++ * to do it, it'd better to use that.
++ */
++static int ioda_eeh_get_state(struct eeh_pe *pe)
++{
++	struct pnv_phb *phb = pe->phb->private_data;
++
++	/* Sanity check on PE number. PHB PE should have 0 */
++	if (pe->addr < 0 ||
++	    pe->addr >= phb->ioda.total_pe) {
++		pr_warn("%s: PHB#%x-PE#%x out of range [0, %x]\n",
++			__func__, phb->hose->global_number,
++			pe->addr, phb->ioda.total_pe);
++		return EEH_STATE_NOT_SUPPORT;
++	}
++
++	if (pe->type & EEH_PE_PHB)
++		return ioda_eeh_get_phb_state(pe);
++
++	return ioda_eeh_get_pe_state(pe);
++}
++
+ static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
+ {
+ 	s64 rc = OPAL_HARDWARE;
 -- 
 1.9.1
