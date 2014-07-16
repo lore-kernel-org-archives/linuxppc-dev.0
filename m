@@ -1,27 +1,38 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-ig0-f182.google.com (mail-ig0-f182.google.com
- [209.85.213.182])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDA2B1A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:33:42 +1000 (EST)
+Received: from mail-ig0-f176.google.com (mail-ig0-f176.google.com
+ [209.85.213.176])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 689231A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 13:58:25 +1000 (EST)
-Received: by mail-ig0-f182.google.com with SMTP id c1so427402igq.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2014 20:58:22 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 69DFB1400D5
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2014 15:33:42 +1000 (EST)
+Received: by mail-ig0-f176.google.com with SMTP id hn18so3709495igb.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2014 22:33:40 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <53BEF099.5020705@linux.vnet.ibm.com>
-References: <1405018257-35616-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <53BEF099.5020705@linux.vnet.ibm.com>
+In-Reply-To: <53AD8296.6040702@austin.ibm.com>
+References: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
+ <53A30117.3010100@austin.ibm.com>
+ <20140623144806.1348EC40A60@trevor.secretlab.ca>
+ <53A9DB4F.9060708@austin.ibm.com>
+ <20140625202446.77687C40AE6@trevor.secretlab.ca>
+ <53AC7C2D.3040604@austin.ibm.com>
+ <20140627124101.367F7C40E5E@trevor.secretlab.ca>
+ <53AD8296.6040702@austin.ibm.com>
 From: Grant Likely <grant.likely@linaro.org>
-Date: Tue, 15 Jul 2014 21:58:02 -0600
-Message-ID: <CACxGe6uGf3NKsxK9HPYRxPyKfVbR4GYkp5-zkRHN3GRuoqu3Nw@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/pseries: dynamically added OF nodes need to
- call of_node_init
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 15 Jul 2014 23:33:20 -0600
+Message-ID: <CACxGe6u5bVwYZjux9F2xzZSxZOSe37DGemCgcYtmiTP-xenQfg@mail.gmail.com>
+Subject: Re: OF_DYNAMIC node lifecycle
+To: Nathan Fontenot <nfont@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, stable <stable@vger.kernel.org>,
- mdroth@linux.vnet.ibm.com
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +42,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 10, 2014 at 1:59 PM, Nathan Fontenot
-<nfont@linux.vnet.ibm.com> wrote:
-> On 07/10/2014 01:50 PM, Tyrel Datwyler wrote:
->> Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
->> can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
->> by moving the kobect initialization logic out of of_node_add into its own
->> of_node_init function. The inital commit removed the existing kref_init calls
->> in the pseries dlpar code with the assumption kobject initialization would
->> occur in of_node_add. The second commit had the side effect of triggering a
->> BUG_ON during DLPAR, migration and suspend/resume operations as a result of
->> dynamically added nodes being uninitialized.
->>
->> This patch fixes this by adding of_node_init calls in place of the previously
->> removed kref_init calls.
->>
->> Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->
-> Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+I've got another question about powerpc reconfiguration. I was looking
+at the dlpar_configure_connector() function in dlpar.c. I see that the
+function has the ability to process multiple nodes with additional
+sibling and child nodes. It appears to link them into a detached tree
+structure, and the function returns a pointer to the first node.
 
-Acked-by: Grant Likely <grant.likely@linaro.org>
-
-Ben, are you going to take this or should I take it via my tree?
+All of the callers of that function then call dlpar_attach_node(),
+which calls of_attach_node(). However, of_attach_node() only handles a
+single node. It doesn't handle siblings or children. Is this a bug?
+Does the configure connector ever actually receive more than one node
+at once?
 
 g.
 
+On Fri, Jun 27, 2014 at 8:41 AM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> On 06/27/2014 07:41 AM, Grant Likely wrote:
+>> On Thu, 26 Jun 2014 15:01:49 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+>>> On 06/25/2014 03:24 PM, Grant Likely wrote:
+>>>> On Tue, 24 Jun 2014 15:10:55 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+>>>>>>> heh! I have often thought about adding reference counting to device tree
+>>>>>>> properties.
+>>>>>>
+>>>>>> You horrible, horrible man.
+>>>>>
+>>>>> Yes. I are evil :)
+>>>>>
+>>>>> After looking again the work needed to add reference counts to properties
+>>>>> would be huge. The few properties I am concerned with are specific to powerpc
+>>>>> so perhaps just adding an arch specific lock around updating those
+>>>>> properties would work.
+>>>>
+>>>> Which code/properties? I'd like to have a look myself.
+>>>
+>>> /ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
+>>>
+>>> The property is updated in
+>>> arch/powerpc/platforms/pseries/hotplug-memory.c:pseries_update_drconf_memory()
+>>
+>> Specifically, what do you need for the locking? Are you wanting to hold
+>> off additional changes while that function is executing? Pantelis is
+>> adding a mutex for device tree writers. Holding that mutex would prevent
+>> any changes from happening in the tree without affecting readers. Would
+>> that be sufficient?
 >
->> ---
->> V2:
->>  - included stable kernel list on Cc per comment by mpe
->>
->>  arch/powerpc/platforms/pseries/dlpar.c    | 1 +
->>  arch/powerpc/platforms/pseries/reconfig.c | 1 +
->>  2 files changed, 2 insertions(+)
->>
->> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
->> index 022b38e..2d0b4d6 100644
->> --- a/arch/powerpc/platforms/pseries/dlpar.c
->> +++ b/arch/powerpc/platforms/pseries/dlpar.c
->> @@ -86,6 +86,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
->>       }
->>
->>       of_node_set_flag(dn, OF_DYNAMIC);
->> +     of_node_init(dn);
->>
->>       return dn;
->>  }
->> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
->> index 0435bb6..1c0a60d 100644
->> --- a/arch/powerpc/platforms/pseries/reconfig.c
->> +++ b/arch/powerpc/platforms/pseries/reconfig.c
->> @@ -69,6 +69,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
->>
->>       np->properties = proplist;
->>       of_node_set_flag(np, OF_DYNAMIC);
->> +     of_node_init(np);
->>
->>       np->parent = derive_parent(path);
->>       if (IS_ERR(np->parent)) {
->>
+> That would work.
+>
+> -Nathan
 >
