@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC6E31A03C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:55 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E2D21A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:51:33 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 15:50:55 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2F1DE2BB0059
+ Wed, 16 Jul 2014 15:51:25 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 299A72BB0054
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:23 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6G5o6YL9634140
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:07 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6G5oMRa024795
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:22 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6G5Rcbh41943130
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:27:39 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6G5oLXP014088
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:21 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/6] powerpc/eeh: Aux PE data for error log
-Date: Wed, 16 Jul 2014 15:50:19 +1000
-Message-Id: <1405489819-26211-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/6] powerpc/eeh: Selectively enable IO for error log
+Date: Wed, 16 Jul 2014 15:50:15 +1000
+Message-Id: <1405489819-26211-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1405489819-26211-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1405489819-26211-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,218 +37,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch allows PE (struct eeh_pe) instance to have auxillary data,
-whose size is configurable on basis of platform. For PowerNV, the
-auxillary data will be used to cache PHB diag-data for that PE
-(frozen PE or fenced PHB). In turn, we can retrieve the diag-data
-at any later points It's useful for the case of VFIO PCI devices
-where the error log should be cached, and then be retrieved by the
-guest at later point.
+According to the experiment I did, PCI config access is blocked
+on P7IOC frozen PE by hardware, but PHB3 doesn't do that. That
+means we always get 0xFF's while dumping PCI config space of the
+frozen PE on P7IOC. We don't have the problem on PHB3. So we have
+to enable I/O prioir to collecting error log. Otherwise, meaningless
+0xFF's are always returned.
+
+The patch fixes it by EEH flag (EEH_ENABLE_IO_FOR_LOG), which is
+selectively set to indicate the case for: P7IOC on PowerNV platform,
+pSeries platform.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  2 ++
- arch/powerpc/kernel/eeh_pe.c                 | 26 ++++++++++++++++-
- arch/powerpc/platforms/powernv/eeh-ioda.c    | 42 +++++++++++++++++++---------
- arch/powerpc/platforms/powernv/eeh-powernv.c |  3 +-
- 4 files changed, 58 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  9 +++++----
+ arch/powerpc/kernel/eeh.c                    |  2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 16 ++++++++++++++++
+ arch/powerpc/platforms/pseries/eeh_pseries.c |  2 +-
+ 4 files changed, 23 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 494c3ff..9983c3d 100644
+index ca8aada..494c3ff 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -88,6 +88,7 @@ struct eeh_pe {
- 	int false_positives;		/* Times of reported #ff's	*/
- 	atomic_t pass_dev_cnt;		/* Count of passed through devs	*/
- 	struct eeh_pe *parent;		/* Parent PE			*/
-+	void *data;			/* PE auxillary data		*/
- 	struct list_head child_list;	/* Link PE to the child list	*/
- 	struct list_head edevs;		/* Link list of EEH devices	*/
- 	struct list_head child;		/* Child PEs			*/
-@@ -248,6 +249,7 @@ static inline void eeh_serialize_unlock(unsigned long flags)
- #define EEH_MAX_ALLOWED_FREEZES 5
+@@ -34,10 +34,11 @@ struct device_node;
+ #ifdef CONFIG_EEH
  
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
-+void eeh_set_pe_aux_size(int size);
- int eeh_phb_pe_create(struct pci_controller *phb);
- struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
- struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 77632ab..00e3844 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -32,9 +32,24 @@
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
+ /* EEH subsystem flags */
+-#define EEH_ENABLED		0x1	/* EEH enabled		*/
+-#define EEH_FORCE_DISABLED	0x2	/* EEH disabled		*/
+-#define EEH_PROBE_MODE_DEV	0x4	/* From PCI device	*/
+-#define EEH_PROBE_MODE_DEVTREE	0x8	/* From device tree	*/
++#define EEH_ENABLED		0x01	/* EEH enabled		*/
++#define EEH_FORCE_DISABLED	0x02	/* EEH disabled		*/
++#define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
++#define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
++#define EEH_ENABLE_IO_FOR_LOG	0x10	/* Enable IO for log	*/
  
-+static int eeh_pe_aux_size = 0;
- static LIST_HEAD(eeh_phb_pe);
- 
- /**
-+ * eeh_set_pe_aux_size - Set PE auxillary data size
-+ * @size: PE auxillary data size
-+ *
-+ * Set PE auxillary data size
-+ */
-+void eeh_set_pe_aux_size(int size)
-+{
-+	if (size < 0)
-+		return;
-+
-+	eeh_pe_aux_size = size;
-+}
-+
-+/**
-  * eeh_pe_alloc - Allocate PE
-  * @phb: PCI controller
-  * @type: PE type
-@@ -44,9 +59,16 @@ static LIST_HEAD(eeh_phb_pe);
- static struct eeh_pe *eeh_pe_alloc(struct pci_controller *phb, int type)
- {
- 	struct eeh_pe *pe;
-+	size_t alloc_size;
-+
-+	alloc_size = sizeof(struct eeh_pe);
-+	if (eeh_pe_aux_size) {
-+		alloc_size = ALIGN(alloc_size, cache_line_size());
-+		alloc_size += eeh_pe_aux_size;
-+	}
- 
- 	/* Allocate PHB PE */
--	pe = kzalloc(sizeof(struct eeh_pe), GFP_KERNEL);
-+	pe = kzalloc(alloc_size, GFP_KERNEL);
- 	if (!pe) return NULL;
- 
- 	/* Initialize PHB PE */
-@@ -56,6 +78,8 @@ static struct eeh_pe *eeh_pe_alloc(struct pci_controller *phb, int type)
- 	INIT_LIST_HEAD(&pe->child);
- 	INIT_LIST_HEAD(&pe->edevs);
- 
-+	pe->data = (void *)pe + ALIGN(sizeof(struct eeh_pe),
-+				      cache_line_size());
- 	return pe;
- }
- 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index bccdf60..b4624cf 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -236,20 +236,16 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- 	return ret;
- }
- 
--static void ioda_eeh_phb_diag(struct pci_controller *hose)
-+static void ioda_eeh_phb_diag(struct eeh_pe *pe)
- {
--	struct pnv_phb *phb = hose->private_data;
-+	struct pnv_phb *phb = pe->phb->private_data;
- 	long rc;
- 
--	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
-+	rc = opal_pci_get_phb_diag_data2(phb->opal_id, pe->data,
- 					 PNV_PCI_DIAG_BUF_SIZE);
--	if (rc != OPAL_SUCCESS) {
-+	if (rc != OPAL_SUCCESS)
- 		pr_warn("%s: Failed to get diag-data for PHB#%x (%ld)\n",
--			__func__, hose->global_number, rc);
--		return;
--	}
--
--	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
-+			__func__, pe->phb->global_number, rc);
- }
- 
- static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
-@@ -282,7 +278,7 @@ static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
- 			  EEH_STATE_DMA_ENABLED);
- 	} else if (!(pe->state & EEH_PE_ISOLATED)) {
- 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
--		ioda_eeh_phb_diag(phb->hose);
-+		ioda_eeh_phb_diag(pe);
- 	}
- 
- 	return result;
-@@ -380,7 +376,7 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
- 			phb->freeze_pe(phb, pe->addr);
- 
- 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
--		ioda_eeh_phb_diag(phb->hose);
-+		ioda_eeh_phb_diag(pe);
- 	}
- 
- 	return result;
-@@ -623,6 +619,24 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- }
- 
- /**
-+ * ioda_eeh_get_log - Retrieve error log
-+ * @pe: frozen PE
-+ * @severity: permanent or temporary error
-+ * @drv_log: device driver log
-+ * @len: length of device driver log
-+ *
-+ * Retrieve error log, which contains log from device driver
-+ * and firmware.
-+ */
-+int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
-+		     char *drv_log, unsigned long len)
-+{
-+	pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
-+
-+	return 0;
-+}
-+
-+/**
-  * ioda_eeh_configure_bridge - Configure the PCI bridges for the indicated PE
-  * @pe: EEH PE
-  *
-@@ -860,7 +874,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 					"detected, location: %s\n",
- 					hose->global_number,
- 					eeh_pe_loc_get(phb_pe));
--				ioda_eeh_phb_diag(hose);
-+				ioda_eeh_phb_diag(phb_pe);
-+				pnv_pci_dump_phb_diag_data(hose, phb_pe->data);
- 				ret = EEH_NEXT_ERR_NONE;
- 			}
- 
-@@ -908,7 +923,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		    ret == EEH_NEXT_ERR_FENCED_PHB) &&
- 		    !((*pe)->state & EEH_PE_ISOLATED)) {
- 			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
--			ioda_eeh_phb_diag(hose);
-+			ioda_eeh_phb_diag(*pe);
- 		}
- 
- 		/*
-@@ -954,6 +969,7 @@ struct pnv_eeh_ops ioda_eeh_ops = {
- 	.set_option		= ioda_eeh_set_option,
- 	.get_state		= ioda_eeh_get_state,
- 	.reset			= ioda_eeh_reset,
-+	.get_log		= ioda_eeh_get_log,
- 	.configure_bridge	= ioda_eeh_configure_bridge,
- 	.next_error		= ioda_eeh_next_error
- };
+ /*
+  * Delay for PE reset, all in ms
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 65a163f..aa33656 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -252,7 +252,7 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ 	 * 0xFF's is always returned from PCI config space.
+ 	 */
+ 	if (!(pe->type & EEH_PE_PHB)) {
+-		if (eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
++		if (eeh_has_flag(EEH_ENABLE_IO_FOR_LOG))
+ 			eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
+ 		eeh_ops->configure_bridge(pe);
+ 		eeh_pe_restore_bars(pe);
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index f1f5d4b..f5bbc9f 100644
+index ba134ac..740c396 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -326,7 +326,7 @@ static int powernv_eeh_wait_state(struct eeh_pe *pe, int max_wait)
-  * Retrieve the temporary or permanent error from the PE.
+@@ -45,6 +45,9 @@
   */
- static int powernv_eeh_get_log(struct eeh_pe *pe, int severity,
--			char *drv_log, unsigned long len)
-+			       char *drv_log, unsigned long len)
+ static int powernv_eeh_init(void)
  {
- 	struct pci_controller *hose = pe->phb;
- 	struct pnv_phb *phb = hose->private_data;
-@@ -433,6 +433,7 @@ static int __init eeh_powernv_init(void)
- 	if (!machine_is(powernv))
- 		return ret;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++
+ 	/* We require OPALv3 */
+ 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		pr_warning("%s: OPALv3 is required !\n", __func__);
+@@ -54,6 +57,19 @@ static int powernv_eeh_init(void)
+ 	/* Set probe mode */
+ 	eeh_add_flag(EEH_PROBE_MODE_DEV);
  
-+	eeh_set_pe_aux_size(PNV_PCI_DIAG_BUF_SIZE);
- 	ret = eeh_ops_register(&powernv_eeh_ops);
- 	if (!ret)
- 		pr_info("EEH: PowerNV platform initialized\n");
++	/*
++	 * P7IOC blocks PCI config access to frozen PE, but PHB3
++	 * doesn't do that. So we have to selectively enable I/O
++	 * prior to collecting error log.
++	 */
++	list_for_each_entry(hose, &hose_list, list_node) {
++		phb = hose->private_data;
++
++		if (phb->model == PNV_PHB_MODEL_P7IOC)
++			eeh_add_flag(EEH_ENABLE_IO_FOR_LOG);
++		break;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index f173705..1e15cdd 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -128,7 +128,7 @@ static int pseries_eeh_init(void)
+ 	}
+ 
+ 	/* Set EEH probe mode */
+-	eeh_add_flag(EEH_PROBE_MODE_DEVTREE);
++	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+ 
+ 	return 0;
+ }
 -- 
 1.8.3.2
