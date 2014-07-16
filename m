@@ -1,33 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A83E1A020E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:29 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC6E31A03C7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:55 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 15:50:28 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8475F2BB0040
+ Wed, 16 Jul 2014 15:50:55 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2F1DE2BB0059
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:23 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6G5XZ2O55115794
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:33:36 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6G5o6YL9634140
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:07 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6G5oMkv024787
+ s6G5oMRa024795
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:50:22 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/6] powerpc/eeh: Make diag-data not endian dependent
-Date: Wed, 16 Jul 2014 15:50:18 +1000
-Message-Id: <1405489819-26211-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 6/6] powerpc/eeh: Aux PE data for error log
+Date: Wed, 16 Jul 2014 15:50:19 +1000
+Message-Id: <1405489819-26211-7-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1405489819-26211-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1405489819-26211-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Guo Chao <yan@linux.vnet.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,384 +37,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's followup of commit ddf0322a ("powerpc/powernv: Fix endianness
-problems in EEH"). The patch helps to get non-endian-dependent
-diag-data.
+The patch allows PE (struct eeh_pe) instance to have auxillary data,
+whose size is configurable on basis of platform. For PowerNV, the
+auxillary data will be used to cache PHB diag-data for that PE
+(frozen PE or fenced PHB). In turn, we can retrieve the diag-data
+at any later points It's useful for the case of VFIO PCI devices
+where the error log should be cached, and then be retrieved by the
+guest at later point.
 
-Cc: Guo Chao <yan@linux.vnet.ibm.com>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h           | 128 +++++++++++++++---------------
- arch/powerpc/platforms/powernv/eeh-ioda.c |  51 +++++++-----
- arch/powerpc/platforms/powernv/pci.c      |  68 ++++++++++------
- 3 files changed, 139 insertions(+), 108 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  2 ++
+ arch/powerpc/kernel/eeh_pe.c                 | 26 ++++++++++++++++-
+ arch/powerpc/platforms/powernv/eeh-ioda.c    | 42 +++++++++++++++++++---------
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  3 +-
+ 4 files changed, 58 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index edbfe1c..f0b5b40 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -520,40 +520,40 @@ enum {
- };
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 494c3ff..9983c3d 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -88,6 +88,7 @@ struct eeh_pe {
+ 	int false_positives;		/* Times of reported #ff's	*/
+ 	atomic_t pass_dev_cnt;		/* Count of passed through devs	*/
+ 	struct eeh_pe *parent;		/* Parent PE			*/
++	void *data;			/* PE auxillary data		*/
+ 	struct list_head child_list;	/* Link PE to the child list	*/
+ 	struct list_head edevs;		/* Link list of EEH devices	*/
+ 	struct list_head child;		/* Child PEs			*/
+@@ -248,6 +249,7 @@ static inline void eeh_serialize_unlock(unsigned long flags)
+ #define EEH_MAX_ALLOWED_FREEZES 5
  
- struct OpalIoP7IOCErrorData {
--	uint16_t type;
-+	__be16 type;
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
++void eeh_set_pe_aux_size(int size);
+ int eeh_phb_pe_create(struct pci_controller *phb);
+ struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb);
+ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev);
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 77632ab..00e3844 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -32,9 +32,24 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
  
- 	/* GEM */
--	uint64_t gemXfir;
--	uint64_t gemRfir;
--	uint64_t gemRirqfir;
--	uint64_t gemMask;
--	uint64_t gemRwof;
-+	__be64 gemXfir;
-+	__be64 gemRfir;
-+	__be64 gemRirqfir;
-+	__be64 gemMask;
-+	__be64 gemRwof;
++static int eeh_pe_aux_size = 0;
+ static LIST_HEAD(eeh_phb_pe);
  
- 	/* LEM */
--	uint64_t lemFir;
--	uint64_t lemErrMask;
--	uint64_t lemAction0;
--	uint64_t lemAction1;
--	uint64_t lemWof;
-+	__be64 lemFir;
-+	__be64 lemErrMask;
-+	__be64 lemAction0;
-+	__be64 lemAction1;
-+	__be64 lemWof;
+ /**
++ * eeh_set_pe_aux_size - Set PE auxillary data size
++ * @size: PE auxillary data size
++ *
++ * Set PE auxillary data size
++ */
++void eeh_set_pe_aux_size(int size)
++{
++	if (size < 0)
++		return;
++
++	eeh_pe_aux_size = size;
++}
++
++/**
+  * eeh_pe_alloc - Allocate PE
+  * @phb: PCI controller
+  * @type: PE type
+@@ -44,9 +59,16 @@ static LIST_HEAD(eeh_phb_pe);
+ static struct eeh_pe *eeh_pe_alloc(struct pci_controller *phb, int type)
+ {
+ 	struct eeh_pe *pe;
++	size_t alloc_size;
++
++	alloc_size = sizeof(struct eeh_pe);
++	if (eeh_pe_aux_size) {
++		alloc_size = ALIGN(alloc_size, cache_line_size());
++		alloc_size += eeh_pe_aux_size;
++	}
  
- 	union {
- 		struct OpalIoP7IOCRgcErrorData {
--			uint64_t rgcStatus;		/* 3E1C10 */
--			uint64_t rgcLdcp;		/* 3E1C18 */
-+			__be64 rgcStatus;	/* 3E1C10 */
-+			__be64 rgcLdcp;		/* 3E1C18 */
- 		}rgc;
- 		struct OpalIoP7IOCBiErrorData {
--			uint64_t biLdcp0;		/* 3C0100, 3C0118 */
--			uint64_t biLdcp1;		/* 3C0108, 3C0120 */
--			uint64_t biLdcp2;		/* 3C0110, 3C0128 */
--			uint64_t biFenceStatus;		/* 3C0130, 3C0130 */
-+			__be64 biLdcp0;		/* 3C0100, 3C0118 */
-+			__be64 biLdcp1;		/* 3C0108, 3C0120 */
-+			__be64 biLdcp2;		/* 3C0110, 3C0128 */
-+			__be64 biFenceStatus;	/* 3C0130, 3C0130 */
+ 	/* Allocate PHB PE */
+-	pe = kzalloc(sizeof(struct eeh_pe), GFP_KERNEL);
++	pe = kzalloc(alloc_size, GFP_KERNEL);
+ 	if (!pe) return NULL;
  
--			uint8_t  biDownbound;		/* BI Downbound or Upbound */
-+			    u8 biDownbound;	/* BI Downbound or Upbound */
- 		}bi;
- 		struct OpalIoP7IOCCiErrorData {
--			uint64_t ciPortStatus;		/* 3Dn008 */
--			uint64_t ciPortLdcp;		/* 3Dn010 */
-+			__be64 ciPortStatus;	/* 3Dn008 */
-+			__be64 ciPortLdcp;	/* 3Dn010 */
+ 	/* Initialize PHB PE */
+@@ -56,6 +78,8 @@ static struct eeh_pe *eeh_pe_alloc(struct pci_controller *phb, int type)
+ 	INIT_LIST_HEAD(&pe->child);
+ 	INIT_LIST_HEAD(&pe->edevs);
  
--			uint8_t	 ciPort;		/* Index of CI port: 0/1 */
-+			    u8 ciPort;		/* Index of CI port: 0/1 */
- 		}ci;
- 	};
- };
-@@ -585,60 +585,60 @@ struct OpalIoPhbErrorCommon {
- struct OpalIoP7IOCPhbErrorData {
- 	struct OpalIoPhbErrorCommon common;
++	pe->data = (void *)pe + ALIGN(sizeof(struct eeh_pe),
++				      cache_line_size());
+ 	return pe;
+ }
  
--	uint32_t brdgCtl;
-+	__be32 brdgCtl;
- 
- 	// P7IOC utl regs
--	uint32_t portStatusReg;
--	uint32_t rootCmplxStatus;
--	uint32_t busAgentStatus;
-+	__be32 portStatusReg;
-+	__be32 rootCmplxStatus;
-+	__be32 busAgentStatus;
- 
- 	// P7IOC cfg regs
--	uint32_t deviceStatus;
--	uint32_t slotStatus;
--	uint32_t linkStatus;
--	uint32_t devCmdStatus;
--	uint32_t devSecStatus;
-+	__be32 deviceStatus;
-+	__be32 slotStatus;
-+	__be32 linkStatus;
-+	__be32 devCmdStatus;
-+	__be32 devSecStatus;
- 
- 	// cfg AER regs
--	uint32_t rootErrorStatus;
--	uint32_t uncorrErrorStatus;
--	uint32_t corrErrorStatus;
--	uint32_t tlpHdr1;
--	uint32_t tlpHdr2;
--	uint32_t tlpHdr3;
--	uint32_t tlpHdr4;
--	uint32_t sourceId;
-+	__be32 rootErrorStatus;
-+	__be32 uncorrErrorStatus;
-+	__be32 corrErrorStatus;
-+	__be32 tlpHdr1;
-+	__be32 tlpHdr2;
-+	__be32 tlpHdr3;
-+	__be32 tlpHdr4;
-+	__be32 sourceId;
- 
--	uint32_t rsv3;
-+	__be32 rsv3;
- 
- 	// Record data about the call to allocate a buffer.
--	uint64_t errorClass;
--	uint64_t correlator;
-+	__be64 errorClass;
-+	__be64 correlator;
- 
- 	//P7IOC MMIO Error Regs
--	uint64_t p7iocPlssr;                // n120
--	uint64_t p7iocCsr;                  // n110
--	uint64_t lemFir;                    // nC00
--	uint64_t lemErrorMask;              // nC18
--	uint64_t lemWOF;                    // nC40
--	uint64_t phbErrorStatus;            // nC80
--	uint64_t phbFirstErrorStatus;       // nC88
--	uint64_t phbErrorLog0;              // nCC0
--	uint64_t phbErrorLog1;              // nCC8
--	uint64_t mmioErrorStatus;           // nD00
--	uint64_t mmioFirstErrorStatus;      // nD08
--	uint64_t mmioErrorLog0;             // nD40
--	uint64_t mmioErrorLog1;             // nD48
--	uint64_t dma0ErrorStatus;           // nD80
--	uint64_t dma0FirstErrorStatus;      // nD88
--	uint64_t dma0ErrorLog0;             // nDC0
--	uint64_t dma0ErrorLog1;             // nDC8
--	uint64_t dma1ErrorStatus;           // nE00
--	uint64_t dma1FirstErrorStatus;      // nE08
--	uint64_t dma1ErrorLog0;             // nE40
--	uint64_t dma1ErrorLog1;             // nE48
--	uint64_t pestA[OPAL_P7IOC_NUM_PEST_REGS];
--	uint64_t pestB[OPAL_P7IOC_NUM_PEST_REGS];
-+	__be64 p7iocPlssr;                // n120
-+	__be64 p7iocCsr;                  // n110
-+	__be64 lemFir;                    // nC00
-+	__be64 lemErrorMask;              // nC18
-+	__be64 lemWOF;                    // nC40
-+	__be64 phbErrorStatus;            // nC80
-+	__be64 phbFirstErrorStatus;       // nC88
-+	__be64 phbErrorLog0;              // nCC0
-+	__be64 phbErrorLog1;              // nCC8
-+	__be64 mmioErrorStatus;           // nD00
-+	__be64 mmioFirstErrorStatus;      // nD08
-+	__be64 mmioErrorLog0;             // nD40
-+	__be64 mmioErrorLog1;             // nD48
-+	__be64 dma0ErrorStatus;           // nD80
-+	__be64 dma0FirstErrorStatus;      // nD88
-+	__be64 dma0ErrorLog0;             // nDC0
-+	__be64 dma0ErrorLog1;             // nDC8
-+	__be64 dma1ErrorStatus;           // nE00
-+	__be64 dma1FirstErrorStatus;      // nE08
-+	__be64 dma1ErrorLog0;             // nE40
-+	__be64 dma1ErrorLog1;             // nE48
-+	__be64 pestA[OPAL_P7IOC_NUM_PEST_REGS];
-+	__be64 pestB[OPAL_P7IOC_NUM_PEST_REGS];
- };
- 
- struct OpalIoPhb3ErrorData {
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index edec622..bccdf60 100644
+index bccdf60..b4624cf 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
 +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -639,18 +639,24 @@ static int ioda_eeh_configure_bridge(struct eeh_pe *pe)
- static void ioda_eeh_hub_diag_common(struct OpalIoP7IOCErrorData *data)
+@@ -236,20 +236,16 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
+ 	return ret;
+ }
+ 
+-static void ioda_eeh_phb_diag(struct pci_controller *hose)
++static void ioda_eeh_phb_diag(struct eeh_pe *pe)
  {
- 	/* GEM */
--	pr_info("  GEM XFIR:        %016llx\n", data->gemXfir);
--	pr_info("  GEM RFIR:        %016llx\n", data->gemRfir);
--	pr_info("  GEM RIRQFIR:     %016llx\n", data->gemRirqfir);
--	pr_info("  GEM Mask:        %016llx\n", data->gemMask);
--	pr_info("  GEM RWOF:        %016llx\n", data->gemRwof);
-+	if (data->gemXfir || data->gemRfir ||
-+	    data->gemRirqfir || data->gemMask || data->gemRwof)
-+		pr_info("  GEM: %016llx %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->gemXfir),
-+			be64_to_cpu(data->gemRfir),
-+			be64_to_cpu(data->gemRirqfir),
-+			be64_to_cpu(data->gemMask),
-+			be64_to_cpu(data->gemRwof));
+-	struct pnv_phb *phb = hose->private_data;
++	struct pnv_phb *phb = pe->phb->private_data;
+ 	long rc;
  
- 	/* LEM */
--	pr_info("  LEM FIR:         %016llx\n", data->lemFir);
--	pr_info("  LEM Error Mask:  %016llx\n", data->lemErrMask);
--	pr_info("  LEM Action 0:    %016llx\n", data->lemAction0);
--	pr_info("  LEM Action 1:    %016llx\n", data->lemAction1);
--	pr_info("  LEM WOF:         %016llx\n", data->lemWof);
-+	if (data->lemFir || data->lemErrMask ||
-+	    data->lemAction0 || data->lemAction1 || data->lemWof)
-+		pr_info("  LEM: %016llx %016llx %016llx %016llx %016llx\n",
-+			be64_to_cpu(data->lemFir),
-+			be64_to_cpu(data->lemErrMask),
-+			be64_to_cpu(data->lemAction0),
-+			be64_to_cpu(data->lemAction1),
-+			be64_to_cpu(data->lemWof));
+-	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
++	rc = opal_pci_get_phb_diag_data2(phb->opal_id, pe->data,
+ 					 PNV_PCI_DIAG_BUF_SIZE);
+-	if (rc != OPAL_SUCCESS) {
++	if (rc != OPAL_SUCCESS)
+ 		pr_warn("%s: Failed to get diag-data for PHB#%x (%ld)\n",
+-			__func__, hose->global_number, rc);
+-		return;
+-	}
+-
+-	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
++			__func__, pe->phb->global_number, rc);
  }
  
- static void ioda_eeh_hub_diag(struct pci_controller *hose)
-@@ -670,24 +676,31 @@ static void ioda_eeh_hub_diag(struct pci_controller *hose)
- 	case OPAL_P7IOC_DIAG_TYPE_RGC:
- 		pr_info("P7IOC diag-data for RGC\n\n");
- 		ioda_eeh_hub_diag_common(data);
--		pr_info("  RGC Status:      %016llx\n", data->rgc.rgcStatus);
--		pr_info("  RGC LDCP:        %016llx\n", data->rgc.rgcLdcp);
-+		if (data->rgc.rgcStatus || data->rgc.rgcLdcp)
-+			pr_info("  RGC: %016llx %016llx\n",
-+				be64_to_cpu(data->rgc.rgcStatus),
-+				be64_to_cpu(data->rgc.rgcLdcp));
- 		break;
- 	case OPAL_P7IOC_DIAG_TYPE_BI:
- 		pr_info("P7IOC diag-data for BI %s\n\n",
- 			data->bi.biDownbound ? "Downbound" : "Upbound");
- 		ioda_eeh_hub_diag_common(data);
--		pr_info("  BI LDCP 0:       %016llx\n", data->bi.biLdcp0);
--		pr_info("  BI LDCP 1:       %016llx\n", data->bi.biLdcp1);
--		pr_info("  BI LDCP 2:       %016llx\n", data->bi.biLdcp2);
--		pr_info("  BI Fence Status: %016llx\n", data->bi.biFenceStatus);
-+		if (data->bi.biLdcp0 || data->bi.biLdcp1 ||
-+		    data->bi.biLdcp2 || data->bi.biFenceStatus)
-+			pr_info("  BI:  %016llx %016llx %016llx %016llx\n",
-+				be64_to_cpu(data->bi.biLdcp0),
-+				be64_to_cpu(data->bi.biLdcp1),
-+				be64_to_cpu(data->bi.biLdcp2),
-+				be64_to_cpu(data->bi.biFenceStatus));
- 		break;
- 	case OPAL_P7IOC_DIAG_TYPE_CI:
--		pr_info("P7IOC diag-data for CI Port %d\\nn",
-+		pr_info("P7IOC diag-data for CI Port %d\n\n",
- 			data->ci.ciPort);
- 		ioda_eeh_hub_diag_common(data);
--		pr_info("  CI Port Status:  %016llx\n", data->ci.ciPortStatus);
--		pr_info("  CI Port LDCP:    %016llx\n", data->ci.ciPortLdcp);
-+		if (data->ci.ciPortStatus || data->ci.ciPortLdcp)
-+			pr_info("  CI:  %016llx %016llx\n",
-+				be64_to_cpu(data->ci.ciPortStatus),
-+				be64_to_cpu(data->ci.ciPortLdcp));
- 		break;
- 	case OPAL_P7IOC_DIAG_TYPE_MISC:
- 		pr_info("P7IOC diag-data for MISC\n\n");
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 353e35b..97f515c 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -132,61 +132,78 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
- 
- 	data = (struct OpalIoP7IOCPhbErrorData *)common;
- 	pr_info("P7IOC PHB#%d Diag-data (Version: %d)\n",
--		hose->global_number, common->version);
-+		hose->global_number, be32_to_cpu(common->version));
- 
- 	if (data->brdgCtl)
- 		pr_info("brdgCtl:     %08x\n",
--			data->brdgCtl);
-+			be32_to_cpu(data->brdgCtl));
- 	if (data->portStatusReg || data->rootCmplxStatus ||
- 	    data->busAgentStatus)
- 		pr_info("UtlSts:      %08x %08x %08x\n",
--			data->portStatusReg, data->rootCmplxStatus,
--			data->busAgentStatus);
-+			be32_to_cpu(data->portStatusReg),
-+			be32_to_cpu(data->rootCmplxStatus),
-+			be32_to_cpu(data->busAgentStatus));
- 	if (data->deviceStatus || data->slotStatus   ||
- 	    data->linkStatus   || data->devCmdStatus ||
- 	    data->devSecStatus)
- 		pr_info("RootSts:     %08x %08x %08x %08x %08x\n",
--			data->deviceStatus, data->slotStatus,
--			data->linkStatus, data->devCmdStatus,
--			data->devSecStatus);
-+			be32_to_cpu(data->deviceStatus),
-+			be32_to_cpu(data->slotStatus),
-+			be32_to_cpu(data->linkStatus),
-+			be32_to_cpu(data->devCmdStatus),
-+			be32_to_cpu(data->devSecStatus));
- 	if (data->rootErrorStatus   || data->uncorrErrorStatus ||
- 	    data->corrErrorStatus)
- 		pr_info("RootErrSts:  %08x %08x %08x\n",
--			data->rootErrorStatus, data->uncorrErrorStatus,
--			data->corrErrorStatus);
-+			be32_to_cpu(data->rootErrorStatus),
-+			be32_to_cpu(data->uncorrErrorStatus),
-+			be32_to_cpu(data->corrErrorStatus));
- 	if (data->tlpHdr1 || data->tlpHdr2 ||
- 	    data->tlpHdr3 || data->tlpHdr4)
- 		pr_info("RootErrLog:  %08x %08x %08x %08x\n",
--			data->tlpHdr1, data->tlpHdr2,
--			data->tlpHdr3, data->tlpHdr4);
-+			be32_to_cpu(data->tlpHdr1),
-+			be32_to_cpu(data->tlpHdr2),
-+			be32_to_cpu(data->tlpHdr3),
-+			be32_to_cpu(data->tlpHdr4));
- 	if (data->sourceId || data->errorClass ||
- 	    data->correlator)
- 		pr_info("RootErrLog1: %08x %016llx %016llx\n",
--			data->sourceId, data->errorClass,
--			data->correlator);
-+			be32_to_cpu(data->sourceId),
-+			be64_to_cpu(data->errorClass),
-+			be64_to_cpu(data->correlator));
- 	if (data->p7iocPlssr || data->p7iocCsr)
- 		pr_info("PhbSts:      %016llx %016llx\n",
--			data->p7iocPlssr, data->p7iocCsr);
-+			be64_to_cpu(data->p7iocPlssr),
-+			be64_to_cpu(data->p7iocCsr));
- 	if (data->lemFir)
- 		pr_info("Lem:         %016llx %016llx %016llx\n",
--			data->lemFir, data->lemErrorMask,
--			data->lemWOF);
-+			be64_to_cpu(data->lemFir),
-+			be64_to_cpu(data->lemErrorMask),
-+			be64_to_cpu(data->lemWOF));
- 	if (data->phbErrorStatus)
- 		pr_info("PhbErr:      %016llx %016llx %016llx %016llx\n",
--			data->phbErrorStatus, data->phbFirstErrorStatus,
--			data->phbErrorLog0, data->phbErrorLog1);
-+			be64_to_cpu(data->phbErrorStatus),
-+			be64_to_cpu(data->phbFirstErrorStatus),
-+			be64_to_cpu(data->phbErrorLog0),
-+			be64_to_cpu(data->phbErrorLog1));
- 	if (data->mmioErrorStatus)
- 		pr_info("OutErr:      %016llx %016llx %016llx %016llx\n",
--			data->mmioErrorStatus, data->mmioFirstErrorStatus,
--			data->mmioErrorLog0, data->mmioErrorLog1);
-+			be64_to_cpu(data->mmioErrorStatus),
-+			be64_to_cpu(data->mmioFirstErrorStatus),
-+			be64_to_cpu(data->mmioErrorLog0),
-+			be64_to_cpu(data->mmioErrorLog1));
- 	if (data->dma0ErrorStatus)
- 		pr_info("InAErr:      %016llx %016llx %016llx %016llx\n",
--			data->dma0ErrorStatus, data->dma0FirstErrorStatus,
--			data->dma0ErrorLog0, data->dma0ErrorLog1);
-+			be64_to_cpu(data->dma0ErrorStatus),
-+			be64_to_cpu(data->dma0FirstErrorStatus),
-+			be64_to_cpu(data->dma0ErrorLog0),
-+			be64_to_cpu(data->dma0ErrorLog1));
- 	if (data->dma1ErrorStatus)
- 		pr_info("InBErr:      %016llx %016llx %016llx %016llx\n",
--			data->dma1ErrorStatus, data->dma1FirstErrorStatus,
--			data->dma1ErrorLog0, data->dma1ErrorLog1);
-+			be64_to_cpu(data->dma1ErrorStatus),
-+			be64_to_cpu(data->dma1FirstErrorStatus),
-+			be64_to_cpu(data->dma1ErrorLog0),
-+			be64_to_cpu(data->dma1ErrorLog1));
- 
- 	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
- 		if ((data->pestA[i] >> 63) == 0 &&
-@@ -194,7 +211,8 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
- 			continue;
- 
- 		pr_info("PE[%3d] A/B: %016llx %016llx\n",
--			i, data->pestA[i], data->pestB[i]);
-+			i, be64_to_cpu(data->pestA[i]),
-+			be64_to_cpu(data->pestB[i]));
+ static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
+@@ -282,7 +278,7 @@ static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
+ 			  EEH_STATE_DMA_ENABLED);
+ 	} else if (!(pe->state & EEH_PE_ISOLATED)) {
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+-		ioda_eeh_phb_diag(phb->hose);
++		ioda_eeh_phb_diag(pe);
  	}
+ 
+ 	return result;
+@@ -380,7 +376,7 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
+ 			phb->freeze_pe(phb, pe->addr);
+ 
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+-		ioda_eeh_phb_diag(phb->hose);
++		ioda_eeh_phb_diag(pe);
+ 	}
+ 
+ 	return result;
+@@ -623,6 +619,24 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
  }
  
+ /**
++ * ioda_eeh_get_log - Retrieve error log
++ * @pe: frozen PE
++ * @severity: permanent or temporary error
++ * @drv_log: device driver log
++ * @len: length of device driver log
++ *
++ * Retrieve error log, which contains log from device driver
++ * and firmware.
++ */
++int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
++		     char *drv_log, unsigned long len)
++{
++	pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
++
++	return 0;
++}
++
++/**
+  * ioda_eeh_configure_bridge - Configure the PCI bridges for the indicated PE
+  * @pe: EEH PE
+  *
+@@ -860,7 +874,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 					"detected, location: %s\n",
+ 					hose->global_number,
+ 					eeh_pe_loc_get(phb_pe));
+-				ioda_eeh_phb_diag(hose);
++				ioda_eeh_phb_diag(phb_pe);
++				pnv_pci_dump_phb_diag_data(hose, phb_pe->data);
+ 				ret = EEH_NEXT_ERR_NONE;
+ 			}
+ 
+@@ -908,7 +923,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 		    ret == EEH_NEXT_ERR_FENCED_PHB) &&
+ 		    !((*pe)->state & EEH_PE_ISOLATED)) {
+ 			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
+-			ioda_eeh_phb_diag(hose);
++			ioda_eeh_phb_diag(*pe);
+ 		}
+ 
+ 		/*
+@@ -954,6 +969,7 @@ struct pnv_eeh_ops ioda_eeh_ops = {
+ 	.set_option		= ioda_eeh_set_option,
+ 	.get_state		= ioda_eeh_get_state,
+ 	.reset			= ioda_eeh_reset,
++	.get_log		= ioda_eeh_get_log,
+ 	.configure_bridge	= ioda_eeh_configure_bridge,
+ 	.next_error		= ioda_eeh_next_error
+ };
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index f1f5d4b..f5bbc9f 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -326,7 +326,7 @@ static int powernv_eeh_wait_state(struct eeh_pe *pe, int max_wait)
+  * Retrieve the temporary or permanent error from the PE.
+  */
+ static int powernv_eeh_get_log(struct eeh_pe *pe, int severity,
+-			char *drv_log, unsigned long len)
++			       char *drv_log, unsigned long len)
+ {
+ 	struct pci_controller *hose = pe->phb;
+ 	struct pnv_phb *phb = hose->private_data;
+@@ -433,6 +433,7 @@ static int __init eeh_powernv_init(void)
+ 	if (!machine_is(powernv))
+ 		return ret;
+ 
++	eeh_set_pe_aux_size(PNV_PCI_DIAG_BUF_SIZE);
+ 	ret = eeh_ops_register(&powernv_eeh_ops);
+ 	if (!ret)
+ 		pr_info("EEH: PowerNV platform initialized\n");
 -- 
 1.8.3.2
