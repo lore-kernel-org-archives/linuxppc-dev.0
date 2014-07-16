@@ -1,24 +1,41 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
- [IPv6:2607:f8b0:4001:c05::230])
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7CFB81A028F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 08:27:12 +1000 (EST)
+Received: from mail-ig0-f177.google.com (mail-ig0-f177.google.com
+ [209.85.213.177])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 72B9C1A0257
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 08:20:31 +1000 (EST)
-Received: by mail-ig0-f176.google.com with SMTP id hn18so4885028igb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 15:20:27 -0700 (PDT)
-Date: Wed, 16 Jul 2014 16:20:24 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH 2/2] PCI/MSI: Remove arch_msi_check_device()
-Message-ID: <20140716222024.GE14366@google.com>
-References: <cover.1405160163.git.agordeev@redhat.com>
- <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
+ by ozlabs.org (Postfix) with ESMTPS id 014B1140082
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 08:27:11 +1000 (EST)
+Received: by mail-ig0-f177.google.com with SMTP id hn18so1674761igb.4
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2014 15:27:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <CACxGe6v8BgEcTRB-ftPVkR6Tqs3GPw_0fVuwFgff_VqawoocGA@mail.gmail.com>
+References: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
+ <53A30117.3010100@austin.ibm.com>
+ <20140623144806.1348EC40A60@trevor.secretlab.ca>
+ <53A9DB4F.9060708@austin.ibm.com>
+ <20140625202446.77687C40AE6@trevor.secretlab.ca>
+ <53AC7C2D.3040604@austin.ibm.com>
+ <20140627124101.367F7C40E5E@trevor.secretlab.ca>
+ <53AD8296.6040702@austin.ibm.com>
+ <CACxGe6u5bVwYZjux9F2xzZSxZOSe37DGemCgcYtmiTP-xenQfg@mail.gmail.com>
+ <53C6C4BE.6010301@gmail.com>
+ <CACxGe6v8BgEcTRB-ftPVkR6Tqs3GPw_0fVuwFgff_VqawoocGA@mail.gmail.com>
+From: Grant Likely <grant.likely@linaro.org>
+Date: Wed, 16 Jul 2014 16:26:49 -0600
+Message-ID: <CACxGe6scb291V9rjz2P48FxCEtXEEtOkgiQms=nZ_wdOf_cqHA@mail.gmail.com>
+Subject: Re: OF_DYNAMIC node lifecycle
+To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,65 +45,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 12, 2014 at 01:21:08PM +0200, Alexander Gordeev wrote:
-> There are no archs that override arch_msi_check_device()
-> hook. Remove it as it is completely redundant.
-> 
-> If an arch would need to check MSI/MSI-X possibility for a
-> device it should make it within arch_setup_msi_irqs() hook.
-> 
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-pci@vger.kernel.org
-> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-> ---
->  drivers/pci/msi.c   |   49 +++++++++++++------------------------------------
->  include/linux/msi.h |    3 ---
->  2 files changed, 13 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index 13f3d30..19ac058 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -56,16 +56,6 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
->  	chip->teardown_irq(chip, irq);
->  }
->  
-> -int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
-> -{
-> -	struct msi_chip *chip = dev->bus->msi;
-> -
-> -	if (!chip || !chip->check_device)
-> -		return 0;
-> -
-> -	return chip->check_device(chip, dev, nvec, type);
-> -}
-> -
->  int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->  {
->  	struct msi_desc *entry;
-> @@ -809,22 +799,23 @@ out_free:
->  }
->  
->  /**
-> - * pci_msi_check_device - check whether MSI may be enabled on a device
-> + * msi_check_device - check whether MSI may be enabled on a device
->   * @dev: pointer to the pci_dev data structure of MSI device function
->   * @nvec: how many MSIs have been requested ?
-> - * @type: are we checking for MSI or MSI-X ?
->   *
->   * Look at global flags, the device itself, and its parent buses
->   * to determine if MSI/-X are supported for the device. If MSI/-X is
->   * supported return 0, else return an error code.
->   **/
-> -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-> +static int msi_check_device(struct pci_dev *dev, int nvec)
+On Wed, Jul 16, 2014 at 2:57 PM, Grant Likely <grant.likely@linaro.org> wrote:
+> On Wed, Jul 16, 2014 at 12:30 PM, Tyrel Datwyler
+> <turtle.in.the.kernel@gmail.com> wrote:
+>> On 07/15/2014 10:33 PM, Grant Likely wrote:
+>>> I've got another question about powerpc reconfiguration. I was looking
+>>> at the dlpar_configure_connector() function in dlpar.c. I see that the
+>>> function has the ability to process multiple nodes with additional
+>>> sibling and child nodes. It appears to link them into a detached tree
+>>> structure, and the function returns a pointer to the first node.
+>>>
+>>> All of the callers of that function then call dlpar_attach_node(),
+>>> which calls of_attach_node(). However, of_attach_node() only handles a
+>>> single node. It doesn't handle siblings or children. Is this a bug?
+>>> Does the configure connector ever actually receive more than one node
+>>> at once?
+>>
+>> Yes, it is sometimes the case we will get a tree structure back of more
+>> than one node. Under the proc interface implementation this just worked.
+>> With the move to sysfs it appears we have a regression here. What makes
+>> more sense here, for us to walk the tree calling of_attach_node, or to
+>> move such tree walking logic into of_attach_node? From what I can tell
+>> we are the only consumers of of_attach_node.
+>
+> That is very shortly going to change. The overlay code also uses
+> of_attach_node(). I can make of_attach_node() recurse over
+> descendants, but I'm also considering moving the powerpc code over to
+> the of_changeset series that Panto and I are working on.
+>
+> Either way, the handling of multiple nodes should be common code. I
+> think the easiest is to put the recursion into of_attach_node(), at
+> least for fixing the bug. It can be reworked later.
 
-I think "check_device" is a terrible name because it really doesn't
-give a clue about what it's doing or what the return value means.
-Since you're removing the external usage (arch_msi_check_device) and
-this one is static, this would be a good time to fix it.  Maybe
-"pci_msi_supported()" or something?
+On pseries, do notifiers ever fail? ie. Does the reconfig code ever
+object to a DT change and prevent it from being applied?
 
-I *love* the idea of getting rid of this much code!
-
-Bjorn
+g.
