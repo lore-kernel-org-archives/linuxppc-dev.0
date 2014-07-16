@@ -1,39 +1,39 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-we0-x22f.google.com (mail-we0-x22f.google.com
+ [IPv6:2a00:1450:400c:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4541C1A0910
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 22:27:08 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 17:57:05 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 65B9E3940063
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 17:57:03 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6GCRKKV59703326
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 17:57:20 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6GCR0XD031010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 17:57:01 +0530
-Date: Wed, 16 Jul 2014 22:26:53 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: David Laight <David.Laight@aculab.com>
-Subject: Re: [PATCH 3/6] powerpc/eeh: Reduce lines of log dump
-Message-ID: <20140716122653.GB5313@shangw>
-References: <1405489819-26211-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1405489819-26211-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D17274752@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1D661A0012
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 23:28:49 +1000 (EST)
+Received: by mail-we0-f175.google.com with SMTP id t60so936818wes.20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 06:28:44 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 16 Jul 2014 15:28:38 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Subject: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+Message-ID: <20140716132838.GA18597@gmail.com>
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <1405394370.17767.7.camel@concordia>
+ <1405408602.9343.75.camel@pasglop> <53C4FDC8.9050801@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D17274752@AcuExch.aculab.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- 'Gavin Shan' <gwshan@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+In-Reply-To: <53C4FDC8.9050801@hitachi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,45 +43,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 16, 2014 at 08:30:55AM +0000, David Laight wrote:
->From: Gavin Shan
->> The patch prints 4 PCIE or AER config registers each line, which
->> is part of the EEH log so that it looks a bit more compact.
->...
->> -		for (i=0; i<=8; i++) {
->> +		for (i=0, j=0; i<=8; i++) {
->>  			eeh_ops->read_config(dn, cap+4*i, 4, &cfg);
->>  			n += scnprintf(buf+n, len-n, "%02x:%x\n", 4*i, cfg);
->> -			pr_warn("EEH: PCI-E %02x: %08x\n", i, cfg);
->> +
->> +			if ((i % 4) == 0) {
->> +				memset(buffer, 0, sizeof(buffer));
 
->
->You don't need a memset().
->I would add:
->				if (i != 0)
->					pr_warn("%s\n", buffer);
->and move the other pr_warn() outside the loop.
->
+* Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
 
-Thanks, It looks better. I'll fix.
+> (2014/07/15 16:16), Benjamin Herrenschmidt wrote:
+> > On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
+> > 
+> >>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> >>> Reported-by: Tony Luck <tony.luck@gmail.com>
+> >>> Tested-by: Tony Luck <tony.luck@intel.com>
+> >>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >>
+> >> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+> >> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+> >>
+> >> Ben, can you take this in your tree?
+> > 
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > That looks more like generic material. Do we have a kprobes maintainer ?
+> > Andrew, do you want to take this ?
+> 
+> Yeah, I usually use Ingo's tip tree for kprobes maintenance.
+> Ingo, could you pull this as urgent-for-linus patch?
 
->> +				j = scnprintf(buffer, sizeof(buffer),
->> +					      "EEH: PCI-E %02x: %08x ",
->> +					      4*i, cfg);
->> +			} else {
->> +				j += scnprintf(buffer+j, sizeof(buffer)-j,
->> +					       "%08x ", cfg);
->> +			}
->> +
->> +			if ((i % 4) == 3 || i >= 8)
->> +				pr_warn("%s\n", buffer);
->>  		}
->>  	}
->
->	David
->
+Mind resending it in a separate thread with all acks added, etc?
 
 Thanks,
-Gavin
+
+	Ingo
