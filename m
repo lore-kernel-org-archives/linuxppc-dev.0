@@ -1,29 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F085C1A02E7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:11:51 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2D76A1400B6
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 21:11:50 +1000 (EST)
-Message-ID: <1405595380.25310.21.camel@pasglop>
-Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Thu, 17 Jul 2014 21:09:40 +1000
-In-Reply-To: <53C7A4FA.4030600@linux.vnet.ibm.com>
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
- <53996E41.4070309@linux.vnet.ibm.com> <53C7A4FA.4030600@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, james.hogan@imgtec.com,
- avagin@openvz.org, Paul.Clothier@imgtec.com, peterz@infradead.org,
- palves@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
- dhowells@redhat.com, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
- davej@redhat.com, akpm@linux-foundation.org, davem@davemloft.net
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
+ by lists.ozlabs.org (Postfix) with ESMTP id 45D101A0325
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:18:06 +1000 (EST)
+Message-ID: <53C7B0E6.1050503@hitachi.com>
+Date: Thu, 17 Jul 2014 20:17:58 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RESEND PATCH v5] [BUGFIX] kprobes: Fix "Failed to find blacklist"
+ error on ia64 and ppc64
+References: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
+ <20140717093832.GB4232@gmail.com>
+In-Reply-To: <20140717093832.GB4232@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Tony Luck <tony.luck@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> >> Outstanding Issues
-> >> ==================
-> >> (1) Running DSCR register value inside a transaction does not seem to be saved
-> >>     at thread.dscr when the process stops for ptrace examination.
-> > 
-> > Hey Ben,
-> > 
-> > Any updates on this patch series ?
+(2014/07/17 18:38), Ingo Molnar wrote:
 > 
-> Ben,
+> * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
 > 
-> Any updates on this patch series ?
+>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+>> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+> 
+> Looks good, but this is not a valid SOB sequence: if Suzuki wrote the 
+> patch then he should be the first SOB (and should have a From line as 
+> well), if he acked it along the way then it should be an Acked-by - or 
+> Reviewed-by.
 
-I haven't had a chance to review yet, I was hoping somebody else would..
+Ah, OK, so I'll add his name as Fixed-by:.
 
-Have you made any progress vs. the DSCR outstanding issue mentioned
-above ?
+> 
+> This fix should be in v3.16 as well, right?
 
-Cheers,
-Ben.
+Right, it should be.
+
+Thank you,
+
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
