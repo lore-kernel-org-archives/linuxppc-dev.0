@@ -1,40 +1,22 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
- [IPv6:2a00:1450:400c:c05::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0EFE41A000B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:41:01 +1000 (EST)
-Received: by mail-wi0-f173.google.com with SMTP id f8so6745668wiw.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 02:40:54 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Thu, 17 Jul 2014 11:40:45 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: Re: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-Message-ID: <20140717094045.GC4232@gmail.com>
-References: <1404276081.7254.1.camel@concordia>
- <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
- <1405394370.17767.7.camel@concordia>
- <1405408602.9343.75.camel@pasglop> <53C4FDC8.9050801@hitachi.com>
- <20140716132838.GA18597@gmail.com> <53C776ED.3050001@hitachi.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B22151A02B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 20:22:10 +1000 (EST)
+Date: Thu, 17 Jul 2014 12:22:52 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 2/2] PCI/MSI: Remove arch_msi_check_device()
+Message-ID: <20140717102252.GA17987@dhcp-26-207.brq.redhat.com>
+References: <cover.1405160163.git.agordeev@redhat.com>
+ <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
+ <20140716222024.GE14366@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53C776ED.3050001@hitachi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20140716222024.GE14366@google.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,47 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
-
-> (2014/07/16 22:28), Ingo Molnar wrote:
-> > 
-> > * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
-> > 
-> >> (2014/07/15 16:16), Benjamin Herrenschmidt wrote:
-> >>> On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
-> >>>
-> >>>>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> >>>>> Reported-by: Tony Luck <tony.luck@gmail.com>
-> >>>>> Tested-by: Tony Luck <tony.luck@intel.com>
-> >>>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >>>>
-> >>>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-> >>>> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
-> >>>>
-> >>>> Ben, can you take this in your tree?
-> >>>
-> >>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>>
-> >>> That looks more like generic material. Do we have a kprobes maintainer ?
-> >>> Andrew, do you want to take this ?
-> >>
-> >> Yeah, I usually use Ingo's tip tree for kprobes maintenance.
-> >> Ingo, could you pull this as urgent-for-linus patch?
-> > 
-> > Mind resending it in a separate thread with all acks added, etc?
+On Wed, Jul 16, 2014 at 04:20:24PM -0600, Bjorn Helgaas wrote:
+> > @@ -809,22 +799,23 @@ out_free:
+> >  }
+> >  
+> >  /**
+> > - * pci_msi_check_device - check whether MSI may be enabled on a device
+> > + * msi_check_device - check whether MSI may be enabled on a device
+> >   * @dev: pointer to the pci_dev data structure of MSI device function
+> >   * @nvec: how many MSIs have been requested ?
+> > - * @type: are we checking for MSI or MSI-X ?
+> >   *
+> >   * Look at global flags, the device itself, and its parent buses
+> >   * to determine if MSI/-X are supported for the device. If MSI/-X is
+> >   * supported return 0, else return an error code.
+> >   **/
+> > -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> > +static int msi_check_device(struct pci_dev *dev, int nvec)
 > 
-> OK, I'll resend that soon.
-> BTW, I missed Suzuki's Signed-off-by in this version,
-> I'd like to recover that since he made a big bugfix on this.
+> I think "check_device" is a terrible name because it really doesn't
+> give a clue about what it's doing or what the return value means.
+> Since you're removing the external usage (arch_msi_check_device) and
+> this one is static, this would be a good time to fix it.  Maybe
+> "pci_msi_supported()" or something?
 
-That kind of credit can be added as:
+What about pci_can_enable_msi() or pci_msi_can_enable() or msi_can_enable()?
 
-  Fixed-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+> I *love* the idea of getting rid of this much code!
+> 
+> Bjorn
 
-and by also adding a sentence to the log message (outside of the 
-version changelogs which get stripped ususally).
-
-Thanks,
-
-	Ingo
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
