@@ -1,31 +1,38 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B21D1A0372
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 08:06:19 +1000 (EST)
-Date: Thu, 17 Jul 2014 15:06:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] CMA: generalize CMA reserved area management
- functionality (fixup)
-Message-Id: <20140717150615.32c48786b6bdbc880bdc5ed4@linux-foundation.org>
-In-Reply-To: <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
-References: <53C78ED7.7030002@samsung.com>
- <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EFD31A01EB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:09:40 +1000 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 17 Jul 2014 17:09:35 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EB71B3E40048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 17:09:31 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6HN8JA310027424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 01:08:19 +0200
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6HN9UJm021511
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 17:09:31 -0600
+Date: Thu, 17 Jul 2014 16:09:23 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [RFC 0/2] Memoryless nodes and kworker
+Message-ID: <20140717230923.GA32660@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,72 +42,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jul 2014 11:36:07 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+[Apologies for the large Cc list, but I believe we have the following
+interested parties:
 
-> MAX_CMA_AREAS is used by other subsystems (i.e. arch/arm/mm/dma-mapping.c),
-> so we need to provide correct definition even if CMA is disabled.
-> This patch fixes this issue.
-> 
-> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  include/linux/cma.h | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/include/linux/cma.h b/include/linux/cma.h
-> index 9a18a2b1934c..c077635cad76 100644
-> --- a/include/linux/cma.h
-> +++ b/include/linux/cma.h
-> @@ -5,7 +5,11 @@
->   * There is always at least global CMA area and a few optional
->   * areas configured in kernel .config.
->   */
-> +#ifdef CONFIG_CMA
->  #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
-> +#else
-> +#define MAX_CMA_AREAS	(0)
-> +#endif
->  
->  struct cma;
+x86 (recently posted memoryless node support)
+ia64 (existing memoryless node support)
+ppc (existing memoryless node support)
+previous discussion of how to solve Anton's issue with slab usage
+workqueue contributors/maintainers]
 
-Joonsoo already fixed this up, a bit differently:
-http://ozlabs.org/~akpm/mmots/broken-out/cma-generalize-cma-reserved-area-management-functionality-fix.patch
+There is an issue currently where NUMA information is used on powerpc
+(and possibly ia64) before it has been read from the device-tree, which
+leads to large slab consumption with CONFIG_SLUB and memoryless nodes.
 
-Which approach makes more sense?
+While testing memoryless nodes on PowerKVM guests with the patches in
+this series, with a guest topology of
+    
+    available: 2 nodes (0-1)
+    node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49
+    node 0 size: 0 MB
+    node 0 free: 0 MB
+    node 1 cpus: 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99
+    node 1 size: 16336 MB
+    node 1 free: 15329 MB
+    node distances:
+    node   0   1
+      0:  10  40
+      1:  40  10
+    
+the slab consumption decreases from
+    
+    Slab:             932416 kB
+    SUnreclaim:       902336 kB
+    
+to
+    
+    Slab:             395264 kB
+    SUnreclaim:       359424 kB
+    
+And we see a corresponding increase in the slab efficiency from
+    
+    slab                                   mem     objs    slabs
+                                          used   active   active
+    ------------------------------------------------------------
+    kmalloc-16384                       337 MB   11.28%  100.00%
+    task_struct                         288 MB    9.93%  100.00%
+    
+to
+    
+    slab                                   mem     objs    slabs
+                                          used   active   active
+    ------------------------------------------------------------
+    kmalloc-16384                        37 MB  100.00%  100.00%
+    task_struct                          31 MB  100.00%  100.00%
 
-
-
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: CMA: fix ARM build failure related to MAX_CMA_AREAS definition
-
-If CMA is disabled, CONFIG_CMA_AREAS isn't defined so compile error
-happens. To fix it, define MAX_CMA_AREAS if CONFIG_CMA_AREAS
-isn't defined.
-
-Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- include/linux/cma.h |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff -puN include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix include/linux/cma.h
---- a/include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix
-+++ a/include/linux/cma.h
-@@ -5,8 +5,14 @@
-  * There is always at least global CMA area and a few optional
-  * areas configured in kernel .config.
-  */
-+#ifdef CONFIG_CMA_AREAS
- #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
- 
-+#else
-+#define MAX_CMA_AREAS	(0)
-+
-+#endif
-+
- struct cma;
- 
- extern phys_addr_t cma_get_base(struct cma *cma);
-_
+It turns out we see this large slab usage due to using the wrong NUMA
+information when creating kthreads.
+    
+Two changes are required, one of which is in the workqueue code and one
+of which is in the powerpc initialization. Note that ia64 may want to
+consider something similar.
