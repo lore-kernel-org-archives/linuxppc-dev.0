@@ -1,50 +1,22 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ECC61A03EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:23:27 +1000 (EST)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DEE53140173
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:26 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Fri, 18 Jul 2014 09:23:26 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BDA4C2BB0052
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:20 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6HN6VsW66584796
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:06:31 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6HNNJC2019789
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:20 +1000
-Message-ID: <53C85AE6.7080600@au1.ibm.com>
-Date: Fri, 18 Jul 2014 09:23:18 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF0B21A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:52:20 +1000 (EST)
+Date: Fri, 18 Jul 2014 09:52:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] Use the POWER8 Micro Partition Prefetch Engine in KVM
+ HV on POWER8
+Message-ID: <20140717235214.GB8513@iris.ozlabs.ibm.com>
+References: <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
- <53996E41.4070309@linux.vnet.ibm.com> <53C7A4FA.4030600@linux.vnet.ibm.com>
- <1405595380.25310.21.camel@pasglop>
- <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
-In-Reply-To: <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
- "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
- Pedro Alves <palves@redhat.com>, oleg@redhat.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dhowells@redhat.com,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, davej@redhat.com,
- akpm@linux-foundation.org, tglx@linutronix.de,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,45 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/07/14 21:14, Michael Neuling wrote:
-> 
-> On Jul 17, 2014 9:11 PM, "Benjamin Herrenschmidt"
-> <benh@kernel.crashing.org <mailto:benh@kernel.crashing.org>> wrote:
->>
->> > >
->> > >> Outstanding Issues
->> > >> ==================
->> > >> (1) Running DSCR register value inside a transaction does not
-> seem to be saved
->> > >>     at thread.dscr when the process stops for ptrace examination.
->> > >
->> > > Hey Ben,
->> > >
->> > > Any updates on this patch series ?
->> >
->> > Ben,
->> >
->> > Any updates on this patch series ?
->>
->> I haven't had a chance to review yet, I was hoping somebody else would..
->>
->> Have you made any progress vs. the DSCR outstanding issue mentioned
->> above ?
-> 
-> The DSCR issue should be resolved with Sam Bobroff's recent  DSCR
-> fixes.  I've not tested them though.
-> 
-> Actually... Sam did you review this series?
-> 
-> Mikey
-> 
+On Thu, Jul 17, 2014 at 01:19:57PM +1000, Stewart Smith wrote:
 
-I did, and applying "powerpc: Correct DSCR during TM context switch"
-corrected the DSCR value in the test program (the one in the patch notes
-for this series).
+> The POWER8 processor has a Micro Partition Prefetch Engine, which is
+> a fancy way of saying "has way to store and load contents of L2 or
+> L2+MRU way of L3 cache". We initiate the storing of the log (list of
+> addresses) using the logmpp instruction and start restore by writing
+> to a SPR.
+> 
+> The logmpp instruction takes parameters in a single 64bit register:
+> - starting address of the table to store log of L2/L2+L3 cache contents
+>   - 32kb for L2
+>   - 128kb for L2+L3
+>   - Aligned relative to maximum size of the table (32kb or 128kb)
+> - Log control (no-op, L2 only, L2 and L3, abort logout)
+> 
+> We should abort any ongoing logging before initiating one.
 
-(In fact, IIRC, the reason for my patch set was the bug exposed by this
-one ;-)
+Do we ever want to wait for ongoing logging to finish?
 
-Cheers,
-Sam.
+[snip]
+
+> +#if defined(CONFIG_PPC_64K_PAGES)
+> +#define MPP_BUFFER_ORDER	0
+> +#elif defined(CONFIG_PPC_4K_PAGES)
+> +#define MPP_BUFFER_ORDER	4
+
+Why 4 not 3?  You only need 32kB, don't you?
+
+> +static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
+> +{
+> +	struct kvmppc_vcore *vcore;
+> +
+> +	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
+> +
+> +	if (vcore == NULL)
+> +		return NULL;
+> +
+> +	INIT_LIST_HEAD(&vcore->runnable_threads);
+> +	spin_lock_init(&vcore->lock);
+> +	init_waitqueue_head(&vcore->wq);
+> +	vcore->preempt_tb = TB_NIL;
+> +	vcore->lpcr = kvm->arch.lpcr;
+> +	vcore->first_vcpuid = core * threads_per_core;
+> +	vcore->kvm = kvm;
+
+Is there a particular reason why you need to pull this code out into a
+separate function?  If so, it would be a little nicer if you did that
+in a separate patch, to make it easier to see that the code motion
+changes nothing.
+
+> @@ -1590,9 +1645,16 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+>  
+>  	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
+>  
+> +	if (vc->mpp_buffer_is_valid)
+> +		ppc_start_restoring_l2_cache(vc);
+> +
+>  	__kvmppc_vcore_entry();
+>  
+>  	spin_lock(&vc->lock);
+> +
+> +	if (vc->mpp_buffer)
+> +		ppc_start_saving_l2_cache(vc);
+
+I wonder if we would get better performance improvements if we kicked
+this off earlier, for instance before we save all the FP/VSX state and
+switch the MMU?  I guess that could be a subsequent patch.
+
+Paul.
