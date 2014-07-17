@@ -1,25 +1,29 @@
 Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-we0-x22b.google.com (mail-we0-x22b.google.com
- [IPv6:2a00:1450:400c:c03::22b])
+Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
+ [IPv6:2a00:1450:400c:c05::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C67CD1A0009
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:38:49 +1000 (EST)
-Received: by mail-we0-f171.google.com with SMTP id p10so2202588wes.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 02:38:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0EFE41A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:41:01 +1000 (EST)
+Received: by mail-wi0-f173.google.com with SMTP id f8so6745668wiw.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 02:40:54 -0700 (PDT)
 Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Thu, 17 Jul 2014 11:38:32 +0200
+Date: Thu, 17 Jul 2014 11:40:45 +0200
 From: Ingo Molnar <mingo@kernel.org>
 To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: Re: [RESEND PATCH v5] [BUGFIX] kprobes: Fix "Failed to find
+Subject: Re: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
  blacklist" error on ia64 and ppc64
-Message-ID: <20140717093832.GB4232@gmail.com>
-References: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
+Message-ID: <20140717094045.GC4232@gmail.com>
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <1405394370.17767.7.camel@concordia>
+ <1405408602.9343.75.camel@pasglop> <53C4FDC8.9050801@hitachi.com>
+ <20140716132838.GA18597@gmail.com> <53C776ED.3050001@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
+In-Reply-To: <53C776ED.3050001@hitachi.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Tony Luck <tony.luck@gmail.com>,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
  anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
@@ -28,7 +32,7 @@ Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
  yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
  Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
  Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,15 +47,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
 
-> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+> (2014/07/16 22:28), Ingo Molnar wrote:
+> > 
+> > * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
+> > 
+> >> (2014/07/15 16:16), Benjamin Herrenschmidt wrote:
+> >>> On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
+> >>>
+> >>>>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> >>>>> Reported-by: Tony Luck <tony.luck@gmail.com>
+> >>>>> Tested-by: Tony Luck <tony.luck@intel.com>
+> >>>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >>>>
+> >>>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+> >>>> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+> >>>>
+> >>>> Ben, can you take this in your tree?
+> >>>
+> >>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >>>
+> >>> That looks more like generic material. Do we have a kprobes maintainer ?
+> >>> Andrew, do you want to take this ?
+> >>
+> >> Yeah, I usually use Ingo's tip tree for kprobes maintenance.
+> >> Ingo, could you pull this as urgent-for-linus patch?
+> > 
+> > Mind resending it in a separate thread with all acks added, etc?
+> 
+> OK, I'll resend that soon.
+> BTW, I missed Suzuki's Signed-off-by in this version,
+> I'd like to recover that since he made a big bugfix on this.
 
-Looks good, but this is not a valid SOB sequence: if Suzuki wrote the 
-patch then he should be the first SOB (and should have a From line as 
-well), if he acked it along the way then it should be an Acked-by - or 
-Reviewed-by.
+That kind of credit can be added as:
 
-This fix should be in v3.16 as well, right?
+  Fixed-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+
+and by also adding a sentence to the log message (outside of the 
+version changelogs which get stripped ususally).
 
 Thanks,
 
