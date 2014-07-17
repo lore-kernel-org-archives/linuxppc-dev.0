@@ -1,54 +1,31 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 62F2C1A01B7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 01:09:48 +1000 (EST)
-Date: Thu, 17 Jul 2014 16:06:57 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Message-ID: <20140717150657.GY17528@sirena.org.uk>
-References: <1405606399-26608-1-git-send-email-tomeu.vizoso@collabora.com>
- <1405606399-26608-3-git-send-email-tomeu.vizoso@collabora.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8c7vHYlrYOebzgj6"
-In-Reply-To: <1405606399-26608-3-git-send-email-tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v4 2/6] ASoC: mxs-saif: fix mixed use of public and
- provider clk API
-Cc: Andrew Lunn <andrew@lunn.ch>, Ulf Hansson <ulf.hansson@linaro.org>,
- Prashant Gaikwad <pgaikwad@nvidia.com>, Tony Lindgren <tony@atomide.com>,
- Tomasz Figa <t.figa@samsung.com>, alsa-devel@alsa-project.org,
- Jaroslav Kysela <perex@perex.cz>, Thierry Reding <thierry.reding@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>,
- Emilio =?iso-8859-1?Q?L=F3pez?= <emilio@elopez.com.ar>,
- Takashi Iwai <tiwai@suse.de>, Michal Simek <michal.simek@xilinx.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Kevin Hilman <khilman@deeprootsystems.com>,
- linux-arm-kernel@lists.infradead.org, patches@opensource.wolfsonmicro.com,
- Viresh Kumar <viresh.linux@gmail.com>, David Brown <davidb@codeaurora.org>,
- Anatolij Gustschin <agust@denx.de>, Dinh Nguyen <dinguyen@altera.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
- spear-devel@list.st.com, Barry Song <baohua@kernel.org>,
- linux-samsung-soc@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- Ben Dooks <ben-linux@fluff.org>, linux-tegra@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org,
- Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@freescale.com>,
- Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>,
- Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
- rabin@rab.in, Bryan Huntsman <bryanh@codeaurora.org>,
- Santosh Shilimkar <santosh.shilimkar@ti.com>,
- =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>,
- Maxime Ripard <maxime.ripard@free-electrons.com>, linux-media@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Javier Martinez Canillas <javier.martinez@collabora.co.uk>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B21D1A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 08:06:19 +1000 (EST)
+Date: Thu, 17 Jul 2014 15:06:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] CMA: generalize CMA reserved area management
+ functionality (fixup)
+Message-Id: <20140717150615.32c48786b6bdbc880bdc5ed4@linux-foundation.org>
+In-Reply-To: <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
+References: <53C78ED7.7030002@samsung.com>
+ <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,37 +35,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 17 Jul 2014 11:36:07 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
 
---8c7vHYlrYOebzgj6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> MAX_CMA_AREAS is used by other subsystems (i.e. arch/arm/mm/dma-mapping.c),
+> so we need to provide correct definition even if CMA is disabled.
+> This patch fixes this issue.
+> 
+> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  include/linux/cma.h | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/include/linux/cma.h b/include/linux/cma.h
+> index 9a18a2b1934c..c077635cad76 100644
+> --- a/include/linux/cma.h
+> +++ b/include/linux/cma.h
+> @@ -5,7 +5,11 @@
+>   * There is always at least global CMA area and a few optional
+>   * areas configured in kernel .config.
+>   */
+> +#ifdef CONFIG_CMA
+>  #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
+> +#else
+> +#define MAX_CMA_AREAS	(0)
+> +#endif
+>  
+>  struct cma;
 
-On Thu, Jul 17, 2014 at 04:13:15PM +0200, Tomeu Vizoso wrote:
-> In preparation to changing the clk provider API to use struct clk_core instead
-> of struct clk.
+Joonsoo already fixed this up, a bit differently:
+http://ozlabs.org/~akpm/mmots/broken-out/cma-generalize-cma-reserved-area-management-functionality-fix.patch
 
-Acked-by: Mark Brown <broonie@linaro.org>
+Which approach makes more sense?
 
---8c7vHYlrYOebzgj6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAEBAgAGBQJTx+aOAAoJELSic+t+oim9kbYP/1XSKsTieBgyUHwsZVX4t8n8
-RCddHvCUUKM1bGm4/zJcI3EcCy6vjvbt3QkgHSv6JD6ot0jyRo9mzoWEZiUz9lDn
-D8JSITKut5tP1Th1bi+yla0Zm2wf56JModA9CBUT0B/BnOkqxgpTlIua5JmkWV6m
-x+8e98J/rY68uX69MD2RBhCEMfx8UkHlQ3/nWpFUigsHAOogELhIV+ChFSuVq070
-3qbLOzM9Hvbf8clKA0K2c1elyHlG6it+gtSk+6cQs3KH2YU23oi4Yd4b++mGxtsa
-MHVca5khElB8RM06cEsacgpB6QDj5ya17QBnEwZa2Y/FT15mKNCHKCDqWHyh8YEm
-K3phLMwcpdk2hoDeCt2WCSPpCQmRj2xFxG9BG6M6LEM4eHTx1HWb+Hu5uJvi2qQY
-XQi5+3bECfElzmZxgQjfJ867VKHefRiX1nabOE6qdoposm5GoUiga5VpiCYuDc13
-9hsCMpEpSg++Y2G6l7cDlvPDaLnIgGAQ2jLFn/Utfb6BRZtHkQ5zP9jKDecWH7C8
-I7uGjfwnxn7dRlof42mrkPHstNvWGX5hQfhcggQdIeCOiDRfW/Z9u0lZFRTH5h1R
-mKldh7ssgHvYFoMSsBq2tVHZmqAXHHw19OnFQBB2ZPBKJPgsiU1OF1cJQ5i3QJRM
-RF2NVRXsIgDlPYLdPWZE
-=S67s
------END PGP SIGNATURE-----
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: CMA: fix ARM build failure related to MAX_CMA_AREAS definition
 
---8c7vHYlrYOebzgj6--
+If CMA is disabled, CONFIG_CMA_AREAS isn't defined so compile error
+happens. To fix it, define MAX_CMA_AREAS if CONFIG_CMA_AREAS
+isn't defined.
+
+Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/cma.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff -puN include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix include/linux/cma.h
+--- a/include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix
++++ a/include/linux/cma.h
+@@ -5,8 +5,14 @@
+  * There is always at least global CMA area and a few optional
+  * areas configured in kernel .config.
+  */
++#ifdef CONFIG_CMA_AREAS
+ #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
+ 
++#else
++#define MAX_CMA_AREAS	(0)
++
++#endif
++
+ struct cma;
+ 
+ extern phys_addr_t cma_get_base(struct cma *cma);
+_
