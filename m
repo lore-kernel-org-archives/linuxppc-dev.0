@@ -1,32 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2881A1A0299
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2AF941A02A8
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:41:47 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 17 Jul 2014 14:41:46 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 432352CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:41:45 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6H4fSFX11141492
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:41:29 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6H4fino000631
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7DFF6357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:41:44 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6H4IxFr5636484
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:19:00 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6H4fhYw009990
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:41:44 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/6] powerpc/eeh: Selectively enable IO for error log
-Date: Thu, 17 Jul 2014 14:41:39 +1000
-Message-Id: <1405572103-32152-3-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1405572103-32152-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1405572103-32152-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/6] EEH Cleanup
+Date: Thu, 17 Jul 2014 14:41:37 +1000
+Message-Id: <1405572103-32152-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,104 +35,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the experiment I did, PCI config access is blocked
-on P7IOC frozen PE by hardware, but PHB3 doesn't do that. That
-means we always get 0xFF's while dumping PCI config space of the
-frozen PE on P7IOC. We don't have the problem on PHB3. So we have
-to enable I/O prioir to collecting error log. Otherwise, meaningless
-0xFF's are always returned.
+The patchset is EEH cleanup and expected to be merged during 3.17
+window. The the patchset is expected to be applied after:
 
-The patch fixes it by EEH flag (EEH_ENABLE_IO_FOR_LOG), which is
-selectively set to indicate the case for: P7IOC on PowerNV platform,
-pSeries platform.
+   | EEH support for guest
+   | 2 more bug fixes for EEH support for guest
+   | M64 related EEH changes
+   | 2 bug fixes from Mike Qiu
+   |
+   +-> The current patchset
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h               |  9 +++++----
- arch/powerpc/kernel/eeh.c                    |  2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 16 ++++++++++++++++
- arch/powerpc/platforms/pseries/eeh_pseries.c |  2 +-
- 4 files changed, 23 insertions(+), 6 deletions(-)
+Except the following 2 patches, all patches are for cleanup:
+Refactoring EEH log, replacing pr_warning() with pr_warn(),
+reducing length of EEH log dump etc:
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index ca8aada..494c3ff 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -34,10 +34,11 @@ struct device_node;
- #ifdef CONFIG_EEH
- 
- /* EEH subsystem flags */
--#define EEH_ENABLED		0x1	/* EEH enabled		*/
--#define EEH_FORCE_DISABLED	0x2	/* EEH disabled		*/
--#define EEH_PROBE_MODE_DEV	0x4	/* From PCI device	*/
--#define EEH_PROBE_MODE_DEVTREE	0x8	/* From device tree	*/
-+#define EEH_ENABLED		0x01	/* EEH enabled		*/
-+#define EEH_FORCE_DISABLED	0x02	/* EEH disabled		*/
-+#define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
-+#define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
-+#define EEH_ENABLE_IO_FOR_LOG	0x10	/* Enable IO for log	*/
- 
- /*
-  * Delay for PE reset, all in ms
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 65a163f..aa33656 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -252,7 +252,7 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
- 	 * 0xFF's is always returned from PCI config space.
- 	 */
- 	if (!(pe->type & EEH_PE_PHB)) {
--		if (eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
-+		if (eeh_has_flag(EEH_ENABLE_IO_FOR_LOG))
- 			eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
- 		eeh_ops->configure_bridge(pe);
- 		eeh_pe_restore_bars(pe);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index ba134ac..740c396 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -45,6 +45,9 @@
-  */
- static int powernv_eeh_init(void)
- {
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+
- 	/* We require OPALv3 */
- 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		pr_warning("%s: OPALv3 is required !\n", __func__);
-@@ -54,6 +57,19 @@ static int powernv_eeh_init(void)
- 	/* Set probe mode */
- 	eeh_add_flag(EEH_PROBE_MODE_DEV);
- 
-+	/*
-+	 * P7IOC blocks PCI config access to frozen PE, but PHB3
-+	 * doesn't do that. So we have to selectively enable I/O
-+	 * prior to collecting error log.
-+	 */
-+	list_for_each_entry(hose, &hose_list, list_node) {
-+		phb = hose->private_data;
-+
-+		if (phb->model == PNV_PHB_MODEL_P7IOC)
-+			eeh_add_flag(EEH_ENABLE_IO_FOR_LOG);
-+		break;
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index f173705..1e15cdd 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -128,7 +128,7 @@ static int pseries_eeh_init(void)
- 	}
- 
- 	/* Set EEH probe mode */
--	eeh_add_flag(EEH_PROBE_MODE_DEVTREE);
-+	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
- 
- 	return 0;
- }
+PATCH[2/6]: We have to enable I/O path before collecting EEH log.
+            Otherwise, 0xFF is always returned from PCI config
+            of devices in frozen PE. the problem is only existing
+            on PHB3.
+PATCH[6/6]: It's something related to EEH guest log retrieval.
+            Currently, all PEs in one specific PHB are sharing
+            diag-data blob for storing EEH log. It's possible
+            for diag-data blob overwritten before being collected
+            by guest. The patch introduce auxillary data for PE,
+            which is maintained by backend. On PowerNV, that's used
+            for EEH log.
+
+Changelog
+=========
+v1 -> v2:
+	* Simplified condition to output buffer in PATCH[3/6].
+
+Gavin Shan (6):
+  powerpc/eeh: Refactor EEH flag accessors
+  powerpc/eeh: Selectively enable IO for error log
+  powerpc/eeh: Reduce lines of log dump
+  powerpc/eeh: Replace pr_warning() with pr_warn()
+  powerpc/eeh: Make diag-data not endian dependent
+  powerpc/eeh: Aux PE data for error log
+
+ arch/powerpc/include/asm/eeh.h               |  43 ++++-----
+ arch/powerpc/include/asm/opal.h              | 128 +++++++++++++--------------
+ arch/powerpc/kernel/eeh.c                    |  74 +++++++++++-----
+ arch/powerpc/kernel/eeh_cache.c              |   9 +-
+ arch/powerpc/kernel/eeh_dev.c                |   3 +-
+ arch/powerpc/kernel/eeh_driver.c             |  16 ++--
+ arch/powerpc/kernel/eeh_pe.c                 |  29 +++++-
+ arch/powerpc/platforms/powernv/eeh-ioda.c    | 103 +++++++++++++--------
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  32 +++++--
+ arch/powerpc/platforms/powernv/pci-ioda.c    |   1 -
+ arch/powerpc/platforms/powernv/pci.c         |  68 ++++++++------
+ arch/powerpc/platforms/pseries/eeh_pseries.c |  32 +++----
+ 12 files changed, 325 insertions(+), 213 deletions(-)
+
 -- 
 1.8.3.2
