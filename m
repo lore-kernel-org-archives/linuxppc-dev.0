@@ -1,28 +1,20 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by lists.ozlabs.org (Postfix) with ESMTP id 422E61A00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:44:22 +1000 (EST)
-Subject: [PATCH v6] [BUGFIX] kprobes: Fix "Failed to find blacklist" error
- on ia64 and ppc64
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-To: Ingo Molnar <mingo@kernel.org>
-Date: Thu, 17 Jul 2014 11:44:11 +0000
-Message-ID: <20140717114411.13401.2632.stgit@kbuild-fedora.novalocal>
+Return-Path: <hs@denx.de>
+Received: from submit1.sa.ew.hu (submit1.sa.ew.hu [212.108.200.71])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3E3631A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:44:21 +1000 (EST)
+Message-ID: <53C7B70F.5040904@denx.de>
+Date: Thu, 17 Jul 2014 13:44:15 +0200
+From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Tony Luck <tony.luck@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: spi, spi_fsl-spi.c not working?
+References: <53C79351.2080406@denx.de> <20140717113129.GU17528@sirena.org.uk>
+In-Reply-To: <20140717113129.GU17528@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andreas Larsson <andreas@gaisler.com>, linux-spi@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,109 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ia64 and ppc64, the function pointer does not point the
-entry address of the function, but the address of function
-discriptor (which contains the entry address and misc
-data.) Since the kprobes passes the function pointer stored
-by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
-initalizing its blacklist, it fails and reports many errors
-as below.
+Hello Mark,
 
-  Failed to find blacklist 0001013168300000
-  Failed to find blacklist 0001013000f0a000
-  Failed to find blacklist 000101315f70a000
-  Failed to find blacklist 000101324c80a000
-  Failed to find blacklist 0001013063f0a000
-  Failed to find blacklist 000101327800a000
-  Failed to find blacklist 0001013277f0a000
-  Failed to find blacklist 000101315a70a000
-  Failed to find blacklist 0001013277e0a000
-  Failed to find blacklist 000101305a20a000
-  Failed to find blacklist 0001013277d0a000
-  Failed to find blacklist 00010130bdc0a000
-  Failed to find blacklist 00010130dc20a000
-  Failed to find blacklist 000101309a00a000
-  Failed to find blacklist 0001013277c0a000
-  Failed to find blacklist 0001013277b0a000
-  Failed to find blacklist 0001013277a0a000
-  Failed to find blacklist 000101327790a000
-  Failed to find blacklist 000101303140a000
-  Failed to find blacklist 0001013a3280a000
+Am 17.07.2014 13:31, schrieb Mark Brown:
+> On Thu, Jul 17, 2014 at 11:11:45AM +0200, Heiko Schocher wrote:
+>
+>> Is it maybe the missing "support for the SPI subsystem's queue SPI messages"?
+>
+> It shouldn't be that, that's still optional (sadly).
 
-To fix this bug, this uses arch_deref_entry_point() to get
-the function entry address for kallsyms_lookup_size_offset()
-instead of the raw function pointer.
-Suzuki also pointed out that blacklist entries should also
-be updated by that too.
+Thanks for this info! I digging in it ...
 
-Changes in v6:
- - Update patch description.
- - Remove "#include <linux/types.h>" which is no more needed
-   because we don't use new function_entry() macro any more.
-
-Changes in v5:
- - Use arch_deref_entry_point() instead of function_entry().
-
-Changes in v4:
- - Add kernel_text_address() check for verifying the address.
- - Moved on the latest linus tree.
-
-Changes in v3:
- - Fix a bug to get blacklist address based on function entry
-   instead of function descriptor. (Suzuki's work, Thanks!)
-
-Changes in V2:
- - Use function_entry() macro when lookin up symbols instead
-   of storing it.
- - Update for the latest -next.
-
-Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Fixed-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Reported-by: Tony Luck <tony.luck@gmail.com>
-Tested-by: Tony Luck <tony.luck@intel.com>
-Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Kevin Hao <haokexin@gmail.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
----
- kernel/kprobes.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 3214289..734e9a7 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -2037,19 +2037,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
- {
- 	unsigned long *iter;
- 	struct kprobe_blacklist_entry *ent;
--	unsigned long offset = 0, size = 0;
-+	unsigned long entry, offset = 0, size = 0;
- 
- 	for (iter = start; iter < end; iter++) {
--		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
--			pr_err("Failed to find blacklist %p\n", (void *)*iter);
-+		entry = arch_deref_entry_point((void *)*iter);
-+
-+		if (!kernel_text_address(entry) ||
-+		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
-+			pr_err("Failed to find blacklist at %p\n",
-+				(void *)entry);
- 			continue;
- 		}
- 
- 		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
- 		if (!ent)
- 			return -ENOMEM;
--		ent->start_addr = *iter;
--		ent->end_addr = *iter + size;
-+		ent->start_addr = entry;
-+		ent->end_addr = entry + size;
- 		INIT_LIST_HEAD(&ent->list);
- 		list_add_tail(&ent->list, &kprobe_blacklist);
- 	}
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
