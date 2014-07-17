@@ -1,41 +1,50 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1ECC61A03EC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:23:27 +1000 (EST)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 35F2A1A036C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:15:24 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DEE53140173
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:26 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 17 Jul 2014 17:15:22 -0600
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6EA696E8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:15:10 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6HNFKpZ8126972
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 23:15:20 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6HNFITU023295
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:15:20 -0400
-Date: Thu, 17 Jul 2014 16:15:12 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [RFC 2/2] powerpc: reorder per-cpu NUMA information's initialization
-Message-ID: <20140717231512.GC32660@linux.vnet.ibm.com>
-References: <20140717230923.GA32660@linux.vnet.ibm.com>
- <20140717230958.GB32660@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Fri, 18 Jul 2014 09:23:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BDA4C2BB0052
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6HN6VsW66584796
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:06:31 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6HNNJC2019789
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2014 09:23:20 +1000
+Message-ID: <53C85AE6.7080600@au1.ibm.com>
+Date: Fri, 18 Jul 2014 09:23:18 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140717230958.GB32660@linux.vnet.ibm.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <53996E41.4070309@linux.vnet.ibm.com> <53C7A4FA.4030600@linux.vnet.ibm.com>
+ <1405595380.25310.21.camel@pasglop>
+ <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
+In-Reply-To: <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
+ "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
+ Pedro Alves <palves@redhat.com>, oleg@redhat.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dhowells@redhat.com,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, davej@redhat.com,
+ akpm@linux-foundation.org, tglx@linutronix.de,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,147 +54,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is an issue currently where NUMA information is used on powerpc
-(and possibly ia64) before it has been read from the device-tree, which
-leads to large slab consumption with CONFIG_SLUB and memoryless nodes.
+On 17/07/14 21:14, Michael Neuling wrote:
+> 
+> On Jul 17, 2014 9:11 PM, "Benjamin Herrenschmidt"
+> <benh@kernel.crashing.org <mailto:benh@kernel.crashing.org>> wrote:
+>>
+>> > >
+>> > >> Outstanding Issues
+>> > >> ==================
+>> > >> (1) Running DSCR register value inside a transaction does not
+> seem to be saved
+>> > >>     at thread.dscr when the process stops for ptrace examination.
+>> > >
+>> > > Hey Ben,
+>> > >
+>> > > Any updates on this patch series ?
+>> >
+>> > Ben,
+>> >
+>> > Any updates on this patch series ?
+>>
+>> I haven't had a chance to review yet, I was hoping somebody else would..
+>>
+>> Have you made any progress vs. the DSCR outstanding issue mentioned
+>> above ?
+> 
+> The DSCR issue should be resolved with Sam Bobroff's recent  DSCR
+> fixes.  I've not tested them though.
+> 
+> Actually... Sam did you review this series?
+> 
+> Mikey
+> 
 
-NUMA powerpc non-boot CPU's cpu_to_node/cpu_to_mem is only accurate
-after start_secondary(), similar to ia64, which is invoked via
-smp_init().
+I did, and applying "powerpc: Correct DSCR during TM context switch"
+corrected the DSCR value in the test program (the one in the patch notes
+for this series).
 
-Commit 6ee0578b4daae ("workqueue: mark init_workqueues() as
-early_initcall()") made init_workqueues() be invoked via
-do_pre_smp_initcalls(), which is obviously before the secondary
-processors are online.
+(In fact, IIRC, the reason for my patch set was the bug exposed by this
+one ;-)
 
-Additionally, the following commits changed init_workqueues() to use
-cpu_to_node to determine the node to use for kthread_create_on_node:
-
-bce903809ab3f ("workqueue: add wq_numa_tbl_len and
-wq_numa_possible_cpumask[]")
-f3f90ad469342 ("workqueue: determine NUMA node of workers accourding to
-the allowed cpumask")
-
-Therefore, when init_workqueues() runs, it sees all CPUs as being on
-Node 0. On LPARs or KVM guests where Node 0 is memoryless, this leads to
-a high number of slab deactivations
-(http://www.spinics.net/lists/linux-mm/msg67489.html).
-
-Fix this by initializing the powerpc-specific CPU<->node/local memory
-node mapping as early as possible, which on powerpc is
-do_init_bootmem(). Currently that function initializes the mapping for
-the boot CPU, but we extend it to setup the mapping for all possible
-CPUs. Then, in smp_prepare_cpus(), we can correspondingly set the
-per-cpu values for all possible CPUs. That ensures that before the
-early_initcalls run (and really as early as possible), the per-cpu NUMA
-mapping is accurate.
-
-While testing memoryless nodes on PowerKVM guests with a fix to the
-workqueue logic to use cpu_to_mem() instead of cpu_to_node(), with a
-guest topology of:
-
-available: 2 nodes (0-1)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49
-node 0 size: 0 MB
-node 0 free: 0 MB
-node 1 cpus: 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99
-node 1 size: 16336 MB
-node 1 free: 15329 MB
-node distances:
-node   0   1
-  0:  10  40
-  1:  40  10
-
-the slab consumption decreases from
-
-Slab:             932416 kB
-SUnreclaim:       902336 kB
-
-to
-
-Slab:             395264 kB
-SUnreclaim:       359424 kB
-
-And we a corresponding increase in the slab efficiency from
-
-slab                                   mem     objs    slabs
-                                      used   active   active
-------------------------------------------------------------
-kmalloc-16384                       337 MB   11.28%  100.00%
-task_struct                         288 MB    9.93%  100.00%
-
-to
-
-slab                                   mem     objs    slabs
-                                      used   active   active
-------------------------------------------------------------
-kmalloc-16384                        37 MB  100.00%  100.00%
-task_struct                          31 MB  100.00%  100.00%
-
-Powerpc didn't support memoryless nodes until recently (64bb80d87f01
-"powerpc/numa: Enable CONFIG_HAVE_MEMORYLESS_NODES" and 8c272261194d
-"powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"). Those commits also
-helped improve memory consumption with these kind of environments.
-
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 51a3ff7..91ff531 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -376,6 +376,11 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 					GFP_KERNEL, cpu_to_node(cpu));
- 		zalloc_cpumask_var_node(&per_cpu(cpu_core_map, cpu),
- 					GFP_KERNEL, cpu_to_node(cpu));
-+		/*
-+		 * numa_node_id() works after this.
-+		 */
-+		set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
-+		set_cpu_numa_mem(cpu, local_memory_node(numa_cpu_lookup_table[cpu]));
- 	}
- 
- 	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
-@@ -723,12 +728,6 @@ void start_secondary(void *unused)
- 	}
- 	traverse_core_siblings(cpu, true);
- 
--	/*
--	 * numa_node_id() works after this.
--	 */
--	set_numa_node(numa_cpu_lookup_table[cpu]);
--	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
--
- 	smp_wmb();
- 	notify_cpu_starting(cpu);
- 	set_cpu_online(cpu, true);
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 3b181b2..b1f0b86 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1049,7 +1049,7 @@ static void __init mark_reserved_regions_for_nid(int nid)
- 
- void __init do_init_bootmem(void)
- {
--	int nid;
-+	int nid, cpu;
- 
- 	min_low_pfn = 0;
- 	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-@@ -1122,8 +1122,15 @@ void __init do_init_bootmem(void)
- 
- 	reset_numa_cpu_lookup_table();
- 	register_cpu_notifier(&ppc64_numa_nb);
--	cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
--			  (void *)(unsigned long)boot_cpuid);
-+	/*
-+	 * We need the numa_cpu_lookup_table to be accurate for all CPUs,
-+	 * even before we online them, so that we can use cpu_to_{node,mem}
-+	 * early in boot, cf. smp_prepare_cpus().
-+	 */
-+	for_each_possible_cpu(cpu) {
-+		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-+				  (void *)(unsigned long)cpu);
-+	}
- }
- 
- void __init paging_init(void)
+Cheers,
+Sam.
