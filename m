@@ -1,37 +1,20 @@
-Return-Path: <michael.neuling@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F24081A01DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:14:55 +1000 (EST)
-Received: from mail-la0-x236.google.com (mail-la0-x236.google.com
- [IPv6:2a00:1450:4010:c03::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 29E3F14008B
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 21:14:54 +1000 (EST)
-Received: by mail-la0-f54.google.com with SMTP id el20so1623499lab.27
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 04:14:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 10F2C1A008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 23:19:27 +1000 (EST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: <broonie@kernel.org>
+Subject: [PATCH 0/2] ASoC: fsl_sai: Two bug fixes for fsl_sai driver
+Date: Thu, 17 Jul 2014 21:21:36 +0800
+Message-ID: <cover.1405603108.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-Sender: michael.neuling@gmail.com
-In-Reply-To: <1405595380.25310.21.camel@pasglop>
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
- <53996E41.4070309@linux.vnet.ibm.com>
- <53C7A4FA.4030600@linux.vnet.ibm.com>
- <1405595380.25310.21.camel@pasglop>
-Date: Thu, 17 Jul 2014 21:14:51 +1000
-Message-ID: <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
-Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=001a11c370dce713fa04fe61bfd3
-Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
- Peter Zijlstra <peterz@infradead.org>, Pedro Alves <palves@redhat.com>,
- oleg@redhat.com, akpm@linux-foundation.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dhowells@redhat.com,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, davej@redhat.com, tglx@linutronix.de,
- "David S. Miller" <davem@davemloft.net>, sam.bobroff@au1.ibm.com,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, b42378@freescale.com, b02247@freescale.com,
+ linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,75 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c370dce713fa04fe61bfd3
-Content-Type: text/plain; charset=UTF-8
+Nicolin Chen (2):
+  ASoC: fsl_sai: Reset FIFOs after disabling TE/RE
+  ASoC: fsl_sai: Fix incorrect register writing in fsl_sai_isr()
 
-On Jul 17, 2014 9:11 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-wrote:
->
-> > >
-> > >> Outstanding Issues
-> > >> ==================
-> > >> (1) Running DSCR register value inside a transaction does not seem
-to be saved
-> > >>     at thread.dscr when the process stops for ptrace examination.
-> > >
-> > > Hey Ben,
-> > >
-> > > Any updates on this patch series ?
-> >
-> > Ben,
-> >
-> > Any updates on this patch series ?
->
-> I haven't had a chance to review yet, I was hoping somebody else would..
->
-> Have you made any progress vs. the DSCR outstanding issue mentioned
-> above ?
+ sound/soc/fsl/fsl_sai.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-The DSCR issue should be resolved with Sam Bobroff's recent  DSCR fixes.
-I've not tested them though.
-
-Actually... Sam did you review this series?
-
-Mikey
-
---001a11c370dce713fa04fe61bfd3
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<p dir=3D"ltr"><br>
-On Jul 17, 2014 9:11 PM, &quot;Benjamin Herrenschmidt&quot; &lt;<a href=3D"=
-mailto:benh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt; wrote:<br=
->
-&gt;<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt;&gt; Outstanding Issues<br>
-&gt; &gt; &gt;&gt; =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<b=
-r>
-&gt; &gt; &gt;&gt; (1) Running DSCR register value inside a transaction doe=
-s not seem to be saved<br>
-&gt; &gt; &gt;&gt; =C2=A0 =C2=A0 at thread.dscr when the process stops for =
-ptrace examination.<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; Hey Ben,<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; Any updates on this patch series ?<br>
-&gt; &gt;<br>
-&gt; &gt; Ben,<br>
-&gt; &gt;<br>
-&gt; &gt; Any updates on this patch series ?<br>
-&gt;<br>
-&gt; I haven&#39;t had a chance to review yet, I was hoping somebody else w=
-ould..<br>
-&gt;<br>
-&gt; Have you made any progress vs. the DSCR outstanding issue mentioned<br=
->
-&gt; above ?</p>
-<p dir=3D"ltr">The DSCR issue should be resolved with Sam Bobroff&#39;s rec=
-ent=C2=A0 DSCR fixes.=C2=A0 I&#39;ve not tested them though.</p>
-<p dir=3D"ltr">Actually... Sam did you review this series? </p>
-<p dir=3D"ltr">Mikey<br>
-</p>
-
---001a11c370dce713fa04fe61bfd3--
+-- 
+1.8.4
