@@ -1,14 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2FFD81A03A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:18:08 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] selftests/powerpc: Add test of L3 bank handling
-Date: Thu, 17 Jul 2014 21:18:02 +1000
-Message-Id: <1405595882-5792-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 988C11A0003
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:22:43 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH v5 0/5] Read guest last instruction from kvmppc_get_last_inst()
+Date: Thu, 17 Jul 2014 14:22:23 +0300
+Message-ID: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,79 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/powerpc/pmu/Makefile       |  2 +-
- tools/testing/selftests/powerpc/pmu/l3_bank_test.c | 48 ++++++++++++++++++++++
- 2 files changed, 49 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/l3_bank_test.c
+Read guest last instruction from kvmppc_get_last_inst() allowing the function
+to fail in order to emulate again. On bookehv architecture search for
+the physical address and kmap it, instead of using Load External PID (lwepx)
+instruction. This fixes an infinite loop caused by lwepx's data TLB miss
+exception handled in the host and the TODO for execute-but-not-read entries
+and TLB eviction.
 
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index b9ff0db42c79..8f1aca38c055 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -1,7 +1,7 @@
- noarg:
- 	$(MAKE) -C ../
- 
--PROGS := count_instructions
-+PROGS := count_instructions l3_bank_test
- EXTRA_SOURCES := ../harness.c event.c
- 
- all: $(PROGS) sub_all
-diff --git a/tools/testing/selftests/powerpc/pmu/l3_bank_test.c b/tools/testing/selftests/powerpc/pmu/l3_bank_test.c
-new file mode 100644
-index 000000000000..77472f31441e
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/l3_bank_test.c
-@@ -0,0 +1,48 @@
-+/*
-+ * Copyright 2014, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+
-+#include "event.h"
-+#include "utils.h"
-+
-+#define MALLOC_SIZE     (0x10000 * 10)  /* Ought to be enough .. */
-+
-+/*
-+ * Tests that the L3 bank handling is correct. We fixed it in commit e9aaac1.
-+ */
-+static int l3_bank_test(void)
-+{
-+	struct event event;
-+	char *p;
-+	int i;
-+
-+	p = malloc(MALLOC_SIZE);
-+	FAIL_IF(!p);
-+
-+	event_init(&event, 0x84918F);
-+
-+	FAIL_IF(event_open(&event));
-+
-+	for (i = 0; i < MALLOC_SIZE; i += 0x10000)
-+		p[i] = i;
-+
-+	event_read(&event);
-+	event_report(&event);
-+
-+	FAIL_IF(event.result.running == 0);
-+	FAIL_IF(event.result.enabled == 0);
-+
-+	event_close(&event);
-+	free(p);
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(l3_bank_test, "l3_bank_test");
-+}
+Mihai Caraman (5):
+  KVM: PPC: e500mc: Revert "add load inst fixup"
+  KVM: PPC: Book3e: Add TLBSEL/TSIZE defines for MAS0/1
+  KVM: PPC: Book3s: Remove kvmppc_read_inst() function
+  KVM: PPC: Alow kvmppc_get_last_inst() to fail
+  KVM: PPC: Bookehv: Get vcpu's last instruction for      emulation
+
+ arch/powerpc/include/asm/kvm_book3s.h    |  26 -------
+ arch/powerpc/include/asm/kvm_booke.h     |   5 --
+ arch/powerpc/include/asm/kvm_ppc.h       |  25 +++++++
+ arch/powerpc/include/asm/mmu-book3e.h    |   9 ++-
+ arch/powerpc/kvm/book3s.c                |  17 +++++
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      |  17 ++---
+ arch/powerpc/kvm/book3s_paired_singles.c |  38 +++++++----
+ arch/powerpc/kvm/book3s_pr.c             | 114 ++++++++++++++++---------------
+ arch/powerpc/kvm/booke.c                 |  47 +++++++++++++
+ arch/powerpc/kvm/bookehv_interrupts.S    |  55 ++-------------
+ arch/powerpc/kvm/e500_mmu_host.c         |  98 ++++++++++++++++++++++++++
+ arch/powerpc/kvm/emulate.c               |  18 +++--
+ arch/powerpc/kvm/powerpc.c               |  11 ++-
+ 13 files changed, 309 insertions(+), 171 deletions(-)
+
 -- 
-1.9.1
+1.7.11.7
