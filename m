@@ -1,34 +1,36 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-we0-x22b.google.com (mail-we0-x22b.google.com
+ [IPv6:2a00:1450:400c:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D460D1A0292
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:36:23 +1000 (EST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout1.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0N8U006HWO0CXS40@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 17 Jul 2014 10:36:12 +0100 (BST)
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michal Nazarewicz <mina86@mina86.com>
-Subject: [PATCH] CMA: generalize CMA reserved area management functionality
- (fixup)
-Date: Thu, 17 Jul 2014 11:36:07 +0200
-Message-id: <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
-In-reply-to: <53C78ED7.7030002@samsung.com>
-References: <53C78ED7.7030002@samsung.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
- linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C67CD1A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 19:38:49 +1000 (EST)
+Received: by mail-we0-f171.google.com with SMTP id p10so2202588wes.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 02:38:41 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Thu, 17 Jul 2014 11:38:32 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Subject: Re: [RESEND PATCH v5] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+Message-ID: <20140717093832.GB4232@gmail.com>
+References: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Tony Luck <tony.luck@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,31 +40,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MAX_CMA_AREAS is used by other subsystems (i.e. arch/arm/mm/dma-mapping.c),
-so we need to provide correct definition even if CMA is disabled.
-This patch fixes this issue.
 
-Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- include/linux/cma.h | 4 ++++
- 1 file changed, 4 insertions(+)
+* Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
 
-diff --git a/include/linux/cma.h b/include/linux/cma.h
-index 9a18a2b1934c..c077635cad76 100644
---- a/include/linux/cma.h
-+++ b/include/linux/cma.h
-@@ -5,7 +5,11 @@
-  * There is always at least global CMA area and a few optional
-  * areas configured in kernel .config.
-  */
-+#ifdef CONFIG_CMA
- #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
-+#else
-+#define MAX_CMA_AREAS	(0)
-+#endif
- 
- struct cma;
- 
--- 
-1.9.2
+> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+
+Looks good, but this is not a valid SOB sequence: if Suzuki wrote the 
+patch then he should be the first SOB (and should have a From line as 
+well), if he acked it along the way then it should be an Acked-by - or 
+Reviewed-by.
+
+This fix should be in v3.16 as well, right?
+
+Thanks,
+
+	Ingo
