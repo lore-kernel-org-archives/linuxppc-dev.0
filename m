@@ -1,37 +1,37 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2271D1A0292
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 13:20:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57E6A1A028F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:40:38 +1000 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 16 Jul 2014 21:20:10 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id ADF2A1FF001C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 21:20:06 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (b03eismtpcl100.ahe.boulder.ibm.com
- [9.17.195.167])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6H1GR8N59441180
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 03:16:27 +0200
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6H3K7hf010788
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2014 21:20:07 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org,
- Alexander Graf <agraf@suse.de>
-Subject: [PATCH v3] Use the POWER8 Micro Partition Prefetch Engine in KVM HV
- on POWER8
-Date: Thu, 17 Jul 2014 13:19:57 +1000
-Message-Id: <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
-In-Reply-To: <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
-References: <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 17 Jul 2014 14:40:37 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BED44357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:40:34 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6H4eIk91835298
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:40:18 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6H4eXGB014029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 14:40:34 +1000
+Date: Thu, 17 Jul 2014 14:40:33 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Guo Chao <yan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/6] powerpc/powernv: Enable M64 aperatus for PHB3
+Message-ID: <20140717044033.GA27480@shangw>
+References: <1405513475-24220-1-git-send-email-yan@linux.vnet.ibm.com>
+ <1405513475-24220-2-git-send-email-yan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1405513475-24220-2-git-send-email-yan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,324 +41,516 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER8 processor has a Micro Partition Prefetch Engine, which is
-a fancy way of saying "has way to store and load contents of L2 or
-L2+MRU way of L3 cache". We initiate the storing of the log (list of
-addresses) using the logmpp instruction and start restore by writing
-to a SPR.
+On Wed, Jul 16, 2014 at 08:24:30PM +0800, Guo Chao wrote:
+>This patch enables M64 aperatus for PHB3.
+>
+>We already had platform hook (ppc_md.pcibios_window_alignment) to affect
+>the PCI resource assignment done in PCI core so that each PE's M32 resource
+>was built on basis of M32 segment size. Similarly, we're using that for
+>M64 assignment on basis of M64 segment size.
+>
+>   * We're using last M64 BAR to cover M64 aperatus, and it's shared by all
+>     256 PEs.
+>   * We don't support P7IOC yet. However, some function callbacks are added
+>     to (struct pnv_phb) so that we can reuse them on P7IOC in future.
+>   * PE, corresponding to PCI bus with large M64 BAR device attached, might
+>     span multiple M64 segments. We introduce "compound" PE to cover the case.
+>     The compound PE is a list of PEs and the master PE is used as before.
+>     The slave PEs are just for MMIO isolation.
+>
+>Signed-off-by: Guo Chao <yan@linux.vnet.ibm.com>
 
-The logmpp instruction takes parameters in a single 64bit register:
-- starting address of the table to store log of L2/L2+L3 cache contents
-  - 32kb for L2
-  - 128kb for L2+L3
-  - Aligned relative to maximum size of the table (32kb or 128kb)
-- Log control (no-op, L2 only, L2 and L3, abort logout)
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-We should abort any ongoing logging before initiating one.
+It looks good to me except the PELTV bits (I told you before), which can be
+fixed later. Without PELTV, we can rely software to maintain master/slave
+business. However, it's worthy to have PELTV setup correctly so that inbound
+ER errors can freeze multiple PEs (if applicable) by hardware.
 
-To initiate restore, we write to the MPPR SPR. The format of what to write
-to the SPR is similar to the logmpp instruction parameter:
-- starting address of the table to read from (same alignment requirements)
-- table size (no data, until end of table)
-- prefetch rate (from fastest possible to slower. about every 8, 16, 24 or
-  32 cycles)
+Also, I run it on P7 box and no problem found there.
 
-The idea behind loading and storing the contents of L2/L3 cache is to
-reduce memory latency in a system that is frequently swapping vcores on
-a physical CPU.
+Thanks,
+Gavin
 
-The best case scenario for doing this is when some vcores are doing very
-cache heavy workloads. The worst case is when they have about 0 cache hits,
-so we just generate needless memory operations.
-
-This implementation just does L2 store/load. In my benchmarks this proves
-to be useful.
-
-Benchmark 1:
- - 16 core POWER8
- - 3x Ubuntu 14.04LTS guests (LE) with 8 VCPUs each
- - No split core/SMT
- - two guests running sysbench memory test.
-   sysbench --test=memory --num-threads=8 run
- - one guest running apache bench (of default HTML page)
-   ab -n 490000 -c 400 http://localhost/
-
-This benchmark aims to measure performance of real world application (apache)
-where other guests are cache hot with their own workloads. The sysbench memory
-benchmark does pointer sized writes to a (small) memory buffer in a loop.
-
-In this benchmark with this patch I can see an improvement both in requests
-per second (~5%) and in mean and median response times (again, about 5%).
-The spread of minimum and maximum response times were largely unchanged.
-
-benchmark 2:
- - Same VM config as benchmark 1
- - all three guests running sysbench memory benchmark
-
-This benchmark aims to see if there is a positive or negative affect to this
-cache heavy benchmark. Although due to the nature of the benchmark (stores) we
-may not see a difference in performance, but rather hopefully an improvement
-in consistency of performance (when vcore switched in, don't have to wait
-many times for cachelines to be pulled in)
-
-The results of this benchmark are improvements in consistency of performance
-rather than performance itself. With this patch, the few outliers in duration
-go away and we get more consistent performance in each guest.
-
-benchmark 3:
- - same 3 guests and CPU configuration as benchmark 1 and 2.
- - two idle guests
- - 1 guest running STREAM benchmark
-
-This scenario also saw performance improvement with this patch. On Copy and
-Scale workloads from STREAM, I got 5-6% improvement with this patch. For
-Add and triad, it was around 10% (or more).
-
-benchmark 4:
- - same 3 guests as previous benchmarks
- - two guests running sysbench --memory, distinctly different cache heavy
-   workload
- - one guest running STREAM benchmark.
-
-Similar improvements to benchmark 3.
-
-benchmark 5:
- - 1 guest, 8 VCPUs, Ubuntu 14.04
- - Host configured with split core (SMT8, subcores-per-core=4)
- - STREAM benchmark
-
-In this benchmark, we see a 10-20% performance improvement across the board
-of STREAM benchmark results with this patch.
-
-Based on preliminary investigation and microbenchmarks
-by Prerna Saxena <prerna@linux.vnet.ibm.com>
-
-Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
---
-changes since v2:
-- based on feedback from Alexander Graf:
-  - move save and restore of cache to separate functions
-  - move allocation of mpp_buffer to vcore creation
-  - get_free_pages() does actually allocate pages aligned to order
-    (Mel Gorman confirms)
-  - make SPR and logmpp parameters a bit less magic, especially around abort
-
-changes since v1:
-- s/mppe/mpp_buffer/
-- add MPP_BUFFER_ORDER define.
----
- arch/powerpc/include/asm/kvm_host.h   |    2 +
- arch/powerpc/include/asm/ppc-opcode.h |   17 +++++++
- arch/powerpc/include/asm/reg.h        |    1 +
- arch/powerpc/kvm/book3s_hv.c          |   89 +++++++++++++++++++++++++++++----
- 4 files changed, 98 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 1eaea2d..5769497 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -305,6 +305,8 @@ struct kvmppc_vcore {
- 	u32 arch_compat;
- 	ulong pcr;
- 	ulong dpdes;		/* doorbell state (POWER8) */
-+	unsigned long mpp_buffer; /* Micro Partition Prefetch buffer */
-+	bool mpp_buffer_is_valid;
- };
- 
- #define VCORE_ENTRY_COUNT(vc)	((vc)->entry_exit_count & 0xff)
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 3132bb9..c636841 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -139,6 +139,7 @@
- #define PPC_INST_ISEL			0x7c00001e
- #define PPC_INST_ISEL_MASK		0xfc00003e
- #define PPC_INST_LDARX			0x7c0000a8
-+#define PPC_INST_LOGMPP			0x7c0007e4
- #define PPC_INST_LSWI			0x7c0004aa
- #define PPC_INST_LSWX			0x7c00042a
- #define PPC_INST_LWARX			0x7c000028
-@@ -275,6 +276,20 @@
- #define __PPC_EH(eh)	0
- #endif
- 
-+/* POWER8 Micro Partition Prefetch (MPP) parameters */
-+/* Address mask is common for LOGMPP instruction and MPPR SPR */
-+#define PPC_MPPE_ADDRESS_MASK 0xffffffffc000
-+
-+/* Bits 60 and 61 of MPP SPR should be set to one of the following */
-+/* Aborting the fetch is indeed setting 00 in the table size bits */
-+#define PPC_MPPR_FETCH_ABORT (0x0ULL << 60)
-+#define PPC_MPPR_FETCH_WHOLE_TABLE (0x2ULL << 60)
-+
-+/* Bits 54 and 55 of register for LOGMPP instruction should be set to: */
-+#define PPC_LOGMPP_LOG_L2 (0x02ULL << 54)
-+#define PPC_LOGMPP_LOG_L2L3 (0x01ULL << 54)
-+#define PPC_LOGMPP_LOG_ABORT (0x03ULL << 54)
-+
- /* Deal with instructions that older assemblers aren't aware of */
- #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
- 					__PPC_RA(a) | __PPC_RB(b))
-@@ -283,6 +298,8 @@
- #define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LDARX | \
- 					___PPC_RT(t) | ___PPC_RA(a) | \
- 					___PPC_RB(b) | __PPC_EH(eh))
-+#define PPC_LOGMPP(b)		stringify_in_c(.long PPC_INST_LOGMPP | \
-+					__PPC_RB(b))
- #define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LWARX | \
- 					___PPC_RT(t) | ___PPC_RA(a) | \
- 					___PPC_RB(b) | __PPC_EH(eh))
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index e5d2e0b..5164beb 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -224,6 +224,7 @@
- #define   CTRL_TE	0x00c00000	/* thread enable */
- #define   CTRL_RUNLATCH	0x1
- #define SPRN_DAWR	0xB4
-+#define SPRN_MPPR	0xB8	/* Micro Partition Prefetch Register */
- #define SPRN_CIABR	0xBB
- #define   CIABR_PRIV		0x3
- #define   CIABR_PRIV_USER	1
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8227dba..b5a8b11 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -67,6 +67,13 @@
- /* Used as a "null" value for timebase values */
- #define TB_NIL	(~(u64)0)
- 
-+#if defined(CONFIG_PPC_64K_PAGES)
-+#define MPP_BUFFER_ORDER	0
-+#elif defined(CONFIG_PPC_4K_PAGES)
-+#define MPP_BUFFER_ORDER	4
-+#endif
-+
-+
- static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
- 
-@@ -1258,6 +1265,32 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	return r;
- }
- 
-+static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
-+{
-+	struct kvmppc_vcore *vcore;
-+
-+	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
-+
-+	if (vcore == NULL)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&vcore->runnable_threads);
-+	spin_lock_init(&vcore->lock);
-+	init_waitqueue_head(&vcore->wq);
-+	vcore->preempt_tb = TB_NIL;
-+	vcore->lpcr = kvm->arch.lpcr;
-+	vcore->first_vcpuid = core * threads_per_core;
-+	vcore->kvm = kvm;
-+
-+	vcore->mpp_buffer_is_valid = false;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		vcore->mpp_buffer = __get_free_pages(GFP_KERNEL|__GFP_ZERO,
-+						     MPP_BUFFER_ORDER);
-+
-+	return vcore;
-+}
-+
- static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 						   unsigned int id)
- {
-@@ -1298,16 +1331,7 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 	mutex_lock(&kvm->lock);
- 	vcore = kvm->arch.vcores[core];
- 	if (!vcore) {
--		vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
--		if (vcore) {
--			INIT_LIST_HEAD(&vcore->runnable_threads);
--			spin_lock_init(&vcore->lock);
--			init_waitqueue_head(&vcore->wq);
--			vcore->preempt_tb = TB_NIL;
--			vcore->lpcr = kvm->arch.lpcr;
--			vcore->first_vcpuid = core * threads_per_core;
--			vcore->kvm = kvm;
--		}
-+		vcore = kvmppc_vcore_create(kvm, core);
- 		kvm->arch.vcores[core] = vcore;
- 		kvm->arch.online_vcores++;
- 	}
-@@ -1516,6 +1540,37 @@ static int on_primary_thread(void)
- 	return 1;
- }
- 
-+static void ppc_start_saving_l2_cache(struct kvmppc_vcore *vc)
-+{
-+	phys_addr_t phy_addr, tmp;
-+
-+	phy_addr = (phys_addr_t)virt_to_phys((void *)vc->mpp_buffer);
-+
-+	tmp = phy_addr & PPC_MPPE_ADDRESS_MASK;
-+
-+	mtspr(SPRN_MPPR, tmp | PPC_MPPR_FETCH_ABORT);
-+
-+	asm volatile(PPC_LOGMPP(R1) : : "r" (tmp | PPC_LOGMPP_LOG_L2));
-+
-+	vc->mpp_buffer_is_valid = true;
-+}
-+
-+static void ppc_start_restoring_l2_cache(const struct kvmppc_vcore *vc)
-+{
-+	phys_addr_t phy_addr, tmp;
-+
-+	phy_addr = virt_to_phys((void *)vc->mpp_buffer);
-+
-+	tmp = phy_addr & PPC_MPPE_ADDRESS_MASK;
-+
-+	/* We must abort any in-progress save operations to ensure
-+	 * the table is valid so that prefetch engine knows when to
-+	 * stop prefetching. */
-+	asm volatile(PPC_LOGMPP(R1) : : "r" (tmp | PPC_LOGMPP_LOG_ABORT));
-+
-+	mtspr(SPRN_MPPR, tmp | PPC_MPPR_FETCH_WHOLE_TABLE);
-+}
-+
- /*
-  * Run a set of guest threads on a physical core.
-  * Called with vc->lock held.
-@@ -1590,9 +1645,16 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
- 
- 	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
- 
-+	if (vc->mpp_buffer_is_valid)
-+		ppc_start_restoring_l2_cache(vc);
-+
- 	__kvmppc_vcore_entry();
- 
- 	spin_lock(&vc->lock);
-+
-+	if (vc->mpp_buffer)
-+		ppc_start_saving_l2_cache(vc);
-+
- 	/* disable sending of IPIs on virtual external irqs */
- 	list_for_each_entry(vcpu, &vc->runnable_threads, arch.run_list)
- 		vcpu->cpu = -1;
-@@ -2329,8 +2391,13 @@ static void kvmppc_free_vcores(struct kvm *kvm)
- {
- 	long int i;
- 
--	for (i = 0; i < KVM_MAX_VCORES; ++i)
-+	for (i = 0; i < KVM_MAX_VCORES; ++i) {
-+		if (kvm->arch.vcores[i] && kvm->arch.vcores[i]->mpp_buffer) {
-+			free_pages(kvm->arch.vcores[i]->mpp_buffer,
-+				   MPP_BUFFER_ORDER);
-+		}
- 		kfree(kvm->arch.vcores[i]);
-+	}
- 	kvm->arch.online_vcores = 0;
- }
- 
--- 
-1.7.10.4
+>---
+> arch/powerpc/include/asm/opal.h           |   8 +-
+> arch/powerpc/platforms/powernv/pci-ioda.c | 301 +++++++++++++++++++++++++++---
+> arch/powerpc/platforms/powernv/pci.h      |  20 ++
+> 3 files changed, 307 insertions(+), 22 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+>index 0da1dbd..ae885cc 100644
+>--- a/arch/powerpc/include/asm/opal.h
+>+++ b/arch/powerpc/include/asm/opal.h
+>@@ -340,6 +340,12 @@ enum OpalMveEnableAction {
+> 	OPAL_ENABLE_MVE = 1
+> };
+>
+>+enum OpalM64EnableAction {
+>+	OPAL_DISABLE_M64 = 0,
+>+	OPAL_ENABLE_M64_SPLIT = 1,
+>+	OPAL_ENABLE_M64_NON_SPLIT = 2
+>+};
+>+
+> enum OpalPciResetScope {
+> 	OPAL_PHB_COMPLETE = 1, OPAL_PCI_LINK = 2, OPAL_PHB_ERROR = 3,
+> 	OPAL_PCI_HOT_RESET = 4, OPAL_PCI_FUNDAMENTAL_RESET = 5,
+>@@ -768,7 +774,7 @@ int64_t opal_pci_set_phb_mem_window(uint64_t phb_id, uint16_t window_type,
+> 				    uint16_t window_num,
+> 				    uint64_t starting_real_address,
+> 				    uint64_t starting_pci_address,
+>-				    uint16_t segment_size);
+>+				    uint64_t size);
+> int64_t opal_pci_map_pe_mmio_window(uint64_t phb_id, uint16_t pe_number,
+> 				    uint16_t window_type, uint16_t window_num,
+> 				    uint16_t segment_num);
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index 93fd815..2b659d9 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -36,6 +36,7 @@
+> #include <asm/tce.h>
+> #include <asm/xics.h>
+> #include <asm/debug.h>
+>+#include <asm/firmware.h>
+>
+> #include "powernv.h"
+> #include "pci.h"
+>@@ -82,6 +83,12 @@ static inline void __raw_rm_writeq(u64 val, volatile void __iomem *paddr)
+> 		: : "r" (val), "r" (paddr) : "memory");
+> }
+>
+>+static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
+>+{
+>+	return ((flags & (IORESOURCE_MEM_64 | IORESOURCE_PREFETCH)) ==
+>+		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
+>+}
+>+
+> static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+> {
+> 	unsigned long pe;
+>@@ -106,6 +113,240 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
+> 	clear_bit(pe, phb->ioda.pe_alloc);
+> }
+>
+>+/* The default M64 BAR is shared by all PEs */
+>+static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+>+{
+>+	const char *desc;
+>+	struct resource *r;
+>+	s64 rc;
+>+
+>+	/* Configure the default M64 BAR */
+>+	rc = opal_pci_set_phb_mem_window(phb->opal_id,
+>+					 OPAL_M64_WINDOW_TYPE,
+>+					 phb->ioda.m64_bar_idx,
+>+					 phb->ioda.m64_base,
+>+					 0, /* unused */
+>+					 phb->ioda.m64_size);
+>+	if (rc != OPAL_SUCCESS) {
+>+		desc = "configuring";
+>+		goto fail;
+>+	}
+>+
+>+	/* Enable the default M64 BAR */
+>+	rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>+				      OPAL_M64_WINDOW_TYPE,
+>+				      phb->ioda.m64_bar_idx,
+>+				      OPAL_ENABLE_M64_SPLIT);
+>+	if (rc != OPAL_SUCCESS) {
+>+		desc = "enabling";
+>+		goto fail;
+>+	}
+>+
+>+	/* Mark the M64 BAR assigned */
+>+	set_bit(phb->ioda.m64_bar_idx, &phb->ioda.m64_bar_alloc);
+>+
+>+	/*
+>+	 * Strip off the segment used by the reserved PE, which is
+>+	 * expected to be 0 or last one of PE capabicity.
+>+	 */
+>+	r = &phb->hose->mem_resources[1];
+>+	if (phb->ioda.reserved_pe == 0)
+>+		r->start += phb->ioda.m64_segsize;
+>+	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
+>+		r->end -= phb->ioda.m64_segsize;
+>+	else
+>+		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+>+			phb->ioda.reserved_pe);
+>+
+>+	return 0;
+>+
+>+fail:
+>+	pr_warn("  Failure %lld %s M64 BAR#%d\n",
+>+		rc, desc, phb->ioda.m64_bar_idx);
+>+	opal_pci_phb_mmio_enable(phb->opal_id,
+>+				 OPAL_M64_WINDOW_TYPE,
+>+				 phb->ioda.m64_bar_idx,
+>+				 OPAL_DISABLE_M64);
+>+	return -EIO;
+>+}
+>+
+>+static void pnv_ioda2_alloc_m64_pe(struct pnv_phb *phb)
+>+{
+>+	resource_size_t sgsz = phb->ioda.m64_segsize;
+>+	struct pci_dev *pdev;
+>+	struct resource *r;
+>+	int base, step, i;
+>+
+>+	/*
+>+	 * Root bus always has full M64 range and root port has
+>+	 * M64 range used in reality. So we're checking root port
+>+	 * instead of root bus.
+>+	 */
+>+	list_for_each_entry(pdev, &phb->hose->bus->devices, bus_list) {
+>+		for (i = PCI_BRIDGE_RESOURCES;
+>+		     i <= PCI_BRIDGE_RESOURCE_END; i++) {
+>+			r = &pdev->resource[i];
+>+			if (!r->parent ||
+>+			    !pnv_pci_is_mem_pref_64(r->flags))
+>+				continue;
+>+
+>+			base = (r->start - phb->ioda.m64_base) / sgsz;
+>+			for (step = 0; step < resource_size(r) / sgsz; step++)
+>+				set_bit(base + step, phb->ioda.pe_alloc);
+>+		}
+>+	}
+>+}
+>+
+>+static int pnv_ioda2_pick_m64_pe(struct pnv_phb *phb,
+>+				 struct pci_bus *bus, int all)
+>+{
+>+	resource_size_t segsz = phb->ioda.m64_segsize;
+>+	struct pci_dev *pdev;
+>+	struct resource *r;
+>+	struct pnv_ioda_pe *master_pe, *pe;
+>+	unsigned long size, *pe_alloc;
+>+	bool found;
+>+	int start, i, j;
+>+
+>+	/* Root bus shouldn't use M64 */
+>+	if (pci_is_root_bus(bus))
+>+		return IODA_INVALID_PE;
+>+
+>+	/* We support only one M64 window on each bus */
+>+	found = false;
+>+	pci_bus_for_each_resource(bus, r, i) {
+>+		if (r && r->parent &&
+>+		    pnv_pci_is_mem_pref_64(r->flags)) {
+>+			found = true;
+>+			break;
+>+		}
+>+	}
+>+
+>+	/* No M64 window found ? */
+>+	if (!found)
+>+		return IODA_INVALID_PE;
+>+
+>+	/* Allocate bitmap */
+>+	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
+>+	pe_alloc = kzalloc(size, GFP_KERNEL);
+>+	if (!pe_alloc) {
+>+		pr_warn("%s: Out of memory !\n",
+>+			__func__);
+>+		return IODA_INVALID_PE;
+>+	}
+>+
+>+	/*
+>+	 * Figure out reserved PE numbers by the PE
+>+	 * the its child PEs.
+>+	 */
+>+	start = (r->start - phb->ioda.m64_base) / segsz;
+>+	for (i = 0; i < resource_size(r) / segsz; i++)
+>+		set_bit(start + i, pe_alloc);
+>+
+>+	if (all)
+>+		goto done;
+>+
+>+	/*
+>+	 * If the PE doesn't cover all subordinate buses,
+>+	 * we need subtract from reserved PEs for children.
+>+	 */
+>+	list_for_each_entry(pdev, &bus->devices, bus_list) {
+>+		if (!pdev->subordinate)
+>+			continue;
+>+
+>+		pci_bus_for_each_resource(pdev->subordinate, r, i) {
+>+			if (!r || !r->parent ||
+>+			    !pnv_pci_is_mem_pref_64(r->flags))
+>+				continue;
+>+
+>+			start = (r->start - phb->ioda.m64_base) / segsz;
+>+			for (j = 0; j < resource_size(r) / segsz ; j++)
+>+				clear_bit(start + j, pe_alloc);
+>+                }
+>+        }
+>+
+>+	/*
+>+	 * the current bus might not own M64 window and that's all
+>+	 * contributed by its child buses. For the case, we needn't
+>+	 * pick M64 dependent PE#.
+>+	 */
+>+	if (bitmap_empty(pe_alloc, phb->ioda.total_pe)) {
+>+		kfree(pe_alloc);
+>+		return IODA_INVALID_PE;
+>+	}
+>+
+>+	/*
+>+	 * Figure out the master PE and put all slave PEs to master
+>+	 * PE's list to form compound PE.
+>+	 */
+>+done:
+>+	master_pe = NULL;
+>+	i = -1;
+>+	while ((i = find_next_bit(pe_alloc, phb->ioda.total_pe, i + 1)) <
+>+		phb->ioda.total_pe) {
+>+		pe = &phb->ioda.pe_array[i];
+>+		pe->phb = phb;
+>+		pe->pe_number = i;
+>+
+>+		if (!master_pe) {
+>+			pe->flags |= PNV_IODA_PE_MASTER;
+>+			INIT_LIST_HEAD(&pe->slaves);
+>+			master_pe = pe;
+>+		} else {
+>+			pe->flags |= PNV_IODA_PE_SLAVE;
+>+			pe->master = master_pe;
+>+			list_add_tail(&pe->list, &master_pe->slaves);
+>+		}
+>+	}
+>+
+>+	kfree(pe_alloc);
+>+	return master_pe->pe_number;
+>+}
+>+
+>+static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>+{
+>+	struct pci_controller *hose = phb->hose;
+>+	struct device_node *dn = hose->dn;
+>+	struct resource *res;
+>+	const u32 *r;
+>+	u64 pci_addr;
+>+
+>+	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+>+		pr_info("  Firmware too old to support M64 window\n");
+>+		return;
+>+	}
+>+
+>+	r = of_get_property(dn, "ibm,opal-m64-window", NULL);
+>+	if (!r) {
+>+		pr_info("  No <ibm,opal-m64-window> on %s\n",
+>+			dn->full_name);
+>+		return;
+>+	}
+>+
+>+	/* FIXME: Support M64 for P7IOC */
+>+	if (phb->type != PNV_PHB_IODA2) {
+>+		pr_info("  Not support M64 window\n");
+>+		return;
+>+	}
+>+
+>+	res = &hose->mem_resources[1];
+>+	res->start = of_translate_address(dn, r + 2);
+>+	res->end = res->start + of_read_number(r + 4, 2) - 1;
+>+	res->flags = (IORESOURCE_MEM | IORESOURCE_MEM_64 | IORESOURCE_PREFETCH);
+>+	pci_addr = of_read_number(r, 2);
+>+	hose->mem_offset[1] = res->start - pci_addr;
+>+
+>+	phb->ioda.m64_size = resource_size(res);
+>+	phb->ioda.m64_segsize = phb->ioda.m64_size / phb->ioda.total_pe;
+>+	phb->ioda.m64_base = pci_addr;
+>+
+>+	/* Use last M64 BAR to cover M64 window */
+>+	phb->ioda.m64_bar_idx = 15;
+>+	phb->init_m64 = pnv_ioda2_init_m64;
+>+	phb->alloc_m64_pe = pnv_ioda2_alloc_m64_pe;
+>+	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
+>+}
+>+
+> /* Currently those 2 are only used when MSIs are enabled, this will change
+>  * but in the meantime, we need to protect them to avoid warnings
+>  */
+>@@ -363,9 +604,16 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+> 	struct pci_controller *hose = pci_bus_to_host(bus);
+> 	struct pnv_phb *phb = hose->private_data;
+> 	struct pnv_ioda_pe *pe;
+>-	int pe_num;
+>+	int pe_num = IODA_INVALID_PE;
+>+
+>+	/* Check if PE is determined by M64 */
+>+	if (phb->pick_m64_pe)
+>+		pe_num = phb->pick_m64_pe(phb, bus, all);
+>+
+>+	/* The PE number isn't pinned by M64 */
+>+	if (pe_num == IODA_INVALID_PE)
+>+		pe_num = pnv_ioda_alloc_pe(phb);
+>
+>-	pe_num = pnv_ioda_alloc_pe(phb);
+> 	if (pe_num == IODA_INVALID_PE) {
+> 		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
+> 			__func__, pci_domain_nr(bus), bus->number);
+>@@ -373,7 +621,7 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+> 	}
+>
+> 	pe = &phb->ioda.pe_array[pe_num];
+>-	pe->flags = (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
+>+	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
+> 	pe->pbus = bus;
+> 	pe->pdev = NULL;
+> 	pe->tce32_seg = -1;
+>@@ -441,8 +689,15 @@ static void pnv_ioda_setup_PEs(struct pci_bus *bus)
+> static void pnv_pci_ioda_setup_PEs(void)
+> {
+> 	struct pci_controller *hose, *tmp;
+>+	struct pnv_phb *phb;
+>
+> 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+>+		phb = hose->private_data;
+>+
+>+		/* M64 layout might affect PE allocation */
+>+		if (phb->alloc_m64_pe)
+>+			phb->alloc_m64_pe(phb);
+>+
+> 		pnv_ioda_setup_PEs(hose->bus);
+> 	}
+> }
+>@@ -1067,9 +1322,6 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+> 				index++;
+> 			}
+> 		} else if (res->flags & IORESOURCE_MEM) {
+>-			/* WARNING: Assumes M32 is mem region 0 in PHB. We need to
+>-			 * harden that algorithm when we start supporting M64
+>-			 */
+> 			region.start = res->start -
+> 				       hose->mem_offset[0] -
+> 				       phb->ioda.m32_pci_base;
+>@@ -1190,7 +1442,10 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+> 		bridge = bridge->bus->self;
+> 	}
+>
+>-	/* We need support prefetchable memory window later */
+>+	/* We fail back to M32 if M64 isn't supported */
+>+	if (phb->ioda.m64_segsize &&
+>+	    pnv_pci_is_mem_pref_64(type))
+>+		return phb->ioda.m64_segsize;
+> 	if (type & IORESOURCE_MEM)
+> 		return phb->ioda.m32_segsize;
+>
+>@@ -1311,6 +1566,10 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 	prop32 = of_get_property(np, "ibm,opal-reserved-pe", NULL);
+> 	if (prop32)
+> 		phb->ioda.reserved_pe = be32_to_cpup(prop32);
+>+
+>+	/* Parse 64-bit MMIO range */
+>+	pnv_ioda_parse_m64_window(phb);
+>+
+> 	phb->ioda.m32_size = resource_size(&hose->mem_resources[0]);
+> 	/* FW Has already off top 64k of M32 space (MSI space) */
+> 	phb->ioda.m32_size += 0x10000;
+>@@ -1346,14 +1605,6 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 	/* Calculate how many 32-bit TCE segments we have */
+> 	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
+>
+>-	/* Clear unusable m64 */
+>-	hose->mem_resources[1].flags = 0;
+>-	hose->mem_resources[1].start = 0;
+>-	hose->mem_resources[1].end = 0;
+>-	hose->mem_resources[2].flags = 0;
+>-	hose->mem_resources[2].start = 0;
+>-	hose->mem_resources[2].end = 0;
+>-
+> #if 0 /* We should really do that ... */
+> 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
+> 					 window_type,
+>@@ -1363,12 +1614,16 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 					 segment_size);
+> #endif
+>
+>-	pr_info("  %d (%d) PE's M32: 0x%x [segment=0x%x]"
+>-		" IO: 0x%x [segment=0x%x]\n",
+>-		phb->ioda.total_pe,
+>-		phb->ioda.reserved_pe,
+>-		phb->ioda.m32_size, phb->ioda.m32_segsize,
+>-		phb->ioda.io_size, phb->ioda.io_segsize);
+>+	pr_info("  %03d (%03d) PE's M32: 0x%x [segment=0x%x]\n",
+>+		phb->ioda.total_pe, phb->ioda.reserved_pe,
+>+		phb->ioda.m32_size, phb->ioda.m32_segsize);
+>+	if (phb->ioda.m64_size)
+>+		pr_info("                 M64: 0x%lx [segment=0x%lx]\n",
+>+			phb->ioda.m64_size, phb->ioda.m64_segsize);
+>+	if (phb->ioda.io_size)
+>+		pr_info("                  IO: 0x%x [segment=0x%x]\n",
+>+			phb->ioda.io_size, phb->ioda.io_segsize);
+>+
+>
+> 	phb->hose->ops = &pnv_pci_ops;
+> #ifdef CONFIG_EEH
+>@@ -1416,6 +1671,10 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 		ioda_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
+> 		ioda_eeh_phb_reset(hose, OPAL_DEASSERT_RESET);
+> 	}
+>+
+>+	/* Configure M64 window */
+>+	if (phb->init_m64 && phb->init_m64(phb))
+>+		hose->mem_resources[1].flags = 0;
+> }
+>
+> void __init pnv_pci_init_ioda2_phb(struct device_node *np)
+>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>index 676232c..def7171 100644
+>--- a/arch/powerpc/platforms/powernv/pci.h
+>+++ b/arch/powerpc/platforms/powernv/pci.h
+>@@ -21,6 +21,8 @@ enum pnv_phb_model {
+> #define PNV_IODA_PE_DEV		(1 << 0)	/* PE has single PCI device	*/
+> #define PNV_IODA_PE_BUS		(1 << 1)	/* PE has primary PCI bus	*/
+> #define PNV_IODA_PE_BUS_ALL	(1 << 2)	/* PE has subordinate buses	*/
+>+#define PNV_IODA_PE_MASTER	(1 << 3)	/* Master PE in compound case	*/
+>+#define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	*/
+>
+> /* Data associated with a PE, including IOMMU tracking etc.. */
+> struct pnv_phb;
+>@@ -64,6 +66,10 @@ struct pnv_ioda_pe {
+> 	 */
+> 	int			mve_number;
+>
+>+	/* PEs in compound case */
+>+	struct pnv_ioda_pe	*master;
+>+	struct list_head	slaves;
+>+
+> 	/* Link in list of PE#s */
+> 	struct list_head	dma_link;
+> 	struct list_head	list;
+>@@ -119,6 +125,9 @@ struct pnv_phb {
+> 	void (*fixup_phb)(struct pci_controller *hose);
+> 	u32 (*bdfn_to_pe)(struct pnv_phb *phb, struct pci_bus *bus, u32 devfn);
+> 	void (*shutdown)(struct pnv_phb *phb);
+>+	int (*init_m64)(struct pnv_phb *phb);
+>+	void (*alloc_m64_pe)(struct pnv_phb *phb);
+>+	int (*pick_m64_pe)(struct pnv_phb *phb, struct pci_bus *bus, int all);
+>
+> 	union {
+> 		struct {
+>@@ -129,9 +138,20 @@ struct pnv_phb {
+> 			/* Global bridge info */
+> 			unsigned int		total_pe;
+> 			unsigned int		reserved_pe;
+>+
+>+			/* 32-bit MMIO window */
+> 			unsigned int		m32_size;
+> 			unsigned int		m32_segsize;
+> 			unsigned int		m32_pci_base;
+>+
+>+			/* 64-bit MMIO window */
+>+			unsigned int		m64_bar_idx;
+>+			unsigned long		m64_size;
+>+			unsigned long		m64_segsize;
+>+			unsigned long		m64_base;
+>+			unsigned long		m64_bar_alloc;
+>+
+>+			/* IO ports */
+> 			unsigned int		io_size;
+> 			unsigned int		io_segsize;
+> 			unsigned int		io_pci_base;
+>-- 
+>1.9.1
+>
