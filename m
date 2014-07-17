@@ -1,20 +1,52 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tomeu.vizoso@gmail.com>
+Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
+ [IPv6:2a00:1450:400c:c00::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83D291A0253
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 00:25:22 +1000 (EST)
-Message-ID: <53C7DCCF.60803@suse.de>
-Date: Thu, 17 Jul 2014 16:25:19 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v5 0/5] Read guest last instruction from
- kvmppc_get_last_inst()
-References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E695E1A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 00:13:55 +1000 (EST)
+Received: by mail-wg0-f48.google.com with SMTP id x13so2117630wgg.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 07:13:50 -0700 (PDT)
+Sender: Tomeu Vizoso <tomeu.vizoso@gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+To: Mike Turquette <mturquette@linaro.org>
+Subject: [PATCH v4 0/6] Per-user clock constraints
+Date: Thu, 17 Jul 2014 16:13:13 +0200
+Message-Id: <1405606399-26608-1-git-send-email-tomeu.vizoso@collabora.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Prashant Gaikwad <pgaikwad@nvidia.com>, Tony Lindgren <tony@atomide.com>,
+ Tomasz Figa <t.figa@samsung.com>, alsa-devel@alsa-project.org,
+ Jaroslav Kysela <perex@perex.cz>, Thierry Reding <thierry.reding@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ =?UTF-8?q?Emilio=20L=C3=B3pez?= <emilio@elopez.com.ar>,
+ Takashi Iwai <tiwai@suse.de>, Michal Simek <michal.simek@xilinx.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Kevin Hilman <khilman@deeprootsystems.com>,
+ linux-arm-kernel@lists.infradead.org, patches@opensource.wolfsonmicro.com,
+ Viresh Kumar <viresh.linux@gmail.com>, David Brown <davidb@codeaurora.org>,
+ Anatolij Gustschin <agust@denx.de>, Dinh Nguyen <dinguyen@altera.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
+ spear-devel@list.st.com, Barry Song <baohua@kernel.org>,
+ Mark Brown <broonie@kernel.org>, linux-rpi-kernel@lists.infradead.org,
+ Ben Dooks <ben-linux@fluff.org>, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>,
+ Shawn Guo <shawn.guo@freescale.com>, Paul Walmsley <paul@pwsan.com>,
+ Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
+ rabin@rab.in, Bryan Huntsman <bryanh@codeaurora.org>,
+ Santosh Shilimkar <santosh.shilimkar@ti.com>,
+ =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>, linux-media@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Javier Martinez Canillas <javier.martinez@collabora.co.uk>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +56,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
-On 17.07.14 13:22, Mihai Caraman wrote:
-> Read guest last instruction from kvmppc_get_last_inst() allowing the function
-> to fail in order to emulate again. On bookehv architecture search for
-> the physical address and kmap it, instead of using Load External PID (lwepx)
-> instruction. This fixes an infinite loop caused by lwepx's data TLB miss
-> exception handled in the host and the TODO for execute-but-not-read entries
-> and TLB eviction.
+I'm retaking Rabin's patches [0] for splitting the clk API in two: one API for
+clk consumers and another for providers. The consumer API uses a clk structure
+that just keeps track of the consumer and has a reference to the actual
+clk_core struct, which is used internally.
 
-Looks very good apart from minor nits. Please let me know whether you 
-can send a final patch set fixing those or you would like me to fix it 
-up while applying them.
+I have kept a patch from Rabin that aims to aid in debugging nested
+enable/disable calls, though my personal aim is to allow more than one consumer
+to influence the final, effective frequency rate. For now this is limited to
+setting floor and ceiling constraints, with the short-term aim of allowing
+devfreq and thermal drivers to set floor and ceiling frequencies on the memory
+clock, respectively.
 
+For those functions in the consumer clk API that were called from providers, I
+have added variants to clk-provider.h that are the same only that accept a
+clk_core instead. These functions are prefixed with clk_provider_.
 
-Alex
+Patch 1/6 just adds a bunch of defines with the goal of having all the renames
+in their own commit while preserving git-bisectability, with patch 3/6
+containing the rename itself as generated by the Coccinelle script in [1].
+Patch 2/6 is needed because sound/soc/mxs/mxs-saif.c calls both the consumer
+and the provider API. The actual implementation of the API split comes in patch
+4/6. I will be happy to organize the refactoring differently if anybody has a
+better idea.
+
+Patch 5/6 warns when there's an unbalanced usage of the enable and disable
+APIs, and patch 6/6 adds the API for setting floor and ceiling frequencies, per
+consumer.
+
+[0] http://thread.gmane.org/gmane.linux.kernel/1402006
+[1] http://cgit.collabora.com/git/user/tomeu/linux.git/commit/?id=da9c7e34d9
+
+Thanks,
+
+Tomeu
+
+Tomeu Vizoso (6):
+  clk: Add temporary mapping to the existing API
+  ASoC: mxs-saif: fix mixed use of public and provider clk API
+  clk: Move all drivers to use internal API
+  clk: use struct clk only for external API
+  clk: per-user clock accounting for debug
+  clk: Add floor and ceiling constraints to clock rates
+
+[detailed diffstat omitted for brevity sake]
+
+ 244 files changed, 2345 insertions(+), 1812 deletions(-)
+
+-- 
+1.9.3
