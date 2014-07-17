@@ -1,18 +1,15 @@
 Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
- by lists.ozlabs.org (Postfix) with ESMTP id B87BE1A01BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:41:04 +1000 (EST)
-Message-ID: <53C7B649.1070004@hitachi.com>
-Date: Thu, 17 Jul 2014 20:40:57 +0900
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 422E61A00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:44:22 +1000 (EST)
+Subject: [PATCH v6] [BUGFIX] kprobes: Fix "Failed to find blacklist" error
+ on ia64 and ppc64
 From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-MIME-Version: 1.0
 To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: Re: [RESEND PATCH v5] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <20140717071121.3130.86341.stgit@kbuild-fedora.novalocal>
- <20140717093832.GB4232@gmail.com> <53C7B0E6.1050503@hitachi.com>
-In-Reply-To: <53C7B0E6.1050503@hitachi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 17 Jul 2014 11:44:11 +0000
+Message-ID: <20140717114411.13401.2632.stgit@kbuild-fedora.novalocal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
  sparse@chrisli.org, Tony Luck <tony.luck@gmail.com>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
@@ -35,28 +32,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/07/17 20:17), Masami Hiramatsu wrote:
-> (2014/07/17 18:38), Ingo Molnar wrote:
->>
->> * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
->>
->>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
->>> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
->>
->> Looks good, but this is not a valid SOB sequence: if Suzuki wrote the 
->> patch then he should be the first SOB (and should have a From line as 
->> well), if he acked it along the way then it should be an Acked-by - or 
->> Reviewed-by.
-> 
-> Ah, OK, so I'll add his name as Fixed-by:.
+On ia64 and ppc64, the function pointer does not point the
+entry address of the function, but the address of function
+discriptor (which contains the entry address and misc
+data.) Since the kprobes passes the function pointer stored
+by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
+initalizing its blacklist, it fails and reports many errors
+as below.
 
-Oops, I also found that an old comment in the patch description
-and unneeded "include". I'll fix and send that asap.
+  Failed to find blacklist 0001013168300000
+  Failed to find blacklist 0001013000f0a000
+  Failed to find blacklist 000101315f70a000
+  Failed to find blacklist 000101324c80a000
+  Failed to find blacklist 0001013063f0a000
+  Failed to find blacklist 000101327800a000
+  Failed to find blacklist 0001013277f0a000
+  Failed to find blacklist 000101315a70a000
+  Failed to find blacklist 0001013277e0a000
+  Failed to find blacklist 000101305a20a000
+  Failed to find blacklist 0001013277d0a000
+  Failed to find blacklist 00010130bdc0a000
+  Failed to find blacklist 00010130dc20a000
+  Failed to find blacklist 000101309a00a000
+  Failed to find blacklist 0001013277c0a000
+  Failed to find blacklist 0001013277b0a000
+  Failed to find blacklist 0001013277a0a000
+  Failed to find blacklist 000101327790a000
+  Failed to find blacklist 000101303140a000
+  Failed to find blacklist 0001013a3280a000
 
-Thank you,
+To fix this bug, this uses arch_deref_entry_point() to get
+the function entry address for kallsyms_lookup_size_offset()
+instead of the raw function pointer.
+Suzuki also pointed out that blacklist entries should also
+be updated by that too.
 
--- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+Changes in v6:
+ - Update patch description.
+ - Remove "#include <linux/types.h>" which is no more needed
+   because we don't use new function_entry() macro any more.
+
+Changes in v5:
+ - Use arch_deref_entry_point() instead of function_entry().
+
+Changes in v4:
+ - Add kernel_text_address() check for verifying the address.
+ - Moved on the latest linus tree.
+
+Changes in v3:
+ - Fix a bug to get blacklist address based on function entry
+   instead of function descriptor. (Suzuki's work, Thanks!)
+
+Changes in V2:
+ - Use function_entry() macro when lookin up symbols instead
+   of storing it.
+ - Update for the latest -next.
+
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Fixed-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Reported-by: Tony Luck <tony.luck@gmail.com>
+Tested-by: Tony Luck <tony.luck@intel.com>
+Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Kevin Hao <haokexin@gmail.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ kernel/kprobes.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 3214289..734e9a7 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -2037,19 +2037,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
+ {
+ 	unsigned long *iter;
+ 	struct kprobe_blacklist_entry *ent;
+-	unsigned long offset = 0, size = 0;
++	unsigned long entry, offset = 0, size = 0;
+ 
+ 	for (iter = start; iter < end; iter++) {
+-		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
+-			pr_err("Failed to find blacklist %p\n", (void *)*iter);
++		entry = arch_deref_entry_point((void *)*iter);
++
++		if (!kernel_text_address(entry) ||
++		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
++			pr_err("Failed to find blacklist at %p\n",
++				(void *)entry);
+ 			continue;
+ 		}
+ 
+ 		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
+ 		if (!ent)
+ 			return -ENOMEM;
+-		ent->start_addr = *iter;
+-		ent->end_addr = *iter + size;
++		ent->start_addr = entry;
++		ent->end_addr = entry + size;
+ 		INIT_LIST_HEAD(&ent->list);
+ 		list_add_tail(&ent->list, &kprobe_blacklist);
+ 	}
