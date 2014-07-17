@@ -1,20 +1,37 @@
-Return-Path: <hs@denx.de>
-Received: from submit1.sa.ew.hu (submit1.sa.ew.hu [212.108.200.71])
- by lists.ozlabs.org (Postfix) with ESMTP id 3E3631A0058
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:44:21 +1000 (EST)
-Message-ID: <53C7B70F.5040904@denx.de>
-Date: Thu, 17 Jul 2014 13:44:15 +0200
-From: Heiko Schocher <hs@denx.de>
+Return-Path: <michael.neuling@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F24081A01DE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 21:14:55 +1000 (EST)
+Received: from mail-la0-x236.google.com (mail-la0-x236.google.com
+ [IPv6:2a00:1450:4010:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 29E3F14008B
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 21:14:54 +1000 (EST)
+Received: by mail-la0-f54.google.com with SMTP id el20so1623499lab.27
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2014 04:14:51 -0700 (PDT)
 MIME-Version: 1.0
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: spi, spi_fsl-spi.c not working?
-References: <53C79351.2080406@denx.de> <20140717113129.GU17528@sirena.org.uk>
-In-Reply-To: <20140717113129.GU17528@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andreas Larsson <andreas@gaisler.com>, linux-spi@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
-Reply-To: hs@denx.de
+Sender: michael.neuling@gmail.com
+In-Reply-To: <1405595380.25310.21.camel@pasglop>
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <53996E41.4070309@linux.vnet.ibm.com>
+ <53C7A4FA.4030600@linux.vnet.ibm.com>
+ <1405595380.25310.21.camel@pasglop>
+Date: Thu, 17 Jul 2014 21:14:51 +1000
+Message-ID: <CAEjGV6yK_9DS1cLQ2BH=HFi029N8rz-4Wyvwzdb_gy6PnJgbwg@mail.gmail.com>
+Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/alternative; boundary=001a11c370dce713fa04fe61bfd3
+Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
+ Peter Zijlstra <peterz@infradead.org>, Pedro Alves <palves@redhat.com>,
+ oleg@redhat.com, akpm@linux-foundation.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dhowells@redhat.com,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, davej@redhat.com, tglx@linutronix.de,
+ "David S. Miller" <davem@davemloft.net>, sam.bobroff@au1.ibm.com,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +41,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Mark,
+--001a11c370dce713fa04fe61bfd3
+Content-Type: text/plain; charset=UTF-8
 
-Am 17.07.2014 13:31, schrieb Mark Brown:
-> On Thu, Jul 17, 2014 at 11:11:45AM +0200, Heiko Schocher wrote:
+On Jul 17, 2014 9:11 PM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+wrote:
 >
->> Is it maybe the missing "support for the SPI subsystem's queue SPI messages"?
+> > >
+> > >> Outstanding Issues
+> > >> ==================
+> > >> (1) Running DSCR register value inside a transaction does not seem
+to be saved
+> > >>     at thread.dscr when the process stops for ptrace examination.
+> > >
+> > > Hey Ben,
+> > >
+> > > Any updates on this patch series ?
+> >
+> > Ben,
+> >
+> > Any updates on this patch series ?
 >
-> It shouldn't be that, that's still optional (sadly).
+> I haven't had a chance to review yet, I was hoping somebody else would..
+>
+> Have you made any progress vs. the DSCR outstanding issue mentioned
+> above ?
 
-Thanks for this info! I digging in it ...
+The DSCR issue should be resolved with Sam Bobroff's recent  DSCR fixes.
+I've not tested them though.
 
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Actually... Sam did you review this series?
+
+Mikey
+
+--001a11c370dce713fa04fe61bfd3
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<p dir=3D"ltr"><br>
+On Jul 17, 2014 9:11 PM, &quot;Benjamin Herrenschmidt&quot; &lt;<a href=3D"=
+mailto:benh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt; wrote:<br=
+>
+&gt;<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt;&gt; Outstanding Issues<br>
+&gt; &gt; &gt;&gt; =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<b=
+r>
+&gt; &gt; &gt;&gt; (1) Running DSCR register value inside a transaction doe=
+s not seem to be saved<br>
+&gt; &gt; &gt;&gt; =C2=A0 =C2=A0 at thread.dscr when the process stops for =
+ptrace examination.<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; Hey Ben,<br>
+&gt; &gt; &gt;<br>
+&gt; &gt; &gt; Any updates on this patch series ?<br>
+&gt; &gt;<br>
+&gt; &gt; Ben,<br>
+&gt; &gt;<br>
+&gt; &gt; Any updates on this patch series ?<br>
+&gt;<br>
+&gt; I haven&#39;t had a chance to review yet, I was hoping somebody else w=
+ould..<br>
+&gt;<br>
+&gt; Have you made any progress vs. the DSCR outstanding issue mentioned<br=
+>
+&gt; above ?</p>
+<p dir=3D"ltr">The DSCR issue should be resolved with Sam Bobroff&#39;s rec=
+ent=C2=A0 DSCR fixes.=C2=A0 I&#39;ve not tested them though.</p>
+<p dir=3D"ltr">Actually... Sam did you review this series? </p>
+<p dir=3D"ltr">Mikey<br>
+</p>
+
+--001a11c370dce713fa04fe61bfd3--
