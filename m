@@ -1,14 +1,33 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF23F1A0197
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 15:29:47 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Document how we set AIL on guest kernels
-Date: Thu, 17 Jul 2014 15:29:45 +1000
-Message-Id: <1405574985-21097-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9DB8C1A02A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 17:10:46 +1000 (EST)
+Message-ID: <53C776ED.3050001@hitachi.com>
+Date: Thu, 17 Jul 2014 16:10:37 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: Re: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+ <1405394370.17767.7.camel@concordia> <1405408602.9343.75.camel@pasglop>
+ <53C4FDC8.9050801@hitachi.com> <20140716132838.GA18597@gmail.com>
+In-Reply-To: <20140716132838.GA18597@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,31 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I spent ten minutes scratching my head, trying to work out where we
-enabled relocation on interrupts for guest kernels. Expand the doco to
-make it clear.
+(2014/07/16 22:28), Ingo Molnar wrote:
+> 
+> * Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com> wrote:
+> 
+>> (2014/07/15 16:16), Benjamin Herrenschmidt wrote:
+>>> On Tue, 2014-07-15 at 13:19 +1000, Michael Ellerman wrote:
+>>>
+>>>>> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+>>>>> Reported-by: Tony Luck <tony.luck@gmail.com>
+>>>>> Tested-by: Tony Luck <tony.luck@intel.com>
+>>>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>>>
+>>>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+>>>> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+>>>>
+>>>> Ben, can you take this in your tree?
+>>>
+>>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>
+>>> That looks more like generic material. Do we have a kprobes maintainer ?
+>>> Andrew, do you want to take this ?
+>>
+>> Yeah, I usually use Ingo's tip tree for kprobes maintenance.
+>> Ingo, could you pull this as urgent-for-linus patch?
+> 
+> Mind resending it in a separate thread with all acks added, etc?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+OK, I'll resend that soon.
+BTW, I missed Suzuki's Signed-off-by in this version,
+I'd like to recover that since he made a big bugfix on this.
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index ee082d771178..d600b3fe5f5c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -201,7 +201,11 @@ static void cpu_ready_for_interrupts(void)
- 	/* Set IR and DR in PACA MSR */
- 	get_paca()->kernel_msr = MSR_KERNEL;
- 
--	/* Enable AIL if supported */
-+	/*
-+	 * Enable AIL if supported, and we are in hypervisor mode. If we are
-+	 * not in hypervisor mode, we enable relocation-on interrupts later
-+	 * in pSeries_setup_arch() using the H_SET_MODE hcall.
-+	 */
- 	if (cpu_has_feature(CPU_FTR_HVMODE) &&
- 	    cpu_has_feature(CPU_FTR_ARCH_207S)) {
- 		unsigned long lpcr = mfspr(SPRN_LPCR);
+Thanks,
+
 -- 
-1.9.1
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
