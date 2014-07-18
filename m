@@ -1,37 +1,19 @@
-Return-Path: <will.deacon@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50])
- by lists.ozlabs.org (Postfix) with ESMTP id D541D1A07E5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 20:16:05 +1000 (EST)
-Date: Fri, 18 Jul 2014 11:14:16 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
- mm: Remove default gate area
-Message-ID: <20140718101416.GB1818@arm.com>
-References: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
- <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 13A831A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 20:19:52 +1000 (EST)
+From: Nikhil Badola <nikhil.badola@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc : dma-mapping : Check null condition for
+ dev->archdata.dma_ops
+Date: Fri, 18 Jul 2014 15:34:52 +0530
+Message-ID: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- Catalin Marinas <Catalin.Marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Richard Weinberger <richard@nod.at>, X86 ML <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>, Jeff Dike <jdike@addtoit.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Nikhil Badola <nikhil.badola@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:
-> On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski <luto@amacapital.net> wrote:
-> > The core mm code will provide a default gate area based on
-> > FIXADDR_USER_START and FIXADDR_USER_END if
-> > !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
-> >
-> > This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
-> > 64-bit UML, and x86_32 have their own code just to disable it.  arm,
-> > 32-bit UML, and x86_64 have gate areas, but they have their own
-> > implementations.
-> >
-> > This gets rid of the default and moves the code into ia64.
-> >
-> > This should save some code on architectures without a gate area: it's
-> > now possible to inline the gate_area functions in the default case.
-> 
-> Can one of you pull this somewhere?  Otherwise I can put it somewhere
-> stable and ask for -next inclusion, but that seems like overkill for a
-> single patch.
+Modifies get_dma_ops() implementation on ppc arch to check null condition
+for dev->archdata.dma_ops; returns common dma_direct_ops structure in
+case its NULL
 
-I'd be happy to take the arm64 part, but it doesn't feel right for mm/*
-changes (or changes to other archs) to go via our tree.
+Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+---
+ arch/powerpc/include/asm/dma-mapping.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-I'm not sure what the best approach is if you want to send this via a single
-tree. Maybe you could ask akpm nicely?
-
-Will
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 150866b..d73bae8 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -86,10 +86,12 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+ 	 */
+ 	if (unlikely(dev == NULL))
+ 		return NULL;
+-
+-	return dev->archdata.dma_ops;
++	if (dev->archdata.dma_ops)
++		return dev->archdata.dma_ops;
++	return &dma_direct_ops;
+ }
+ 
++
+ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+ {
+ 	dev->archdata.dma_ops = ops;
+-- 
+1.7.11.7
