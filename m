@@ -1,19 +1,23 @@
-Return-Path: <nikhil.badola@freescale.com>
+Return-Path: <guangyu.chen@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 13A831A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 20:19:52 +1000 (EST)
-From: Nikhil Badola <nikhil.badola@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc : dma-mapping : Check null condition for
- dev->archdata.dma_ops
-Date: Fri, 18 Jul 2014 15:34:52 +0530
-Message-ID: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E01251A044F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 20:36:55 +1000 (EST)
+Date: Fri, 18 Jul 2014 18:18:12 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl_sai: Reset FIFOs after disabling TE/RE
+Message-ID: <20140718101810.GA15150@MrMyself>
+References: <cover.1405603108.git.nicoleotsuka@gmail.com>
+ <9ef07dc9cc98b19e3f81f8374617605bf0d9faeb.1405603108.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Nikhil Badola <nikhil.badola@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <9ef07dc9cc98b19e3f81f8374617605bf0d9faeb.1405603108.git.nicoleotsuka@gmail.com>
+Cc: alsa-devel@alsa-project.org, broonie@kernel.org, b42378@freescale.com,
+ b02247@freescale.com, linux-kernel@vger.kernel.org, timur@tabi.org,
+ Li.Xiubo@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modifies get_dma_ops() implementation on ppc arch to check null condition
-for dev->archdata.dma_ops; returns common dma_direct_ops structure in
-case its NULL
+Mark,
 
-Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
----
- arch/powerpc/include/asm/dma-mapping.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+	Please disregard this single patch. 
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 150866b..d73bae8 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -86,10 +86,12 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
- 	 */
- 	if (unlikely(dev == NULL))
- 		return NULL;
--
--	return dev->archdata.dma_ops;
-+	if (dev->archdata.dma_ops)
-+		return dev->archdata.dma_ops;
-+	return &dma_direct_ops;
- }
- 
-+
- static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
- {
- 	dev->archdata.dma_ops = ops;
--- 
-1.7.11.7
+On Thu, Jul 17, 2014 at 09:21:37PM +0800, Nicolin Chen wrote:
+> SAI will not clear their FIFOs after disabling TE/RE. Therfore, the driver
+> should take care the task so as not to let useless data remain in the FIFO.
+> 
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> ---
+>  sound/soc/fsl/fsl_sai.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index c5a0e8a..b10dbd8 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -371,10 +371,13 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+>  
+>  		/* Check if the opposite FRDE is also disabled */
+>  		if (!(tx ? rcsr & FSL_SAI_CSR_FRDE : tcsr & FSL_SAI_CSR_FRDE)) {
+> +			/* Disable both directions and reset their FIFOs */
+>  			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
+> -					   FSL_SAI_CSR_TERE, 0);
+> +					   FSL_SAI_CSR_TERE | FSL_SAI_CSR_FR,
+> +					   FSL_SAI_CSR_FR);
+>  			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
+> -					   FSL_SAI_CSR_TERE, 0);
+> +					   FSL_SAI_CSR_TERE | FSL_SAI_CSR_FR,
+> +					   FSL_SAI_CSR_FR);
+
+
+The FR should be set _after_ clear TERE, not at the same time because it
+still may have tiny possibility to remain data.
+
+I'll send another version later for this patch.
+
+The other patch for isr() should be still fine.
+
+Thank you,
+Nicolin
+
+>  		}
+>  		break;
+>  	default:
+> -- 
+> 1.8.4
+> 
