@@ -1,24 +1,22 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 548881A02C5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 19:05:39 +1000 (EST)
-From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Alexander Graf <agraf@suse.de>, "kvm-ppc@vger.kernel.org"
- <kvm-ppc@vger.kernel.org>
-Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
-Date: Fri, 18 Jul 2014 09:05:32 +0000
-Message-ID: <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
- <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
- <53C7DBC3.2060104@suse.de>
-In-Reply-To: <53C7DBC3.2060104@suse.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <zhangyanfei@cn.fujitsu.com>
+Received: from heian.cn.fujitsu.com (unknown [59.151.112.132])
+ by lists.ozlabs.org (Postfix) with ESMTP id 508981A0609
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 19:28:03 +1000 (EST)
+Message-ID: <53C8E602.1060301@cn.fujitsu.com>
+Date: Fri, 18 Jul 2014 17:16:50 +0800
+From: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+To: Wang Nan <wangnan0@huawei.com>
+Subject: Re: [PATCH 0/5] memory-hotplug: suitable memory should go to
+ ZONE_MOVABLE
+References: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linux-ia64@vger.kernel.org, Pei Feiyue <peifeiyue@huawei.com>,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,107 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Alexander Graf [mailto:agraf@suse.de]
-> Sent: Thursday, July 17, 2014 5:21 PM
-> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
-> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
->=20
->=20
-> On 17.07.14 13:22, Mihai Caraman wrote:
-> > On book3e, guest last instruction is read on the exit path using load
-> > external pid (lwepx) dedicated instruction. This load operation may
-> fail
-> > due to TLB eviction and execute-but-not-read entries.
-> >
-> > This patch lay down the path for an alternative solution to read the
-> guest
-> > last instruction, by allowing kvmppc_get_lat_inst() function to fail.
-> > Architecture specific implmentations of kvmppc_load_last_inst() may
-> read
-> > last guest instruction and instruct the emulation layer to re-execute
-> the
-> > guest in case of failure.
-> >
-> > Make kvmppc_get_last_inst() definition common between architectures.
-> >
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > ---
+Hello,
 
-...
+On 07/18/2014 03:55 PM, Wang Nan wrote:
+> This series of patches fix a problem when adding memory in bad manner.
+> For example: for a x86_64 machine booted with "mem=400M" and with 2GiB
+> memory installed, following commands cause problem:
+> 
+>  # echo 0x40000000 > /sys/devices/system/memory/probe
+> [   28.613895] init_memory_mapping: [mem 0x40000000-0x47ffffff]
+>  # echo 0x48000000 > /sys/devices/system/memory/probe
+> [   28.693675] init_memory_mapping: [mem 0x48000000-0x4fffffff]
+>  # echo online_movable > /sys/devices/system/memory/memory9/state
+>  # echo 0x50000000 > /sys/devices/system/memory/probe 
+> [   29.084090] init_memory_mapping: [mem 0x50000000-0x57ffffff]
+>  # echo 0x58000000 > /sys/devices/system/memory/probe 
+> [   29.151880] init_memory_mapping: [mem 0x58000000-0x5fffffff]
+>  # echo online_movable > /sys/devices/system/memory/memory11/state
+>  # echo online> /sys/devices/system/memory/memory8/state
+>  # echo online> /sys/devices/system/memory/memory10/state
+>  # echo offline> /sys/devices/system/memory/memory9/state
+> [   30.558819] Offlined Pages 32768
+>  # free
+>              total       used       free     shared    buffers     cached
+> Mem:        780588 18014398509432020     830552          0          0      51180
+> -/+ buffers/cache: 18014398509380840     881732
+> Swap:            0          0          0
+> 
+> This is because the above commands probe higher memory after online a
+> section with online_movable, which causes ZONE_HIGHMEM (or ZONE_NORMAL
+> for systems without ZONE_HIGHMEM) overlaps ZONE_MOVABLE.
 
-> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h
-> b/arch/powerpc/include/asm/kvm_ppc.h
-> > index e2fd5a1..7f9c634 100644
-> > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > @@ -47,6 +47,11 @@ enum emulation_result {
-> >   	EMULATE_EXIT_USER,    /* emulation requires exit to user-space */
-> >   };
-> >
-> > +enum instruction_type {
-> > +	INST_GENERIC,
-> > +	INST_SC,		/* system call */
-> > +};
-> > +
-> >   extern int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu
-> *vcpu);
-> >   extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu
-> *vcpu);
-> >   extern void kvmppc_handler_highmem(void);
-> > @@ -62,6 +67,9 @@ extern int kvmppc_handle_store(struct kvm_run *run,
-> struct kvm_vcpu *vcpu,
-> >   			       u64 val, unsigned int bytes,
-> >   			       int is_default_endian);
-> >
-> > +extern int kvmppc_load_last_inst(struct kvm_vcpu *vcpu,
-> > +				 enum instruction_type type, u32 *inst);
-> > +
-> >   extern int kvmppc_emulate_instruction(struct kvm_run *run,
-> >                                         struct kvm_vcpu *vcpu);
-> >   extern int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu
-> *vcpu);
-> > @@ -234,6 +242,23 @@ struct kvmppc_ops {
-> >   extern struct kvmppc_ops *kvmppc_hv_ops;
-> >   extern struct kvmppc_ops *kvmppc_pr_ops;
-> >
-> > +static inline int kvmppc_get_last_inst(struct kvm_vcpu *vcpu,
-> > +					enum instruction_type type, u32 *inst)
-> > +{
-> > +	int ret =3D EMULATE_DONE;
-> > +
-> > +	/* Load the instruction manually if it failed to do so in the
-> > +	 * exit path */
-> > +	if (vcpu->arch.last_inst =3D=3D KVM_INST_FETCH_FAILED)
-> > +		ret =3D kvmppc_load_last_inst(vcpu, type, &vcpu-
-> >arch.last_inst);
-> > +
-> > +
-> > +	*inst =3D (ret =3D=3D EMULATE_DONE && kvmppc_need_byteswap(vcpu)) ?
-> > +		swab32(vcpu->arch.last_inst) : vcpu->arch.last_inst;
->=20
-> This makes even less sense than the previous version. Either you treat
-> inst as "definitely overwritten" or as "preserves previous data on
-> failure".
+Yeah, this is rare in reality but can happen. Could you please also
+include the free result and zoneinfo after applying your patch?
 
-Both v4 and v5 versions treat inst as "definitely overwritten".
+Thanks.
 
->=20
-> So either you unconditionally swap like you did before
+> 
+> After the second online_movable, the problem can be observed from
+> zoneinfo:
+> 
+>  # cat /proc/zoneinfo
+> ...
+> Node 0, zone  Movable
+>   pages free     65491
+>         min      250
+>         low      312
+>         high     375
+>         scanned  0
+>         spanned  18446744073709518848
+>         present  65536
+>         managed  65536
+> ...
+> 
+> This series of patches solve the problem by checking ZONE_MOVABLE when
+> choosing zone for new memory. If new memory is inside or higher than
+> ZONE_MOVABLE, makes it go there instead.
+> 
+> 
+> Wang Nan (5):
+>   memory-hotplug: x86_64: suitable memory should go to ZONE_MOVABLE
+>   memory-hotplug: x86_32: suitable memory should go to ZONE_MOVABLE
+>   memory-hotplug: ia64: suitable memory should go to ZONE_MOVABLE
+>   memory-hotplug: sh: suitable memory should go to ZONE_MOVABLE
+>   memory-hotplug: powerpc: suitable memory should go to ZONE_MOVABLE
+> 
+>  arch/ia64/mm/init.c   |  7 +++++++
+>  arch/powerpc/mm/mem.c |  6 ++++++
+>  arch/sh/mm/init.c     | 13 ++++++++-----
+>  arch/x86/mm/init_32.c |  6 ++++++
+>  arch/x86/mm/init_64.c | 10 ++++++++--
+>  5 files changed, 35 insertions(+), 7 deletions(-)
+> 
 
-If we make abstraction of its symmetry, KVM_INST_FETCH_FAILED is operated
-in host endianness, so it doesn't need byte swap.
 
-I agree with your reasoning if last_inst is initialized and compared with
-data in guest endianess, which is not the case yet for KVM_INST_FETCH_FAILE=
-D.
-
-> or you do
->=20
-> if (ret =3D=3D EMULATE_DONE)
->      *inst =3D kvmppc_need_byteswap(vcpu) ? swab32(vcpu->arch.last_inst) =
-:
-> vcpu->arch.last_inst;
-
--Mike
+-- 
+Thanks.
+Zhang Yanfei
