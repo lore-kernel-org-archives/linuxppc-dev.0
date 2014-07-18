@@ -1,39 +1,27 @@
-Return-Path: <richard@nod.at>
-Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-qa0-x22e.google.com (mail-qa0-x22e.google.com
+ [IPv6:2607:f8b0:400d:c00::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F08E1A07C5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 20:40:27 +1000 (EST)
-Message-ID: <53C8F4DF.8020103@nod.at>
-Date: Fri, 18 Jul 2014 12:20:15 +0200
-From: Richard Weinberger <richard@nod.at>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B10E61A07E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 21:20:44 +1000 (EST)
+Received: by mail-qa0-f46.google.com with SMTP id v10so2911178qac.33
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 04:20:41 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Fri, 18 Jul 2014 07:20:39 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/2] Memoryless nodes and kworker
+Message-ID: <20140718112039.GA8383@htj.dyndns.org>
+References: <20140717230923.GA32660@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Will Deacon <will.deacon@arm.com>, Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
- mm: Remove default gate area
-References: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
- <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
- <20140718101416.GB1818@arm.com>
-In-Reply-To: <20140718101416.GB1818@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- Catalin Marinas <Catalin.Marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>, Jeff Dike <jdike@addtoit.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140717230923.GA32660@linux.vnet.ibm.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,37 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 18.07.2014 12:14, schrieb Will Deacon:
-> On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:
->> On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->>> The core mm code will provide a default gate area based on
->>> FIXADDR_USER_START and FIXADDR_USER_END if
->>> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
->>>
->>> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
->>> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
->>> 32-bit UML, and x86_64 have gate areas, but they have their own
->>> implementations.
->>>
->>> This gets rid of the default and moves the code into ia64.
->>>
->>> This should save some code on architectures without a gate area: it's
->>> now possible to inline the gate_area functions in the default case.
->>
->> Can one of you pull this somewhere?  Otherwise I can put it somewhere
->> stable and ask for -next inclusion, but that seems like overkill for a
->> single patch.
-
-For the um bits:
-Acked-by: Richard Weinberger <richard@nod.at>
-
-> I'd be happy to take the arm64 part, but it doesn't feel right for mm/*
-> changes (or changes to other archs) to go via our tree.
+On Thu, Jul 17, 2014 at 04:09:23PM -0700, Nishanth Aravamudan wrote:
+> [Apologies for the large Cc list, but I believe we have the following
+> interested parties:
 > 
-> I'm not sure what the best approach is if you want to send this via a single
-> tree. Maybe you could ask akpm nicely?
+> x86 (recently posted memoryless node support)
+> ia64 (existing memoryless node support)
+> ppc (existing memoryless node support)
+> previous discussion of how to solve Anton's issue with slab usage
+> workqueue contributors/maintainers]
 
-Going though Andrew's tree sounds sane to me.
+Well, you forgot to cc me.
 
-Thanks,
-//richard
+...
+> It turns out we see this large slab usage due to using the wrong NUMA
+> information when creating kthreads.
+>     
+> Two changes are required, one of which is in the workqueue code and one
+> of which is in the powerpc initialization. Note that ia64 may want to
+> consider something similar.
+
+Wasn't there a thread on this exact subject a few weeks ago?  Was that
+someone else?  Memory-less node detail leaking out of allocator proper
+isn't a good idea.  Please allow allocator users to specify the nodes
+they're on and let the allocator layer deal with mapping that to
+whatever is appropriate.  Please don't push that to everybody.
+
+Thanks.
+
+-- 
+tejun
