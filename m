@@ -1,36 +1,23 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A907D1A0241
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 17:33:24 +1000 (EST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout3.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0N8W00AU6CZGGU70@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 18 Jul 2014 08:33:16 +0100 (BST)
-Message-id: <53C8CDBC.3030600@samsung.com>
-Date: Fri, 18 Jul 2014 09:33:16 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-MIME-version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] CMA: generalize CMA reserved area management functionality
- (fixup)
-References: <53C78ED7.7030002@samsung.com>
- <1405589767-17513-1-git-send-email-m.szyprowski@samsung.com>
- <20140717150615.32c48786b6bdbc880bdc5ed4@linux-foundation.org>
-In-reply-to: <20140717150615.32c48786b6bdbc880bdc5ed4@linux-foundation.org>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F7301A0333
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 17:48:12 +1000 (EST)
+Date: Fri, 18 Jul 2014 17:48:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 2/2] Use the POWER8 Micro Partition Prefetch Engine in
+ KVM HV on POWER8
+Message-ID: <20140718074807.GB32094@iris.ozlabs.ibm.com>
+References: <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405657123-20087-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405657123-20087-3-git-send-email-stewart@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1405657123-20087-3-git-send-email-stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,82 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Fri, Jul 18, 2014 at 02:18:43PM +1000, Stewart Smith wrote:
+> The POWER8 processor has a Micro Partition Prefetch Engine, which is
+> a fancy way of saying "has way to store and load contents of L2 or
+> L2+MRU way of L3 cache". We initiate the storing of the log (list of
+> addresses) using the logmpp instruction and start restore by writing
+> to a SPR.
+> 
+> The logmpp instruction takes parameters in a single 64bit register:
+> - starting address of the table to store log of L2/L2+L3 cache contents
+>   - 32kb for L2
+>   - 128kb for L2+L3
+>   - Aligned relative to maximum size of the table (32kb or 128kb)
+> - Log control (no-op, L2 only, L2 and L3, abort logout)
+> 
+> We should abort any ongoing logging before initiating one.
+> 
+> To initiate restore, we write to the MPPR SPR. The format of what to write
+> to the SPR is similar to the logmpp instruction parameter:
+> - starting address of the table to read from (same alignment requirements)
+> - table size (no data, until end of table)
+> - prefetch rate (from fastest possible to slower. about every 8, 16, 24 or
+>   32 cycles)
+> 
+> The idea behind loading and storing the contents of L2/L3 cache is to
+> reduce memory latency in a system that is frequently swapping vcores on
+> a physical CPU.
+> 
+> The best case scenario for doing this is when some vcores are doing very
+> cache heavy workloads. The worst case is when they have about 0 cache hits,
+> so we just generate needless memory operations.
+> 
+> This implementation just does L2 store/load. In my benchmarks this proves
+> to be useful.
+> 
+> Benchmark 1:
+>  - 16 core POWER8
+>  - 3x Ubuntu 14.04LTS guests (LE) with 8 VCPUs each
+>  - No split core/SMT
+>  - two guests running sysbench memory test.
+>    sysbench --test=memory --num-threads=8 run
+>  - one guest running apache bench (of default HTML page)
+>    ab -n 490000 -c 400 http://localhost/
+> 
+> This benchmark aims to measure performance of real world application (apache)
+> where other guests are cache hot with their own workloads. The sysbench memory
+> benchmark does pointer sized writes to a (small) memory buffer in a loop.
+> 
+> In this benchmark with this patch I can see an improvement both in requests
+> per second (~5%) and in mean and median response times (again, about 5%).
+> The spread of minimum and maximum response times were largely unchanged.
+> 
+> benchmark 2:
+>  - Same VM config as benchmark 1
+>  - all three guests running sysbench memory benchmark
+> 
+> This benchmark aims to see if there is a positive or negative affect to this
+> cache heavy benchmark. Although due to the nature of the benchmark (stores) we
+> may not see a difference in performance, but rather hopefully an improvement
+> in consistency of performance (when vcore switched in, don't have to wait
+> many times for cachelines to be pulled in)
+> 
+> The results of this benchmark are improvements in consistency of performance
+> rather than performance itself. With this patch, the few outliers in duration
+> go away and we get more consistent performance in each guest.
+> 
+> benchmark 3:
+>  - same 3 guests and CPU configuration as benchmark 1 and 2.
+>  - two idle guests
+>  - 1 guest running STREAM benchmark
+> 
+> This scenario also saw performance improvement with this patch. On Copy and
+> Scale workloads from STREAM, I got 5-6% improvement with this patch. For
+> Add and triad, it was around 10% (or more).
+> 
+> benchmark 4:
+>  - same 3 guests as previous benchmarks
+>  - two guests running sysbench --memory, distinctly different cache heavy
+>    workload
+>  - one guest running STREAM benchmark.
+> 
+> Similar improvements to benchmark 3.
+> 
+> benchmark 5:
+>  - 1 guest, 8 VCPUs, Ubuntu 14.04
+>  - Host configured with split core (SMT8, subcores-per-core=4)
+>  - STREAM benchmark
+> 
+> In this benchmark, we see a 10-20% performance improvement across the board
+> of STREAM benchmark results with this patch.
+> 
+> Based on preliminary investigation and microbenchmarks
+> by Prerna Saxena <prerna@linux.vnet.ibm.com>
+> 
+> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-On 2014-07-18 00:06, Andrew Morton wrote:
-> On Thu, 17 Jul 2014 11:36:07 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->
->> MAX_CMA_AREAS is used by other subsystems (i.e. arch/arm/mm/dma-mapping.c),
->> so we need to provide correct definition even if CMA is disabled.
->> This patch fixes this issue.
->>
->> Reported-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
->>   include/linux/cma.h | 4 ++++
->>   1 file changed, 4 insertions(+)
->>
->> diff --git a/include/linux/cma.h b/include/linux/cma.h
->> index 9a18a2b1934c..c077635cad76 100644
->> --- a/include/linux/cma.h
->> +++ b/include/linux/cma.h
->> @@ -5,7 +5,11 @@
->>    * There is always at least global CMA area and a few optional
->>    * areas configured in kernel .config.
->>    */
->> +#ifdef CONFIG_CMA
->>   #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
->> +#else
->> +#define MAX_CMA_AREAS	(0)
->> +#endif
->>   
->>   struct cma;
-> Joonsoo already fixed this up, a bit differently:
-> http://ozlabs.org/~akpm/mmots/broken-out/cma-generalize-cma-reserved-area-management-functionality-fix.patch
->
-> Which approach makes more sense?
-
-CMA_AREAS depends on CMA being enabled, so both approaches works exactly
-the same way. Please keep Joonsoo's patch and just ignore mine to avoid
-confusing others by disappearing patches. I'm sorry that I've missed it
-before sending mine.
-
-> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Subject: CMA: fix ARM build failure related to MAX_CMA_AREAS definition
->
-> If CMA is disabled, CONFIG_CMA_AREAS isn't defined so compile error
-> happens. To fix it, define MAX_CMA_AREAS if CONFIG_CMA_AREAS
-> isn't defined.
->
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->   include/linux/cma.h |    6 ++++++
->   1 file changed, 6 insertions(+)
->
-> diff -puN include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix include/linux/cma.h
-> --- a/include/linux/cma.h~cma-generalize-cma-reserved-area-management-functionality-fix
-> +++ a/include/linux/cma.h
-> @@ -5,8 +5,14 @@
->    * There is always at least global CMA area and a few optional
->    * areas configured in kernel .config.
->    */
-> +#ifdef CONFIG_CMA_AREAS
->   #define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
->   
-> +#else
-> +#define MAX_CMA_AREAS	(0)
-> +
-> +#endif
-> +
->   struct cma;
->   
->   extern phys_addr_t cma_get_base(struct cma *cma);
-> _
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Acked-by: Paul Mackerras <paulus@samba.org>
