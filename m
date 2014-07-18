@@ -1,27 +1,23 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qa0-x22e.google.com (mail-qa0-x22e.google.com
- [IPv6:2607:f8b0:400d:c00::22e])
+Return-Path: <kirjanov@gmail.com>
+Received: from mail-oa0-x235.google.com (mail-oa0-x235.google.com
+ [IPv6:2607:f8b0:4003:c02::235])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B10E61A07E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 21:20:44 +1000 (EST)
-Received: by mail-qa0-f46.google.com with SMTP id v10so2911178qac.33
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 04:20:41 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Fri, 18 Jul 2014 07:20:39 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC 0/2] Memoryless nodes and kworker
-Message-ID: <20140718112039.GA8383@htj.dyndns.org>
-References: <20140717230923.GA32660@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B75BF1A07ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 23:51:21 +1000 (EST)
+Received: by mail-oa0-f53.google.com with SMTP id j17so3098316oag.26
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 06:51:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140717230923.GA32660@linux.vnet.ibm.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+In-Reply-To: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
+References: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
+Date: Fri, 18 Jul 2014 17:51:16 +0400
+Message-ID: <CAHj3AVmD1ecGor_z_bsVRty7KSh8CL1TW20=YGk60SXV1hjOtg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc : dma-mapping : Check null condition for
+ dev->archdata.dma_ops
+From: Denis Kirjanov <kirjanov@gmail.com>
+To: Nikhil Badola <nikhil.badola@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 17, 2014 at 04:09:23PM -0700, Nishanth Aravamudan wrote:
-> [Apologies for the large Cc list, but I believe we have the following
-> interested parties:
-> 
-> x86 (recently posted memoryless node support)
-> ia64 (existing memoryless node support)
-> ppc (existing memoryless node support)
-> previous discussion of how to solve Anton's issue with slab usage
-> workqueue contributors/maintainers]
+On 7/18/14, Nikhil Badola <nikhil.badola@freescale.com> wrote:
+> Modifies get_dma_ops() implementation on ppc arch to check null condition
+ which means that dma is not supported.
 
-Well, you forgot to cc me.
+Could you please describe the use case where the ops is null.
 
-...
-> It turns out we see this large slab usage due to using the wrong NUMA
-> information when creating kthreads.
->     
-> Two changes are required, one of which is in the workqueue code and one
-> of which is in the powerpc initialization. Note that ia64 may want to
-> consider something similar.
+> for dev->archdata.dma_ops; returns common dma_direct_ops structure in
+> case its NULL
+>
+> Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+> ---
+>  arch/powerpc/include/asm/dma-mapping.h | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h
+> b/arch/powerpc/include/asm/dma-mapping.h
+> index 150866b..d73bae8 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -86,10 +86,12 @@ static inline struct dma_map_ops *get_dma_ops(struct
+> device *dev)
+>  	 */
+>  	if (unlikely(dev == NULL))
+>  		return NULL;
+> -
+> -	return dev->archdata.dma_ops;
+> +	if (dev->archdata.dma_ops)
+> +		return dev->archdata.dma_ops;
+> +	return &dma_direct_ops;
+>  }
+>
+> +
+>  static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+>  {
+>  	dev->archdata.dma_ops = ops;
+> --
+> 1.7.11.7
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-Wasn't there a thread on this exact subject a few weeks ago?  Was that
-someone else?  Memory-less node detail leaking out of allocator proper
-isn't a good idea.  Please allow allocator users to specify the nodes
-they're on and let the allocator layer deal with mapping that to
-whatever is appropriate.  Please don't push that to everybody.
-
-Thanks.
 
 -- 
-tejun
+Regards,
+Denis
