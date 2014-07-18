@@ -1,33 +1,41 @@
-Return-Path: <nish.aravamudan@gmail.com>
-Received: from mail-vc0-x236.google.com (mail-vc0-x236.google.com
- [IPv6:2607:f8b0:400c:c03::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Nathan_Lynch@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 649261A07E5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 04:47:14 +1000 (EST)
-Received: by mail-vc0-f182.google.com with SMTP id hy4so8260929vcb.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 11:47:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29B8C1A07E8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 03:56:33 +1000 (EST)
+Message-ID: <53C95932.206@mentor.com>
+Date: Fri, 18 Jul 2014 12:28:18 -0500
+From: Nathan Lynch <Nathan_Lynch@mentor.com>
 MIME-Version: 1.0
-In-Reply-To: <20140718181947.GE13012@htj.dyndns.org>
-References: <20140717230923.GA32660@linux.vnet.ibm.com>
- <20140718112039.GA8383@htj.dyndns.org>
- <CAOhV88PyBK3WxDjG1H0hUbRhRYzPOzV8eim5DuOcgObe-FtFYg@mail.gmail.com>
- <20140718180008.GC13012@htj.dyndns.org>
- <CAOhV88O03zCsv_3eadEKNv1D1RoBmjWRFNhPjEHawF9s71U0JA@mail.gmail.com>
- <20140718181947.GE13012@htj.dyndns.org>
-Date: Fri, 18 Jul 2014 11:47:08 -0700
-Message-ID: <CAOhV88Mby_vrLPtRsRNO724-_ABEL06Fc1mMwjgq7LWw-uxeAw@mail.gmail.com>
-Subject: Re: [RFC 0/2] Memoryless nodes and kworker
-From: Nish Aravamudan <nish.aravamudan@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Content-Type: multipart/alternative; boundary=001a11c22fb441517f04fe7c2f4f
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+To: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+References: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
+ <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
+ <20140718101416.GB1818@arm.com> <53C8F4DF.8020103@nod.at>
+ <CALCETrXve-=N5yzqDw2YQee4BmC6sb8GYWYJcV2780V38OuJiQ@mail.gmail.com>
+In-Reply-To: <CALCETrXve-=N5yzqDw2YQee4BmC6sb8GYWYJcV2780V38OuJiQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Richard Weinberger <richard@nod.at>, X86 ML <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <Catalin.Marinas@arm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ "user-mode-linux-devel@lists.sourceforge.net"
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,111 +45,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c22fb441517f04fe7c2f4f
-Content-Type: text/plain; charset=UTF-8
+On 07/18/2014 11:53 AM, Andy Lutomirski wrote:
+> 
+> On Jul 18, 2014 3:20 AM, "Richard Weinberger" <richard@nod.at
+> <mailto:richard@nod.at>> wrote:
+>>
+>> Am 18.07.2014 12:14, schrieb Will Deacon:
+>> > On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:
+>> >> On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski
+> <luto@amacapital.net <mailto:luto@amacapital.net>> wrote:
+>> >>> The core mm code will provide a default gate area based on
+>> >>> FIXADDR_USER_START and FIXADDR_USER_END if
+>> >>> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
+>> >>>
+>> >>> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+>> >>> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
+>> >>> 32-bit UML, and x86_64 have gate areas, but they have their own
+>> >>> implementations.
+>> >>>
+>> >>> This gets rid of the default and moves the code into ia64.
+>> >>>
+>> >>> This should save some code on architectures without a gate area: it's
+>> >>> now possible to inline the gate_area functions in the default case.
+>> >>
+>> >> Can one of you pull this somewhere?  Otherwise I can put it somewhere
+>> >> stable and ask for -next inclusion, but that seems like overkill for a
+>> >> single patch.
+>>
+>> For the um bits:
+>> Acked-by: Richard Weinberger <richard@nod.at <mailto:richard@nod.at>>
+>>
+>> > I'd be happy to take the arm64 part, but it doesn't feel right for mm/*
+>> > changes (or changes to other archs) to go via our tree.
+>> >
+>> > I'm not sure what the best approach is if you want to send this via
+> a single
+>> > tree. Maybe you could ask akpm nicely?
+>>
+>> Going though Andrew's tree sounds sane to me.
+> 
+> Splitting this will be annoying: I'd probably have to add a flag asking
+> for the new behavior, update all the arches, then remove the flag.  The
+> chance of screwing up bisectability in the process seems pretty high. 
+> This seems like overkill for a patch that mostly deletes code.
+> 
+> Akpm, can you take this?
 
-On Fri, Jul 18, 2014 at 11:19 AM, Tejun Heo <tj@kernel.org> wrote:
->
-> Hello,
->
-> On Fri, Jul 18, 2014 at 11:12:01AM -0700, Nish Aravamudan wrote:
-> > why aren't these callers using kthread_create_on_cpu()? That API was
->
-> It is using that.  There just are other data structures too.
+FWIW:
 
-Sorry, I might not have been clear.
+Acked-by: Nathan Lynch <nathan_lynch@mentor.com>
 
-Why are any callers of the format kthread_create_on_node(...,
-cpu_to_node(cpu), ...) not using kthread_create_on_cpu(..., cpu, ...)?
+This patch allows me to avoid adding a bunch of empty hooks to arch/arm
+when adding VDSO support:
 
-In total in Linus' tree, there are only two APIs that use
-kthread_create_on_cpu() -- smpboot_create_threads() and
-smpboot_register_percpu_thread(). Neither of those seem to be used by the
-workqueue code that I can see as of yet.
-
-> > already change to use cpu_to_mem() [so one change, rather than of all
-over
-> > the kernel source]. We could change it back to cpu_to_node and push down
-> > the knowledge about the fallback.
->
-> And once it's properly solved, please convert back kthread to use
-> cpu_to_node() too.  We really shouldn't be sprinkling the new subtly
-> different variant across the kernel.  It's wrong and confusing.
-
-I understand what you mean, but it's equally wrong for the kernel to be
-wasting GBs of slab. Different kinds of wrongness :)
-
-> > Yes, this is a good point. But honestly, we're not really even to the
-point
-> > of talking about fallback here, at least in my testing, going off-node
-at
-> > all causes SLUB-configured slabs to deactivate, which then leads to an
-> > explosion in the unreclaimable slab.
->
-> I don't think moving the logic inside allocator proper is a huge
-> amount of work and this isn't the first spillage of this subtlety out
-> of allocator proper.  Fortunately, it hasn't spread too much yet.
-> Let's please stop it here.  I'm not saying you shouldn't or can't fix
-> the off-node allocation.
-
-It seems like an additional reasonable approach would be to provide a
-suitable _cpu() API for the allocators. I'm not sure why saying that
-callers should know about NUMA (in order to call cpu_to_node() in every
-caller) is any better than saying that callers should know about memoryless
-nodes (in order to call cpu_to_mem() in every caller instead) -- when at
-least in several cases that I've seen the relevant data is what CPU we're
-expecting to run or are running on. Seems like the _cpu API would specify
--- please allocate memory local to this CPU, wherever it is?
-
-Thanks,
-Nish
-
---001a11c22fb441517f04fe7c2f4f
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div><div>On Fri, Jul 18, 2014 at 11:19 AM, Tejun Heo &lt;=
-<a href=3D"mailto:tj@kernel.org">tj@kernel.org</a>&gt; wrote:<br>&gt;<br>&g=
-t; Hello,<br>&gt;<br>&gt; On Fri, Jul 18, 2014 at 11:12:01AM -0700, Nish Ar=
-avamudan wrote:<br>
-&gt; &gt; why aren&#39;t these callers using kthread_create_on_cpu()? That =
-API was<br>&gt;<br>&gt; It is using that. =C2=A0There just are other data s=
-tructures too.<br><br></div>Sorry, I might not have been clear.<br><br>Why =
-are any callers of the format kthread_create_on_node(..., cpu_to_node(cpu),=
- ...) not using kthread_create_on_cpu(..., cpu, ...)?<br>
-<br></div>In total in Linus&#39; tree, there are only two APIs that use kth=
-read_create_on_cpu() -- smpboot_create_threads() and smpboot_register_percp=
-u_thread(). Neither of those seem to be used by the workqueue code that I c=
-an see as of yet.<br>
-<div><div><div><br>&gt; &gt; already change to use cpu_to_mem() [so one cha=
-nge, rather than of all over<br>&gt; &gt; the kernel source]. We could chan=
-ge it back to cpu_to_node and push down<br>&gt; &gt; the knowledge about th=
-e fallback.<br>
-&gt;<br>&gt; And once it&#39;s properly solved, please convert back kthread=
- to use<br>&gt; cpu_to_node() too. =C2=A0We really shouldn&#39;t be sprinkl=
-ing the new subtly<br>&gt; different variant across the kernel. =C2=A0It&#3=
-9;s wrong and confusing.<br>
-<br></div><div>I understand what you mean, but it&#39;s equally wrong for t=
-he kernel to be wasting GBs of slab. Different kinds of wrongness :)<br></d=
-iv><div><br>&gt; &gt; Yes, this is a good point. But honestly, we&#39;re no=
-t really even to the point<br>
-&gt; &gt; of talking about fallback here, at least in my testing, going off=
--node at<br>&gt; &gt; all causes SLUB-configured slabs to deactivate, which=
- then leads to an<br>&gt; &gt; explosion in the unreclaimable slab.<br>
-&gt;<br>&gt; I don&#39;t think moving the logic inside allocator proper is =
-a huge<br>&gt; amount of work and this isn&#39;t the first spillage of this=
- subtlety out<br>&gt; of allocator proper. =C2=A0Fortunately, it hasn&#39;t=
- spread too much yet.<br>
-&gt; Let&#39;s please stop it here. =C2=A0I&#39;m not saying you shouldn&#3=
-9;t or can&#39;t fix<br>&gt; the off-node allocation.<br><br></div><div>It =
-seems like an additional reasonable approach would be to provide a suitable=
- _cpu() API for the allocators. I&#39;m not sure why saying that callers sh=
-ould know about NUMA (in order to call cpu_to_node() in every caller) is an=
-y better than saying that callers should know about memoryless nodes (in or=
-der to call cpu_to_mem() in every caller instead) -- when at least in sever=
-al cases that I&#39;ve seen the relevant data is what CPU we&#39;re expecti=
-ng to run or are running on. Seems like the _cpu API would specify -- pleas=
-e allocate memory local to this CPU, wherever it is?<br>
-<br></div><div>Thanks,<br></div><div>Nish<br></div></div></div></div>
-
---001a11c22fb441517f04fe7c2f4f--
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/268045.html
