@@ -1,22 +1,24 @@
 Return-Path: <nish.aravamudan@gmail.com>
-Received: from mail-vc0-x22a.google.com (mail-vc0-x22a.google.com
- [IPv6:2607:f8b0:400c:c03::22a])
+Received: from mail-vc0-x233.google.com (mail-vc0-x233.google.com
+ [IPv6:2607:f8b0:400c:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0AB51A07E8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 03:42:32 +1000 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id lf12so7862926vcb.29
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 10:42:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05BD01A07EF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 04:12:04 +1000 (EST)
+Received: by mail-vc0-f179.google.com with SMTP id hq11so6477804vcb.24
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 11:12:02 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20140718112039.GA8383@htj.dyndns.org>
+In-Reply-To: <20140718180008.GC13012@htj.dyndns.org>
 References: <20140717230923.GA32660@linux.vnet.ibm.com>
  <20140718112039.GA8383@htj.dyndns.org>
-Date: Fri, 18 Jul 2014 10:42:29 -0700
-Message-ID: <CAOhV88PyBK3WxDjG1H0hUbRhRYzPOzV8eim5DuOcgObe-FtFYg@mail.gmail.com>
+ <CAOhV88PyBK3WxDjG1H0hUbRhRYzPOzV8eim5DuOcgObe-FtFYg@mail.gmail.com>
+ <20140718180008.GC13012@htj.dyndns.org>
+Date: Fri, 18 Jul 2014 11:12:01 -0700
+Message-ID: <CAOhV88O03zCsv_3eadEKNv1D1RoBmjWRFNhPjEHawF9s71U0JA@mail.gmail.com>
 Subject: Re: [RFC 0/2] Memoryless nodes and kworker
 From: Nish Aravamudan <nish.aravamudan@gmail.com>
 To: Tejun Heo <tj@kernel.org>
-Content-Type: multipart/alternative; boundary=001a11c3cef2048c0804fe7b484c
+Content-Type: multipart/alternative; boundary=001a11c3bc7aa94e1004fe7bb104
 Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
  linux-ia64@vger.kernel.org, Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -33,115 +35,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c3cef2048c0804fe7b484c
+--001a11c3bc7aa94e1004fe7bb104
 Content-Type: text/plain; charset=UTF-8
 
 Hi Tejun,
 
-On Fri, Jul 18, 2014 at 4:20 AM, Tejun Heo <tj@kernel.org> wrote:
+[I found the other thread where you made these points, thanks you for
+expressing them so clearly again!]
+
+On Fri, Jul 18, 2014 at 11:00 AM, Tejun Heo <tj@kernel.org> wrote:
 >
-> On Thu, Jul 17, 2014 at 04:09:23PM -0700, Nishanth Aravamudan wrote:
-> > [Apologies for the large Cc list, but I believe we have the following
-> > interested parties:
-> >
-> > x86 (recently posted memoryless node support)
-> > ia64 (existing memoryless node support)
-> > ppc (existing memoryless node support)
-> > previous discussion of how to solve Anton's issue with slab usage
-> > workqueue contributors/maintainers]
+> Hello,
 >
-> Well, you forgot to cc me.
-
-Ah I'm very sorry! That's what I get for editing e-mails... Thank you for
-your reply!
-
-> ...
-> > It turns out we see this large slab usage due to using the wrong NUMA
-> > information when creating kthreads.
-> >
-> > Two changes are required, one of which is in the workqueue code and one
-> > of which is in the powerpc initialization. Note that ia64 may want to
-> > consider something similar.
+> On Fri, Jul 18, 2014 at 10:42:29AM -0700, Nish Aravamudan wrote:
+> > So, to be clear, this is not *necessarily* about memoryless nodes. It's
+> > about the semantics intended. The workqueue code currently calls
+> > cpu_to_node() in a few places, and passes that node into the core MM as
+a
+> > hint about where the memory should come from. However, when memoryless
+> > nodes are present, that hint is guaranteed to be wrong, as it's the
+nearest
+> > NUMA node to the CPU (which happens to be the one its on), not the
+nearest
+> > NUMA node with memory. The hint is correctly specified as cpu_to_mem(),
 >
-> Wasn't there a thread on this exact subject a few weeks ago?  Was that
-> someone else?  Memory-less node detail leaking out of allocator proper
-> isn't a good idea.  Please allow allocator users to specify the nodes
-> they're on and let the allocator layer deal with mapping that to
-> whatever is appropriate.  Please don't push that to everybody.
+> It's telling the allocator the node the CPU is on.  Choosing and
+> falling back the actual allocation is the allocator's job.
 
-I didn't send anything for the workqueue logic anytime recently. Jiang sent
-out a patchset for x86 memoryless node support, which may have touched
-kernel/workqueue.c.
+Ok, I agree with you then, if that's all the semantic is supposed to be.
 
-So, to be clear, this is not *necessarily* about memoryless nodes. It's
-about the semantics intended. The workqueue code currently calls
-cpu_to_node() in a few places, and passes that node into the core MM as a
-hint about where the memory should come from. However, when memoryless
-nodes are present, that hint is guaranteed to be wrong, as it's the nearest
-NUMA node to the CPU (which happens to be the one its on), not the nearest
-NUMA node with memory. The hint is correctly specified as cpu_to_mem(),
-which does the right thing in the presence or absence of memoryless nodes.
-And I think encapsulates the hint's semantics correctly -- please give me
-memory from where I expect it, which is the closest NUMA node.
+But looking at the comment for kthread_create_on_node:
 
-I guess we could also change tsk_fork_get_node to return
-local_memory_node(tsk->pref_node_fork), but that can be a bit expensive, as
-it generates a new zonelist each time to determine the first fallback node.
-We get the exact same semantics (because cpu_to_mem() caches the result of
-local_memory_node) by using cpu_to_mem directly.
+ * If thread is going to be bound on a particular cpu, give its node
+ * in @node, to get NUMA affinity for kthread stack, or else give -1.
 
-Again, apologies for not Cc'ing you originally.
+so the API interprets it as a suggestion for the affinity itself, *not* the
+node the kthread should be on. Piddly, yes, but actually I have another
+thought altogether, and in reviewing Jiang's patches this seems like the
+right approach:
 
--Nish
+why aren't these callers using kthread_create_on_cpu()? That API was
+already change to use cpu_to_mem() [so one change, rather than of all over
+the kernel source]. We could change it back to cpu_to_node and push down
+the knowledge about the fallback.
 
---001a11c3cef2048c0804fe7b484c
+> > which does the right thing in the presence or absence of memoryless
+nodes.
+> > And I think encapsulates the hint's semantics correctly -- please give
+me
+> > memory from where I expect it, which is the closest NUMA node.
+>
+> I don't think it does.  It loses information at too high a layer.
+> Workqueue here doesn't care how memory subsystem is structured, it's
+> just telling the allocator where it's at and expecting it to do the
+> right thing.  Please consider the following scenario.
+>
+>         A - B - C - D - E
+>
+> Let's say C is a memory-less node.  If we map from C to either B or D
+> from individual users and that node can't serve that memory request,
+> the allocator would fall back to A or E respectively when the right
+> thing to do would be falling back to D or B respectively, right?
+
+Yes, this is a good point. But honestly, we're not really even to the point
+of talking about fallback here, at least in my testing, going off-node at
+all causes SLUB-configured slabs to deactivate, which then leads to an
+explosion in the unreclaimable slab.
+
+> This isn't a huge issue but it shows that this is the wrong layer to
+> deal with this issue.  Let the allocators express where they are.
+> Choosing and falling back belong to the memory allocator.  That's the
+> only place which has all the information that's necessary and those
+> details must be contained there.  Please don't leak it to memory
+> allocator users.
+
+Ok, I will continue to work at that level of abstraction.
+
+Thanks,
+Nish
+
+--001a11c3bc7aa94e1004fe7bb104
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><div>Hi Tejun,<br><br>On Fri, Jul 18, 2014 at 4:20 AM, Tej=
-un Heo &lt;<a href=3D"mailto:tj@kernel.org">tj@kernel.org</a>&gt; wrote:<br=
->&gt;<br>&gt; On Thu, Jul 17, 2014 at 04:09:23PM -0700, Nishanth Aravamudan=
- wrote:<br>
-&gt; &gt; [Apologies for the large Cc list, but I believe we have the follo=
-wing<br>&gt; &gt; interested parties:<br>&gt; &gt;<br>&gt; &gt; x86 (recent=
-ly posted memoryless node support)<br>&gt; &gt; ia64 (existing memoryless n=
-ode support)<br>
-&gt; &gt; ppc (existing memoryless node support)<br>&gt; &gt; previous disc=
-ussion of how to solve Anton&#39;s issue with slab usage<br>&gt; &gt; workq=
-ueue contributors/maintainers]<br>&gt;<br>&gt; Well, you forgot to cc me.<b=
-r>
-<br>Ah I&#39;m very sorry! That&#39;s what I get for editing e-mails... Tha=
-nk you for your reply!<br><br>&gt; ...<br>&gt; &gt; It turns out we see thi=
-s large slab usage due to using the wrong NUMA<br>&gt; &gt; information whe=
-n creating kthreads.<br>
-&gt; &gt;<br>&gt; &gt; Two changes are required, one of which is in the wor=
-kqueue code and one<br>&gt; &gt; of which is in the powerpc initialization.=
- Note that ia64 may want to<br>&gt; &gt; consider something similar.<br>
-&gt;<br>&gt; Wasn&#39;t there a thread on this exact subject a few weeks ag=
-o? =C2=A0Was that<br>&gt; someone else? =C2=A0Memory-less node detail leaki=
-ng out of allocator proper<br>&gt; isn&#39;t a good idea. =C2=A0Please allo=
-w allocator users to specify the nodes<br>
-&gt; they&#39;re on and let the allocator layer deal with mapping that to<b=
-r>&gt; whatever is appropriate. =C2=A0Please don&#39;t push that to everybo=
-dy.<br><br>I didn&#39;t send anything for the workqueue logic anytime recen=
-tly. Jiang sent out a patchset for x86 memoryless node support, which may h=
-ave touched kernel/workqueue.c.<br>
-<br>So, to be clear, this is not *necessarily* about memoryless nodes. It&#=
-39;s about the semantics intended. The workqueue code currently calls cpu_t=
-o_node() in a few places, and passes that node into the core MM as a hint a=
-bout where the memory should come from. However, when memoryless nodes are =
-present, that hint is guaranteed to be wrong, as it&#39;s the nearest NUMA =
-node to the CPU (which happens to be the one its on), not the nearest NUMA =
-node with memory. The hint is correctly specified as cpu_to_mem(), which do=
-es the right thing in the presence or absence of memoryless nodes. And I th=
-ink encapsulates the hint&#39;s semantics correctly -- please give me memor=
-y from where I expect it, which is the closest NUMA node.<br>
-<br></div><div>I guess we could also change tsk_fork_get_node to return loc=
-al_memory_node(tsk-&gt;pref_node_fork), but that can be a bit expensive, as=
- it generates a new zonelist each time to determine the first fallback node=
-. We get the exact same semantics (because cpu_to_mem() caches the result o=
-f local_memory_node) by using cpu_to_mem directly.<br>
-<br>Again, apologies for not Cc&#39;ing you originally.<br><br>-Nish</div><=
-/div>
+<div dir=3D"ltr"><div>Hi Tejun,<br><br></div>[I found the other thread wher=
+e you made these points, thanks you for expressing them so clearly again!]<=
+br><div><div><div><br>On Fri, Jul 18, 2014 at 11:00 AM, Tejun Heo &lt;<a hr=
+ef=3D"mailto:tj@kernel.org">tj@kernel.org</a>&gt; wrote:<br>
+&gt;<br>&gt; Hello,<br>&gt;<br>&gt; On Fri, Jul 18, 2014 at 10:42:29AM -070=
+0, Nish Aravamudan wrote:<br>&gt; &gt; So, to be clear, this is not *necess=
+arily* about memoryless nodes. It&#39;s<br>&gt; &gt; about the semantics in=
+tended. The workqueue code currently calls<br>
+&gt; &gt; cpu_to_node() in a few places, and passes that node into the core=
+ MM as a<br>&gt; &gt; hint about where the memory should come from. However=
+, when memoryless<br>&gt; &gt; nodes are present, that hint is guaranteed t=
+o be wrong, as it&#39;s the nearest<br>
+&gt; &gt; NUMA node to the CPU (which happens to be the one its on), not th=
+e nearest<br>&gt; &gt; NUMA node with memory. The hint is correctly specifi=
+ed as cpu_to_mem(),<br>&gt;<br>&gt; It&#39;s telling the allocator the node=
+ the CPU is on. =C2=A0Choosing and<br>
+&gt; falling back the actual allocation is the allocator&#39;s job.<br><br>=
+</div><div>Ok, I agree with you then, if that&#39;s all the semantic is sup=
+posed to be.<br></div><div><br>But looking at the comment for kthread_creat=
+e_on_node:<br>
+<br>=C2=A0* If thread is going to be bound on a particular cpu, give its no=
+de<br>=C2=A0* in @node, to get NUMA affinity for kthread stack, or else giv=
+e -1.<br><br></div><div>so the API interprets it as a suggestion for the af=
+finity itself, *not* the node the kthread should be on. Piddly, yes, but ac=
+tually I have another thought altogether, and in reviewing Jiang&#39;s patc=
+hes this seems like the right approach:<br>
+<br></div><div>why aren&#39;t these callers using kthread_create_on_cpu()? =
+That API was already change to use cpu_to_mem() [so one change, rather than=
+ of all over the kernel source]. We could change it back to cpu_to_node and=
+ push down the knowledge about the fallback.<br>
+</div><div><br>&gt; &gt; which does the right thing in the presence or abse=
+nce of memoryless nodes.<br>&gt; &gt; And I think encapsulates the hint&#39=
+;s semantics correctly -- please give me<br>&gt; &gt; memory from where I e=
+xpect it, which is the closest NUMA node.<br>
+&gt;<br>&gt; I don&#39;t think it does. =C2=A0It loses information at too h=
+igh a layer.<br>&gt; Workqueue here doesn&#39;t care how memory subsystem i=
+s structured, it&#39;s<br>&gt; just telling the allocator where it&#39;s at=
+ and expecting it to do the<br>
+&gt; right thing. =C2=A0Please consider the following scenario.<br>&gt;<br>=
+&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 A - B - C - D - E<br>&gt;<br>&gt; Let&#39;=
+s say C is a memory-less node. =C2=A0If we map from C to either B or D<br>&=
+gt; from individual users and that node can&#39;t serve that memory request=
+,<br>
+&gt; the allocator would fall back to A or E respectively when the right<br=
+>&gt; thing to do would be falling back to D or B respectively, right?<br><=
+br></div><div>Yes, this is a good point. But honestly, we&#39;re not really=
+ even to the point of talking about fallback here, at least in my testing, =
+going off-node at all causes SLUB-configured slabs to deactivate, which the=
+n leads to an explosion in the unreclaimable slab.<br>
+</div><div><br>&gt; This isn&#39;t a huge issue but it shows that this is t=
+he wrong layer to<br>&gt; deal with this issue. =C2=A0Let the allocators ex=
+press where they are.<br>&gt; Choosing and falling back belong to the memor=
+y allocator. =C2=A0That&#39;s the<br>
+&gt; only place which has all the information that&#39;s necessary and thos=
+e<br>&gt; details must be contained there. =C2=A0Please don&#39;t leak it t=
+o memory<br>&gt; allocator users.<br><br></div><div>Ok, I will continue to =
+work at that level of abstraction.<br>
+<br>Thanks,<br>Nish<br></div></div></div></div>
 
---001a11c3cef2048c0804fe7b484c--
+--001a11c3bc7aa94e1004fe7bb104--
