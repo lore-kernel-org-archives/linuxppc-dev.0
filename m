@@ -1,21 +1,40 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-vc0-x22a.google.com (mail-vc0-x22a.google.com
- [IPv6:2607:f8b0:400c:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 892081A03F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 13:23:29 +1000 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id lf12so6356072vcb.15
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 20:23:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 334951A01EA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 14:10:23 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 17 Jul 2014 22:10:21 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1CA421FF0045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 22:10:18 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6I496dN7405972
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 06:09:06 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6I4AI1S000753
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2014 22:10:18 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3] Use the POWER8 Micro Partition Prefetch Engine in KVM
+ HV on POWER8
+In-Reply-To: <20140717235214.GB8513@iris.ozlabs.ibm.com>
+References: <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <20140717235214.GB8513@iris.ozlabs.ibm.com>
+Date: Fri, 18 Jul 2014 14:10:14 +1000
+Message-ID: <m3lhrrmhnd.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Date: Thu, 17 Jul 2014 23:23:25 -0400
-Message-ID: <CAPDOMVgTBrUwH42yCU7w6U93wSwoa3OW8V9JaOyaBQd1=MN=Fg@mail.gmail.com>
-Subject: RE: Allyesconfig Still Failing
-From: Nick Krause <xerofoify@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/mixed; boundary=001a1133793ed5290704fe6f4742
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,142 +44,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a1133793ed5290704fe6f4742
-Content-Type: text/plain; charset=UTF-8
+Paul Mackerras <paulus@samba.org> writes:
+> On Thu, Jul 17, 2014 at 01:19:57PM +1000, Stewart Smith wrote:
+>
+>> The POWER8 processor has a Micro Partition Prefetch Engine, which is
+>> a fancy way of saying "has way to store and load contents of L2 or
+>> L2+MRU way of L3 cache". We initiate the storing of the log (list of
+>> addresses) using the logmpp instruction and start restore by writing
+>> to a SPR.
+>> 
+>> The logmpp instruction takes parameters in a single 64bit register:
+>> - starting address of the table to store log of L2/L2+L3 cache contents
+>>   - 32kb for L2
+>>   - 128kb for L2+L3
+>>   - Aligned relative to maximum size of the table (32kb or 128kb)
+>> - Log control (no-op, L2 only, L2 and L3, abort logout)
+>> 
+>> We should abort any ongoing logging before initiating one.
+>
+> Do we ever want to wait for ongoing logging to finish?
 
-Hey Ben,
-Me and Steven have discussed that the allyesconfig build is still
-failing.I seem to hitting this in the main branch too and not the
-linux next tree .
-Furthermore I will attach my log of my build failing as I am cross
-compiling on an Intel Sandy Bridge i5 2500k at 4.5ghz. Perhaps we can
-clean this up
-for the next kernel stable release if we still have time before this
-mergewindow.
-Cheers Nick
+*Probably* not... but as far as I can see the hardware doesn't expose a
+way to find out if there is any ongoing logging or a way to be notified
+when it's done.
 
---001a1133793ed5290704fe6f4742
-Content-Type: application/octet-stream; name=allyesconfig
-Content-Disposition: attachment; filename=allyesconfig
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hxqxy14w0
+>> +#if defined(CONFIG_PPC_64K_PAGES)
+>> +#define MPP_BUFFER_ORDER	0
+>> +#elif defined(CONFIG_PPC_4K_PAGES)
+>> +#define MPP_BUFFER_ORDER	4
+>
+> Why 4 not 3?  You only need 32kB, don't you?
 
-bGliL2NwdW1hc2suYzogSW4gZnVuY3Rpb24g4oCYY3B1bWFza19zZXRfY3B1X2xvY2FsX2ZpcnN0
-4oCZOgpsaWIvY3B1bWFzay5jOjE5NDoyNTogd2FybmluZzogdGhlIGFkZHJlc3Mgb2Yg4oCYY3B1
-X2FsbF9iaXRz4oCZIHdpbGwgYWx3YXlzIGV2YWx1YXRlIGFzIOKAmHRydWXigJkgWy1XYWRkcmVz
-c10KICBpZiAobnVtYV9ub2RlID09IC0xIHx8ICFjcHVtYXNrX29mX25vZGUobnVtYV9ub2RlKSkg
-ewogICAgICAgICAgICAgICAgICAgICAgICAgXgptYWtlWzFdOiAqKiogTm8gcnVsZSB0byBtYWtl
-IHRhcmdldCBgL21lZGlhL25pY2svTmljaydzJywgbmVlZGVkIGJ5IGBrZXJuZWwveDUwOV9jZXJ0
-aWZpY2F0ZV9saXN0Jy4gIFN0b3AuCm1ha2VbMV06ICoqKiBXYWl0aW5nIGZvciB1bmZpbmlzaGVk
-IGpvYnMuLi4uCm1ha2U6ICoqKiBba2VybmVsXSBFcnJvciAyCm1ha2U6ICoqKiBXYWl0aW5nIGZv
-ciB1bmZpbmlzaGVkIGpvYnMuLi4uCnNvdW5kL3NvYy9jb2RlY3MvYWRhdTE5NzcuYzogSW4gZnVu
-Y3Rpb24g4oCYYWRhdTE5NzdfcHJvYmXigJk6CnNvdW5kL3NvYy9jb2RlY3MvYWRhdTE5NzcuYzo5
-NzE6Mzogd2FybmluZzogbGFyZ2UgaW50ZWdlciBpbXBsaWNpdGx5IHRydW5jYXRlZCB0byB1bnNp
-Z25lZCB0eXBlIFstV292ZXJmbG93XQogICBwb3dlcl9vZmZfbWFzayA9IH5BREFVMTk3N19CTE9D
-S19QT1dFUl9TQUlfTERPX0VOOwogICBeCmRyaXZlcnMvZ3Bpby9ncGlvLXNjaDMxMXguYzogSW4g
-ZnVuY3Rpb24g4oCYc2NoMzExeF9ncGlvX3Byb2Jl4oCZOgpkcml2ZXJzL2dwaW8vZ3Bpby1zY2gz
-MTF4LmM6Mjg2OjE4OiB3YXJuaW5nOiBpZ25vcmluZyByZXR1cm4gdmFsdWUgb2Yg4oCYZ3Bpb2No
-aXBfcmVtb3Zl4oCZLCBkZWNsYXJlZCB3aXRoIGF0dHJpYnV0ZSB3YXJuX3VudXNlZF9yZXN1bHQg
-Wy1XdW51c2VkLXJlc3VsdF0KICAgZ3Bpb2NoaXBfcmVtb3ZlKCZwcml2LT5ibG9ja3NbaV0uY2hp
-cCk7CiAgICAgICAgICAgICAgICAgIF4Kc291bmQvc29jL2ZzbC9mc2xfc2FpLmM6IEluIGZ1bmN0
-aW9uIOKAmGZzbF9zYWlfdHJpZ2dlcuKAmToKc291bmQvc29jL2ZzbC9mc2xfc2FpLmM6MzM3Ojc6
-IHdhcm5pbmc6IGxhcmdlIGludGVnZXIgaW1wbGljaXRseSB0cnVuY2F0ZWQgdG8gdW5zaWduZWQg
-dHlwZSBbLVdvdmVyZmxvd10KICAgICAgIH5GU0xfU0FJX0NSMl9TWU5DKTsKICAgICAgIF4Kc291
-bmQvc29jL2ZzbC9pbXgtYXVkbXV4LmM6IEluIGZ1bmN0aW9uIOKAmGF1ZG11eF9yZWFkX2ZpbGXi
-gJk6CnNvdW5kL3NvYy9mc2wvaW14LWF1ZG11eC5jOjcwOjEzOiB3YXJuaW5nOiBjYXN0IGZyb20g
-cG9pbnRlciB0byBpbnRlZ2VyIG9mIGRpZmZlcmVudCBzaXplIFstV3BvaW50ZXItdG8taW50LWNh
-c3RdCiAgaW50IHBvcnQgPSAoaW50KWZpbGUtPnByaXZhdGVfZGF0YTsKICAgICAgICAgICAgIF4K
-c291bmQvc29jL2ZzbC9pbXgtYXVkbXV4LmM6IEluIGZ1bmN0aW9uIOKAmGF1ZG11eF9kZWJ1Z2Zz
-X2luaXTigJk6CnNvdW5kL3NvYy9mc2wvaW14LWF1ZG11eC5jOjE2Mjo3OiB3YXJuaW5nOiBjYXN0
-IHRvIHBvaW50ZXIgZnJvbSBpbnRlZ2VyIG9mIGRpZmZlcmVudCBzaXplIFstV2ludC10by1wb2lu
-dGVyLWNhc3RdCiAgICAgICAodm9pZCAqKWksICZhdWRtdXhfZGVidWdmc19mb3BzKSkKICAgICAg
-IF4KZHJpdmVycy9paW8vYWRjL2V4eW5vc19hZGMuYzogSW4gZnVuY3Rpb24g4oCYZXh5bm9zX2Fk
-Y19nZXRfdmVyc2lvbuKAmToKZHJpdmVycy9paW8vYWRjL2V4eW5vc19hZGMuYzoxMTI6OTogd2Fy
-bmluZzogY2FzdCBmcm9tIHBvaW50ZXIgdG8gaW50ZWdlciBvZiBkaWZmZXJlbnQgc2l6ZSBbLVdw
-b2ludGVyLXRvLWludC1jYXN0XQogIHJldHVybiAodW5zaWduZWQgaW50KW1hdGNoLT5kYXRhOwog
-ICAgICAgICBeCmRyaXZlcnMvaW5wdXQvam95c3RpY2svYW5hbG9nLmM6MTcxOjI6IHdhcm5pbmc6
-ICN3YXJuaW5nIFByZWNpc2UgdGltZXIgbm90IGRlZmluZWQgZm9yIHRoaXMgYXJjaGl0ZWN0dXJl
-LiBbLVdjcHBdCiAjd2FybmluZyBQcmVjaXNlIHRpbWVyIG5vdCBkZWZpbmVkIGZvciB0aGlzIGFy
-Y2hpdGVjdHVyZS4KICBeCmRyaXZlcnMvbWZkL3N0bXBlLWkyYy5jOiBJbiBmdW5jdGlvbiDigJhz
-dG1wZV9pMmNfcHJvYmXigJk6CmRyaXZlcnMvbWZkL3N0bXBlLWkyYy5jOjg4OjEzOiB3YXJuaW5n
-OiBjYXN0IGZyb20gcG9pbnRlciB0byBpbnRlZ2VyIG9mIGRpZmZlcmVudCBzaXplIFstV3BvaW50
-ZXItdG8taW50LWNhc3RdCiAgIHBhcnRudW0gPSAoaW50KW9mX2lkLT5kYXRhOwogICAgICAgICAg
-ICAgXgpkcml2ZXJzL21mZC9hcml6b25hLWNvcmUuYzogSW4gZnVuY3Rpb24g4oCYYXJpem9uYV9v
-Zl9nZXRfdHlwZeKAmToKZHJpdmVycy9tZmQvYXJpem9uYS1jb3JlLmM6NTA1OjEwOiB3YXJuaW5n
-OiBjYXN0IGZyb20gcG9pbnRlciB0byBpbnRlZ2VyIG9mIGRpZmZlcmVudCBzaXplIFstV3BvaW50
-ZXItdG8taW50LWNhc3RdCiAgIHJldHVybiAoaW50KWlkLT5kYXRhOwogICAgICAgICAgXgpkcml2
-ZXJzL21mZC90cHM2NTkxMC5jOiBJbiBmdW5jdGlvbiDigJh0cHM2NTkxMF9wYXJzZV9kdOKAmToK
-ZHJpdmVycy9tZmQvdHBzNjU5MTAuYzo0MDQ6MTQ6IHdhcm5pbmc6IGNhc3QgZnJvbSBwb2ludGVy
-IHRvIGludGVnZXIgb2YgZGlmZmVyZW50IHNpemUgWy1XcG9pbnRlci10by1pbnQtY2FzdF0KICAq
-Y2hpcF9pZCAgPSAoaW50KW1hdGNoLT5kYXRhOwogICAgICAgICAgICAgIF4KZHJpdmVycy9uZXQv
-ZXRoZXJuZXQvYW1kL25tY2xhbl9jcy5jOiBJbiBmdW5jdGlvbiDigJhubWNsYW5fY29uZmln4oCZ
-Ogpkcml2ZXJzL25ldC9ldGhlcm5ldC9hbWQvbm1jbGFuX2NzLmM6NjI0OjM6IHdhcm5pbmc6IOKA
-mHBjbWNpYV9yZXF1ZXN0X2V4Y2x1c2l2ZV9pcnHigJkgaXMgZGVwcmVjYXRlZCAoZGVjbGFyZWQg
-YXQgaW5jbHVkZS9wY21jaWEvZHMuaDoyMTMpIFstV2RlcHJlY2F0ZWQtZGVjbGFyYXRpb25zXQog
-ICByZXQgPSBwY21jaWFfcmVxdWVzdF9leGNsdXNpdmVfaXJxKGxpbmssIG1hY2VfaW50ZXJydXB0
-KTsKICAgXgpkcml2ZXJzL3JlZ3VsYXRvci90cHM2NTg2eC1yZWd1bGF0b3IuYzogSW4gZnVuY3Rp
-b24g4oCYdHBzNjU4NnhfcGFyc2VfcmVndWxhdG9yX2R04oCZOgpkcml2ZXJzL3JlZ3VsYXRvci90
-cHM2NTg2eC1yZWd1bGF0b3IuYzo0MjM6ODogd2FybmluZzogY2FzdCBmcm9tIHBvaW50ZXIgdG8g
-aW50ZWdlciBvZiBkaWZmZXJlbnQgc2l6ZSBbLVdwb2ludGVyLXRvLWludC1jYXN0XQogICBpZCA9
-IChpbnQpdHBzNjU4NnhfbWF0Y2hlc1tpXS5kcml2ZXJfZGF0YTsKICAgICAgICBeCmRyaXZlcnMv
-c3BpL3NwaS1hdG1lbC5jOiBJbiBmdW5jdGlvbiDigJhhdG1lbF9zcGlfc2V0dXDigJk6CmRyaXZl
-cnMvc3BpL3NwaS1hdG1lbC5jOjEwMjE6MTM6IHdhcm5pbmc6IGNhc3QgZnJvbSBwb2ludGVyIHRv
-IGludGVnZXIgb2YgZGlmZmVyZW50IHNpemUgWy1XcG9pbnRlci10by1pbnQtY2FzdF0KICBucGNz
-X3BpbiA9ICh1bnNpZ25lZCBpbnQpc3BpLT5jb250cm9sbGVyX2RhdGE7CiAgICAgICAgICAgICBe
-CmRyaXZlcnMvc3BpL3NwaS1hdG1lbC5jOiBJbiBmdW5jdGlvbiDigJhhdG1lbF9zcGlfY2xlYW51
-cOKAmToKZHJpdmVycy9zcGkvc3BpLWF0bWVsLmM6MTI1NjoxOTogd2FybmluZzogY2FzdCBmcm9t
-IHBvaW50ZXIgdG8gaW50ZWdlciBvZiBkaWZmZXJlbnQgc2l6ZSBbLVdwb2ludGVyLXRvLWludC1j
-YXN0XQogIHVuc2lnbmVkICBncGlvID0gKHVuc2lnbmVkKSBzcGktPmNvbnRyb2xsZXJfZGF0YTsK
-ICAgICAgICAgICAgICAgICAgIF4KZHJpdmVycy9zdGFnaW5nL2JjbS9DbUhvc3QuYzogSW4gZnVu
-Y3Rpb24g4oCYU3RvcmVDbUNvbnRyb2xSZXNwb25zZU1lc3NhZ2XigJk6CmRyaXZlcnMvc3RhZ2lu
-Zy9iY20vQ21Ib3N0LmM6MTUwMjozOiB3YXJuaW5nOiBjYXN0IHRvIHBvaW50ZXIgZnJvbSBpbnRl
-Z2VyIG9mIGRpZmZlcmVudCBzaXplIFstV2ludC10by1wb2ludGVyLWNhc3RdCiAgIChzdHJ1Y3Qg
-YmNtX2Nvbm5lY3RfbWdyX3BhcmFtcyAqKSBudG9obCgKICAgXgpkcml2ZXJzL3N0YWdpbmcvYmNt
-L0NtSG9zdC5jOjE1NDU6Mzogd2FybmluZzogY2FzdCB0byBwb2ludGVyIGZyb20gaW50ZWdlciBv
-ZiBkaWZmZXJlbnQgc2l6ZSBbLVdpbnQtdG8tcG9pbnRlci1jYXN0XQogICAoc3RydWN0IGJjbV9j
-b25uZWN0X21ncl9wYXJhbXMgKikgbnRvaGwoCiAgIF4KZHJpdmVycy9zdGFnaW5nL2JjbS9DbUhv
-c3QuYzoxNTYzOjM6IHdhcm5pbmc6IGNhc3QgdG8gcG9pbnRlciBmcm9tIGludGVnZXIgb2YgZGlm
-ZmVyZW50IHNpemUgWy1XaW50LXRvLXBvaW50ZXItY2FzdF0KICAgKHN0cnVjdCBiY21fY29ubmVj
-dF9tZ3JfcGFyYW1zICopIG50b2hsKAogICBeCmRyaXZlcnMvbmV0L2V0aGVybmV0L2libS9laGVh
-L2VoZWFfbWFpbi5jOjEwNjoyODogd2FybmluZzog4oCYZWhlYV9tb2R1bGVfZGV2aWNlX3RhYmxl
-4oCZIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3VudXNlZC12YXJpYWJsZV0KIHN0YXRpYyBzdHJ1
-Y3Qgb2ZfZGV2aWNlX2lkIGVoZWFfbW9kdWxlX2RldmljZV90YWJsZVtdID0gewogICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgXgpJbiBmaWxlIGluY2x1ZGVkIGZyb20gaW5jbHVkZS9saW51eC9r
-ZXJuZWwuaDoxMjowLAogICAgICAgICAgICAgICAgIGZyb20gaW5jbHVkZS9saW51eC9kZWxheS5o
-OjEwLAogICAgICAgICAgICAgICAgIGZyb20gZHJpdmVycy9uZXQvZXRoZXJuZXQveGlsaW54L2xs
-X3RlbWFjX21haW4uYzozMDoKZHJpdmVycy9uZXQvZXRoZXJuZXQveGlsaW54L2xsX3RlbWFjX21h
-aW4uYzogSW4gZnVuY3Rpb24g4oCYdGVtYWNfaW5kaXJlY3RfYnVzeXdhaXTigJk6CmluY2x1ZGUv
-bGludXgvdHlwZWNoZWNrLmg6MTE6MTg6IHdhcm5pbmc6IGNvbXBhcmlzb24gb2YgZGlzdGluY3Qg
-cG9pbnRlciB0eXBlcyBsYWNrcyBhIGNhc3QgW2VuYWJsZWQgYnkgZGVmYXVsdF0KICAodm9pZCko
-Jl9fZHVtbXkgPT0gJl9fZHVtbXkyKTsgXAogICAgICAgICAgICAgICAgICBeCmluY2x1ZGUvbGlu
-dXgvamlmZmllcy5oOjEwOTozOiBub3RlOiBpbiBleHBhbnNpb24gb2YgbWFjcm8g4oCYdHlwZWNo
-ZWNr4oCZCiAgIHR5cGVjaGVjayh1bnNpZ25lZCBsb25nLCBiKSAmJiBcCiAgIF4KaW5jbHVkZS9s
-aW51eC9qaWZmaWVzLmg6MTExOjI5OiBub3RlOiBpbiBleHBhbnNpb24gb2YgbWFjcm8g4oCYdGlt
-ZV9hZnRlcl9lceKAmQogI2RlZmluZSB0aW1lX2JlZm9yZV9lcShhLGIpIHRpbWVfYWZ0ZXJfZXEo
-YixhKQogICAgICAgICAgICAgICAgICAgICAgICAgICAgIF4KZHJpdmVycy9uZXQvZXRoZXJuZXQv
-eGlsaW54L2xsX3RlbWFjX21haW4uYzo3ODo3OiBub3RlOiBpbiBleHBhbnNpb24gb2YgbWFjcm8g
-4oCYdGltZV9iZWZvcmVfZXHigJkKICAgaWYgKHRpbWVfYmVmb3JlX2VxKGVuZCwgamlmZmllcykp
-IHsKICAgICAgIF4KZHJpdmVycy9uZXQvZXRoZXJuZXQveGlsaW54L2xsX3RlbWFjX21haW4uYzog
-SW4gZnVuY3Rpb24g4oCYdGVtYWNfc3RhcnRfeG1pdF9kb25l4oCZOgpkcml2ZXJzL25ldC9ldGhl
-cm5ldC94aWxpbngvbGxfdGVtYWNfbWFpbi5jOjYzMzoyMjogd2FybmluZzogY2FzdCB0byBwb2lu
-dGVyIGZyb20gaW50ZWdlciBvZiBkaWZmZXJlbnQgc2l6ZSBbLVdpbnQtdG8tcG9pbnRlci1jYXN0
-XQogICAgZGV2X2tmcmVlX3NrYl9pcnEoKHN0cnVjdCBza19idWZmICopY3VyX3AtPmFwcDQpOwog
-ICAgICAgICAgICAgICAgICAgICAgXgpkcml2ZXJzL3Njc2kvaXBzLmM6MjEwOjI6IHdhcm5pbmc6
-ICN3YXJuaW5nICJUaGlzIGRyaXZlciBoYXMgb25seSBiZWVuIHRlc3RlZCBvbiB0aGUgeDg2L2lh
-NjQveDg2XzY0IHBsYXRmb3JtcyIgWy1XY3BwXQogI3dhcm5pbmcgIlRoaXMgZHJpdmVyIGhhcyBv
-bmx5IGJlZW4gdGVzdGVkIG9uIHRoZSB4ODYvaWE2NC94ODZfNjQgcGxhdGZvcm1zIgogIF4KZHJp
-dmVycy9zY3NpL2Zkb21haW4uYzoxNzc0OjI5OiB3YXJuaW5nOiDigJhmZG9tYWluX3BjaV90Ymzi
-gJkgZGVmaW5lZCBidXQgbm90IHVzZWQgWy1XdW51c2VkLXZhcmlhYmxlXQogc3RhdGljIHN0cnVj
-dCBwY2lfZGV2aWNlX2lkIGZkb21haW5fcGNpX3RibFtdID0gewogICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIF4KZHJpdmVycy9zY3NpL2hwc2EuYzogSW4gZnVuY3Rpb24g4oCYaHBzYV9zZXRf
-ZHJpdmVyX3N1cHBvcnRfYml0c+KAmToKZHJpdmVycy9zY3NpL2hwc2EuYzo2MzczOjE3OiB3YXJu
-aW5nOiDigJhkcml2ZXJfc3VwcG9ydOKAmSBpcyB1c2VkIHVuaW5pdGlhbGl6ZWQgaW4gdGhpcyBm
-dW5jdGlvbiBbLVd1bmluaXRpYWxpemVkXQogIGRyaXZlcl9zdXBwb3J0IHw9IEVOQUJMRV9VTklU
-X0FUVE47CiAgICAgICAgICAgICAgICAgXgpkcml2ZXJzL3Njc2kvaW5pdGlvLmM6MTMxOjI5OiB3
-YXJuaW5nOiDigJhpOTF1X3BjaV9kZXZpY2Vz4oCZIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3Vu
-dXNlZC12YXJpYWJsZV0KIHN0YXRpYyBzdHJ1Y3QgcGNpX2RldmljZV9pZCBpOTF1X3BjaV9kZXZp
-Y2VzW10gPSB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXgpkcml2ZXJzL3N0YWdpbmcv
-dXNiaXAvc3R1Yl9kZXYuYzozMzoyOTogd2FybmluZzog4oCYc3R1Yl90YWJsZeKAmSBkZWZpbmVk
-IGJ1dCBub3QgdXNlZCBbLVd1bnVzZWQtdmFyaWFibGVdCiBzdGF0aWMgc3RydWN0IHVzYl9kZXZp
-Y2VfaWQgc3R1Yl90YWJsZVtdID0gewogICAgICAgICAgICAgICAgICAgICAgICAgICAgIF4K
---001a1133793ed5290704fe6f4742--
+Correct. whoops.
+
+>> +static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
+>> +{
+>> +	struct kvmppc_vcore *vcore;
+>> +
+>> +	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
+>> +
+>> +	if (vcore == NULL)
+>> +		return NULL;
+>> +
+>> +	INIT_LIST_HEAD(&vcore->runnable_threads);
+>> +	spin_lock_init(&vcore->lock);
+>> +	init_waitqueue_head(&vcore->wq);
+>> +	vcore->preempt_tb = TB_NIL;
+>> +	vcore->lpcr = kvm->arch.lpcr;
+>> +	vcore->first_vcpuid = core * threads_per_core;
+>> +	vcore->kvm = kvm;
+>
+> Is there a particular reason why you need to pull this code out into a
+> separate function?  If so, it would be a little nicer if you did that
+> in a separate patch, to make it easier to see that the code motion
+> changes nothing.
+
+ack, done.
+
+>> @@ -1590,9 +1645,16 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+>>  
+>>  	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
+>>  
+>> +	if (vc->mpp_buffer_is_valid)
+>> +		ppc_start_restoring_l2_cache(vc);
+>> +
+>>  	__kvmppc_vcore_entry();
+>>  
+>>  	spin_lock(&vc->lock);
+>> +
+>> +	if (vc->mpp_buffer)
+>> +		ppc_start_saving_l2_cache(vc);
+>
+> I wonder if we would get better performance improvements if we kicked
+> this off earlier, for instance before we save all the FP/VSX state and
+> switch the MMU?  I guess that could be a subsequent patch.
+
+Possibly, yes. Maybe something to look at in future patch, along with if
+also doing the L3 save/restore is a benefit.
