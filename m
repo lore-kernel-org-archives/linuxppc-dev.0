@@ -2,14 +2,17 @@ Return-Path: <wangnan0@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F36C1A01D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 18:16:05 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 578671A013F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 18:17:09 +1000 (EST)
 From: Wang Nan <wangnan0@huawei.com>
 To: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>, "Mel
  Gorman" <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/5] memory-hotplug: suitable memory should go to ZONE_MOVABLE
-Date: Fri, 18 Jul 2014 15:55:58 +0800
-Message-ID: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
+Subject: [PATCH 3/5] memory-hotplug: ia64: suitable memory should go to
+ ZONE_MOVABLE
+Date: Fri, 18 Jul 2014 15:56:01 +0800
+Message-ID: <1405670163-53747-4-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
+References: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-ia64@vger.kernel.org, Pei Feiyue <peifeiyue@huawei.com>,
@@ -24,68 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches fix a problem when adding memory in bad manner.
-For example: for a x86_64 machine booted with "mem=400M" and with 2GiB
-memory installed, following commands cause problem:
+This patch add new memory to ZONE_MOVABLE if movable zone is setup
+and lower than newly added memory for ia64.
 
- # echo 0x40000000 > /sys/devices/system/memory/probe
-[   28.613895] init_memory_mapping: [mem 0x40000000-0x47ffffff]
- # echo 0x48000000 > /sys/devices/system/memory/probe
-[   28.693675] init_memory_mapping: [mem 0x48000000-0x4fffffff]
- # echo online_movable > /sys/devices/system/memory/memory9/state
- # echo 0x50000000 > /sys/devices/system/memory/probe 
-[   29.084090] init_memory_mapping: [mem 0x50000000-0x57ffffff]
- # echo 0x58000000 > /sys/devices/system/memory/probe 
-[   29.151880] init_memory_mapping: [mem 0x58000000-0x5fffffff]
- # echo online_movable > /sys/devices/system/memory/memory11/state
- # echo online> /sys/devices/system/memory/memory8/state
- # echo online> /sys/devices/system/memory/memory10/state
- # echo offline> /sys/devices/system/memory/memory9/state
-[   30.558819] Offlined Pages 32768
- # free
-             total       used       free     shared    buffers     cached
-Mem:        780588 18014398509432020     830552          0          0      51180
--/+ buffers/cache: 18014398509380840     881732
-Swap:            0          0          0
+Signed-off-by: Wang Nan <wangnan0@huawei.com>
+---
+ arch/ia64/mm/init.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-This is because the above commands probe higher memory after online a
-section with online_movable, which causes ZONE_HIGHMEM (or ZONE_NORMAL
-for systems without ZONE_HIGHMEM) overlaps ZONE_MOVABLE.
-
-After the second online_movable, the problem can be observed from
-zoneinfo:
-
- # cat /proc/zoneinfo
-...
-Node 0, zone  Movable
-  pages free     65491
-        min      250
-        low      312
-        high     375
-        scanned  0
-        spanned  18446744073709518848
-        present  65536
-        managed  65536
-...
-
-This series of patches solve the problem by checking ZONE_MOVABLE when
-choosing zone for new memory. If new memory is inside or higher than
-ZONE_MOVABLE, makes it go there instead.
-
-
-Wang Nan (5):
-  memory-hotplug: x86_64: suitable memory should go to ZONE_MOVABLE
-  memory-hotplug: x86_32: suitable memory should go to ZONE_MOVABLE
-  memory-hotplug: ia64: suitable memory should go to ZONE_MOVABLE
-  memory-hotplug: sh: suitable memory should go to ZONE_MOVABLE
-  memory-hotplug: powerpc: suitable memory should go to ZONE_MOVABLE
-
- arch/ia64/mm/init.c   |  7 +++++++
- arch/powerpc/mm/mem.c |  6 ++++++
- arch/sh/mm/init.c     | 13 ++++++++-----
- arch/x86/mm/init_32.c |  6 ++++++
- arch/x86/mm/init_64.c | 10 ++++++++--
- 5 files changed, 35 insertions(+), 7 deletions(-)
-
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 25c3502..d81c916 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -625,6 +625,7 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ {
+ 	pg_data_t *pgdat;
+ 	struct zone *zone;
++	struct zone *movable_zone;
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int ret;
+@@ -632,6 +633,12 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ 	pgdat = NODE_DATA(nid);
+ 
+ 	zone = pgdat->node_zones + ZONE_NORMAL;
++	movable_zone = pgdat->node_zones + ZONE_MOVABLE;
++	if (!zone_is_empty(movable_zone))
++		if (zone_spans_pfn(movable_zone, start_pfn) ||
++				(zone_end_pfn(movable_zone) <= start_pfn))
++			zone = movable_zone;
++
+ 	ret = __add_pages(nid, zone, start_pfn, nr_pages);
+ 
+ 	if (ret)
 -- 
 1.8.4
