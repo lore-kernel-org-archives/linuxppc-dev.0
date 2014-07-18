@@ -1,21 +1,43 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E86931A0810
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 09:12:37 +1000 (EST)
-Message-ID: <1405725136.5289.112.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Add cputable definition for POWER8 DD1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Sat, 19 Jul 2014 09:12:16 +1000
-In-Reply-To: <1405660235.7952.5.camel@ale.ozlabs.ibm.com>
-References: <1405649497-679-1-git-send-email-joel@jms.id.au>
- <1405660235.7952.5.camel@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, Joel Stanley <joel@jms.id.au>, preeti@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49AC71A001A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 02:53:39 +1000 (EST)
+Received: by mail-la0-f51.google.com with SMTP id el20so3032434lab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 09:53:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <53C8F4DF.8020103@nod.at>
+References: <70f331f59e620dc4e66bd3fa095e6f6b744b532b.1405281639.git.luto@amacapital.net>
+ <CALCETrXG6nL4K=Er+kv5-CXBDVa0TLg9yR6iePnMyE2ufXgKkw@mail.gmail.com>
+ <20140718101416.GB1818@arm.com> <53C8F4DF.8020103@nod.at>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 18 Jul 2014 09:53:14 -0700
+Message-ID: <CALCETrXve-=N5yzqDw2YQee4BmC6sb8GYWYJcV2780V38OuJiQ@mail.gmail.com>
+Subject: Re: [PATCH v3] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+To: Richard Weinberger <richard@nod.at>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/alternative; boundary=001a11c3f90a12d5e104fe7a9985
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ "user-mode-linux-devel@lists.sourceforge.net"
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,90 +47,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-07-18 at 15:10 +1000, Michael Neuling wrote:
-> On Fri, 2014-07-18 at 11:41 +0930, Joel Stanley wrote:
-> > These processors do not currently support doorbell IPIs, so remove them
-> > from the feature list if we are at DD 1.xx for the 0x004d part.
-> 
-> We GAed with DD2.1 and generally we don't upstream anything that isn't
-> GAed.  Plus, if you wanna go down this path, you are going to have to
-> fix a lot more bugs than this one (not that our early chips had bugs or
-> anything).  
-> 
-> I suggested you crush your crappy DD1 parts into cubes and ask for some
-> shiny new DD2.1 parts.
+--001a11c3f90a12d5e104fe7a9985
+Content-Type: text/plain; charset=UTF-8
 
-This is Venice, not Murano. We are going to have some of these guys
-out there with the initial batch of dev boards.
+On Jul 18, 2014 3:20 AM, "Richard Weinberger" <richard@nod.at> wrote:
+>
+> Am 18.07.2014 12:14, schrieb Will Deacon:
+> > On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:
+> >> On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski <luto@amacapital.net>
+wrote:
+> >>> The core mm code will provide a default gate area based on
+> >>> FIXADDR_USER_START and FIXADDR_USER_END if
+> >>> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
+> >>>
+> >>> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+> >>> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
+> >>> 32-bit UML, and x86_64 have gate areas, but they have their own
+> >>> implementations.
+> >>>
+> >>> This gets rid of the default and moves the code into ia64.
+> >>>
+> >>> This should save some code on architectures without a gate area: it's
+> >>> now possible to inline the gate_area functions in the default case.
+> >>
+> >> Can one of you pull this somewhere?  Otherwise I can put it somewhere
+> >> stable and ask for -next inclusion, but that seems like overkill for a
+> >> single patch.
+>
+> For the um bits:
+> Acked-by: Richard Weinberger <richard@nod.at>
+>
+> > I'd be happy to take the arm64 part, but it doesn't feel right for mm/*
+> > changes (or changes to other archs) to go via our tree.
+> >
+> > I'm not sure what the best approach is if you want to send this via a
+single
+> > tree. Maybe you could ask akpm nicely?
+>
+> Going though Andrew's tree sounds sane to me.
 
-.../..
+Splitting this will be annoying: I'd probably have to add a flag asking for
+the new behavior, update all the arches, then remove the flag.  The chance
+of screwing up bisectability in the process seems pretty high.  This seems
+like overkill for a patch that mostly deletes code.
 
-> Humm, well doorbells worked on DD1 so i'm not sure this is entirely your
-> problem.  There was an issue related to powersave that Ian posted a fix
-> for but we never needed it as the issue was fixed before GA.
-> 
-> http://patchwork.ozlabs.org/patch/240338/
-> 
-> So NAK again.
+Akpm, can you take this?
 
-Actually he did what I asked him to do :-)
+--Andy
 
-Between Ian's workaround and just disabling DB on DD1, I prefer just
-disabling DB on DD1. The fix is more crappy obscure asm to carry around
-and I think it might cause spurrious DBs on non-broken CPUs.
+>
+> Thanks,
+> //richard
 
-Cheers,
-Ben.
+--001a11c3f90a12d5e104fe7a9985
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Mikey
-> 
-> > Fixes: d4e58e5928f8 (powerpc/powernv: Enable POWER8 doorbell IPIs)
-> > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> > ---
-> >  arch/powerpc/include/asm/cputable.h |  1 +
-> >  arch/powerpc/kernel/cputable.c      | 20 ++++++++++++++++++++
-> >  2 files changed, 21 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> > index bc23477..0fdd7ee 100644
-> > --- a/arch/powerpc/include/asm/cputable.h
-> > +++ b/arch/powerpc/include/asm/cputable.h
-> > @@ -447,6 +447,7 @@ extern const char *powerpc_base_platform;
-> >  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
-> >  	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
-> >  #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
-> > +#define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
-> >  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-> >  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> > index 965291b..0c15764 100644
-> > --- a/arch/powerpc/kernel/cputable.c
-> > +++ b/arch/powerpc/kernel/cputable.c
-> > @@ -527,6 +527,26 @@ static struct cpu_spec __initdata cpu_specs[] = {
-> >  		.machine_check_early	= __machine_check_early_realmode_p8,
-> >  		.platform		= "power8",
-> >  	},
-> > +	{	/* Power8 DD1: Does not support doorbell IPIs */
-> > +		.pvr_mask		= 0xffffff00,
-> > +		.pvr_value		= 0x004d0100,
-> > +		.cpu_name		= "POWER8 (raw)",
-> > +		.cpu_features		= CPU_FTRS_POWER8_DD1,
-> > +		.cpu_user_features	= COMMON_USER_POWER8,
-> > +		.cpu_user_features2	= COMMON_USER2_POWER8,
-> > +		.mmu_features		= MMU_FTRS_POWER8,
-> > +		.icache_bsize		= 128,
-> > +		.dcache_bsize		= 128,
-> > +		.num_pmcs		= 6,
-> > +		.pmc_type		= PPC_PMC_IBM,
-> > +		.oprofile_cpu_type	= "ppc64/power8",
-> > +		.oprofile_type		= PPC_OPROFILE_INVALID,
-> > +		.cpu_setup		= __setup_cpu_power8,
-> > +		.cpu_restore		= __restore_cpu_power8,
-> > +		.flush_tlb		= __flush_tlb_power8,
-> > +		.machine_check_early	= __machine_check_early_realmode_p8,
-> > +		.platform		= "power8",
-> > +	},
-> >  	{	/* Power8 */
-> >  		.pvr_mask		= 0xffff0000,
-> >  		.pvr_value		= 0x004d0000,
+<div dir=3D"ltr"><p dir=3D"ltr"><br>
+On Jul 18, 2014 3:20 AM, &quot;Richard Weinberger&quot; &lt;<a href=3D"mail=
+to:richard@nod.at" target=3D"_blank">richard@nod.at</a>&gt; wrote:<br>
+&gt;<br>
+&gt; Am 18.07.2014 12:14, schrieb Will Deacon:<br>
+&gt; &gt; On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:<=
+br>
+&gt; &gt;&gt; On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski &lt;<a href=
+=3D"mailto:luto@amacapital.net" target=3D"_blank">luto@amacapital.net</a>&g=
+t; wrote:<br>
+&gt; &gt;&gt;&gt; The core mm code will provide a default gate area based o=
+n<br>
+&gt; &gt;&gt;&gt; FIXADDR_USER_START and FIXADDR_USER_END if<br>
+&gt; &gt;&gt;&gt; !defined(__HAVE_ARCH_GATE_AREA) &amp;&amp; defined(AT_SYS=
+INFO_EHDR).<br>
+&gt; &gt;&gt;&gt;<br>
+&gt; &gt;&gt;&gt; This default is only useful for ia64. =C2=A0arm64, ppc, s=
+390, sh, tile,<br>
+&gt; &gt;&gt;&gt; 64-bit UML, and x86_32 have their own code just to disabl=
+e it. =C2=A0arm,<br>
+&gt; &gt;&gt;&gt; 32-bit UML, and x86_64 have gate areas, but they have the=
+ir own<br>
+&gt; &gt;&gt;&gt; implementations.<br>
+&gt; &gt;&gt;&gt;<br>
+&gt; &gt;&gt;&gt; This gets rid of the default and moves the code into ia64=
+.<br>
+&gt; &gt;&gt;&gt;<br>
+&gt; &gt;&gt;&gt; This should save some code on architectures without a gat=
+e area: it&#39;s<br>
+&gt; &gt;&gt;&gt; now possible to inline the gate_area functions in the def=
+ault case.<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; Can one of you pull this somewhere? =C2=A0Otherwise I can put=
+ it somewhere<br>
+&gt; &gt;&gt; stable and ask for -next inclusion, but that seems like overk=
+ill for a<br>
+&gt; &gt;&gt; single patch.<br>
+&gt;<br>
+&gt; For the um bits:<br>
+&gt; Acked-by: Richard Weinberger &lt;<a href=3D"mailto:richard@nod.at" tar=
+get=3D"_blank">richard@nod.at</a>&gt;<br>
+&gt;<br>
+&gt; &gt; I&#39;d be happy to take the arm64 part, but it doesn&#39;t feel =
+right for mm/*<br>
+&gt; &gt; changes (or changes to other archs) to go via our tree.<br>
+&gt; &gt;<br>
+&gt; &gt; I&#39;m not sure what the best approach is if you want to send th=
+is via a single<br>
+&gt; &gt; tree. Maybe you could ask akpm nicely?<br>
+&gt;<br>
+&gt; Going though Andrew&#39;s tree sounds sane to me.</p>
+<p dir=3D"ltr">Splitting this will be annoying: I&#39;d probably have to ad=
+d a flag asking for the new behavior, update all the arches, then remove th=
+e flag.=C2=A0 The chance of screwing up bisectability in the process seems =
+pretty high.=C2=A0 This seems like overkill for a patch that mostly deletes=
+ code.</p>
+
+
+
+
+<p dir=3D"ltr">Akpm, can you take this?</p>
+<p dir=3D"ltr">--Andy</p>
+<p dir=3D"ltr">&gt;<br>
+&gt; Thanks,<br>
+&gt; //richard<br>
+</p>
+</div>
+
+--001a11c3f90a12d5e104fe7a9985--
