@@ -1,21 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F7301A0333
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADED91A0334
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 17:48:12 +1000 (EST)
-Date: Fri, 18 Jul 2014 17:48:07 +1000
+Date: Fri, 18 Jul 2014 17:47:35 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 2/2] Use the POWER8 Micro Partition Prefetch Engine in
- KVM HV on POWER8
-Message-ID: <20140718074807.GB32094@iris.ozlabs.ibm.com>
+Subject: Re: [PATCH v4 1/2] Split out struct kvmppc_vcore creation to
+ separate function
+Message-ID: <20140718074735.GA32094@iris.ozlabs.ibm.com>
 References: <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
  <1405657123-20087-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1405657123-20087-3-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405657123-20087-2-git-send-email-stewart@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1405657123-20087-3-git-send-email-stewart@linux.vnet.ibm.com>
+In-Reply-To: <1405657123-20087-2-git-send-email-stewart@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
  kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,98 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 18, 2014 at 02:18:43PM +1000, Stewart Smith wrote:
-> The POWER8 processor has a Micro Partition Prefetch Engine, which is
-> a fancy way of saying "has way to store and load contents of L2 or
-> L2+MRU way of L3 cache". We initiate the storing of the log (list of
-> addresses) using the logmpp instruction and start restore by writing
-> to a SPR.
-> 
-> The logmpp instruction takes parameters in a single 64bit register:
-> - starting address of the table to store log of L2/L2+L3 cache contents
->   - 32kb for L2
->   - 128kb for L2+L3
->   - Aligned relative to maximum size of the table (32kb or 128kb)
-> - Log control (no-op, L2 only, L2 and L3, abort logout)
-> 
-> We should abort any ongoing logging before initiating one.
-> 
-> To initiate restore, we write to the MPPR SPR. The format of what to write
-> to the SPR is similar to the logmpp instruction parameter:
-> - starting address of the table to read from (same alignment requirements)
-> - table size (no data, until end of table)
-> - prefetch rate (from fastest possible to slower. about every 8, 16, 24 or
->   32 cycles)
-> 
-> The idea behind loading and storing the contents of L2/L3 cache is to
-> reduce memory latency in a system that is frequently swapping vcores on
-> a physical CPU.
-> 
-> The best case scenario for doing this is when some vcores are doing very
-> cache heavy workloads. The worst case is when they have about 0 cache hits,
-> so we just generate needless memory operations.
-> 
-> This implementation just does L2 store/load. In my benchmarks this proves
-> to be useful.
-> 
-> Benchmark 1:
->  - 16 core POWER8
->  - 3x Ubuntu 14.04LTS guests (LE) with 8 VCPUs each
->  - No split core/SMT
->  - two guests running sysbench memory test.
->    sysbench --test=memory --num-threads=8 run
->  - one guest running apache bench (of default HTML page)
->    ab -n 490000 -c 400 http://localhost/
-> 
-> This benchmark aims to measure performance of real world application (apache)
-> where other guests are cache hot with their own workloads. The sysbench memory
-> benchmark does pointer sized writes to a (small) memory buffer in a loop.
-> 
-> In this benchmark with this patch I can see an improvement both in requests
-> per second (~5%) and in mean and median response times (again, about 5%).
-> The spread of minimum and maximum response times were largely unchanged.
-> 
-> benchmark 2:
->  - Same VM config as benchmark 1
->  - all three guests running sysbench memory benchmark
-> 
-> This benchmark aims to see if there is a positive or negative affect to this
-> cache heavy benchmark. Although due to the nature of the benchmark (stores) we
-> may not see a difference in performance, but rather hopefully an improvement
-> in consistency of performance (when vcore switched in, don't have to wait
-> many times for cachelines to be pulled in)
-> 
-> The results of this benchmark are improvements in consistency of performance
-> rather than performance itself. With this patch, the few outliers in duration
-> go away and we get more consistent performance in each guest.
-> 
-> benchmark 3:
->  - same 3 guests and CPU configuration as benchmark 1 and 2.
->  - two idle guests
->  - 1 guest running STREAM benchmark
-> 
-> This scenario also saw performance improvement with this patch. On Copy and
-> Scale workloads from STREAM, I got 5-6% improvement with this patch. For
-> Add and triad, it was around 10% (or more).
-> 
-> benchmark 4:
->  - same 3 guests as previous benchmarks
->  - two guests running sysbench --memory, distinctly different cache heavy
->    workload
->  - one guest running STREAM benchmark.
-> 
-> Similar improvements to benchmark 3.
-> 
-> benchmark 5:
->  - 1 guest, 8 VCPUs, Ubuntu 14.04
->  - Host configured with split core (SMT8, subcores-per-core=4)
->  - STREAM benchmark
-> 
-> In this benchmark, we see a 10-20% performance improvement across the board
-> of STREAM benchmark results with this patch.
-> 
-> Based on preliminary investigation and microbenchmarks
-> by Prerna Saxena <prerna@linux.vnet.ibm.com>
+On Fri, Jul 18, 2014 at 02:18:42PM +1000, Stewart Smith wrote:
+> No code changes, just split it out to a function so that with the addition
+> of micro partition prefetch buffer allocation (in subsequent patch) looks
+> neater and doesn't require excessive indentation.
 > 
 > Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
