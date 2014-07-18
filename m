@@ -1,23 +1,23 @@
-Return-Path: <kirjanov@gmail.com>
-Received: from mail-oa0-x235.google.com (mail-oa0-x235.google.com
- [IPv6:2607:f8b0:4003:c02::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B75BF1A07ED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 23:51:21 +1000 (EST)
-Received: by mail-oa0-f53.google.com with SMTP id j17so3098316oag.26
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2014 06:51:17 -0700 (PDT)
+Return-Path: <dave.hansen@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8B6A91A07E8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 01:00:47 +1000 (EST)
+Message-ID: <53C9369B.4070608@intel.com>
+Date: Fri, 18 Jul 2014 08:00:43 -0700
+From: Dave Hansen <dave.hansen@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
-References: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
-Date: Fri, 18 Jul 2014 17:51:16 +0400
-Message-ID: <CAHj3AVmD1ecGor_z_bsVRty7KSh8CL1TW20=YGk60SXV1hjOtg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc : dma-mapping : Check null condition for
- dev->archdata.dma_ops
-From: Denis Kirjanov <kirjanov@gmail.com>
-To: Nikhil Badola <nikhil.badola@freescale.com>
+To: Wang Nan <wangnan0@huawei.com>, Ingo Molnar <mingo@redhat.com>,
+ Yinghai Lu <yinghai@kernel.org>,
+ Mel Gorman <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] memory-hotplug: x86_64: suitable memory should go
+ to ZONE_MOVABLE
+References: <1405670163-53747-1-git-send-email-wangnan0@huawei.com>
+ <1405670163-53747-2-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <1405670163-53747-2-git-send-email-wangnan0@huawei.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, Pei Feiyue <peifeiyue@huawei.com>,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/18/14, Nikhil Badola <nikhil.badola@freescale.com> wrote:
-> Modifies get_dma_ops() implementation on ppc arch to check null condition
- which means that dma is not supported.
-
-Could you please describe the use case where the ops is null.
-
-> for dev->archdata.dma_ops; returns common dma_direct_ops structure in
-> case its NULL
->
-> Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
-> ---
->  arch/powerpc/include/asm/dma-mapping.h | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h
-> b/arch/powerpc/include/asm/dma-mapping.h
-> index 150866b..d73bae8 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -86,10 +86,12 @@ static inline struct dma_map_ops *get_dma_ops(struct
-> device *dev)
->  	 */
->  	if (unlikely(dev == NULL))
->  		return NULL;
-> -
-> -	return dev->archdata.dma_ops;
-> +	if (dev->archdata.dma_ops)
-> +		return dev->archdata.dma_ops;
-> +	return &dma_direct_ops;
->  }
->
+On 07/18/2014 12:55 AM, Wang Nan wrote:
+> +	if (!zone_is_empty(movable_zone))
+> +		if (zone_spans_pfn(movable_zone, start_pfn) ||
+> +				(zone_end_pfn(movable_zone) <= start_pfn))
+> +			zone = movable_zone;
 > +
->  static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
->  {
->  	dev->archdata.dma_ops = ops;
-> --
-> 1.7.11.7
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-
--- 
-Regards,
-Denis
+It's nice that you hit so many architectures, but is there a way to do
+this that doesn't involve copying and pasting the same bit of code in to
+each architecture?
