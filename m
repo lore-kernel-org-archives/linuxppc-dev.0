@@ -1,19 +1,22 @@
-Return-Path: <paulus@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <himangi774@gmail.com>
+Received: from mail-pd0-x232.google.com (mail-pd0-x232.google.com
+ [IPv6:2607:f8b0:400e:c02::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A13DF1A02D3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 17:48:03 +1000 (EST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 52DC1140139
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2014 17:48:03 +1000 (EST)
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix bugs in emulate_step()
-Date: Sat, 19 Jul 2014 17:47:57 +1000
-Message-Id: <1405756077-19935-1-git-send-email-paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A36C21A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jul 2014 07:50:10 +1000 (EST)
+Received: by mail-pd0-f178.google.com with SMTP id w10so6999195pde.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jul 2014 14:50:07 -0700 (PDT)
+Date: Sun, 20 Jul 2014 03:19:59 +0530
+From: Himangi Saraogi <himangi774@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [RESEND PATCH] powerpc/fsl-pci: Correct use of ! and &
+Message-ID: <20140719214958.GA22123@himangi-Dell>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: julia.lawall@lip6.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,66 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes some bugs in emulate_step().  First, the setting of the carry
-bit for the arithmetic right-shift instructions was not correct on 64-bit
-machines because we were masking with a mask of type int rather than
-unsigned long.  Secondly, the sld (shift left doubleword) instruction was
-using the wrong instruction field for the register containing the shift
-count.
+In commit ae91d60ba88ef0bdb1b5e9b2363bd52fc45d2af7, a bug was fixed that
+involved converting !x & y to !(x & y).  The code below shows the same
+pattern, and thus should perhaps be fixed in the same way.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+This is not tested and clearly changes the semantics, so it is only
+something to consider.
+
+The Coccinelle semantic patch that makes this change is as follows:
+
+// <smpl>
+@@ expression E1,E2; @@
+(
+  !E1 & !E2
+|
+- !E1 & E2
++ !(E1 & E2)
+)
+// </smpl>
+
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
 ---
- arch/powerpc/lib/sstep.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 412dd46..5c09f36 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1198,7 +1198,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 			sh = regs->gpr[rb] & 0x3f;
- 			ival = (signed int) regs->gpr[rd];
- 			regs->gpr[ra] = ival >> (sh < 32 ? sh : 31);
--			if (ival < 0 && (sh >= 32 || (ival & ((1 << sh) - 1)) != 0))
-+			if (ival < 0 && (sh >= 32 || (ival & ((1ul << sh) - 1)) != 0))
- 				regs->xer |= XER_CA;
- 			else
- 				regs->xer &= ~XER_CA;
-@@ -1208,7 +1208,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 			sh = rb;
- 			ival = (signed int) regs->gpr[rd];
- 			regs->gpr[ra] = ival >> sh;
--			if (ival < 0 && (ival & ((1 << sh) - 1)) != 0)
-+			if (ival < 0 && (ival & ((1ul << sh) - 1)) != 0)
- 				regs->xer |= XER_CA;
- 			else
- 				regs->xer &= ~XER_CA;
-@@ -1216,7 +1216,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 4bd091a..c507767 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -853,8 +853,8 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+ 		in = pcie->cfg_type0 + PEX_RC_INWIN_BASE;
+ 		for (i = 0; i < 4; i++) {
+ 			/* not enabled, skip */
+-			if (!in_le32(&in[i].ar) & PEX_RCIWARn_EN)
+-				 continue;
++			if (!(in_le32(&in[i].ar) & PEX_RCIWARn_EN))
++				continue;
  
- #ifdef __powerpc64__
- 		case 27:	/* sld */
--			sh = regs->gpr[rd] & 0x7f;
-+			sh = regs->gpr[rb] & 0x7f;
- 			if (sh < 64)
- 				regs->gpr[ra] = regs->gpr[rd] << sh;
- 			else
-@@ -1235,7 +1235,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 			sh = regs->gpr[rb] & 0x7f;
- 			ival = (signed long int) regs->gpr[rd];
- 			regs->gpr[ra] = ival >> (sh < 64 ? sh : 63);
--			if (ival < 0 && (sh >= 64 || (ival & ((1 << sh) - 1)) != 0))
-+			if (ival < 0 && (sh >= 64 || (ival & ((1ul << sh) - 1)) != 0))
- 				regs->xer |= XER_CA;
- 			else
- 				regs->xer &= ~XER_CA;
-@@ -1246,7 +1246,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 			sh = rb | ((instr & 2) << 4);
- 			ival = (signed long int) regs->gpr[rd];
- 			regs->gpr[ra] = ival >> sh;
--			if (ival < 0 && (ival & ((1 << sh) - 1)) != 0)
-+			if (ival < 0 && (ival & ((1ul << sh) - 1)) != 0)
- 				regs->xer |= XER_CA;
- 			else
- 				regs->xer &= ~XER_CA;
+ 			if (get_immrbase() == in_le32(&in[i].tar))
+ 				return (u64)in_le32(&in[i].barh) << 32 |
 -- 
-2.0.1
+1.9.1
