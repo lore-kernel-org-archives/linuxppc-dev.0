@@ -2,16 +2,16 @@ Return-Path: <wangnan0@huawei.com>
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AD101A020C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:56:53 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 213941A0213
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:56:54 +1000 (EST)
 From: Wang Nan <wangnan0@huawei.com>
 To: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>, "Mel
  Gorman" <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>, "Dave
  Hansen" <dave.hansen@intel.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Subject: [PATCH v2 1/7] memory-hotplug: add zone_for_memory() for selecting
- zone for new memory
-Date: Mon, 21 Jul 2014 11:46:36 +0800
-Message-ID: <1405914402-66212-2-git-send-email-wangnan0@huawei.com>
+Subject: [PATCH v2 5/7] memory-hotplug: ppc: suitable memory should go to
+ ZONE_MOVABLE
+Date: Mon, 21 Jul 2014 11:46:40 +0800
+Message-ID: <1405914402-66212-6-git-send-email-wangnan0@huawei.com>
 In-Reply-To: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
 References: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
 MIME-Version: 1.0
@@ -28,78 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces a zone_for_memory function in arch independent
-code for arch_add_memory() using.
-
-Many arch_add_memory() function simply selects ZONE_HIGHMEM or
-ZONE_NORMAL and add new memory into it. However, with the existance of
-ZONE_MOVABLE, the selection method should be carefully considered: if
-new, higher memory is added after ZONE_MOVABLE is setup, the default
-zone and ZONE_MOVABLE may overlap each other.
-
-should_add_memory_movable() checks the status of ZONE_MOVABLE. If it has
-already contain memory, compare the address of new memory and movable
-memory. If new memory is higher than movable, it should be added into
-ZONE_MOVABLE instead of default zone.
+This patch introduces zone_for_memory() to arch_add_memory() on powerpc
+to ensure new, higher memory added into ZONE_MOVABLE if movable zone has
+already setup.
 
 Signed-off-by: Wang Nan <wangnan0@huawei.com>
 Cc: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
 Cc: Dave Hansen <dave.hansen@intel.com>
 ---
- include/linux/memory_hotplug.h |  1 +
- mm/memory_hotplug.c            | 28 ++++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
+ arch/powerpc/mm/mem.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 010d125..3de3d02 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -258,6 +258,7 @@ static inline void remove_memory(int nid, u64 start, u64 size) {}
- extern int walk_memory_range(unsigned long start_pfn, unsigned long end_pfn,
- 		void *arg, int (*func)(struct memory_block *, void *));
- extern int add_memory(int nid, u64 start, u64 size);
-+extern int zone_for_memory(int nid, u64 start, u64 size, int zone_default);
- extern int arch_add_memory(int nid, u64 start, u64 size);
- extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
- extern bool is_memblock_offlined(struct memory_block *mem);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 469bbf5..348fda7 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1156,6 +1156,34 @@ static int check_hotplug_memory_range(u64 start, u64 size)
- 	return 0;
- }
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 2c8e90f..e0f7a18 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -128,7 +128,8 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ 		return -EINVAL;
  
-+/*
-+ * If movable zone has already been setup, newly added memory should be check.
-+ * If its address is higher than movable zone, it should be added as movable.
-+ * Without this check, movable zone may overlap with other zone.
-+ */
-+static int should_add_memory_movable(int nid, u64 start, u64 size)
-+{
-+	unsigned long start_pfn = start >> PAGE_SHIFT;
-+	pg_data_t *pgdat = NODE_DATA(nid);
-+	struct zone *movable_zone = pgdat->node_zones + ZONE_MOVABLE;
-+
-+	if (zone_is_empty(movable_zone))
-+		return 0;
-+
-+	if (movable_zone->zone_start_pfn <= start_pfn)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+int zone_for_memory(int nid, u64 start, u64 size, int zone_default)
-+{
-+	if (should_add_memory_movable(nid, start, size))
-+		return ZONE_MOVABLE;
-+
-+	return zone_default;
-+}
-+
- /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
- int __ref add_memory(int nid, u64 start, u64 size)
- {
+ 	/* this should work for most non-highmem platforms */
+-	zone = pgdata->node_zones;
++	zone = pgdata->node_zones +
++		zone_for_memory(nid, start, size, 0);
+ 
+ 	return __add_pages(nid, zone, start_pfn, nr_pages);
+ }
 -- 
 1.8.4
