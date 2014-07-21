@@ -1,24 +1,20 @@
-Return-Path: <wangnan0@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00D2C1A020E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:56:54 +1000 (EST)
-From: Wang Nan <wangnan0@huawei.com>
-To: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>, "Mel
- Gorman" <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>, "Dave
- Hansen" <dave.hansen@intel.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Subject: [PATCH v2 7/7] memory-hotplug: tile: suitable memory should go to
- ZONE_MOVABLE
-Date: Mon, 21 Jul 2014 11:46:42 +0800
-Message-ID: <1405914402-66212-8-git-send-email-wangnan0@huawei.com>
-In-Reply-To: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
-References: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: wangnan0@huawei.com, linux-ia64@vger.kernel.org, peifeiyue@huawei.com,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 640BB1A01E5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 14:31:06 +1000 (EST)
+Date: Sun, 20 Jul 2014 21:31:02 -0700 (PDT)
+Message-Id: <20140720.213102.1007291311502673484.davem@davemloft.net>
+To: fabf@skynet.be
+Subject: Re: [PATCH 00/30] drivers/net: remove unnecessary break after return
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1405865801-18806-1-git-send-email-fabf@skynet.be>
+References: <1405865801-18806-1-git-send-email-fabf@skynet.be>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: brcm80211-dev-list@broadcom.com, e1000-devel@lists.sourceforge.net,
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, joe@perches.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces zone_for_memory() to arch_add_memory() on tile to
-ensure new, higher memory added into ZONE_MOVABLE if movable zone has
-already setup.
+From: Fabian Frederick <fabf@skynet.be>
+Date: Sun, 20 Jul 2014 16:16:08 +0200
 
-This patch also fix a problem: on tile, new memory should be added into
-ZONE_HIGHMEM by default, not MAX_NR_ZONES-1, which is ZONE_MOVABLE.
+> Second patchset after "remove unnecessary break after goto" addressing break redundancy on drivers/net branch
+> (suggested by Joe Perches)
 
-Signed-off-by: Wang Nan <wangnan0@huawei.com>
-Cc: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Cc: Dave Hansen <dave.hansen@intel.com>
----
- arch/tile/mm/init.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/tile/mm/init.c b/arch/tile/mm/init.c
-index bfb3127..22ac6c1 100644
---- a/arch/tile/mm/init.c
-+++ b/arch/tile/mm/init.c
-@@ -872,7 +872,8 @@ void __init mem_init(void)
- int arch_add_memory(u64 start, u64 size)
- {
- 	struct pglist_data *pgdata = &contig_page_data;
--	struct zone *zone = pgdata->node_zones + MAX_NR_ZONES-1;
-+	struct zone *zone = pgdata->node_zones +
-+		zone_for_memory(nid, start, size, ZONE_HIGHMEM);
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 
--- 
-1.8.4
+All applied except the i40e patch, which did not apply to net-next at all.
