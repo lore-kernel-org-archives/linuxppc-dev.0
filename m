@@ -1,30 +1,24 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
- [IPv6:2a00:1450:400c:c00::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <wangnan0@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FCB61A0209
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 05:18:09 +1000 (EST)
-Received: by mail-wg0-f48.google.com with SMTP id x13so5593360wgg.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jul 2014 12:18:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2FDC1A01F5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:56:53 +1000 (EST)
+From: Wang Nan <wangnan0@huawei.com>
+To: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>, "Mel
+ Gorman" <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>, "Dave
+ Hansen" <dave.hansen@intel.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
+Subject: [PATCH v2 6/7] memory-hotplug: sh: suitable memory should go to
+ ZONE_MOVABLE
+Date: Mon, 21 Jul 2014 11:46:41 +0800
+Message-ID: <1405914402-66212-7-git-send-email-wangnan0@huawei.com>
+In-Reply-To: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
+References: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <1403693580-9449-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1403693580-9449-1-git-send-email-a13xp0p0v88@gmail.com>
-Date: Sun, 20 Jul 2014 23:18:04 +0400
-Message-ID: <CAF0T0X62_uwG7z8ZKtn7C=OsRCRfbBBE8QKb3tpju0zvSZf8Fg@mail.gmail.com>
-Subject: Re: [PATCH v3 0/3] dmaengine: mpc512x: add device tree binding
- document and DMA channel lookup
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Mark Rutland <mark.rutland@arm.com>, Gerhard Sittig <gsi@denx.de>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Cc: wangnan0@huawei.com, linux-ia64@vger.kernel.org, peifeiyue@huawei.com,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+This patch introduces zone_for_memory() to arch_add_memory() on sh to
+ensure new, higher memory added into ZONE_MOVABLE if movable zone has
+already setup.
 
-2014-06-25 14:52 GMT+04:00 Alexander Popov <a13xp0p0v88@gmail.com>:
-> This patch series introduces a device tree binding document for
-> the MPC512x DMA controller and adds device tree based DMA channel lookup
-> for it.
->
-> This version contains the improved device tree binding document:
-> #dma-cells is made a required property, as it must be according
-> dma/dma.txt document.
+Signed-off-by: Wang Nan <wangnan0@huawei.com>
+Cc: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
+Cc: Dave Hansen <dave.hansen@intel.com>
+---
+ arch/sh/mm/init.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Could I have a feedback, please?
-Thanks!
-
-> Alexander Popov (3):
->   dmaengine: mpc512x: add device tree binding document
->   dmaengine: of: add common xlate function for matching by channel id
->   dmaengine: mpc512x: register for device tree channel lookup
->
->  .../devicetree/bindings/dma/mpc512x-dma.txt        | 29 ++++++++++++++++++
->  arch/powerpc/boot/dts/mpc5121.dtsi                 |  1 +
->  drivers/dma/mpc512x_dma.c                          | 13 +++++++-
->  drivers/dma/of-dma.c                               | 35 ++++++++++++++++++++++
->  include/linux/of_dma.h                             |  4 +++
->  5 files changed, 81 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
->
-> --
-> 1.8.4.2
->
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index 2d089fe..2790b6a 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -495,8 +495,9 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ 	pgdat = NODE_DATA(nid);
+ 
+ 	/* We only have ZONE_NORMAL, so this is easy.. */
+-	ret = __add_pages(nid, pgdat->node_zones + ZONE_NORMAL,
+-				start_pfn, nr_pages);
++	ret = __add_pages(nid, pgdat->node_zones +
++			zone_for_memory(nid, start, size, ZONE_NORMAL),
++			start_pfn, nr_pages);
+ 	if (unlikely(ret))
+ 		printk("%s: Failed, __add_pages() == %d\n", __func__, ret);
+ 
+-- 
+1.8.4
