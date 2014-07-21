@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 509891A018B
+ by lists.ozlabs.org (Postfix) with ESMTPS id B85E71A018B
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 14:34:49 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/3] selftests/powerpc: Count instructions under scheduler
- pressure
-Date: Mon, 21 Jul 2014 14:34:40 +1000
-Message-Id: <1405917282-31599-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] selftests/powerpc: Count more instructions
+Date: Mon, 21 Jul 2014 14:34:41 +1000
+Message-Id: <1405917282-31599-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1405917282-31599-1-git-send-email-mpe@ellerman.id.au>
+References: <1405917282-31599-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,61 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Have a task eat some cpu while we are counting instructions to create
-some scheduler pressure. The idea being to try and unearth any bugs we
-have in counting that only appear when context switching is happening.
+Although we expect some small discrepancies for very large counts, we
+seem to be able to count up to 64G instructions without too much skew, so
+do so.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/pmu/Makefile             | 2 +-
- tools/testing/selftests/powerpc/pmu/count_instructions.c | 8 +++++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/pmu/count_instructions.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index b9ff0db42c79..9c1ae4a9aa53 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -2,7 +2,7 @@ noarg:
- 	$(MAKE) -C ../
- 
- PROGS := count_instructions
--EXTRA_SOURCES := ../harness.c event.c
-+EXTRA_SOURCES := ../harness.c event.c lib.c
- 
- all: $(PROGS) sub_all
- 
 diff --git a/tools/testing/selftests/powerpc/pmu/count_instructions.c b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-index 312b4f0fd27c..5e241e14f204 100644
+index 5e241e14f204..56572f0b1eb2 100644
 --- a/tools/testing/selftests/powerpc/pmu/count_instructions.c
 +++ b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-@@ -12,6 +12,7 @@
+@@ -124,6 +124,12 @@ static int test_body(void)
+ 	/* Run for 1G instructions */
+ 	FAIL_IF(do_count_loop(events, 0x40000000, overhead, true));
  
- #include "event.h"
- #include "utils.h"
-+#include "lib.h"
- 
- extern void thirty_two_instruction_loop(u64 loops);
- 
-@@ -90,7 +91,7 @@ static u64 determine_overhead(struct event *events)
- 	return overhead;
- }
- 
--static int count_instructions(void)
-+static int test_body(void)
- {
- 	struct event events[2];
- 	u64 overhead;
-@@ -129,6 +130,11 @@ static int count_instructions(void)
- 	return 0;
- }
- 
-+static int count_instructions(void)
-+{
-+	return eat_cpu(test_body);
-+}
++	/* Run for 16G instructions */
++	FAIL_IF(do_count_loop(events, 0x400000000, overhead, true));
 +
- int main(void)
- {
- 	return test_harness(count_instructions, "count_instructions");
++	/* Run for 64G instructions */
++	FAIL_IF(do_count_loop(events, 0x1000000000, overhead, true));
++
+ 	event_close(&events[0]);
+ 	event_close(&events[1]);
+ 
 -- 
 1.9.1
