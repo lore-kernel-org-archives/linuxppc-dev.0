@@ -1,41 +1,22 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 78FD41A0215
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 18:06:43 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Mon, 21 Jul 2014 13:36:39 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 33F7F1258059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:36:28 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6L86uL7197014
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:36:56 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6L86Zjw019398
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:36:35 +0530
-Message-ID: <53CCCA09.1060404@linux.vnet.ibm.com>
-Date: Mon, 21 Jul 2014 16:06:33 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D01521A020C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 19:47:58 +1000 (EST)
+From: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>
+To: Denis Kirjanov <kirjanov@gmail.com>
+Subject: RE: [PATCH] powerpc : dma-mapping : Check null condition for
+ dev->archdata.dma_ops
+Date: Mon, 21 Jul 2014 09:47:44 +0000
+Message-ID: <7915139669ac4176b4af2854db24713c@BN1PR0301MB0593.namprd03.prod.outlook.com>
+References: <1405677892-7201-1-git-send-email-nikhil.badola@freescale.com>
+ <CAHj3AVmD1ecGor_z_bsVRty7KSh8CL1TW20=YGk60SXV1hjOtg@mail.gmail.com>
+In-Reply-To: <CAHj3AVmD1ecGor_z_bsVRty7KSh8CL1TW20=YGk60SXV1hjOtg@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v1 2/3] powerpc/powernv: Support PCI error injection
-References: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1403489682-14841-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <53A91819.1010900@linux.vnet.ibm.com> <1403591761.4587.161.camel@pasglop>
- <53A9216C.8050904@linux.vnet.ibm.com> <1403593252.4587.163.camel@pasglop>
- <20140625000305.GA5742@shangw> <53AA3C5C.4080807@linux.vnet.ibm.com>
- <1403666349.4587.196.camel@pasglop>
-In-Reply-To: <1403666349.4587.196.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org, agraf@suse.de
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,30 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/25/2014 11:19 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2014-06-25 at 11:05 +0800, Mike Qiu wrote:
->> Here maybe  "/sys/kernel/debug/powerpc/errinjct" is better, because
->> it
->> will supply "PCI_domain_nr" in parameters, so no need supply errinjct
->> for each PCI domain.
->>
->> Another reason is error inject not only for PCI(in future), so better
->> not in PCI domain entry.
->>
->> Also it simple for userland tools to has a fixed path.
-> I don't like this. I much prefer have dedicated error injection files
-> in their respective locations, something for PCI under the corresponding
-> PCI bridge etc...
+> -----Original Message-----
+> From: Denis Kirjanov [mailto:kirjanov@gmail.com]
+> Sent: Friday, July 18, 2014 7:21 PM
+> To: Badola Nikhil-B46172
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] powerpc : dma-mapping : Check null condition for dev=
+-
+> >archdata.dma_ops
+>=20
+> On 7/18/14, Nikhil Badola <nikhil.badola@freescale.com> wrote:
+> > Modifies get_dma_ops() implementation on ppc arch to check null
+> > condition
+>  which means that dma is not supported.
+>=20
+> Could you please describe the use case where the ops is null.
 
-So PowerNV error injection will be designed rely on debugfs been 
-configured, right?
+The use case in which ops are null is while running USB in Gadget and Otg m=
+ode.
 
-Thanks,
-Mike
->
-> Cheers,
-> Ben.
->
->
->
->
+For PPC architecture, whenever a platform device is registered, pdev->dev i=
+s=20
+assigned dma_ops.=20
+In USB, one single chipidea platform device is registered for any mode (hos=
+t, gadget or otg)
+whose dev, as explained above, has dma_ops set and this dev is assigned to =
+ ci->dev(dev of chipidea struct)
+which is used by host controller device. That is why we don't need the abov=
+e null case checking in
+host mode. But when we run usb in gadget/otg mode, the device structure use=
+d is ci->gadget.dev
+which does not have dma_ops set and it crashes when dma transaction starts =
+when it calls get_dma_ops()
+which returns NULL.
+
+A similar approach is used in ARM architecture which checks for null condit=
+ion and returns=20
+common dma_ops
+>=20
+> > for dev->archdata.dma_ops; returns common dma_direct_ops structure in
+> > case its NULL
+> >
+> > Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+> > ---
+> >  arch/powerpc/include/asm/dma-mapping.h | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/dma-mapping.h
+> > b/arch/powerpc/include/asm/dma-mapping.h
+> > index 150866b..d73bae8 100644
+> > --- a/arch/powerpc/include/asm/dma-mapping.h
+> > +++ b/arch/powerpc/include/asm/dma-mapping.h
+> > @@ -86,10 +86,12 @@ static inline struct dma_map_ops
+> > *get_dma_ops(struct device *dev)
+> >  	 */
+> >  	if (unlikely(dev =3D=3D NULL))
+> >  		return NULL;
+> > -
+> > -	return dev->archdata.dma_ops;
+> > +	if (dev->archdata.dma_ops)
+> > +		return dev->archdata.dma_ops;
+> > +	return &dma_direct_ops;
+> >  }
+> >
+> > +
+> >  static inline void set_dma_ops(struct device *dev, struct dma_map_ops
+> > *ops)  {
+> >  	dev->archdata.dma_ops =3D ops;
+> > --
+> > 1.7.11.7
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
+>=20
+> --
+> Regards,
+> Denis
+
+Regards,
+Nikhil
