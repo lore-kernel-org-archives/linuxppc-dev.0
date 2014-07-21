@@ -1,20 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 640BB1A01E5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 14:31:06 +1000 (EST)
-Date: Sun, 20 Jul 2014 21:31:02 -0700 (PDT)
-Message-Id: <20140720.213102.1007291311502673484.davem@davemloft.net>
-To: fabf@skynet.be
-Subject: Re: [PATCH 00/30] drivers/net: remove unnecessary break after return
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1405865801-18806-1-git-send-email-fabf@skynet.be>
-References: <1405865801-18806-1-git-send-email-fabf@skynet.be>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: brcm80211-dev-list@broadcom.com, e1000-devel@lists.sourceforge.net,
- netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, joe@perches.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 509891A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 14:34:49 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] selftests/powerpc: Count instructions under scheduler
+ pressure
+Date: Mon, 21 Jul 2014 14:34:40 +1000
+Message-Id: <1405917282-31599-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,10 +19,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Fabian Frederick <fabf@skynet.be>
-Date: Sun, 20 Jul 2014 16:16:08 +0200
+Have a task eat some cpu while we are counting instructions to create
+some scheduler pressure. The idea being to try and unearth any bugs we
+have in counting that only appear when context switching is happening.
 
-> Second patchset after "remove unnecessary break after goto" addressing break redundancy on drivers/net branch
-> (suggested by Joe Perches)
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/pmu/Makefile             | 2 +-
+ tools/testing/selftests/powerpc/pmu/count_instructions.c | 8 +++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-All applied except the i40e patch, which did not apply to net-next at all.
+diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
+index b9ff0db42c79..9c1ae4a9aa53 100644
+--- a/tools/testing/selftests/powerpc/pmu/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/Makefile
+@@ -2,7 +2,7 @@ noarg:
+ 	$(MAKE) -C ../
+ 
+ PROGS := count_instructions
+-EXTRA_SOURCES := ../harness.c event.c
++EXTRA_SOURCES := ../harness.c event.c lib.c
+ 
+ all: $(PROGS) sub_all
+ 
+diff --git a/tools/testing/selftests/powerpc/pmu/count_instructions.c b/tools/testing/selftests/powerpc/pmu/count_instructions.c
+index 312b4f0fd27c..5e241e14f204 100644
+--- a/tools/testing/selftests/powerpc/pmu/count_instructions.c
++++ b/tools/testing/selftests/powerpc/pmu/count_instructions.c
+@@ -12,6 +12,7 @@
+ 
+ #include "event.h"
+ #include "utils.h"
++#include "lib.h"
+ 
+ extern void thirty_two_instruction_loop(u64 loops);
+ 
+@@ -90,7 +91,7 @@ static u64 determine_overhead(struct event *events)
+ 	return overhead;
+ }
+ 
+-static int count_instructions(void)
++static int test_body(void)
+ {
+ 	struct event events[2];
+ 	u64 overhead;
+@@ -129,6 +130,11 @@ static int count_instructions(void)
+ 	return 0;
+ }
+ 
++static int count_instructions(void)
++{
++	return eat_cpu(test_body);
++}
++
+ int main(void)
+ {
+ 	return test_harness(count_instructions, "count_instructions");
+-- 
+1.9.1
