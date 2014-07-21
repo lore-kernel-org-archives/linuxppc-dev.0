@@ -2,16 +2,16 @@ Return-Path: <wangnan0@huawei.com>
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 213941A0213
+ by lists.ozlabs.org (Postfix) with ESMTPS id 00D2C1A020E
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 13:56:54 +1000 (EST)
 From: Wang Nan <wangnan0@huawei.com>
 To: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>, "Mel
  Gorman" <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>, "Dave
  Hansen" <dave.hansen@intel.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Subject: [PATCH v2 5/7] memory-hotplug: ppc: suitable memory should go to
+Subject: [PATCH v2 7/7] memory-hotplug: tile: suitable memory should go to
  ZONE_MOVABLE
-Date: Mon, 21 Jul 2014 11:46:40 +0800
-Message-ID: <1405914402-66212-6-git-send-email-wangnan0@huawei.com>
+Date: Mon, 21 Jul 2014 11:46:42 +0800
+Message-ID: <1405914402-66212-8-git-send-email-wangnan0@huawei.com>
 In-Reply-To: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
 References: <1405914402-66212-1-git-send-email-wangnan0@huawei.com>
 MIME-Version: 1.0
@@ -28,30 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces zone_for_memory() to arch_add_memory() on powerpc
-to ensure new, higher memory added into ZONE_MOVABLE if movable zone has
+This patch introduces zone_for_memory() to arch_add_memory() on tile to
+ensure new, higher memory added into ZONE_MOVABLE if movable zone has
 already setup.
+
+This patch also fix a problem: on tile, new memory should be added into
+ZONE_HIGHMEM by default, not MAX_NR_ZONES-1, which is ZONE_MOVABLE.
 
 Signed-off-by: Wang Nan <wangnan0@huawei.com>
 Cc: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
 Cc: Dave Hansen <dave.hansen@intel.com>
 ---
- arch/powerpc/mm/mem.c | 3 ++-
+ arch/tile/mm/init.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 2c8e90f..e0f7a18 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -128,7 +128,8 @@ int arch_add_memory(int nid, u64 start, u64 size)
- 		return -EINVAL;
+diff --git a/arch/tile/mm/init.c b/arch/tile/mm/init.c
+index bfb3127..22ac6c1 100644
+--- a/arch/tile/mm/init.c
++++ b/arch/tile/mm/init.c
+@@ -872,7 +872,8 @@ void __init mem_init(void)
+ int arch_add_memory(u64 start, u64 size)
+ {
+ 	struct pglist_data *pgdata = &contig_page_data;
+-	struct zone *zone = pgdata->node_zones + MAX_NR_ZONES-1;
++	struct zone *zone = pgdata->node_zones +
++		zone_for_memory(nid, start, size, ZONE_HIGHMEM);
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
  
- 	/* this should work for most non-highmem platforms */
--	zone = pgdata->node_zones;
-+	zone = pgdata->node_zones +
-+		zone_for_memory(nid, start, size, 0);
- 
- 	return __add_pages(nid, zone, start_pfn, nr_pages);
- }
 -- 
 1.8.4
