@@ -1,35 +1,25 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 978A71A019A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 19:55:24 +1000 (EST)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 21 Jul 2014 10:55:20 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 60C7B219005F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 10:55:02 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6L9tGRO34013348
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 09:55:17 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6L9tGU8014514
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 03:55:16 -0600
-Message-ID: <1405936513.2618.15.camel@TP-T420>
-Subject: [PATCH powerpc] use _GLOBAL_TOC for memmove
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 21 Jul 2014 17:55:13 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA0641A019D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 20:00:16 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+Date: Mon, 21 Jul 2014 09:59:59 +0000
+Message-ID: <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
+ <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
+ <53C7DBC3.2060104@suse.de>
+ <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
+In-Reply-To: <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,56 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-memmove may be called from module code copy_pages(btrfs), and it may
-call memcpy, which may call back to C code, so it needs to use
-_GLOBAL_TOC to set up r2 correctly. 
-
-This fixes following error when I tried to boot an le guest:
-
-Vector: 300 (Data Access) at [c000000073f97210]
-    pc: c000000000015004: enable_kernel_altivec+0x24/0x80
-    lr: c000000000058fbc: enter_vmx_copy+0x3c/0x60
-    sp: c000000073f97490
-   msr: 8000000002009033
-   dar: d000000001d50170
- dsisr: 40000000
-  current = 0xc0000000734c0000
-  paca    = 0xc00000000fff0000	 softe: 0	 irq_happened: 0x01
-    pid   = 815, comm = mktemp
-enter ? for help
-[c000000073f974f0] c000000000058fbc enter_vmx_copy+0x3c/0x60
-[c000000073f97510] c000000000057d34 memcpy_power7+0x274/0x840
-[c000000073f97610] d000000001c3179c copy_pages+0xfc/0x110 [btrfs]
-[c000000073f97660] d000000001c3c248 memcpy_extent_buffer+0xe8/0x160 [btrfs]
-[c000000073f97700] d000000001be4be8 setup_items_for_insert+0x208/0x4a0 [btrfs]
-[c000000073f97820] d000000001be50b4 btrfs_insert_empty_items+0xf4/0x140 [btrfs]
-[c000000073f97890] d000000001bfed30 insert_with_overflow+0x70/0x180 [btrfs]
-[c000000073f97900] d000000001bff174 btrfs_insert_dir_item+0x114/0x2f0 [btrfs]
-[c000000073f979a0] d000000001c1f92c btrfs_add_link+0x10c/0x370 [btrfs]
-[c000000073f97a40] d000000001c20e94 btrfs_create+0x204/0x270 [btrfs]
-[c000000073f97b00] c00000000026d438 vfs_create+0x178/0x210
-[c000000073f97b50] c000000000270a70 do_last+0x9f0/0xe90
-[c000000073f97c20] c000000000271010 path_openat+0x100/0x810
-[c000000073f97ce0] c000000000272ea8 do_filp_open+0x58/0xd0
-[c000000073f97dc0] c00000000025ade8 do_sys_open+0x1b8/0x300
-[c000000073f97e30] c00000000000a008 syscall_exit+0x0/0x7c
---- Exception: c01 (System Call) at 00003fffaabe2854
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/lib/mem_64.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-index 0738f96..43435c6 100644
---- a/arch/powerpc/lib/mem_64.S
-+++ b/arch/powerpc/lib/mem_64.S
-@@ -77,7 +77,7 @@ _GLOBAL(memset)
- 	stb	r4,0(r6)
- 	blr
- 
--_GLOBAL(memmove)
-+_GLOBAL_TOC(memmove)
- 	cmplw	0,r3,r4
- 	bgt	backwards_memcpy
- 	b	memcpy
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0
+bzpsaW51eHBwYy1kZXYtDQo+IGJvdW5jZXMrbWloYWkuY2FyYW1hbj1mcmVlc2NhbGUuY29tQGxp
+c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZg0KPiBtaWhhaS5jYXJhbWFuQGZyZWVzY2FsZS5j
+b20NCj4gU2VudDogRnJpZGF5LCBKdWx5IDE4LCAyMDE0IDEyOjA2IFBNDQo+IFRvOiBBbGV4YW5k
+ZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnOyBrdm1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0gg
+djUgNC81XSBLVk06IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvIGZhaWwNCj4g
+DQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBBbGV4YW5kZXIgR3Jh
+ZiBbbWFpbHRvOmFncmFmQHN1c2UuZGVdDQo+ID4gU2VudDogVGh1cnNkYXksIEp1bHkgMTcsIDIw
+MTQgNToyMSBQTQ0KPiA+IFRvOiBDYXJhbWFuIE1paGFpIENsYXVkaXUtQjAyMDA4OyBrdm0tcHBj
+QHZnZXIua2VybmVsLm9yZw0KPiA+IENjOiBrdm1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjUgNC81XSBLVk06
+IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvDQo+IGZhaWwNCj4gPg0KPiA+DQo+
+ID4gT24gMTcuMDcuMTQgMTM6MjIsIE1paGFpIENhcmFtYW4gd3JvdGU6DQo+ID4gPiBPbiBib29r
+M2UsIGd1ZXN0IGxhc3QgaW5zdHJ1Y3Rpb24gaXMgcmVhZCBvbiB0aGUgZXhpdCBwYXRoIHVzaW5n
+IGxvYWQNCj4gPiA+IGV4dGVybmFsIHBpZCAobHdlcHgpIGRlZGljYXRlZCBpbnN0cnVjdGlvbi4g
+VGhpcyBsb2FkIG9wZXJhdGlvbiBtYXkNCj4gPiBmYWlsDQo+ID4gPiBkdWUgdG8gVExCIGV2aWN0
+aW9uIGFuZCBleGVjdXRlLWJ1dC1ub3QtcmVhZCBlbnRyaWVzLg0KPiA+ID4NCj4gPiA+IFRoaXMg
+cGF0Y2ggbGF5IGRvd24gdGhlIHBhdGggZm9yIGFuIGFsdGVybmF0aXZlIHNvbHV0aW9uIHRvIHJl
+YWQgdGhlDQo+ID4gZ3Vlc3QNCj4gPiA+IGxhc3QgaW5zdHJ1Y3Rpb24sIGJ5IGFsbG93aW5nIGt2
+bXBwY19nZXRfbGF0X2luc3QoKSBmdW5jdGlvbiB0byBmYWlsLg0KPiA+ID4gQXJjaGl0ZWN0dXJl
+IHNwZWNpZmljIGltcGxtZW50YXRpb25zIG9mIGt2bXBwY19sb2FkX2xhc3RfaW5zdCgpIG1heQ0K
+PiA+IHJlYWQNCj4gPiA+IGxhc3QgZ3Vlc3QgaW5zdHJ1Y3Rpb24gYW5kIGluc3RydWN0IHRoZSBl
+bXVsYXRpb24gbGF5ZXIgdG8gcmUtZXhlY3V0ZQ0KPiA+IHRoZQ0KPiA+ID4gZ3Vlc3QgaW4gY2Fz
+ZSBvZiBmYWlsdXJlLg0KPiA+ID4NCj4gPiA+IE1ha2Uga3ZtcHBjX2dldF9sYXN0X2luc3QoKSBk
+ZWZpbml0aW9uIGNvbW1vbiBiZXR3ZWVuIGFyY2hpdGVjdHVyZXMuDQo+ID4gPg0KPiA+ID4gU2ln
+bmVkLW9mZi1ieTogTWloYWkgQ2FyYW1hbiA8bWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tPg0K
+PiA+ID4gLS0tDQo+IA0KPiAuLi4NCj4gDQo+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBj
+L2luY2x1ZGUvYXNtL2t2bV9wcGMuaA0KPiA+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2t2
+bV9wcGMuaA0KPiA+ID4gaW5kZXggZTJmZDVhMS4uN2Y5YzYzNCAxMDA2NDQNCj4gPiA+IC0tLSBh
+L2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPiA+ICsrKyBiL2FyY2gvcG93
+ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPiA+IEBAIC00Nyw2ICs0NywxMSBAQCBlbnVt
+IGVtdWxhdGlvbl9yZXN1bHQgew0KPiA+ID4gICAJRU1VTEFURV9FWElUX1VTRVIsICAgIC8qIGVt
+dWxhdGlvbiByZXF1aXJlcyBleGl0IHRvIHVzZXItDQo+IHNwYWNlICovDQo+ID4gPiAgIH07DQo+
+ID4gPg0KPiA+ID4gK2VudW0gaW5zdHJ1Y3Rpb25fdHlwZSB7DQo+ID4gPiArCUlOU1RfR0VORVJJ
+QywNCj4gPiA+ICsJSU5TVF9TQywJCS8qIHN5c3RlbSBjYWxsICovDQo+ID4gPiArfTsNCj4gPiA+
+ICsNCj4gPiA+ICAgZXh0ZXJuIGludCBrdm1wcGNfdmNwdV9ydW4oc3RydWN0IGt2bV9ydW4gKmt2
+bV9ydW4sIHN0cnVjdCBrdm1fdmNwdQ0KPiA+ICp2Y3B1KTsNCj4gPiA+ICAgZXh0ZXJuIGludCBf
+X2t2bXBwY192Y3B1X3J1bihzdHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+IGt2bV92
+Y3B1DQo+ID4gKnZjcHUpOw0KPiA+ID4gICBleHRlcm4gdm9pZCBrdm1wcGNfaGFuZGxlcl9oaWdo
+bWVtKHZvaWQpOw0KPiA+ID4gQEAgLTYyLDYgKzY3LDkgQEAgZXh0ZXJuIGludCBrdm1wcGNfaGFu
+ZGxlX3N0b3JlKHN0cnVjdCBrdm1fcnVuICpydW4sDQo+ID4gc3RydWN0IGt2bV92Y3B1ICp2Y3B1
+LA0KPiA+ID4gICAJCQkgICAgICAgdTY0IHZhbCwgdW5zaWduZWQgaW50IGJ5dGVzLA0KPiA+ID4g
+ICAJCQkgICAgICAgaW50IGlzX2RlZmF1bHRfZW5kaWFuKTsNCj4gPiA+DQo+ID4gPiArZXh0ZXJu
+IGludCBrdm1wcGNfbG9hZF9sYXN0X2luc3Qoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LA0KPiA+ID4g
+KwkJCQkgZW51bSBpbnN0cnVjdGlvbl90eXBlIHR5cGUsIHUzMiAqaW5zdCk7DQo+ID4gPiArDQo+
+ID4gPiAgIGV4dGVybiBpbnQga3ZtcHBjX2VtdWxhdGVfaW5zdHJ1Y3Rpb24oc3RydWN0IGt2bV9y
+dW4gKnJ1biwNCj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBz
+dHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpOw0KPiA+ID4gICBleHRlcm4gaW50IGt2bXBwY19lbXVsYXRl
+X21taW8oc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0IGt2bV92Y3B1DQo+ID4gKnZjcHUpOw0K
+PiA+ID4gQEAgLTIzNCw2ICsyNDIsMjMgQEAgc3RydWN0IGt2bXBwY19vcHMgew0KPiA+ID4gICBl
+eHRlcm4gc3RydWN0IGt2bXBwY19vcHMgKmt2bXBwY19odl9vcHM7DQo+ID4gPiAgIGV4dGVybiBz
+dHJ1Y3Qga3ZtcHBjX29wcyAqa3ZtcHBjX3ByX29wczsNCj4gPiA+DQo+ID4gPiArc3RhdGljIGlu
+bGluZSBpbnQga3ZtcHBjX2dldF9sYXN0X2luc3Qoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LA0KPiA+
+ID4gKwkJCQkJZW51bSBpbnN0cnVjdGlvbl90eXBlIHR5cGUsIHUzMiAqaW5zdCkNCj4gPiA+ICt7
+DQo+ID4gPiArCWludCByZXQgPSBFTVVMQVRFX0RPTkU7DQo+ID4gPiArDQo+ID4gPiArCS8qIExv
+YWQgdGhlIGluc3RydWN0aW9uIG1hbnVhbGx5IGlmIGl0IGZhaWxlZCB0byBkbyBzbyBpbiB0aGUN
+Cj4gPiA+ICsJICogZXhpdCBwYXRoICovDQo+ID4gPiArCWlmICh2Y3B1LT5hcmNoLmxhc3RfaW5z
+dCA9PSBLVk1fSU5TVF9GRVRDSF9GQUlMRUQpDQo+ID4gPiArCQlyZXQgPSBrdm1wcGNfbG9hZF9s
+YXN0X2luc3QodmNwdSwgdHlwZSwgJnZjcHUtDQo+ID4gPmFyY2gubGFzdF9pbnN0KTsNCj4gPiA+
+ICsNCj4gPiA+ICsNCj4gPiA+ICsJKmluc3QgPSAocmV0ID09IEVNVUxBVEVfRE9ORSAmJiBrdm1w
+cGNfbmVlZF9ieXRlc3dhcCh2Y3B1KSkgPw0KPiA+ID4gKwkJc3dhYjMyKHZjcHUtPmFyY2gubGFz
+dF9pbnN0KSA6IHZjcHUtPmFyY2gubGFzdF9pbnN0Ow0KPiA+DQo+ID4gVGhpcyBtYWtlcyBldmVu
+IGxlc3Mgc2Vuc2UgdGhhbiB0aGUgcHJldmlvdXMgdmVyc2lvbi4gRWl0aGVyIHlvdSB0cmVhdA0K
+PiA+IGluc3QgYXMgImRlZmluaXRlbHkgb3ZlcndyaXR0ZW4iIG9yIGFzICJwcmVzZXJ2ZXMgcHJl
+dmlvdXMgZGF0YSBvbg0KPiA+IGZhaWx1cmUiLg0KPiANCj4gQm90aCB2NCBhbmQgdjUgdmVyc2lv
+bnMgdHJlYXQgaW5zdCBhcyAiZGVmaW5pdGVseSBvdmVyd3JpdHRlbiIuDQo+IA0KPiA+DQo+ID4g
+U28gZWl0aGVyIHlvdSB1bmNvbmRpdGlvbmFsbHkgc3dhcCBsaWtlIHlvdSBkaWQgYmVmb3JlDQo+
+IA0KPiBJZiB3ZSBtYWtlIGFic3RyYWN0aW9uIG9mIGl0cyBzeW1tZXRyeSwgS1ZNX0lOU1RfRkVU
+Q0hfRkFJTEVEIGlzIG9wZXJhdGVkDQo+IGluIGhvc3QgZW5kaWFubmVzcywgc28gaXQgZG9lc24n
+dCBuZWVkIGJ5dGUgc3dhcC4NCj4gDQo+IEkgYWdyZWUgd2l0aCB5b3VyIHJlYXNvbmluZyBpZiBs
+YXN0X2luc3QgaXMgaW5pdGlhbGl6ZWQgYW5kIGNvbXBhcmVkIHdpdGgNCj4gZGF0YSBpbiBndWVz
+dCBlbmRpYW5lc3MsIHdoaWNoIGlzIG5vdCB0aGUgY2FzZSB5ZXQgZm9yDQo+IEtWTV9JTlNUX0ZF
+VENIX0ZBSUxFRC4NCg0KQWxleCwgYXJlIHlvdSByZWx5aW5nIG9uIHRoZSBmYWN0IHRoYXQgS1ZN
+X0lOU1RfRkVUQ0hfRkFJTEVEIHZhbHVlIGlzIHN5bW1ldHJpY2FsPw0KV2l0aCBhIG5vbiBzeW1t
+ZXRyaWNhbCB2YWx1ZSBsaWtlIDB4REVBREJFRUYsIGFuZCBjb25zaWRlcmluZyBhIGxpdHRsZS1l
+bmRpYW4gZ3Vlc3QNCm9uIGEgYmlnLWVuZGlhbiBob3N0LCB3ZSBuZWVkIHRvIGZpeCBrdm0gbG9n
+aWMgdG8gaW5pdGlhbGl6ZSBhbmQgY29tcGFyZSBsYXN0X2luc3QNCndpdGggMHhFRkJFQURERSBz
+d2FwZWQgdmFsdWUuDQoNCllvdXIgc3VnZ2VzdGlvbiB0byB1bmNvbmRpdGlvbmFsbHkgc3dhcCBt
+YWtlcyBzZW5zZSBvbmx5IHdpdGggdGhlIGFib3ZlIGZpeCwgb3RoZXJ3aXNlDQppbnN0IG1heSBl
+bmQgdXAgd2l0aCAweEVGQkVBRERFIHN3YXBlZCB2YWx1ZSB3aXRoIGlzIHdyb25nLg0KDQotTWlr
+ZQ0K
