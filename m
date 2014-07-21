@@ -1,21 +1,21 @@
 Return-Path: <mihai.caraman@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA0641A019D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 20:00:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43EB51A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jul 2014 23:23:42 +1000 (EST)
 From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
-Date: Mon, 21 Jul 2014 09:59:59 +0000
-Message-ID: <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
- <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
- <53C7DBC3.2060104@suse.de>
- <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
-In-Reply-To: <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+To: Alexander Graf <agraf@suse.de>, Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+ SPE/FP/AltiVec int numbers
+Date: Mon, 21 Jul 2014 13:23:26 +0000
+Message-ID: <767ce3456f6f40809a1488b4df90498d@BLUPR03MB503.namprd03.prod.outlook.com>
+References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
+ <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
+ <53B54AAD.4040609@suse.de>
+In-Reply-To: <53B54AAD.4040609@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
@@ -29,85 +29,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0
-bzpsaW51eHBwYy1kZXYtDQo+IGJvdW5jZXMrbWloYWkuY2FyYW1hbj1mcmVlc2NhbGUuY29tQGxp
-c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZg0KPiBtaWhhaS5jYXJhbWFuQGZyZWVzY2FsZS5j
-b20NCj4gU2VudDogRnJpZGF5LCBKdWx5IDE4LCAyMDE0IDEyOjA2IFBNDQo+IFRvOiBBbGV4YW5k
-ZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOyBrdm1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0gg
-djUgNC81XSBLVk06IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvIGZhaWwNCj4g
-DQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBBbGV4YW5kZXIgR3Jh
-ZiBbbWFpbHRvOmFncmFmQHN1c2UuZGVdDQo+ID4gU2VudDogVGh1cnNkYXksIEp1bHkgMTcsIDIw
-MTQgNToyMSBQTQ0KPiA+IFRvOiBDYXJhbWFuIE1paGFpIENsYXVkaXUtQjAyMDA4OyBrdm0tcHBj
-QHZnZXIua2VybmVsLm9yZw0KPiA+IENjOiBrdm1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjUgNC81XSBLVk06
-IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvDQo+IGZhaWwNCj4gPg0KPiA+DQo+
-ID4gT24gMTcuMDcuMTQgMTM6MjIsIE1paGFpIENhcmFtYW4gd3JvdGU6DQo+ID4gPiBPbiBib29r
-M2UsIGd1ZXN0IGxhc3QgaW5zdHJ1Y3Rpb24gaXMgcmVhZCBvbiB0aGUgZXhpdCBwYXRoIHVzaW5n
-IGxvYWQNCj4gPiA+IGV4dGVybmFsIHBpZCAobHdlcHgpIGRlZGljYXRlZCBpbnN0cnVjdGlvbi4g
-VGhpcyBsb2FkIG9wZXJhdGlvbiBtYXkNCj4gPiBmYWlsDQo+ID4gPiBkdWUgdG8gVExCIGV2aWN0
-aW9uIGFuZCBleGVjdXRlLWJ1dC1ub3QtcmVhZCBlbnRyaWVzLg0KPiA+ID4NCj4gPiA+IFRoaXMg
-cGF0Y2ggbGF5IGRvd24gdGhlIHBhdGggZm9yIGFuIGFsdGVybmF0aXZlIHNvbHV0aW9uIHRvIHJl
-YWQgdGhlDQo+ID4gZ3Vlc3QNCj4gPiA+IGxhc3QgaW5zdHJ1Y3Rpb24sIGJ5IGFsbG93aW5nIGt2
-bXBwY19nZXRfbGF0X2luc3QoKSBmdW5jdGlvbiB0byBmYWlsLg0KPiA+ID4gQXJjaGl0ZWN0dXJl
-IHNwZWNpZmljIGltcGxtZW50YXRpb25zIG9mIGt2bXBwY19sb2FkX2xhc3RfaW5zdCgpIG1heQ0K
-PiA+IHJlYWQNCj4gPiA+IGxhc3QgZ3Vlc3QgaW5zdHJ1Y3Rpb24gYW5kIGluc3RydWN0IHRoZSBl
-bXVsYXRpb24gbGF5ZXIgdG8gcmUtZXhlY3V0ZQ0KPiA+IHRoZQ0KPiA+ID4gZ3Vlc3QgaW4gY2Fz
-ZSBvZiBmYWlsdXJlLg0KPiA+ID4NCj4gPiA+IE1ha2Uga3ZtcHBjX2dldF9sYXN0X2luc3QoKSBk
-ZWZpbml0aW9uIGNvbW1vbiBiZXR3ZWVuIGFyY2hpdGVjdHVyZXMuDQo+ID4gPg0KPiA+ID4gU2ln
-bmVkLW9mZi1ieTogTWloYWkgQ2FyYW1hbiA8bWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tPg0K
-PiA+ID4gLS0tDQo+IA0KPiAuLi4NCj4gDQo+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBj
-L2luY2x1ZGUvYXNtL2t2bV9wcGMuaA0KPiA+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2t2
-bV9wcGMuaA0KPiA+ID4gaW5kZXggZTJmZDVhMS4uN2Y5YzYzNCAxMDA2NDQNCj4gPiA+IC0tLSBh
-L2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPiA+ICsrKyBiL2FyY2gvcG93
-ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPiA+IEBAIC00Nyw2ICs0NywxMSBAQCBlbnVt
-IGVtdWxhdGlvbl9yZXN1bHQgew0KPiA+ID4gICAJRU1VTEFURV9FWElUX1VTRVIsICAgIC8qIGVt
-dWxhdGlvbiByZXF1aXJlcyBleGl0IHRvIHVzZXItDQo+IHNwYWNlICovDQo+ID4gPiAgIH07DQo+
-ID4gPg0KPiA+ID4gK2VudW0gaW5zdHJ1Y3Rpb25fdHlwZSB7DQo+ID4gPiArCUlOU1RfR0VORVJJ
-QywNCj4gPiA+ICsJSU5TVF9TQywJCS8qIHN5c3RlbSBjYWxsICovDQo+ID4gPiArfTsNCj4gPiA+
-ICsNCj4gPiA+ICAgZXh0ZXJuIGludCBrdm1wcGNfdmNwdV9ydW4oc3RydWN0IGt2bV9ydW4gKmt2
-bV9ydW4sIHN0cnVjdCBrdm1fdmNwdQ0KPiA+ICp2Y3B1KTsNCj4gPiA+ICAgZXh0ZXJuIGludCBf
-X2t2bXBwY192Y3B1X3J1bihzdHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+IGt2bV92
-Y3B1DQo+ID4gKnZjcHUpOw0KPiA+ID4gICBleHRlcm4gdm9pZCBrdm1wcGNfaGFuZGxlcl9oaWdo
-bWVtKHZvaWQpOw0KPiA+ID4gQEAgLTYyLDYgKzY3LDkgQEAgZXh0ZXJuIGludCBrdm1wcGNfaGFu
-ZGxlX3N0b3JlKHN0cnVjdCBrdm1fcnVuICpydW4sDQo+ID4gc3RydWN0IGt2bV92Y3B1ICp2Y3B1
-LA0KPiA+ID4gICAJCQkgICAgICAgdTY0IHZhbCwgdW5zaWduZWQgaW50IGJ5dGVzLA0KPiA+ID4g
-ICAJCQkgICAgICAgaW50IGlzX2RlZmF1bHRfZW5kaWFuKTsNCj4gPiA+DQo+ID4gPiArZXh0ZXJu
-IGludCBrdm1wcGNfbG9hZF9sYXN0X2luc3Qoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LA0KPiA+ID4g
-KwkJCQkgZW51bSBpbnN0cnVjdGlvbl90eXBlIHR5cGUsIHUzMiAqaW5zdCk7DQo+ID4gPiArDQo+
-ID4gPiAgIGV4dGVybiBpbnQga3ZtcHBjX2VtdWxhdGVfaW5zdHJ1Y3Rpb24oc3RydWN0IGt2bV9y
-dW4gKnJ1biwNCj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBz
-dHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpOw0KPiA+ID4gICBleHRlcm4gaW50IGt2bXBwY19lbXVsYXRl
-X21taW8oc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0IGt2bV92Y3B1DQo+ID4gKnZjcHUpOw0K
-PiA+ID4gQEAgLTIzNCw2ICsyNDIsMjMgQEAgc3RydWN0IGt2bXBwY19vcHMgew0KPiA+ID4gICBl
-eHRlcm4gc3RydWN0IGt2bXBwY19vcHMgKmt2bXBwY19odl9vcHM7DQo+ID4gPiAgIGV4dGVybiBz
-dHJ1Y3Qga3ZtcHBjX29wcyAqa3ZtcHBjX3ByX29wczsNCj4gPiA+DQo+ID4gPiArc3RhdGljIGlu
-bGluZSBpbnQga3ZtcHBjX2dldF9sYXN0X2luc3Qoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LA0KPiA+
-ID4gKwkJCQkJZW51bSBpbnN0cnVjdGlvbl90eXBlIHR5cGUsIHUzMiAqaW5zdCkNCj4gPiA+ICt7
-DQo+ID4gPiArCWludCByZXQgPSBFTVVMQVRFX0RPTkU7DQo+ID4gPiArDQo+ID4gPiArCS8qIExv
-YWQgdGhlIGluc3RydWN0aW9uIG1hbnVhbGx5IGlmIGl0IGZhaWxlZCB0byBkbyBzbyBpbiB0aGUN
-Cj4gPiA+ICsJICogZXhpdCBwYXRoICovDQo+ID4gPiArCWlmICh2Y3B1LT5hcmNoLmxhc3RfaW5z
-dCA9PSBLVk1fSU5TVF9GRVRDSF9GQUlMRUQpDQo+ID4gPiArCQlyZXQgPSBrdm1wcGNfbG9hZF9s
-YXN0X2luc3QodmNwdSwgdHlwZSwgJnZjcHUtDQo+ID4gPmFyY2gubGFzdF9pbnN0KTsNCj4gPiA+
-ICsNCj4gPiA+ICsNCj4gPiA+ICsJKmluc3QgPSAocmV0ID09IEVNVUxBVEVfRE9ORSAmJiBrdm1w
-cGNfbmVlZF9ieXRlc3dhcCh2Y3B1KSkgPw0KPiA+ID4gKwkJc3dhYjMyKHZjcHUtPmFyY2gubGFz
-dF9pbnN0KSA6IHZjcHUtPmFyY2gubGFzdF9pbnN0Ow0KPiA+DQo+ID4gVGhpcyBtYWtlcyBldmVu
-IGxlc3Mgc2Vuc2UgdGhhbiB0aGUgcHJldmlvdXMgdmVyc2lvbi4gRWl0aGVyIHlvdSB0cmVhdA0K
-PiA+IGluc3QgYXMgImRlZmluaXRlbHkgb3ZlcndyaXR0ZW4iIG9yIGFzICJwcmVzZXJ2ZXMgcHJl
-dmlvdXMgZGF0YSBvbg0KPiA+IGZhaWx1cmUiLg0KPiANCj4gQm90aCB2NCBhbmQgdjUgdmVyc2lv
-bnMgdHJlYXQgaW5zdCBhcyAiZGVmaW5pdGVseSBvdmVyd3JpdHRlbiIuDQo+IA0KPiA+DQo+ID4g
-U28gZWl0aGVyIHlvdSB1bmNvbmRpdGlvbmFsbHkgc3dhcCBsaWtlIHlvdSBkaWQgYmVmb3JlDQo+
-IA0KPiBJZiB3ZSBtYWtlIGFic3RyYWN0aW9uIG9mIGl0cyBzeW1tZXRyeSwgS1ZNX0lOU1RfRkVU
-Q0hfRkFJTEVEIGlzIG9wZXJhdGVkDQo+IGluIGhvc3QgZW5kaWFubmVzcywgc28gaXQgZG9lc24n
-dCBuZWVkIGJ5dGUgc3dhcC4NCj4gDQo+IEkgYWdyZWUgd2l0aCB5b3VyIHJlYXNvbmluZyBpZiBs
-YXN0X2luc3QgaXMgaW5pdGlhbGl6ZWQgYW5kIGNvbXBhcmVkIHdpdGgNCj4gZGF0YSBpbiBndWVz
-dCBlbmRpYW5lc3MsIHdoaWNoIGlzIG5vdCB0aGUgY2FzZSB5ZXQgZm9yDQo+IEtWTV9JTlNUX0ZF
-VENIX0ZBSUxFRC4NCg0KQWxleCwgYXJlIHlvdSByZWx5aW5nIG9uIHRoZSBmYWN0IHRoYXQgS1ZN
-X0lOU1RfRkVUQ0hfRkFJTEVEIHZhbHVlIGlzIHN5bW1ldHJpY2FsPw0KV2l0aCBhIG5vbiBzeW1t
-ZXRyaWNhbCB2YWx1ZSBsaWtlIDB4REVBREJFRUYsIGFuZCBjb25zaWRlcmluZyBhIGxpdHRsZS1l
-bmRpYW4gZ3Vlc3QNCm9uIGEgYmlnLWVuZGlhbiBob3N0LCB3ZSBuZWVkIHRvIGZpeCBrdm0gbG9n
-aWMgdG8gaW5pdGlhbGl6ZSBhbmQgY29tcGFyZSBsYXN0X2luc3QNCndpdGggMHhFRkJFQURERSBz
-d2FwZWQgdmFsdWUuDQoNCllvdXIgc3VnZ2VzdGlvbiB0byB1bmNvbmRpdGlvbmFsbHkgc3dhcCBt
-YWtlcyBzZW5zZSBvbmx5IHdpdGggdGhlIGFib3ZlIGZpeCwgb3RoZXJ3aXNlDQppbnN0IG1heSBl
-bmQgdXAgd2l0aCAweEVGQkVBRERFIHN3YXBlZCB2YWx1ZSB3aXRoIGlzIHdyb25nLg0KDQotTWlr
-ZQ0K
+> -----Original Message-----
+> From: Alexander Graf [mailto:agraf@suse.de]
+> Sent: Thursday, July 03, 2014 3:21 PM
+> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
+> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+> SPE/FP/AltiVec int numbers
+>=20
+>=20
+> On 30.06.14 17:34, Mihai Caraman wrote:
+> > Use common BOOKE_IRQPRIO and BOOKE_INTERRUPT defines for SPE/FP/AltiVec
+> > which share the same interrupt numbers.
+> >
+> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> > ---
+> > v2:
+> >   - remove outdated definitions
+> >
+> >   arch/powerpc/include/asm/kvm_asm.h    |  8 --------
+> >   arch/powerpc/kvm/booke.c              | 17 +++++++++--------
+> >   arch/powerpc/kvm/booke.h              |  4 ++--
+> >   arch/powerpc/kvm/booke_interrupts.S   |  9 +++++----
+> >   arch/powerpc/kvm/bookehv_interrupts.S |  4 ++--
+> >   arch/powerpc/kvm/e500.c               | 10 ++++++----
+> >   arch/powerpc/kvm/e500_emulate.c       | 10 ++++++----
+> >   7 files changed, 30 insertions(+), 32 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/kvm_asm.h
+> b/arch/powerpc/include/asm/kvm_asm.h
+> > index 9601741..c94fd33 100644
+> > --- a/arch/powerpc/include/asm/kvm_asm.h
+> > +++ b/arch/powerpc/include/asm/kvm_asm.h
+> > @@ -56,14 +56,6 @@
+> >   /* E500 */
+> >   #define BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL 32
+> >   #define BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST 33
+> > -/*
+> > - * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same
+> defines
+> > - */
+> > -#define BOOKE_INTERRUPT_SPE_UNAVAIL
+> BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> > -#define BOOKE_INTERRUPT_SPE_FP_DATA
+> BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> > -#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL
+> BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> > -#define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
+> > -				BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+>=20
+> I think I'd prefer to keep them separate.
+>=20
+> >   #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+> >   #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
+> >   #define BOOKE_INTERRUPT_DOORBELL 36
+> > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> > index ab62109..3c86d9b 100644
+> > --- a/arch/powerpc/kvm/booke.c
+> > +++ b/arch/powerpc/kvm/booke.c
+> > @@ -388,8 +388,8 @@ static int kvmppc_booke_irqprio_deliver(struct
+> kvm_vcpu *vcpu,
+> >   	case BOOKE_IRQPRIO_ITLB_MISS:
+> >   	case BOOKE_IRQPRIO_SYSCALL:
+> >   	case BOOKE_IRQPRIO_FP_UNAVAIL:
+> > -	case BOOKE_IRQPRIO_SPE_UNAVAIL:
+> > -	case BOOKE_IRQPRIO_SPE_FP_DATA:
+> > +	case BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL:
+> > +	case BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST:
+>=20
+> #ifdef CONFIG_KVM_E500V2
+>    case ...SPE:
+> #else
+>    case ..ALTIVEC:
+> #endif
+>=20
+> >   	case BOOKE_IRQPRIO_SPE_FP_ROUND:
+> >   	case BOOKE_IRQPRIO_AP_UNAVAIL:
+> >   		allowed =3D 1;
+> > @@ -977,18 +977,19 @@ int kvmppc_handle_exit(struct kvm_run *run,
+> struct kvm_vcpu *vcpu,
+> >   		break;
+> >
+> >   #ifdef CONFIG_SPE
+> > -	case BOOKE_INTERRUPT_SPE_UNAVAIL: {
+> > +	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
+> >   		if (vcpu->arch.shared->msr & MSR_SPE)
+> >   			kvmppc_vcpu_enable_spe(vcpu);
+> >   		else
+> >   			kvmppc_booke_queue_irqprio(vcpu,
+> > -						   BOOKE_IRQPRIO_SPE_UNAVAIL);
+> > +				BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL);
+> >   		r =3D RESUME_GUEST;
+> >   		break;
+> >   	}
+> >
+> > -	case BOOKE_INTERRUPT_SPE_FP_DATA:
+> > -		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SPE_FP_DATA);
+> > +	case BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST:
+> > +		kvmppc_booke_queue_irqprio(vcpu,
+> > +			BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST);
+> >   		r =3D RESUME_GUEST;
+> >   		break;
+> >
+> > @@ -997,7 +998,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct
+> kvm_vcpu *vcpu,
+> >   		r =3D RESUME_GUEST;
+> >   		break;
+> >   #else
+> > -	case BOOKE_INTERRUPT_SPE_UNAVAIL:
+> > +	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL:
+> >   		/*
+> >   		 * Guest wants SPE, but host kernel doesn't support it.  Send
+> >   		 * an "unimplemented operation" program check to the guest.
+> > @@ -1010,7 +1011,7 @@ int kvmppc_handle_exit(struct kvm_run *run,
+> struct kvm_vcpu *vcpu,
+> >   	 * These really should never happen without CONFIG_SPE,
+> >   	 * as we should never enable the real MSR[SPE] in the guest.
+> >   	 */
+> > -	case BOOKE_INTERRUPT_SPE_FP_DATA:
+> > +	case BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST:
+> >   	case BOOKE_INTERRUPT_SPE_FP_ROUND:
+> >   		printk(KERN_CRIT "%s: unexpected SPE interrupt %u at
+> %08lx\n",
+> >   		       __func__, exit_nr, vcpu->arch.pc);
+> > diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+> > index b632cd3..f182b32 100644
+> > --- a/arch/powerpc/kvm/booke.h
+> > +++ b/arch/powerpc/kvm/booke.h
+> > @@ -32,8 +32,8 @@
+> >   #define BOOKE_IRQPRIO_ALIGNMENT 2
+> >   #define BOOKE_IRQPRIO_PROGRAM 3
+> >   #define BOOKE_IRQPRIO_FP_UNAVAIL 4
+> > -#define BOOKE_IRQPRIO_SPE_UNAVAIL 5
+> > -#define BOOKE_IRQPRIO_SPE_FP_DATA 6
+> > +#define BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL 5
+> > +#define BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST 6
+>=20
+> #ifdef CONFIG_KVM_E500V2
+> #define ...SPE...
+> #else
+> #define ...ALTIVEC...
+> #endif
+>=20
+> That way we can be 100% sure that no SPE cruft leaks into anything.
+>=20
+>=20
+> >   #define BOOKE_IRQPRIO_SPE_FP_ROUND 7
+> >   #define BOOKE_IRQPRIO_SYSCALL 8
+> >   #define BOOKE_IRQPRIO_AP_UNAVAIL 9
+> > diff --git a/arch/powerpc/kvm/booke_interrupts.S
+> b/arch/powerpc/kvm/booke_interrupts.S
+> > index 2c6deb5ef..a275dc5 100644
+> > --- a/arch/powerpc/kvm/booke_interrupts.S
+> > +++ b/arch/powerpc/kvm/booke_interrupts.S
+> > @@ -137,8 +137,9 @@ KVM_HANDLER BOOKE_INTERRUPT_WATCHDOG
+> SPRN_SPRG_RSCRATCH_CRIT SPRN_CSRR0
+> >   KVM_HANDLER BOOKE_INTERRUPT_DTLB_MISS SPRN_SPRG_RSCRATCH0 SPRN_SRR0
+> >   KVM_HANDLER BOOKE_INTERRUPT_ITLB_MISS SPRN_SPRG_RSCRATCH0 SPRN_SRR0
+> >   KVM_DBG_HANDLER BOOKE_INTERRUPT_DEBUG SPRN_SPRG_RSCRATCH_CRIT
+> SPRN_CSRR0
+> > -KVM_HANDLER BOOKE_INTERRUPT_SPE_UNAVAIL SPRN_SPRG_RSCRATCH0 SPRN_SRR0
+> > -KVM_HANDLER BOOKE_INTERRUPT_SPE_FP_DATA SPRN_SPRG_RSCRATCH0 SPRN_SRR0
+> > +KVM_HANDLER BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL SPRN_SPRG_RSCRATCH0
+> SPRN_SRR0
+> > +KVM_HANDLER BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> SPRN_SPRG_RSCRATCH0 \
+> > +	SPRN_SRR0
+>=20
+> Same thing here - just only trap SPE when CONFIG_KVM_E500V2 is available
+> and trap altivec otherwise (to make sure we always have a handler).
+
+This will not even build with current kernel. 32-bit FSL kernel defines SPE
+handlers for e500v2/e500mc/e5500 (see head_fsl_booke.S which is guarded by
+CONFIG_FSL_BOOKE) even when CONFIG_SPE is not defined. This is simple to
+verify by removing KVM's HV 32-bit BOOKE_INTERRUPT_SPE_xxx handlers from
+bookehv_interrupts.S.
+
+The kernel equivalent of your CONFIG_KVM_E500V2 suggestion looks like this:
+
+#ifndef CONFIG_PPC_E500MC
+/* e500v2 */
+#define BOOKE_INTERRUPT_SPE_UNAVAIL 32
+#define BOOKE_INTERRUPT_SPE_FP_DATA 33
+#define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+#elif
+/* e500mc, e5500, e6500 */
+#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 32
+#define BOOKE_INTERRUPT_ALTIVEC_ASSIST BOOKE_33
+#endif
+
+but instead, the current kernel expects something like this:
+
+#ifdef CONFIG_FSL_BOOKE
+/* 32-bit targets: e500v2, e500mc, e5500 */
+#define BOOKE_INTERRUPT_SPE_UNAVAIL 32
+#define BOOKE_INTERRUPT_SPE_FP_DATA 33
+#define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+#elif CONFIG_PPC_BOOK3E_64
+/* 64-bit targets: e5500, e6500 */
+#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 32
+#define BOOKE_INTERRUPT_ALTIVEC_ASSIST BOOKE_33
+#endif
+
+We can guard kernel SPE handlers with !CONFIG_PPC_E500MC to have
+something like:
+
+#ifdef CONFIG_FSL_BOOKE
+#ifndef CONFIG_PPC_E500MC
+/* e500v2 */
+#define BOOKE_INTERRUPT_SPE_UNAVAIL 32
+#define BOOKE_INTERRUPT_SPE_FP_DATA 33
+#define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+#endif
+#elif CONFIG_PPC_BOOK3E_64
+/* e5500, e6500 */
+#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL 32
+#define BOOKE_INTERRUPT_ALTIVEC_ASSIST BOOKE_33
+#endif
+
+My suggestion is to go ahead with KVM AltiVec patches without waiting for
+this kernel cleanup. I will do the KVM synchronization later when you will
+have these kernel changes in your tree.
+
+Scott, do you agree to guard SPE kernel handlers in head_fsl_booke.S with
+!CONFIG_PPC_E500MC?
+
+-Mike
+=20
+>=20
+> Alex
