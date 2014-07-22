@@ -1,41 +1,20 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DB011A021C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 14:00:59 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Tue, 22 Jul 2014 09:30:56 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id F19F3E0053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 09:32:32 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6M41Fdm11665914
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 09:31:15 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6M40pah026584
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 09:30:52 +0530
-Message-ID: <53CDE1EC.4040202@linux.vnet.ibm.com>
-Date: Tue, 22 Jul 2014 12:00:44 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v1 2/3] powerpc/powernv: Support PCI error injection
-References: <53A91819.1010900@linux.vnet.ibm.com>
- <1403591761.4587.161.camel@pasglop> <53A9216C.8050904@linux.vnet.ibm.com>
- <1403593252.4587.163.camel@pasglop> <20140625000305.GA5742@shangw>
- <53AA3C5C.4080807@linux.vnet.ibm.com> <1403666349.4587.196.camel@pasglop>
- <53CCCA09.1060404@linux.vnet.ibm.com> <1405982949.5289.217.camel@pasglop>
- <53CDD632.1050908@linux.vnet.ibm.com> <20140722032605.GA31107@shangw>
-In-Reply-To: <20140722032605.GA31107@shangw>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
- kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D2FE1A01ED
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 15:27:53 +1000 (EST)
+Message-ID: <1406006862.22200.7.camel@pasglop>
+Subject: Re: [PATCH] powerpc: thp: Add write barrier after updating the
+ valid bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 22 Jul 2014 15:27:42 +1000
+In-Reply-To: <1405435937-24115-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1405435937-24115-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,39 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2014 11:26 AM, Gavin Shan wrote:
-> On Tue, Jul 22, 2014 at 11:10:42AM +0800, Mike Qiu wrote:
->> On 07/22/2014 06:49 AM, Benjamin Herrenschmidt wrote:
->>> On Mon, 2014-07-21 at 16:06 +0800, Mike Qiu wrote:
->>>>> I don't like this. I much prefer have dedicated error injection files
->>>>> in their respective locations, something for PCI under the corresponding
->>>>> PCI bridge etc...
->>>> So PowerNV error injection will be designed rely on debugfs been
->>>> configured, right?
->>> Not necessarily. If we create a better debugfs layout for our PHBs, then
->>> yes. It might be useful to provide more info in there for example access
->>> to some of the counters ...
->>>
->>> But on the other hand, for error injection in general, I wonder if we should
->>> be under sysfs instead... something to study a bit.
->> In pHyp, general error injection use syscall:
->>
->>     #define __NR_rtas        255
->>
->> I don't know if it is a good idea to reuse this syscall for PowerNV.
->>
->> At least, it is another choice without sysfs rely.
->>
-> We won't use syscall for routing the error injection on PowerNV any more.
-> Generally speaking, we will use ioctl commands or subcode of EEH ioctl
-> command, which was invented for EEH support for VFIO devices to suport
-> QEMU. For the utility (errinjct) running on PowerNV, we will use debugfs
-> entries. I have premature code for that, but don't have chance to polish
-> it yet. Let me send you that so that you can start working from there.
+On Tue, 2014-07-15 at 20:22 +0530, Aneesh Kumar K.V wrote:
+> With hugepages, we store the hpte valid information in the pte page
+> whose address is stored in the second half of the PMD. Use a
+> write barrier to make sure that clearing pmd busy bit and updating
+> hpte valid info are ordered properly.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc64.h | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+> index eb9261024f51..558beb760062 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -394,6 +394,12 @@ static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
+>  					unsigned int index, unsigned int hidx)
+>  {
+>  	hpte_slot_array[index] = hidx << 4 | 0x1 << 3;
+> +	/*
+> +	 * The hpte valid is stored in the pgtable whose address is in the
+> +	 * second half of the PMD. Order this against clearing of the busy bit in
+> +	 * huge pmd.
+> +	 */
+> +	smp_wmb();
+>  }
 
-OK, thanks
-> Thanks,
-> Gavin
->
->
->
+A better place for this would be right before the last write to the PMD
+(that's also clearing BUSY) in __hash_page_thp(). Basically, it's the
+normal lock ordering that's missing here, nothing specific to
+mark_hpte_slot_valid() but instead, any state relative to the BUSY bit
+in the PMD (including the actual hash writes in update_pp etc...)
+
+>  struct page *realmode_pfn_to_page(unsigned long pfn);
