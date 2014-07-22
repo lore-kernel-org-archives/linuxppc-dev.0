@@ -1,38 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85BF71A01C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 04:55:57 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 23 Jul 2014 04:55:54 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9CE632CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 04:55:52 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6MIcvZT65667156
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 04:38:57 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6MItq8n023214
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 04:55:52 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: thp: invalidate old 64K based hash page
- mapping before insert
-In-Reply-To: <1406007123.22200.11.camel@pasglop>
-References: <1405435927-24027-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1405435927-24027-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1406007123.22200.11.camel@pasglop>
-Date: Wed, 23 Jul 2014 00:25:48 +0530
-Message-ID: <8738dtte8b.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5949D1A018C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 07:21:40 +1000 (EST)
+Message-ID: <53CED5D9.9010609@suse.de>
+Date: Tue, 22 Jul 2014 23:21:29 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
+ <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
+ <53C7DBC3.2060104@suse.de>
+ <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
+ <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
+In-Reply-To: <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,20 +29,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Tue, 2014-07-15 at 20:22 +0530, Aneesh Kumar K.V wrote:
->> If we changed base page size of the segment, either via sub_page_protect
->> or via remap_4k_pfn, we do a demote_segment which doesn't flush the hash
->> table entries. We do that when inserting a new hash pte by checking the
->> _PAGE_COMBO flag. We missed to do that when inserting hash for a new 16MB
->> page. Add the same. This patch mark the 4k base page size 16MB hugepage
->> via _PAGE_COMBO.
+On 21.07.14 11:59, mihai.caraman@freescale.com wrote:
+>> -----Original Message-----
+>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>> bounces+mihai.caraman=freescale.com@lists.ozlabs.org] On Behalf Of
+>> mihai.caraman@freescale.com
+>> Sent: Friday, July 18, 2014 12:06 PM
+>> To: Alexander Graf; kvm-ppc@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org; kvm@vger.kernel.org
+>> Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+>>
+>>> -----Original Message-----
+>>> From: Alexander Graf [mailto:agraf@suse.de]
+>>> Sent: Thursday, July 17, 2014 5:21 PM
+>>> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
+>>> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+>>> Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to
+>> fail
+>>>
+>>> On 17.07.14 13:22, Mihai Caraman wrote:
+>>>> On book3e, guest last instruction is read on the exit path using load
+>>>> external pid (lwepx) dedicated instruction. This load operation may
+>>> fail
+>>>> due to TLB eviction and execute-but-not-read entries.
+>>>>
+>>>> This patch lay down the path for an alternative solution to read the
+>>> guest
+>>>> last instruction, by allowing kvmppc_get_lat_inst() function to fail.
+>>>> Architecture specific implmentations of kvmppc_load_last_inst() may
+>>> read
+>>>> last guest instruction and instruct the emulation layer to re-execute
+>>> the
+>>>> guest in case of failure.
+>>>>
+>>>> Make kvmppc_get_last_inst() definition common between architectures.
+>>>>
+>>>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+>>>> ---
+>> ...
+>>
+>>>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h
+>>> b/arch/powerpc/include/asm/kvm_ppc.h
+>>>> index e2fd5a1..7f9c634 100644
+>>>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>>>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>>>> @@ -47,6 +47,11 @@ enum emulation_result {
+>>>>    	EMULATE_EXIT_USER,    /* emulation requires exit to user-
+>> space */
+>>>>    };
+>>>>
+>>>> +enum instruction_type {
+>>>> +	INST_GENERIC,
+>>>> +	INST_SC,		/* system call */
+>>>> +};
+>>>> +
+>>>>    extern int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu
+>>> *vcpu);
+>>>>    extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct
+>> kvm_vcpu
+>>> *vcpu);
+>>>>    extern void kvmppc_handler_highmem(void);
+>>>> @@ -62,6 +67,9 @@ extern int kvmppc_handle_store(struct kvm_run *run,
+>>> struct kvm_vcpu *vcpu,
+>>>>    			       u64 val, unsigned int bytes,
+>>>>    			       int is_default_endian);
+>>>>
+>>>> +extern int kvmppc_load_last_inst(struct kvm_vcpu *vcpu,
+>>>> +				 enum instruction_type type, u32 *inst);
+>>>> +
+>>>>    extern int kvmppc_emulate_instruction(struct kvm_run *run,
+>>>>                                          struct kvm_vcpu *vcpu);
+>>>>    extern int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu
+>>> *vcpu);
+>>>> @@ -234,6 +242,23 @@ struct kvmppc_ops {
+>>>>    extern struct kvmppc_ops *kvmppc_hv_ops;
+>>>>    extern struct kvmppc_ops *kvmppc_pr_ops;
+>>>>
+>>>> +static inline int kvmppc_get_last_inst(struct kvm_vcpu *vcpu,
+>>>> +					enum instruction_type type, u32 *inst)
+>>>> +{
+>>>> +	int ret = EMULATE_DONE;
+>>>> +
+>>>> +	/* Load the instruction manually if it failed to do so in the
+>>>> +	 * exit path */
+>>>> +	if (vcpu->arch.last_inst == KVM_INST_FETCH_FAILED)
+>>>> +		ret = kvmppc_load_last_inst(vcpu, type, &vcpu-
+>>>> arch.last_inst);
+>>>> +
+>>>> +
+>>>> +	*inst = (ret == EMULATE_DONE && kvmppc_need_byteswap(vcpu)) ?
+>>>> +		swab32(vcpu->arch.last_inst) : vcpu->arch.last_inst;
+>>> This makes even less sense than the previous version. Either you treat
+>>> inst as "definitely overwritten" or as "preserves previous data on
+>>> failure".
+>> Both v4 and v5 versions treat inst as "definitely overwritten".
+>>
+>>> So either you unconditionally swap like you did before
+>> If we make abstraction of its symmetry, KVM_INST_FETCH_FAILED is operated
+>> in host endianness, so it doesn't need byte swap.
+>>
+>> I agree with your reasoning if last_inst is initialized and compared with
+>> data in guest endianess, which is not the case yet for
+>> KVM_INST_FETCH_FAILED.
+> Alex, are you relying on the fact that KVM_INST_FETCH_FAILED value is symmetrical?
+> With a non symmetrical value like 0xDEADBEEF, and considering a little-endian guest
+> on a big-endian host, we need to fix kvm logic to initialize and compare last_inst
+> with 0xEFBEADDE swaped value.
 >
-> please improve the above, I don't understand it.
+> Your suggestion to unconditionally swap makes sense only with the above fix, otherwise
+> inst may end up with 0xEFBEADDE swaped value with is wrong.
 
-I have reworked this patch and will send an updated version. We also
-need to handle _PAGE_COMBO condition on hugepage_flush. I will add more
-comments in the next update.
+Only for *inst which we would treat as "undefined" after the function 
+returned EMULATE_AGAIN. last_inst stays  unmodified.
 
--aneesh
+
+Alex
