@@ -1,45 +1,31 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
+ [IPv6:2607:f8b0:4001:c05::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9C321A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 09:47:37 +1000 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 22 Jul 2014 17:47:34 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CA35D1FF0041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 17:47:31 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6MNkI8f3604890
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 01:46:18 +0200
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6MNlVNH004733
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 17:47:32 -0600
-Date: Tue, 22 Jul 2014 16:47:26 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140722234726.GO4156@linux.vnet.ibm.com>
-References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9240A1A0003
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 10:43:44 +1000 (EST)
+Received: by mail-ig0-f180.google.com with SMTP id l13so871040iga.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 17:43:41 -0700 (PDT)
+Date: Tue, 22 Jul 2014 17:43:39 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
+ the fallback node
+In-Reply-To: <20140722214311.GM4156@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.02.1407221726540.15657@chino.kir.corp.google.com>
+References: <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
  <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
  <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
  <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
  <20140207054819.GC28952@lge.com>
  <alpine.DEB.2.02.1402080154140.9668@chino.kir.corp.google.com>
- <20140210010936.GA12574@lge.com>
- <20140722010305.GJ4156@linux.vnet.ibm.com>
+ <20140210010936.GA12574@lge.com> <20140722010305.GJ4156@linux.vnet.ibm.com>
  <alpine.DEB.2.02.1407211809140.9778@chino.kir.corp.google.com>
  <20140722214311.GM4156@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140722214311.GM4156@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Pekka Enberg <penberg@kernel.org>,
  Linux Memory Management List <linux-mm@kvack.org>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
@@ -55,67 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22.07.2014 [14:43:11 -0700], Nishanth Aravamudan wrote:
-> Hi David,
+On Tue, 22 Jul 2014, Nishanth Aravamudan wrote:
 
-<snip>
-
-> on powerpc now, things look really good. On a KVM instance with the
-> following topology:
+> > I think there's two use cases of interest:
+> > 
+> >  - allocating from a memoryless node where numa_node_id() is memoryless, 
+> >    and
+> > 
+> >  - using node_to_mem_node() for a possibly-memoryless node for kmalloc().
+> > 
+> > I believe the first should have its own node_zonelist[0], whether it's 
+> > memoryless or not, that points to a list of zones that start with those 
+> > with the smallest distance.
 > 
-> available: 2 nodes (0-1)
-> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49
-> node 0 size: 0 MB
-> node 0 free: 0 MB
-> node 1 cpus: 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99
-> node 1 size: 16336 MB
-> node 1 free: 14274 MB
-> node distances:
-> node   0   1 
->   0:  10  40 
->   1:  40  10 
+> Ok, and that would be used for falling back in the appropriate priority?
 > 
-> 3.16.0-rc6 gives:
+
+There's no real fallback since there's never a case when you can allocate 
+on a memoryless node.  The zonelist defines the appropriate order in which 
+to try to allocate from zones, so it depends on things like the 
+numa_node_id() in alloc_pages_current() and whether the zonelist for a 
+memoryless node is properly initialized or whether this needs to be 
+numa_mem_id().  It depends on the intended behavior of calling 
+alloc_pages_{node,vma}() with a memoryless node, the complexity of 
+(re-)building the zonelists at bootstrap and for memory hotplug isn't a 
+hotpath.
+
+This choice would also impact MPOL_PREFERRED mempolicies when MPOL_F_LOCAL 
+is set.
+
+> > I think its own node_zonelist[1], for __GFP_THISNODE allocations,
+> > should point to the node with present memory that has the smallest
+> > distance.
 > 
->         Slab:            1039744 kB
-> 	SReclaimable:      38976 kB
-> 	SUnreclaim:      1000768 kB
-
-<snip>
-
-> Adding my patch on top of Joonsoo's and the revert, I get:
+> And so would this, but with the caveat that we can fail here and don't
+> go further? Semantically, __GFP_THISNODE then means "as close as
+> physically possible ignoring run-time memory constraints". I say that
+> because obviously we might get off-node memory without memoryless nodes,
+> but that shouldn't be used to satisfy __GPF_THISNODE allocations.
 > 
-> 	Slab:             411776 kB
-> 	SReclaimable:      40960 kB
-> 	SUnreclaim:       370816 kB
-> 
-> So CONFIG_SLUB still uses about 3x as much slab memory, but it's not so
-> much that we are close to OOM with small VM/LPAR sizes.
 
-Just to clarify/add one more datapoint, with a balanced topology:
+alloc_pages_current() substitutes any existing mempolicy for the default 
+local policy when __GFP_THISNODE is set, and that would require local 
+allocation.  That, currently, is numa_node_id() and not numa_mem_id().
 
-available: 2 nodes (0-1)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49
-node 0 size: 8154 MB
-node 0 free: 8075 MB
-node 1 cpus: 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99
-node 1 size: 8181 MB
-node 1 free: 7776 MB
-node distances:
-node   0   1 
-  0:  10  40 
-  1:  40  10
-
-I see the following for my patch + Joonsoo's + the revert:
-
-Slab:             495872 kB
-SReclaimable:      46528 kB
-SUnreclaim:       449344 kB
-
-(Although these numbers fluctuate quite a bit between 250M and 500M),
-which indicates that the memoryless node slab consumption is now on-par
-with a populated topology. And both are still more than CONFIG_SLAB
-requires.
-
-Thanks,
-Nish
+The slab allocator already only uses __GFP_THISNODE for numa_mem_id() so 
+it will allocate remotely anyway.
