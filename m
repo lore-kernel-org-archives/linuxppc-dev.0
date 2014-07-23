@@ -1,37 +1,32 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
- [IPv6:2607:f8b0:4001:c05::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9240A1A0003
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 10:43:44 +1000 (EST)
-Received: by mail-ig0-f180.google.com with SMTP id l13so871040iga.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 17:43:41 -0700 (PDT)
-Date: Tue, 22 Jul 2014 17:43:39 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <20140722214311.GM4156@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.02.1407221726540.15657@chino.kir.corp.google.com>
-References: <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com>
- <alpine.DEB.2.02.1402080154140.9668@chino.kir.corp.google.com>
- <20140210010936.GA12574@lge.com> <20140722010305.GJ4156@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1407211809140.9778@chino.kir.corp.google.com>
- <20140722214311.GM4156@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Matt Mackall <mpm@selenic.com>, Tejun Heo <tj@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@linux.com>, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 505951A01C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:13 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Wed, 23 Jul 2014 13:06:10 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7D0582BB0063
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:09 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6N2nCgg57081908
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 12:49:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6N367rD030987
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:08 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 00/18] powernv: vfio: Add Dynamic DMA windows (DDW)
+Date: Wed, 23 Jul 2014 13:05:46 +1000
+Message-Id: <1406084764-24685-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 22 Jul 2014, Nishanth Aravamudan wrote:
 
-> > I think there's two use cases of interest:
-> > 
-> >  - allocating from a memoryless node where numa_node_id() is memoryless, 
-> >    and
-> > 
-> >  - using node_to_mem_node() for a possibly-memoryless node for kmalloc().
-> > 
-> > I believe the first should have its own node_zonelist[0], whether it's 
-> > memoryless or not, that points to a list of zones that start with those 
-> > with the smallest distance.
-> 
-> Ok, and that would be used for falling back in the appropriate priority?
-> 
+This prepares existing upstream kernel for DDW (Dynamic DMA windows) and
+adds actual DDW support for VFIO.
 
-There's no real fallback since there's never a case when you can allocate 
-on a memoryless node.  The zonelist defines the appropriate order in which 
-to try to allocate from zones, so it depends on things like the 
-numa_node_id() in alloc_pages_current() and whether the zonelist for a 
-memoryless node is properly initialized or whether this needs to be 
-numa_mem_id().  It depends on the intended behavior of calling 
-alloc_pages_{node,vma}() with a memoryless node, the complexity of 
-(re-)building the zonelists at bootstrap and for memory hotplug isn't a 
-hotpath.
+This patchset does not contain any in-kernel acceleration stuff.
 
-This choice would also impact MPOL_PREFERRED mempolicies when MPOL_F_LOCAL 
-is set.
+This patchset does not enable DDW for emulated devices.
 
-> > I think its own node_zonelist[1], for __GFP_THISNODE allocations,
-> > should point to the node with present memory that has the smallest
-> > distance.
-> 
-> And so would this, but with the caveat that we can fail here and don't
-> go further? Semantically, __GFP_THISNODE then means "as close as
-> physically possible ignoring run-time memory constraints". I say that
-> because obviously we might get off-node memory without memoryless nodes,
-> but that shouldn't be used to satisfy __GPF_THISNODE allocations.
-> 
+Changes:
+v2:
+* moved "Account TCE pages in locked_vm" here (was in later series)
+* added counting for huge window to locked_vm (ugly but better than nothing)
+* fixed bug with missing >>PAGE_SHIFT when calling pfn_to_page
 
-alloc_pages_current() substitutes any existing mempolicy for the default 
-local policy when __GFP_THISNODE is set, and that would require local 
-allocation.  That, currently, is numa_node_id() and not numa_mem_id().
 
-The slab allocator already only uses __GFP_THISNODE for numa_mem_id() so 
-it will allocate remotely anyway.
+Alexey Kardashevskiy (18):
+  powerpc/iommu: Fix comments with it_page_shift
+  KVM: PPC: Use RCU when adding to arch.spapr_tce_tables
+  KVM: PPC: Account TCE pages in locked_vm
+  vfio: powerpc: Move locked_vm accounting to a helper
+  powerpc/powernv: Use it_page_shift for TCE invalidation
+  powerpc/powernv: Use it_page_shift in TCE build
+  powerpc/powernv: Add a page size parameter to
+    pnv_pci_setup_iommu_table()
+  powerpc/powernv: Make invalidate() callback an iommu_table callback
+  powerpc/spapr: vfio: Implement spapr_tce_iommu_ops
+  powerpc/powernv: Convert/move set_bypass() callback to
+    take_ownership()
+  powerpc/iommu: Fix IOMMU ownership control functions
+  powerpc/iommu: Fix missing permission bits in
+    iommu_put_tce_user_mode()
+  powerpc/iommu: Extend ppc_md.tce_build(_rm) to return old TCE values
+  powerpc/powernv: Return non-zero TCE from pnv_tce_build
+  powerpc/iommu: Implement put_page() if TCE had non-zero value
+  powerpc/powernv: Implement Dynamic DMA windows (DDW) for IODA
+  vfio: Use it_page_size
+  vfio: powerpc: Enable Dynamic DMA windows
+
+ arch/powerpc/include/asm/iommu.h            |  11 +-
+ arch/powerpc/include/asm/machdep.h          |   2 +
+ arch/powerpc/include/asm/tce.h              |  36 +++
+ arch/powerpc/kernel/iommu.c                 |  95 +++++---
+ arch/powerpc/kvm/book3s_64_vio.c            |  37 ++-
+ arch/powerpc/platforms/powernv/pci-ioda.c   | 253 ++++++++++++++++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |   4 +-
+ arch/powerpc/platforms/powernv/pci.c        |  60 +++--
+ arch/powerpc/platforms/powernv/pci.h        |   4 +-
+ arch/powerpc/platforms/pseries/iommu.c      |  17 +-
+ arch/powerpc/sysdev/dart_iommu.c            |   1 +
+ drivers/vfio/vfio_iommu_spapr_tce.c         | 362 ++++++++++++++++++++++++----
+ include/uapi/linux/vfio.h                   |  37 ++-
+ 13 files changed, 780 insertions(+), 139 deletions(-)
+
+-- 
+2.0.0
