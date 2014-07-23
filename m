@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 526641A01C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D09A31A01C4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:14 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Wed, 23 Jul 2014 13:06:08 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4AFAA2BB0060
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:09 +1000 (EST)
+ Wed, 23 Jul 2014 13:06:13 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E05DD2CE8064
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:10 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6N35rAS9109854
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:05:53 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6N2hI2u55574690
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 12:43:18 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6N368vU004561
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:08 +1000
+ s6N369WX004649
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 13:06:10 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 02/18] KVM: PPC: Use RCU when adding to
- arch.spapr_tce_tables
-Date: Wed, 23 Jul 2014 13:05:48 +1000
-Message-Id: <1406084764-24685-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v2 04/18] vfio: powerpc: Move locked_vm accounting to a helper
+Date: Wed, 23 Jul 2014 13:05:50 +1000
+Message-Id: <1406084764-24685-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406084764-24685-1-git-send-email-aik@ozlabs.ru>
 References: <1406084764-24685-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -39,23 +38,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Additional DMA windows support is coming and accounting will include them
+so let's move this code to a helper for reuse.
+
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kvm/book3s_64_vio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 54 ++++++++++++++++++++++++-------------
+ 1 file changed, 36 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 54cf9bc..516f2ee 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -131,7 +131,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	kvm_get_kvm(kvm);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index a84788b..c8f7284 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -47,10 +47,40 @@ struct tce_container {
+ 	bool enabled;
+ };
  
- 	mutex_lock(&kvm->lock);
--	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-+	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
++/*
++ * Checks ulimit in order not to let the user space to pin all
++ * available memory for TCE tables.
++ */
++static long tce_iommu_account_memlimit(struct iommu_table *tbl, bool inc)
++{
++	unsigned long ret = 0, locked, lock_limit;
++	long npages;
++
++	if (!current->mm)
++		return -ESRCH; /* process exited */
++
++	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	if (!inc)
++		npages = -npages;
++
++	down_write(&current->mm->mmap_sem);
++	locked = current->mm->locked_vm + npages;
++	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
++	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
++		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
++				rlimit(RLIMIT_MEMLOCK));
++		ret = -ENOMEM;
++	} else {
++		current->mm->locked_vm += npages;
++	}
++	up_write(&current->mm->mmap_sem);
++
++	return ret;
++}
++
+ static int tce_iommu_enable(struct tce_container *container)
+ {
+ 	int ret = 0;
+-	unsigned long locked, lock_limit, npages;
+ 	struct iommu_table *tbl = container->tbl;
  
- 	mutex_unlock(&kvm->lock);
+ 	if (!container->tbl)
+@@ -80,20 +110,11 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * that would effectively kill the guest at random points, much better
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
+-	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+-	locked = current->mm->locked_vm + npages;
+-	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+-		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+-				rlimit(RLIMIT_MEMLOCK));
+-		ret = -ENOMEM;
+-	} else {
++	ret = tce_iommu_account_memlimit(tbl, true);
++	if (ret)
++		return ret;
  
+-		current->mm->locked_vm += npages;
+-		container->enabled = true;
+-	}
+-	up_write(&current->mm->mmap_sem);
++	container->enabled = true;
+ 
+ 	return ret;
+ }
+@@ -108,10 +129,7 @@ static void tce_iommu_disable(struct tce_container *container)
+ 	if (!container->tbl || !current->mm)
+ 		return;
+ 
+-	down_write(&current->mm->mmap_sem);
+-	current->mm->locked_vm -= (container->tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+-	up_write(&current->mm->mmap_sem);
++	tce_iommu_account_memlimit(container->tbl, false);
+ }
+ 
+ static void *tce_iommu_open(unsigned long arg)
 -- 
 2.0.0
