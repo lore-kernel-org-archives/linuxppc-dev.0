@@ -1,24 +1,29 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DFFC01A01E9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 20:03:30 +1000 (EST)
-Date: Wed, 23 Jul 2014 17:52:32 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] ASoC: fsl_sai: Reset FIFOs after disabling TE/RE
-Message-ID: <20140723095229.GA25639@MrMyself>
-References: <cover.1405603108.git.nicoleotsuka@gmail.com>
- <9ef07dc9cc98b19e3f81f8374617605bf0d9faeb.1405603108.git.nicoleotsuka@gmail.com>
- <20140718101810.GA15150@MrMyself>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27DE81A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 20:07:03 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+Date: Wed, 23 Jul 2014 10:06:56 +0000
+Message-ID: <29a7a8c7ac1542a08ada4a35675bf7dc@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
+ <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
+ <53C7DBC3.2060104@suse.de>
+ <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
+ <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
+ <53CED5D9.9010609@suse.de>
+ <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
+ <4803B12E-A3CF-43C4-AF98-2AD87F76D151@suse.de>
+In-Reply-To: <4803B12E-A3CF-43C4-AF98-2AD87F76D151@suse.de>
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140718101810.GA15150@MrMyself>
-Cc: alsa-devel@alsa-project.org, b42378@freescale.com, b02247@freescale.com,
- linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sir,
+> > Right. With this do you acknowledge that v5 (definitely overwritten
+> approach)
+> > is ok?
+>=20
+> I think I'm starting to understand your logic of v5. You write
+> fetch_failed into *inst unswapped if the fetch failed.
 
-I found this two patches are merged into for-next branch, although I haven't
-got the 'applied' email. 
+"v5
+  - don't swap when load fails" :)
 
-Is that possible for you to drop this one? If not, I'll send another patch
-to fix this.
+>=20
+> I think that's ok, but I definitely do not like the code flow - it's too
+> hard to understand at a glimpse. Just rewrite it to swab at local
+> variable level, preferably with if()s and comments what this is about and
+> have a single unconditional *inst =3D fetched_inst; at the end of the
+> function.
 
-Thank you,
-Nicolin
+I will incorporate these change requests into v6.
 
-On Fri, Jul 18, 2014 at 06:18:12PM +0800, Nicolin Chen wrote:
-> Mark,
-> 
-> 	Please disregard this single patch. 
-> 
-> On Thu, Jul 17, 2014 at 09:21:37PM +0800, Nicolin Chen wrote:
-> > SAI will not clear their FIFOs after disabling TE/RE. Therfore, the driver
-> > should take care the task so as not to let useless data remain in the FIFO.
-> > 
-> > Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> > ---
-> >  sound/soc/fsl/fsl_sai.c | 7 +++++--
-> >  1 file changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> > index c5a0e8a..b10dbd8 100644
-> > --- a/sound/soc/fsl/fsl_sai.c
-> > +++ b/sound/soc/fsl/fsl_sai.c
-> > @@ -371,10 +371,13 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
-> >  
-> >  		/* Check if the opposite FRDE is also disabled */
-> >  		if (!(tx ? rcsr & FSL_SAI_CSR_FRDE : tcsr & FSL_SAI_CSR_FRDE)) {
-> > +			/* Disable both directions and reset their FIFOs */
-> >  			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
-> > -					   FSL_SAI_CSR_TERE, 0);
-> > +					   FSL_SAI_CSR_TERE | FSL_SAI_CSR_FR,
-> > +					   FSL_SAI_CSR_FR);
-> >  			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
-> > -					   FSL_SAI_CSR_TERE, 0);
-> > +					   FSL_SAI_CSR_TERE | FSL_SAI_CSR_FR,
-> > +					   FSL_SAI_CSR_FR);
-> 
-> 
-> The FR should be set _after_ clear TERE, not at the same time because it
-> still may have tiny possibility to remain data.
-> 
-> I'll send another version later for this patch.
-> 
-> The other patch for isr() should be still fine.
-> 
-> Thank you,
-> Nicolin
-> 
-> >  		}
-> >  		break;
-> >  	default:
-> > -- 
-> > 1.8.4
-> > 
+Thanks,
+-Mike
