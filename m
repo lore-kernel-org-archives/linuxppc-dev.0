@@ -1,19 +1,19 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BE621A01A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 01:28:39 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [RESEND PATCH] rapidio: add new RapidIO DMA interface routines
-Date: Wed, 23 Jul 2014 11:04:18 -0400
-Message-Id: <1406127858-32478-1-git-send-email-alexandre.bounine@idt.com>
-Cc: linux-kernel@vger.kernel.org,
- Andre van Herk <andre.van.herk@prodrive-technologies.com>,
- Alexandre Bounine <alexandre.bounine@idt.com>,
- Stef van Os <stef.van.os@prodrive-technologies.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9CCE1A046A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 02:06:37 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH v6 0/5] Read guest last instruction from kvmppc_get_last_inst()
+Date: Wed, 23 Jul 2014 19:06:17 +0300
+Message-ID: <1406131582-6052-1-git-send-email-mihai.caraman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,165 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Resending because the original email was rejected by some gateways.
+Read guest last instruction from kvmppc_get_last_inst() allowing the function
+to fail in order to emulate again. On bookehv architecture search for
+the physical address and kmap it, instead of using Load External PID (lwepx)
+instruction. This fixes an infinite loop caused by lwepx's data TLB miss
+exception handled in the host and the TODO for execute-but-not-read entries
+and TLB eviction.
 
-Add RapidIO DMA interface routines that directly use reference to the mport
-device object and/or target device destination ID as parameters.
-This allows to perform RapidIO DMA transfer requests by modules that do not
-have an access to the RapidIO device list.
+Mihai Caraman (5):
+  KVM: PPC: e500mc: Revert "add load inst fixup"
+  KVM: PPC: Book3e: Add TLBSEL/TSIZE defines for MAS0/1
+  KVM: PPC: Book3s: Remove kvmppc_read_inst() function
+  KVM: PPC: Alow kvmppc_get_last_inst() to fail
+  KVM: PPC: Bookehv: Get vcpu's last instruction for emulation
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Andre van Herk <andre.van.herk@prodrive-technologies.com>
-Cc: Stef van Os <stef.van.os@prodrive-technologies.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/rapidio/rio.c   | 66 +++++++++++++++++++++++++++++++++++--------------
- include/linux/rio_drv.h |  5 ++++
- 2 files changed, 52 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h    |  26 -------
+ arch/powerpc/include/asm/kvm_booke.h     |   5 --
+ arch/powerpc/include/asm/kvm_ppc.h       |  31 +++++++++
+ arch/powerpc/include/asm/mmu-book3e.h    |   9 ++-
+ arch/powerpc/kvm/book3s.c                |  17 +++++
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      |  17 ++---
+ arch/powerpc/kvm/book3s_paired_singles.c |  38 +++++++----
+ arch/powerpc/kvm/book3s_pr.c             | 114 ++++++++++++++++---------------
+ arch/powerpc/kvm/booke.c                 |  47 +++++++++++++
+ arch/powerpc/kvm/bookehv_interrupts.S    |  55 ++-------------
+ arch/powerpc/kvm/e500_mmu_host.c         |  98 ++++++++++++++++++++++++++
+ arch/powerpc/kvm/emulate.c               |  18 +++--
+ arch/powerpc/kvm/powerpc.c               |  11 ++-
+ 13 files changed, 314 insertions(+), 172 deletions(-)
 
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index a54ba04..d7b87c6 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -1509,30 +1509,39 @@ EXPORT_SYMBOL_GPL(rio_route_clr_table);
- 
- static bool rio_chan_filter(struct dma_chan *chan, void *arg)
- {
--	struct rio_dev *rdev = arg;
-+	struct rio_mport *mport = arg;
- 
- 	/* Check that DMA device belongs to the right MPORT */
--	return (rdev->net->hport ==
--		container_of(chan->device, struct rio_mport, dma));
-+	return mport == container_of(chan->device, struct rio_mport, dma);
- }
- 
- /**
-- * rio_request_dma - request RapidIO capable DMA channel that supports
-- *   specified target RapidIO device.
-- * @rdev: RIO device control structure
-+ * rio_request_mport_dma - request RapidIO capable DMA channel associated
-+ *   with specified local RapidIO mport device.
-+ * @mport: RIO mport to perform DMA data transfers
-  *
-  * Returns pointer to allocated DMA channel or NULL if failed.
-  */
--struct dma_chan *rio_request_dma(struct rio_dev *rdev)
-+struct dma_chan *rio_request_mport_dma(struct rio_mport *mport)
- {
- 	dma_cap_mask_t mask;
--	struct dma_chan *dchan;
- 
- 	dma_cap_zero(mask);
- 	dma_cap_set(DMA_SLAVE, mask);
--	dchan = dma_request_channel(mask, rio_chan_filter, rdev);
-+	return dma_request_channel(mask, rio_chan_filter, mport);
-+}
-+EXPORT_SYMBOL_GPL(rio_request_mport_dma);
- 
--	return dchan;
-+/**
-+ * rio_request_dma - request RapidIO capable DMA channel that supports
-+ *   specified target RapidIO device.
-+ * @rdev: RIO device associated with DMA transfer
-+ *
-+ * Returns pointer to allocated DMA channel or NULL if failed.
-+ */
-+struct dma_chan *rio_request_dma(struct rio_dev *rdev)
-+{
-+	return rio_request_mport_dma(rdev->net->hport);
- }
- EXPORT_SYMBOL_GPL(rio_request_dma);
- 
-@@ -1547,10 +1556,10 @@ void rio_release_dma(struct dma_chan *dchan)
- EXPORT_SYMBOL_GPL(rio_release_dma);
- 
- /**
-- * rio_dma_prep_slave_sg - RapidIO specific wrapper
-+ * rio_dma_prep_xfer - RapidIO specific wrapper
-  *   for device_prep_slave_sg callback defined by DMAENGINE.
-- * @rdev: RIO device control structure
-  * @dchan: DMA channel to configure
-+ * @destid: target RapidIO device destination ID
-  * @data: RIO specific data descriptor
-  * @direction: DMA data transfer direction (TO or FROM the device)
-  * @flags: dmaengine defined flags
-@@ -1560,11 +1569,10 @@ EXPORT_SYMBOL_GPL(rio_release_dma);
-  * target RIO device.
-  * Returns pointer to DMA transaction descriptor or NULL if failed.
-  */
--struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
--	struct dma_chan *dchan, struct rio_dma_data *data,
-+struct dma_async_tx_descriptor *rio_dma_prep_xfer(struct dma_chan *dchan,
-+	u16 destid, struct rio_dma_data *data,
- 	enum dma_transfer_direction direction, unsigned long flags)
- {
--	struct dma_async_tx_descriptor *txd = NULL;
- 	struct rio_dma_ext rio_ext;
- 
- 	if (dchan->device->device_prep_slave_sg == NULL) {
-@@ -1572,15 +1580,35 @@ struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
- 		return NULL;
- 	}
- 
--	rio_ext.destid = rdev->destid;
-+	rio_ext.destid = destid;
- 	rio_ext.rio_addr_u = data->rio_addr_u;
- 	rio_ext.rio_addr = data->rio_addr;
- 	rio_ext.wr_type = data->wr_type;
- 
--	txd = dmaengine_prep_rio_sg(dchan, data->sg, data->sg_len,
--					direction, flags, &rio_ext);
-+	return dmaengine_prep_rio_sg(dchan, data->sg, data->sg_len,
-+				     direction, flags, &rio_ext);
-+}
-+EXPORT_SYMBOL_GPL(rio_dma_prep_xfer);
- 
--	return txd;
-+/**
-+ * rio_dma_prep_slave_sg - RapidIO specific wrapper
-+ *   for device_prep_slave_sg callback defined by DMAENGINE.
-+ * @rdev: RIO device control structure
-+ * @dchan: DMA channel to configure
-+ * @data: RIO specific data descriptor
-+ * @direction: DMA data transfer direction (TO or FROM the device)
-+ * @flags: dmaengine defined flags
-+ *
-+ * Initializes RapidIO capable DMA channel for the specified data transfer.
-+ * Uses DMA channel private extension to pass information related to remote
-+ * target RIO device.
-+ * Returns pointer to DMA transaction descriptor or NULL if failed.
-+ */
-+struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
-+	struct dma_chan *dchan, struct rio_dma_data *data,
-+	enum dma_transfer_direction direction, unsigned long flags)
-+{
-+	return rio_dma_prep_xfer(dchan,	rdev->destid, data, direction, flags);
- }
- EXPORT_SYMBOL_GPL(rio_dma_prep_slave_sg);
- 
-diff --git a/include/linux/rio_drv.h b/include/linux/rio_drv.h
-index 5059994..9fc2f21 100644
---- a/include/linux/rio_drv.h
-+++ b/include/linux/rio_drv.h
-@@ -384,11 +384,16 @@ void rio_dev_put(struct rio_dev *);
- 
- #ifdef CONFIG_RAPIDIO_DMA_ENGINE
- extern struct dma_chan *rio_request_dma(struct rio_dev *rdev);
-+extern struct dma_chan *rio_request_mport_dma(struct rio_mport *mport);
- extern void rio_release_dma(struct dma_chan *dchan);
- extern struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(
- 		struct rio_dev *rdev, struct dma_chan *dchan,
- 		struct rio_dma_data *data,
- 		enum dma_transfer_direction direction, unsigned long flags);
-+extern struct dma_async_tx_descriptor *rio_dma_prep_xfer(
-+		struct dma_chan *dchan,	u16 destid,
-+		struct rio_dma_data *data,
-+		enum dma_transfer_direction direction, unsigned long flags);
- #endif
- 
- /**
 -- 
-1.7.11
+1.7.11.7
