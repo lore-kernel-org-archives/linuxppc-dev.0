@@ -1,25 +1,16 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2488F1A0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 20:11:56 +1000 (EST)
-Date: Wed, 23 Jul 2014 17:59:54 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] ASoC: fsl_sai: Reset FIFOs after disabling TE/RE
-Message-ID: <20140723095953.GB25639@MrMyself>
-References: <cover.1405603108.git.nicoleotsuka@gmail.com>
- <9ef07dc9cc98b19e3f81f8374617605bf0d9faeb.1405603108.git.nicoleotsuka@gmail.com>
- <20140718101810.GA15150@MrMyself> <20140723095229.GA25639@MrMyself>
- <20140723100746.GC17528@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140723100746.GC17528@sirena.org.uk>
-Cc: alsa-devel@alsa-project.org, b42378@freescale.com, b02247@freescale.com,
- linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55DDE1A01E6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 21:12:48 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc/perf: Clear all MMCR settings before calling
+ compute_mmcr()
+Date: Wed, 23 Jul 2014 21:12:36 +1000
+Message-Id: <1406113958-28653-1-git-send-email-mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 23, 2014 at 11:07:46AM +0100, Mark Brown wrote:
-> On Wed, Jul 23, 2014 at 05:52:32PM +0800, Nicolin Chen wrote:
-> 
-> > I found this two patches are merged into for-next branch, although I haven't
-> > got the 'applied' email. 
-> 
-> > Is that possible for you to drop this one? If not, I'll send another patch
-> > to fix this.
-> 
-> Please send a patch, I'd already applied it by the time you asked me to
-> drop it.
+Because we reuse cpuhw->mmcr on each call to compute_mmcr() there's a
+risk that we could forget to set one of the values and use whatever
+value was in there previously.
 
-Got it. Thank you.
-Nicolin
+Currently all the implementations are careful to set all the values, but
+it's safer to clear them all before we call compute_mmcr().
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/perf/core-book3s.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index fe52db2eea6a..f82c0973866f 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1219,8 +1219,10 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	}
+ 
+ 	/*
+-	 * Compute MMCR* values for the new set of events
++	 * Clear all MMCR settings and recompute them for the new set of events.
+ 	 */
++	memset(cpuhw->mmcr, 0, sizeof(cpuhw->mmcr));
++
+ 	if (ppmu->compute_mmcr(cpuhw->events, cpuhw->n_events, hwc_index,
+ 			       cpuhw->mmcr)) {
+ 		/* shouldn't ever get here */
+-- 
+1.9.1
