@@ -1,29 +1,25 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27DE81A000C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 20:07:03 +1000 (EST)
-From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
-Date: Wed, 23 Jul 2014 10:06:56 +0000
-Message-ID: <29a7a8c7ac1542a08ada4a35675bf7dc@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
- <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
- <53C7DBC3.2060104@suse.de>
- <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
- <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
- <53CED5D9.9010609@suse.de>
- <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
- <4803B12E-A3CF-43C4-AF98-2AD87F76D151@suse.de>
-In-Reply-To: <4803B12E-A3CF-43C4-AF98-2AD87F76D151@suse.de>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C6391A013B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 20:08:00 +1000 (EST)
+Date: Wed, 23 Jul 2014 11:07:46 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <Guangyu.Chen@freescale.com>
+Message-ID: <20140723100746.GC17528@sirena.org.uk>
+References: <cover.1405603108.git.nicoleotsuka@gmail.com>
+ <9ef07dc9cc98b19e3f81f8374617605bf0d9faeb.1405603108.git.nicoleotsuka@gmail.com>
+ <20140718101810.GA15150@MrMyself> <20140723095229.GA25639@MrMyself>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="NFhhVVeDTkyNvWHh"
+In-Reply-To: <20140723095229.GA25639@MrMyself>
+Subject: Re: [PATCH 1/2] ASoC: fsl_sai: Reset FIFOs after disabling TE/RE
+Cc: alsa-devel@alsa-project.org, b42378@freescale.com, b02247@freescale.com,
+ linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > Right. With this do you acknowledge that v5 (definitely overwritten
-> approach)
-> > is ok?
->=20
-> I think I'm starting to understand your logic of v5. You write
-> fetch_failed into *inst unswapped if the fetch failed.
 
-"v5
-  - don't swap when load fails" :)
+--NFhhVVeDTkyNvWHh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->=20
-> I think that's ok, but I definitely do not like the code flow - it's too
-> hard to understand at a glimpse. Just rewrite it to swab at local
-> variable level, preferably with if()s and comments what this is about and
-> have a single unconditional *inst =3D fetched_inst; at the end of the
-> function.
+On Wed, Jul 23, 2014 at 05:52:32PM +0800, Nicolin Chen wrote:
 
-I will incorporate these change requests into v6.
+> I found this two patches are merged into for-next branch, although I have=
+n't
+> got the 'applied' email.=20
 
-Thanks,
--Mike
+> Is that possible for you to drop this one? If not, I'll send another patch
+> to fix this.
+
+Please send a patch, I'd already applied it by the time you asked me to
+drop it.
+
+--NFhhVVeDTkyNvWHh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJTz4lvAAoJELSic+t+oim9x7gP/06hLfS/OM3JrvPuAaXXqvgK
+7G0nVvMQh/QopDYZ10MJNxU+w0CCFpP1yPbhqkZrDLQH0WxXlzlDFgVMzmFKHmJw
+qYkwrWD6vzjSxEecrCEtsYIXhAn4FUNgOATa5FrqVT1pBCXrY8kIXkaclzB7YOOL
+Ob5lsdGIf3YXQnsWt+sFF1CLKTb4rDXg0Oe3PTmHbqdQx4Gwbls2TmE37za8XKtf
+UtZgN91zsxgZYMOKRUeqQpvCaIHIQbZTipoDjOTaw0Ocdb6NusTVUw9lJXrrrP52
+8SPlJqs+KwJGThv5xjFNmn8fDTx0P+SfzIXPcc56xiHDdpe00Ziy3zKv7PDUaq6o
+HuIzOWJvIClrc/WoyayiEbUtnJsKkl/1v1L15tkipb5H7wz0OL0a9JdPf7lDMR/3
+N1WvtAjkcYJNVEoYhVuuUymqqkT1MKEq64blgX7wuretgt3ZVVpfLhVYdL0ltzcN
+ZKZnzKlEm/aTMz9x9gArLiy6AomAgGYf9wDZd6hriyqm5Ll2toT7dnvRClZ6ugkt
+SDdbCbl9i9w0DRZdFNOAJkQzJ/mBmUR0SjQ08aWxBu2Rb5IUtzUmAPayHSDcKOeY
+vLiYUGTgbokKtmkvFw12uvtFFJjsprK5gOrsSnK5EsOTmYfU63EAk4XCKGsCEhsn
+aMvVzC+PZdV3wMX42zEV
+=8XPw
+-----END PGP SIGNATURE-----
+
+--NFhhVVeDTkyNvWHh--
