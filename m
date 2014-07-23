@@ -1,24 +1,25 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 35F3C1A01C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 18:24:54 +1000 (EST)
-From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
-Date: Wed, 23 Jul 2014 08:24:44 +0000
-Message-ID: <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C03421A00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 18:39:40 +1000 (EST)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
+Date: Wed, 23 Jul 2014 10:39:32 +0200
+Message-Id: <4803B12E-A3CF-43C4-AF98-2AD87F76D151@suse.de>
 References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
  <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
  <53C7DBC3.2060104@suse.de>
  <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
  <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
  <53CED5D9.9010609@suse.de>
-In-Reply-To: <53CED5D9.9010609@suse.de>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
+To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -31,100 +32,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBrdm0tcHBjLW93bmVyQHZnZXIu
-a2VybmVsLm9yZyBbbWFpbHRvOmt2bS1wcGMtDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24g
-QmVoYWxmIE9mIEFsZXhhbmRlciBHcmFmDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVseSAyMywgMjAx
-NCAxMjoyMSBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOA0KPiBDYzoga3Zt
-LXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBr
-dm1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjUgNC81XSBLVk06IFBQ
-QzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvIGZhaWwNCj4gDQo+IA0KPiBPbiAyMS4w
-Ny4xNCAxMTo1OSwgbWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+PiAtLS0t
-LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzps
-aW51eHBwYy1kZXYtDQo+ID4+IGJvdW5jZXMrbWloYWkuY2FyYW1hbj1mcmVlc2NhbGUuY29tQGxp
-c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZg0KPiA+PiBtaWhhaS5jYXJhbWFuQGZyZWVzY2Fs
-ZS5jb20NCj4gPj4gU2VudDogRnJpZGF5LCBKdWx5IDE4LCAyMDE0IDEyOjA2IFBNDQo+ID4+IFRv
-OiBBbGV4YW5kZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gQ2M6IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBrdm1Admdlci5rZXJuZWwub3JnDQo+ID4+IFN1Ympl
-Y3Q6IFJFOiBbUEFUQ0ggdjUgNC81XSBLVk06IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5z
-dCgpIHRvDQo+IGZhaWwNCj4gPj4NCj4gPj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
-ID4+PiBGcm9tOiBBbGV4YW5kZXIgR3JhZiBbbWFpbHRvOmFncmFmQHN1c2UuZGVdDQo+ID4+PiBT
-ZW50OiBUaHVyc2RheSwgSnVseSAxNywgMjAxNCA1OjIxIFBNDQo+ID4+PiBUbzogQ2FyYW1hbiBN
-aWhhaSBDbGF1ZGl1LUIwMjAwODsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gPj4+IENjOiBr
-dm1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+Pj4g
-U3ViamVjdDogUmU6IFtQQVRDSCB2NSA0LzVdIEtWTTogUFBDOiBBbG93IGt2bXBwY19nZXRfbGFz
-dF9pbnN0KCkgdG8NCj4gPj4gZmFpbA0KPiA+Pj4NCj4gPj4+IE9uIDE3LjA3LjE0IDEzOjIyLCBN
-aWhhaSBDYXJhbWFuIHdyb3RlOg0KPiA+Pj4+IE9uIGJvb2szZSwgZ3Vlc3QgbGFzdCBpbnN0cnVj
-dGlvbiBpcyByZWFkIG9uIHRoZSBleGl0IHBhdGggdXNpbmcNCj4gbG9hZA0KPiA+Pj4+IGV4dGVy
-bmFsIHBpZCAobHdlcHgpIGRlZGljYXRlZCBpbnN0cnVjdGlvbi4gVGhpcyBsb2FkIG9wZXJhdGlv
-biBtYXkNCj4gPj4+IGZhaWwNCj4gPj4+PiBkdWUgdG8gVExCIGV2aWN0aW9uIGFuZCBleGVjdXRl
-LWJ1dC1ub3QtcmVhZCBlbnRyaWVzLg0KPiA+Pj4+DQo+ID4+Pj4gVGhpcyBwYXRjaCBsYXkgZG93
-biB0aGUgcGF0aCBmb3IgYW4gYWx0ZXJuYXRpdmUgc29sdXRpb24gdG8gcmVhZCB0aGUNCj4gPj4+
-IGd1ZXN0DQo+ID4+Pj4gbGFzdCBpbnN0cnVjdGlvbiwgYnkgYWxsb3dpbmcga3ZtcHBjX2dldF9s
-YXRfaW5zdCgpIGZ1bmN0aW9uIHRvDQo+IGZhaWwuDQo+ID4+Pj4gQXJjaGl0ZWN0dXJlIHNwZWNp
-ZmljIGltcGxtZW50YXRpb25zIG9mIGt2bXBwY19sb2FkX2xhc3RfaW5zdCgpIG1heQ0KPiA+Pj4g
-cmVhZA0KPiA+Pj4+IGxhc3QgZ3Vlc3QgaW5zdHJ1Y3Rpb24gYW5kIGluc3RydWN0IHRoZSBlbXVs
-YXRpb24gbGF5ZXIgdG8gcmUtDQo+IGV4ZWN1dGUNCj4gPj4+IHRoZQ0KPiA+Pj4+IGd1ZXN0IGlu
-IGNhc2Ugb2YgZmFpbHVyZS4NCj4gPj4+Pg0KPiA+Pj4+IE1ha2Uga3ZtcHBjX2dldF9sYXN0X2lu
-c3QoKSBkZWZpbml0aW9uIGNvbW1vbiBiZXR3ZWVuIGFyY2hpdGVjdHVyZXMuDQo+ID4+Pj4NCj4g
-Pj4+PiBTaWduZWQtb2ZmLWJ5OiBNaWhhaSBDYXJhbWFuIDxtaWhhaS5jYXJhbWFuQGZyZWVzY2Fs
-ZS5jb20+DQo+ID4+Pj4gLS0tDQo+ID4+IC4uLg0KPiA+Pg0KPiA+Pj4+IGRpZmYgLS1naXQgYS9h
-cmNoL3Bvd2VycGMvaW5jbHVkZS9hc20va3ZtX3BwYy5oDQo+ID4+PiBiL2FyY2gvcG93ZXJwYy9p
-bmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPj4+PiBpbmRleCBlMmZkNWExLi43ZjljNjM0IDEwMDY0
-NA0KPiA+Pj4+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPj4+
-PiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20va3ZtX3BwYy5oDQo+ID4+Pj4gQEAgLTQ3
-LDYgKzQ3LDExIEBAIGVudW0gZW11bGF0aW9uX3Jlc3VsdCB7DQo+ID4+Pj4gICAgCUVNVUxBVEVf
-RVhJVF9VU0VSLCAgICAvKiBlbXVsYXRpb24gcmVxdWlyZXMgZXhpdCB0byB1c2VyLQ0KPiA+PiBz
-cGFjZSAqLw0KPiA+Pj4+ICAgIH07DQo+ID4+Pj4NCj4gPj4+PiArZW51bSBpbnN0cnVjdGlvbl90
-eXBlIHsNCj4gPj4+PiArCUlOU1RfR0VORVJJQywNCj4gPj4+PiArCUlOU1RfU0MsCQkvKiBzeXN0
-ZW0gY2FsbCAqLw0KPiA+Pj4+ICt9Ow0KPiA+Pj4+ICsNCj4gPj4+PiAgICBleHRlcm4gaW50IGt2
-bXBwY192Y3B1X3J1bihzdHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+IGt2bV92Y3B1
-DQo+ID4+PiAqdmNwdSk7DQo+ID4+Pj4gICAgZXh0ZXJuIGludCBfX2t2bXBwY192Y3B1X3J1bihz
-dHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+ID4+IGt2bV92Y3B1DQo+ID4+PiAqdmNw
-dSk7DQo+ID4+Pj4gICAgZXh0ZXJuIHZvaWQga3ZtcHBjX2hhbmRsZXJfaGlnaG1lbSh2b2lkKTsN
-Cj4gPj4+PiBAQCAtNjIsNiArNjcsOSBAQCBleHRlcm4gaW50IGt2bXBwY19oYW5kbGVfc3RvcmUo
-c3RydWN0IGt2bV9ydW4NCj4gKnJ1biwNCj4gPj4+IHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4g
-Pj4+PiAgICAJCQkgICAgICAgdTY0IHZhbCwgdW5zaWduZWQgaW50IGJ5dGVzLA0KPiA+Pj4+ICAg
-IAkJCSAgICAgICBpbnQgaXNfZGVmYXVsdF9lbmRpYW4pOw0KPiA+Pj4+DQo+ID4+Pj4gK2V4dGVy
-biBpbnQga3ZtcHBjX2xvYWRfbGFzdF9pbnN0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4gPj4+
-PiArCQkJCSBlbnVtIGluc3RydWN0aW9uX3R5cGUgdHlwZSwgdTMyICppbnN0KTsNCj4gPj4+PiAr
-DQo+ID4+Pj4gICAgZXh0ZXJuIGludCBrdm1wcGNfZW11bGF0ZV9pbnN0cnVjdGlvbihzdHJ1Y3Qg
-a3ZtX3J1biAqcnVuLA0KPiA+Pj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgc3RydWN0IGt2bV92Y3B1ICp2Y3B1KTsNCj4gPj4+PiAgICBleHRlcm4gaW50IGt2bXBw
-Y19lbXVsYXRlX21taW8oc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0DQo+IGt2bV92Y3B1DQo+
-ID4+PiAqdmNwdSk7DQo+ID4+Pj4gQEAgLTIzNCw2ICsyNDIsMjMgQEAgc3RydWN0IGt2bXBwY19v
-cHMgew0KPiA+Pj4+ICAgIGV4dGVybiBzdHJ1Y3Qga3ZtcHBjX29wcyAqa3ZtcHBjX2h2X29wczsN
-Cj4gPj4+PiAgICBleHRlcm4gc3RydWN0IGt2bXBwY19vcHMgKmt2bXBwY19wcl9vcHM7DQo+ID4+
-Pj4NCj4gPj4+PiArc3RhdGljIGlubGluZSBpbnQga3ZtcHBjX2dldF9sYXN0X2luc3Qoc3RydWN0
-IGt2bV92Y3B1ICp2Y3B1LA0KPiA+Pj4+ICsJCQkJCWVudW0gaW5zdHJ1Y3Rpb25fdHlwZSB0eXBl
-LCB1MzINCj4gKmluc3QpDQo+ID4+Pj4gK3sNCj4gPj4+PiArCWludCByZXQgPSBFTVVMQVRFX0RP
-TkU7DQo+ID4+Pj4gKw0KPiA+Pj4+ICsJLyogTG9hZCB0aGUgaW5zdHJ1Y3Rpb24gbWFudWFsbHkg
-aWYgaXQgZmFpbGVkIHRvIGRvIHNvIGluIHRoZQ0KPiA+Pj4+ICsJICogZXhpdCBwYXRoICovDQo+
-ID4+Pj4gKwlpZiAodmNwdS0+YXJjaC5sYXN0X2luc3QgPT0gS1ZNX0lOU1RfRkVUQ0hfRkFJTEVE
-KQ0KPiA+Pj4+ICsJCXJldCA9IGt2bXBwY19sb2FkX2xhc3RfaW5zdCh2Y3B1LCB0eXBlLCAmdmNw
-dS0NCj4gPj4+PiBhcmNoLmxhc3RfaW5zdCk7DQo+ID4+Pj4gKw0KPiA+Pj4+ICsNCj4gPj4+PiAr
-CSppbnN0ID0gKHJldCA9PSBFTVVMQVRFX0RPTkUgJiYga3ZtcHBjX25lZWRfYnl0ZXN3YXAodmNw
-dSkpID8NCj4gPj4+PiArCQlzd2FiMzIodmNwdS0+YXJjaC5sYXN0X2luc3QpIDogdmNwdS0+YXJj
-aC5sYXN0X2luc3Q7DQo+ID4+PiBUaGlzIG1ha2VzIGV2ZW4gbGVzcyBzZW5zZSB0aGFuIHRoZSBw
-cmV2aW91cyB2ZXJzaW9uLiBFaXRoZXIgeW91DQo+IHRyZWF0DQo+ID4+PiBpbnN0IGFzICJkZWZp
-bml0ZWx5IG92ZXJ3cml0dGVuIiBvciBhcyAicHJlc2VydmVzIHByZXZpb3VzIGRhdGEgb24NCj4g
-Pj4+IGZhaWx1cmUiLg0KPiA+PiBCb3RoIHY0IGFuZCB2NSB2ZXJzaW9ucyB0cmVhdCBpbnN0IGFz
-ICJkZWZpbml0ZWx5IG92ZXJ3cml0dGVuIi4NCj4gPj4NCj4gPj4+IFNvIGVpdGhlciB5b3UgdW5j
-b25kaXRpb25hbGx5IHN3YXAgbGlrZSB5b3UgZGlkIGJlZm9yZQ0KPiA+PiBJZiB3ZSBtYWtlIGFi
-c3RyYWN0aW9uIG9mIGl0cyBzeW1tZXRyeSwgS1ZNX0lOU1RfRkVUQ0hfRkFJTEVEIGlzDQo+IG9w
-ZXJhdGVkDQo+ID4+IGluIGhvc3QgZW5kaWFubmVzcywgc28gaXQgZG9lc24ndCBuZWVkIGJ5dGUg
-c3dhcC4NCj4gPj4NCj4gPj4gSSBhZ3JlZSB3aXRoIHlvdXIgcmVhc29uaW5nIGlmIGxhc3RfaW5z
-dCBpcyBpbml0aWFsaXplZCBhbmQgY29tcGFyZWQNCj4gd2l0aA0KPiA+PiBkYXRhIGluIGd1ZXN0
-IGVuZGlhbmVzcywgd2hpY2ggaXMgbm90IHRoZSBjYXNlIHlldCBmb3INCj4gPj4gS1ZNX0lOU1Rf
-RkVUQ0hfRkFJTEVELg0KPiA+IEFsZXgsIGFyZSB5b3UgcmVseWluZyBvbiB0aGUgZmFjdCB0aGF0
-IEtWTV9JTlNUX0ZFVENIX0ZBSUxFRCB2YWx1ZSBpcw0KPiBzeW1tZXRyaWNhbD8NCj4gPiBXaXRo
-IGEgbm9uIHN5bW1ldHJpY2FsIHZhbHVlIGxpa2UgMHhERUFEQkVFRiwgYW5kIGNvbnNpZGVyaW5n
-IGEgbGl0dGxlLQ0KPiBlbmRpYW4gZ3Vlc3QNCj4gPiBvbiBhIGJpZy1lbmRpYW4gaG9zdCwgd2Ug
-bmVlZCB0byBmaXgga3ZtIGxvZ2ljIHRvIGluaXRpYWxpemUgYW5kDQo+IGNvbXBhcmUgbGFzdF9p
-bnN0DQo+ID4gd2l0aCAweEVGQkVBRERFIHN3YXBlZCB2YWx1ZS4NCj4gPg0KPiA+IFlvdXIgc3Vn
-Z2VzdGlvbiB0byB1bmNvbmRpdGlvbmFsbHkgc3dhcCBtYWtlcyBzZW5zZSBvbmx5IHdpdGggdGhl
-IGFib3ZlDQo+IGZpeCwgb3RoZXJ3aXNlDQo+ID4gaW5zdCBtYXkgZW5kIHVwIHdpdGggMHhFRkJF
-QURERSBzd2FwZWQgdmFsdWUgd2l0aCBpcyB3cm9uZy4NCj4gDQo+IE9ubHkgZm9yICppbnN0IHdo
-aWNoIHdlIHdvdWxkIHRyZWF0IGFzICJ1bmRlZmluZWQiIGFmdGVyIHRoZSBmdW5jdGlvbg0KPiBy
-ZXR1cm5lZCBFTVVMQVRFX0FHQUlOLiANCg0KUmlnaHQuIFdpdGggdGhpcyBkbyB5b3UgYWNrbm93
-bGVkZ2UgdGhhdCB2NSAoZGVmaW5pdGVseSBvdmVyd3JpdHRlbiBhcHByb2FjaCkNCmlzIG9rPw0K
-DQotTWlrZQ0K
+
+
+Am 23.07.2014 um 10:24 schrieb "mihai.caraman@freescale.com" <mihai.caraman@=
+freescale.com>:
+
+>> -----Original Message-----
+>> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-
+>> owner@vger.kernel.org] On Behalf Of Alexander Graf
+>> Sent: Wednesday, July 23, 2014 12:21 AM
+>> To: Caraman Mihai Claudiu-B02008
+>> Cc: kvm-ppc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+>> kvm@vger.kernel.org
+>> Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail=
+
+>>=20
+>>=20
+>> On 21.07.14 11:59, mihai.caraman@freescale.com wrote:
+>>>> -----Original Message-----
+>>>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>>>> bounces+mihai.caraman=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+>>>> mihai.caraman@freescale.com
+>>>> Sent: Friday, July 18, 2014 12:06 PM
+>>>> To: Alexander Graf; kvm-ppc@vger.kernel.org
+>>>> Cc: linuxppc-dev@lists.ozlabs.org; kvm@vger.kernel.org
+>>>> Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to
+>> fail
+>>>>=20
+>>>>> -----Original Message-----
+>>>>> From: Alexander Graf [mailto:agraf@suse.de]
+>>>>> Sent: Thursday, July 17, 2014 5:21 PM
+>>>>> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
+>>>>> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+>>>>> Subject: Re: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to
+>>>> fail
+>>>>>=20
+>>>>>> On 17.07.14 13:22, Mihai Caraman wrote:
+>>>>>> On book3e, guest last instruction is read on the exit path using
+>> load
+>>>>>> external pid (lwepx) dedicated instruction. This load operation may
+>>>>> fail
+>>>>>> due to TLB eviction and execute-but-not-read entries.
+>>>>>>=20
+>>>>>> This patch lay down the path for an alternative solution to read the
+>>>>> guest
+>>>>>> last instruction, by allowing kvmppc_get_lat_inst() function to
+>> fail.
+>>>>>> Architecture specific implmentations of kvmppc_load_last_inst() may
+>>>>> read
+>>>>>> last guest instruction and instruct the emulation layer to re-
+>> execute
+>>>>> the
+>>>>>> guest in case of failure.
+>>>>>>=20
+>>>>>> Make kvmppc_get_last_inst() definition common between architectures.
+>>>>>>=20
+>>>>>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+>>>>>> ---
+>>>> ...
+>>>>=20
+>>>>>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h
+>>>>> b/arch/powerpc/include/asm/kvm_ppc.h
+>>>>>> index e2fd5a1..7f9c634 100644
+>>>>>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>>>>>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>>>>>> @@ -47,6 +47,11 @@ enum emulation_result {
+>>>>>>       EMULATE_EXIT_USER,    /* emulation requires exit to user-
+>>>> space */
+>>>>>>   };
+>>>>>>=20
+>>>>>> +enum instruction_type {
+>>>>>> +    INST_GENERIC,
+>>>>>> +    INST_SC,        /* system call */
+>>>>>> +};
+>>>>>> +
+>>>>>>   extern int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct
+>> kvm_vcpu
+>>>>> *vcpu);
+>>>>>>   extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct
+>>>> kvm_vcpu
+>>>>> *vcpu);
+>>>>>>   extern void kvmppc_handler_highmem(void);
+>>>>>> @@ -62,6 +67,9 @@ extern int kvmppc_handle_store(struct kvm_run
+>> *run,
+>>>>> struct kvm_vcpu *vcpu,
+>>>>>>                      u64 val, unsigned int bytes,
+>>>>>>                      int is_default_endian);
+>>>>>>=20
+>>>>>> +extern int kvmppc_load_last_inst(struct kvm_vcpu *vcpu,
+>>>>>> +                 enum instruction_type type, u32 *inst);
+>>>>>> +
+>>>>>>   extern int kvmppc_emulate_instruction(struct kvm_run *run,
+>>>>>>                                         struct kvm_vcpu *vcpu);
+>>>>>>   extern int kvmppc_emulate_mmio(struct kvm_run *run, struct
+>> kvm_vcpu
+>>>>> *vcpu);
+>>>>>> @@ -234,6 +242,23 @@ struct kvmppc_ops {
+>>>>>>   extern struct kvmppc_ops *kvmppc_hv_ops;
+>>>>>>   extern struct kvmppc_ops *kvmppc_pr_ops;
+>>>>>>=20
+>>>>>> +static inline int kvmppc_get_last_inst(struct kvm_vcpu *vcpu,
+>>>>>> +                    enum instruction_type type, u32
+>> *inst)
+>>>>>> +{
+>>>>>> +    int ret =3D EMULATE_DONE;
+>>>>>> +
+>>>>>> +    /* Load the instruction manually if it failed to do so in the
+>>>>>> +     * exit path */
+>>>>>> +    if (vcpu->arch.last_inst =3D=3D KVM_INST_FETCH_FAILED)
+>>>>>> +        ret =3D kvmppc_load_last_inst(vcpu, type, &vcpu-
+>>>>>> arch.last_inst);
+>>>>>> +
+>>>>>> +
+>>>>>> +    *inst =3D (ret =3D=3D EMULATE_DONE && kvmppc_need_byteswap(vcpu)=
+) ?
+>>>>>> +        swab32(vcpu->arch.last_inst) : vcpu->arch.last_inst;
+>>>>> This makes even less sense than the previous version. Either you
+>> treat
+>>>>> inst as "definitely overwritten" or as "preserves previous data on
+>>>>> failure".
+>>>> Both v4 and v5 versions treat inst as "definitely overwritten".
+>>>>=20
+>>>>> So either you unconditionally swap like you did before
+>>>> If we make abstraction of its symmetry, KVM_INST_FETCH_FAILED is
+>> operated
+>>>> in host endianness, so it doesn't need byte swap.
+>>>>=20
+>>>> I agree with your reasoning if last_inst is initialized and compared
+>> with
+>>>> data in guest endianess, which is not the case yet for
+>>>> KVM_INST_FETCH_FAILED.
+>>> Alex, are you relying on the fact that KVM_INST_FETCH_FAILED value is
+>> symmetrical?
+>>> With a non symmetrical value like 0xDEADBEEF, and considering a little-
+>> endian guest
+>>> on a big-endian host, we need to fix kvm logic to initialize and
+>> compare last_inst
+>>> with 0xEFBEADDE swaped value.
+>>>=20
+>>> Your suggestion to unconditionally swap makes sense only with the above
+>> fix, otherwise
+>>> inst may end up with 0xEFBEADDE swaped value with is wrong.
+>>=20
+>> Only for *inst which we would treat as "undefined" after the function
+>> returned EMULATE_AGAIN.
+>=20
+> Right. With this do you acknowledge that v5 (definitely overwritten approa=
+ch)
+> is ok?
+
+I think I'm starting to understand your logic of v5. You write fetch_failed i=
+nto *inst unswapped if the fetch failed.
+
+I think that's ok, but I definitely do not like the code flow - it's too har=
+d to understand at a glimpse. Just rewrite it to swab at local variable leve=
+l, preferably with if()s and comments what this is about and have a single u=
+nconditional *inst =3D fetched_inst; at the end of the function.
+
+Alex
