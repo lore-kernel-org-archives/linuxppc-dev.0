@@ -1,24 +1,18 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
- [209.85.220.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F7AA1A0042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 14:04:27 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id et14so881407pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jul 2014 21:04:25 -0700 (PDT)
-Message-ID: <53CF3440.6070504@ozlabs.ru>
-Date: Wed, 23 Jul 2014 14:04:16 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 06/18] powerpc/powernv: Use it_page_shift in TCE build
-References: <1406084764-24685-1-git-send-email-aik@ozlabs.ru>
- <1406084764-24685-7-git-send-email-aik@ozlabs.ru>
- <20140723040040.GB5531@shangw>
-In-Reply-To: <20140723040040.GB5531@shangw>
-Content-Type: text/plain; charset=KOI8-R
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 846921A01A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 14:54:47 +1000 (EST)
+Message-ID: <1406091277.22200.44.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 23 Jul 2014 14:54:37 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2014 02:00 PM, Gavin Shan wrote:
-> On Wed, Jul 23, 2014 at 01:05:52PM +1000, Alexey Kardashevskiy wrote:
->> This makes use of iommu_table::it_page_shift instead of TCE_SHIFT and
->> TCE_RPN_SHIFT hardcoded values.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> 
->> ---
->> arch/powerpc/platforms/powernv/pci.c | 5 +++--
->> 1 file changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index f91a4e5..b6cb996 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -564,10 +564,11 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
->> 		proto_tce |= TCE_PCI_WRITE;
->>
->> 	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->> -	rpn = __pa(uaddr) >> TCE_SHIFT;
->> +	rpn = __pa(uaddr) >> tbl->it_page_shift;
->>
-> 
-> I'm not sure for 100%. It might be worthy to have some check somewhere:
-> 
-> 	WARN_ON(uaddr & ((1ull << tbl->it_page_shift) - 1))
+Hi Linus !
 
+Here is a handful of powerpc fixes for 3.16. They are all pretty
+simple and self contained and should still make this release.
 
-The calling code (KVM and SPAPR TCE VFIO driver) performs all these checks,
-no need to repeat it here.
+Cheers,
+Ben.
 
+The following changes since commit f56029410a13cae3652d1f34788045c40a13ffc7:
 
-> The "uaddr" are required to be "0x1ull << tbl->it_page_shift" aligned :-)
-> 
-> Thanks,
-> Gavin
-> 
->> 	while (npages--)
->> -		*(tcep++) = cpu_to_be64(proto_tce | (rpn++ << TCE_RPN_SHIFT));
->> +		*(tcep++) = cpu_to_be64(proto_tce |
->> +				(rpn++ << tbl->it_page_shift));
->>
->> 	/* Some implementations won't cache invalid TCEs and thus may not
->> 	 * need that flush. We'll probably turn it_type into a bit mask
->> -- 
->> 2.0.0
->>
-> 
+  powerpc/perf: Never program book3s PMCs with values >= 0x80000000 (2014-07-11 13:50:47 +1000)
 
+are available in the git repository at:
 
--- 
-Alexey
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 6f5405bc2ee0102bb3856e2cdea64ff415db2e0c:
+
+  powerpc: use _GLOBAL_TOC for memmove (2014-07-22 15:56:04 +1000)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc: subpage_protect: Increase the array size to take care of 64TB
+
+Joel Stanley (1):
+      powerpc: Disable doorbells on Power8 DD1.x
+
+Li Zhong (1):
+      powerpc: use _GLOBAL_TOC for memmove
+
+Paul Mackerras (1):
+      powerpc: Fix bugs in emulate_step()
+
+Tyrel Datwyler (1):
+      powerpc/pseries: dynamically added OF nodes need to call of_node_init
+
+ arch/powerpc/include/asm/cputable.h       |  1 +
+ arch/powerpc/include/asm/mmu-hash64.h     |  3 ++-
+ arch/powerpc/kernel/cputable.c            | 20 ++++++++++++++++++++
+ arch/powerpc/lib/mem_64.S                 |  2 +-
+ arch/powerpc/lib/sstep.c                  | 10 +++++-----
+ arch/powerpc/platforms/pseries/dlpar.c    |  1 +
+ arch/powerpc/platforms/pseries/reconfig.c |  1 +
+ 7 files changed, 31 insertions(+), 7 deletions(-)
