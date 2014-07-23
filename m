@@ -1,22 +1,19 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6007E1A03C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 23:34:19 +1000 (EST)
-Date: Wed, 23 Jul 2014 21:10:48 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [RFC, prePATCH] crypto: talitos modified for powerpc 88x
- security engine
-Message-ID: <20140723131048.GB29178@gondor.apana.org.au>
-References: <20140711120939.DD0031A9740@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140711120939.DD0031A9740@localhost.localdomain>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BE621A01A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 01:28:39 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [RESEND PATCH] rapidio: add new RapidIO DMA interface routines
+Date: Wed, 23 Jul 2014 11:04:18 -0400
+Message-Id: <1406127858-32478-1-git-send-email-alexandre.bounine@idt.com>
+Cc: linux-kernel@vger.kernel.org,
+ Andre van Herk <andre.van.herk@prodrive-technologies.com>,
+ Alexandre Bounine <alexandre.bounine@idt.com>,
+ Stef van Os <stef.van.os@prodrive-technologies.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +23,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 11, 2014 at 02:09:39PM +0200, Christophe Leroy wrote:
-> Here is a pre-patch for the support of the SEC ENGINE of MPC88x/MPC82xx
-> I have tried to make use of defines in order to keep a single driver for the two
-> TALITOS variants as suggested by Kim, but I'm not too happy about the quantity
-> of #ifdef
+Resending because the original email was rejected by some gateways.
 
-Yeah these ifdefs have got to go.
+Add RapidIO DMA interface routines that directly use reference to the mport
+device object and/or target device destination ID as parameters.
+This allows to perform RapidIO DMA transfer requests by modules that do not
+have an access to the RapidIO device list.
 
-Cheers,
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Andre van Herk <andre.van.herk@prodrive-technologies.com>
+Cc: Stef van Os <stef.van.os@prodrive-technologies.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/rapidio/rio.c   | 66 +++++++++++++++++++++++++++++++++++--------------
+ include/linux/rio_drv.h |  5 ++++
+ 2 files changed, 52 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index a54ba04..d7b87c6 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -1509,30 +1509,39 @@ EXPORT_SYMBOL_GPL(rio_route_clr_table);
+ 
+ static bool rio_chan_filter(struct dma_chan *chan, void *arg)
+ {
+-	struct rio_dev *rdev = arg;
++	struct rio_mport *mport = arg;
+ 
+ 	/* Check that DMA device belongs to the right MPORT */
+-	return (rdev->net->hport ==
+-		container_of(chan->device, struct rio_mport, dma));
++	return mport == container_of(chan->device, struct rio_mport, dma);
+ }
+ 
+ /**
+- * rio_request_dma - request RapidIO capable DMA channel that supports
+- *   specified target RapidIO device.
+- * @rdev: RIO device control structure
++ * rio_request_mport_dma - request RapidIO capable DMA channel associated
++ *   with specified local RapidIO mport device.
++ * @mport: RIO mport to perform DMA data transfers
+  *
+  * Returns pointer to allocated DMA channel or NULL if failed.
+  */
+-struct dma_chan *rio_request_dma(struct rio_dev *rdev)
++struct dma_chan *rio_request_mport_dma(struct rio_mport *mport)
+ {
+ 	dma_cap_mask_t mask;
+-	struct dma_chan *dchan;
+ 
+ 	dma_cap_zero(mask);
+ 	dma_cap_set(DMA_SLAVE, mask);
+-	dchan = dma_request_channel(mask, rio_chan_filter, rdev);
++	return dma_request_channel(mask, rio_chan_filter, mport);
++}
++EXPORT_SYMBOL_GPL(rio_request_mport_dma);
+ 
+-	return dchan;
++/**
++ * rio_request_dma - request RapidIO capable DMA channel that supports
++ *   specified target RapidIO device.
++ * @rdev: RIO device associated with DMA transfer
++ *
++ * Returns pointer to allocated DMA channel or NULL if failed.
++ */
++struct dma_chan *rio_request_dma(struct rio_dev *rdev)
++{
++	return rio_request_mport_dma(rdev->net->hport);
+ }
+ EXPORT_SYMBOL_GPL(rio_request_dma);
+ 
+@@ -1547,10 +1556,10 @@ void rio_release_dma(struct dma_chan *dchan)
+ EXPORT_SYMBOL_GPL(rio_release_dma);
+ 
+ /**
+- * rio_dma_prep_slave_sg - RapidIO specific wrapper
++ * rio_dma_prep_xfer - RapidIO specific wrapper
+  *   for device_prep_slave_sg callback defined by DMAENGINE.
+- * @rdev: RIO device control structure
+  * @dchan: DMA channel to configure
++ * @destid: target RapidIO device destination ID
+  * @data: RIO specific data descriptor
+  * @direction: DMA data transfer direction (TO or FROM the device)
+  * @flags: dmaengine defined flags
+@@ -1560,11 +1569,10 @@ EXPORT_SYMBOL_GPL(rio_release_dma);
+  * target RIO device.
+  * Returns pointer to DMA transaction descriptor or NULL if failed.
+  */
+-struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
+-	struct dma_chan *dchan, struct rio_dma_data *data,
++struct dma_async_tx_descriptor *rio_dma_prep_xfer(struct dma_chan *dchan,
++	u16 destid, struct rio_dma_data *data,
+ 	enum dma_transfer_direction direction, unsigned long flags)
+ {
+-	struct dma_async_tx_descriptor *txd = NULL;
+ 	struct rio_dma_ext rio_ext;
+ 
+ 	if (dchan->device->device_prep_slave_sg == NULL) {
+@@ -1572,15 +1580,35 @@ struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
+ 		return NULL;
+ 	}
+ 
+-	rio_ext.destid = rdev->destid;
++	rio_ext.destid = destid;
+ 	rio_ext.rio_addr_u = data->rio_addr_u;
+ 	rio_ext.rio_addr = data->rio_addr;
+ 	rio_ext.wr_type = data->wr_type;
+ 
+-	txd = dmaengine_prep_rio_sg(dchan, data->sg, data->sg_len,
+-					direction, flags, &rio_ext);
++	return dmaengine_prep_rio_sg(dchan, data->sg, data->sg_len,
++				     direction, flags, &rio_ext);
++}
++EXPORT_SYMBOL_GPL(rio_dma_prep_xfer);
+ 
+-	return txd;
++/**
++ * rio_dma_prep_slave_sg - RapidIO specific wrapper
++ *   for device_prep_slave_sg callback defined by DMAENGINE.
++ * @rdev: RIO device control structure
++ * @dchan: DMA channel to configure
++ * @data: RIO specific data descriptor
++ * @direction: DMA data transfer direction (TO or FROM the device)
++ * @flags: dmaengine defined flags
++ *
++ * Initializes RapidIO capable DMA channel for the specified data transfer.
++ * Uses DMA channel private extension to pass information related to remote
++ * target RIO device.
++ * Returns pointer to DMA transaction descriptor or NULL if failed.
++ */
++struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(struct rio_dev *rdev,
++	struct dma_chan *dchan, struct rio_dma_data *data,
++	enum dma_transfer_direction direction, unsigned long flags)
++{
++	return rio_dma_prep_xfer(dchan,	rdev->destid, data, direction, flags);
+ }
+ EXPORT_SYMBOL_GPL(rio_dma_prep_slave_sg);
+ 
+diff --git a/include/linux/rio_drv.h b/include/linux/rio_drv.h
+index 5059994..9fc2f21 100644
+--- a/include/linux/rio_drv.h
++++ b/include/linux/rio_drv.h
+@@ -384,11 +384,16 @@ void rio_dev_put(struct rio_dev *);
+ 
+ #ifdef CONFIG_RAPIDIO_DMA_ENGINE
+ extern struct dma_chan *rio_request_dma(struct rio_dev *rdev);
++extern struct dma_chan *rio_request_mport_dma(struct rio_mport *mport);
+ extern void rio_release_dma(struct dma_chan *dchan);
+ extern struct dma_async_tx_descriptor *rio_dma_prep_slave_sg(
+ 		struct rio_dev *rdev, struct dma_chan *dchan,
+ 		struct rio_dma_data *data,
+ 		enum dma_transfer_direction direction, unsigned long flags);
++extern struct dma_async_tx_descriptor *rio_dma_prep_xfer(
++		struct dma_chan *dchan,	u16 destid,
++		struct rio_dma_data *data,
++		enum dma_transfer_direction direction, unsigned long flags);
+ #endif
+ 
+ /**
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.7.11
