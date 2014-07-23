@@ -1,17 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C4F461A06B5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 17:31:46 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 10/10] selftests/powerpc: Add test of per-event excludes
-Date: Wed, 23 Jul 2014 17:31:40 +1000
-Message-Id: <1406100700-9702-10-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1406100700-9702-1-git-send-email-mpe@ellerman.id.au>
-References: <1406100700-9702-1-git-send-email-mpe@ellerman.id.au>
-Cc: sam.bobroff@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 35F3C1A01C4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jul 2014 18:24:54 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH v5 4/5] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+Date: Wed, 23 Jul 2014 08:24:44 +0000
+Message-ID: <72a612351ec34db5a94cda4f4883e608@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1405596148-1507-1-git-send-email-mihai.caraman@freescale.com>
+ <1405596148-1507-5-git-send-email-mihai.caraman@freescale.com>
+ <53C7DBC3.2060104@suse.de>
+ <9905fb7c7f604bcb966478e3722e8bfc@BY2PR03MB508.namprd03.prod.outlook.com>
+ <32d95c415b3f4a69bebd5a208c498e15@BY2PR03MB508.namprd03.prod.outlook.com>
+ <53CED5D9.9010609@suse.de>
+In-Reply-To: <53CED5D9.9010609@suse.de>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,145 +31,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/powerpc/pmu/Makefile       |   2 +-
- .../selftests/powerpc/pmu/per_event_excludes.c     | 114 +++++++++++++++++++++
- 2 files changed, 115 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index 8595cfd7e41b..c9f4263906a5 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -1,7 +1,7 @@
- noarg:
- 	$(MAKE) -C ../
- 
--PROGS := count_instructions l3_bank_test
-+PROGS := count_instructions l3_bank_test per_event_excludes
- EXTRA_SOURCES := ../harness.c event.c lib.c
- 
- SUB_TARGETS = ebb
-diff --git a/tools/testing/selftests/powerpc/pmu/per_event_excludes.c b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-new file mode 100644
-index 000000000000..fddbbc9cae2f
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-@@ -0,0 +1,114 @@
-+/*
-+ * Copyright 2014, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#define _GNU_SOURCE
-+
-+#include <elf.h>
-+#include <limits.h>
-+#include <stdio.h>
-+#include <stdbool.h>
-+#include <string.h>
-+#include <sys/prctl.h>
-+
-+#include "event.h"
-+#include "lib.h"
-+#include "utils.h"
-+
-+/*
-+ * Test that per-event excludes work.
-+ */
-+
-+static int per_event_excludes(void)
-+{
-+	struct event *e, events[4];
-+	char *platform;
-+	int i;
-+
-+	platform = (char *)get_auxv_entry(AT_BASE_PLATFORM);
-+	FAIL_IF(!platform);
-+	SKIP_IF(strcmp(platform, "power8") != 0);
-+
-+	/*
-+	 * We need to create the events disabled, otherwise the running/enabled
-+	 * counts don't match up.
-+	 */
-+	e = &events[0];
-+	event_init_opts(e, PERF_COUNT_HW_INSTRUCTIONS,
-+			PERF_TYPE_HARDWARE, "instructions");
-+	e->attr.disabled = 1;
-+
-+	e = &events[1];
-+	event_init_opts(e, PERF_COUNT_HW_INSTRUCTIONS,
-+			PERF_TYPE_HARDWARE, "instructions(k)");
-+	e->attr.disabled = 1;
-+	e->attr.exclude_user = 1;
-+	e->attr.exclude_hv = 1;
-+
-+	e = &events[2];
-+	event_init_opts(e, PERF_COUNT_HW_INSTRUCTIONS,
-+			PERF_TYPE_HARDWARE, "instructions(h)");
-+	e->attr.disabled = 1;
-+	e->attr.exclude_user = 1;
-+	e->attr.exclude_kernel = 1;
-+
-+	e = &events[3];
-+	event_init_opts(e, PERF_COUNT_HW_INSTRUCTIONS,
-+			PERF_TYPE_HARDWARE, "instructions(u)");
-+	e->attr.disabled = 1;
-+	e->attr.exclude_hv = 1;
-+	e->attr.exclude_kernel = 1;
-+
-+	FAIL_IF(event_open(&events[0]));
-+
-+	/*
-+	 * The open here will fail if we don't have per event exclude support,
-+	 * because the second event has an incompatible set of exclude settings
-+	 * and we're asking for the events to be in a group.
-+	 */
-+	for (i = 1; i < 4; i++)
-+		FAIL_IF(event_open_with_group(&events[i], events[0].fd));
-+
-+	/*
-+	 * Even though the above will fail without per-event excludes we keep
-+	 * testing in order to be thorough.
-+	 */
-+	prctl(PR_TASK_PERF_EVENTS_ENABLE);
-+
-+	/* Spin for a while */
-+	for (i = 0; i < INT_MAX; i++)
-+		asm volatile("" : : : "memory");
-+
-+	prctl(PR_TASK_PERF_EVENTS_DISABLE);
-+
-+	for (i = 0; i < 4; i++) {
-+		FAIL_IF(event_read(&events[i]));
-+		event_report(&events[i]);
-+	}
-+
-+	/*
-+	 * We should see that all events have enabled == running. That
-+	 * shows that they were all on the PMU at once.
-+	 */
-+	for (i = 0; i < 4; i++)
-+		FAIL_IF(events[i].result.running != events[i].result.enabled);
-+
-+	/*
-+	 * We can also check that the result for instructions is >= all the
-+	 * other counts. That's because it is counting all instructions while
-+	 * the others are counting a subset.
-+	 */
-+	for (i = 1; i < 4; i++)
-+		FAIL_IF(events[0].result.value < events[i].result.value);
-+
-+	for (i = 0; i < 4; i++)
-+		event_close(&events[i]);
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(per_event_excludes, "per_event_excludes");
-+}
--- 
-1.9.1
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBrdm0tcHBjLW93bmVyQHZnZXIu
+a2VybmVsLm9yZyBbbWFpbHRvOmt2bS1wcGMtDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24g
+QmVoYWxmIE9mIEFsZXhhbmRlciBHcmFmDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVseSAyMywgMjAx
+NCAxMjoyMSBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwOA0KPiBDYzoga3Zt
+LXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBr
+dm1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjUgNC81XSBLVk06IFBQ
+QzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5zdCgpIHRvIGZhaWwNCj4gDQo+IA0KPiBPbiAyMS4w
+Ny4xNCAxMTo1OSwgbWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+PiAtLS0t
+LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzps
+aW51eHBwYy1kZXYtDQo+ID4+IGJvdW5jZXMrbWloYWkuY2FyYW1hbj1mcmVlc2NhbGUuY29tQGxp
+c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZg0KPiA+PiBtaWhhaS5jYXJhbWFuQGZyZWVzY2Fs
+ZS5jb20NCj4gPj4gU2VudDogRnJpZGF5LCBKdWx5IDE4LCAyMDE0IDEyOjA2IFBNDQo+ID4+IFRv
+OiBBbGV4YW5kZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gQ2M6IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBrdm1Admdlci5rZXJuZWwub3JnDQo+ID4+IFN1Ympl
+Y3Q6IFJFOiBbUEFUQ0ggdjUgNC81XSBLVk06IFBQQzogQWxvdyBrdm1wcGNfZ2V0X2xhc3RfaW5z
+dCgpIHRvDQo+IGZhaWwNCj4gPj4NCj4gPj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
+ID4+PiBGcm9tOiBBbGV4YW5kZXIgR3JhZiBbbWFpbHRvOmFncmFmQHN1c2UuZGVdDQo+ID4+PiBT
+ZW50OiBUaHVyc2RheSwgSnVseSAxNywgMjAxNCA1OjIxIFBNDQo+ID4+PiBUbzogQ2FyYW1hbiBN
+aWhhaSBDbGF1ZGl1LUIwMjAwODsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmcNCj4gPj4+IENjOiBr
+dm1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+Pj4g
+U3ViamVjdDogUmU6IFtQQVRDSCB2NSA0LzVdIEtWTTogUFBDOiBBbG93IGt2bXBwY19nZXRfbGFz
+dF9pbnN0KCkgdG8NCj4gPj4gZmFpbA0KPiA+Pj4NCj4gPj4+IE9uIDE3LjA3LjE0IDEzOjIyLCBN
+aWhhaSBDYXJhbWFuIHdyb3RlOg0KPiA+Pj4+IE9uIGJvb2szZSwgZ3Vlc3QgbGFzdCBpbnN0cnVj
+dGlvbiBpcyByZWFkIG9uIHRoZSBleGl0IHBhdGggdXNpbmcNCj4gbG9hZA0KPiA+Pj4+IGV4dGVy
+bmFsIHBpZCAobHdlcHgpIGRlZGljYXRlZCBpbnN0cnVjdGlvbi4gVGhpcyBsb2FkIG9wZXJhdGlv
+biBtYXkNCj4gPj4+IGZhaWwNCj4gPj4+PiBkdWUgdG8gVExCIGV2aWN0aW9uIGFuZCBleGVjdXRl
+LWJ1dC1ub3QtcmVhZCBlbnRyaWVzLg0KPiA+Pj4+DQo+ID4+Pj4gVGhpcyBwYXRjaCBsYXkgZG93
+biB0aGUgcGF0aCBmb3IgYW4gYWx0ZXJuYXRpdmUgc29sdXRpb24gdG8gcmVhZCB0aGUNCj4gPj4+
+IGd1ZXN0DQo+ID4+Pj4gbGFzdCBpbnN0cnVjdGlvbiwgYnkgYWxsb3dpbmcga3ZtcHBjX2dldF9s
+YXRfaW5zdCgpIGZ1bmN0aW9uIHRvDQo+IGZhaWwuDQo+ID4+Pj4gQXJjaGl0ZWN0dXJlIHNwZWNp
+ZmljIGltcGxtZW50YXRpb25zIG9mIGt2bXBwY19sb2FkX2xhc3RfaW5zdCgpIG1heQ0KPiA+Pj4g
+cmVhZA0KPiA+Pj4+IGxhc3QgZ3Vlc3QgaW5zdHJ1Y3Rpb24gYW5kIGluc3RydWN0IHRoZSBlbXVs
+YXRpb24gbGF5ZXIgdG8gcmUtDQo+IGV4ZWN1dGUNCj4gPj4+IHRoZQ0KPiA+Pj4+IGd1ZXN0IGlu
+IGNhc2Ugb2YgZmFpbHVyZS4NCj4gPj4+Pg0KPiA+Pj4+IE1ha2Uga3ZtcHBjX2dldF9sYXN0X2lu
+c3QoKSBkZWZpbml0aW9uIGNvbW1vbiBiZXR3ZWVuIGFyY2hpdGVjdHVyZXMuDQo+ID4+Pj4NCj4g
+Pj4+PiBTaWduZWQtb2ZmLWJ5OiBNaWhhaSBDYXJhbWFuIDxtaWhhaS5jYXJhbWFuQGZyZWVzY2Fs
+ZS5jb20+DQo+ID4+Pj4gLS0tDQo+ID4+IC4uLg0KPiA+Pg0KPiA+Pj4+IGRpZmYgLS1naXQgYS9h
+cmNoL3Bvd2VycGMvaW5jbHVkZS9hc20va3ZtX3BwYy5oDQo+ID4+PiBiL2FyY2gvcG93ZXJwYy9p
+bmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPj4+PiBpbmRleCBlMmZkNWExLi43ZjljNjM0IDEwMDY0
+NA0KPiA+Pj4+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9rdm1fcHBjLmgNCj4gPj4+
+PiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20va3ZtX3BwYy5oDQo+ID4+Pj4gQEAgLTQ3
+LDYgKzQ3LDExIEBAIGVudW0gZW11bGF0aW9uX3Jlc3VsdCB7DQo+ID4+Pj4gICAgCUVNVUxBVEVf
+RVhJVF9VU0VSLCAgICAvKiBlbXVsYXRpb24gcmVxdWlyZXMgZXhpdCB0byB1c2VyLQ0KPiA+PiBz
+cGFjZSAqLw0KPiA+Pj4+ICAgIH07DQo+ID4+Pj4NCj4gPj4+PiArZW51bSBpbnN0cnVjdGlvbl90
+eXBlIHsNCj4gPj4+PiArCUlOU1RfR0VORVJJQywNCj4gPj4+PiArCUlOU1RfU0MsCQkvKiBzeXN0
+ZW0gY2FsbCAqLw0KPiA+Pj4+ICt9Ow0KPiA+Pj4+ICsNCj4gPj4+PiAgICBleHRlcm4gaW50IGt2
+bXBwY192Y3B1X3J1bihzdHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+IGt2bV92Y3B1
+DQo+ID4+PiAqdmNwdSk7DQo+ID4+Pj4gICAgZXh0ZXJuIGludCBfX2t2bXBwY192Y3B1X3J1bihz
+dHJ1Y3Qga3ZtX3J1biAqa3ZtX3J1biwgc3RydWN0DQo+ID4+IGt2bV92Y3B1DQo+ID4+PiAqdmNw
+dSk7DQo+ID4+Pj4gICAgZXh0ZXJuIHZvaWQga3ZtcHBjX2hhbmRsZXJfaGlnaG1lbSh2b2lkKTsN
+Cj4gPj4+PiBAQCAtNjIsNiArNjcsOSBAQCBleHRlcm4gaW50IGt2bXBwY19oYW5kbGVfc3RvcmUo
+c3RydWN0IGt2bV9ydW4NCj4gKnJ1biwNCj4gPj4+IHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4g
+Pj4+PiAgICAJCQkgICAgICAgdTY0IHZhbCwgdW5zaWduZWQgaW50IGJ5dGVzLA0KPiA+Pj4+ICAg
+IAkJCSAgICAgICBpbnQgaXNfZGVmYXVsdF9lbmRpYW4pOw0KPiA+Pj4+DQo+ID4+Pj4gK2V4dGVy
+biBpbnQga3ZtcHBjX2xvYWRfbGFzdF9pbnN0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwNCj4gPj4+
+PiArCQkJCSBlbnVtIGluc3RydWN0aW9uX3R5cGUgdHlwZSwgdTMyICppbnN0KTsNCj4gPj4+PiAr
+DQo+ID4+Pj4gICAgZXh0ZXJuIGludCBrdm1wcGNfZW11bGF0ZV9pbnN0cnVjdGlvbihzdHJ1Y3Qg
+a3ZtX3J1biAqcnVuLA0KPiA+Pj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgc3RydWN0IGt2bV92Y3B1ICp2Y3B1KTsNCj4gPj4+PiAgICBleHRlcm4gaW50IGt2bXBw
+Y19lbXVsYXRlX21taW8oc3RydWN0IGt2bV9ydW4gKnJ1biwgc3RydWN0DQo+IGt2bV92Y3B1DQo+
+ID4+PiAqdmNwdSk7DQo+ID4+Pj4gQEAgLTIzNCw2ICsyNDIsMjMgQEAgc3RydWN0IGt2bXBwY19v
+cHMgew0KPiA+Pj4+ICAgIGV4dGVybiBzdHJ1Y3Qga3ZtcHBjX29wcyAqa3ZtcHBjX2h2X29wczsN
+Cj4gPj4+PiAgICBleHRlcm4gc3RydWN0IGt2bXBwY19vcHMgKmt2bXBwY19wcl9vcHM7DQo+ID4+
+Pj4NCj4gPj4+PiArc3RhdGljIGlubGluZSBpbnQga3ZtcHBjX2dldF9sYXN0X2luc3Qoc3RydWN0
+IGt2bV92Y3B1ICp2Y3B1LA0KPiA+Pj4+ICsJCQkJCWVudW0gaW5zdHJ1Y3Rpb25fdHlwZSB0eXBl
+LCB1MzINCj4gKmluc3QpDQo+ID4+Pj4gK3sNCj4gPj4+PiArCWludCByZXQgPSBFTVVMQVRFX0RP
+TkU7DQo+ID4+Pj4gKw0KPiA+Pj4+ICsJLyogTG9hZCB0aGUgaW5zdHJ1Y3Rpb24gbWFudWFsbHkg
+aWYgaXQgZmFpbGVkIHRvIGRvIHNvIGluIHRoZQ0KPiA+Pj4+ICsJICogZXhpdCBwYXRoICovDQo+
+ID4+Pj4gKwlpZiAodmNwdS0+YXJjaC5sYXN0X2luc3QgPT0gS1ZNX0lOU1RfRkVUQ0hfRkFJTEVE
+KQ0KPiA+Pj4+ICsJCXJldCA9IGt2bXBwY19sb2FkX2xhc3RfaW5zdCh2Y3B1LCB0eXBlLCAmdmNw
+dS0NCj4gPj4+PiBhcmNoLmxhc3RfaW5zdCk7DQo+ID4+Pj4gKw0KPiA+Pj4+ICsNCj4gPj4+PiAr
+CSppbnN0ID0gKHJldCA9PSBFTVVMQVRFX0RPTkUgJiYga3ZtcHBjX25lZWRfYnl0ZXN3YXAodmNw
+dSkpID8NCj4gPj4+PiArCQlzd2FiMzIodmNwdS0+YXJjaC5sYXN0X2luc3QpIDogdmNwdS0+YXJj
+aC5sYXN0X2luc3Q7DQo+ID4+PiBUaGlzIG1ha2VzIGV2ZW4gbGVzcyBzZW5zZSB0aGFuIHRoZSBw
+cmV2aW91cyB2ZXJzaW9uLiBFaXRoZXIgeW91DQo+IHRyZWF0DQo+ID4+PiBpbnN0IGFzICJkZWZp
+bml0ZWx5IG92ZXJ3cml0dGVuIiBvciBhcyAicHJlc2VydmVzIHByZXZpb3VzIGRhdGEgb24NCj4g
+Pj4+IGZhaWx1cmUiLg0KPiA+PiBCb3RoIHY0IGFuZCB2NSB2ZXJzaW9ucyB0cmVhdCBpbnN0IGFz
+ICJkZWZpbml0ZWx5IG92ZXJ3cml0dGVuIi4NCj4gPj4NCj4gPj4+IFNvIGVpdGhlciB5b3UgdW5j
+b25kaXRpb25hbGx5IHN3YXAgbGlrZSB5b3UgZGlkIGJlZm9yZQ0KPiA+PiBJZiB3ZSBtYWtlIGFi
+c3RyYWN0aW9uIG9mIGl0cyBzeW1tZXRyeSwgS1ZNX0lOU1RfRkVUQ0hfRkFJTEVEIGlzDQo+IG9w
+ZXJhdGVkDQo+ID4+IGluIGhvc3QgZW5kaWFubmVzcywgc28gaXQgZG9lc24ndCBuZWVkIGJ5dGUg
+c3dhcC4NCj4gPj4NCj4gPj4gSSBhZ3JlZSB3aXRoIHlvdXIgcmVhc29uaW5nIGlmIGxhc3RfaW5z
+dCBpcyBpbml0aWFsaXplZCBhbmQgY29tcGFyZWQNCj4gd2l0aA0KPiA+PiBkYXRhIGluIGd1ZXN0
+IGVuZGlhbmVzcywgd2hpY2ggaXMgbm90IHRoZSBjYXNlIHlldCBmb3INCj4gPj4gS1ZNX0lOU1Rf
+RkVUQ0hfRkFJTEVELg0KPiA+IEFsZXgsIGFyZSB5b3UgcmVseWluZyBvbiB0aGUgZmFjdCB0aGF0
+IEtWTV9JTlNUX0ZFVENIX0ZBSUxFRCB2YWx1ZSBpcw0KPiBzeW1tZXRyaWNhbD8NCj4gPiBXaXRo
+IGEgbm9uIHN5bW1ldHJpY2FsIHZhbHVlIGxpa2UgMHhERUFEQkVFRiwgYW5kIGNvbnNpZGVyaW5n
+IGEgbGl0dGxlLQ0KPiBlbmRpYW4gZ3Vlc3QNCj4gPiBvbiBhIGJpZy1lbmRpYW4gaG9zdCwgd2Ug
+bmVlZCB0byBmaXgga3ZtIGxvZ2ljIHRvIGluaXRpYWxpemUgYW5kDQo+IGNvbXBhcmUgbGFzdF9p
+bnN0DQo+ID4gd2l0aCAweEVGQkVBRERFIHN3YXBlZCB2YWx1ZS4NCj4gPg0KPiA+IFlvdXIgc3Vn
+Z2VzdGlvbiB0byB1bmNvbmRpdGlvbmFsbHkgc3dhcCBtYWtlcyBzZW5zZSBvbmx5IHdpdGggdGhl
+IGFib3ZlDQo+IGZpeCwgb3RoZXJ3aXNlDQo+ID4gaW5zdCBtYXkgZW5kIHVwIHdpdGggMHhFRkJF
+QURERSBzd2FwZWQgdmFsdWUgd2l0aCBpcyB3cm9uZy4NCj4gDQo+IE9ubHkgZm9yICppbnN0IHdo
+aWNoIHdlIHdvdWxkIHRyZWF0IGFzICJ1bmRlZmluZWQiIGFmdGVyIHRoZSBmdW5jdGlvbg0KPiBy
+ZXR1cm5lZCBFTVVMQVRFX0FHQUlOLiANCg0KUmlnaHQuIFdpdGggdGhpcyBkbyB5b3UgYWNrbm93
+bGVkZ2UgdGhhdCB2NSAoZGVmaW5pdGVseSBvdmVyd3JpdHRlbiBhcHByb2FjaCkNCmlzIG9rPw0K
+DQotTWlrZQ0K
