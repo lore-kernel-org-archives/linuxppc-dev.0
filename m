@@ -1,32 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BDD991A033E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 16:22:42 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64AD11A0937
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 16:22:46 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 24 Jul 2014 11:52:38 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E604F1258063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:27 +0530 (IST)
+ Thu, 24 Jul 2014 11:52:44 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id DDF35E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:54:21 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6O6MtZt6095206
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:55 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O6N06Q60162134
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:53:01 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6O6MXVe021276
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:34 +0530
+ s6O6MdZt021652
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:39 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com,
  yan@linux.vnet.ibm.com, qiudayu@linux.vnet.ibm.com
-Subject: [PATCH V7 01/17] PCI/IOV: Export interface for retrieve VF's BDF
-Date: Thu, 24 Jul 2014 14:22:11 +0800
-Message-Id: <1406182947-11302-2-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V7 04/17] PCI: Take additional IOV BAR alignment in sizing and
+ assigning
+Date: Thu, 24 Jul 2014 14:22:14 +0800
+Message-Id: <1406182947-11302-5-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
@@ -39,200 +40,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When implementing the SR-IOV on PowerNV platform, some resource reservation is
-needed for VFs which don't exist at the bootup stage. To do the match between
-resources and VFs, the code need to get the VF's BDF in advance.
+At resource sizing/assigning stage, resources are divided into two lists,
+requested list and additional list, while the alignement of the additional
+IOV BAR is not taken into the sizeing and assigning procedure.
 
-In this patch, it exports the interface to retrieve VF's BDF:
-   * Make the virtfn_bus as an interface
-   * Make the virtfn_devfn as an interface
-   * rename them with more specific name
-   * code cleanup in pci_sriov_resource_alignment()
+This is reasonable in the original implementation, since IOV BAR's alignment is
+mostly the size of a PF BAR alignemt. This means the alignment is already taken
+into consideration. While this rule may be violated on some platform.
+
+This patch take the additional IOV BAR alignment in sizing and assigning stage
+explicitly.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/iov.c   |   26 +++++++-------------------
- drivers/pci/pci.h   |   19 -------------------
- include/linux/pci.h |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 51 insertions(+), 38 deletions(-)
+ drivers/pci/setup-bus.c |   68 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 60 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index cb6f247..7566238 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -19,18 +19,6 @@
- 
- #define VIRTFN_ID_LEN	16
- 
--static inline u8 virtfn_bus(struct pci_dev *dev, int id)
--{
--	return dev->bus->number + ((dev->devfn + dev->sriov->offset +
--				    dev->sriov->stride * id) >> 8);
--}
--
--static inline u8 virtfn_devfn(struct pci_dev *dev, int id)
--{
--	return (dev->devfn + dev->sriov->offset +
--		dev->sriov->stride * id) & 0xff;
--}
--
- static struct pci_bus *virtfn_add_bus(struct pci_bus *bus, int busnr)
- {
- 	struct pci_bus *child;
-@@ -69,7 +57,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 	struct pci_bus *bus;
- 
- 	mutex_lock(&iov->dev->sriov->lock);
--	bus = virtfn_add_bus(dev->bus, virtfn_bus(dev, id));
-+	bus = virtfn_add_bus(dev->bus, pci_iov_virtfn_bus(dev, id));
- 	if (!bus)
- 		goto failed;
- 
-@@ -77,7 +65,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 	if (!virtfn)
- 		goto failed0;
- 
--	virtfn->devfn = virtfn_devfn(dev, id);
-+	virtfn->devfn = pci_iov_virtfn_devfn(dev, id);
- 	virtfn->vendor = dev->vendor;
- 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_DID, &virtfn->device);
- 	pci_setup_device(virtfn);
-@@ -140,8 +128,8 @@ static void virtfn_remove(struct pci_dev *dev, int id, int reset)
- 	struct pci_sriov *iov = dev->sriov;
- 
- 	virtfn = pci_get_domain_bus_and_slot(pci_domain_nr(dev->bus),
--					     virtfn_bus(dev, id),
--					     virtfn_devfn(dev, id));
-+					     pci_iov_virtfn_bus(dev, id),
-+					     pci_iov_virtfn_devfn(dev, id));
- 	if (!virtfn)
- 		return;
- 
-@@ -216,7 +204,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 	iov->offset = offset;
- 	iov->stride = stride;
- 
--	if (virtfn_bus(dev, nr_virtfn - 1) > dev->bus->busn_res.end) {
-+	if (pci_iov_virtfn_bus(dev, nr_virtfn - 1) > dev->bus->busn_res.end) {
- 		dev_err(&dev->dev, "SR-IOV: bus number out of range\n");
- 		return -ENOMEM;
- 	}
-@@ -516,7 +504,7 @@ resource_size_t pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
- 	if (!reg)
- 		return 0;
- 
--	 __pci_read_base(dev, type, &tmp, reg);
-+	__pci_read_base(dev, type, &tmp, reg);
- 	return resource_alignment(&tmp);
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index a5a63ec..d83681f 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -120,6 +120,28 @@ static resource_size_t get_res_add_size(struct list_head *head,
+ 	return 0;
  }
  
-@@ -546,7 +534,7 @@ int pci_iov_bus_range(struct pci_bus *bus)
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		if (!dev->is_physfn)
- 			continue;
--		busnr = virtfn_bus(dev, dev->sriov->total_VFs - 1);
-+		busnr = pci_iov_virtfn_bus(dev, dev->sriov->total_VFs - 1);
- 		if (busnr > max)
- 			max = busnr;
++static resource_size_t get_res_add_align(struct list_head *head,
++		struct resource *res)
++{
++	struct pci_dev_resource *dev_res;
++
++	list_for_each_entry(dev_res, head, list) {
++		if (dev_res->res == res) {
++			int idx = res - &dev_res->dev->resource[0];
++
++			dev_printk(KERN_DEBUG, &dev_res->dev->dev,
++				   "res[%d]=%pR get_res_add_align min_align %llx\n",
++				   idx, dev_res->res,
++				   (unsigned long long)dev_res->min_align);
++
++			return dev_res->min_align;
++		}
++	}
++
++	return 0;
++}
++
++
+ /* Sort resources by alignment */
+ static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
+ {
+@@ -368,8 +390,9 @@ static void __assign_resources_sorted(struct list_head *head,
+ 	LIST_HEAD(save_head);
+ 	LIST_HEAD(local_fail_head);
+ 	struct pci_dev_resource *save_res;
+-	struct pci_dev_resource *dev_res, *tmp_res;
++	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
+ 	unsigned long fail_type;
++	resource_size_t add_align, align;
+ 
+ 	/* Check if optional add_size is there */
+ 	if (!realloc_head || list_empty(realloc_head))
+@@ -384,10 +407,31 @@ static void __assign_resources_sorted(struct list_head *head,
  	}
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 0601890..a3158b2 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -221,25 +221,6 @@ static inline int pci_ari_enabled(struct pci_bus *bus)
- void pci_reassigndev_resource_alignment(struct pci_dev *dev);
- void pci_disable_bridge_window(struct pci_dev *dev);
  
--/* Single Root I/O Virtualization */
--struct pci_sriov {
--	int pos;		/* capability position */
--	int nres;		/* number of resources */
--	u32 cap;		/* SR-IOV Capabilities */
--	u16 ctrl;		/* SR-IOV Control */
--	u16 total_VFs;		/* total VFs associated with the PF */
--	u16 initial_VFs;	/* initial VFs associated with the PF */
--	u16 num_VFs;		/* number of VFs available */
--	u16 offset;		/* first VF Routing ID offset */
--	u16 stride;		/* following VF stride */
--	u32 pgsz;		/* page size for BAR alignment */
--	u8 link;		/* Function Dependency Link */
--	u16 driver_max_VFs;	/* max num VFs driver supports */
--	struct pci_dev *dev;	/* lowest numbered PF */
--	struct pci_dev *self;	/* this PF */
--	struct mutex lock;	/* lock for VF bus */
--};
--
- #ifdef CONFIG_PCI_ATS
- void pci_restore_ats_state(struct pci_dev *dev);
- #else
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 466bcd1..194db52 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -245,6 +245,27 @@ struct pci_vpd;
- struct pci_sriov;
- struct pci_ats;
+ 	/* Update res in head list with add_size in realloc_head list */
+-	list_for_each_entry(dev_res, head, list)
++	list_for_each_entry_safe(dev_res, tmp_res, head, list) {
+ 		dev_res->res->end += get_res_add_size(realloc_head,
+ 							dev_res->res);
  
-+/* Single Root I/O Virtualization */
-+struct pci_sriov {
-+	int pos;		/* capability position */
-+	int nres;		/* number of resources */
-+	u32 cap;		/* SR-IOV Capabilities */
-+	u16 ctrl;		/* SR-IOV Control */
-+	u16 total_VFs;		/* total VFs associated with the PF */
-+	u16 initial_VFs;	/* initial VFs associated with the PF */
-+	u16 num_VFs;		/* number of VFs available */
-+	u16 offset;		/* first VF Routing ID offset */
-+	u16 stride;		/* following VF stride */
-+	u32 pgsz;		/* page size for BAR alignment */
-+	u8 link;		/* Function Dependency Link */
-+	u16 driver_max_VFs;	/* max num VFs driver supports */
-+	struct pci_dev *dev;	/* lowest numbered PF */
-+	struct pci_dev *self;	/* this PF */
-+	struct mutex lock;	/* lock for VF bus */
-+	struct work_struct mtask; /* VF Migration task */
-+	u8 __iomem *mstate;	/* VF Migration State Array */
-+};
++		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
++			continue;
 +
- /*
-  * The pci_dev structure is used to describe PCI devices.
-  */
-@@ -1616,6 +1637,21 @@ int pci_ext_cfg_avail(void);
- void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
- 
- #ifdef CONFIG_PCI_IOV
-+static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
-+{
-+	if (!dev->is_physfn)
-+		return -EINVAL;
-+	return dev->bus->number + ((dev->devfn + dev->sriov->offset +
-+				    dev->sriov->stride * id) >> 8);
-+}
-+static inline int pci_iov_virtfn_devfn(struct pci_dev *dev, int id)
-+{
-+	if (!dev->is_physfn)
-+		return -EINVAL;
-+	return (dev->devfn + dev->sriov->offset +
-+		dev->sriov->stride * id) & 0xff;
-+}
++		add_align = get_res_add_align(realloc_head, dev_res->res);
 +
- int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
- void pci_disable_sriov(struct pci_dev *dev);
- int pci_num_vf(struct pci_dev *dev);
-@@ -1623,6 +1659,14 @@ int pci_vfs_assigned(struct pci_dev *dev);
- int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
- int pci_sriov_get_totalvfs(struct pci_dev *dev);
- #else
-+static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
-+{
-+	return -ENXIO;
-+}
-+static inline int pci_iov_virtfn_devfn(struct pci_dev *dev, int id)
-+{
-+	return -ENXIO;
-+}
- static inline int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
- { return -ENODEV; }
- static inline void pci_disable_sriov(struct pci_dev *dev) { }
++		if (add_align > dev_res->res->start) {
++			dev_res->res->start = add_align;
++			dev_res->res->end = add_align +
++				            resource_size(dev_res->res);
++
++			list_for_each_entry(dev_res2, head, list) {
++				align = pci_resource_alignment(dev_res2->dev,
++							       dev_res2->res);
++				if (add_align > align)
++					list_move_tail(&dev_res->list,
++						       &dev_res2->list);
++			}
++               }
++
++	}
++
+ 	/* Try updated head list with add_size added */
+ 	assign_requested_resources_sorted(head, &local_fail_head);
+ 
+@@ -930,6 +974,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 	struct resource *b_res = find_free_bus_resource(bus,
+ 					mask | IORESOURCE_PREFETCH, type);
+ 	resource_size_t children_add_size = 0;
++	resource_size_t children_add_align = 0;
++	resource_size_t add_align = 0;
+ 
+ 	if (!b_res)
+ 		return -ENOSPC;
+@@ -954,6 +1000,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			/* put SRIOV requested res to the optional list */
+ 			if (realloc_head && i >= PCI_IOV_RESOURCES &&
+ 					i <= PCI_IOV_RESOURCE_END) {
++				add_align = max(pci_resource_alignment(dev, r), add_align);
+ 				r->end = r->start - 1;
+ 				add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
+ 				children_add_size += r_size;
+@@ -984,8 +1031,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			if (order > max_order)
+ 				max_order = order;
+ 
+-			if (realloc_head)
++			if (realloc_head) {
+ 				children_add_size += get_res_add_size(realloc_head, r);
++				children_add_align = get_res_add_align(realloc_head, r);
++				add_align = max(add_align, children_add_align);
++			}
+ 		}
+ 	}
+ 
+@@ -996,7 +1046,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 		add_size = children_add_size;
+ 	size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
+ 		calculate_memsize(size, min_size, add_size,
+-				resource_size(b_res), min_align);
++				resource_size(b_res), max(min_align, add_align));
+ 	if (!size0 && !size1) {
+ 		if (b_res->start || b_res->end)
+ 			dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
+@@ -1008,10 +1058,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 	b_res->end = size0 + min_align - 1;
+ 	b_res->flags |= IORESOURCE_STARTALIGN;
+ 	if (size1 > size0 && realloc_head) {
+-		add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
+-		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
+-			   b_res, &bus->busn_res,
+-			   (unsigned long long)size1-size0);
++		add_to_list(realloc_head, bus->self, b_res, size1-size0,
++				max(min_align, add_align));
++		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
++				 "%pR to %pR add_size %llx add_align %llx\n", b_res,
++				 &bus->busn_res, (unsigned long long)size1-size0,
++				 max(min_align, add_align));
+ 	}
+ 	return 0;
+ }
 -- 
 1.7.9.5
