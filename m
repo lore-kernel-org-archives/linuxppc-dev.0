@@ -1,30 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B97B51A0148
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD8241A0150
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:20 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 24 Jul 2014 18:48:19 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 07AA52CE805E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:16 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6O8VJQJ131328
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:31:19 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6O8mGkD004782
+ Thu, 24 Jul 2014 18:48:15 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 394CE357805D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:17 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O8m0SN4194680
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:01 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6O8mGtd016982
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:16 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 04/18] vfio: powerpc: Move locked_vm accounting to a helper
-Date: Thu, 24 Jul 2014 18:47:57 +1000
-Message-Id: <1406191691-31441-5-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 05/18] powerpc/powernv: Use it_page_shift for TCE
+ invalidation
+Date: Thu, 24 Jul 2014 18:47:58 +1000
+Message-Id: <1406191691-31441-6-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -38,96 +39,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Additional DMA windows support is coming and accounting will include them
-so let's move this code to a helper for reuse.
+This fixes IODA1/2 to use it_page_shift as it may be bigger than 4K.
+
+This changes the involved constant values to use "ull" modifier.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 54 ++++++++++++++++++++++++-------------
- 1 file changed, 36 insertions(+), 18 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index a84788b..c8f7284 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -47,10 +47,40 @@ struct tce_container {
- 	bool enabled;
- };
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index de19ede..40f968e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -513,15 +513,16 @@ static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
+ 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+ 		(__be64 __iomem *)tbl->it_index;
+ 	unsigned long start, end, inc;
++	const unsigned shift = tbl->it_page_shift;
  
-+/*
-+ * Checks ulimit in order not to let the user space to pin all
-+ * available memory for TCE tables.
-+ */
-+static long tce_iommu_account_memlimit(struct iommu_table *tbl, bool inc)
-+{
-+	unsigned long ret = 0, locked, lock_limit;
-+	long npages;
-+
-+	if (!current->mm)
-+		return -ESRCH; /* process exited */
-+
-+	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+	if (!inc)
-+		npages = -npages;
-+
-+	down_write(&current->mm->mmap_sem);
-+	locked = current->mm->locked_vm + npages;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-+		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
-+				rlimit(RLIMIT_MEMLOCK));
-+		ret = -ENOMEM;
-+	} else {
-+		current->mm->locked_vm += npages;
-+	}
-+	up_write(&current->mm->mmap_sem);
-+
-+	return ret;
-+}
-+
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
--	unsigned long locked, lock_limit, npages;
- 	struct iommu_table *tbl = container->tbl;
+ 	start = __pa(startp);
+ 	end = __pa(endp);
  
- 	if (!container->tbl)
-@@ -80,20 +110,11 @@ static int tce_iommu_enable(struct tce_container *container)
- 	 * that would effectively kill the guest at random points, much better
- 	 * enforcing the limit based on the max that the guest can map.
- 	 */
--	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
--	locked = current->mm->locked_vm + npages;
--	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
--		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
--				rlimit(RLIMIT_MEMLOCK));
--		ret = -ENOMEM;
--	} else {
-+	ret = tce_iommu_account_memlimit(tbl, true);
-+	if (ret)
-+		return ret;
+ 	/* BML uses this case for p6/p7/galaxy2: Shift addr and put in node */
+ 	if (tbl->it_busno) {
+-		start <<= 12;
+-		end <<= 12;
+-		inc = 128 << 12;
++		start <<= shift;
++		end <<= shift;
++		inc = 128ull << shift;
+ 		start |= tbl->it_busno;
+ 		end |= tbl->it_busno;
+ 	} else if (tbl->it_type & TCE_PCI_SWINV_PAIR) {
+@@ -559,18 +560,19 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	__be64 __iomem *invalidate = rm ?
+ 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+ 		(__be64 __iomem *)tbl->it_index;
++	const unsigned shift = tbl->it_page_shift;
  
--		current->mm->locked_vm += npages;
--		container->enabled = true;
--	}
--	up_write(&current->mm->mmap_sem);
-+	container->enabled = true;
+ 	/* We'll invalidate DMA address in PE scope */
+-	start = 0x2ul << 60;
++	start = 0x2ull << 60;
+ 	start |= (pe->pe_number & 0xFF);
+ 	end = start;
  
- 	return ret;
- }
-@@ -108,10 +129,7 @@ static void tce_iommu_disable(struct tce_container *container)
- 	if (!container->tbl || !current->mm)
- 		return;
+ 	/* Figure out the start, end and step */
+ 	inc = tbl->it_offset + (((u64)startp - tbl->it_base) / sizeof(u64));
+-	start |= (inc << 12);
++	start |= (inc << shift);
+ 	inc = tbl->it_offset + (((u64)endp - tbl->it_base) / sizeof(u64));
+-	end |= (inc << 12);
+-	inc = (0x1ul << 12);
++	end |= (inc << shift);
++	inc = (0x1ull << shift);
+ 	mb();
  
--	down_write(&current->mm->mmap_sem);
--	current->mm->locked_vm -= (container->tbl->it_size <<
--			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
--	up_write(&current->mm->mmap_sem);
-+	tce_iommu_account_memlimit(container->tbl, false);
- }
- 
- static void *tce_iommu_open(unsigned long arg)
+ 	while (start <= end) {
 -- 
 2.0.0
