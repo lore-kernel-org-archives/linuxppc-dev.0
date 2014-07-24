@@ -1,27 +1,36 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 105F61A095C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 23:45:25 +1000 (EST)
-Date: Thu, 24 Jul 2014 21:30:04 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [PATCH v2 1/2] ARM: imx: Add the secondary request into the
- structure for imx-sdma
-Message-ID: <20140724133002.GC6827@dragon>
-References: <cover.1406189745.git.nicoleotsuka@gmail.com>
- <e47c36814695fd8c88ef063a9771cf097a128ec0.1406189745.git.nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C67B1A0962
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 01:11:55 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Thu, 24 Jul 2014 11:11:51 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C735938C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:11:48 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6OFBmsL6160828
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 15:11:48 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6OFBlG0032324
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:11:48 -0400
+Message-ID: <53D1222F.7010900@linux.vnet.ibm.com>
+Date: Thu, 24 Jul 2014 10:11:43 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <e47c36814695fd8c88ef063a9771cf097a128ec0.1406189745.git.nicoleotsuka@gmail.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, b42378@freescale.com, timur@tabi.org,
- pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, tiwai@suse.de,
- linux-kernel@vger.kernel.org, rdunlap@infradead.org, b02247@freescale.com,
- lgirdwood@gmail.com, robh+dt@kernel.org, perex@perex.cz, broonie@kernel.org,
- galak@codeaurora.org, grant.likely@linaro.org, linuxppc-dev@lists.ozlabs.org
+To: Li Zhong <zhong@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/4] powerpc: implement vmemmap_list_free()
+References: <1402475019-19699-1-git-send-email-zhong@linux.vnet.ibm.com>
+In-Reply-To: <1402475019-19699-1-git-send-email-zhong@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +40,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 24, 2014 at 04:35:28PM +0800, Nicolin Chen wrote:
-> SDMA supports device to device (per_2_per) scripts to handle DMA transfering
-> between two peripheral devices. The per_2_per script, however, needs two dma
-> requests from two sides while the current structure only defined one request.
+On 06/11/2014 03:23 AM, Li Zhong wrote:
+> This patch implements vmemmap_list_free() for vmemmap_free().
 > 
-> So this patch just simply adds the secondary request so as to let SDMA and
-> its user to add its implementation later.
+> The freed entries will be removed from vmemmap_list, and form a freed list,
+> with next as the header. The next position in the last allocated page is kept
+> at the list tail.
 > 
-> [ Both change in the SDMA driver and its users like Freescale ASRC ASoC driver
->   should be taken along with this change in order to truly support per_2_per
->   sciprts. However, we here make an expediency by adding this first so that
->   we can add either side later since this patch won't break any function and
->   meanwhile it can make merge window more smoothly: we don't need to apply the
->   change inside dmaengine branch via ASoC tree any more. -- Nicolin ]
+> When allocation, if there are freed entries left, get it from the freed list;
+> if no freed entries left, get it like before from the last allocated pages.
 > 
-> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> With this change, realmode_pfn_to_page() also needs to be changed to walk
+> all the entries in the vmemmap_list, as the virt_addr of the entries might not
+> be stored in order anymore.
+> 
+> It helps to reuse the memory when continuous doing memory hot-plug/remove
+> operations, but didn't reclaim the pages already allocated, so the memory usage
+> will only increase, but won't exceed the value for the largest memory
+> configuration.
+> 
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+> ---
+>  arch/powerpc/mm/init_64.c |   62 +++++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 52 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index e3734ed..fa5d28b 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -226,14 +226,24 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
+>  #endif /* CONFIG_PPC_BOOK3E */
+>  
+>  struct vmemmap_backing *vmemmap_list;
+> +static struct vmemmap_backing *next;
+> +static int num_left;
+> +static int num_freed;
+>  
+>  static __meminit struct vmemmap_backing * vmemmap_list_alloc(int node)
+>  {
+> -	static struct vmemmap_backing *next;
+> -	static int num_left;
+> +	struct vmemmap_backing *vmem_back;
+> +	/* get from freed entries first */
+> +	if (num_freed) {
+> +		num_freed--;
+> +		vmem_back = next;
+> +		next = next->list;
+> +
+> +		return vmem_back;
+> +	}
+>  
+>  	/* allocate a page when required and hand out chunks */
+> -	if (!next || !num_left) {
+> +	if (!num_left) {
+>  		next = vmemmap_alloc_block(PAGE_SIZE, node);
+>  		if (unlikely(!next)) {
+>  			WARN_ON(1);
+> @@ -266,6 +276,38 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
+>  	vmemmap_list = vmem_back;
+>  }
+>  
+> +static unsigned long vmemmap_list_free(unsigned long start)
+> +{
+> +	struct vmemmap_backing *vmem_back, *vmem_back_prev;
+> +
+> +	vmem_back_prev = vmem_back = vmemmap_list;
+> +
+> +	/* look for it with prev pointer recorded */
+> +	for (; vmem_back; vmem_back = vmem_back->list) {
+> +		if (vmem_back->virt_addr == start)
+> +			break;
+> +		vmem_back_prev = vmem_back;
+> +	}
+> +
+> +	if (unlikely(!vmem_back)) {
+> +		WARN_ON(1);
+> +		return 0;
+> +	}
+> +
+> +	/* remove it from vmemmap_list */
+> +	if (vmem_back == vmemmap_list) /* remove head */
+> +		vmemmap_list = vmem_back->list;
+> +	else
+> +		vmem_back_prev->list = vmem_back->list;
+> +
+> +	/* next point to this freed entry */
+> +	vmem_back->list = next;
+> +	next = vmem_back;
+> +	num_freed++;
+> +
+> +	return vmem_back->phys;
+> +}
+> +
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+>  {
+>  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+> @@ -331,16 +373,16 @@ struct page *realmode_pfn_to_page(unsigned long pfn)
+>  		if (pg_va < vmem_back->virt_addr)
+>  			continue;
+>  
+> -		/* Check that page struct is not split between real pages */
+> -		if ((pg_va + sizeof(struct page)) >
+> -				(vmem_back->virt_addr + page_size))
+> -			return NULL;
+> -
+> -		page = (struct page *) (vmem_back->phys + pg_va -
+> +		/* After vmemmap_list entry free is possible, need check all */
+> +		if ((pg_va + sizeof(struct page)) <=
+> +				(vmem_back->virt_addr + page_size)) {
+> +			page = (struct page *) (vmem_back->phys + pg_va -
+>  				vmem_back->virt_addr);
+> -		return page;
+> +			return page;
+> +		}
+>  	}
+>  
+> +	/* Probably that page struct is split between real pages */
+>  	return NULL;
+>  }
+>  EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
+> 
