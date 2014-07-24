@@ -1,27 +1,34 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 375EE1A013F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:45:14 +1000 (EST)
-Date: Thu, 24 Jul 2014 16:25:46 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [RFC][PATCH 0/2] Add ASRC Peripheral to Peripheral driver
-Message-ID: <20140724082545.GA27595@MrMyself>
-References: <cover.1402653667.git.nicoleotsuka@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <cover.1402653667.git.nicoleotsuka@gmail.com>
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, timur@tabi.org, lgirdwood@gmail.com,
- vinod.koul@intel.com, b42378@freescale.com, b02247@freescale.com,
- grant.likely@linaro.org, devicetree@vger.kernel.org, pawel.moll@arm.com,
- ijc+devicetree@hellion.org.uk, s.hauer@pengutronix.de, b38343@freescale.com,
- robh+dt@kernel.org, dan.j.williams@intel.com, perex@perex.cz,
- rdunlap@infradead.org, linux-kernel@vger.kernel.org, broonie@kernel.org,
- galak@codeaurora.org, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DE141A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:19 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 24 Jul 2014 18:48:13 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 933442BB005F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:16 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O8VIhh64225416
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:31:18 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6O8mFe2031678
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:15 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 03/18] KVM: PPC: Account TCE pages in locked_vm
+Date: Thu, 24 Jul 2014 18:47:56 +1000
+Message-Id: <1406191691-31441-4-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
+References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +38,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 13, 2014 at 06:07:03PM +0800, Nicolin Chen wrote:
-> This series of patches have a direct dependency between them. So we might
-> need to push them into one branch. And sorry for this :(
-> 
-> Patch-1 adds device to device support in SDMA driver along with a secondary
-> request in struct imx_dma_data which's requred in the Patch-2 ASRC driver.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
 
-I just sent a new version V2. So please disregard this version.
-
-Thanks all,
-Nicolin
-
-> 
-> Nicolin Chen (2):
->   dma: imx-sdma: Add device to device support
->   ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers
-> 
->  .../devicetree/bindings/sound/fsl,asrc.txt         |   62 ++
->  drivers/dma/imx-sdma.c                             |   40 +-
->  include/linux/platform_data/dma-imx.h              |    1 +
->  sound/soc/fsl/Kconfig                              |    9 +
->  sound/soc/fsl/Makefile                             |    2 +
->  sound/soc/fsl/fsl_asrc.c                           | 1031 ++++++++++++++++++++
->  sound/soc/fsl/fsl_asrc.h                           |  431 ++++++++
->  sound/soc/fsl/fsl_asrc_dma.c                       |  385 ++++++++
->  8 files changed, 1956 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/sound/fsl,asrc.txt
->  create mode 100644 sound/soc/fsl/fsl_asrc.c
->  create mode 100644 sound/soc/fsl/fsl_asrc.h
->  create mode 100644 sound/soc/fsl/fsl_asrc_dma.c
-> 
-> -- 
-> 1.8.4
-> 
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 516f2ee..48b7ed4 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -45,18 +45,48 @@ static long kvmppc_stt_npages(unsigned long window_size)
+ 		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
+ }
+ 
++/*
++ * Checks ulimit in order not to let the user space to pin all
++ * available memory for TCE tables.
++ */
++static long kvmppc_account_memlimit(long npages)
++{
++	unsigned long ret = 0, locked, lock_limit;
++
++	if (!current->mm)
++		return -ESRCH; /* process exited */
++
++	down_write(&current->mm->mmap_sem);
++	locked = current->mm->locked_vm + npages;
++	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
++	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
++		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
++				rlimit(RLIMIT_MEMLOCK));
++		ret = -ENOMEM;
++	} else {
++		current->mm->locked_vm += npages;
++	}
++	up_write(&current->mm->mmap_sem);
++
++	return ret;
++}
++
+ static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
+ {
+ 	struct kvm *kvm = stt->kvm;
+ 	int i;
++	long npages = kvmppc_stt_npages(stt->window_size);
+ 
+ 	mutex_lock(&kvm->lock);
+ 	list_del(&stt->list);
+-	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
++	for (i = 0; i < npages; i++)
+ 		__free_page(stt->pages[i]);
++
+ 	kfree(stt);
+ 	mutex_unlock(&kvm->lock);
+ 
++	kvmppc_account_memlimit(-(npages + 1));
++
+ 	kvm_put_kvm(kvm);
+ }
+ 
+@@ -112,6 +142,9 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 	}
+ 
+ 	npages = kvmppc_stt_npages(args->window_size);
++	ret = kvmppc_account_memlimit(npages + 1);
++	if (ret)
++		goto fail;
+ 
+ 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
+ 		      GFP_KERNEL);
+-- 
+2.0.0
