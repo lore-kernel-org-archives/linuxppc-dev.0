@@ -1,20 +1,23 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ltanure@gmail.com>
+Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c04::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D1B821A095A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 23:08:13 +1000 (EST)
-Message-ID: <53D10537.8030906@suse.de>
-Date: Thu, 24 Jul 2014 15:08:07 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 190FF1A0094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 23:24:22 +1000 (EST)
+Received: by mail-qg0-f43.google.com with SMTP id a108so3247863qge.30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 06:24:19 -0700 (PDT)
+Sender: Lucas Tanure <ltanure@gmail.com>
+Date: Thu, 24 Jul 2014 10:24:06 -0300
+From: Lucas Tanure <tanure@linux.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, trivial@kernel.org,
+ kernelnewbies <kernelnewbies@kernelnewbies.org>
+Subject: [PATCH] powerpc: fix wrong defintion in boot/io.h
+Message-ID: <20140724132406.GA2159@ttmp-linux>
 MIME-Version: 1.0
-To: Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v6 0/5] Read guest last instruction from
- kvmppc_get_last_inst()
-References: <1406131582-6052-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1406131582-6052-1-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fix wrong __IO_H definition in boot/io.h
 
-On 23.07.14 18:06, Mihai Caraman wrote:
-> Read guest last instruction from kvmppc_get_last_inst() allowing the function
-> to fail in order to emulate again. On bookehv architecture search for
-> the physical address and kmap it, instead of using Load External PID (lwepx)
-> instruction. This fixes an infinite loop caused by lwepx's data TLB miss
-> exception handled in the host and the TODO for execute-but-not-read entries
-> and TLB eviction.
->
-> Mihai Caraman (5):
->    KVM: PPC: e500mc: Revert "add load inst fixup"
->    KVM: PPC: Book3e: Add TLBSEL/TSIZE defines for MAS0/1
->    KVM: PPC: Book3s: Remove kvmppc_read_inst() function
->    KVM: PPC: Alow kvmppc_get_last_inst() to fail
->    KVM: PPC: Bookehv: Get vcpu's last instruction for emulation
+Reported-by: Fernando Silveira <fsilveira@gmail.com>
+Signed-off-by: Lucas Tanure <tanure@linux.com>
+---
+ arch/powerpc/boot/io.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, applied to kvm-ppc-queue.
-
-
-Alex
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
+index 7c09f48..394da55 100644
+--- a/arch/powerpc/boot/io.h
++++ b/arch/powerpc/boot/io.h
+@@ -1,5 +1,5 @@
+ #ifndef _IO_H
+-#define __IO_H
++#define _IO_H
+ 
+ #include "types.h"
+ 
+-- 
+2.0.0
