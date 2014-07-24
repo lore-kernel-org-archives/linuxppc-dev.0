@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 632A21A08A5
+ by lists.ozlabs.org (Postfix) with ESMTPS id A624C1A0692
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:25 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 24 Jul 2014 18:48:17 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E14512BB005D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:22 +1000 (EST)
+ Thu, 24 Jul 2014 18:48:19 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 42F692CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:21 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6O8VPnv49086714
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:31:25 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O8PRq610420696
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:25:28 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6O8mMSR030468
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:22 +1000
+ s6O8mKNE030395
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:20 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 14/18] powerpc/powernv: Return non-zero TCE from
- pnv_tce_build
-Date: Thu, 24 Jul 2014 18:48:07 +1000
-Message-Id: <1406191691-31441-15-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 11/18] powerpc/iommu: Fix IOMMU ownership control functions
+Date: Thu, 24 Jul 2014 18:48:04 +1000
+Message-Id: <1406191691-31441-12-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -39,43 +38,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This returns old TCE values to the caller if requested.
-The caller is expectded to call put_page() for them.
+This adds missing locks in iommu_take_ownership()/
+iommu_release_ownership().
+
+This marks all pages busy in iommu_table::it_map in order to catch
+errors if there is an attempt to use this table while ownership over it
+is taken.
+
+This only clears TCE content if there is no page marked busy in it_map.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/iommu.c | 37 ++++++++++++++++++++++++++++++-------
+ 1 file changed, 30 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 4b764c2..164d653 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -579,6 +579,7 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
- 	u64 proto_tce;
- 	__be64 *tcep, *tces;
- 	u64 rpn;
-+	long i;
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 06984d5..0cda2e8 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1103,33 +1103,56 @@ EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
  
- 	proto_tce = TCE_PCI_READ; // Read allowed
+ int iommu_take_ownership(struct iommu_table *tbl)
+ {
+-	unsigned long sz = (tbl->it_size + 7) >> 3;
++	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
++	int ret = 0, bit0 = 0;
++
++	spin_lock_irqsave(&tbl->large_pool.lock, flags);
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_lock(&tbl->pools[i].lock);
  
-@@ -588,9 +589,13 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
- 	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
- 	rpn = __pa(uaddr) >> tbl->it_page_shift;
+ 	if (tbl->it_offset == 0)
+-		clear_bit(0, tbl->it_map);
++		bit0 = test_and_clear_bit(0, tbl->it_map);
  
--	while (npages--)
--		*(tcep++) = cpu_to_be64(proto_tce |
--				(rpn++ << tbl->it_page_shift));
-+	for (i = 0; i < npages; i++) {
-+		unsigned long oldtce = xchg(tcep, cpu_to_be64(proto_tce |
-+				(rpn++ << tbl->it_page_shift)));
-+		if (old_tces)
-+			old_tces[i] = (unsigned long) __va(oldtce);
-+		tcep++;
-+	}
+ 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+ 		pr_err("iommu_tce: it_map is not empty");
+-		return -EBUSY;
++		ret = -EBUSY;
++		if (bit0)
++			set_bit(0, tbl->it_map);
++	} else {
++		memset(tbl->it_map, 0xff, sz);
+ 	}
  
- 	pnv_tce_invalidate(tbl, tces, tcep - 1, rm);
+-	memset(tbl->it_map, 0xff, sz);
+-	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
++	if (!ret)
++		iommu_clear_tces_and_put_pages(tbl, tbl->it_offset,
++				tbl->it_size);
+ 
+-	return 0;
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_unlock(&tbl->pools[i].lock);
++	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(iommu_take_ownership);
+ 
+ void iommu_release_ownership(struct iommu_table *tbl)
+ {
+-	unsigned long sz = (tbl->it_size + 7) >> 3;
++	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+ 
+ 	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
++
++	spin_lock_irqsave(&tbl->large_pool.lock, flags);
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_lock(&tbl->pools[i].lock);
++
+ 	memset(tbl->it_map, 0, sz);
+ 
+ 	/* Restore bit#0 set by iommu_init_table() */
+ 	if (tbl->it_offset == 0)
+ 		set_bit(0, tbl->it_map);
++
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_unlock(&tbl->pools[i].lock);
++	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(iommu_release_ownership);
  
 -- 
 2.0.0
