@@ -1,39 +1,32 @@
 Return-Path: <luto@amacapital.net>
-Received: from mail-la0-f45.google.com (mail-la0-f45.google.com
- [209.85.215.45])
+Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
+ [209.85.192.169])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7400F1A0949
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 04:48:26 +1000 (EST)
-Received: by mail-la0-f45.google.com with SMTP id ty20so2245909lab.32
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:48:21 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BE221A092C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 06:56:36 +1000 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id y10so4367491pdj.14
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 13:56:35 -0700 (PDT)
 From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 24 Jul 2014 11:48:00 -0700
-Message-ID: <CALCETrURqjZQbRk-UJoeEXwJJCL=dBtoRt8_S0qF3a2mZJdgrw@mail.gmail.com>
-Subject: (request for -mm inclusion) Re: [PATCH v3] arm64, ia64, ppc, s390, sh,
- tile, um, x86, mm: Remove default gate area
-To: Richard Weinberger <richard@nod.at>,
- Andrew Morton <akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary=089e0141a9f69cde9704fef4e6e3
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- Catalin Marinas <Catalin.Marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-arch <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>,
- Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v4] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+Date: Thu, 24 Jul 2014 13:56:24 -0700
+Message-Id: <6435254cc74d6e9172931f27be3854d522ad299b.1406232860.git.luto@amacapital.net>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ user-mode-linux-devel@lists.sourceforge.net, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
  Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,352 +36,529 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e0141a9f69cde9704fef4e6e3
-Content-Type: text/plain; charset=UTF-8
+The core mm code will provide a default gate area based on
+FIXADDR_USER_START and FIXADDR_USER_END if
+!defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
 
-Hi akpm-
+This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+64-bit UML, and x86_32 have their own code just to disable it.  arm,
+32-bit UML, and x86_64 have gate areas, but they have their own
+implementations.
 
-One more try before I spam the world with a new thread.  Is this patch
-okay for -mm?
+This gets rid of the default and moves the code into ia64.
 
-So far, it's accumulated:
+This should save some code on architectures without a gate area: it's
+now possible to inline the gate_area functions in the default case.
 
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Nathan Lynch <Nathan_Lynch@mentor.com>
+Cc: x86@kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: linux-mm@kvack.org
 Acked-by: Nathan Lynch <nathan_lynch@mentor.com>
 Acked-by: H. Peter Anvin <hpa@linux.intel.com>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org> [in principle]
 Acked-by: Richard Weinberger <richard@nod.at> [for um]
 Acked-by: Will Deacon <will.deacon@arm.com> [for arm64]
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
 
-For convenience, I've attached the patch w/ the acked-by's folded in
-and with no other changes.
+Changes from v3: Fix ia64 build (I was missing in_gate_area in the ia64 part).
 
-Thanks,
-Andy
+This now builds successfully with allnoconfig on ia64.  I don't know how
+to test-boot it (no QEMU support), and I got a failure on a randconfig,
+but I don't think the randconfig failure has anything to do with this
+patch.
 
+ arch/arm64/include/asm/page.h      |  3 ---
+ arch/arm64/kernel/vdso.c           | 19 -------------------
+ arch/ia64/include/asm/page.h       |  2 ++
+ arch/ia64/mm/init.c                | 31 +++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/page.h    |  3 ---
+ arch/powerpc/kernel/vdso.c         | 16 ----------------
+ arch/s390/include/asm/page.h       |  2 --
+ arch/s390/kernel/vdso.c            | 15 ---------------
+ arch/sh/include/asm/page.h         |  5 -----
+ arch/sh/kernel/vsyscall/vsyscall.c | 15 ---------------
+ arch/tile/include/asm/page.h       |  6 ------
+ arch/tile/kernel/vdso.c            | 15 ---------------
+ arch/um/include/asm/page.h         |  5 +++++
+ arch/x86/include/asm/page.h        |  1 -
+ arch/x86/include/asm/page_64.h     |  2 ++
+ arch/x86/um/asm/elf.h              |  1 -
+ arch/x86/um/mem_64.c               | 15 ---------------
+ arch/x86/vdso/vdso32-setup.c       | 19 +------------------
+ include/linux/mm.h                 | 17 ++++++++++++-----
+ mm/memory.c                        | 38 --------------------------------------
+ mm/nommu.c                         |  5 -----
+ 21 files changed, 53 insertions(+), 182 deletions(-)
 
-On Fri, Jul 18, 2014 at 9:53 AM, Andy Lutomirski <luto@amacapital.net> wrote:
->
-> On Jul 18, 2014 3:20 AM, "Richard Weinberger" <richard@nod.at> wrote:
->>
->> Am 18.07.2014 12:14, schrieb Will Deacon:
->> > On Tue, Jul 15, 2014 at 03:47:26PM +0100, Andy Lutomirski wrote:
->> >> On Sun, Jul 13, 2014 at 1:01 PM, Andy Lutomirski <luto@amacapital.net>
->> >> wrote:
->> >>> The core mm code will provide a default gate area based on
->> >>> FIXADDR_USER_START and FIXADDR_USER_END if
->> >>> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
->> >>>
->> >>> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
->> >>> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
->> >>> 32-bit UML, and x86_64 have gate areas, but they have their own
->> >>> implementations.
->> >>>
->> >>> This gets rid of the default and moves the code into ia64.
->> >>>
->> >>> This should save some code on architectures without a gate area: it's
->> >>> now possible to inline the gate_area functions in the default case.
->> >>
->> >> Can one of you pull this somewhere?  Otherwise I can put it somewhere
->> >> stable and ask for -next inclusion, but that seems like overkill for a
->> >> single patch.
->>
->> For the um bits:
->> Acked-by: Richard Weinberger <richard@nod.at>
->>
->> > I'd be happy to take the arm64 part, but it doesn't feel right for mm/*
->> > changes (or changes to other archs) to go via our tree.
->> >
->> > I'm not sure what the best approach is if you want to send this via a
->> > single
->> > tree. Maybe you could ask akpm nicely?
->>
->> Going though Andrew's tree sounds sane to me.
->
-> Splitting this will be annoying: I'd probably have to add a flag asking for
-> the new behavior, update all the arches, then remove the flag.  The chance
-> of screwing up bisectability in the process seems pretty high.  This seems
-> like overkill for a patch that mostly deletes code.
->
-> Akpm, can you take this?
->
-> --Andy
->
->>
->> Thanks,
->> //richard
-
-
-
+diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
+index 46bf666..992710f 100644
+--- a/arch/arm64/include/asm/page.h
++++ b/arch/arm64/include/asm/page.h
+@@ -28,9 +28,6 @@
+ #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
+ #define PAGE_MASK		(~(PAGE_SIZE-1))
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_ARM64_64K_PAGES
+diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
+index 50384fe..f630626 100644
+--- a/arch/arm64/kernel/vdso.c
++++ b/arch/arm64/kernel/vdso.c
+@@ -187,25 +187,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ }
+ 
+ /*
+- * We define AT_SYSINFO_EHDR, so we need these function stubs to keep
+- * Linux happy.
+- */
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-/*
+  * Update the vDSO data page to keep in sync with kernel timekeeping.
+  */
+ void update_vsyscall(struct timekeeper *tk)
+diff --git a/arch/ia64/include/asm/page.h b/arch/ia64/include/asm/page.h
+index f1e1b2e..1f1bf14 100644
+--- a/arch/ia64/include/asm/page.h
++++ b/arch/ia64/include/asm/page.h
+@@ -231,4 +231,6 @@ get_order (unsigned long size)
+ #define PERCPU_ADDR		(-PERCPU_PAGE_SIZE)
+ #define LOAD_OFFSET		(KERNEL_START - KERNEL_TR_PAGE_SIZE)
+ 
++#define __HAVE_ARCH_GATE_AREA	1
++
+ #endif /* _ASM_IA64_PAGE_H */
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 25c3502..0e7ad82 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -278,6 +278,37 @@ setup_gate (void)
+ 	ia64_patch_gate();
+ }
+ 
++static struct vm_area_struct gate_vma;
++
++static int __init gate_vma_init(void)
++{
++	gate_vma.vm_mm = NULL;
++	gate_vma.vm_start = FIXADDR_USER_START;
++	gate_vma.vm_end = FIXADDR_USER_END;
++	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
++	gate_vma.vm_page_prot = __P101;
++
++	return 0;
++}
++__initcall(gate_vma_init);
++
++struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return &gate_vma;
++}
++
++int in_gate_area_no_mm(unsigned long addr)
++{
++	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
++		return 1;
++	return 0;
++}
++
++int in_gate_area(struct mm_struct *mm, unsigned long addr)
++{
++	return in_gate_area_no_mm(addr);
++}
++
+ void ia64_mmu_init(void *my_cpu_data)
+ {
+ 	unsigned long pta, impl_va_bits;
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 32e4e21..26fe1ae 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -48,9 +48,6 @@ extern unsigned int HPAGE_SHIFT;
+ #define HUGE_MAX_HSTATE		(MMU_PAGE_COUNT-1)
+ #endif
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ /*
+  * Subtle: (1 << PAGE_SHIFT) is an int, not an unsigned long. So if we
+  * assign PAGE_MASK to a larger type it gets extended the way we want
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ce74c33..f174351 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -840,19 +840,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ arch_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
+index 114258e..7b2ac6e 100644
+--- a/arch/s390/include/asm/page.h
++++ b/arch/s390/include/asm/page.h
+@@ -162,6 +162,4 @@ static inline int devmem_is_allowed(unsigned long pfn)
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+-
+ #endif /* _S390_PAGE_H */
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index 6136490..0bbb7e0 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -316,18 +316,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ early_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
+index 15d9703..fe20d14 100644
+--- a/arch/sh/include/asm/page.h
++++ b/arch/sh/include/asm/page.h
+@@ -186,11 +186,6 @@ typedef struct page *pgtable_t;
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-/* vDSO support */
+-#ifdef CONFIG_VSYSCALL
+-#define __HAVE_ARCH_GATE_AREA
+-#endif
+-
+ /*
+  * Some drivers need to perform DMA into kmalloc'ed buffers
+  * and so we have to increase the kmalloc minalign for this.
+diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
+index 5ca5797..ea2aa13 100644
+--- a/arch/sh/kernel/vsyscall/vsyscall.c
++++ b/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -92,18 +92,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+diff --git a/arch/tile/include/asm/page.h b/arch/tile/include/asm/page.h
+index 6727680..a213a8d 100644
+--- a/arch/tile/include/asm/page.h
++++ b/arch/tile/include/asm/page.h
+@@ -39,12 +39,6 @@
+ #define HPAGE_MASK	(~(HPAGE_SIZE - 1))
+ 
+ /*
+- * We do define AT_SYSINFO_EHDR to support vDSO,
+- * but don't use the gate mechanism.
+- */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+-/*
+  * If the Kconfig doesn't specify, set a maximum zone order that
+  * is enough so that we can create huge pages from small pages given
+  * the respective sizes of the two page types.  See <linux/mmzone.h>.
+diff --git a/arch/tile/kernel/vdso.c b/arch/tile/kernel/vdso.c
+index 1533af2..5bc51d7 100644
+--- a/arch/tile/kernel/vdso.c
++++ b/arch/tile/kernel/vdso.c
+@@ -121,21 +121,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 	return NULL;
+ }
+ 
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+-
+ int setup_vdso_pages(void)
+ {
+ 	struct page **pagelist;
+diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
+index 5ff53d9..71c5d13 100644
+--- a/arch/um/include/asm/page.h
++++ b/arch/um/include/asm/page.h
+@@ -119,4 +119,9 @@ extern unsigned long uml_physmem;
+ #include <asm-generic/getorder.h>
+ 
+ #endif	/* __ASSEMBLY__ */
++
++#ifdef CONFIG_X86_32
++#define __HAVE_ARCH_GATE_AREA 1
++#endif
++
+ #endif	/* __UM_PAGE_H */
+diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
+index 775873d..802dde3 100644
+--- a/arch/x86/include/asm/page.h
++++ b/arch/x86/include/asm/page.h
+@@ -70,7 +70,6 @@ extern bool __virt_addr_valid(unsigned long kaddr);
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif	/* __KERNEL__ */
+diff --git a/arch/x86/include/asm/page_64.h b/arch/x86/include/asm/page_64.h
+index 0f1ddee..f408caf 100644
+--- a/arch/x86/include/asm/page_64.h
++++ b/arch/x86/include/asm/page_64.h
+@@ -39,4 +39,6 @@ void copy_page(void *to, void *from);
+ 
+ #endif	/* !__ASSEMBLY__ */
+ 
++#define __HAVE_ARCH_GATE_AREA 1
++
+ #endif /* _ASM_X86_PAGE_64_H */
+diff --git a/arch/x86/um/asm/elf.h b/arch/x86/um/asm/elf.h
+index 0feee2f..25a1022 100644
+--- a/arch/x86/um/asm/elf.h
++++ b/arch/x86/um/asm/elf.h
+@@ -216,6 +216,5 @@ extern long elf_aux_hwcap;
+ #define ELF_HWCAP (elf_aux_hwcap)
+ 
+ #define SET_PERSONALITY(ex) do ; while(0)
+-#define __HAVE_ARCH_GATE_AREA 1
+ 
+ #endif
+diff --git a/arch/x86/um/mem_64.c b/arch/x86/um/mem_64.c
+index c6492e7..f8fecad 100644
+--- a/arch/x86/um/mem_64.c
++++ b/arch/x86/um/mem_64.c
+@@ -9,18 +9,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
+index e4f7781..e904c27 100644
+--- a/arch/x86/vdso/vdso32-setup.c
++++ b/arch/x86/vdso/vdso32-setup.c
+@@ -115,23 +115,6 @@ static __init int ia32_binfmt_init(void)
+ 	return 0;
+ }
+ __initcall(ia32_binfmt_init);
+-#endif
+-
+-#else  /* CONFIG_X86_32 */
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
++#endif /* CONFIG_SYSCTL */
+ 
+ #endif	/* CONFIG_X86_64 */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index e03dd29..8981cc8 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2014,13 +2014,20 @@ static inline bool kernel_page_present(struct page *page) { return true; }
+ #endif /* CONFIG_HIBERNATION */
+ #endif
+ 
++#ifdef __HAVE_ARCH_GATE_AREA
+ extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
+-#ifdef	__HAVE_ARCH_GATE_AREA
+-int in_gate_area_no_mm(unsigned long addr);
+-int in_gate_area(struct mm_struct *mm, unsigned long addr);
++extern int in_gate_area_no_mm(unsigned long addr);
++extern int in_gate_area(struct mm_struct *mm, unsigned long addr);
+ #else
+-int in_gate_area_no_mm(unsigned long addr);
+-#define in_gate_area(mm, addr) ({(void)mm; in_gate_area_no_mm(addr);})
++static inline struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return NULL;
++}
++static inline int in_gate_area_no_mm(unsigned long addr) { return 0; }
++static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
++{
++	return 0;
++}
+ #endif	/* __HAVE_ARCH_GATE_AREA */
+ 
+ #ifdef CONFIG_SYSCTL
+diff --git a/mm/memory.c b/mm/memory.c
+index d67fd9f..099d234 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3399,44 +3399,6 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+ }
+ #endif /* __PAGETABLE_PMD_FOLDED */
+ 
+-#if !defined(__HAVE_ARCH_GATE_AREA)
+-
+-#if defined(AT_SYSINFO_EHDR)
+-static struct vm_area_struct gate_vma;
+-
+-static int __init gate_vma_init(void)
+-{
+-	gate_vma.vm_mm = NULL;
+-	gate_vma.vm_start = FIXADDR_USER_START;
+-	gate_vma.vm_end = FIXADDR_USER_END;
+-	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
+-	gate_vma.vm_page_prot = __P101;
+-
+-	return 0;
+-}
+-__initcall(gate_vma_init);
+-#endif
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	return &gate_vma;
+-#else
+-	return NULL;
+-#endif
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
+-		return 1;
+-#endif
+-	return 0;
+-}
+-
+-#endif	/* __HAVE_ARCH_GATE_AREA */
+-
+ static int __follow_pte(struct mm_struct *mm, unsigned long address,
+ 		pte_t **ptepp, spinlock_t **ptlp)
+ {
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 4a852f6..a881d96 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1981,11 +1981,6 @@ error:
+ 	return -ENOMEM;
+ }
+ 
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
+ 	BUG();
 -- 
-Andy Lutomirski
-AMA Capital Management, LLC
-
---089e0141a9f69cde9704fef4e6e3
-Content-Type: text/x-diff; charset=US-ASCII;
-	name="0001-arm64-ia64-ppc-s390-sh-tile-um-x86-mm-Remove-default.patch"
-Content-Disposition: attachment;
-	filename="0001-arm64-ia64-ppc-s390-sh-tile-um-x86-mm-Remove-default.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hy0fmrj00
-
-RnJvbSAzYTRkZGZhYWI5NmQxZGQwNmI5Y2Q2Mjk4ZTc0YTkxYzVhOTU2ZWNlIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8M2E0ZGRmYWFiOTZkMWRkMDZiOWNkNjI5OGU3NGE5
-MWM1YTk1NmVjZS4xNDA2MjI3NTkzLmdpdC5sdXRvQGFtYWNhcGl0YWwubmV0PgpGcm9tOiBBbmR5
-IEx1dG9taXJza2kgPGx1dG9AYW1hY2FwaXRhbC5uZXQ+CkRhdGU6IFR1ZSwgMTcgSnVuIDIwMTQg
-MTA6Mjg6MjAgLTA3MDAKU3ViamVjdDogW1BBVENIXSBhcm02NCxpYTY0LHBwYyxzMzkwLHNoLHRp
-bGUsdW0seDg2LG1tOiBSZW1vdmUgZGVmYXVsdCBnYXRlCiBhcmVhCgpUaGUgY29yZSBtbSBjb2Rl
-IHdpbGwgcHJvdmlkZSBhIGRlZmF1bHQgZ2F0ZSBhcmVhIGJhc2VkIG9uCkZJWEFERFJfVVNFUl9T
-VEFSVCBhbmQgRklYQUREUl9VU0VSX0VORCBpZgohZGVmaW5lZChfX0hBVkVfQVJDSF9HQVRFX0FS
-RUEpICYmIGRlZmluZWQoQVRfU1lTSU5GT19FSERSKS4KClRoaXMgZGVmYXVsdCBpcyBvbmx5IHVz
-ZWZ1bCBmb3IgaWE2NC4gIGFybTY0LCBwcGMsIHMzOTAsIHNoLCB0aWxlLAo2NC1iaXQgVU1MLCBh
-bmQgeDg2XzMyIGhhdmUgdGhlaXIgb3duIGNvZGUganVzdCB0byBkaXNhYmxlIGl0LiAgYXJtLAoz
-Mi1iaXQgVU1MLCBhbmQgeDg2XzY0IGhhdmUgZ2F0ZSBhcmVhcywgYnV0IHRoZXkgaGF2ZSB0aGVp
-ciBvd24KaW1wbGVtZW50YXRpb25zLgoKVGhpcyBnZXRzIHJpZCBvZiB0aGUgZGVmYXVsdCBhbmQg
-bW92ZXMgdGhlIGNvZGUgaW50byBpYTY0LgoKVGhpcyBzaG91bGQgc2F2ZSBzb21lIGNvZGUgb24g
-YXJjaGl0ZWN0dXJlcyB3aXRob3V0IGEgZ2F0ZSBhcmVhOiBpdCdzCm5vdyBwb3NzaWJsZSB0byBp
-bmxpbmUgdGhlIGdhdGVfYXJlYSBmdW5jdGlvbnMgaW4gdGhlIGRlZmF1bHQgY2FzZS4KCkNjOiBD
-YXRhbGluIE1hcmluYXMgPGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tPgpDYzogV2lsbCBEZWFjb24g
-PHdpbGwuZGVhY29uQGFybS5jb20+CkNjOiBUb255IEx1Y2sgPHRvbnkubHVja0BpbnRlbC5jb20+
-CkNjOiBGZW5naHVhIFl1IDxmZW5naHVhLnl1QGludGVsLmNvbT4KQ2M6IEJlbmphbWluIEhlcnJl
-bnNjaG1pZHQgPGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZz4KQ2M6IFBhdWwgTWFja2VycmFzIDxw
-YXVsdXNAc2FtYmEub3JnPgpDYzogTWFydGluIFNjaHdpZGVmc2t5IDxzY2h3aWRlZnNreUBkZS5p
-Ym0uY29tPgpDYzogSGVpa28gQ2Fyc3RlbnMgPGhlaWtvLmNhcnN0ZW5zQGRlLmlibS5jb20+CkNj
-OiBsaW51eDM5MEBkZS5pYm0uY29tCkNjOiBDaHJpcyBNZXRjYWxmIDxjbWV0Y2FsZkB0aWxlcmEu
-Y29tPgpDYzogSmVmZiBEaWtlIDxqZGlrZUBhZGR0b2l0LmNvbT4KQ2M6IFJpY2hhcmQgV2VpbmJl
-cmdlciA8cmljaGFyZEBub2QuYXQ+CkNjOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25p
-eC5kZT4KQ2M6IEluZ28gTW9sbmFyIDxtaW5nb0ByZWRoYXQuY29tPgpDYzogIkguIFBldGVyIEFu
-dmluIiA8aHBhQHp5dG9yLmNvbT4KQ2M6IE5hdGhhbiBMeW5jaCA8TmF0aGFuX0x5bmNoQG1lbnRv
-ci5jb20+CkNjOiB4ODZAa2VybmVsLm9yZwpDYzogbGludXgtYXJjaEB2Z2VyLmtlcm5lbC5vcmcK
-Q2M6IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpDYzogbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZwpDYzogbGludXgtaWE2NEB2Z2VyLmtlcm5lbC5vcmcKQ2M6IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCkNjOiBsaW51eC1zMzkwQHZnZXIua2VybmVsLm9yZwpD
-YzogbGludXgtc2hAdmdlci5rZXJuZWwub3JnCkNjOiB1c2VyLW1vZGUtbGludXgtZGV2ZWxAbGlz
-dHMuc291cmNlZm9yZ2UubmV0CkNjOiBsaW51eC1tbUBrdmFjay5vcmcKQWNrZWQtYnk6IE5hdGhh
-biBMeW5jaCA8bmF0aGFuX2x5bmNoQG1lbnRvci5jb20+CkFja2VkLWJ5OiBILiBQZXRlciBBbnZp
-biA8aHBhQGxpbnV4LmludGVsLmNvbT4KQWNrZWQtYnk6IEJlbmphbWluIEhlcnJlbnNjaG1pZHQg
-PGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZz4gW2luIHByaW5jaXBsZV0KQWNrZWQtYnk6IFJpY2hh
-cmQgV2VpbmJlcmdlciA8cmljaGFyZEBub2QuYXQ+IFtmb3IgdW1dCkFja2VkLWJ5OiBXaWxsIERl
-YWNvbiA8d2lsbC5kZWFjb25AYXJtLmNvbT4gW2ZvciBhcm02NF0KU2lnbmVkLW9mZi1ieTogQW5k
-eSBMdXRvbWlyc2tpIDxsdXRvQGFtYWNhcGl0YWwubmV0PgotLS0KIGFyY2gvYXJtNjQvaW5jbHVk
-ZS9hc20vcGFnZS5oICAgICAgfCAgMyAtLS0KIGFyY2gvYXJtNjQva2VybmVsL3Zkc28uYyAgICAg
-ICAgICAgfCAxOSAtLS0tLS0tLS0tLS0tLS0tLS0tCiBhcmNoL2lhNjQvaW5jbHVkZS9hc20vcGFn
-ZS5oICAgICAgIHwgIDIgKysKIGFyY2gvaWE2NC9tbS9pbml0LmMgICAgICAgICAgICAgICAgfCAy
-NiArKysrKysrKysrKysrKysrKysrKysrKysrKwogYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3Bh
-Z2UuaCAgICB8ICAzIC0tLQogYXJjaC9wb3dlcnBjL2tlcm5lbC92ZHNvLmMgICAgICAgICB8IDE2
-IC0tLS0tLS0tLS0tLS0tLS0KIGFyY2gvczM5MC9pbmNsdWRlL2FzbS9wYWdlLmggICAgICAgfCAg
-MiAtLQogYXJjaC9zMzkwL2tlcm5lbC92ZHNvLmMgICAgICAgICAgICB8IDE1IC0tLS0tLS0tLS0t
-LS0tLQogYXJjaC9zaC9pbmNsdWRlL2FzbS9wYWdlLmggICAgICAgICB8ICA1IC0tLS0tCiBhcmNo
-L3NoL2tlcm5lbC92c3lzY2FsbC92c3lzY2FsbC5jIHwgMTUgLS0tLS0tLS0tLS0tLS0tCiBhcmNo
-L3RpbGUvaW5jbHVkZS9hc20vcGFnZS5oICAgICAgIHwgIDYgLS0tLS0tCiBhcmNoL3RpbGUva2Vy
-bmVsL3Zkc28uYyAgICAgICAgICAgIHwgMTUgLS0tLS0tLS0tLS0tLS0tCiBhcmNoL3VtL2luY2x1
-ZGUvYXNtL3BhZ2UuaCAgICAgICAgIHwgIDUgKysrKysKIGFyY2gveDg2L2luY2x1ZGUvYXNtL3Bh
-Z2UuaCAgICAgICAgfCAgMSAtCiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9wYWdlXzY0LmggICAgIHwg
-IDIgKysKIGFyY2gveDg2L3VtL2FzbS9lbGYuaCAgICAgICAgICAgICAgfCAgMSAtCiBhcmNoL3g4
-Ni91bS9tZW1fNjQuYyAgICAgICAgICAgICAgIHwgMTUgLS0tLS0tLS0tLS0tLS0tCiBhcmNoL3g4
-Ni92ZHNvL3Zkc28zMi1zZXR1cC5jICAgICAgIHwgMTkgKy0tLS0tLS0tLS0tLS0tLS0tLQogaW5j
-bHVkZS9saW51eC9tbS5oICAgICAgICAgICAgICAgICB8IDE3ICsrKysrKysrKysrKy0tLS0tCiBt
-bS9tZW1vcnkuYyAgICAgICAgICAgICAgICAgICAgICAgIHwgMzggLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0KIG1tL25vbW11LmMgICAgICAgICAgICAgICAgICAgICAgICAg
-fCAgNSAtLS0tLQogMjEgZmlsZXMgY2hhbmdlZCwgNDggaW5zZXJ0aW9ucygrKSwgMTgyIGRlbGV0
-aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvaW5jbHVkZS9hc20vcGFnZS5oIGIvYXJj
-aC9hcm02NC9pbmNsdWRlL2FzbS9wYWdlLmgKaW5kZXggNDZiZjY2Ni4uOTkyNzEwZiAxMDA2NDQK
-LS0tIGEvYXJjaC9hcm02NC9pbmNsdWRlL2FzbS9wYWdlLmgKKysrIGIvYXJjaC9hcm02NC9pbmNs
-dWRlL2FzbS9wYWdlLmgKQEAgLTI4LDkgKzI4LDYgQEAKICNkZWZpbmUgUEFHRV9TSVpFCQkoX0FD
-KDEsVUwpIDw8IFBBR0VfU0hJRlQpCiAjZGVmaW5lIFBBR0VfTUFTSwkJKH4oUEFHRV9TSVpFLTEp
-KQogCi0vKiBXZSBkbyBkZWZpbmUgQVRfU1lTSU5GT19FSERSIGJ1dCBkb24ndCB1c2UgdGhlIGdh
-dGUgbWVjaGFuaXNtICovCi0jZGVmaW5lIF9fSEFWRV9BUkNIX0dBVEVfQVJFQQkJMQotCiAjaWZu
-ZGVmIF9fQVNTRU1CTFlfXwogCiAjaWZkZWYgQ09ORklHX0FSTTY0XzY0S19QQUdFUwpkaWZmIC0t
-Z2l0IGEvYXJjaC9hcm02NC9rZXJuZWwvdmRzby5jIGIvYXJjaC9hcm02NC9rZXJuZWwvdmRzby5j
-CmluZGV4IDUwMzg0ZmUuLmY2MzA2MjYgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtNjQva2VybmVsL3Zk
-c28uYworKysgYi9hcmNoL2FybTY0L2tlcm5lbC92ZHNvLmMKQEAgLTE4NywyNSArMTg3LDYgQEAg
-Y29uc3QgY2hhciAqYXJjaF92bWFfbmFtZShzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSkKIH0K
-IAogLyoKLSAqIFdlIGRlZmluZSBBVF9TWVNJTkZPX0VIRFIsIHNvIHdlIG5lZWQgdGhlc2UgZnVu
-Y3Rpb24gc3R1YnMgdG8ga2VlcAotICogTGludXggaGFwcHkuCi0gKi8KLWludCBpbl9nYXRlX2Fy
-ZWFfbm9fbW0odW5zaWduZWQgbG9uZyBhZGRyKQotewotCXJldHVybiAwOwotfQotCi1pbnQgaW5f
-Z2F0ZV9hcmVhKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLCB1bnNpZ25lZCBsb25nIGFkZHIpCi17Ci0J
-cmV0dXJuIDA7Ci19Ci0KLXN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqZ2V0X2dhdGVfdm1hKHN0cnVj
-dCBtbV9zdHJ1Y3QgKm1tKQotewotCXJldHVybiBOVUxMOwotfQotCi0vKgogICogVXBkYXRlIHRo
-ZSB2RFNPIGRhdGEgcGFnZSB0byBrZWVwIGluIHN5bmMgd2l0aCBrZXJuZWwgdGltZWtlZXBpbmcu
-CiAgKi8KIHZvaWQgdXBkYXRlX3ZzeXNjYWxsKHN0cnVjdCB0aW1la2VlcGVyICp0aykKZGlmZiAt
-LWdpdCBhL2FyY2gvaWE2NC9pbmNsdWRlL2FzbS9wYWdlLmggYi9hcmNoL2lhNjQvaW5jbHVkZS9h
-c20vcGFnZS5oCmluZGV4IGYxZTFiMmUuLjFmMWJmMTQgMTAwNjQ0Ci0tLSBhL2FyY2gvaWE2NC9p
-bmNsdWRlL2FzbS9wYWdlLmgKKysrIGIvYXJjaC9pYTY0L2luY2x1ZGUvYXNtL3BhZ2UuaApAQCAt
-MjMxLDQgKzIzMSw2IEBAIGdldF9vcmRlciAodW5zaWduZWQgbG9uZyBzaXplKQogI2RlZmluZSBQ
-RVJDUFVfQUREUgkJKC1QRVJDUFVfUEFHRV9TSVpFKQogI2RlZmluZSBMT0FEX09GRlNFVAkJKEtF
-Uk5FTF9TVEFSVCAtIEtFUk5FTF9UUl9QQUdFX1NJWkUpCiAKKyNkZWZpbmUgX19IQVZFX0FSQ0hf
-R0FURV9BUkVBCTEKKwogI2VuZGlmIC8qIF9BU01fSUE2NF9QQUdFX0ggKi8KZGlmZiAtLWdpdCBh
-L2FyY2gvaWE2NC9tbS9pbml0LmMgYi9hcmNoL2lhNjQvbW0vaW5pdC5jCmluZGV4IDI1YzM1MDIu
-LjM1ZWZhYTMgMTAwNjQ0Ci0tLSBhL2FyY2gvaWE2NC9tbS9pbml0LmMKKysrIGIvYXJjaC9pYTY0
-L21tL2luaXQuYwpAQCAtMjc4LDYgKzI3OCwzMiBAQCBzZXR1cF9nYXRlICh2b2lkKQogCWlhNjRf
-cGF0Y2hfZ2F0ZSgpOwogfQogCitzdGF0aWMgc3RydWN0IHZtX2FyZWFfc3RydWN0IGdhdGVfdm1h
-OworCitzdGF0aWMgaW50IF9faW5pdCBnYXRlX3ZtYV9pbml0KHZvaWQpCit7CisJZ2F0ZV92bWEu
-dm1fbW0gPSBOVUxMOworCWdhdGVfdm1hLnZtX3N0YXJ0ID0gRklYQUREUl9VU0VSX1NUQVJUOwor
-CWdhdGVfdm1hLnZtX2VuZCA9IEZJWEFERFJfVVNFUl9FTkQ7CisJZ2F0ZV92bWEudm1fZmxhZ3Mg
-PSBWTV9SRUFEIHwgVk1fTUFZUkVBRCB8IFZNX0VYRUMgfCBWTV9NQVlFWEVDOworCWdhdGVfdm1h
-LnZtX3BhZ2VfcHJvdCA9IF9fUDEwMTsKKworCXJldHVybiAwOworfQorX19pbml0Y2FsbChnYXRl
-X3ZtYV9pbml0KTsKKworc3RydWN0IHZtX2FyZWFfc3RydWN0ICpnZXRfZ2F0ZV92bWEoc3RydWN0
-IG1tX3N0cnVjdCAqbW0pCit7CisJcmV0dXJuICZnYXRlX3ZtYTsKK30KKworaW50IGluX2dhdGVf
-YXJlYV9ub19tbSh1bnNpZ25lZCBsb25nIGFkZHIpCit7CisJaWYgKChhZGRyID49IEZJWEFERFJf
-VVNFUl9TVEFSVCkgJiYgKGFkZHIgPCBGSVhBRERSX1VTRVJfRU5EKSkKKwkJcmV0dXJuIDE7CisJ
-cmV0dXJuIDA7Cit9CisKIHZvaWQgaWE2NF9tbXVfaW5pdCh2b2lkICpteV9jcHVfZGF0YSkKIHsK
-IAl1bnNpZ25lZCBsb25nIHB0YSwgaW1wbF92YV9iaXRzOwpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
-cnBjL2luY2x1ZGUvYXNtL3BhZ2UuaCBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wYWdlLmgK
-aW5kZXggMzJlNGUyMS4uMjZmZTFhZSAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUv
-YXNtL3BhZ2UuaAorKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGFnZS5oCkBAIC00OCw5
-ICs0OCw2IEBAIGV4dGVybiB1bnNpZ25lZCBpbnQgSFBBR0VfU0hJRlQ7CiAjZGVmaW5lIEhVR0Vf
-TUFYX0hTVEFURQkJKE1NVV9QQUdFX0NPVU5ULTEpCiAjZW5kaWYKIAotLyogV2UgZG8gZGVmaW5l
-IEFUX1NZU0lORk9fRUhEUiBidXQgZG9uJ3QgdXNlIHRoZSBnYXRlIG1lY2hhbmlzbSAqLwotI2Rl
-ZmluZSBfX0hBVkVfQVJDSF9HQVRFX0FSRUEJCTEKLQogLyoKICAqIFN1YnRsZTogKDEgPDwgUEFH
-RV9TSElGVCkgaXMgYW4gaW50LCBub3QgYW4gdW5zaWduZWQgbG9uZy4gU28gaWYgd2UKICAqIGFz
-c2lnbiBQQUdFX01BU0sgdG8gYSBsYXJnZXIgdHlwZSBpdCBnZXRzIGV4dGVuZGVkIHRoZSB3YXkg
-d2Ugd2FudApkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC92ZHNvLmMgYi9hcmNoL3Bv
-d2VycGMva2VybmVsL3Zkc28uYwppbmRleCBjZTc0YzMzLi5mMTc0MzUxIDEwMDY0NAotLS0gYS9h
-cmNoL3Bvd2VycGMva2VybmVsL3Zkc28uYworKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3Zkc28u
-YwpAQCAtODQwLDE5ICs4NDAsMyBAQCBzdGF0aWMgaW50IF9faW5pdCB2ZHNvX2luaXQodm9pZCkK
-IAlyZXR1cm4gMDsKIH0KIGFyY2hfaW5pdGNhbGwodmRzb19pbml0KTsKLQotaW50IGluX2dhdGVf
-YXJlYV9ub19tbSh1bnNpZ25lZCBsb25nIGFkZHIpCi17Ci0JcmV0dXJuIDA7Ci19Ci0KLWludCBp
-bl9nYXRlX2FyZWEoc3RydWN0IG1tX3N0cnVjdCAqbW0sIHVuc2lnbmVkIGxvbmcgYWRkcikKLXsK
-LQlyZXR1cm4gMDsKLX0KLQotc3RydWN0IHZtX2FyZWFfc3RydWN0ICpnZXRfZ2F0ZV92bWEoc3Ry
-dWN0IG1tX3N0cnVjdCAqbW0pCi17Ci0JcmV0dXJuIE5VTEw7Ci19Ci0KZGlmZiAtLWdpdCBhL2Fy
-Y2gvczM5MC9pbmNsdWRlL2FzbS9wYWdlLmggYi9hcmNoL3MzOTAvaW5jbHVkZS9hc20vcGFnZS5o
-CmluZGV4IDExNDI1OGUuLjdiMmFjNmUgMTAwNjQ0Ci0tLSBhL2FyY2gvczM5MC9pbmNsdWRlL2Fz
-bS9wYWdlLmgKKysrIGIvYXJjaC9zMzkwL2luY2x1ZGUvYXNtL3BhZ2UuaApAQCAtMTYyLDYgKzE2
-Miw0IEBAIHN0YXRpYyBpbmxpbmUgaW50IGRldm1lbV9pc19hbGxvd2VkKHVuc2lnbmVkIGxvbmcg
-cGZuKQogI2luY2x1ZGUgPGFzbS1nZW5lcmljL21lbW9yeV9tb2RlbC5oPgogI2luY2x1ZGUgPGFz
-bS1nZW5lcmljL2dldG9yZGVyLmg+CiAKLSNkZWZpbmUgX19IQVZFX0FSQ0hfR0FURV9BUkVBIDEK
-LQogI2VuZGlmIC8qIF9TMzkwX1BBR0VfSCAqLwpkaWZmIC0tZ2l0IGEvYXJjaC9zMzkwL2tlcm5l
-bC92ZHNvLmMgYi9hcmNoL3MzOTAva2VybmVsL3Zkc28uYwppbmRleCA2MTM2NDkwLi4wYmJiN2Uw
-IDEwMDY0NAotLS0gYS9hcmNoL3MzOTAva2VybmVsL3Zkc28uYworKysgYi9hcmNoL3MzOTAva2Vy
-bmVsL3Zkc28uYwpAQCAtMzE2LDE4ICszMTYsMyBAQCBzdGF0aWMgaW50IF9faW5pdCB2ZHNvX2lu
-aXQodm9pZCkKIAlyZXR1cm4gMDsKIH0KIGVhcmx5X2luaXRjYWxsKHZkc29faW5pdCk7Ci0KLWlu
-dCBpbl9nYXRlX2FyZWFfbm9fbW0odW5zaWduZWQgbG9uZyBhZGRyKQotewotCXJldHVybiAwOwot
-fQotCi1pbnQgaW5fZ2F0ZV9hcmVhKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLCB1bnNpZ25lZCBsb25n
-IGFkZHIpCi17Ci0JcmV0dXJuIDA7Ci19Ci0KLXN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqZ2V0X2dh
-dGVfdm1hKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tKQotewotCXJldHVybiBOVUxMOwotfQpkaWZmIC0t
-Z2l0IGEvYXJjaC9zaC9pbmNsdWRlL2FzbS9wYWdlLmggYi9hcmNoL3NoL2luY2x1ZGUvYXNtL3Bh
-Z2UuaAppbmRleCAxNWQ5NzAzLi5mZTIwZDE0IDEwMDY0NAotLS0gYS9hcmNoL3NoL2luY2x1ZGUv
-YXNtL3BhZ2UuaAorKysgYi9hcmNoL3NoL2luY2x1ZGUvYXNtL3BhZ2UuaApAQCAtMTg2LDExICsx
-ODYsNiBAQCB0eXBlZGVmIHN0cnVjdCBwYWdlICpwZ3RhYmxlX3Q7CiAjaW5jbHVkZSA8YXNtLWdl
-bmVyaWMvbWVtb3J5X21vZGVsLmg+CiAjaW5jbHVkZSA8YXNtLWdlbmVyaWMvZ2V0b3JkZXIuaD4K
-IAotLyogdkRTTyBzdXBwb3J0ICovCi0jaWZkZWYgQ09ORklHX1ZTWVNDQUxMCi0jZGVmaW5lIF9f
-SEFWRV9BUkNIX0dBVEVfQVJFQQotI2VuZGlmCi0KIC8qCiAgKiBTb21lIGRyaXZlcnMgbmVlZCB0
-byBwZXJmb3JtIERNQSBpbnRvIGttYWxsb2MnZWQgYnVmZmVycwogICogYW5kIHNvIHdlIGhhdmUg
-dG8gaW5jcmVhc2UgdGhlIGttYWxsb2MgbWluYWxpZ24gZm9yIHRoaXMuCmRpZmYgLS1naXQgYS9h
-cmNoL3NoL2tlcm5lbC92c3lzY2FsbC92c3lzY2FsbC5jIGIvYXJjaC9zaC9rZXJuZWwvdnN5c2Nh
-bGwvdnN5c2NhbGwuYwppbmRleCA1Y2E1Nzk3Li5lYTJhYTEzIDEwMDY0NAotLS0gYS9hcmNoL3No
-L2tlcm5lbC92c3lzY2FsbC92c3lzY2FsbC5jCisrKyBiL2FyY2gvc2gva2VybmVsL3ZzeXNjYWxs
-L3ZzeXNjYWxsLmMKQEAgLTkyLDE4ICs5MiwzIEBAIGNvbnN0IGNoYXIgKmFyY2hfdm1hX25hbWUo
-c3RydWN0IHZtX2FyZWFfc3RydWN0ICp2bWEpCiAKIAlyZXR1cm4gTlVMTDsKIH0KLQotc3RydWN0
-IHZtX2FyZWFfc3RydWN0ICpnZXRfZ2F0ZV92bWEoc3RydWN0IG1tX3N0cnVjdCAqbW0pCi17Ci0J
-cmV0dXJuIE5VTEw7Ci19Ci0KLWludCBpbl9nYXRlX2FyZWEoc3RydWN0IG1tX3N0cnVjdCAqbW0s
-IHVuc2lnbmVkIGxvbmcgYWRkcmVzcykKLXsKLQlyZXR1cm4gMDsKLX0KLQotaW50IGluX2dhdGVf
-YXJlYV9ub19tbSh1bnNpZ25lZCBsb25nIGFkZHJlc3MpCi17Ci0JcmV0dXJuIDA7Ci19CmRpZmYg
-LS1naXQgYS9hcmNoL3RpbGUvaW5jbHVkZS9hc20vcGFnZS5oIGIvYXJjaC90aWxlL2luY2x1ZGUv
-YXNtL3BhZ2UuaAppbmRleCA2NzI3NjgwLi5hMjEzYThkIDEwMDY0NAotLS0gYS9hcmNoL3RpbGUv
-aW5jbHVkZS9hc20vcGFnZS5oCisrKyBiL2FyY2gvdGlsZS9pbmNsdWRlL2FzbS9wYWdlLmgKQEAg
-LTM5LDEyICszOSw2IEBACiAjZGVmaW5lIEhQQUdFX01BU0sJKH4oSFBBR0VfU0laRSAtIDEpKQog
-CiAvKgotICogV2UgZG8gZGVmaW5lIEFUX1NZU0lORk9fRUhEUiB0byBzdXBwb3J0IHZEU08sCi0g
-KiBidXQgZG9uJ3QgdXNlIHRoZSBnYXRlIG1lY2hhbmlzbS4KLSAqLwotI2RlZmluZSBfX0hBVkVf
-QVJDSF9HQVRFX0FSRUEJCTEKLQotLyoKICAqIElmIHRoZSBLY29uZmlnIGRvZXNuJ3Qgc3BlY2lm
-eSwgc2V0IGEgbWF4aW11bSB6b25lIG9yZGVyIHRoYXQKICAqIGlzIGVub3VnaCBzbyB0aGF0IHdl
-IGNhbiBjcmVhdGUgaHVnZSBwYWdlcyBmcm9tIHNtYWxsIHBhZ2VzIGdpdmVuCiAgKiB0aGUgcmVz
-cGVjdGl2ZSBzaXplcyBvZiB0aGUgdHdvIHBhZ2UgdHlwZXMuICBTZWUgPGxpbnV4L21tem9uZS5o
-Pi4KZGlmZiAtLWdpdCBhL2FyY2gvdGlsZS9rZXJuZWwvdmRzby5jIGIvYXJjaC90aWxlL2tlcm5l
-bC92ZHNvLmMKaW5kZXggMTUzM2FmMi4uNWJjNTFkNyAxMDA2NDQKLS0tIGEvYXJjaC90aWxlL2tl
-cm5lbC92ZHNvLmMKKysrIGIvYXJjaC90aWxlL2tlcm5lbC92ZHNvLmMKQEAgLTEyMSwyMSArMTIx
-LDYgQEAgY29uc3QgY2hhciAqYXJjaF92bWFfbmFtZShzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZt
-YSkKIAlyZXR1cm4gTlVMTDsKIH0KIAotc3RydWN0IHZtX2FyZWFfc3RydWN0ICpnZXRfZ2F0ZV92
-bWEoc3RydWN0IG1tX3N0cnVjdCAqbW0pCi17Ci0JcmV0dXJuIE5VTEw7Ci19Ci0KLWludCBpbl9n
-YXRlX2FyZWEoc3RydWN0IG1tX3N0cnVjdCAqbW0sIHVuc2lnbmVkIGxvbmcgYWRkcmVzcykKLXsK
-LQlyZXR1cm4gMDsKLX0KLQotaW50IGluX2dhdGVfYXJlYV9ub19tbSh1bnNpZ25lZCBsb25nIGFk
-ZHJlc3MpCi17Ci0JcmV0dXJuIDA7Ci19Ci0KIGludCBzZXR1cF92ZHNvX3BhZ2VzKHZvaWQpCiB7
-CiAJc3RydWN0IHBhZ2UgKipwYWdlbGlzdDsKZGlmZiAtLWdpdCBhL2FyY2gvdW0vaW5jbHVkZS9h
-c20vcGFnZS5oIGIvYXJjaC91bS9pbmNsdWRlL2FzbS9wYWdlLmgKaW5kZXggNWZmNTNkOS4uNzFj
-NWQxMyAxMDA2NDQKLS0tIGEvYXJjaC91bS9pbmNsdWRlL2FzbS9wYWdlLmgKKysrIGIvYXJjaC91
-bS9pbmNsdWRlL2FzbS9wYWdlLmgKQEAgLTExOSw0ICsxMTksOSBAQCBleHRlcm4gdW5zaWduZWQg
-bG9uZyB1bWxfcGh5c21lbTsKICNpbmNsdWRlIDxhc20tZ2VuZXJpYy9nZXRvcmRlci5oPgogCiAj
-ZW5kaWYJLyogX19BU1NFTUJMWV9fICovCisKKyNpZmRlZiBDT05GSUdfWDg2XzMyCisjZGVmaW5l
-IF9fSEFWRV9BUkNIX0dBVEVfQVJFQSAxCisjZW5kaWYKKwogI2VuZGlmCS8qIF9fVU1fUEFHRV9I
-ICovCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9pbmNsdWRlL2FzbS9wYWdlLmggYi9hcmNoL3g4Ni9p
-bmNsdWRlL2FzbS9wYWdlLmgKaW5kZXggNzc1ODczZC4uODAyZGRlMyAxMDA2NDQKLS0tIGEvYXJj
-aC94ODYvaW5jbHVkZS9hc20vcGFnZS5oCisrKyBiL2FyY2gveDg2L2luY2x1ZGUvYXNtL3BhZ2Uu
-aApAQCAtNzAsNyArNzAsNiBAQCBleHRlcm4gYm9vbCBfX3ZpcnRfYWRkcl92YWxpZCh1bnNpZ25l
-ZCBsb25nIGthZGRyKTsKICNpbmNsdWRlIDxhc20tZ2VuZXJpYy9tZW1vcnlfbW9kZWwuaD4KICNp
-bmNsdWRlIDxhc20tZ2VuZXJpYy9nZXRvcmRlci5oPgogCi0jZGVmaW5lIF9fSEFWRV9BUkNIX0dB
-VEVfQVJFQSAxCiAjZGVmaW5lIEhBVkVfQVJDSF9IVUdFVExCX1VOTUFQUEVEX0FSRUEKIAogI2Vu
-ZGlmCS8qIF9fS0VSTkVMX18gKi8KZGlmZiAtLWdpdCBhL2FyY2gveDg2L2luY2x1ZGUvYXNtL3Bh
-Z2VfNjQuaCBiL2FyY2gveDg2L2luY2x1ZGUvYXNtL3BhZ2VfNjQuaAppbmRleCAwZjFkZGVlLi5m
-NDA4Y2FmIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9pbmNsdWRlL2FzbS9wYWdlXzY0LmgKKysrIGIv
-YXJjaC94ODYvaW5jbHVkZS9hc20vcGFnZV82NC5oCkBAIC0zOSw0ICszOSw2IEBAIHZvaWQgY29w
-eV9wYWdlKHZvaWQgKnRvLCB2b2lkICpmcm9tKTsKIAogI2VuZGlmCS8qICFfX0FTU0VNQkxZX18g
-Ki8KIAorI2RlZmluZSBfX0hBVkVfQVJDSF9HQVRFX0FSRUEgMQorCiAjZW5kaWYgLyogX0FTTV9Y
-ODZfUEFHRV82NF9IICovCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni91bS9hc20vZWxmLmggYi9hcmNo
-L3g4Ni91bS9hc20vZWxmLmgKaW5kZXggMGZlZWUyZi4uMjVhMTAyMiAxMDA2NDQKLS0tIGEvYXJj
-aC94ODYvdW0vYXNtL2VsZi5oCisrKyBiL2FyY2gveDg2L3VtL2FzbS9lbGYuaApAQCAtMjE2LDYg
-KzIxNiw1IEBAIGV4dGVybiBsb25nIGVsZl9hdXhfaHdjYXA7CiAjZGVmaW5lIEVMRl9IV0NBUCAo
-ZWxmX2F1eF9od2NhcCkKIAogI2RlZmluZSBTRVRfUEVSU09OQUxJVFkoZXgpIGRvIDsgd2hpbGUo
-MCkKLSNkZWZpbmUgX19IQVZFX0FSQ0hfR0FURV9BUkVBIDEKIAogI2VuZGlmCmRpZmYgLS1naXQg
-YS9hcmNoL3g4Ni91bS9tZW1fNjQuYyBiL2FyY2gveDg2L3VtL21lbV82NC5jCmluZGV4IGM2NDky
-ZTcuLmY4ZmVjYWQgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L3VtL21lbV82NC5jCisrKyBiL2FyY2gv
-eDg2L3VtL21lbV82NC5jCkBAIC05LDE4ICs5LDMgQEAgY29uc3QgY2hhciAqYXJjaF92bWFfbmFt
-ZShzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSkKIAogCXJldHVybiBOVUxMOwogfQotCi1zdHJ1
-Y3Qgdm1fYXJlYV9zdHJ1Y3QgKmdldF9nYXRlX3ZtYShzdHJ1Y3QgbW1fc3RydWN0ICptbSkKLXsK
-LQlyZXR1cm4gTlVMTDsKLX0KLQotaW50IGluX2dhdGVfYXJlYShzdHJ1Y3QgbW1fc3RydWN0ICpt
-bSwgdW5zaWduZWQgbG9uZyBhZGRyKQotewotCXJldHVybiAwOwotfQotCi1pbnQgaW5fZ2F0ZV9h
-cmVhX25vX21tKHVuc2lnbmVkIGxvbmcgYWRkcikKLXsKLQlyZXR1cm4gMDsKLX0KZGlmZiAtLWdp
-dCBhL2FyY2gveDg2L3Zkc28vdmRzbzMyLXNldHVwLmMgYi9hcmNoL3g4Ni92ZHNvL3Zkc28zMi1z
-ZXR1cC5jCmluZGV4IGU0Zjc3ODEuLmU5MDRjMjcgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L3Zkc28v
-dmRzbzMyLXNldHVwLmMKKysrIGIvYXJjaC94ODYvdmRzby92ZHNvMzItc2V0dXAuYwpAQCAtMTE1
-LDIzICsxMTUsNiBAQCBzdGF0aWMgX19pbml0IGludCBpYTMyX2JpbmZtdF9pbml0KHZvaWQpCiAJ
-cmV0dXJuIDA7CiB9CiBfX2luaXRjYWxsKGlhMzJfYmluZm10X2luaXQpOwotI2VuZGlmCi0KLSNl
-bHNlICAvKiBDT05GSUdfWDg2XzMyICovCi0KLXN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqZ2V0X2dh
-dGVfdm1hKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tKQotewotCXJldHVybiBOVUxMOwotfQotCi1pbnQg
-aW5fZ2F0ZV9hcmVhKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLCB1bnNpZ25lZCBsb25nIGFkZHIpCi17
-Ci0JcmV0dXJuIDA7Ci19Ci0KLWludCBpbl9nYXRlX2FyZWFfbm9fbW0odW5zaWduZWQgbG9uZyBh
-ZGRyKQotewotCXJldHVybiAwOwotfQorI2VuZGlmIC8qIENPTkZJR19TWVNDVEwgKi8KIAogI2Vu
-ZGlmCS8qIENPTkZJR19YODZfNjQgKi8KZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbW0uaCBi
-L2luY2x1ZGUvbGludXgvbW0uaAppbmRleCBlMDNkZDI5Li44OTgxY2M4IDEwMDY0NAotLS0gYS9p
-bmNsdWRlL2xpbnV4L21tLmgKKysrIGIvaW5jbHVkZS9saW51eC9tbS5oCkBAIC0yMDE0LDEzICsy
-MDE0LDIwIEBAIHN0YXRpYyBpbmxpbmUgYm9vbCBrZXJuZWxfcGFnZV9wcmVzZW50KHN0cnVjdCBw
-YWdlICpwYWdlKSB7IHJldHVybiB0cnVlOyB9CiAjZW5kaWYgLyogQ09ORklHX0hJQkVSTkFUSU9O
-ICovCiAjZW5kaWYKIAorI2lmZGVmIF9fSEFWRV9BUkNIX0dBVEVfQVJFQQogZXh0ZXJuIHN0cnVj
-dCB2bV9hcmVhX3N0cnVjdCAqZ2V0X2dhdGVfdm1hKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tKTsKLSNp
-ZmRlZglfX0hBVkVfQVJDSF9HQVRFX0FSRUEKLWludCBpbl9nYXRlX2FyZWFfbm9fbW0odW5zaWdu
-ZWQgbG9uZyBhZGRyKTsKLWludCBpbl9nYXRlX2FyZWEoc3RydWN0IG1tX3N0cnVjdCAqbW0sIHVu
-c2lnbmVkIGxvbmcgYWRkcik7CitleHRlcm4gaW50IGluX2dhdGVfYXJlYV9ub19tbSh1bnNpZ25l
-ZCBsb25nIGFkZHIpOworZXh0ZXJuIGludCBpbl9nYXRlX2FyZWEoc3RydWN0IG1tX3N0cnVjdCAq
-bW0sIHVuc2lnbmVkIGxvbmcgYWRkcik7CiAjZWxzZQotaW50IGluX2dhdGVfYXJlYV9ub19tbSh1
-bnNpZ25lZCBsb25nIGFkZHIpOwotI2RlZmluZSBpbl9nYXRlX2FyZWEobW0sIGFkZHIpICh7KHZv
-aWQpbW07IGluX2dhdGVfYXJlYV9ub19tbShhZGRyKTt9KQorc3RhdGljIGlubGluZSBzdHJ1Y3Qg
-dm1fYXJlYV9zdHJ1Y3QgKmdldF9nYXRlX3ZtYShzdHJ1Y3QgbW1fc3RydWN0ICptbSkKK3sKKwly
-ZXR1cm4gTlVMTDsKK30KK3N0YXRpYyBpbmxpbmUgaW50IGluX2dhdGVfYXJlYV9ub19tbSh1bnNp
-Z25lZCBsb25nIGFkZHIpIHsgcmV0dXJuIDA7IH0KK3N0YXRpYyBpbmxpbmUgaW50IGluX2dhdGVf
-YXJlYShzdHJ1Y3QgbW1fc3RydWN0ICptbSwgdW5zaWduZWQgbG9uZyBhZGRyKQoreworCXJldHVy
-biAwOworfQogI2VuZGlmCS8qIF9fSEFWRV9BUkNIX0dBVEVfQVJFQSAqLwogCiAjaWZkZWYgQ09O
-RklHX1NZU0NUTApkaWZmIC0tZ2l0IGEvbW0vbWVtb3J5LmMgYi9tbS9tZW1vcnkuYwppbmRleCBk
-NjdmZDlmLi4wOTlkMjM0IDEwMDY0NAotLS0gYS9tbS9tZW1vcnkuYworKysgYi9tbS9tZW1vcnku
-YwpAQCAtMzM5OSw0NCArMzM5OSw2IEBAIGludCBfX3BtZF9hbGxvYyhzdHJ1Y3QgbW1fc3RydWN0
-ICptbSwgcHVkX3QgKnB1ZCwgdW5zaWduZWQgbG9uZyBhZGRyZXNzKQogfQogI2VuZGlmIC8qIF9f
-UEFHRVRBQkxFX1BNRF9GT0xERUQgKi8KIAotI2lmICFkZWZpbmVkKF9fSEFWRV9BUkNIX0dBVEVf
-QVJFQSkKLQotI2lmIGRlZmluZWQoQVRfU1lTSU5GT19FSERSKQotc3RhdGljIHN0cnVjdCB2bV9h
-cmVhX3N0cnVjdCBnYXRlX3ZtYTsKLQotc3RhdGljIGludCBfX2luaXQgZ2F0ZV92bWFfaW5pdCh2
-b2lkKQotewotCWdhdGVfdm1hLnZtX21tID0gTlVMTDsKLQlnYXRlX3ZtYS52bV9zdGFydCA9IEZJ
-WEFERFJfVVNFUl9TVEFSVDsKLQlnYXRlX3ZtYS52bV9lbmQgPSBGSVhBRERSX1VTRVJfRU5EOwot
-CWdhdGVfdm1hLnZtX2ZsYWdzID0gVk1fUkVBRCB8IFZNX01BWVJFQUQgfCBWTV9FWEVDIHwgVk1f
-TUFZRVhFQzsKLQlnYXRlX3ZtYS52bV9wYWdlX3Byb3QgPSBfX1AxMDE7Ci0KLQlyZXR1cm4gMDsK
-LX0KLV9faW5pdGNhbGwoZ2F0ZV92bWFfaW5pdCk7Ci0jZW5kaWYKLQotc3RydWN0IHZtX2FyZWFf
-c3RydWN0ICpnZXRfZ2F0ZV92bWEoc3RydWN0IG1tX3N0cnVjdCAqbW0pCi17Ci0jaWZkZWYgQVRf
-U1lTSU5GT19FSERSCi0JcmV0dXJuICZnYXRlX3ZtYTsKLSNlbHNlCi0JcmV0dXJuIE5VTEw7Ci0j
-ZW5kaWYKLX0KLQotaW50IGluX2dhdGVfYXJlYV9ub19tbSh1bnNpZ25lZCBsb25nIGFkZHIpCi17
-Ci0jaWZkZWYgQVRfU1lTSU5GT19FSERSCi0JaWYgKChhZGRyID49IEZJWEFERFJfVVNFUl9TVEFS
-VCkgJiYgKGFkZHIgPCBGSVhBRERSX1VTRVJfRU5EKSkKLQkJcmV0dXJuIDE7Ci0jZW5kaWYKLQly
-ZXR1cm4gMDsKLX0KLQotI2VuZGlmCS8qIF9fSEFWRV9BUkNIX0dBVEVfQVJFQSAqLwotCiBzdGF0
-aWMgaW50IF9fZm9sbG93X3B0ZShzdHJ1Y3QgbW1fc3RydWN0ICptbSwgdW5zaWduZWQgbG9uZyBh
-ZGRyZXNzLAogCQlwdGVfdCAqKnB0ZXBwLCBzcGlubG9ja190ICoqcHRscCkKIHsKZGlmZiAtLWdp
-dCBhL21tL25vbW11LmMgYi9tbS9ub21tdS5jCmluZGV4IDRhODUyZjYuLmE4ODFkOTYgMTAwNjQ0
-Ci0tLSBhL21tL25vbW11LmMKKysrIGIvbW0vbm9tbXUuYwpAQCAtMTk4MSwxMSArMTk4MSw2IEBA
-IGVycm9yOgogCXJldHVybiAtRU5PTUVNOwogfQogCi1pbnQgaW5fZ2F0ZV9hcmVhX25vX21tKHVu
-c2lnbmVkIGxvbmcgYWRkcikKLXsKLQlyZXR1cm4gMDsKLX0KLQogaW50IGZpbGVtYXBfZmF1bHQo
-c3RydWN0IHZtX2FyZWFfc3RydWN0ICp2bWEsIHN0cnVjdCB2bV9mYXVsdCAqdm1mKQogewogCUJV
-RygpOwotLSAKMS45LjMKCg==
---089e0141a9f69cde9704fef4e6e3--
+1.9.3
