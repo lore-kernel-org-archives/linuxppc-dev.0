@@ -2,31 +2,32 @@ Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A07F1A096E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 16:22:55 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1F561A0460
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 16:22:58 +1000 (EST)
 Received: from /spool/local
  by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 24 Jul 2014 11:52:53 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3A0153940068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:50 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6O6NBOj9830788
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:53:11 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6O6MnWX018750
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:49 +0530
+ Thu, 24 Jul 2014 11:52:56 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4AAFB3940065
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:53 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O6OhxK7799042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:54:43 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6O6MqCc007917
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 11:52:52 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com,
  yan@linux.vnet.ibm.com, qiudayu@linux.vnet.ibm.com
-Subject: [PATCH V7 10/17] powerpc/powernv: Allocate pe->iommu_table dynamically
-Date: Thu, 24 Jul 2014 14:22:20 +0800
-Message-Id: <1406182947-11302-11-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V7 12/17] powerpc/powernv: Expand VF resources according to
+ the number of total_pe
+Date: Thu, 24 Jul 2014 14:22:22 +0800
+Message-Id: <1406182947-11302-13-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
@@ -39,140 +40,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current iommu_table of a PE is a static field. This will have a problem when
-iommu_free_table is called.
+On PHB3, VF resources will be covered by M64 BAR to have better PE isolation.
+Mostly the total_pe number is different from the total_VFs, which will lead to
+a conflict between MMIO space and the PE number.
 
-This patch allocate iommu_table dynamically.
+This patch expands the VF resource size to reserve total_pe number of VFs'
+resource, which prevents the conflict.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/iommu.h          |    3 +++
- arch/powerpc/platforms/powernv/pci-ioda.c |   26 ++++++++++++++------------
- arch/powerpc/platforms/powernv/pci.h      |    2 +-
- 3 files changed, 18 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/machdep.h        |    4 ++
+ arch/powerpc/include/asm/pci-bridge.h     |    3 +
+ arch/powerpc/kernel/pci-common.c          |    5 ++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   91 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.h      |    3 +
+ 5 files changed, 106 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 42632c7..0fedacb 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -78,6 +78,9 @@ struct iommu_table {
- 	struct iommu_group *it_group;
- #endif
- 	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-+#ifdef CONFIG_PPC_POWERNV
-+	void           *data;
-+#endif
- };
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 3909d1b..fabb8016 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -252,6 +252,10 @@ struct machdep_calls {
+ 	/* Reset the secondary bus of bridge */
+ 	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
  
- /* Pure 2^n version of get_order */
++#ifdef CONFIG_PCI_IOV
++	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
++#endif /* CONFIG_PCI_IOV */
++
+ 	/* Called to shutdown machine specific hardware not already controlled
+ 	 * by other drivers.
+ 	 */
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 757d7bb..3cb95af 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -173,6 +173,9 @@ struct pci_dn {
+ #define IODA_INVALID_PE		(-1)
+ #ifdef CONFIG_PPC_POWERNV
+ 	int	pe_number;
++#ifdef CONFIG_PCI_IOV
++	u16     vfs;			/* number of VFs IOV BAR expended */
++#endif /* CONFIG_PCI_IOV */
+ #endif
+ 	struct list_head child_list;
+ 	struct list_head list;
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index d38a330..c2b7930 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1651,6 +1651,11 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	if (ppc_md.pcibios_fixup_phb)
+ 		ppc_md.pcibios_fixup_phb(hose);
+ 
++#ifdef CONFIG_PCI_IOV
++	if (ppc_md.pcibios_fixup_sriov)
++		ppc_md.pcibios_fixup_sriov(bus);
++#endif /* CONFIG_PCI_IOV */
++
+ 	/* Configure PCI Express settings */
+ 	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+ 		struct pci_bus *child;
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index b5082a2..d66a76b 100644
+index 8318b07..6fd2377 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -784,6 +784,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
- 		return;
- 	}
+@@ -1505,6 +1505,60 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
+ #endif /* CONFIG_PCI_MSI */
  
-+	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
-+			GFP_KERNEL, hose->node);
-+	pe->tce32_table->data = pe;
++#ifdef CONFIG_PCI_IOV
++static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	struct resource *res;
++	int i;
++	resource_size_t size;
++	struct pci_dn *pdn;
 +
- 	/* Associate it with all child devices */
- 	pnv_ioda_setup_same_PE(bus, pe);
- 
-@@ -857,7 +861,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
--	set_iommu_table_base(&pdev->dev, &pe->tce32_table);
-+	set_iommu_table_base(&pdev->dev, pe->tce32_table);
++	if (!pdev->is_physfn || pdev->is_added)
++		return;
++
++	hose = pci_bus_to_host(pdev->bus);
++	phb = hose->private_data;
++
++	pdn = pci_get_pdn(pdev);
++	pdn->vfs = 0;
++
++	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++) {
++		res = &pdev->resource[i];
++		if (!res->flags || res->parent)
++			continue;
++		if (!pnv_pci_is_mem_pref_64(res->flags)) {
++			dev_warn(&pdev->dev, " non M64 IOV BAR %pR on %s\n",
++				 res, pci_name(pdev));
++			continue;
++		}
++
++		dev_dbg(&pdev->dev, "PowerNV: Fixing VF BAR[%d] %pR to\n",
++				i, res);
++		size = pnv_pci_sriov_resource_size(pdev, i);
++		res->end = res->start + size * phb->ioda.total_pe - 1;
++		dev_dbg(&pdev->dev, "                       %pR\n", res);
++	}
++	pdn->vfs = phb->ioda.total_pe;
++}
++
++static void pnv_pci_ioda_fixup_sriov(struct pci_bus *bus)
++{
++	struct pci_dev *pdev;
++	struct pci_bus *b;
++
++	list_for_each_entry(pdev, &bus->devices, bus_list) {
++		b = pdev->subordinate;
++
++		if (b)
++			pnv_pci_ioda_fixup_sriov(b);
++
++		pnv_pci_ioda_fixup_iov_resources(pdev);
++	}
++}
++#endif /* CONFIG_PCI_IOV */
++
+ /*
+  * This function is supposed to be called on basis of PE from top
+  * to bottom style. So the the I/O or MMIO segment assigned to
+@@ -1681,6 +1735,40 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ 	return phb->ioda.io_segsize;
  }
  
- static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-@@ -884,7 +888,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
- 	} else {
- 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
- 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
--		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
-+		set_iommu_table_base(&pdev->dev, pe->tce32_table);
- 	}
- 	return 0;
- }
-@@ -898,9 +902,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		if (add_to_iommu_group)
- 			set_iommu_table_base_and_group(&dev->dev,
--						       &pe->tce32_table);
-+						       pe->tce32_table);
- 		else
--			set_iommu_table_base(&dev->dev, &pe->tce32_table);
-+			set_iommu_table_base(&dev->dev, pe->tce32_table);
++/*
++ * Allocate firmware data for VF, which doesn't have corresponding
++ * device node. So we have to extend device's archdata.
++ */
++#ifdef CONFIG_PCI_IOV
++static resource_size_t pnv_pcibios_sriov_resource_size(struct pci_dev *pdev, int resno)
++{
++	struct pci_dn *pdn = pci_get_pdn(pdev);
++	resource_size_t size = 0;
++
++	if (!pdn->vfs)
++		return size;
++
++	size = resource_size(pdev->resource + resno);
++	do_div(size, pdn->vfs);
++
++	return size;
++}
++
++resource_size_t pnv_pci_sriov_resource_size(struct pci_dev *pdev, int resno)
++{
++	resource_size_t size;
++
++	size = pnv_pcibios_sriov_resource_size(pdev, resno);
++	if (size != 0)
++		return size;
++
++	size = resource_size(pdev->resource + resno);
++	do_div(size, pci_sriov_get_totalvfs(pdev));
++
++	return size;
++}
++#endif /* CONFIG_PCI_IOV */
++
+ /* Prevent enabling devices for which we couldn't properly
+  * assign a PE
+  */
+@@ -1886,6 +1974,9 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+ 	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
++#ifdef CONFIG_PCI_IOV
++	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_sriov;
++#endif /* CONFIG_PCI_IOV */
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
- 		if (dev->subordinate)
- 			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
-@@ -988,8 +992,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
- void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
- 				 __be64 *startp, __be64 *endp, bool rm)
- {
--	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
--					      tce32_table);
-+	struct pnv_ioda_pe *pe = tbl->data;
- 	struct pnv_phb *phb = pe->phb;
- 
- 	if (phb->type == PNV_PHB_IODA1)
-@@ -1055,7 +1058,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	}
- 
- 	/* Setup linux iommu table */
--	tbl = &pe->tce32_table;
-+	tbl = pe->tce32_table;
- 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
- 				  base << 28);
- 
-@@ -1093,8 +1096,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 
- static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
- {
--	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
--					      tce32_table);
-+	struct pnv_ioda_pe *pe = tbl->data;
- 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
- 	int64_t rc;
- 
-@@ -1139,10 +1141,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
- 	pe->tce_bypass_base = 1ull << 59;
- 
- 	/* Install set_bypass callback for VFIO */
--	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
-+	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
- 
- 	/* Enable bypass by default */
--	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
-+	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
- }
- 
- static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-@@ -1190,7 +1192,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	}
- 
- 	/* Setup linux iommu table */
--	tbl = &pe->tce32_table;
-+	tbl = pe->tce32_table;
- 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0);
- 
- 	/* OPAL variant of PHB3 invalidated TCEs */
+ 	/* Reset IODA tables to a clean state */
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index bff26d9..0d616f0 100644
+index 0d616f0..e55772f 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -53,7 +53,7 @@ struct pnv_ioda_pe {
- 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
- 	int			tce32_seg;
- 	int			tce32_segcount;
--	struct iommu_table	tce32_table;
-+	struct iommu_table	*tce32_table;
- 	phys_addr_t		tce_inval_reg_phys;
+@@ -229,5 +229,8 @@ extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 					__be64 *startp, __be64 *endp, bool rm);
+ extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
+ extern int ioda_eeh_phb_reset(struct pci_controller *hose, int option);
++#ifdef CONFIG_PCI_IOV
++resource_size_t pnv_pci_sriov_resource_size(struct pci_dev *pdev, int resno);
++#endif
  
- 	/* 64-bit TCE bypass region */
+ #endif /* __POWERNV_PCI_H */
 -- 
 1.7.9.5
