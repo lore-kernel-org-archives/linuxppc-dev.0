@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 268A91A07BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:26 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFF031A018A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:27 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 24 Jul 2014 18:48:22 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9D3E73578055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:24 +1000 (EST)
+ Thu, 24 Jul 2014 18:48:21 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 04A913578057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:25 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6O8m84Q5702036
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:08 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6O8VRHn67043498
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:31:27 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6O8mOq2017163
+ s6O8mOGj017184
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 18:48:24 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 17/18] vfio: Use it_page_size
-Date: Thu, 24 Jul 2014 18:48:10 +1000
-Message-Id: <1406191691-31441-18-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 18/18] vfio: powerpc: Enable Dynamic DMA windows
+Date: Thu, 24 Jul 2014 18:48:11 +1000
+Message-Id: <1406191691-31441-19-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -38,80 +38,308 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes use of the it_page_size from the iommu_table struct
-as page size can differ.
+This defines and implements VFIO IOMMU API required to support
+Dynamic DMA windows defined in the SPAPR specification. The ioctl handlers
+implement host-size part of corresponding RTAS calls:
+- VFIO_IOMMU_SPAPR_TCE_QUERY - ibm,query-pe-dma-window;
+- VFIO_IOMMU_SPAPR_TCE_CREATE - ibm,create-pe-dma-window;
+- VFIO_IOMMU_SPAPR_TCE_REMOVE - ibm,remove-pe-dma-window;
+- VFIO_IOMMU_SPAPR_TCE_RESET - ibm,reset-pe-dma-window.
 
-This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
-as recently introduced IOMMU_PAGE_XXX macros do not include
-IOMMU_PAGE_SHIFT.
+The VFIO IOMMU driver does basic sanity checks and calls corresponding
+SPAPR TCE functions. At the moment only IODA2 (POWER8 PCI host bridge)
+implements them.
+
+This advertises VFIO_IOMMU_SPAPR_TCE_FLAG_DDW capability via
+VFIO_IOMMU_SPAPR_TCE_GET_INFO.
+
+This calls reset() when IOMMU is being disabled (happens when VFIO stops
+using it).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   1 +
+ drivers/vfio/vfio_iommu_spapr_tce.c       | 169 +++++++++++++++++++++++++++++-
+ include/uapi/linux/vfio.h                 |  37 ++++++-
+ 3 files changed, 205 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 2f2bdab..abd97be 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -859,6 +859,7 @@ static long pnv_pci_ioda2_ddw_create(struct spapr_tce_iommu_group *data,
+ 
+ 	/* Copy "invalidate" register address */
+ 	tbl64->it_index = pe->tce32.table.it_index;
++	tbl64->it_group = pe->tce32.table.it_group;
+ 	tbl64->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
+ 			TCE_PCI_SWINV_PAIR;
+ 	tbl64->it_map = (void *) 0xDEADBEEF; /* poison */
 diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 05b2f11..2deab4a 100644
+index 2deab4a..20d34b8 100644
 --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -59,7 +59,7 @@ static long tce_iommu_account_memlimit(struct iommu_table *tbl, bool inc)
- 	if (!current->mm)
- 		return -ESRCH; /* process exited */
+@@ -45,6 +45,7 @@ struct tce_container {
+ 	struct mutex lock;
+ 	struct iommu_group *grp;
+ 	bool enabled;
++	unsigned long start64;
+ };
  
--	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
- 	if (!inc)
- 		npages = -npages;
+ /*
+@@ -145,18 +146,34 @@ static void tce_iommu_disable(struct tce_container *container)
  
-@@ -228,8 +228,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (info.argsz < minsz)
- 			return -EINVAL;
+ 	container->enabled = false;
  
--		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
--		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
-+		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
-+		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+-	if (!container->grp || !current->mm)
++	if (!container->grp)
+ 		return;
+ 
+ 	data = iommu_group_get_iommudata(container->grp);
+ 	if (!data || !data->iommu_owner || !data->ops->get_table)
+ 		return;
+ 
++	/* Try resetting, there might have been a 64bit window */
++	if (data->ops->reset)
++		data->ops->reset(data);
++
++	if (!current->mm)
++		return;
++
+ 	tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
+ 	if (!tbl)
+ 		return;
+ 
+ 	tce_iommu_account_memlimit(tbl, false);
++
++	if (!container->start64)
++		return;
++
++	tbl = data->ops->get_table(data, container->start64);
++	if (!tbl)
++		return;
++
++	tce_iommu_account_memlimit(tbl, false);
+ }
+ 
+ static void *tce_iommu_open(unsigned long arg)
+@@ -231,6 +248,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
+ 		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
  		info.flags = 0;
++		if (data->ops->query && data->ops->create && data->ops->remove)
++			info.flags |= VFIO_IOMMU_SPAPR_TCE_FLAG_DDW;
  
  		if (copy_to_user((void __user *)arg, &info, minsz))
-@@ -282,17 +282,17 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (ret)
- 			return ret;
+ 			return -EFAULT;
+@@ -356,6 +375,154 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		tce_iommu_disable(container);
+ 		mutex_unlock(&container->lock);
+ 		return 0;
++
++	case VFIO_IOMMU_SPAPR_TCE_QUERY: {
++		struct vfio_iommu_spapr_tce_query query;
++		struct spapr_tce_iommu_group *data;
++
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++
++		minsz = offsetofend(struct vfio_iommu_spapr_tce_query,
++				page_size_mask);
++
++		if (copy_from_user(&query, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (query.argsz < minsz)
++			return -EINVAL;
++
++		if (!data->ops->query || !data->iommu_owner)
++			return -ENOSYS;
++
++		ret = data->ops->query(data,
++				&query.windows_available,
++				&query.page_size_mask);
++
++		if (ret)
++			return ret;
++
++		if (copy_to_user((void __user *)arg, &query, minsz))
++			return -EFAULT;
++
++		return 0;
++	}
++	case VFIO_IOMMU_SPAPR_TCE_CREATE: {
++		struct vfio_iommu_spapr_tce_create create;
++		struct spapr_tce_iommu_group *data;
++		struct iommu_table *tbl;
++
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++
++		minsz = offsetofend(struct vfio_iommu_spapr_tce_create,
++				start_addr);
++
++		if (copy_from_user(&create, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (create.argsz < minsz)
++			return -EINVAL;
++
++		if (!data->ops->create || !data->iommu_owner)
++			return -ENOSYS;
++
++		BUG_ON(!data || !data->ops || !data->ops->remove);
++
++		ret = data->ops->create(data, create.page_shift,
++				create.window_shift, &tbl);
++		if (ret)
++			return ret;
++
++		ret = tce_iommu_account_memlimit(tbl, true);
++		if (ret) {
++			data->ops->remove(data, tbl);
++			return ret;
++		}
++
++		create.start_addr = tbl->it_offset << tbl->it_page_shift;
++
++		if (copy_to_user((void __user *)arg, &create, minsz)) {
++			data->ops->remove(data, tbl);
++			tce_iommu_account_memlimit(tbl, false);
++			return -EFAULT;
++		}
++
++		return ret;
++	}
++	case VFIO_IOMMU_SPAPR_TCE_REMOVE: {
++		struct vfio_iommu_spapr_tce_remove remove;
++		struct spapr_tce_iommu_group *data;
++		struct iommu_table *tbl;
++
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++
++		minsz = offsetofend(struct vfio_iommu_spapr_tce_remove,
++				start_addr);
++
++		if (copy_from_user(&remove, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (remove.argsz < minsz)
++			return -EINVAL;
++
++		if (!data->ops->remove || !data->iommu_owner)
++			return -ENOSYS;
++
++		tbl = data->ops->get_table(data, remove.start_addr);
++		if (!tbl)
++			return -EINVAL;
++
++		ret = data->ops->remove(data, tbl);
++		if (ret)
++			return ret;
++
++		tce_iommu_account_memlimit(tbl, false);
++
++		return 0;
++	}
++	case VFIO_IOMMU_SPAPR_TCE_RESET: {
++		struct vfio_iommu_spapr_tce_reset reset;
++		struct spapr_tce_iommu_group *data;
++
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++
++		minsz = offsetofend(struct vfio_iommu_spapr_tce_reset, argsz);
++
++		if (copy_from_user(&reset, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (reset.argsz < minsz)
++			return -EINVAL;
++
++		if (!data->ops->reset || !data->iommu_owner)
++			return -ENOSYS;
++
++		ret = data->ops->reset(data);
++		if (ret)
++			return ret;
++
++		if (container->start64) {
++			struct iommu_table *tbl;
++
++			tbl = data->ops->get_table(data, container->start64);
++			BUG_ON(!tbl);
++
++			tce_iommu_account_memlimit(tbl, false);
++		}
++
++		return 0;
++	}
+ 	}
  
--		for (i = 0; i < (param.size >> IOMMU_PAGE_SHIFT_4K); ++i) {
-+		for (i = 0; i < (param.size >> tbl->it_page_shift); ++i) {
- 			ret = iommu_put_tce_user_mode(tbl,
--					(param.iova >> IOMMU_PAGE_SHIFT_4K) + i,
-+					(param.iova >> tbl->it_page_shift) + i,
- 					tce);
- 			if (ret)
- 				break;
--			tce += IOMMU_PAGE_SIZE_4K;
-+			tce += IOMMU_PAGE_SIZE(tbl);
- 		}
- 		if (ret)
- 			iommu_clear_tces_and_put_pages(tbl,
--					param.iova >> IOMMU_PAGE_SHIFT_4K, i);
-+					param.iova >> tbl->it_page_shift, i);
+ 	return -ENOTTY;
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index cb9023d..8b03381 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -448,13 +448,48 @@ struct vfio_iommu_type1_dma_unmap {
+  */
+ struct vfio_iommu_spapr_tce_info {
+ 	__u32 argsz;
+-	__u32 flags;			/* reserved for future use */
++	__u32 flags;
++#define VFIO_IOMMU_SPAPR_TCE_FLAG_DDW	1 /* Support dynamic windows */
+ 	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
+ 	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
+ };
  
- 		iommu_flush_tce(tbl);
+ #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
  
-@@ -333,13 +333,13 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		BUG_ON(!tbl->it_group);
++/*
++ * Dynamic DMA windows
++ */
++struct vfio_iommu_spapr_tce_query {
++	__u32 argsz;
++	/* out */
++	__u32 windows_available;
++	__u32 page_size_mask;
++};
++#define VFIO_IOMMU_SPAPR_TCE_QUERY	_IO(VFIO_TYPE, VFIO_BASE + 17)
++
++struct vfio_iommu_spapr_tce_create {
++	__u32 argsz;
++	/* in */
++	__u32 page_shift;
++	__u32 window_shift;
++	/* out */
++	__u64 start_addr;
++
++};
++#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 18)
++
++struct vfio_iommu_spapr_tce_remove {
++	__u32 argsz;
++	/* in */
++	__u64 start_addr;
++};
++#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 19)
++
++struct vfio_iommu_spapr_tce_reset {
++	__u32 argsz;
++};
++#define VFIO_IOMMU_SPAPR_TCE_RESET	_IO(VFIO_TYPE, VFIO_BASE + 20)
++
+ /* ***************************************************************** */
  
- 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.size >> tbl->it_page_shift);
- 		if (ret)
- 			return ret;
- 
- 		ret = iommu_clear_tces_and_put_pages(tbl,
--				param.iova >> IOMMU_PAGE_SHIFT_4K,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.iova >> tbl->it_page_shift,
-+				param.size >> tbl->it_page_shift);
- 		iommu_flush_tce(tbl);
- 
- 		return ret;
+ #endif /* _UAPIVFIO_H */
 -- 
 2.0.0
