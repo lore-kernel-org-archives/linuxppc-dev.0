@@ -1,21 +1,24 @@
-Return-Path: <Shaohui.Xie@freescale.com>
+Return-Path: <nicoleotsuka@gmail.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2541B1A094D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 13:26:56 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Shruti Kanetkar <Shruti@freescale.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
-Date: Fri, 25 Jul 2014 03:11:52 +0000
-Message-ID: <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
-In-Reply-To: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACFDE1A0950
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 14:01:47 +1000 (EST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: <broonie@kernel.org>
+Subject: [PATCH v3 0/2] Add Freescale ASRC driver
+Date: Fri, 25 Jul 2014 12:03:57 +0800
+Message-ID: <cover.1406259578.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, b42378@freescale.com, timur@tabi.org,
+ pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, rdunlap@infradead.org, b02247@freescale.com,
+ lgirdwood@gmail.com, perex@perex.cz, robh+dt@kernel.org, galak@codeaurora.org,
+ grant.likely@linaro.org, tklauser@distanz.ch, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8sIFNjb3R0LCBTaHJ1dGksDQoNClRoZXJlIGFyZSB0d28gdHlwZXMgTURJTyBjb250cm9s
-bGVycywgZWFjaCBNQUMgaGFzIGEgY29ycmVzcG9uZGluZyBNRElPIGNvbnRyb2xsZXIgdG8gYWNj
-ZXNzIGludGVybmFsIFBIWXMgaW5zaWRlIFNlcmRlcywgYW5vdGhlciBpcyBkZWRpY2F0ZWQgTURJ
-TyBjb250cm9sbGVyIHRvIGFjY2VzcyBleHRlcm5hbCBQSFlzIChQSFlzIG9uIGJvYXJkIG9yIHJp
-c2VyIGNhcmQsIGV0YykuIEN1cnJlbnQgTURJTyBkcml2ZXIgZG9lcyBub3QgZGlzdGluZ3Vpc2gg
-dGhlIHR3byBjb250cm9sbGVycywgaWYgd2UgbmVlZCB0byBkaXN0aW5ndWlzaCB0aGUgY29udHJv
-bGxlcnMsIHdoYXQgY291bGQgYmUgdGhlIHByb3BlciB3YXk/IFBlcmhhcHMgYSBuZXcgcHJvcGVy
-dHkgaXMgbmVlZGVkIGluIGR0cz8NClBsZWFzZSBjb21tZW50IQ0KVGhhbmtzIQ0KDQpCZXN0IFJl
-Z2FyZHMsIA0KU2hhb2h1aSBYaWUNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
-bTogTGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK2IyMTk4OT1m
-cmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBTaHJ1dGkNCj4gS2Fu
-ZXRrYXINCj4gU2VudDogVGh1cnNkYXksIEp1bHkgMTcsIDIwMTQgNDoxNyBBTQ0KPiBUbzogV29v
-ZCBTY290dC1CMDc0MjENCj4gQ2M6IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQ7IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFtQQVRDSCB2MiAxLzddIGR0OiBJbnRyb2R1
-Y2UgdGhlIEZNYW4gMTAgR2IvcyBNRElPIGJpbmRpbmcNCj4gDQo+IFRoaXMgZG9jdW1lbnQgY292
-ZXJzIEZNYW52MiBhbmQgRk1hbnYzIG1FTUFDIE1ESU8NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFNo
-cnV0aSBLYW5ldGthciA8U2hydXRpQEZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiAgLi4uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC14Z21hYy1waHkudHh0ICAgICAgfCAyOQ0KPiArKysrKysr
-KysrKysrKysrKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwgMjkgaW5zZXJ0aW9ucygrKQ0KPiAg
-Y3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQv
-ZnNsLXhnbWFjLQ0KPiBwaHkudHh0DQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
-ZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9mc2wteGdtYWMtcGh5LnR4dA0KPiBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLXhnbWFjLXBoeS50eHQNCj4gbmV3IGZpbGUg
-bW9kZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uMmYyZDU2ZA0KPiAtLS0gL2Rldi9udWxsDQo+
-ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLXhnbWFjLXBo
-eS50eHQNCj4gQEAgLTAsMCArMSwyOSBAQA0KPiArKk1ESU8gSU8gZGV2aWNlDQo+ICsNCj4gK1Ro
-ZSBNRElPIGlzIGEgYnVzIHRvIHdoaWNoIHRoZSBQSFkgZGV2aWNlcyBhcmUgY29ubmVjdGVkLiBG
-b3IgZWFjaA0KPiArZGV2aWNlIHRoYXQgZXhpc3RzIG9uIHRoaXMgYnVzLCBhIGNoaWxkIG5vZGUg
-c2hvdWxkIGJlIGNyZWF0ZWQuDQo+ICsNCj4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ICsJLSBj
-b21wYXRpYmxlOiBDdXJyZW50bHkgc3VwcG9ydGVkIHN0cmluZ3MvZGV2aWNlcyBhcmU6DQo+ICsJ
-CQktICJmc2wsZm1hbi14bWRpbyIgKE11c3QgYmUgdXNlZCBmb3IgMTAgR2IvcyBNRElPIGZyb20N
-Cj4gRk1hbiB2Mi4NCj4gKwkJCSAgQ2FuIGJlIHVzZWQgZm9yIDEvMTAgR2IvcyBNRElPIGZyb20g
-Rk1hbiB2MykNCj4gKwkJCS0gImZzbCxmbWFuLW1lbWFjLW1kaW8iIChNdXN0IGJlIHVzZWQgZm9y
-IDEvMTAgR2Ivcw0KPiBNRElPIGZyb20NCj4gKwkJCSAgRk1hbiB2MykNCj4gKwktIHJlZw0KPiAr
-DQo+ICsJRXhhbXBsZSBmb3IgRk1hbiB2MjoNCj4gKwkJbWRpb0BmMTAwMCB7DQo+ICsJCQkjYWRk
-cmVzcy1jZWxscyA9IDwxPjsNCj4gKwkJCSNzaXplLWNlbGxzID0gPDA+Ow0KPiArCQkJY29tcGF0
-aWJsZSA9ICJmc2wsZm1hbi14bWRpbyI7DQo+ICsJCQlyZWcgPSA8MHhmMTAwMCAweDEwMDA+Ow0K
-PiArCQl9Ow0KPiArDQo+ICsJRXhhbXBsZSBmb3IgRk1hbiB2MzoNCj4gKw0KPiArCQltZGlvQGYx
-MDAwIHsNCj4gKwkJCSNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiArCQkJI3NpemUtY2VsbHMgPSA8
-MD47DQo+ICsJCQljb21wYXRpYmxlID0gImZzbCxmbWFuLW1lbWFjLW1kaW8iLCAiZnNsLGZtYW4t
-eG1kaW8iOw0KPiArCQkJcmVnID0gPDB4ZjEwMDAgMHgxMDAwPjsNCj4gKwkJfQ0KPiAtLQ0KPiAx
-LjguMy4xDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXw0KPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+IExpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnDQo+IGh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1k
-ZXYNCg==
+This series of patches add Freescale ASRC module driver support along
+with the extra request in imx-sdma structure required by SDMA Device
+to Device script.
+
+The previous version has been in the maillist for nearly six months
+without any comment and reply. So I decide to drop the SDMA part's
+change since this series focus on ASRC support (Later, we can send
+SDMA part separately.) so that ASRC driver may get upstream first.
+
+Changelog
+v3:
+ * PATCH-1: Added an Acked-by from Shawn Guo
+ * PATCH-2: Dropped THIS_MODULE as Tobias suggests
+ * PATCH-2: Use dma_coerce_mask_and_coherent() in fsl_asrc_dma_pcm_new()
+ * PATCH-2: Added substream check in fsl_asrc_dma_pcm_new()
+v2:
+ * PATCH-1: Dropped the change to SDMA driver.
+ * PATCH-2: Dropped useless member in private data structures.
+ * PATCH-2: Refined some comments in fsl_asrc_dma.c driver.
+ * PATCH-2: Refined commit comments.
+
+Nicolin Chen (2):
+  ARM: imx: Add the secondary request into the structure for imx-sdma
+  ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers
+
+ .../devicetree/bindings/sound/fsl,asrc.txt         |   62 ++
+ include/linux/platform_data/dma-imx.h              |    1 +
+ sound/soc/fsl/Kconfig                              |    9 +
+ sound/soc/fsl/Makefile                             |    2 +
+ sound/soc/fsl/fsl_asrc.c                           | 1030 ++++++++++++++++++++
+ sound/soc/fsl/fsl_asrc.h                           |  461 +++++++++
+ sound/soc/fsl/fsl_asrc_dma.c                       |  386 ++++++++
+ 7 files changed, 1951 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/sound/fsl,asrc.txt
+ create mode 100644 sound/soc/fsl/fsl_asrc.c
+ create mode 100644 sound/soc/fsl/fsl_asrc.h
+ create mode 100644 sound/soc/fsl/fsl_asrc_dma.c
+
+-- 
+1.8.4
