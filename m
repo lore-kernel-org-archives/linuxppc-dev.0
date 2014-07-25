@@ -1,30 +1,21 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B0B71A0453
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 12:21:16 +1000 (EST)
-Date: Fri, 25 Jul 2014 10:05:22 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Tobias Klauser <tklauser@distanz.ch>
-Subject: Re: [PATCH v2 2/2] ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and
- platform drivers
-Message-ID: <20140725020520.GA29136@MrMyself>
-References: <cover.1406189745.git.nicoleotsuka@gmail.com>
- <2c74a11776ffcc017c80dc31be4a8313755be8f5.1406189745.git.nicoleotsuka@gmail.com>
- <20140724152045.GA3384@distanz.ch>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2541B1A094D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 13:26:56 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Shruti Kanetkar <Shruti@freescale.com>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
+Date: Fri, 25 Jul 2014 03:11:52 +0000
+Message-ID: <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+In-Reply-To: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140724152045.GA3384@distanz.ch>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, b42378@freescale.com, timur@tabi.org,
- pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, tiwai@suse.de,
- linux-kernel@vger.kernel.org, rdunlap@infradead.org, b02247@freescale.com,
- lgirdwood@gmail.com, robh+dt@kernel.org, perex@perex.cz,
- Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
- galak@codeaurora.org, grant.likely@linaro.org, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,67 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tobias,
-
-On Thu, Jul 24, 2014 at 05:20:45PM +0200, Tobias Klauser wrote:
-> On 2014-07-24 at 10:35:29 +0200, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> > The Asynchronous Sample Rate Converter (ASRC) converts the sampling rate of a
-> > signal associated with an input clock into a signal associated with a different
-> > output clock. The driver currently works as a Front End of DPCM with other Back
-> > Ends DAI links such as ESAI<->CS42888 and SSI<->WM8962 and SAI. It converts the
-> > original sample rate to a common rate supported by Back Ends for playback while
-> > converts the common rate of Back Ends to a desired rate for capture. It has 3
-> > pairs to support three different substreams within totally 10 channels.
-> > 
-> > Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> > ---
-> 
-> [...]
-> 
-> > --- /dev/null
-> > +++ b/sound/soc/fsl/fsl_asrc.c
-> > @@ -0,0 +1,1031 @@
-> 
-> [...]
-> 
-> > +static struct platform_driver fsl_asrc_driver = {
-> > +	.probe = fsl_asrc_probe,
-> > +	.driver = {
-> > +		.name = "fsl-asrc",
-> > +		.owner = THIS_MODULE,
-> 
-> Not necessary, this will be set by module_platform_driver (or
-> the expansion of platform_driver_register, respectively).
-> 
-> > +		.of_match_table = fsl_asrc_ids,
-> > +		.pm = &fsl_asrc_pm,
-> > +	},
-> > +};
-> > +module_platform_driver(fsl_asrc_driver);
-> 
-> [...]
-> 
-> > --- /dev/null
-> > +++ b/sound/soc/fsl/fsl_asrc_dma.c
-> > @@ -0,0 +1,384 @@
-> 
-> [...]
-> 
-> > +static int fsl_asrc_dma_pcm_new(struct snd_soc_pcm_runtime *rtd)
-> > +{
-> > +	struct snd_card *card = rtd->card->snd_card;
-> > +	struct snd_pcm_substream *substream;
-> > +	struct snd_pcm *pcm = rtd->pcm;
-> > +	u64 dma_mask = DMA_BIT_MASK(32);
-> > +	int ret, i;
-> > +
-> > +	if (!card->dev->dma_mask)
-> > +		card->dev->dma_mask = &dma_mask;
-> 
-> dma_mask will go out of scope after fsl_asrc_dma_pcm_new returns,
-> resulting in a stray pointer in card->dev->dma_mask.
-
-Will fix them in v3.
-
-Thank you
-Nicolin
+SGVsbG8sIFNjb3R0LCBTaHJ1dGksDQoNClRoZXJlIGFyZSB0d28gdHlwZXMgTURJTyBjb250cm9s
+bGVycywgZWFjaCBNQUMgaGFzIGEgY29ycmVzcG9uZGluZyBNRElPIGNvbnRyb2xsZXIgdG8gYWNj
+ZXNzIGludGVybmFsIFBIWXMgaW5zaWRlIFNlcmRlcywgYW5vdGhlciBpcyBkZWRpY2F0ZWQgTURJ
+TyBjb250cm9sbGVyIHRvIGFjY2VzcyBleHRlcm5hbCBQSFlzIChQSFlzIG9uIGJvYXJkIG9yIHJp
+c2VyIGNhcmQsIGV0YykuIEN1cnJlbnQgTURJTyBkcml2ZXIgZG9lcyBub3QgZGlzdGluZ3Vpc2gg
+dGhlIHR3byBjb250cm9sbGVycywgaWYgd2UgbmVlZCB0byBkaXN0aW5ndWlzaCB0aGUgY29udHJv
+bGxlcnMsIHdoYXQgY291bGQgYmUgdGhlIHByb3BlciB3YXk/IFBlcmhhcHMgYSBuZXcgcHJvcGVy
+dHkgaXMgbmVlZGVkIGluIGR0cz8NClBsZWFzZSBjb21tZW50IQ0KVGhhbmtzIQ0KDQpCZXN0IFJl
+Z2FyZHMsIA0KU2hhb2h1aSBYaWUNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
+bTogTGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK2IyMTk4OT1m
+cmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBTaHJ1dGkNCj4gS2Fu
+ZXRrYXINCj4gU2VudDogVGh1cnNkYXksIEp1bHkgMTcsIDIwMTQgNDoxNyBBTQ0KPiBUbzogV29v
+ZCBTY290dC1CMDc0MjENCj4gQ2M6IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQ7IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFtQQVRDSCB2MiAxLzddIGR0OiBJbnRyb2R1
+Y2UgdGhlIEZNYW4gMTAgR2IvcyBNRElPIGJpbmRpbmcNCj4gDQo+IFRoaXMgZG9jdW1lbnQgY292
+ZXJzIEZNYW52MiBhbmQgRk1hbnYzIG1FTUFDIE1ESU8NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFNo
+cnV0aSBLYW5ldGthciA8U2hydXRpQEZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiAgLi4uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC14Z21hYy1waHkudHh0ICAgICAgfCAyOQ0KPiArKysrKysr
+KysrKysrKysrKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwgMjkgaW5zZXJ0aW9ucygrKQ0KPiAg
+Y3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQv
+ZnNsLXhnbWFjLQ0KPiBwaHkudHh0DQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9mc2wteGdtYWMtcGh5LnR4dA0KPiBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLXhnbWFjLXBoeS50eHQNCj4gbmV3IGZpbGUg
+bW9kZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uMmYyZDU2ZA0KPiAtLS0gL2Rldi9udWxsDQo+
+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLXhnbWFjLXBo
+eS50eHQNCj4gQEAgLTAsMCArMSwyOSBAQA0KPiArKk1ESU8gSU8gZGV2aWNlDQo+ICsNCj4gK1Ro
+ZSBNRElPIGlzIGEgYnVzIHRvIHdoaWNoIHRoZSBQSFkgZGV2aWNlcyBhcmUgY29ubmVjdGVkLiBG
+b3IgZWFjaA0KPiArZGV2aWNlIHRoYXQgZXhpc3RzIG9uIHRoaXMgYnVzLCBhIGNoaWxkIG5vZGUg
+c2hvdWxkIGJlIGNyZWF0ZWQuDQo+ICsNCj4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ICsJLSBj
+b21wYXRpYmxlOiBDdXJyZW50bHkgc3VwcG9ydGVkIHN0cmluZ3MvZGV2aWNlcyBhcmU6DQo+ICsJ
+CQktICJmc2wsZm1hbi14bWRpbyIgKE11c3QgYmUgdXNlZCBmb3IgMTAgR2IvcyBNRElPIGZyb20N
+Cj4gRk1hbiB2Mi4NCj4gKwkJCSAgQ2FuIGJlIHVzZWQgZm9yIDEvMTAgR2IvcyBNRElPIGZyb20g
+Rk1hbiB2MykNCj4gKwkJCS0gImZzbCxmbWFuLW1lbWFjLW1kaW8iIChNdXN0IGJlIHVzZWQgZm9y
+IDEvMTAgR2Ivcw0KPiBNRElPIGZyb20NCj4gKwkJCSAgRk1hbiB2MykNCj4gKwktIHJlZw0KPiAr
+DQo+ICsJRXhhbXBsZSBmb3IgRk1hbiB2MjoNCj4gKwkJbWRpb0BmMTAwMCB7DQo+ICsJCQkjYWRk
+cmVzcy1jZWxscyA9IDwxPjsNCj4gKwkJCSNzaXplLWNlbGxzID0gPDA+Ow0KPiArCQkJY29tcGF0
+aWJsZSA9ICJmc2wsZm1hbi14bWRpbyI7DQo+ICsJCQlyZWcgPSA8MHhmMTAwMCAweDEwMDA+Ow0K
+PiArCQl9Ow0KPiArDQo+ICsJRXhhbXBsZSBmb3IgRk1hbiB2MzoNCj4gKw0KPiArCQltZGlvQGYx
+MDAwIHsNCj4gKwkJCSNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiArCQkJI3NpemUtY2VsbHMgPSA8
+MD47DQo+ICsJCQljb21wYXRpYmxlID0gImZzbCxmbWFuLW1lbWFjLW1kaW8iLCAiZnNsLGZtYW4t
+eG1kaW8iOw0KPiArCQkJcmVnID0gPDB4ZjEwMDAgMHgxMDAwPjsNCj4gKwkJfQ0KPiAtLQ0KPiAx
+LjguMy4xDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXw0KPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+IExpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnDQo+IGh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1k
+ZXYNCg==
