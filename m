@@ -1,23 +1,24 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 13CC91A0973
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 00:32:30 +1000 (EST)
-Date: Fri, 25 Jul 2014 19:55:59 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: Re: [PATCH v3 0/3] dmaengine: mpc512x: add device tree binding
- document and DMA channel lookup
-Message-ID: <20140725142559.GU8181@intel.com>
-References: <1403693580-9449-1-git-send-email-a13xp0p0v88@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1403693580-9449-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Gerhard Sittig <gsi@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
- dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <pawel.moll@arm.com>
+Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
+ [217.140.110.23])
+ by lists.ozlabs.org (Postfix) with ESMTP id A00311A0988
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 00:32:33 +1000 (EST)
+From: Pawel Moll <pawel.moll@arm.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's device
+Date: Fri, 25 Jul 2014 15:23:51 +0100
+Message-Id: <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
+References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
+Cc: paul@pwsan.com, Pawel Moll <pawel.moll@arm.com>,
+ Arnd Bergmann <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Anton Vorontsov <anton@enomsg.org>, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Chris Ball <chris@printf.net>,
+ linux-tegra@vger.kernel.org, arm@kernel.org, Olof Johansson <olof@lixom.net>,
+ Ulf Hansson <ulf.hansson@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 25, 2014 at 02:52:57PM +0400, Alexander Popov wrote:
-> This patch series introduces a device tree binding document for
-> the MPC512x DMA controller and adds device tree based DMA channel lookup
-> for it.
-> 
-> This version contains the improved device tree binding document:
-> #dma-cells is made a required property, as it must be according
-> dma/dma.txt document.
+The code selecting a device for the sdhci host has been
+continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
+"mmc: sdhci-pltfm: Add structure for host-specific data" and
+a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
+device does not pass parent to sdhci_alloc_host") while there
+does not seem to be any reason to use platform device's parent
+in the first place.
 
-Applied, thanks
+The comment saying "Some PCI-based MFD need the parent here"
+seem to refer to Timberdale FPGA driver (the only MFD driver
+registering SDHCI cell, drivers/mfd/timberdale.c) but again,
+the only situation when parent device matter is runtime PM,
+which is not implemented for Timberdale.
 
+Cc: Chris Ball <chris@printf.net>
+Cc: Anton Vorontsov <anton@enomsg.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+---
+
+This patch is a part of effort to remove references to platform_bus
+and make it static.
+
+Chris, Anton, Ulf - could you please advise if the assumptions
+above are correct or if I'm completely wrong? Do you know what
+where the real reasons to use parent originally? The PCI comment
+seems like a red herring to me...
+
+ drivers/mmc/host/sdhci-pltfm.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index 7e834fb..4996112 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -136,13 +136,8 @@ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
+ 	if (resource_size(iomem) < 0x100)
+ 		dev_err(&pdev->dev, "Invalid iomem size!\n");
+ 
+-	/* Some PCI-based MFD need the parent here */
+-	if (pdev->dev.parent != &platform_bus && !np)
+-		host = sdhci_alloc_host(pdev->dev.parent,
+-			sizeof(struct sdhci_pltfm_host) + priv_size);
+-	else
+-		host = sdhci_alloc_host(&pdev->dev,
+-			sizeof(struct sdhci_pltfm_host) + priv_size);
++	host = sdhci_alloc_host(&pdev->dev,
++		sizeof(struct sdhci_pltfm_host) + priv_size);
+ 
+ 	if (IS_ERR(host)) {
+ 		ret = PTR_ERR(host);
 -- 
-~Vinod
+1.9.1
