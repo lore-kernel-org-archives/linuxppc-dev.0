@@ -1,22 +1,24 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <varkabhadram@gmail.com>
+Received: from mail-pd0-x22a.google.com (mail-pd0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c02::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE0511A095B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 16:07:39 +1000 (EST)
-Date: Fri, 25 Jul 2014 13:54:48 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Varka Bhadram <varkabhadram@gmail.com>
-Subject: Re: [PATCH v3 2/2] ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and
- platform drivers
-Message-ID: <20140725055447.GC29136@MrMyself>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0319E1A017B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 16:19:10 +1000 (EST)
+Received: by mail-pd0-f170.google.com with SMTP id g10so5131631pdj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jul 2014 23:19:07 -0700 (PDT)
+Message-ID: <53D1F686.30600@gmail.com>
+Date: Fri, 25 Jul 2014 11:47:42 +0530
+From: Varka Bhadram <varkabhadram@gmail.com>
+MIME-Version: 1.0
+To: Nicolin Chen <Guangyu.Chen@freescale.com>
+Subject: Re: [PATCH v3 2/2] ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform
+ drivers
 References: <cover.1406259578.git.nicoleotsuka@gmail.com>
  <f4ff79269a1680f9ce128e0e98fea926d3a41834.1406259578.git.nicoleotsuka@gmail.com>
- <53D1DC0B.1000905@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <53D1DC0B.1000905@gmail.com>
+ <53D1DC0B.1000905@gmail.com> <20140725055447.GC29136@MrMyself>
+In-Reply-To: <20140725055447.GC29136@MrMyself>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, b42378@freescale.com, timur@tabi.org,
  pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, tiwai@suse.de,
@@ -34,49 +36,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Varka,
+Hi Nicolin,
 
-   Regarding a point you suggested.
+On 07/25/2014 11:24 AM, Nicolin Chen wrote:
+> Hi Varka,
+>
+>     Regarding a point you suggested.
+>
+> On Fri, Jul 25, 2014 at 09:54:43AM +0530, Varka Bhadram wrote:
+>> On 07/25/2014 09:33 AM, Nicolin Chen wrote:
+>> (...)
+>>
+>>> +
+>>> +static const struct platform_device_id fsl_asrc_devtype[] = {
+>>> +	{
+>>> +		.name = "imx35-asrc",
+>>> +		.driver_data = IMX35_ASRC,
+>>> +	}, {
+>>> +		.name = "imx53-asrc",
+>>> +		.driver_data = IMX53_ASRC,
+>>> +	}, {
+>>> +		/* sentinel */
+>>> +	}
+>>> +};
+>>> +MODULE_DEVICE_TABLE(platform, fsl_asrc_devtype);
+>>> +
+>>> +static const struct of_device_id fsl_asrc_ids[] = {
+>>> +	{
+>>> +		.compatible = "fsl,imx35-asrc",
+>>> +		.data = &fsl_asrc_devtype[IMX35_ASRC],
+>>> +	}, {
+>>> +		.compatible = "fsl,imx53-asrc",
+>>> +		.data = &fsl_asrc_devtype[IMX53_ASRC],
+>>> +	}, {
+>>> +		/* sentinel */
+>>> +	}
+>>> +};
+>>> +MODULE_DEVICE_TABLE(of, fsl_asrc_ids);
+>>> +
+>> move these ids after probe/remove... every driver follows same thing...
+> Hmm.. fsl_asrc_ids is called in probe(), so it's probably not a good choice
+> to put them after probe/remove. And actually not every driver does so.
+> For example drivers/i2c/busses/i2c-s3c2410.c
+>
+> I think it should be okay to put here if it contains data.
 
-On Fri, Jul 25, 2014 at 09:54:43AM +0530, Varka Bhadram wrote:
-> On 07/25/2014 09:33 AM, Nicolin Chen wrote:
-> (...)
-> 
-> >+
-> >+static const struct platform_device_id fsl_asrc_devtype[] = {
-> >+	{
-> >+		.name = "imx35-asrc",
-> >+		.driver_data = IMX35_ASRC,
-> >+	}, {
-> >+		.name = "imx53-asrc",
-> >+		.driver_data = IMX53_ASRC,
-> >+	}, {
-> >+		/* sentinel */
-> >+	}
-> >+};
-> >+MODULE_DEVICE_TABLE(platform, fsl_asrc_devtype);
-> >+
-> >+static const struct of_device_id fsl_asrc_ids[] = {
-> >+	{
-> >+		.compatible = "fsl,imx35-asrc",
-> >+		.data = &fsl_asrc_devtype[IMX35_ASRC],
-> >+	}, {
-> >+		.compatible = "fsl,imx53-asrc",
-> >+		.data = &fsl_asrc_devtype[IMX53_ASRC],
-> >+	}, {
-> >+		/* sentinel */
-> >+	}
-> >+};
-> >+MODULE_DEVICE_TABLE(of, fsl_asrc_ids);
-> >+
-> 
-> move these ids after probe/remove... every driver follows same thing...
+You are using these ids in the probe .Tt should be above the probe() so
+we can see of_match_device() directly...
+and also one more thing that the interrupt handler also would be immediately
+above the probe()
 
-Hmm.. fsl_asrc_ids is called in probe(), so it's probably not a good choice
-to put them after probe/remove. And actually not every driver does so.
-For example drivers/i2c/busses/i2c-s3c2410.c
+ex:
+static irqreturn_t fsl_asrc_isr(int irq, void *dev_id)
+{
+...
+}
 
-I think it should be okay to put here if it contains data.
+device ids..
 
-Thank you,
-Nicolin
+your_probe()
+{
+...
+}
+
+your_remove()
+{
+...
+}
+
+Now every driver that is coming following this style...
+
+If your not using device ids in probe then it would be like
+
+static irqreturn_t fsl_asrc_isr(int irq, void *dev_id)
+{
+...
+}
+
+your_probe()
+{
+...
+}
+
+your_remove()
+{
+...
+}
+
+device ids..
+
+Thanks...
+
+-- 
+Regards,
+Varka Bhadram.
