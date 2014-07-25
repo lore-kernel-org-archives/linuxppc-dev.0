@@ -1,15 +1,18 @@
 Return-Path: <nicoleotsuka@gmail.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 862371A0019
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 18:44:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 240E01A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jul 2014 18:44:18 +1000 (EST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: <broonie@kernel.org>
-Subject: [PATCH v5 0/2] Add Freescale ASRC driver
-Date: Fri, 25 Jul 2014 16:46:17 +0800
-Message-ID: <cover.1406276436.git.nicoleotsuka@gmail.com>
+Subject: [PATCH v5 1/2] ARM: imx: Add the secondary request into the structure
+ for imx-sdma
+Date: Fri, 25 Jul 2014 16:46:18 +0800
+Message-ID: <a2ded5bde6f54756b5a6a6abf27baa46c4a9c038.1406276436.git.nicoleotsuka@gmail.com>
+In-Reply-To: <cover.1406276436.git.nicoleotsuka@gmail.com>
+References: <cover.1406276436.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
@@ -28,54 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches add Freescale ASRC module driver support along
-with the extra request in imx-sdma structure required by SDMA Device
-to Device script.
+SDMA supports device to device (per_2_per) scripts to handle DMA transfering
+between two peripheral devices. The per_2_per script, however, needs two dma
+requests from two sides while the current structure only defined one request.
 
-The previous version has been in the maillist for nearly six months
-without any comment and reply. So I decide to drop the SDMA part's
-change since this series focus on ASRC support (Later, we can send
-SDMA part separately.) so that ASRC driver may get upstream first.
+So this patch just simply adds the secondary request so as to let SDMA and
+its user to add its implementation later.
 
-Changelog
-v5: (All follow Varka's suggestions)
- * PATCH-2: Added missing '\n' to pair_err() calls.
- * PATCH-2: Return the final regmap_write() for fsl_asrc_init().
- * PATCH-2: Dropped fsl_asrc_devtype and use simple ids behind fsl_asrc_pm.
- * PATCH-2: Use of_device_is_compatible() to differ compatible directly.
- * PATCH-2: Fixed indentation for devm_regmap_init_mmio_clk() call.
-v4: (All follow Varka's suggestions)
- * PATCH-2: Added '\n' to dev_dbg() inside fsl_asrc_isr().
- * PATCH-2: Added indentations to DT binding document.
- * PATCH-2: Redefined fsl_asrc_set_watermarks() as void type.
- * PATCH-2: Put fsl_asrc_isr() and fsl_asrc_ids before probe()
-v3:
- * PATCH-1: Added an Acked-by from Shawn Guo
- * PATCH-2: Dropped THIS_MODULE as Tobias suggests
- * PATCH-2: Use dma_coerce_mask_and_coherent() in fsl_asrc_dma_pcm_new()
- * PATCH-2: Added substream check in fsl_asrc_dma_pcm_new()
-v2:
- * PATCH-1: Dropped the change to SDMA driver.
- * PATCH-2: Dropped useless member in private data structures.
- * PATCH-2: Refined some comments in fsl_asrc_dma.c driver.
- * PATCH-2: Refined commit comments.
+[ Both change in the SDMA driver and its users like Freescale ASRC ASoC driver
+  should be taken along with this change in order to truly support per_2_per
+  sciprts. However, we here make an expediency by adding this first so that
+  we can add either side later since this patch won't break any function and
+  meanwhile it can make merge window more smoothly: we don't need to apply the
+  change inside dmaengine branch via ASoC tree any more. -- Nicolin ]
 
-Nicolin Chen (2):
-  ARM: imx: Add the secondary request into the structure for imx-sdma
-  ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ include/linux/platform_data/dma-imx.h | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../devicetree/bindings/sound/fsl,asrc.txt         |  60 ++
- include/linux/platform_data/dma-imx.h              |   1 +
- sound/soc/fsl/Kconfig                              |   9 +
- sound/soc/fsl/Makefile                             |   2 +
- sound/soc/fsl/fsl_asrc.c                           | 992 +++++++++++++++++++++
- sound/soc/fsl/fsl_asrc.h                           | 461 ++++++++++
- sound/soc/fsl/fsl_asrc_dma.c                       | 386 ++++++++
- 7 files changed, 1911 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/sound/fsl,asrc.txt
- create mode 100644 sound/soc/fsl/fsl_asrc.c
- create mode 100644 sound/soc/fsl/fsl_asrc.h
- create mode 100644 sound/soc/fsl/fsl_asrc_dma.c
-
+diff --git a/include/linux/platform_data/dma-imx.h b/include/linux/platform_data/dma-imx.h
+index 7aa0e89..6a1357d 100644
+--- a/include/linux/platform_data/dma-imx.h
++++ b/include/linux/platform_data/dma-imx.h
+@@ -51,6 +51,7 @@ enum imx_dma_prio {
+ 
+ struct imx_dma_data {
+ 	int dma_request; /* DMA request line */
++	int dma_request2; /* secondary DMA request line */
+ 	enum sdma_peripheral_type peripheral_type;
+ 	int priority;
+ };
 -- 
 1.8.4
