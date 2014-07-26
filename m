@@ -1,24 +1,23 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x232.google.com (mail-la0-x232.google.com
+ [IPv6:2a00:1450:4010:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8E961A0628
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 18:26:13 +1000 (EST)
-Message-ID: <53D36429.4020106@Freescale.com>
-Date: Sat, 26 Jul 2014 03:17:45 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE2A31A044B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 01:46:35 +1000 (EST)
+Received: by mail-la0-f50.google.com with SMTP id gf5so3987160lab.23
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 08:46:29 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@Freescale.com>, Xie Shaohui-B21989
- <Shaohui.Xie@Freescale.com>
-Subject: Re: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
-References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
- <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1406318092.29414.116.camel@snotra.buserror.net>
-In-Reply-To: <1406318092.29414.116.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Kanetkar Shruti-B44454 <Shruti@Freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1406389175-9745-1-git-send-email-geert@linux-m68k.org>
+References: <1406389175-9745-1-git-send-email-geert@linux-m68k.org>
+Date: Sat, 26 Jul 2014 17:46:28 +0200
+Message-ID: <CAMuHMdWM_Nbpj9nv6SctPcB0ygE0wzx=LpS4OFgq8ES9ZHcSBg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.16-rc5
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
+On Sat, Jul 26, 2014 at 5:39 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.16-rc5[1]  to v3.16-rc4[3], the summaries are:
+>   - build errors: +14/-11
 
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PAGES_PER_SECTION' undeclared (first use in this function):  =>
+1779:46, 1887:46, 1149:18
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PAGE_SECTION_MASK' undeclared (first use in this function):  =>
+1148:20
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PFN_SECTION_SHIFT' undeclared (first use in this function):  =>
+1348:31
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function '__nr_to_section'
+[-Werror=implicit-function-declaration]:  => 1784:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'find_memory_block_hinted'
+[-Werror=implicit-function-declaration]:  => 1791:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'pfn_to_section_nr'
+[-Werror=implicit-function-declaration]:  => 1780:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'present_section_nr'
+[-Werror=implicit-function-declaration]:  => 1781:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'section_nr_to_pfn'
+[-Werror=implicit-function-declaration]:  => 1816:3
 
-On 07/25/2014 02:54 PM, Scott Wood wrote:
-> On Thu, 2014-07-24 at 22:11 -0500, Xie Shaohui-B21989 wrote:
->> Hello, Scott, Shruti,
->>
->> There are two types MDIO controllers, each MAC has a corresponding MDIO
->> controller to access internal PHYs inside Serdes, another is dedicated
->> MDIO controller to access external PHYs (PHYs on board or riser card,
->> etc). Current MDIO driver does not distinguish the two controllers, if
->> we need to distinguish the controllers, what could be the proper way?
->> Perhaps a new property is needed in dts?
-> 
-> Are these different programming models, or just two instances of the
-> same type of device, with different things attached?
+powerpc-randconfig
 
-The controllers are very similar; the FMan v3 MDIO controller is a newer
-revision of the FMan v2 10 Gb/s MDIO controller
+(ignoring a few more R_PPC64_REL24 truncated relocations in
+powerpc-allyesconfig)
 
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7665/ (all 119 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7639/ (all 119 configs)
 
-Cheers,
+Gr{oetje,eeting}s,
 
+                        Geert
 
-> -Scott
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
