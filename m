@@ -3,16 +3,16 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4124F1A032F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:03:09 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C79011A0624
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:13:16 +1000 (EST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3.10 54/56] locking/mutex: Disable optimistic spinning on some
+Subject: [PATCH 3.14 81/87] locking/mutex: Disable optimistic spinning on some
  architectures
-Date: Sat, 26 Jul 2014 12:02:47 -0700
-Message-Id: <20140726190201.843883600@linuxfoundation.org>
-In-Reply-To: <20140726190200.061512159@linuxfoundation.org>
-References: <20140726190200.061512159@linuxfoundation.org>
+Date: Sat, 26 Jul 2014 12:02:55 -0700
+Message-Id: <20140726190217.233358653@linuxfoundation.org>
+In-Reply-To: <20140726190214.530473925@linuxfoundation.org>
+References: <20140726190214.530473925@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
@@ -39,7 +39,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.10-stable review patch.  If anyone has any objections, please let me know.
+3.14-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -93,34 +93,34 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -4,6 +4,7 @@ config ARM
- 	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select ARCH_HAVE_CUSTOM_GPIO_H
-+	select ARCH_SUPPORTS_ATOMIC_RMW
+@@ -6,6 +6,7 @@ config ARM
  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAVE_CUSTOM_GPIO_H
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_CMPXCHG_LOCKREF
  	select ARCH_WANT_IPC_PARSE_VERSION
- 	select BUILDTIME_EXTABLE_SORT if MMU
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -1,6 +1,7 @@
- config ARM64
+@@ -2,6 +2,7 @@ config ARM64
  	def_bool y
  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_USE_CMPXCHG_LOCKREF
 +	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
  	select ARCH_WANT_OPTIONAL_GPIOLIB
  	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
- 	select ARCH_WANT_FRAME_POINTERS
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -138,6 +138,7 @@ config PPC
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select OLD_SIGSUSPEND
- 	select OLD_SIGACTION if PPC32
+@@ -141,6 +141,7 @@ config PPC
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+ 	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
 +	select ARCH_SUPPORTS_ATOMIC_RMW
  
- config EARLY_PRINTK
- 	bool
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
 --- a/arch/sparc/Kconfig
 +++ b/arch/sparc/Kconfig
 @@ -77,6 +77,7 @@ config SPARC64
@@ -133,10 +133,10 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	string
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -121,6 +121,7 @@ config X86
- 	select OLD_SIGACTION if X86_32
- 	select COMPAT_OLD_SIGACTION if IA32_EMULATION
- 	select RTC_LIB
+@@ -127,6 +127,7 @@ config X86
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK if X86_64
+ 	select HAVE_CC_STACKPROTECTOR
 +	select ARCH_SUPPORTS_ATOMIC_RMW
  
  config INSTRUCTION_DECODER
