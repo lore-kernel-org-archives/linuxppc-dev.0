@@ -3,16 +3,16 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C79011A0624
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:13:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D606C1A050C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:23:19 +1000 (EST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3.14 81/87] locking/mutex: Disable optimistic spinning on some
- architectures
-Date: Sat, 26 Jul 2014 12:02:55 -0700
-Message-Id: <20140726190217.233358653@linuxfoundation.org>
-In-Reply-To: <20140726190214.530473925@linuxfoundation.org>
-References: <20140726190214.530473925@linuxfoundation.org>
+Subject: [PATCH 3.15 100/109] locking/mutex: Disable optimistic spinning on
+ some architectures
+Date: Sat, 26 Jul 2014 12:03:02 -0700
+Message-Id: <20140726190226.856788942@linuxfoundation.org>
+In-Reply-To: <20140726190223.834037485@linuxfoundation.org>
+References: <20140726190223.834037485@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
@@ -39,7 +39,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.14-stable review patch.  If anyone has any objections, please let me know.
+3.15-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -113,30 +113,30 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -141,6 +141,7 @@ config PPC
- 	select HAVE_DEBUG_STACKOVERFLOW
+@@ -145,6 +145,7 @@ config PPC
  	select HAVE_IRQ_EXIT_ON_IRQ_STACK
  	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
+ 	select HAVE_ARCH_AUDITSYSCALL
 +	select ARCH_SUPPORTS_ATOMIC_RMW
  
  config GENERIC_CSUM
  	def_bool CPU_LITTLE_ENDIAN
 --- a/arch/sparc/Kconfig
 +++ b/arch/sparc/Kconfig
-@@ -77,6 +77,7 @@ config SPARC64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+@@ -78,6 +78,7 @@ config SPARC64
  	select HAVE_C_RECORDMCOUNT
  	select NO_BOOTMEM
+ 	select HAVE_ARCH_AUDITSYSCALL
 +	select ARCH_SUPPORTS_ATOMIC_RMW
  
  config ARCH_DEFCONFIG
  	string
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -127,6 +127,7 @@ config X86
- 	select HAVE_DEBUG_STACKOVERFLOW
- 	select HAVE_IRQ_EXIT_ON_IRQ_STACK if X86_64
+@@ -130,6 +130,7 @@ config X86
  	select HAVE_CC_STACKPROTECTOR
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select HAVE_ARCH_AUDITSYSCALL
 +	select ARCH_SUPPORTS_ATOMIC_RMW
  
  config INSTRUCTION_DECODER
