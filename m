@@ -1,21 +1,35 @@
-Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-lb0-f171.google.com (mail-lb0-f171.google.com
- [209.85.217.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 467E51A000C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 02:43:43 +1000 (EST)
-Received: by mail-lb0-f171.google.com with SMTP id l4so4411509lbv.16
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 09:43:39 -0700 (PDT)
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: platforms: powermac: bootx_init.c: Cleaning up
- missing null-terminate in conjunction with strncpy
-Date: Sat, 26 Jul 2014 18:45:05 +0200
-Message-Id: <1406393105-5222-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4124F1A032F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:03:09 +1000 (EST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 3.10 54/56] locking/mutex: Disable optimistic spinning on some
+ architectures
+Date: Sat, 26 Jul 2014 12:02:47 -0700
+Message-Id: <20140726190201.843883600@linuxfoundation.org>
+In-Reply-To: <20140726190200.061512159@linuxfoundation.org>
+References: <20140726190200.061512159@linuxfoundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Mikulas Patocka <mpatocka@redhat.com>,
+ John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
+ Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Vineet Gupta <vgupta@synopsys.com>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +39,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replacing strncpy with strlcpy to avoid strings that lacks null terminate.
-And removed unnecessary magic numbers.
+3.10-stable review patch.  If anyone has any objections, please let me know.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+------------------
+
+From: Peter Zijlstra <peterz@infradead.org>
+
+commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
+
+The optimistic spin code assumes regular stores and cmpxchg() play nice;
+this is found to not be true for at least: parisc, sparc32, tile32,
+metag-lock1, arc-!llsc and hexagon.
+
+There is further wreckage, but this in particular seemed easy to
+trigger, so blacklist this.
+
+Opt in for known good archs.
+
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Jason Low <jason.low2@hp.com>
+Cc: Waiman Long <waiman.long@hp.com>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: John David Anglin <dave.anglin@bell.net>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davidlohr Bueso <davidlohr@hp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
- arch/powerpc/platforms/powermac/bootx_init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/Kconfig     |    1 +
+ arch/arm64/Kconfig   |    1 +
+ arch/powerpc/Kconfig |    1 +
+ arch/sparc/Kconfig   |    1 +
+ arch/x86/Kconfig     |    1 +
+ kernel/Kconfig.locks |    5 ++++-
+ 6 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
-index 3e91ef5..76f5013 100644
---- a/arch/powerpc/platforms/powermac/bootx_init.c
-+++ b/arch/powerpc/platforms/powermac/bootx_init.c
-@@ -246,7 +246,7 @@ static void __init bootx_scan_dt_build_strings(unsigned long base,
- 		DBG(" detected display ! adding properties names !\n");
- 		bootx_dt_add_string("linux,boot-display", mem_end);
- 		bootx_dt_add_string("linux,opened", mem_end);
--		strncpy(bootx_disp_path, namep, 255);
-+		strlcpy(bootx_disp_path, namep, sizeof(bootx_disp_path));
- 	}
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -4,6 +4,7 @@ config ARM
+ 	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAVE_CUSTOM_GPIO_H
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select BUILDTIME_EXTABLE_SORT if MMU
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1,6 +1,7 @@
+ config ARM64
+ 	def_bool y
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_FRAME_POINTERS
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -138,6 +138,7 @@ config PPC
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select OLD_SIGSUSPEND
+ 	select OLD_SIGACTION if PPC32
++	select ARCH_SUPPORTS_ATOMIC_RMW
  
- 	/* get and store all property names */
--- 
-1.7.10.4
+ config EARLY_PRINTK
+ 	bool
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -77,6 +77,7 @@ config SPARC64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
+ 	select NO_BOOTMEM
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config ARCH_DEFCONFIG
+ 	string
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -121,6 +121,7 @@ config X86
+ 	select OLD_SIGACTION if X86_32
+ 	select COMPAT_OLD_SIGACTION if IA32_EMULATION
+ 	select RTC_LIB
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool y
+--- a/kernel/Kconfig.locks
++++ b/kernel/Kconfig.locks
+@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
+ 
+ endif
+ 
++config ARCH_SUPPORTS_ATOMIC_RMW
++	bool
++
+ config MUTEX_SPIN_ON_OWNER
+ 	def_bool y
+-	depends on SMP && !DEBUG_MUTEXES
++	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
