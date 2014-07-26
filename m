@@ -1,22 +1,28 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0190.outbound.protection.outlook.com [207.46.163.190])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 08ABE1A0054
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 06:09:22 +1000 (EST)
-Message-ID: <53D2B777.10107@Freescale.com>
-Date: Fri, 25 Jul 2014 15:00:55 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Shaohui Xie <Shaohui.Xie@Freescale.com>, Shruti Kanetkar
- <Shruti@Freescale.com>, Scott Wood <scottwood@Freescale.com>
-Subject: Re: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
-References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
- <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
-In-Reply-To: <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E50C31A0955
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 10:10:53 +1000 (EST)
+Message-ID: <1406333436.29414.151.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+ SPE/FP/AltiVec int numbers
+From: Scott Wood <scottwood@freescale.com>
+To: Caraman Mihai Claudiu-B02008 <mihai.caraman@freescale.com>
+Date: Fri, 25 Jul 2014 19:10:36 -0500
+In-Reply-To: <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
+ <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
+ <53B54AAD.4040609@suse.de>
+ <767ce3456f6f40809a1488b4df90498d@BLUPR03MB503.namprd03.prod.outlook.com>
+ <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,93 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Shao-Hui,
+On Thu, 2014-07-24 at 04:16 -0500, Caraman Mihai Claudiu-B02008 wrote:
+> Scott, Alex's request to define SPE handlers only for e500v2 implies changes
+> in 32-bit FSL kernel to have exclusive configurations for e200/e500v2 and
+> e500mc/e5500. We would probably need something like this, what's your take on it?
 
+That is already a compile-time decision.
+        
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> index b497188..9d41015 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -613,6 +613,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+>         mfspr   r10, SPRN_SPRG_RSCRATCH0
+>         b       InstructionStorage
+>  
+> +/* Define SPE handlers only for e500v2 and e200 */
+> +#ifndef CONFIG_PPC_E500MC
+>  #ifdef CONFIG_SPE
+>         /* SPE Unavailable */
+>         START_EXCEPTION(SPEUnavailable)
+> @@ -626,7 +628,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+>         EXCEPTION(0x2020, SPE_ALTIVEC_UNAVAIL, SPEUnavailable, \
+>                   unknown_exception, EXC_XFER_EE)
+>  #endif /* CONFIG_SPE */
+> +#endif
 
-On 07/24/2014 10:11 PM, Shaohui Xie wrote:
-> Hello, Scott, Shruti,
+This is redundant:
+
+        config SPE
+                bool "SPE Support"
+                depends on E200 || (E500 && !PPC_E500MC)
+                default y 
+
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index c1faade..3ab65c2 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -2030,6 +2030,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  #endif /* CONFIG_PPC32 */
+>  #ifdef CONFIG_E500
+>  #ifdef CONFIG_PPC32
+> +#ifndef CONFIG_PPC_E500MC
+>         {       /* e500 */
+>                 .pvr_mask               = 0xffff0000,
+>                 .pvr_value              = 0x80200000,
+> @@ -2069,6 +2070,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>                 .machine_check          = machine_check_e500,
+>                 .platform               = "ppc8548",
+>         },
+> +#endif /* !CONFIG_PPC_E500MC */
+>         {       /* e500mc */
+>                 .pvr_mask               = 0xffff0000,
+>                 .pvr_value              = 0x80230000,
 > 
-> There are two types MDIO controllers, each MAC has a corresponding
-> MDIO controller to access internal PHYs inside Serdes, another is
-> dedicated MDIO controller to access external PHYs (PHYs on board or
-> riser card, etc). Current MDIO driver does not distinguish the two
-> controllers, if we need to distinguish the controllers, what could be
-> the proper way? Perhaps a new property is needed in dts?
 
-As per the intended binding, FMan v3 MDIO must use the
-"fsl,fman-memac-mdio" compatible. Why is that not enough to
-differentiate the two controllers?
+This looks a bit strange -- e500v2 gets excluded if PPC_E500MC, but
+e500mc gets included in !PPC_E500MC?
 
-
-Cheers,
-
-
-> Please comment!
-> Thanks!
-> 
-> Best Regards, 
-> Shaohui Xie
->> -----Original Message-----
->> From: Linuxppc-dev [mailto:linuxppc-dev-
->> bounces+b21989=freescale.com@lists.ozlabs.org] On Behalf Of Shruti
->> Kanetkar
->> Sent: Thursday, July 17, 2014 4:17 AM
->> To: Wood Scott-B07421
->> Cc: Kanetkar Shruti-B44454; linuxppc-dev@lists.ozlabs.org
->> Subject: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
->>
->> This document covers FManv2 and FManv3 mEMAC MDIO
->>
->> Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
->> ---
->>  .../devicetree/bindings/net/fsl-xgmac-phy.txt      | 29
->> ++++++++++++++++++++++
->>  1 file changed, 29 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/net/fsl-xgmac-
->> phy.txt
->>
->> diff --git a/Documentation/devicetree/bindings/net/fsl-xgmac-phy.txt
->> b/Documentation/devicetree/bindings/net/fsl-xgmac-phy.txt
->> new file mode 100644
->> index 0000000..2f2d56d
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/net/fsl-xgmac-phy.txt
->> @@ -0,0 +1,29 @@
->> +*MDIO IO device
->> +
->> +The MDIO is a bus to which the PHY devices are connected. For each
->> +device that exists on this bus, a child node should be created.
->> +
->> +Required properties:
->> +	- compatible: Currently supported strings/devices are:
->> +			- "fsl,fman-xmdio" (Must be used for 10 Gb/s MDIO from
->> FMan v2.
->> +			  Can be used for 1/10 Gb/s MDIO from FMan v3)
->> +			- "fsl,fman-memac-mdio" (Must be used for 1/10 Gb/s
->> MDIO from
->> +			  FMan v3)
->> +	- reg
->> +
->> +	Example for FMan v2:
->> +		mdio@f1000 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->> +			compatible = "fsl,fman-xmdio";
->> +			reg = <0xf1000 0x1000>;
->> +		};
->> +
->> +	Example for FMan v3:
->> +
->> +		mdio@f1000 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->> +			compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
->> +			reg = <0xf1000 0x1000>;
->> +		}
->> --
->> 1.8.3.1
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-Scott
