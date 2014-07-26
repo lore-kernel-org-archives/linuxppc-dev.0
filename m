@@ -1,28 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0190.outbound.protection.outlook.com [207.46.163.190])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E50C31A0955
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 10:10:53 +1000 (EST)
-Message-ID: <1406333436.29414.151.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
- SPE/FP/AltiVec int numbers
-From: Scott Wood <scottwood@freescale.com>
-To: Caraman Mihai Claudiu-B02008 <mihai.caraman@freescale.com>
-Date: Fri, 25 Jul 2014 19:10:36 -0500
-In-Reply-To: <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
- <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
- <53B54AAD.4040609@suse.de>
- <767ce3456f6f40809a1488b4df90498d@BLUPR03MB503.namprd03.prod.outlook.com>
- <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8E961A0628
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 18:26:13 +1000 (EST)
+Message-ID: <53D36429.4020106@Freescale.com>
+Date: Sat, 26 Jul 2014 03:17:45 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+To: Scott Wood <scottwood@Freescale.com>, Xie Shaohui-B21989
+ <Shaohui.Xie@Freescale.com>
+Subject: Re: [PATCH v2 1/7] dt: Introduce the FMan 10 Gb/s MDIO binding
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+ <df68a97dc8ae427f95078082ad587543@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1406318092.29414.116.camel@snotra.buserror.net>
+In-Reply-To: <1406318092.29414.116.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Kanetkar Shruti-B44454 <Shruti@Freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-24 at 04:16 -0500, Caraman Mihai Claudiu-B02008 wrote:
-> Scott, Alex's request to define SPE handlers only for e500v2 implies changes
-> in 32-bit FSL kernel to have exclusive configurations for e200/e500v2 and
-> e500mc/e5500. We would probably need something like this, what's your take on it?
+Hello Scott,
 
-That is already a compile-time decision.
-        
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> index b497188..9d41015 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -613,6 +613,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
->         mfspr   r10, SPRN_SPRG_RSCRATCH0
->         b       InstructionStorage
->  
-> +/* Define SPE handlers only for e500v2 and e200 */
-> +#ifndef CONFIG_PPC_E500MC
->  #ifdef CONFIG_SPE
->         /* SPE Unavailable */
->         START_EXCEPTION(SPEUnavailable)
-> @@ -626,7 +628,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
->         EXCEPTION(0x2020, SPE_ALTIVEC_UNAVAIL, SPEUnavailable, \
->                   unknown_exception, EXC_XFER_EE)
->  #endif /* CONFIG_SPE */
-> +#endif
 
-This is redundant:
-
-        config SPE
-                bool "SPE Support"
-                depends on E200 || (E500 && !PPC_E500MC)
-                default y 
-
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> index c1faade..3ab65c2 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -2030,6 +2030,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  #endif /* CONFIG_PPC32 */
->  #ifdef CONFIG_E500
->  #ifdef CONFIG_PPC32
-> +#ifndef CONFIG_PPC_E500MC
->         {       /* e500 */
->                 .pvr_mask               = 0xffff0000,
->                 .pvr_value              = 0x80200000,
-> @@ -2069,6 +2070,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->                 .machine_check          = machine_check_e500,
->                 .platform               = "ppc8548",
->         },
-> +#endif /* !CONFIG_PPC_E500MC */
->         {       /* e500mc */
->                 .pvr_mask               = 0xffff0000,
->                 .pvr_value              = 0x80230000,
+On 07/25/2014 02:54 PM, Scott Wood wrote:
+> On Thu, 2014-07-24 at 22:11 -0500, Xie Shaohui-B21989 wrote:
+>> Hello, Scott, Shruti,
+>>
+>> There are two types MDIO controllers, each MAC has a corresponding MDIO
+>> controller to access internal PHYs inside Serdes, another is dedicated
+>> MDIO controller to access external PHYs (PHYs on board or riser card,
+>> etc). Current MDIO driver does not distinguish the two controllers, if
+>> we need to distinguish the controllers, what could be the proper way?
+>> Perhaps a new property is needed in dts?
 > 
+> Are these different programming models, or just two instances of the
+> same type of device, with different things attached?
 
-This looks a bit strange -- e500v2 gets excluded if PPC_E500MC, but
-e500mc gets included in !PPC_E500MC?
+The controllers are very similar; the FMan v3 MDIO controller is a newer
+revision of the FMan v2 10 Gb/s MDIO controller
 
--Scott
+
+Cheers,
+
+
+> -Scott
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
