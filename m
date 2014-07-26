@@ -1,35 +1,22 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rickard_strandqvist@spectrumdigital.se>
+Received: from mail-wg0-f48.google.com (mail-wg0-f48.google.com [74.125.82.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D606C1A050C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 05:23:19 +1000 (EST)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3.15 100/109] locking/mutex: Disable optimistic spinning on
- some architectures
-Date: Sat, 26 Jul 2014 12:03:02 -0700
-Message-Id: <20140726190226.856788942@linuxfoundation.org>
-In-Reply-To: <20140726190223.834037485@linuxfoundation.org>
-References: <20140726190223.834037485@linuxfoundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- James Bottomley <James.Bottomley@hansenpartnership.com>,
- Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Mikulas Patocka <mpatocka@redhat.com>,
- John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
- Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Vineet Gupta <vgupta@synopsys.com>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17EEF1A073A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 07:25:30 +1000 (EST)
+Received: by mail-wg0-f48.google.com with SMTP id x13so5614140wgg.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 14:25:26 -0700 (PDT)
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] arch: powerpc: sysdev: qe_lib: qe.c: Cleaning up in
+ conjunction with strncpy and strcpy
+Date: Sat, 26 Jul 2014 23:26:51 +0200
+Message-Id: <1406410011-6522-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: devicetree@vger.kernel.org,
+ Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,118 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.15-stable review patch.  If anyone has any objections, please let me know.
+Replacing strcpy and strncpy with strlcpy to avoid strings that ar to big,
+or lacks null terminate.
 
-------------------
-
-From: Peter Zijlstra <peterz@infradead.org>
-
-commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
-
-The optimistic spin code assumes regular stores and cmpxchg() play nice;
-this is found to not be true for at least: parisc, sparc32, tile32,
-metag-lock1, arc-!llsc and hexagon.
-
-There is further wreckage, but this in particular seemed easy to
-trigger, so blacklist this.
-
-Opt in for known good archs.
-
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Reported-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Chris Metcalf <cmetcalf@tilera.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Vineet Gupta <vgupta@synopsys.com>
-Cc: Jason Low <jason.low2@hp.com>
-Cc: Waiman Long <waiman.long@hp.com>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Cc: John David Anglin <dave.anglin@bell.net>
-Cc: James Hogan <james.hogan@imgtec.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davidlohr Bueso <davidlohr@hp.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
-Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/arm/Kconfig     |    1 +
- arch/arm64/Kconfig   |    1 +
- arch/powerpc/Kconfig |    1 +
- arch/sparc/Kconfig   |    1 +
- arch/x86/Kconfig     |    1 +
- kernel/Kconfig.locks |    5 ++++-
- 6 files changed, 9 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/qe_lib/qe.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -6,6 +6,7 @@ config ARM
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAVE_CUSTOM_GPIO_H
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select ARCH_WANT_IPC_PARSE_VERSION
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -2,6 +2,7 @@ config ARM64
- 	def_bool y
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select ARCH_USE_CMPXCHG_LOCKREF
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -145,6 +145,7 @@ config PPC
- 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
- 	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
- 	select HAVE_ARCH_AUDITSYSCALL
-+	select ARCH_SUPPORTS_ATOMIC_RMW
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 238a07b..9f19e6c 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -498,7 +498,7 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
+ 	 * saved microcode information and put in the new.
+ 	 */
+ 	memset(&qe_firmware_info, 0, sizeof(qe_firmware_info));
+-	strcpy(qe_firmware_info.id, firmware->id);
++	strlcpy(qe_firmware_info.id, firmware->id, sizeof(qe_firmware_info.id));
+ 	qe_firmware_info.extended_modes = firmware->extended_modes;
+ 	memcpy(qe_firmware_info.vtraps, firmware->vtraps,
+ 		sizeof(firmware->vtraps));
+@@ -584,8 +584,8 @@ struct qe_firmware_info *qe_get_firmware_info(void)
+ 	/* Copy the data into qe_firmware_info*/
+ 	sprop = of_get_property(fw, "id", NULL);
+ 	if (sprop)
+-		strncpy(qe_firmware_info.id, sprop,
+-			sizeof(qe_firmware_info.id) - 1);
++		strlcpy(qe_firmware_info.id, sprop,
++			sizeof(qe_firmware_info.id));
  
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -78,6 +78,7 @@ config SPARC64
- 	select HAVE_C_RECORDMCOUNT
- 	select NO_BOOTMEM
- 	select HAVE_ARCH_AUDITSYSCALL
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config ARCH_DEFCONFIG
- 	string
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -130,6 +130,7 @@ config X86
- 	select HAVE_CC_STACKPROTECTOR
- 	select GENERIC_CPU_AUTOPROBE
- 	select HAVE_ARCH_AUDITSYSCALL
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config INSTRUCTION_DECODER
- 	def_bool y
---- a/kernel/Kconfig.locks
-+++ b/kernel/Kconfig.locks
-@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
- 
- endif
- 
-+config ARCH_SUPPORTS_ATOMIC_RMW
-+	bool
-+
- config MUTEX_SPIN_ON_OWNER
- 	def_bool y
--	depends on SMP && !DEBUG_MUTEXES
-+	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
+ 	prop = of_find_property(fw, "extended-modes", NULL);
+ 	if (prop && (prop->length == sizeof(u64))) {
+-- 
+1.7.10.4
