@@ -1,20 +1,20 @@
 Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-wg0-f52.google.com (mail-wg0-f52.google.com [74.125.82.52])
+Received: from mail-lb0-f171.google.com (mail-lb0-f171.google.com
+ [209.85.217.171])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22A891A0623
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 02:42:12 +1000 (EST)
-Received: by mail-wg0-f52.google.com with SMTP id a1so5434512wgh.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 09:42:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 467E51A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 02:43:43 +1000 (EST)
+Received: by mail-lb0-f171.google.com with SMTP id l4so4411509lbv.16
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jul 2014 09:43:39 -0700 (PDT)
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: kernel: nvram_64.c: Cleaning up missing
- null-terminate in conjunction with strncpy
-Date: Sat, 26 Jul 2014 18:43:32 +0200
-Message-Id: <1406393013-5138-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: Chen Gang <gang.chen@asianux.com>, Cedric Le Goater <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+Subject: [PATCH] arch: powerpc: platforms: powermac: bootx_init.c: Cleaning up
+ missing null-terminate in conjunction with strncpy
+Date: Sat, 26 Jul 2014 18:45:05 +0200
+Message-Id: <1406393105-5222-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,30 +30,21 @@ And removed unnecessary magic numbers.
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/powerpc/kernel/nvram_64.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powermac/bootx_init.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 28b898e..5ed7b74 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -292,7 +292,7 @@ int __init nvram_remove_partition(const char *name, int sig,
+diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+index 3e91ef5..76f5013 100644
+--- a/arch/powerpc/platforms/powermac/bootx_init.c
++++ b/arch/powerpc/platforms/powermac/bootx_init.c
+@@ -246,7 +246,7 @@ static void __init bootx_scan_dt_build_strings(unsigned long base,
+ 		DBG(" detected display ! adding properties names !\n");
+ 		bootx_dt_add_string("linux,boot-display", mem_end);
+ 		bootx_dt_add_string("linux,opened", mem_end);
+-		strncpy(bootx_disp_path, namep, 255);
++		strlcpy(bootx_disp_path, namep, sizeof(bootx_disp_path));
+ 	}
  
- 		/* Make partition a free partition */
- 		part->header.signature = NVRAM_SIG_FREE;
--		strncpy(part->header.name, "wwwwwwwwwwww", 12);
-+		strlcpy(part->header.name, "wwwwwwwwwwww", sizeof(part->header.name));
- 		part->header.checksum = nvram_checksum(&part->header);
- 		rc = nvram_write_header(part);
- 		if (rc <= 0) {
-@@ -395,7 +395,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	new_part->index = free_part->index;
- 	new_part->header.signature = sig;
- 	new_part->header.length = size;
--	strncpy(new_part->header.name, name, 12);
-+	strlcpy(new_part->header.name, name, sizeof(new_part->header.name));
- 	new_part->header.checksum = nvram_checksum(&new_part->header);
- 
- 	rc = nvram_write_header(new_part);
+ 	/* get and store all property names */
 -- 
 1.7.10.4
