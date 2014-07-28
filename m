@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F24381A0254
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 14:30:46 +1000 (EST)
-Message-ID: <1406521836.4935.44.camel@pasglop>
-Subject: Re: [PATCH v3 02/18] KVM: PPC: Use RCU when adding to
- arch.spapr_tce_tables
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 28 Jul 2014 14:30:36 +1000
-In-Reply-To: <53D5CD55.9050909@ozlabs.ru>
-References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
- <1406191691-31441-3-git-send-email-aik@ozlabs.ru>
- <1406508047.4935.21.camel@pasglop> <53D5CD55.9050909@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id BAB1D1A0257
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 14:32:37 +1000 (EST)
+Received: by mail-pa0-f43.google.com with SMTP id lf10so9749821pab.30
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 21:32:35 -0700 (PDT)
+Message-ID: <53D5D25D.90107@ozlabs.ru>
+Date: Mon, 28 Jul 2014 14:32:29 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 12/18] powerpc/iommu: Fix missing permission bits in
+ iommu_put_tce_user_mode()
+References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>	
+ <1406191691-31441-13-git-send-email-aik@ozlabs.ru>
+ <1406510394.4935.35.camel@pasglop>
+In-Reply-To: <1406510394.4935.35.camel@pasglop>
+Content-Type: text/plain; charset=koi8-r
 Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,65 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-07-28 at 14:11 +1000, Alexey Kardashevskiy wrote:
-> ===
-> At the moment the spapr_tce_tables list is not protected against races
-> which may happen if the userspace issues the KVM_CREATE_SPAPR_TCE ioctl
-> to KVM from different threads.
+On 07/28/2014 11:19 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-07-24 at 18:48 +1000, Alexey Kardashevskiy wrote:
+>> This adds missing permission bits to the translated TCE.
 > 
-> This makes use of _rcu helpers for list_add()/list_del().
-> ===
-> 
-> and it is missing this bit as well (was under impression that all tables
-> get freed at once at KVM exit but this might not be the case for malicious
-> guest):
-> 
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -211,7 +211,7 @@ static void release_spapr_tce_table(struct
-> kvmppc_spapr_tce_table *stt)
->         long npages = kvmppc_stt_npages(stt->size);
-> 
->         mutex_lock(&kvm->lock);
-> -       list_del(&stt->list);
-> +       list_del_rcu(&stt->list);
-> 
-> 
-> 
-> Would this be sufficient?
+> Is this a bug fix for existing stuff ? If yes, submit it separately.
 
-Well, not really, we'd need to see the corresponding RCU'isms when
-walking the list including the rcu read lock ... which could be
-problematic if we are in real mode....
 
-Cheers,
-Ben.
+There is 15/18 patch which fixes possible bug with leaking pages, and that
+patch won't work until this one is applied.
+
+Merge this one and "[PATCH v3 15/18] powerpc/iommu: Implement put_page() if
+TCE had non-zero value"?
+
+
 
 
 > 
-> 
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> >> ---
-> >>  arch/powerpc/kvm/book3s_64_vio.c | 2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-> >> index 54cf9bc..516f2ee 100644
-> >> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> >> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> >> @@ -131,7 +131,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
-> >>  	kvm_get_kvm(kvm);
-> >>  
-> >>  	mutex_lock(&kvm->lock);
-> >> -	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
-> >> +	list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
-> >>  
-> >>  	mutex_unlock(&kvm->lock);
-> >>  
-> > 
-> > 
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/kernel/iommu.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>> index 0cda2e8..5af2319 100644
+>> --- a/arch/powerpc/kernel/iommu.c
+>> +++ b/arch/powerpc/kernel/iommu.c
+>> @@ -1088,6 +1088,7 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
+>>  		return -EFAULT;
+>>  	}
+>>  	hwaddr = (unsigned long) page_address(page) + offset;
+>> +	hwaddr |= tce & (TCE_PCI_READ | TCE_PCI_WRITE);
+>>  
+>>  	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
+>>  	if (ret)
 > 
 > 
+
+
+-- 
+Alexey
