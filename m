@@ -1,37 +1,22 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE0391A000A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 20:29:09 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Mon, 28 Jul 2014 15:59:04 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 653D5E0053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 16:00:46 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6SAT1jJ9699502
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 15:59:01 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6SAT05K006089
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 15:59:00 +0530
-Date: Mon, 28 Jul 2014 15:58:58 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Kernel crash caused by cpufreq
-Message-ID: <20140728102858.GA8549@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20140725010757.GA19679@shangw>
- <1406530990.23799.8.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F90E1A01D8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 22:30:49 +1000 (EST)
+Message-ID: <53D64273.3060701@suse.de>
+Date: Mon, 28 Jul 2014 14:30:43 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1406530990.23799.8.camel@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v3] Use the POWER8 Micro Partition Prefetch Engine in
+ KVM HV on POWER8
+References: <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <53C78161.9040700@suse.de> <m3k37bmhnb.fsf@oc8180480414.ibm.com>
+In-Reply-To: <m3k37bmhnb.fsf@oc8180480414.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,108 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Michael Ellerman <mpe@ellerman.id.au> [2014-07-28 17:03:10]:
 
-> On Fri, 2014-07-25 at 11:07 +1000, Gavin Shan wrote:
-> > I'm tracing one LSI interrupt issue on P8 box, and eventually into the
-> > following kernel crash. Not sure if there is one fix against this? :-)
-> 
-> Vaidy wrote that I'm pretty sure (on CC).
+On 18.07.14 06:10, Stewart Smith wrote:
+> Alexander Graf <agraf@suse.de> writes:
+>>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>>> index 1eaea2d..5769497 100644
+>>> --- a/arch/powerpc/include/asm/kvm_host.h
+>>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>>> @@ -305,6 +305,8 @@ struct kvmppc_vcore {
+>>>    	u32 arch_compat;
+>>>    	ulong pcr;
+>>>    	ulong dpdes;		/* doorbell state (POWER8) */
+>>> +	unsigned long mpp_buffer; /* Micro Partition Prefetch buffer */
+>> Just make this a void*?
+> get_free_pages returns an unsigned long and free_pages accepts an
+> unsigned long, so I was just avoiding the cast. Is the style in this
+> case to do void* rather than unsigned long and cast it everywhere?
+>
+> In v4 of patch I've gone to void* anyway.
 
-Yes, I did :)
- 
-> > Starting Linux PPC64 #401 SMP Fri Jul 25 10:52:28 EST 2014
-> > -----------------------------------------------------
-> > ppc64_pft_size                = 0x0
-> > physicalMemorySize            = 0x800000000
-> > htab_address                  = 0xc0000007fe000000
-> > htab_hash_mask                = 0x3ffff
-> > -----------------------------------------------------
-> >  <- setup_system()
-> > Initializing cgroup subsys cpuset
-> > Initializing cgroup subsys cpuacct
-> > Linux version 3.16.0-rc6-00076-g4226dbe-dirty (shangw@shangw) (gcc version 4.5.2 (crosstool-NG 1.19.0) ) #401 SMP Fri Jul 25 10:52:28 EST 2014
-> > 	:
-> > < Unrelated log stripped >
-> 
-> Are you sure there's nothing else in the log that might be related? See the
-> messages in init_powernv_pstates() for example.
+It's probably just a matter of personal taste, but I personally prefer 
+to keep pointers to memory locations in pointers.
 
-Most likely PMSR register is showing out of bound values because of
-potential firmware (OPAL) issue.
+>
+>>> @@ -1516,6 +1540,37 @@ static int on_primary_thread(void)
+>>>    	return 1;
+>>>    }
+>>>    
+>>> +static void ppc_start_saving_l2_cache(struct kvmppc_vcore *vc)
+>> Please use the "kvmppc" name space.
+> ack, done.
+>
+>>> +	phys_addr_t phy_addr, tmp;
+>>> +
+>>> +	phy_addr = (phys_addr_t)virt_to_phys((void *)vc->mpp_buffer);
+>>> +
+>>> +	tmp = phy_addr & PPC_MPPE_ADDRESS_MASK;
+>> I would prefer if you give the variable a more telling name.
+> ack.
+>
+>>> +
+>>> +	mtspr(SPRN_MPPR, tmp | PPC_MPPR_FETCH_ABORT);
+>>> +
+>>> +	asm volatile(PPC_LOGMPP(R1) : : "r" (tmp | PPC_LOGMPP_LOG_L2));
+>> Can you move this asm() into a static inline function in generic code
+>> somewhere?
+> okay. It seems the best place may be powerpc/include/asm/cache.h -
+> simply because it deals with cache things. I'm open to better
+> suggestions :)
+>
+>>> +
+>>> +	vc->mpp_buffer_is_valid = true;
+>> Where does this ever get unset? And what point does this variable make?
+>> Can't you just check on if (vc->mpp_buffer)?
+> The problem with having moved the memory allocation for mpp_buffer to
+> vcore setup is that we'll have vc->mpp_buffer != NULL but have some
+> random contents in it, so when we first start executing the vcore, we
+> shouldn't initiate prefetching (hence mpp_buffer_is_valid).
+>
+> If we point the prefetch engine to random memory contents, we get the
+> most amazing array of incomprehensible illegal accesses :)
 
-> > ------------[ cut here ]------------
-> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> > cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
-> >     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
-> >     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
-> >     sp: c0000007f84835f0
-> >    msr: 9000000000029032
-> >   current = 0xc0000007f8400000
-> >   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
-> >     pid   = 1, comm = swapper/0
-> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> > enter ? for help
-> > [link register   ] c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
-> > [c0000007f84835f0] c000000001076070 key_type_dns_resolver+0xef20/0x40d20 (unreliable)
-> > [c0000007f8483670] c00000000010812c .generic_exec_single+0x8c/0x270
-> > [c0000007f8483730] c0000000001083d0 .smp_call_function_single+0x90/0xb0
-> > [c0000007f84837b0] c000000000108cec .smp_call_function_any+0x15c/0x200
-> > [c0000007f8483860] c00000000096f27c .powernv_cpufreq_get+0x3c/0x60
-> > [c0000007f84838f0] c000000000969dc4 .__cpufreq_add_dev.clone.11+0x574/0xa20
-> > [c0000007f84839e0] c0000000005f7a4c .subsys_interface_register+0xec/0x130
-> > [c0000007f8483a90] c000000000967af8 .cpufreq_register_driver+0x168/0x2d0
-> > [c0000007f8483b30] c000000000f774cc .powernv_cpufreq_init+0x210/0x244
-> > [c0000007f8483be0] c00000000000bc08 .do_one_initcall+0xc8/0x240
-> > [c0000007f8483ce0] c000000000f44054 .kernel_init_freeable+0x268/0x33c
-> > [c0000007f8483db0] c00000000000c4dc .kernel_init+0x1c/0x110
-> > [c0000007f8483e30] c00000000000a428 .ret_from_kernel_thread+0x58/0xb0
-> > 1:mon> e
-> > cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
-> >     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
-> >     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
-> >     sp: c0000007f84835f0
-> >    msr: 9000000000029032
-> >   current = 0xc0000007f8400000
-> >   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
-> >     pid   = 1, comm = swapper/0
-> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> > 1:mon> r
-> > R00 = 0000000000000042   R16 = 0000000000000000
-> > R01 = c0000007f84835f0   R17 = 0000000000000000
-> > R02 = c00000000116c430   R18 = 0000000000000000
-> > R03 = ffffffffffffffbe   R19 = 0000000000000001
-> > R04 = 0000000000000000   R20 = c00000078bd61e58
-> > R05 = c00000000114ca78   R21 = c000000001008910
-> > R06 = c0000007f84838d0   R22 = c0000000011c1b74
-> > R07 = 0000000000000001   R23 = c000000002200030
-> > R08 = c0000000011c1910   R24 = 0000000000000001
-> > R09 = c000000001f2970c   R25 = c000000001008730
-> > R10 = 0000000000000001   R26 = c000000001f29478
-> > R11 = 0000000000000042   R27 = c0000007f84838d0
-> > R12 = 0000000044002084   R28 = c00000000114ca78
-> > R13 = c00000000ff00400   R29 = 0000000000000000
-> > R14 = c00000000000c4c0   R30 = c0000000010a90f0
-> > R15 = 0000000000000000   R31 = c0000007f84838d0
-> > pc  = c00000000096f32c .pstate_id_to_freq+0x2c/0x50
-> > cfar= c00000000096f324 .pstate_id_to_freq+0x24/0x50
-> > lr  = c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
-> > msr = 9000000000029032   cr  = 44002082
-> > ctr = c00000000096f350   xer = 0000000020000000   trap =  700
-> > 1:mon>
-> 
-> Gavin, in future for a dump like this it's very helpful to see the actual code
-> that hit the bug. You can get that with:
-> 
-> 1:mon> di $.pstate_id_to_freq
-> 
-> 
-> Vaidy, judging by r3 it looks like i became negative. That would obviously
-> happen if powernv_pstate_info.max was zero?
+I see :). That makes a lot of sense indeed. Maybe rename the variable to 
+mpp_content_is_valid to indicate that we are not looking at a valid 
+buffer, but valid content?
 
-yes, negative is ok.  Something has gone wrong with the PState
-firmware/hardware.  A BUG_ON() is too severe for this error.  I will
-change code to not stop the system for this error and also investigate
-what is happening at runtime.
 
---Vaidy
+Alex
