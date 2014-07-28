@@ -1,29 +1,26 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
+ [209.85.192.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F52C1A0052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 18:54:12 +1000 (EST)
-From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
- SPE/FP/AltiVec int numbers
-Date: Mon, 28 Jul 2014 08:54:04 +0000
-Message-ID: <1941bf37d0bb4e2cba64add056a5986c@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
- <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
- <53B54AAD.4040609@suse.de>
- <767ce3456f6f40809a1488b4df90498d@BLUPR03MB503.namprd03.prod.outlook.com>
- <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
- <1406333436.29414.151.camel@snotra.buserror.net>
-In-Reply-To: <1406333436.29414.151.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CED61A0257
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 19:12:14 +1000 (EST)
+Received: by mail-pd0-f172.google.com with SMTP id ft15so9597274pdb.31
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 02:12:12 -0700 (PDT)
+Message-ID: <53D613E7.2090806@ozlabs.ru>
+Date: Mon, 28 Jul 2014 19:12:07 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 04/18] vfio: powerpc: Move locked_vm accounting to
+ a helper
+References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>	
+ <1406191691-31441-5-git-send-email-aik@ozlabs.ru>
+ <1406508410.4935.24.camel@pasglop>
+In-Reply-To: <1406508410.4935.24.camel@pasglop>
+Content-Type: text/plain; charset=koi8-r
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,73 +30,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBTYXR1cmRheSwgSnVseSAyNiwgMjAxNCAzOjExIEFNDQo+IFRvOiBDYXJhbWFuIE1p
-aGFpIENsYXVkaXUtQjAyMDA4DQo+IENjOiBBbGV4YW5kZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtl
-cm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS82IHYyXSBLVk06IFBQQzogQm9vazNFOiBV
-c2UgY29tbW9uIGRlZmluZXMgZm9yDQo+IFNQRS9GUC9BbHRpVmVjIGludCBudW1iZXJzDQo+IA0K
-PiBPbiBUaHUsIDIwMTQtMDctMjQgYXQgMDQ6MTYgLTA1MDAsIENhcmFtYW4gTWloYWkgQ2xhdWRp
-dS1CMDIwMDggd3JvdGU6DQo+ID4gU2NvdHQsIEFsZXgncyByZXF1ZXN0IHRvIGRlZmluZSBTUEUg
-aGFuZGxlcnMgb25seSBmb3IgZTUwMHYyIGltcGxpZXMNCj4gY2hhbmdlcw0KPiA+IGluIDMyLWJp
-dCBGU0wga2VybmVsIHRvIGhhdmUgZXhjbHVzaXZlIGNvbmZpZ3VyYXRpb25zIGZvciBlMjAwL2U1
-MDB2Mg0KPiBhbmQNCj4gPiBlNTAwbWMvZTU1MDAuIFdlIHdvdWxkIHByb2JhYmx5IG5lZWQgc29t
-ZXRoaW5nIGxpa2UgdGhpcywgd2hhdCdzIHlvdXINCj4gdGFrZSBvbiBpdD8NCj4gDQo+IFRoYXQg
-aXMgYWxyZWFkeSBhIGNvbXBpbGUtdGltZSBkZWNpc2lvbi4NCg0KWWVzLCBidXQgaXMgbm90IGZ1
-bGx5IGltcGxlbWVudGVkLg0KDQo+IA0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2Vy
-bmVsL2hlYWRfZnNsX2Jvb2tlLlMNCj4gYi9hcmNoL3Bvd2VycGMva2VybmVsL2hlYWRfZnNsX2Jv
-b2tlLlMNCj4gPiBpbmRleCBiNDk3MTg4Li45ZDQxMDE1IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gv
-cG93ZXJwYy9rZXJuZWwvaGVhZF9mc2xfYm9va2UuUw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9r
-ZXJuZWwvaGVhZF9mc2xfYm9va2UuUw0KPiA+IEBAIC02MTMsNiArNjEzLDggQEAgRU5EX0ZUUl9T
-RUNUSU9OX0lGU0VUKENQVV9GVFJfRU1CX0hWKQ0KPiA+ICAgICAgICAgbWZzcHIgICByMTAsIFNQ
-Uk5fU1BSR19SU0NSQVRDSDANCj4gPiAgICAgICAgIGIgICAgICAgSW5zdHJ1Y3Rpb25TdG9yYWdl
-DQo+ID4NCj4gPiArLyogRGVmaW5lIFNQRSBoYW5kbGVycyBvbmx5IGZvciBlNTAwdjIgYW5kIGUy
-MDAgKi8NCj4gPiArI2lmbmRlZiBDT05GSUdfUFBDX0U1MDBNQw0KPiA+ICAjaWZkZWYgQ09ORklH
-X1NQRQ0KPiA+ICAgICAgICAgLyogU1BFIFVuYXZhaWxhYmxlICovDQo+ID4gICAgICAgICBTVEFS
-VF9FWENFUFRJT04oU1BFVW5hdmFpbGFibGUpDQo+ID4gQEAgLTYyNiw3ICs2MjgsOSBAQCBFTkRf
-RlRSX1NFQ1RJT05fSUZTRVQoQ1BVX0ZUUl9FTUJfSFYpDQo+ID4gICAgICAgICBFWENFUFRJT04o
-MHgyMDIwLCBTUEVfQUxUSVZFQ19VTkFWQUlMLCBTUEVVbmF2YWlsYWJsZSwgXA0KPiA+ICAgICAg
-ICAgICAgICAgICAgIHVua25vd25fZXhjZXB0aW9uLCBFWENfWEZFUl9FRSkNCj4gPiAgI2VuZGlm
-IC8qIENPTkZJR19TUEUgKi8NCj4gPiArI2VuZGlmDQo+IA0KPiBUaGlzIGlzIHJlZHVuZGFudDoN
-Cj4gDQo+ICAgICAgICAgY29uZmlnIFNQRQ0KPiAgICAgICAgICAgICAgICAgYm9vbCAiU1BFIFN1
-cHBvcnQiDQo+ICAgICAgICAgICAgICAgICBkZXBlbmRzIG9uIEUyMDAgfHwgKEU1MDAgJiYgIVBQ
-Q19FNTAwTUMpDQo+ICAgICAgICAgICAgICAgICBkZWZhdWx0IHkNCg0KSSBzZWUgd2hhdCB5b3Ug
-bWVhbiwgYnV0IGl0J3Mgbm90IHJlZHVuZGFudC4gQWxleCB3YXMgbG9va2luZyB0byByZW1vdmUg
-U1BFDQpoYW5kbGVycyBmb3IgZTUwMG1jKyBhbmQgdGhlIHByb3Bvc2FsIGhhbmRsZWQgIVNQRSBj
-YXNlLiBJbiB0aGUgbmV3DQpsaWdodCBJIGZpbmQgdGhpcyB2YXJpYW50IG1vcmUgcmVhZGFibGU6
-DQoNCisvKiBEZWZpbmUgU1BFIGhhbmRsZXJzIGZvciBlMjAwIGFuZCBlNTAwdjIgKi8NCiAjaWZk
-ZWYgQ09ORklHX1NQRQ0KICAgICAgICAvKiBTUEUgVW5hdmFpbGFibGUgKi8NCiAgICAgICAgU1RB
-UlRfRVhDRVBUSU9OKFNQRVVuYXZhaWxhYmxlKQ0KQEAgLTYyMiwxMSArNjIzLDEzIEBAIEVORF9G
-VFJfU0VDVElPTl9JRlNFVChDUFVfRlRSX0VNQl9IVikNCiAgICAgICAgYiAgICAgICBmYXN0X2V4
-Y2VwdGlvbl9yZXR1cm4NCiAxOiAgICAgYWRkaSAgICByMyxyMSxTVEFDS19GUkFNRV9PVkVSSEVB
-RA0KICAgICAgICBFWENfWEZFUl9FRV9MSVRFKDB4MjAxMCwgS2VybmVsU1BFKQ0KLSNlbHNlDQor
-I2VsaWYgZGVmaW5lZChDT05GSUdfRTIwMCkgfHwgXA0KKyAgICAgIChkZWZpbmVkKENPTkZJR19F
-NTAwKSAmJiAhZGVmaW5lZChDT05GSUdfUFBDX0U1MDBNQykpDQogICAgICAgIEVYQ0VQVElPTigw
-eDIwMjAsIFNQRV9BTFRJVkVDX1VOQVZBSUwsIFNQRVVuYXZhaWxhYmxlLCBcDQogICAgICAgICAg
-ICAgICAgICB1bmtub3duX2V4Y2VwdGlvbiwgRVhDX1hGRVJfRUUpDQogI2VuZGlmIC8qIENPTkZJ
-R19TUEUgKi8NCg0KPiANCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHV0
-YWJsZS5jDQo+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHV0YWJsZS5jDQo+ID4gaW5kZXggYzFm
-YWFkZS4uM2FiNjVjMiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL2NwdXRh
-YmxlLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2NwdXRhYmxlLmMNCj4gPiBAQCAt
-MjAzMCw2ICsyMDMwLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVfc3BlYyBfX2luaXRkYXRhIGNwdV9z
-cGVjc1tdID0gew0KPiA+ICAjZW5kaWYgLyogQ09ORklHX1BQQzMyICovDQo+ID4gICNpZmRlZiBD
-T05GSUdfRTUwMA0KPiA+ICAjaWZkZWYgQ09ORklHX1BQQzMyDQo+ID4gKyNpZm5kZWYgQ09ORklH
-X1BQQ19FNTAwTUMNCj4gPiAgICAgICAgIHsgICAgICAgLyogZTUwMCAqLw0KPiA+ICAgICAgICAg
-ICAgICAgICAucHZyX21hc2sgICAgICAgICAgICAgICA9IDB4ZmZmZjAwMDAsDQo+ID4gICAgICAg
-ICAgICAgICAgIC5wdnJfdmFsdWUgICAgICAgICAgICAgID0gMHg4MDIwMDAwMCwNCj4gPiBAQCAt
-MjA2OSw2ICsyMDcwLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVfc3BlYyBfX2luaXRkYXRhIGNwdV9z
-cGVjc1tdID0gew0KPiA+ICAgICAgICAgICAgICAgICAubWFjaGluZV9jaGVjayAgICAgICAgICA9
-IG1hY2hpbmVfY2hlY2tfZTUwMCwNCj4gPiAgICAgICAgICAgICAgICAgLnBsYXRmb3JtICAgICAg
-ICAgICAgICAgPSAicHBjODU0OCIsDQo+ID4gICAgICAgICB9LA0KPiA+ICsjZW5kaWYgLyogIUNP
-TkZJR19QUENfRTUwME1DICovDQo+ID4gICAgICAgICB7ICAgICAgIC8qIGU1MDBtYyAqLw0KPiA+
-ICAgICAgICAgICAgICAgICAucHZyX21hc2sgICAgICAgICAgICAgICA9IDB4ZmZmZjAwMDAsDQo+
-ID4gICAgICAgICAgICAgICAgIC5wdnJfdmFsdWUgICAgICAgICAgICAgID0gMHg4MDIzMDAwMCwN
-Cj4gPg0KPiANCj4gVGhpcyBsb29rcyBhIGJpdCBzdHJhbmdlIC0tIGU1MDB2MiBnZXRzIGV4Y2x1
-ZGVkIGlmIFBQQ19FNTAwTUMsIGJ1dA0KPiBlNTAwbWMgZ2V0cyBpbmNsdWRlZCBpbiAhUFBDX0U1
-MDBNQz8NCg0KUmlnaHQsIG15IG1haW4gcHVycG9zZSB3YXMgdG8gZ2V0IHJpZCBvZiBfX3NldHVw
-X2U1MDBfaXZvcnMgb24gUFBDX0U1MDBNQw0Kd2hpY2ggcmVmZXJzIFNQRVVuYXZhaWxhYmxlLiBJ
-IHdpbGwgYWRkIGFuICNlbHNlIHRvIGV4Y2x1ZGUgZTUwMG1jLg0KDQpUaGUgImdlbmVyaWMgRTUw
-MCBQUEMiIGRlZmF1bHQgY3B1IGFkdmVydGlzZXMgUFBDX0ZFQVRVUkVfSEFTX1NQRV9DT01QLg0K
-RG8gd2Ugd2FudCB0byBleGNsdWRlZCBpdCBpZiBQUENfRTUwME1DPyBJcyB0aGlzIGNwdSB1c2Vm
-dWwgd2l0aG91dCBjcHVfc2V0dXAoKQ0KYW5kIGlmIHNvIHdoeSBkb24ndCB3ZSBhbHNvIGhhdmUg
-YSBkZWZhdWx0IGZvciA2NC1iaXQ/DQoNCi1NaWtlDQo=
+On 07/28/2014 10:46 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-07-24 at 18:47 +1000, Alexey Kardashevskiy wrote:
+>> Additional DMA windows support is coming and accounting will include them
+>> so let's move this code to a helper for reuse.
+> 
+> This code looks a LOT like the one you added in the previous patch
+> (ie. kvmppc_account_memlimit()), though in a different place. I
+> wonder if we should re-arrange things so that there is really
+> only one version of it..
+
+
+One copy is in VFIO driver, another in KVM, they meet in VFIO KVM device
+(which may miss) or IOMMU code (drivers/iommu/iommu.c or
+arch/powerpc/kernel/iommu.c) but this math has nothing to do with IOMMU. I
+fail to see good common place for this.
+
+
+> 
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  drivers/vfio/vfio_iommu_spapr_tce.c | 54 ++++++++++++++++++++++++-------------
+>>  1 file changed, 36 insertions(+), 18 deletions(-)
+>>
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index a84788b..c8f7284 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -47,10 +47,40 @@ struct tce_container {
+>>  	bool enabled;
+>>  };
+>>  
+>> +/*
+>> + * Checks ulimit in order not to let the user space to pin all
+>> + * available memory for TCE tables.
+>> + */
+>> +static long tce_iommu_account_memlimit(struct iommu_table *tbl, bool inc)
+>> +{
+>> +	unsigned long ret = 0, locked, lock_limit;
+>> +	long npages;
+>> +
+>> +	if (!current->mm)
+>> +		return -ESRCH; /* process exited */
+>> +
+>> +	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+>> +	if (!inc)
+>> +		npages = -npages;
+>> +
+>> +	down_write(&current->mm->mmap_sem);
+>> +	locked = current->mm->locked_vm + npages;
+>> +	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>> +	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+>> +		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+>> +				rlimit(RLIMIT_MEMLOCK));
+>> +		ret = -ENOMEM;
+>> +	} else {
+>> +		current->mm->locked_vm += npages;
+>> +	}
+>> +	up_write(&current->mm->mmap_sem);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  static int tce_iommu_enable(struct tce_container *container)
+>>  {
+>>  	int ret = 0;
+>> -	unsigned long locked, lock_limit, npages;
+>>  	struct iommu_table *tbl = container->tbl;
+>>  
+>>  	if (!container->tbl)
+>> @@ -80,20 +110,11 @@ static int tce_iommu_enable(struct tce_container *container)
+>>  	 * that would effectively kill the guest at random points, much better
+>>  	 * enforcing the limit based on the max that the guest can map.
+>>  	 */
+>> -	down_write(&current->mm->mmap_sem);
+>> -	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+>> -	locked = current->mm->locked_vm + npages;
+>> -	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>> -	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+>> -		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+>> -				rlimit(RLIMIT_MEMLOCK));
+>> -		ret = -ENOMEM;
+>> -	} else {
+>> +	ret = tce_iommu_account_memlimit(tbl, true);
+>> +	if (ret)
+>> +		return ret;
+>>  
+>> -		current->mm->locked_vm += npages;
+>> -		container->enabled = true;
+>> -	}
+>> -	up_write(&current->mm->mmap_sem);
+>> +	container->enabled = true;
+>>  
+>>  	return ret;
+>>  }
+>> @@ -108,10 +129,7 @@ static void tce_iommu_disable(struct tce_container *container)
+>>  	if (!container->tbl || !current->mm)
+>>  		return;
+>>  
+>> -	down_write(&current->mm->mmap_sem);
+>> -	current->mm->locked_vm -= (container->tbl->it_size <<
+>> -			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+>> -	up_write(&current->mm->mmap_sem);
+>> +	tce_iommu_account_memlimit(container->tbl, false);
+>>  }
+>>  
+>>  static void *tce_iommu_open(unsigned long arg)
+> 
+> 
+
+
+-- 
+Alexey
