@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6F6B1A019E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 14:35:43 +1000 (EST)
-Message-ID: <1406522134.4935.47.camel@pasglop>
-Subject: Re: [PATCH v3 12/18] powerpc/iommu: Fix missing permission bits in
- iommu_put_tce_user_mode()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 28 Jul 2014 14:35:34 +1000
-In-Reply-To: <53D5D25D.90107@ozlabs.ru>
-References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
- <1406191691-31441-13-git-send-email-aik@ozlabs.ru>
- <1406510394.4935.35.camel@pasglop> <53D5D25D.90107@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0D4D1A032A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 16:05:36 +1000 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id eu11so9817799pac.18
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jul 2014 23:05:34 -0700 (PDT)
+From: Liu Ping Fan <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc: kvm: make the setup of hpte under the protection of
+ KVMPPC_RMAP_LOCK_BIT
+Date: Mon, 28 Jul 2014 14:09:04 +0800
+Message-Id: <1406527744-25316-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-07-28 at 14:32 +1000, Alexey Kardashevskiy wrote:
-> On 07/28/2014 11:19 AM, Benjamin Herrenschmidt wrote:
-> > On Thu, 2014-07-24 at 18:48 +1000, Alexey Kardashevskiy wrote:
-> >> This adds missing permission bits to the translated TCE.
-> > 
-> > Is this a bug fix for existing stuff ? If yes, submit it separately.
-> 
-> 
-> There is 15/18 patch which fixes possible bug with leaking pages, and that
-> patch won't work until this one is applied.
+In current code, the setup of hpte is under the risk of race with
+mmu_notifier_invalidate, i.e we may setup a hpte with a invalid pfn.
+Resolve this issue by sync the two actions by KVMPPC_RMAP_LOCK_BIT.
 
-Please collapse them then.
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-> Merge this one and "[PATCH v3 15/18] powerpc/iommu: Implement put_page() if
-> TCE had non-zero value"?
-
-Right, and if the result is a bug fix on top of something already
-upstream, please send it separately.
-
-Cheers,
-Ben.
-
-> 
-> 
-> > 
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >>  arch/powerpc/kernel/iommu.c | 1 +
-> >>  1 file changed, 1 insertion(+)
-> >>
-> >> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> >> index 0cda2e8..5af2319 100644
-> >> --- a/arch/powerpc/kernel/iommu.c
-> >> +++ b/arch/powerpc/kernel/iommu.c
-> >> @@ -1088,6 +1088,7 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
-> >>  		return -EFAULT;
-> >>  	}
-> >>  	hwaddr = (unsigned long) page_address(page) + offset;
-> >> +	hwaddr |= tce & (TCE_PCI_READ | TCE_PCI_WRITE);
-> >>  
-> >>  	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
-> >>  	if (ret)
-> > 
-> > 
-> 
-> 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 8056107..e6dcff4 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -754,19 +754,24 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	if (hptep[0] & HPTE_V_VALID) {
+ 		/* HPTE was previously valid, so we need to invalidate it */
+-		unlock_rmap(rmap);
+ 		hptep[0] |= HPTE_V_ABSENT;
+ 		kvmppc_invalidate_hpte(kvm, hptep, index);
+ 		/* don't lose previous R and C bits */
+ 		r |= hptep[1] & (HPTE_R_R | HPTE_R_C);
++
++		hptep[1] = r;
++		eieio();
++		hptep[0] = hpte[0];
++		asm volatile("ptesync" : : : "memory");
++		unlock_rmap(rmap);
+ 	} else {
++		hptep[1] = r;
++		eieio();
++		hptep[0] = hpte[0];
++		asm volatile("ptesync" : : : "memory");
+ 		kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
+ 	}
+ 
+-	hptep[1] = r;
+-	eieio();
+-	hptep[0] = hpte[0];
+-	asm volatile("ptesync" : : : "memory");
+ 	preempt_enable();
+ 	if (page && hpte_is_writable(r))
+ 		SetPageDirty(page);
+-- 
+1.8.1.4
