@@ -1,25 +1,29 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
- [IPv6:2607:f8b0:4002:c07::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D47951A0072
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 17:58:53 +1000 (EST)
-Received: by mail-yk0-f180.google.com with SMTP id 200so4459371ykr.25
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 00:58:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F52C1A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 18:54:12 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+ SPE/FP/AltiVec int numbers
+Date: Mon, 28 Jul 2014 08:54:04 +0000
+Message-ID: <1941bf37d0bb4e2cba64add056a5986c@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
+ <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
+ <53B54AAD.4040609@suse.de>
+ <767ce3456f6f40809a1488b4df90498d@BLUPR03MB503.namprd03.prod.outlook.com>
+ <3807e749871d460f90a57ad47ad2654d@BY2PR03MB508.namprd03.prod.outlook.com>
+ <1406333436.29414.151.camel@snotra.buserror.net>
+In-Reply-To: <1406333436.29414.151.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1406529741.4935.48.camel@pasglop>
-References: <1406527744-25316-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1406529741.4935.48.camel@pasglop>
-Date: Mon, 28 Jul 2014 15:58:50 +0800
-Message-ID: <CAFgQCTvC1MX8fN26-KHWRMmpN_zk82LX1=RYn3j61PWo7kvwBQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: kvm: make the setup of hpte under the protection
- of KVMPPC_RMAP_LOCK_BIT
-From: Liu ping fan <kernelfans@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hope I am right.  Take the following seq as an example
-
-if (hptep[0] & HPTE_V_VALID) {
-/* HPTE was previously valid, so we need to invalidate it */
-unlock_rmap(rmap);
-hptep[0] |= HPTE_V_ABSENT;
-kvmppc_invalidate_hpte(kvm, hptep, index);
-/* don't lose previous R and C bits */
-r |= hptep[1] & (HPTE_R_R | HPTE_R_C);
-} else {
-kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
-}
-  ---------------------------------------------> if we try_to_unmap on
-pfn at here, then @r contains a invalid pfn
-hptep[1] = r;
-eieio();
-hptep[0] = hpte[0];
-asm volatile("ptesync" : : : "memory");
-
-Thx.
-Fan
-
-On Mon, Jul 28, 2014 at 2:42 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2014-07-28 at 14:09 +0800, Liu Ping Fan wrote:
->> In current code, the setup of hpte is under the risk of race with
->> mmu_notifier_invalidate, i.e we may setup a hpte with a invalid pfn.
->> Resolve this issue by sync the two actions by KVMPPC_RMAP_LOCK_BIT.
->
-> Please describe the race you think you see. I'm quite sure both Paul and
-> I went over that code and somewhat convinced ourselves that it was ok
-> but it's possible that we were both wrong :-)
->
-> Cheers,
-> Ben.
->
->> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kvm/book3s_64_mmu_hv.c | 15 ++++++++++-----
->>  1 file changed, 10 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> index 8056107..e6dcff4 100644
->> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> @@ -754,19 +754,24 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>
->>       if (hptep[0] & HPTE_V_VALID) {
->>               /* HPTE was previously valid, so we need to invalidate it */
->> -             unlock_rmap(rmap);
->>               hptep[0] |= HPTE_V_ABSENT;
->>               kvmppc_invalidate_hpte(kvm, hptep, index);
->>               /* don't lose previous R and C bits */
->>               r |= hptep[1] & (HPTE_R_R | HPTE_R_C);
->> +
->> +             hptep[1] = r;
->> +             eieio();
->> +             hptep[0] = hpte[0];
->> +             asm volatile("ptesync" : : : "memory");
->> +             unlock_rmap(rmap);
->>       } else {
->> +             hptep[1] = r;
->> +             eieio();
->> +             hptep[0] = hpte[0];
->> +             asm volatile("ptesync" : : : "memory");
->>               kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
->>       }
->>
->> -     hptep[1] = r;
->> -     eieio();
->> -     hptep[0] = hpte[0];
->> -     asm volatile("ptesync" : : : "memory");
->>       preempt_enable();
->>       if (page && hpte_is_writable(r))
->>               SetPageDirty(page);
->
->
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBTYXR1cmRheSwgSnVseSAyNiwgMjAxNCAzOjExIEFNDQo+IFRvOiBDYXJhbWFuIE1p
+aGFpIENsYXVkaXUtQjAyMDA4DQo+IENjOiBBbGV4YW5kZXIgR3JhZjsga3ZtLXBwY0B2Z2VyLmtl
+cm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS82IHYyXSBLVk06IFBQQzogQm9vazNFOiBV
+c2UgY29tbW9uIGRlZmluZXMgZm9yDQo+IFNQRS9GUC9BbHRpVmVjIGludCBudW1iZXJzDQo+IA0K
+PiBPbiBUaHUsIDIwMTQtMDctMjQgYXQgMDQ6MTYgLTA1MDAsIENhcmFtYW4gTWloYWkgQ2xhdWRp
+dS1CMDIwMDggd3JvdGU6DQo+ID4gU2NvdHQsIEFsZXgncyByZXF1ZXN0IHRvIGRlZmluZSBTUEUg
+aGFuZGxlcnMgb25seSBmb3IgZTUwMHYyIGltcGxpZXMNCj4gY2hhbmdlcw0KPiA+IGluIDMyLWJp
+dCBGU0wga2VybmVsIHRvIGhhdmUgZXhjbHVzaXZlIGNvbmZpZ3VyYXRpb25zIGZvciBlMjAwL2U1
+MDB2Mg0KPiBhbmQNCj4gPiBlNTAwbWMvZTU1MDAuIFdlIHdvdWxkIHByb2JhYmx5IG5lZWQgc29t
+ZXRoaW5nIGxpa2UgdGhpcywgd2hhdCdzIHlvdXINCj4gdGFrZSBvbiBpdD8NCj4gDQo+IFRoYXQg
+aXMgYWxyZWFkeSBhIGNvbXBpbGUtdGltZSBkZWNpc2lvbi4NCg0KWWVzLCBidXQgaXMgbm90IGZ1
+bGx5IGltcGxlbWVudGVkLg0KDQo+IA0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2Vy
+bmVsL2hlYWRfZnNsX2Jvb2tlLlMNCj4gYi9hcmNoL3Bvd2VycGMva2VybmVsL2hlYWRfZnNsX2Jv
+b2tlLlMNCj4gPiBpbmRleCBiNDk3MTg4Li45ZDQxMDE1IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gv
+cG93ZXJwYy9rZXJuZWwvaGVhZF9mc2xfYm9va2UuUw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9r
+ZXJuZWwvaGVhZF9mc2xfYm9va2UuUw0KPiA+IEBAIC02MTMsNiArNjEzLDggQEAgRU5EX0ZUUl9T
+RUNUSU9OX0lGU0VUKENQVV9GVFJfRU1CX0hWKQ0KPiA+ICAgICAgICAgbWZzcHIgICByMTAsIFNQ
+Uk5fU1BSR19SU0NSQVRDSDANCj4gPiAgICAgICAgIGIgICAgICAgSW5zdHJ1Y3Rpb25TdG9yYWdl
+DQo+ID4NCj4gPiArLyogRGVmaW5lIFNQRSBoYW5kbGVycyBvbmx5IGZvciBlNTAwdjIgYW5kIGUy
+MDAgKi8NCj4gPiArI2lmbmRlZiBDT05GSUdfUFBDX0U1MDBNQw0KPiA+ICAjaWZkZWYgQ09ORklH
+X1NQRQ0KPiA+ICAgICAgICAgLyogU1BFIFVuYXZhaWxhYmxlICovDQo+ID4gICAgICAgICBTVEFS
+VF9FWENFUFRJT04oU1BFVW5hdmFpbGFibGUpDQo+ID4gQEAgLTYyNiw3ICs2MjgsOSBAQCBFTkRf
+RlRSX1NFQ1RJT05fSUZTRVQoQ1BVX0ZUUl9FTUJfSFYpDQo+ID4gICAgICAgICBFWENFUFRJT04o
+MHgyMDIwLCBTUEVfQUxUSVZFQ19VTkFWQUlMLCBTUEVVbmF2YWlsYWJsZSwgXA0KPiA+ICAgICAg
+ICAgICAgICAgICAgIHVua25vd25fZXhjZXB0aW9uLCBFWENfWEZFUl9FRSkNCj4gPiAgI2VuZGlm
+IC8qIENPTkZJR19TUEUgKi8NCj4gPiArI2VuZGlmDQo+IA0KPiBUaGlzIGlzIHJlZHVuZGFudDoN
+Cj4gDQo+ICAgICAgICAgY29uZmlnIFNQRQ0KPiAgICAgICAgICAgICAgICAgYm9vbCAiU1BFIFN1
+cHBvcnQiDQo+ICAgICAgICAgICAgICAgICBkZXBlbmRzIG9uIEUyMDAgfHwgKEU1MDAgJiYgIVBQ
+Q19FNTAwTUMpDQo+ICAgICAgICAgICAgICAgICBkZWZhdWx0IHkNCg0KSSBzZWUgd2hhdCB5b3Ug
+bWVhbiwgYnV0IGl0J3Mgbm90IHJlZHVuZGFudC4gQWxleCB3YXMgbG9va2luZyB0byByZW1vdmUg
+U1BFDQpoYW5kbGVycyBmb3IgZTUwMG1jKyBhbmQgdGhlIHByb3Bvc2FsIGhhbmRsZWQgIVNQRSBj
+YXNlLiBJbiB0aGUgbmV3DQpsaWdodCBJIGZpbmQgdGhpcyB2YXJpYW50IG1vcmUgcmVhZGFibGU6
+DQoNCisvKiBEZWZpbmUgU1BFIGhhbmRsZXJzIGZvciBlMjAwIGFuZCBlNTAwdjIgKi8NCiAjaWZk
+ZWYgQ09ORklHX1NQRQ0KICAgICAgICAvKiBTUEUgVW5hdmFpbGFibGUgKi8NCiAgICAgICAgU1RB
+UlRfRVhDRVBUSU9OKFNQRVVuYXZhaWxhYmxlKQ0KQEAgLTYyMiwxMSArNjIzLDEzIEBAIEVORF9G
+VFJfU0VDVElPTl9JRlNFVChDUFVfRlRSX0VNQl9IVikNCiAgICAgICAgYiAgICAgICBmYXN0X2V4
+Y2VwdGlvbl9yZXR1cm4NCiAxOiAgICAgYWRkaSAgICByMyxyMSxTVEFDS19GUkFNRV9PVkVSSEVB
+RA0KICAgICAgICBFWENfWEZFUl9FRV9MSVRFKDB4MjAxMCwgS2VybmVsU1BFKQ0KLSNlbHNlDQor
+I2VsaWYgZGVmaW5lZChDT05GSUdfRTIwMCkgfHwgXA0KKyAgICAgIChkZWZpbmVkKENPTkZJR19F
+NTAwKSAmJiAhZGVmaW5lZChDT05GSUdfUFBDX0U1MDBNQykpDQogICAgICAgIEVYQ0VQVElPTigw
+eDIwMjAsIFNQRV9BTFRJVkVDX1VOQVZBSUwsIFNQRVVuYXZhaWxhYmxlLCBcDQogICAgICAgICAg
+ICAgICAgICB1bmtub3duX2V4Y2VwdGlvbiwgRVhDX1hGRVJfRUUpDQogI2VuZGlmIC8qIENPTkZJ
+R19TUEUgKi8NCg0KPiANCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHV0
+YWJsZS5jDQo+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHV0YWJsZS5jDQo+ID4gaW5kZXggYzFm
+YWFkZS4uM2FiNjVjMiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL2NwdXRh
+YmxlLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2NwdXRhYmxlLmMNCj4gPiBAQCAt
+MjAzMCw2ICsyMDMwLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVfc3BlYyBfX2luaXRkYXRhIGNwdV9z
+cGVjc1tdID0gew0KPiA+ICAjZW5kaWYgLyogQ09ORklHX1BQQzMyICovDQo+ID4gICNpZmRlZiBD
+T05GSUdfRTUwMA0KPiA+ICAjaWZkZWYgQ09ORklHX1BQQzMyDQo+ID4gKyNpZm5kZWYgQ09ORklH
+X1BQQ19FNTAwTUMNCj4gPiAgICAgICAgIHsgICAgICAgLyogZTUwMCAqLw0KPiA+ICAgICAgICAg
+ICAgICAgICAucHZyX21hc2sgICAgICAgICAgICAgICA9IDB4ZmZmZjAwMDAsDQo+ID4gICAgICAg
+ICAgICAgICAgIC5wdnJfdmFsdWUgICAgICAgICAgICAgID0gMHg4MDIwMDAwMCwNCj4gPiBAQCAt
+MjA2OSw2ICsyMDcwLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVfc3BlYyBfX2luaXRkYXRhIGNwdV9z
+cGVjc1tdID0gew0KPiA+ICAgICAgICAgICAgICAgICAubWFjaGluZV9jaGVjayAgICAgICAgICA9
+IG1hY2hpbmVfY2hlY2tfZTUwMCwNCj4gPiAgICAgICAgICAgICAgICAgLnBsYXRmb3JtICAgICAg
+ICAgICAgICAgPSAicHBjODU0OCIsDQo+ID4gICAgICAgICB9LA0KPiA+ICsjZW5kaWYgLyogIUNP
+TkZJR19QUENfRTUwME1DICovDQo+ID4gICAgICAgICB7ICAgICAgIC8qIGU1MDBtYyAqLw0KPiA+
+ICAgICAgICAgICAgICAgICAucHZyX21hc2sgICAgICAgICAgICAgICA9IDB4ZmZmZjAwMDAsDQo+
+ID4gICAgICAgICAgICAgICAgIC5wdnJfdmFsdWUgICAgICAgICAgICAgID0gMHg4MDIzMDAwMCwN
+Cj4gPg0KPiANCj4gVGhpcyBsb29rcyBhIGJpdCBzdHJhbmdlIC0tIGU1MDB2MiBnZXRzIGV4Y2x1
+ZGVkIGlmIFBQQ19FNTAwTUMsIGJ1dA0KPiBlNTAwbWMgZ2V0cyBpbmNsdWRlZCBpbiAhUFBDX0U1
+MDBNQz8NCg0KUmlnaHQsIG15IG1haW4gcHVycG9zZSB3YXMgdG8gZ2V0IHJpZCBvZiBfX3NldHVw
+X2U1MDBfaXZvcnMgb24gUFBDX0U1MDBNQw0Kd2hpY2ggcmVmZXJzIFNQRVVuYXZhaWxhYmxlLiBJ
+IHdpbGwgYWRkIGFuICNlbHNlIHRvIGV4Y2x1ZGUgZTUwMG1jLg0KDQpUaGUgImdlbmVyaWMgRTUw
+MCBQUEMiIGRlZmF1bHQgY3B1IGFkdmVydGlzZXMgUFBDX0ZFQVRVUkVfSEFTX1NQRV9DT01QLg0K
+RG8gd2Ugd2FudCB0byBleGNsdWRlZCBpdCBpZiBQUENfRTUwME1DPyBJcyB0aGlzIGNwdSB1c2Vm
+dWwgd2l0aG91dCBjcHVfc2V0dXAoKQ0KYW5kIGlmIHNvIHdoeSBkb24ndCB3ZSBhbHNvIGhhdmUg
+YSBkZWZhdWx0IGZvciA2NC1iaXQ/DQoNCi1NaWtlDQo=
