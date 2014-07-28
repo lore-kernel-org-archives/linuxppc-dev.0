@@ -1,19 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B592B1A01A6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 17:03:15 +1000 (EST)
-Message-ID: <1406530990.23799.8.camel@concordia>
-Subject: Re: Kernel crash caused by cpufreq
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, svaidy@linux.vnet.ibm.com
-Date: Mon, 28 Jul 2014 17:03:10 +1000
-In-Reply-To: <20140725010757.GA19679@shangw>
-References: <20140725010757.GA19679@shangw>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 226751A01AF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 17:15:13 +1000 (EST)
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9A5B7140120
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2014 17:15:11 +1000 (EST)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+ id 1XBeui-0001YT-4Y
+ for linuxppc-dev@ozlabs.org; Mon, 28 Jul 2014 09:00:04 +0200
+Received: from gate-tx3.freescale.com ([192.88.168.1])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2014 09:00:04 +0200
+Received: from Emilian.Medve by gate-tx3.freescale.com with local (Gmexim 0.1
+ (Debian)) id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2014 09:00:04 +0200
+To: linuxppc-dev@ozlabs.org
+From: Emil Medve <Emilian.Medve@Freescale.com>
+Subject: Re: [PATCH v2 5/7] powerpc/corenet: Add MDIO bus muxing support to
+ the board device tree(s)
+Date: Mon, 28 Jul 2014 06:51:11 +0000 (UTC)
+Message-ID: <loom.20140728T081519-636@post.gmane.org>
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+ <1405541831-1277-5-git-send-email-Shruti@Freescale.com>
+ <1405982754.29414.33.camel@snotra.buserror.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,96 +40,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-07-25 at 11:07 +1000, Gavin Shan wrote:
-> I'm tracing one LSI interrupt issue on P8 box, and eventually into the
-> following kernel crash. Not sure if there is one fix against this? :-)
- 
-Vaidy wrote that I'm pretty sure (on CC).
-
-> Starting Linux PPC64 #401 SMP Fri Jul 25 10:52:28 EST 2014
-> -----------------------------------------------------
-> ppc64_pft_size                = 0x0
-> physicalMemorySize            = 0x800000000
-> htab_address                  = 0xc0000007fe000000
-> htab_hash_mask                = 0x3ffff
-> -----------------------------------------------------
->  <- setup_system()
-> Initializing cgroup subsys cpuset
-> Initializing cgroup subsys cpuacct
-> Linux version 3.16.0-rc6-00076-g4226dbe-dirty (shangw@shangw) (gcc version 4.5.2 (crosstool-NG 1.19.0) ) #401 SMP Fri Jul 25 10:52:28 EST 2014
-> 	:
-> < Unrelated log stripped >
-
-Are you sure there's nothing else in the log that might be related? See the
-messages in init_powernv_pstates() for example.
-
-> ------------[ cut here ]------------
-> kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
->     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
->     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
->     sp: c0000007f84835f0
->    msr: 9000000000029032
->   current = 0xc0000007f8400000
->   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
->     pid   = 1, comm = swapper/0
-> kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> enter ? for help
-> [link register   ] c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
-> [c0000007f84835f0] c000000001076070 key_type_dns_resolver+0xef20/0x40d20 (unreliable)
-> [c0000007f8483670] c00000000010812c .generic_exec_single+0x8c/0x270
-> [c0000007f8483730] c0000000001083d0 .smp_call_function_single+0x90/0xb0
-> [c0000007f84837b0] c000000000108cec .smp_call_function_any+0x15c/0x200
-> [c0000007f8483860] c00000000096f27c .powernv_cpufreq_get+0x3c/0x60
-> [c0000007f84838f0] c000000000969dc4 .__cpufreq_add_dev.clone.11+0x574/0xa20
-> [c0000007f84839e0] c0000000005f7a4c .subsys_interface_register+0xec/0x130
-> [c0000007f8483a90] c000000000967af8 .cpufreq_register_driver+0x168/0x2d0
-> [c0000007f8483b30] c000000000f774cc .powernv_cpufreq_init+0x210/0x244
-> [c0000007f8483be0] c00000000000bc08 .do_one_initcall+0xc8/0x240
-> [c0000007f8483ce0] c000000000f44054 .kernel_init_freeable+0x268/0x33c
-> [c0000007f8483db0] c00000000000c4dc .kernel_init+0x1c/0x110
-> [c0000007f8483e30] c00000000000a428 .ret_from_kernel_thread+0x58/0xb0
-> 1:mon> e
-> cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
->     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
->     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
->     sp: c0000007f84835f0
->    msr: 9000000000029032
->   current = 0xc0000007f8400000
->   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
->     pid   = 1, comm = swapper/0
-> kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
-> 1:mon> r
-> R00 = 0000000000000042   R16 = 0000000000000000
-> R01 = c0000007f84835f0   R17 = 0000000000000000
-> R02 = c00000000116c430   R18 = 0000000000000000
-> R03 = ffffffffffffffbe   R19 = 0000000000000001
-> R04 = 0000000000000000   R20 = c00000078bd61e58
-> R05 = c00000000114ca78   R21 = c000000001008910
-> R06 = c0000007f84838d0   R22 = c0000000011c1b74
-> R07 = 0000000000000001   R23 = c000000002200030
-> R08 = c0000000011c1910   R24 = 0000000000000001
-> R09 = c000000001f2970c   R25 = c000000001008730
-> R10 = 0000000000000001   R26 = c000000001f29478
-> R11 = 0000000000000042   R27 = c0000007f84838d0
-> R12 = 0000000044002084   R28 = c00000000114ca78
-> R13 = c00000000ff00400   R29 = 0000000000000000
-> R14 = c00000000000c4c0   R30 = c0000000010a90f0
-> R15 = 0000000000000000   R31 = c0000007f84838d0
-> pc  = c00000000096f32c .pstate_id_to_freq+0x2c/0x50
-> cfar= c00000000096f324 .pstate_id_to_freq+0x24/0x50
-> lr  = c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
-> msr = 9000000000029032   cr  = 44002082
-> ctr = c00000000096f350   xer = 0000000020000000   trap =  700
-> 1:mon>
-
-Gavin, in future for a dump like this it's very helpful to see the actual code
-that hit the bug. You can get that with:
-
-1:mon> di $.pstate_id_to_freq
+Hello Scott,
 
 
-Vaidy, judging by r3 it looks like i became negative. That would obviously
-happen if powernv_pstate_info.max was zero?
+Scott Wood <scottwood <at> freescale.com> writes:
+> On Wed, 2014-07-16 at 15:17 -0500, Shruti Kanetkar wrote:
+> > +			mdio <at> fd000 {
+> > +				/* For 10g interfaces */
+> > +				phy_xaui_slot1: xaui-phy <at> slot1 {
+> > +					status = "disabled";
+> > +					compatible = "ethernet-phy-ieee802.3-c45";
+> > +					reg = <0x7>; /* default switch setting on slot1 of AMC2PEX */
+> > +				};
+> 
+> Why xaui-phy and not ethernet-phy?
+> 
+> As for the device_type discussion from v1, there is a generic binding
+> that says device_type "should" be ethernet-phy.
 
-cheers
+I have no strong feelings about this and we can use ethernet-phy, but:
+
+1. The binding is old/stale (?) as it still uses device_type and the kernel
+doesn't seem to use anymore the device_type for PHY(s)
+
+2. The binding asks "ethernet-phy" for the device_type property, not for the
+name. As such TBI PHY(s) use (upstream) the tbi-phy@ node name
+
+> BTW, that binding
+> (net/phy.txt) could use some cleaning up -- it still has references to
+> things like linux,phandle.
+> 
+> > diff --git a/arch/powerpc/boot/dts/b4qds.dtsi
+b/arch/powerpc/boot/dts/b4qds.dtsi
+> > index 8b47edc..6188583 100644
+> > --- a/arch/powerpc/boot/dts/b4qds.dtsi
+> > +++ b/arch/powerpc/boot/dts/b4qds.dtsi
+> >  <at>  <at>  -39,6 +39,13  <at>  <at> 
+> >  	#size-cells = <2>;
+> >  	interrupt-parent = <&mpic>;
+> >  
+> > +	aliases {
+> > +		phy_sgmii_10 = &phy_sgmii_10;
+> > +		phy_sgmii_11 = &phy_sgmii_11;
+> > +		phy_sgmii_1c = &phy_sgmii_1c;
+> > +		phy_sgmii_1d = &phy_sgmii_1d;
+> > +	};
+> 
+> Is the encoding of these alias strings considered ABI (for either the
+> OS's use or U-Boot's)?
+
+U-Boot uses these aliases
+
+> If so, please document it.
+
+Will do
+
+> If not, how do you
+> see this being used?  What does the hex number mean from the user's
+> perspective?
+> 
+> > +			mdio0: mdio <at> fc000 {
+> > +			};
+> 
+> Why is the empty node needed?
+
+For the label
+
+
+Cheers,
