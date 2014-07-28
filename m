@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95D6D1A0208
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 11:46:13 +1000 (EST)
-Message-ID: <1406510394.4935.35.camel@pasglop>
-Subject: Re: [PATCH v3 12/18] powerpc/iommu: Fix missing permission bits in
- iommu_put_tce_user_mode()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 28 Jul 2014 11:19:54 +1000
-In-Reply-To: <1406191691-31441-13-git-send-email-aik@ozlabs.ru>
-References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
- <1406191691-31441-13-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C30491A01A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 13:35:33 +1000 (EST)
+Message-ID: <1406518533.8345.1.camel@concordia>
+Subject: Re: [PATCH] powerpc: fixing endianness of flash_block_list in
+ rtas_flash
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Mon, 28 Jul 2014 13:35:33 +1000
+In-Reply-To: <1406310462-23005-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1406310462-23005-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-24 at 18:48 +1000, Alexey Kardashevskiy wrote:
-> This adds missing permission bits to the translated TCE.
+Hi Thomas,
 
-Is this a bug fix for existing stuff ? If yes, submit it separately.
+On Fri, 2014-07-25 at 12:47 -0500, Thomas Falcon wrote:
+> [PATCH] powerpc: fixing endianness of flash_block_list in rtas_flash
 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/kernel/iommu.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 0cda2e8..5af2319 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1088,6 +1088,7 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
->  		return -EFAULT;
->  	}
->  	hwaddr = (unsigned long) page_address(page) + offset;
-> +	hwaddr |= tce & (TCE_PCI_READ | TCE_PCI_WRITE);
->  
->  	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
->  	if (ret)
+Minor nit, but the commit title should use the imperative mood, so eg:
+
+  [PATCH] powerpc: Fix endianness of flash_block_list in rtas_flash
+
+> The function rtas_flash_firmware passes the address of a data structure,
+> flash_block_list, when making the update-flash-64-and-reboot rtas call.
+> While the endianness of the address is handled correctly, the endianness
+> of the data is not.  This patch ensures that the data in flash_block_list
+> is big endian when passed to rtas on little endian hosts.
+
+This looks good.
+
+But you can do even better by changing the data types to be explicitly BE, so
+eg. length should be __be64 I think.
+
+Then if you build with "make C=2 CF=-D__CHECK_ENDIAN__" and have sparse
+installed it will tell you when incorrectly assign from/to the BE types.
+
+cheers
