@@ -2,20 +2,22 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DFE91A01B9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 22:34:41 +1000 (EST)
-Message-ID: <53D6435D.6050601@suse.de>
-Date: Mon, 28 Jul 2014 14:34:37 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0249E1A01AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 23:25:38 +1000 (EST)
+Message-ID: <53D64F4C.80208@suse.de>
+Date: Mon, 28 Jul 2014 15:25:32 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v4 0/2] Use the POWER8 Micro Partition Prefetch Engine
- in KVM HV
-References: <1405567197-23333-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1405657123-20087-1-git-send-email-stewart@linux.vnet.ibm.com>
-In-Reply-To: <1405657123-20087-1-git-send-email-stewart@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH 1/4] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
+ register
+References: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1401970085-14493-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <53919B83.4070308@suse.de> <874mzyxati.fsf@linux.vnet.ibm.com>
+In-Reply-To: <874mzyxati.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +28,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 18.07.14 06:18, Stewart Smith wrote:
-> changes since v3:
-> - use kvmppc namespace
-> - MPP_BUFFER_ORDER of 3 not 4, as we only need 32k and it's already 32k aligned
-> - split out kvmppc_vcore_create in separate patch
-> - give a variable a better name: s/tmp/mpp_addr/
-> - logmpp becomes static inline function
+On 06.06.14 18:27, Aneesh Kumar K.V wrote:
+> Alexander Graf <agraf@suse.de> writes:
 >
-> Stewart Smith (2):
->    Split out struct kvmppc_vcore creation to separate function
->    Use the POWER8 Micro Partition Prefetch Engine in KVM HV on POWER8
+>> On 05.06.14 14:08, Aneesh Kumar K.V wrote:
+>>> virtual time base register is a per VM, per cpu register that needs
+>>> to be saved and restored on vm exit and entry. Writing to VTB is not
+>>> allowed in the privileged mode.
+>>>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> For some reason BUG() doesn't always trigger the "execution stops here"
+>> logic in gcc. So I've squashed this patch into yours.
+>>
+>>
+>> Alex
+>>
+>>
+>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+>> index 3e7085d..99de6ad 100644
+>> --- a/arch/powerpc/include/asm/reg.h
+>> +++ b/arch/powerpc/include/asm/reg.h
+>> @@ -1206,6 +1206,7 @@ static inline unsigned long mfvtb (void)
+>>         * capture that.
+>>         */
+>>        BUG();
+>> +    return 0;
+>>    }
+>>
+>>    #ifdef __powerpc64__
+> you can then drop the include header change. ie,
+>
+> #include <asm/bug.h>
 
-I only realized just now that I've commented on v3 :). Sorry. I guess 
-the name isn't really important enough for a respin. If you come up with 
-a really nice one, I'd be happy to apply another patch that renames it.
-
-Thanks, applied all to kvm-ppc-queue.
+Yeah, things are even worse than I thought. I've eventually squashed the 
+following in. a NOP'ed mfspr() won't keep the branch from blr'ing, so 
+we'd never hit the BUG() anyway.
 
 
 Alex
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1f34ef7..c8f3381 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -25,7 +25,6 @@
+  #ifdef CONFIG_8xx
+  #include <asm/reg_8xx.h>
+  #endif /* CONFIG_8xx */
+-#include <asm/bug.h>
+
+  #define MSR_SF_LG      63              /* Enable 64 bit mode */
+  #define MSR_ISF_LG     61              /* Interrupt 64b mode valid on 
+630 */
+@@ -1210,12 +1209,6 @@ static inline unsigned long mfvtb (void)
+         if (cpu_has_feature(CPU_FTR_ARCH_207S))
+                 return mfspr(SPRN_VTB);
+  #endif
+-       /*
+-        * The above mfspr will be a no-op on anything before Power8
+-        * That can result in random values returned. We need to
+-        * capture that.
+-        */
+-       BUG();
+         return 0;
+  }
