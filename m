@@ -1,26 +1,37 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CED61A0257
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 19:12:14 +1000 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id ft15so9597274pdb.31
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 02:12:12 -0700 (PDT)
-Message-ID: <53D613E7.2090806@ozlabs.ru>
-Date: Mon, 28 Jul 2014 19:12:07 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE0391A000A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 20:29:09 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Mon, 28 Jul 2014 15:59:04 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 653D5E0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 16:00:46 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6SAT1jJ9699502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 15:59:01 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6SAT05K006089
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 15:59:00 +0530
+Date: Mon, 28 Jul 2014 15:58:58 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Kernel crash caused by cpufreq
+Message-ID: <20140728102858.GA8549@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20140725010757.GA19679@shangw>
+ <1406530990.23799.8.camel@concordia>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 04/18] vfio: powerpc: Move locked_vm accounting to
- a helper
-References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>	
- <1406191691-31441-5-git-send-email-aik@ozlabs.ru>
- <1406508410.4935.24.camel@pasglop>
-In-Reply-To: <1406508410.4935.24.camel@pasglop>
-Content-Type: text/plain; charset=koi8-r
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1406530990.23799.8.camel@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,115 +41,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2014 10:46 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-07-24 at 18:47 +1000, Alexey Kardashevskiy wrote:
->> Additional DMA windows support is coming and accounting will include them
->> so let's move this code to a helper for reuse.
+* Michael Ellerman <mpe@ellerman.id.au> [2014-07-28 17:03:10]:
+
+> On Fri, 2014-07-25 at 11:07 +1000, Gavin Shan wrote:
+> > I'm tracing one LSI interrupt issue on P8 box, and eventually into the
+> > following kernel crash. Not sure if there is one fix against this? :-)
 > 
-> This code looks a LOT like the one you added in the previous patch
-> (ie. kvmppc_account_memlimit()), though in a different place. I
-> wonder if we should re-arrange things so that there is really
-> only one version of it..
+> Vaidy wrote that I'm pretty sure (on CC).
 
-
-One copy is in VFIO driver, another in KVM, they meet in VFIO KVM device
-(which may miss) or IOMMU code (drivers/iommu/iommu.c or
-arch/powerpc/kernel/iommu.c) but this math has nothing to do with IOMMU. I
-fail to see good common place for this.
-
-
+Yes, I did :)
+ 
+> > Starting Linux PPC64 #401 SMP Fri Jul 25 10:52:28 EST 2014
+> > -----------------------------------------------------
+> > ppc64_pft_size                = 0x0
+> > physicalMemorySize            = 0x800000000
+> > htab_address                  = 0xc0000007fe000000
+> > htab_hash_mask                = 0x3ffff
+> > -----------------------------------------------------
+> >  <- setup_system()
+> > Initializing cgroup subsys cpuset
+> > Initializing cgroup subsys cpuacct
+> > Linux version 3.16.0-rc6-00076-g4226dbe-dirty (shangw@shangw) (gcc version 4.5.2 (crosstool-NG 1.19.0) ) #401 SMP Fri Jul 25 10:52:28 EST 2014
+> > 	:
+> > < Unrelated log stripped >
 > 
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>  drivers/vfio/vfio_iommu_spapr_tce.c | 54 ++++++++++++++++++++++++-------------
->>  1 file changed, 36 insertions(+), 18 deletions(-)
->>
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index a84788b..c8f7284 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -47,10 +47,40 @@ struct tce_container {
->>  	bool enabled;
->>  };
->>  
->> +/*
->> + * Checks ulimit in order not to let the user space to pin all
->> + * available memory for TCE tables.
->> + */
->> +static long tce_iommu_account_memlimit(struct iommu_table *tbl, bool inc)
->> +{
->> +	unsigned long ret = 0, locked, lock_limit;
->> +	long npages;
->> +
->> +	if (!current->mm)
->> +		return -ESRCH; /* process exited */
->> +
->> +	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->> +	if (!inc)
->> +		npages = -npages;
->> +
->> +	down_write(&current->mm->mmap_sem);
->> +	locked = current->mm->locked_vm + npages;
->> +	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->> +	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
->> +		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
->> +				rlimit(RLIMIT_MEMLOCK));
->> +		ret = -ENOMEM;
->> +	} else {
->> +		current->mm->locked_vm += npages;
->> +	}
->> +	up_write(&current->mm->mmap_sem);
->> +
->> +	return ret;
->> +}
->> +
->>  static int tce_iommu_enable(struct tce_container *container)
->>  {
->>  	int ret = 0;
->> -	unsigned long locked, lock_limit, npages;
->>  	struct iommu_table *tbl = container->tbl;
->>  
->>  	if (!container->tbl)
->> @@ -80,20 +110,11 @@ static int tce_iommu_enable(struct tce_container *container)
->>  	 * that would effectively kill the guest at random points, much better
->>  	 * enforcing the limit based on the max that the guest can map.
->>  	 */
->> -	down_write(&current->mm->mmap_sem);
->> -	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->> -	locked = current->mm->locked_vm + npages;
->> -	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->> -	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
->> -		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
->> -				rlimit(RLIMIT_MEMLOCK));
->> -		ret = -ENOMEM;
->> -	} else {
->> +	ret = tce_iommu_account_memlimit(tbl, true);
->> +	if (ret)
->> +		return ret;
->>  
->> -		current->mm->locked_vm += npages;
->> -		container->enabled = true;
->> -	}
->> -	up_write(&current->mm->mmap_sem);
->> +	container->enabled = true;
->>  
->>  	return ret;
->>  }
->> @@ -108,10 +129,7 @@ static void tce_iommu_disable(struct tce_container *container)
->>  	if (!container->tbl || !current->mm)
->>  		return;
->>  
->> -	down_write(&current->mm->mmap_sem);
->> -	current->mm->locked_vm -= (container->tbl->it_size <<
->> -			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->> -	up_write(&current->mm->mmap_sem);
->> +	tce_iommu_account_memlimit(container->tbl, false);
->>  }
->>  
->>  static void *tce_iommu_open(unsigned long arg)
+> Are you sure there's nothing else in the log that might be related? See the
+> messages in init_powernv_pstates() for example.
+
+Most likely PMSR register is showing out of bound values because of
+potential firmware (OPAL) issue.
+
+> > ------------[ cut here ]------------
+> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
+> > cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
+> >     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
+> >     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
+> >     sp: c0000007f84835f0
+> >    msr: 9000000000029032
+> >   current = 0xc0000007f8400000
+> >   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
+> >     pid   = 1, comm = swapper/0
+> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
+> > enter ? for help
+> > [link register   ] c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
+> > [c0000007f84835f0] c000000001076070 key_type_dns_resolver+0xef20/0x40d20 (unreliable)
+> > [c0000007f8483670] c00000000010812c .generic_exec_single+0x8c/0x270
+> > [c0000007f8483730] c0000000001083d0 .smp_call_function_single+0x90/0xb0
+> > [c0000007f84837b0] c000000000108cec .smp_call_function_any+0x15c/0x200
+> > [c0000007f8483860] c00000000096f27c .powernv_cpufreq_get+0x3c/0x60
+> > [c0000007f84838f0] c000000000969dc4 .__cpufreq_add_dev.clone.11+0x574/0xa20
+> > [c0000007f84839e0] c0000000005f7a4c .subsys_interface_register+0xec/0x130
+> > [c0000007f8483a90] c000000000967af8 .cpufreq_register_driver+0x168/0x2d0
+> > [c0000007f8483b30] c000000000f774cc .powernv_cpufreq_init+0x210/0x244
+> > [c0000007f8483be0] c00000000000bc08 .do_one_initcall+0xc8/0x240
+> > [c0000007f8483ce0] c000000000f44054 .kernel_init_freeable+0x268/0x33c
+> > [c0000007f8483db0] c00000000000c4dc .kernel_init+0x1c/0x110
+> > [c0000007f8483e30] c00000000000a428 .ret_from_kernel_thread+0x58/0xb0
+> > 1:mon> e
+> > cpu 0x1: Vector: 700 (Program Check) at [c0000007f8483370]
+> >     pc: c00000000096f32c: .pstate_id_to_freq+0x2c/0x50
+> >     lr: c00000000096f37c: .powernv_read_cpu_freq+0x2c/0x50
+> >     sp: c0000007f84835f0
+> >    msr: 9000000000029032
+> >   current = 0xc0000007f8400000
+> >   paca    = 0xc00000000ff00400	 softe: 0	 irq_happened: 0x01
+> >     pid   = 1, comm = swapper/0
+> > kernel BUG at drivers/cpufreq/powernv-cpufreq.c:134!
+> > 1:mon> r
+> > R00 = 0000000000000042   R16 = 0000000000000000
+> > R01 = c0000007f84835f0   R17 = 0000000000000000
+> > R02 = c00000000116c430   R18 = 0000000000000000
+> > R03 = ffffffffffffffbe   R19 = 0000000000000001
+> > R04 = 0000000000000000   R20 = c00000078bd61e58
+> > R05 = c00000000114ca78   R21 = c000000001008910
+> > R06 = c0000007f84838d0   R22 = c0000000011c1b74
+> > R07 = 0000000000000001   R23 = c000000002200030
+> > R08 = c0000000011c1910   R24 = 0000000000000001
+> > R09 = c000000001f2970c   R25 = c000000001008730
+> > R10 = 0000000000000001   R26 = c000000001f29478
+> > R11 = 0000000000000042   R27 = c0000007f84838d0
+> > R12 = 0000000044002084   R28 = c00000000114ca78
+> > R13 = c00000000ff00400   R29 = 0000000000000000
+> > R14 = c00000000000c4c0   R30 = c0000000010a90f0
+> > R15 = 0000000000000000   R31 = c0000007f84838d0
+> > pc  = c00000000096f32c .pstate_id_to_freq+0x2c/0x50
+> > cfar= c00000000096f324 .pstate_id_to_freq+0x24/0x50
+> > lr  = c00000000096f37c .powernv_read_cpu_freq+0x2c/0x50
+> > msr = 9000000000029032   cr  = 44002082
+> > ctr = c00000000096f350   xer = 0000000020000000   trap =  700
+> > 1:mon>
+> 
+> Gavin, in future for a dump like this it's very helpful to see the actual code
+> that hit the bug. You can get that with:
+> 
+> 1:mon> di $.pstate_id_to_freq
 > 
 > 
+> Vaidy, judging by r3 it looks like i became negative. That would obviously
+> happen if powernv_pstate_info.max was zero?
 
+yes, negative is ok.  Something has gone wrong with the PState
+firmware/hardware.  A BUG_ON() is too severe for this error.  I will
+change code to not stop the system for this error and also investigate
+what is happening at runtime.
 
--- 
-Alexey
+--Vaidy
