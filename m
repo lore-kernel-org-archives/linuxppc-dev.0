@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE64D1A013F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 11:09:30 +1000 (EST)
-Message-ID: <1406509755.4935.29.camel@pasglop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8D501A01BA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jul 2014 11:16:26 +1000 (EST)
+Message-ID: <1406510169.4935.32.camel@pasglop>
 Subject: Re: [PATCH v3 13/18] powerpc/iommu: Extend ppc_md.tce_build(_rm) to
  return old TCE values
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 28 Jul 2014 11:09:15 +1000
+Date: Mon, 28 Jul 2014 11:16:09 +1000
 In-Reply-To: <1406191691-31441-14-git-send-email-aik@ozlabs.ru>
 References: <1406191691-31441-1-git-send-email-aik@ozlabs.ru>
  <1406191691-31441-14-git-send-email-aik@ozlabs.ru>
@@ -39,9 +39,20 @@ On Thu, 2014-07-24 at 18:48 +1000, Alexey Kardashevskiy wrote:
 > 
 > As this patch is mechanical, no change in behaviour is expected.
 
-You missed a few iommu's in the conversion ... pasemi, cell, ...
+Yeah well ... you added the new argument but you never actually populate
+it. Don't do that, make that one single patch.
 
-Ben.
+Also this is broken in many other ways. You don't implement it for all
+iommu's which is not a reasonable interface. On the other hand,
+implementing for all of them would have a significant cost since on
+pseries It would mean another H-call.
+
+So I'd suggest you actually create a separate callback, something like
+tce_get_and_set() or something...
+
+In fact, since you're going to touch each iommu interface like that you
+should probably do what I suggested earlier and move those callbacks
+to an iommu_ops structure per iommu.
 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
