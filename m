@@ -1,40 +1,32 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jslaby@suse.cz>
+Received: from ip4-83-240-18-248.cust.nbox.cz (ip4-83-240-18-248.cust.nbox.cz
+ [83.240.18.248])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 88E571A01ED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 23:10:20 +1000 (EST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DC3631400B5
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2014 23:10:19 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 29 Jul 2014 18:40:18 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 95770125804F
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2014 18:40:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6TDAZ3g23331030
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2014 18:40:35 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6TDAERI020216
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2014 18:40:14 +0530
-Subject: [PATCH 3/3] powerpc/book3s: handle HMIs for cpus in nap mode.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 29 Jul 2014 18:40:13 +0530
-Message-ID: <20140729131012.13492.75311.stgit@mars>
-In-Reply-To: <20140729130900.13492.85976.stgit@mars>
-References: <20140729130900.13492.85976.stgit@mars>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3D5D1A01A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 01:10:35 +1000 (EST)
+From: Jiri Slaby <jslaby@suse.cz>
+To: stable@vger.kernel.org
+Subject: [patch added to the 3.12 stable tree] locking/mutex: Disable
+ optimistic spinning on some architectures
+Date: Tue, 29 Jul 2014 17:09:32 +0200
+Message-Id: <1406646576-1299-52-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1406646576-1299-1-git-send-email-jslaby@suse.cz>
+References: <1406646576-1299-1-git-send-email-jslaby@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
+ Jiri Slaby <jslaby@suse.cz>, Ingo Molnar <mingo@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
+ Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
+ Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,79 +36,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+From: Peter Zijlstra <peterz@infradead.org>
 
-HMIs are thread specific and can come while thread is in sleep/nap mode.
-Hence with SMT=off mode we can receive HMIs on sleeping threads. For
-interrupt received in nap mode, cpu wakes up at system reset vector, clears
-the interrupt and go back to nap mode again. But HMIs are sticky and they
-keep happening until we clear reason bits from HMER. Hence add a special
-check for HMI in reset vector (through power7_wakeup_* functions) and
-invoke opal call to handle HMI.
+This patch has been added to the 3.12 stable tree. If you have any
+objections, please let us know.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+===============
+
+commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
+
+The optimistic spin code assumes regular stores and cmpxchg() play nice;
+this is found to not be true for at least: parisc, sparc32, tile32,
+metag-lock1, arc-!llsc and hexagon.
+
+There is further wreckage, but this in particular seemed easy to
+trigger, so blacklist this.
+
+Opt in for known good archs.
+
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Jason Low <jason.low2@hp.com>
+Cc: Waiman Long <waiman.long@hp.com>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: John David Anglin <dave.anglin@bell.net>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davidlohr Bueso <davidlohr@hp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 ---
- arch/powerpc/kernel/idle_power7.S |   32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ arch/arm/Kconfig     | 1 +
+ arch/arm64/Kconfig   | 1 +
+ arch/powerpc/Kconfig | 1 +
+ arch/sparc/Kconfig   | 1 +
+ arch/x86/Kconfig     | 1 +
+ kernel/Kconfig.locks | 5 ++++-
+ 6 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 5cf3d36..06305f6 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -135,10 +135,36 @@ _GLOBAL(power7_sleep)
- 	b	power7_powersave_common
- 	/* No return */
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index e47fcd1e9645..99e1ce978cf9 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -5,6 +5,7 @@ config ARM
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAVE_CUSTOM_GPIO_H
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select BUILDTIME_EXTABLE_SORT if MMU
+ 	select CLONE_BACKWARDS
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index c04454876bcb..fe70eaea0e28 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1,6 +1,7 @@
+ config ARM64
+ 	def_bool y
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_FRAME_POINTERS
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d5d026b6d237..2e0ddfadc0b9 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -138,6 +138,7 @@ config PPC
+ 	select OLD_SIGSUSPEND
+ 	select OLD_SIGACTION if PPC32
+ 	select HAVE_DEBUG_STACKOVERFLOW
++	select ARCH_SUPPORTS_ATOMIC_RMW
  
-+#define CHECK_HMI_INTERRUPT						\
-+	mfspr	r0,SPRN_SRR1;						\
-+BEGIN_FTR_SECTION_NESTED(66);						\
-+	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
-+FTR_SECTION_ELSE_NESTED(66);						\
-+	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
-+ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-+	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
-+	bne	20f;							\
-+	/* Invoke opal call to handle hmi */				\
-+	ld	r2,PACATOC(r13);					\
-+	ld	r1,PACAR1(r13);						\
-+	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
-+	li	r0,OPAL_HANDLE_HMI;					\
-+	LOAD_REG_ADDR(r11,opal);					\
-+	ld	r12,8(r11);						\
-+	ld	r2,0(r11);						\
-+	mtctr	r12;							\
-+	bctrl;								\
-+	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
-+20:	nop;
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 4e5683877b93..d60f34dbae89 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -75,6 +75,7 @@ config SPARC64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
+ 	select NO_BOOTMEM
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config ARCH_DEFCONFIG
+ 	string
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index eb2dfa61eabe..9dc1a24d41b8 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -123,6 +123,7 @@ config X86
+ 	select COMPAT_OLD_SIGACTION if IA32_EMULATION
+ 	select RTC_LIB
+ 	select HAVE_DEBUG_STACKOVERFLOW
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool y
+diff --git a/kernel/Kconfig.locks b/kernel/Kconfig.locks
+index d2b32ac27a39..ecee67a00f5f 100644
+--- a/kernel/Kconfig.locks
++++ b/kernel/Kconfig.locks
+@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
+ 
+ endif
+ 
++config ARCH_SUPPORTS_ATOMIC_RMW
++	bool
 +
-+
- _GLOBAL(power7_wakeup_tb_loss)
- 	ld	r2,PACATOC(r13);
- 	ld	r1,PACAR1(r13)
- 
-+BEGIN_FTR_SECTION
-+	CHECK_HMI_INTERRUPT
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	/* Time base re-sync */
- 	li	r0,OPAL_RESYNC_TIMEBASE
- 	LOAD_REG_ADDR(r11,opal);
-@@ -163,6 +189,9 @@ _GLOBAL(power7_wakeup_tb_loss)
- 
- _GLOBAL(power7_wakeup_loss)
- 	ld	r1,PACAR1(r13)
-+BEGIN_FTR_SECTION
-+	CHECK_HMI_INTERRUPT
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	REST_NVGPRS(r1)
- 	REST_GPR(2, r1)
- 	ld	r3,_CCR(r1)
-@@ -178,6 +207,9 @@ _GLOBAL(power7_wakeup_noloss)
- 	lbz	r0,PACA_NAPSTATELOST(r13)
- 	cmpwi	r0,0
- 	bne	power7_wakeup_loss
-+BEGIN_FTR_SECTION
-+	CHECK_HMI_INTERRUPT
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	ld	r1,PACAR1(r13)
- 	ld	r4,_MSR(r1)
- 	ld	r5,_NIP(r1)
+ config MUTEX_SPIN_ON_OWNER
+ 	def_bool y
+-	depends on SMP && !DEBUG_MUTEXES
++	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
+-- 
+2.0.1
