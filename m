@@ -1,38 +1,27 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27B4C1A01C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 03:55:57 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 29 Jul 2014 13:55:55 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 41708C90041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 13:55:45 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6THtqpt8519988
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 17:55:52 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6THsmUA018135
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 13:54:48 -0400
-Message-ID: <53D7DFE7.8000304@linux.vnet.ibm.com>
-Date: Tue, 29 Jul 2014 10:54:47 -0700
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 252261A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 04:23:59 +1000 (EST)
+Date: Tue, 29 Jul 2014 19:23:10 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20140729182310.GY17528@sirena.org.uk>
+References: <cover.1406628283.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pci: reorder pci bus/bridge unregistration during
- PHB removal
-References: <1406594911-7097-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1406598256.11977.1.camel@concordia>
-In-Reply-To: <1406598256.11977.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="pIgUhm2PSpi2KHBa"
+In-Reply-To: <cover.1406628283.git.nicoleotsuka@gmail.com>
+Subject: Re: [PATCH v6 0/2] Add Freescale ASRC driver
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, b42378@freescale.com, timur@tabi.org,
+ pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, rdunlap@infradead.org, b02247@freescale.com,
+ lgirdwood@gmail.com, perex@perex.cz, varkabhadram@gmail.com,
+ robh+dt@kernel.org, galak@codeaurora.org, grant.likely@linaro.org,
+ tklauser@distanz.ch, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,28 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2014 06:44 PM, Michael Ellerman wrote:
-> On Mon, 2014-07-28 at 20:48 -0400, Tyrel Datwyler wrote:
->> Commit bcdde7e made __sysfs_remove_dir() recursive and introduced a BUG_ON
->> during PHB removal while attempting to delete the power managment attribute
->> group of the bus. This is a result of tearing the bridge and bus devices down
->> out of order in remove_phb_dynamic. Since, the the bus resides below the bridge
->> in the sysfs device tree it should be torn down first.
->>
->> This patch simply moves the device_unregister call for the PHB bridge device
->> after the device_unregister call for the PHB bus.
->>
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> 
-> That commit went into 3.13, so shouldn't this be CC to stable?
 
-Darn it. Yes, it should.
+--pIgUhm2PSpi2KHBa
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> 
-> And also:
-> 
->   Fixes: bcdde7e221a8 ("sysfs: make __sysfs_remove_dir() recursive")
-> 
-> cheers
-> 
-> 
+On Tue, Jul 29, 2014 at 06:08:51PM +0800, Nicolin Chen wrote:
+> This series of patches add Freescale ASRC module driver support along
+> with the extra request in imx-sdma structure required by SDMA Device
+> to Device script.
+
+Applied both, thanks.
+
+--pIgUhm2PSpi2KHBa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT1+aKAAoJELSic+t+oim9SaoP/1FVsjb2QpLsKVSx6LP5AVJY
+DKmL2lH6q3YqSurOEBtoKAPw8738LJdWxGtRGqPEA+AMgP2QwXE35PIEyo3NFE0K
+ifGX0KKRfmvvGqWGajnYThJ71Z/0AWdlHj13ZTBuyschGBNi02JmeAwbPFH9y/Ux
+Wab6Ygul8yGR3pcYO86vSAvPB9vXubHbZJIeyHV68saOjqTcR6BAK1ZgC6tFzvz6
+QRtjosyqFDK00gWnXxPr3iyP+nq31cZPX3+LABwm3UDo8palIeKy+fz0AKpVr5IK
+iE85eb/YQFJG+a0UU6JY0sxaQ7BYtnGIFRcgaohlUDyWvgTSnFIdDWpobaFCO1KF
+M6pxRAtS3FPFY/oGvK+rzt7+fRkyj0AKd1mJLryYa6tG5OlBqESCuqy4mUa9xTmp
+fewpqjuZPGURNX95bBl6aYtwqwC++fZKV+iM5jl3y2Hu60pGtXWanO6N5VxQPEXa
+Ayd2VTrCQc6hgc3vmLTeXH7xFFX25HlFcYADI9ZCvH70JpeNmcKJzJyezF+lC6Ew
+Rwx4pIRFVhi/NKUnWc8MWriKDhz27k9urM8VCesnTjZ2AwQUmX//rXQlJBRTWqWn
+easFnaFB+wXzI3p/X7V3sTXYFkyOyWaludbgIyvU18hIwC2boLA2KDBkxfFwizFT
+RnngHEH/Pf2zFzmlRuJ0
+=ExYX
+-----END PGP SIGNATURE-----
+
+--pIgUhm2PSpi2KHBa--
