@@ -1,20 +1,33 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BCE11A0090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 11:44:18 +1000 (EST)
-Message-ID: <1406598256.11977.1.camel@concordia>
-Subject: Re: [PATCH] powerpc/pci: reorder pci bus/bridge unregistration
- during PHB removal
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E79A1A0003
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 12:19:18 +1000 (EST)
+Message-ID: <1406600356.11977.4.camel@concordia>
+Subject: Re: [PATCH v4] arm64, ia64, ppc, s390, sh, tile, um, x86, mm:
+ Remove default gate area
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Tue, 29 Jul 2014 11:44:16 +1000
-In-Reply-To: <1406594911-7097-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1406594911-7097-1-git-send-email-tyreld@linux.vnet.ibm.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Date: Tue, 29 Jul 2014 12:19:16 +1000
+In-Reply-To: <6435254cc74d6e9172931f27be3854d522ad299b.1406232860.git.luto@amacapital.net>
+References: <6435254cc74d6e9172931f27be3854d522ad299b.1406232860.git.luto@amacapital.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ user-mode-linux-devel@lists.sourceforge.net, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Nathan Lynch <Nathan_Lynch@mentor.com>,
+ linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-07-28 at 20:48 -0400, Tyrel Datwyler wrote:
-> Commit bcdde7e made __sysfs_remove_dir() recursive and introduced a BUG_ON
-> during PHB removal while attempting to delete the power managment attribute
-> group of the bus. This is a result of tearing the bridge and bus devices down
-> out of order in remove_phb_dynamic. Since, the the bus resides below the bridge
-> in the sysfs device tree it should be torn down first.
+On Thu, 2014-07-24 at 13:56 -0700, Andy Lutomirski wrote:
+> The core mm code will provide a default gate area based on
+> FIXADDR_USER_START and FIXADDR_USER_END if
+> !defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
 > 
-> This patch simply moves the device_unregister call for the PHB bridge device
-> after the device_unregister call for the PHB bus.
+> This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+> 64-bit UML, and x86_32 have their own code just to disable it.  arm,
+> 32-bit UML, and x86_64 have gate areas, but they have their own
+> implementations.
 > 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> This gets rid of the default and moves the code into ia64.
+> 
+> This should save some code on architectures without a gate area: it's
+> now possible to inline the gate_area functions in the default case.
 
-That commit went into 3.13, so shouldn't this be CC to stable?
+Looks good to me. Booted and everything seems happy, I still have a vdso etc.
 
-And also:
-
-  Fixes: bcdde7e221a8 ("sysfs: make __sysfs_remove_dir() recursive")
+Tested-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
 
 cheers
