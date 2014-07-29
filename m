@@ -1,26 +1,32 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50])
- by lists.ozlabs.org (Postfix) with ESMTP id 060CB1A01A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:25:27 +1000 (EST)
-Date: Tue, 29 Jul 2014 10:24:44 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
- memory
-Message-ID: <20140729092444.GI2576@leverpostej>
-References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
- <1404425400.21434.89.camel@snotra.buserror.net>
- <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
- <1404768354.21434.191.camel@snotra.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1404768354.21434.191.camel@snotra.buserror.net>
-Cc: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DAB451A01A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:38:08 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 29 Jul 2014 19:37:50 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9BBF12BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:38:03 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6T9F3RI4522274
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:15:04 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6T9c1bi008054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:38:02 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH 0/8] THP fixes for ppc64
+Date: Tue, 29 Jul 2014 15:07:41 +0530
+Message-Id: <1406626669-31154-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 07, 2014 at 10:25:54PM +0100, Scott Wood wrote:
-> On Thu, 2014-07-03 at 23:08 -0500, Jain Priyanka-B32167 wrote:
-> > 
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Friday, July 04, 2014 3:40 AM
-> > > To: Jain Priyanka-B32167
-> > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > > spi@vger.kernel.org; linux-mtd@lists.infradead.org
-> > > Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
-> > > memory
-> > > 
-> > > On Thu, 2014-07-03 at 15:42 +0530, Priyanka Jain wrote:
-> > > > -Micron n25q512a memory is supported by m25p80 driver.
-> > > >  Add compatible field required to support n25q512a in m25p80.txt -Add
-> > > > micron to the vendor-prefixes.txt file
-> > > >
-> > > > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> > > > ---
-> > > >  Documentation/devicetree/bindings/mtd/m25p80.txt   |    1 +
-> > > >  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
-> > > >  2 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > > Why did you send this to the ppc list but not the spi or mtd lists?
-> > > 
-> > [Jain Priyanka-B32167] Sorry, I missed that
-> > > I'm having a hard time following the flow of how these SPI devices get
-> > > bound -- is the compatible involved at all?  I don't see this string
-> > > (with vendor prefix included) in the driver.  I do see a table that
-> > > contains what looks like device IDs.  If the device can report its id,
-> > > shouldn't we rely on that rather than device tree compatible?
-> > > 
-> > > -Scott
-> > [Jain Priyanka-B32167]
-> > Spi driver has a check to device name corresponding to device-id and compare to what is passed in dts string.
-> 
-> Please go into more detail.  I don't see where the string
-> "micron,n25q512a" appears in the current kernel.  I do see "n25q512a",
-> but how does that compare successfully with the version of the string
-> that has a vendor compatible?
+Hi,
 
-The spi code has a hack to not require an of_device_id_table:
-of_register_spi_devices calls of_modalias_node, which for a given
-"foo,bar" compatible string will set spi->modalias to "bar", by cutting
-off everything up to and including the comma. Later, spi_match_id can
-match a device with an spi_device_id->name of "bar".
+This patch series fixes machine check exception that we observed when using
+transparent huge page along with 4k hash pte on power bare metal platform.
+Patch "powerpc: mm: Use read barrier when creating real_pte" is not really
+related to thp, but was added in the series  because it is fixing a related
+issue with 4k pte. That patch was not really needed to fix the MCE.
 
-Thus "micron,n25q512a" can match one of the entries already in
-drivers/mtd/spi-nor/spi-nor.c.
+Aneesh Kumar K.V (8):
+  powerpc: thp: Add write barrier after updating the valid bit
+  powerpc: thp: don't recompute vsid and ssize in loop on invalidate
+  powerpc: thp: invalidate old 64K based hash page mapping before insert
+    of 4k pte
+  powerpc: thp: Handle combo pages in invalidate
+  powerpc: thp: inalidate with vpn in loop
+  powerpc: thp: use ACCESS_ONCE when loading pmdp
+  powerpc: mm: Use read barrier when creating real_pte
+  powerpc: thp: Add tracepoints to track hugepage invalidate
 
-This is a real pain when searching around.
+ arch/powerpc/include/asm/machdep.h        |  6 +--
+ arch/powerpc/include/asm/pgtable-ppc64.h  |  2 +-
+ arch/powerpc/include/asm/pte-hash64-64k.h | 27 ++++++++--
+ arch/powerpc/mm/hash_native_64.c          | 40 ++++----------
+ arch/powerpc/mm/hugepage-hash64.c         | 88 +++++++++++++++++++++++++++----
+ arch/powerpc/mm/pgtable_64.c              | 44 ++++++++++------
+ arch/powerpc/mm/tlb_hash64.c              |  6 ++-
+ arch/powerpc/platforms/pseries/lpar.c     | 20 +++----
+ include/trace/events/thp.h                | 88 +++++++++++++++++++++++++++++++
+ 9 files changed, 242 insertions(+), 79 deletions(-)
+ create mode 100644 include/trace/events/thp.h
 
-Thanks,
-Mark.
+-aneesh
