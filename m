@@ -1,27 +1,26 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yh0-x230.google.com (mail-yh0-x230.google.com
- [IPv6:2607:f8b0:4002:c01::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED24E1A01EF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 18:07:04 +1000 (EST)
-Received: by mail-yh0-f48.google.com with SMTP id i57so5479865yha.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 01:07:02 -0700 (PDT)
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50])
+ by lists.ozlabs.org (Postfix) with ESMTP id 060CB1A01A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 19:25:27 +1000 (EST)
+Date: Tue, 29 Jul 2014 10:24:44 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
+ memory
+Message-ID: <20140729092444.GI2576@leverpostej>
+References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1404425400.21434.89.camel@snotra.buserror.net>
+ <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
+ <1404768354.21434.191.camel@snotra.buserror.net>
 MIME-Version: 1.0
-In-Reply-To: <1406617022.4935.79.camel@pasglop>
-References: <1406527744-25316-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1406529741.4935.48.camel@pasglop>
- <CAFgQCTvC1MX8fN26-KHWRMmpN_zk82LX1=RYn3j61PWo7kvwBQ@mail.gmail.com>
- <1406617022.4935.79.camel@pasglop>
-Date: Tue, 29 Jul 2014 16:07:01 +0800
-Message-ID: <CAFgQCTuJu_kOSAHay=PDtNmLzD5r2ODKO_ayR-AH+avBOFcM_w@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: kvm: make the setup of hpte under the protection
- of KVMPPC_RMAP_LOCK_BIT
-From: Liu ping fan <kernelfans@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1404768354.21434.191.camel@snotra.buserror.net>
+Cc: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>,
+ "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,105 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 29, 2014 at 2:57 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2014-07-28 at 15:58 +0800, Liu ping fan wrote:
->> Hope I am right.  Take the following seq as an example
->>
->> if (hptep[0] & HPTE_V_VALID) {
->> /* HPTE was previously valid, so we need to invalidate it */
->> unlock_rmap(rmap);
->> hptep[0] |= HPTE_V_ABSENT;
->> kvmppc_invalidate_hpte(kvm, hptep, index);
->> /* don't lose previous R and C bits */
->> r |= hptep[1] & (HPTE_R_R | HPTE_R_C);
->> } else {
->> kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
->> }
->>   ---------------------------------------------> if we try_to_unmap on
->> pfn at here, then @r contains a invalid pfn
->> hptep[1] = r;
->> eieio();
->> hptep[0] = hpte[0];
->> asm volatile("ptesync" : : : "memory");
->
-> If that was the case we would have the same race in kvmppc_do_h_enter().
->
-> I think the fact that the HPTE is locked will prevent the race, ie,
-> HPTE_V_HVLOCK is set until hptep[0] is written to.
->
-> If I look at at the unmap case, my understanding is that it uses
-> kvm_unmap_rmapp() which will also lock the HPTE (try_lock_hpte)
-> and so shouldn't have a race vs the above code.
->
-Yes, you are right :)
+On Mon, Jul 07, 2014 at 10:25:54PM +0100, Scott Wood wrote:
+> On Thu, 2014-07-03 at 23:08 -0500, Jain Priyanka-B32167 wrote:
+> > 
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Friday, July 04, 2014 3:40 AM
+> > > To: Jain Priyanka-B32167
+> > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > > spi@vger.kernel.org; linux-mtd@lists.infradead.org
+> > > Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
+> > > memory
+> > > 
+> > > On Thu, 2014-07-03 at 15:42 +0530, Priyanka Jain wrote:
+> > > > -Micron n25q512a memory is supported by m25p80 driver.
+> > > >  Add compatible field required to support n25q512a in m25p80.txt -Add
+> > > > micron to the vendor-prefixes.txt file
+> > > >
+> > > > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> > > > ---
+> > > >  Documentation/devicetree/bindings/mtd/m25p80.txt   |    1 +
+> > > >  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+> > > >  2 files changed, 2 insertions(+), 0 deletions(-)
+> > > 
+> > > Why did you send this to the ppc list but not the spi or mtd lists?
+> > > 
+> > [Jain Priyanka-B32167] Sorry, I missed that
+> > > I'm having a hard time following the flow of how these SPI devices get
+> > > bound -- is the compatible involved at all?  I don't see this string
+> > > (with vendor prefix included) in the driver.  I do see a table that
+> > > contains what looks like device IDs.  If the device can report its id,
+> > > shouldn't we rely on that rather than device tree compatible?
+> > > 
+> > > -Scott
+> > [Jain Priyanka-B32167]
+> > Spi driver has a check to device name corresponding to device-id and compare to what is passed in dts string.
+> 
+> Please go into more detail.  I don't see where the string
+> "micron,n25q512a" appears in the current kernel.  I do see "n25q512a",
+> but how does that compare successfully with the version of the string
+> that has a vendor compatible?
 
-Thx,
-Fan
+The spi code has a hack to not require an of_device_id_table:
+of_register_spi_devices calls of_modalias_node, which for a given
+"foo,bar" compatible string will set spi->modalias to "bar", by cutting
+off everything up to and including the comma. Later, spi_match_id can
+match a device with an spi_device_id->name of "bar".
 
+Thus "micron,n25q512a" can match one of the entries already in
+drivers/mtd/spi-nor/spi-nor.c.
 
-> Or do you see a race I don't ?
->
-> Cheers,
-> Ben.
->
->> Thx.
->> Fan
->>
->> On Mon, Jul 28, 2014 at 2:42 PM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->> > On Mon, 2014-07-28 at 14:09 +0800, Liu Ping Fan wrote:
->> >> In current code, the setup of hpte is under the risk of race with
->> >> mmu_notifier_invalidate, i.e we may setup a hpte with a invalid pfn.
->> >> Resolve this issue by sync the two actions by KVMPPC_RMAP_LOCK_BIT.
->> >
->> > Please describe the race you think you see. I'm quite sure both Paul and
->> > I went over that code and somewhat convinced ourselves that it was ok
->> > but it's possible that we were both wrong :-)
->> >
->> > Cheers,
->> > Ben.
->> >
->> >> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> >> ---
->> >>  arch/powerpc/kvm/book3s_64_mmu_hv.c | 15 ++++++++++-----
->> >>  1 file changed, 10 insertions(+), 5 deletions(-)
->> >>
->> >> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> >> index 8056107..e6dcff4 100644
->> >> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> >> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> >> @@ -754,19 +754,24 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->> >>
->> >>       if (hptep[0] & HPTE_V_VALID) {
->> >>               /* HPTE was previously valid, so we need to invalidate it */
->> >> -             unlock_rmap(rmap);
->> >>               hptep[0] |= HPTE_V_ABSENT;
->> >>               kvmppc_invalidate_hpte(kvm, hptep, index);
->> >>               /* don't lose previous R and C bits */
->> >>               r |= hptep[1] & (HPTE_R_R | HPTE_R_C);
->> >> +
->> >> +             hptep[1] = r;
->> >> +             eieio();
->> >> +             hptep[0] = hpte[0];
->> >> +             asm volatile("ptesync" : : : "memory");
->> >> +             unlock_rmap(rmap);
->> >>       } else {
->> >> +             hptep[1] = r;
->> >> +             eieio();
->> >> +             hptep[0] = hpte[0];
->> >> +             asm volatile("ptesync" : : : "memory");
->> >>               kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
->> >>       }
->> >>
->> >> -     hptep[1] = r;
->> >> -     eieio();
->> >> -     hptep[0] = hpte[0];
->> >> -     asm volatile("ptesync" : : : "memory");
->> >>       preempt_enable();
->> >>       if (page && hpte_is_writable(r))
->> >>               SetPageDirty(page);
->> >
->> >
->
->
+This is a real pain when searching around.
+
+Thanks,
+Mark.
