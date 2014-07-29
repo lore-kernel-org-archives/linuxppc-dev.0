@@ -1,32 +1,38 @@
-Return-Path: <jslaby@suse.cz>
-Received: from ip4-83-240-18-248.cust.nbox.cz (ip4-83-240-18-248.cust.nbox.cz
- [83.240.18.248])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3D5D1A01A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 01:10:35 +1000 (EST)
-From: Jiri Slaby <jslaby@suse.cz>
-To: stable@vger.kernel.org
-Subject: [patch added to the 3.12 stable tree] locking/mutex: Disable
- optimistic spinning on some architectures
-Date: Tue, 29 Jul 2014 17:09:32 +0200
-Message-Id: <1406646576-1299-52-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1406646576-1299-1-git-send-email-jslaby@suse.cz>
-References: <1406646576-1299-1-git-send-email-jslaby@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- James Bottomley <James.Bottomley@hansenpartnership.com>,
- Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
- Jiri Slaby <jslaby@suse.cz>, Ingo Molnar <mingo@kernel.org>,
- Russell King <linux@arm.linux.org.uk>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
- John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
- Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
- Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27B4C1A01C4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 03:55:57 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 29 Jul 2014 13:55:55 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 41708C90041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 13:55:45 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6THtqpt8519988
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 17:55:52 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6THsmUA018135
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 13:54:48 -0400
+Message-ID: <53D7DFE7.8000304@linux.vnet.ibm.com>
+Date: Tue, 29 Jul 2014 10:54:47 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pci: reorder pci bus/bridge unregistration during
+ PHB removal
+References: <1406594911-7097-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1406598256.11977.1.camel@concordia>
+In-Reply-To: <1406598256.11977.1.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,132 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Zijlstra <peterz@infradead.org>
+On 07/28/2014 06:44 PM, Michael Ellerman wrote:
+> On Mon, 2014-07-28 at 20:48 -0400, Tyrel Datwyler wrote:
+>> Commit bcdde7e made __sysfs_remove_dir() recursive and introduced a BUG_ON
+>> during PHB removal while attempting to delete the power managment attribute
+>> group of the bus. This is a result of tearing the bridge and bus devices down
+>> out of order in remove_phb_dynamic. Since, the the bus resides below the bridge
+>> in the sysfs device tree it should be torn down first.
+>>
+>> This patch simply moves the device_unregister call for the PHB bridge device
+>> after the device_unregister call for the PHB bus.
+>>
+>> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> 
+> That commit went into 3.13, so shouldn't this be CC to stable?
 
-This patch has been added to the 3.12 stable tree. If you have any
-objections, please let us know.
+Darn it. Yes, it should.
 
-===============
-
-commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
-
-The optimistic spin code assumes regular stores and cmpxchg() play nice;
-this is found to not be true for at least: parisc, sparc32, tile32,
-metag-lock1, arc-!llsc and hexagon.
-
-There is further wreckage, but this in particular seemed easy to
-trigger, so blacklist this.
-
-Opt in for known good archs.
-
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Reported-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Chris Metcalf <cmetcalf@tilera.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Vineet Gupta <vgupta@synopsys.com>
-Cc: Jason Low <jason.low2@hp.com>
-Cc: Waiman Long <waiman.long@hp.com>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Cc: John David Anglin <dave.anglin@bell.net>
-Cc: James Hogan <james.hogan@imgtec.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davidlohr Bueso <davidlohr@hp.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
-Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- arch/arm/Kconfig     | 1 +
- arch/arm64/Kconfig   | 1 +
- arch/powerpc/Kconfig | 1 +
- arch/sparc/Kconfig   | 1 +
- arch/x86/Kconfig     | 1 +
- kernel/Kconfig.locks | 5 ++++-
- 6 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index e47fcd1e9645..99e1ce978cf9 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -5,6 +5,7 @@ config ARM
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAVE_CUSTOM_GPIO_H
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select BUILDTIME_EXTABLE_SORT if MMU
- 	select CLONE_BACKWARDS
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index c04454876bcb..fe70eaea0e28 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -1,6 +1,7 @@
- config ARM64
- 	def_bool y
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
- 	select ARCH_WANT_FRAME_POINTERS
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d5d026b6d237..2e0ddfadc0b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -138,6 +138,7 @@ config PPC
- 	select OLD_SIGSUSPEND
- 	select OLD_SIGACTION if PPC32
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 4e5683877b93..d60f34dbae89 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -75,6 +75,7 @@ config SPARC64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select HAVE_C_RECORDMCOUNT
- 	select NO_BOOTMEM
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index eb2dfa61eabe..9dc1a24d41b8 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -123,6 +123,7 @@ config X86
- 	select COMPAT_OLD_SIGACTION if IA32_EMULATION
- 	select RTC_LIB
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config INSTRUCTION_DECODER
- 	def_bool y
-diff --git a/kernel/Kconfig.locks b/kernel/Kconfig.locks
-index d2b32ac27a39..ecee67a00f5f 100644
---- a/kernel/Kconfig.locks
-+++ b/kernel/Kconfig.locks
-@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
- 
- endif
- 
-+config ARCH_SUPPORTS_ATOMIC_RMW
-+	bool
-+
- config MUTEX_SPIN_ON_OWNER
- 	def_bool y
--	depends on SMP && !DEBUG_MUTEXES
-+	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
--- 
-2.0.1
+> 
+> And also:
+> 
+>   Fixes: bcdde7e221a8 ("sysfs: make __sysfs_remove_dir() recursive")
+> 
+> cheers
+> 
+> 
