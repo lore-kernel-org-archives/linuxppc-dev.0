@@ -1,34 +1,20 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 384271A01C5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 06:38:27 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 29 Jul 2014 14:38:24 -0600
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C167238C8039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 16:38:22 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6TKcMtb65863810
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 20:38:22 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6TKWViG004709
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2014 16:38:22 -0400
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pci: reorder pci bus/bridge unregistration during PHB
- removal
-Date: Tue, 29 Jul 2014 13:48:13 -0400
-Message-Id: <1406656093-23908-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org, paulus@samba.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE15D1A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 10:19:39 +1000 (EST)
+Date: Tue, 29 Jul 2014 19:19:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang <B45475@freescale.com>
+Subject: Re: qe: move qe from arch/powerpc to drivers
+Message-ID: <20140730001923.GA4151@home.buserror.net>
+References: <1403580712-30153-1-git-send-email-B45475@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1403580712-30153-1-git-send-email-B45475@freescale.com>
+Cc: B07421@freescale.com, R63061@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,41 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit bcdde7e made __sysfs_remove_dir() recursive and introduced a BUG_ON
-during PHB removal while attempting to delete the power managment attribute
-group of the bus. This is a result of tearing the bridge and bus devices down
-out of order in remove_phb_dynamic. Since, the the bus resides below the bridge
-in the sysfs device tree it should be torn down first.
+On Tue, Jun 24, 2014 at 11:31:52AM +0800, Zhao Qiang wrote:
+> ls1 has qe and ls1 has arm cpu.
+> move qe from arch/powerpc to drivers.
+> 
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
 
-This patch simply moves the device_unregister call for the PHB bridge device
-after the device_unregister call for the PHB bus.
+This is a very terse changelog.  Explain more about what QE is, and what
+this patch accomplishes (it doesn't seem to get rid of the PPC
+dependency, just moving code at this stage)
 
-Fixes: bcdde7e221a8 ("sysfs: make __sysfs_remove_dir() recursive")
-Cc: stable@vger.kernel.org
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
-v2:
- - Included stable kernel list on Cc per comment by mpe
+I don't see a MAINTAINERS update for the new path.  Who is going to
+maintain it?
 
- arch/powerpc/platforms/pseries/pci_dlpar.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I don't think drivers/qe is the right place for it.  Directories directly
+under drivers/ tend to be for classes of devices, not instances.  In any
+case, LKML should be CCed when creating a new directory directly under
+drivers/ or under a subdirectory of drivers/ that doesn't have its own
+mailing list.
 
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 203cbf0..89e2381 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -118,10 +118,10 @@ int remove_phb_dynamic(struct pci_controller *phb)
- 		}
- 	}
- 
--	/* Unregister the bridge device from sysfs and remove the PCI bus */
--	device_unregister(b->bridge);
-+	/* Remove the PCI bus and unregister the bridge device from sysfs */
- 	phb->bus = NULL;
- 	pci_remove_bus(b);
-+	device_unregister(b->bridge);
- 
- 	/* Now release the IO resource */
- 	if (res->flags & IORESOURCE_IO)
--- 
-1.7.12.4
+This came up before, without a resolution.  See:
+http://www.spinics.net/lists/kernel/msg1621335.html
+
+> diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
+> index bf4c447..22c0d6d 100644
+> --- a/arch/powerpc/platforms/83xx/km83xx.c
+> +++ b/arch/powerpc/platforms/83xx/km83xx.c
+> @@ -37,8 +37,8 @@
+>  #include <asm/udbg.h>
+>  #include <sysdev/fsl_soc.h>
+>  #include <sysdev/fsl_pci.h>
+> -#include <asm/qe.h>
+> -#include <asm/qe_ic.h>
+> +#include <linux/qe.h>
+> +#include <linux/qe_ic.h>
+
+If you're moving it out of asm/ please give it an fsl prefix.
+
+> diff --git a/drivers/qe/Kconfig b/drivers/qe/Kconfig
+> new file mode 100644
+> index 0000000..dc16e9a
+> --- /dev/null
+> +++ b/drivers/qe/Kconfig
+> @@ -0,0 +1,35 @@
+> +#
+> +# QE Communication options
+> +#
+> +menuconfig QUICC_ENGINE
+> +	bool "Freescale QUICC Engine (QE) Support"
+> +	depends on FSL_SOC && PPC32
+> +	select PPC_LIB_RHEAP
+> +	select CRC32
+> +	help
+> +	  The QUICC Engine (QE) is a new generation of communications
+> +	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+> +	  Selecting this option means that you wish to build a kernel
+> +	  for a machine with a QE coprocessor.
+> +
+> +if QUICC_ENGINE
+> +
+> +config UCC_SLOW
+> +	bool
+> +	default y if SERIAL_QE
+> +	help
+> +	  This option provides qe_lib support to UCC slow
+> +	  protocols: UART, BISYNC, QMC
+> +
+> +config UCC_FAST
+> +	bool
+> +	default y if UCC_GETH
+> +	help
+> +	  This option provides qe_lib support to UCC fast
+> +	  protocols: HDLC, Ethernet, ATM, transparent
+> +
+> +config UCC
+> +	bool
+> +	default y if UCC_FAST || UCC_SLOW
+> +
+> +endif
+
+These config options could use better namespacing.
+
+-Scott
