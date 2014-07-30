@@ -2,29 +2,29 @@ Return-Path: <aik@ozlabs.ru>
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4FE11A01A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:44 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 115BA1A01F3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:45 +1000 (EST)
 Received: from /spool/local
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Wed, 30 Jul 2014 19:31:43 +1000
+ Wed, 30 Jul 2014 19:31:44 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 207112BB002D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:41 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C5E41357805D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:42 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6U9Eaao64618742
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:14:36 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6U9VepC031264
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:40 +1000
+ s6U9EccF58196162
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:14:38 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6U9Vgsr026668
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:42 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 04/16] KVM: PPC: Account TCE-containing pages in locked_vm
-Date: Wed, 30 Jul 2014 19:31:23 +1000
-Message-Id: <1406712695-9491-5-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v4 07/16] powerpc/spapr: vfio: Implement spapr_tce_iommu_ops
+Date: Wed, 30 Jul 2014 19:31:26 +1000
+Message-Id: <1406712695-9491-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406712695-9491-1-git-send-email-aik@ozlabs.ru>
 References: <1406712695-9491-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,76 +39,558 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment pages used for TCE tables (not pages addressed by TCEs) are
-not counter in locked_vm counter so a malicious userspace tool can
-call ioctl(KVM_CREATE_SPAPR_TCE) as many times as RLIMIT_NOFILE and
-lock a lot of memory.
+Modern IBM POWERPC systems support multiple IOMMU tables per PE
+so we need a more reliable way (compared to container_of()) to get
+a PE pointer from the iommu_table struct pointer used in IOMMU functions.
 
-This adds counting for pages used for TCE tables.
+At the moment IOMMU group data points to an iommu_table struct. This
+introduces a spapr_tce_iommu_group struct which keeps an iommu_owner
+and a spapr_tce_iommu_ops struct. For IODA, iommu_owner is a pointer to
+the pnv_ioda_pe struct, for others it is still a pointer to
+the iommu_table struct. The ops structs correspond to the type which
+iommu_owner points to.
 
-This counts the number of pages required for a table plus pages for
-the kvmppc_spapr_tce_table struct (TCE table descriptor) itself.
+At the moment a get_table() callback is the only one. It returns
+an iommu_table for a bus address.
 
-This does not change the amount of (de)allocated memory.
+As the IOMMU group data pointer points to variable type instead of
+iommu_table, VFIO SPAPR TCE driver is fixed to use new type.
+This changes the tce_container struct to keep iommu_group instead of
+iommu_table.
+
+So, it was:
+- iommu_table points to iommu_group via iommu_table::it_group;
+- iommu_group points to iommu_table via iommu_group_get_iommudata();
+
+now it is:
+- iommu_table points to iommu_group via iommu_table::it_group;
+- iommu_group points to spapr_tce_iommu_group via
+iommu_group_get_iommudata();
+- spapr_tce_iommu_group points to either (depending on .get_table()):
+	- iommu_table;
+	- pnv_ioda_pe;
+
+This uses pnv_ioda1_iommu_get_table for both IODA1&2 but IODA2 will
+have own pnv_ioda2_iommu_get_table soon and pnv_ioda1_iommu_get_table
+will only be used for IODA1.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v4:
-* fixed counting for kvmppc_spapr_tce_table (used to be +1 page)
-* added 2 helpers to common MM code for later reuse from vfio-spapr
----
- arch/powerpc/kvm/book3s_64_vio.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/iommu.h            |   6 ++
+ arch/powerpc/include/asm/tce.h              |  15 ++++
+ arch/powerpc/kernel/iommu.c                 |  34 ++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c   |  39 +++++++++-
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |   1 +
+ arch/powerpc/platforms/powernv/pci.c        |   2 +-
+ arch/powerpc/platforms/pseries/iommu.c      |  10 ++-
+ drivers/vfio/vfio_iommu_spapr_tce.c         | 113 +++++++++++++++++++++-------
+ 8 files changed, 184 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 5958f7d..b32aeb1 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -45,16 +45,33 @@ static long kvmppc_stt_npages(unsigned long window_size)
- 		     * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 42632c7..84ee339 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -108,13 +108,19 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+  */
+ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+ 					    int nid);
++
++struct spapr_tce_iommu_ops;
+ #ifdef CONFIG_IOMMU_API
+ extern void iommu_register_group(struct iommu_table *tbl,
++				 void *iommu_owner,
++				 struct spapr_tce_iommu_ops *ops,
+ 				 int pci_domain_number, unsigned long pe_num);
+ extern int iommu_add_device(struct device *dev);
+ extern void iommu_del_device(struct device *dev);
+ #else
+ static inline void iommu_register_group(struct iommu_table *tbl,
++					void *iommu_owner,
++					struct spapr_tce_iommu_ops *ops,
+ 					int pci_domain_number,
+ 					unsigned long pe_num)
+ {
+diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
+index 743f36b..8bfe98f 100644
+--- a/arch/powerpc/include/asm/tce.h
++++ b/arch/powerpc/include/asm/tce.h
+@@ -50,5 +50,20 @@
+ #define TCE_PCI_READ		0x1		/* read from PCI allowed */
+ #define TCE_VB_WRITE		0x1		/* write from VB allowed */
+ 
++struct spapr_tce_iommu_group;
++
++#define TCE_DEFAULT_WINDOW	~(0ULL)
++
++struct spapr_tce_iommu_ops {
++	struct iommu_table *(*get_table)(
++			struct spapr_tce_iommu_group *data,
++			phys_addr_t addr);
++};
++
++struct spapr_tce_iommu_group {
++	void *iommu_owner;
++	struct spapr_tce_iommu_ops *ops;
++};
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_TCE_H */
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index f84f799..e203314 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -877,24 +877,52 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+  */
+ static void group_release(void *iommu_data)
+ {
+-	struct iommu_table *tbl = iommu_data;
+-	tbl->it_group = NULL;
++	kfree(iommu_data);
  }
  
-+static long kvmppc_account_memlimit(long npages, bool inc)
++static struct iommu_table *spapr_tce_get_default_table(
++		struct spapr_tce_iommu_group *data, phys_addr_t addr)
 +{
-+	long stt_pages = ALIGN(sizeof(struct kvmppc_spapr_tce_table) +
-+			(abs(npages) * sizeof(struct page *)), PAGE_SIZE);
++	struct iommu_table *tbl = data->iommu_owner;
 +
-+	npages += stt_pages;
-+	if (inc)
-+		return try_increment_locked_vm(npages);
++	if (addr == TCE_DEFAULT_WINDOW)
++		return tbl;
 +
-+	decrement_locked_vm(npages);
++	if ((addr >> tbl->it_page_shift) < tbl->it_size)
++		return tbl;
 +
-+	return 0;
++	return NULL;
 +}
 +
- static void release_spapr_tce_table(struct rcu_head *head)
- {
- 	struct kvmppc_spapr_tce_table *stt = container_of(head,
- 			struct kvmppc_spapr_tce_table, rcu);
- 	int i;
-+	long npages = kvmppc_stt_npages(stt->window_size);
- 
--	for (i = 0; i < kvmppc_stt_npages(stt->window_size); i++)
-+	for (i = 0; i < npages; i++)
- 		__free_page(stt->pages[i]);
- 	kvm_put_kvm(stt->kvm);
- 	kfree(stt);
++static struct spapr_tce_iommu_ops spapr_tce_default_ops = {
++	.get_table = spapr_tce_get_default_table
++};
 +
-+	kvmppc_account_memlimit(npages, false);
+ void iommu_register_group(struct iommu_table *tbl,
++		void *iommu_owner, struct spapr_tce_iommu_ops *ops,
+ 		int pci_domain_number, unsigned long pe_num)
+ {
+ 	struct iommu_group *grp;
+ 	char *name;
++	struct spapr_tce_iommu_group *data;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return;
++
++	data->iommu_owner = iommu_owner ? iommu_owner : tbl;
++	data->ops = ops ? ops : &spapr_tce_default_ops;
+ 
+ 	grp = iommu_group_alloc();
+ 	if (IS_ERR(grp)) {
+ 		pr_warn("powerpc iommu api: cannot create new group, err=%ld\n",
+ 				PTR_ERR(grp));
++		kfree(data);
+ 		return;
+ 	}
++
+ 	tbl->it_group = grp;
+-	iommu_group_set_iommudata(grp, tbl, group_release);
++	iommu_group_set_iommudata(grp, data, group_release);
+ 	name = kasprintf(GFP_KERNEL, "domain%d-pe%lx",
+ 			pci_domain_number, pe_num);
+ 	if (!name)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 007497f..495137b 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -23,6 +23,7 @@
+ #include <linux/io.h>
+ #include <linux/msi.h>
+ #include <linux/memblock.h>
++#include <linux/iommu.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/io.h>
+@@ -584,6 +585,34 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	}
  }
  
- static int kvm_spapr_tce_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-@@ -115,6 +132,9 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
++static bool pnv_pci_ioda_check_addr(struct iommu_table *tbl, __u64 start_addr)
++{
++	unsigned long entry = start_addr >> tbl->it_page_shift;
++	unsigned long start = tbl->it_offset;
++	unsigned long end = start + tbl->it_size;
++
++	return (start <= entry) && (entry < end);
++}
++
++static struct iommu_table *pnv_ioda1_iommu_get_table(
++		struct spapr_tce_iommu_group *data,
++		phys_addr_t addr)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++
++	if (addr == TCE_DEFAULT_WINDOW)
++		return &pe->tce32.table;
++
++	if (pnv_pci_ioda_check_addr(&pe->tce32.table, addr))
++		return &pe->tce32.table;
++
++	return NULL;
++}
++
++static struct spapr_tce_iommu_ops pnv_pci_ioda1_ops = {
++	.get_table = pnv_ioda1_iommu_get_table,
++};
++
+ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 				      struct pnv_ioda_pe *pe, unsigned int base,
+ 				      unsigned int segs)
+@@ -663,7 +692,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 				 TCE_PCI_SWINV_PAIR);
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+-	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
++	iommu_register_group(tbl, pe, &pnv_pci_ioda1_ops,
++			phb->hose->global_number, pe->pe_number);
+ 
+ 	if (pe->pdev)
+ 		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
+@@ -729,6 +759,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+ 	pnv_pci_ioda2_set_bypass(&pe->tce32.table, true);
+ }
+ 
++static struct spapr_tce_iommu_ops pnv_pci_ioda2_ops = {
++	.get_table = pnv_ioda1_iommu_get_table,
++};
++
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 				       struct pnv_ioda_pe *pe)
+ {
+@@ -794,7 +828,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+-	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
++	iommu_register_group(tbl, pe, &pnv_pci_ioda2_ops,
++			phb->hose->global_number, pe->pe_number);
+ 
+ 	if (pe->pdev)
+ 		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 94ce348..b79066d 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -89,6 +89,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
+ 	if (phb->p5ioc2.iommu_table.it_map == NULL) {
+ 		iommu_init_table(&phb->p5ioc2.iommu_table, phb->hose->node);
+ 		iommu_register_group(&phb->p5ioc2.iommu_table,
++				NULL, NULL,
+ 				pci_domain_nr(phb->hose->bus), phb->opal_id);
  	}
  
- 	npages = kvmppc_stt_npages(args->window_size);
-+	ret = kvmppc_account_memlimit(npages, true);
-+	if (ret)
-+		goto fail;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 74a2626..cc54e3b 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -674,7 +674,7 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
+ 	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
+ 				  be32_to_cpup(sizep), 0, IOMMU_PAGE_SHIFT_4K);
+ 	iommu_init_table(tbl, hose->node);
+-	iommu_register_group(tbl, pci_domain_nr(hose->bus), 0);
++	iommu_register_group(tbl, NULL, NULL, pci_domain_nr(hose->bus), 0);
  
- 	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
- 		      GFP_KERNEL);
+ 	/* Deal with SW invalidated TCEs when needed (BML way) */
+ 	swinvp = of_get_property(hose->dn, "linux,tce-sw-invalidate-info",
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 33b552f..a047754 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -616,7 +616,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+-	iommu_register_group(tbl, pci_domain_nr(bus), 0);
++	iommu_register_group(tbl, NULL, NULL, pci_domain_nr(bus), 0);
+ 
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -661,7 +661,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 				   ppci->phb->node);
+ 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+ 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+-		iommu_register_group(tbl, pci_domain_nr(bus), 0);
++		iommu_register_group(tbl, NULL, NULL, pci_domain_nr(bus), 0);
+ 		pr_debug("  created table: %p\n", ppci->iommu_table);
+ 	}
+ }
+@@ -688,7 +688,8 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 				   phb->node);
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+-		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
++		iommu_register_group(tbl, NULL, NULL,
++				pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base_and_group(&dev->dev,
+ 					       PCI_DN(dn)->iommu_table);
+ 		return;
+@@ -1104,7 +1105,8 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 				   pci->phb->node);
+ 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+-		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
++		iommu_register_group(tbl, NULL, NULL,
++				pci_domain_nr(pci->phb->bus), 0);
+ 		pr_debug("  created table: %p\n", pci->iommu_table);
+ 	} else {
+ 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index a84788b..46c2bc8 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -43,7 +43,7 @@ static void tce_iommu_detach_group(void *iommu_data,
+  */
+ struct tce_container {
+ 	struct mutex lock;
+-	struct iommu_table *tbl;
++	struct iommu_group *grp;
+ 	bool enabled;
+ };
+ 
+@@ -51,9 +51,14 @@ static int tce_iommu_enable(struct tce_container *container)
+ {
+ 	int ret = 0;
+ 	unsigned long locked, lock_limit, npages;
+-	struct iommu_table *tbl = container->tbl;
++	struct iommu_table *tbl;
++	struct spapr_tce_iommu_group *data;
+ 
+-	if (!container->tbl)
++	if (!container->grp)
++		return -ENXIO;
++
++	data = iommu_group_get_iommudata(container->grp);
++	if (!data || !data->iommu_owner || !data->ops->get_table)
+ 		return -ENXIO;
+ 
+ 	if (!current->mm)
+@@ -80,6 +85,10 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * that would effectively kill the guest at random points, much better
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
++	tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
++	if (!tbl)
++		return -ENXIO;
++
+ 	down_write(&current->mm->mmap_sem);
+ 	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+ 	locked = current->mm->locked_vm + npages;
+@@ -89,7 +98,6 @@ static int tce_iommu_enable(struct tce_container *container)
+ 				rlimit(RLIMIT_MEMLOCK));
+ 		ret = -ENOMEM;
+ 	} else {
+-
+ 		current->mm->locked_vm += npages;
+ 		container->enabled = true;
+ 	}
+@@ -100,16 +108,27 @@ static int tce_iommu_enable(struct tce_container *container)
+ 
+ static void tce_iommu_disable(struct tce_container *container)
+ {
++	struct spapr_tce_iommu_group *data;
++	struct iommu_table *tbl;
++
+ 	if (!container->enabled)
+ 		return;
+ 
+ 	container->enabled = false;
+ 
+-	if (!container->tbl || !current->mm)
++	if (!container->grp || !current->mm)
++		return;
++
++	data = iommu_group_get_iommudata(container->grp);
++	if (!data || !data->iommu_owner || !data->ops->get_table)
++		return;
++
++	tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
++	if (!tbl)
+ 		return;
+ 
+ 	down_write(&current->mm->mmap_sem);
+-	current->mm->locked_vm -= (container->tbl->it_size <<
++	current->mm->locked_vm -= (tbl->it_size <<
+ 			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+ 	up_write(&current->mm->mmap_sem);
+ }
+@@ -136,11 +155,11 @@ static void tce_iommu_release(void *iommu_data)
+ {
+ 	struct tce_container *container = iommu_data;
+ 
+-	WARN_ON(container->tbl && !container->tbl->it_group);
++	WARN_ON(container->grp);
+ 	tce_iommu_disable(container);
+ 
+-	if (container->tbl && container->tbl->it_group)
+-		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
++	if (container->grp)
++		tce_iommu_detach_group(iommu_data, container->grp);
+ 
+ 	mutex_destroy(&container->lock);
+ 
+@@ -160,8 +179,17 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 
+ 	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
+ 		struct vfio_iommu_spapr_tce_info info;
+-		struct iommu_table *tbl = container->tbl;
++		struct iommu_table *tbl;
++		struct spapr_tce_iommu_group *data;
+ 
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
++			return -ENXIO;
++
++		tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
+ 		if (WARN_ON(!tbl))
+ 			return -ENXIO;
+ 
+@@ -185,13 +213,16 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 	}
+ 	case VFIO_IOMMU_MAP_DMA: {
+ 		struct vfio_iommu_type1_dma_map param;
+-		struct iommu_table *tbl = container->tbl;
++		struct iommu_table *tbl;
++		struct spapr_tce_iommu_group *data;
+ 		unsigned long tce, i;
+ 
+-		if (!tbl)
++		if (WARN_ON(!container->grp))
+ 			return -ENXIO;
+ 
+-		BUG_ON(!tbl->it_group);
++		data = iommu_group_get_iommudata(container->grp);
++		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
++			return -ENXIO;
+ 
+ 		minsz = offsetofend(struct vfio_iommu_type1_dma_map, size);
+ 
+@@ -216,6 +247,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+ 			tce |= TCE_PCI_WRITE;
+ 
++		tbl = data->ops->get_table(data, param.iova);
++		if (!tbl)
++			return -ENXIO;
++		BUG_ON(!tbl->it_group);
++
+ 		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
+ 		if (ret)
+ 			return ret;
+@@ -238,9 +274,14 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 	}
+ 	case VFIO_IOMMU_UNMAP_DMA: {
+ 		struct vfio_iommu_type1_dma_unmap param;
+-		struct iommu_table *tbl = container->tbl;
++		struct iommu_table *tbl;
++		struct spapr_tce_iommu_group *data;
+ 
+-		if (WARN_ON(!tbl))
++		if (WARN_ON(!container->grp))
++			return -ENXIO;
++
++		data = iommu_group_get_iommudata(container->grp);
++		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
+ 			return -ENXIO;
+ 
+ 		minsz = offsetofend(struct vfio_iommu_type1_dma_unmap,
+@@ -259,6 +300,12 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.size & ~IOMMU_PAGE_MASK_4K)
+ 			return -EINVAL;
+ 
++		tbl = data->ops->get_table(data, param.iova);
++		if (WARN_ON(!tbl))
++			return -ENXIO;
++
++		BUG_ON(!tbl->it_group);
++
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+ 				param.size >> IOMMU_PAGE_SHIFT_4K);
+ 		if (ret)
+@@ -293,16 +340,16 @@ static int tce_iommu_attach_group(void *iommu_data,
+ {
+ 	int ret;
+ 	struct tce_container *container = iommu_data;
+-	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
++	struct iommu_table *tbl;
++	struct spapr_tce_iommu_group *data;
+ 
+-	BUG_ON(!tbl);
+ 	mutex_lock(&container->lock);
+ 
+ 	/* pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
+ 			iommu_group_id(iommu_group), iommu_group); */
+-	if (container->tbl) {
++	if (container->grp) {
+ 		pr_warn("tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
+-				iommu_group_id(container->tbl->it_group),
++				iommu_group_id(container->grp),
+ 				iommu_group_id(iommu_group));
+ 		ret = -EBUSY;
+ 	} else if (container->enabled) {
+@@ -310,9 +357,16 @@ static int tce_iommu_attach_group(void *iommu_data,
+ 				iommu_group_id(iommu_group));
+ 		ret = -EBUSY;
+ 	} else {
++		data = iommu_group_get_iommudata(iommu_group);
++		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
++			return -ENXIO;
++
++		tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
++		BUG_ON(!tbl);
++
+ 		ret = iommu_take_ownership(tbl);
+ 		if (!ret)
+-			container->tbl = tbl;
++			container->grp = iommu_group;
+ 	}
+ 
+ 	mutex_unlock(&container->lock);
+@@ -324,24 +378,31 @@ static void tce_iommu_detach_group(void *iommu_data,
+ 		struct iommu_group *iommu_group)
+ {
+ 	struct tce_container *container = iommu_data;
+-	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
++	struct iommu_table *tbl;
++	struct spapr_tce_iommu_group *data;
+ 
+-	BUG_ON(!tbl);
+ 	mutex_lock(&container->lock);
+-	if (tbl != container->tbl) {
++	if (iommu_group != container->grp) {
+ 		pr_warn("tce_vfio: detaching group #%u, expected group is #%u\n",
+ 				iommu_group_id(iommu_group),
+-				iommu_group_id(tbl->it_group));
++				iommu_group_id(container->grp));
+ 	} else {
+ 		if (container->enabled) {
+ 			pr_warn("tce_vfio: detaching group #%u from enabled container, forcing disable\n",
+-					iommu_group_id(tbl->it_group));
++					iommu_group_id(container->grp));
+ 			tce_iommu_disable(container);
+ 		}
+ 
+ 		/* pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
+ 				iommu_group_id(iommu_group), iommu_group); */
+-		container->tbl = NULL;
++		container->grp = NULL;
++
++		data = iommu_group_get_iommudata(iommu_group);
++		BUG_ON(!data || !data->iommu_owner || !data->ops);
++
++		tbl = data->ops->get_table(data, TCE_DEFAULT_WINDOW);
++		BUG_ON(!tbl);
++
+ 		iommu_release_ownership(tbl);
+ 	}
+ 	mutex_unlock(&container->lock);
 -- 
 2.0.0
