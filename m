@@ -1,22 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F35821A01A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 08:16:34 +1000 (EST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DEF31A01F6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 06:13:05 +1000 (EST)
-Date: Wed, 30 Jul 2014 15:12:51 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Subject: Re: [2/2] powerpc/fsl-booke: Add initial T1042RDB_PI board support
-Message-ID: <20140730201250.GA29789@home.buserror.net>
-References: <1404879851-2914-1-git-send-email-Priyanka.Jain@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 14E4D14017A
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2014 08:16:33 +1000 (EST)
+Message-ID: <53D96906.1040407@Freescale.com>
+Date: Wed, 30 Jul 2014 16:52:06 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1404879851-2914-1-git-send-email-Priyanka.Jain@freescale.com>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Prabhakar Kushwaha <prabhakar@freescale.com>, Poonam
- Aggrwal <poonam.aggrwal@freescale.com>
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH v2 5/7] powerpc/corenet: Add MDIO bus muxing support to
+ the board device tree(s)
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+ <1405541831-1277-5-git-send-email-Shruti@Freescale.com>
+ <1405982754.29414.33.camel@snotra.buserror.net>
+ <loom.20140728T081519-636@post.gmane.org>
+ <1406663895.29414.240.camel@snotra.buserror.net>
+In-Reply-To: <1406663895.29414.240.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 09, 2014 at 09:54:11AM +0530, Priyanka Jain wrote:
-> diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> index 9aaefa5..e7e765f 100644
-> --- a/arch/powerpc/boot/dts/t104xrdb.dtsi
-> +++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> @@ -57,7 +57,8 @@
->  		};
->  
->  		cpld@3,0 {
-> -			compatible = "fsl,t1040rdb-cpld","fsl,t1042rdb-cpld";
-> +			compatible = "fsl,t1040rdb-cpld","fsl,t1042rdb-cpld",
-> +					"fsl,t1042rdb_pi-cpld";
->  			reg = <3 0 0x300>;
->  		};
->  	};
+Hello Scott,
 
-What's going on here?  This file is used by all three boards.  If you
-need to distinguish one board's CPLD from another's, you'll have to do it
-somewhere else.  If the CPLDs are exactly the same and no distinction
-needs to be made, then you don't need three compatible strings.  Even
-then, you may wish to specify the exact board as the first compatible
-string, but again you'll need to patch that in elsewhere so that it
-actually matches the board.
 
--Scott
+On 07/29/2014 02:58 PM, Scott Wood wrote:
+> On Mon, 2014-07-28 at 06:51 +0000, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> Scott Wood <scottwood <at> freescale.com> writes:
+>>> On Wed, 2014-07-16 at 15:17 -0500, Shruti Kanetkar wrote:
+>>>> +			mdio <at> fd000 {
+>>>> +				/* For 10g interfaces */
+>>>> +				phy_xaui_slot1: xaui-phy <at> slot1 {
+>>>> +					status = "disabled";
+>>>> +					compatible = "ethernet-phy-ieee802.3-c45";
+>>>> +					reg = <0x7>; /* default switch setting on slot1 of AMC2PEX */
+>>>> +				};
+>>>
+>>> Why xaui-phy and not ethernet-phy?
+>>>
+>>> As for the device_type discussion from v1, there is a generic binding
+>>> that says device_type "should" be ethernet-phy.
+>>
+>> I have no strong feelings about this and we can use ethernet-phy, but:
+>>
+>> 1. The binding is old/stale (?) as it still uses device_type and the kernel
+>> doesn't seem to use anymore the device_type for PHY(s)
+> 
+> Yes.
+> 
+>> 2. The binding asks "ethernet-phy" for the device_type property, not for the
+>> name. As such TBI PHY(s) use (upstream) the tbi-phy@ node name
+> 
+> It shows ethernet-phy as the name in the example.  ePAPR urges generic
+> node names (this was also a recommendation for IEEE1275), and has
+> ethernet-phy on the preferred list.  Is a xaui-phy not an ethernet phy?
+
+So you thinking somebody should cleanup all the sgmii-phy and tbi-phy
+node names, huh?
+
+It seems that a number of tbi-phy instances slipped by you:
+
+1be62c6 powerpc/mpc85xx: Add BSC9132 QDS Support
+bf57aeb powerpc/85xx: add the P1020RDB-PD DTS support
+8a6be2b powerpc/85xx: Add TWR-P1025 board support
+
+>>>> +			mdio0: mdio <at> fc000 {
+>>>> +			};
+>>>
+>>> Why is the empty node needed?
+>>
+>> For the label
+> 
+> For mdio-parent-bus, or is there some other dts layer that makes this
+> node non-empty?
+
+'powerpc/corenet: Create the dts components for the DPAA FMan' -
+http://patchwork.ozlabs.org/patch/370872 and 'powerpc/corenet: Add DPAA
+FMan support to the SoC device tree(s)' -
+http://patchwork.ozlabs.org/patch/370868 add content to said node
+
+
+Cheers,
