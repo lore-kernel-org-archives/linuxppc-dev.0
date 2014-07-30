@@ -1,34 +1,22 @@
-Return-Path: <jslaby@suse.cz>
-Received: from ip4-83-240-18-248.cust.nbox.cz (ip4-83-240-18-248.cust.nbox.cz
- [83.240.18.248])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB5031A008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 22:16:23 +1000 (EST)
-From: Jiri Slaby <jslaby@suse.cz>
-To: stable@vger.kernel.org
-Subject: [PATCH 3.12 71/94] locking/mutex: Disable optimistic spinning on some
- architectures
-Date: Wed, 30 Jul 2014 14:15:00 +0200
-Message-Id: <91b2716ab0210733b2e26fbe9d490e9136b79672.1406722270.git.jslaby@suse.cz>
-In-Reply-To: <e43bbc2c2b44d8f0bd0b7f65d6fd50ef738c57aa.1406722270.git.jslaby@suse.cz>
-References: <e43bbc2c2b44d8f0bd0b7f65d6fd50ef738c57aa.1406722270.git.jslaby@suse.cz>
-In-Reply-To: <cover.1406722269.git.jslaby@suse.cz>
-References: <cover.1406722269.git.jslaby@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- James Bottomley <James.Bottomley@hansenpartnership.com>,
- Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
- Jiri Slaby <jslaby@suse.cz>, Ingo Molnar <mingo@kernel.org>,
- Russell King <linux@arm.linux.org.uk>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
- John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
- Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
- Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 82A351A021A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 22:25:44 +1000 (EST)
+Message-ID: <53D8E2B4.6060009@tabi.org>
+Date: Wed, 30 Jul 2014 07:19:00 -0500
+From: Timur Tabi <timur@tabi.org>
+MIME-Version: 1.0
+To: Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org
+Subject: Re: [PATCH 4/4] ASoC: fsl_ssi: Add stream names for DPCM usage
+References: <cover.1406688048.git.nicoleotsuka@gmail.com>
+ <891b9f4edbba81a03c2b8350abc5ccf923db9260.1406688049.git.nicoleotsuka@gmail.com>
+In-Reply-To: <891b9f4edbba81a03c2b8350abc5ccf923db9260.1406688049.git.nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: alsa-devel@alsa-project.org, tiwai@suse.de, b42378@freescale.com,
+ b02247@freescale.com, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
+ Li.Xiubo@freescale.com, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,131 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Zijlstra <peterz@infradead.org>
+Nicolin Chen wrote:
+> DPCM needs extra dapm routes in the machine driver to route audio
+> between Front-End and Back-End. In order to differ the stream names
+> in the route map from CODECs, we here add specific stream names to
+> SSI driver so that we can implement ASRC via DPCM to it.
+>
+> Signed-off-by: Nicolin Chen<nicoleotsuka@gmail.com>
 
-3.12-stable review patch.  If anyone has any objections, please let me know.
-
-===============
-
-commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
-
-The optimistic spin code assumes regular stores and cmpxchg() play nice;
-this is found to not be true for at least: parisc, sparc32, tile32,
-metag-lock1, arc-!llsc and hexagon.
-
-There is further wreckage, but this in particular seemed easy to
-trigger, so blacklist this.
-
-Opt in for known good archs.
-
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Reported-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Chris Metcalf <cmetcalf@tilera.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Vineet Gupta <vgupta@synopsys.com>
-Cc: Jason Low <jason.low2@hp.com>
-Cc: Waiman Long <waiman.long@hp.com>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Cc: John David Anglin <dave.anglin@bell.net>
-Cc: James Hogan <james.hogan@imgtec.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davidlohr Bueso <davidlohr@hp.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
-Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- arch/arm/Kconfig     | 1 +
- arch/arm64/Kconfig   | 1 +
- arch/powerpc/Kconfig | 1 +
- arch/sparc/Kconfig   | 1 +
- arch/x86/Kconfig     | 1 +
- kernel/Kconfig.locks | 5 ++++-
- 6 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index e47fcd1e9645..99e1ce978cf9 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -5,6 +5,7 @@ config ARM
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAVE_CUSTOM_GPIO_H
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select BUILDTIME_EXTABLE_SORT if MMU
- 	select CLONE_BACKWARDS
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index c04454876bcb..fe70eaea0e28 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -1,6 +1,7 @@
- config ARM64
- 	def_bool y
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
- 	select ARCH_WANT_FRAME_POINTERS
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d5d026b6d237..2e0ddfadc0b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -138,6 +138,7 @@ config PPC
- 	select OLD_SIGSUSPEND
- 	select OLD_SIGACTION if PPC32
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 4e5683877b93..d60f34dbae89 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -75,6 +75,7 @@ config SPARC64
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select HAVE_C_RECORDMCOUNT
- 	select NO_BOOTMEM
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index eb2dfa61eabe..9dc1a24d41b8 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -123,6 +123,7 @@ config X86
- 	select COMPAT_OLD_SIGACTION if IA32_EMULATION
- 	select RTC_LIB
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select ARCH_SUPPORTS_ATOMIC_RMW
- 
- config INSTRUCTION_DECODER
- 	def_bool y
-diff --git a/kernel/Kconfig.locks b/kernel/Kconfig.locks
-index d2b32ac27a39..ecee67a00f5f 100644
---- a/kernel/Kconfig.locks
-+++ b/kernel/Kconfig.locks
-@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
- 
- endif
- 
-+config ARCH_SUPPORTS_ATOMIC_RMW
-+	bool
-+
- config MUTEX_SPIN_ON_OWNER
- 	def_bool y
--	depends on SMP && !DEBUG_MUTEXES
-+	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
--- 
-2.0.1
+Acked-by: Timur Tabi <timur@tabi.org>
