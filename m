@@ -1,30 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EFFA41A0223
+ by lists.ozlabs.org (Postfix) with ESMTPS id 148541A0866
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:51 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Wed, 30 Jul 2014 19:31:50 +1000
+ Wed, 30 Jul 2014 19:31:27 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E0A1D2CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:47 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BEE402BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6U9VNEm10682512
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:23 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6U9Vlle026792
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:47 +1000
+ s6U9VMVb24969282
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:22 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6U9Vk4E024003
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2014 19:31:46 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 15/16] vfio: powerpc/spapr: Use it_page_size
-Date: Wed, 30 Jul 2014 19:31:34 +1000
-Message-Id: <1406712695-9491-16-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v4 13/16] powerpc/powernv: Implement Dynamic DMA windows (DDW)
+ for IODA
+Date: Wed, 30 Jul 2014 19:31:32 +1000
+Message-Id: <1406712695-9491-14-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1406712695-9491-1-git-send-email-aik@ozlabs.ru>
 References: <1406712695-9491-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,89 +40,256 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes use of the it_page_size from the iommu_table struct
-as page size can differ.
+SPAPR defines an interface to create additional DMA windows dynamically.
+"Dynamically" means that the window is not allocated at the guest start
+and the guest can request it later. In practice, existing linux guests
+check for the capability and if it is there, they create+map one big DMA
+window as big as the entire guest RAM.
 
-This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
-as recently introduced IOMMU_PAGE_XXX macros do not include
-IOMMU_PAGE_SHIFT.
+SPAPR defines 4 RTAS calls for this feature which userspace implements.
+This adds 4 callbacks into the spapr_tce_iommu_ops struct:
+1. query - ibm,query-pe-dma-window - returns number/size of windows
+which can be created (one, any page size);
+2. create - ibm,create-pe-dma-window - creates a window;
+3. remove - ibm,remove-pe-dma-window - removes a window; only additional
+window created by create() can be removed, the default 32bit window cannot
+be removed as guests do not expect new windows to start from zero;
+4. reset -  ibm,reset-pe-dma-window - reset the DMA windows configuration
+to the default state; now it only removes the additional window if it
+was created.
+
+The next patch will add corresponding ioctls to VFIO SPAPR TCE driver to
+pass RTAS call from the userspace to the IODA code.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/tce.h            |  21 ++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 158 +++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.h      |   2 +
+ 3 files changed, 180 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 6ed0fc3..48b256c 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -103,7 +103,7 @@ static int tce_iommu_enable(struct tce_container *container)
- 	if (!tbl)
- 		return -ENXIO;
+diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
+index 5ee4987..583463b 100644
+--- a/arch/powerpc/include/asm/tce.h
++++ b/arch/powerpc/include/asm/tce.h
+@@ -60,6 +60,27 @@ struct spapr_tce_iommu_ops {
+ 			phys_addr_t addr);
+ 	void (*take_ownership)(struct spapr_tce_iommu_group *data,
+ 			bool enable);
++
++	/* Dynamic DMA window */
++	/* Page size flags for ibm,query-pe-dma-window */
++#define DDW_PGSIZE_4K       0x01
++#define DDW_PGSIZE_64K      0x02
++#define DDW_PGSIZE_16M      0x04
++#define DDW_PGSIZE_32M      0x08
++#define DDW_PGSIZE_64M      0x10
++#define DDW_PGSIZE_128M     0x20
++#define DDW_PGSIZE_256M     0x40
++#define DDW_PGSIZE_16G      0x80
++	long (*query)(struct spapr_tce_iommu_group *data,
++			__u32 *windows_available,
++			__u32 *page_size_mask);
++	long (*create)(struct spapr_tce_iommu_group *data,
++			__u32 page_shift,
++			__u32 window_shift,
++			struct iommu_table **ptbl);
++	long (*remove)(struct spapr_tce_iommu_group *data,
++			struct iommu_table *tbl);
++	long (*reset)(struct spapr_tce_iommu_group *data);
+ };
  
--	ret = try_increment_locked_vm((tbl->it_size << IOMMU_PAGE_SHIFT_4K) >>
-+	ret = try_increment_locked_vm((tbl->it_size << tbl->it_page_shift) >>
- 			PAGE_SHIFT);
- 	if (ret)
- 		return ret;
-@@ -134,7 +134,7 @@ static void tce_iommu_disable(struct tce_container *container)
- 	if (!tbl)
- 		return;
- 
--	decrement_locked_vm((tbl->it_size << IOMMU_PAGE_SHIFT_4K) >>
-+	decrement_locked_vm((tbl->it_size << tbl->it_page_shift) >>
- 			PAGE_SHIFT);
+ struct spapr_tce_iommu_group {
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 7482518..6a847b2 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -754,6 +754,24 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+ 	pnv_pci_ioda2_set_bypass(pe, true);
  }
  
-@@ -207,8 +207,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (info.argsz < minsz)
- 			return -EINVAL;
++static struct iommu_table *pnv_ioda2_iommu_get_table(
++		struct spapr_tce_iommu_group *data,
++		phys_addr_t addr)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++
++	if (addr == TCE_DEFAULT_WINDOW)
++		return &pe->tce32.table;
++
++	if (pnv_pci_ioda_check_addr(&pe->tce64.table, addr))
++		return &pe->tce64.table;
++
++	if (pnv_pci_ioda_check_addr(&pe->tce32.table, addr))
++		return &pe->tce32.table;
++
++	return NULL;
++}
++
+ static void pnv_ioda2_take_ownership(struct spapr_tce_iommu_group *data,
+ 				     bool enable)
+ {
+@@ -762,9 +780,147 @@ static void pnv_ioda2_take_ownership(struct spapr_tce_iommu_group *data,
+ 	pnv_pci_ioda2_set_bypass(pe, !enable);
+ }
  
--		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
--		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
-+		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
-+		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
- 		info.flags = 0;
++static long pnv_pci_ioda2_ddw_query(struct spapr_tce_iommu_group *data,
++		__u32 *windows_available, __u32 *page_size_mask)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++
++	if (pe->tce64_active) {
++		*page_size_mask = 0;
++		*windows_available = 0;
++	} else {
++		*page_size_mask =
++			DDW_PGSIZE_4K |
++			DDW_PGSIZE_64K |
++			DDW_PGSIZE_16M;
++		*windows_available = 1;
++	}
++
++	return 0;
++}
++
++static long pnv_pci_ioda2_ddw_create(struct spapr_tce_iommu_group *data,
++		__u32 page_shift, __u32 window_shift,
++		struct iommu_table **ptbl)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++	struct pnv_phb *phb = pe->phb;
++	struct page *tce_mem = NULL;
++	void *addr;
++	long ret;
++	unsigned long tce_table_size =
++			(1ULL << (window_shift - page_shift)) * 8;
++	unsigned order;
++	struct iommu_table *tbl64 = &pe->tce64.table;
++
++	if ((page_shift != 12) && (page_shift != 16) && (page_shift != 24))
++		return -EINVAL;
++
++	if (window_shift > (memory_hotplug_max() >> page_shift))
++		return -EINVAL;
++
++	if (pe->tce64_active)
++		return -EBUSY;
++
++	tce_table_size = max(0x1000UL, tce_table_size);
++	order = get_order(tce_table_size);
++
++	pe_info(pe, "Setting up DDW at %llx..%llx ws=0x%x ps=0x%x table_size=0x%lx order=0x%x\n",
++			pe->tce_bypass_base,
++			pe->tce_bypass_base + (1ULL << window_shift) - 1,
++			window_shift, page_shift, tce_table_size, order);
++
++	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL, order);
++	if (!tce_mem) {
++		pe_err(pe, " Failed to allocate a DDW\n");
++		return -EFAULT;
++	}
++	addr = page_address(tce_mem);
++	memset(addr, 0, tce_table_size);
++
++	/* Configure HW */
++	ret = opal_pci_map_pe_dma_window(phb->opal_id,
++			pe->pe_number,
++			(pe->pe_number << 1) + 1, /* Window number */
++			1,
++			__pa(addr),
++			tce_table_size,
++			1 << page_shift);
++	if (ret) {
++		pe_err(pe, " Failed to configure 32-bit TCE table, err %ld\n",
++				ret);
++		return -EFAULT;
++	}
++
++	/* Setup linux iommu table */
++	pnv_pci_setup_iommu_table(tbl64, addr, tce_table_size,
++			pe->tce_bypass_base, page_shift);
++	pe->tce64.pe = pe;
++
++	/* Copy "invalidate" register address */
++	tbl64->it_index = pe->tce32.table.it_index;
++	tbl64->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
++			TCE_PCI_SWINV_PAIR;
++	tbl64->it_map = (void *) 0xDEADBEEF; /* poison */
++	tbl64->it_ops = pe->tce32.table.it_ops;
++
++	*ptbl = tbl64;
++
++	pe->tce64_active = true;
++
++	return 0;
++}
++
++static long pnv_pci_ioda2_ddw_remove(struct spapr_tce_iommu_group *data,
++		struct iommu_table *tbl)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++	struct pnv_phb *phb = pe->phb;
++	long ret;
++
++	/* Only additional 64bit window removal is supported */
++	if ((tbl != &pe->tce64.table) || !pe->tce64_active)
++		return -EFAULT;
++
++	pe_info(pe, "Removing huge 64bit DMA window\n");
++
++	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
++
++	pe->tce64_active = false;
++
++	ret = opal_pci_map_pe_dma_window(phb->opal_id,
++			pe->pe_number,
++			(pe->pe_number << 1) + 1,
++			0/* levels */, 0/* table address */,
++			0/* table size */, 0/* page size */);
++	if (ret)
++		pe_warn(pe, "Unmapping failed, ret = %ld\n", ret);
++
++	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
++	memset(&pe->tce64, 0, sizeof(pe->tce64));
++
++	return ret;
++}
++
++static long pnv_pci_ioda2_ddw_reset(struct spapr_tce_iommu_group *data)
++{
++	struct pnv_ioda_pe *pe = data->iommu_owner;
++
++	pe_info(pe, "Reset DMA windows\n");
++
++	if (!pe->tce64_active)
++		return 0;
++
++	return pnv_pci_ioda2_ddw_remove(data, &pe->tce64.table);
++}
++
+ static struct spapr_tce_iommu_ops pnv_pci_ioda2_ops = {
+-	.get_table = pnv_ioda1_iommu_get_table,
++	.get_table = pnv_ioda2_iommu_get_table,
+ 	.take_ownership = pnv_ioda2_take_ownership,
++	.query = pnv_pci_ioda2_ddw_query,
++	.create = pnv_pci_ioda2_ddw_create,
++	.remove = pnv_pci_ioda2_ddw_remove,
++	.reset = pnv_pci_ioda2_ddw_reset
+ };
  
- 		if (copy_to_user((void __user *)arg, &info, minsz))
-@@ -261,17 +261,17 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (ret)
- 			return ret;
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index ab85743..f25f633 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -64,6 +64,8 @@ struct pnv_ioda_pe {
+ 	int			tce32_segcount;
+ 	struct pnv_iommu_table	tce32;
+ 	phys_addr_t		tce_inval_reg_phys;
++	bool			tce64_active;
++	struct pnv_iommu_table	tce64;
  
--		for (i = 0; i < (param.size >> IOMMU_PAGE_SHIFT_4K); ++i) {
-+		for (i = 0; i < (param.size >> tbl->it_page_shift); ++i) {
- 			ret = iommu_put_tce_user_mode(tbl,
--					(param.iova >> IOMMU_PAGE_SHIFT_4K) + i,
-+					(param.iova >> tbl->it_page_shift) + i,
- 					tce);
- 			if (ret)
- 				break;
--			tce += IOMMU_PAGE_SIZE_4K;
-+			tce += IOMMU_PAGE_SIZE(tbl);
- 		}
- 		if (ret)
- 			iommu_clear_tces_and_put_pages(tbl,
--					param.iova >> IOMMU_PAGE_SHIFT_4K, i);
-+					param.iova >> tbl->it_page_shift, i);
- 
- 		iommu_flush_tce(tbl);
- 
-@@ -312,13 +312,13 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		BUG_ON(!tbl->it_group);
- 
- 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.size >> tbl->it_page_shift);
- 		if (ret)
- 			return ret;
- 
- 		ret = iommu_clear_tces_and_put_pages(tbl,
--				param.iova >> IOMMU_PAGE_SHIFT_4K,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.iova >> tbl->it_page_shift,
-+				param.size >> tbl->it_page_shift);
- 		iommu_flush_tce(tbl);
- 
- 		return ret;
+ 	/* 64-bit TCE bypass region */
+ 	bool			tce_bypass_enabled;
 -- 
 2.0.0
