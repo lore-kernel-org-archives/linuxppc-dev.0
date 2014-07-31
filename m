@@ -1,24 +1,32 @@
-Return-Path: <Priyanka.Jain@freescale.com>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 746D31A021A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 14:43:40 +1000 (EST)
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2ECD41A0206
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 14:37:55 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [2/2] powerpc/fsl-booke: Add initial T1042RDB_PI board support
-Date: Thu, 31 Jul 2014 04:37:22 +0000
-Message-ID: <946e9d7e260c4d78b3c025c3eaeec0f5@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1404879851-2914-1-git-send-email-Priyanka.Jain@freescale.com>
- <20140730201250.GA29789@home.buserror.net>
-In-Reply-To: <20140730201250.GA29789@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 972FC140174
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2014 14:43:39 +1000 (EST)
+Message-ID: <53D9C77D.8070203@Freescale.com>
+Date: Wed, 30 Jul 2014 23:35:09 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "prabhakar@freescale.com" <prabhakar@freescale.com>,
- "Poonam.Aggrwal@freescale.com" <Poonam.Aggrwal@freescale.com>
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH v2 5/7] powerpc/corenet: Add MDIO bus muxing support to
+ the board device tree(s)
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+ <1405541831-1277-5-git-send-email-Shruti@Freescale.com>
+ <1405982754.29414.33.camel@snotra.buserror.net>
+ <loom.20140728T081519-636@post.gmane.org>
+ <1406663895.29414.240.camel@snotra.buserror.net>
+ <53D96906.1040407@Freescale.com>
+ <1406773805.29414.302.camel@snotra.buserror.net>
+In-Reply-To: <1406773805.29414.302.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +36,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello Scott,
 
 
------Original Message-----
-From: Wood Scott-B07421=20
-Sent: Thursday, July 31, 2014 1:43 AM
-To: Jain Priyanka-B32167
-Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Aggrwal Poon=
-am-B10812; Kushwaha Prabhakar-B32579
-Subject: Re: [2/2] powerpc/fsl-booke: Add initial T1042RDB_PI board support
+On 07/30/2014 09:30 PM, Scott Wood wrote:
+> On Wed, 2014-07-30 at 16:52 -0500, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> On 07/29/2014 02:58 PM, Scott Wood wrote:
+>>> On Mon, 2014-07-28 at 06:51 +0000, Emil Medve wrote:
+>>>> Hello Scott,
+>>>>
+>>>>
+>>>> Scott Wood <scottwood <at> freescale.com> writes:
+>>>>> On Wed, 2014-07-16 at 15:17 -0500, Shruti Kanetkar wrote:
+>>>>>> +			mdio <at> fd000 {
+>>>>>> +				/* For 10g interfaces */
+>>>>>> +				phy_xaui_slot1: xaui-phy <at> slot1 {
+>>>>>> +					status = "disabled";
+>>>>>> +					compatible = "ethernet-phy-ieee802.3-c45";
+>>>>>> +					reg = <0x7>; /* default switch setting on slot1 of AMC2PEX */
+>>>>>> +				};
+>>>>>
+>>>>> Why xaui-phy and not ethernet-phy?
+>>>>>
+>>>>> As for the device_type discussion from v1, there is a generic binding
+>>>>> that says device_type "should" be ethernet-phy.
+>>>>
+>>>> I have no strong feelings about this and we can use ethernet-phy, but:
+>>>>
+>>>> 1. The binding is old/stale (?) as it still uses device_type and the kernel
+>>>> doesn't seem to use anymore the device_type for PHY(s)
+>>>
+>>> Yes.
+>>>
+>>>> 2. The binding asks "ethernet-phy" for the device_type property, not for the
+>>>> name. As such TBI PHY(s) use (upstream) the tbi-phy@ node name
+>>>
+>>> It shows ethernet-phy as the name in the example.  ePAPR urges generic
+>>> node names (this was also a recommendation for IEEE1275), and has
+>>> ethernet-phy on the preferred list.  Is a xaui-phy not an ethernet phy?
+>>
+>> So you thinking somebody should cleanup all the sgmii-phy and tbi-phy
+>> node names, huh?
+> 
+> No, I was just wondering why we're adding yet another name, and whether
+> there's any value in it.
 
-On Wed, Jul 09, 2014 at 09:54:11AM +0530, Priyanka Jain wrote:
-> diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi=20
-> b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> index 9aaefa5..e7e765f 100644
-> --- a/arch/powerpc/boot/dts/t104xrdb.dtsi
-> +++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> @@ -57,7 +57,8 @@
->  		};
-> =20
->  		cpld@3,0 {
-> -			compatible =3D "fsl,t1040rdb-cpld","fsl,t1042rdb-cpld";
-> +			compatible =3D "fsl,t1040rdb-cpld","fsl,t1042rdb-cpld",
-> +					"fsl,t1042rdb_pi-cpld";
->  			reg =3D <3 0 0x300>;
->  		};
->  	};
+That's fair. We'll just use ethernet-phy
 
-What's going on here?  This file is used by all three boards.  If you need =
-to distinguish one board's CPLD from another's, you'll have to do it somewh=
-ere else.  If the CPLDs are exactly the same and no distinction needs to be=
- made, then you don't need three compatible strings.  Even then, you may wi=
-sh to specify the exact board as the first compatible string, but again you=
-'ll need to patch that in elsewhere so that it actually matches the board
-.
-As the register set of CPLD for all three boards is same, I am thinking of =
-replacing this with t104srdb-cpld
-compatible =3D "fsl,t104xrdb-cpld","
-Is this OK?
+>> It seems that a number of tbi-phy instances slipped by you:
+>>
+>> 1be62c6 powerpc/mpc85xx: Add BSC9132 QDS Support
+>> bf57aeb powerpc/85xx: add the P1020RDB-PD DTS support
+>> 8a6be2b powerpc/85xx: Add TWR-P1025 board support
+> 
+> tbi-phy is existing practice.  xaui-phy isn't.
+> 
+>>>>>> +			mdio0: mdio <at> fc000 {
+>>>>>> +			};
+>>>>>
+>>>>> Why is the empty node needed?
+>>>>
+>>>> For the label
+>>>
+>>> For mdio-parent-bus, or is there some other dts layer that makes this
+>>> node non-empty?
+>>
+>> 'powerpc/corenet: Create the dts components for the DPAA FMan' -
+>> http://patchwork.ozlabs.org/patch/370872
+> 
+> Why does this patch define the mdio0 label for mdio@e1120, but not
+> define a label for any other node?
 
--Scott
+Only MDIO controllers that are pinned out have these labels. Only pinned
+out MDIO(s) are capable of controlling external PHY(s) via these board
+level MDIO buses
+
+>>  and 'powerpc/corenet: Add DPAA
+>> FMan support to the SoC device tree(s)' -
+>> http://patchwork.ozlabs.org/patch/370868 add content to said node
+> 
+> This one adds content to some mdio nodes, none of which are mdio@fc000
+> or &mdio0.
+
+This patch adds the SoC level PHY(s), which in this case are just TBI
+PHY(s): i.e. no FMan v2 10 Gb/s MDIO or FMan v3 standalone MDIO devices.
+Also the labels become relevant only at board level to connect the MDIO
+buses to their corresponding MDIO controllers
+
+
+Cheers,
