@@ -1,35 +1,54 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tomeu.vizoso@collabora.com>
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [93.93.135.160])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA7B51A004F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:18 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Thu, 31 Jul 2014 20:30:17 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 16F783578053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:15 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6VA7CXW59900154
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:07:13 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6VAUE06017915
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:14 +1000
-Subject: [PATCH v2 1/2] printk: Add function to return log buffer address
- and size
-To: linux-kernel@vger.kernel.org
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Thu, 31 Jul 2014 16:00:06 +0530
-Message-ID: <20140731102920.27954.25076.stgit@hegdevasant.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBC961A0226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 21:58:05 +1000 (EST)
+Message-ID: <53DA2CCB.2080300@collabora.com>
+Date: Thu, 31 Jul 2014 13:47:23 +0200
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+To: Stephen Warren <swarren@wwwdotorg.org>,
+ Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v4 6/6] clk: Add floor and ceiling constraints to clock
+ rates
+References: <1405606399-26608-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1405606399-26608-7-git-send-email-tomeu.vizoso@collabora.com>
+ <53CEA483.6090704@wwwdotorg.org>
+In-Reply-To: <53CEA483.6090704@wwwdotorg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Lunn <andrew@lunn.ch>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Prashant Gaikwad <pgaikwad@nvidia.com>, Tony Lindgren <tony@atomide.com>,
+ Tomasz Figa <t.figa@samsung.com>, alsa-devel@alsa-project.org,
+ Jaroslav Kysela <perex@perex.cz>, Thierry Reding <thierry.reding@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ =?ISO-8859-1?Q?Emilio_L=F3pez?= <emilio@elopez.com.ar>,
+ Takashi Iwai <tiwai@suse.de>, Michal Simek <michal.simek@xilinx.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Kevin Hilman <khilman@deeprootsystems.com>,
+ linux-arm-kernel@lists.infradead.org, patches@opensource.wolfsonmicro.com,
+ Viresh Kumar <viresh.linux@gmail.com>, David Brown <davidb@codeaurora.org>,
+ Anatolij Gustschin <agust@denx.de>, Dinh Nguyen <dinguyen@altera.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
+ linux-arm-msm@vger.kernel.org, spear-devel@list.st.com,
+ Barry Song <baohua@kernel.org>, Mark Brown <broonie@kernel.org>,
+ linux-rpi-kernel@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
+ linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@freescale.com>,
+ Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
+ rabin@rab.in, Bryan Huntsman <bryanh@codeaurora.org>,
+ Santosh Shilimkar <santosh.shilimkar@ti.com>,
+ =?ISO-8859-1?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>, linux-media@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Javier Martinez Canillas <javier.martinez@collabora.co.uk>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,63 +58,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Platforms like IBM Power Systems supports service processor
-assisted dump. It provides interface to add memory region to
-be captured when system is crashed.
+On 07/22/2014 07:50 PM, Stephen Warren wrote:
+> On 07/17/2014 08:13 AM, Tomeu Vizoso wrote:
+>> Adds a way for clock consumers to set maximum and minimum rates. This can be
+>> used for thermal drivers to set ceiling rates, or by misc. drivers to set
+>> floor rates to assure a minimum performance level.
+>
+>> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+>
+>> +struct rate_constraint {
+>> +	struct hlist_node	node;
+>> +	const char		*dev_id;
+>> +	const char		*con_id;
+>> +	enum constraint_type	type;
+>> +	unsigned long		rate;
+>> +};
+>
+> I would personally still prefer either:
+>
+> a) The struct rate_constraints be stored in struct clk rather than
+> struct clk_core, so they're stored in the container that "set" the
+> constraints. This would mean iterating over a struct clk_core's
+> associated struct clks, then iterating over the struct rate_constraints
+> within each struct clk.
+>
+> or:
+>
+> b) struct rate_constraint to contain a pointer to the struct clk that
+> created the constraint, rather than copying the dev_id/con_id from that
+> struct clk into the struct rate_constraint.
+>
+> With either of those changes, the constraints are directly associated
+> with the clock client object that created the constraint much better
+> than right now, where the matching is only because the struct clk and
+> struct rate_constraint "happen to" have the same dev_id/con_id values.
+>
+> Still, this is a pretty minor issue, and overall this series looks
+> reasonable to me at a quick look.
 
-During initialization/running we can add kernel memory region
-to be collected.
+Yeah, I agree and personally prefer a), but given the little feedback 
+that I have gotten so far on the refactoring, I'm starting to consider 
+forgetting about the per-user clk struct and go instead with a 
+request-based API similar to that of pm_qos, for setting floor and 
+ceiling frequencies.
 
-Presently we don't have a way to get the log buffer base address
-and size. This patch adds support to return log buffer address
-and size.
+Regards,
 
-
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
-  Next patch extends arch specific code to add log buffer to platform
-dump.
-
--Vasant
-
- include/linux/printk.h |    3 +++
- kernel/printk/printk.c |   12 ++++++++++++
- 2 files changed, 15 insertions(+)
-
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-index 319ff7e..aae82c4 100644
---- a/include/linux/printk.h
-+++ b/include/linux/printk.h
-@@ -10,6 +10,9 @@
- extern const char linux_banner[];
- extern const char linux_proc_banner[];
- 
-+extern void *get_log_buf_addr(void);
-+extern u32 get_log_buf_len(void);
-+
- static inline int printk_get_level(const char *buffer)
- {
- 	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 13e839d..4049f7b 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
- static char *log_buf = __log_buf;
- static u32 log_buf_len = __LOG_BUF_LEN;
- 
-+/* Return log buffer address */
-+void *get_log_buf_addr(void)
-+{
-+	return log_buf;
-+}
-+
-+/* Return log buffer size */
-+u32 get_log_buf_len(void)
-+{
-+	return log_buf_len;
-+}
-+
- /* human readable text of the record */
- static char *log_text(const struct printk_log *msg)
- {
+Tomeu
