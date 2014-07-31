@@ -1,35 +1,25 @@
-Return-Path: <hartb@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A4D61A073A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 05:24:45 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hartb@linux.vnet.ibm.com>;
- Thu, 31 Jul 2014 13:24:43 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AA52219D803E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 13:24:29 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6VJN23666715792
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 21:23:02 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6VJOesX031509
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 13:24:40 -0600
-Date: Thu, 31 Jul 2014 14:24:37 -0500
-From: Brian W Hart <hartb@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/powernv: update dev->dma_mask in pci_set_dma_mask()
- path
-Message-ID: <20140731192437.GA18855@oc3347516403.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 254101A0206
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 05:56:10 +1000 (EST)
+Date: Thu, 31 Jul 2014 20:55:47 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20140731195547.GV17528@sirena.org.uk>
+References: <cover.1406688048.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="b6KVNqYBpl4d9+rq"
+In-Reply-To: <cover.1406688048.git.nicoleotsuka@gmail.com>
+Subject: Re: [PATCH 0/4] ASoC: fsl: Add stream names to CPU DAI drivers for
+ DPCM
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ b42378@freescale.com, b02247@freescale.com, linux-kernel@vger.kernel.org,
+ timur@tabi.org, Li.Xiubo@freescale.com, perex@perex.cz,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,33 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc defines various machine-specific routines for handling
-pci_set_dma_mask().  The routines for machine "PowerNV" may neglect
-to set dev->dma_mask.  This could confuse anyone (e.g. drivers) that
-consult dev->dma_mask to find the current mask.  Set the dma_mask in
-the PowerNV leaf routine.
 
-Signed-off-by: Brian W. Hart <hartb@linux.vnet.ibm.com>
----
-I assume the failure to set dma_mask in this path was just an oversight.
-With this change everything still seems to work fine on my powernv setup,
-and dev->dma_mask now carries the appropriate value after
-pci_set_dma_mask(dev, DMA_BIT_MASK(64).
+--b6KVNqYBpl4d9+rq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
- arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+On Wed, Jul 30, 2014 at 11:10:25AM +0800, Nicolin Chen wrote:
+> DPCM needs extra dapm routes in the machine driver to route audio
+> between Front-End and Back-End. In order to differ the stream names
+> in the route map from CODECs, we here add specific stream names to
+> all Freescale ASoC CPU DAI drivers so that we can implement ASRC via
+> DPCM to each of them.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index de19ede..3136ae2 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -491,6 +491,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
- 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
- 		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
- 	}
-+	*pdev->dev.dma_mask = dma_mask;
- 	return 0;
- }
- 
--- 
-1.7.1
+Applied all, thanks.
+
+--b6KVNqYBpl4d9+rq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT2p9AAAoJELSic+t+oim9k7UP/jE5Gew7OjKcyLkB1HbSU48d
+sNjdIdsAr9YqQIIOefbA6mjs1u9hdaNb6AMeR9y5BvT5JcW5Qa8yxtIpYbuy8GE7
+aq5ocu11bgDbVOr6GPSfRtVDVPT/RXQOEAKBHV5AclVE+hQmESMLaQRNhKwiVVBK
+GgqAdHiLSOH9BIq0kawhGvh50ltUhmw6F5BTEWMXCd7MYOqrTz108n76kqoV682q
++c4S4xLSbka5cM+W1VjzoNpCGOZzKC008WwC7ZjQcVjTdO409LRkIeekdWJalOR2
+mS/HRXV186//768SnVDopG3I3KawR66LixfUHIqiyaNgaPtv97A9EqSPKN2ktO7f
+IQZA3fKB12Z+BUsuUoV8Z1qbAWsatYgRdKbv6YJyLWIRfKw30PrnFgf5GjjMWnIj
+T0hYQdIHeNIa3swNWI0/EQj29KHM9AYD2bPLUwsQWew2TDVtQ03el9Kn2+krCl+M
+go/O43VdWpXJ4j/ZaI08LHXt5FERvykO6Hu6vSZZIxAyxy5eo6gvS97+t3IiKUse
+DKXVjOKtw8wYBfrTJ3Rzaz2DF9iSrTpluYDRTnfMcaTB+yL7BIis4MkkHiDhvGOw
+QLCJVg4vQzzOKQdPn9tqSPL0PNbcGAH+1IIqfl+YiJXmv4othPaf4Rc1r6XyT/gb
+yeoNtIN12jM9cY4iL3Ay
+=Q2VY
+-----END PGP SIGNATURE-----
+
+--b6KVNqYBpl4d9+rq--
