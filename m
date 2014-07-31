@@ -2,29 +2,32 @@ Return-Path: <hegdevasant@linux.vnet.ibm.com>
 Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2FC01A07E8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 01:36:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70C121A0222
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 03:46:10 +1000 (EST)
 Received: from /spool/local
  by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Thu, 31 Jul 2014 21:06:08 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ Thu, 31 Jul 2014 23:16:04 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6F9E4394B34A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 16:00:49 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
  by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6VFc79T64225494
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 21:08:08 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6VFa6IG009312
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 21:06:07 +0530
+ s6VAWhtF23199780
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 16:02:44 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6VAUau4021217
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 16:00:37 +0530
 Subject: [PATCH v2 2/2] powerpc/powernv: Interface to register/unregister
  opal dump region
 To: linux-kernel@vger.kernel.org
 From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Thu, 31 Jul 2014 21:06:04 +0530
-Message-ID: <20140731153556.27134.11030.stgit@hegdevasant.in.ibm.com>
-In-Reply-To: <20140731153447.27134.44225.stgit@hegdevasant.in.ibm.com>
-References: <20140731153447.27134.44225.stgit@hegdevasant.in.ibm.com>
+Date: Thu, 31 Jul 2014 16:00:23 +0530
+Message-ID: <20140731103019.27954.37756.stgit@hegdevasant.in.ibm.com>
+In-Reply-To: <20140731102920.27954.25076.stgit@hegdevasant.in.ibm.com>
+References: <20140731102920.27954.25076.stgit@hegdevasant.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
