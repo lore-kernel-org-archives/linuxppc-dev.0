@@ -1,26 +1,35 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <hartb@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48C051A002C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 05:24:28 +1000 (EST)
-Date: Thu, 31 Jul 2014 20:24:02 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Message-ID: <20140731192402.GL17528@sirena.org.uk>
-References: <20140731093209.GF30276@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A4D61A073A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 05:24:45 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hartb@linux.vnet.ibm.com>;
+ Thu, 31 Jul 2014 13:24:43 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AA52219D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 13:24:29 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6VJN23666715792
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 21:23:02 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6VJOesX031509
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 13:24:40 -0600
+Date: Thu, 31 Jul 2014 14:24:37 -0500
+From: Brian W Hart <hartb@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/powernv: update dev->dma_mask in pci_set_dma_mask()
+ path
+Message-ID: <20140731192437.GA18855@oc3347516403.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="1km+XC/p/ep4c9cZ"
-In-Reply-To: <20140731093209.GF30276@mwanda>
-Subject: Re: [patch -next] ASoC: fsl_asrc: fix an error code in
- fsl_asrc_probe()
-Cc: alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
- Takashi Iwai <tiwai@suse.de>, kernel-janitors@vger.kernel.org,
- Timur Tabi <timur@tabi.org>, Jaroslav Kysela <perex@perex.cz>,
- Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +39,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+powerpc defines various machine-specific routines for handling
+pci_set_dma_mask().  The routines for machine "PowerNV" may neglect
+to set dev->dma_mask.  This could confuse anyone (e.g. drivers) that
+consult dev->dma_mask to find the current mask.  Set the dma_mask in
+the PowerNV leaf routine.
 
---1km+XC/p/ep4c9cZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Brian W. Hart <hartb@linux.vnet.ibm.com>
+---
+I assume the failure to set dma_mask in this path was just an oversight.
+With this change everything still seems to work fine on my powernv setup,
+and dev->dma_mask now carries the appropriate value after
+pci_set_dma_mask(dev, DMA_BIT_MASK(64).
 
-On Thu, Jul 31, 2014 at 12:32:09PM +0300, Dan Carpenter wrote:
-> There is a cut and paste bug so it returns success instead of the error
-> code.
+ arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Applied, thanks.  Might be worth looking at how you're generating your
-CC lists here, it seems a bit random.
-
---1km+XC/p/ep4c9cZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJT2pfPAAoJELSic+t+oim9dEUQAIWxQhqoVk38JF6Z0yvVc8+O
-B+zV4AYxzjY+9gLpGY7uDI/Dmdw06RpbuYfrk3t2o/kd7/XdfQiq7tr7h/ea6aFA
-lIvmqovviaWyJR3SaeNa0agwN9Tb6YRAoRboVfoZ0nDVLryaKoeyWWG0jcygzliG
-w7BQyOL5KEDbL0aRdn1cqA2t7R5eyHMj8H0N4K+K8y7PmvGAr+n0FfUhbXzwL5ht
-rULwprgHW3ArYSrOSsVrkkGRuQqnfUXoTIpd+ebgIqxGrvmyQxIY61wkgmrU80Nr
-es2iUdkI3/dWrvMfL1oKwt4PKa1OPi/BhOPaVhQFlNKg2B/EjmxaCGqQNgbJY9sK
-7gOVWgP2YzIfmrCiwsm0y9+2RJAGs2pI1D9MI3ttsrLxyxIXvetGu3brCEZMtosh
-Bb3mmXFk+uMChjCgcBMpBJtu7CmjrkzbTQkWZ281r2aGNmgDvPbgbgWwvG4rmat/
-BhbPAOtlDpLk6TNtdcd3zH3WKWEQo0S5bBCefLJfLTAohXNyXXZCtKtw3IBJamJd
-QwOBKIxSUdV8KP7Nf5Fnya1ej/s+Rodf7/iKZsfc36AlOm31B7O24frsjS8q1B/d
-1IHMewZV1u7SzQlv5LqWVTk63Fg3PiFe7ahUQR8+2AGJ9aea9/FAHcQD8i+asjI7
-iU/SnumU7/Ol39WptEPQ
-=PNDi
------END PGP SIGNATURE-----
-
---1km+XC/p/ep4c9cZ--
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index de19ede..3136ae2 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -491,6 +491,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+ 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+ 		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
+ 	}
++	*pdev->dev.dma_mask = dma_mask;
+ 	return 0;
+ }
+ 
+-- 
+1.7.1
