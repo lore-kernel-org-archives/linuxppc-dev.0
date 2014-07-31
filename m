@@ -1,26 +1,35 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 165861A0223
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 19:33:07 +1000 (EST)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- s6V9X5iX007287
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 09:33:06 GMT
-Date: Thu, 31 Jul 2014 12:32:09 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: [patch -next] ASoC: fsl_asrc: fix an error code in fsl_asrc_probe()
-Message-ID: <20140731093209.GF30276@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA7B51A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:18 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 31 Jul 2014 20:30:17 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 16F783578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:15 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6VA7CXW59900154
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:07:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6VAUE06017915
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2014 20:30:14 +1000
+Subject: [PATCH v2 1/2] printk: Add function to return log buffer address
+ and size
+To: linux-kernel@vger.kernel.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Thu, 31 Jul 2014 16:00:06 +0530
+Message-ID: <20140731102920.27954.25076.stgit@hegdevasant.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
- kernel-janitors@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Mark Brown <broonie@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +39,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a cut and paste bug so it returns success instead of the error
-code.
+Platforms like IBM Power Systems supports service processor
+assisted dump. It provides interface to add memory region to
+be captured when system is crashed.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+During initialization/running we can add kernel memory region
+to be collected.
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index b9a2888..b04438c 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -826,7 +826,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 	asrc_priv->mem_clk = devm_clk_get(&pdev->dev, "mem");
- 	if (IS_ERR(asrc_priv->mem_clk)) {
- 		dev_err(&pdev->dev, "failed to get mem clock\n");
--		return PTR_ERR(asrc_priv->ipg_clk);
-+		return PTR_ERR(asrc_priv->mem_clk);
- 	}
+Presently we don't have a way to get the log buffer base address
+and size. This patch adds support to return log buffer address
+and size.
+
+
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+---
+  Next patch extends arch specific code to add log buffer to platform
+dump.
+
+-Vasant
+
+ include/linux/printk.h |    3 +++
+ kernel/printk/printk.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 319ff7e..aae82c4 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -10,6 +10,9 @@
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
  
- 	asrc_priv->ipg_clk = devm_clk_get(&pdev->dev, "ipg");
++extern void *get_log_buf_addr(void);
++extern u32 get_log_buf_len(void);
++
+ static inline int printk_get_level(const char *buffer)
+ {
+ 	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 13e839d..4049f7b 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
+ static char *log_buf = __log_buf;
+ static u32 log_buf_len = __LOG_BUF_LEN;
+ 
++/* Return log buffer address */
++void *get_log_buf_addr(void)
++{
++	return log_buf;
++}
++
++/* Return log buffer size */
++u32 get_log_buf_len(void)
++{
++	return log_buf_len;
++}
++
+ /* human readable text of the record */
+ static char *log_text(const struct printk_log *msg)
+ {
