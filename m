@@ -1,25 +1,20 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0171.hostedemail.com
- [216.40.44.171])
- by lists.ozlabs.org (Postfix) with ESMTP id DE0EC1A07B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 10:47:32 +1000 (EST)
-Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
- by smtpgrave04.hostedemail.com (Postfix) with ESMTP id 0AAACB192B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 00:40:56 +0000 (UTC)
-Message-ID: <1406853648.9953.14.camel@joe-AO725>
-Subject: Re: [PATCH v2 1/2] printk: Add function to return log buffer
- address and size
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 31 Jul 2014 17:40:48 -0700
-In-Reply-To: <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
-References: <20140731153447.27134.44225.stgit@hegdevasant.in.ibm.com>
- <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-1"
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F20631A01AF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 11:53:37 +1000 (EST)
+Message-ID: <1406858017.32701.1.camel@concordia>
+Subject: Re: scheduler crash on Power
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Fri, 01 Aug 2014 11:53:37 +1000
+In-Reply-To: <20140730072242.GA21516@us.ibm.com>
+References: <20140730072242.GA21516@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: bruno@wolff.to, peterz@infrdead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, jwboyer@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,14 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-31 at 15:22 -0700, Andrew Morton wrote:
+On Wed, 2014-07-30 at 00:22 -0700, Sukadev Bhattiprolu wrote:
+> I am getting this crash on a Powerpc system using 3.16.0-rc7 kernel plus
+> some patches related to perf (24x7 counters) that Cody Schafer posted here:
+> 
+> 	https://lkml.org/lkml/2014/5/27/768
+> 
+> I don't get the crash on an unpatched kernel though.
 
-> Please include this in whatever tree carries "powerpc/powernv:
-> Interface to register/unregister opal dump region".
+You mean you don't get the crash on 3.16-rc7 ?
 
-At some point, I'd like to redo the patch series
-that breaks up printk.c into more manageable blocks.
+I find it hard to believe those 24x7 patches are causing this.
+ 
+> I am also attaching the debug messages that Peterz added
+> here: https://lkml.org/lkml/2014/7/17/288
 
-https://lkml.org/lkml/2012/10/17/41
+I don't see any FAIL messages in your log, so it looks like you're not hitting
+the case that patch was looking for?
 
-Any suggestion for timing?
+> Appreciate any debug suggestions.
+
+Reproduce on an unpatched kernel.
+
+cheers
