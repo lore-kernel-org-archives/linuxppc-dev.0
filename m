@@ -1,38 +1,35 @@
 Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A06A1A0805
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 18:15:35 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92EDF1A01A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 19:33:02 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 1 Aug 2014 13:45:29 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1BFDAE001A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 13:47:14 +0530 (IST)
+ Fri, 1 Aug 2014 15:02:59 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4B04A125801C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 15:02:57 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s718FECA6160580
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 13:45:15 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s719XEFI52035604
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 15:03:15 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s718FNYK028043
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 13:45:23 +0530
-Message-ID: <53DB4C9A.8050400@linux.vnet.ibm.com>
-Date: Fri, 01 Aug 2014 13:45:22 +0530
+ s719Wres023933
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 15:02:53 +0530
+Message-ID: <53DB5EC5.5000703@linux.vnet.ibm.com>
+Date: Fri, 01 Aug 2014 15:02:53 +0530
 From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2 1/2] printk: Add function to return log buffer address
- and size
-References: <20140731153447.27134.44225.stgit@hegdevasant.in.ibm.com>
- <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
-In-Reply-To: <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: fixing endianness of flash_block_list in
+ rtas_flash
+References: <1406310462-23005-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <1406310462-23005-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,86 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/01/2014 03:52 AM, Andrew Morton wrote:
-> On Thu, 31 Jul 2014 21:05:48 +0530 Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+On 07/25/2014 11:17 PM, Thomas Falcon wrote:
+> The function rtas_flash_firmware passes the address of a data structure,
+> flash_block_list, when making the update-flash-64-and-reboot rtas call.
+> While the endianness of the address is handled correctly, the endianness
+> of the data is not.  This patch ensures that the data in flash_block_list
+> is big endian when passed to rtas on little endian hosts.
 >
->> Platforms like IBM Power Systems supports service processor
->> assisted dump. It provides interface to add memory region to
->> be captured when system is crashed.
->>
->> During initialization/running we can add kernel memory region
->> to be collected.
->>
->> Presently we don't have a way to get the log buffer base address
->> and size. This patch adds support to return log buffer address
->> and size.
->>
->> ...
->>
->> --- a/include/linux/printk.h
->> +++ b/include/linux/printk.h
->> @@ -10,6 +10,9 @@
->>   extern const char linux_banner[];
->>   extern const char linux_proc_banner[];
->>
->> +extern void *get_log_buf_addr(void);
->> +extern u32 get_log_buf_len(void);
->> +
->>   static inline int printk_get_level(const char *buffer)
->>   {
->>   	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
->> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
->> index 13e839d..4049f7b 100644
->> --- a/kernel/printk/printk.c
->> +++ b/kernel/printk/printk.c
->> @@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
->>   static char *log_buf = __log_buf;
->>   static u32 log_buf_len = __LOG_BUF_LEN;
->>
->> +/* Return log buffer address */
->> +void *get_log_buf_addr(void)
->> +{
->> +	return log_buf;
->> +}
->> +
->> +/* Return log buffer size */
->> +u32 get_log_buf_len(void)
->> +{
->> +	return log_buf_len;
->> +}
->> +
->>   /* human readable text of the record */
->>   static char *log_text(const struct printk_log *msg)
->>   {
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/kernel/rtas_flash.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
 >
 
-Andrew,
+Tom,
 
-Thanks for the review.. Shall I add your Ack?
+In validate_flash rtas call returns  update_results in BE.. I think we need 
+below changes as well.
 
-> Looks OK to me, although I think log_buf_addr_get() and
-> log_buf_len_get() would be better names.  The kernel uses some
-> big-endian names and some little-endian-names and some middle-endian
-> names.  It's all rather a mess.  These symbols are already big-endian
-> (ie: decreasing significance):
->
-> 	log_buf -> addr -> get
-> 	log_buf -> len -> get
+Rest looks good.
 
-Sure . Will rename function as above.
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index db2b482..1eae0d8 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -449,7 +449,7 @@ error:
+  static void validate_flash(struct rtas_validate_flash_t *args_buf)
+  {
+         int token = rtas_token("ibm,validate-flash-image");
+-       int update_results;
++       __be32 update_results;
+         s32 rc;
 
->
->
-> The world wouldn't end if we simply made log_buf and log_buf_len global
-> symbols.  The pros and cons are all minor.
->
-> It's probably better to make get_log_buf_addr() tell the truth and
-> return a char *.
->
->
-> Please include this in whatever tree carries "powerpc/powernv:
-> Interface to register/unregister opal dump region".
+         rc = 0;
+@@ -463,7 +463,7 @@ static void validate_flash(struct rtas_validate_flash_t 
+*args_buf)
+         } while (rtas_busy_delay(rc));
 
-Sure.. Will work with BenH.
+         args_buf->status = rc;
+-       args_buf->update_results = update_results;
++       args_buf->update_results =  be32_to_cpu(update_results);
+  }
+
 
 -Vasant
