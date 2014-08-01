@@ -1,32 +1,38 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA8DB1A07EA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 14:50:51 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A06A1A0805
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 18:15:35 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 1 Aug 2014 10:20:48 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7EED1125801A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 10:20:45 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s714ooq054722752
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 10:20:50 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s714oihd031025
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 10:20:45 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
-Date: Fri,  1 Aug 2014 10:20:43 +0530
-Message-Id: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Fri, 1 Aug 2014 13:45:29 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1BFDAE001A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2014 13:47:14 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s718FECA6160580
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 13:45:15 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s718FNYK028043
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Aug 2014 13:45:23 +0530
+Message-ID: <53DB4C9A.8050400@linux.vnet.ibm.com>
+Date: Fri, 01 Aug 2014 13:45:22 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2 1/2] printk: Add function to return log buffer address
+ and size
+References: <20140731153447.27134.44225.stgit@hegdevasant.in.ibm.com>
+ <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
+In-Reply-To: <20140731152255.37e675870dfdf77d9dbaff70@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,146 +42,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds kernel side support for software breakpoint.
-Design is that, by using an illegal instruction, we trap to hypervisor
-via Emulation Assistance interrupt, where we check for the illegal instruction
-and accordingly we return to Host or Guest. Patch also adds support for
-software breakpoint in PR KVM.
+On 08/01/2014 03:52 AM, Andrew Morton wrote:
+> On Thu, 31 Jul 2014 21:05:48 +0530 Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+>
+>> Platforms like IBM Power Systems supports service processor
+>> assisted dump. It provides interface to add memory region to
+>> be captured when system is crashed.
+>>
+>> During initialization/running we can add kernel memory region
+>> to be collected.
+>>
+>> Presently we don't have a way to get the log buffer base address
+>> and size. This patch adds support to return log buffer address
+>> and size.
+>>
+>> ...
+>>
+>> --- a/include/linux/printk.h
+>> +++ b/include/linux/printk.h
+>> @@ -10,6 +10,9 @@
+>>   extern const char linux_banner[];
+>>   extern const char linux_proc_banner[];
+>>
+>> +extern void *get_log_buf_addr(void);
+>> +extern u32 get_log_buf_len(void);
+>> +
+>>   static inline int printk_get_level(const char *buffer)
+>>   {
+>>   	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+>> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+>> index 13e839d..4049f7b 100644
+>> --- a/kernel/printk/printk.c
+>> +++ b/kernel/printk/printk.c
+>> @@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
+>>   static char *log_buf = __log_buf;
+>>   static u32 log_buf_len = __LOG_BUF_LEN;
+>>
+>> +/* Return log buffer address */
+>> +void *get_log_buf_addr(void)
+>> +{
+>> +	return log_buf;
+>> +}
+>> +
+>> +/* Return log buffer size */
+>> +u32 get_log_buf_len(void)
+>> +{
+>> +	return log_buf_len;
+>> +}
+>> +
+>>   /* human readable text of the record */
+>>   static char *log_text(const struct printk_log *msg)
+>>   {
+>
 
-Changes v2->v3:
- Changed the debug instructions. Using the all zero opcode in the instruction word
-  as illegal instruction as mentioned in Power ISA instead of ABS
- Removed reg updated in emulation assist and added a call to
-  kvmppc_emulate_instruction for reg update.
+Andrew,
 
-Changes v1->v2:
+Thanks for the review.. Shall I add your Ack?
 
- Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
- Added code to use KVM get one reg infrastructure to get debug opcode.
- Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
- Made changes to commit message.
+> Looks OK to me, although I think log_buf_addr_get() and
+> log_buf_len_get() would be better names.  The kernel uses some
+> big-endian names and some little-endian-names and some middle-endian
+> names.  It's all rather a mess.  These symbols are already big-endian
+> (ie: decreasing significance):
+>
+> 	log_buf -> addr -> get
+> 	log_buf -> len -> get
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/kvm_book3s.h |  7 +++++++
- arch/powerpc/include/asm/ppc-opcode.h |  5 +++++
- arch/powerpc/kvm/book3s.c             |  3 ++-
- arch/powerpc/kvm/book3s_hv.c          | 12 ++++++++++--
- arch/powerpc/kvm/book3s_pr.c          |  3 +++
- arch/powerpc/kvm/emulate.c            |  9 +++++++++
- 6 files changed, 36 insertions(+), 3 deletions(-)
+Sure . Will rename function as above.
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index f52f656..f17e3fd 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -24,6 +24,13 @@
- #include <linux/kvm_host.h>
- #include <asm/kvm_book3s_asm.h>
- 
-+/*
-+ * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
-+ * Based on PowerISA v2.07, Instruction with opcode 0s will be treated as illegal
-+ * instruction.
-+ */
-+#define KVMPPC_INST_BOOK3S_DEBUG	0x00dddd00
-+
- struct kvmppc_bat {
- 	u64 raw;
- 	u32 bepi;
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 3132bb9..56739b3 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -111,6 +111,11 @@
- #define OP_31_XOP_LHBRX     790
- #define OP_31_XOP_STHBRX    918
- 
-+/* KVMPPC_INST_BOOK3S_DEBUG -- Software breakpoint Instruction
-+ * 0x00dddd00 -- Primary opcode is 0s
-+ */
-+#define OP_ZERO                 0x0
-+
- #define OP_LWZ  32
- #define OP_LD   58
- #define OP_LWZU 33
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index c254c27..b40fe5d 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -789,7 +789,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
- int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 					struct kvm_guest_debug *dbg)
- {
--	return -EINVAL;
-+	vcpu->guest_debug = dbg->control;
-+	return 0;
- }
- 
- void kvmppc_decrementer_func(unsigned long data)
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 7a12edb..7c16f4f 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -725,8 +725,13 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	 * we don't emulate any guest instructions at this stage.
- 	 */
- 	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
--		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
--		r = RESUME_GUEST;
-+		if (kvmppc_get_last_inst(vcpu) == KVMPPC_INST_BOOK3S_DEBUG) {
-+			kvmppc_emulate_instruction(run, vcpu);
-+			r = RESUME_HOST;
-+		} else {
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			r = RESUME_GUEST;
-+		}
- 		break;
- 	/*
- 	 * This occurs if the guest (kernel or userspace), does something that
-@@ -831,6 +836,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	long int i;
- 
- 	switch (id) {
-+	case KVM_REG_PPC_DEBUG_INST:
-+		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
-+		break;
- 	case KVM_REG_PPC_HIOR:
- 		*val = get_reg_val(id, 0);
- 		break;
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 8eef1e5..27f5234 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1229,6 +1229,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 	int r = 0;
- 
- 	switch (id) {
-+	case KVM_REG_PPC_DEBUG_INST:
-+		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
-+		break;
- 	case KVM_REG_PPC_HIOR:
- 		*val = get_reg_val(id, to_book3s(vcpu)->hior);
- 		break;
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index da86d9b..d95014e 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -458,6 +458,15 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 		kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
- 		break;
- 
-+	case OP_ZERO:
-+		if((inst & 0x00FFFF00) == KVMPPC_INST_BOOK3S_DEBUG) {
-+			run->exit_reason = KVM_EXIT_DEBUG;
-+			run->debug.arch.address = kvmppc_get_pc(vcpu);
-+			emulated = EMULATE_EXIT_USER;
-+			advance = 0;
-+		}
-+		break;	
-+
- 	default:
- 		emulated = EMULATE_FAIL;
- 	}
--- 
-1.7.11.4
+>
+>
+> The world wouldn't end if we simply made log_buf and log_buf_len global
+> symbols.  The pros and cons are all minor.
+>
+> It's probably better to make get_log_buf_addr() tell the truth and
+> return a char *.
+>
+>
+> Please include this in whatever tree carries "powerpc/powernv:
+> Interface to register/unregister opal dump region".
+
+Sure.. Will work with BenH.
+
+-Vasant
