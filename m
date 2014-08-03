@@ -1,21 +1,37 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C99CD1A073A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Aug 2014 13:08:01 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc/nohash: Split __early_init_mmu() into boot and
- secondary
-Date: Fri, 1 Aug 2014 22:07:41 -0500
-Message-ID: <1406948861-11322-2-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1406948861-11322-1-git-send-email-scottwood@freescale.com>
-References: <1406948861-11322-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04B261A01C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 17:53:18 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Sun, 3 Aug 2014 13:23:14 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A89711258017
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 13:23:11 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s737tEB46095158
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 13:25:14 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s737r9Xc019109
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 13:23:09 +0530
+Subject: [PATCH] powerpc/cpuidle: Fix parsing of idle state flags from
+ device-tree
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Anton Blanchard <anton@samba.org>
+Date: Sun, 03 Aug 2014 13:23:08 +0530
+Message-ID: <20140803075119.10152.52685.stgit@drishya>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,147 +41,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__early_init_mmu() does some things that are really only needed by the
-boot cpu.  On FSL booke, This includes calling
-memblock_enforce_memory_limit(), which is labelled __init.  Secondary
-cpu init code can't be __init as that would break CPU hotplug.
+Flags from device-tree need to be parsed with accessors for
+interpreting correct value in little-endian.
 
-While it's probably a bug that memblock_enforce_memory_limit() isn't
-__init_memblock instead, there's no reason why we should be doing this
-stuff for secondary cpus in the first place.
-
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/tlb_nohash.c | 90 ++++++++++++++++++++++----------------------
- 1 file changed, 46 insertions(+), 44 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 92cb18d..11ece11 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -581,42 +581,10 @@ static void setup_mmu_htw(void)
- /*
-  * Early initialization of the MMU TLB code
-  */
--static void __early_init_mmu(int boot_cpu)
-+static void early_init_mmu_allcpus(void)
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 74f5788..a64be57 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -160,10 +160,10 @@ static int powernv_cpuidle_driver_init(void)
+ static int powernv_add_idle_states(void)
  {
- 	unsigned int mas4;
+ 	struct device_node *power_mgt;
+-	struct property *prop;
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+-	u32 *flags;
++	const __be32 *idle_state_flags;
++	u32 len_flags, flags;
+ 	int i;
  
--	/* XXX This will have to be decided at runtime, but right
--	 * now our boot and TLB miss code hard wires it. Ideally
--	 * we should find out a suitable page size and patch the
--	 * TLB miss code (either that or use the PACA to store
--	 * the value we want)
--	 */
--	mmu_linear_psize = MMU_PAGE_1G;
--
--	/* XXX This should be decided at runtime based on supported
--	 * page sizes in the TLB, but for now let's assume 16M is
--	 * always there and a good fit (which it probably is)
--	 *
--	 * Freescale booke only supports 4K pages in TLB0, so use that.
--	 */
--	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
--		mmu_vmemmap_psize = MMU_PAGE_4K;
--	else
--		mmu_vmemmap_psize = MMU_PAGE_16M;
--
--	/* XXX This code only checks for TLB 0 capabilities and doesn't
--	 *     check what page size combos are supported by the HW. It
--	 *     also doesn't handle the case where a separate array holds
--	 *     the IND entries from the array loaded by the PT.
--	 */
--	if (boot_cpu) {
--		/* Look for supported page sizes */
--		setup_page_sizes();
--
--		/* Look for HW tablewalk support */
--		setup_mmu_htw();
--	}
--
- 	/* Set MAS4 based on page table setting */
- 
- 	mas4 = 0x4 << MAS4_WIMGED_SHIFT;
-@@ -650,11 +618,6 @@ static void __early_init_mmu(int boot_cpu)
+ 	/* Currently we have snooze statically defined */
+@@ -174,18 +174,18 @@ static int powernv_add_idle_states(void)
+ 		return nr_idle_states;
  	}
- 	mtspr(SPRN_MAS4, mas4);
  
--	/* Set the global containing the top of the linear mapping
--	 * for use by the TLB miss code
--	 */
--	linear_map_top = memblock_end_of_DRAM();
--
- #ifdef CONFIG_PPC_FSL_BOOK3E
- 	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
- 		unsigned int num_cams;
-@@ -662,7 +625,51 @@ static void __early_init_mmu(int boot_cpu)
- 		/* use a quarter of the TLBCAM for bolted linear map */
- 		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
- 		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
-+	}
-+#endif
-+}
+-	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
+-	if (!prop) {
++	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
++	if (!idle_state_flags) {
+ 		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+ 		return nr_idle_states;
+ 	}
  
-+void __init early_init_mmu(void)
-+{
-+	/* XXX This will have to be decided at runtime, but right
-+	 * now our boot and TLB miss code hard wires it. Ideally
-+	 * we should find out a suitable page size and patch the
-+	 * TLB miss code (either that or use the PACA to store
-+	 * the value we want)
-+	 */
-+	mmu_linear_psize = MMU_PAGE_1G;
-+
-+	/* XXX This should be decided at runtime based on supported
-+	 * page sizes in the TLB, but for now let's assume 16M is
-+	 * always there and a good fit (which it probably is)
-+	 *
-+	 * Freescale booke only supports 4K pages in TLB0, so use that.
-+	 */
-+	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
-+		mmu_vmemmap_psize = MMU_PAGE_4K;
-+	else
-+		mmu_vmemmap_psize = MMU_PAGE_16M;
-+
-+	/* XXX This code only checks for TLB 0 capabilities and doesn't
-+	 *     check what page size combos are supported by the HW. It
-+	 *     also doesn't handle the case where a separate array holds
-+	 *     the IND entries from the array loaded by the PT.
-+	 */
-+	/* Look for supported page sizes */
-+	setup_page_sizes();
-+
-+	/* Look for HW tablewalk support */
-+	setup_mmu_htw();
-+
-+	/* Set the global containing the top of the linear mapping
-+	 * for use by the TLB miss code
-+	 */
-+	linear_map_top = memblock_end_of_DRAM();
-+
-+	early_init_mmu_allcpus();
-+
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
- 		/* limit memory so we dont have linear faults */
- 		memblock_enforce_memory_limit(linear_map_top);
+-	dt_idle_states = prop->length / sizeof(u32);
+-	flags = (u32 *) prop->value;
++	dt_idle_states = len_flags / sizeof(u32);
  
-@@ -683,14 +690,9 @@ static void __early_init_mmu(int boot_cpu)
- 	memblock_set_current_limit(linear_map_top);
- }
+ 	for (i = 0; i < dt_idle_states; i++) {
  
--void __init early_init_mmu(void)
--{
--	__early_init_mmu(1);
--}
--
- void early_init_mmu_secondary(void)
- {
--	__early_init_mmu(0);
-+	early_init_mmu_allcpus();
- }
+-		if (flags[i] & IDLE_USE_INST_NAP) {
++		flags = be32_to_cpu(idle_state_flags[i]);
++		if (flags & IDLE_USE_INST_NAP) {
+ 			/* Add NAP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+@@ -196,7 +196,7 @@ static int powernv_add_idle_states(void)
+ 			nr_idle_states++;
+ 		}
  
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--- 
-1.9.1
+-		if (flags[i] & IDLE_USE_INST_SLEEP) {
++		if (flags & IDLE_USE_INST_SLEEP) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
