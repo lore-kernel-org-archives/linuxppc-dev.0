@@ -1,35 +1,40 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47D381A005A
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 19:24:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 531251A01A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 23:01:18 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Sun, 3 Aug 2014 19:24:14 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 270922BB0023
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 19:24:12 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s73971vv55967764
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 19:07:02 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s739OAmP027876
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 19:24:10 +1000
-Subject: [PATCH] powerpc/cpufreq: Add pr_warn() on OPAL firmware failures
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Michael Ellerman <michaele@au1.ibm.com>
-Date: Sun, 03 Aug 2014 14:54:05 +0530
-Message-ID: <20140803092158.20134.68818.stgit@drishya>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Sun, 3 Aug 2014 09:01:15 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8D64938C804D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Aug 2014 09:01:11 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s73D1BmY7536986
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 13:01:11 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s73D1Ag5020408
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Aug 2014 09:01:11 -0400
+Message-ID: <53DE3293.2050604@linux.vnet.ibm.com>
+Date: Sun, 03 Aug 2014 18:31:07 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/cpuidle: Fix parsing of idle state flags from
+ device-tree
+References: <20140803075119.10152.52685.stgit@drishya>
+In-Reply-To: <20140803075119.10152.52685.stgit@drishya>
+Content-Type: text/plain; charset=UTF-8
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,67 +44,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cpufreq depends on platform firmware to implement PStates.  In case of
-platform firmware failure, cpufreq should not panic host kernel with
-BUG_ON().  Less severe pr_warn() will suffice.
+On 08/03/2014 01:23 PM, Vaidyanathan Srinivasan wrote:
+> Flags from device-tree need to be parsed with accessors for
+> interpreting correct value in little-endian.
+> 
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c |   16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 74f5788..a64be57 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -160,10 +160,10 @@ static int powernv_cpuidle_driver_init(void)
+>  static int powernv_add_idle_states(void)
+>  {
+>  	struct device_node *power_mgt;
+> -	struct property *prop;
+>  	int nr_idle_states = 1; /* Snooze */
+>  	int dt_idle_states;
+> -	u32 *flags;
+> +	const __be32 *idle_state_flags;
+> +	u32 len_flags, flags;
+>  	int i;
+>  
+>  	/* Currently we have snooze statically defined */
+> @@ -174,18 +174,18 @@ static int powernv_add_idle_states(void)
+>  		return nr_idle_states;
+>  	}
+>  
+> -	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
+> -	if (!prop) {
+> +	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
+> +	if (!idle_state_flags) {
+>  		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+>  		return nr_idle_states;
+>  	}
+>  
+> -	dt_idle_states = prop->length / sizeof(u32);
+> -	flags = (u32 *) prop->value;
+> +	dt_idle_states = len_flags / sizeof(u32);
+>  
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  
+> -		if (flags[i] & IDLE_USE_INST_NAP) {
+> +		flags = be32_to_cpu(idle_state_flags[i]);
+> +		if (flags & IDLE_USE_INST_NAP) {
+>  			/* Add NAP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "Nap");
+>  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+> @@ -196,7 +196,7 @@ static int powernv_add_idle_states(void)
+>  			nr_idle_states++;
+>  		}
+>  
+> -		if (flags[i] & IDLE_USE_INST_SLEEP) {
+> +		if (flags & IDLE_USE_INST_SLEEP) {
+>  			/* Add FASTSLEEP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+>  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
 
-Add firmware_has_feature(FW_FEATURE_OPALv3) check to
-skip probing for device-tree on non-powernv platforms.
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- Tested on powernv and pseries platforms with v3.16-rc7 kernel.
-
- drivers/cpufreq/powernv-cpufreq.c |   18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index bb1d08d..379c083 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -28,6 +28,7 @@
- #include <linux/of.h>
- 
- #include <asm/cputhreads.h>
-+#include <asm/firmware.h>
- #include <asm/reg.h>
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
- 
-@@ -98,7 +99,11 @@ static int init_powernv_pstates(void)
- 		return -ENODEV;
- 	}
- 
--	WARN_ON(len_ids != len_freqs);
-+	if (len_ids != len_freqs) {
-+		pr_warn("Entries in ibm,pstate-ids and "
-+			"ibm,pstate-frequencies-mhz does not match\n");
-+	}
-+
- 	nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
- 	if (!nr_pstates) {
- 		pr_warn("No PStates found\n");
-@@ -131,7 +136,12 @@ static unsigned int pstate_id_to_freq(int pstate_id)
- 	int i;
- 
- 	i = powernv_pstate_info.max - pstate_id;
--	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
-+	if (i >= powernv_pstate_info.nr_pstates || i < 0) {
-+		pr_warn("PState id %d outside of PState table, "
-+			"reporting nominal id %d instead\n",
-+			pstate_id, powernv_pstate_info.nominal);
-+		i = powernv_pstate_info.max - powernv_pstate_info.nominal;
-+	}
- 
- 	return powernv_freqs[i].frequency;
- }
-@@ -321,6 +331,10 @@ static int __init powernv_cpufreq_init(void)
- {
- 	int rc = 0;
- 
-+	/* Don't probe on pseries (guest) platforms */
-+	if (!firmware_has_feature(FW_FEATURE_OPALv3))
-+		return -ENODEV;
-+
- 	/* Discover pstates from device tree and init */
- 	rc = init_powernv_pstates();
- 	if (rc) {
+Reviewed-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
