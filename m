@@ -1,19 +1,40 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA29F1A0186
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 17:05:08 +1000 (EST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: <broonie@kernel.org>
-Subject: [PATCH] ASoC: fsl_sai: Set SYNC bit of TCR2 to Asynchronous Mode
-Date: Mon, 4 Aug 2014 15:07:25 +0800
-Message-ID: <1407136045-8940-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E40CC1A0199
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 18:10:55 +1000 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 4 Aug 2014 02:10:52 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 79DE819D8039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 02:10:39 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s748AoPa57671706
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Aug 2014 10:10:50 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s748AnCK002653
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Aug 2014 02:10:50 -0600
+Date: Mon, 4 Aug 2014 13:40:44 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/cpufreq: Add pr_warn() on OPAL firmware failures
+Message-ID: <20140804081044.GA8221@in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+References: <20140803092158.20134.68818.stgit@drishya>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140803092158.20134.68818.stgit@drishya>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +44,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
+On Sun, Aug 03, 2014 at 02:54:05PM +0530, Vaidyanathan Srinivasan wrote:
+> @@ -131,7 +136,12 @@ static unsigned int pstate_id_to_freq(int pstate_id)
+>  	int i;
+> 
+>  	i = powernv_pstate_info.max - pstate_id;
+> -	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
+> +	if (i >= powernv_pstate_info.nr_pstates || i < 0) {
+> +		pr_warn("PState id %d outside of PState table, "
+> +			"reporting nominal id %d instead\n",
+> +			pstate_id, powernv_pstate_info.nominal);
+> +		i = powernv_pstate_info.max - powernv_pstate_info.nominal;
 
-There is one design rule according to SAI's reference manual:
-If the transmitter bit clock and frame sync are to be used by both transmitter
-and receiver, the transmitter must be configured for asynchronous operation
-and the receiver for synchronous operation.
+As of now the default loglevel corresponds to KERN_WARNING so this
+warning should get printed anyway. However, don't you think it would
+be better if we make it a pr_err( ) since it's a platform error that's
+causing the pstate_id to go out of bounds ?
 
-And SYNC of TCR2 is a 2-width control bit:
-00 Asynchronous mode.
-01 Synchronous with receiver.
-10 Synchronous with another SAI transmitter.
-11 Synchronous with another SAI receiver.
+Otherwise it looks ok.
 
-So the driver should have set SYNC bit of TCR2 to 0x0, and meanwhile set SYNC
-bit of RCR2 to 0x1 (Synchronous with transmitter).
+Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
+> +	}
+> 
+>  	return powernv_freqs[i].frequency;
+>  }
 
-@Mark
-Sir, I don't see your last patch in your branch. So I guess we can still use
-this better fix which does not have the 64bit compiling issue either. 
 
- sound/soc/fsl/fsl_sai.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index faa0497..9f10575 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -333,8 +333,7 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	 * The transmitter bit clock and frame sync are to be
- 	 * used by both the transmitter and receiver.
- 	 */
--	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC,
--			   ~FSL_SAI_CR2_SYNC);
-+	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC, 0);
- 	regmap_update_bits(sai->regmap, FSL_SAI_RCR2, FSL_SAI_CR2_SYNC,
- 			   FSL_SAI_CR2_SYNC);
- 
--- 
-1.8.4
+--
+Thanks and Regards
+gautham.
