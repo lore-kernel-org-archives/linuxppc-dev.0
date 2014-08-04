@@ -1,44 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 174801A00EF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 20:50:23 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 4 Aug 2014 20:50:20 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5EE883578054
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 20:50:15 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s74AR7rd7274846
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Aug 2014 20:27:08 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s74AoCsv029969
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Aug 2014 20:50:13 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Minchan Kim <minchan@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v13 4/8] powerpc: add pmd_[dirty|mkclean] for THP
-In-Reply-To: <1405666386-15095-5-git-send-email-minchan@kernel.org>
-References: <1405666386-15095-1-git-send-email-minchan@kernel.org>
- <1405666386-15095-5-git-send-email-minchan@kernel.org>
-Date: Mon, 04 Aug 2014 16:20:07 +0530
-Message-ID: <87ppggedgg.fsf@linux.vnet.ibm.com>
+Return-Path: <dietmar.eggemann@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2DCE71A014D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 21:31:07 +1000 (EST)
+Message-ID: <53DF6EFC.30705@arm.com>
+Date: Mon, 04 Aug 2014 12:31:08 +0100
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
- Minchan Kim <minchan@kernel.org>, Linux API <linux-api@vger.kernel.org>,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: scheduler crash on Power
+References: <20140730072242.GA21516@us.ibm.com> <53DA2F15.1070605@arm.com>	
+ <20140801212447.GA25435@us.ibm.com> <1407122432.2286.0.camel@concordia>
+In-Reply-To: <1407122432.2286.0.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: "bruno@wolff.to" <bruno@wolff.to>, Michael Ellerman <michaele@au1.ibm.com>,
+ "jwboyer@redhat.com" <jwboyer@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "peterz@infrdead.org" <peterz@infrdead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,42 +27,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Minchan Kim <minchan@kernel.org> writes:
+On 04/08/14 04:20, Michael Ellerman wrote:
+> On Fri, 2014-08-01 at 14:24 -0700, Sukadev Bhattiprolu wrote:
+>> Dietmar Eggemann [dietmar.eggemann@arm.com] wrote:
+>> | > ltcbrazos2-lp07 login: [  181.915974] ------------[ cut here ]------=
+------
+>> | > [  181.915991] WARNING: at ../kernel/sched/core.c:5881
+>> |=20
+>> | This warning indicates the problem. One of the struct sched_domains do=
+es
+>> | not have it's groups member set.
+>> |=20
+>> | And its happening during a rebuild of the sched domain hierarchy, not
+>> | during the initial build.
+>> |=20
+>> | You could run your system with the following patch-let (on top of
+>> | https://lkml.org/lkml/2014/7/17/288)  w/ and w/o the perf related
+>> | patches (w/ CONFIG_SCHED_DEBUG enabled).
+>> |=20
+>> | @@ -5882,6 +5882,9 @@ static void init_sched_groups_capacity(int cpu,
+>> | struct sched_domain *sd)
+>> |  {
+>> |         struct sched_group *sg =3D sd->groups;
+>> |=20
+>> | +#ifdef CONFIG_SCHED_DEBUG
+>> | +       printk("sd name: %s span: %pc\n", sd->name, sd->span);
+>> | +#endif
+>> |         WARN_ON(!sg);
+>> |=20
+>> |         do {
+>> |=20
+>> | This will show if the rebuild of the sched domain hierarchy happens on
+>> | both systems and hopefully indicate for which sched_domain the
+>> | sd->groups is not set.
+>>
+>> Thanks for the patch. It appears that the NUMA sched domain does not
+>> have the sd->groups set - snippet of the error (with your patch and
+>> Peter's patch)
+>>
+>> [  181.914494] build_sched_groups: got group c000000006da0000 with cpus:=
+=20
+>> [  181.914498] build_sched_groups: got group c0000000dd830000 with cpus:=
+=20
+>> [  181.915234] sd name: SMT span: 8-15
+>> [  181.915239] sd name: DIE span: 0-7
+>> [  181.915242] sd name: NUMA span: 0-15
+>> [  181.915250] ------------[ cut here ]------------
+>> [  181.915253] WARNING: at ../kernel/sched/core.c:5891
+>>
+>> Patched code:
+>>
+>> =095884 static void init_sched_groups_capacity(int cpu, struct sched_dom=
+ain *sd)
+>> =095885 {
+>> =095886         struct sched_group *sg =3D sd->groups;
+>> =095887=20
+>> =095888 #ifdef CONFIG_SCHED_DEBUG
+>> =095889         printk("sd name: %s span: %pc\n", sd->name, sd->span);
+>> =095890 #endif
+>> =095891         WARN_ON(!sg);
+>>
+>> Complete log below.
+>>
+>> I was able to bisect it down to this patch in the 24x7 patchset
+>>
+>> =09https://lkml.org/lkml/2014/5/27/804
+>>
+>> I replaced the kfree(page) calls in the patch with
+>> kmem_cache_free(hv_page_cache, page).
+>>
+>> The problem sems to disappear if the call to create_events_from_catalog(=
+)
+>> in hv_24x7_init() is skipped. I am continuing to debug the 24x7 patch.
+>=20
+> Is that patch just clobbering memory it doesn't own and corrupting the
+> scheduler data structures?
 
-> MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
-> overwrite of the contents since MADV_FREE syscall is called for
-> THP page.
->
-> This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
-> support.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
+Quite likely. When the system comes up initially, it has SMT and DIE
+sched domain level:
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+...
+[    0.033832] build_sched_groups: got group c0000000e7d50000 with cpus:
+[    0.033835] build_sched_groups: got group c0000000e7d80000 with cpus:
+[    0.033844] sd name: SMT span: 8-15
+[    0.033847] sd name: DIE span: 0-15  <-- !!!
+[    0.033850] sd name: SMT span: 8-15
+[    0.033853] sd name: DIE span: 0-15
+...
 
-> Signed-off-by: Minchan Kim <minchan@kernel.org>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index eb9261024f51..c9a4bbe8e179 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
->
->  #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
->  #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
-> +#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
->  #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
->  #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
->  #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
-> +#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
->  #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
->  #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
->
-> -- 
-> 2.0.0
+and the cpu mask of DIE spans all CPUs '0-15'.
+
+Then during the rebuild of the sched domain hierarchy, this looks very
+different:
+
+...
+[  181.914494] build_sched_groups: got group c000000006da0000 with cpus:
+[  181.914498] build_sched_groups: got group c0000000dd830000 with cpus:
+[  181.915234] sd name: SMT span: 8-15
+[  181.915239] sd name: DIE span: 0-7   <-- !!!
+[  181.915242] sd name: NUMA span: 0-15
+...
+
+The cpu mask of the DIE level is all the sudden '0-7', which is clearly
+wrong.
+
+So I suspect that sched_domain_mask_f mask function for the DIE level
+'cpu_cpu_mask()' returns a wrong value during this rebuild.
+
+Could be checked with this little patch-let:
+
+@@ -6467,6 +6467,12 @@ struct sched_domain *build_sched_domain(struct
+sched_domain_topology_level *tl,
+        if (!sd)
+                return child;
+
++       printk("%s: cpu: %d level: %s cpu_map: %pc tl->mask: %pc\n",
++                       __func__,
++                       cpu, tl->name,
++                       cpu_map,
++                       tl->mask(cpu));
++
+        cpumask_and(sched_domain_span(sd), cpu_map, tl->mask(cpu));
+        if (child) {
+                sd->level =3D child->level + 1;
+
+
+Should give you something similar like:
+
+...
+build_sched_domain: cpu: 0 level: GMC cpu_map: 0-4 tl->mask: 0
+build_sched_domain: cpu: 0 level: MC cpu_map: 0-4 tl->mask: 0-1
+build_sched_domain: cpu: 0 level: DIE cpu_map: 0-4 tl->mask: 0-4
+build_sched_domain: cpu: 1 level: GMC cpu_map: 0-4 tl->mask: 1
+build_sched_domain: cpu: 1 level: MC cpu_map: 0-4 tl->mask: 0-1
+build_sched_domain: cpu: 1 level: DIE cpu_map: 0-4 tl->mask: 0-4
+...
+
+>=20
+> cheers
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
