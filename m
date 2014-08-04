@@ -1,21 +1,19 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D7C161A05D7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 14:17:50 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA29F1A0186
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 17:05:08 +1000 (EST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: <broonie@kernel.org>
-Subject: [PATCH 1/2] ASoC: fsl_sarc_dma: Check pair before using it
-Date: Mon, 4 Aug 2014 12:19:48 +0800
-Message-ID: <5a5ffb6219ec5ade81511be9dfbdbeef311f1a16.1407125653.git.nicoleotsuka@gmail.com>
-In-Reply-To: <cover.1407125653.git.nicoleotsuka@gmail.com>
-References: <cover.1407125653.git.nicoleotsuka@gmail.com>
+Subject: [PATCH] ASoC: fsl_sai: Set SYNC bit of TCR2 to Asynchronous Mode
+Date: Mon, 4 Aug 2014 15:07:25 +0800
+Message-ID: <1407136045-8940-1-git-send-email-nicoleotsuka@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, timur@tabi.org
+Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch 3117bb3109dc: "ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and
-platform drivers" from Jul 29, 2014, leads to the following Smatch
-complaint:
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
 
-sound/soc/fsl/fsl_asrc_dma.c:304 fsl_asrc_dma_shutdown()
-warn: variable dereferenced before check 'pair' (see line 302)
+There is one design rule according to SAI's reference manual:
+If the transmitter bit clock and frame sync are to be used by both transmitter
+and receiver, the transmitter must be configured for asynchronous operation
+and the receiver for synchronous operation.
 
-sound/soc/fsl/fsl_asrc_dma.c
-301          struct fsl_asrc_pair *pair = runtime->private_data;
-302          struct fsl_asrc *asrc_priv = pair->asrc_priv;
-                                          ^^^^^^^^^^^^^^^
-                                            Dereference.
+And SYNC of TCR2 is a 2-width control bit:
+00 Asynchronous mode.
+01 Synchronous with receiver.
+10 Synchronous with another SAI transmitter.
+11 Synchronous with another SAI receiver.
 
-303
-304          if (pair && asrc_priv->pair[pair->index] == pair)
-                 ^^^^
-                Check.
+So the driver should have set SYNC bit of TCR2 to 0x0, and meanwhile set SYNC
+bit of RCR2 to 0x1 (Synchronous with transmitter).
 
-305                  asrc_priv->pair[pair->index] = NULL;
-306
-
-So we just let the driver check pair before using it.
-
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_asrc_dma.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 5b1e73e..ffc000b 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -299,9 +299,14 @@ static int fsl_asrc_dma_shutdown(struct snd_pcm_substream *substream)
- {
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct fsl_asrc_pair *pair = runtime->private_data;
--	struct fsl_asrc *asrc_priv = pair->asrc_priv;
-+	struct fsl_asrc *asrc_priv;
-+
-+	if (!pair)
-+		return 0;
-+
-+	asrc_priv = pair->asrc_priv;
+@Mark
+Sir, I don't see your last patch in your branch. So I guess we can still use
+this better fix which does not have the 64bit compiling issue either. 
+
+ sound/soc/fsl/fsl_sai.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index faa0497..9f10575 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -333,8 +333,7 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	 * The transmitter bit clock and frame sync are to be
+ 	 * used by both the transmitter and receiver.
+ 	 */
+-	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC,
+-			   ~FSL_SAI_CR2_SYNC);
++	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC, 0);
+ 	regmap_update_bits(sai->regmap, FSL_SAI_RCR2, FSL_SAI_CR2_SYNC,
+ 			   FSL_SAI_CR2_SYNC);
  
--	if (pair && asrc_priv->pair[pair->index] == pair)
-+	if (asrc_priv->pair[pair->index] == pair)
- 		asrc_priv->pair[pair->index] = NULL;
- 
- 	kfree(pair);
 -- 
 1.8.4
