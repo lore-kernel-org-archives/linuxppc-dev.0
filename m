@@ -1,22 +1,33 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 758231A0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 01:29:48 +1000 (EST)
-Date: Mon, 4 Aug 2014 16:22:52 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20140804152252.GT30458@sirena.org.uk>
-References: <1407136045-8940-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F6CE1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 03:34:12 +1000 (EST)
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="j5abB2DrWbqmv6QP"
-In-Reply-To: <1407136045-8940-1-git-send-email-nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Set SYNC bit of TCR2 to Asynchronous Mode
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+From: Ben Hutchings <ben@decadent.org.uk>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Date: Mon, 04 Aug 2014 17:48:32 +0100
+Message-ID: <lsq.1407170912.728427849@decadent.org.uk>
+Subject: [PATCH 3.2 51/94] locking/mutex: Disable optimistic spinning on
+ some architectures
+In-Reply-To: <lsq.1407170911.107020799@decadent.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Mikulas Patocka <mpatocka@redhat.com>,
+ John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
+ Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
+ Vineet Gupta <vgupta@synopsys.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +37,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+3.2.62-rc1 review patch.  If anyone has any objections, please let me know.
 
---j5abB2DrWbqmv6QP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+------------------
 
-On Mon, Aug 04, 2014 at 03:07:25PM +0800, Nicolin Chen wrote:
-> From: Nicolin Chen <Guangyu.Chen@freescale.com>
->=20
-> There is one design rule according to SAI's reference manual:
-> If the transmitter bit clock and frame sync are to be used by both transm=
-itter
-> and receiver, the transmitter must be configured for asynchronous operati=
-on
-> and the receiver for synchronous operation.
+From: Peter Zijlstra <peterz@infradead.org>
 
-Applied, thanks.
+commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
 
---j5abB2DrWbqmv6QP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+The optimistic spin code assumes regular stores and cmpxchg() play nice;
+this is found to not be true for at least: parisc, sparc32, tile32,
+metag-lock1, arc-!llsc and hexagon.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+There is further wreckage, but this in particular seemed easy to
+trigger, so blacklist this.
 
-iQIcBAEBAgAGBQJT36VJAAoJELSic+t+oim9ABwP/3ndUI2+gdawDpjqFp0aOxaJ
-87fp0zku0Hqk/rH+W4yGDj2erflkRkZz3wvfMh0cUfIACltX3VkDh2oqX94wVXy0
-y5BsJOfQB3o+FFMqUsgtYIms8DMBrM6ZWoqwNNo4khnbtwwmC0ZBahCrbsGpMTUp
-oALZXwBbLaR8HM9rPxYOM23qMZYi2S+3w56LYko2tE98xI6pooTHYcH4RvhgemmC
-quLeG1lM/Pab6NLr5Vfnbf8dcQPoCuXMT7ql/97aAJaG+hqSgMaUXVvuEfFlALtm
-cNjE9tWTtkXcak04EriQSyOXeW3WWQbkI0gb9IPehQ/Qv9deOtilgFHzOSagDjS0
-U6XROBeeiJNVr1ypyAaH2dqEKc0JCZavZapwlwfX8SKLOwmT2PEIBjkgXiF1moqm
-WeoDUMBcpioNkGcpDeDj7UrHQC5xYjoKn3O7IqWKZqnMDi6EpBPG1esVUc7ocz6T
-jc55+ZKHEkUgTWX+ajOoO4H0TVFTTSBBpCb3ssmugNZNfaqj04WkAMkd594nxLF/
-RGLDAl/v4ZgRgZCkVUbJO3A8Zz0jg03yfVbaEroWav3wJA6x86BiY8U7N4WxZo42
-OzQh4udzNgvA80IIQU+dAIyIczpRoVxPUBvw3N7aOA2QQz2aAsn1x3rTlf1q/B9a
-Rmy/wCcilXiBxFuWb90a
-=348I
------END PGP SIGNATURE-----
+Opt in for known good archs.
 
---j5abB2DrWbqmv6QP--
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Jason Low <jason.low2@hp.com>
+Cc: Waiman Long <waiman.long@hp.com>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: John David Anglin <dave.anglin@bell.net>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davidlohr Bueso <davidlohr@hp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+[bwh: Backported to 3.2:
+ - Adjust context
+ - Drop arm64 change]
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1,6 +1,7 @@
+ config ARM
+ 	bool
+ 	default y
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select HAVE_DMA_API_DEBUG
+ 	select HAVE_IDE if PCI || ISA || PCMCIA
+ 	select HAVE_MEMBLOCK
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -137,6 +137,7 @@ config PPC
+ 	select HAVE_BPF_JIT if (PPC64 && NET)
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config EARLY_PRINTK
+ 	bool
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -57,6 +57,7 @@ config SPARC64
+ 	select IRQ_PREFLOW_FASTEOI
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config ARCH_DEFCONFIG
+ 	string
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -75,6 +75,7 @@ config X86
+ 	select HAVE_BPF_JIT if (X86_64 && NET)
+ 	select CLKEVT_I8253
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool (KPROBES || PERF_EVENTS)
+--- a/kernel/Kconfig.locks
++++ b/kernel/Kconfig.locks
+@@ -198,5 +198,9 @@ config INLINE_WRITE_UNLOCK_IRQ
+ config INLINE_WRITE_UNLOCK_IRQRESTORE
+ 	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
+ 
++config ARCH_SUPPORTS_ATOMIC_RMW
++	bool
++
+ config MUTEX_SPIN_ON_OWNER
+-	def_bool SMP && !DEBUG_MUTEXES
++	def_bool y
++	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
