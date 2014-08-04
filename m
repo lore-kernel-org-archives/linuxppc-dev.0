@@ -1,34 +1,23 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1182F1A008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 07:19:46 +1000 (EST)
-Received: from frontend1.mail.m-online.net (frontend1.mail.intern.m-online.net
- [192.168.8.180])
- by mail-out.m-online.net (Postfix) with ESMTP id 3hRsKY3bNBz3hhp6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 23:14:08 +0200 (CEST)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.68])
- by mail.m-online.net (Postfix) with ESMTP id 3hRsKX47sgz7S6Rt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 23:14:08 +0200 (CEST)
-Received: from mail.mnet-online.de ([192.168.8.180])
- by localhost (dynscan1.mail.m-online.net [192.168.6.68]) (amavisd-new,
- port 10024)
- with ESMTP id UJxb1vCyevLd for <linuxppc-dev@lists.ozlabs.org>;
- Mon,  4 Aug 2014 23:14:07 +0200 (CEST)
-Received: from igel.home (ppp-188-174-156-107.dynamic.mnet-online.de
- [188.174.156.107]) by mail.mnet-online.de (Postfix) with ESMTPA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 23:14:07 +0200 (CEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Simplify symbol check in prom_init_check.sh
-References: <87zjfkvyha.fsf__21215.9315743067$1407184642$gmane$org@comtv.ru>
-Date: Mon, 04 Aug 2014 23:14:07 +0200
-In-Reply-To: <87zjfkvyha.fsf__21215.9315743067$1407184642$gmane$org@comtv.ru>
- (av's message of "Mon, 04 Aug 2014 23:36:17 +0400")
-Message-ID: <87mwbkez4w.fsf@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1579F1A00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 07:53:11 +1000 (EST)
+Message-ID: <1407189176.10311.12.camel@snotra.buserror.net>
+Subject: Re: spi, spi_fsl-spi.c not working?
+From: Scott Wood <scottwood@freescale.com>
+To: <hs@denx.de>
+Date: Mon, 4 Aug 2014 16:52:56 -0500
+In-Reply-To: <53C79351.2080406@denx.de>
+References: <53C79351.2080406@denx.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
+Cc: Andreas Larsson <andreas@gaisler.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>, Anton
+ Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,51 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/kernel/prom_init_check.sh | 22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
+On Thu, 2014-07-17 at 11:11 +0200, Heiko Schocher wrote:
+> Hello all,
+> 
+> I just tried a mpc83xx based board (similiar to the mpc8313erdb)
+> with linux v3.16-rc4 using the drivers/spi/spi-fsl-spi.c driver.
+> DT nodes for spi are the same as in arch/powerpc/boot/dts/mpc8313erdb.dts:
+> 
+>                  spi@7000 {
+>                          cell-index = <0>;
+>                          compatible = "fsl,spi";
+>                          reg = <0x7000 0x1000>;
+>                          interrupts = <16 0x8>;
+>                          interrupt-parent = <&ipic>;
+>                          mode = "cpu";
+>                  };
+> 
+> Bootlog shows:
+> 
+> [    1.341411] fsl_spi f0007000.spi: master is unqueued, this is deprecated
+> [    1.554405] ------------[ cut here ]------------
+> [    1.559080] WARNING: at c023a958 [verbose debug info unavailable]
 
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index fe8e54b..12640f7 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -50,24 +50,14 @@ do
- 	done
- 
- 	# ignore register save/restore funcitons
--	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
-+	case $UNDEF in
-+	_restgpr_*|_restgpr0_*|_rest32gpr_*)
- 		OK=1
--	fi
--	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
-+		;;
-+	_savegpr_*|_savegpr0_*|_save32gpr_*)
- 		OK=1
--	fi
--	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
--		OK=1
--	fi
-+		;;
-+	esac
- 
- 	if [ $OK -eq 0 ]; then
- 		ERROR=1
--- 
-2.0.4
+If you haven't already resolved this, could you enable verbose debug
+info (or use gdb) to get the line number?
 
+I don't see the WARNING when booting mpc8379rdb with SPI enabled (though
+I do see the "master is unqueued" message).  I don't have easy access to
+an mpc8313erdb to test on.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-Scott
