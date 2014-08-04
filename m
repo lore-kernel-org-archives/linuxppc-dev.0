@@ -1,23 +1,23 @@
-Return-Path: <dietmar.eggemann@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by lists.ozlabs.org (Postfix) with ESMTP id 2DCE71A014D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2014 21:31:07 +1000 (EST)
-Message-ID: <53DF6EFC.30705@arm.com>
-Date: Mon, 04 Aug 2014 12:31:08 +0100
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 577501A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 00:50:31 +1000 (EST)
+Date: Mon, 4 Aug 2014 15:48:57 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20140804144857.GS30458@sirena.org.uk>
+References: <cover.1407125653.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: scheduler crash on Power
-References: <20140730072242.GA21516@us.ibm.com> <53DA2F15.1070605@arm.com>	
- <20140801212447.GA25435@us.ibm.com> <1407122432.2286.0.camel@concordia>
-In-Reply-To: <1407122432.2286.0.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: "bruno@wolff.to" <bruno@wolff.to>, Michael Ellerman <michaele@au1.ibm.com>,
- "jwboyer@redhat.com" <jwboyer@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "peterz@infrdead.org" <peterz@infrdead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="cLlE6j+44ygFdGhU"
+In-Reply-To: <cover.1407125653.git.nicoleotsuka@gmail.com>
+Subject: Re: [PATCH 0/2] ASoC: fsl_asrc: Fix two dereferenced variable before
+ check
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,150 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/14 04:20, Michael Ellerman wrote:
-> On Fri, 2014-08-01 at 14:24 -0700, Sukadev Bhattiprolu wrote:
->> Dietmar Eggemann [dietmar.eggemann@arm.com] wrote:
->> | > ltcbrazos2-lp07 login: [  181.915974] ------------[ cut here ]------=
-------
->> | > [  181.915991] WARNING: at ../kernel/sched/core.c:5881
->> |=20
->> | This warning indicates the problem. One of the struct sched_domains do=
-es
->> | not have it's groups member set.
->> |=20
->> | And its happening during a rebuild of the sched domain hierarchy, not
->> | during the initial build.
->> |=20
->> | You could run your system with the following patch-let (on top of
->> | https://lkml.org/lkml/2014/7/17/288)  w/ and w/o the perf related
->> | patches (w/ CONFIG_SCHED_DEBUG enabled).
->> |=20
->> | @@ -5882,6 +5882,9 @@ static void init_sched_groups_capacity(int cpu,
->> | struct sched_domain *sd)
->> |  {
->> |         struct sched_group *sg =3D sd->groups;
->> |=20
->> | +#ifdef CONFIG_SCHED_DEBUG
->> | +       printk("sd name: %s span: %pc\n", sd->name, sd->span);
->> | +#endif
->> |         WARN_ON(!sg);
->> |=20
->> |         do {
->> |=20
->> | This will show if the rebuild of the sched domain hierarchy happens on
->> | both systems and hopefully indicate for which sched_domain the
->> | sd->groups is not set.
->>
->> Thanks for the patch. It appears that the NUMA sched domain does not
->> have the sd->groups set - snippet of the error (with your patch and
->> Peter's patch)
->>
->> [  181.914494] build_sched_groups: got group c000000006da0000 with cpus:=
-=20
->> [  181.914498] build_sched_groups: got group c0000000dd830000 with cpus:=
-=20
->> [  181.915234] sd name: SMT span: 8-15
->> [  181.915239] sd name: DIE span: 0-7
->> [  181.915242] sd name: NUMA span: 0-15
->> [  181.915250] ------------[ cut here ]------------
->> [  181.915253] WARNING: at ../kernel/sched/core.c:5891
->>
->> Patched code:
->>
->> =095884 static void init_sched_groups_capacity(int cpu, struct sched_dom=
-ain *sd)
->> =095885 {
->> =095886         struct sched_group *sg =3D sd->groups;
->> =095887=20
->> =095888 #ifdef CONFIG_SCHED_DEBUG
->> =095889         printk("sd name: %s span: %pc\n", sd->name, sd->span);
->> =095890 #endif
->> =095891         WARN_ON(!sg);
->>
->> Complete log below.
->>
->> I was able to bisect it down to this patch in the 24x7 patchset
->>
->> =09https://lkml.org/lkml/2014/5/27/804
->>
->> I replaced the kfree(page) calls in the patch with
->> kmem_cache_free(hv_page_cache, page).
->>
->> The problem sems to disappear if the call to create_events_from_catalog(=
-)
->> in hv_24x7_init() is skipped. I am continuing to debug the 24x7 patch.
->=20
-> Is that patch just clobbering memory it doesn't own and corrupting the
-> scheduler data structures?
 
-Quite likely. When the system comes up initially, it has SMT and DIE
-sched domain level:
+--cLlE6j+44ygFdGhU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-...
-[    0.033832] build_sched_groups: got group c0000000e7d50000 with cpus:
-[    0.033835] build_sched_groups: got group c0000000e7d80000 with cpus:
-[    0.033844] sd name: SMT span: 8-15
-[    0.033847] sd name: DIE span: 0-15  <-- !!!
-[    0.033850] sd name: SMT span: 8-15
-[    0.033853] sd name: DIE span: 0-15
-...
+On Mon, Aug 04, 2014 at 12:19:47PM +0800, Nicolin Chen wrote:
+> These two patches fixes two warning of dereferenced variable reported by
+> Dan Carpenter <dan.carpenter@oracle.com>
 
-and the cpu mask of DIE spans all CPUs '0-15'.
+Applied both, thanks.
 
-Then during the rebuild of the sched domain hierarchy, this looks very
-different:
+--cLlE6j+44ygFdGhU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-...
-[  181.914494] build_sched_groups: got group c000000006da0000 with cpus:
-[  181.914498] build_sched_groups: got group c0000000dd830000 with cpus:
-[  181.915234] sd name: SMT span: 8-15
-[  181.915239] sd name: DIE span: 0-7   <-- !!!
-[  181.915242] sd name: NUMA span: 0-15
-...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-The cpu mask of the DIE level is all the sudden '0-7', which is clearly
-wrong.
+iQIcBAEBAgAGBQJT351WAAoJELSic+t+oim9NToQAJUF1XjbsAlLJBtudz22BZB4
+pT0zwdKzezTIWkiCRqJA6WLcI2uotofSUEOyj+Oyp1/DfcS1/1GPPGKRV5g/sZn8
+lKJAQhD7K+dJXqVgYcjz42DhTGZq55Drva9T+tA6aP4745GYsYqOWnTDZONNBB3d
+rbIPUgXCiL47Kwnn/dHSQLsFEzwUdiQc2cOBzBlykim5k1eQWefhZp8Kw85wN+ea
+cNg3T8eWNP/FFbVxF7l/des/7KY6y3QAm5wRNFPDSOOhcoN87OhYmmeZpoDl7WqO
+Kc1pxGjKY8EOMd6nZSC3uID5vqQwuBRHWU42I0VAHO7/HLAJSGPYIzOBTsYDUNnB
+vD0z0HnWa7kWnuqVi7pAc0y9v37Am/xSZn8L3L9Fga3SQxPvxMtxDxZNP2uqJFEY
+9pqLigIw/aXSFm6fjVK98ZJgbMNU8+sFjhtKfjdU5UXZQ8cNaHT9GlJwlrroXmPF
+ruyI0WDklicdatlInhbs3WjyiHCWX+Awr0ZDmeRVd9cEzhY22SEDIqd0HZK/gu6+
+g1th0bZrPjSMb7Eofdl4gOoeyEhv3HQH9Dtwd6VxnySaTj4YzFYldtHELiyNQFpH
+PIwcAp2eyOAdVWTARiH6jUXO5M9sLuo12YmMenuByvq7QrbRyEzgvSpkjULI/X1H
+p5iIxT6ioswgvNtQnXuM
+=22xm
+-----END PGP SIGNATURE-----
 
-So I suspect that sched_domain_mask_f mask function for the DIE level
-'cpu_cpu_mask()' returns a wrong value during this rebuild.
-
-Could be checked with this little patch-let:
-
-@@ -6467,6 +6467,12 @@ struct sched_domain *build_sched_domain(struct
-sched_domain_topology_level *tl,
-        if (!sd)
-                return child;
-
-+       printk("%s: cpu: %d level: %s cpu_map: %pc tl->mask: %pc\n",
-+                       __func__,
-+                       cpu, tl->name,
-+                       cpu_map,
-+                       tl->mask(cpu));
-+
-        cpumask_and(sched_domain_span(sd), cpu_map, tl->mask(cpu));
-        if (child) {
-                sd->level =3D child->level + 1;
-
-
-Should give you something similar like:
-
-...
-build_sched_domain: cpu: 0 level: GMC cpu_map: 0-4 tl->mask: 0
-build_sched_domain: cpu: 0 level: MC cpu_map: 0-4 tl->mask: 0-1
-build_sched_domain: cpu: 0 level: DIE cpu_map: 0-4 tl->mask: 0-4
-build_sched_domain: cpu: 1 level: GMC cpu_map: 0-4 tl->mask: 1
-build_sched_domain: cpu: 1 level: MC cpu_map: 0-4 tl->mask: 0-1
-build_sched_domain: cpu: 1 level: DIE cpu_map: 0-4 tl->mask: 0-4
-...
-
->=20
-> cheers
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
+--cLlE6j+44ygFdGhU--
