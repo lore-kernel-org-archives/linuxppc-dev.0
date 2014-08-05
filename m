@@ -1,23 +1,22 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
- [IPv6:2a00:1450:4010:c04::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD6091A0148
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 17:26:58 +1000 (EST)
-Received: by mail-lb0-f176.google.com with SMTP id u10so387190lbd.21
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Aug 2014 00:26:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E21FD1A008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 17:29:37 +1000 (EST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: <broonie@kernel.org>
+Subject: [PATCH] ASoC: fsl_sai: Add asynchronous mode support
+Date: Tue, 5 Aug 2014 15:32:05 +0800
+Message-ID: <1407223925-29678-1-git-send-email-nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1407222997-31109-1-git-send-email-geert@linux-m68k.org>
-References: <1407222997-31109-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 5 Aug 2014 09:26:54 +0200
-Message-ID: <CAMuHMdUekNbigyNeEps6Q_i0jsKVq=rUV-aD0JNRQYg53gYdyQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.16
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
+ b42378@freescale.com, b02247@freescale.com, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
+ galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +26,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 5, 2014 at 9:16 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.16[1]  to v3.16-rc7[3], the summaries are:
->   - build errors: +3/-1
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
 
-  + error: tpm_ibmvtpm.c: undefined reference to
-`.__vio_register_driver':  => .init.text+0x6950)
-  + error: tpm_ibmvtpm.c: undefined reference to
-`.plpar_hcall_norets':  => .text+0xedc1c), .text+0xedae4),
-.text+0xedde0), .text+0xedb9c), .text+0xeda70)
-  + error: tpm_ibmvtpm.c: undefined reference to
-`.vio_unregister_driver':  => .exit.text+0x1920)
+SAI supports these operation modes:
+1) asynchronous mode
+   Both Tx and Rx are set to be asynchronous.
+2) synchronous mode (Rx sync with Tx)
+   Tx is set to be asynchronous, Rx is set to be synchronous.
+3) synchronous mode (Tx sync with Rx)
+   Rx is set to be asynchronous, Tx is set to be synchronous.
+4) synchronous mode (Tx/Rx sync with another SAI's Tx)
+5) synchronous mode (Tx/Rx sync with another SAI's Rx)
 
-powerpc-randconfig
+* 4) and 5) are beyond this patch because they are related with another SAI.
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7732/ (all 119 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7708/ (all 119 configs)
+As the initial version of this SAI driver, it supported 2) as default while
+the others were totally missing.
 
-Gr{oetje,eeting}s,
+So this patch just adds supports for 1) and 3).
 
-                        Geert
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ .../devicetree/bindings/sound/fsl-sai.txt          | 16 ++++++++++++
+ sound/soc/fsl/fsl_sai.c                            | 30 +++++++++++++++++++---
+ sound/soc/fsl/fsl_sai.h                            |  4 +++
+ 3 files changed, 46 insertions(+), 4 deletions(-)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+index 0f4e238..77864f4 100644
+--- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
++++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+@@ -24,6 +24,22 @@ Required properties:
+ - big-endian-data: If this property is absent, the little endian mode will
+   be in use as default, or the big endian mode will be in use for all the
+   fifo data.
++- fsl,sai-synchronous-rx: This is a boolean property. If present, indicating
++  that SAI will work in the synchronous mode (sync Tx with Rx) which means
++  both the transimitter and receiver will send and receive data by following
++  receiver's bit clocks and frame sync clocks.
++- fsl,sai-asynchronous: This is a boolean property. If present, indicating
++  that SAI will work in the asynchronous mode, which means both transimitter
++  and receiver will send and receive data by following their own bit clocks
++  and frame sync clocks separately.
++
++Note:
++- If both fsl,sai-asynchronous and fsl,sai-synchronous-rx are absent, the
++  default synchronous mode (sync Rx with Tx) will be used, which means both
++  transimitter and receiver will send and receive data by following clocks
++  of transimitter.
++- fsl,sai-asynchronous will be ignored if fsl,sai-synchronous-rx property is
++  already present.
+ 
+ Example:
+ sai2: sai@40031000 {
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 9f10575..dc84f98 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -330,12 +330,14 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	u32 xcsr, count = 100;
+ 
+ 	/*
+-	 * The transmitter bit clock and frame sync are to be
+-	 * used by both the transmitter and receiver.
++	 * Asynchronous mode: Clear SYNC for both Tx and Rx.
++	 * Rx sync with Tx clocks: Clear SYNC for Tx, set it for Rx.
++	 * Tx sync with Rx clocks: Clear SYNC for Rx, set it for Tx.
+ 	 */
+-	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC, 0);
++	regmap_update_bits(sai->regmap, FSL_SAI_TCR2, FSL_SAI_CR2_SYNC,
++			   sai->synchronous[TX] ? FSL_SAI_CR2_SYNC : 0);
+ 	regmap_update_bits(sai->regmap, FSL_SAI_RCR2, FSL_SAI_CR2_SYNC,
+-			   FSL_SAI_CR2_SYNC);
++			   sai->synchronous[RX] ? FSL_SAI_CR2_SYNC : 0);
+ 
+ 	/*
+ 	 * It is recommended that the transmitter is the last enabled
+@@ -620,6 +622,26 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	/* Sync Tx with Rx as default by following old DT binding */
++	sai->synchronous[RX] = true;
++	sai->synchronous[TX] = false;
++	fsl_sai_dai.symmetric_rates = 1;
++	fsl_sai_dai.symmetric_channels = 1;
++	fsl_sai_dai.symmetric_samplebits = 1;
++
++	if (of_find_property(np, "fsl,sai-synchronous-rx", NULL)) {
++		/* Sync Rx with Tx */
++		sai->synchronous[RX] = false;
++		sai->synchronous[TX] = true;
++	} else if (of_find_property(np, "fsl,sai-asynchronous", NULL)) {
++		/* Discard all settings for asynchronous mode */
++		sai->synchronous[RX] = false;
++		sai->synchronous[TX] = false;
++		fsl_sai_dai.symmetric_rates = 0;
++		fsl_sai_dai.symmetric_channels = 0;
++		fsl_sai_dai.symmetric_samplebits = 0;
++	}
++
+ 	sai->dma_params_rx.addr = res->start + FSL_SAI_RDR;
+ 	sai->dma_params_tx.addr = res->start + FSL_SAI_TDR;
+ 	sai->dma_params_rx.maxburst = FSL_SAI_MAXBURST_RX;
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 0e6c9f5..c24d3fd 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -135,9 +135,13 @@ struct fsl_sai {
+ 	bool big_endian_data;
+ 	bool is_dsp_mode;
+ 	bool sai_on_imx;
++	bool synchronous[2];
+ 
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ };
+ 
++#define TX 1
++#define RX 0
++
+ #endif /* __FSL_SAI_H */
+-- 
+1.8.4
