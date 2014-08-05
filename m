@@ -1,37 +1,20 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37F271A007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 02:03:30 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 6 Aug 2014 02:03:28 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 521BC2CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 02:03:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s75G3xA312583012
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 02:03:59 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s75G3PrQ020969
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 02:03:25 +1000
-Date: Wed, 6 Aug 2014 00:03:23 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Fix IOMMU group lost
-Message-ID: <20140805160323.GA9066@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1407227258-17732-1-git-send-email-gwshan@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1407227258-17732-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: weiyang@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8434C1A019A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 04:09:56 +1000 (EST)
+Message-ID: <1407261588.316.49.camel@ul30vt.home>
+Subject: Re: [PATCH 4/4] vfio_pci: spapr: Enable VFIO if EEH is not supported
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 05 Aug 2014 11:59:48 -0600
+In-Reply-To: <1407241785-30111-5-git-send-email-aik@ozlabs.ru>
+References: <1407241785-30111-1-git-send-email-aik@ozlabs.ru>
+ <1407241785-30111-5-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,142 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I just give a shot with patch on PHB3 with hotplug case. From the functional
-point of view, it works. The iommu group is created and attached with device.
-While it still has the problem we had which commit 3f28c5a tried to solve.
+On Tue, 2014-08-05 at 22:29 +1000, Alexey Kardashevskiy wrote:
+> The existing vfio_pci_open() fails if there is no EEH support for PCI.
+> This breaks POWER7's P5IOC2 PHB support which this patch brings back.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  drivers/vfio/pci/vfio_pci.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index e2ee80f..63a73c0 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -179,10 +179,8 @@ static int vfio_pci_open(void *device_data)
+>  			goto error;
+>  
+>  		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
+> -		if (ret) {
+> -			vfio_pci_disable(vdev);
+> -			goto error;
+> -		}
+> +		if (ret)
+> +			pr_warn("EEH is not supported\n");
 
-In the test case, the pci bus is not removed. This means in
-pcibios_add_device(), it will try to add iommu group since the
-pci_bus->is_added is true. And at this moment the pci_dev->kobj->sd is not
-initialized properly. This makes the iommu_add_device() fail.
+Is this really deserving of a warn?  Does it need a warning every time?
+pr_warn_once?  pr_info?  pr_info_once?
 
-Your patch delete the warning at this place, so from the log it looks good. But
-actually, it is not that clear to address the problem. We still have two
-problems:
-   1. iommu group will fail to be created
-   2. iommu group will be created multiple times
+PS - kvm is the official vfio mailing list; suggest keeping it cc'd
 
-My opinion is to make a clear understanding of the order/sequence of the iommu
-group creation in both pci bus removed/not removed cases, than create and
-attach it properly.
-
-On Tue, Aug 05, 2014 at 06:27:38PM +1000, Gavin Shan wrote:
->When we take full hotplug to recover from EEH errors, PCI buses
->could be involved. For the case, the child devices of involved
->PCI buses can't be attached to IOMMU group properly, which is
->caused by commit 3f28c5a ("powerpc/powernv: Reduce multi-hit of
->iommu_add_device()").
->
->When adding the PCI devices of the newly created PCI buses to
->the system, the IOMMU group is expected to be added in (C).
->(A) fails to bind the IOMMU group because bus->is_added is
->false. (B) fails because the device doesn't have binding IOMMU
->table yet. bus->is_added is set to true at end of (C) and
->pdev->is_added is set to true at (D).
->
->   pcibios_add_pci_devices()
->      pci_scan_bridge()
->         pci_scan_child_bus()
->            pci_scan_slot()
->               pci_scan_single_device()
->                  pci_scan_device()
->                  pci_device_add()
->                     pcibios_add_device()           A: Ignore
->                     device_add()                   B: Ignore
->                  pcibios_fixup_bus()
->                     pcibios_setup_bus_devices()
->                        pcibios_setup_device()      C: Hit
->      pcibios_finish_adding_to_bus()
->         pci_bus_add_devices()
->            pci_bus_add_device()                    D: Add device
->
->If the parent PCI bus isn't involved in hotplug, the IOMMU
->group is expected to be bound in (A).
->
->The patch fixes the issue by reverting commit 3f28c5a and remove
->WARN_ON() in iommu_add_device() to allow calling the function
->even the specified device already has associated IOMMU group.
->
->Cc: <stable@vger.kernel.org>  # 3.16+
->Reported-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Tested-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/kernel/iommu.c               | 30 +++++++++++++-----------------
-> arch/powerpc/platforms/powernv/pci-ioda.c |  2 +-
-> 2 files changed, 14 insertions(+), 18 deletions(-)
->
->diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->index 88e3ec6..4663c10 100644
->--- a/arch/powerpc/kernel/iommu.c
->+++ b/arch/powerpc/kernel/iommu.c
->@@ -1120,37 +1120,33 @@ EXPORT_SYMBOL_GPL(iommu_release_ownership);
-> int iommu_add_device(struct device *dev)
-> {
-> 	struct iommu_table *tbl;
->-	int ret = 0;
->
->-	if (WARN_ON(dev->iommu_group)) {
->-		pr_warn("iommu_tce: device %s is already in iommu group %d, skipping\n",
->-				dev_name(dev),
->-				iommu_group_id(dev->iommu_group));
->+	if (dev->iommu_group) {
->+		pr_debug("%s: Skipping device %s with iommu group %d\n",
->+			 __func__, dev_name(dev),
->+			 iommu_group_id(dev->iommu_group));
-> 		return -EBUSY;
-> 	}
->
-> 	tbl = get_iommu_table_base(dev);
-> 	if (!tbl || !tbl->it_group) {
->-		pr_debug("iommu_tce: skipping device %s with no tbl\n",
->-				dev_name(dev));
->+		pr_debug("%s: Skipping device %s with no tbl\n",
->+			 __func__, dev_name(dev));
-> 		return 0;
-> 	}
->
->-	pr_debug("iommu_tce: adding %s to iommu group %d\n",
->-			dev_name(dev), iommu_group_id(tbl->it_group));
->+	pr_debug("%s: Adding %s to iommu group %d\n",
->+		 __func__, dev_name(dev),
->+		 iommu_group_id(tbl->it_group));
->
-> 	if (PAGE_SIZE < IOMMU_PAGE_SIZE(tbl)) {
->-		pr_err("iommu_tce: unsupported iommu page size.");
->-		pr_err("%s has not been added\n", dev_name(dev));
->+		pr_err("%s: Invalid IOMMU page size %lx (%lx) on %s\n",
->+		       __func__, IOMMU_PAGE_SIZE(tbl),
->+		       PAGE_SIZE, dev_name(dev));
-> 		return -EINVAL;
-> 	}
->
->-	ret = iommu_group_add_device(tbl->it_group, dev);
->-	if (ret < 0)
->-		pr_err("iommu_tce: %s has not been added, ret=%d\n",
->-				dev_name(dev), ret);
->-
->-	return ret;
->+	return iommu_group_add_device(tbl->it_group, dev);
-> }
-> EXPORT_SYMBOL_GPL(iommu_add_device);
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index de19ede..86290eb 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -462,7 +462,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
->
-> 	pe = &phb->ioda.pe_array[pdn->pe_number];
-> 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
->-	set_iommu_table_base(&pdev->dev, &pe->tce32_table);
->+	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
-> }
->
-> static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
->-- 
->1.8.3.2
-
--- 
-Richard Yang
-Help you, Help me
+>  	}
+>  
+>  	return 0;
