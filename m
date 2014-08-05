@@ -1,19 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
+ [IPv6:2a00:1450:4010:c04::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A124D1A0148
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 17:25:54 +1000 (EST)
-Date: Tue, 5 Aug 2014 17:25:55 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: Re: [PATCH 1/2 v3] bootmem/powerpc: Unify bootmem initialization
-Message-ID: <20140805172555.001ac170@kryten>
-In-Reply-To: <1399532799-1557-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1399532799-1557-1-git-send-email-Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD6091A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 17:26:58 +1000 (EST)
+Received: by mail-lb0-f176.google.com with SMTP id u10so387190lbd.21
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Aug 2014 00:26:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1407222997-31109-1-git-send-email-geert@linux-m68k.org>
+References: <1407222997-31109-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 5 Aug 2014 09:26:54 +0200
+Message-ID: <CAMuHMdUekNbigyNeEps6Q_i0jsKVq=rUV-aD0JNRQYg53gYdyQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.16
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Emil,
+On Tue, Aug 5, 2014 at 9:16 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.16[1]  to v3.16-rc7[3], the summaries are:
+>   - build errors: +3/-1
 
-> Unify the low/highmem code path from do_init_bootmem() by using (the)
-> lowmem related variables/parameters even when the low/highmem split
-> is not needed (64-bit) or configured. In such cases the "lowmem"
-> variables/parameters continue to observe the definition by referring
-> to memory directly mapped by the kernel
+  + error: tpm_ibmvtpm.c: undefined reference to
+`.__vio_register_driver':  => .init.text+0x6950)
+  + error: tpm_ibmvtpm.c: undefined reference to
+`.plpar_hcall_norets':  => .text+0xedc1c), .text+0xedae4),
+.text+0xedde0), .text+0xedb9c), .text+0xeda70)
+  + error: tpm_ibmvtpm.c: undefined reference to
+`.vio_unregister_driver':  => .exit.text+0x1920)
 
-Ben pointed me at this patch after I had finished my bootmem removal
-series. I can rebase on this one if it makes sense.
+powerpc-randconfig
 
-Anton
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7732/ (all 119 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7708/ (all 119 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
