@@ -2,14 +2,16 @@ Return-Path: <anton@samba.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42B3B1A0192
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 14:54:59 +1000 (EST)
-Date: Tue, 5 Aug 2014 14:55:00 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACA031A0199
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2014 14:56:20 +1000 (EST)
+Date: Tue, 5 Aug 2014 14:56:21 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  paulmck@linux.vnet.ibm.com
-Subject: [PATCH 1/2] powerpc: Hard disable interrupts in xmon
-Message-ID: <20140805145500.773004e9@kryten>
+Subject: [PATCH 2/2] powerpc: Add ppc64 hard lockup detector support
+Message-ID: <20140805145621.2fa2a372@kryten>
+In-Reply-To: <20140805145500.773004e9@kryten>
+References: <20140805145500.773004e9@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -22,42 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-xmon only soft disables interrupts. This seems like a bad idea - we
-certainly don't want decrementer and PMU exceptions going off when
-we are debugging something inside xmon.
+The hard lockup detector uses a PMU event as a periodic NMI to
+detect if we are stuck (where stuck means no timer interrupts have
+occurred).
 
-This issue was uncovered when the hard lockup detector went off
-inside xmon. To ensure we wont get a spurious hard lockup warning,
-I also call touch_nmi_watchdog() when exiting xmon.
+Ben's rework of the ppc64 soft disable code has made ppc64 PMU
+exceptions a partial NMI. They can get disabled if an external interrupt
+comes in, but otherwise PMU interrupts will fire in interrupt disabled
+regions.
+
+I wrote a kernel module to test this patch and noticed we sometimes
+missed hard lockup warnings. The RCU code detected the stall first and
+issued an IPI to backtrace all CPUs. Unfortunately an IPI is an external
+interrupt and that will hard disable interrupts, preventing the hard
+lockup detector from going off.
+
+If I reduced the hard lockup threshold to 5 seconds:
+
+echo 5 > /proc/sys/kernel/watchdog_thresh
+
+Then it would beat the RCU code in detecting a stall and get a
+correct backtrace out.
+
+Another downside is that our PMCs can only count to 2^31, so even when
+we ask for 10 seconds of processor cycles, we end up taking a couple
+of PMU exceptions a second.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: b/arch/powerpc/xmon/xmon.c
+Index: b/arch/powerpc/Kconfig
 ===================================================================
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/bug.h>
-+#include <linux/nmi.h>
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -145,6 +145,7 @@ config PPC
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+ 	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
+ 	select HAVE_ARCH_AUDITSYSCALL
++	select HAVE_PERF_EVENTS_NMI if PPC64
  
- #include <asm/ptrace.h>
- #include <asm/string.h>
-@@ -374,6 +375,7 @@ static int xmon_core(struct pt_regs *reg
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+Index: b/arch/powerpc/include/asm/nmi.h
+===================================================================
+--- /dev/null
++++ b/arch/powerpc/include/asm/nmi.h
+@@ -0,0 +1,4 @@
++#ifndef _ASM_NMI_H
++#define _ASM_NMI_H
++
++#endif /* _ASM_NMI_H */
+Index: b/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -796,3 +796,10 @@ unsigned long memory_block_size_bytes(vo
+ struct ppc_pci_io ppc_pci_io;
+ EXPORT_SYMBOL(ppc_pci_io);
  #endif
- 
- 	local_irq_save(flags);
-+	hard_irq_disable();
- 
- 	bp = in_breakpoint_table(regs->nip, &offset);
- 	if (bp != NULL) {
-@@ -558,6 +560,7 @@ static int xmon_core(struct pt_regs *reg
- #endif
- 	insert_cpu_bpts();
- 
-+	touch_nmi_watchdog();
- 	local_irq_restore(flags);
- 
- 	return cmd != 'X' && cmd != EOF;
++
++#ifdef CONFIG_HARDLOCKUP_DETECTOR
++u64 hw_nmi_get_sample_period(int watchdog_thresh)
++{
++	return ppc_proc_freq * watchdog_thresh;
++}
++#endif
