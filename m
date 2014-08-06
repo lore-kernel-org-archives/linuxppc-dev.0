@@ -1,22 +1,14 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B566A1A0A29
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 18:53:36 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: qe: move qe from arch/powerpc to drivers
-Date: Wed, 6 Aug 2014 08:53:28 +0000
-Message-ID: <61b449dd79754d25ace3701ccebe10e2@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1403580712-30153-1-git-send-email-B45475@freescale.com>
- <20140730001923.GA4151@home.buserror.net>
-In-Reply-To: <20140730001923.GA4151@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Xiaobo
- Xie <X.Xie@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1CD91A01F2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 19:08:25 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc/ppc64: Clean up the boot-time settings display
+Date: Wed,  6 Aug 2014 19:08:21 +1000
+Message-Id: <1407316102-22917-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,107 +18,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 30, 2014 at 08:19 AM, Wood Scott wrote:
+At boot we display a bunch of low level settings which can be useful to
+know, and can help to spot bugs when things are fundamentally
+misconfigured.
 
+At the moment they are very widely spaced, so that we can accommodate
+the line:
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, July 30, 2014 8:19 AM
-> To: Zhao Qiang-B45475
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Xie Xiaobo-R63061
-> Subject: Re: qe: move qe from arch/powerpc to drivers
->=20
-> On Tue, Jun 24, 2014 at 11:31:52AM +0800, Zhao Qiang wrote:
-> > ls1 has qe and ls1 has arm cpu.
-> > move qe from arch/powerpc to drivers.
-> >
-> > Signed-off-by: Zhao Qiang <B45475@freescale.com>
->=20
-> This is a very terse changelog.  Explain more about what QE is, and what
-> this patch accomplishes (it doesn't seem to get rid of the PPC dependency=
-,
-> just moving code at this stage)
->=20
-> I don't see a MAINTAINERS update for the new path.  Who is going to
-> maintain it?
->=20
-> I don't think drivers/qe is the right place for it.  Directories directly
-> under drivers/ tend to be for classes of devices, not instances.  In any
-> case, LKML should be CCed when creating a new directory directly under
-> drivers/ or under a subdirectory of drivers/ that doesn't have its own
-> mailing list.
+  ppc64_caches.dcache_line_size = 0xYY
 
-So which directory do you recommend?
-Actually qe is a kind of IP block, so in my opinion, it is proper to put it=
- under driver/(just in my opinion).
+But we only print that line when the cache line size is not 128, ie.
+almost never, so it just makes the display look odd usually.
 
+The ppc64_caches prefix is redundant so remove it, which means we can
+align things a bit closer for the common case. While we're there
+replace the last use of camelCase (physicalMemorySize), and use
+phys_mem_size.
 
->=20
-> This came up before, without a resolution.  See:
-> http://www.spinics.net/lists/kernel/msg1621335.html
->=20
-> > diff --git a/arch/powerpc/platforms/83xx/km83xx.c
-> > b/arch/powerpc/platforms/83xx/km83xx.c
-> > index bf4c447..22c0d6d 100644
-> > --- a/arch/powerpc/platforms/83xx/km83xx.c
-> > +++ b/arch/powerpc/platforms/83xx/km83xx.c
-> > @@ -37,8 +37,8 @@
-> >  #include <asm/udbg.h>
-> >  #include <sysdev/fsl_soc.h>
-> >  #include <sysdev/fsl_pci.h>
-> > -#include <asm/qe.h>
-> > -#include <asm/qe_ic.h>
-> > +#include <linux/qe.h>
-> > +#include <linux/qe_ic.h>
->=20
-> If you're moving it out of asm/ please give it an fsl prefix.
->=20
-> > diff --git a/drivers/qe/Kconfig b/drivers/qe/Kconfig new file mode
-> > 100644 index 0000000..dc16e9a
-> > --- /dev/null
-> > +++ b/drivers/qe/Kconfig
-> > @@ -0,0 +1,35 @@
-> > +#
-> > +# QE Communication options
-> > +#
-> > +menuconfig QUICC_ENGINE
-> > +	bool "Freescale QUICC Engine (QE) Support"
-> > +	depends on FSL_SOC && PPC32
-> > +	select PPC_LIB_RHEAP
-> > +	select CRC32
-> > +	help
-> > +	  The QUICC Engine (QE) is a new generation of communications
-> > +	  coprocessors on Freescale embedded CPUs (akin to CPM in older
-> chips).
-> > +	  Selecting this option means that you wish to build a kernel
-> > +	  for a machine with a QE coprocessor.
-> > +
-> > +if QUICC_ENGINE
-> > +
-> > +config UCC_SLOW
-> > +	bool
-> > +	default y if SERIAL_QE
-> > +	help
-> > +	  This option provides qe_lib support to UCC slow
-> > +	  protocols: UART, BISYNC, QMC
-> > +
-> > +config UCC_FAST
-> > +	bool
-> > +	default y if UCC_GETH
-> > +	help
-> > +	  This option provides qe_lib support to UCC fast
-> > +	  protocols: HDLC, Ethernet, ATM, transparent
-> > +
-> > +config UCC
-> > +	bool
-> > +	default y if UCC_FAST || UCC_SLOW
-> > +
-> > +endif
->=20
-> These config options could use better namespacing.
->=20
-> -Scott
+Before:
+  Starting Linux PPC64 #104 SMP Wed Aug 6 18:41:34 EST 2014
+  -----------------------------------------------------
+  ppc64_pft_size                = 0x1a
+  physicalMemorySize            = 0x200000000
+  ppc64_caches.dcache_line_size = 0xf0
+  ppc64_caches.icache_line_size = 0xf0
+  htab_address                  = 0xdeadbeef
+  htab_hash_mask                = 0x7ffff
+  physical_start                = 0xf000bar
+  -----------------------------------------------------
 
+After:
+  Starting Linux PPC64 #103 SMP Wed Aug 6 18:38:04 EST 2014
+  -----------------------------------------------------
+  ppc64_pft_size    = 0x1a
+  phys_mem_size     = 0x200000000
+  dcache_line_size  = 0xf0
+  icache_line_size  = 0xf0
+  htab_address      = 0xdeadbeef
+  htab_hash_mask    = 0x7ffff
+  physical_start    = 0xf000bar
+  -----------------------------------------------------
 
-Regards,
-Zhao Qiang
+This patch is final, no bike shedding ;)
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index ee082d771178..b364f7bd0a94 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -517,21 +517,23 @@ void __init setup_system(void)
+ 	printk("Starting Linux PPC64 %s\n", init_utsname()->version);
+ 
+ 	printk("-----------------------------------------------------\n");
+-	printk("ppc64_pft_size                = 0x%llx\n", ppc64_pft_size);
+-	printk("physicalMemorySize            = 0x%llx\n", memblock_phys_mem_size());
++	printk("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
++	printk("phys_mem_size     = 0x%llx\n", memblock_phys_mem_size());
++
+ 	if (ppc64_caches.dline_size != 0x80)
+-		printk("ppc64_caches.dcache_line_size = 0x%x\n",
+-		       ppc64_caches.dline_size);
++		printk("dcache_line_size  = 0x%x\n", ppc64_caches.dline_size);
+ 	if (ppc64_caches.iline_size != 0x80)
+-		printk("ppc64_caches.icache_line_size = 0x%x\n",
+-		       ppc64_caches.iline_size);
++		printk("icache_line_size  = 0x%x\n", ppc64_caches.iline_size);
++
+ #ifdef CONFIG_PPC_STD_MMU_64
+ 	if (htab_address)
+-		printk("htab_address                  = 0x%p\n", htab_address);
+-	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
+-#endif /* CONFIG_PPC_STD_MMU_64 */
++		printk("htab_address      = 0x%p\n", htab_address);
++
++	printk("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
++#endif
++
+ 	if (PHYSICAL_START > 0)
+-		printk("physical_start                = 0x%llx\n",
++		printk("physical_start    = 0x%llx\n",
+ 		       (unsigned long long)PHYSICAL_START);
+ 	printk("-----------------------------------------------------\n");
+ 
+-- 
+1.9.1
