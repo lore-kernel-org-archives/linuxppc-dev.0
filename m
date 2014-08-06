@@ -1,14 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37C491A025B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 18:22:34 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE00A1A02B4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 18:26:38 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Remove CPU_FTR_HVMODE from CPU_FTRS_ALWAYS
-Date: Wed,  6 Aug 2014 18:22:25 +1000
-Message-Id: <1407313345-4276-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: Remove unused CPU_FTRS_A2
+Date: Wed,  6 Aug 2014 18:26:28 +1000
+Message-Id: <1407313588-17564-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,30 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We potentially clear CPU_FTR_HVMODE at runtime in __init_hvmode_206(),
-so we must make sure it's not set in CPU_FTRS_ALWAYS.
-
-This doesn't hurt us in practice at the moment, because we don't support
-compiling only for CPUs that support CPU_FTR_HVMODE.
+In commit fb5a515704d7 "Remove platforms/wsp and associated pieces" we
+removed the last user of CPU_FTRS_A2, so we should remove it too.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/cputable.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/cputable.h | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 0fdd7eece6d9..16d355e4a58b 100644
+index 0fdd7eece6d9..1de5ff3b7e42 100644
 --- a/arch/powerpc/include/asm/cputable.h
 +++ b/arch/powerpc/include/asm/cputable.h
-@@ -520,7 +520,8 @@ enum {
+@@ -458,13 +458,9 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_DABRX)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
+ 
+-#define CPU_FTRS_A2 (CPU_FTR_USE_TB | CPU_FTR_SMT | CPU_FTR_DBELL | \
+-		     CPU_FTR_NOEXECUTE | CPU_FTR_NODSISRALIGN | \
+-		     CPU_FTR_ICSWX | CPU_FTR_DABRX )
+-
+ #ifdef __powerpc64__
+ #ifdef CONFIG_PPC_BOOK3E
+-#define CPU_FTRS_POSSIBLE	(CPU_FTRS_E6500 | CPU_FTRS_E5500 | CPU_FTRS_A2)
++#define CPU_FTRS_POSSIBLE	(CPU_FTRS_E6500 | CPU_FTRS_E5500)
+ #else
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+@@ -515,7 +511,7 @@ enum {
+ 
+ #ifdef __powerpc64__
+ #ifdef CONFIG_PPC_BOOK3E
+-#define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500 & CPU_FTRS_A2)
++#define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500)
+ #else
  #define CPU_FTRS_ALWAYS		\
  	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
- 	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
--	    CPU_FTRS_POWER7 & CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
-+	    CPU_FTRS_POWER7 & CPU_FTRS_CELL & CPU_FTRS_PA6T & \
-+	    ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE)
- #endif
- #else
- enum {
 -- 
 1.9.1
