@@ -1,25 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <davidlohr@hp.com>
+Received: from g9t1613g.houston.hp.com (g9t1613g.houston.hp.com [15.240.0.71])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98FFA1A0445
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 06:46:25 +1000 (EST)
-Message-ID: <1407357967.3073.103.camel@pasglop>
-Subject: Re: [PATCH 2/2] powerpc/nohash: Split __early_init_mmu() into boot
- and secondary
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 07 Aug 2014 06:46:07 +1000
-In-Reply-To: <1407355754.7427.36.camel@snotra.buserror.net>
-References: <1406948861-11322-1-git-send-email-scottwood@freescale.com>
- <1406948861-11322-2-git-send-email-scottwood@freescale.com>
- <1407213410.19150.65.camel@pasglop>
- <1407286090.7427.19.camel@snotra.buserror.net>
- <1407301138.3073.68.camel@pasglop>
- <1407355754.7427.36.camel@snotra.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F37751A0872
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 07:37:45 +1000 (EST)
+Received: from g2t2352.austin.hp.com (g2t2352.austin.hp.com [15.217.128.51])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by g9t1613g.houston.hp.com (Postfix) with ESMTPS id 5A53862507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 21:30:26 +0000 (UTC)
+Message-ID: <1407360614.3395.2.camel@buesod1.americas.hpqcorp.net>
+Subject: Re: [3.13.y.z extended stable] Patch "locking/mutex: Disable
+ optimistic spinning on some architectures" has been added to staging queue
+From: Davidlohr Bueso <davidlohr@hp.com>
+To: Andev <debiandev@gmail.com>
+Date: Wed, 06 Aug 2014 14:30:14 -0700
+In-Reply-To: <CAJUuVQ5OpNye8HAEw6x=owBB32pq-aLF7_Gqo493jDDHDahhRA@mail.gmail.com>
+References: <1407358496-23094-1-git-send-email-kamal@canonical.com>
+ <CAJUuVQ5OpNye8HAEw6x=owBB32pq-aLF7_Gqo493jDDHDahhRA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, kernel-team@lists.ubuntu.com,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Mikulas Patocka <mpatocka@redhat.com>,
+ John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
+ Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Kamal Mostafa <kamal@canonical.com>,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +44,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-08-06 at 15:09 -0500, Scott Wood wrote:
-> BTW, is there a particular reason why we need to use
-> memblock_enforce_memory_limit() on FSL_BOOK3E, rather than relying on
-> memblock_set_current_limit()?  I see that when
-> memblock_enforce_memory_limit() was added to __early_init_mmu(),
-> memblock_set_current_limit() did not exist.  On 32-bit fsl booke uses
-> memblock_set_current_limit() for this.
+On Wed, 2014-08-06 at 17:25 -0400, Andev wrote:
+> On Wed, Aug 6, 2014 at 4:54 PM, Kamal Mostafa <kamal@canonical.com> wrote:
+> > This is a note to let you know that I have just added a patch titled
+> >
+> >     locking/mutex: Disable optimistic spinning on some architectures
+> >
+> > to the linux-3.13.y-queue branch of the 3.13.y.z extended stable tree
+> > which can be found at:
+> >
+> >  http://kernel.ubuntu.com/git?p=ubuntu/linux.git;a=shortlog;h=refs/heads/linux-3.13.y-queue
+> >
+> > This patch is scheduled to be released in version 3.13.11.6.
+> >
+> 
+> This patch is specifically for parisc, sparc32, tile32, metag-lock1,
+> arc-!llsc and hexagon none of which Ubuntu supports.
+> 
+> Why are you backporting this patch?
 
-I don't remember. I don't even know what the difference is, I can
-have a look later if you want but I'd rather you did :-)
-
-Cheers,
-Ben.
+Well 3.13.y.z isn't an Ubuntu kernel, its upstream, and those archs
+*are* supported.
