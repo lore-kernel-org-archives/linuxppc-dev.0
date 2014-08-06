@@ -1,25 +1,36 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A3671A071A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 23:05:51 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id rd3so3413923pab.40
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Aug 2014 06:05:48 -0700 (PDT)
-Message-ID: <53E22827.2000204@ozlabs.ru>
-Date: Wed, 06 Aug 2014 23:05:43 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93A941A071C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 00:46:28 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 7 Aug 2014 00:46:26 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2AEE92BB002D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 00:46:24 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s76ENFMo42008622
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 00:23:15 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s76EkNbL023654
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 00:46:23 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: thp: Use tlbiel wherever possible
+In-Reply-To: <1407221289-19390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1407221289-19390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 06 Aug 2014 20:16:20 +0530
+Message-ID: <8738d965hf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/4] drivers/vfio: Enable VFIO if EEH is not supported
-References: <1407318545-17554-1-git-send-email-gwshan@linux.vnet.ibm.com>	
- <1407318545-17554-5-git-send-email-gwshan@linux.vnet.ibm.com>
- <1407329433.316.80.camel@ul30vt.home>
-In-Reply-To: <1407329433.316.80.camel@ul30vt.home>
-Content-Type: text/plain; charset=koi8-r
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,98 +40,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2014 10:50 PM, Alex Williamson wrote:
-> On Wed, 2014-08-06 at 19:49 +1000, Gavin Shan wrote:
->> From: Alexey Kardashevskiy <aik@ozlabs.ru>
->>
->> The existing vfio_pci_open() fails upon error returned from
->> vfio_spapr_pci_eeh_open(), which breaks POWER7's P5IOC2 PHB
->> support which this patch brings back.
->>
->> The patch fixes the issue by dropping the return value of
->> vfio_spapr_pci_eeh_open().
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->> v3: Drop return value of vfio_spapr_pci_eeh_open()
->> ---
->>  drivers/vfio/pci/vfio_pci.c   | 6 +-----
->>  drivers/vfio/vfio_spapr_eeh.c | 4 ++--
->>  include/linux/vfio.h          | 5 ++---
->>  3 files changed, 5 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
->> index e2ee80f..32d69c8 100644
->> --- a/drivers/vfio/pci/vfio_pci.c
->> +++ b/drivers/vfio/pci/vfio_pci.c
->> @@ -178,11 +178,7 @@ static int vfio_pci_open(void *device_data)
->>  		if (ret)
->>  			goto error;
->>  
->> -		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
->> -		if (ret) {
->> -			vfio_pci_disable(vdev);
->> -			goto error;
->> -		}
->> +		vfio_spapr_pci_eeh_open(vdev->pdev);
->>  	}
->>  
->>  	return 0;
->> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
->> index 4779cac..86dfceb 100644
->> --- a/drivers/vfio/vfio_spapr_eeh.c
->> +++ b/drivers/vfio/vfio_spapr_eeh.c
->> @@ -19,9 +19,9 @@
->>  #define DRIVER_DESC	"VFIO IOMMU SPAPR EEH"
->>  
->>  /* We might build address mapping here for "fast" path later */
->> -int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->> +void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->>  {
->> -	return eeh_dev_open(pdev);
->> +	eeh_dev_open(pdev);
-> 
-> Wasn't there some intent to provide a warning message, that would now be
-> done here?  Has that idea been dropped?
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+
+> If we know that user address space has never executed on other cpus
+> we could use tlbiel.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+Now checking against flush_hash_page, I am wondering whether I need to handle
+transcational memory in case of tlbiel ? Michael, can you let me know if
+this is needed ?
 
 
-Comrade Gavin just forgot it :)
-
-Gavin, please add it. Thanks!
-
-
-
-> 
->>  }
->>  EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_open);
->>  
->> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
->> index 224128a..d320411 100644
->> --- a/include/linux/vfio.h
->> +++ b/include/linux/vfio.h
->> @@ -100,15 +100,14 @@ extern long vfio_external_check_extension(struct vfio_group *group,
->>  
->>  struct pci_dev;
->>  #ifdef CONFIG_EEH
->> -extern int vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
->> +extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
->>  extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
->>  extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
->>  				       unsigned int cmd,
->>  				       unsigned long arg);
->>  #else
->> -static inline int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->> +static inline void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->>  {
->> -	return 0;
->>  }
->>  
->>  static inline void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
-> 
-> 
-> 
-
-
--- 
-Alexey
+-aneesh
