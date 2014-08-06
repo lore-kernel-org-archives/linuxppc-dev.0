@@ -1,36 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F08621A013E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 20:38:14 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 6 Aug 2014 16:08:10 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id CCC13125801E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 16:08:11 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s76AcT0O61604054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 16:08:29 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s76Ac7at002658
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 16:08:07 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] powerpc: subpage_protect: Increase the array size to take
- care of 64TB
-In-Reply-To: <1405435950-24187-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1405435950-24187-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 06 Aug 2014 16:08:06 +0530
-Message-ID: <87y4v1dhtd.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 558811A08B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 20:38:21 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <broonie@kernel.org>, <lgirdwood@gmail.com>, <timur@tabi.org>,
+ <perex@perex.cz>, <tiwai@suse.de>, <nicoleotsuka@gmail.com>,
+ <Li.Xiubo@freescale.com>, <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
+ <arnd@arndb.de>
+Subject: [PATCH V1 1/2] ASoC: fsl: esai: refine esai for tdm support
+Date: Wed, 6 Aug 2014 18:23:03 +0800
+Message-ID: <e68d8fbaaed7000b13688b0f1757b5b9557889d7.1407320232.git.shengjiu.wang@freescale.com>
+In-Reply-To: <cover.1407320232.git.shengjiu.wang@freescale.com>
+References: <cover.1407320232.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,32 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Add parameter for slots, and caculate the number of TX/RX pins and bclk with
+slots. Then driver will be compatible with slots > 2 in TDM mode.
 
-> We now support TASK_SIZE of 16TB, hence the array should be 8.
->
-> Fixes the below crash:
->
-> Unable to handle kernel paging request for data at address 0x000100bd
-> Faulting instruction address: 0xc00000000004f914
-> cpu 0x13: Vector: 300 (Data Access) at [c000000fea75fa90]
->     pc: c00000000004f914: .sys_subpage_prot+0x2d4/0x5c0
->     lr: c00000000004fb5c: .sys_subpage_prot+0x51c/0x5c0
->     sp: c000000fea75fd10
->    msr: 9000000000009032
->    dar: 100bd
->  dsisr: 40000000
->   current = 0xc000000fea6ae490
->   paca    = 0xc00000000fb8ab00   softe: 0        irq_happened: 0x00
->     pid   = 8237, comm = a.out
-> enter ? for help
-> [c000000fea75fe30] c00000000000a164 syscall_exit+0x0/0x98
-> --- Exception: c00 (System Call) at 00003fff89737004
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+---
+ sound/soc/fsl/fsl_esai.c |   10 +++++++---
+ sound/soc/fsl/fsl_esai.h |    8 ++++----
+ 2 files changed, 11 insertions(+), 7 deletions(-)
 
-This should go to stable also. Merged upstream as
-dad6f37c2602e4af6c3aecfdb41f2d8bd4668163. Let me know how it should be
-handled.
-
--aneesh
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 72d154e..89aa531 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -56,6 +56,7 @@ struct fsl_esai {
+ 	struct clk *fsysclk;
+ 	u32 fifo_depth;
+ 	u32 slot_width;
++	u32 slots;
+ 	u32 hck_rate[2];
+ 	u32 sck_rate[2];
+ 	bool hck_dir[2];
+@@ -363,6 +364,7 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+ 			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(rx_mask));
+ 
+ 	esai_priv->slot_width = slot_width;
++	esai_priv->slots      = slots;
+ 
+ 	return 0;
+ }
+@@ -510,10 +512,11 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
+ 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	u32 width = snd_pcm_format_width(params_format(params));
+ 	u32 channels = params_channels(params);
++	u32 pin = DIV_ROUND_UP(channels, esai_priv->slots);
+ 	u32 bclk, mask, val;
+ 	int ret;
+ 
+-	bclk = params_rate(params) * esai_priv->slot_width * 2;
++	bclk = params_rate(params) * esai_priv->slot_width * esai_priv->slots;
+ 
+ 	ret = fsl_esai_set_bclk(dai, tx, bclk);
+ 	if (ret)
+@@ -530,7 +533,7 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
+ 	mask = ESAI_xFCR_xFR_MASK | ESAI_xFCR_xWA_MASK | ESAI_xFCR_xFWM_MASK |
+ 	      (tx ? ESAI_xFCR_TE_MASK | ESAI_xFCR_TIEN : ESAI_xFCR_RE_MASK);
+ 	val = ESAI_xFCR_xWA(width) | ESAI_xFCR_xFWM(esai_priv->fifo_depth) |
+-	     (tx ? ESAI_xFCR_TE(channels) | ESAI_xFCR_TIEN : ESAI_xFCR_RE(channels));
++	     (tx ? ESAI_xFCR_TE(pin) | ESAI_xFCR_TIEN : ESAI_xFCR_RE(pin));
+ 
+ 	regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx), mask, val);
+ 
+@@ -565,6 +568,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+ 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	u8 i, channels = substream->runtime->channels;
++	u32 pin = DIV_ROUND_UP(channels, esai_priv->slots);
+ 
+ 	switch (cmd) {
+ 	case SNDRV_PCM_TRIGGER_START:
+@@ -579,7 +583,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 
+ 		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+ 				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK,
+-				   tx ? ESAI_xCR_TE(channels) : ESAI_xCR_RE(channels));
++				   tx ? ESAI_xCR_TE(pin) : ESAI_xCR_RE(pin));
+ 		break;
+ 	case SNDRV_PCM_TRIGGER_SUSPEND:
+ 	case SNDRV_PCM_TRIGGER_STOP:
+diff --git a/sound/soc/fsl/fsl_esai.h b/sound/soc/fsl/fsl_esai.h
+index 75e1403..91a550f 100644
+--- a/sound/soc/fsl/fsl_esai.h
++++ b/sound/soc/fsl/fsl_esai.h
+@@ -130,8 +130,8 @@
+ #define ESAI_xFCR_RE_WIDTH	4
+ #define ESAI_xFCR_TE_MASK	(((1 << ESAI_xFCR_TE_WIDTH) - 1) << ESAI_xFCR_xE_SHIFT)
+ #define ESAI_xFCR_RE_MASK	(((1 << ESAI_xFCR_RE_WIDTH) - 1) << ESAI_xFCR_xE_SHIFT)
+-#define ESAI_xFCR_TE(x) 	((ESAI_xFCR_TE_MASK >> (ESAI_xFCR_TE_WIDTH - ((x + 1) >> 1))) & ESAI_xFCR_TE_MASK)
+-#define ESAI_xFCR_RE(x) 	((ESAI_xFCR_RE_MASK >> (ESAI_xFCR_RE_WIDTH - ((x + 1) >> 1))) & ESAI_xFCR_RE_MASK)
++#define ESAI_xFCR_TE(x) 	((ESAI_xFCR_TE_MASK >> (ESAI_xFCR_TE_WIDTH - x)) & ESAI_xFCR_TE_MASK)
++#define ESAI_xFCR_RE(x) 	((ESAI_xFCR_RE_MASK >> (ESAI_xFCR_RE_WIDTH - x)) & ESAI_xFCR_RE_MASK)
+ #define ESAI_xFCR_xFR_SHIFT	1
+ #define ESAI_xFCR_xFR_MASK	(1 << ESAI_xFCR_xFR_SHIFT)
+ #define ESAI_xFCR_xFR		(1 << ESAI_xFCR_xFR_SHIFT)
+@@ -272,8 +272,8 @@
+ #define ESAI_xCR_RE_WIDTH	4
+ #define ESAI_xCR_TE_MASK	(((1 << ESAI_xCR_TE_WIDTH) - 1) << ESAI_xCR_xE_SHIFT)
+ #define ESAI_xCR_RE_MASK	(((1 << ESAI_xCR_RE_WIDTH) - 1) << ESAI_xCR_xE_SHIFT)
+-#define ESAI_xCR_TE(x) 		((ESAI_xCR_TE_MASK >> (ESAI_xCR_TE_WIDTH - ((x + 1) >> 1))) & ESAI_xCR_TE_MASK)
+-#define ESAI_xCR_RE(x) 		((ESAI_xCR_RE_MASK >> (ESAI_xCR_RE_WIDTH - ((x + 1) >> 1))) & ESAI_xCR_RE_MASK)
++#define ESAI_xCR_TE(x) 		((ESAI_xCR_TE_MASK >> (ESAI_xCR_TE_WIDTH - x)) & ESAI_xCR_TE_MASK)
++#define ESAI_xCR_RE(x) 		((ESAI_xCR_RE_MASK >> (ESAI_xCR_RE_WIDTH - x)) & ESAI_xCR_RE_MASK)
+ 
+ /*
+  * Transmit Clock Control Register -- REG_ESAI_TCCR 0xD8
+-- 
+1.7.9.5
