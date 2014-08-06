@@ -1,23 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 097D71A017B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 10:49:26 +1000 (EST)
-Message-ID: <1407286090.7427.19.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] powerpc/nohash: Split __early_init_mmu() into boot
- and secondary
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 5 Aug 2014 19:48:10 -0500
-In-Reply-To: <1407213410.19150.65.camel@pasglop>
-References: <1406948861-11322-1-git-send-email-scottwood@freescale.com>
- <1406948861-11322-2-git-send-email-scottwood@freescale.com>
- <1407213410.19150.65.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 566001A01A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 11:46:25 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 6 Aug 2014 11:46:21 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2D2E52CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 11:46:14 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s761T0b662980158
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 11:29:01 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s761kCSZ007261
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 11:46:12 +1000
+Date: Wed, 6 Aug 2014 11:46:03 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Fix IOMMU group lost
+Message-ID: <20140806014603.GA4532@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1407227258-17732-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20140805100036.GA7364@richard>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140805100036.GA7364@richard>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +42,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-08-05 at 14:36 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-08-01 at 22:07 -0500, Scott Wood wrote:
-> 
-> >  
-> > -void __init early_init_mmu(void)
-> > -{
-> > -	__early_init_mmu(1);
-> > -}
-> > -
-> >  void early_init_mmu_secondary(void)
-> >  {
-> > -	__early_init_mmu(0);
-> > +	early_init_mmu_allcpus();
-> >  }
-> 
-> Small nit, it took me 30s too long to figure out what you were doing due
-> to the naming above :)
-> 
-> Call the latter early_init_this_mmu() and keep the global one separate
-> such that early_init_mmu() does:
-> 
-> 	early_init_mmu_common();
-> 	early_init_this_mmu();
+On Tue, Aug 05, 2014 at 06:00:36PM +0800, Wei Yang wrote:
+>I didn't manage to test this one PHB3, since some network issue, I can't
+>access the machine in Austin.
+>
+>Will reply after I test this on PHB3.
+>
 
-I'll do s/mmu_allcpus/this_mmu/ but early_init_mmu() needs to do things
-both before and after early_init_mmu_common().  Do you want two new
-functions (before and after) or is it OK to just rename
-early_init_mmu_allcpus() and put a comment before early_init_mmu()
-saying it's just for the boot cpu?
+Yep, thanks. By the way, I tested it on P7 box and looks good
+for partial/full hotplug cases.
 
--Scott
+Thanks,
+Gavin
