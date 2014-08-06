@@ -1,25 +1,20 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64F1B1A013E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 20:39:19 +1000 (EST)
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <broonie@kernel.org>, <lgirdwood@gmail.com>, <timur@tabi.org>,
- <perex@perex.cz>, <tiwai@suse.de>, <nicoleotsuka@gmail.com>,
- <Li.Xiubo@freescale.com>, <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
- <arnd@arndb.de>
-Subject: [PATCH V1 2/2] Revert "ASoC: fsl-esai: Add .xlate_tdm_slot_mask()
- support."
-Date: Wed, 6 Aug 2014 18:23:04 +0800
-Message-ID: <c4337ee35f7e513b8eb50910cbe2ccd6d39bc9d8.1407320232.git.shengjiu.wang@freescale.com>
-In-Reply-To: <cover.1407320232.git.shengjiu.wang@freescale.com>
-References: <cover.1407320232.git.shengjiu.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A0001A0716
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 22:50:48 +1000 (EST)
+Message-ID: <1407329433.316.80.camel@ul30vt.home>
+Subject: Re: [PATCH v3 4/4] drivers/vfio: Enable VFIO if EEH is not supported
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Wed, 06 Aug 2014 06:50:33 -0600
+In-Reply-To: <1407318545-17554-5-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1407318545-17554-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1407318545-17554-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit a603c8ee526f5ea9ad9b40710308766299ad8a69.
+On Wed, 2014-08-06 at 19:49 +1000, Gavin Shan wrote:
+> From: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> The existing vfio_pci_open() fails upon error returned from
+> vfio_spapr_pci_eeh_open(), which breaks POWER7's P5IOC2 PHB
+> support which this patch brings back.
+> 
+> The patch fixes the issue by dropping the return value of
+> vfio_spapr_pci_eeh_open().
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+> v3: Drop return value of vfio_spapr_pci_eeh_open()
+> ---
+>  drivers/vfio/pci/vfio_pci.c   | 6 +-----
+>  drivers/vfio/vfio_spapr_eeh.c | 4 ++--
+>  include/linux/vfio.h          | 5 ++---
+>  3 files changed, 5 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index e2ee80f..32d69c8 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -178,11 +178,7 @@ static int vfio_pci_open(void *device_data)
+>  		if (ret)
+>  			goto error;
+>  
+> -		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
+> -		if (ret) {
+> -			vfio_pci_disable(vdev);
+> -			goto error;
+> -		}
+> +		vfio_spapr_pci_eeh_open(vdev->pdev);
+>  	}
+>  
+>  	return 0;
+> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+> index 4779cac..86dfceb 100644
+> --- a/drivers/vfio/vfio_spapr_eeh.c
+> +++ b/drivers/vfio/vfio_spapr_eeh.c
+> @@ -19,9 +19,9 @@
+>  #define DRIVER_DESC	"VFIO IOMMU SPAPR EEH"
+>  
+>  /* We might build address mapping here for "fast" path later */
+> -int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+> +void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+>  {
+> -	return eeh_dev_open(pdev);
+> +	eeh_dev_open(pdev);
 
-fsl_asoc_xlate_tdm_slot_mask() will invert the mask, which isn't fit for
-esai. The default function snd_soc_xlate_tdm_slot_mask() is ok for esai.
+Wasn't there some intent to provide a warning message, that would now be
+done here?  Has that idea been dropped?
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
- sound/soc/fsl/Kconfig    |    1 -
- sound/soc/fsl/fsl_esai.c |    2 --
- 2 files changed, 3 deletions(-)
-
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index f54a8fc..f3012b6 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -49,7 +49,6 @@ config SND_SOC_FSL_ESAI
- 	tristate "Enhanced Serial Audio Interface (ESAI) module support"
- 	select REGMAP_MMIO
- 	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
--	select SND_SOC_FSL_UTILS
- 	help
- 	  Say Y if you want to add Enhanced Synchronous Audio Interface
- 	  (ESAI) support for the Freescale CPUs.
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 89aa531..d05b920 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -18,7 +18,6 @@
- 
- #include "fsl_esai.h"
- #include "imx-pcm.h"
--#include "fsl_utils.h"
- 
- #define FSL_ESAI_RATES		SNDRV_PCM_RATE_8000_192000
- #define FSL_ESAI_FORMATS	(SNDRV_PCM_FMTBIT_S8 | \
-@@ -611,7 +610,6 @@ static struct snd_soc_dai_ops fsl_esai_dai_ops = {
- 	.hw_params = fsl_esai_hw_params,
- 	.set_sysclk = fsl_esai_set_dai_sysclk,
- 	.set_fmt = fsl_esai_set_dai_fmt,
--	.xlate_tdm_slot_mask = fsl_asoc_xlate_tdm_slot_mask,
- 	.set_tdm_slot = fsl_esai_set_dai_tdm_slot,
- };
- 
--- 
-1.7.9.5
+>  }
+>  EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_open);
+>  
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index 224128a..d320411 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -100,15 +100,14 @@ extern long vfio_external_check_extension(struct vfio_group *group,
+>  
+>  struct pci_dev;
+>  #ifdef CONFIG_EEH
+> -extern int vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+> +extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+>  extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
+>  extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>  				       unsigned int cmd,
+>  				       unsigned long arg);
+>  #else
+> -static inline int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+> +static inline void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+>  {
+> -	return 0;
+>  }
+>  
+>  static inline void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
