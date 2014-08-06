@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
+ [209.85.192.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C597A1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 16:31:51 +1000 (EST)
-Date: Wed, 6 Aug 2014 16:31:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the powerpc tree
-Message-ID: <20140806163144.17b87b0f@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 13CA51A003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 16:33:41 +1000 (EST)
+Received: by mail-pd0-f178.google.com with SMTP id w10so2739501pde.37
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Aug 2014 23:33:39 -0700 (PDT)
+Message-ID: <53E1CC39.9000401@ozlabs.ru>
+Date: Wed, 06 Aug 2014 16:33:29 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/wxRMqA0QueYHEwUOUDB2LvG"; protocol="application/pgp-signature"
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/4] vfio: spapr: Fix build error
+References: <1407293313-24894-1-git-send-email-aik@ozlabs.ru>
+ <1407293313-24894-3-git-send-email-aik@ozlabs.ru>
+ <1407294770.316.76.camel@ul30vt.home> <20140806035413.GA7681@shangw>
+In-Reply-To: <20140806035413.GA7681@shangw>
+Content-Type: text/plain; charset=UTF-8
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +29,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/wxRMqA0QueYHEwUOUDB2LvG
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 08/06/2014 01:54 PM, Gavin Shan wrote:
+> On Tue, Aug 05, 2014 at 09:12:50PM -0600, Alex Williamson wrote:
+>> On Wed, 2014-08-06 at 12:48 +1000, Alexey Kardashevskiy wrote:
+>>> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>
+>>> The VFIO related components could be built as dynamic modules.
+>>> Unfortunately, CONFIG_EEH can't be configured to "m". The patch
+>>> fixes the build errors when configuring VFIO related components
+>>> as dynamic modules as follows:
+>>>
+>>>   CC [M]  drivers/vfio/vfio_iommu_spapr_tce.o
+>>> In file included from drivers/vfio/vfio.c:33:0:
+>>> include/linux/vfio.h:101:43: warning: ‘struct pci_dev’ declared \
+>>> inside parameter list [enabled by default]
+>>> :
+>>>   WRAP    arch/powerpc/boot/zImage.pseries
+>>>   WRAP    arch/powerpc/boot/zImage.maple
+>>>   WRAP    arch/powerpc/boot/zImage.pmac
+>>>   WRAP    arch/powerpc/boot/zImage.epapr
+>>>   MODPOST 1818 modules
+>>> ERROR: ".vfio_spapr_iommu_eeh_ioctl" [drivers/vfio/vfio_iommu_spapr_tce.ko]\
+>>> undefined!
+>>> ERROR: ".vfio_spapr_pci_eeh_open" [drivers/vfio/pci/vfio-pci.ko] undefined!
+>>> ERROR: ".vfio_spapr_pci_eeh_release" [drivers/vfio/pci/vfio-pci.ko] undefined!
+>>>
+>>> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> [removed include "pci.h" in vfio.c]
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>> Changes:
+>>> v2:
+>>> * removed #include <linux/pci.h> from vfio.c and tested
+> 
+> Appreciated for Alexey's help on it :)
 
-Hi all,
 
-After merging the powerpc tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+My bad, that was wrong actually, we still need this:
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:865: Error: attempt to move .org backw=
-ards
-arch/powerpc/kernel/exceptions-64s.S:866: Error: attempt to move .org backw=
-ards
-arch/powerpc/kernel/exceptions-64s.S:890: Error: attempt to move .org backw=
-ards
+diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+index 25a0fbd..224128a 100644
+--- a/include/linux/vfio.h
++++ b/include/linux/vfio.h
+@@ -98,6 +98,7 @@ extern int vfio_external_user_iommu_id(struct vfio_group
+*group);
+ extern long vfio_external_check_extension(struct vfio_group *group,
+                                          unsigned long arg);
 
-Its back again and I have left it broken.
++struct pci_dev;
+ #ifdef CONFIG_EEH
+ extern int vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+ extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
 
-Maybe caused by commit 0869b6fd209b ("powerpc/book3s: Add basic
-infrastructure to handle HMI in Linux").
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
---Sig_/wxRMqA0QueYHEwUOUDB2LvG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Otherwise it is "warning: ‘struct pci_dev’ declared inside parameter list".
+For some reason I only see this warning when backporting this patch to 3.10
+and I do not see it in 3.16-rc7, I guess pci.h gets included somewhere.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAEBCAAGBQJT4cvVAAoJEMDTa8Ir7ZwVIkkP/1Xv1XQgMw5mv4a+xw59a0lI
-lixyth2h2i5HHF4GRfAt3QR/B5Kni9M7B3a0TAoipsl1xtRyIz68DweEU2mR9r9q
-kw7vnHkX50ANnVsNFrBnK4dOzeRfsVSJp+z9Xyal2hyIwP5ETSdw/dKR4JwLvnhx
-RL8SfJ/L9w4e0+gvIPA/Ip1W2NDTg8OjOuljIGd1D4Mn58JcxY+XVapxZgGE4HTf
-qc1J0WX62WzfD+cnbKT7zl9bO2SrJf2qc9BXis01g6Q6hlQEJ6mUywNCSeMLGHFo
-Byz2FKqs9c1ITKe3+jL+ldA5VMNelaAhHxwAPRtcxwmW4jL3Ib20ITH86GJS87RY
-sRhxNrdwE8aKlEGoDoz4lKhumooT7Rk55z9oQtyaDkpArOpaT3fnCOA/W7GFvNA8
-u53RIQMDQkQrc3Ym1MtK6YJUzcm2mFwnz4mJ25GZccK/PAyUSKE52s6Bu28WqYbH
-McMKfZ0VntRjYJrqDAmoa6vxQgo4Ls9shpzxp+vOznoy+13Ymi4nMERrOO/Hggt+
-03kD1kyJHWCqCBsutZrot7bdqFBcPRmZL74xNnfwYuVSVxVyIWQOhswJZQPl87Hf
-OKCu8jw0EYsC5LOPftEF3R+IOJHU1Z0d4TrSfulB5mgSOtR0hfbLGUPOHgUc+Guc
-Iy2O8lKvKlZYzzryRZ18
-=N2ti
------END PGP SIGNATURE-----
+> 
+>>
+>> I also commented regarding the ifdef around all of vfio_spapr_eeh.c:
+>>
+>>        Why not add a new CONFIG_VFIO_SPAPR_EEH option to handle this
+>>        instead?
+>>
+>> Did you disagree?  The ifdef is pretty ugly.
+>>
+> 
+> I'll introduce CONFIG_VFIO_SPAPR_EEH.
 
---Sig_/wxRMqA0QueYHEwUOUDB2LvG--
+
+So, Gavin, then the patchset is yours (again), ok?
+
+
+
+
+> Thanks,
+> Gavin
+> 
+>>> ---
+>>>  drivers/vfio/Makefile         | 4 ++--
+>>>  drivers/vfio/vfio_spapr_eeh.c | 6 ++++++
+>>>  2 files changed, 8 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
+>>> index 50e30bc..4891cca 100644
+>>> --- a/drivers/vfio/Makefile
+>>> +++ b/drivers/vfio/Makefile
+>>> @@ -1,5 +1,5 @@
+>>>  obj-$(CONFIG_VFIO) += vfio.o
+>>>  obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
+>>> -obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
+>>> -obj-$(CONFIG_EEH) += vfio_spapr_eeh.o
+>>> +obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o \
+>>> +				      vfio_spapr_eeh.o
+>>>  obj-$(CONFIG_VFIO_PCI) += pci/
+>>> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+>>> index f834b4c..1a93e83 100644
+>>> --- a/drivers/vfio/vfio_spapr_eeh.c
+>>> +++ b/drivers/vfio/vfio_spapr_eeh.c
+>>> @@ -14,15 +14,19 @@
+>>>  #include <asm/eeh.h>
+>>>  
+>>>  /* We might build address mapping here for "fast" path later */
+>>> +#ifdef CONFIG_EEH
+>>> +
+>>>  int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+>>>  {
+>>>  	return eeh_dev_open(pdev);
+>>>  }
+>>> +EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_open);
+>>>  
+>>>  void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
+>>>  {
+>>>  	eeh_dev_release(pdev);
+>>>  }
+>>> +EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_release);
+>>>  
+>>>  long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>>>  				unsigned int cmd, unsigned long arg)
+>>> @@ -85,3 +89,5 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+>>>  
+>>>  	return ret;
+>>>  }
+>>> +EXPORT_SYMBOL_GPL(vfio_spapr_iommu_eeh_ioctl);
+>>> +#endif /* CONFIG_EEH */
+>>
+>>
+>>
+> 
+
+
+-- 
+Alexey
