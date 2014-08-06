@@ -1,35 +1,27 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C683F1A08C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 12:49:38 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Wed, 6 Aug 2014 12:49:26 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D79D83578061
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 12:49:02 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s762VnMY000450
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 12:31:49 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s762n0DC020436
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Aug 2014 12:49:01 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/4] vfio_pci: spapr: Enable VFIO if EEH is not supported
-Date: Wed,  6 Aug 2014 12:48:33 +1000
-Message-Id: <1407293313-24894-5-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1407293313-24894-1-git-send-email-aik@ozlabs.ru>
-References: <1407293313-24894-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFC701A0CF6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 12:53:21 +1000 (EST)
+Date: Wed, 6 Aug 2014 10:42:37 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Varka Bhadram <varkabhadram@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add asynchronous mode support
+Message-ID: <20140806024236.GA17879@MrMyself>
+References: <1407223925-29678-1-git-send-email-nicoleotsuka@gmail.com>
+ <53E0B926.9010103@gmail.com> <20140805110735.GA16503@MrMyself>
+ <53E0BC95.7040208@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <53E0BC95.7040208@gmail.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
+ Li.Xiubo@freescale.com, b42378@freescale.com, b02247@freescale.com,
+ linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
+ Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
+ galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,40 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The existing vfio_pci_open() fails if there is no EEH support for PCI.
-This breaks POWER7's P5IOC2 PHB support which this patch brings back.
+Hi Varka,
 
-It is a warning because this should not normally happen on supported
-configurations such as POWER8+IODA so we always want to see it in dmesg.
-It is _once() as the message may be triggered by non-privileged userspace
-and we do not want to pollute dmesg.
+On Tue, Aug 05, 2014 at 04:44:29PM +0530, Varka Bhadram wrote:
+> On 08/05/2014 04:37 PM, Nicolin Chen wrote:
+> >Hi Varka,
+> >
+> >On Tue, Aug 05, 2014 at 04:29:50PM +0530, Varka Bhadram wrote:
+> >>>diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> >>>index 0f4e238..77864f4 100644
+> >>>--- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> >>>+++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> >>>@@ -24,6 +24,22 @@ Required properties:
+> >>>  - big-endian-data: If this property is absent, the little endian mode will
+> >>>    be in use as default, or the big endian mode will be in use for all the
+> >>>    fifo data.
+> >>>+- fsl,sai-synchronous-rx: This is a boolean property. If present, indicating
+> >>>+  that SAI will work in the synchronous mode (sync Tx with Rx) which means
+> >>>+  both the transimitter and receiver will send and receive data by following
+> >>>+  receiver's bit clocks and frame sync clocks.
+> >>>+- fsl,sai-asynchronous: This is a boolean property. If present, indicating
+> >>>+  that SAI will work in the asynchronous mode, which means both transimitter
+> >>>+  and receiver will send and receive data by following their own bit clocks
+> >>>+  and frame sync clocks separately.
+> >>>
+> >>Would be readable if it like this...
+> >>
+> >>fsl,sai-synchronous-rx: This is a boolean property. If present, indicating
+> >>			that SAI will work in the synchronous mode (sync Tx with Rx) which means
+> >>			both the transimitter and receiver will send and receive data by following
+> >>			receiver's bit clocks and frame sync clocks.
+> >>- fsl,sai-asynchronous: This is a boolean property. If present, indicating
+> >>			that SAI will work in the asynchronous mode, which means both transimitter
+> >>			and receiver will send and receive data by following their own bit clocks
+> >>			and frame sync clocks separately.
+> >I agree, however, the doc was initialized in that format. Adding
+> >indentations for these two appended lines makes the whole text
+> >look weird. :(
+> 
+> Reading comfortably is important for us...  :-)
+> see this:http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt#L46
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* discussed with Ben Herrenschmidt and did s/pr_warn/pr_warn_once/
-* updated commit log
----
- drivers/vfio/pci/vfio_pci.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+I know how to write a binding doc with indentations to make it clear.
 
-diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index e2ee80f..68dc8da 100644
---- a/drivers/vfio/pci/vfio_pci.c
-+++ b/drivers/vfio/pci/vfio_pci.c
-@@ -179,10 +179,8 @@ static int vfio_pci_open(void *device_data)
- 			goto error;
- 
- 		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
--		if (ret) {
--			vfio_pci_disable(vdev);
--			goto error;
--		}
-+		if (ret)
-+			pr_warn_once("EEH is not supported\n");
- 	}
- 
- 	return 0;
--- 
-2.0.0
+What I'm talking about is that the doc was created without indentations,
+so I don't feel comfortable to add indentations starting from this patch
+while leaving the old lines in totally a different style because It's not
+helpful to make people read comfortably at all but only forcing people to
+think why these two lines are so special to take some steps back here.
+
+So personally I agree with your idea to make doc more readable. But what
+I prefer to do is not having a conversation on the style within this patch
+but to create an extra style-refinement patch later after this one.
+
+Let's just focus on the function itself right now. We can later send a
+patch to refine this entire doc. Won't you think it's a better idea? :)
+
+Thank you
+Nicolin
