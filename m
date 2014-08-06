@@ -1,15 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25FB91A021A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 15:42:21 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add POWER8 features to CPU_FTRS_POSSIBLE/ALWAYS
-Date: Wed,  6 Aug 2014 15:42:17 +1000
-Message-Id: <1407303737-29529-1-git-send-email-mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 941641A0367
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2014 16:26:03 +1000 (EST)
+Message-ID: <1407306347.3073.69.camel@pasglop>
+Subject: Re: [PATCH v4 11/16] powerpc/powernv: Release replaced TCE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 06 Aug 2014 16:25:47 +1000
+In-Reply-To: <1406712695-9491-12-git-send-email-aik@ozlabs.ru>
+References: <1406712695-9491-1-git-send-email-aik@ozlabs.ru>
+ <1406712695-9491-12-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have been a bit slack about updating the CPU_FTRS_POSSIBLE and
-CPU_FTRS_ALWAYS masks. When we added POWER8, and also POWER8E we forgot
-to update the ALWAYS mask. And when we added POWER8_DD1 we forgot to
-update both the POSSIBLE and ALWAYS masks.
+On Wed, 2014-07-30 at 19:31 +1000, Alexey Kardashevskiy wrote:
+> +       if (oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))
+> +               put_page(pfn_to_page(__pa(oldtce) >> PAGE_SHIFT));
 
-Luckily this hasn't caused any actual bugs AFAICS. Failing to update the
-ALWAYS mask just forgoes a potential optimisation opportunity. Failing
-to update the POSSIBLE mask for POWER8_DD1 is also OK because it only
-removes a bit rather than adding any.
+That probably needs set_page_dirty if TCE_PCI_WRITE is set
 
-Regardless they should all be in both masks so as to avoid any future
-bugs when the set of ALWAYS/POSSIBLE bits changes, or the masks
-themselves change.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index af5598688daf..d696eeb2def0 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -458,7 +458,8 @@ extern const char *powerpc_base_platform;
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_POWER4 | CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
--	     CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_VSX)
-+	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
-+	     CPU_FTRS_PA6T | CPU_FTR_VSX)
- #endif
- #else
- enum {
-@@ -508,7 +509,8 @@ enum {
- #define CPU_FTRS_ALWAYS		\
- 	    (CPU_FTRS_POWER4 & CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
- 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
--	     CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
-+	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
-+	     CPU_FTRS_POWER8_DD1 & CPU_FTRS_POSSIBLE)
- #endif
- #else
- enum {
--- 
-1.9.1
+Cheers,
+Ben.
