@@ -1,21 +1,26 @@
-Return-Path: <xerofoiify@gmail.com>
-Received: from mail-yk0-x243.google.com (mail-yk0-x243.google.com
- [IPv6:2607:f8b0:4002:c07::243])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 184221A087B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 13:46:32 +1000 (EST)
-Received: by mail-yk0-f195.google.com with SMTP id 79so596367ykr.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Aug 2014 20:46:30 -0700 (PDT)
-From: Nick Krause <xerofoiify@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powerpc: Fix warnings about right shift count
-Date: Thu,  7 Aug 2014 05:46:38 +0200
-Message-Id: <1407383199-7919-1-git-send-email-xerofoiify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79E551A0875
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 14:35:33 +1000 (EST)
+Date: Thu, 7 Aug 2014 12:26:27 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
+Subject: Re: [alsa-devel] [PATCH V1 1/2] ASoC: fsl: esai: refine esai for tdm
+ support
+Message-ID: <20140807042626.GA2709@MrMyself>
+References: <cover.1407320232.git.shengjiu.wang@freescale.com>
+ <e68d8fbaaed7000b13688b0f1757b5b9557889d7.1407320232.git.shengjiu.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <e68d8fbaaed7000b13688b0f1757b5b9557889d7.1407320232.git.shengjiu.wang@freescale.com>
+Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org, timur@tabi.org,
+ arnd@arndb.de, shc_work@mail.ru, tiwai@suse.de, Li.Xiubo@freescale.com,
+ lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix warnings like the following using upper_32_bits(), discussed after mail with
-someone on kernelnewbies
+About the title, please follow the old pattern:
 
-arch/powerpc/boot/addnote.c:183:3: warning: right shift count >= width of type
-arch/powerpc/boot/addnote.c:188:3: warning: right shift count >= width of type
-arch/powerpc/boot/addnote.c:206:3: warning: right shift count >= width of type
-arch/powerpc/boot/addnote.c:211:3: warning: right shift count >= width of type
+ASoC: fsl_esai: Refine....
 
-Signed-off-by: Nick Krause <xerofoify@gmail.com>
----
- arch/powerpc/boot/addnote.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+You can get the history from 'git log --oneline sound/soc/fsl/fsl_esai.c'
 
-diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
-index 9d9f6f3..4611c12 100644
---- a/arch/powerpc/boot/addnote.c
-+++ b/arch/powerpc/boot/addnote.c
-@@ -72,7 +72,7 @@ static int e_class = ELFCLASS32;
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
- 			 buf[(off) + 1] = (v) & 0xff)
- #define PUT_32BE(off, v)(PUT_16BE((off), (v) >> 16L), PUT_16BE((off) + 2, (v)))
--#define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-+#define PUT_64BE(off, v)((PUT_32BE((off), upper_32_bits(v)), \
- 			  PUT_32BE((off) + 4, (v))))
- 
- #define GET_16LE(off)	((buf[off]) + (buf[(off)+1] << 8))
-@@ -82,7 +82,8 @@ static int e_class = ELFCLASS32;
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
- 			  buf[(off) + 1] = ((v) >> 8) & 0xff)
- #define PUT_32LE(off, v) (PUT_16LE((off), (v)), PUT_16LE((off) + 2, (v) >> 16L))
--#define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-+#define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, \
-+						upper_32_bits(v)))
- 
- #define GET_16(off)	(e_data == ELFDATA2MSB ? GET_16BE(off) : GET_16LE(off))
- #define GET_32(off)	(e_data == ELFDATA2MSB ? GET_32BE(off) : GET_32LE(off))
--- 
-2.0.1
+On Wed, Aug 06, 2014 at 06:23:03PM +0800, Shengjiu Wang wrote:
+> Add parameter for slots, and caculate the number of TX/RX pins and bclk with
+> slots. Then driver will be compatible with slots > 2 in TDM mode.
+
+Hmm...although I totally understand what the patch's exactly improving,
+I suggest to describe more so that other people can get a quick idea
+even without looking at the code, like what the original driver lacks
+or what's the problem of the original design, how this patch fulfills
+this feature and why some change have to be done, those change in the
+header file for example.
+
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+> ---
+>  sound/soc/fsl/fsl_esai.c |   10 +++++++---
+>  sound/soc/fsl/fsl_esai.h |    8 ++++----
+>  2 files changed, 11 insertions(+), 7 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+> index 72d154e..89aa531 100644
+> --- a/sound/soc/fsl/fsl_esai.c
+> +++ b/sound/soc/fsl/fsl_esai.c
+> @@ -56,6 +56,7 @@ struct fsl_esai {
+>  	struct clk *fsysclk;
+>  	u32 fifo_depth;
+>  	u32 slot_width;
+> +	u32 slots;
+>  	u32 hck_rate[2];
+>  	u32 sck_rate[2];
+>  	bool hck_dir[2];
+
+Please append a description for the new member to the existing comments
+above the structure define.
+
+> @@ -363,6 +364,7 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+>  			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(rx_mask));
+>  
+>  	esai_priv->slot_width = slot_width;
+> +	esai_priv->slots      = slots;
+
+I prefer not to add indentation here, even thought this doesn't hurt.
+Just...If there's going to be a subsequent patch adding a new member
+assignment whose name's longer than slot_width, the style'll be broken
+as well. For example:
+	esai_priv->slot_width = slot_width;
+	esai_priv->slots      = slots;
+	esai_priv->slot_samplebit = slots;
+
+The indentation for the 'slots' will look abnormal.
+	
+>  
+>  	return 0;
+>  }
+> @@ -510,10 +512,11 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
+>  	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+>  	u32 width = snd_pcm_format_width(params_format(params));
+>  	u32 channels = params_channels(params);
+> +	u32 pin = DIV_ROUND_UP(channels, esai_priv->slots);
+
+This may cause a 'Division by zero' here. The 'slots' is only assigned
+in set_dai_tdm_slot(). As default, a machine driver who does not call
+set_dai_tdm_slot() will get a zero slot. We must give 'slots' a default
+value (2 for example) somewhere during initialization.
+
+And another personal suggestion -- using name 'pins' might be better.
+
+Thank you Shengjiu,
+Nicolin
