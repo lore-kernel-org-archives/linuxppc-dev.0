@@ -1,24 +1,22 @@
-Return-Path: <qiang.zhao@freescale.com>
+Return-Path: <shengjiu.wang@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFFC91A087F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 19:15:46 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: qe: move qe from arch/powerpc to drivers
-Date: Thu, 7 Aug 2014 09:15:39 +0000
-Message-ID: <4fff14ebe11b44e997bbdc75f240356b@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1403580712-30153-1-git-send-email-B45475@freescale.com>
- <20140730001923.GA4151@home.buserror.net>
- <61b449dd79754d25ace3701ccebe10e2@BLUPR03MB341.namprd03.prod.outlook.com>
- <1407356142.7427.41.camel@snotra.buserror.net>
-In-Reply-To: <1407356142.7427.41.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF64B1A0881
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 19:33:33 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <broonie@kernel.org>, <lgirdwood@gmail.com>, <timur@tabi.org>,
+ <perex@perex.cz>, <tiwai@suse.de>, <nicoleotsuka@gmail.com>,
+ <Li.Xiubo@freescale.com>, <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
+ <arnd@arndb.de>
+Subject: [PATCH V2 0/2] refine esai for tdm support
+Date: Thu, 7 Aug 2014 17:33:23 +0800
+Message-ID: <cover.1407403727.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Xiaobo
- Xie <X.Xie@freescale.com>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCBBdWcgNywgMjAxNCBhdCA0OjE2IEFNLCBXb29kIFNjb3R0IHdyb3RlOg0KDQoNCj4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4g
-U2VudDogVGh1cnNkYXksIEF1Z3VzdCAwNywgMjAxNCA0OjE2IEFNDQo+IFRvOiBaaGFvIFFpYW5n
-LUI0NTQ3NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBYaWFvYm8t
-UjYzMDYxDQo+IFN1YmplY3Q6IFJlOiBxZTogbW92ZSBxZSBmcm9tIGFyY2gvcG93ZXJwYyB0byBk
-cml2ZXJzDQo+IA0KPiBPbiBXZWQsIDIwMTQtMDgtMDYgYXQgMDM6NTMgLTA1MDAsIFpoYW8gUWlh
-bmctQjQ1NDc1IHdyb3RlOg0KPiA+IE9uIFdlZCwgSnVsIDMwLCAyMDE0IGF0IDA4OjE5IEFNLCBX
-b29kIFNjb3R0IHdyb3RlOg0KPiA+DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5
-LCBKdWx5IDMwLCAyMDE0IDg6MTkgQU0NCj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+
-ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kIFNjb3R0LUIwNzQyMTsg
-WGllDQo+ID4gPiBYaWFvYm8tUjYzMDYxDQo+ID4gPiBTdWJqZWN0OiBSZTogcWU6IG1vdmUgcWUg
-ZnJvbSBhcmNoL3Bvd2VycGMgdG8gZHJpdmVycw0KPiA+ID4NCj4gPiA+IE9uIFR1ZSwgSnVuIDI0
-LCAyMDE0IGF0IDExOjMxOjUyQU0gKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gPiA+IGxz
-MSBoYXMgcWUgYW5kIGxzMSBoYXMgYXJtIGNwdS4NCj4gPiA+ID4gbW92ZSBxZSBmcm9tIGFyY2gv
-cG93ZXJwYyB0byBkcml2ZXJzLg0KPiA+ID4gPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFv
-IFFpYW5nIDxCNDU0NzVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+DQo+ID4gPiBUaGlzIGlzIGEgdmVy
-eSB0ZXJzZSBjaGFuZ2Vsb2cuICBFeHBsYWluIG1vcmUgYWJvdXQgd2hhdCBRRSBpcywgYW5kDQo+
-ID4gPiB3aGF0IHRoaXMgcGF0Y2ggYWNjb21wbGlzaGVzIChpdCBkb2Vzbid0IHNlZW0gdG8gZ2V0
-IHJpZCBvZiB0aGUgUFBDDQo+ID4gPiBkZXBlbmRlbmN5LCBqdXN0IG1vdmluZyBjb2RlIGF0IHRo
-aXMgc3RhZ2UpDQo+ID4gPg0KPiA+ID4gSSBkb24ndCBzZWUgYSBNQUlOVEFJTkVSUyB1cGRhdGUg
-Zm9yIHRoZSBuZXcgcGF0aC4gIFdobyBpcyBnb2luZyB0bw0KPiA+ID4gbWFpbnRhaW4gaXQ/DQo+
-ID4gPg0KPiA+ID4gSSBkb24ndCB0aGluayBkcml2ZXJzL3FlIGlzIHRoZSByaWdodCBwbGFjZSBm
-b3IgaXQuICBEaXJlY3Rvcmllcw0KPiA+ID4gZGlyZWN0bHkgdW5kZXIgZHJpdmVycy8gdGVuZCB0
-byBiZSBmb3IgY2xhc3NlcyBvZiBkZXZpY2VzLCBub3QNCj4gPiA+IGluc3RhbmNlcy4gIEluIGFu
-eSBjYXNlLCBMS01MIHNob3VsZCBiZSBDQ2VkIHdoZW4gY3JlYXRpbmcgYSBuZXcNCj4gPiA+IGRp
-cmVjdG9yeSBkaXJlY3RseSB1bmRlciBkcml2ZXJzLyBvciB1bmRlciBhIHN1YmRpcmVjdG9yeSBv
-Zg0KPiA+ID4gZHJpdmVycy8gdGhhdCBkb2Vzbid0IGhhdmUgaXRzIG93biBtYWlsaW5nIGxpc3Qu
-DQo+ID4NCj4gPiBTbyB3aGljaCBkaXJlY3RvcnkgZG8geW91IHJlY29tbWVuZD8NCj4gDQo+IGRy
-aXZlcnMvc29jLw0KPiANCj4gPiBBY3R1YWxseSBxZSBpcyBhIGtpbmQgb2YgSVAgYmxvY2ssIHNv
-IGluIG15IG9waW5pb24sIGl0IGlzIHByb3BlciB0bw0KPiBwdXQgaXQgdW5kZXIgZHJpdmVyLyhq
-dXN0IGluIG15IG9waW5pb24pLg0KPiANCj4gTm8sIGl0IGlzbid0IGEgdHlwZSBvZiBkZXZpY2Ug
-KGUuZy4gImV0aGVybmV0IiBvciAidHR5IikuICBJdCdzIGFuDQo+IGFiYnJldmlhdGlvbiBvZiBh
-IHRyYWRlbWFyayBmb3IgYSBzcGVjaWZpYyBtdWx0aXB1cnBvc2UgSS9PIGFyY2hpdGVjdHVyZS4N
-Cg0KU28gd2hpY2ggZGlyZWN0b3J5IGRvIHlvdSByZWNvbW1lbmTvvJ8NCg0KPiANCj4gLVNjb3R0
-DQo+IA0KUmVnYXJkcywNClpoYW8gUWlhbmcNCg==
+These patchs is to refine esai for tdm support.
+
+Changes for V2
+- update the comments according the reviewer's suggestion
+- add init value for slots and change pin to pins.
+
+Shengjiu Wang (2):
+  ASoC: fsl_esai: refine esai for TDM support
+  Revert "ASoC: fsl-esai: Add .xlate_tdm_slot_mask() support."
+
+ sound/soc/fsl/Kconfig    |    1 -
+ sound/soc/fsl/fsl_esai.c |   16 +++++++++++-----
+ sound/soc/fsl/fsl_esai.h |    8 ++++----
+ 3 files changed, 15 insertions(+), 10 deletions(-)
+
+-- 
+1.7.9.5
