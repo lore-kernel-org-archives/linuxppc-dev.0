@@ -1,22 +1,19 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C3981A0A4B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 07:48:57 +1000 (EST)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Li Yang <leoli@freescale.com>
-Subject: [PATCH 3/3] net: ucc_geth: Don't use the MAC as PHY without a fixed
- link
-Date: Thu,  7 Aug 2014 23:48:26 +0200
-Message-Id: <1407448106-1819-3-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1407448106-1819-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1407448106-1819-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: netdev@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id DE5461A0A3F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 09:07:18 +1000 (EST)
+Date: Thu, 07 Aug 2014 16:07:13 -0700 (PDT)
+Message-Id: <20140807.160713.557740387140282430.davem@davemloft.net>
+To: u.kleine-koenig@pengutronix.de
+Subject: Re: [PATCH] net: fs_enet: fix reference counting for phy_node
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1407445560-20500-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1407445560-20500-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: f.fainelli@gmail.com, vbordug@ru.mvista.com, netdev@vger.kernel.org,
+ kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This matches what the other drivers using fixed-link support do and
-restores the behaviour before commit 87009814cdbb ("ucc_geth: use the
-new fixed PHY helpers") for the affected device trees (i.e. no
-phy-handle and no fixed-link).
+From: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+Date: Thu,  7 Aug 2014 23:06:00 +0200
 
-Fixes: 87009814cdbb ("ucc_geth: use the new fixed PHY helpers")
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+> Make sure that fs_enet_probe is left with a reference to the phy node=
+.=
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index a22ff770f9e5..07415a0df88c 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3787,15 +3787,14 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
- 
- 	ug_info->phy_node = of_parse_phandle(np, "phy-handle", 0);
--	if (!ug_info->phy_node) {
--		/* In the case of a fixed PHY, the DT node associated
-+	if (!ug_info->phy_node && of_phy_is_fixed_link(np)) {
-+		/*
-+		 * In the case of a fixed PHY, the DT node associated
- 		 * to the PHY is the Ethernet MAC DT node.
- 		 */
--		if (of_phy_is_fixed_link(np)) {
--			err = of_phy_register_fixed_link(np);
--			if (err)
--				return err;
--		}
-+		err = of_phy_register_fixed_link(np);
-+		if (err)
-+			return err;
- 		ug_info->phy_node = of_node_get(np);
- 	}
- 
--- 
-2.0.1
+> In the presence of a phy handle this is already the case as
+> of_parse_phandle returns a reference. In the fixed phy case a call to=
+
+> of_node_get is necessary. Otherwise the error path and remove functio=
+n
+> drop a reference the driver isn't holding.
+> =
+
+> Fixes: bb74d9a4a87b ("fs_enet: use the new fixed PHY helpers")
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+
+Applied.
