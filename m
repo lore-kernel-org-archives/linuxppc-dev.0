@@ -3,20 +3,23 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 213391A0003
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 19:39:14 +1000 (EST)
-Date: Thu, 7 Aug 2014 10:38:51 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9311A1A00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 19:45:44 +1000 (EST)
+Date: Thu, 7 Aug 2014 10:45:27 +0100
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20140807093851.GB17528@sirena.org.uk>
-References: <1407230421-20953-1-git-send-email-nicoleotsuka@gmail.com>
+Message-ID: <20140807094527.GC17528@sirena.org.uk>
+References: <1407223925-29678-1-git-send-email-nicoleotsuka@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="t+aXE7hLC8APFkG0"
-In-Reply-To: <1407230421-20953-1-git-send-email-nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Initialize with software reset
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+ protocol="application/pgp-signature"; boundary="Gpwijd/hIJ1U6yrH"
+In-Reply-To: <1407223925-29678-1-git-send-email-nicoleotsuka@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add asynchronous mode support
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
+ b42378@freescale.com, b02247@freescale.com, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
+ galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +30,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---t+aXE7hLC8APFkG0
+--Gpwijd/hIJ1U6yrH
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 05, 2014 at 05:20:21PM +0800, Nicolin Chen wrote:
-> This patch adds software reset code in dai_probe() so as to make a true init
-> by clearing SAI's internal logic, including the bit clock generation, status
-> flags, and FIFO pointers.
+On Tue, Aug 05, 2014 at 03:32:05PM +0800, Nicolin Chen wrote:
+> From: Nicolin Chen <Guangyu.Chen@freescale.com>
+>=20
+> SAI supports these operation modes:
+> 1) asynchronous mode
+>    Both Tx and Rx are set to be asynchronous.
+> 2) synchronous mode (Rx sync with Tx)
+>    Tx is set to be asynchronous, Rx is set to be synchronous.
+> 3) synchronous mode (Tx sync with Rx)
+>    Rx is set to be asynchronous, Tx is set to be synchronous.
+> 4) synchronous mode (Tx/Rx sync with another SAI's Tx)
+> 5) synchronous mode (Tx/Rx sync with another SAI's Rx)
 
-Applied, thanks.
+This seems to conflict with something else on my branch - not checked
+what.  Can you take a look please?
 
---t+aXE7hLC8APFkG0
+> +Note:
+> +- If both fsl,sai-asynchronous and fsl,sai-synchronous-rx are absent, the
+> +  default synchronous mode (sync Rx with Tx) will be used, which means b=
+oth
+> +  transimitter and receiver will send and receive data by following cloc=
+ks
+> +  of transimitter.
+> +- fsl,sai-asynchronous will be ignored if fsl,sai-synchronous-rx propert=
+y is
+> +  already present.
+
+Might be worth printing an error here.
+
+--Gpwijd/hIJ1U6yrH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT40koAAoJELSic+t+oim9KpYQAJlYBddSHjSnX4yqwAZKyQcd
-9EWSfckY5xV9Ci+qiSCbJ7GIcOsHunIqyReBvlF3KwshyKjNo0OmTVWh8fZ6L+gI
-pc13E/Yu/iW7h8QJN3klEI38ZxXD6RgMec1pLCU0IvYs/zUFTUzCHNKGCFceRaHN
-vV4nE/JC8Wz8Pbie1+rBmZOxgP1jQ1VcSMDLNGZhZOTJyhaf0O+idoJeVKcN6buE
-reZOq4Ede8tt++G+u6Xwna1BFwT/xOnsCtrEn7Ev8Ou35237tB9mTwtQycP4YUGz
-5SLc+QJfasR7Lou5bnUFl4T3fvO6JjyWvMCjskLLzn7fWM3DBO1HCiYFJMV6ZCUG
-/KgXxTuSA5V9BcvaZx6XmsZ5rnq88zas8eJkxyD6noICor9OCdp8+sRV2Pmx9Z8N
-aDjVe58mhU3B5g0MHi51BLWKkrT5J9S63NSqvi2TLMLzdHEPPTdA4aP4zrlriL3x
-9fnTBZB9rdC7I+j0vjsILn1bZFGiz9Mly1TCXOHS7crWie2P6nGGTt8/AdULWoo8
-PP12ucY2wQaOY2MnSb88VV7wtQafMhrilDmkJm0mQH0li/IVeiJII9niVrXQjcQb
-dayUqWYvMtKWV/xwj6ZpHYWtNEoU1k/A39W7t4PwDTwjCTcwMQUvVYNC9dS8Q9VV
-KogLUWEJ9UfV393gQBHd
-=pV9C
+iQIcBAEBAgAGBQJT40q0AAoJELSic+t+oim9L/IP/09XmprJfNXyU1qqKlJhv70c
+tj+U4iIPJlroeCqeOWfpG4qfqsJ8cGKkT7y9/c2+MFbh5aKn4yD8/WaG9gBzDZ6n
+WwXLuD5c/yaAhWnlN2ekYOS7oG/Odzmb//BZNnPssxQW21hR8pqAT+KgUN6waslu
+qlv7s/p1qqg67J/bEzHeh+D9VhCJooVdRvl843TDDZDUeaM/PyXOyJKpz8KawSs2
+Txn5PKLh6UOOFSHQegZ7i84k8gjEwo0Rtl3edLtHjKUKGZf2azDrd4iffb9heiGH
+OXb+N20qzFgCi6afkzx8B8fU4vvwd8tCGALe3kiStokVfYZvNG/2MB5MB7as+/7Z
+XLpd1JCqJo3UXFBGS57RGH2jguIxla+0RJLbGMU4+4JCsHicUws3AqQl/yAtkgJs
+2Xp++ABOQRum9jx/6q6LQfkegVzStr6KMC/aaIVUZCRFXRsdVpHMxqi/9hq7/7AB
+ALG0R2J6qTCRTpCUNCmw6M+Xa0REODq4e6zZhyZy2UKrPwfYk1+f0HQfNTieCmmP
+al8tU58vpKfMEjPSMcAA0SHb94VbBansfK8/43jm7itnVJYAZ6WNw5+nr/LmkmRz
+gyh/7qrOeNml4NAs3CpPyrBgSP2CacH/LFpPEoDSytaPXbafUlisTtQBRDriYIRU
+sO39I/WMNnI9lYcXI80e
+=yhVo
 -----END PGP SIGNATURE-----
 
---t+aXE7hLC8APFkG0--
+--Gpwijd/hIJ1U6yrH--
