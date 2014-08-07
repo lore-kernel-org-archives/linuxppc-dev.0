@@ -1,17 +1,37 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BD8B1A06EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 15:36:24 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc: Add smp_mb()s to arch_spin_unlock_wait()
-Date: Thu,  7 Aug 2014 15:36:18 +1000
-Message-Id: <1407389778-6793-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1407389778-6793-1-git-send-email-mpe@ellerman.id.au>
-References: <1407389778-6793-1-git-send-email-mpe@ellerman.id.au>
-Cc: paulmck@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19A5A1A0453
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 16:05:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 7 Aug 2014 16:05:06 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AC5762BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 16:05:02 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s775fkL751380444
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 15:41:46 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7764ruH010299
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 16:04:54 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: thp: Use tlbiel wherever possible
+In-Reply-To: <1407357040.3073.93.camel@pasglop>
+References: <1407221289-19390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <8738d965hf.fsf@linux.vnet.ibm.com> <1407357040.3073.93.camel@pasglop>
+Date: Thu, 07 Aug 2014 11:34:45 +0530
+Message-ID: <87zjfg4yyq.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Michael Neuling <mikey@neuling.org>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to the previous commit which described why we need to add a
-barrier to arch_spin_is_locked(), we have a similar problem with
-spin_unlock_wait().
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-We need a barrier on entry to ensure any spinlock we have previously
-taken is visibly locked prior to the load of lock->slock.
+> On Wed, 2014-08-06 at 20:16 +0530, Aneesh Kumar K.V wrote:
+>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>> 
+>> > If we know that user address space has never executed on other cpus
+>> > we could use tlbiel.
+>> >
+>> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> Now checking against flush_hash_page, I am wondering whether I need to handle
+>> transcational memory in case of tlbiel ? Michael, can you let me know if
+>> this is needed ?
+>
+> Also, beware that we have code that sets "tlbiel" in the page definition
+> array to 0 on all but 4k and 64k pages...
+>
 
-It's also not clear if spin_unlock_wait() is intended to have ACQUIRE
-semantics. For now be conservative and add a barrier on exit to give it
-ACQUIRE semantics.
+Ok we use base page size to determine whether we can use tlbiel or not. 
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/lib/locks.c | 4 ++++
- 1 file changed, 4 insertions(+)
+static inline void tlbie(unsigned long vpn, int psize, int apsize,
+			 int ssize, int local)
+{
+....
+	if (use_local)
+		use_local = mmu_psize_defs[psize].tlbiel;
 
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index 0c9c8d7d0734..170a0346f756 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -70,12 +70,16 @@ void __rw_yield(arch_rwlock_t *rw)
- 
- void arch_spin_unlock_wait(arch_spinlock_t *lock)
- {
-+	smp_mb();
-+
- 	while (lock->slock) {
- 		HMT_low();
- 		if (SHARED_PROCESSOR)
- 			__spin_yield(lock);
- 	}
- 	HMT_medium();
-+
-+	smp_mb();
- }
- 
- EXPORT_SYMBOL(arch_spin_unlock_wait);
--- 
-1.9.1
+With that we should be ok, because we are using 4k and 64k base page
+size and we have
+
+/*
+ * We don't know for sure what's up with tlbiel, so
+ * for now we only set it for 4K and 64K pages
+ */
+if (base_idx == MMU_PAGE_4K || base_idx == MMU_PAGE_64K)
+	def->tlbiel = 1;
+else
+	def->tlbiel = 0;
+
+
+-aneesh
