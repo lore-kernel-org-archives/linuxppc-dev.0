@@ -1,26 +1,25 @@
-Return-Path: <guangyu.chen@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 259F01A0881
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 22:11:09 +1000 (EST)
-Date: Thu, 7 Aug 2014 20:09:11 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Shengjiu Wang <shengjiu.wang@freescale.com>
-Subject: Re: [alsa-devel] [PATCH V2 2/2] Revert "ASoC: fsl-esai: Add
- .xlate_tdm_slot_mask() support."
-Message-ID: <20140807120909.GA4153@MrMyself>
-References: <cover.1407403727.git.shengjiu.wang@freescale.com>
- <5627d0f839900c33b1c15de4c21f745015d3e19d.1407403727.git.shengjiu.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 576401A08C0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 03:15:22 +1000 (EST)
+Message-ID: <1407431705.7427.53.camel@snotra.buserror.net>
+Subject: Re: qe: move qe from arch/powerpc to drivers
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+Date: Thu, 7 Aug 2014 12:15:05 -0500
+In-Reply-To: <4fff14ebe11b44e997bbdc75f240356b@BLUPR03MB341.namprd03.prod.outlook.com>
+References: <1403580712-30153-1-git-send-email-B45475@freescale.com>
+ <20140730001923.GA4151@home.buserror.net>
+ <61b449dd79754d25ace3701ccebe10e2@BLUPR03MB341.namprd03.prod.outlook.com>
+ <1407356142.7427.41.camel@snotra.buserror.net>
+ <4fff14ebe11b44e997bbdc75f240356b@BLUPR03MB341.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <5627d0f839900c33b1c15de4c21f745015d3e19d.1407403727.git.shengjiu.wang@freescale.com>
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org, timur@tabi.org,
- arnd@arndb.de, shc_work@mail.ru, tiwai@suse.de, Li.Xiubo@freescale.com,
- lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Xie
+ Xiaobo-R63061 <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shengjiu,
-   
-On Thu, Aug 07, 2014 at 05:33:25PM +0800, Shengjiu Wang wrote:
-> This reverts commit a603c8ee526f5ea9ad9b40710308766299ad8a69.
+On Thu, 2014-08-07 at 04:15 -0500, Zhao Qiang-B45475 wrote:
+> On Thu, Aug 7, 2014 at 4:16 AM, Wood Scott wrote:
 > 
-> fsl_asoc_xlate_tdm_slot_mask() will invert the mask, which isn't fit for
-> esai. The default function snd_soc_xlate_tdm_slot_mask() is ok for esai.
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, August 07, 2014 4:16 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linuxppc-dev@lists.ozlabs.org; Xie Xiaobo-R63061
+> > Subject: Re: qe: move qe from arch/powerpc to drivers
+> > 
+> > On Wed, 2014-08-06 at 03:53 -0500, Zhao Qiang-B45475 wrote:
+> > > On Wed, Jul 30, 2014 at 08:19 AM, Wood Scott wrote:
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, July 30, 2014 8:19 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Xie
+> > > > Xiaobo-R63061
+> > > > Subject: Re: qe: move qe from arch/powerpc to drivers
+> > > >
+> > > > On Tue, Jun 24, 2014 at 11:31:52AM +0800, Zhao Qiang wrote:
+> > > > > ls1 has qe and ls1 has arm cpu.
+> > > > > move qe from arch/powerpc to drivers.
+> > > > >
+> > > > > Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> > > >
+> > > > This is a very terse changelog.  Explain more about what QE is, and
+> > > > what this patch accomplishes (it doesn't seem to get rid of the PPC
+> > > > dependency, just moving code at this stage)
+> > > >
+> > > > I don't see a MAINTAINERS update for the new path.  Who is going to
+> > > > maintain it?
+> > > >
+> > > > I don't think drivers/qe is the right place for it.  Directories
+> > > > directly under drivers/ tend to be for classes of devices, not
+> > > > instances.  In any case, LKML should be CCed when creating a new
+> > > > directory directly under drivers/ or under a subdirectory of
+> > > > drivers/ that doesn't have its own mailing list.
+> > >
+> > > So which directory do you recommend?
+> > 
+> > drivers/soc/
+> > 
+> > > Actually qe is a kind of IP block, so in my opinion, it is proper to
+> > put it under driver/(just in my opinion).
+> > 
+> > No, it isn't a type of device (e.g. "ethernet" or "tty").  It's an
+> > abbreviation of a trademark for a specific multipurpose I/O architecture.
+> 
+> So which directory do you recommend？
 
-You should describe why that doesn't fit for ESAI and what's the result
-if keeping it.
+Please see about 10 lines up. :-P
 
-Thank you,
-Nicolin
-
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
-> ---
->  sound/soc/fsl/Kconfig    |    1 -
->  sound/soc/fsl/fsl_esai.c |    2 --
->  2 files changed, 3 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-> index f54a8fc..f3012b6 100644
-> --- a/sound/soc/fsl/Kconfig
-> +++ b/sound/soc/fsl/Kconfig
-> @@ -49,7 +49,6 @@ config SND_SOC_FSL_ESAI
->  	tristate "Enhanced Serial Audio Interface (ESAI) module support"
->  	select REGMAP_MMIO
->  	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
-> -	select SND_SOC_FSL_UTILS
->  	help
->  	  Say Y if you want to add Enhanced Synchronous Audio Interface
->  	  (ESAI) support for the Freescale CPUs.
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index f252370..b2f6b3e 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -18,7 +18,6 @@
->  
->  #include "fsl_esai.h"
->  #include "imx-pcm.h"
-> -#include "fsl_utils.h"
->  
->  #define FSL_ESAI_RATES		SNDRV_PCM_RATE_8000_192000
->  #define FSL_ESAI_FORMATS	(SNDRV_PCM_FMTBIT_S8 | \
-> @@ -612,7 +611,6 @@ static struct snd_soc_dai_ops fsl_esai_dai_ops = {
->  	.hw_params = fsl_esai_hw_params,
->  	.set_sysclk = fsl_esai_set_dai_sysclk,
->  	.set_fmt = fsl_esai_set_dai_fmt,
-> -	.xlate_tdm_slot_mask = fsl_asoc_xlate_tdm_slot_mask,
->  	.set_tdm_slot = fsl_esai_set_dai_tdm_slot,
->  };
->  
-> -- 
-> 1.7.9.5
-> 
-> _______________________________________________
-> Alsa-devel mailing list
-> Alsa-devel@alsa-project.org
-> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+-Scott
