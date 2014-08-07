@@ -1,37 +1,14 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 19A5A1A0453
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 16:05:09 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 7 Aug 2014 16:05:06 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AC5762BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 16:05:02 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s775fkL751380444
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 15:41:46 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7764ruH010299
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Aug 2014 16:04:54 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: thp: Use tlbiel wherever possible
-In-Reply-To: <1407357040.3073.93.camel@pasglop>
-References: <1407221289-19390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <8738d965hf.fsf@linux.vnet.ibm.com> <1407357040.3073.93.camel@pasglop>
-Date: Thu, 07 Aug 2014 11:34:45 +0530
-Message-ID: <87zjfg4yyq.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Michael Neuling <mikey@neuling.org>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 459F41A087B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Aug 2014 17:26:39 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/mm: Unindent htab_dt_scan_page_sizes()
+Date: Thu,  7 Aug 2014 17:26:33 +1000
+Message-Id: <1407396393-29446-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,44 +18,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+We can unindent the bulk of htab_dt_scan_page_sizes() by returning early
+if the property is not found. That is nice in and of itself, but also
+has the advantage of making it clear that we always return success once
+we have found the ibm,segment-page-sizes property.
 
-> On Wed, 2014-08-06 at 20:16 +0530, Aneesh Kumar K.V wrote:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->> 
->> > If we know that user address space has never executed on other cpus
->> > we could use tlbiel.
->> >
->> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> Now checking against flush_hash_page, I am wondering whether I need to handle
->> transcational memory in case of tlbiel ? Michael, can you let me know if
->> this is needed ?
->
-> Also, beware that we have code that sets "tlbiel" in the page definition
-> array to 0 on all but 4k and 64k pages...
->
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/hash_utils_64.c | 121 ++++++++++++++++++++--------------------
+ 1 file changed, 60 insertions(+), 61 deletions(-)
 
-Ok we use base page size to determine whether we can use tlbiel or not. 
-
-static inline void tlbie(unsigned long vpn, int psize, int apsize,
-			 int ssize, int local)
-{
-....
-	if (use_local)
-		use_local = mmu_psize_defs[psize].tlbiel;
-
-With that we should be ok, because we are using 4k and 64k base page
-size and we have
-
-/*
- * We don't know for sure what's up with tlbiel, so
- * for now we only set it for 4K and 64K pages
- */
-if (base_idx == MMU_PAGE_4K || base_idx == MMU_PAGE_64K)
-	def->tlbiel = 1;
-else
-	def->tlbiel = 0;
-
-
--aneesh
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 6b7c1c824cf9..8fccc71d472f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -333,70 +333,69 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+ 		return 0;
+ 
+ 	prop = of_get_flat_dt_prop(node, "ibm,segment-page-sizes", &size);
+-	if (prop != NULL) {
+-		pr_info("Page sizes from device-tree:\n");
+-		size /= 4;
+-		cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
+-		while(size > 0) {
+-			unsigned int base_shift = be32_to_cpu(prop[0]);
+-			unsigned int slbenc = be32_to_cpu(prop[1]);
+-			unsigned int lpnum = be32_to_cpu(prop[2]);
+-			struct mmu_psize_def *def;
+-			int idx, base_idx;
+-
+-			size -= 3; prop += 3;
+-			base_idx = get_idx_from_shift(base_shift);
+-			if (base_idx < 0) {
+-				/*
+-				 * skip the pte encoding also
+-				 */
+-				prop += lpnum * 2; size -= lpnum * 2;
++	if (!prop)
++		return 0;
++
++	pr_info("Page sizes from device-tree:\n");
++	size /= 4;
++	cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
++	while(size > 0) {
++		unsigned int base_shift = be32_to_cpu(prop[0]);
++		unsigned int slbenc = be32_to_cpu(prop[1]);
++		unsigned int lpnum = be32_to_cpu(prop[2]);
++		struct mmu_psize_def *def;
++		int idx, base_idx;
++
++		size -= 3; prop += 3;
++		base_idx = get_idx_from_shift(base_shift);
++		if (base_idx < 0) {
++			/* skip the pte encoding also */
++			prop += lpnum * 2; size -= lpnum * 2;
++			continue;
++		}
++		def = &mmu_psize_defs[base_idx];
++		if (base_idx == MMU_PAGE_16M)
++			cur_cpu_spec->mmu_features |= MMU_FTR_16M_PAGE;
++
++		def->shift = base_shift;
++		if (base_shift <= 23)
++			def->avpnm = 0;
++		else
++			def->avpnm = (1 << (base_shift - 23)) - 1;
++		def->sllp = slbenc;
++		/*
++		 * We don't know for sure what's up with tlbiel, so
++		 * for now we only set it for 4K and 64K pages
++		 */
++		if (base_idx == MMU_PAGE_4K || base_idx == MMU_PAGE_64K)
++			def->tlbiel = 1;
++		else
++			def->tlbiel = 0;
++
++		while (size > 0 && lpnum) {
++			unsigned int shift = be32_to_cpu(prop[0]);
++			int penc  = be32_to_cpu(prop[1]);
++
++			prop += 2; size -= 2;
++			lpnum--;
++
++			idx = get_idx_from_shift(shift);
++			if (idx < 0)
+ 				continue;
+-			}
+-			def = &mmu_psize_defs[base_idx];
+-			if (base_idx == MMU_PAGE_16M)
+-				cur_cpu_spec->mmu_features |= MMU_FTR_16M_PAGE;
+-
+-			def->shift = base_shift;
+-			if (base_shift <= 23)
+-				def->avpnm = 0;
+-			else
+-				def->avpnm = (1 << (base_shift - 23)) - 1;
+-			def->sllp = slbenc;
+-			/*
+-			 * We don't know for sure what's up with tlbiel, so
+-			 * for now we only set it for 4K and 64K pages
+-			 */
+-			if (base_idx == MMU_PAGE_4K || base_idx == MMU_PAGE_64K)
+-				def->tlbiel = 1;
+-			else
+-				def->tlbiel = 0;
+-
+-			while (size > 0 && lpnum) {
+-				unsigned int shift = be32_to_cpu(prop[0]);
+-				int penc  = be32_to_cpu(prop[1]);
+-
+-				prop += 2; size -= 2;
+-				lpnum--;
+-
+-				idx = get_idx_from_shift(shift);
+-				if (idx < 0)
+-					continue;
+-
+-				if (penc == -1)
+-					pr_err("Invalid penc for base_shift=%d "
+-					       "shift=%d\n", base_shift, shift);
+-
+-				def->penc[idx] = penc;
+-				pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
+-					" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
+-					base_shift, shift, def->sllp,
+-					def->avpnm, def->tlbiel, def->penc[idx]);
+-			}
++
++			if (penc == -1)
++				pr_err("Invalid penc for base_shift=%d "
++				       "shift=%d\n", base_shift, shift);
++
++			def->penc[idx] = penc;
++			pr_info("base_shift=%d: shift=%d, sllp=0x%04lx,"
++				" avpnm=0x%08lx, tlbiel=%d, penc=%d\n",
++				base_shift, shift, def->sllp,
++				def->avpnm, def->tlbiel, def->penc[idx]);
+ 		}
+-		return 1;
+ 	}
+-	return 0;
++
++	return 1;
+ }
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+-- 
+1.9.1
