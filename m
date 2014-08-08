@@ -1,31 +1,19 @@
-Return-Path: <pawel.moll@arm.com>
-Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
- [217.140.110.23])
- by lists.ozlabs.org (Postfix) with ESMTP id 406D21A0A68
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 02:36:42 +1000 (EST)
-Message-ID: <1407515785.31897.28.camel@hornet>
-Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
- device
-From: Pawel Moll <pawel.moll@arm.com>
-To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>, Ulf
- Hansson <ulf.hansson@linaro.org>
-Date: Fri, 08 Aug 2014 17:36:25 +0100
-In-Reply-To: <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
-References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
- <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A3A21A0A6C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 03:13:32 +1000 (EST)
+Message-ID: <1407518003.26210.13.camel@ul30vt.home>
+Subject: Re: [PATCH v4 0/5] drivers/vfio: EEH Compile and compatibility
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Fri, 08 Aug 2014 11:13:23 -0600
+In-Reply-To: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Peter De Schrijver <pdeschrijver@nvidia.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
- Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
-> The code selecting a device for the sdhci host has been
-> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
-> "mmc: sdhci-pltfm: Add structure for host-specific data" and
-> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
-> device does not pass parent to sdhci_alloc_host") while there
-> does not seem to be any reason to use platform device's parent
-> in the first place.
+On Thu, 2014-08-07 at 12:47 +1000, Gavin Shan wrote:
+> The patchset is mainly for fixing errors from building VFIO compoments
+> as dynamic modules. PATCH[4/4] allows VFIO can be used though EEH fails
+> to initialize for VFIO PCI devices.
 > 
-> The comment saying "Some PCI-based MFD need the parent here"
-> seem to refer to Timberdale FPGA driver (the only MFD driver
-> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
-> the only situation when parent device matter is runtime PM,
-> which is not implemented for Timberdale.
 > 
-> Cc: Chris Ball <chris@printf.net>
-> Cc: Anton Vorontsov <anton@enomsg.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: linux-mmc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
-> ---
+> Alexey Kardashevskiy (2):
+>   drivers/vfio: Allow EEH to be built as module
+>   drivers/vfio: Enable VFIO if EEH is not supported
 > 
-> This patch is a part of effort to remove references to platform_bus
-> and make it static.
+> Gavin Shan (3):
+>   powerpc/eeh: Export eeh_iommu_group_to_pe()
+>   powerpc/eeh: Add warning message in eeh_dev_open()
+>   drivers/vfio: Fix EEH build error
 > 
-> Chris, Anton, Ulf - could you please advise if the assumptions
-> above are correct or if I'm completely wrong? Do you know what
-> where the real reasons to use parent originally? The PCI comment
-> seems like a red herring to me...
+>  arch/powerpc/kernel/eeh.c     |  6 +++++-
+>  drivers/vfio/Kconfig          |  6 ++++++
+>  drivers/vfio/Makefile         |  2 +-
+>  drivers/vfio/pci/vfio_pci.c   |  6 +-----
+>  drivers/vfio/vfio_spapr_eeh.c | 17 +++++++++++++++--
+>  include/linux/vfio.h          |  6 +++---
+>  6 files changed, 31 insertions(+), 12 deletions(-)
 
-Can I take the silence as a suggestion that the change looks ok-ish for
-you?
+Applied 3-5 to vfio next branch for 3.17.  Thanks,
 
-Paweł
+Alex
