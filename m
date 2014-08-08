@@ -1,22 +1,31 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9AE81A0A47
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 20:53:15 +1000 (EST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: <broonie@kernel.org>
-Subject: [PATCH] ASoC: fsl_sai: Make Synchronous and Asynchronous modes
- exclusive
-Date: Fri, 8 Aug 2014 18:41:19 +0800
-Message-ID: <1407494479-9877-1-git-send-email-nicoleotsuka@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
- Li.Xiubo@freescale.com, galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <pawel.moll@arm.com>
+Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
+ [217.140.110.23])
+ by lists.ozlabs.org (Postfix) with ESMTP id 406D21A0A68
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 02:36:42 +1000 (EST)
+Message-ID: <1407515785.31897.28.camel@hornet>
+Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
+ device
+From: Pawel Moll <pawel.moll@arm.com>
+To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>, Ulf
+ Hansson <ulf.hansson@linaro.org>
+Date: Fri, 08 Aug 2014 17:36:25 +0100
+In-Reply-To: <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
+ <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
+ Olof Johansson <olof@lixom.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch (ASoC: fsl_sai: Add asynchronous mode support) added
-new Device Tree bindings for Asynchronous and Synchronous modes support.
-However, these two shall not be present at the same time.
+On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
+> The code selecting a device for the sdhci host has been
+> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
+> "mmc: sdhci-pltfm: Add structure for host-specific data" and
+> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
+> device does not pass parent to sdhci_alloc_host") while there
+> does not seem to be any reason to use platform device's parent
+> in the first place.
+> 
+> The comment saying "Some PCI-based MFD need the parent here"
+> seem to refer to Timberdale FPGA driver (the only MFD driver
+> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
+> the only situation when parent device matter is runtime PM,
+> which is not implemented for Timberdale.
+> 
+> Cc: Chris Ball <chris@printf.net>
+> Cc: Anton Vorontsov <anton@enomsg.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: linux-mmc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+> ---
+> 
+> This patch is a part of effort to remove references to platform_bus
+> and make it static.
+> 
+> Chris, Anton, Ulf - could you please advise if the assumptions
+> above are correct or if I'm completely wrong? Do you know what
+> where the real reasons to use parent originally? The PCI comment
+> seems like a red herring to me...
 
-So this patch just simply makes them exclusive so as to avoid incorrect
-Device Tree binding usage.
+Can I take the silence as a suggestion that the change looks ok-ish for
+you?
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- Documentation/devicetree/bindings/sound/fsl-sai.txt | 3 +--
- sound/soc/fsl/fsl_sai.c                             | 7 +++++++
- 2 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-index 77864f4..dc9f9c3 100644
---- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-@@ -38,8 +38,7 @@ Note:
-   default synchronous mode (sync Rx with Tx) will be used, which means both
-   transimitter and receiver will send and receive data by following clocks
-   of transimitter.
--- fsl,sai-asynchronous will be ignored if fsl,sai-synchronous-rx property is
--  already present.
-+- fsl,sai-asynchronous and fsl,sai-synchronous-rx are exclusive.
- 
- Example:
- sai2: sai@40031000 {
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index ef7c758..4c9e71c 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -634,6 +634,13 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 	fsl_sai_dai.symmetric_channels = 1;
- 	fsl_sai_dai.symmetric_samplebits = 1;
- 
-+	if (of_find_property(np, "fsl,sai-synchronous-rx", NULL) &&
-+	    of_find_property(np, "fsl,sai-asynchronous", NULL)) {
-+		/* error out if both synchronous and asynchronous are present */
-+		dev_err(&pdev->dev, "invalid binding for synchronous mode\n");
-+		return -EINVAL;
-+	}
-+
- 	if (of_find_property(np, "fsl,sai-synchronous-rx", NULL)) {
- 		/* Sync Rx with Tx */
- 		sai->synchronous[RX] = false;
--- 
-1.8.4
+Paweł
