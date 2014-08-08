@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2EC1B1A0AA2
+ by lists.ozlabs.org (Postfix) with ESMTP id C36671A0A87
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 17:04:55 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 20/20] powerpc/8xx: Don't restore regs to save them again.
-Message-Id: <20140808070346.75C8D1ABD50@localhost.localdomain>
-Date: Fri,  8 Aug 2014 09:03:46 +0200 (CEST)
+Subject: [PATCH 17/20] powerpc/8xx: Better readibility of ERRATA CPU6 handling
+Message-Id: <20140808070345.86FCF1ABD4D@localhost.localdomain>
+Date: Fri,  8 Aug 2014 09:03:45 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,41 +19,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is not need to restore r10, r11 and cr registers at this end of ITLBmiss
-handler as they are saved again to the same place in ITLBError handler we are
-jumping to.
+This patch hiddes that SPR address needed for CPU6 ERRATA handling in the macro.
+Then we don't have to worry about this address directly in the code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |   29 ++++++++++++++++-------------
+ 1 files changed, 16 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 99438d8..102fe9f 100644
+index 82e4139..3e11b87 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -380,8 +380,7 @@ InstructionTLBMiss:
- 	lwz	r3, 8(r0)
- #endif
- 	mfspr	r10, SPRN_SPRG_SCRATCH2
--	EXCEPTION_EPILOG_0
--	b	InstructionTLBError
-+	b	InstructionTLBError1
+@@ -33,12 +33,19 @@
  
- 	. = 0x1200
- DataStoreTLBMiss:
-@@ -470,7 +469,10 @@ DataStoreTLBMiss:
-  */
- 	. = 0x1300
- InstructionTLBError:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG_0
-+InstructionTLBError1:
-+	EXCEPTION_PROLOG_1
-+	EXCEPTION_PROLOG_2
- 	mr	r4,r12
- 	mr	r5,r9
- 	EXC_XFER_LITE(0x1300, handle_page_fault)
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+-#define DO_8xx_CPU6(val, reg)	\
+-	li	reg, val;	\
+-	stw	reg, 12(r0);	\
+-	lwz	reg, 12(r0);
++#define SPRN_MI_TWC_ADDR	0x2b80
++#define SPRN_MI_RPN_ADDR	0x2d80
++#define SPRN_MD_TWC_ADDR	0x3b80
++#define SPRN_MD_RPN_ADDR	0x3d80
++
++#define MTSPR_CPU6(spr, reg, treg)	\
++	li	treg, spr##_ADDR;	\
++	stw	treg, 12(r0);		\
++	lwz	treg, 12(r0);		\
++	mtspr	spr, reg
+ #else
+-#define DO_8xx_CPU6(val, reg)
++#define MTSPR_CPU6(spr, reg, treg)	\
++	mtspr	spr, reg
+ #endif
+ 
+ /* 
+@@ -333,8 +340,7 @@ InstructionTLBMiss:
+ 	 * for this "segment."
+ 	 */
+ 	ori	r11,r11,1		/* Set valid bit */
+-	DO_8xx_CPU6(0x2b80, r3)
+-	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
++	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+ 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+ 	/* Extract level 2 index */
+ 	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+@@ -353,8 +359,7 @@ InstructionTLBMiss:
+ 	 */
+ 	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
+-	DO_8xx_CPU6(0x2d80, r3)
+-	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
++	MTSPR_CPU6(SPRN_MI_RPN, r10, r3)	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+@@ -423,8 +428,7 @@ DataStoreTLBMiss:
+ 	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
+ 	 */
+ 	rlwimi	r11, r10, 32-5, 30, 30
+-	DO_8xx_CPU6(0x3b80, r3)
+-	mtspr	SPRN_MD_TWC, r11
++	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
+ 
+ 	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
+ 	 * We also need to know if the insn is a load/store, so:
+@@ -457,8 +461,7 @@ DataStoreTLBMiss:
+ 	 */
+ 2:	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+-	DO_8xx_CPU6(0x3d80, r3)
+-	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
++	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
 -- 
 1.7.1
