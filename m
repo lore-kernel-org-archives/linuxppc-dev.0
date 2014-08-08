@@ -1,22 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5934C1A0A58
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 14:06:24 +1000 (EST)
-Message-ID: <1407470775.316.316.camel@ul30vt.home>
-Subject: Re: [PATCH v4 2/5] powerpc/eeh: Add warning message in eeh_dev_open()
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 07 Aug 2014 22:06:15 -0600
-In-Reply-To: <1407469812.4508.1.camel@pasglop>
-References: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1407379640-13065-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <1407469812.4508.1.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C37F1A0A50
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 15:21:44 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <broonie@kernel.org>, <lgirdwood@gmail.com>, <timur@tabi.org>,
+ <perex@perex.cz>, <tiwai@suse.de>, <nicoleotsuka@gmail.com>,
+ <Li.Xiubo@freescale.com>, <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
+ <arnd@arndb.de>
+Subject: [PATCH V3 0/2] refine esai for tdm support
+Date: Fri, 8 Aug 2014 13:21:22 +0800
+Message-ID: <cover.1407475184.git.shengjiu.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-08-08 at 13:50 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-08-07 at 12:47 +1000, Gavin Shan wrote:
-> > The patch adds one warning message in eeh_dev_open() in case the
-> > PCI device can't be marked as passed through.
-> > 
-> > Suggested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> > ---
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Alex, are you taking this or should I ?
+These patchs is to refine esai for tdm support.
 
-You should take 1 & 2, AFAICT there's no dependencies between anything
-in this series.  Thanks,
+Changes for V3
+- update the comments for patch 2
 
-Alex
+Changes for V2
+- update the comments according the reviewer's suggestion
+- add init value for slots and change pin to pins.
 
-> >  arch/powerpc/kernel/eeh.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> > index 59a64f8..5d73a49 100644
-> > --- a/arch/powerpc/kernel/eeh.c
-> > +++ b/arch/powerpc/kernel/eeh.c
-> > @@ -1162,8 +1162,11 @@ int eeh_dev_open(struct pci_dev *pdev)
-> >  
-> >  	/* No EEH device or PE ? */
-> >  	edev = pci_dev_to_eeh_dev(pdev);
-> > -	if (!edev || !edev->pe)
-> > +	if (!edev || !edev->pe) {
-> > +		pr_warn_once("%s: PCI device %s not supported\n",
-> > +			     __func__, pci_name(pdev));
-> >  		goto out;
-> > +	}
-> >  
-> >  	/* Increase PE's pass through count */
-> >  	atomic_inc(&edev->pe->pass_dev_cnt);
-> 
-> 
+
+Shengjiu Wang (2):
+  ASoC: fsl_esai: refine esai for TDM support
+  Revert "ASoC: fsl-esai: Add .xlate_tdm_slot_mask() support."
+
+ sound/soc/fsl/Kconfig    |    1 -
+ sound/soc/fsl/fsl_esai.c |   16 +++++++++++-----
+ sound/soc/fsl/fsl_esai.h |    8 ++++----
+ 3 files changed, 15 insertions(+), 10 deletions(-)
+
+-- 
+1.7.9.5
