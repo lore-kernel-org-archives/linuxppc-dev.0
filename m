@@ -1,21 +1,23 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <vneethv@gmail.com>
+Received: from mail-we0-x22a.google.com (mail-we0-x22a.google.com
+ [IPv6:2a00:1450:400c:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B6DDB1A01C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 17:05:15 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Vineeth <vneethv@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: T1040QDS warm reboot
-Date: Fri, 8 Aug 2014 07:05:06 +0000
-Message-ID: <3e55262eed7c4b6b9e08e8b792d82e7b@CY1PR0301MB0857.namprd03.prod.outlook.com>
-References: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
-In-Reply-To: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
-Content-Type: multipart/alternative;
- boundary="_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92E6D1A1281
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 17:22:42 +1000 (EST)
+Received: by mail-we0-f170.google.com with SMTP id w62so5183397wes.29
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Aug 2014 00:22:36 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <3e55262eed7c4b6b9e08e8b792d82e7b@CY1PR0301MB0857.namprd03.prod.outlook.com>
+References: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
+ <3e55262eed7c4b6b9e08e8b792d82e7b@CY1PR0301MB0857.namprd03.prod.outlook.com>
+From: Vineeth <vneethv@gmail.com>
+Date: Fri, 8 Aug 2014 12:52:16 +0530
+Message-ID: <CAFbQSaDSrCff2YJi2Z-b4655NMa6fkk+xLKs3PB6DG8_Lmf+_A@mail.gmail.com>
+Subject: Re: T1040QDS warm reboot
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+Content-Type: multipart/alternative; boundary=f46d04138d31d263f30500191161
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,106 +27,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+--f46d04138d31d263f30500191161
+Content-Type: text/plain; charset=UTF-8
 
-VGhhbmtzIFZpbmVldGggZm9yIHBvaW50aW5nIHRoaXMuDQoNCldlIHdpbGwgY2hlY2sgdGhpcyBv
-biBUMTA0MFFEUyBhbmQgZ2V0IGJhY2suDQoNCg0KUmVnYXJkcw0KUHJpeWFua2ENCg0KRnJvbTog
-TGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LWJvdW5jZXMrcHJpeWFua2EuamFpbj1m
-cmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBWaW5lZXRoDQpTZW50
-OiBGcmlkYXksIEF1Z3VzdCAwOCwgMjAxNCAxMTozNSBBTQ0KVG86IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnDQpTdWJqZWN0OiBUMTA0MFFEUyB3YXJtIHJlYm9vdA0KDQpXYXMgd29uZGVy
-aW5nIGhvdyAicmVib290IiB3b3JrcyBmcm9tIGxpbnV4IGtlcm5lbCBmb3IgdDEwNDBxZHMuDQpX
-aGVuIGNoZWNrZWQsIEBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9zb2MuYw0KX19zZXR1cF9yc3Rj
-ciwgYW4gaW9yZW1hcCBpcyBkb25lIGZvciB0aGUgb2Zmc2V0IDB4YjAgYW5kIHdyaXRlcyAweDIg
-dG8gdGhhdCB0byByZWJvb3QgdGhlIG1hY2hpbmUuIGFuZCBpdCB3b3JrcyBwcm9wZXJseS4NCndo
-ZW4gY2hlY2tlZCB0aGUgcmVmZXJlbmNlIG1hbnVhbCBmb3IgVDEwNDBRRFMsIGl0IHdhcyBnaXZl
-biB0aGF0IFJTVF9DVEwgaXMgYXQgb2Zmc2V0IDB4NDAgYW5kIHRoZSBSU1QgaXMgdGhlIDd0aCBi
-aXQgb2Ygc2FtZS4NCnRoZW4gaG93J3MgaGFzLXJzdGNyL3JlYm9vdCB3b3JrcyA/DQpWaW5lZXRo
-DQoNCg0K
+Again, warm-reboot WORKS. there's no issue with that.
+My ONLY concern is i am not able to understand how it works; the ref.manual
+information and the code doesnt match.
 
---_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: base64
+Vineeth
 
-PGh0bWwgeG1sbnM6dj0idXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTp2bWwiIHhtbG5zOm89InVy
-bjpzY2hlbWFzLW1pY3Jvc29mdC1jb206b2ZmaWNlOm9mZmljZSIgeG1sbnM6dz0idXJuOnNjaGVt
-YXMtbWljcm9zb2Z0LWNvbTpvZmZpY2U6d29yZCIgeG1sbnM6bT0iaHR0cDovL3NjaGVtYXMubWlj
-cm9zb2Z0LmNvbS9vZmZpY2UvMjAwNC8xMi9vbW1sIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcv
-VFIvUkVDLWh0bWw0MCI+DQo8aGVhZD4NCjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIg
-Y29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxtZXRhIG5hbWU9IkdlbmVyYXRv
-ciIgY29udGVudD0iTWljcm9zb2Z0IFdvcmQgMTUgKGZpbHRlcmVkIG1lZGl1bSkiPg0KPHN0eWxl
-PjwhLS0NCi8qIEZvbnQgRGVmaW5pdGlvbnMgKi8NCkBmb250LWZhY2UNCgl7Zm9udC1mYW1pbHk6
-IkNhbWJyaWEgTWF0aCI7DQoJcGFub3NlLTE6MiA0IDUgMyA1IDQgNiAzIDIgNDt9DQpAZm9udC1m
-YWNlDQoJe2ZvbnQtZmFtaWx5OkNhbGlicmk7DQoJcGFub3NlLTE6MiAxNSA1IDIgMiAyIDQgMyAy
-IDQ7fQ0KLyogU3R5bGUgRGVmaW5pdGlvbnMgKi8NCnAuTXNvTm9ybWFsLCBsaS5Nc29Ob3JtYWws
-IGRpdi5Nc29Ob3JtYWwNCgl7bWFyZ2luOjBpbjsNCgltYXJnaW4tYm90dG9tOi4wMDAxcHQ7DQoJ
-Zm9udC1zaXplOjEyLjBwdDsNCglmb250LWZhbWlseToiVGltZXMgTmV3IFJvbWFuIiwic2VyaWYi
-O30NCmE6bGluaywgc3Bhbi5Nc29IeXBlcmxpbmsNCgl7bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0K
-CWNvbG9yOiMwNTYzQzE7DQoJdGV4dC1kZWNvcmF0aW9uOnVuZGVybGluZTt9DQphOnZpc2l0ZWQs
-IHNwYW4uTXNvSHlwZXJsaW5rRm9sbG93ZWQNCgl7bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0KCWNv
-bG9yOiM5NTRGNzI7DQoJdGV4dC1kZWNvcmF0aW9uOnVuZGVybGluZTt9DQpzcGFuLkVtYWlsU3R5
-bGUxNw0KCXttc28tc3R5bGUtdHlwZTpwZXJzb25hbC1yZXBseTsNCglmb250LWZhbWlseToiQ2Fs
-aWJyaSIsInNhbnMtc2VyaWYiOw0KCWNvbG9yOiMxRjQ5N0Q7fQ0KLk1zb0NocERlZmF1bHQNCgl7
-bXNvLXN0eWxlLXR5cGU6ZXhwb3J0LW9ubHk7DQoJZm9udC1mYW1pbHk6IkNhbGlicmkiLCJzYW5z
-LXNlcmlmIjt9DQpAcGFnZSBXb3JkU2VjdGlvbjENCgl7c2l6ZTo4LjVpbiAxMS4waW47DQoJbWFy
-Z2luOjEuMGluIDEuMGluIDEuMGluIDEuMGluO30NCmRpdi5Xb3JkU2VjdGlvbjENCgl7cGFnZTpX
-b3JkU2VjdGlvbjE7fQ0KLS0+PC9zdHlsZT48IS0tW2lmIGd0ZSBtc28gOV0+PHhtbD4NCjxvOnNo
-YXBlZGVmYXVsdHMgdjpleHQ9ImVkaXQiIHNwaWRtYXg9IjEwMjYiIC8+DQo8L3htbD48IVtlbmRp
-Zl0tLT48IS0tW2lmIGd0ZSBtc28gOV0+PHhtbD4NCjxvOnNoYXBlbGF5b3V0IHY6ZXh0PSJlZGl0
-Ij4NCjxvOmlkbWFwIHY6ZXh0PSJlZGl0IiBkYXRhPSIxIiAvPg0KPC9vOnNoYXBlbGF5b3V0Pjwv
-eG1sPjwhW2VuZGlmXS0tPg0KPC9oZWFkPg0KPGJvZHkgbGFuZz0iRU4tVVMiIGxpbms9IiMwNTYz
-QzEiIHZsaW5rPSIjOTU0RjcyIj4NCjxkaXYgY2xhc3M9IldvcmRTZWN0aW9uMSI+DQo8cCBjbGFz
-cz0iTXNvTm9ybWFsIj48c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTom
-cXVvdDtDYWxpYnJpJnF1b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+
-VGhhbmtzIFZpbmVldGggZm9yIHBvaW50aW5nIHRoaXMuPG86cD48L286cD48L3NwYW4+PC9wPg0K
-PHAgY2xhc3M9Ik1zb05vcm1hbCI+PHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMS4wcHQ7Zm9udC1m
-YW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlmJnF1b3Q7O2NvbG9yOiMx
-RjQ5N0QiPjxvOnA+Jm5ic3A7PC9vOnA+PC9zcGFuPjwvcD4NCjxwIGNsYXNzPSJNc29Ob3JtYWwi
-PjxzcGFuIHN0eWxlPSJmb250LXNpemU6MTEuMHB0O2ZvbnQtZmFtaWx5OiZxdW90O0NhbGlicmkm
-cXVvdDssJnF1b3Q7c2Fucy1zZXJpZiZxdW90Oztjb2xvcjojMUY0OTdEIj5XZSB3aWxsIGNoZWNr
-IHRoaXMgb24gVDEwNDBRRFMgYW5kIGdldCBiYWNrLjxvOnA+PC9vOnA+PC9zcGFuPjwvcD4NCjxw
-IGNsYXNzPSJNc29Ob3JtYWwiPjxzcGFuIHN0eWxlPSJmb250LXNpemU6MTEuMHB0O2ZvbnQtZmFt
-aWx5OiZxdW90O0NhbGlicmkmcXVvdDssJnF1b3Q7c2Fucy1zZXJpZiZxdW90Oztjb2xvcjojMUY0
-OTdEIj48bzpwPiZuYnNwOzwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIj48
-c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTomcXVvdDtDYWxpYnJpJnF1
-b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+PG86cD4mbmJzcDs8L286
-cD48L3NwYW4+PC9wPg0KPHAgY2xhc3M9Ik1zb05vcm1hbCI+PHNwYW4gc3R5bGU9ImZvbnQtc2l6
-ZToxMS4wcHQ7Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlm
-JnF1b3Q7O2NvbG9yOiMxRjQ5N0QiPlJlZ2FyZHM8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBj
-bGFzcz0iTXNvTm9ybWFsIj48c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWls
-eTomcXVvdDtDYWxpYnJpJnF1b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3
-RCI+UHJpeWFua2E8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIj48
-c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTomcXVvdDtDYWxpYnJpJnF1
-b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+PG86cD4mbmJzcDs8L286
-cD48L3NwYW4+PC9wPg0KPHAgY2xhc3M9Ik1zb05vcm1hbCI+PGI+PHNwYW4gc3R5bGU9ImZvbnQt
-c2l6ZToxMS4wcHQ7Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNl
-cmlmJnF1b3Q7Ij5Gcm9tOjwvc3Bhbj48L2I+PHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMS4wcHQ7
-Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlmJnF1b3Q7Ij4g
-TGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LWJvdW5jZXMmIzQzO3ByaXlhbmthLmph
-aW49ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxhYnMub3JnXQ0KPGI+T24gQmVoYWxmIE9mIDwvYj5W
-aW5lZXRoPGJyPg0KPGI+U2VudDo8L2I+IEZyaWRheSwgQXVndXN0IDA4LCAyMDE0IDExOjM1IEFN
-PGJyPg0KPGI+VG86PC9iPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzxicj4NCjxiPlN1
-YmplY3Q6PC9iPiBUMTA0MFFEUyB3YXJtIHJlYm9vdDxvOnA+PC9vOnA+PC9zcGFuPjwvcD4NCjxw
-IGNsYXNzPSJNc29Ob3JtYWwiPjxvOnA+Jm5ic3A7PC9vOnA+PC9wPg0KPGRpdj4NCjxkaXY+DQo8
-ZGl2Pg0KPGRpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIiBzdHlsZT0ibWFyZ2luLWJv
-dHRvbToxMi4wcHQiPldhcyB3b25kZXJpbmcgaG93ICZxdW90O3JlYm9vdCZxdW90OyB3b3JrcyBm
-cm9tIGxpbnV4IGtlcm5lbCBmb3IgdDEwNDBxZHMuPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxw
-IGNsYXNzPSJNc29Ob3JtYWwiPldoZW4gY2hlY2tlZCwgQGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNs
-X3NvYy5jIDxvOnA+PC9vOnA+PC9wPg0KPC9kaXY+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIiBzdHls
-ZT0ibWFyZ2luLWJvdHRvbToxMi4wcHQiPl9fc2V0dXBfcnN0Y3IsIGFuIGlvcmVtYXAgaXMgZG9u
-ZSBmb3IgdGhlIG9mZnNldCAweGIwIGFuZCB3cml0ZXMgMHgyIHRvIHRoYXQgdG8gcmVib290IHRo
-ZSBtYWNoaW5lLiBhbmQgaXQgd29ya3MgcHJvcGVybHkuPG86cD48L286cD48L3A+DQo8L2Rpdj4N
-CjxwIGNsYXNzPSJNc29Ob3JtYWwiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjEyLjBwdCI+d2hlbiBj
-aGVja2VkIHRoZSByZWZlcmVuY2UgbWFudWFsIGZvciBUMTA0MFFEUywgaXQgd2FzIGdpdmVuIHRo
-YXQgUlNUX0NUTCBpcyBhdCBvZmZzZXQgMHg0MCBhbmQgdGhlIFJTVCBpcyB0aGUgN3RoIGJpdCBv
-ZiBzYW1lLg0KPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNvTm9y
-bWFsIiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxMi4wcHQiPnRoZW4gaG93J3MgaGFzLXJzdGNyL3Jl
-Ym9vdCB3b3JrcyA/PG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNv
-Tm9ybWFsIj5WaW5lZXRoPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0i
-TXNvTm9ybWFsIj48bzpwPiZuYnNwOzwvbzpwPjwvcD4NCjwvZGl2Pg0KPHAgY2xhc3M9Ik1zb05v
-cm1hbCI+PG86cD4mbmJzcDs8L286cD48L3A+DQo8L2Rpdj4NCjwvZGl2Pg0KPC9ib2R5Pg0KPC9o
-dG1sPg0K
 
---_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_--
+On Fri, Aug 8, 2014 at 12:35 PM, Priyanka Jain <Priyanka.Jain@freescale.com>
+wrote:
+
+>  Thanks Vineeth for pointing this.
+>
+>
+>
+> We will check this on T1040QDS and get back.
+>
+>
+>
+>
+>
+> Regards
+>
+> Priyanka
+>
+>
+>
+> *From:* Linuxppc-dev [mailto:linuxppc-dev-bounces+priyanka.jain=
+> freescale.com@lists.ozlabs.org] *On Behalf Of *Vineeth
+> *Sent:* Friday, August 08, 2014 11:35 AM
+> *To:* linuxppc-dev@lists.ozlabs.org
+> *Subject:* T1040QDS warm reboot
+>
+>
+>
+> Was wondering how "reboot" works from linux kernel for t1040qds.
+>
+> When checked, @arch/powerpc/sysdev/fsl_soc.c
+>
+> __setup_rstcr, an ioremap is done for the offset 0xb0 and writes 0x2 to
+> that to reboot the machine. and it works properly.
+>
+> when checked the reference manual for T1040QDS, it was given that RST_CTL
+> is at offset 0x40 and the RST is the 7th bit of same.
+>
+> then how's has-rstcr/reboot works ?
+>
+> Vineeth
+>
+>
+>
+>
+>
+
+--f46d04138d31d263f30500191161
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div>Again, warm-reboot WORKS. there&#39;s no issue with t=
+hat.<br></div>My ONLY concern is i am not able to understand how it works; =
+the ref.manual information and the code doesnt match.<br><br>Vineeth<br></d=
+iv>
+
+<div class=3D"gmail_extra"><br><br><div class=3D"gmail_quote">On Fri, Aug 8=
+, 2014 at 12:35 PM, Priyanka Jain <span dir=3D"ltr">&lt;<a href=3D"mailto:P=
+riyanka.Jain@freescale.com" target=3D"_blank">Priyanka.Jain@freescale.com</=
+a>&gt;</span> wrote:<br>
+
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+
+
+
+
+
+<div link=3D"#0563C1" vlink=3D"#954F72" lang=3D"EN-US">
+<div>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">Thanks Vineeth for pointi=
+ng this.<u></u><u></u></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=C2=A0<u></u></spa=
+n></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">We will check this on T10=
+40QDS and get back.<u></u><u></u></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=C2=A0<u></u></spa=
+n></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=C2=A0<u></u></spa=
+n></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">Regards<u></u><u></u></sp=
+an></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">Priyanka<u></u><u></u></s=
+pan></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=C2=A0<u></u></spa=
+n></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Calibri&quot;,&quot;sans-serif&quot;">From:</span></b><span style=3D"font-=
+size:11.0pt;font-family:&quot;Calibri&quot;,&quot;sans-serif&quot;"> Linuxp=
+pc-dev [mailto:<a href=3D"mailto:linuxppc-dev-bounces%2Bpriyanka.jain" targ=
+et=3D"_blank">linuxppc-dev-bounces+priyanka.jain</a>=3D<a href=3D"mailto:fr=
+eescale.com@lists.ozlabs.org" target=3D"_blank">freescale.com@lists.ozlabs.=
+org</a>]
+<b>On Behalf Of </b>Vineeth<br>
+<b>Sent:</b> Friday, August 08, 2014 11:35 AM<br>
+<b>To:</b> <a href=3D"mailto:linuxppc-dev@lists.ozlabs.org" target=3D"_blan=
+k">linuxppc-dev@lists.ozlabs.org</a><br>
+<b>Subject:</b> T1040QDS warm reboot<u></u><u></u></span></p><div><div clas=
+s=3D"h5">
+<p class=3D"MsoNormal"><u></u>=C2=A0<u></u></p>
+<div>
+<div>
+<div>
+<div>
+<div>
+<p class=3D"MsoNormal" style=3D"margin-bottom:12.0pt">Was wondering how &qu=
+ot;reboot&quot; works from linux kernel for t1040qds.<u></u><u></u></p>
+</div>
+<p class=3D"MsoNormal">When checked, @arch/powerpc/sysdev/fsl_soc.c <u></u>=
+<u></u></p>
+</div>
+<p class=3D"MsoNormal" style=3D"margin-bottom:12.0pt">__setup_rstcr, an ior=
+emap is done for the offset 0xb0 and writes 0x2 to that to reboot the machi=
+ne. and it works properly.<u></u><u></u></p>
+</div>
+<p class=3D"MsoNormal" style=3D"margin-bottom:12.0pt">when checked the refe=
+rence manual for T1040QDS, it was given that RST_CTL is at offset 0x40 and =
+the RST is the 7th bit of same.
+<u></u><u></u></p>
+</div>
+<div>
+<p class=3D"MsoNormal" style=3D"margin-bottom:12.0pt">then how&#39;s has-rs=
+tcr/reboot works ?<u></u><u></u></p>
+</div>
+<div>
+<p class=3D"MsoNormal">Vineeth<u></u><u></u></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><u></u>=C2=A0<u></u></p>
+</div>
+<p class=3D"MsoNormal"><u></u>=C2=A0<u></u></p>
+</div>
+</div></div></div>
+</div>
+
+</blockquote></div><br></div>
+
+--f46d04138d31d263f30500191161--
