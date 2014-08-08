@@ -1,19 +1,22 @@
-Return-Path: <vneethv@gmail.com>
-Received: from mail-wg0-x22a.google.com (mail-wg0-x22a.google.com
- [IPv6:2a00:1450:400c:c00::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B67361A0946
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 16:05:48 +1000 (EST)
-Received: by mail-wg0-f42.google.com with SMTP id l18so5087824wgh.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Aug 2014 23:05:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8D9C1A0A60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 16:47:29 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <broonie@kernel.org>, <lgirdwood@gmail.com>, <timur@tabi.org>,
+ <perex@perex.cz>, <tiwai@suse.de>, <nicoleotsuka@gmail.com>,
+ <Li.Xiubo@freescale.com>, <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
+ <arnd@arndb.de>
+Subject: [PATCH V4 0/2]  refine esai for tdm support
+Date: Fri, 8 Aug 2014 14:47:20 +0800
+Message-ID: <cover.1407480333.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-From: Vineeth <vneethv@gmail.com>
-Date: Fri, 8 Aug 2014 11:35:24 +0530
-Message-ID: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
-Subject: T1040QDS warm reboot
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=047d7bfcfc18e92d65050017fe09
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7bfcfc18e92d65050017fe09
-Content-Type: text/plain; charset=UTF-8
+These patchs is to refine esai for tdm support.
 
-Was wondering how "reboot" works from linux kernel for t1040qds.
+Changes for V4
+- update the comments for patch 2
 
-When checked, @arch/powerpc/sysdev/fsl_soc.c
-__setup_rstcr, an ioremap is done for the offset 0xb0 and writes 0x2 to
-that to reboot the machine. and it works properly.
+Changes for V3
+- update the comments for patch 2
 
-when checked the reference manual for T1040QDS, it was given that RST_CTL
-is at offset 0x40 and the RST is the 7th bit of same.
-
-then how's has-rstcr/reboot works ?
-
-Vineeth
-
---047d7bfcfc18e92d65050017fe09
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div><div><div><div>Was wondering how &quot;reboot&quot; w=
-orks from linux kernel for t1040qds.<br><br></div>When checked, @arch/power=
-pc/sysdev/fsl_soc.c <br></div>__setup_rstcr, an ioremap is done for the off=
-set 0xb0 and writes 0x2 to that to reboot the machine. and it works properl=
-y.<br>
+Changes for V2
+- update the comments according the reviewer's suggestion
+- add init value for slots and change pin to pins.
 
 
-<br></div>when checked the reference manual for T1040QDS, it was given that=
- RST_CTL is at offset 0x40 and the RST is the 7th bit of same. <br><br></di=
-v><div>then how&#39;s has-rstcr/reboot works ?<br><br></div><div>Vineeth<br=
->
+Shengjiu Wang (2):
+  ASoC: fsl_esai: refine esai for TDM support
+  Revert "ASoC: fsl-esai: Add .xlate_tdm_slot_mask() support."
 
-</div><div><br></div><br></div>
+ sound/soc/fsl/Kconfig    |    1 -
+ sound/soc/fsl/fsl_esai.c |   16 +++++++++++-----
+ sound/soc/fsl/fsl_esai.h |    8 ++++----
+ 3 files changed, 15 insertions(+), 10 deletions(-)
 
---047d7bfcfc18e92d65050017fe09--
+-- 
+1.7.9.5
