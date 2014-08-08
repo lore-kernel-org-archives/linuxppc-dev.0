@@ -1,15 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id E75B31A0AA3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 17:05:09 +1000 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 16/20] powerpc/8xx: Implement 16k pages
-Message-Id: <20140808070345.3A7F51ABD4C@localhost.localdomain>
-Date: Fri,  8 Aug 2014 09:03:45 +0200 (CEST)
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6DDB1A01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 17:05:15 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Vineeth <vneethv@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: T1040QDS warm reboot
+Date: Fri, 8 Aug 2014 07:05:06 +0000
+Message-ID: <3e55262eed7c4b6b9e08e8b792d82e7b@CY1PR0301MB0857.namprd03.prod.outlook.com>
+References: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
+In-Reply-To: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
+Content-Type: multipart/alternative;
+ boundary="_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,64 +25,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch activates the handling of 16k pages on the MPC8xx.
+--_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+VGhhbmtzIFZpbmVldGggZm9yIHBvaW50aW5nIHRoaXMuDQoNCldlIHdpbGwgY2hlY2sgdGhpcyBv
+biBUMTA0MFFEUyBhbmQgZ2V0IGJhY2suDQoNCg0KUmVnYXJkcw0KUHJpeWFua2ENCg0KRnJvbTog
+TGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LWJvdW5jZXMrcHJpeWFua2EuamFpbj1m
+cmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBWaW5lZXRoDQpTZW50
+OiBGcmlkYXksIEF1Z3VzdCAwOCwgMjAxNCAxMTozNSBBTQ0KVG86IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnDQpTdWJqZWN0OiBUMTA0MFFEUyB3YXJtIHJlYm9vdA0KDQpXYXMgd29uZGVy
+aW5nIGhvdyAicmVib290IiB3b3JrcyBmcm9tIGxpbnV4IGtlcm5lbCBmb3IgdDEwNDBxZHMuDQpX
+aGVuIGNoZWNrZWQsIEBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9zb2MuYw0KX19zZXR1cF9yc3Rj
+ciwgYW4gaW9yZW1hcCBpcyBkb25lIGZvciB0aGUgb2Zmc2V0IDB4YjAgYW5kIHdyaXRlcyAweDIg
+dG8gdGhhdCB0byByZWJvb3QgdGhlIG1hY2hpbmUuIGFuZCBpdCB3b3JrcyBwcm9wZXJseS4NCndo
+ZW4gY2hlY2tlZCB0aGUgcmVmZXJlbmNlIG1hbnVhbCBmb3IgVDEwNDBRRFMsIGl0IHdhcyBnaXZl
+biB0aGF0IFJTVF9DVEwgaXMgYXQgb2Zmc2V0IDB4NDAgYW5kIHRoZSBSU1QgaXMgdGhlIDd0aCBi
+aXQgb2Ygc2FtZS4NCnRoZW4gaG93J3MgaGFzLXJzdGNyL3JlYm9vdCB3b3JrcyA/DQpWaW5lZXRo
+DQoNCg0K
 
----
- arch/powerpc/Kconfig               |    2 +-
- arch/powerpc/include/asm/mmu-8xx.h |    2 ++
- arch/powerpc/kernel/head_8xx.S     |    4 ++++
- 3 files changed, 7 insertions(+), 1 deletions(-)
+--_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: base64
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5f44d3b..dc5f64e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -518,7 +518,7 @@ config PPC_4K_PAGES
- 	bool "4k page size"
- 
- config PPC_16K_PAGES
--	bool "16k page size" if 44x
-+	bool "16k page size" if 44x || PPC_8xx
- 
- config PPC_64K_PAGES
- 	bool "64k page size" if 44x || PPC_STD_MMU_64 || PPC_BOOK3E_64
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 3d11d3c..986b9e1 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -56,6 +56,7 @@
-  * additional information from the MI_EPN, and MI_TWC registers.
-  */
- #define SPRN_MI_RPN	790
-+#define MI_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
- 
- /* Define an RPN value for mapping kernel memory to large virtual
-  * pages for boot initialization.  This has real page number of 0,
-@@ -129,6 +130,7 @@
-  * additional information from the MD_EPN, and MD_TWC registers.
-  */
- #define SPRN_MD_RPN	798
-+#define MD_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
- 
- /* This is a temporary storage register that could be used to save
-  * a processor working register during a tablewalk.
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a8945af..82e4139 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -45,7 +45,11 @@
-  * Value for the bits that have fixed value in RPN entries.
-  * Also used for tagging DAR for DTLBerror.
-  */
-+#ifdef CONFIG_PPC_16K_PAGES
-+#define RPN_PATTERN	(0x00f0 | MD_SPS16K)
-+#else
- #define RPN_PATTERN	0x00f0
-+#endif
- 
- 	__HEAD
- _ENTRY(_stext);
--- 
-1.7.1
+PGh0bWwgeG1sbnM6dj0idXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTp2bWwiIHhtbG5zOm89InVy
+bjpzY2hlbWFzLW1pY3Jvc29mdC1jb206b2ZmaWNlOm9mZmljZSIgeG1sbnM6dz0idXJuOnNjaGVt
+YXMtbWljcm9zb2Z0LWNvbTpvZmZpY2U6d29yZCIgeG1sbnM6bT0iaHR0cDovL3NjaGVtYXMubWlj
+cm9zb2Z0LmNvbS9vZmZpY2UvMjAwNC8xMi9vbW1sIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcv
+VFIvUkVDLWh0bWw0MCI+DQo8aGVhZD4NCjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIg
+Y29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxtZXRhIG5hbWU9IkdlbmVyYXRv
+ciIgY29udGVudD0iTWljcm9zb2Z0IFdvcmQgMTUgKGZpbHRlcmVkIG1lZGl1bSkiPg0KPHN0eWxl
+PjwhLS0NCi8qIEZvbnQgRGVmaW5pdGlvbnMgKi8NCkBmb250LWZhY2UNCgl7Zm9udC1mYW1pbHk6
+IkNhbWJyaWEgTWF0aCI7DQoJcGFub3NlLTE6MiA0IDUgMyA1IDQgNiAzIDIgNDt9DQpAZm9udC1m
+YWNlDQoJe2ZvbnQtZmFtaWx5OkNhbGlicmk7DQoJcGFub3NlLTE6MiAxNSA1IDIgMiAyIDQgMyAy
+IDQ7fQ0KLyogU3R5bGUgRGVmaW5pdGlvbnMgKi8NCnAuTXNvTm9ybWFsLCBsaS5Nc29Ob3JtYWws
+IGRpdi5Nc29Ob3JtYWwNCgl7bWFyZ2luOjBpbjsNCgltYXJnaW4tYm90dG9tOi4wMDAxcHQ7DQoJ
+Zm9udC1zaXplOjEyLjBwdDsNCglmb250LWZhbWlseToiVGltZXMgTmV3IFJvbWFuIiwic2VyaWYi
+O30NCmE6bGluaywgc3Bhbi5Nc29IeXBlcmxpbmsNCgl7bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0K
+CWNvbG9yOiMwNTYzQzE7DQoJdGV4dC1kZWNvcmF0aW9uOnVuZGVybGluZTt9DQphOnZpc2l0ZWQs
+IHNwYW4uTXNvSHlwZXJsaW5rRm9sbG93ZWQNCgl7bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0KCWNv
+bG9yOiM5NTRGNzI7DQoJdGV4dC1kZWNvcmF0aW9uOnVuZGVybGluZTt9DQpzcGFuLkVtYWlsU3R5
+bGUxNw0KCXttc28tc3R5bGUtdHlwZTpwZXJzb25hbC1yZXBseTsNCglmb250LWZhbWlseToiQ2Fs
+aWJyaSIsInNhbnMtc2VyaWYiOw0KCWNvbG9yOiMxRjQ5N0Q7fQ0KLk1zb0NocERlZmF1bHQNCgl7
+bXNvLXN0eWxlLXR5cGU6ZXhwb3J0LW9ubHk7DQoJZm9udC1mYW1pbHk6IkNhbGlicmkiLCJzYW5z
+LXNlcmlmIjt9DQpAcGFnZSBXb3JkU2VjdGlvbjENCgl7c2l6ZTo4LjVpbiAxMS4waW47DQoJbWFy
+Z2luOjEuMGluIDEuMGluIDEuMGluIDEuMGluO30NCmRpdi5Xb3JkU2VjdGlvbjENCgl7cGFnZTpX
+b3JkU2VjdGlvbjE7fQ0KLS0+PC9zdHlsZT48IS0tW2lmIGd0ZSBtc28gOV0+PHhtbD4NCjxvOnNo
+YXBlZGVmYXVsdHMgdjpleHQ9ImVkaXQiIHNwaWRtYXg9IjEwMjYiIC8+DQo8L3htbD48IVtlbmRp
+Zl0tLT48IS0tW2lmIGd0ZSBtc28gOV0+PHhtbD4NCjxvOnNoYXBlbGF5b3V0IHY6ZXh0PSJlZGl0
+Ij4NCjxvOmlkbWFwIHY6ZXh0PSJlZGl0IiBkYXRhPSIxIiAvPg0KPC9vOnNoYXBlbGF5b3V0Pjwv
+eG1sPjwhW2VuZGlmXS0tPg0KPC9oZWFkPg0KPGJvZHkgbGFuZz0iRU4tVVMiIGxpbms9IiMwNTYz
+QzEiIHZsaW5rPSIjOTU0RjcyIj4NCjxkaXYgY2xhc3M9IldvcmRTZWN0aW9uMSI+DQo8cCBjbGFz
+cz0iTXNvTm9ybWFsIj48c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTom
+cXVvdDtDYWxpYnJpJnF1b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+
+VGhhbmtzIFZpbmVldGggZm9yIHBvaW50aW5nIHRoaXMuPG86cD48L286cD48L3NwYW4+PC9wPg0K
+PHAgY2xhc3M9Ik1zb05vcm1hbCI+PHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMS4wcHQ7Zm9udC1m
+YW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlmJnF1b3Q7O2NvbG9yOiMx
+RjQ5N0QiPjxvOnA+Jm5ic3A7PC9vOnA+PC9zcGFuPjwvcD4NCjxwIGNsYXNzPSJNc29Ob3JtYWwi
+PjxzcGFuIHN0eWxlPSJmb250LXNpemU6MTEuMHB0O2ZvbnQtZmFtaWx5OiZxdW90O0NhbGlicmkm
+cXVvdDssJnF1b3Q7c2Fucy1zZXJpZiZxdW90Oztjb2xvcjojMUY0OTdEIj5XZSB3aWxsIGNoZWNr
+IHRoaXMgb24gVDEwNDBRRFMgYW5kIGdldCBiYWNrLjxvOnA+PC9vOnA+PC9zcGFuPjwvcD4NCjxw
+IGNsYXNzPSJNc29Ob3JtYWwiPjxzcGFuIHN0eWxlPSJmb250LXNpemU6MTEuMHB0O2ZvbnQtZmFt
+aWx5OiZxdW90O0NhbGlicmkmcXVvdDssJnF1b3Q7c2Fucy1zZXJpZiZxdW90Oztjb2xvcjojMUY0
+OTdEIj48bzpwPiZuYnNwOzwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIj48
+c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTomcXVvdDtDYWxpYnJpJnF1
+b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+PG86cD4mbmJzcDs8L286
+cD48L3NwYW4+PC9wPg0KPHAgY2xhc3M9Ik1zb05vcm1hbCI+PHNwYW4gc3R5bGU9ImZvbnQtc2l6
+ZToxMS4wcHQ7Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlm
+JnF1b3Q7O2NvbG9yOiMxRjQ5N0QiPlJlZ2FyZHM8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBj
+bGFzcz0iTXNvTm9ybWFsIj48c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWls
+eTomcXVvdDtDYWxpYnJpJnF1b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3
+RCI+UHJpeWFua2E8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIj48
+c3BhbiBzdHlsZT0iZm9udC1zaXplOjExLjBwdDtmb250LWZhbWlseTomcXVvdDtDYWxpYnJpJnF1
+b3Q7LCZxdW90O3NhbnMtc2VyaWYmcXVvdDs7Y29sb3I6IzFGNDk3RCI+PG86cD4mbmJzcDs8L286
+cD48L3NwYW4+PC9wPg0KPHAgY2xhc3M9Ik1zb05vcm1hbCI+PGI+PHNwYW4gc3R5bGU9ImZvbnQt
+c2l6ZToxMS4wcHQ7Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNl
+cmlmJnF1b3Q7Ij5Gcm9tOjwvc3Bhbj48L2I+PHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMS4wcHQ7
+Zm9udC1mYW1pbHk6JnF1b3Q7Q2FsaWJyaSZxdW90OywmcXVvdDtzYW5zLXNlcmlmJnF1b3Q7Ij4g
+TGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LWJvdW5jZXMmIzQzO3ByaXlhbmthLmph
+aW49ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxhYnMub3JnXQ0KPGI+T24gQmVoYWxmIE9mIDwvYj5W
+aW5lZXRoPGJyPg0KPGI+U2VudDo8L2I+IEZyaWRheSwgQXVndXN0IDA4LCAyMDE0IDExOjM1IEFN
+PGJyPg0KPGI+VG86PC9iPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzxicj4NCjxiPlN1
+YmplY3Q6PC9iPiBUMTA0MFFEUyB3YXJtIHJlYm9vdDxvOnA+PC9vOnA+PC9zcGFuPjwvcD4NCjxw
+IGNsYXNzPSJNc29Ob3JtYWwiPjxvOnA+Jm5ic3A7PC9vOnA+PC9wPg0KPGRpdj4NCjxkaXY+DQo8
+ZGl2Pg0KPGRpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIiBzdHlsZT0ibWFyZ2luLWJv
+dHRvbToxMi4wcHQiPldhcyB3b25kZXJpbmcgaG93ICZxdW90O3JlYm9vdCZxdW90OyB3b3JrcyBm
+cm9tIGxpbnV4IGtlcm5lbCBmb3IgdDEwNDBxZHMuPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxw
+IGNsYXNzPSJNc29Ob3JtYWwiPldoZW4gY2hlY2tlZCwgQGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNs
+X3NvYy5jIDxvOnA+PC9vOnA+PC9wPg0KPC9kaXY+DQo8cCBjbGFzcz0iTXNvTm9ybWFsIiBzdHls
+ZT0ibWFyZ2luLWJvdHRvbToxMi4wcHQiPl9fc2V0dXBfcnN0Y3IsIGFuIGlvcmVtYXAgaXMgZG9u
+ZSBmb3IgdGhlIG9mZnNldCAweGIwIGFuZCB3cml0ZXMgMHgyIHRvIHRoYXQgdG8gcmVib290IHRo
+ZSBtYWNoaW5lLiBhbmQgaXQgd29ya3MgcHJvcGVybHkuPG86cD48L286cD48L3A+DQo8L2Rpdj4N
+CjxwIGNsYXNzPSJNc29Ob3JtYWwiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjEyLjBwdCI+d2hlbiBj
+aGVja2VkIHRoZSByZWZlcmVuY2UgbWFudWFsIGZvciBUMTA0MFFEUywgaXQgd2FzIGdpdmVuIHRo
+YXQgUlNUX0NUTCBpcyBhdCBvZmZzZXQgMHg0MCBhbmQgdGhlIFJTVCBpcyB0aGUgN3RoIGJpdCBv
+ZiBzYW1lLg0KPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNvTm9y
+bWFsIiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxMi4wcHQiPnRoZW4gaG93J3MgaGFzLXJzdGNyL3Jl
+Ym9vdCB3b3JrcyA/PG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0iTXNv
+Tm9ybWFsIj5WaW5lZXRoPG86cD48L286cD48L3A+DQo8L2Rpdj4NCjxkaXY+DQo8cCBjbGFzcz0i
+TXNvTm9ybWFsIj48bzpwPiZuYnNwOzwvbzpwPjwvcD4NCjwvZGl2Pg0KPHAgY2xhc3M9Ik1zb05v
+cm1hbCI+PG86cD4mbmJzcDs8L286cD48L3A+DQo8L2Rpdj4NCjwvZGl2Pg0KPC9ib2R5Pg0KPC9o
+dG1sPg0K
+
+--_000_3e55262eed7c4b6b9e08e8b792d82e7bCY1PR0301MB0857namprd03_--
