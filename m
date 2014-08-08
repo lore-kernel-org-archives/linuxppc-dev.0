@@ -1,19 +1,20 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A3A21A0A6C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 03:13:32 +1000 (EST)
-Message-ID: <1407518003.26210.13.camel@ul30vt.home>
-Subject: Re: [PATCH v4 0/5] drivers/vfio: EEH Compile and compatibility
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Fri, 08 Aug 2014 11:13:23 -0600
-In-Reply-To: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD01F1A0A72
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 04:15:36 +1000 (EST)
+Message-ID: <1407521714.7427.70.camel@snotra.buserror.net>
+Subject: Re: T1040QDS warm reboot
+From: Scott Wood <scottwood@freescale.com>
+To: Vineeth <vneethv@gmail.com>
+Date: Fri, 8 Aug 2014 13:15:14 -0500
+In-Reply-To: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
+References: <CAFbQSaA80pdzXBk2Om4ewGS9FTWc_tPvu9MM596gPc-_B3igVw@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-08-07 at 12:47 +1000, Gavin Shan wrote:
-> The patchset is mainly for fixing errors from building VFIO compoments
-> as dynamic modules. PATCH[4/4] allows VFIO can be used though EEH fails
-> to initialize for VFIO PCI devices.
+On Fri, 2014-08-08 at 11:35 +0530, Vineeth wrote:
+> Was wondering how "reboot" works from linux kernel for t1040qds.
 > 
 > 
-> Alexey Kardashevskiy (2):
->   drivers/vfio: Allow EEH to be built as module
->   drivers/vfio: Enable VFIO if EEH is not supported
+> When checked, @arch/powerpc/sysdev/fsl_soc.c 
 > 
-> Gavin Shan (3):
->   powerpc/eeh: Export eeh_iommu_group_to_pe()
->   powerpc/eeh: Add warning message in eeh_dev_open()
->   drivers/vfio: Fix EEH build error
+> __setup_rstcr, an ioremap is done for the offset 0xb0 and writes 0x2
+> to that to reboot the machine. and it works properly.
 > 
->  arch/powerpc/kernel/eeh.c     |  6 +++++-
->  drivers/vfio/Kconfig          |  6 ++++++
->  drivers/vfio/Makefile         |  2 +-
->  drivers/vfio/pci/vfio_pci.c   |  6 +-----
->  drivers/vfio/vfio_spapr_eeh.c | 17 +++++++++++++++--
->  include/linux/vfio.h          |  6 +++---
->  6 files changed, 31 insertions(+), 12 deletions(-)
+> 
+> when checked the reference manual for T1040QDS, it was given that
+> RST_CTL is at offset 0x40 and the RST is the 7th bit of same. 
 
-Applied 3-5 to vfio next branch for 3.17.  Thanks,
+RSTCR is an SoC register (see DCFG_CCSR_RSTCR in T1040RM), not something
+implemented by the board.  Are you perhaps looking at some QIXIS
+register?
 
-Alex
+-Scott
