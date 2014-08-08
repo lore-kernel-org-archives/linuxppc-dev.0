@@ -1,21 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 562DA1A0A4B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 09:07:31 +1000 (EST)
-Date: Thu, 07 Aug 2014 16:07:29 -0700 (PDT)
-Message-Id: <20140807.160729.547343802808631351.davem@davemloft.net>
-To: u.kleine-koenig@pengutronix.de
-Subject: Re: [PATCH 3/3] net: ucc_geth: Don't use the MAC as PHY without a
- fixed link
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1407448106-1819-3-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1407448106-1819-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1407448106-1819-3-git-send-email-u.kleine-koenig@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, f.fainelli@gmail.com,
- kernel@pengutronix.de
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3F6E1A0947
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 11:09:56 +1000 (EST)
+Date: Fri, 8 Aug 2014 11:09:58 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ nfont@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Remove ppc_md.remove_memory
+Message-ID: <20140808110958.59dbe066@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +22,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-Date: Thu,  7 Aug 2014 23:48:26 +0200
+We have an extra level of indirection on memory hot remove which is not
+matched on memory hot add. Memory hotplug is book3s only, so there is
+no need for it.
 
-> This matches what the other drivers using fixed-link support do and
-> restores the behaviour before commit 87009814cdbb ("ucc_geth: use the=
+This also enables means remove_memory() (ie memory hot unplug) works
+on powernv.
 
-> new fixed PHY helpers") for the affected device trees (i.e. no
-> phy-handle and no fixed-link).
-> =
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-> Fixes: 87009814cdbb ("ucc_geth: use the new fixed PHY helpers")
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-
-Applied.
+Index: b/arch/powerpc/include/asm/machdep.h
+===================================================================
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -294,10 +294,6 @@ struct machdep_calls {
+ #ifdef CONFIG_ARCH_RANDOM
+ 	int (*get_random_long)(unsigned long *v);
+ #endif
+-
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	int (*remove_memory)(u64, u64);
+-#endif
+ };
+ 
+ extern void e500_idle(void);
+Index: b/arch/powerpc/mm/mem.c
+===================================================================
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -35,6 +35,7 @@
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
+ #include <linux/slab.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/prom.h>
+@@ -143,8 +144,15 @@ int arch_remove_memory(u64 start, u64 si
+ 
+ 	zone = page_zone(pfn_to_page(start_pfn));
+ 	ret = __remove_pages(zone, start_pfn, nr_pages);
+-	if (!ret && (ppc_md.remove_memory))
+-		ret = ppc_md.remove_memory(start, size);
++
++	start = (unsigned long)__va(start);
++	if (!ret)
++		ret = remove_section_mapping(start, start + size);
++
++	/* Ensure all vmalloc mappings are flushed in case they also
++	 * hit that section of memory
++	 */
++	vm_unmap_aliases();
+ 
+ 	return ret;
+ }
+Index: b/arch/powerpc/platforms/pseries/hotplug-memory.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -12,7 +12,6 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/memblock.h>
+-#include <linux/vmalloc.h>
+ #include <linux/memory.h>
+ #include <linux/memory_hotplug.h>
+ 
+@@ -65,22 +64,6 @@ unsigned long pseries_memory_block_size(
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+-static int pseries_remove_memory(u64 start, u64 size)
+-{
+-	int ret;
+-
+-	/* Remove htab bolted mappings for this section of memory */
+-	start = (unsigned long)__va(start);
+-	ret = remove_section_mapping(start, start + size);
+-
+-	/* Ensure all vmalloc mappings are flushed in case they also
+-	 * hit that section of memory
+-	 */
+-	vm_unmap_aliases();
+-
+-	return ret;
+-}
+-
+ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+ {
+ 	unsigned long block_sz, start_pfn;
+@@ -259,10 +242,6 @@ static int __init pseries_memory_hotplug
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		of_reconfig_notifier_register(&pseries_mem_nb);
+ 
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	ppc_md.remove_memory = pseries_remove_memory;
+-#endif
+-
+ 	return 0;
+ }
+ machine_device_initcall(pseries, pseries_memory_hotplug_init);
