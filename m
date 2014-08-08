@@ -1,22 +1,31 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <kamal@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 567EF1A088C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 06:35:09 +1000 (EST)
-Date: Fri, 8 Aug 2014 22:34:56 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 1/3] net: ucc_geth: drop acquired references in probe
- error path and remove
-Message-ID: <20140808203456.GB5134@pengutronix.de>
-References: <1407448106-1819-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1407448106-1819-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Cc: netdev@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFDA91A0A28
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 06:42:33 +1000 (EST)
+From: Kamal Mostafa <kamal@canonical.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ kernel-team@lists.ubuntu.com
+Subject: [PATCH 3.13 145/259] locking/mutex: Disable optimistic spinning on
+ some architectures
+Date: Fri,  8 Aug 2014 13:39:28 -0700
+Message-Id: <1407530482-4483-146-git-send-email-kamal@canonical.com>
+In-Reply-To: <1407530482-4483-1-git-send-email-kamal@canonical.com>
+References: <1407530482-4483-1-git-send-email-kamal@canonical.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ Davidlohr Bueso <davidlohr@hp.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ James Hogan <james.hogan@imgtec.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ John David Anglin <dave.anglin@bell.net>, linux-arm-kernel@lists.infradead.org,
+ Jason Low <jason.low2@hp.com>, Waiman Long <waiman.long@hp.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Kamal Mostafa <kamal@canonical.com>,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +35,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 07, 2014 at 11:48:24PM +0200, Uwe Kleine-König wrote:
-> The ucc_geth_probe function assigns to ug_info->tbi_node and
-> ug_info->phy_node a value returned by of_parse_phandle which returns a
-> new reference. Put this reference again in the error path of
-> ucc_geth_probe and when removing the device.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
-> No Fixes: footer here. The problem already exists in v2.6.31-rc1 (e.g.
-> commit 0b9da337dca9 (net: Rework ucc_geth driver to use of_mdio
-> infrastructure)). Didn't continue to research a specific commit.
-> ---
->  drivers/net/ethernet/freescale/ucc_geth.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-> index 36fc429298e3..5f1aab9c4ee7 100644
-> --- a/drivers/net/ethernet/freescale/ucc_geth.c
-> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-> @@ -3864,8 +3864,11 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->  	/* Create an ethernet device instance */
->  	dev = alloc_etherdev(sizeof(*ugeth));
->  
-> -	if (dev == NULL)
-> +	if (dev == NULL) {
-> +		of_node_put(ug_info->tbi_node);
-> +		of_node_put(ug_info->phy_node);
->  		return -ENOMEM;
-> +	}
->  
->  	ugeth = netdev_priv(dev);
->  	spin_lock_init(&ugeth->lock);
-> @@ -3899,6 +3902,8 @@ static int ucc_geth_probe(struct platform_device* ofdev)
->  			pr_err("%s: Cannot register net device, aborting\n",
->  			       dev->name);
->  		free_netdev(dev);
-> +		of_node_put(ug_info->tbi_node);
-> +		of_node_put(ug_info->phy_node);
->  		return err;
->  	}
->  
-> @@ -3922,6 +3927,8 @@ static int ucc_geth_remove(struct platform_device* ofdev)
->  	unregister_netdev(dev);
->  	free_netdev(dev);
->  	ucc_geth_memclean(ugeth);
-> +	of_node_put(ugeth->info->tbi_node);
-> +	of_node_put(ugeth->info->phy_node);
-this must read:
+3.13.11.6 -stable review patch.  If anyone has any objections, please let me know.
 
-	of_node_put(ugeth->ug_info->tbi_node);
-	of_node_put(ugeth->ug_info->phy_node);
+------------------
 
-otherwise it fails to build.
+From: Peter Zijlstra <peterz@infradead.org>
 
-@davem: Should I send a fixup or a new version?
+commit 4badad352a6bb202ec68afa7a574c0bb961e5ebc upstream.
 
-Best regards
-Uwe
+The optimistic spin code assumes regular stores and cmpxchg() play nice;
+this is found to not be true for at least: parisc, sparc32, tile32,
+metag-lock1, arc-!llsc and hexagon.
 
+There is further wreckage, but this in particular seemed easy to
+trigger, so blacklist this.
+
+Opt in for known good archs.
+
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Jason Low <jason.low2@hp.com>
+Cc: Waiman Long <waiman.long@hp.com>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: John David Anglin <dave.anglin@bell.net>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davidlohr Bueso <davidlohr@hp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Link: http://lkml.kernel.org/r/20140606175316.GV13930@laptop.programming.kicks-ass.net
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Kamal Mostafa <kamal@canonical.com>
+---
+ arch/arm/Kconfig     | 1 +
+ arch/arm64/Kconfig   | 1 +
+ arch/powerpc/Kconfig | 1 +
+ arch/sparc/Kconfig   | 1 +
+ arch/x86/Kconfig     | 1 +
+ kernel/Kconfig.locks | 5 ++++-
+ 6 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 31e1f44..b3d400d 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -6,6 +6,7 @@ config ARM
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAVE_CUSTOM_GPIO_H
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_USE_CMPXCHG_LOCKREF
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select BUILDTIME_EXTABLE_SORT if MMU
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 6d4dd22..bf0ed5d 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -2,6 +2,7 @@ config ARM64
+ 	def_bool y
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_USE_CMPXCHG_LOCKREF
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_FRAME_POINTERS
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b44b52c..ab43fa3 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -139,6 +139,7 @@ config PPC
+ 	select OLD_SIGACTION if PPC32
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 6c95f4d..94cd9c1 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -76,6 +76,7 @@ config SPARC64
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
+ 	select NO_BOOTMEM
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config ARCH_DEFCONFIG
+ 	string
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 9e31880..9562fc3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -125,6 +125,7 @@ config X86
+ 	select RTC_LIB
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select HAVE_IRQ_EXIT_ON_IRQ_STACK if X86_64
++	select ARCH_SUPPORTS_ATOMIC_RMW
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool y
+diff --git a/kernel/Kconfig.locks b/kernel/Kconfig.locks
+index d2b32ac..ecee67a 100644
+--- a/kernel/Kconfig.locks
++++ b/kernel/Kconfig.locks
+@@ -220,6 +220,9 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
+ 
+ endif
+ 
++config ARCH_SUPPORTS_ATOMIC_RMW
++	bool
++
+ config MUTEX_SPIN_ON_OWNER
+ 	def_bool y
+-	depends on SMP && !DEBUG_MUTEXES
++	depends on SMP && !DEBUG_MUTEXES && ARCH_SUPPORTS_ATOMIC_RMW
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+1.9.1
