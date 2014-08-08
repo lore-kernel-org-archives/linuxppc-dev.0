@@ -1,19 +1,21 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEFD51A02D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 11:49:34 +1000 (EST)
-Date: Fri, 8 Aug 2014 11:49:36 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- zhong@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
-Subject: [PATCH] powerpc: Move htab_remove_mapping function prototype into
- header file
-Message-ID: <20140808114936.2e2df11a@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCD9E1A0A47
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2014 13:49:56 +1000 (EST)
+Message-ID: <1407469782.4508.0.camel@pasglop>
+Subject: Re: [PATCH v4 1/5] powerpc/eeh: Export eeh_iommu_group_to_pe()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Fri, 08 Aug 2014 13:49:42 +1000
+In-Reply-To: <1407379640-13065-2-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1407379640-13065-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1407379640-13065-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A recent patch added a function prototype for htab_remove_mapping in
-c code. Fix it.
+On Thu, 2014-08-07 at 12:47 +1000, Gavin Shan wrote:
+> The function is used by VFIO driver, which might be built as a
+> dynamic module. So it should be exported.
+> 
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index d765144..92bc3a6 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -342,6 +342,8 @@ extern void hash_failure_debug(unsigned long ea, unsigned long access,
- extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     unsigned long pstart, unsigned long prot,
- 			     int psize, int ssize);
-+int htab_remove_mapping(unsigned long vstart, unsigned long vend,
-+			int psize, int ssize);
- extern void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages);
- extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
- 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 253b4b9..3481556 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -233,9 +233,6 @@ static void __meminit vmemmap_create_mapping(unsigned long start,
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--extern int htab_remove_mapping(unsigned long vstart, unsigned long vend,
--			int psize, int ssize);
--
- static void vmemmap_remove_mapping(unsigned long start,
- 				   unsigned long page_size)
- {
+Alex, are you taking this or should I ?
+
+> ---
+>  arch/powerpc/kernel/eeh.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 6043879..59a64f8 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1254,6 +1254,7 @@ struct eeh_pe *eeh_iommu_group_to_pe(struct iommu_group *group)
+>  
+>  	return edev->pe;
+>  }
+> +EXPORT_SYMBOL_GPL(eeh_iommu_group_to_pe);
+>  
+>  #endif /* CONFIG_IOMMU_API */
+>  
