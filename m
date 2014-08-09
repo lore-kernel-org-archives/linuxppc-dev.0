@@ -1,19 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B62D11A0DDB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 09:44:24 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 083F01A0A2D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 15:22:20 +1000 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id eu11so8356446pac.32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Aug 2014 22:22:17 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/nohash: Split __early_init_mmu() into boot and
- secondary
-Date: Fri, 8 Aug 2014 18:44:01 -0500
-Message-ID: <1407541441-4169-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix "attempt to move .org backwards" error
+Date: Fri,  8 Aug 2014 22:22:12 -0700
+Message-Id: <1407561732-817-1-git-send-email-linux@roeck-us.net>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,181 +25,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__early_init_mmu() does some things that are really only needed by the
-boot cpu.  On FSL booke, This includes calling
-memblock_enforce_memory_limit(), which is labelled __init.  Secondary
-cpu init code can't be __init as that would break CPU hotplug.
+Once again, we see
 
-While it's probably a bug that memblock_enforce_memory_limit() isn't
-__init_memblock instead, there's no reason why we should be doing this
-stuff for secondary cpus in the first place.
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:865: Error: attempt to move .org backwards
+arch/powerpc/kernel/exceptions-64s.S:866: Error: attempt to move .org backwards
+arch/powerpc/kernel/exceptions-64s.S:890: Error: attempt to move .org backwards
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+when compiling ppc:allmodconfig.
+
+This time the problem has been caused by to commit 0869b6fd209bda
+("powerpc/book3s: Add basic infrastructure to handle HMI in Linux"),
+which adds functions hmi_exception_early and hmi_exception_after_realmode
+into a critical (size-limited) code area, even though that does not appear
+to be necessary.
+
+Move those functions to a non-critical area of the file.
+
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-v2: Rename early_init_this_mmu(), and factor early_init_mmu_global()
-and early_mmu_set_memory_limit() out from early_init_mmu().
+Compile tested with all ppc configurations.
+The reported checkpatch error appears to be a false positive.
 
- arch/powerpc/mm/tlb_nohash.c | 111 +++++++++++++++++++++++++------------------
- 1 file changed, 66 insertions(+), 45 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 110 +++++++++++++++++------------------
+ 1 file changed, 55 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 92cb18d..f38ea4d 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -581,42 +581,10 @@ static void setup_mmu_htw(void)
- /*
-  * Early initialization of the MMU TLB code
-  */
--static void __early_init_mmu(int boot_cpu)
-+static void early_init_this_mmu(void)
- {
- 	unsigned int mas4;
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 6144d5a..050f79a 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -592,61 +592,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	MASKABLE_EXCEPTION_HV_OOL(0xe62, hmi_exception)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe62)
  
--	/* XXX This will have to be decided at runtime, but right
--	 * now our boot and TLB miss code hard wires it. Ideally
--	 * we should find out a suitable page size and patch the
--	 * TLB miss code (either that or use the PACA to store
--	 * the value we want)
+-	.globl hmi_exception_early
+-hmi_exception_early:
+-	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
+-	mr	r10,r1			/* Save r1			*/
+-	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
+-	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
+-	std	r9,_CCR(r1)		/* save CR in stackframe	*/
+-	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
+-	std	r11,_NIP(r1)		/* save HSRR0 in stackframe	*/
+-	mfspr	r12,SPRN_HSRR1		/* Save SRR1 */
+-	std	r12,_MSR(r1)		/* save SRR1 in stackframe	*/
+-	std	r10,0(r1)		/* make stack chain pointer	*/
+-	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
+-	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
+-	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
+-	EXCEPTION_PROLOG_COMMON_3(0xe60)
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	hmi_exception_realmode
+-	/* Windup the stack. */
+-	/* Clear MSR_RI before setting SRR0 and SRR1. */
+-	li	r0,MSR_RI
+-	mfmsr	r9			/* get MSR value */
+-	andc	r9,r9,r0
+-	mtmsrd	r9,1			/* Clear MSR_RI */
+-	/* Move original HSRR0 and HSRR1 into the respective regs */
+-	ld	r9,_MSR(r1)
+-	mtspr	SPRN_HSRR1,r9
+-	ld	r3,_NIP(r1)
+-	mtspr	SPRN_HSRR0,r3
+-	ld	r9,_CTR(r1)
+-	mtctr	r9
+-	ld	r9,_XER(r1)
+-	mtxer	r9
+-	ld	r9,_LINK(r1)
+-	mtlr	r9
+-	REST_GPR(0, r1)
+-	REST_8GPRS(2, r1)
+-	REST_GPR(10, r1)
+-	ld	r11,_CCR(r1)
+-	mtcr	r11
+-	REST_GPR(11, r1)
+-	REST_2GPRS(12, r1)
+-	/* restore original r1. */
+-	ld	r1,GPR1(r1)
+-
+-	/*
+-	 * Go to virtual mode and pull the HMI event information from
+-	 * firmware.
 -	 */
--	mmu_linear_psize = MMU_PAGE_1G;
+-	.globl hmi_exception_after_realmode
+-hmi_exception_after_realmode:
+-	SET_SCRATCH0(r13)
+-	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	b	hmi_exception_hv
 -
--	/* XXX This should be decided at runtime based on supported
--	 * page sizes in the TLB, but for now let's assume 16M is
--	 * always there and a good fit (which it probably is)
--	 *
--	 * Freescale booke only supports 4K pages in TLB0, so use that.
--	 */
--	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
--		mmu_vmemmap_psize = MMU_PAGE_4K;
--	else
--		mmu_vmemmap_psize = MMU_PAGE_16M;
--
--	/* XXX This code only checks for TLB 0 capabilities and doesn't
--	 *     check what page size combos are supported by the HW. It
--	 *     also doesn't handle the case where a separate array holds
--	 *     the IND entries from the array loaded by the PT.
--	 */
--	if (boot_cpu) {
--		/* Look for supported page sizes */
--		setup_page_sizes();
--
--		/* Look for HW tablewalk support */
--		setup_mmu_htw();
--	}
--
- 	/* Set MAS4 based on page table setting */
+ 	MASKABLE_EXCEPTION_HV_OOL(0xe82, h_doorbell)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe82)
  
- 	mas4 = 0x4 << MAS4_WIMGED_SHIFT;
-@@ -650,11 +618,6 @@ static void __early_init_mmu(int boot_cpu)
- 	}
- 	mtspr(SPRN_MAS4, mas4);
+@@ -1306,6 +1251,61 @@ fwnmi_data_area:
+ 	. = 0x8000
+ #endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
  
--	/* Set the global containing the top of the linear mapping
--	 * for use by the TLB miss code
--	 */
--	linear_map_top = memblock_end_of_DRAM();
--
- #ifdef CONFIG_PPC_FSL_BOOK3E
- 	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
- 		unsigned int num_cams;
-@@ -662,10 +625,49 @@ static void __early_init_mmu(int boot_cpu)
- 		/* use a quarter of the TLBCAM for bolted linear map */
- 		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
- 		linear_map_top = map_mem_in_cams(linear_map_top, num_cams);
-+	}
-+#endif
- 
--		/* limit memory so we dont have linear faults */
--		memblock_enforce_memory_limit(linear_map_top);
-+	/* A sync won't hurt us after mucking around with
-+	 * the MMU configuration
++	.globl hmi_exception_early
++hmi_exception_early:
++	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
++	mr	r10,r1			/* Save r1			*/
++	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
++	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
++	std	r9,_CCR(r1)		/* save CR in stackframe	*/
++	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
++	std	r11,_NIP(r1)		/* save HSRR0 in stackframe	*/
++	mfspr	r12,SPRN_HSRR1		/* Save SRR1 */
++	std	r12,_MSR(r1)		/* save SRR1 in stackframe	*/
++	std	r10,0(r1)		/* make stack chain pointer	*/
++	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
++	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
++	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
++	EXCEPTION_PROLOG_COMMON_3(0xe60)
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	hmi_exception_realmode
++	/* Windup the stack. */
++	/* Clear MSR_RI before setting SRR0 and SRR1. */
++	li	r0,MSR_RI
++	mfmsr	r9			/* get MSR value */
++	andc	r9,r9,r0
++	mtmsrd	r9,1			/* Clear MSR_RI */
++	/* Move original HSRR0 and HSRR1 into the respective regs */
++	ld	r9,_MSR(r1)
++	mtspr	SPRN_HSRR1,r9
++	ld	r3,_NIP(r1)
++	mtspr	SPRN_HSRR0,r3
++	ld	r9,_CTR(r1)
++	mtctr	r9
++	ld	r9,_XER(r1)
++	mtxer	r9
++	ld	r9,_LINK(r1)
++	mtlr	r9
++	REST_GPR(0, r1)
++	REST_8GPRS(2, r1)
++	REST_GPR(10, r1)
++	ld	r11,_CCR(r1)
++	mtcr	r11
++	REST_GPR(11, r1)
++	REST_2GPRS(12, r1)
++	/* restore original r1. */
++	ld	r1,GPR1(r1)
++
++	/*
++	 * Go to virtual mode and pull the HMI event information from
++	 * firmware.
 +	 */
-+	mb();
-+}
- 
-+static void __init early_init_mmu_global(void)
-+{
-+	/* XXX This will have to be decided at runtime, but right
-+	 * now our boot and TLB miss code hard wires it. Ideally
-+	 * we should find out a suitable page size and patch the
-+	 * TLB miss code (either that or use the PACA to store
-+	 * the value we want)
-+	 */
-+	mmu_linear_psize = MMU_PAGE_1G;
++	.globl hmi_exception_after_realmode
++hmi_exception_after_realmode:
++	SET_SCRATCH0(r13)
++	EXCEPTION_PROLOG_0(PACA_EXGEN)
++	b	hmi_exception_hv
 +
-+	/* XXX This should be decided at runtime based on supported
-+	 * page sizes in the TLB, but for now let's assume 16M is
-+	 * always there and a good fit (which it probably is)
-+	 *
-+	 * Freescale booke only supports 4K pages in TLB0, so use that.
-+	 */
-+	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
-+		mmu_vmemmap_psize = MMU_PAGE_4K;
-+	else
-+		mmu_vmemmap_psize = MMU_PAGE_16M;
-+
-+	/* XXX This code only checks for TLB 0 capabilities and doesn't
-+	 *     check what page size combos are supported by the HW. It
-+	 *     also doesn't handle the case where a separate array holds
-+	 *     the IND entries from the array loaded by the PT.
-+	 */
-+	/* Look for supported page sizes */
-+	setup_page_sizes();
-+
-+	/* Look for HW tablewalk support */
-+	setup_mmu_htw();
-+
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
- 		if (book3e_htw_mode == PPC_HTW_NONE) {
- 			extlb_level_exc = EX_TLB_SIZE;
- 			patch_exception(0x1c0, exc_data_tlb_miss_bolted_book3e);
-@@ -675,22 +677,41 @@ static void __early_init_mmu(int boot_cpu)
- 	}
- #endif
- 
--	/* A sync won't hurt us after mucking around with
--	 * the MMU configuration
-+	/* Set the global containing the top of the linear mapping
-+	 * for use by the TLB miss code
- 	 */
--	mb();
-+	linear_map_top = memblock_end_of_DRAM();
-+}
-+
-+static void __init early_mmu_set_memory_limit(void)
-+{
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
-+		/*
-+		 * Limit memory so we dont have linear faults.
-+		 * Unlike memblock_set_current_limit, which limits
-+		 * memory available during early boot, this permanently
-+		 * reduces the memory available to Linux.  We need to
-+		 * do this because highmem is not supported on 64-bit.
-+		 */
-+		memblock_enforce_memory_limit(linear_map_top);
-+	}
-+#endif
- 
- 	memblock_set_current_limit(linear_map_top);
- }
- 
-+/* boot cpu only */
- void __init early_init_mmu(void)
- {
--	__early_init_mmu(1);
-+	early_init_mmu_global();
-+	early_init_this_mmu();
-+	early_mmu_set_memory_limit();
- }
- 
- void early_init_mmu_secondary(void)
- {
--	__early_init_mmu(0);
-+	early_init_this_mmu();
- }
- 
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ #ifdef CONFIG_PPC_POWERNV
+ _GLOBAL(opal_mc_secondary_handler)
+ 	HMT_MEDIUM_PPR_DISCARD
 -- 
 1.9.1
