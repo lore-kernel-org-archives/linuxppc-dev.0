@@ -1,21 +1,35 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 083F01A0A2D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 15:22:20 +1000 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id eu11so8356446pac.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Aug 2014 22:22:17 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Fix "attempt to move .org backwards" error
-Date: Fri,  8 Aug 2014 22:22:12 -0700
-Message-Id: <1407561732-817-1-git-send-email-linux@roeck-us.net>
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D590B1A0A68
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 15:45:39 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Sat, 9 Aug 2014 15:45:38 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B93352CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2014 15:45:35 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s795MMjO11665740
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Aug 2014 15:22:23 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s795jYPk018493
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Aug 2014 15:45:34 +1000
+Subject: [PATCH v3 1/2] printk: Add function to return log buffer address
+ and size
+To: linuxppc-dev@lists.ozlabs.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Sat, 09 Aug 2014 11:15:30 +0530
+Message-ID: <20140809054424.17676.1090.stgit@hegdevasant.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,159 +39,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once again, we see
+Platforms like IBM Power Systems supports service processor
+assisted dump. It provides interface to add memory region to
+be captured when system is crashed.
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:865: Error: attempt to move .org backwards
-arch/powerpc/kernel/exceptions-64s.S:866: Error: attempt to move .org backwards
-arch/powerpc/kernel/exceptions-64s.S:890: Error: attempt to move .org backwards
+During initialization/running we can add kernel memory region
+to be collected.
 
-when compiling ppc:allmodconfig.
+Presently we don't have a way to get the log buffer base address
+and size. This patch adds support to return log buffer address
+and size.
 
-This time the problem has been caused by to commit 0869b6fd209bda
-("powerpc/book3s: Add basic infrastructure to handle HMI in Linux"),
-which adds functions hmi_exception_early and hmi_exception_after_realmode
-into a critical (size-limited) code area, even though that does not appear
-to be necessary.
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Move those functions to a non-critical area of the file.
-
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
-Compile tested with all ppc configurations.
-The reported checkpatch error appears to be a false positive.
+Next patch extends arch specific code to add log buffer to platform
+dump.
 
- arch/powerpc/kernel/exceptions-64s.S | 110 +++++++++++++++++------------------
- 1 file changed, 55 insertions(+), 55 deletions(-)
+Changes in v3:
+  As Andrew suggested changed function names and return type.
+  (https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-August/119802.html).
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 6144d5a..050f79a 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -592,61 +592,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	MASKABLE_EXCEPTION_HV_OOL(0xe62, hmi_exception)
- 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe62)
+Ben,
+  - This patchset applies cleanly on powerpc next branch.
+  - Andrew Morton suggested to include this patch in powerpc tree.
+    (https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-August/119802.html)
+
+
+ include/linux/printk.h |    3 +++
+ kernel/printk/printk.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 319ff7e..b8c0316 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -10,6 +10,9 @@
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
  
--	.globl hmi_exception_early
--hmi_exception_early:
--	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
--	mr	r10,r1			/* Save r1			*/
--	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
--	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
--	std	r9,_CCR(r1)		/* save CR in stackframe	*/
--	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
--	std	r11,_NIP(r1)		/* save HSRR0 in stackframe	*/
--	mfspr	r12,SPRN_HSRR1		/* Save SRR1 */
--	std	r12,_MSR(r1)		/* save SRR1 in stackframe	*/
--	std	r10,0(r1)		/* make stack chain pointer	*/
--	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
--	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
--	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
--	EXCEPTION_PROLOG_COMMON_3(0xe60)
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	hmi_exception_realmode
--	/* Windup the stack. */
--	/* Clear MSR_RI before setting SRR0 and SRR1. */
--	li	r0,MSR_RI
--	mfmsr	r9			/* get MSR value */
--	andc	r9,r9,r0
--	mtmsrd	r9,1			/* Clear MSR_RI */
--	/* Move original HSRR0 and HSRR1 into the respective regs */
--	ld	r9,_MSR(r1)
--	mtspr	SPRN_HSRR1,r9
--	ld	r3,_NIP(r1)
--	mtspr	SPRN_HSRR0,r3
--	ld	r9,_CTR(r1)
--	mtctr	r9
--	ld	r9,_XER(r1)
--	mtxer	r9
--	ld	r9,_LINK(r1)
--	mtlr	r9
--	REST_GPR(0, r1)
--	REST_8GPRS(2, r1)
--	REST_GPR(10, r1)
--	ld	r11,_CCR(r1)
--	mtcr	r11
--	REST_GPR(11, r1)
--	REST_2GPRS(12, r1)
--	/* restore original r1. */
--	ld	r1,GPR1(r1)
--
--	/*
--	 * Go to virtual mode and pull the HMI event information from
--	 * firmware.
--	 */
--	.globl hmi_exception_after_realmode
--hmi_exception_after_realmode:
--	SET_SCRATCH0(r13)
--	EXCEPTION_PROLOG_0(PACA_EXGEN)
--	b	hmi_exception_hv
--
- 	MASKABLE_EXCEPTION_HV_OOL(0xe82, h_doorbell)
- 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe82)
- 
-@@ -1306,6 +1251,61 @@ fwnmi_data_area:
- 	. = 0x8000
- #endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
- 
-+	.globl hmi_exception_early
-+hmi_exception_early:
-+	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
-+	mr	r10,r1			/* Save r1			*/
-+	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
-+	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
-+	std	r9,_CCR(r1)		/* save CR in stackframe	*/
-+	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
-+	std	r11,_NIP(r1)		/* save HSRR0 in stackframe	*/
-+	mfspr	r12,SPRN_HSRR1		/* Save SRR1 */
-+	std	r12,_MSR(r1)		/* save SRR1 in stackframe	*/
-+	std	r10,0(r1)		/* make stack chain pointer	*/
-+	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
-+	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
-+	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
-+	EXCEPTION_PROLOG_COMMON_3(0xe60)
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	hmi_exception_realmode
-+	/* Windup the stack. */
-+	/* Clear MSR_RI before setting SRR0 and SRR1. */
-+	li	r0,MSR_RI
-+	mfmsr	r9			/* get MSR value */
-+	andc	r9,r9,r0
-+	mtmsrd	r9,1			/* Clear MSR_RI */
-+	/* Move original HSRR0 and HSRR1 into the respective regs */
-+	ld	r9,_MSR(r1)
-+	mtspr	SPRN_HSRR1,r9
-+	ld	r3,_NIP(r1)
-+	mtspr	SPRN_HSRR0,r3
-+	ld	r9,_CTR(r1)
-+	mtctr	r9
-+	ld	r9,_XER(r1)
-+	mtxer	r9
-+	ld	r9,_LINK(r1)
-+	mtlr	r9
-+	REST_GPR(0, r1)
-+	REST_8GPRS(2, r1)
-+	REST_GPR(10, r1)
-+	ld	r11,_CCR(r1)
-+	mtcr	r11
-+	REST_GPR(11, r1)
-+	REST_2GPRS(12, r1)
-+	/* restore original r1. */
-+	ld	r1,GPR1(r1)
++extern char *log_buf_addr_get(void);
++extern u32 log_buf_len_get(void);
 +
-+	/*
-+	 * Go to virtual mode and pull the HMI event information from
-+	 * firmware.
-+	 */
-+	.globl hmi_exception_after_realmode
-+hmi_exception_after_realmode:
-+	SET_SCRATCH0(r13)
-+	EXCEPTION_PROLOG_0(PACA_EXGEN)
-+	b	hmi_exception_hv
+ static inline int printk_get_level(const char *buffer)
+ {
+ 	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index ea2d5f6..d6a984c 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
+ static char *log_buf = __log_buf;
+ static u32 log_buf_len = __LOG_BUF_LEN;
+ 
++/* Return log buffer address */
++char *log_buf_addr_get(void)
++{
++	return log_buf;
++}
 +
- #ifdef CONFIG_PPC_POWERNV
- _GLOBAL(opal_mc_secondary_handler)
- 	HMT_MEDIUM_PPR_DISCARD
--- 
-1.9.1
++/* Return log buffer size */
++u32 log_buf_len_get(void)
++{
++	return log_buf_len;
++}
++
+ /* human readable text of the record */
+ static char *log_text(const struct printk_log *msg)
+ {
