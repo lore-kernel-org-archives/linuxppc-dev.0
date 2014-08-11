@@ -1,27 +1,26 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qa0-f43.google.com (mail-qa0-f43.google.com
- [209.85.216.43])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E08FE1A07E5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:32:43 +1000 (EST)
-Received: by mail-qa0-f43.google.com with SMTP id w8so7567775qac.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 02:32:41 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1407748550.3680.10.camel@hornet>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC16D1A071E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 20:12:36 +1000 (EST)
+Date: Mon, 11 Aug 2014 11:02:41 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pawel Moll <pawel.moll@arm.com>
+Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
+ device
+Message-ID: <20140811100241.GB30401@n2100.arm.linux.org.uk>
 References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
  <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
  <1407515785.31897.28.camel@hornet>
  <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
  <1407748550.3680.10.camel@hornet>
-Date: Mon, 11 Aug 2014 11:32:40 +0200
-Message-ID: <CAPDyKFruZxUtzUKM+PvsK-_qqcE4OcCaKSkRJ2_01y7TuQMGkA@mail.gmail.com>
-Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
- device
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Pawel Moll <pawel.moll@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1407748550.3680.10.camel@hornet>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
  Stephen Warren <swarren@wwwdotorg.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Peter De Schrijver <pdeschrijver@nvidia.com>,
@@ -33,6 +32,7 @@ Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
  "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
  Olof Johansson <olof@lixom.net>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paul@pwsan.com" <paul@pwsan.com>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,53 +43,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11 August 2014 11:15, Pawel Moll <pawel.moll@arm.com> wrote:
+On Mon, Aug 11, 2014 at 10:15:50AM +0100, Pawel Moll wrote:
 > On Mon, 2014-08-11 at 10:07 +0100, Ulf Hansson wrote:
->> On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
->> > On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
->> >> The code selecting a device for the sdhci host has been
->> >> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
->> >> "mmc: sdhci-pltfm: Add structure for host-specific data" and
->> >> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
->> >> device does not pass parent to sdhci_alloc_host") while there
->> >> does not seem to be any reason to use platform device's parent
->> >> in the first place.
->> >>
->> >> The comment saying "Some PCI-based MFD need the parent here"
->> >> seem to refer to Timberdale FPGA driver (the only MFD driver
->> >> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
->> >> the only situation when parent device matter is runtime PM,
->> >> which is not implemented for Timberdale.
->> >>
->> >> Cc: Chris Ball <chris@printf.net>
->> >> Cc: Anton Vorontsov <anton@enomsg.org>
->> >> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> >> Cc: linux-mmc@vger.kernel.org
->> >> Cc: linuxppc-dev@lists.ozlabs.org
->> >> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
->> >> ---
->> >>
->> >> This patch is a part of effort to remove references to platform_bus
->> >> and make it static.
->> >>
->> >> Chris, Anton, Ulf - could you please advise if the assumptions
->> >> above are correct or if I'm completely wrong? Do you know what
->> >> where the real reasons to use parent originally? The PCI comment
->> >> seems like a red herring to me...
->> >
->> > Can I take the silence as a suggestion that the change looks ok-ish for
->> > you?
->>
->> Sorry for the delay. I suppose this make sense, but I really don't
->> know for sure.
->>
->> I guess we need some testing in linux-next, to get some confidence.
->
+> > Sorry for the delay. I suppose this make sense, but I really don't
+> > know for sure.
+> > 
+> > I guess we need some testing in linux-next, to get some confidence.
+> 
 > Would you take it into -next then? Unless I'm completely wrong there
 > should be no impact on any in-tree driver...
 
-I will take it; though I think it's best to queue it for 3.18 to get
-some more testing.
+But not until 3.17-rc1 has been released.  linux-next should not receive
+new material other than bug fixes while a merge window is open.
 
-Kind regards
-Uffe
+-- 
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.
