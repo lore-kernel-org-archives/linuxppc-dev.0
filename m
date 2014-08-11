@@ -1,20 +1,21 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D2DA21A04CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:31:38 +1000 (EST)
-Date: Tue, 12 Aug 2014 09:31:37 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- paulmck@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc: Add ppc64 hard lockup detector support
-Message-ID: <20140812093137.404e8930@kryten>
-In-Reply-To: <20140805145621.2fa2a372@kryten>
-References: <20140805145500.773004e9@kryten> <20140805145621.2fa2a372@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 213D01A071A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:36:53 +1000 (EST)
+Message-ID: <1407800199.7427.108.camel@snotra.buserror.net>
+Subject: Re: [PATCH] KVM: PPC: e500mc: Add support for single threaded vcpus
+ on e6500 core
+From: Scott Wood <scottwood@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Date: Mon, 11 Aug 2014 18:36:39 -0500
+In-Reply-To: <1407342808-15987-1-git-send-email-mihai.caraman@freescale.com>
+References: <1407342808-15987-1-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,85 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hard lockup detector uses a PMU event as a periodic NMI to
-detect if we are stuck (where stuck means no timer interrupts have
-occurred).
+On Wed, 2014-08-06 at 19:33 +0300, Mihai Caraman wrote:
+> @@ -390,19 +400,30 @@ static void kvmppc_core_vcpu_free_e500mc(struct kvm_vcpu *vcpu)
+>  
+>  static int kvmppc_core_init_vm_e500mc(struct kvm *kvm)
+>  {
+> -	int lpid;
+> +	int i, lpid;
+>  
+> -	lpid = kvmppc_alloc_lpid();
+> -	if (lpid < 0)
+> -		return lpid;
+> +	/* The lpid pool supports only 2 entries now */
+> +	if (threads_per_core > 2)
+> +		return -ENOMEM;
+> +
+> +	/* Each VM allocates one LPID per HW thread index */
+> +	for (i = 0; i < threads_per_core; i++) {
+> +		lpid = kvmppc_alloc_lpid();
+> +		if (lpid < 0)
+> +			return lpid;
+> +
+> +		kvm->arch.lpid_pool[i] = lpid;
+> +	}
 
-Ben's rework of the ppc64 soft disable code has made ppc64 PMU
-exceptions a partial NMI. They can get disabled if an external interrupt
-comes in, but otherwise PMU interrupts will fire in interrupt disabled
-regions.
+Wouldn't it be simpler to halve the size of the lpid pool that the
+allocator sees, and just OR in the high bit based on the low bit of the
+cpu number?
 
-I wrote a kernel module to test this patch and noticed we sometimes
-missed hard lockup warnings. The RCU code detected the stall first and
-issued an IPI to backtrace all CPUs. Unfortunately an IPI is an external
-interrupt and that will hard disable interrupts, preventing the hard
-lockup detector from going off.
-
-If I reduced the hard lockup threshold to 5 seconds:
-
-echo 5 > /proc/sys/kernel/watchdog_thresh
-
-Then it would beat the RCU code in detecting a stall and get a
-correct backtrace out.
-
-Another downside is that our PMCs can only count to 2^31, so even when
-we ask for 10 seconds of processor cycles, we end up taking a couple
-of PMU exceptions a second.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-v2: Mikey noticed a build issue with oprofile. Since our NMI is just
-the PMU hardware it doesn't make any sense for oprofile to try and
-use it.
-
-Index: b/arch/powerpc/Kconfig
-===================================================================
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -145,6 +145,7 @@ config PPC
- 	select HAVE_IRQ_EXIT_ON_IRQ_STACK
- 	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
- 	select HAVE_ARCH_AUDITSYSCALL
-+	select HAVE_PERF_EVENTS_NMI if PPC64
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-Index: b/arch/powerpc/include/asm/nmi.h
-===================================================================
---- /dev/null
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -0,0 +1,4 @@
-+#ifndef _ASM_NMI_H
-+#define _ASM_NMI_H
-+
-+#endif /* _ASM_NMI_H */
-Index: b/arch/powerpc/kernel/setup_64.c
-===================================================================
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -800,3 +800,10 @@ unsigned long memory_block_size_bytes(vo
- struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif
-+
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR
-+u64 hw_nmi_get_sample_period(int watchdog_thresh)
-+{
-+	return ppc_proc_freq * watchdog_thresh;
-+}
-+#endif
-Index: b/arch/Kconfig
-===================================================================
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -32,7 +32,7 @@ config HAVE_OPROFILE
- 
- config OPROFILE_NMI_TIMER
- 	def_bool y
--	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI
-+	depends on (PERF_EVENTS && HAVE_PERF_EVENTS_NMI) && !PPC
- 
- config KPROBES
- 	bool "Kprobes"
+-Scott
