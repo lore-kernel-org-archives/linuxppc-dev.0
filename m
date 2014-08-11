@@ -2,21 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22DC61A086A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 11:13:47 +1000 (EST)
-Message-ID: <1407719612.4508.52.camel@pasglop>
-Subject: Re: [PATCH v3 1/2] printk: Add function to return log buffer
- address and size
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE81E1A07BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 12:56:59 +1000 (EST)
+Message-ID: <1407725796.4508.54.camel@pasglop>
+Subject: Re: [PATCH 7/14] cpu: delete unneeded test before of_node_put
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Mon, 11 Aug 2014 11:13:32 +1000
-In-Reply-To: <20140809054424.17676.1090.stgit@hegdevasant.in.ibm.com>
-References: <20140809054424.17676.1090.stgit@hegdevasant.in.ibm.com>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Mon, 11 Aug 2014 12:56:36 +1000
+In-Reply-To: <1407492475-26283-3-git-send-email-Julia.Lawall@lip6.fr>
+References: <1407492475-26283-3-git-send-email-Julia.Lawall@lip6.fr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-08-09 at 11:15 +0530, Vasant Hegde wrote:
-
-> Ben,
->   - This patchset applies cleanly on powerpc next branch.
->   - Andrew Morton suggested to include this patch in powerpc tree.
->     (https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-August/119802.html)
+On Fri, 2014-08-08 at 12:07 +0200, Julia Lawall wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
-
-Ok, Andrew, can I have an Ack ?
-
-Cheers,
-Ben.
-
->  include/linux/printk.h |    3 +++
->  kernel/printk/printk.c |   12 ++++++++++++
->  2 files changed, 15 insertions(+)
+> Simplify the error path to avoid calling of_node_put when it is not needed.
 > 
-> diff --git a/include/linux/printk.h b/include/linux/printk.h
-> index 319ff7e..b8c0316 100644
-> --- a/include/linux/printk.h
-> +++ b/include/linux/printk.h
-> @@ -10,6 +10,9 @@
->  extern const char linux_banner[];
->  extern const char linux_proc_banner[];
+> The semantic patch that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+
+Change the subject to powerpc/4xx/cpm or something like that,
+appart from that:
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> 
+> // <smpl>
+> @@
+> expression e;
+> @@
+> 
+> -if (e)
+>    of_node_put(e);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+>  arch/powerpc/sysdev/ppc4xx_cpm.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/ppc4xx_cpm.c b/arch/powerpc/sysdev/ppc4xx_cpm.c
+> index 82e2cfe..ba95adf 100644
+> --- a/arch/powerpc/sysdev/ppc4xx_cpm.c
+> +++ b/arch/powerpc/sysdev/ppc4xx_cpm.c
+> @@ -281,7 +281,7 @@ static int __init cpm_init(void)
+>  		printk(KERN_ERR "cpm: could not parse dcr property for %s\n",
+>  		       np->full_name);
+>  		ret = -EINVAL;
+> -		goto out;
+> +		goto node_put;
+>  	}
 >  
-> +extern char *log_buf_addr_get(void);
-> +extern u32 log_buf_len_get(void);
-> +
->  static inline int printk_get_level(const char *buffer)
->  {
->  	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
-> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> index ea2d5f6..d6a984c 100644
-> --- a/kernel/printk/printk.c
-> +++ b/kernel/printk/printk.c
-> @@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
->  static char *log_buf = __log_buf;
->  static u32 log_buf_len = __LOG_BUF_LEN;
+>  	cpm.dcr_host = dcr_map(np, dcr_base, dcr_len);
+> @@ -290,7 +290,7 @@ static int __init cpm_init(void)
+>  		printk(KERN_ERR "cpm: failed to map dcr property for %s\n",
+>  		       np->full_name);
+>  		ret = -EINVAL;
+> -		goto out;
+> +		goto node_put;
+>  	}
 >  
-> +/* Return log buffer address */
-> +char *log_buf_addr_get(void)
-> +{
-> +	return log_buf;
-> +}
-> +
-> +/* Return log buffer size */
-> +u32 log_buf_len_get(void)
-> +{
-> +	return log_buf_len;
-> +}
-> +
->  /* human readable text of the record */
->  static char *log_text(const struct printk_log *msg)
->  {
+>  	/* All 4xx SoCs with a CPM controller have one of two
+> @@ -330,9 +330,9 @@ static int __init cpm_init(void)
+>  
+>  	if (cpm.standby || cpm.suspend)
+>  		suspend_set_ops(&cpm_suspend_ops);
+> +node_put:
+> +	of_node_put(np);
+>  out:
+> -	if (np)
+> -		of_node_put(np);
+>  	return ret;
+>  }
+>  
