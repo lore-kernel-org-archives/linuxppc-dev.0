@@ -1,34 +1,31 @@
-Return-Path: <pawel.moll@arm.com>
-Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
- [217.140.110.23])
- by lists.ozlabs.org (Postfix) with ESMTP id DA22F1A0C0B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:05 +1000 (EST)
-Message-ID: <1407748550.3680.10.camel@hornet>
-Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
- device
-From: Pawel Moll <pawel.moll@arm.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 11 Aug 2014 10:15:50 +0100
-In-Reply-To: <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
-References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
- <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
- <1407515785.31897.28.camel@hornet>
- <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Peter De Schrijver <pdeschrijver@nvidia.com>,
- Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <chris@printf.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
- Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE0921A0CC7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:27 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 11 Aug 2014 19:16:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E84742BB002D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:23 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7B8x4im52953318
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 18:59:05 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7B9GNLJ001111
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:23 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/pseries: Failure on removing device node
+Date: Mon, 11 Aug 2014 19:16:19 +1000
+Message-Id: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-08-11 at 10:07 +0100, Ulf Hansson wrote:
-> On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
-> > On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
-> >> The code selecting a device for the sdhci host has been
-> >> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
-> >> "mmc: sdhci-pltfm: Add structure for host-specific data" and
-> >> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
-> >> device does not pass parent to sdhci_alloc_host") while there
-> >> does not seem to be any reason to use platform device's parent
-> >> in the first place.
-> >>
-> >> The comment saying "Some PCI-based MFD need the parent here"
-> >> seem to refer to Timberdale FPGA driver (the only MFD driver
-> >> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
-> >> the only situation when parent device matter is runtime PM,
-> >> which is not implemented for Timberdale.
-> >>
-> >> Cc: Chris Ball <chris@printf.net>
-> >> Cc: Anton Vorontsov <anton@enomsg.org>
-> >> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> >> Cc: linux-mmc@vger.kernel.org
-> >> Cc: linuxppc-dev@lists.ozlabs.org
-> >> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
-> >> ---
-> >>
-> >> This patch is a part of effort to remove references to platform_bus
-> >> and make it static.
-> >>
-> >> Chris, Anton, Ulf - could you please advise if the assumptions
-> >> above are correct or if I'm completely wrong? Do you know what
-> >> where the real reasons to use parent originally? The PCI comment
-> >> seems like a red herring to me...
-> >
-> > Can I take the silence as a suggestion that the change looks ok-ish for
-> > you?
-> 
-> Sorry for the delay. I suppose this make sense, but I really don't
-> know for sure.
-> 
-> I guess we need some testing in linux-next, to get some confidence.
+While running command "drmgr -c phb -r -s 'PHB 528'", following
+backtrace jumped out because the target device node isn't marked
+with OF_DETACHED by of_detach_node(), which caused by error
+returned from memory hotplug related reconfig notifier when
+disabling CONFIG_MEMORY_HOTREMOVE. The patch fixes it.
 
-Would you take it into -next then? Unless I'm completely wrong there
-should be no impact on any in-tree driver...
+ERROR: Bad of_node_put() on /pci@800000020000210/ethernet@0
+CPU: 14 PID: 2252 Comm: drmgr Tainted: G        W     3.16.0+ #427
+Call Trace:
+[c000000012a776a0] [c000000000013d9c] .show_stack+0x88/0x148 (unreliable)
+[c000000012a77750] [c00000000083cd34] .dump_stack+0x7c/0x9c
+[c000000012a777d0] [c0000000006807c4] .of_node_release+0x58/0xe0
+[c000000012a77860] [c00000000038a7d0] .kobject_release+0x174/0x1b8
+[c000000012a77900] [c00000000038a884] .kobject_put+0x70/0x78
+[c000000012a77980] [c000000000681680] .of_node_put+0x28/0x34
+[c000000012a77a00] [c000000000681ea8] .__of_get_next_child+0x64/0x70
+[c000000012a77a90] [c000000000682138] .of_find_node_by_path+0x1b8/0x20c
+[c000000012a77b40] [c000000000051840] .ofdt_write+0x308/0x688
+[c000000012a77c20] [c000000000238430] .proc_reg_write+0xb8/0xd4
+[c000000012a77cd0] [c0000000001cbeac] .vfs_write+0xec/0x1f8
+[c000000012a77d70] [c0000000001cc3b0] .SyS_write+0x58/0xa0
+[c000000012a77e30] [c00000000000a064] syscall_exit+0x0/0x98
 
-Cheers!
+Cc: stable@vger.kernel.org
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Pawel
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 7995135..24abc5c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -146,7 +146,7 @@ static inline int pseries_remove_memblock(unsigned long base,
+ }
+ static inline int pseries_remove_mem_node(struct device_node *np)
+ {
+-	return -EOPNOTSUPP;
++	return 0;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+ 
+-- 
+1.8.3.2
