@@ -1,38 +1,34 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 239321A07EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:42:25 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9AFFB1A087F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:53:27 +1000 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 11 Aug 2014 17:42:22 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AE44819D8039
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 17:42:09 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7BNgLZX20906076
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 01:42:21 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s7BNkaVf019818
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 17:46:37 -0600
-Date: Mon, 11 Aug 2014 16:42:19 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 2/2] powerpc: Add ppc64 hard lockup detector support
-Message-ID: <20140811234219.GH5821@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20140805145500.773004e9@kryten> <20140805145621.2fa2a372@kryten>
- <20140812093137.404e8930@kryten>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 11 Aug 2014 19:53:24 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B6C61C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:53:14 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7BNrMsT8913390
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 23:53:22 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7BNrLRL017969
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:53:22 -0400
+Date: Mon, 11 Aug 2014 16:43:18 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc: remove duplicate definition of TEXASR_FS
+Message-ID: <20140811234317.GC4497@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140812093137.404e8930@kryten>
-Cc: mikey@neuling.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,73 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 12, 2014 at 09:31:37AM +1000, Anton Blanchard wrote:
-> The hard lockup detector uses a PMU event as a periodic NMI to
-> detect if we are stuck (where stuck means no timer interrupts have
-> occurred).
-> 
-> Ben's rework of the ppc64 soft disable code has made ppc64 PMU
-> exceptions a partial NMI. They can get disabled if an external interrupt
-> comes in, but otherwise PMU interrupts will fire in interrupt disabled
-> regions.
-> 
-> I wrote a kernel module to test this patch and noticed we sometimes
-> missed hard lockup warnings. The RCU code detected the stall first and
-> issued an IPI to backtrace all CPUs. Unfortunately an IPI is an external
-> interrupt and that will hard disable interrupts, preventing the hard
-> lockup detector from going off.
+It appears that commits 7f06f21d40a6 ("powerpc/tm: Add checking to
+treclaim/trechkpt") and e4e38121507a ("KVM: PPC: Book3S HV: Add
+transactional memory support") both added definitions of TEXASR_FS.
+Remove one of them. At the same time, fix the alignment of the remaining
+definition (should be tab-separated like the rest of the #defines).
 
-If it helps, commit bc1dce514e9b (rcu: Don't use NMIs to dump other
-CPUs' stacks) makes RCU avoid this behavior.  It instead reads the
-stacks out remotely when this commit is applied.  It is in -tip, and
-should make mainline this merge window.  Corresponding patch below.
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-						Thanx, Paul
-
-------------------------------------------------------------------------
-
-rcu: Don't use NMIs to dump other CPUs' stacks
-
-Although NMI-based stack dumps are in principle more accurate, they are
-also more likely to trigger deadlocks.  This commit therefore replaces
-all uses of trigger_all_cpu_backtrace() with rcu_dump_cpu_stacks(), so
-that the CPU detecting an RCU CPU stall does the stack dumping.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-
-diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
-index 3f93033d3c61..8f3e4d43d736 100644
---- a/kernel/rcu/tree.c
-+++ b/kernel/rcu/tree.c
-@@ -1013,10 +1013,7 @@ static void record_gp_stall_check_time(struct rcu_state *rsp)
- }
- 
- /*
-- * Dump stacks of all tasks running on stalled CPUs.  This is a fallback
-- * for architectures that do not implement trigger_all_cpu_backtrace().
-- * The NMI-triggered stack traces are more accurate because they are
-- * printed by the target CPU.
-+ * Dump stacks of all tasks running on stalled CPUs.
-  */
- static void rcu_dump_cpu_stacks(struct rcu_state *rsp)
- {
-@@ -1094,7 +1091,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 	       (long)rsp->gpnum, (long)rsp->completed, totqlen);
- 	if (ndetected == 0)
- 		pr_err("INFO: Stall ended before state dump start\n");
--	else if (!trigger_all_cpu_backtrace())
-+	else
- 		rcu_dump_cpu_stacks(rsp);
- 
- 	/* Complain about tasks blocking the grace period. */
-@@ -1125,8 +1122,7 @@ static void print_cpu_stall(struct rcu_state *rsp)
- 	pr_cont(" (t=%lu jiffies g=%ld c=%ld q=%lu)\n",
- 		jiffies - rsp->gp_start,
- 		(long)rsp->gpnum, (long)rsp->completed, totqlen);
--	if (!trigger_all_cpu_backtrace())
--		dump_stack();
-+	rcu_dump_cpu_stacks(rsp);
- 
- 	raw_spin_lock_irqsave(&rnp->lock, flags);
- 	if (ULONG_CMP_GE(jiffies, ACCESS_ONCE(rsp->jiffies_stall)))
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1c987bf794ef..0c0505956a29 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -213,9 +213,8 @@
+ #define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
+ #define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
+ #define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
+-#define   TEXASR_FS	__MASK(63-36)	/* Transaction Failure Summary */
+ #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
+-#define   TEXASR_FS     __MASK(63-36) /* TEXASR Failure Summary */
++#define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
+ #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
+ #define SPRN_CTRLF	0x088
+ #define SPRN_CTRLT	0x098
