@@ -1,36 +1,26 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B83891A07E5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 00:16:08 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 11 Aug 2014 08:16:06 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D324A3E40040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 08:16:03 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
- ESMTP id s7BCCDKO7274772
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:12:13 +0200
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7BEG3vr030946
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 08:16:03 -0600
-Message-ID: <53E8D021.1010908@linux.vnet.ibm.com>
-Date: Mon, 11 Aug 2014 09:16:01 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E4371A06EE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 00:48:44 +1000 (EST)
+From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+To: Alexander Gordeev <agordeev@redhat.com>, Bjorn Helgaas
+ <bhelgaas@google.com>
+Subject: RE: [PATCH v2 2/2] PCI/MSI: Remove arch_msi_check_device()
+Date: Mon, 11 Aug 2014 14:33:25 +0000
+Message-ID: <0a23568bd6eb4dfbb5f4acc96bba3706@BLUPR03MB566.namprd03.prod.outlook.com>
+References: <cover.1405160163.git.agordeev@redhat.com>
+ <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
+ <20140716222024.GE14366@google.com>
+ <20140811114536.GA3427@dhcp-27-160.brq.redhat.com>
+In-Reply-To: <20140811114536.GA3427@dhcp-27-160.brq.redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/pseries: Failure on removing device node
-References: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: stable@vger.kernel.org
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,65 +30,196 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2014 04:16 AM, Gavin Shan wrote:
-> While running command "drmgr -c phb -r -s 'PHB 528'", following
-> backtrace jumped out because the target device node isn't marked
-> with OF_DETACHED by of_detach_node(), which caused by error
-> returned from memory hotplug related reconfig notifier when
-> disabling CONFIG_MEMORY_HOTREMOVE. The patch fixes it.
-> 
 
-Could you provide some more context here.
 
-Your comment claims that you hit an error while trying to remove a PHB,
-but the fix you provided is for memory hotplug. This changes the
-rturn code to zero which usually inidcates success except that
-your comment states you disabled memory hotplug remove.
+> -----Original Message-----
+> From: linux-pci-owner@vger.kernel.org [mailto:linux-pci-owner@vger.kernel=
+.org]
+> On Behalf Of Alexander Gordeev
+> Sent: Monday, August 11, 2014 5:16 PM
+> To: Bjorn Helgaas
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> pci@vger.kernel.org
+> Subject: [PATCH v2 2/2] PCI/MSI: Remove arch_msi_check_device()
+>=20
+> There are no archs that override arch_msi_check_device() hook. Remove it =
+as it
+> is completely redundant.
 
-I think the fix we need to have here is to update the version of
-pseries_remove_mem_node() when CONFIG_MEMORY_HOTREMOVE is disabled
-to validate that the node is a memory node and return the proper value
-instead of just returning -EOPNOTSUPP in all cases. 
+Is not we are still overriding this in powerpc (not sure I missed some patc=
+h , if so please point to that).
 
-The pseries_remove_mem_node() routine when memory removed is enabled
-already does this.
- 
--Nathan
+$ grep -r  arch_msi_check_device arch/powerpc/
+Binary file arch/powerpc/kernel/msi.o matches
+arch/powerpc/kernel/msi.c:int arch_msi_check_device(struct pci_dev* dev, in=
+t nvec, int type)
+Binary file arch/powerpc/kernel/built-in.o matches
 
-> ERROR: Bad of_node_put() on /pci@800000020000210/ethernet@0
-> CPU: 14 PID: 2252 Comm: drmgr Tainted: G        W     3.16.0+ #427
-> Call Trace:
-> [c000000012a776a0] [c000000000013d9c] .show_stack+0x88/0x148 (unreliable)
-> [c000000012a77750] [c00000000083cd34] .dump_stack+0x7c/0x9c
-> [c000000012a777d0] [c0000000006807c4] .of_node_release+0x58/0xe0
-> [c000000012a77860] [c00000000038a7d0] .kobject_release+0x174/0x1b8
-> [c000000012a77900] [c00000000038a884] .kobject_put+0x70/0x78
-> [c000000012a77980] [c000000000681680] .of_node_put+0x28/0x34
-> [c000000012a77a00] [c000000000681ea8] .__of_get_next_child+0x64/0x70
-> [c000000012a77a90] [c000000000682138] .of_find_node_by_path+0x1b8/0x20c
-> [c000000012a77b40] [c000000000051840] .ofdt_write+0x308/0x688
-> [c000000012a77c20] [c000000000238430] .proc_reg_write+0xb8/0xd4
-> [c000000012a77cd0] [c0000000001cbeac] .vfs_write+0xec/0x1f8
-> [c000000012a77d70] [c0000000001cc3b0] .SyS_write+0x58/0xa0
-> [c000000012a77e30] [c00000000000a064] syscall_exit+0x0/0x98
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Thanks
+-Bharat
+
+>=20
+> If an arch would need to check MSI/MSI-X possibility for a device it shou=
+ld make
+> it within arch_setup_msi_irqs() hook.
+>=20
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-pci@vger.kernel.org
+> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 > ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 7995135..24abc5c 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -146,7 +146,7 @@ static inline int pseries_remove_memblock(unsigned long base,
+>  drivers/pci/msi.c   | 49 +++++++++++++----------------------------------=
+--
+>  include/linux/msi.h |  3 ---
+>  2 files changed, 13 insertions(+), 39 deletions(-)
+>=20
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c index 5a40516..6c2cc41=
+ 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -56,16 +56,6 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
+>  	chip->teardown_irq(chip, irq);
 >  }
->  static inline int pseries_remove_mem_node(struct device_node *np)
+>=20
+> -int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type=
+) -{
+> -	struct msi_chip *chip =3D dev->bus->msi;
+> -
+> -	if (!chip || !chip->check_device)
+> -		return 0;
+> -
+> -	return chip->check_device(chip, dev, nvec, type);
+> -}
+> -
+>  int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type) =
+ {
+>  	struct msi_desc *entry;
+> @@ -806,22 +796,23 @@ out_free:
+>  }
+>=20
+>  /**
+> - * pci_msi_check_device - check whether MSI may be enabled on a device
+> + * pci_msi_supported - check whether MSI may be enabled on a device
+>   * @dev: pointer to the pci_dev data structure of MSI device function
+>   * @nvec: how many MSIs have been requested ?
+> - * @type: are we checking for MSI or MSI-X ?
+>   *
+>   * Look at global flags, the device itself, and its parent buses
+>   * to determine if MSI/-X are supported for the device. If MSI/-X is
+>   * supported return 0, else return an error code.
+>   **/
+> -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +static int pci_msi_supported(struct pci_dev *dev, int nvec)
 >  {
-> -	return -EOPNOTSUPP;
-> +	return 0;
+>  	struct pci_bus *bus;
+> -	int ret;
+>=20
+>  	/* MSI must be globally enabled and supported by the device */
+> -	if (!pci_msi_enable || !dev || dev->no_msi)
+> +	if (!pci_msi_enable)
+> +		return -EINVAL;
+> +
+> +	if (!dev || dev->no_msi || dev->current_state !=3D PCI_D0)
+>  		return -EINVAL;
+>=20
+>  	/*
+> @@ -843,10 +834,6 @@ static int pci_msi_check_device(struct pci_dev *dev,=
+ int
+> nvec, int type)
+>  		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
+>  			return -EINVAL;
+>=20
+> -	ret =3D arch_msi_check_device(dev, nvec, type);
+> -	if (ret)
+> -		return ret;
+> -
+>  	return 0;
 >  }
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
->  
-> 
+>=20
+> @@ -949,13 +936,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msi=
+x_entry
+> *entries, int nvec)
+>  	int status, nr_entries;
+>  	int i, j;
+>=20
+> -	if (!entries || !dev->msix_cap || dev->current_state !=3D PCI_D0)
+> -		return -EINVAL;
+> -
+> -	status =3D pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
+> +	status =3D pci_msi_supported(dev, nvec);
+>  	if (status)
+>  		return status;
+>=20
+> +	if (!entries)
+> +		return -EINVAL;
+> +
+>  	nr_entries =3D pci_msix_vec_count(dev);
+>  	if (nr_entries < 0)
+>  		return nr_entries;
+> @@ -1062,8 +1049,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int m=
+invec,
+> int maxvec)
+>  	int nvec;
+>  	int rc;
+>=20
+> -	if (dev->current_state !=3D PCI_D0)
+> -		return -EINVAL;
+> +	rc =3D pci_msi_supported(dev, minvec);
+> +	if (rc)
+> +		return rc;
+>=20
+>  	WARN_ON(!!dev->msi_enabled);
+>=20
+> @@ -1086,17 +1074,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int =
+minvec,
+> int maxvec)
+>  		nvec =3D maxvec;
+>=20
+>  	do {
+> -		rc =3D pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
+> -		if (rc < 0) {
+> -			return rc;
+> -		} else if (rc > 0) {
+> -			if (rc < minvec)
+> -				return -ENOSPC;
+> -			nvec =3D rc;
+> -		}
+> -	} while (rc);
+> -
+> -	do {
+>  		rc =3D msi_capability_init(dev, nvec);
+>  		if (rc < 0) {
+>  			return rc;
+> diff --git a/include/linux/msi.h b/include/linux/msi.h index 8103f32..dbf=
+7cc9
+> 100644
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -60,7 +60,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_=
+desc
+> *desc);  void arch_teardown_msi_irq(unsigned int irq);  int
+> arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);  void
+> arch_teardown_msi_irqs(struct pci_dev *dev); -int arch_msi_check_device(s=
+truct
+> pci_dev* dev, int nvec, int type);  void arch_restore_msi_irqs(struct pci=
+_dev
+> *dev);
+>=20
+>  void default_teardown_msi_irqs(struct pci_dev *dev); @@ -77,8 +76,6 @@ s=
+truct
+> msi_chip {
+>  	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
+>  			 struct msi_desc *desc);
+>  	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
+> -	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
+> -			    int nvec, int type);
+>  };
+>=20
+>  #endif /* LINUX_MSI_H */
+> --
+> 1.9.3
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in t=
+he body
+> of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
