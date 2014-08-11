@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB71C1A0881
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 13:12:06 +1000 (EST)
-Message-ID: <1407726718.4508.60.camel@pasglop>
-Subject: Re: [PATCH 2/2] powerpc/powernv: Remove duplicate check in
- tce_iommu_bus_notifier()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9356A1A0881
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 13:16:52 +1000 (EST)
+Message-ID: <1407726995.4508.64.camel@pasglop>
+Subject: Re: [PATCH] powerpc: non-GPL export for eeh_dev_check_failure
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Mon, 11 Aug 2014 13:11:58 +1000
-In-Reply-To: <1407309017-13870-2-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1407309017-13870-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1407309017-13870-2-git-send-email-gwshan@linux.vnet.ibm.com>
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Date: Mon, 11 Aug 2014 13:16:35 +1000
+In-Reply-To: <20140805155140.2b200061@alan.etchedpixels.co.uk>
+References: <53E0ED41.8030804@linux.vnet.ibm.com>
+ <20140805155140.2b200061@alan.etchedpixels.co.uk>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Vishal Mansur <vmansur@linux.vnet.ibm.com>,
+ gwshan@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-08-06 at 17:10 +1000, Gavin Shan wrote:
-> The called function iommu_del_device() checks if the device has
-> attached IOMMU group, we needn't check it again in the parent
-> function call tce_iommu_bus_notifier().
-
-The patch does more than that... it also refactors the function, which
-it should either not do or document.
-
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci.c | 13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
+On Tue, 2014-08-05 at 15:51 +0100, One Thousand Gnomes wrote:
+> On Tue, 05 Aug 2014 20:12:09 +0530
+> Vishal Mansur <vmansur@linux.vnet.ibm.com> wrote:
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index f91a4e5..b562b0d 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -820,17 +820,18 @@ static int tce_iommu_bus_notifier(struct notifier_block *nb,
->  		unsigned long action, void *data)
->  {
->  	struct device *dev = data;
-> +	int ret = 0;
->  
->  	switch (action) {
->  	case BUS_NOTIFY_ADD_DEVICE:
-> -		return iommu_add_device(dev);
-> +		ret = iommu_add_device(dev);
-> +		break;
->  	case BUS_NOTIFY_DEL_DEVICE:
-> -		if (dev->iommu_group)
-> -			iommu_del_device(dev);
-> -		return 0;
-> -	default:
-> -		return 0;
-> +		iommu_del_device(dev);
-> +		break;
->  	}
-> +
-> +	return ret;
->  }
->  
->  static struct notifier_block tce_iommu_bus_nb = {
+> > EEH kernel services are inconsistently exported by the 
+> > kernel. eeh_check_failure is exported for any use, but 
+> > eeh_dev_check_failure is exported only for GPL use. 
+> > While eeh_check_failure is implemented for a specific 
+> > purpose to be used by services such as readl, it is 
+> > not suited for a purpose where caller needs eeh status. 
+> > This functionality is provided by eeh_dev_check_failure.
+> > 
+> > This patch relaxes the export for eeh_dev_check_failure
+> > to make it consistent with eeh_check_failure() and 
+> > usable by non-GPL modules.
+> 
+> The GPL covers all derivative works. Tweaking this doesn't magically
+> allow you to use the feature in non GPL code. Your legal department can I
+> am sure explain in detail further.
+
+This is an interesting case... I assume this has to do with a well known
+GPU manufacturer...
+
+The PCI APIs are generally exported in such a way that a non-GPL driver
+can use them (regardless of whether one considers a non-GPL driver to be
+legal here or not, this is besides the point).
+
+eeh_dev_check_failure() can be considered as powerpc specific extension
+of the PCI API for use by PCI drivers and as such, it *could* be
+construed that we should be consistent (and consistent with
+eeh_check_failure()) and expose it as an EXPORT_SYMBOL without the GPL
+suffix.
+
+So I'm somewhat tempted to take this patch, but Vishal, the driver in
+question could, I suppose, as a workaround, use a readl to some scratch
+register of some description, no ?
+
+Cheers,
+Ben.
+
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
