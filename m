@@ -1,21 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A57B1A0879
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 10:20:58 +1000 (EST)
-Date: Mon, 11 Aug 2014 10:20:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] powerpc: Fix "attempt to move .org backwards" error
-Message-ID: <20140811102052.6d9c28cb@canb.auug.org.au>
-In-Reply-To: <1407561732-817-1-git-send-email-linux@roeck-us.net>
-References: <1407561732-817-1-git-send-email-linux@roeck-us.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/Je.kQBUMvSEkChVVghKMWnP"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22DC61A086A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 11:13:47 +1000 (EST)
+Message-ID: <1407719612.4508.52.camel@pasglop>
+Subject: Re: [PATCH v3 1/2] printk: Add function to return log buffer
+ address and size
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Mon, 11 Aug 2014 11:13:32 +1000
+In-Reply-To: <20140809054424.17676.1090.stgit@hegdevasant.in.ibm.com>
+References: <20140809054424.17676.1090.stgit@hegdevasant.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/Je.kQBUMvSEkChVVghKMWnP
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2014-08-09 at 11:15 +0530, Vasant Hegde wrote:
 
-Hi Guenter,
+> Ben,
+>   - This patchset applies cleanly on powerpc next branch.
+>   - Andrew Morton suggested to include this patch in powerpc tree.
+>     (https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-August/119802.html)
+> 
 
-On Fri,  8 Aug 2014 22:22:12 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
->
-> Once again, we see
->=20
-> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-> arch/powerpc/kernel/exceptions-64s.S:865: Error: attempt to move .org bac=
-kwards
-> arch/powerpc/kernel/exceptions-64s.S:866: Error: attempt to move .org bac=
-kwards
-> arch/powerpc/kernel/exceptions-64s.S:890: Error: attempt to move .org bac=
-kwards
->=20
-> when compiling ppc:allmodconfig.
->=20
-> This time the problem has been caused by to commit 0869b6fd209bda
-> ("powerpc/book3s: Add basic infrastructure to handle HMI in Linux"),
-> which adds functions hmi_exception_early and hmi_exception_after_realmode
-> into a critical (size-limited) code area, even though that does not appear
-> to be necessary.
->=20
-> Move those functions to a non-critical area of the file.
->=20
-> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> Compile tested with all ppc configurations.
-> The reported checkpatch error appears to be a false positive.
+Ok, Andrew, can I have an Ack ?
 
-Thanks.
-
-I have added that to my fixes tree for today.
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Ben.
 
---Sig_/Je.kQBUMvSEkChVVghKMWnP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJT6AxpAAoJEMDTa8Ir7ZwVQBgP/3Ie7o02bek22/BasSgXzUqh
-OpdoVzL3FGZFfUTPA83IiMt6r+qJGwHybnDOFBdp3vDV6FVncFbPfhaGnKfVPDwa
-LBcj0vfNU9yksVoETtZZ0nyJ4V2X5YM+ziZMspNQeSfpzmK4k22ydaXBdPEM+9S1
-xzq79p+SqmbwnbK+9S0pn+6hpZw8Cgr0buH35Bg0NPwdRxwvMflrIaCyMJ6WvCe2
-XlCRAdkJ4O/W04o3+d/vSqi6fKsDjsX8P81O40w3h+S0zZTt56qXT8TnptmpglrY
-IRi1ohMfY/3c0lXsCxawO5quwavDnBdv1mPsavgkCD7TV8eBPHy0rLz6/YPdpth9
-Rc6IGnifLKbDouGInJToev7QmTKwewdmHMdDdcqeoWm0e/lha+iN3iDNz+EcGSPV
-r5u8VxTuK7SpNE9zEOSO8QYi0G+RJvmZOACIUE5tJLzDlZ0+RgjqXf/g+Hhyk+BP
-g3AF2IGXY5yulmM6XQEsJZ5hP9NHcp++b9+ELEYOgDRlzKXCpbljsFjfeLTfXSrr
-C6S2+4xENS2PBjQZCl3ecLG2vhlzwE76UVzLBeiv1JDP89/wwDol6zb9pYbruJKr
-jPE/YD7xDmkW4qDq+90mBLpPwkU7ugb1o35tugclG8C9WDDBt/NoZ8lvKBZCBZVt
-JESCTLfRd4296OCgdR/q
-=7aEu
------END PGP SIGNATURE-----
-
---Sig_/Je.kQBUMvSEkChVVghKMWnP--
+>  include/linux/printk.h |    3 +++
+>  kernel/printk/printk.c |   12 ++++++++++++
+>  2 files changed, 15 insertions(+)
+> 
+> diff --git a/include/linux/printk.h b/include/linux/printk.h
+> index 319ff7e..b8c0316 100644
+> --- a/include/linux/printk.h
+> +++ b/include/linux/printk.h
+> @@ -10,6 +10,9 @@
+>  extern const char linux_banner[];
+>  extern const char linux_proc_banner[];
+>  
+> +extern char *log_buf_addr_get(void);
+> +extern u32 log_buf_len_get(void);
+> +
+>  static inline int printk_get_level(const char *buffer)
+>  {
+>  	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index ea2d5f6..d6a984c 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -270,6 +270,18 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
+>  static char *log_buf = __log_buf;
+>  static u32 log_buf_len = __LOG_BUF_LEN;
+>  
+> +/* Return log buffer address */
+> +char *log_buf_addr_get(void)
+> +{
+> +	return log_buf;
+> +}
+> +
+> +/* Return log buffer size */
+> +u32 log_buf_len_get(void)
+> +{
+> +	return log_buf_len;
+> +}
+> +
+>  /* human readable text of the record */
+>  static char *log_text(const struct printk_log *msg)
+>  {
