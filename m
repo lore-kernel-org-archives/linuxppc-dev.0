@@ -1,30 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE0921A0CC7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:27 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F42F1A0BE8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:29 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 11 Aug 2014 19:16:26 +1000
+ Mon, 11 Aug 2014 19:16:28 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E84742BB002D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:23 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3F9922CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:25 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7B8x4im52953318
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 18:59:05 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7B9GNLJ001111
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:23 +1000
+ s7B8x65P62980096
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 18:59:06 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7B9GO9T004726
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:16:24 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/pseries: Failure on removing device node
-Date: Mon, 11 Aug 2014 19:16:19 +1000
-Message-Id: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/pseries: Avoid deadlock on removing ddw
+Date: Mon, 11 Aug 2014 19:16:20 +1000
+Message-Id: <1407748580-3412-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1407748580-3412-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,47 +37,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While running command "drmgr -c phb -r -s 'PHB 528'", following
-backtrace jumped out because the target device node isn't marked
-with OF_DETACHED by of_detach_node(), which caused by error
-returned from memory hotplug related reconfig notifier when
-disabling CONFIG_MEMORY_HOTREMOVE. The patch fixes it.
+Function remove_ddw() could be called in of_reconfig_notifier and
+we potentially remove the dynamic DMA window property, which invokes
+of_reconfig_notifier again. Eventually, it leads to the deadlock as
+following backtrace shows.
 
-ERROR: Bad of_node_put() on /pci@800000020000210/ethernet@0
-CPU: 14 PID: 2252 Comm: drmgr Tainted: G        W     3.16.0+ #427
+The patch fixes the above issue by deferring releasing the dynamic
+DMA window property while releasing the device node.
+
+=============================================
+[ INFO: possible recursive locking detected ]
+3.16.0+ #428 Tainted: G        W
+---------------------------------------------
+drmgr/2273 is trying to acquire lock:
+ ((of_reconfig_chain).rwsem){.+.+..}, at: [<c000000000091890>] \
+ .__blocking_notifier_call_chain+0x40/0x78
+
+but task is already holding lock:
+ ((of_reconfig_chain).rwsem){.+.+..}, at: [<c000000000091890>] \
+ .__blocking_notifier_call_chain+0x40/0x78
+
+other info that might help us debug this:
+ Possible unsafe locking scenario:
+
+       CPU0
+       ----
+  lock((of_reconfig_chain).rwsem);
+  lock((of_reconfig_chain).rwsem);
+ *** DEADLOCK ***
+
+ May be due to missing lock nesting notation
+
+2 locks held by drmgr/2273:
+ #0:  (sb_writers#4){.+.+.+}, at: [<c0000000001cbe70>] \
+      .vfs_write+0xb0/0x1f8
+ #1:  ((of_reconfig_chain).rwsem){.+.+..}, at: [<c000000000091890>] \
+      .__blocking_notifier_call_chain+0x40/0x78
+
+stack backtrace:
+CPU: 17 PID: 2273 Comm: drmgr Tainted: G        W     3.16.0+ #428
 Call Trace:
-[c000000012a776a0] [c000000000013d9c] .show_stack+0x88/0x148 (unreliable)
-[c000000012a77750] [c00000000083cd34] .dump_stack+0x7c/0x9c
-[c000000012a777d0] [c0000000006807c4] .of_node_release+0x58/0xe0
-[c000000012a77860] [c00000000038a7d0] .kobject_release+0x174/0x1b8
-[c000000012a77900] [c00000000038a884] .kobject_put+0x70/0x78
-[c000000012a77980] [c000000000681680] .of_node_put+0x28/0x34
-[c000000012a77a00] [c000000000681ea8] .__of_get_next_child+0x64/0x70
-[c000000012a77a90] [c000000000682138] .of_find_node_by_path+0x1b8/0x20c
-[c000000012a77b40] [c000000000051840] .ofdt_write+0x308/0x688
-[c000000012a77c20] [c000000000238430] .proc_reg_write+0xb8/0xd4
-[c000000012a77cd0] [c0000000001cbeac] .vfs_write+0xec/0x1f8
-[c000000012a77d70] [c0000000001cc3b0] .SyS_write+0x58/0xa0
-[c000000012a77e30] [c00000000000a064] syscall_exit+0x0/0x98
+[c0000000137e7000] [c000000000013d9c] .show_stack+0x88/0x148 (unreliable)
+[c0000000137e70b0] [c00000000083cd34] .dump_stack+0x7c/0x9c
+[c0000000137e7130] [c0000000000b8afc] .__lock_acquire+0x128c/0x1c68
+[c0000000137e7280] [c0000000000b9a4c] .lock_acquire+0xe8/0x104
+[c0000000137e7350] [c00000000083588c] .down_read+0x4c/0x90
+[c0000000137e73e0] [c000000000091890] .__blocking_notifier_call_chain+0x40/0x78
+[c0000000137e7490] [c000000000091900] .blocking_notifier_call_chain+0x38/0x48
+[c0000000137e7520] [c000000000682a28] .of_reconfig_notify+0x34/0x5c
+[c0000000137e75b0] [c000000000682a9c] .of_property_notify+0x4c/0x54
+[c0000000137e7650] [c000000000682bf0] .of_remove_property+0x30/0xd4
+[c0000000137e76f0] [c000000000052a44] .remove_ddw+0x144/0x168
+[c0000000137e7790] [c000000000053204] .iommu_reconfig_notifier+0x30/0xe0
+[c0000000137e7820] [c00000000009137c] .notifier_call_chain+0x6c/0xb4
+[c0000000137e78c0] [c0000000000918ac] .__blocking_notifier_call_chain+0x5c/0x78
+[c0000000137e7970] [c000000000091900] .blocking_notifier_call_chain+0x38/0x48
+[c0000000137e7a00] [c000000000682a28] .of_reconfig_notify+0x34/0x5c
+[c0000000137e7a90] [c000000000682e14] .of_detach_node+0x44/0x1fc
+[c0000000137e7b40] [c0000000000518e4] .ofdt_write+0x3ac/0x688
+[c0000000137e7c20] [c000000000238430] .proc_reg_write+0xb8/0xd4
+[c0000000137e7cd0] [c0000000001cbeac] .vfs_write+0xec/0x1f8
+[c0000000137e7d70] [c0000000001cc3b0] .SyS_write+0x58/0xa0
+[c0000000137e7e30] [c00000000000a064] syscall_exit+0x0/0x98
 
 Cc: stable@vger.kernel.org
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 7995135..24abc5c 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -146,7 +146,7 @@ static inline int pseries_remove_memblock(unsigned long base,
- }
- static inline int pseries_remove_mem_node(struct device_node *np)
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 33b552f..4642d6a 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -721,13 +721,13 @@ static int __init disable_ddw_setup(char *str)
+ 
+ early_param("disable_ddw", disable_ddw_setup);
+ 
+-static void remove_ddw(struct device_node *np)
++static void remove_ddw(struct device_node *np, bool remove_prop)
  {
--	return -EOPNOTSUPP;
-+	return 0;
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
+ 	struct dynamic_dma_window_prop *dwp;
+ 	struct property *win64;
+ 	const u32 *ddw_avail;
+ 	u64 liobn;
+-	int len, ret;
++	int len, ret = 0;
+ 
+ 	ddw_avail = of_get_property(np, "ibm,ddw-applicable", &len);
+ 	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
+@@ -761,7 +761,8 @@ static void remove_ddw(struct device_node *np)
+ 			np->full_name, ret, ddw_avail[2], liobn);
+ 
+ delprop:
+-	ret = of_remove_property(np, win64);
++	if (remove_prop)
++		ret = of_remove_property(np, win64);
+ 	if (ret)
+ 		pr_warning("%s: failed to remove direct window property: %d\n",
+ 			np->full_name, ret);
+@@ -805,7 +806,7 @@ static int find_existing_ddw_windows(void)
+ 		window = kzalloc(sizeof(*window), GFP_KERNEL);
+ 		if (!window || len < sizeof(struct dynamic_dma_window_prop)) {
+ 			kfree(window);
+-			remove_ddw(pdn);
++			remove_ddw(pdn, true);
+ 			continue;
+ 		}
+ 
+@@ -1045,7 +1046,7 @@ out_free_window:
+ 	kfree(window);
+ 
+ out_clear_window:
+-	remove_ddw(pdn);
++	remove_ddw(pdn, true);
+ 
+ out_free_prop:
+ 	kfree(win64->name);
+@@ -1255,7 +1256,14 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
+ 
+ 	switch (action) {
+ 	case OF_RECONFIG_DETACH_NODE:
+-		remove_ddw(np);
++		/*
++		 * Removing the property will invoke the reconfig
++		 * notifier again, which causes dead-lock on the
++		 * read-write semaphore of the notifier chain. So
++		 * we have to remove the property when releasing
++		 * the device node.
++		 */
++		remove_ddw(np, false);
+ 		if (pci && pci->iommu_table)
+ 			iommu_free_table(pci->iommu_table, np->full_name);
  
 -- 
 1.8.3.2
