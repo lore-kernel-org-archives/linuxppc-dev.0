@@ -1,37 +1,39 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qc0-f172.google.com (mail-qc0-f172.google.com
- [209.85.216.172])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C262F1A07BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:08:00 +1000 (EST)
-Received: by mail-qc0-f172.google.com with SMTP id i8so1352568qcq.17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 02:07:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F80F1A045B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:15:06 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 11 Aug 2014 19:15:04 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F1EB53578047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:15:01 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7B9Fhdr16449552
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:15:43 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7B9F0Yc031020
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:15:01 +1000
+Date: Mon, 11 Aug 2014 19:14:59 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc/powernv: Remove duplicate check in
+ tce_iommu_bus_notifier()
+Message-ID: <20140811091459.GA2928@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1407309017-13870-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1407309017-13870-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1407726718.4508.60.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <1407515785.31897.28.camel@hornet>
-References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
- <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
- <1407515785.31897.28.camel@hornet>
-Date: Mon, 11 Aug 2014 11:07:57 +0200
-Message-ID: <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
-Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
- device
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Pawel Moll <pawel.moll@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Peter De Schrijver <pdeschrijver@nvidia.com>,
- Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <chris@printf.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
- Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1407726718.4508.60.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,53 +43,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
-> On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
->> The code selecting a device for the sdhci host has been
->> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
->> "mmc: sdhci-pltfm: Add structure for host-specific data" and
->> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
->> device does not pass parent to sdhci_alloc_host") while there
->> does not seem to be any reason to use platform device's parent
->> in the first place.
->>
->> The comment saying "Some PCI-based MFD need the parent here"
->> seem to refer to Timberdale FPGA driver (the only MFD driver
->> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
->> the only situation when parent device matter is runtime PM,
->> which is not implemented for Timberdale.
->>
->> Cc: Chris Ball <chris@printf.net>
->> Cc: Anton Vorontsov <anton@enomsg.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: linux-mmc@vger.kernel.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+On Mon, Aug 11, 2014 at 01:11:58PM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2014-08-06 at 17:10 +1000, Gavin Shan wrote:
+>> The called function iommu_del_device() checks if the device has
+>> attached IOMMU group, we needn't check it again in the parent
+>> function call tce_iommu_bus_notifier().
+>
+>The patch does more than that... it also refactors the function, which
+>it should either not do or document.
+>
+
+Ben, please drop PATCH[2/2] for now.
+
+Thanks,
+Gavin
+
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >> ---
->>
->> This patch is a part of effort to remove references to platform_bus
->> and make it static.
->>
->> Chris, Anton, Ulf - could you please advise if the assumptions
->> above are correct or if I'm completely wrong? Do you know what
->> where the real reasons to use parent originally? The PCI comment
->> seems like a red herring to me...
+>>  arch/powerpc/platforms/powernv/pci.c | 13 +++++++------
+>>  1 file changed, 7 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index f91a4e5..b562b0d 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -820,17 +820,18 @@ static int tce_iommu_bus_notifier(struct notifier_block *nb,
+>>  		unsigned long action, void *data)
+>>  {
+>>  	struct device *dev = data;
+>> +	int ret = 0;
+>>  
+>>  	switch (action) {
+>>  	case BUS_NOTIFY_ADD_DEVICE:
+>> -		return iommu_add_device(dev);
+>> +		ret = iommu_add_device(dev);
+>> +		break;
+>>  	case BUS_NOTIFY_DEL_DEVICE:
+>> -		if (dev->iommu_group)
+>> -			iommu_del_device(dev);
+>> -		return 0;
+>> -	default:
+>> -		return 0;
+>> +		iommu_del_device(dev);
+>> +		break;
+>>  	}
+>> +
+>> +	return ret;
+>>  }
+>>  
+>>  static struct notifier_block tce_iommu_bus_nb = {
 >
-> Can I take the silence as a suggestion that the change looks ok-ish for
-> you?
-
-Sorry for the delay. I suppose this make sense, but I really don't
-know for sure.
-
-I guess we need some testing in linux-next, to get some confidence.
-
-Kind regards
-Uffe
-
 >
-> Pawe=C5=82
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
