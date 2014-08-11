@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1884D1A0886
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:37:29 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 572B9140139
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2014 14:37:28 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s7B4bNTS013225
- for <linuxppc-dev@ozlabs.org>; Sun, 10 Aug 2014 23:37:24 -0500
-Message-ID: <1407731842.4508.70.camel@pasglop>
-Subject: [PATCH] powerpc/boot: Use correct zlib types for comparison
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 11 Aug 2014 14:37:22 +1000
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id F2D491A071A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:40:29 +1000 (EST)
+Date: Sun, 10 Aug 2014 21:40:25 -0700 (PDT)
+Message-Id: <20140810.214025.1717177470256485891.davem@davemloft.net>
+To: u.kleine-koenig@pengutronix.de
+Subject: Re: [PATCH] net: ucc_geth: fix build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1407695525-32227-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20140808.135237.120203200807493642.davem@davemloft.net>
+ <1407695525-32227-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, f.fainelli@gmail.com,
+ kernel@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avoids this warning:
+From: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+Date: Sun, 10 Aug 2014 20:32:05 +0200
 
-arch/powerpc/boot/gunzip_util.c:118:9: warning: comparison of distinct pointer types lacks a cast
+> My series to fix the reference counting of dt nodes introduced a buil=
+d
+> failure. Fix it.
+> =
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/boot/gunzip_util.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Fixes: fa310789a488 ("net: ucc_geth: drop acquired references in prob=
+e error path and remove")
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
-diff --git a/arch/powerpc/boot/gunzip_util.c b/arch/powerpc/boot/gunzip_util.c
-index ef2aed0..9dc5250 100644
---- a/arch/powerpc/boot/gunzip_util.c
-+++ b/arch/powerpc/boot/gunzip_util.c
-@@ -112,10 +112,10 @@ int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
- 		r = zlib_inflate(&state->s, Z_FULL_FLUSH);
- 		if (r != Z_OK && r != Z_STREAM_END)
- 			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
--		len = state->s.next_out - (unsigned char *)dst;
-+		len = state->s.next_out - (Byte *)dst;
- 	} else {
- 		/* uncompressed image */
--		len = min(state->s.avail_in, (unsigned)dstlen);
-+		len = min(state->s.avail_in, (uLong)dstlen);
- 		memcpy(dst, state->s.next_in, len);
- 		state->s.next_in += len;
- 		state->s.avail_in -= len;
+Applied, thanks.
