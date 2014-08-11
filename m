@@ -1,22 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qc0-f172.google.com (mail-qc0-f172.google.com
+ [209.85.216.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95BDD1A0718
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 18:51:16 +1000 (EST)
-Message-ID: <1407747061.4508.75.camel@pasglop>
-Subject: Re: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Mon, 11 Aug 2014 18:51:01 +1000
-In-Reply-To: <53E87023.6080200@suse.de>
-References: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
- <53E87023.6080200@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C262F1A07BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 19:08:00 +1000 (EST)
+Received: by mail-qc0-f172.google.com with SMTP id i8so1352568qcq.17
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 02:07:58 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1407515785.31897.28.camel@hornet>
+References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
+ <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+ <1407515785.31897.28.camel@hornet>
+Date: Mon, 11 Aug 2014 11:07:57 +0200
+Message-ID: <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
+Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
+ device
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Pawel Moll <pawel.moll@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Anton Vorontsov <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Chris Ball <chris@printf.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
+ Olof Johansson <olof@lixom.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-08-11 at 09:26 +0200, Alexander Graf wrote:
-> > diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> > index da86d9b..d95014e 100644
-> > --- a/arch/powerpc/kvm/emulate.c
-> > +++ b/arch/powerpc/kvm/emulate.c
-> 
-> This should be book3s_emulate.c.
+On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
+> On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
+>> The code selecting a device for the sdhci host has been
+>> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
+>> "mmc: sdhci-pltfm: Add structure for host-specific data" and
+>> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
+>> device does not pass parent to sdhci_alloc_host") while there
+>> does not seem to be any reason to use platform device's parent
+>> in the first place.
+>>
+>> The comment saying "Some PCI-based MFD need the parent here"
+>> seem to refer to Timberdale FPGA driver (the only MFD driver
+>> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
+>> the only situation when parent device matter is runtime PM,
+>> which is not implemented for Timberdale.
+>>
+>> Cc: Chris Ball <chris@printf.net>
+>> Cc: Anton Vorontsov <anton@enomsg.org>
+>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> Cc: linux-mmc@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+>> ---
+>>
+>> This patch is a part of effort to remove references to platform_bus
+>> and make it static.
+>>
+>> Chris, Anton, Ulf - could you please advise if the assumptions
+>> above are correct or if I'm completely wrong? Do you know what
+>> where the real reasons to use parent originally? The PCI comment
+>> seems like a red herring to me...
+>
+> Can I take the silence as a suggestion that the change looks ok-ish for
+> you?
 
-Any reason we can't make that 00dddd00 opcode as breakpoint common to
-all powerpc variants ?
+Sorry for the delay. I suppose this make sense, but I really don't
+know for sure.
 
-Cheers,
-Ben.
+I guess we need some testing in linux-next, to get some confidence.
+
+Kind regards
+Uffe
+
+>
+> Pawe=C5=82
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
