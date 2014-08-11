@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id F2D491A071A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:40:29 +1000 (EST)
-Date: Sun, 10 Aug 2014 21:40:25 -0700 (PDT)
-Message-Id: <20140810.214025.1717177470256485891.davem@davemloft.net>
-To: u.kleine-koenig@pengutronix.de
-Subject: Re: [PATCH] net: ucc_geth: fix build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1407695525-32227-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <20140808.135237.120203200807493642.davem@davemloft.net>
- <1407695525-32227-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, f.fainelli@gmail.com,
- kernel@pengutronix.de
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C81C01A0367
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 15:35:33 +1000 (EST)
+Date: Mon, 11 Aug 2014 07:35:16 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] net: ugg_geth: Fix build error in -next
+Message-ID: <20140811053516.GE5134@pengutronix.de>
+References: <1407687554-14539-1-git-send-email-linux@roeck-us.net>
+ <20140810183622.GC5134@pengutronix.de>
+ <53E7BD21.6010301@roeck-us.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <53E7BD21.6010301@roeck-us.net>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-Date: Sun, 10 Aug 2014 20:32:05 +0200
+Hello Guenter,
 
-> My series to fix the reference counting of dt nodes introduced a buil=
-d
-> failure. Fix it.
-> =
+On Sun, Aug 10, 2014 at 11:42:41AM -0700, Guenter Roeck wrote:
+> On 08/10/2014 11:36 AM, Uwe Kleine-König wrote:
+> >On Sun, Aug 10, 2014 at 09:19:14AM -0700, Guenter Roeck wrote:
+> >>powerpc:mpc83xx_defconfig and other builds fail with
+> >>
+> >>drivers/net/ethernet/freescale/ucc_geth.c: In function 'ucc_geth_remove':
+> >>drivers/net/ethernet/freescale/ucc_geth.c:3927:19: error:
+> >>	'struct ucc_geth_private' has no member named 'info'
+> >>   of_node_put(ugeth->info->tbi_node);
+> >>                      ^
+> >>drivers/net/ethernet/freescale/ucc_geth.c:3928:19: error:
+> >>	     'struct ucc_geth_private' has no member named 'info'
+> >>   of_node_put(ugeth->info->phy_node);
+> >>   		     ^
+> >>
+> >>Introduced by commit "net: ucc_geth: drop acquired references in probe error
+> >>path and remove".
+> >>
+> >> From the context, it appears that the variable is named ug_info.
+> >>
+> >>Cc: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> >>Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> >>---
+> >>Only seen in -next.
+> >My patch was only sent just now, but it has the subject right:
+> >
+> Excellent.
+> 
+> >	http://mid.gmane.org/1407695525-32227-1-git-send-email-u.kleine-koenig@pengutronix.de
+> >
+> The link doesn't seem to work for some reason.
+It didn't work for me when I sent the mail either. I thought gmane will
+have indexed the mail in a few minutes though. Gmane is broken somehow,
+when I follow the Subject link of
+http://article.gmane.org/gmane.linux.network/326013 I also get a No such
+article page?! :-(
 
-> Fixes: fa310789a488 ("net: ucc_geth: drop acquired references in prob=
-e error path and remove")
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+http://patchwork.ozlabs.org/patch/378854/ is a link that works for me.
 
-Applied, thanks.
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
