@@ -1,26 +1,19 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <milkatoffeecuco@gmail.com>
+Received: from mail-we0-x22c.google.com (mail-we0-x22c.google.com
+ [IPv6:2a00:1450:400c:c03::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5A7C1A0877
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 05:36:05 +1000 (EST)
-Date: Mon, 11 Aug 2014 15:35:55 -0400
-From: Alexander Gordeev <agordeev@redhat.com>
-To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-Subject: Re: [PATCH v2 2/2] PCI/MSI: Remove arch_msi_check_device()
-Message-ID: <20140811193555.GC8397@lenovo-rd230-04.lab.bos.redhat.com>
-References: <cover.1405160163.git.agordeev@redhat.com>
- <1005232855c3af2c0c669818ee63be445389b6ad.1405160163.git.agordeev@redhat.com>
- <20140716222024.GE14366@google.com>
- <20140811114536.GA3427@dhcp-27-160.brq.redhat.com>
- <0a23568bd6eb4dfbb5f4acc96bba3706@BLUPR03MB566.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 906271A0835
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 05:55:53 +1000 (EST)
+Received: by mail-we0-f172.google.com with SMTP id x48so9115751wes.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 12:55:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0a23568bd6eb4dfbb5f4acc96bba3706@BLUPR03MB566.namprd03.prod.outlook.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 11 Aug 2014 21:55:48 +0200
+Message-ID: <CAC_ERrD+zhWnHqwZyTp1hjQFRpS4MZ9KOAHdPAQLd4duEoDx+w@mail.gmail.com>
+Subject: Mpc5125 nfc hw ecc problems
+From: Daniel Mosquera <milkatoffeecuco@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=047d7b873762f6d9e605005ff02e
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,185 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 11, 2014 at 02:33:25PM +0000, Bharat.Bhushan@freescale.com wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: linux-pci-owner@vger.kernel.org [mailto:linux-pci-owner@vger.kernel.org]
-> > On Behalf Of Alexander Gordeev
-> > Sent: Monday, August 11, 2014 5:16 PM
-> > To: Bjorn Helgaas
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > pci@vger.kernel.org
-> > Subject: [PATCH v2 2/2] PCI/MSI: Remove arch_msi_check_device()
-> > 
-> > There are no archs that override arch_msi_check_device() hook. Remove it as it
-> > is completely redundant.
-> 
-> Is not we are still overriding this in powerpc (not sure I missed some patch , if so please point to that).
+--047d7b873762f6d9e605005ff02e
+Content-Type: text/plain; charset=UTF-8
 
-Patch 1/2 ;)
+Hi,
 
-> $ grep -r  arch_msi_check_device arch/powerpc/
-> Binary file arch/powerpc/kernel/msi.o matches
-> arch/powerpc/kernel/msi.c:int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
-> Binary file arch/powerpc/kernel/built-in.o matches
-> 
-> Thanks
-> -Bharat
-> 
-> > 
-> > If an arch would need to check MSI/MSI-X possibility for a device it should make
-> > it within arch_setup_msi_irqs() hook.
-> > 
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-pci@vger.kernel.org
-> > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-> > ---
-> >  drivers/pci/msi.c   | 49 +++++++++++++------------------------------------
-> >  include/linux/msi.h |  3 ---
-> >  2 files changed, 13 insertions(+), 39 deletions(-)
-> > 
-> > diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c index 5a40516..6c2cc41 100644
-> > --- a/drivers/pci/msi.c
-> > +++ b/drivers/pci/msi.c
-> > @@ -56,16 +56,6 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
-> >  	chip->teardown_irq(chip, irq);
-> >  }
-> > 
-> > -int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type) -{
-> > -	struct msi_chip *chip = dev->bus->msi;
-> > -
-> > -	if (!chip || !chip->check_device)
-> > -		return 0;
-> > -
-> > -	return chip->check_device(chip, dev, nvec, type);
-> > -}
-> > -
-> >  int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)  {
-> >  	struct msi_desc *entry;
-> > @@ -806,22 +796,23 @@ out_free:
-> >  }
-> > 
-> >  /**
-> > - * pci_msi_check_device - check whether MSI may be enabled on a device
-> > + * pci_msi_supported - check whether MSI may be enabled on a device
-> >   * @dev: pointer to the pci_dev data structure of MSI device function
-> >   * @nvec: how many MSIs have been requested ?
-> > - * @type: are we checking for MSI or MSI-X ?
-> >   *
-> >   * Look at global flags, the device itself, and its parent buses
-> >   * to determine if MSI/-X are supported for the device. If MSI/-X is
-> >   * supported return 0, else return an error code.
-> >   **/
-> > -static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-> > +static int pci_msi_supported(struct pci_dev *dev, int nvec)
-> >  {
-> >  	struct pci_bus *bus;
-> > -	int ret;
-> > 
-> >  	/* MSI must be globally enabled and supported by the device */
-> > -	if (!pci_msi_enable || !dev || dev->no_msi)
-> > +	if (!pci_msi_enable)
-> > +		return -EINVAL;
-> > +
-> > +	if (!dev || dev->no_msi || dev->current_state != PCI_D0)
-> >  		return -EINVAL;
-> > 
-> >  	/*
-> > @@ -843,10 +834,6 @@ static int pci_msi_check_device(struct pci_dev *dev, int
-> > nvec, int type)
-> >  		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
-> >  			return -EINVAL;
-> > 
-> > -	ret = arch_msi_check_device(dev, nvec, type);
-> > -	if (ret)
-> > -		return ret;
-> > -
-> >  	return 0;
-> >  }
-> > 
-> > @@ -949,13 +936,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry
-> > *entries, int nvec)
-> >  	int status, nr_entries;
-> >  	int i, j;
-> > 
-> > -	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
-> > -		return -EINVAL;
-> > -
-> > -	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
-> > +	status = pci_msi_supported(dev, nvec);
-> >  	if (status)
-> >  		return status;
-> > 
-> > +	if (!entries)
-> > +		return -EINVAL;
-> > +
-> >  	nr_entries = pci_msix_vec_count(dev);
-> >  	if (nr_entries < 0)
-> >  		return nr_entries;
-> > @@ -1062,8 +1049,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec,
-> > int maxvec)
-> >  	int nvec;
-> >  	int rc;
-> > 
-> > -	if (dev->current_state != PCI_D0)
-> > -		return -EINVAL;
-> > +	rc = pci_msi_supported(dev, minvec);
-> > +	if (rc)
-> > +		return rc;
-> > 
-> >  	WARN_ON(!!dev->msi_enabled);
-> > 
-> > @@ -1086,17 +1074,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec,
-> > int maxvec)
-> >  		nvec = maxvec;
-> > 
-> >  	do {
-> > -		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
-> > -		if (rc < 0) {
-> > -			return rc;
-> > -		} else if (rc > 0) {
-> > -			if (rc < minvec)
-> > -				return -ENOSPC;
-> > -			nvec = rc;
-> > -		}
-> > -	} while (rc);
-> > -
-> > -	do {
-> >  		rc = msi_capability_init(dev, nvec);
-> >  		if (rc < 0) {
-> >  			return rc;
-> > diff --git a/include/linux/msi.h b/include/linux/msi.h index 8103f32..dbf7cc9
-> > 100644
-> > --- a/include/linux/msi.h
-> > +++ b/include/linux/msi.h
-> > @@ -60,7 +60,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc
-> > *desc);  void arch_teardown_msi_irq(unsigned int irq);  int
-> > arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);  void
-> > arch_teardown_msi_irqs(struct pci_dev *dev); -int arch_msi_check_device(struct
-> > pci_dev* dev, int nvec, int type);  void arch_restore_msi_irqs(struct pci_dev
-> > *dev);
-> > 
-> >  void default_teardown_msi_irqs(struct pci_dev *dev); @@ -77,8 +76,6 @@ struct
-> > msi_chip {
-> >  	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
-> >  			 struct msi_desc *desc);
-> >  	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
-> > -	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
-> > -			    int nvec, int type);
-> >  };
-> > 
-> >  #endif /* LINUX_MSI_H */
-> > --
-> > 1.9.3
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in the body
-> > of a message to majordomo@vger.kernel.org More majordomo info at
-> > http://vger.kernel.org/majordomo-info.html
+I'm trying to port the nfc nand driver from 2.6.39.1 linux kernel to 3.14.4
+using 4k nand blocks and 2k page size and 24bit hw ecc.
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+At the current time I have been able to make ecc, page read, and page write
+to work but I cannot make oob read and write to work.
+
+The main problem I'm facing is that I don't know how the ecc layout in the
+spare area works in mpc5125.
+
+Please, could anybody tell where I could get information about how to tell
+linux the correct ecc oob parameters?
+
+Thanks in advance,
+Daniel
+
+--047d7b873762f6d9e605005ff02e
+Content-Type: text/html; charset=UTF-8
+
+<p dir="ltr">Hi,</p>
+<p dir="ltr">I&#39;m trying to port the nfc nand driver from 2.6.39.1 linux kernel to 3.14.4 using 4k nand blocks and 2k page size and 24bit hw ecc.</p>
+<p dir="ltr">At the current time I have been able to make ecc, page read, and page write to work but I cannot make oob read and write to work.</p>
+<p dir="ltr">The main problem I&#39;m facing is that I don&#39;t know how the ecc layout in the spare area works in mpc5125.</p>
+<p dir="ltr">Please, could anybody tell where I could get information about how to tell linux the correct ecc oob parameters?</p>
+<p dir="ltr">Thanks in advance,<br>
+Daniel</p>
+
+--047d7b873762f6d9e605005ff02e--
