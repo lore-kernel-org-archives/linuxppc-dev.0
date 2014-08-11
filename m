@@ -2,26 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 780781A008C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:20:03 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1884D1A0886
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:37:29 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B6F6214008F
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2014 14:20:02 +1000 (EST)
-Message-ID: <1407730744.4508.67.camel@pasglop>
-Subject: Re: [tip:timers/core] timekeeping: Fixup typo in
- update_vsyscall_old definition
+ by ozlabs.org (Postfix) with ESMTPS id 572B9140139
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2014 14:37:28 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s7B4bNTS013225
+ for <linuxppc-dev@ozlabs.org>; Sun, 10 Aug 2014 23:37:24 -0500
+Message-ID: <1407731842.4508.70.camel@pasglop>
+Subject: [PATCH] powerpc/boot: Use correct zlib types for comparison
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: john.stultz@linaro.org
-Date: Mon, 11 Aug 2014 14:19:04 +1000
-In-Reply-To: <tip-953dec21aed4038464fec02f96a2f1b8701a5bce@git.kernel.org>
-References: <1406349439-11785-1-git-send-email-john.stultz@linaro.org>
- <tip-953dec21aed4038464fec02f96a2f1b8701a5bce@git.kernel.org>
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 11 Aug 2014 14:37:22 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, peterz@infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, hpa@zytor.com, tglx@linutronix.de, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-07-30 at 00:31 -0700, tip-bot for John Stultz wrote:
-> Commit-ID:  953dec21aed4038464fec02f96a2f1b8701a5bce
-> Gitweb:     http://git.kernel.org/tip/953dec21aed4038464fec02f96a2f1b8701a5bce
-> Author:     John Stultz <john.stultz@linaro.org>
-> AuthorDate: Fri, 25 Jul 2014 21:37:19 -0700
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Wed, 30 Jul 2014 09:26:25 +0200
-> 
-> timekeeping: Fixup typo in update_vsyscall_old definition
-> 
-> In commit 4a0e637738f0 ("clocksource: Get rid of cycle_last"),
-> currently in the -tip tree, there was a small typo where cycles_t
-> was used intstead of cycle_t. This broke ppc64 builds.
+Avoids this warning:
 
-There's another bug in there... You fix timespec vs. timespec64 for the
-first argument of update_vsyscall_old but not the second one ...
-(wall_to_monotonic).
+arch/powerpc/boot/gunzip_util.c:118:9: warning: comparison of distinct pointer types lacks a cast
 
-Also, in e2dff1ec0 you claim this is "minor", you seem to forget that
-arch/powerpc also deals with 32-bit kernels which use the same time
-keeping code, so we have a pretty serious regressions here...
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/boot/gunzip_util.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-BTW. Is there some documentation you can point me to to figure out what
-replace that "_OLD" stuff so we can update to whatever is "new" ?
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/boot/gunzip_util.c b/arch/powerpc/boot/gunzip_util.c
+index ef2aed0..9dc5250 100644
+--- a/arch/powerpc/boot/gunzip_util.c
++++ b/arch/powerpc/boot/gunzip_util.c
+@@ -112,10 +112,10 @@ int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
+ 		r = zlib_inflate(&state->s, Z_FULL_FLUSH);
+ 		if (r != Z_OK && r != Z_STREAM_END)
+ 			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
+-		len = state->s.next_out - (unsigned char *)dst;
++		len = state->s.next_out - (Byte *)dst;
+ 	} else {
+ 		/* uncompressed image */
+-		len = min(state->s.avail_in, (unsigned)dstlen);
++		len = min(state->s.avail_in, (uLong)dstlen);
+ 		memcpy(dst, state->s.next_in, len);
+ 		state->s.next_in += len;
+ 		state->s.avail_in -= len;
