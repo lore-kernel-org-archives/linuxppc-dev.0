@@ -1,23 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9ACF41A0B66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 13:26:55 +1000 (EST)
-Message-ID: <1407725838.4508.57.camel@pasglop>
-Subject: Re: [PATCH 4/14] powerpc/pseries: delete unneeded test before
- of_node_put
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Mon, 11 Aug 2014 12:57:18 +1000
-In-Reply-To: <1407492475-26283-6-git-send-email-Julia.Lawall@lip6.fr>
-References: <1407492475-26283-6-git-send-email-Julia.Lawall@lip6.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C5F31A0717
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:00:08 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 11 Aug 2014 14:00:07 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7544B2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:00:04 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7B3anZV7406016
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 13:36:49 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7B402gf022330
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2014 14:00:03 +1000
+Message-ID: <53E83FBF.2040607@linux.vnet.ibm.com>
+Date: Mon, 11 Aug 2014 09:29:59 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
+References: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20140803155108.GA19710@gate.crashing.org>
+In-Reply-To: <20140803155108.GA19710@gate.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-08-08 at 12:07 +0200, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Sunday 03 August 2014 09:21 PM, Segher Boessenkool wrote:
+>> +/*
+>> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
+>> + * Based on PowerISA v2.07, Instruction with opcode 0s will be treated as illegal
+>> + * instruction.
+>> + */
 > 
-> Of_node_put supports NULL as its argument, so the initial test is not
-> necessary.
+> "primary opcode 0" instead?
 > 
-> Suggested by Uwe Kleine-König.
-> 
-> The semantic patch that fixes this problem is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression e;
-> @@
-> 
-> -if (e)
->    of_node_put(e);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+ok sure.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> +#define OP_ZERO                 0x0
+> 
+> Using 0x0 where you mean 0, making a #define for 0 in the first place...
+> This all looks rather silly doesn't it.
+> 
+
+I wanted to avoid zero mentioned in the case statement, but can add a
+comment explaining it.
+
+>> +	case OP_ZERO:
+>> +		if((inst & 0x00FFFF00) == KVMPPC_INST_BOOK3S_DEBUG) {
+> 
+> You either shouldn't mask at all here, or the mask is wrong (the primary
+> op is the top six bits, not the top eight).
+>
+Yes. I guess I dont need to check here. Will resend the patch.
+
+Thanks for review
+Regards
+Maddy
 
 > 
-> ---
->  arch/powerpc/platforms/pseries/iommu.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> Segher
 > 
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 33b552f..2ea6831 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -575,8 +575,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
->  	while (isa_dn && isa_dn != dn)
->  		isa_dn = isa_dn->parent;
->  
-> -	if (isa_dn_orig)
-> -		of_node_put(isa_dn_orig);
-> +	of_node_put(isa_dn_orig);
->  
->  	/* Count number of direct PCI children of the PHB. */
->  	for (children = 0, tmp = dn->child; tmp; tmp = tmp->sibling)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
