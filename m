@@ -1,39 +1,33 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9A2C1A003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 15:18:04 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 12 Aug 2014 10:48:01 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E875DE001F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 10:49:56 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7C5IJYY35586092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 10:48:20 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7C5HuiK023483
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 10:47:57 +0530
-Message-ID: <53E9A383.5060009@linux.vnet.ibm.com>
-Date: Tue, 12 Aug 2014 10:47:55 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 291AE1A0B93
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:02:50 +1000 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [RFC PATCH 07/20] x86/MSI: Use msi_chip instead of arch func to
+ configure MSI/MSI-X
+Date: Tue, 12 Aug 2014 15:26:00 +0800
+Message-ID: <1407828373-24322-8-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
+References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
-References: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
- <53E87023.6080200@suse.de> <1407747061.4508.75.camel@pasglop>
- <53E889BA.40108@suse.de>
-In-Reply-To: <53E889BA.40108@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Content-Type: text/plain
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Yijing Wang <wangyijing@huawei.com>, "H.
+ Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Marc Zyngier <marc.zyngier@arm.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,38 +37,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 11 August 2014 02:45 PM, Alexander Graf wrote:
-> 
-> On 11.08.14 10:51, Benjamin Herrenschmidt wrote:
->> On Mon, 2014-08-11 at 09:26 +0200, Alexander Graf wrote:
->>>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
->>>> index da86d9b..d95014e 100644
->>>> --- a/arch/powerpc/kvm/emulate.c
->>>> +++ b/arch/powerpc/kvm/emulate.c
->>> This should be book3s_emulate.c.
->> Any reason we can't make that 00dddd00 opcode as breakpoint common to
->> all powerpc variants ?
-> 
-> I can't think of a good reason. We use a hypercall on booke (which traps
-> into an illegal instruction for pr) today, but I don't think it has to
-> be that way.
-> 
-> Given that the user space API allows us to change it dynamically, there
-> should be nothing blocking us from going with 00dddd00 always.
-> 
-Kindly correct me if i am wrong. So we can still have a common code in
-emulate.c to set the env for both HV and pr incase of illegal
-instruction (i will rebase latest src). But suggestion here to use
-00dddd00, in that case current path in embed is kvmppc_handle_exit
-(booke.c) -> BOOKE_INTERRUPT_HV_PRIV -> emulation_exit ->
-kvmppc_emulate_instruction, will change to kvmppc_handle_exit (booke.c)
--> BOOKE_INTERRUPT_PROGRAM -> if debug instr call emulation_exit else
-send to guest?
+Introduce a new struct msi_chip apic_msi_chip instead of weak arch
+functions to configure MSI/MSI-X in x86.
 
-Thanks for review
-regards
-Maddy
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/x86/include/asm/pci.h     |    1 +
+ arch/x86/kernel/apic/io_apic.c |   20 ++++++++++++++++----
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-> 
-> Alex
-> 
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index 0892ea0..878a06d 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -101,6 +101,7 @@ void native_teardown_msi_irq(unsigned int irq);
+ void native_restore_msi_irqs(struct pci_dev *dev);
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 		  unsigned int irq_base, unsigned int irq_offset);
++extern struct msi_chip *x86_msi_chip;
+ #else
+ #define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 2609dcd..eb8ab7c 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3077,24 +3077,25 @@ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 	return 0;
+ }
+ 
+-int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++int native_setup_msi_irqs(struct device *dev, int nvec, int type)
+ {
+ 	struct msi_desc *msidesc;
+ 	unsigned int irq;
+ 	int node, ret;
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 
+ 	/* Multiple MSI vectors only supported with interrupt remapping */
+ 	if (type == PCI_CAP_ID_MSI && nvec > 1)
+ 		return 1;
+ 
+-	node = dev_to_node(&dev->dev);
++	node = dev_to_node(dev);
+ 
+-	list_for_each_entry(msidesc, &dev->msi_list, list) {
++	list_for_each_entry(msidesc, &pdev->msi_list, list) {
+ 		irq = irq_alloc_hwirq(node);
+ 		if (!irq)
+ 			return -ENOSPC;
+ 
+-		ret = setup_msi_irq(dev, msidesc, irq, 0);
++		ret = setup_msi_irq(pdev, msidesc, irq, 0);
+ 		if (ret < 0) {
+ 			irq_free_hwirq(irq);
+ 			return ret;
+@@ -3214,6 +3215,17 @@ int default_setup_hpet_msi(unsigned int irq, unsigned int id)
+ }
+ #endif
+ 
++struct msi_chip apic_msi_chip = {
++	.setup_irqs = native_setup_msi_irqs,
++	.teardown_irq = native_teardown_msi_irq,
++};
++
++struct msi_chip *arch_get_match_msi_chip(struct device *dev)
++{
++	return x86_msi_chip;
++}
++
++struct msi_chip *x86_msi_chip = &apic_msi_chip;
+ #endif /* CONFIG_PCI_MSI */
+ /*
+  * Hypertransport interrupt support
+-- 
+1.7.1
