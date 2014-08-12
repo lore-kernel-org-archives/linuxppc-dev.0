@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D1981A15D7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:02:51 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 014D81A15E2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:02:59 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 01/20] x86/xen/MSI: Eliminate arch_msix_mask_irq() and
- arch_msi_mask_irq()
-Date: Tue, 12 Aug 2014 15:25:54 +0800
-Message-ID: <1407828373-24322-2-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 06/20] PCI/MSI: Introduce arch_get_match_msi_chip() to
+ find the match msi_chip
+Date: Tue, 12 Aug 2014 15:25:59 +0800
+Message-ID: <1407828373-24322-7-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,229 +37,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 0e4ccb150 added two __weak arch functions arch_msix_mask_irq()
-and arch_msi_mask_irq() to fix a bug found when running xen in x86.
-Introduced these two funcntions make MSI code complex. This patch
-reverted commit 0e4ccb150 and add #ifdef for x86 msi_chip to fix this
-bug for simplicity. Also this is preparation for using struct
-msi_chip instead of weak arch MSI functions in all platforms.
+Introduce __weak arch_get_match_msi_chip() to find the match msi_chip.
+We prepare to use struct msi_chip to eliminate arch_xxx functions
+in all platforms. The MSI device and the msi_chip binding is platform
+specific. For instance, in x86, LAPICs receive all MSI irq, but in
+arm, PCI device usually deliver their MSI to PCI hostbridge, if more
+than one msi_chip found in system, DTS file will report the binding
+between MSI devices and target msi_chip. So we need a platform implemented
+interface to do that.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-CC: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/include/asm/x86_init.h |    3 ---
- arch/x86/kernel/apic/io_apic.c  |   15 +++++++++++++++
- arch/x86/kernel/x86_init.c      |   10 ----------
- arch/x86/pci/xen.c              |   13 +------------
- drivers/pci/msi.c               |   22 ++++++----------------
- include/linux/msi.h             |    2 --
- 6 files changed, 22 insertions(+), 43 deletions(-)
+ drivers/pci/msi.c |   30 ++++++++++++++++++++++++++----
+ 1 files changed, 26 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index e45e4da..f58a9c7 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -172,7 +172,6 @@ struct x86_platform_ops {
- 
- struct pci_dev;
- struct msi_msg;
--struct msi_desc;
- 
- struct x86_msi_ops {
- 	int (*setup_msi_irqs)(struct pci_dev *dev, int nvec, int type);
-@@ -183,8 +182,6 @@ struct x86_msi_ops {
- 	void (*teardown_msi_irqs)(struct pci_dev *dev);
- 	void (*restore_msi_irqs)(struct pci_dev *dev);
- 	int  (*setup_hpet_msi)(unsigned int irq, unsigned int id);
--	u32 (*msi_mask_irq)(struct msi_desc *desc, u32 mask, u32 flag);
--	u32 (*msix_mask_irq)(struct msi_desc *desc, u32 flag);
- };
- 
- struct IO_APIC_route_entry;
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 81e08ef..2609dcd 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3019,14 +3019,29 @@ msi_set_affinity(struct irq_data *data, const struct cpumask *mask, bool force)
- 	return IRQ_SET_MASK_OK_NOCOPY;
- }
- 
-+#ifdef CONFIG_XEN
-+static void nop_unmask_msi_irq(struct irq_data *data)
-+{
-+}
-+
-+static void nop_mask_msi_irq(struct irq_data *data)
-+{
-+}
-+#endif
-+
- /*
-  * IRQ Chip for MSI PCI/PCI-X/PCI-Express Devices,
-  * which implement the MSI or MSI-X Capability Structure.
-  */
- static struct irq_chip msi_chip = {
- 	.name			= "PCI-MSI",
-+#ifdef CONFIG_XEN
-+	.irq_unmask		= nop_unmask_msi_irq,
-+	.irq_mask		= nop_mask_msi_irq,
-+#else
- 	.irq_unmask		= unmask_msi_irq,
- 	.irq_mask		= mask_msi_irq,
-+#endif
- 	.irq_ack		= ack_apic_edge,
- 	.irq_set_affinity	= msi_set_affinity,
- 	.irq_retrigger		= ioapic_retrigger_irq,
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index e48b674..234b072 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -116,8 +116,6 @@ struct x86_msi_ops x86_msi = {
- 	.teardown_msi_irqs	= default_teardown_msi_irqs,
- 	.restore_msi_irqs	= default_restore_msi_irqs,
- 	.setup_hpet_msi		= default_setup_hpet_msi,
--	.msi_mask_irq		= default_msi_mask_irq,
--	.msix_mask_irq		= default_msix_mask_irq,
- };
- 
- /* MSI arch specific hooks */
-@@ -140,14 +138,6 @@ void arch_restore_msi_irqs(struct pci_dev *dev)
- {
- 	x86_msi.restore_msi_irqs(dev);
- }
--u32 arch_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
--{
--	return x86_msi.msi_mask_irq(desc, mask, flag);
--}
--u32 arch_msix_mask_irq(struct msi_desc *desc, u32 flag)
--{
--	return x86_msi.msix_mask_irq(desc, flag);
--}
- #endif
- 
- struct x86_io_apic_ops x86_io_apic_ops = {
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 905956f..55c7858 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -393,14 +393,7 @@ static void xen_teardown_msi_irq(unsigned int irq)
- {
- 	xen_destroy_irq(irq);
- }
--static u32 xen_nop_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
--{
--	return 0;
--}
--static u32 xen_nop_msix_mask_irq(struct msi_desc *desc, u32 flag)
--{
--	return 0;
--}
-+
- #endif
- 
- int __init pci_xen_init(void)
-@@ -424,8 +417,6 @@ int __init pci_xen_init(void)
- 	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
- 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
- 	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
--	x86_msi.msi_mask_irq = xen_nop_msi_mask_irq;
--	x86_msi.msix_mask_irq = xen_nop_msix_mask_irq;
- #endif
- 	return 0;
- }
-@@ -505,8 +496,6 @@ int __init pci_xen_initial_domain(void)
- 	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
- 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
- 	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
--	x86_msi.msi_mask_irq = xen_nop_msi_mask_irq;
--	x86_msi.msix_mask_irq = xen_nop_msix_mask_irq;
- #endif
- 	xen_setup_acpi_sci();
- 	__acpi_register_gsi = acpi_register_gsi_xen;
 diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 5a40516..bff25df 100644
+index 7b7abe9..feba5dd 100644
 --- a/drivers/pci/msi.c
 +++ b/drivers/pci/msi.c
-@@ -173,7 +173,7 @@ static inline __attribute_const__ u32 msi_mask(unsigned x)
-  * reliably as devices without an INTx disable bit will then generate a
-  * level IRQ which will never be cleared.
-  */
--u32 default_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
-+static u32 __msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
- {
- 	u32 mask_bits = desc->masked;
+@@ -29,10 +29,22 @@ static int pci_msi_enable = 1;
  
-@@ -187,14 +187,9 @@ u32 default_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
- 	return mask_bits;
+ /* Arch hooks */
+ 
+-int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
++struct msi_chip * __weak arch_get_match_msi_chip(struct device *dev)
++{
++	if (dev_is_pci(dev)) {
++		struct pci_dev *pdev = to_pci_dev(dev);
++		struct msi_chip *chip = pdev->bus->msi;
++
++		return chip;
++	}
++
++	return NULL;
++}
++
++int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ {
+-	struct msi_chip *chip = dev->bus->msi;
+ 	int err;
++	struct msi_chip *chip = arch_get_match_msi_chip(&dev->dev);
+ 
+ 	if (!chip || !chip->setup_irq)
+ 		return -EINVAL;
+@@ -46,7 +58,8 @@ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ 
+ void __weak arch_teardown_msi_irq(unsigned int irq)
+ {
+-	struct msi_chip *chip = irq_get_chip_data(irq);
++	struct msi_desc *entry = irq_get_msi_desc(irq);
++	struct msi_chip *chip = arch_get_match_msi_chip(&entry->dev->dev);
+ 
+ 	if (!chip || !chip->teardown_irq)
+ 		return;
+@@ -56,7 +69,7 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
+ 
+ int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+ {
+-	struct msi_chip *chip = dev->bus->msi;
++	struct msi_chip *chip = arch_get_match_msi_chip(&dev->dev);
+ 
+ 	if (!chip || !chip->check_device)
+ 		return 0;
+@@ -68,7 +81,12 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+ 	int ret;
++	struct msi_chip *chip;
+ 
++	chip = arch_get_match_msi_chip(&dev->dev);
++	if (chip && chip->setup_irqs)
++		return chip->setup_irqs(&dev->dev, nvec, type);
++
+ 	/*
+ 	 * If an architecture wants to support multiple MSI, it needs to
+ 	 * override arch_setup_msi_irqs()
+@@ -133,6 +151,10 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
+ 
+ void __weak arch_restore_msi_irqs(struct pci_dev *dev)
+ {
++	struct msi_chip *chip = arch_get_msi_chip(&dev->dev);
++	if (chip && chip->restore_irqs)
++		return chip->restore_irqs(&dev->dev);
++
+ 	return default_restore_msi_irqs(dev);
  }
  
--__weak u32 arch_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
--{
--	return default_msi_mask_irq(desc, mask, flag);
--}
--
- static void msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
- {
--	desc->masked = arch_msi_mask_irq(desc, mask, flag);
-+	desc->masked = __msi_mask_irq(desc, mask, flag);
- }
- 
- /*
-@@ -204,7 +199,7 @@ static void msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag)
-  * file.  This saves a few milliseconds when initialising devices with lots
-  * of MSI-X interrupts.
-  */
--u32 default_msix_mask_irq(struct msi_desc *desc, u32 flag)
-+static u32 __msix_mask_irq(struct msi_desc *desc, u32 flag)
- {
- 	u32 mask_bits = desc->masked;
- 	unsigned offset = desc->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
-@@ -217,14 +212,9 @@ u32 default_msix_mask_irq(struct msi_desc *desc, u32 flag)
- 	return mask_bits;
- }
- 
--__weak u32 arch_msix_mask_irq(struct msi_desc *desc, u32 flag)
--{
--	return default_msix_mask_irq(desc, flag);
--}
--
- static void msix_mask_irq(struct msi_desc *desc, u32 flag)
- {
--	desc->masked = arch_msix_mask_irq(desc, flag);
-+	desc->masked = __msix_mask_irq(desc, flag);
- }
- 
- static void msi_set_mask_bit(struct irq_data *data, u32 flag)
-@@ -893,7 +883,7 @@ void pci_msi_shutdown(struct pci_dev *dev)
- 	/* Return the device with MSI unmasked as initial states */
- 	mask = msi_mask(desc->msi_attrib.multi_cap);
- 	/* Keep cached state to be restored */
--	arch_msi_mask_irq(desc, mask, ~mask);
-+	__msi_mask_irq(desc, mask, ~mask);
- 
- 	/* Restore dev->irq to its default pin-assertion irq */
- 	dev->irq = desc->msi_attrib.default_irq;
-@@ -993,7 +983,7 @@ void pci_msix_shutdown(struct pci_dev *dev)
- 	/* Return the device with MSI-X masked as initial states */
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		/* Keep cached states to be restored */
--		arch_msix_mask_irq(entry, 1);
-+		__msix_mask_irq(entry, 1);
- 	}
- 
- 	msix_clear_and_set_ctrl(dev, PCI_MSIX_FLAGS_ENABLE, 0);
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 8103f32..78e6b6e 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -65,8 +65,6 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
- 
- void default_teardown_msi_irqs(struct pci_dev *dev);
- void default_restore_msi_irqs(struct pci_dev *dev);
--u32 default_msi_mask_irq(struct msi_desc *desc, u32 mask, u32 flag);
--u32 default_msix_mask_irq(struct msi_desc *desc, u32 flag);
- 
- struct msi_chip {
- 	struct module *owner;
 -- 
 1.7.1
