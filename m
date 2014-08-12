@@ -1,15 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D33F1A1734
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC9061A1754
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:15 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 11/20] MIPS/Octeon/MSI: Use msi_chip instead of arch func
+Subject: [RFC PATCH 16/20] arm/iop13xx/MSI: Use msi_chip instead of arch func
  to configure MSI/MSI-X
-Date: Tue, 12 Aug 2014 15:26:04 +0800
-Message-ID: <1407828373-24322-12-git-send-email-wangyijing@huawei.com>
+Date: Tue, 12 Aug 2014 15:26:09 +0800
+Message-ID: <1407828373-24322-17-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,132 +37,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new struct msi_chip octeon_msi_chip instead of weak arch
-functions to configure MSI/MSI-X.
+Introduce a new struct msi_chip iop13xx_msi_chip instead of weak arch
+functions to configure MSI/MSI-X. And associate the pci bus with msi_chip
+in pcibios_add_bus().
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/mips/pci/msi-octeon.c |   45 ++++++++++++++++++-------------------------
- 1 files changed, 19 insertions(+), 26 deletions(-)
+ arch/arm/mach-iop13xx/include/mach/pci.h |    2 ++
+ arch/arm/mach-iop13xx/iq81340mc.c        |    1 +
+ arch/arm/mach-iop13xx/iq81340sc.c        |    1 +
+ arch/arm/mach-iop13xx/msi.c              |   14 ++++++++++++--
+ arch/arm/mach-iop13xx/pci.c              |    6 ++++++
+ 5 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/pci/msi-octeon.c b/arch/mips/pci/msi-octeon.c
-index ab0c5d1..8098066 100644
---- a/arch/mips/pci/msi-octeon.c
-+++ b/arch/mips/pci/msi-octeon.c
-@@ -57,7 +57,7 @@ static int msi_irq_size;
-  *
-  * Returns 0 on success.
-  */
--int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-+int octeon_setup_msi_irq(struct device *dev, struct msi_desc *desc)
+diff --git a/arch/arm/mach-iop13xx/include/mach/pci.h b/arch/arm/mach-iop13xx/include/mach/pci.h
+index 59f42b5..7a073cb 100644
+--- a/arch/arm/mach-iop13xx/include/mach/pci.h
++++ b/arch/arm/mach-iop13xx/include/mach/pci.h
+@@ -10,6 +10,8 @@ struct pci_bus *iop13xx_scan_bus(int nr, struct pci_sys_data *);
+ void iop13xx_atu_select(struct hw_pci *plat_pci);
+ void iop13xx_pci_init(void);
+ void iop13xx_map_pci_memory(void);
++void iop13xx_add_bus(struct pci_bus *bus);
++extern struct msi_chip iop13xx_msi_chip;
+ 
+ #define IOP_PCI_STATUS_ERROR (PCI_STATUS_PARITY |	     \
+ 			       PCI_STATUS_SIG_TARGET_ABORT | \
+diff --git a/arch/arm/mach-iop13xx/iq81340mc.c b/arch/arm/mach-iop13xx/iq81340mc.c
+index 9cd07d3..19d47cb 100644
+--- a/arch/arm/mach-iop13xx/iq81340mc.c
++++ b/arch/arm/mach-iop13xx/iq81340mc.c
+@@ -59,6 +59,7 @@ static struct hw_pci iq81340mc_pci __initdata = {
+ 	.map_irq	= iq81340mc_pcix_map_irq,
+ 	.scan		= iop13xx_scan_bus,
+ 	.preinit	= iop13xx_pci_init,
++	.add_bus	= iop13xx_add_bus;
+ };
+ 
+ static int __init iq81340mc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/iq81340sc.c b/arch/arm/mach-iop13xx/iq81340sc.c
+index b3ec11c..4d56993 100644
+--- a/arch/arm/mach-iop13xx/iq81340sc.c
++++ b/arch/arm/mach-iop13xx/iq81340sc.c
+@@ -61,6 +61,7 @@ static struct hw_pci iq81340sc_pci __initdata = {
+ 	.scan		= iop13xx_scan_bus,
+ 	.map_irq	= iq81340sc_atux_map_irq,
+ 	.preinit	= iop13xx_pci_init
++	.add_bus	= iop13xx_add_bus;
+ };
+ 
+ static int __init iq81340sc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/msi.c b/arch/arm/mach-iop13xx/msi.c
+index e7730cf..59a9f8f 100644
+--- a/arch/arm/mach-iop13xx/msi.c
++++ b/arch/arm/mach-iop13xx/msi.c
+@@ -132,7 +132,7 @@ static struct irq_chip iop13xx_msi_chip = {
+ 	.irq_unmask = unmask_msi_irq,
+ };
+ 
+-int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
++int iop13xx_setup_msi_irq(struct device *dev, struct msi_desc *desc)
  {
+ 	int id, irq = irq_alloc_desc_from(IRQ_IOP13XX_MSI_0, -1);
  	struct msi_msg msg;
- 	u16 control;
-@@ -73,7 +73,7 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 	 * wants.  Most devices only want 1, which will give
- 	 * configured_private_bits and request_private_bits equal 0.
- 	 */
--	pci_read_config_word(dev, desc->msi_attrib.pos + PCI_MSI_FLAGS,
-+	pci_read_config_word(to_pci_dev(dev), desc->msi_attrib.pos + PCI_MSI_FLAGS,
- 			     &control);
- 
- 	/*
-@@ -176,7 +176,7 @@ msi_irq_allocated:
- 	/* Update the number of IRQs the device has available to it */
- 	control &= ~PCI_MSI_FLAGS_QSIZE;
- 	control |= request_private_bits << 4;
--	pci_write_config_word(dev, desc->msi_attrib.pos + PCI_MSI_FLAGS,
-+	pci_write_config_word(to_pci_dev(dev), desc->msi_attrib.pos + PCI_MSI_FLAGS,
- 			      control);
- 
- 	irq_set_msi_desc(irq, desc);
-@@ -184,32 +184,14 @@ msi_irq_allocated:
+@@ -159,7 +159,17 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
  	return 0;
  }
  
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int octeon_check_msi_device(struct device *dev, int nvec, int type)
- {
--	struct msi_desc *entry;
--	int ret;
--
- 	/*
- 	 * MSI-X is not supported.
- 	 */
- 	if (type == PCI_CAP_ID_MSIX)
- 		return -EINVAL;
- 
--	/*
--	 * If an architecture wants to support multiple MSI, it needs to
--	 * override arch_setup_msi_irqs()
--	 */
--	if (type == PCI_CAP_ID_MSI && nvec > 1)
--		return 1;
--
--	list_for_each_entry(entry, &dev->msi_list, list) {
--		ret = arch_setup_msi_irq(dev, entry);
--		if (ret < 0)
--			return ret;
--		if (ret > 0)
--			return -ENOSPC;
--	}
--
- 	return 0;
- }
- 
-@@ -219,7 +201,7 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-  *
-  * @irq:    The devices first irq number. There may be multple in sequence.
-  */
 -void arch_teardown_msi_irq(unsigned int irq)
-+void octeon_teardown_msi_irq(unsigned int irq)
++void iop13xx_teardown_msi_irq(unsigned int irq)
  {
- 	int number_irqs;
- 	u64 bitmask;
-@@ -229,7 +211,7 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	if ((irq < OCTEON_IRQ_MSI_BIT0)
- 		|| (irq > msi_irq_size + OCTEON_IRQ_MSI_BIT0))
- 		panic("arch_teardown_msi_irq: Attempted to teardown illegal "
--		      "MSI interrupt (%d)", irq);
-+			"MSI interrupt (%d)", irq);
- 
- 	irq -= OCTEON_IRQ_MSI_BIT0;
- 	index = irq / 64;
-@@ -242,7 +224,7 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	 */
- 	number_irqs = 0;
- 	while ((irq0 + number_irqs < 64) &&
--	       (msi_multiple_irq_bitmask[index]
-+		(msi_multiple_irq_bitmask[index]
- 		& (1ull << (irq0 + number_irqs))))
- 		number_irqs++;
- 	number_irqs++;
-@@ -252,7 +234,7 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	bitmask <<= irq0;
- 	if ((msi_free_irq_bitmask[index] & bitmask) != bitmask)
- 		panic("arch_teardown_msi_irq: Attempted to teardown MSI "
--		      "interrupt (%d) not in use", irq);
-+			"interrupt (%d) not in use", irq);
- 
- 	/* Checks are done, update the in use bitmask */
- 	spin_lock(&msi_free_irq_bitmask_lock);
-@@ -261,6 +243,17 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	spin_unlock(&msi_free_irq_bitmask_lock);
+ 	irq_free_desc(irq);
  }
- 
-+struct msi_chip octeon_msi_chip = {
-+	.setup_irq = octeon_setup_msi_irq,
-+	.teardown_irq = octeon_teardown_msi_irq,
-+	.check_device = octeon_check_msi_device,
++
++struct msi_chip iop13xx_chip = {
++	.setup_irq = iop13xx_setup_msi_irq,
++	.teardown_irq = iop13xx_teardown_msi_irq,
 +};
 +
 +struct msi_chip *arch_get_match_msi_chip(struct device *dev)
 +{
-+	return &octeon_msi_chip;
++	return &iop13xx_chip;
++}
+diff --git a/arch/arm/mach-iop13xx/pci.c b/arch/arm/mach-iop13xx/pci.c
+index 9082b84..f498800 100644
+--- a/arch/arm/mach-iop13xx/pci.c
++++ b/arch/arm/mach-iop13xx/pci.c
+@@ -962,6 +962,12 @@ void __init iop13xx_atu_select(struct hw_pci *plat_pci)
+ 	}
+ }
+ 
++void iop13xx_add_bus(struct pci_bus *bus)
++{
++	if (IS_ENABLED(CONFIG_PCI_MSI))
++		bus->msi = &iop13xx_msi_chip;
 +}
 +
- static DEFINE_RAW_SPINLOCK(octeon_irq_msi_lock);
- 
- static u64 msi_rcv_reg[4];
+ void __init iop13xx_pci_init(void)
+ {
+ 	/* clear pre-existing south bridge errors */
 -- 
 1.7.1
