@@ -1,33 +1,20 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A8B21A15D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:25 +1000 (EST)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 14/20] Powerpc/MSI: Use msi_chip instead of arch func to
- configure MSI/MSI-X
-Date: Tue, 12 Aug 2014 15:26:07 +0800
-Message-ID: <1407828373-24322-15-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
-References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <martijn.de.gouw@prodrive-technologies.com>
+Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
+ by lists.ozlabs.org (Postfix) with ESMTP id 81BAD1A0042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 18:48:04 +1000 (EST)
+Message-ID: <53E9D4C0.5030203@prodrive-technologies.com>
+Date: Tue, 12 Aug 2014 10:48:00 +0200
+From: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>, "H.
- Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Marc Zyngier <marc.zyngier@arm.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] fsl-rio: add support for mapping inbound windows
+References: <1407246752-21639-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+ <1407274663.7427.7.camel@snotra.buserror.net>
+In-Reply-To: <1407274663.7427.7.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Alexandre.Bounine@idt.com, Liu Gang <Gang.Liu@freescale.com>,
+ Barry.Wood@idt.com, linuxppc-dev@lists.ozlabs.org,
+ stef.van.os@prodrive-technologies.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,61 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new struct msi_chip ppc_msi_chip instead of weak arch
-functions to configure MSI/MSI-X.
+On 08/05/2014 11:37 PM, Scott Wood wrote:
+> On Tue, 2014-08-05 at 15:52 +0200, Martijn de Gouw wrote:
+>> Add support for mapping and unmapping of inbound rapidio windows.
+>>
+>> Signed-off-by: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+>
+> Could you elaborate in the changelog on what this fixes or makes
+> possible?  E.g. did the driver previously not support inbound
+> transactions at all, or did it assume the window was set up by a
+> bootloader?
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
----
- arch/powerpc/kernel/msi.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
+Something like:
 
-diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
-index 8bbc12d..170b02c 100644
---- a/arch/powerpc/kernel/msi.c
-+++ b/arch/powerpc/kernel/msi.c
-@@ -13,7 +13,7 @@
- 
- #include <asm/machdep.h>
- 
--int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
-+int ppc_msi_check_device(struct device *dev, int nvec, int type)
- {
- 	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
- 		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
-@@ -26,18 +26,29 @@ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
- 
- 	if (ppc_md.msi_check_device) {
- 		pr_debug("msi: Using platform check routine.\n");
--		return ppc_md.msi_check_device(dev, nvec, type);
-+		return ppc_md.msi_check_device(to_pci_dev(dev), nvec, type);
- 	}
- 
-         return 0;
- }
- 
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int ppc_setup_msi_irqs(struct device *dev, int nvec, int type)
- {
--	return ppc_md.setup_msi_irqs(dev, nvec, type);
-+	return ppc_md.setup_msi_irqs(to_pci_dev(dev), nvec, type);
- }
- 
--void arch_teardown_msi_irqs(struct pci_dev *dev)
-+void ppc_teardown_msi_irqs(struct device *dev)
- {
--	ppc_md.teardown_msi_irqs(dev);
-+	ppc_md.teardown_msi_irqs(to_pci_dev(dev));
-+}
-+
-+struct msi_chip ppc_msi_chip = {
-+	.setup_irqs = ppc_setup_msi_irqs,
-+	.teardown_irqs = ppc_teardown_msi_irqs,
-+	.check_device = ppc_msi_check_device,
-+};
-+
-+struct msi_chip *arch_get_match_msi_chip(struct device *dev)
-+{
-+	return &ppc_msi_chip;
- }
+fsl-rio: add support for mapping inbound windows
+
+     Add support for mapping and unmapping of inbound rapidio windows.
+     This allows for drivers to open up a part of local memory on the
+     rapidio network. Also applications can use this and tranfer blocks
+     of data over the network.
+
+>
+> Liu Gang, could you review this?
+
+I'll wait for the review before I post a new version.
+
+Gr, Martijn
+
+
 -- 
-1.7.1
+Martijn de Gouw
+Engineer
+Prodrive Technologies B.V.
+Mobile: +31 63 17 76 161
+Phone:  +31 40 26 76 200
