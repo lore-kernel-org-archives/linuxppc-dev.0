@@ -1,40 +1,37 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qg0-f47.google.com (mail-qg0-f47.google.com
- [209.85.192.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0335D1A02B4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 18:58:05 +1000 (EST)
-Received: by mail-qg0-f47.google.com with SMTP id i50so9318202qgf.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 01:58:03 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPDyKFruZxUtzUKM+PvsK-_qqcE4OcCaKSkRJ2_01y7TuQMGkA@mail.gmail.com>
-References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
- <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
- <1407515785.31897.28.camel@hornet>
- <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
- <1407748550.3680.10.camel@hornet>
- <CAPDyKFruZxUtzUKM+PvsK-_qqcE4OcCaKSkRJ2_01y7TuQMGkA@mail.gmail.com>
-Date: Tue, 12 Aug 2014 10:58:02 +0200
-Message-ID: <CAPDyKFrb9OSbhHtn=wgbs9Yky1t453rdNBJVgGA62vER-65dYw@mail.gmail.com>
-Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
- device
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Pawel Moll <pawel.moll@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Peter De Schrijver <pdeschrijver@nvidia.com>,
- Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <chris@printf.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
- Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED24D1A0718
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 19:17:16 +1000 (EST)
+Received: from /spool/local
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 12 Aug 2014 10:17:12 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 45E2A2190041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 10:16:53 +0100 (BST)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7C9H9FK34013204
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:17:09 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7C9H9HL014612
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 03:17:09 -0600
+Message-ID: <1407835024.3288.10.camel@TP420>
+Subject: [PATCH powerpc] use machine_subsys_initcall() for
+ opal_hmi_handler_init()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 12 Aug 2014 17:17:04 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>, mahesh@linux.vnet.ibm.com,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,56 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11 August 2014 11:32, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 11 August 2014 11:15, Pawel Moll <pawel.moll@arm.com> wrote:
->> On Mon, 2014-08-11 at 10:07 +0100, Ulf Hansson wrote:
->>> On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
->>> > On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
->>> >> The code selecting a device for the sdhci host has been
->>> >> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
->>> >> "mmc: sdhci-pltfm: Add structure for host-specific data" and
->>> >> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
->>> >> device does not pass parent to sdhci_alloc_host") while there
->>> >> does not seem to be any reason to use platform device's parent
->>> >> in the first place.
->>> >>
->>> >> The comment saying "Some PCI-based MFD need the parent here"
->>> >> seem to refer to Timberdale FPGA driver (the only MFD driver
->>> >> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
->>> >> the only situation when parent device matter is runtime PM,
->>> >> which is not implemented for Timberdale.
->>> >>
->>> >> Cc: Chris Ball <chris@printf.net>
->>> >> Cc: Anton Vorontsov <anton@enomsg.org>
->>> >> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->>> >> Cc: linux-mmc@vger.kernel.org
->>> >> Cc: linuxppc-dev@lists.ozlabs.org
->>> >> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
->>> >> ---
->>> >>
->>> >> This patch is a part of effort to remove references to platform_bus
->>> >> and make it static.
->>> >>
->>> >> Chris, Anton, Ulf - could you please advise if the assumptions
->>> >> above are correct or if I'm completely wrong? Do you know what
->>> >> where the real reasons to use parent originally? The PCI comment
->>> >> seems like a red herring to me...
->>> >
->>> > Can I take the silence as a suggestion that the change looks ok-ish for
->>> > you?
->>>
->>> Sorry for the delay. I suppose this make sense, but I really don't
->>> know for sure.
->>>
->>> I guess we need some testing in linux-next, to get some confidence.
->>
->> Would you take it into -next then? Unless I'm completely wrong there
->> should be no impact on any in-tree driver...
->
-> I will take it; though I think it's best to queue it for 3.18 to get
-> some more testing.
+As opal_message_init() uses machine_early_initcall(powernv, ), and
+opal_hmi_handler_init() depends on that early initcall, so it also needs
+use machine_* to check the machine_id.
 
-This patch causes a compiler warning, could you please fix it.
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-hmi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Kind regards
-Uffe
+diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
+index 97ac8dc..5e1ed15 100644
+--- a/arch/powerpc/platforms/powernv/opal-hmi.c
++++ b/arch/powerpc/platforms/powernv/opal-hmi.c
+@@ -28,6 +28,7 @@
+ 
+ #include <asm/opal.h>
+ #include <asm/cputable.h>
++#include <asm/machdep.h>
+ 
+ static int opal_hmi_handler_nb_init;
+ struct OpalHmiEvtNode {
+@@ -185,4 +186,4 @@ static int __init opal_hmi_handler_init(void)
+ 	}
+ 	return 0;
+ }
+-subsys_initcall(opal_hmi_handler_init);
++machine_subsys_initcall(powernv, opal_hmi_handler_init);
