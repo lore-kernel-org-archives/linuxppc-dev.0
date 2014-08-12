@@ -1,15 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB3891A15E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:07 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07EF71A1735
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:17 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 09/20] irq_remapping/MSI: Use msi_chip instead of arch
- func to configure MSI/MSI-X
-Date: Tue, 12 Aug 2014 15:26:02 +0800
-Message-ID: <1407828373-24322-10-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 18/20] Sparc/MSI: Use msi_chip instead of arch func to
+ configure MSI/MSI-X
+Date: Tue, 12 Aug 2014 15:26:11 +0800
+Message-ID: <1407828373-24322-19-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,52 +37,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new struct msi_chip remap_msi_chip instead of weak arch
-functions to configure irq remapping MSI/MSI-X in x86.
+Introduce a new struct msi_chip sparc_msi_chip instead of weak arch
+functions to configure MSI/MSI-X.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/iommu/irq_remapping.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ arch/sparc/kernel/pci.c |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
-index 33c4395..f494b51 100644
---- a/drivers/iommu/irq_remapping.c
-+++ b/drivers/iommu/irq_remapping.c
-@@ -139,15 +139,20 @@ error:
- 	return ret;
- }
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index 857ad77..9eabd22 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -839,18 +839,18 @@ int pci_domain_nr(struct pci_bus *pbus)
+ EXPORT_SYMBOL(pci_domain_nr);
  
--static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
-+static int irq_remapping_setup_msi_irqs(struct device *dev,
- 					int nvec, int type)
+ #ifdef CONFIG_PCI_MSI
+-int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
++int sparc_setup_msi_irq(struct device *dev, struct msi_desc *desc)
  {
- 	if (type == PCI_CAP_ID_MSI)
--		return do_setup_msi_irqs(dev, nvec);
-+		return do_setup_msi_irqs(to_pci_dev(dev), nvec);
- 	else
--		return do_setup_msix_irqs(dev, nvec);
-+		return do_setup_msix_irqs(to_pci_dev(dev), nvec);
+-	struct pci_pbm_info *pbm = pdev->dev.archdata.host_controller;
++	struct pci_pbm_info *pbm = dev->archdata.host_controller;
+ 	unsigned int irq;
+ 
+ 	if (!pbm->setup_msi_irq)
+ 		return -EINVAL;
+ 
+-	return pbm->setup_msi_irq(&irq, pdev, desc);
++	return pbm->setup_msi_irq(&irq, to_pci_dev(dev), desc);
  }
  
-+struct msi_chip remap_msi_chip = {
-+	.setup_irqs = irq_remapping_setup_msi_irqs,
-+	.teardown_irq = native_teardown_msi_irq,
+-void arch_teardown_msi_irq(unsigned int irq)
++void sparc_teardown_msi_irq(unsigned int irq)
+ {
+ 	struct msi_desc *entry = irq_get_msi_desc(irq);
+ 	struct pci_dev *pdev = entry->dev;
+@@ -859,6 +859,16 @@ void arch_teardown_msi_irq(unsigned int irq)
+ 	if (pbm->teardown_msi_irq)
+ 		pbm->teardown_msi_irq(irq, pdev);
+ }
++
++struct msi_chip sparc_msi_chip = {
++	.setup_irq = sparc_setup_msi_irq,
++	.teardown_irq = sparc_teardown_msi_irq,
 +};
 +
- static void eoi_ioapic_pin_remapped(int apic, int pin, int vector)
- {
- 	/*
-@@ -165,9 +170,9 @@ static void __init irq_remapping_modify_x86_ops(void)
- 	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
- 	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
- 	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
--	x86_msi.setup_msi_irqs		= irq_remapping_setup_msi_irqs;
- 	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
- 	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
-+	x86_msi_chip = &remap_msi_chip;
- }
++struct msi_chip *arch_get_match_msi_chip(struct device *dev)
++{
++	return &sparc_msi_chip;
++}
+ #endif /* !(CONFIG_PCI_MSI) */
  
- static __init int setup_nointremap(char *str)
+ static void ali_sound_dma_hack(struct pci_dev *pdev, int set_bit)
 -- 
 1.7.1
