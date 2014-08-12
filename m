@@ -1,14 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82C121A1725
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:11 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D33F1A1734
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:12 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 20/20] PCI/MSI: Clean up unused MSI arch functions
-Date: Tue, 12 Aug 2014 15:26:13 +0800
-Message-ID: <1407828373-24322-21-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 11/20] MIPS/Octeon/MSI: Use msi_chip instead of arch func
+ to configure MSI/MSI-X
+Date: Tue, 12 Aug 2014 15:26:04 +0800
+Message-ID: <1407828373-24322-12-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -36,197 +37,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we use struct msi_chip in all platforms to configure
-MSI/MSI-X. We can clean up the unused arch functions.
+Introduce a new struct msi_chip octeon_msi_chip instead of weak arch
+functions to configure MSI/MSI-X.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/pci/msi.c |   82 ++++++++++++++++++++--------------------------------
- 1 files changed, 32 insertions(+), 50 deletions(-)
+ arch/mips/pci/msi-octeon.c |   45 ++++++++++++++++++-------------------------
+ 1 files changed, 19 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index feba5dd..2d2d4cd 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -41,33 +41,7 @@ struct msi_chip * __weak arch_get_match_msi_chip(struct device *dev)
- 	return NULL;
- }
- 
--int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc) 
--{
--	int err;
--	struct msi_chip *chip = arch_get_match_msi_chip(&dev->dev);
--
--	if (!chip || !chip->setup_irq)
--		return -EINVAL;
--
--	err = chip->setup_irq(&dev->dev, desc);
--	if (err < 0)
--		return err;
--
--	return 0;
--}
--
--void __weak arch_teardown_msi_irq(unsigned int irq)
--{
--	struct msi_desc *entry = irq_get_msi_desc(irq);
--	struct msi_chip *chip = arch_get_match_msi_chip(&entry->dev->dev);
--
--	if (!chip || !chip->teardown_irq)
--		return;
--
--	chip->teardown_irq(irq);
--}
--
--int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
-+static int msi_check_device(struct pci_dev *dev, int nvec, int type)
+diff --git a/arch/mips/pci/msi-octeon.c b/arch/mips/pci/msi-octeon.c
+index ab0c5d1..8098066 100644
+--- a/arch/mips/pci/msi-octeon.c
++++ b/arch/mips/pci/msi-octeon.c
+@@ -57,7 +57,7 @@ static int msi_irq_size;
+  *
+  * Returns 0 on success.
+  */
+-int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
++int octeon_setup_msi_irq(struct device *dev, struct msi_desc *desc)
  {
- 	struct msi_chip *chip = arch_get_match_msi_chip(&dev->dev);
- 
-@@ -77,25 +51,31 @@ int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
- 	return chip->check_device(&dev->dev, nvec, type);
- }
- 
--int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
- 	struct msi_chip *chip;
- 
- 	chip = arch_get_match_msi_chip(&dev->dev);
--	if (chip && chip->setup_irqs)
-+	if (!chip)
-+		return -EINVAL;
-+
-+	if (chip->setup_irqs)
- 		return chip->setup_irqs(&dev->dev, nvec, type);
- 	
- 	/*
- 	 * If an architecture wants to support multiple MSI, it needs to
--	 * override arch_setup_msi_irqs()
-+	 * provide chip->setup_irqs()
+ 	struct msi_msg msg;
+ 	u16 control;
+@@ -73,7 +73,7 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ 	 * wants.  Most devices only want 1, which will give
+ 	 * configured_private_bits and request_private_bits equal 0.
  	 */
- 	if (type == PCI_CAP_ID_MSI && nvec > 1)
- 		return 1;
+-	pci_read_config_word(dev, desc->msi_attrib.pos + PCI_MSI_FLAGS,
++	pci_read_config_word(to_pci_dev(dev), desc->msi_attrib.pos + PCI_MSI_FLAGS,
+ 			     &control);
  
-+	if (!chip->setup_irq)
-+		return -EINVAL;
-+
- 	list_for_each_entry(entry, &dev->msi_list, list) {
--		ret = arch_setup_msi_irq(dev, entry);
-+		ret = chip->setup_irq(&dev->dev, entry);
- 		if (ret < 0)
- 			return ret;
- 		if (ret > 0)
-@@ -105,13 +85,20 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	/*
+@@ -176,7 +176,7 @@ msi_irq_allocated:
+ 	/* Update the number of IRQs the device has available to it */
+ 	control &= ~PCI_MSI_FLAGS_QSIZE;
+ 	control |= request_private_bits << 4;
+-	pci_write_config_word(dev, desc->msi_attrib.pos + PCI_MSI_FLAGS,
++	pci_write_config_word(to_pci_dev(dev), desc->msi_attrib.pos + PCI_MSI_FLAGS,
+ 			      control);
+ 
+ 	irq_set_msi_desc(irq, desc);
+@@ -184,32 +184,14 @@ msi_irq_allocated:
  	return 0;
  }
  
--/*
-- * We have a default implementation available as a separate non-weak
-- * function, as it is used by the Xen x86 PCI code
-- */
--void default_teardown_msi_irqs(struct pci_dev *dev)
-+static void teardown_msi_irqs(struct pci_dev *dev)
+-int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++int octeon_check_msi_device(struct device *dev, int nvec, int type)
  {
- 	struct msi_desc *entry;
-+	struct msi_chip *chip;
-+
-+	chip = arch_get_match_msi_chip(&dev->dev);
-+	if (!chip)
-+		return;
-+
-+	if (chip->teardown_irqs)
-+		return chip->teardown_irqs(&dev->dev);
-+
-+	if (!chip->teardown_irq)
-+		return;
- 
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		int i, nvec;
-@@ -122,15 +109,10 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
- 		else
- 			nvec = 1 << entry->msi_attrib.multiple;
- 		for (i = 0; i < nvec; i++)
--			arch_teardown_msi_irq(entry->irq + i);
-+			chip->teardown_irq(entry->irq + i);
- 	}
- }
- 
--void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
--{
--	return default_teardown_msi_irqs(dev);
--}
+-	struct msi_desc *entry;
+-	int ret;
 -
- static void default_restore_msi_irq(struct pci_dev *dev, int irq)
- {
- 	struct msi_desc *entry;
-@@ -149,9 +131,9 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
- 		write_msi_msg(irq, &entry->msg);
+ 	/*
+ 	 * MSI-X is not supported.
+ 	 */
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		return -EINVAL;
+ 
+-	/*
+-	 * If an architecture wants to support multiple MSI, it needs to
+-	 * override arch_setup_msi_irqs()
+-	 */
+-	if (type == PCI_CAP_ID_MSI && nvec > 1)
+-		return 1;
+-
+-	list_for_each_entry(entry, &dev->msi_list, list) {
+-		ret = arch_setup_msi_irq(dev, entry);
+-		if (ret < 0)
+-			return ret;
+-		if (ret > 0)
+-			return -ENOSPC;
+-	}
+-
+ 	return 0;
  }
  
--void __weak arch_restore_msi_irqs(struct pci_dev *dev)
-+static void restore_msi_irqs(struct pci_dev *dev)
+@@ -219,7 +201,7 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+  *
+  * @irq:    The devices first irq number. There may be multple in sequence.
+  */
+-void arch_teardown_msi_irq(unsigned int irq)
++void octeon_teardown_msi_irq(unsigned int irq)
  {
--	struct msi_chip *chip = arch_get_msi_chip(&dev->dev);
-+	struct msi_chip *chip = arch_get_match_msi_chip(&dev->dev);
- 	if (chip && chip->restore_irqs)
- 		return chip->restore_irqs(&dev->dev);
+ 	int number_irqs;
+ 	u64 bitmask;
+@@ -229,7 +211,7 @@ void arch_teardown_msi_irq(unsigned int irq)
+ 	if ((irq < OCTEON_IRQ_MSI_BIT0)
+ 		|| (irq > msi_irq_size + OCTEON_IRQ_MSI_BIT0))
+ 		panic("arch_teardown_msi_irq: Attempted to teardown illegal "
+-		      "MSI interrupt (%d)", irq);
++			"MSI interrupt (%d)", irq);
  
-@@ -386,7 +368,7 @@ static void free_msi_irqs(struct pci_dev *dev)
- 			BUG_ON(irq_has_action(entry->irq + i));
- 	}
+ 	irq -= OCTEON_IRQ_MSI_BIT0;
+ 	index = irq / 64;
+@@ -242,7 +224,7 @@ void arch_teardown_msi_irq(unsigned int irq)
+ 	 */
+ 	number_irqs = 0;
+ 	while ((irq0 + number_irqs < 64) &&
+-	       (msi_multiple_irq_bitmask[index]
++		(msi_multiple_irq_bitmask[index]
+ 		& (1ull << (irq0 + number_irqs))))
+ 		number_irqs++;
+ 	number_irqs++;
+@@ -252,7 +234,7 @@ void arch_teardown_msi_irq(unsigned int irq)
+ 	bitmask <<= irq0;
+ 	if ((msi_free_irq_bitmask[index] & bitmask) != bitmask)
+ 		panic("arch_teardown_msi_irq: Attempted to teardown MSI "
+-		      "interrupt (%d) not in use", irq);
++			"interrupt (%d) not in use", irq);
  
--	arch_teardown_msi_irqs(dev);
-+	teardown_msi_irqs(dev);
+ 	/* Checks are done, update the in use bitmask */
+ 	spin_lock(&msi_free_irq_bitmask_lock);
+@@ -261,6 +243,17 @@ void arch_teardown_msi_irq(unsigned int irq)
+ 	spin_unlock(&msi_free_irq_bitmask_lock);
+ }
  
- 	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
- 		if (entry->msi_attrib.is_msix) {
-@@ -456,7 +438,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
++struct msi_chip octeon_msi_chip = {
++	.setup_irq = octeon_setup_msi_irq,
++	.teardown_irq = octeon_teardown_msi_irq,
++	.check_device = octeon_check_msi_device,
++};
++
++struct msi_chip *arch_get_match_msi_chip(struct device *dev)
++{
++	return &octeon_msi_chip;
++}
++
+ static DEFINE_RAW_SPINLOCK(octeon_irq_msi_lock);
  
- 	pci_intx_for_msi(dev, 0);
- 	msi_set_enable(dev, 0);
--	arch_restore_msi_irqs(dev);
-+	restore_msi_irqs(dev);
- 
- 	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &control);
- 	msi_mask_irq(entry, msi_mask(entry->msi_attrib.multi_cap),
-@@ -479,7 +461,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
- 	msix_clear_and_set_ctrl(dev, 0,
- 				PCI_MSIX_FLAGS_ENABLE | PCI_MSIX_FLAGS_MASKALL);
- 
--	arch_restore_msi_irqs(dev);
-+	restore_msi_irqs(dev);
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		msix_mask_irq(entry, entry->masked);
- 	}
-@@ -650,7 +632,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
- 	list_add_tail(&entry->list, &dev->msi_list);
- 
- 	/* Configure MSI capability structure */
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
-+	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
- 	if (ret) {
- 		msi_mask_irq(entry, mask, ~mask);
- 		free_msi_irqs(dev);
-@@ -766,7 +748,7 @@ static int msix_capability_init(struct pci_dev *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-+	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
- 	if (ret)
- 		goto out_avail;
- 
-@@ -853,7 +835,7 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
- 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
- 			return -EINVAL;
- 
--	ret = arch_msi_check_device(dev, nvec, type);
-+	ret = msi_check_device(dev, nvec, type);
- 	if (ret)
- 		return ret;
- 
+ static u64 msi_rcv_reg[4];
 -- 
 1.7.1
