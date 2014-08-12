@@ -1,33 +1,23 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D1921A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 21:16:10 +1000 (EST)
-Message-ID: <53E9F679.8060302@huawei.com>
-Date: Tue, 12 Aug 2014 19:11:53 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A0B81A040C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 21:19:08 +1000 (EST)
+Message-ID: <53E9F824.9080906@suse.de>
+Date: Tue, 12 Aug 2014 13:19:00 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: David Vrabel <david.vrabel@citrix.com>, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [Xen-devel] [RFC PATCH 01/20] x86/xen/MSI: Eliminate
- arch_msix_mask_irq() and arch_msi_mask_irq()
-References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
- <1407828373-24322-2-git-send-email-wangyijing@huawei.com>
- <53E9D9DD.3060901@citrix.com>
-In-Reply-To: <53E9D9DD.3060901@citrix.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>, "H. Peter
- Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg
- Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Marc Zyngier <marc.zyngier@arm.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
+References: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <53E87023.6080200@suse.de> <1407747061.4508.75.camel@pasglop>
+ <53E889BA.40108@suse.de> <53E9A383.5060009@linux.vnet.ibm.com>
+In-Reply-To: <53E9A383.5060009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,86 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/8/12 17:09, David Vrabel wrote:
-> On 12/08/14 08:25, Yijing Wang wrote:
->> Commit 0e4ccb150 added two __weak arch functions arch_msix_mask_irq()
->> and arch_msi_mask_irq() to fix a bug found when running xen in x86.
->> Introduced these two funcntions make MSI code complex. This patch
->> reverted commit 0e4ccb150 and add #ifdef for x86 msi_chip to fix this
->> bug for simplicity. Also this is preparation for using struct
->> msi_chip instead of weak arch MSI functions in all platforms.
-> [...]
->>  static struct irq_chip msi_chip = {
->>  	.name			= "PCI-MSI",
->> +#ifdef CONFIG_XEN
->> +	.irq_unmask		= nop_unmask_msi_irq,
->> +	.irq_mask		= nop_mask_msi_irq,
->> +#else
->>  	.irq_unmask		= unmask_msi_irq,
->>  	.irq_mask		= mask_msi_irq,
->> +#endif
-> 
-> No.  CONFIG_XEN kernels can run on Xen and bare metal so this must be a
-> runtime option.
 
-Hi David, that's my mistake, what about export struct irq_chip msi_chip, then
-change the msi_chip->irq_mask/irq_unmask() in xen init functions.
+On 12.08.14 07:17, Madhavan Srinivasan wrote:
+> On Monday 11 August 2014 02:45 PM, Alexander Graf wrote:
+>> On 11.08.14 10:51, Benjamin Herrenschmidt wrote:
+>>> On Mon, 2014-08-11 at 09:26 +0200, Alexander Graf wrote:
+>>>>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+>>>>> index da86d9b..d95014e 100644
+>>>>> --- a/arch/powerpc/kvm/emulate.c
+>>>>> +++ b/arch/powerpc/kvm/emulate.c
+>>>> This should be book3s_emulate.c.
+>>> Any reason we can't make that 00dddd00 opcode as breakpoint common to
+>>> all powerpc variants ?
+>> I can't think of a good reason. We use a hypercall on booke (which traps
+>> into an illegal instruction for pr) today, but I don't think it has to
+>> be that way.
+>>
+>> Given that the user space API allows us to change it dynamically, there
+>> should be nothing blocking us from going with 00dddd00 always.
+>>
+> Kindly correct me if i am wrong. So we can still have a common code in
+> emulate.c to set the env for both HV and pr incase of illegal
+> instruction (i will rebase latest src). But suggestion here to use
+> 00dddd00, in that case current path in embed is kvmppc_handle_exit
+> (booke.c) -> BOOKE_INTERRUPT_HV_PRIV -> emulation_exit ->
+> kvmppc_emulate_instruction, will change to kvmppc_handle_exit (booke.c)
+> -> BOOKE_INTERRUPT_PROGRAM -> if debug instr call emulation_exit else
+> send to guest?
 
+I can't follow your description above.
 
-Eg.
+With the latest git version HV KVM does not include emulate.c anymore.
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 19b0eba..bb6af00 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -43,6 +43,10 @@ static inline void generic_apic_probe(void)
- }
- #endif
+Also, it would make a lot of sense of have the same soft breakpoint 
+instruction across all ppc targets, so it would make sense to change it 
+to 0x00dddd00 for booke as well.
 
-+#ifdef CONFIG_PCI_MSI
-+extern struct irq_chip msi_chip;
-+#endif
-+
- #ifdef CONFIG_X86_LOCAL_APIC
-[...]
-+
-+#ifdef CONFIG_PCI_MSI
-+void xen_nop_msi_mask(struct irq_data *data)
- {
--       return 0;
- }
- #endif
-
-@@ -424,8 +423,8 @@ int __init pci_xen_init(void)
-        x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
-        x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-        x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
--       x86_msi.msi_mask_irq = xen_nop_msi_mask_irq;
--       x86_msi.msix_mask_irq = xen_nop_msix_mask_irq;
-+       msi_chip.irq_mask = xen_nop_msi_mask;
-+       msi_chip.irq_unmask = xen_nop_msi_mask;
- #endif
-        return 0;
- }
-@@ -505,8 +504,8 @@ int __init pci_xen_initial_domain(void)
-        x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
-        x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-        x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
--       x86_msi.msi_mask_irq = xen_nop_msi_mask_irq;
--       x86_msi.msix_mask_irq = xen_nop_msix_mask_irq;
-+       msi_chip.irq_mask = xen_nop_msi_mask;
-+       msi_chip.irq_unmask = xen_nop_msi_mask;
- #endif
-        xen_setup_acpi_sci();
+Basically you would have handling code in emulate.c and book3s_hv.c at 
+the end of the day.
 
 
-> 
-> David
-> 
-> .
-> 
-
-
--- 
-Thanks!
-Yijing
+Alex
