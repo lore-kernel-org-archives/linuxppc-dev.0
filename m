@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D5B331A1767
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:07 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3999A1A172F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:08 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 12/20] MIPS/Xlp/MSI: Use msi_chip instead of arch func to
+Subject: [RFC PATCH 13/20] MIPS/xlr/MSI: Use msi_chip instead of arch func to
  configure MSI/MSI-X
-Date: Tue, 12 Aug 2014 15:26:05 +0800
-Message-ID: <1407828373-24322-13-git-send-email-wangyijing@huawei.com>
+Date: Tue, 12 Aug 2014 15:26:06 +0800
+Message-ID: <1407828373-24322-14-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,57 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new struct msi_chip xlp_chip instead of weak arch
+Introduce a new struct msi_chip xlr_msi_chip instead of weak arch
 functions to configure MSI/MSI-X.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/mips/pci/msi-xlp.c |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+ arch/mips/pci/pci-xlr.c |   19 +++++++++++++++----
+ 1 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/arch/mips/pci/msi-xlp.c b/arch/mips/pci/msi-xlp.c
-index fa374fe..6c27346 100644
---- a/arch/mips/pci/msi-xlp.c
-+++ b/arch/mips/pci/msi-xlp.c
-@@ -245,7 +245,7 @@ static struct irq_chip xlp_msix_chip = {
- 	.irq_unmask	= unmask_msi_irq,
- };
- 
--void arch_teardown_msi_irq(unsigned int irq)
-+void xlp_teardown_msi_irq(unsigned int irq)
- {
+diff --git a/arch/mips/pci/pci-xlr.c b/arch/mips/pci/pci-xlr.c
+index 0dde803..6eef164 100644
+--- a/arch/mips/pci/pci-xlr.c
++++ b/arch/mips/pci/pci-xlr.c
+@@ -214,11 +214,11 @@ static int get_irq_vector(const struct pci_dev *dev)
  }
  
-@@ -452,11 +452,12 @@ static int xlp_setup_msix(uint64_t lnkbase, int node, int link,
- 	return 0;
+ #ifdef CONFIG_PCI_MSI
+-void arch_teardown_msi_irq(unsigned int irq)
++void xlr_teardown_msi_irq(unsigned int irq)
+ {
  }
  
 -int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-+int xlp_setup_msi_irq(struct device *d, struct msi_desc *desc)
++int xlr_setup_msi_irq(struct device *dev, struct msi_desc *desc)
  {
- 	struct pci_dev *lnkdev;
- 	uint64_t lnkbase;
- 	int node, link, slot;
-+	struct pci_dev *dev = to_pci_dev(d);
+ 	struct msi_msg msg;
+ 	struct pci_dev *lnk;
+@@ -233,7 +233,7 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ 	 * Enable MSI on the XLS PCIe controller bridge which was disabled
+ 	 * at enumeration, the bridge MSI capability is at 0x50
+ 	 */
+-	lnk = xls_get_pcie_link(dev);
++	lnk = xls_get_pcie_link(to_pci_dev(dev));
+ 	if (lnk == NULL)
+ 		return 1;
  
- 	lnkdev = xlp_get_pcie_link(dev);
- 	if (lnkdev == NULL) {
-@@ -474,6 +475,16 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 		return xlp_setup_msi(lnkbase, node, link, desc);
+@@ -243,7 +243,7 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ 		pci_write_config_word(lnk, 0x50 + PCI_MSI_FLAGS, val);
+ 	}
+ 
+-	irq = get_irq_vector(dev);
++	irq = get_irq_vector(to_pci_dev(dev));
+ 	if (irq <= 0)
+ 		return 1;
+ 
+@@ -263,6 +263,17 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ 	write_msi_msg(irq, &msg);
+ 	return 0;
  }
- 
-+struct msi_chip xlp_chip = {
-+	.setup_irq = xlp_setup_msi_irq,
-+	.teardown_irq = xlp_teardown_msi_irq,
++
++struct msi_chip xlr_msi_chip = {
++	.setup_irq = xlr_setup_msi_irq,
++	.teardown_irq = xlr_teardown_msi_irq,
 +};
 +
 +struct msi_chip *arch_get_match_msi_chip(struct device *dev)
 +{
-+	return &xlp_chip;
++	return &xlr_msi_chip;
 +}
 +
- void __init xlp_init_node_msi_irqs(int node, int link)
- {
- 	struct nlm_soc_info *nodep;
+ #endif
+ 
+ /* Extra ACK needed for XLR on chip PCI controller */
 -- 
 1.7.1
