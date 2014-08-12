@@ -1,37 +1,32 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <david.vrabel@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED24D1A0718
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 19:17:16 +1000 (EST)
-Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 12 Aug 2014 10:17:12 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 45E2A2190041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 10:16:53 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7C9H9FK34013204
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 09:17:09 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7C9H9HL014612
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 03:17:09 -0600
-Message-ID: <1407835024.3288.10.camel@TP420>
-Subject: [PATCH powerpc] use machine_subsys_initcall() for
- opal_hmi_handler_init()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 12 Aug 2014 17:17:04 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>, mahesh@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 203A31A088B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 19:20:48 +1000 (EST)
+Message-ID: <53E9D9DD.3060901@citrix.com>
+Date: Tue, 12 Aug 2014 10:09:49 +0100
+From: David Vrabel <david.vrabel@citrix.com>
+MIME-Version: 1.0
+To: Yijing Wang <wangyijing@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Xen-devel] [RFC PATCH 01/20] x86/xen/MSI: Eliminate
+ arch_msix_mask_irq() and arch_msi_mask_irq()
+References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
+ <1407828373-24322-2-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1407828373-24322-2-git-send-email-wangyijing@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>, "H. Peter
+ Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As opal_message_init() uses machine_early_initcall(powernv, ), and
-opal_hmi_handler_init() depends on that early initcall, so it also needs
-use machine_* to check the machine_id.
+On 12/08/14 08:25, Yijing Wang wrote:
+> Commit 0e4ccb150 added two __weak arch functions arch_msix_mask_irq()
+> and arch_msi_mask_irq() to fix a bug found when running xen in x86.
+> Introduced these two funcntions make MSI code complex. This patch
+> reverted commit 0e4ccb150 and add #ifdef for x86 msi_chip to fix this
+> bug for simplicity. Also this is preparation for using struct
+> msi_chip instead of weak arch MSI functions in all platforms.
+[...]
+>  static struct irq_chip msi_chip = {
+>  	.name			= "PCI-MSI",
+> +#ifdef CONFIG_XEN
+> +	.irq_unmask		= nop_unmask_msi_irq,
+> +	.irq_mask		= nop_mask_msi_irq,
+> +#else
+>  	.irq_unmask		= unmask_msi_irq,
+>  	.irq_mask		= mask_msi_irq,
+> +#endif
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-hmi.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+No.  CONFIG_XEN kernels can run on Xen and bare metal so this must be a
+runtime option.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index 97ac8dc..5e1ed15 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -28,6 +28,7 @@
- 
- #include <asm/opal.h>
- #include <asm/cputable.h>
-+#include <asm/machdep.h>
- 
- static int opal_hmi_handler_nb_init;
- struct OpalHmiEvtNode {
-@@ -185,4 +186,4 @@ static int __init opal_hmi_handler_init(void)
- 	}
- 	return 0;
- }
--subsys_initcall(opal_hmi_handler_init);
-+machine_subsys_initcall(powernv, opal_hmi_handler_init);
+David
