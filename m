@@ -1,15 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A61161A15E3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:17 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB3891A15E7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:03:07 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 19/20] tile/MSI: Use msi_chip instead of arch func to
- configure MSI/MSI-X
-Date: Tue, 12 Aug 2014 15:26:12 +0800
-Message-ID: <1407828373-24322-20-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 09/20] irq_remapping/MSI: Use msi_chip instead of arch
+ func to configure MSI/MSI-X
+Date: Tue, 12 Aug 2014 15:26:02 +0800
+Message-ID: <1407828373-24322-10-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,72 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new struct msi_chip tile_msi_chip instead of weak arch
-functions to configure MSI/MSI-X.
+Introduce a new struct msi_chip remap_msi_chip instead of weak arch
+functions to configure irq remapping MSI/MSI-X in x86.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/tile/kernel/pci_gx.c |   20 +++++++++++++++-----
- 1 files changed, 15 insertions(+), 5 deletions(-)
+ drivers/iommu/irq_remapping.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/tile/kernel/pci_gx.c b/arch/tile/kernel/pci_gx.c
-index e39f9c5..d1f308c 100644
---- a/arch/tile/kernel/pci_gx.c
-+++ b/arch/tile/kernel/pci_gx.c
-@@ -1485,7 +1485,7 @@ static struct irq_chip tilegx_msi_chip = {
- 	/* TBD: support set_affinity. */
- };
- 
--int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
-+int tile_setup_msi_irq(struct device *dev, struct msi_desc *desc)
- {
- 	struct pci_controller *controller;
- 	gxio_trio_context_t *trio_context;
-@@ -1510,7 +1510,7 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
- 	 * Most PCIe endpoint devices do support 64-bit message addressing.
- 	 */
- 	if (desc->msi_attrib.is_64 == 0) {
--		dev_printk(KERN_INFO, &pdev->dev,
-+		dev_printk(KERN_INFO, dev,
- 			"64-bit MSI message address not supported, "
- 			"falling back to legacy interrupts.\n");
- 
-@@ -1549,7 +1549,7 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
- 		/* SQ regions are out, allocate from map mem regions. */
- 		mem_map = gxio_trio_alloc_memory_maps(trio_context, 1, 0, 0);
- 		if (mem_map < 0) {
--			dev_printk(KERN_INFO, &pdev->dev,
-+			dev_printk(KERN_INFO, dev,
- 				"%s Mem-Map alloc failure. "
- 				"Failed to initialize MSI interrupts. "
- 				"Falling back to legacy interrupts.\n",
-@@ -1580,7 +1580,7 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
- 					mem_map, mem_map_base, mem_map_limit,
- 					trio_context->asid);
- 	if (ret < 0) {
--		dev_printk(KERN_INFO, &pdev->dev, "HV MSI config failed.\n");
-+		dev_printk(KERN_INFO, dev, "HV MSI config failed.\n");
- 
- 		goto hv_msi_config_failure;
- 	}
-@@ -1604,7 +1604,17 @@ is_64_failure:
+diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
+index 33c4395..f494b51 100644
+--- a/drivers/iommu/irq_remapping.c
++++ b/drivers/iommu/irq_remapping.c
+@@ -139,15 +139,20 @@ error:
  	return ret;
  }
  
--void arch_teardown_msi_irq(unsigned int irq)
-+void tile_teardown_msi_irq(unsigned int irq)
+-static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
++static int irq_remapping_setup_msi_irqs(struct device *dev,
+ 					int nvec, int type)
  {
- 	irq_free_hwirq(irq);
+ 	if (type == PCI_CAP_ID_MSI)
+-		return do_setup_msi_irqs(dev, nvec);
++		return do_setup_msi_irqs(to_pci_dev(dev), nvec);
+ 	else
+-		return do_setup_msix_irqs(dev, nvec);
++		return do_setup_msix_irqs(to_pci_dev(dev), nvec);
  }
-+
-+struct msi_chip tile_msi_chip = {
-+	.setup_irq = tile_setup_msi_irq,
-+	.teardown_irq = tile_teardown_msi_irq,
+ 
++struct msi_chip remap_msi_chip = {
++	.setup_irqs = irq_remapping_setup_msi_irqs,
++	.teardown_irq = native_teardown_msi_irq,
 +};
 +
-+struct msi_chip *arch_get_match_msi_chip(struct device *dev)
-+{
-+	return &tile_msi_chip;
-+}
+ static void eoi_ioapic_pin_remapped(int apic, int pin, int vector)
+ {
+ 	/*
+@@ -165,9 +170,9 @@ static void __init irq_remapping_modify_x86_ops(void)
+ 	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
+ 	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
+ 	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
+-	x86_msi.setup_msi_irqs		= irq_remapping_setup_msi_irqs;
+ 	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
+ 	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
++	x86_msi_chip = &remap_msi_chip;
+ }
+ 
+ static __init int setup_nointremap(char *str)
 -- 
 1.7.1
