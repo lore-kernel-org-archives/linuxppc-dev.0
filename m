@@ -1,40 +1,28 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
+ [209.85.216.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 721301A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 21:35:30 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 12 Aug 2014 17:05:24 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C415B125801F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:05:29 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7CBZiOO4522382
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:05:45 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7CBZKrM018402
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 17:05:21 +0530
-Message-ID: <53E9FBF6.5010008@linux.vnet.ibm.com>
-Date: Tue, 12 Aug 2014 17:05:18 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C71711A01F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 21:51:37 +1000 (EST)
+Received: by mail-qa0-f51.google.com with SMTP id k15so8642975qaq.24
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 04:51:34 -0700 (PDT)
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3] powerpc/kvm: support to handle sw breakpoint
-References: <1406868643-26291-1-git-send-email-maddy@linux.vnet.ibm.com>
- <53E87023.6080200@suse.de> <1407747061.4508.75.camel@pasglop>
- <53E889BA.40108@suse.de> <53E9A383.5060009@linux.vnet.ibm.com>
- <53E9F824.9080906@suse.de>
-In-Reply-To: <53E9F824.9080906@suse.de>
+In-Reply-To: <1407839872-12864-1-git-send-email-pawel.moll@arm.com>
+References: <CAPDyKFrb9OSbhHtn=wgbs9Yky1t453rdNBJVgGA62vER-65dYw@mail.gmail.com>
+ <1407839872-12864-1-git-send-email-pawel.moll@arm.com>
+Date: Tue, 12 Aug 2014 13:51:34 +0200
+Message-ID: <CAPDyKFpR2fuCjD3v6wMWkfCqY4gO3K52vOv8nkyfuLtB1e792w@mail.gmail.com>
+Subject: Re: [PATCH 3/5 v2] mmc: sdhci-pltfm: Do not use parent as the host's
+ device
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Pawel Moll <pawel.moll@arm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Anton Vorontsov <anton@enomsg.org>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Chris Ball <chris@printf.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,69 +32,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 12 August 2014 04:49 PM, Alexander Graf wrote:
-> 
-> On 12.08.14 07:17, Madhavan Srinivasan wrote:
->> On Monday 11 August 2014 02:45 PM, Alexander Graf wrote:
->>> On 11.08.14 10:51, Benjamin Herrenschmidt wrote:
->>>> On Mon, 2014-08-11 at 09:26 +0200, Alexander Graf wrote:
->>>>>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
->>>>>> index da86d9b..d95014e 100644
->>>>>> --- a/arch/powerpc/kvm/emulate.c
->>>>>> +++ b/arch/powerpc/kvm/emulate.c
->>>>> This should be book3s_emulate.c.
->>>> Any reason we can't make that 00dddd00 opcode as breakpoint common to
->>>> all powerpc variants ?
->>> I can't think of a good reason. We use a hypercall on booke (which traps
->>> into an illegal instruction for pr) today, but I don't think it has to
->>> be that way.
->>>
->>> Given that the user space API allows us to change it dynamically, there
->>> should be nothing blocking us from going with 00dddd00 always.
->>>
->> Kindly correct me if i am wrong. So we can still have a common code in
->> emulate.c to set the env for both HV and pr incase of illegal
->> instruction (i will rebase latest src). But suggestion here to use
->> 00dddd00, in that case current path in embed is kvmppc_handle_exit
->> (booke.c) -> BOOKE_INTERRUPT_HV_PRIV -> emulation_exit ->
->> kvmppc_emulate_instruction, will change to kvmppc_handle_exit (booke.c)
->> -> BOOKE_INTERRUPT_PROGRAM -> if debug instr call emulation_exit else
->> send to guest?
-> 
-> I can't follow your description above.
-> 
-My bad.
+On 12 August 2014 12:37, Pawel Moll <pawel.moll@arm.com> wrote:
+> The code selecting a device for the sdhci host has been
+> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
+> "mmc: sdhci-pltfm: Add structure for host-specific data" and
+> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
+> device does not pass parent to sdhci_alloc_host" while there
+> does not seem to be any reason to use platform device's parent
+> in the first place.
+>
+> The comment saying "Some PCI-based MFD need the parent here"
+> seem to refer to Timberdale FPGA driver (the only MFD driver
+> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
+> the only situation when parent device matter is runtime PM,
+> which is not implemented for Timberdale.
+>
+> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 
-> With the latest git version HV KVM does not include emulate.c anymore.
-> 
-> Also, it would make a lot of sense of have the same soft breakpoint
-> instruction across all ppc targets, so it would make sense to change it
-> to 0x00dddd00 for booke as well.
-> 
-Got it. Was describing the current control flow with respect to booke
-and where changes needed (for same software breakpoint inst). This is
-for my understanding and wanted verify.
+Thanks! Queued for 3.18.
 
-kvmppc_handle_exit(booke.c)
-	-> BOOKE_INTERRUPT_HV_PRIV
-		-> emulation_exit
-			->kvmppc_emulate_instruction
+Kind regards
+Uffe
 
-Incase of using the same software breakpoint instruction (0x00dddd00),
-then we need to add code in booke something like this
-
-kvmppc_handle_exit (booke.c)
-	-> BOOKE_INTERRUPT_PROGRAM
-		->	if debug instr
-				->emulation_exit
-			else
-				->send to guest?
-				
-> Basically you would have handling code in emulate.c and book3s_hv.c at
-> the end of the day.
-> 
-Yes. Will resend the patch with updated code.
-
-> 
-> Alex
-> 
+> ---
+>  drivers/mmc/host/sdhci-pltfm.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+> index 7e834fb..c5b01d6 100644
+> --- a/drivers/mmc/host/sdhci-pltfm.c
+> +++ b/drivers/mmc/host/sdhci-pltfm.c
+> @@ -123,7 +123,6 @@ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
+>                                     size_t priv_size)
+>  {
+>         struct sdhci_host *host;
+> -       struct device_node *np = pdev->dev.of_node;
+>         struct resource *iomem;
+>         int ret;
+>
+> @@ -136,13 +135,8 @@ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
+>         if (resource_size(iomem) < 0x100)
+>                 dev_err(&pdev->dev, "Invalid iomem size!\n");
+>
+> -       /* Some PCI-based MFD need the parent here */
+> -       if (pdev->dev.parent != &platform_bus && !np)
+> -               host = sdhci_alloc_host(pdev->dev.parent,
+> -                       sizeof(struct sdhci_pltfm_host) + priv_size);
+> -       else
+> -               host = sdhci_alloc_host(&pdev->dev,
+> -                       sizeof(struct sdhci_pltfm_host) + priv_size);
+> +       host = sdhci_alloc_host(&pdev->dev,
+> +               sizeof(struct sdhci_pltfm_host) + priv_size);
+>
+>         if (IS_ERR(host)) {
+>                 ret = PTR_ERR(host);
+> --
+> 1.9.1
+>
