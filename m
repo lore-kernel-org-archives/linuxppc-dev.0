@@ -1,20 +1,40 @@
-Return-Path: <martijn.de.gouw@prodrive-technologies.com>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by lists.ozlabs.org (Postfix) with ESMTP id 81BAD1A0042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 18:48:04 +1000 (EST)
-Message-ID: <53E9D4C0.5030203@prodrive-technologies.com>
-Date: Tue, 12 Aug 2014 10:48:00 +0200
-From: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qg0-f47.google.com (mail-qg0-f47.google.com
+ [209.85.192.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0335D1A02B4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 18:58:05 +1000 (EST)
+Received: by mail-qg0-f47.google.com with SMTP id i50so9318202qgf.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2014 01:58:03 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] fsl-rio: add support for mapping inbound windows
-References: <1407246752-21639-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
- <1407274663.7427.7.camel@snotra.buserror.net>
-In-Reply-To: <1407274663.7427.7.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Alexandre.Bounine@idt.com, Liu Gang <Gang.Liu@freescale.com>,
- Barry.Wood@idt.com, linuxppc-dev@lists.ozlabs.org,
- stef.van.os@prodrive-technologies.com
+In-Reply-To: <CAPDyKFruZxUtzUKM+PvsK-_qqcE4OcCaKSkRJ2_01y7TuQMGkA@mail.gmail.com>
+References: <1406298233-27876-1-git-send-email-pawel.moll@arm.com>
+ <1406298233-27876-3-git-send-email-pawel.moll@arm.com>
+ <1407515785.31897.28.camel@hornet>
+ <CAPDyKFoLU6pnJFmKe7CB0q-hKfwv4uCPSr0cE4aoYMvfhjMteQ@mail.gmail.com>
+ <1407748550.3680.10.camel@hornet>
+ <CAPDyKFruZxUtzUKM+PvsK-_qqcE4OcCaKSkRJ2_01y7TuQMGkA@mail.gmail.com>
+Date: Tue, 12 Aug 2014 10:58:02 +0200
+Message-ID: <CAPDyKFrb9OSbhHtn=wgbs9Yky1t453rdNBJVgGA62vER-65dYw@mail.gmail.com>
+Subject: Re: [PATCH 3/5] mmc: sdhci-pltfm: Do not use parent as the host's
+ device
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Pawel Moll <pawel.moll@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "paul@pwsan.com" <paul@pwsan.com>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Peter De Schrijver <pdeschrijver@nvidia.com>,
+ Anton Vorontsov <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Chris Ball <chris@printf.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ "arm@kernel.org" <arm@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>,
+ Olof Johansson <olof@lixom.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +44,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/05/2014 11:37 PM, Scott Wood wrote:
-> On Tue, 2014-08-05 at 15:52 +0200, Martijn de Gouw wrote:
->> Add support for mapping and unmapping of inbound rapidio windows.
+On 11 August 2014 11:32, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 11 August 2014 11:15, Pawel Moll <pawel.moll@arm.com> wrote:
+>> On Mon, 2014-08-11 at 10:07 +0100, Ulf Hansson wrote:
+>>> On 8 August 2014 18:36, Pawel Moll <pawel.moll@arm.com> wrote:
+>>> > On Fri, 2014-07-25 at 15:23 +0100, Pawel Moll wrote:
+>>> >> The code selecting a device for the sdhci host has been
+>>> >> continuously tweaked (4b711cb13843f5082e82970dd1e8031383134a65
+>>> >> "mmc: sdhci-pltfm: Add structure for host-specific data" and
+>>> >> a4d2177f00a5252d825236c5124bc1e9918bdb41 "mmc: sdhci-pltfm: dt
+>>> >> device does not pass parent to sdhci_alloc_host") while there
+>>> >> does not seem to be any reason to use platform device's parent
+>>> >> in the first place.
+>>> >>
+>>> >> The comment saying "Some PCI-based MFD need the parent here"
+>>> >> seem to refer to Timberdale FPGA driver (the only MFD driver
+>>> >> registering SDHCI cell, drivers/mfd/timberdale.c) but again,
+>>> >> the only situation when parent device matter is runtime PM,
+>>> >> which is not implemented for Timberdale.
+>>> >>
+>>> >> Cc: Chris Ball <chris@printf.net>
+>>> >> Cc: Anton Vorontsov <anton@enomsg.org>
+>>> >> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>>> >> Cc: linux-mmc@vger.kernel.org
+>>> >> Cc: linuxppc-dev@lists.ozlabs.org
+>>> >> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+>>> >> ---
+>>> >>
+>>> >> This patch is a part of effort to remove references to platform_bus
+>>> >> and make it static.
+>>> >>
+>>> >> Chris, Anton, Ulf - could you please advise if the assumptions
+>>> >> above are correct or if I'm completely wrong? Do you know what
+>>> >> where the real reasons to use parent originally? The PCI comment
+>>> >> seems like a red herring to me...
+>>> >
+>>> > Can I take the silence as a suggestion that the change looks ok-ish for
+>>> > you?
+>>>
+>>> Sorry for the delay. I suppose this make sense, but I really don't
+>>> know for sure.
+>>>
+>>> I guess we need some testing in linux-next, to get some confidence.
 >>
->> Signed-off-by: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+>> Would you take it into -next then? Unless I'm completely wrong there
+>> should be no impact on any in-tree driver...
 >
-> Could you elaborate in the changelog on what this fixes or makes
-> possible?  E.g. did the driver previously not support inbound
-> transactions at all, or did it assume the window was set up by a
-> bootloader?
+> I will take it; though I think it's best to queue it for 3.18 to get
+> some more testing.
 
-Something like:
+This patch causes a compiler warning, could you please fix it.
 
-fsl-rio: add support for mapping inbound windows
-
-     Add support for mapping and unmapping of inbound rapidio windows.
-     This allows for drivers to open up a part of local memory on the
-     rapidio network. Also applications can use this and tranfer blocks
-     of data over the network.
-
->
-> Liu Gang, could you review this?
-
-I'll wait for the review before I post a new version.
-
-Gr, Martijn
-
-
--- 
-Martijn de Gouw
-Engineer
-Prodrive Technologies B.V.
-Mobile: +31 63 17 76 161
-Phone:  +31 40 26 76 200
+Kind regards
+Uffe
