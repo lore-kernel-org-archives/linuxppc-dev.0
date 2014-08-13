@@ -1,35 +1,39 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <vmansur@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BA2E1A173C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:36 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E48881A002C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:07 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Aug 2014 17:02:35 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 27A022CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:34 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7D73D1S14614618
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:03:13 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7D72WQg006358
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:33 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH V2 8/8] powerpc: thp: Add tracepoints to track hugepage
- invalidate
-Date: Wed, 13 Aug 2014 12:32:04 +0530
-Message-Id: <1407913324-8062-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1407913324-8062-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1407913324-8062-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vmansur@linux.vnet.ibm.com>;
+ Wed, 13 Aug 2014 17:30:07 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 849922BB0056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:03 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7D7Ulu815532268
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:47 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7D7U2eI021240
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:02 +1000
+Message-ID: <53EB13D9.5050501@linux.vnet.ibm.com>
+Date: Wed, 13 Aug 2014 12:59:29 +0530
+From: Vishal Mansur <vmansur@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] powerpc: non-GPL export for eeh_dev_check_failure
+References: <53E0ED41.8030804@linux.vnet.ibm.com>
+ <20140805155140.2b200061@alan.etchedpixels.co.uk>
+ <1407726995.4508.64.camel@pasglop>
+In-Reply-To: <1407726995.4508.64.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,170 +43,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add tracepoint to track hugepage invalidate. This help us
-in debugging difficult to track bugs.
+On 8/11/2014 8:46 AM, Benjamin Herrenschmidt wrote:
+> On Tue, 2014-08-05 at 15:51 +0100, One Thousand Gnomes wrote:
+>> On Tue, 05 Aug 2014 20:12:09 +0530
+>> Vishal Mansur <vmansur@linux.vnet.ibm.com> wrote:
+>>
+>>> EEH kernel services are inconsistently exported by the 
+>>> kernel. eeh_check_failure is exported for any use, but 
+>>> eeh_dev_check_failure is exported only for GPL use. 
+>>> While eeh_check_failure is implemented for a specific 
+>>> purpose to be used by services such as readl, it is 
+>>> not suited for a purpose where caller needs eeh status. 
+>>> This functionality is provided by eeh_dev_check_failure.
+>>>
+>>> This patch relaxes the export for eeh_dev_check_failure
+>>> to make it consistent with eeh_check_failure() and 
+>>> usable by non-GPL modules.
+>>
+>> The GPL covers all derivative works. Tweaking this doesn't magically
+>> allow you to use the feature in non GPL code. Your legal department can I
+>> am sure explain in detail further.
+> 
+> This is an interesting case... I assume this has to do with a well known
+> GPU manufacturer...
+> 
+> The PCI APIs are generally exported in such a way that a non-GPL driver
+> can use them (regardless of whether one considers a non-GPL driver to be
+> legal here or not, this is besides the point).
+> 
+> eeh_dev_check_failure() can be considered as powerpc specific extension
+> of the PCI API for use by PCI drivers and as such, it *could* be
+> construed that we should be consistent (and consistent with
+> eeh_check_failure()) and expose it as an EXPORT_SYMBOL without the GPL
+> suffix.
+> 
+> So I'm somewhat tempted to take this patch, but Vishal, the driver in
+> question could, I suppose, as a workaround, use a readl to some scratch
+> register of some description, no ?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/pgtable_64.c |  6 +++
- arch/powerpc/mm/tlb_hash64.c |  4 ++
- include/trace/events/thp.h   | 88 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 98 insertions(+)
- create mode 100644 include/trace/events/thp.h
+Ben, calling readl to some scratch register will be same as calling 
+eeh_check_failure, caller will not be able to get eeh status.
 
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 948a81e02ddb..c8d709ab489d 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -54,6 +54,9 @@
- 
- #include "mmu_decl.h"
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/thp.h>
-+
- /* Some sanity checking */
- #if TASK_SIZE_USER64 > PGTABLE_RANGE
- #error TASK_SIZE_USER64 exceeds pagetable range
-@@ -537,6 +540,7 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
- 	old = pmd_val(*pmdp);
- 	*pmdp = __pmd((old & ~clr) | set);
- #endif
-+	trace_hugepage_update(addr, old, clr, set);
- 	if (old & _PAGE_HASHPTE)
- 		hpte_do_hugepage_flush(mm, addr, pmdp, old);
- 	return old;
-@@ -642,6 +646,7 @@ void pmdp_splitting_flush(struct vm_area_struct *vma,
- 	 * If we didn't had the splitting flag set, go and flush the
- 	 * HPTE entries.
- 	 */
-+	trace_hugepage_splitting(address, old);
- 	if (!(old & _PAGE_SPLITTING)) {
- 		/* We need to flush the hpte */
- 		if (old & _PAGE_HASHPTE)
-@@ -709,6 +714,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 	assert_spin_locked(&mm->page_table_lock);
- 	WARN_ON(!pmd_trans_huge(pmd));
- #endif
-+	trace_hugepage_set_pmd(addr, pmd);
- 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
- }
- 
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 9adda5790463..d2a94b85dbc2 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -30,6 +30,8 @@
- #include <asm/tlb.h>
- #include <asm/bug.h>
- 
-+#include <trace/events/thp.h>
-+
- DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
- 
- /*
-@@ -213,6 +215,8 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
- 		if (ptep == NULL)
- 			continue;
- 		pte = pte_val(*ptep);
-+		if (hugepage_shift)
-+			trace_hugepage_invalidate(start, pte_val(pte));
- 		if (!(pte & _PAGE_HASHPTE))
- 			continue;
- 		if (unlikely(hugepage_shift && pmd_trans_huge(*(pmd_t *)pte)))
-diff --git a/include/trace/events/thp.h b/include/trace/events/thp.h
-new file mode 100644
-index 000000000000..b59b065e9e5d
---- /dev/null
-+++ b/include/trace/events/thp.h
-@@ -0,0 +1,88 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM thp
-+
-+#if !defined(_TRACE_THP_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_THP_H
-+
-+#include <linux/types.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(hugepage_invalidate,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long pte),
-+	    TP_ARGS(addr, pte),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, pte)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->pte = pte;
-+		    ),
-+
-+	    TP_printk("hugepage invalidate at addr 0x%lx and pte = 0x%lx",
-+		      __entry->addr, __entry->pte)
-+);
-+
-+TRACE_EVENT(hugepage_set_pmd,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long pmd),
-+	    TP_ARGS(addr, pmd),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, pmd)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->pmd = pmd;
-+		    ),
-+
-+	    TP_printk("Set pmd with 0x%lx with 0x%lx", __entry->addr, __entry->pmd)
-+);
-+
-+
-+TRACE_EVENT(hugepage_update,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long pte, unsigned long clr, unsigned long set),
-+	    TP_ARGS(addr, pte, clr, set),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, pte)
-+		    __field(unsigned long, clr)
-+		    __field(unsigned long, set)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->pte = pte;
-+		    __entry->clr = clr;
-+		    __entry->set = set;
-+
-+		    ),
-+
-+	    TP_printk("hugepage update at addr 0x%lx and pte = 0x%lx clr = 0x%lx, set = 0x%lx", __entry->addr, __entry->pte, __entry->clr, __entry->set)
-+);
-+TRACE_EVENT(hugepage_splitting,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long pte),
-+	    TP_ARGS(addr, pte),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, pte)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->pte = pte;
-+		    ),
-+
-+	    TP_printk("hugepage splitting at addr 0x%lx and pte = 0x%lx",
-+		      __entry->addr, __entry->pte)
-+);
-+
-+#endif /* _TRACE_THP_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
--- 
-1.9.1
+Hence for the purpose where caller wants to know eeh status during
+a bad register read, it can not be worked around using readl.
+
+Thanks,
+Vishal
+
+> 
+> Cheers,
+> Ben.
+> 
+>> Alan
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
