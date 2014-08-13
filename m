@@ -1,34 +1,26 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <tony@bakeyournoodle.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97BC31A004F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 11:17:22 +1000 (EST)
-Message-ID: <53EABC7E.6080103@huawei.com>
-Date: Wed, 13 Aug 2014 09:16:46 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 087851A0059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 14:03:28 +1000 (EST)
+Date: Wed, 13 Aug 2014 14:03:21 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: John Stultz <john.stultz@linaro.org>
+Subject: Re: [tip:timers/core] timekeeping: Fixup typo in update_vsyscall_old
+ definition
+Message-ID: <20140813040320.GE14290@thor.bakeyournoodle.com>
+References: <1406349439-11785-1-git-send-email-john.stultz@linaro.org>
+ <tip-953dec21aed4038464fec02f96a2f1b8701a5bce@git.kernel.org>
+ <1407730744.4508.67.camel@pasglop> <53EA3320.90908@linaro.org>
 MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [RFC PATCH 07/20] x86/MSI: Use msi_chip instead of arch func
- to configure MSI/MSI-X
-References: <1407828373-24322-1-git-send-email-wangyijing@huawei.com>
- <1407828373-24322-8-git-send-email-wangyijing@huawei.com>
- <20140812190947.GD13996@laptop.dumpdata.com>
-In-Reply-To: <20140812190947.GD13996@laptop.dumpdata.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>, "H.
- Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Marc Zyngier <marc.zyngier@arm.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="vni90+aGYgRvsTuO"
+In-Reply-To: <53EA3320.90908@linaro.org>
+Cc: sfr@canb.auug.org.au, peterz@infradead.org,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, hpa@zytor.com, tglx@linutronix.de,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,115 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/8/13 3:09, Konrad Rzeszutek Wilk wrote:
-> On Tue, Aug 12, 2014 at 03:26:00PM +0800, Yijing Wang wrote:
->> Introduce a new struct msi_chip apic_msi_chip instead of weak arch
->> functions to configure MSI/MSI-X in x86.
-> 
-> Why not 'x86_msi_ops' (see  arch/x86/kernel/x86_init.c)
 
-Hi Konrad, I think currently lots of weak arch functions make MSI code
-complex, we have following weak arch functions
+--vni90+aGYgRvsTuO
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-arch_setup_msi_irqs
-arch_setup_msi_irq
-arch_msi_check_device
-arch_teardown_msi_irqs
-arch_teardown_msi_irq
-arch_restore_msi_irqs
-arch_msi_mask_irq
-arch_msix_mask_irq
+On Tue, Aug 12, 2014 at 08:30:40AM -0700, John Stultz wrote:
 
-And Thierry Reding and Thomas Petazzoni introduce a new MSI chip infrastructure which
-is used in arm platform now. Use msi_chip let us focus on implementing msi_chip ops functions(no need to implement all),
-but now, we should know much of MSI enable flow, then override the weak functions.
-I think use the unified MSI framework in all platforms is better.
-Also this series is preparation to support Non-PCI MSI device use common MSI framework in linux. Non-PCI MSI devices
-include hpet, dmar and the coming consolidator(introduced in ARM GICv3 spec, which is similar to MSI relay device).
+> Thanks for pointing it out. I'll send a fix here shortly (though I only
+> have the ppc64le toolchain handy, so forgive me if its not quite right).
 
+/me pimps the kernel.org toolchains:
+https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/4.9.0/x86_64-gcc-4.9.0-nolibc_powerpc64-linux.tar.xz
 
-Thanks!
-Yijing.
+and gets back in his box.
 
->>
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->> ---
->>  arch/x86/include/asm/pci.h     |    1 +
->>  arch/x86/kernel/apic/io_apic.c |   20 ++++++++++++++++----
->>  2 files changed, 17 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
->> index 0892ea0..878a06d 100644
->> --- a/arch/x86/include/asm/pci.h
->> +++ b/arch/x86/include/asm/pci.h
->> @@ -101,6 +101,7 @@ void native_teardown_msi_irq(unsigned int irq);
->>  void native_restore_msi_irqs(struct pci_dev *dev);
->>  int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
->>  		  unsigned int irq_base, unsigned int irq_offset);
->> +extern struct msi_chip *x86_msi_chip;
->>  #else
->>  #define native_setup_msi_irqs		NULL
->>  #define native_teardown_msi_irq		NULL
->> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
->> index 2609dcd..eb8ab7c 100644
->> --- a/arch/x86/kernel/apic/io_apic.c
->> +++ b/arch/x86/kernel/apic/io_apic.c
->> @@ -3077,24 +3077,25 @@ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
->>  	return 0;
->>  }
->>  
->> -int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->> +int native_setup_msi_irqs(struct device *dev, int nvec, int type)
->>  {
->>  	struct msi_desc *msidesc;
->>  	unsigned int irq;
->>  	int node, ret;
->> +	struct pci_dev *pdev = to_pci_dev(dev);
->>  
->>  	/* Multiple MSI vectors only supported with interrupt remapping */
->>  	if (type == PCI_CAP_ID_MSI && nvec > 1)
->>  		return 1;
->>  
->> -	node = dev_to_node(&dev->dev);
->> +	node = dev_to_node(dev);
->>  
->> -	list_for_each_entry(msidesc, &dev->msi_list, list) {
->> +	list_for_each_entry(msidesc, &pdev->msi_list, list) {
->>  		irq = irq_alloc_hwirq(node);
->>  		if (!irq)
->>  			return -ENOSPC;
->>  
->> -		ret = setup_msi_irq(dev, msidesc, irq, 0);
->> +		ret = setup_msi_irq(pdev, msidesc, irq, 0);
->>  		if (ret < 0) {
->>  			irq_free_hwirq(irq);
->>  			return ret;
->> @@ -3214,6 +3215,17 @@ int default_setup_hpet_msi(unsigned int irq, unsigned int id)
->>  }
->>  #endif
->>  
->> +struct msi_chip apic_msi_chip = {
->> +	.setup_irqs = native_setup_msi_irqs,
->> +	.teardown_irq = native_teardown_msi_irq,
->> +};
->> +
->> +struct msi_chip *arch_get_match_msi_chip(struct device *dev)
->> +{
->> +	return x86_msi_chip;
->> +}
->> +
->> +struct msi_chip *x86_msi_chip = &apic_msi_chip;
->>  #endif /* CONFIG_PCI_MSI */
->>  /*
->>   * Hypertransport interrupt support
->> -- 
->> 1.7.1
->>
-> 
-> .
-> 
+Yours Tony
 
+--vni90+aGYgRvsTuO
+Content-Type: application/pgp-signature
 
--- 
-Thanks!
-Yijing
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCAAGBQJT6uOIAAoJEPvNNsFAAoTBghoQAOkqAGogn4eajMUBf0GhXLfy
+ssEydHKZxOXIXg9Ers8FfHxvE7OPeyFmKjz4QLgVkjKyqJ11XrkHLKRWO/WO7fMf
+8cpDWZShPHSDujO63gg8Flj3gi1ddwAXe4R2p9zSIc+bg+9/Ocu0klv6UcPqVyx8
+X2jL80FNivTknM193ixneYQpAAfh+fAKxlwH/aVFve+mcF7jatoyDBJKKSqZocOa
+iVSOh5wjkPfHcE3/IVlLsw/sLG7xhqliE1CQK/yEzdfrv0ZL52klLE2VHVGKDpJw
+jxe91RcBJdl3O5kZxK6WDHKCD+tT51UrPpesJuEgDwwoEd1jLOpgRY6o4OKlXmsc
+vJhAc/572kQpYz4g87KpgjgABQps893ofQNFhAu5IBF1mi70qCGFXVu9xLvEU4gJ
+9MuNv4U82w9MLwPZ+pQY80q46Mq6oqgc1NQ/pk6h4sL/20qsbqENs3LrVdgv3WaW
+vQJurKt0tHA61mqP5pMMSefxnoHCxnRtdhOlQGjmArZlGRGzvc6xnk+/40IXPJ8i
+7GvrFLLH/dO5N1DLbnZYAqqN45nuZzvHufZGS820SW+XdLcyAoE2p00NmQdLlemo
+bqiCUeL/X2ILEh/eUJd6e9SCO+iEemkNXgRy51tzrNgxR4TLIdu7oMMNrYOsCW8W
+rOE4EBbrZiky3GfW340X
+=pS1r
+-----END PGP SIGNATURE-----
+
+--vni90+aGYgRvsTuO--
