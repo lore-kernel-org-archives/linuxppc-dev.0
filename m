@@ -1,25 +1,31 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCDC61A0199
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 21:05:28 +1000 (EST)
-Date: Wed, 13 Aug 2014 12:05:04 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20140813110504.GM17528@sirena.org.uk>
-References: <1407494479-9877-1-git-send-email-nicoleotsuka@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="eQwIhY+Mh5cQwJH0"
-In-Reply-To: <1407494479-9877-1-git-send-email-nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Make Synchronous and Asynchronous modes
- exclusive
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
- Li.Xiubo@freescale.com, galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 204241A01F4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 21:14:28 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 13 Aug 2014 21:14:23 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9E6FB2CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 21:14:21 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7DBF3mI14549048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 21:15:04 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7DBEK4v025191
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 21:14:21 +1000
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: Avoid to set EEH_PE_ISOLATED for passed PE
+Date: Wed, 13 Aug 2014 07:14:18 -0400
+Message-Id: <1407928458-8125-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When PE passed to guest, and guest EEH occured with this PE,
+EEH_PE_ISOLATED maybe set in host.
 
---eQwIhY+Mh5cQwJH0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It is a big issue when the PE  is reused by host, host EEH
+will not work on this PE because it was set to EEH_PE_ISOLATED
+unexpectly.
 
-On Fri, Aug 08, 2014 at 06:41:19PM +0800, Nicolin Chen wrote:
+Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> The previous patch (ASoC: fsl_sai: Add asynchronous mode support) added
-> new Device Tree bindings for Asynchronous and Synchronous modes support.
-> However, these two shall not be present at the same time.
-
-Applied, thanks.
-
---eQwIhY+Mh5cQwJH0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJT60ZdAAoJELSic+t+oim9ybMP/0/F7Tr/d6KL/XbxzCsUVli8
-X516T8JLDNJ0nHUoUJIR3j5zN0mOAlzXt+9OzDX3Nlf5JviVddIc14UH3xUUq/Xq
-g5YFsdnyf8WFXQmhnqsdWCiifJ6WCPIwTEa5zPpNAj0Z/grVXTCRtKIkmFprNgNM
-73BBkhL8mmTSj31HnVK6S6DUXUPAAlpuVcK/ynVrsP9TE//lr8Pmgb44fvqnnm1Y
-k3aSr4LtkPrEojc5USyy75TnNHLy/WQY5urCbGP08ggUICyQPpQGM9p/OZ0Ob2rW
-4bcOP40FfQ5M5VIqGP4OyDfWsqyC+kYI6YaJWZtz5qstuOKy9pPMRg2Pakbv0xYg
-KPLU3HJQTAFuNkiPQhhXiRinJE+XoBxUqBF/fpkLrjPIPi8oKzp5c6RiTl6oI47Y
-NzpF2IvkVkDYs9QsIFpJhM7o4S1YTRfQpY543UuWwIcqAE2yWahe4Ad7JcxZ+7xz
-6XTnHf2l5lwj2QK3s5N/Avha/KZCLFkHuGu8swskO4Rr+92KSewVGNuBc3CSsZ3y
-s8VYRePWOdISdiDYwyyUNR8Vknckq2Pi6vEjMNFts9KOIHUQixLzK3Cpo2B9i644
-Vy3+yBvDpjGb+2DuIubziBoc9io8s8KVk7B+AyEcjPDcKBnyOFFhO8MNEQLiIn5J
-Jcq8SjNxGE16s7X4sb+x
-=afrS
------END PGP SIGNATURE-----
-
---eQwIhY+Mh5cQwJH0--
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index c945bed..e88eaf6 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -371,7 +371,8 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
+ 	    !(result & EEH_STATE_UNAVAILABLE) &&
+ 	    !(result & EEH_STATE_MMIO_ACTIVE) &&
+ 	    !(result & EEH_STATE_DMA_ACTIVE)  &&
+-	    !(pe->state & EEH_PE_ISOLATED)) {
++	    !(pe->state & EEH_PE_ISOLATED)    &&
++	    !eeh_pe_passed(pe)) {
+ 		if (phb->freeze_pe)
+ 			phb->freeze_pe(phb, pe->addr);
+ 
+-- 
+1.8.1.4
