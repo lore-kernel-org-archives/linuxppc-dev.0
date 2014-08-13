@@ -1,39 +1,37 @@
-Return-Path: <vmansur@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E48881A002C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:07 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vmansur@linux.vnet.ibm.com>;
- Wed, 13 Aug 2014 17:30:07 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 849922BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:03 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7D7Ulu815532268
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:47 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7D7U2eI021240
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:30:02 +1000
-Message-ID: <53EB13D9.5050501@linux.vnet.ibm.com>
-Date: Wed, 13 Aug 2014 12:59:29 +0530
-From: Vishal Mansur <vmansur@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 172FB1A01F5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 18:59:44 +1000 (EST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 19BDE14008B
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2014 18:59:42 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Emilian Medve
+ <Emilian.Medve@freescale.com>
+Subject: RE: [PATCH v2 5/7] powerpc/corenet: Add MDIO bus muxing support to
+ the board device tree(s)
+Date: Wed, 13 Aug 2014 08:44:54 +0000
+Message-ID: <28efb1be1f1640fda4486130faa1f119@CY1PR0301MB0857.namprd03.prod.outlook.com>
+References: <1405541831-1277-1-git-send-email-Shruti@Freescale.com>
+ <1405541831-1277-5-git-send-email-Shruti@Freescale.com>
+ <1405982754.29414.33.camel@snotra.buserror.net>
+ <loom.20140728T081519-636@post.gmane.org>
+ <1406663895.29414.240.camel@snotra.buserror.net>
+ <53D96906.1040407@Freescale.com>
+ <1406773805.29414.302.camel@snotra.buserror.net>
+ <53D9C77D.8070203@Freescale.com>
+ <1406784487.29414.328.camel@snotra.buserror.net>
+ <53D9D893.8090105@Freescale.com>
+ <1406831433.29414.339.camel@snotra.buserror.net>
+In-Reply-To: <1406831433.29414.339.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] powerpc: non-GPL export for eeh_dev_check_failure
-References: <53E0ED41.8030804@linux.vnet.ibm.com>
- <20140805155140.2b200061@alan.etchedpixels.co.uk>
- <1407726995.4508.64.camel@pasglop>
-In-Reply-To: <1407726995.4508.64.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,62 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/11/2014 8:46 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2014-08-05 at 15:51 +0100, One Thousand Gnomes wrote:
->> On Tue, 05 Aug 2014 20:12:09 +0530
->> Vishal Mansur <vmansur@linux.vnet.ibm.com> wrote:
->>
->>> EEH kernel services are inconsistently exported by the 
->>> kernel. eeh_check_failure is exported for any use, but 
->>> eeh_dev_check_failure is exported only for GPL use. 
->>> While eeh_check_failure is implemented for a specific 
->>> purpose to be used by services such as readl, it is 
->>> not suited for a purpose where caller needs eeh status. 
->>> This functionality is provided by eeh_dev_check_failure.
->>>
->>> This patch relaxes the export for eeh_dev_check_failure
->>> to make it consistent with eeh_check_failure() and 
->>> usable by non-GPL modules.
->>
->> The GPL covers all derivative works. Tweaking this doesn't magically
->> allow you to use the feature in non GPL code. Your legal department can I
->> am sure explain in detail further.
-> 
-> This is an interesting case... I assume this has to do with a well known
-> GPU manufacturer...
-> 
-> The PCI APIs are generally exported in such a way that a non-GPL driver
-> can use them (regardless of whether one considers a non-GPL driver to be
-> legal here or not, this is besides the point).
-> 
-> eeh_dev_check_failure() can be considered as powerpc specific extension
-> of the PCI API for use by PCI drivers and as such, it *could* be
-> construed that we should be consistent (and consistent with
-> eeh_check_failure()) and expose it as an EXPORT_SYMBOL without the GPL
-> suffix.
-> 
-> So I'm somewhat tempted to take this patch, but Vishal, the driver in
-> question could, I suppose, as a workaround, use a readl to some scratch
-> register of some description, no ?
-
-Ben, calling readl to some scratch register will be same as calling 
-eeh_check_failure, caller will not be able to get eeh status.
-
-Hence for the purpose where caller wants to know eeh status during
-a bad register read, it can not be worked around using readl.
-
-Thanks,
-Vishal
-
-> 
-> Cheers,
-> Ben.
-> 
->> Alan
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0
+bzpsaW51eHBwYy1kZXYtDQo+IGJvdW5jZXMrYjIxOTg5PWZyZWVzY2FsZS5jb21AbGlzdHMub3ps
+YWJzLm9yZ10gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QNCj4gU2VudDogRnJpZGF5LCBBdWd1c3Qg
+MDEsIDIwMTQgMjozMSBBTQ0KPiBUbzogTWVkdmUgRW1pbGlhbi1FTU1FRFZFMQ0KPiBDYzogbGlu
+dXhwcGMtZGV2QG96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiA1LzddIHBvd2Vy
+cGMvY29yZW5ldDogQWRkIE1ESU8gYnVzIG11eGluZyBzdXBwb3J0DQo+IHRvIHRoZSBib2FyZCBk
+ZXZpY2UgdHJlZShzKQ0KPiANCj4gT24gVGh1LCAyMDE0LTA3LTMxIGF0IDAwOjQ4IC0wNTAwLCBF
+bWlsIE1lZHZlIHdyb3RlOg0KPiA+IEhlbGxvIFNjb3R0LA0KPiA+DQo+ID4NCj4gPiBPbiAwNy8z
+MS8yMDE0IDEyOjI4IEFNLCBTY290dCBXb29kIHdyb3RlOg0KPiA+ID4gT24gV2VkLCAyMDE0LTA3
+LTMwIGF0IDIzOjM1IC0wNTAwLCBFbWlsIE1lZHZlIHdyb3RlOg0KPiA+ID4+IEhlbGxvIFNjb3R0
+LA0KPiA+ID4+DQo+ID4gPj4NCj4gPiA+PiBPbiAwNy8zMC8yMDE0IDA5OjMwIFBNLCBTY290dCBX
+b29kIHdyb3RlOg0KPiA+ID4+PiBPbiBXZWQsIDIwMTQtMDctMzAgYXQgMTY6NTIgLTA1MDAsIEVt
+aWwgTWVkdmUgd3JvdGU6DQo+ID4gPj4+Pj4+Pj4gKwkJCW1kaW8wOiBtZGlvIDxhdD4gZmMwMDAg
+ew0KPiA+ID4+Pj4+Pj4+ICsJCQl9Ow0KPiA+ID4+Pj4+Pj4NCj4gPiA+Pj4+Pj4+IFdoeSBpcyB0
+aGUgZW1wdHkgbm9kZSBuZWVkZWQ/DQo+ID4gPj4+Pj4+DQo+ID4gPj4+Pj4+IEZvciB0aGUgbGFi
+ZWwNCj4gPiA+Pj4+Pg0KPiA+ID4+Pj4+IEZvciBtZGlvLXBhcmVudC1idXMsIG9yIGlzIHRoZXJl
+IHNvbWUgb3RoZXIgZHRzIGxheWVyIHRoYXQgbWFrZXMNCj4gPiA+Pj4+PiB0aGlzIG5vZGUgbm9u
+LWVtcHR5Pw0KPiA+ID4+Pj4NCj4gPiA+Pj4+ICdwb3dlcnBjL2NvcmVuZXQ6IENyZWF0ZSB0aGUg
+ZHRzIGNvbXBvbmVudHMgZm9yIHRoZSBEUEFBIEZNYW4nIC0NCj4gPiA+Pj4+IGh0dHA6Ly9wYXRj
+aHdvcmsub3psYWJzLm9yZy9wYXRjaC8zNzA4NzINCj4gPiA+Pj4NCj4gPiA+Pj4gV2h5IGRvZXMg
+dGhpcyBwYXRjaCBkZWZpbmUgdGhlIG1kaW8wIGxhYmVsIGZvciBtZGlvQGUxMTIwLCBidXQgbm90
+DQo+ID4gPj4+IGRlZmluZSBhIGxhYmVsIGZvciBhbnkgb3RoZXIgbm9kZT8NCj4gPiA+Pg0KPiA+
+ID4+IE9ubHkgTURJTyBjb250cm9sbGVycyB0aGF0IGFyZSBwaW5uZWQgb3V0IGhhdmUgdGhlc2Ug
+bGFiZWxzLiBPbmx5DQo+ID4gPj4gcGlubmVkIG91dCBNRElPKHMpIGFyZSBjYXBhYmxlIG9mIGNv
+bnRyb2xsaW5nIGV4dGVybmFsIFBIWShzKSB2aWENCj4gPiA+PiB0aGVzZSBib2FyZCBsZXZlbCBN
+RElPIGJ1c2VzDQo+ID4gPg0KPiA+ID4gSXMgdGhlcmUgYW55IHJlYXNvbiB0byBkZXNjcmliZSBu
+b24tcGlubmVkLW91dCBNRElPIGNvbnRyb2xsZXJzIGF0DQo+IGFsbD8NCltTLkhdIFJlZ2FyZGlu
+ZyB0aGUgcGlubmVkLW91dCBNRElPIGNvbnRyb2xsZXJzIGFuZCBub24tcGlubmVkLW91dCBNRElP
+IGNvbnRyb2xsZXJzLA0KSG93IHRvIGRpZmZlcmVudGlhdGUgdGhlbT8NCg0KPiA+DQo+ID4gWWVz
+LiBGb3IgdGhlIGludGVybmFsIFRCSSBQSFkocykuIEVhY2ggTUFDIHN1cHBvcnRpbmcgU0dNSUkg
+aGFzIGEgVEJJDQo+ID4gUEhZIHRoYXQgaXMgYXR0YWNoZWQgdG8gdGhlIE1ESU8gY29udHJvbGxl
+ciBvZiB0aGUgcmVzcGVjdGl2ZSBNQUMNCj4gDQpbUy5IXSB0aGVyZSBhcmUgbXVsdGlwbGUgaW50
+ZXJuYWwgUEhZcyBvbiBGbWFuLXYzIFNPQ3MuIEVhY2ggb25lIGlzIHVzZWQgZm9yDQpTcGVjaWZp
+YyBmdW5jdGlvbiwgZm9yIGV4LiBvbiBUNCB0aGVyZSBhcmUgWEZJLCBTR01JSSwgUVNHTUlJLg0K
+V2lsbCBhbGwgb2YgdGhlbSBiZSBsaXN0ZWQgaW4gdGhlIERUUz8gDQoNClRoYW5rcyENCg0KLVNo
+YW9odWkNCg==
