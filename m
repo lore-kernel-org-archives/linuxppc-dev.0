@@ -1,24 +1,20 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408ED1A0189
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 04:51:18 +1000 (EST)
-Date: Wed, 13 Aug 2014 19:50:48 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@freescale.com>
-Message-ID: <20140813185048.GG17528@sirena.org.uk>
-References: <cover.1407480333.git.shengjiu.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0CA71A0186
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 09:03:10 +1000 (EST)
+Message-ID: <1407970977.7427.197.camel@snotra.buserror.net>
+Subject: Re: MPC8641D SMP "Processor 1 is stuck"
+From: Scott Wood <scottwood@freescale.com>
+To: Chris Enrique <microdevel@googlemail.com>
+Date: Wed, 13 Aug 2014 18:02:57 -0500
+In-Reply-To: <CAOB9jCKmpuSSAea_DVHPNEYXOuLL3xUJ=JrMrxVO=uhrajY1Fg@mail.gmail.com>
+References: <CAOB9jCKmpuSSAea_DVHPNEYXOuLL3xUJ=JrMrxVO=uhrajY1Fg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="q8Zyoxu2SgAW6+bf"
-In-Reply-To: <cover.1407480333.git.shengjiu.wang@freescale.com>
-Subject: Re: [PATCH V4 0/2]  refine esai for tdm support
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org, timur@tabi.org,
- arnd@arndb.de, shc_work@mail.ru, tiwai@suse.de, linux-kernel@vger.kernel.org,
- lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
- Li.Xiubo@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-08-12 at 16:29 +0200, Chris Enrique wrote:
+> Hello,
+> 
+> i am currently working on a GE PPC9A board which has a MPC8641D
+> processor.
+> 
+> 
+> My work on this board is currently based on the yocto project (where i
+> also put this issue on the mailinglist) but the issue affects mainly
+> the kernel's SMP feature so i want to share this issue here as well
+> and see if anybody can help:
+> 
+> 
+> 
+> i created a BSP for this board and yocto generates a fully working
+> 3.14 kernel and rootfs as well as devicetree.
+> 
+> the only thing which is causing problems is SMP. i included the
+> following kernel options:
+> 
+> CONFIG_SMP=y
+> CONFIG_SCHED_SMT=y
+> CONFIG_NR_CPUS=64
+> 
+> 
+> Unfortunately, only one CPU is brought up during boot:
 
---q8Zyoxu2SgAW6+bf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Which U-Boot version are you using?
 
-On Fri, Aug 08, 2014 at 02:47:20PM +0800, Shengjiu Wang wrote:
-> These patchs is to refine esai for tdm support.
+If experimenting with U-Boot versions doesn't help, you could try
+instrumenting the spin table code, and/or using JTAG to see what the
+second core is up to.
 
-Applied both, thanks.
-
---q8Zyoxu2SgAW6+bf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJT67OEAAoJELSic+t+oim9yFMP/j1TfybwiW6iJNoBJMaM96x9
-wNoF7mkVjB0jjFioVyx/fHBfCvlsOet/XdfK7ZgD4tkIMPhCRkWpYf6441mnnMGV
-ACreI4OwzkT9U9EXS6JkCD9jeU7/iUyTfnulcKw/zC8SE8Mla5BTlHa1akGvRBom
-H4zGYjhYqDVbbsQCOJGXnfkthPzJBSM1L01fc8uLa2apjEqe6yDIoi3f2iKoFzJK
-gU3I0+HOVx64Etrdu+I62y25f6iMUaz4bVUvZEwdei0AvooSfrZNh8U5/4LV7PIu
-nH4zjHPJeHFYk2HMyWzizqrR9oRapbhD/rtVG2/hlc2WMeXhAVSdYjzHo5BolQFU
-+eq7Zb6EK2hf3AlS1JFEyfzdcsfsJt6MTJMO+JhLGMU0G0jAFOdmPiRKIpKWcOWy
-PGnd94iYxVHuwtciKhS0ld0E25p7aInuN+R6Wo1CRXPRHvWlTlxuze9u1Rx7M7TA
-qnqaIOerbgsvtTGsQ8XRulWtEvbqUXH5HsoRgTI9qAOgIVRBHT7n2Cbo8RqWZpYB
-AsMcBBNHGAAcPqIjiQCqdtQBMu1FOfxYw3RU7+5ALhrWVKM8Yvz+3bLQ2V4nWcW9
-/WEeewgqAAXOC+OM4AjIb2PO5rxNPmm3kR8XeAreoeai5642ISJEjsnJpVDNzx4Q
-hxwAC7u8CgvawwgESjH+
-=5PKl
------END PGP SIGNATURE-----
-
---q8Zyoxu2SgAW6+bf--
+-Scott
