@@ -2,29 +2,30 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 859791A172F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:35 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BA2E1A173C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:36 +1000 (EST)
 Received: from /spool/local
  by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Aug 2014 17:02:34 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 55DE82BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:32 +1000 (EST)
+ Wed, 13 Aug 2014 17:02:35 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 27A022CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:34 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7D6dEEk11665732
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 16:39:14 +1000
+ by d23relay07.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7D73D1S14614618
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:03:13 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7D72UFf006317
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:31 +1000
+ s7D72WQg006358
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 17:02:33 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH V2 7/8] powerpc: mm: Use read barrier when creating real_pte
-Date: Wed, 13 Aug 2014 12:32:03 +0530
-Message-Id: <1407913324-8062-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 8/8] powerpc: thp: Add tracepoints to track hugepage
+ invalidate
+Date: Wed, 13 Aug 2014 12:32:04 +0530
+Message-Id: <1407913324-8062-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1407913324-8062-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1407913324-8062-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,59 +39,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ppc64 we support 4K hash pte with 64K page size. That requires
-us to track the hash pte slot information on a per 4k basis. We do that
-by storing the slot details in the second half of pte page. The pte bit
-_PAGE_COMBO is used to indicate whether the second half need to be
-looked while building real_pte. We need to use read memory barrier while
-doing that so that load of hidx is not reordered w.r.t _PAGE_COMBO
-check. On the store side we already do a lwsync in __hash_page_4K
+Add tracepoint to track hugepage invalidate. This help us
+in debugging difficult to track bugs.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pte-hash64-64k.h | 30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/pgtable_64.c |  6 +++
+ arch/powerpc/mm/tlb_hash64.c |  4 ++
+ include/trace/events/thp.h   | 88 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 98 insertions(+)
+ create mode 100644 include/trace/events/thp.h
 
-diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/include/asm/pte-hash64-64k.h
-index b6d2d42f84b5..4f4ec2ab45c9 100644
---- a/arch/powerpc/include/asm/pte-hash64-64k.h
-+++ b/arch/powerpc/include/asm/pte-hash64-64k.h
-@@ -46,11 +46,31 @@
-  * in order to deal with 64K made of 4K HW pages. Thus we override the
-  * generic accessors and iterators here
-  */
--#define __real_pte(e,p) 	((real_pte_t) { \
--			(e), (pte_val(e) & _PAGE_COMBO) ? \
--				(pte_val(*((p) + PTRS_PER_PTE))) : 0 })
--#define __rpte_to_hidx(r,index)	((pte_val((r).pte) & _PAGE_COMBO) ? \
--        (((r).hidx >> ((index)<<2)) & 0xf) : ((pte_val((r).pte) >> 12) & 0xf))
-+#define __real_pte __real_pte
-+static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
-+{
-+	real_pte_t rpte;
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 948a81e02ddb..c8d709ab489d 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -54,6 +54,9 @@
+ 
+ #include "mmu_decl.h"
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/thp.h>
 +
-+	rpte.pte = pte;
-+	rpte.hidx = 0;
-+	if (pte_val(pte) & _PAGE_COMBO) {
-+		/*
-+		 * Make sure we order the hidx load against the _PAGE_COMBO
-+		 * check. The store side ordering is done in __hash_page_4K
-+		 */
-+		smp_rmb();
-+		rpte.hidx = pte_val(*((ptep) + PTRS_PER_PTE));
-+	}
-+	return rpte;
-+}
+ /* Some sanity checking */
+ #if TASK_SIZE_USER64 > PGTABLE_RANGE
+ #error TASK_SIZE_USER64 exceeds pagetable range
+@@ -537,6 +540,7 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	old = pmd_val(*pmdp);
+ 	*pmdp = __pmd((old & ~clr) | set);
+ #endif
++	trace_hugepage_update(addr, old, clr, set);
+ 	if (old & _PAGE_HASHPTE)
+ 		hpte_do_hugepage_flush(mm, addr, pmdp, old);
+ 	return old;
+@@ -642,6 +646,7 @@ void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 	 * If we didn't had the splitting flag set, go and flush the
+ 	 * HPTE entries.
+ 	 */
++	trace_hugepage_splitting(address, old);
+ 	if (!(old & _PAGE_SPLITTING)) {
+ 		/* We need to flush the hpte */
+ 		if (old & _PAGE_HASHPTE)
+@@ -709,6 +714,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+ 	assert_spin_locked(&mm->page_table_lock);
+ 	WARN_ON(!pmd_trans_huge(pmd));
+ #endif
++	trace_hugepage_set_pmd(addr, pmd);
+ 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+ }
+ 
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 9adda5790463..d2a94b85dbc2 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -30,6 +30,8 @@
+ #include <asm/tlb.h>
+ #include <asm/bug.h>
+ 
++#include <trace/events/thp.h>
 +
-+static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
-+{
-+	if ((pte_val(rpte.pte) & _PAGE_COMBO))
-+		return (rpte.hidx >> (index<<2)) & 0xf;
-+	return (pte_val(rpte.pte) >> 12) & 0xf;
-+}
+ DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
+ 
+ /*
+@@ -213,6 +215,8 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 		if (ptep == NULL)
+ 			continue;
+ 		pte = pte_val(*ptep);
++		if (hugepage_shift)
++			trace_hugepage_invalidate(start, pte_val(pte));
+ 		if (!(pte & _PAGE_HASHPTE))
+ 			continue;
+ 		if (unlikely(hugepage_shift && pmd_trans_huge(*(pmd_t *)pte)))
+diff --git a/include/trace/events/thp.h b/include/trace/events/thp.h
+new file mode 100644
+index 000000000000..b59b065e9e5d
+--- /dev/null
++++ b/include/trace/events/thp.h
+@@ -0,0 +1,88 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM thp
 +
- #define __rpte_to_pte(r)	((r).pte)
- #define __rpte_sub_valid(rpte, index) \
- 	(pte_val(rpte.pte) & (_PAGE_HPTE_SUB0 >> (index)))
++#if !defined(_TRACE_THP_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_THP_H
++
++#include <linux/types.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(hugepage_invalidate,
++
++	    TP_PROTO(unsigned long addr, unsigned long pte),
++	    TP_ARGS(addr, pte),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    __field(unsigned long, pte)
++		    ),
++
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    __entry->pte = pte;
++		    ),
++
++	    TP_printk("hugepage invalidate at addr 0x%lx and pte = 0x%lx",
++		      __entry->addr, __entry->pte)
++);
++
++TRACE_EVENT(hugepage_set_pmd,
++
++	    TP_PROTO(unsigned long addr, unsigned long pmd),
++	    TP_ARGS(addr, pmd),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    __field(unsigned long, pmd)
++		    ),
++
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    __entry->pmd = pmd;
++		    ),
++
++	    TP_printk("Set pmd with 0x%lx with 0x%lx", __entry->addr, __entry->pmd)
++);
++
++
++TRACE_EVENT(hugepage_update,
++
++	    TP_PROTO(unsigned long addr, unsigned long pte, unsigned long clr, unsigned long set),
++	    TP_ARGS(addr, pte, clr, set),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    __field(unsigned long, pte)
++		    __field(unsigned long, clr)
++		    __field(unsigned long, set)
++		    ),
++
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    __entry->pte = pte;
++		    __entry->clr = clr;
++		    __entry->set = set;
++
++		    ),
++
++	    TP_printk("hugepage update at addr 0x%lx and pte = 0x%lx clr = 0x%lx, set = 0x%lx", __entry->addr, __entry->pte, __entry->clr, __entry->set)
++);
++TRACE_EVENT(hugepage_splitting,
++
++	    TP_PROTO(unsigned long addr, unsigned long pte),
++	    TP_ARGS(addr, pte),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    __field(unsigned long, pte)
++		    ),
++
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    __entry->pte = pte;
++		    ),
++
++	    TP_printk("hugepage splitting at addr 0x%lx and pte = 0x%lx",
++		      __entry->addr, __entry->pte)
++);
++
++#endif /* _TRACE_THP_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
 -- 
 1.9.1
