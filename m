@@ -1,25 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 19D861A00C9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 23:41:08 +1000 (EST)
-Message-ID: <53ECBC6B.5030507@suse.de>
-Date: Thu, 14 Aug 2014 15:40:59 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] PC, KVM,
- CMA: Fix regression caused by wrong get_order() use
-References: <1407992587-9164-1-git-send-email-aik@ozlabs.ru>
- <87egwj64bz.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87egwj64bz.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Return-Path: <cl@linux.com>
+Received: from qmta06.emeryville.ca.mail.comcast.net
+ (qmta06.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:56])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1F3021A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 00:44:00 +1000 (EST)
+Date: Thu, 14 Aug 2014 09:35:37 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 1/4] topology: add support for node_to_mem_node()
+ to determine the fallback node
+In-Reply-To: <20140814001422.GJ11121@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.11.1408140934290.25902@gentwo.org>
+References: <20140814001301.GI11121@linux.vnet.ibm.com>
+ <20140814001422.GJ11121@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, David Rientjes <rientjes@google.com>,
+ Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 13 Aug 2014, Nishanth Aravamudan wrote:
 
-On 14.08.14 07:13, Aneesh Kumar K.V wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->
->> fc95ca7284bc54953165cba76c3228bd2cdb9591 claims that there is no
->> functional change but this is not true as it calls get_order() (which
->> takes bytes) where it should have called ilog2() and the kernel stops
->> on VM_BUG_ON().
->>
->> This replaces get_order() with order_base_2() (round-up version of ilog2).
->>
->> Suggested-by: Paul Mackerras <paulus@samba.org>
->> Cc: Alexander Graf <agraf@suse.de>
->> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> +++ b/include/linux/topology.h
+> @@ -119,11 +119,20 @@ static inline int numa_node_id(void)
+>   * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
+>   */
+>  DECLARE_PER_CPU(int, _numa_mem_);
+> +extern int _node_numa_mem_[MAX_NUMNODES];
 
-So this affects 3.17?
-
-
-Alex
+Why are these variables starting with an _ ?
+Maybe _numa_mem was defined that way because it is typically not defined.
+We dont do this in other situations.
