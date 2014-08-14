@@ -1,32 +1,32 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66AF41A0188
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 10:15:32 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 706581A000A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 10:16:42 +1000 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 13 Aug 2014 18:15:30 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A30FE1FF003B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 18:15:27 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7E0FSuB22675626
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 02:15:28 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7E0FOq0008394
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 18:15:28 -0600
-Date: Wed, 13 Aug 2014 17:15:19 -0700
+ Wed, 13 Aug 2014 20:16:39 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 108C46E8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 20:16:26 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7E0GaKW4719014
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 00:16:36 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7E0GZsZ011143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2014 20:16:36 -0400
+Date: Wed, 13 Aug 2014 17:16:29 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC PATCH 2/4] slub: fallback to node_to_mem_node() node if
- allocating on memoryless node
-Message-ID: <20140814001518.GK11121@linux.vnet.ibm.com>
+Subject: [RFC PATCH 3/4] Partial revert of 81c98869faa5 ("kthread: ensure
+ locality of task_struct allocations")
+Message-ID: <20140814001629.GL11121@linux.vnet.ibm.com>
 References: <20140814001301.GI11121@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -47,60 +47,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-
-Update the SLUB code to search for partial slabs on the nearest node
-with memory in the presence of memoryless nodes. Additionally, do not
-consider it to be an ALLOC_NODE_MISMATCH (and deactivate the slab) when
-a memoryless-node specified allocation goes off-node.
-
-Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+After discussions with Tejun, we don't want to spread the use of
+cpu_to_mem() (and thus knowledge of allocators/NUMA topology details)
+into callers, but would rather ensure the callees correctly handle
+memoryless nodes. With the previous patches ("topology: add support for
+node_to_mem_node() to determine the fallback node" and "slub: fallback
+to node_to_mem_node() node if allocating on memoryless node") adding and
+using node_to_mem_node(), we can safely undo part of the change to the
+kthread logic from 81c98869faa5 ("kthread: ensure locality of
+task_struct allocations").
     
----
-v1 -> v2 (Nishanth):
-  Add commit message
-  Clean-up conditions in get_partial()
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 3e8afcc07a76..497fdfed2f01 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1699,7 +1699,12 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
- 		struct kmem_cache_cpu *c)
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index ef483220e855..10e489c448fe 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -369,7 +369,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
  {
- 	void *object;
--	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
-+	int searchnode = node;
-+
-+	if (node == NUMA_NO_NODE)
-+		searchnode = numa_mem_id();
-+	else if (!node_present_pages(node))
-+		searchnode = node_to_mem_node(node);
+ 	struct task_struct *p;
  
- 	object = get_partial_node(s, get_node(s, searchnode), c, flags);
- 	if (object || node != NUMA_NO_NODE)
-@@ -2280,11 +2285,18 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
- redo:
- 
- 	if (unlikely(!node_match(page, node))) {
--		stat(s, ALLOC_NODE_MISMATCH);
--		deactivate_slab(s, page, c->freelist);
--		c->page = NULL;
--		c->freelist = NULL;
--		goto new_slab;
-+		int searchnode = node;
-+
-+		if (node != NUMA_NO_NODE && !node_present_pages(node))
-+			searchnode = node_to_mem_node(node);
-+
-+		if (unlikely(!node_match(page, searchnode))) {
-+			stat(s, ALLOC_NODE_MISMATCH);
-+			deactivate_slab(s, page, c->freelist);
-+			c->page = NULL;
-+			c->freelist = NULL;
-+			goto new_slab;
-+		}
- 	}
- 
- 	/*
+-	p = kthread_create_on_node(threadfn, data, cpu_to_mem(cpu), namefmt,
++	p = kthread_create_on_node(threadfn, data, cpu_to_node(cpu), namefmt,
+ 				   cpu);
+ 	if (IS_ERR(p))
+ 		return p;
