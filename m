@@ -1,24 +1,22 @@
-Return-Path: <gang.chen.5i5j@gmail.com>
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com
+ [198.182.44.111])
+ (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 571741A0215
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:22:55 +1000 (EST)
-Received: by mail-pd0-f181.google.com with SMTP id g10so2281421pdj.26
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:22:53 -0700 (PDT)
-Message-ID: <53ED36AB.8020703@gmail.com>
-Date: Fri, 15 Aug 2014 06:22:35 +0800
-From: Chen Gang <gang.chen.5i5j@gmail.com>
-MIME-Version: 1.0
-To: Lennox Wu <lennox.wu@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54B531A067B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 09:14:04 +1000 (EST)
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+To: Chen Gang <gang.chen.5i5j@gmail.com>, Lennox Wu <lennox.wu@gmail.com>
 Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
  explicitly
+Date: Thu, 14 Aug 2014 23:12:53 +0000
+Message-ID: <C2D7FE5348E1B147BCA15975FBA230753C4BA673@IN01WEMBXA.internal.synopsys.com>
 References: <53ECE9DD.80004@gmail.com>
  <C2D7FE5348E1B147BCA15975FBA230753C4BA528@IN01WEMBXA.internal.synopsys.com>
  <CAF0htA6qfhyVXEuLbruiz+dfxnieF-309NdxSDhoEYHM=aBhQA@mail.gmail.com>
-In-Reply-To: <CAF0htA6qfhyVXEuLbruiz+dfxnieF-309NdxSDhoEYHM=aBhQA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+ <53ED36AB.8020703@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
  "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
  "a-jacquiot@ti.com" <a-jacquiot@ti.com>,
@@ -36,8 +34,8 @@ Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
  "jesper.nilsson@axis.com" <jesper.nilsson@axis.com>,
  "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>,
  "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
- "David S. Miller" <davem@davemloft.net>,
+ "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>, "David S.
+ Miller" <davem@davemloft.net>,
  "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
  "takata@linux-m32r.org" <takata@linux-m32r.org>,
  "x86@kernel.org" <x86@kernel.org>,
@@ -46,13 +44,12 @@ Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
  "msalter@redhat.com" <msalter@redhat.com>,
  "mattst88@gmail.com" <mattst88@gmail.com>,
- "jdike@addtoit.com" <jdike@addtoit.com>,
  "hskinnemoen@gmail.com" <hskinnemoen@gmail.com>,
  "fenghua.yu@intel.com" <fenghua.yu@intel.com>,
  "james.hogan@imgtec.com" <james.hogan@imgtec.com>,
  Arnd Bergmann <arnd@arndb.de>, "realmz6@gmail.com" <realmz6@gmail.com>,
  "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- Vineet Gupta <Vineet.Gupta1@synopsys.com>,
+ "jdike@addtoit.com" <jdike@addtoit.com>,
  "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
  "adi-buildroot-devel@lists.sourceforge.net"
  <adi-buildroot-devel@lists.sourceforge.net>,
@@ -77,8 +74,8 @@ Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
  "rkuo@codeaurora.org" <rkuo@codeaurora.org>,
  "user-mode-linux-devel@lists.sourceforge.net"
  <user-mode-linux-devel@lists.sourceforge.net>,
- Richard Weinberger <richard@nod.at>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Richard Weinberger <richard@nod.at>, Martin
+ Schwidefsky <schwidefsky@de.ibm.com>,
  "linux390@de.ibm.com" <linux390@de.ibm.com>,
  "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
  "yasutake.koichi@jp.panasonic.com" <yasutake.koichi@jp.panasonic.com>,
@@ -93,41 +90,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/15/2014 02:27 AM, Lennox Wu wrote:
-> I don't think it's necessary, what's the benfit?
-> 
-> 2014-08-15 2:21 GMT+08:00 Vineet Gupta <Vineet.Gupta1@synopsys.com>:
-> 
->> On Thursday 14 August 2014 09:55 AM, Chen Gang wrote:
-[...]
->>> diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
->>> index 9596b0a..e939abd 100644
->>> --- a/arch/arc/Kconfig
->>> +++ b/arch/arc/Kconfig
->>> @@ -35,6 +35,7 @@ config ARC
->>>       select OF_EARLY_FLATTREE
->>>       select PERF_USE_VMALLOC
->>>       select HAVE_DEBUG_STACKOVERFLOW
->>> +     select CPU_LITTLE_ENDIAN if !CPU_BIG_ENDIAN
->>
->> It is not clear what exactly are you trying to fix. What doesn't work w/o
->> this
->> patch !
->>
-
-For many individual modules may need check CPU_LITTLE_ENDIAN or
-CPU_BIG_ENDIAN, which is an architecture's attribute.
-
-Or they have to list many architectures which they support, which they
-don't support. And still, it is not precise.
-
-For architecture API, endian is a main architecture's attribute which
-may be used by outside, so every architecture need let outside know
-about it, explicitly.
-
-
-Thanks.
--- 
-Chen Gang
-
-Open share and attitude like air water and life which God blessed
+On Thursday 14 August 2014 03:22 PM, Chen Gang wrote:=0A=
+> For many individual modules may need check CPU_LITTLE_ENDIAN or=0A=
+> CPU_BIG_ENDIAN, which is an architecture's attribute.=0A=
+>=0A=
+> Or they have to list many architectures which they support, which they=0A=
+> don't support. And still, it is not precise.=0A=
+>=0A=
+> For architecture API, endian is a main architecture's attribute which=0A=
+> may be used by outside, so every architecture need let outside know=0A=
+> about it, explicitly.=0A=
+=0A=
+I don't think that is correct. The modules need to use standard API e.g. sw=
+ab=0A=
+which will take care of proper endian handling anyways. Why would a module =
+do=0A=
+anything endian specific outside of those APIs.=0A=
+=0A=
+And again is this churn just theoretical or do you really have a issue at h=
+and ! I=0A=
+would not accept a change for ARC unless you prove that something is broken=
+ (or=0A=
+atleast potentially broken) !=0A=
+=0A=
+-Vineet=0A=
