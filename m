@@ -1,40 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB09D1A0197
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:14:00 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 14 Aug 2014 15:13:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 687232CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:13:57 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7E5EbfB16515244
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:14:37 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7E5Duxw009753
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:13:57 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] PC, KVM,
- CMA: Fix regression caused by wrong get_order() use
-In-Reply-To: <1407992587-9164-1-git-send-email-aik@ozlabs.ru>
-References: <1407992587-9164-1-git-send-email-aik@ozlabs.ru>
-Date: Thu, 14 Aug 2014 10:43:52 +0530
-Message-ID: <87egwj64bz.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE7CB1A017C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 16:16:28 +1000 (EST)
+Message-ID: <1407996977.5490.56.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 14 Aug 2014 16:16:17 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,63 +22,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Hi Linus !
 
-> fc95ca7284bc54953165cba76c3228bd2cdb9591 claims that there is no
-> functional change but this is not true as it calls get_order() (which
-> takes bytes) where it should have called ilog2() and the kernel stops
-> on VM_BUG_ON().
->
-> This replaces get_order() with order_base_2() (round-up version of ilog2).
->
-> Suggested-by: Paul Mackerras <paulus@samba.org>
-> Cc: Alexander Graf <agraf@suse.de>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Here are some more powerpc bits for 3.17, essentially fixes.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+The biggest series, also aimed at -stable, is from Aneesh and is the result
+of weeks and weeks of debugging to find out why the heck or THP implementation
+was occasionally triggering multi-hit errors in our level 1 TLB. It ended up
+being a combination of issues including subtleties as to how we should
+invalidate those special 'MPSS' pages we use to allow the use of 16M pages
+inside 4K/64K "base page size" segments (you really have to love our MMU !)
 
-> ---
->
-> Changes:
-> v2:
-> * s/ilog2/order_base_2/
-> * removed cc: <stable@vger.kernel.org> as I got wrong impression that v3.16 is
-> broken
->
-> ---
->  arch/powerpc/kvm/book3s_hv_builtin.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-> index 329d7fd..b9615ba 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -101,7 +101,7 @@ struct kvm_rma_info *kvm_alloc_rma()
->  	ri = kmalloc(sizeof(struct kvm_rma_info), GFP_KERNEL);
->  	if (!ri)
->  		return NULL;
-> -	page = cma_alloc(kvm_cma, kvm_rma_pages, get_order(kvm_rma_pages));
-> +	page = cma_alloc(kvm_cma, kvm_rma_pages, order_base_2(kvm_rma_pages));
->  	if (!page)
->  		goto err_out;
->  	atomic_set(&ri->use_count, 1);
-> @@ -135,12 +135,12 @@ struct page *kvm_alloc_hpt(unsigned long nr_pages)
->  {
->  	unsigned long align_pages = HPT_ALIGN_PAGES;
->
-> -	VM_BUG_ON(get_order(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
-> +	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
->
->  	/* Old CPUs require HPT aligned on a multiple of its size */
->  	if (!cpu_has_feature(CPU_FTR_ARCH_206))
->  		align_pages = nr_pages;
-> -	return cma_alloc(kvm_cma, nr_pages, get_order(align_pages));
-> +	return cma_alloc(kvm_cma, nr_pages, order_base_2(align_pages));
->  }
->  EXPORT_SYMBOL_GPL(kvm_alloc_hpt);
->
-> -- 
-> 2.0.0
+Another interesting one in the "OMG" category is the series from Michael
+adding memory barriers to spin_is_locked(). That's also the result of many
+days of debugging to figure out why the semaphore code would occasionally
+crash in ways that made no sense. It ended up being some creative lock
+stacking that was defeated by the fact that our locks allow a load inside
+the locked section to be re-ordered with the load of the lock value itself
+(I'm still of two mind about whether to kill that once and for all by putting
+a heavier barrier back into our lock implementation...). The fixes come with
+a long explanation in the cset comments, feel free to read it if you feel
+like having a headache today.
+
+Cheers,
+Ben.
+
+The following changes since commit 58d08e3b2c2033354b91467da33deffa06360c28:
+
+  Merge tag 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/olof/chrome-platform (2014-08-10 11:13:58 -0700)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+
+for you to fetch changes up to 9e813308a5c18c58f9ccae1ec72ed4e14eaf9025:
+
+  powerpc/thp: Add tracepoints to track hugepage invalidate (2014-08-13 18:20:42 +1000)
+
+----------------------------------------------------------------
+Alistair Popple (1):
+      powerpc/ppc476: Disable BTAC
+
+Aneesh Kumar K.V (8):
+      powerpc/thp: Add write barrier after updating the valid bit
+      powerpc/thp: Don't recompute vsid and ssize in loop on invalidate
+      powerpc/thp: Invalidate old 64K based hash page mapping before insert of 4k pte
+      powerpc/thp: Handle combo pages in invalidate
+      powerpc/thp: Invalidate with vpn in loop
+      powerpc/thp: Use ACCESS_ONCE when loading pmdp
+      powerpc/mm: Use read barrier when creating real_pte
+      powerpc/thp: Add tracepoints to track hugepage invalidate
+
+Anton Blanchard (1):
+      powerpc: Hard disable interrupts in xmon
+
+Benjamin Herrenschmidt (1):
+      powerpc/boot: Use correct zlib types for comparison
+
+Gavin Shan (3):
+      powerpc/powernv: Fix IOMMU group lost
+      powerpc/pseries: Failure on removing device node
+      powerpc/pseries: Avoid deadlock on removing ddw
+
+Guenter Roeck (1):
+      powerpc: Fix "attempt to move .org backwards" error
+
+Himangi Saraogi (1):
+      powerpc/perf/hv-24x7: Use kmem_cache_free
+
+Michael Ellerman (3):
+      powerpc: Add smp_mb() to arch_spin_is_locked()
+      powerpc: Add smp_mb()s to arch_spin_unlock_wait()
+      powerpc: Add POWER8 features to CPU_FTRS_POSSIBLE/ALWAYS
+
+Nishanth Aravamudan (2):
+      powerpc: remove duplicate definition of TEXASR_FS
+      powerpc: reorder per-cpu NUMA information's initialization
+
+Scott Wood (1):
+      powerpc/nohash: Split __early_init_mmu() into boot and secondary
+
+Thomas Falcon (1):
+      powerpc/pseries/hvcserver: Fix endian issue in hvcs_get_partner_info
+
+Vasant Hegde (2):
+      printk: Add function to return log buffer address and size
+      powerpc/powernv: Interface to register/unregister opal dump region
+
+ arch/powerpc/boot/gunzip_util.c                 |   4 +-
+ arch/powerpc/include/asm/cputable.h             |   6 +-
+ arch/powerpc/include/asm/machdep.h              |   6 +-
+ arch/powerpc/include/asm/opal.h                 |  11 +++
+ arch/powerpc/include/asm/pgtable-ppc64.h        |   2 +-
+ arch/powerpc/include/asm/pte-hash64-64k.h       |  30 +++++--
+ arch/powerpc/include/asm/reg.h                  |   3 +-
+ arch/powerpc/include/asm/spinlock.h             |   1 +
+ arch/powerpc/kernel/exceptions-64s.S            | 110 +++++++++++------------
+ arch/powerpc/kernel/head_44x.S                  |   4 +-
+ arch/powerpc/kernel/iommu.c                     |  38 ++++----
+ arch/powerpc/kernel/smp.c                       |  11 ++-
+ arch/powerpc/lib/locks.c                        |   4 +
+ arch/powerpc/mm/hash_native_64.c                |  40 +++------
+ arch/powerpc/mm/hugepage-hash64.c               |  88 ++++++++++++++++---
+ arch/powerpc/mm/numa.c                          |  13 ++-
+ arch/powerpc/mm/pgtable_64.c                    |  44 ++++++----
+ arch/powerpc/mm/tlb_hash64.c                    |   6 +-
+ arch/powerpc/mm/tlb_nohash.c                    | 111 ++++++++++++++----------
+ arch/powerpc/perf/hv-24x7.c                     |   2 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S  |   2 +
+ arch/powerpc/platforms/powernv/opal.c           |  23 +++++
+ arch/powerpc/platforms/powernv/pci-ioda.c       |   2 +-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   2 +-
+ arch/powerpc/platforms/pseries/hvcserver.c      |   4 +-
+ arch/powerpc/platforms/pseries/iommu.c          |  20 +++--
+ arch/powerpc/platforms/pseries/lpar.c           |  20 ++---
+ arch/powerpc/xmon/xmon.c                        |   3 +
+ include/linux/printk.h                          |   3 +
+ include/trace/events/thp.h                      |  88 +++++++++++++++++++
+ kernel/printk/printk.c                          |  12 +++
+ 31 files changed, 490 insertions(+), 223 deletions(-)
+ create mode 100644 include/trace/events/thp.h
