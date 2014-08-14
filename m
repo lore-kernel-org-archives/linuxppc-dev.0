@@ -1,25 +1,37 @@
-Return-Path: <minchan@kernel.org>
-Received: from lgemrelse7q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
- by lists.ozlabs.org (Postfix) with ESMTP id A16891A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 11:53:27 +1000 (EST)
-From: Minchan Kim <minchan@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v14 4/8] powerpc: add pmd_[dirty|mkclean] for THP
-Date: Thu, 14 Aug 2014 10:53:28 +0900
-Message-Id: <1407981212-17818-5-git-send-email-minchan@kernel.org>
-In-Reply-To: <1407981212-17818-1-git-send-email-minchan@kernel.org>
-References: <1407981212-17818-1-git-send-email-minchan@kernel.org>
-Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
- Minchan Kim <minchan@kernel.org>,
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 806431A01CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:03:29 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 14 Aug 2014 15:03:26 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A732A2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:03:21 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7E4e26m60293346
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 14:40:03 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7E53Jl9019866
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 15:03:20 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] PC, KVM,
+ CMA: Fix regression caused by wrong get_order() use
+Date: Thu, 14 Aug 2014 15:03:07 +1000
+Message-Id: <1407992587-9164-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Linux API <linux-api@vger.kernel.org>, Hugh Dickins <hughd@google.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
+ Paolo Bonzini <pbonzini@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +41,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
-overwrite of the contents since MADV_FREE syscall is called for
-THP page.
+fc95ca7284bc54953165cba76c3228bd2cdb9591 claims that there is no
+functional change but this is not true as it calls get_order() (which
+takes bytes) where it should have called ilog2() and the kernel stops
+on VM_BUG_ON().
 
-This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
-support.
+This replaces get_order() with order_base_2() (round-up version of ilog2).
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Suggested-by: Paul Mackerras <paulus@samba.org>
+Cc: Alexander Graf <agraf@suse.de>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Minchan Kim <minchan@kernel.org>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index eb9261024f51..c9a4bbe8e179 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+Changes:
+v2:
+* s/ilog2/order_base_2/
+* removed cc: <stable@vger.kernel.org> as I got wrong impression that v3.16 is
+broken
+
+---
+ arch/powerpc/kvm/book3s_hv_builtin.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index 329d7fd..b9615ba 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -101,7 +101,7 @@ struct kvm_rma_info *kvm_alloc_rma()
+ 	ri = kmalloc(sizeof(struct kvm_rma_info), GFP_KERNEL);
+ 	if (!ri)
+ 		return NULL;
+-	page = cma_alloc(kvm_cma, kvm_rma_pages, get_order(kvm_rma_pages));
++	page = cma_alloc(kvm_cma, kvm_rma_pages, order_base_2(kvm_rma_pages));
+ 	if (!page)
+ 		goto err_out;
+ 	atomic_set(&ri->use_count, 1);
+@@ -135,12 +135,12 @@ struct page *kvm_alloc_hpt(unsigned long nr_pages)
+ {
+ 	unsigned long align_pages = HPT_ALIGN_PAGES;
  
- #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
- #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
-+#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
- #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
- #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
- #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
-+#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
- #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
- #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+-	VM_BUG_ON(get_order(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
++	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
+ 
+ 	/* Old CPUs require HPT aligned on a multiple of its size */
+ 	if (!cpu_has_feature(CPU_FTR_ARCH_206))
+ 		align_pages = nr_pages;
+-	return cma_alloc(kvm_cma, nr_pages, get_order(align_pages));
++	return cma_alloc(kvm_cma, nr_pages, order_base_2(align_pages));
+ }
+ EXPORT_SYMBOL_GPL(kvm_alloc_hpt);
  
 -- 
 2.0.0
