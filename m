@@ -1,29 +1,36 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
- [209.85.220.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A36D21A0625
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 13:00:56 +1000 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id eu11so2745630pac.18
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 20:00:54 -0700 (PDT)
-Message-ID: <53ED77DB.8010103@ozlabs.ru>
-Date: Fri, 15 Aug 2014 13:00:43 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57ACD1A0225
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 13:17:58 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Fri, 15 Aug 2014 08:47:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 46ECA1258018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:48:04 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s7F3IGb859637768
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:48:17 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7F3HraS002895
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:47:54 +0530
+Message-ID: <53ED7BD9.4060906@linux.vnet.ibm.com>
+Date: Fri, 15 Aug 2014 11:17:45 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] PC, KVM,
- CMA: Fix regression caused by wrong get_order() use
-References: <1407992587-9164-1-git-send-email-aik@ozlabs.ru>
- <87egwj64bz.fsf@linux.vnet.ibm.com> <53ECBC6B.5030507@suse.de>
-In-Reply-To: <53ECBC6B.5030507@suse.de>
-Content-Type: text/plain; charset=koi8-r
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Avoid to set EEH_PE_ISOLATED for passed
+ PE
+References: <1407928458-8125-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+In-Reply-To: <1407928458-8125-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/14/2014 11:40 PM, Alexander Graf wrote:
-> 
-> On 14.08.14 07:13, Aneesh Kumar K.V wrote:
->> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->>
->>> fc95ca7284bc54953165cba76c3228bd2cdb9591 claims that there is no
->>> functional change but this is not true as it calls get_order() (which
->>> takes bytes) where it should have called ilog2() and the kernel stops
->>> on VM_BUG_ON().
->>>
->>> This replaces get_order() with order_base_2() (round-up version of ilog2).
->>>
->>> Suggested-by: Paul Mackerras <paulus@samba.org>
->>> Cc: Alexander Graf <agraf@suse.de>
->>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> So this affects 3.17?
+Hi, all
 
-Yes.
+After discussing with Gavin offline, it's inappropriate to drop ISOLATED 
+state. Please ignore this patch.
 
+Otherwise, somebody will merge that to mainline, which would be a problem.
 
--- 
-Alexey
+Thanks,
+Mike
+On 08/13/2014 07:14 PM, Mike Qiu wrote:
+> When PE passed to guest, and guest EEH occured with this PE,
+> EEH_PE_ISOLATED maybe set in host.
+>
+> It is a big issue when the PE  is reused by host, host EEH
+> will not work on this PE because it was set to EEH_PE_ISOLATED
+> unexpectly.
+>
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> index c945bed..e88eaf6 100644
+> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> @@ -371,7 +371,8 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
+>   	    !(result & EEH_STATE_UNAVAILABLE) &&
+>   	    !(result & EEH_STATE_MMIO_ACTIVE) &&
+>   	    !(result & EEH_STATE_DMA_ACTIVE)  &&
+> -	    !(pe->state & EEH_PE_ISOLATED)) {
+> +	    !(pe->state & EEH_PE_ISOLATED)    &&
+> +	    !eeh_pe_passed(pe)) {
+>   		if (phb->freeze_pe)
+>   			phb->freeze_pe(phb, pe->addr);
+>
