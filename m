@@ -1,23 +1,23 @@
-Return-Path: <jcmvbkbc@gmail.com>
-Received: from mail-oi0-x22f.google.com (mail-oi0-x22f.google.com
- [IPv6:2607:f8b0:4003:c06::22f])
+Return-Path: <gang.chen.5i5j@gmail.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D94E1A061C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 11:52:11 +1000 (EST)
-Received: by mail-oi0-f47.google.com with SMTP id x69so1300461oia.20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 18:52:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BF2C1A018C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 12:02:44 +1000 (EST)
+Received: by mail-pa0-f44.google.com with SMTP id eu11so2695254pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 19:02:40 -0700 (PDT)
+Message-ID: <53ED6B40.8000409@gmail.com>
+Date: Fri, 15 Aug 2014 10:06:56 +0800
+From: Chen Gang <gang.chen.5i5j@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAMo8BfLuXZ8zyEoKdo8yb6nd+pZUnx0YEL9nqHx98kt76ezfYg@mail.gmail.com>
-References: <53ECE9DD.80004@gmail.com>
- <CAMo8BfLuXZ8zyEoKdo8yb6nd+pZUnx0YEL9nqHx98kt76ezfYg@mail.gmail.com>
-Date: Fri, 15 Aug 2014 05:52:09 +0400
-Message-ID: <CAMo8Bf+=EgXc0hq14y9Kdykaw_7E52kRAENU1P0fAK4tTx=JpA@mail.gmail.com>
+To: Max Filippov <jcmvbkbc@gmail.com>
 Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
  explicitly
-From: Max Filippov <jcmvbkbc@gmail.com>
-To: Chen Gang <gang.chen.5i5j@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+References: <53ECE9DD.80004@gmail.com>	<CAMo8BfLuXZ8zyEoKdo8yb6nd+pZUnx0YEL9nqHx98kt76ezfYg@mail.gmail.com>
+ <CAMo8Bf+=EgXc0hq14y9Kdykaw_7E52kRAENU1P0fAK4tTx=JpA@mail.gmail.com>
+In-Reply-To: <CAMo8Bf+=EgXc0hq14y9Kdykaw_7E52kRAENU1P0fAK4tTx=JpA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 Cc: Linux/MIPS Mailing List <linux-mips@linux-mips.org>,
  linux-s390@vger.kernel.org, Aurelien Jacquiot <a-jacquiot@ti.com>,
  Catalin Marinas <catalin.marinas@arm.com>, linux@lists.openrisc.net,
@@ -35,10 +35,11 @@ Cc: Linux/MIPS Mailing List <linux-mips@linux-mips.org>,
  Lennox Wu <lennox.wu@gmail.com>, Mark Salter <msalter@redhat.com>,
  Matt Turner <mattst88@gmail.com>, hskinnemoen@gmail.com, fenghua.yu@intel.com,
  James Hogan <james.hogan@imgtec.com>, Arnd Bergmann <arnd@arndb.de>,
- realmz6@gmail.com, heiko.carstens@de.ibm.com, jdike@addtoit.com,
- linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- Chris Metcalf <cmetcalf@tilera.com>, starvik@axis.com,
- linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ realmz6@gmail.com, linux-kbuild <linux-kbuild@vger.kernel.org>,
+ heiko.carstens@de.ibm.com, jdike@addtoit.com, linux-alpha@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, Chris Metcalf <cmetcalf@tilera.com>,
+ starvik@axis.com, linux-m68k@lists.linux-m68k.org,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  user-mode-linux-user@lists.sourceforge.net,
  Thomas Gleixner <tglx@linutronix.de>, linux-metag@vger.kernel.org,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
@@ -62,53 +63,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 15, 2014 at 5:47 AM, Max Filippov <jcmvbkbc@gmail.com> wrote:
-> Hi Chen,
->
-> On Thu, Aug 14, 2014 at 8:54 PM, Chen Gang <gang.chen.5i5j@gmail.com> wrote:
->> Normal architectures:
+On 8/15/14 9:52, Max Filippov wrote:
+> On Fri, Aug 15, 2014 at 5:47 AM, Max Filippov <jcmvbkbc@gmail.com> wrote:
+>> Hi Chen,
 >>
->>  - Big endian: avr32, frv, m68k, openrisc, parisc, s390, sparc
->>
->>  - Little endian: alpha, blackfin, cris, hexagon, ia64, metag, mn10300,
->>                   score, unicore32, x86
->>
->>  - Choose in config time: arc, arm, arm64, c6x, m32r, mips, powerpc, sh
->>
->> Special architectures:
->>
->>  - Deside by compiler: microblaze, tile, xtensa.
->>
->>  - Deside by building host: um
->>
->>  - Next, need improve Kbuild to probe endian to deside whether need mark
->>    __BUILDING_TIME_BIG_ENDIAN__ before real config.
->
-> [...]
->
->> diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
->> index 3a617af..a3e8f7e 100644
->> --- a/arch/xtensa/Kconfig
->> +++ b/arch/xtensa/Kconfig
->> @@ -22,6 +22,8 @@ config XTENSA
->>         select HAVE_IRQ_TIME_ACCOUNTING
->>         select HAVE_PERF_EVENTS
->>         select COMMON_CLK
->> +       select CPU_BIG_ENDIAN if __BUILDING_TIME_BIG_ENDIAN__
->> +       select CPU_LITTLE_ENDIAN if !CPU_BIG_ENDIAN
->>         help
->>           Xtensa processors are 32-bit RISC machines designed by Tensilica
->>           primarily for embedded systems.  These processors are both
->
-> I've tested this part and it doesn't select neither CPU_BIG_ENDIAN,
-> nor CPU_LITTLE_ENDIAN. And looking into the Kconfig/Kbuild I cound't
+>> On Thu, Aug 14, 2014 at 8:54 PM, Chen Gang <gang.chen.5i5j@gmail.com> wrote:
+>>> Normal architectures:
+>>>
+>>>  - Big endian: avr32, frv, m68k, openrisc, parisc, s390, sparc
+>>>
+>>>  - Little endian: alpha, blackfin, cris, hexagon, ia64, metag, mn10300,
+>>>                   score, unicore32, x86
+>>>
+>>>  - Choose in config time: arc, arm, arm64, c6x, m32r, mips, powerpc, sh
+>>>
+>>> Special architectures:
+>>>
+>>>  - Deside by compiler: microblaze, tile, xtensa.
+>>>
+>>>  - Deside by building host: um
+>>>
+>>>  - Next, need improve Kbuild to probe endian to deside whether need mark
+>>>    __BUILDING_TIME_BIG_ENDIAN__ before real config.
 
-Correction: it always selects CPU_LITTLE_ENDIAN, regardless of the
-compiler endianness.
+Please check this comments, thanks.
 
-> find anything related to __BUILDING_TIME_BIG_ENDIAN__. Am I missing
-> something?
+>>
+>> [...]
+>>
+>>> diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+>>> index 3a617af..a3e8f7e 100644
+>>> --- a/arch/xtensa/Kconfig
+>>> +++ b/arch/xtensa/Kconfig
+>>> @@ -22,6 +22,8 @@ config XTENSA
+>>>         select HAVE_IRQ_TIME_ACCOUNTING
+>>>         select HAVE_PERF_EVENTS
+>>>         select COMMON_CLK
+>>> +       select CPU_BIG_ENDIAN if __BUILDING_TIME_BIG_ENDIAN__
+>>> +       select CPU_LITTLE_ENDIAN if !CPU_BIG_ENDIAN
+>>>         help
+>>>           Xtensa processors are 32-bit RISC machines designed by Tensilica
+>>>           primarily for embedded systems.  These processors are both
+>>
+>> I've tested this part and it doesn't select neither CPU_BIG_ENDIAN,
+>> nor CPU_LITTLE_ENDIAN. And looking into the Kconfig/Kbuild I cound't
+> 
+> Correction: it always selects CPU_LITTLE_ENDIAN, regardless of the
+> compiler endianness.
+> 
 
+Yeah, at present, it always select CPU_LITTLE_ENDIAN, next, Kbuild need
+be improved for it, just the comments said.
+
+If this patch can be pass checking, I shall improve the Kbuild for it,
+also will modify some individual drivers to use CPU_*_ENDIAN.
+
+I guess, we need Cc to kbuild for getting more ideas, suggestions, or
+completions.
+
+
+
+THanks.
 -- 
-Thanks.
--- Max
+Chen Gang
+
+Open, share, and attitude like air, water, and life which God blessed
