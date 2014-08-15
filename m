@@ -1,59 +1,18 @@
-Return-Path: <gang.chen.5i5j@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BF2C1A018C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 12:02:44 +1000 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id eu11so2695254pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2014 19:02:40 -0700 (PDT)
-Message-ID: <53ED6B40.8000409@gmail.com>
-Date: Fri, 15 Aug 2014 10:06:56 +0800
-From: Chen Gang <gang.chen.5i5j@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D2571A06F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 12:49:31 +1000 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH 2/3] MSI: Use __read_msi_msg() instead of read_msi_msg()
+Date: Fri, 15 Aug 2014 11:14:29 +0800
+Message-ID: <1408072469-9959-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Max Filippov <jcmvbkbc@gmail.com>
-Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
- explicitly
-References: <53ECE9DD.80004@gmail.com>	<CAMo8BfLuXZ8zyEoKdo8yb6nd+pZUnx0YEL9nqHx98kt76ezfYg@mail.gmail.com>
- <CAMo8Bf+=EgXc0hq14y9Kdykaw_7E52kRAENU1P0fAK4tTx=JpA@mail.gmail.com>
-In-Reply-To: <CAMo8Bf+=EgXc0hq14y9Kdykaw_7E52kRAENU1P0fAK4tTx=JpA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Linux/MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-s390@vger.kernel.org, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, linux@lists.openrisc.net,
- Will Deacon <will.deacon@arm.com>, David Howells <dhowells@redhat.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Jean Delvare <jdelvare@suse.de>,
- egtvedt@samfundet.no, Jonas Bonn <jonas@southpole.se>,
- Liqin Chen <liqin.linux@gmail.com>, jesper.nilsson@axis.com,
- linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
- linux-c6x-dev@linux-c6x.org, "David S. Miller" <davem@davemloft.net>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- takata@linux-m32r.org, x86@kernel.org, jejb@parisc-linux.org,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Lennox Wu <lennox.wu@gmail.com>, Mark Salter <msalter@redhat.com>,
- Matt Turner <mattst88@gmail.com>, hskinnemoen@gmail.com, fenghua.yu@intel.com,
- James Hogan <james.hogan@imgtec.com>, Arnd Bergmann <arnd@arndb.de>,
- realmz6@gmail.com, linux-kbuild <linux-kbuild@vger.kernel.org>,
- heiko.carstens@de.ibm.com, jdike@addtoit.com, linux-alpha@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, Chris Metcalf <cmetcalf@tilera.com>,
- starvik@axis.com, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- user-mode-linux-user@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>, linux-metag@vger.kernel.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, tony.luck@intel.com,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, "vgupta@synopsys.com" <vgupta@synopsys.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, rkuo@codeaurora.org,
- user-mode-linux-devel@lists.sourceforge.net,
- Richard Weinberger <richard@nod.at>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, yasutake.koichi@jp.panasonic.com,
- linuxppc-dev@lists.ozlabs.org, deller@gmx.de
+Content-Type: text/plain
+Cc: Yijing Wang <wangyijing@huawei.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,68 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/15/14 9:52, Max Filippov wrote:
-> On Fri, Aug 15, 2014 at 5:47 AM, Max Filippov <jcmvbkbc@gmail.com> wrote:
->> Hi Chen,
->>
->> On Thu, Aug 14, 2014 at 8:54 PM, Chen Gang <gang.chen.5i5j@gmail.com> wrote:
->>> Normal architectures:
->>>
->>>  - Big endian: avr32, frv, m68k, openrisc, parisc, s390, sparc
->>>
->>>  - Little endian: alpha, blackfin, cris, hexagon, ia64, metag, mn10300,
->>>                   score, unicore32, x86
->>>
->>>  - Choose in config time: arc, arm, arm64, c6x, m32r, mips, powerpc, sh
->>>
->>> Special architectures:
->>>
->>>  - Deside by compiler: microblaze, tile, xtensa.
->>>
->>>  - Deside by building host: um
->>>
->>>  - Next, need improve Kbuild to probe endian to deside whether need mark
->>>    __BUILDING_TIME_BIG_ENDIAN__ before real config.
+Read_msi_msg() only be called in rtas_setup_msi_irqs(),
+use __read_msi_msg() instead of read_msi_msg for
+simplification. And rename __read_msi_msg() to
+read_msi_msg().
 
-Please check this comments, thanks.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
+ arch/x86/pci/xen.c                   |    2 +-
+ drivers/pci/msi.c                    |    9 +--------
+ include/linux/msi.h                  |    3 +--
+ 4 files changed, 4 insertions(+), 12 deletions(-)
 
->>
->> [...]
->>
->>> diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
->>> index 3a617af..a3e8f7e 100644
->>> --- a/arch/xtensa/Kconfig
->>> +++ b/arch/xtensa/Kconfig
->>> @@ -22,6 +22,8 @@ config XTENSA
->>>         select HAVE_IRQ_TIME_ACCOUNTING
->>>         select HAVE_PERF_EVENTS
->>>         select COMMON_CLK
->>> +       select CPU_BIG_ENDIAN if __BUILDING_TIME_BIG_ENDIAN__
->>> +       select CPU_LITTLE_ENDIAN if !CPU_BIG_ENDIAN
->>>         help
->>>           Xtensa processors are 32-bit RISC machines designed by Tensilica
->>>           primarily for embedded systems.  These processors are both
->>
->> I've tested this part and it doesn't select neither CPU_BIG_ENDIAN,
->> nor CPU_LITTLE_ENDIAN. And looking into the Kconfig/Kbuild I cound't
-> 
-> Correction: it always selects CPU_LITTLE_ENDIAN, regardless of the
-> compiler endianness.
-> 
-
-Yeah, at present, it always select CPU_LITTLE_ENDIAN, next, Kbuild need
-be improved for it, just the comments said.
-
-If this patch can be pass checking, I shall improve the Kbuild for it,
-also will modify some individual drivers to use CPU_*_ENDIAN.
-
-I guess, we need Cc to kbuild for getting more ideas, suggestions, or
-completions.
-
-
-
-THanks.
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 0c882e8..591650b 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -484,7 +484,7 @@ again:
+ 		irq_set_msi_desc(virq, entry);
+ 
+ 		/* Read config space back so we can restore after reset */
+-		read_msi_msg(virq, &msg);
++		read_msi_msg(entry, &msg);
+ 		entry->msg = msg;
+ 	}
+ 
+diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+index 905956f..4656099 100644
+--- a/arch/x86/pci/xen.c
++++ b/arch/x86/pci/xen.c
+@@ -228,7 +228,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 		return 1;
+ 
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		__read_msi_msg(msidesc, &msg);
++		read_msi_msg(msidesc, &msg);
+ 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
+ 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
+ 		if (msg.data != XEN_PIRQ_MSI_DATA ||
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 988224f..cbb41d6 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -259,7 +259,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
+ 	}
+ }
+ 
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
++void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	BUG_ON(entry->dev->current_state != PCI_D0);
+ 
+@@ -289,13 +289,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ 	}
+ }
+ 
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+-{
+-	struct msi_desc *entry = irq_get_msi_desc(irq);
+-
+-	__read_msi_msg(entry, msg);
+-}
+-
+ void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	/* Assert that the cache is valid, assuming that
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index e3adf93..4d7c0f5 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -15,10 +15,9 @@ struct irq_data;
+ struct msi_desc;
+ void mask_msi_irq(struct irq_data *data);
+ void unmask_msi_irq(struct irq_data *data);
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
++void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+ void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+ 
+ struct msi_desc {
 -- 
-Chen Gang
-
-Open, share, and attitude like air, water, and life which God blessed
+1.7.1
