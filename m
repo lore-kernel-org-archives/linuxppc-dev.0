@@ -1,23 +1,53 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gang.chen.5i5j@gmail.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 549DC1A068B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 17:44:49 +1000 (EST)
-Date: Fri, 15 Aug 2014 09:44:16 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 00/14] Add support for parameterized events from sysfs
-Message-ID: <20140815074416.GA19379@twins.programming.kicks-ass.net>
-References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC7D11A001C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 18:57:08 +1000 (EST)
+Received: by mail-pa0-f44.google.com with SMTP id eu11so3180143pac.31
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 01:57:06 -0700 (PDT)
+Message-ID: <53EDCC60.5040608@gmail.com>
+Date: Fri, 15 Aug 2014 17:01:20 +0800
+From: Chen Gang <gang.chen.5i5j@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="EIpds50fuTT8wE79"
-In-Reply-To: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- eranian@google.com, dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Jiri Olsa <jolsa@redhat.com>, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
+ explicitly
+References: <53ECE9DD.80004@gmail.com> <20140814180418.GA20777@linux-mips.org>
+ <53ED34CE.3040001@gmail.com>
+In-Reply-To: <53ED34CE.3040001@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-m68k@vger.kernel.org, a-jacquiot@ti.com, catalin.marinas@arm.com,
+ linux@openrisc.net, will.deacon@arm.com, dhowells@redhat.com,
+ jcmvbkbc@gmail.com, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
+ Jean Delvare <jdelvare@suse.de>, egtvedt@samfundet.no, jonas@southpole.se,
+ Liqin Chen <liqin.linux@gmail.com>, jesper.nilsson@axis.com,
+ linux-am33-list@redhat.com, linux@arm.linux.org.uk,
+ linux-c6x-dev@linux-c6x.org, "David S. Miller" <davem@davemloft.net>,
+ linux-xtensa@linux-xtensa.org, takata@linux-m32r.org, x86@kernel.org,
+ jejb@parisc-linux.org, linux-sh@vger.kernel.org, mingo@redhat.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Lennox Wu <lennox.wu@gmail.com>,
+ msalter@redhat.com, mattst88@gmail.com, hskinnemoen@gmail.com,
+ fenghua.yu@intel.com, james.hogan@imgtec.com, Arnd Bergmann <arnd@arndb.de>,
+ realmz6@gmail.com, heiko.carstens@de.ibm.com, jdike@addtoit.com,
+ linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
+ cmetcalf@tilera.com, starvik@axis.com, linux-m32r@ml.linux-m32r.org,
+ ink@jurassic.park.msu.ru, user-mode-linux-user@lists.sourceforge.net,
+ tglx@linutronix.de, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, rth@twiddle.net, chris@zankel.net,
+ Michal Simek <monstr@monstr.eu>, tony.luck@intel.com,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, vgupta@synopsys.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ rkuo@codeaurora.org, user-mode-linux-devel@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ akpm@linux-foundation.org, yasutake.koichi@jp.panasonic.com,
+ linuxppc-dev@lists.ozlabs.org, deller@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +58,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---EIpds50fuTT8wE79
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Fri, Aug 15, 2014 at 12:26:09AM -0700, Sukadev Bhattiprolu wrote:
->  include/linux/perf_event.h                         |  10 +
->  kernel/events/core.c                               |   8 +
+On 8/15/14 6:14, Chen Gang wrote:
+> On 08/15/2014 02:04 AM, Ralf Baechle wrote:
+>>
+> 
+> OK, thanks, I assumes when support both endian, the default choice is
+> CPU_BIG_ENDIAN, although no default value for choice (originally, I did
+> worry about it).
+> 
+>> So I think you can just drop the MIPS segment from your patch.
+>>
+> 
+> If what I assumes is correct, what you said sounds reasonable to me.
+> 
+> 
 
-Those are patches 9 and 12 iirc, no objection to that.
+So for me, it is harmless to add CPU_*_ENDIAN explicitly, and can let
+other members don't need think of.
 
-I've not had time to actually think about the rest, seeing how I need to
-pack today and jump on an airplane tomorrow its unlikely to happen
-soon.
+By the way, for sh, it is almost the same case, except it contents the
+default value, for me, it is clear enough, so I skip sh architecture in
+this patch.
 
---EIpds50fuTT8wE79
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Thanks
+-- 
+Chen Gang
 
-iQIcBAEBAgAGBQJT7bpQAAoJEHZH4aRLwOS6EcUP/1kZo7AHPBsEtWcPZjpjhe3k
-YKCxgaFiu/+DkWtN/fAkLyyn658cKMgNKRYpwAh8JIJlUTXe9VvL2rtv8bp3NrpI
-KbIYozkoGP2Q4vmIB1hlmWtGBx+9SQyB0AdCmB018mXCBQCEkYhHM44Wxv+Ckw2E
-yGt6JmjwkRY0zBeUSP0ulwhhH3iDOMk8CMzerAyIn/T30kNPBSBE+qDfzvtslLcc
-9Yd1Odl1+13B0SFJGoJSkF5wlJ43jXcXdvJiM1EuKg8opORhFJrbsqovJSWCfL/z
-f03XcZSgGS21YdUAkOmZC/mvf2OcZTw2T2fkaB30ernYLWtqt4IQU0I5d3bL+FW3
-xh7hbxs7+Hawh8qkoqoEFctE27GIxF5ffPu+vSkgt1FXKolwJhj8NvqiKAT8S8BZ
-/GjpLf0dGZYWC1WJo4BKOLVCLcT7dWt/lfoVAamqCzne+4hwviWhonNAlIt8d29o
-nB6ebXvxkJuAFtKU3rIhAGPLGRnUa6GcwksqP3DXNnED5RPd843kcPbf3Vb1zf0E
-FVSgFtNIq/rSiesCi9GMj3xthkA1m2iyVf+F5xLEyPTzEacm+OTjHupjUYPTOVbm
-l3Bmsd3Zjlo2A7TVEwR55tgFoarHTS7Tn/IAwtWzLZdCV39DaK/O8pkMWqX8KgPm
-xBb6NxkcgJlL8CyXZYCX
-=pQfv
------END PGP SIGNATURE-----
-
---EIpds50fuTT8wE79--
+Open, share, and attitude like air, water, and life which God blessed
