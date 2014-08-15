@@ -1,36 +1,37 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 57ACD1A0225
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 13:17:58 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CC811A1839
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 17:26:32 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Fri, 15 Aug 2014 08:47:55 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 46ECA1258018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:48:04 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s7F3IGb859637768
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:48:17 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7F3HraS002895
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 08:47:54 +0530
-Message-ID: <53ED7BD9.4060906@linux.vnet.ibm.com>
-Date: Fri, 15 Aug 2014 11:17:45 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Avoid to set EEH_PE_ISOLATED for passed
- PE
-References: <1407928458-8125-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-In-Reply-To: <1407928458-8125-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 15 Aug 2014 03:26:30 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2F87A38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 03:26:28 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7F7QSiA5243266
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 07:26:28 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7F7QQrO026969
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 03:26:28 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
+ Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com
+Subject: [PATCH v2 03/14] perf Documentation: sysfs events/ interfaces
+Date: Fri, 15 Aug 2014 00:26:11 -0700
+Message-Id: <1408087583-32239-3-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
+ Michael Ellerman <michaele@au1.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +41,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, all
+From: Cody P Schafer <dev@codyps.com>
 
-After discussing with Gavin offline, it's inappropriate to drop ISOLATED 
-state. Please ignore this patch.
+Add documentation for the <event>, <event>.scale, and <event>.unit
+files in sysfs.
 
-Otherwise, somebody will merge that to mainline, which would be a problem.
+<event>.scale and <event>.unit were undocumented.
+<event> was previously documented only for specific powerpc pmu events.
 
-Thanks,
-Mike
-On 08/13/2014 07:14 PM, Mike Qiu wrote:
-> When PE passed to guest, and guest EEH occured with this PE,
-> EEH_PE_ISOLATED maybe set in host.
->
-> It is a big issue when the PE  is reused by host, host EEH
-> will not work on this PE because it was set to EEH_PE_ISOLATED
-> unexpectly.
->
-> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index c945bed..e88eaf6 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -371,7 +371,8 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
->   	    !(result & EEH_STATE_UNAVAILABLE) &&
->   	    !(result & EEH_STATE_MMIO_ACTIVE) &&
->   	    !(result & EEH_STATE_DMA_ACTIVE)  &&
-> -	    !(pe->state & EEH_PE_ISOLATED)) {
-> +	    !(pe->state & EEH_PE_ISOLATED)    &&
-> +	    !eeh_pe_passed(pe)) {
->   		if (phb->freeze_pe)
->   			phb->freeze_pe(phb, pe->addr);
->
+CC: Haren Myneni <hbabu@us.ibm.com>
+CC: Cody P Schafer <dev@codyps.com>
+Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ .../testing/sysfs-bus-event_source-devices-events  | 60 ++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
+
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+index 7b40a3c..a5226f0 100644
+--- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+@@ -599,3 +599,63 @@ Description:	POWER-systems specific performance monitoring events
+ 		Further, multiple terms like 'event=0xNNNN' can be specified
+ 		and separated with comma. All available terms are defined in
+ 		the /sys/bus/event_source/devices/<dev>/format file.
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Per-pmu performance monitoring events specific to the running system
++
++		Each file (except for some of those with a '.' in them, '.unit'
++		and '.scale') in the 'events' directory describes a single
++		performance monitoring event supported by the <pmu>. The name
++		of the file is the name of the event.
++
++		File contents:
++
++			<term>[=<value>][,<term>[=<value>]]...
++
++		Where <term> is one of the terms listed under
++		/sys/bus/event_source/devices/<pmu>/format/ and <value> is
++		a number is base-16 format with a '0x' prefix (lowercase only).
++		If a <term> is specified alone (without an assigned value), it
++		is implied that 0x1 is assigned to that <term>.
++
++		Examples (each of these lines would be in a seperate file):
++
++			event=0x2abc
++			event=0x423,inv,cmask=0x3
++			domain=0x1,offset=0x8,starting_index=0xffff
++
++		Each of the assignments indicates a value to be assigned to a
++		particular set of bits (as defined by the format file
++		corresponding to the <term>) in the perf_event structure passed
++		to the perf_open syscall.
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>.unit
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Perf event units
++
++		A string specifying the English plural numerical unit that <event>
++		(once multiplied by <event>.scale) represents.
++
++		Example:
++
++			Joules
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>.scale
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Perf event scaling factors
++
++		A string representing a floating point value expressed in
++		scientific notation to be multiplied by the event count
++		recieved from the kernel to match the unit specified in the
++		<event>.unit file.
++
++		Example:
++
++			2.3283064365386962890625e-10
++
++		This is provided to avoid performing floating point arithmetic
++		in the kernel.
+-- 
+1.8.3.1
