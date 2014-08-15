@@ -1,37 +1,23 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF4D71A1A48
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 17:26:47 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 15 Aug 2014 03:26:45 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3806E38C804D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 03:26:43 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7F7Qhkf7733666
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 07:26:43 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7F7Qfm7027685
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 03:26:42 -0400
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
- Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com
-Subject: [PATCH v2 14/14] powerpc/perf/hv-gpci: add the remaining gpci requests
-Date: Fri, 15 Aug 2014 00:26:23 -0700
-Message-Id: <1408087583-32239-15-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 549DC1A068B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 17:44:49 +1000 (EST)
+Date: Fri, 15 Aug 2014 09:44:16 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 00/14] Add support for parameterized events from sysfs
+Message-ID: <20140815074416.GA19379@twins.programming.kicks-ass.net>
 References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
- Michael Ellerman <michaele@au1.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="EIpds50fuTT8wE79"
+In-Reply-To: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ eranian@google.com, dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Jiri Olsa <jolsa@redhat.com>, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,215 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cody P Schafer <dev@codyps.com>
 
-Add the remaining gpci requests that contain counters suitable for use
-by perf. Omit those that don't contain any counters (but note their
-ommision).
+--EIpds50fuTT8wE79
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/hv-gpci-requests.h | 179 +++++++++++++++++++++++++++++++++++
- 1 file changed, 179 insertions(+)
+On Fri, Aug 15, 2014 at 12:26:09AM -0700, Sukadev Bhattiprolu wrote:
+>  include/linux/perf_event.h                         |  10 +
+>  kernel/events/core.c                               |   8 +
 
-diff --git a/arch/powerpc/perf/hv-gpci-requests.h b/arch/powerpc/perf/hv-gpci-requests.h
-index 0dfc4d9..af3b73c 100644
---- a/arch/powerpc/perf/hv-gpci-requests.h
-+++ b/arch/powerpc/perf/hv-gpci-requests.h
-@@ -65,6 +65,33 @@ REQUEST(__count(0,	8,	processor_time_in_timebase_cycles)
- )
- #include I(REQUEST_END)
- 
-+#define REQUEST_NAME entitled_capped_uncapped_donated_idle_timebase_by_partition
-+#define REQUEST_NUM 0x20
-+#define REQUEST_IDX_KIND sibling_part_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	8,	partition_id)
-+	__count(0x8,	8,	entitled_cycles)
-+	__count(0x10,	8,	consumed_capped_cycles)
-+	__count(0x18,	8,	consumed_uncapped_cycles)
-+	__count(0x20,	8,	cycles_donated)
-+	__count(0x28,	8,	purr_idle_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+/*
-+ * Not avaliable for counter_info_version >= 0x8, use
-+ * run_instruction_cycles_by_partition(0x100) instead.
-+ */
-+#define REQUEST_NAME run_instructions_run_cycles_by_partition
-+#define REQUEST_NUM 0x30
-+#define REQUEST_IDX_KIND sibling_part_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	8,	partition_id)
-+	__count(0x8,	8,	instructions_completed)
-+	__count(0x10,	8,	cycles)
-+)
-+#include I(REQUEST_END)
-+
- #define REQUEST_NAME system_performance_capabilities
- #define REQUEST_NUM 0x40
- #define REQUEST_IDX_KIND M1
-@@ -75,5 +102,157 @@ REQUEST(__field(0,	1,	perf_collect_privileged)
- )
- #include I(REQUEST_END)
- 
-+#define REQUEST_NAME processor_bus_utilization_abc_links
-+#define REQUEST_NUM 0x50
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	total_link_cycles)
-+	__count(0x18,	8,	idle_cycles_for_a_link)
-+	__count(0x20,	8,	idle_cycles_for_b_link)
-+	__count(0x28,	8,	idle_cycles_for_c_link)
-+	__array(0x30,	0x20,	reserved2)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_wxyz_links
-+#define REQUEST_NUM 0x60
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	total_link_cycles)
-+	__count(0x18,	8,	idle_cycles_for_w_link)
-+	__count(0x20,	8,	idle_cycles_for_x_link)
-+	__count(0x28,	8,	idle_cycles_for_y_link)
-+	__count(0x30,	8,	idle_cycles_for_z_link)
-+	__array(0x38,	0x28,	reserved2)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_gx_links
-+#define REQUEST_NUM 0x70
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	gx0_in_address_cycles)
-+	__count(0x18,	8,	gx0_in_data_cycles)
-+	__count(0x20,	8,	gx0_in_retries)
-+	__count(0x28,	8,	gx0_in_bus_cycles)
-+	__count(0x30,	8,	gx0_in_cycles_total)
-+	__count(0x38,	8,	gx0_out_address_cycles)
-+	__count(0x40,	8,	gx0_out_data_cycles)
-+	__count(0x48,	8,	gx0_out_retries)
-+	__count(0x50,	8,	gx0_out_bus_cycles)
-+	__count(0x58,	8,	gx0_out_cycles_total)
-+	__count(0x60,	8,	gx1_in_address_cycles)
-+	__count(0x68,	8,	gx1_in_data_cycles)
-+	__count(0x70,	8,	gx1_in_retries)
-+	__count(0x78,	8,	gx1_in_bus_cycles)
-+	__count(0x80,	8,	gx1_in_cycles_total)
-+	__count(0x88,	8,	gx1_out_address_cycles)
-+	__count(0x90,	8,	gx1_out_data_cycles)
-+	__count(0x98,	8,	gx1_out_retries)
-+	__count(0xA0,	8,	gx1_out_bus_cycles)
-+	__count(0xA8,	8,	gx1_out_cycles_total)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_mc_links
-+#define REQUEST_NUM 0x80
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	mc0_frames)
-+	__count(0x18,	8,	mc0_reads)
-+	__count(0x20,	8,	mc0_write)
-+	__count(0x28,	8,	mc0_total_cycles)
-+	__count(0x30,	8,	mc1_frames)
-+	__count(0x38,	8,	mc1_reads)
-+	__count(0x40,	8,	mc1_writes)
-+	__count(0x48,	8,	mc1_total_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+/* Processor_config (0x90) skipped, no counters */
-+/* Current_processor_frequency (0x91) skipped, no counters */
-+
-+#define REQUEST_NAME processor_core_utilization
-+#define REQUEST_NUM 0x94
-+#define REQUEST_IDX_KIND phys_processor_idx
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	phys_processor_idx)
-+	__field(0x4,	4,	hw_processor_id)
-+	__count(0x8,	8,	cycles_across_any_thread)
-+	__count(0x10,	8,	timebase_at_collection)
-+	__count(0x18,	8,	purr_cycles)
-+	__count(0x20,	8,	sum_of_cycles_across_all_threads)
-+	__count(0x28,	8,	instructions_completed)
-+)
-+#include I(REQUEST_END)
-+
-+/* Processor_core_power_mode (0x95) skipped, no counters */
-+/* Affinity_domain_information_by_virtual_processor (0xA0) skipped, no counters */
-+/* Affinity_domain_information_by_domain (0xB0) skipped, no counters */
-+/* Affinity_domain_information_by_partition (0xB1) skipped, no counters */
-+/* Physical_memory_info (0xC0) skipped, no counters */
-+/* Processor_bus_topology (0xD0) skipped, no counters */
-+
-+#define REQUEST_NAME partition_hypervisor_queuing_times
-+#define REQUEST_NUM 0xE0
-+#define REQUEST_IDX_KIND partition_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	2,	partition_id)
-+	__array(0x2,	0x6,	reserved1)
-+	__count(0x8,	8,	time_waiting_for_entitlement)
-+	__count(0x10,	8,	times_waited_for_entitlement)
-+	__count(0x18,	8,	time_waiting_for_phys_processor)
-+	__count(0x20,	8,	times_waited_for_phys_processor)
-+	__count(0x28,	8,	dispatches_on_home_core)
-+	__count(0x30,	8,	dispatches_on_home_primary_affinity_domain)
-+	__count(0x38,	8,	dispatches_on_home_secondary_affinity_domain)
-+	__count(0x40,	8,	dispatches_off_home_secondary_affinity_domain)
-+	__count(0x48,	8,	dispatches_on_dedicated_processor_donating_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME system_hypervisor_times
-+#define REQUEST_NUM 0xF0
-+#define REQUEST_IDX_KIND M1
-+#include I(REQUEST_BEGIN)
-+REQUEST(__count(0,	8,	time_spent_to_dispatch_virtual_processors)
-+	__count(0x8,	8,	time_spent_processing_virtual_processor_timers)
-+	__count(0x10,	8,	time_spent_managing_partitions_over_entitlement)
-+	__count(0x18,	8,	time_spent_on_system_managment)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME system_tlbie_count_and_time
-+#define REQUEST_NUM 0xF4
-+#define REQUEST_IDX_KIND M1
-+#include I(REQUEST_BEGIN)
-+REQUEST(__count(0,	8,	tlbie_instructions_issued)
-+	/* FIXME: The spec says the offset here is 0x10, which I suspect is wrong. */
-+	__count(0x8,	8,	time_spent_issuing_tlbies)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME partition_instruction_count_and_time
-+#define REQUEST_NUM 0x100
-+#define REQUEST_IDX_KIND partition_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	2,	partition_id)
-+	__array(0x2,	0x6,	reserved1)
-+	__count(0x8,	8,	instructions_performed)
-+	__count(0x10,	8,	time_collected)
-+)
-+#include I(REQUEST_END)
-+
-+/* set_mmcrh (0x80001000) skipped, no counters */
-+/* retrieve_hpmcx (0x80002000) skipped, no counters */
-+
- #undef M1
- #include "req-gen/_end.h"
--- 
-1.8.3.1
+Those are patches 9 and 12 iirc, no objection to that.
+
+I've not had time to actually think about the rest, seeing how I need to
+pack today and jump on an airplane tomorrow its unlikely to happen
+soon.
+
+--EIpds50fuTT8wE79
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJT7bpQAAoJEHZH4aRLwOS6EcUP/1kZo7AHPBsEtWcPZjpjhe3k
+YKCxgaFiu/+DkWtN/fAkLyyn658cKMgNKRYpwAh8JIJlUTXe9VvL2rtv8bp3NrpI
+KbIYozkoGP2Q4vmIB1hlmWtGBx+9SQyB0AdCmB018mXCBQCEkYhHM44Wxv+Ckw2E
+yGt6JmjwkRY0zBeUSP0ulwhhH3iDOMk8CMzerAyIn/T30kNPBSBE+qDfzvtslLcc
+9Yd1Odl1+13B0SFJGoJSkF5wlJ43jXcXdvJiM1EuKg8opORhFJrbsqovJSWCfL/z
+f03XcZSgGS21YdUAkOmZC/mvf2OcZTw2T2fkaB30ernYLWtqt4IQU0I5d3bL+FW3
+xh7hbxs7+Hawh8qkoqoEFctE27GIxF5ffPu+vSkgt1FXKolwJhj8NvqiKAT8S8BZ
+/GjpLf0dGZYWC1WJo4BKOLVCLcT7dWt/lfoVAamqCzne+4hwviWhonNAlIt8d29o
+nB6ebXvxkJuAFtKU3rIhAGPLGRnUa6GcwksqP3DXNnED5RPd843kcPbf3Vb1zf0E
+FVSgFtNIq/rSiesCi9GMj3xthkA1m2iyVf+F5xLEyPTzEacm+OTjHupjUYPTOVbm
+l3Bmsd3Zjlo2A7TVEwR55tgFoarHTS7Tn/IAwtWzLZdCV39DaK/O8pkMWqX8KgPm
+xBb6NxkcgJlL8CyXZYCX
+=pQfv
+-----END PGP SIGNATURE-----
+
+--EIpds50fuTT8wE79--
