@@ -1,53 +1,19 @@
-Return-Path: <gang.chen.5i5j@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <asierra@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC7D11A001C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 18:57:08 +1000 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id eu11so3180143pac.31
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2014 01:57:06 -0700 (PDT)
-Message-ID: <53EDCC60.5040608@gmail.com>
-Date: Fri, 15 Aug 2014 17:01:20 +0800
-From: Chen Gang <gang.chen.5i5j@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D0D31A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Aug 2014 07:46:50 +1000 (EST)
+Date: Fri, 15 Aug 2014 16:07:48 -0500 (CDT)
+From: Aaron Sierra <asierra@xes-inc.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <1346443438.56997.1408136868975.JavaMail.zimbra@xes-inc.com>
+In-Reply-To: <420065698.56284.1408136539532.JavaMail.zimbra@xes-inc.com>
+Subject: [PATCH 1/2] fsl_ifc: Fix csor_ext position in fsl_ifc_regs
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
- explicitly
-References: <53ECE9DD.80004@gmail.com> <20140814180418.GA20777@linux-mips.org>
- <53ED34CE.3040001@gmail.com>
-In-Reply-To: <53ED34CE.3040001@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, a-jacquiot@ti.com, catalin.marinas@arm.com,
- linux@openrisc.net, will.deacon@arm.com, dhowells@redhat.com,
- jcmvbkbc@gmail.com, paulus@samba.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
- Jean Delvare <jdelvare@suse.de>, egtvedt@samfundet.no, jonas@southpole.se,
- Liqin Chen <liqin.linux@gmail.com>, jesper.nilsson@axis.com,
- linux-am33-list@redhat.com, linux@arm.linux.org.uk,
- linux-c6x-dev@linux-c6x.org, "David S. Miller" <davem@davemloft.net>,
- linux-xtensa@linux-xtensa.org, takata@linux-m32r.org, x86@kernel.org,
- jejb@parisc-linux.org, linux-sh@vger.kernel.org, mingo@redhat.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Lennox Wu <lennox.wu@gmail.com>,
- msalter@redhat.com, mattst88@gmail.com, hskinnemoen@gmail.com,
- fenghua.yu@intel.com, james.hogan@imgtec.com, Arnd Bergmann <arnd@arndb.de>,
- realmz6@gmail.com, heiko.carstens@de.ibm.com, jdike@addtoit.com,
- linux-alpha@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- cmetcalf@tilera.com, starvik@axis.com, linux-m32r@ml.linux-m32r.org,
- ink@jurassic.park.msu.ru, user-mode-linux-user@lists.sourceforge.net,
- tglx@linutronix.de, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, rth@twiddle.net, chris@zankel.net,
- Michal Simek <monstr@monstr.eu>, tony.luck@intel.com,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, vgupta@synopsys.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- rkuo@codeaurora.org, user-mode-linux-devel@lists.sourceforge.net,
- Richard Weinberger <richard@nod.at>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- akpm@linux-foundation.org, yasutake.koichi@jp.panasonic.com,
- linuxppc-dev@lists.ozlabs.org, deller@gmx.de
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Arnd Bergmann <arnd@arndb.de>, Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,33 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+According to Freescale manuals, the IFC_CSORn_EXT register is located
+immediately _after_ the bank's IFC_CSORn register.
 
+This patch adjusts the csor_ext member of and reserved register arrays
+immediately surrounding the csor_cs structure to provide proper access
+to this register.
 
-On 8/15/14 6:14, Chen Gang wrote:
-> On 08/15/2014 02:04 AM, Ralf Baechle wrote:
->>
-> 
-> OK, thanks, I assumes when support both endian, the default choice is
-> CPU_BIG_ENDIAN, although no default value for choice (originally, I did
-> worry about it).
-> 
->> So I think you can just drop the MIPS segment from your patch.
->>
-> 
-> If what I assumes is correct, what you said sounds reasonable to me.
-> 
-> 
+Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+---
+ include/linux/fsl_ifc.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-So for me, it is harmless to add CPU_*_ENDIAN explicitly, and can let
-other members don't need think of.
-
-By the way, for sh, it is almost the same case, except it contents the
-default value, for me, it is clear enough, so I skip sh architecture in
-this patch.
-
-
-Thanks
+diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+index f49ddb1..84d60cb 100644
+--- a/include/linux/fsl_ifc.h
++++ b/include/linux/fsl_ifc.h
+@@ -781,13 +781,13 @@ struct fsl_ifc_regs {
+ 		__be32 amask;
+ 		u32 res4[0x2];
+ 	} amask_cs[FSL_IFC_BANK_COUNT];
+-	u32 res5[0x17];
++	u32 res5[0x18];
+ 	struct {
+-		__be32 csor_ext;
+ 		__be32 csor;
++		__be32 csor_ext;
+ 		u32 res6;
+ 	} csor_cs[FSL_IFC_BANK_COUNT];
+-	u32 res7[0x19];
++	u32 res7[0x18];
+ 	struct {
+ 		__be32 ftim[4];
+ 		u32 res8[0x8];
 -- 
-Chen Gang
-
-Open, share, and attitude like air, water, and life which God blessed
+1.9.1
