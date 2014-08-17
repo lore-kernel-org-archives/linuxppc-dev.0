@@ -1,33 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-x236.google.com (mail-lb0-x236.google.com
+ [IPv6:2a00:1450:4010:c04::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F90C1A0AE0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 16:43:20 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sun, 17 Aug 2014 16:43:17 +1000
-Received: from d23relay07.au.ibm.com (unknown [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C441C728ECB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:57 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7H33LhR15990920
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:03:21 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7H32a8O001033
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:37 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/5] powerpc/eeh: Freeze PE before PE reset
-Date: Sun, 17 Aug 2014 13:02:27 +1000
-Message-Id: <1408244549-10221-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A5461A003A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2014 06:58:21 +1000 (EST)
+Received: by mail-lb0-f182.google.com with SMTP id z11so3387504lbi.41
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:58:14 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1408308358-27494-1-git-send-email-geert@linux-m68k.org>
+References: <1408308358-27494-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 17 Aug 2014 22:58:14 +0200
+Message-ID: <CAMuHMdUrBYrHiwj=S-kWYEHb+1CX2VUgYmvJhj_aaC-8ChFL_g@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.17-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,132 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds one more option (EEH_OPT_FREEZE_PE) to set_option()
-method to proactively freeze PE, which will be issued before resetting
-pass-throughed PE to drop MMIO access during reset because it's
-always contributing to recursive EEH error.
+On Sun, Aug 17, 2014 at 10:45 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> 16 regressions:
+>   + /scratch/kisskb/src/arch/powerpc/include/asm/floppy.h: error: 'isa_bridge_pcidev' undeclared (first use in this function):  => 142:20
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/kernel/eeh.c                    |  7 +++++
- arch/powerpc/platforms/powernv/eeh-ioda.c    | 43 +++++++++++++++++++++-------
- arch/powerpc/platforms/pseries/eeh_pseries.c |  4 ++-
- 4 files changed, 44 insertions(+), 11 deletions(-)
+powerpc-randconfig
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index adcddb1..f98b1b5 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -167,6 +167,7 @@ enum {
- #define EEH_OPT_ENABLE		1	/* EEH enable	*/
- #define EEH_OPT_THAW_MMIO	2	/* MMIO enable	*/
- #define EEH_OPT_THAW_DMA	3	/* DMA enable	*/
-+#define EEH_OPT_FREEZE_PE	4	/* Freeze PE	*/
- #define EEH_STATE_UNAVAILABLE	(1 << 0)	/* State unavailable	*/
- #define EEH_STATE_NOT_SUPPORT	(1 << 1)	/* EEH not supported	*/
- #define EEH_STATE_RESET_ACTIVE	(1 << 2)	/* Active reset		*/
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 17cf52ba..898c75f 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1382,6 +1382,13 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
- 		break;
- 	case EEH_RESET_HOT:
- 	case EEH_RESET_FUNDAMENTAL:
-+		/*
-+		 * Proactively freeze the PE to drop all MMIO access
-+		 * during reset, which should be banned as it's always
-+		 * cause recursive EEH error.
-+		 */
-+		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
-+
- 		ret = eeh_ops->reset(pe, option);
- 		break;
- 	default:
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index c945bed..f3027b9 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -189,6 +189,7 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- {
- 	struct pci_controller *hose = pe->phb;
- 	struct pnv_phb *phb = hose->private_data;
-+	bool freeze_pe = false;
- 	int enable, ret = 0;
- 	s64 rc;
- 
-@@ -212,6 +213,10 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- 	case EEH_OPT_THAW_DMA:
- 		enable = OPAL_EEH_ACTION_CLEAR_FREEZE_DMA;
- 		break;
-+	case EEH_OPT_FREEZE_PE:
-+		freeze_pe = true;
-+		enable = OPAL_EEH_ACTION_SET_FREEZE_ALL;
-+		break;
- 	default:
- 		pr_warn("%s: Invalid option %d\n",
- 			__func__, option);
-@@ -219,17 +224,35 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
- 	}
- 
- 	/* If PHB supports compound PE, to handle it */
--	if (phb->unfreeze_pe) {
--		ret = phb->unfreeze_pe(phb, pe->addr, enable);
-+	if (freeze_pe) {
-+		if (phb->freeze_pe) {
-+			phb->freeze_pe(phb, pe->addr);
-+		} else {
-+			rc = opal_pci_eeh_freeze_set(phb->opal_id,
-+						     pe->addr,
-+						     enable);
-+			if (rc != OPAL_SUCCESS) {
-+				pr_warn("%s: Failure %lld freezing "
-+					"PHB#%x-PE#%x\n",
-+					__func__, rc,
-+					phb->hose->global_number, pe->addr);
-+				ret = -EIO;
-+			}
-+		}
- 	} else {
--		rc = opal_pci_eeh_freeze_clear(phb->opal_id,
--					       pe->addr,
--					       enable);
--		if (rc != OPAL_SUCCESS) {
--			pr_warn("%s: Failure %lld enable %d for PHB#%x-PE#%x\n",
--				__func__, rc, option, phb->hose->global_number,
--				pe->addr);
--			ret = -EIO;
-+		if (phb->unfreeze_pe) {
-+			ret = phb->unfreeze_pe(phb, pe->addr, enable);
-+		} else {
-+			rc = opal_pci_eeh_freeze_clear(phb->opal_id,
-+						       pe->addr,
-+						       enable);
-+			if (rc != OPAL_SUCCESS) {
-+				pr_warn("%s: Failure %lld enable %d "
-+					"for PHB#%x-PE#%x\n",
-+					__func__, rc, option,
-+					phb->hose->global_number, pe->addr);
-+				ret = -EIO;
-+			}
- 		}
- 	}
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index b080538..b645dc6 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -349,7 +349,9 @@ static int pseries_eeh_set_option(struct eeh_pe *pe, int option)
- 		if (pe->addr)
- 			config_addr = pe->addr;
- 		break;
--
-+	case EEH_OPT_FREEZE_PE:
-+		/* Not support */
-+		return 0;
- 	default:
- 		pr_err("%s: Invalid option %d\n",
- 			__func__, option);
--- 
-1.8.3.2
+>   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: 'AT_FDCWD' undeclared (first use in this function):  => 378
+>   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: (Each undeclared identifier is reported only once:  => 378
+>   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: for each function it appears in.):  => 378
+
+um-defconfig
+
+>   + /scratch/kisskb/src/kernel/locking/mcs_spinlock.h: error: implicit declaration of function 'cpu_relax_lowlatency' [-Werror=implicit-function-declaration]:  => 87:2
+
+frv-defconfig (somehow the fix never made it past Linus' mbox)
+
+>   + error: "flush_icache_range" [drivers/misc/lkdtm.ko] undefined!:  => N/A
+
+sh-allmodconfig (woohoo, this means it has reached the link phase!)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
