@@ -1,30 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 250791A0042
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 16:43:06 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F90C1A0AE0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 16:43:20 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sun, 17 Aug 2014 16:43:01 +1000
+ Sun, 17 Aug 2014 16:43:17 +1000
 Received: from d23relay07.au.ibm.com (unknown [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B8B562F40A96
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:56 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C441C728ECB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:57 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7H33Jfs12517512
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:03:20 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7H32Z8l010075
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:35 +1000
+ s7H33LhR15990920
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:03:21 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7H32a8O001033
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:37 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/5] powerpc: EEH fixes
-Date: Sun, 17 Aug 2014 13:02:24 +1000
-Message-Id: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 3/5] powerpc/eeh: Freeze PE before PE reset
+Date: Sun, 17 Aug 2014 13:02:27 +1000
+Message-Id: <1408244549-10221-4-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,30 +37,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches is to fix recursive EEH error during recovery
-for VFIO-PCI except some cleanup. The recursive EEH error is caused
-by MMIO access when the PE is under reset or the PCI device isn't
-enabled yet. The solution is to freeze the PE until the PCI device
-is enabled after PE reset.
+The patch adds one more option (EEH_OPT_FREEZE_PE) to set_option()
+method to proactively freeze PE, which will be issued before resetting
+pass-throughed PE to drop MMIO access during reset because it's
+always contributing to recursive EEH error.
 
-Another issue is that one specific PE is frozen when being passed
-through. It caused the device can't work properly in userland (e.g.
-QEMU). The fix is to clear the frozen state when passing PE to
-userland.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h               |  1 +
+ arch/powerpc/kernel/eeh.c                    |  7 +++++
+ arch/powerpc/platforms/powernv/eeh-ioda.c    | 43 +++++++++++++++++++++-------
+ arch/powerpc/platforms/pseries/eeh_pseries.c |  4 ++-
+ 4 files changed, 44 insertions(+), 11 deletions(-)
 
-Gavin Shan (5):
-  powerpc/eeh: Drop unused argument in eeh_check_failure()
-  powerpc/eeh: Add eeh_pe_state sysfs entry
-  powerpc/eeh: Freeze PE before PE reset
-  powerpc/eeh: Reenable PCI devices after reset
-  powerpc/eeh: Clear frozen state on passing device
-
- arch/powerpc/include/asm/eeh.h               |  30 +++----
- arch/powerpc/kernel/eeh.c                    | 116 +++++++++++++++++++++------
- arch/powerpc/kernel/eeh_sysfs.c              |  61 +++++++++++++-
- arch/powerpc/platforms/powernv/eeh-ioda.c    |  43 +++++++---
- arch/powerpc/platforms/pseries/eeh_pseries.c |   4 +-
- 5 files changed, 203 insertions(+), 51 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index adcddb1..f98b1b5 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -167,6 +167,7 @@ enum {
+ #define EEH_OPT_ENABLE		1	/* EEH enable	*/
+ #define EEH_OPT_THAW_MMIO	2	/* MMIO enable	*/
+ #define EEH_OPT_THAW_DMA	3	/* DMA enable	*/
++#define EEH_OPT_FREEZE_PE	4	/* Freeze PE	*/
+ #define EEH_STATE_UNAVAILABLE	(1 << 0)	/* State unavailable	*/
+ #define EEH_STATE_NOT_SUPPORT	(1 << 1)	/* EEH not supported	*/
+ #define EEH_STATE_RESET_ACTIVE	(1 << 2)	/* Active reset		*/
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 17cf52ba..898c75f 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1382,6 +1382,13 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
+ 		break;
+ 	case EEH_RESET_HOT:
+ 	case EEH_RESET_FUNDAMENTAL:
++		/*
++		 * Proactively freeze the PE to drop all MMIO access
++		 * during reset, which should be banned as it's always
++		 * cause recursive EEH error.
++		 */
++		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
++
+ 		ret = eeh_ops->reset(pe, option);
+ 		break;
+ 	default:
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index c945bed..f3027b9 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -189,6 +189,7 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
+ {
+ 	struct pci_controller *hose = pe->phb;
+ 	struct pnv_phb *phb = hose->private_data;
++	bool freeze_pe = false;
+ 	int enable, ret = 0;
+ 	s64 rc;
+ 
+@@ -212,6 +213,10 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
+ 	case EEH_OPT_THAW_DMA:
+ 		enable = OPAL_EEH_ACTION_CLEAR_FREEZE_DMA;
+ 		break;
++	case EEH_OPT_FREEZE_PE:
++		freeze_pe = true;
++		enable = OPAL_EEH_ACTION_SET_FREEZE_ALL;
++		break;
+ 	default:
+ 		pr_warn("%s: Invalid option %d\n",
+ 			__func__, option);
+@@ -219,17 +224,35 @@ static int ioda_eeh_set_option(struct eeh_pe *pe, int option)
+ 	}
+ 
+ 	/* If PHB supports compound PE, to handle it */
+-	if (phb->unfreeze_pe) {
+-		ret = phb->unfreeze_pe(phb, pe->addr, enable);
++	if (freeze_pe) {
++		if (phb->freeze_pe) {
++			phb->freeze_pe(phb, pe->addr);
++		} else {
++			rc = opal_pci_eeh_freeze_set(phb->opal_id,
++						     pe->addr,
++						     enable);
++			if (rc != OPAL_SUCCESS) {
++				pr_warn("%s: Failure %lld freezing "
++					"PHB#%x-PE#%x\n",
++					__func__, rc,
++					phb->hose->global_number, pe->addr);
++				ret = -EIO;
++			}
++		}
+ 	} else {
+-		rc = opal_pci_eeh_freeze_clear(phb->opal_id,
+-					       pe->addr,
+-					       enable);
+-		if (rc != OPAL_SUCCESS) {
+-			pr_warn("%s: Failure %lld enable %d for PHB#%x-PE#%x\n",
+-				__func__, rc, option, phb->hose->global_number,
+-				pe->addr);
+-			ret = -EIO;
++		if (phb->unfreeze_pe) {
++			ret = phb->unfreeze_pe(phb, pe->addr, enable);
++		} else {
++			rc = opal_pci_eeh_freeze_clear(phb->opal_id,
++						       pe->addr,
++						       enable);
++			if (rc != OPAL_SUCCESS) {
++				pr_warn("%s: Failure %lld enable %d "
++					"for PHB#%x-PE#%x\n",
++					__func__, rc, option,
++					phb->hose->global_number, pe->addr);
++				ret = -EIO;
++			}
+ 		}
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index b080538..b645dc6 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -349,7 +349,9 @@ static int pseries_eeh_set_option(struct eeh_pe *pe, int option)
+ 		if (pe->addr)
+ 			config_addr = pe->addr;
+ 		break;
+-
++	case EEH_OPT_FREEZE_PE:
++		/* Not support */
++		return 0;
+ 	default:
+ 		pr_err("%s: Invalid option %d\n",
+ 			__func__, option);
 -- 
 1.8.3.2
