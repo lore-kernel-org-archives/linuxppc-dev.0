@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E76E1A001C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90B3E1A01DB
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:02:46 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sun, 17 Aug 2014 08:32:41 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1245C3940018
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:32:40 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7H32SDY60030996
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:32:28 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7H32cIx007509
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:32:38 +0530
+ Sun, 17 Aug 2014 08:32:43 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A3DAE3940017
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:32:38 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7H350oT3735944
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:35:00 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7H32boL007017
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 08:32:37 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/5] powerpc/eeh: Reenable PCI devices after reset
-Date: Sun, 17 Aug 2014 13:02:28 +1000
-Message-Id: <1408244549-10221-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/5] powerpc/eeh: Add eeh_pe_state sysfs entry
+Date: Sun, 17 Aug 2014 13:02:26 +1000
+Message-Id: <1408244549-10221-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1408244549-10221-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,102 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PCI devices that have been passed through are enabled before
-reset, we need restore to the enabled state after reset. Otherwise,
-MMIO access might be issued to disabled devices after reset and
-causes exceptional recursive EEH error.
+The patch adds sysfs entry "eeh_pe_state". Reading on it returns
+the PE's state while writing to it clears the frozen state. It's
+used to check or clear the PE frozen state from userland for
+debugging purpose.
+
+The patch also replaces printk(KERN_WARNING ...) with pr_warn() in
+eeh_sysfs.c
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c | 62 ++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 48 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/eeh_sysfs.c | 61 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 60 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 898c75f..db2841c 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1342,6 +1342,53 @@ int eeh_pe_get_state(struct eeh_pe *pe)
- }
- EXPORT_SYMBOL_GPL(eeh_pe_get_state);
+diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sysfs.c
+index e2595ba..e69bcbb 100644
+--- a/arch/powerpc/kernel/eeh_sysfs.c
++++ b/arch/powerpc/kernel/eeh_sysfs.c
+@@ -54,6 +54,63 @@ EEH_SHOW_ATTR(eeh_mode,            mode,            "0x%x");
+ EEH_SHOW_ATTR(eeh_config_addr,     config_addr,     "0x%x");
+ EEH_SHOW_ATTR(eeh_pe_config_addr,  pe_config_addr,  "0x%x");
  
-+static int eeh_pe_reenable_devices(struct eeh_pe *pe)
++static ssize_t eeh_pe_state_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
 +{
-+	struct eeh_dev *edev, *tmp;
-+	struct pci_dev *pdev;
-+	int ret = 0;
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
++	int state;
 +
-+	/* Restore config space */
-+	eeh_pe_restore_bars(pe);
++	if (!edev || !edev->pe)
++		return 0;
 +
-+	/*
-+	 * Reenable PCI devices as the devices passed
-+	 * through are always enabled before the reset.
-+	 */
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		pdev = eeh_dev_to_pci_dev(edev);
-+		if (!pdev)
-+			continue;
-+
-+		ret = pci_reenable_device(pdev);
-+		if (ret) {
-+			pr_warn("%s: Failure %d reenabling %s\n",
-+				__func__, ret, pci_name(pdev));
-+			return ret;
-+		}
-+	}
-+
-+	/* The PE is still in frozen state */
-+	ret = eeh_ops->set_option(pe, EEH_OPT_THAW_MMIO);
-+	if (ret) {
-+		pr_warn("%s: Failure %d enabling MMIO for PHB#%x-PE#%x\n",
-+			__func__, ret, pe->phb->global_number, pe->addr);
-+		return ret;
-+	}
-+
-+	ret = eeh_ops->set_option(pe, EEH_OPT_THAW_DMA);
-+	if (ret) {
-+		pr_warn("%s: Failure %d enabling DMA for PHB#%x-PE#%x\n",
-+			__func__, ret, pe->phb->global_number, pe->addr);
-+		return ret;
-+	}
-+
-+	/* Clear software isolated state */
-+	eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
-+
-+	return ret;
++	state = eeh_ops->get_state(edev->pe, NULL);
++	return sprintf(buf, "PHB#%d-PE#%d: 0x%08x 0x%08x\n",
++		       edev->pe->phb->global_number,
++		       edev->pe->addr, state, edev->pe->state);
 +}
 +
- /**
-  * eeh_pe_reset - Issue PE reset according to specified type
-  * @pe: EEH PE
-@@ -1368,17 +1415,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
- 		if (ret)
- 			break;
++static ssize_t eeh_pe_state_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
++	int ret;
++
++	if (!edev || !edev->pe)
++		return 0;
++
++	/* Nothing to do if it's not frozen */
++	if (!(edev->pe->state & EEH_PE_ISOLATED))
++		return 0;
++
++	/* Enable MMIO */
++	ret = eeh_pci_enable(edev->pe, EEH_OPT_THAW_MMIO);
++	if (ret) {
++		pr_warn("%s: Failure %d enabling MMIO for PHB#%d-PE#%d\n",
++			__func__, ret, edev->pe->phb->global_number,
++			edev->pe->addr);
++		return 0;
++	}
++
++	/* Enable DMA */
++	ret = eeh_pci_enable(edev->pe, EEH_OPT_THAW_DMA);
++	if (ret) {
++		pr_warn("%s: Failure %d enabling DMA for PHB#%d-PE#%d\n",
++			__func__, ret, edev->pe->phb->global_number,
++			edev->pe->addr);
++		return 0;
++	}
++
++	/* Clear software state */
++	eeh_pe_state_clear(edev->pe, EEH_PE_ISOLATED);
++
++	return count;
++}
++
++static DEVICE_ATTR_RW(eeh_pe_state);
++
+ void eeh_sysfs_add_device(struct pci_dev *pdev)
+ {
+ 	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+@@ -68,9 +125,10 @@ void eeh_sysfs_add_device(struct pci_dev *pdev)
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_mode);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_config_addr);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
++	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_state);
  
--		/*
--		 * The PE is still in frozen state and we need to clear
--		 * that. It's good to clear frozen state after deassert
--		 * to avoid messy IO access during reset, which might
--		 * cause recursive frozen PE.
--		 */
--		ret = eeh_ops->set_option(pe, EEH_OPT_THAW_MMIO);
--		if (!ret)
--			ret = eeh_ops->set_option(pe, EEH_OPT_THAW_DMA);
--		if (!ret)
--			eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
-+		ret = eeh_pe_reenable_devices(pe);
- 		break;
- 	case EEH_RESET_HOT:
- 	case EEH_RESET_FUNDAMENTAL:
-@@ -1417,9 +1454,6 @@ int eeh_pe_configure(struct eeh_pe *pe)
- 	if (!pe)
- 		return -ENODEV;
- 
--	/* Restore config space for the affected devices */
--	eeh_pe_restore_bars(pe);
--
- 	return ret;
+ 	if (rc)
+-		printk(KERN_WARNING "EEH: Unable to create sysfs entries\n");
++		pr_warn("EEH: Unable to create sysfs entries\n");
+ 	else if (edev)
+ 		edev->mode |= EEH_DEV_SYSFS;
  }
- EXPORT_SYMBOL_GPL(eeh_pe_configure);
+@@ -92,6 +150,7 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev)
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_mode);
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_config_addr);
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
++	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_state);
+ 
+ 	if (edev)
+ 		edev->mode &= ~EEH_DEV_SYSFS;
 -- 
 1.8.3.2
