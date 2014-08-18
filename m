@@ -1,25 +1,27 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-047.synserver.de (smtp-out-050.synserver.de
- [212.40.185.50])
- by lists.ozlabs.org (Postfix) with ESMTP id F3EF21A003A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 03:04:30 +1000 (EST)
-Message-ID: <53F22F5E.2090601@metafoo.de>
-Date: Mon, 18 Aug 2014 18:52:46 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x229.google.com (mail-la0-x229.google.com
+ [IPv6:2a00:1450:4010:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 044411A0042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 05:28:20 +1000 (EST)
+Received: by mail-la0-f41.google.com with SMTP id s18so5048485lam.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2014 12:28:16 -0700 (PDT)
 MIME-Version: 1.0
-To: Shengjiu Wang <shengjiu.wang@freescale.com>, lgirdwood@gmail.com,
- broonie@kernel.org, perex@perex.cz, tiwai@suse.de,
- nicoleotsuka@gmail.com, Li.Xiubo@freescale.com, shc_work@mail.ru,
- fabio.estevam@freescale.com, xobs@kosagi.com, arnd@arndb.de,
- sfr@canb.auug.org.au, timur@tabi.org
-Subject: Re: [alsa-devel] [PATCH V1 1/3] ASoC: fsl: Kconfig: remove dependence
- of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA
-References: <cover.1408350626.git.shengjiu.wang@freescale.com>
- <f30ba4e2c4eb6702fa40bd255036e6e9ad6eb47d.1408350626.git.shengjiu.wang@freescale.com>
-In-Reply-To: <f30ba4e2c4eb6702fa40bd255036e6e9ad6eb47d.1408350626.git.shengjiu.wang@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1408388465-26577-1-git-send-email-bobby.prani@gmail.com>
+References: <1408388465-26577-1-git-send-email-bobby.prani@gmail.com>
+Date: Mon, 18 Aug 2014 21:28:15 +0200
+Message-ID: <CAMuHMdXutLPeyDYHdRJ6Heb4vhtg=zMTpwOpKq1h4Yyk8exUSQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix build failure for PPC_32
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Rob Herring <robh@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, Gerhard Sittig <gsi@denx.de>,
+ open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +31,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/18/2014 10:38 AM, Shengjiu Wang wrote:
-> Build kernel with SND_SOC_IMC_PCM_DMA=m && SND_IMX_SOC=n leads the following
-> error:
->
->     sound/built-in.o: In function `fsl_sai_probe':
->>> fsl_sai.c:(.text+0x5f662): undefined reference to `imx_pcm_dma_init'
->     sound/built-in.o: In function `fsl_esai_probe':
->>> fsl_esai.c:(.text+0x6044b): undefined reference to `imx_pcm_dma_init'
->
-> Most cpu driver in soc/fsl has use the function 'imx_pcm_dma_init' which is
-> defined in imx-pcm-dma.c, so need to select SND_SOC_IMX_PCM_DMA, but it depends
-> on SND_IMX_SOC, if SND_IMX_SOC=n, then SND_SOC_IMX_PCM_DMA will not be
-> selected.
-> So remove the dependence of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA.
->
-> Reported-by: kbuild test robot <fengguang.wu@intel.com>
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+Hi Pranith,
 
-Those if conditions where just added[1] by Arnd to avoid other build 
-failures. So just removing them again makes little sense.
+On Mon, Aug 18, 2014 at 9:01 PM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+> Fix ppc 32 build failure as reported here:
+>
+> http://kisskb.ellerman.id.au/kisskb/buildresult/11663513/
 
-As far as I can see imx_pcm_dma_init() should be stubbed out when 
-SND_SOC_IMX_PCM_DMA is not selected. So what's going on here?
+| arch/powerpc/include/asm/floppy.h:142:20: error: 'isa_bridge_pcidev'
+undeclared (first use in this function)
+| make[3]: *** [drivers/block/floppy.o] Error 1
 
-[1] 
-http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff40260f79dc0436604452bccd449bffd25ebafb
+The definition of isa_bridge_pcidev is only available if CONFIG_PCI=y...
+
+> The error is that pci_32.o was not being built for PPC_32. Fix error by adding
+> it in the Makefile. Tested using the ppc cross compiler.
+
+... so how can adding this make the floppy.h error go away?
+
+Note that arch/powerpc/kernel/Makefile does add
+pci_$(CONFIG_WORD_SIZE).o, but only if CONFIG_PCI=y.
+
+So, thanks for your patch, but I don't think your fix is the right solution.
+
+However, drivers/block/floppy.o is enabled by BLK_DEV_FD, which
+depends on ARCH_MAY_HAVE_PC_FDC.
+
+arch/powerpc/Kconfig has:
+
+config ARCH_MAY_HAVE_PC_FDC
+        bool
+        default !PPC_PSERIES || PCI
+
+PCI is not set, and PPC_PSERIES is also not set, so this
+defaults to y, which is obviously not correct, as floppy.h needs PCI.
+
+As this symbol doesn't enable floppy support in-se, probably it should just
+be:
+
+config ARCH_MAY_HAVE_PC_FDC
+        bool
+        depends on PCI
+
+This config line was last touched by
+commit bed59275810a55500e885cbdc5c2a0507f13c00e
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Sun Mar 4 17:04:44 2007 +1100
+
+    [POWERPC] Allow pSeries to build without CONFIG_PCI
+
+    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  arch/powerpc/kernel/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 670c312..3206ba1 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -89,7 +89,7 @@ extra-y                               += vmlinux.lds
+>
+>  obj-$(CONFIG_RELOCATABLE_PPC32)        += reloc_32.o
+>
+> -obj-$(CONFIG_PPC32)            += entry_32.o setup_32.o
+> +obj-$(CONFIG_PPC32)            += entry_32.o setup_32.o pci_32.o
+>  obj-$(CONFIG_PPC64)            += dma-iommu.o iommu.o
+>  obj-$(CONFIG_KGDB)             += kgdb.o
+>  obj-$(CONFIG_MODULES)          += ppc_ksyms.o
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
