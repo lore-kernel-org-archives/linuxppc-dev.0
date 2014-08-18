@@ -1,21 +1,27 @@
-Return-Path: <paulus@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E09411A0188
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2014 22:13:35 +1000 (EST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 9F51B1400A8
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2014 22:13:35 +1000 (EST)
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc: Implement emulation of string loads and stores
-Date: Mon, 18 Aug 2014 22:13:12 +1000
-Message-Id: <1408363992-7929-4-git-send-email-paulus@samba.org>
-In-Reply-To: <1408363992-7929-1-git-send-email-paulus@samba.org>
-References: <1408363992-7929-1-git-send-email-paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E0821A0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 00:55:11 +1000 (EST)
+Date: Mon, 18 Aug 2014 09:53:25 -0500
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
+Message-ID: <20140818145325.GC14537@sirena.org.uk>
+References: <cover.1408350626.git.shengjiu.wang@freescale.com>
+ <b1711ff2c73f3b6acd6af000bc8294d930bbf16b.1408350626.git.shengjiu.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="j6zkAHxOZJkiczrA"
+In-Reply-To: <b1711ff2c73f3b6acd6af000bc8294d930bbf16b.1408350626.git.shengjiu.wang@freescale.com>
+Subject: Re: [PATCH V1 2/3] ASoC: fsl-asoc-card: Fix build warning for
+ maybe-uninitialized
+Cc: fabio.estevam@freescale.com, sfr@canb.auug.org.au,
+ alsa-devel@alsa-project.org, timur@tabi.org, arnd@arndb.de, shc_work@mail.ru,
+ tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
+ perex@perex.cz, nicoleotsuka@gmail.com, Li.Xiubo@freescale.com,
+ xobs@kosagi.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,140 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The size field of the op.type word is now the total number of bytes
-to be loaded or stored.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/lib/sstep.c | 59 ++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 10 deletions(-)
+--j6zkAHxOZJkiczrA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 57e2873..39ed4b7 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1433,11 +1433,24 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
- 
- #endif
-+		case 533:	/* lswx */
-+			op->type = MKOP(LOAD_MULTI, 0, regs->xer & 0x7f);
-+			break;
- 
- 		case 534:	/* lwbrx */
- 			op->type = MKOP(LOAD, BYTEREV, 4);
- 			break;
- 
-+		case 597:	/* lswi */
-+			if (rb == 0)
-+				rb = 32;	/* # bytes to load */
-+			op->type = MKOP(LOAD_MULTI, 0, rb);
-+			op->ea = 0;
-+			if (ra)
-+				op->ea = truncate_if_32bit(regs->msr,
-+							   regs->gpr[ra]);
-+			break;
-+
- #ifdef CONFIG_PPC_FPU
- 		case 535:	/* lfsx */
- 		case 567:	/* lfsux */
-@@ -1475,11 +1488,25 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
- 
- #endif
-+		case 661:	/* stswx */
-+			op->type = MKOP(STORE_MULTI, 0, regs->xer & 0x7f);
-+			break;
-+
- 		case 662:	/* stwbrx */
- 			op->type = MKOP(STORE, BYTEREV, 4);
- 			op->val = byterev_4(regs->gpr[rd]);
- 			break;
- 
-+		case 725:
-+			if (rb == 0)
-+				rb = 32;	/* # bytes to store */
-+			op->type = MKOP(STORE_MULTI, 0, rb);
-+			op->ea = 0;
-+			if (ra)
-+				op->ea = truncate_if_32bit(regs->msr,
-+							   regs->gpr[ra]);
-+			break;
-+
- 		case 790:	/* lhbrx */
- 			op->type = MKOP(LOAD, BYTEREV, 2);
- 			break;
-@@ -1553,15 +1580,14 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 		break;
- 
- 	case 46:	/* lmw */
--		ra = (instr >> 16) & 0x1f;
- 		if (ra >= rd)
- 			break;		/* invalid form, ra in range to load */
--		op->type = MKOP(LOAD_MULTI, 0, 4);
-+		op->type = MKOP(LOAD_MULTI, 0, 4 * (32 - rd));
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
- 	case 47:	/* stmw */
--		op->type = MKOP(STORE_MULTI, 0, 4);
-+		op->type = MKOP(STORE_MULTI, 0, 4 * (32 - rd));
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
-@@ -1744,7 +1770,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 	int r, err, size;
- 	unsigned long val;
- 	unsigned int cr;
--	int rd;
-+	int i, rd, nb;
- 
- 	r = analyse_instr(&op, regs, instr);
- 	if (r != 0)
-@@ -1864,12 +1890,18 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		if (regs->msr & MSR_LE)
- 			return 0;
- 		rd = op.reg;
--		do {
--			err = read_mem(&regs->gpr[rd], op.ea, 4, regs);
-+		for (i = 0; i < size; i += 4) {
-+			nb = size - i;
-+			if (nb > 4)
-+				nb = 4;
-+			err = read_mem(&regs->gpr[rd], op.ea, nb, regs);
- 			if (err)
- 				return 0;
-+			if (nb < 4)	/* left-justify last bytes */
-+				regs->gpr[rd] <<= 32 - 8 * nb;
- 			op.ea += 4;
--		} while (++rd < 32);
-+			++rd;
-+		}
- 		goto instr_done;
- 
- 	case STORE:
-@@ -1910,12 +1942,19 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		if (regs->msr & MSR_LE)
- 			return 0;
- 		rd = op.reg;
--		do {
--			err = write_mem(regs->gpr[rd], op.ea, 4, regs);
-+		for (i = 0; i < size; i += 4) {
-+			val = regs->gpr[rd];
-+			nb = size - i;
-+			if (nb > 4)
-+				nb = 4;
-+			else
-+				val >>= 32 - 8 * nb;
-+			err = write_mem(val, op.ea, nb, regs);
- 			if (err)
- 				return 0;
- 			op.ea += 4;
--		} while (++rd < 32);
-+			++rd;
-+		}
- 		goto instr_done;
- 
- 	case MFMSR:
--- 
-2.1.0.rc1
+On Mon, Aug 18, 2014 at 04:38:39PM +0800, Shengjiu Wang wrote:
+> When build fsl-asoc-card as module, there is following error:
+
+Applied, thanks.
+
+--j6zkAHxOZJkiczrA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT8hNiAAoJELSic+t+oim9vtEP/066v1JvRkbibj+F5sRs0ldE
+p/hv3zajZVFM24ZRpA3ougXhZ+BC+L9a8X/dt0joWHuEwwEL187RxuHGdEDaUddC
+mMpu8SmfaIJ77GimPIKs0Xl2NQsMgm4ZblzN/jgNSTJt9Z1ZWy/b3YysujpDHPHR
+jgemxvDRwE55C5WkKLDgZMqjGWB24xgy5v8n4wOqK9eJ1uxjjEjBwMlun5I/5bqS
+RoM2XQXxY2N+SjAh83hVyd+EUg+T6TwvNAzKtp4YigRD0wgZmuuIyw8xN2cc7NDO
+/M2QIye95ewb2OaNrItkf8FCP+CNVbXLxoXeNBVuxSREmRt6SNPCWySBOm8cjwRZ
+1lpHYWUp3EnbA15xjRXBB4jVi7wzdrJO5WLzFa/s0INbUsKVeuF9slC5AjFG0rjs
+Kz+c2i0iPxxDWJ1Cc2mEfuFKsAY2R9RoQe/FRqkvZqvvWJ9vGh2wEE/fo78+pO+p
+lyK3T9DixQB1Tv2R8wYf74oF/sG/s1fcrbhaRFqap3UdMVLHtsyUeA/2mP6XgSYv
+dIgXpIRXBYfXZbkzHewhT8avRadehuZpDQxHoOE7GYI/LOCzORjNeLmw4DY/pHIR
+AQTfNxKbNAHq+kbe7HBs5KggpCIxtwneuD3ndIVEq4TxXwdUFktLG2ij/JFDGQ7b
+vU4LUyGW+7dpC8ZUTGmE
+=VtEb
+-----END PGP SIGNATURE-----
+
+--j6zkAHxOZJkiczrA--
