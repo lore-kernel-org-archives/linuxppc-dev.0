@@ -1,25 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x236.google.com (mail-lb0-x236.google.com
- [IPv6:2a00:1450:4010:c04::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A5461A003A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2014 06:58:21 +1000 (EST)
-Received: by mail-lb0-f182.google.com with SMTP id z11so3387504lbi.41
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2014 13:58:14 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1408308358-27494-1-git-send-email-geert@linux-m68k.org>
-References: <1408308358-27494-1-git-send-email-geert@linux-m68k.org>
-Date: Sun, 17 Aug 2014 22:58:14 +0200
-Message-ID: <CAMuHMdUrBYrHiwj=S-kWYEHb+1CX2VUgYmvJhj_aaC-8ChFL_g@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.17-rc1
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Linux-sh list <linux-sh@vger.kernel.org>
+Return-Path: <minchan@kernel.org>
+Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
+ by lists.ozlabs.org (Postfix) with ESMTP id 932331A003A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2014 10:17:35 +1000 (EST)
+From: Minchan Kim <minchan@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v15 4/7] powerpc: add pmd_[dirty|mkclean] for THP
+Date: Mon, 18 Aug 2014 09:17:53 +0900
+Message-Id: <1408321076-2231-5-git-send-email-minchan@kernel.org>
+In-Reply-To: <1408321076-2231-1-git-send-email-minchan@kernel.org>
+References: <1408321076-2231-1-git-send-email-minchan@kernel.org>
+Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
+ Minchan Kim <minchan@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-api@vger.kernel.org, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, zhangyanfei@cn.fujitsu.com,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 17, 2014 at 10:45 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> 16 regressions:
->   + /scratch/kisskb/src/arch/powerpc/include/asm/floppy.h: error: 'isa_bridge_pcidev' undeclared (first use in this function):  => 142:20
+MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
+overwrite of the contents since MADV_FREE syscall is called for
+THP page.
 
-powerpc-randconfig
+This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
+support.
 
->   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: 'AT_FDCWD' undeclared (first use in this function):  => 378
->   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: (Each undeclared identifier is reported only once:  => 378
->   + /scratch/kisskb/src/fs/hostfs/hostfs_user.c: error: for each function it appears in.):  => 378
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Minchan Kim <minchan@kernel.org>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-um-defconfig
-
->   + /scratch/kisskb/src/kernel/locking/mcs_spinlock.h: error: implicit declaration of function 'cpu_relax_lowlatency' [-Werror=implicit-function-declaration]:  => 87:2
-
-frv-defconfig (somehow the fix never made it past Linus' mbox)
-
->   + error: "flush_icache_range" [drivers/misc/lkdtm.ko] undefined!:  => N/A
-
-sh-allmodconfig (woohoo, this means it has reached the link phase!)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index eb9261024f51..c9a4bbe8e179 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+ 
+ #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
+ #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
++#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+ #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
++#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+ 
+-- 
+2.0.0
