@@ -1,31 +1,21 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-134.synserver.de (smtp-out-151.synserver.de
- [212.40.185.151])
- by lists.ozlabs.org (Postfix) with ESMTP id 46E1A1A05ED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 20:39:38 +1000 (EST)
-Message-ID: <53F32965.8000302@metafoo.de>
-Date: Tue, 19 Aug 2014 12:39:33 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B8441A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 21:25:25 +1000 (EST)
+Message-ID: <53F3340F.2020208@freescale.com>
+Date: Tue, 19 Aug 2014 14:25:03 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>,
- "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
-Subject: Re: [alsa-devel] [PATCH V1 1/3] ASoC: fsl: Kconfig: remove dependence
- of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA
-References: <cover.1408350626.git.shengjiu.wang@freescale.com>	<f30ba4e2c4eb6702fa40bd255036e6e9ad6eb47d.1408350626.git.shengjiu.wang@freescale.com>	<53F22F5E.2090601@metafoo.de>	<20140819074103.GA5806@audiosh1>	<d7b06608abcc4f098789f63cb9f36eef@BN1PR0301MB0609.namprd03.prod.outlook.com>	<20140819082108.GB5806@audiosh1>	<3a0c98ca698e4d38b3e92f339049b883@BN1PR0301MB0609.namprd03.prod.outlook.com>
- <s5hha184viu.wl-tiwai@suse.de>
-In-Reply-To: <s5hha184viu.wl-tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Fabio.Estevam@freescale.com" <Fabio.Estevam@freescale.com>,
- "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
- "shengjiu.wang@freescale.com" <shengjiu.wang@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "arnd@arndb.de" <arnd@arndb.de>,
- "shc_work@mail.ru" <shc_work@mail.ru>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>, "perex@perex.cz" <perex@perex.cz>,
- "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "xobs@kosagi.com" <xobs@kosagi.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/4] powerpc/fsl_msi: change the irq handler from chained
+ to normal
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Scott Wood <scottwood@freescale.com>,
+ Mihai Caraman <mihai.caraman@freescale.com>,
+ Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,69 +25,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2014 12:35 PM, Takashi Iwai wrote:
-> At Tue, 19 Aug 2014 09:00:06 +0000,
-> Li.Xiubo@freescale.com wrote:
->>
->> How about the following :
->>
->>
->> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
->> index 5ae777a..d42f18c 100644
->> --- a/sound/soc/fsl/Kconfig
->> +++ b/sound/soc/fsl/Kconfig
->> @@ -15,7 +15,7 @@ config SND_SOC_FSL_ASRC
->>   config SND_SOC_FSL_SAI
->>          tristate "Synchronous Audio Interface (SAI) module support"
->>          select REGMAP_MMIO
->> -       select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
->> +       select SND_SOC_IMX_PCM_DMA
->>          select SND_SOC_GENERIC_DMAENGINE_PCM
->>          help
->>            Say Y if you want to add Synchronous Audio Interface (SAI)
->> @@ -25,7 +25,7 @@ config SND_SOC_FSL_SAI
->>
->>   config SND_SOC_FSL_SSI
->>          tristate "Synchronous Serial Interface module support"
->> -       select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
->> +       select SND_SOC_IMX_PCM_DMA
->>          select SND_SOC_IMX_PCM_FIQ if SND_IMX_SOC != n && (MXC_TZIC || MXC_AVIC)
->>          select REGMAP_MMIO
->>          help
->> @@ -37,7 +37,7 @@ config SND_SOC_FSL_SSI
->>   config SND_SOC_FSL_SPDIF
->>          tristate "Sony/Philips Digital Interface module support"
->>          select REGMAP_MMIO
->> -       select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
->> +       select SND_SOC_IMX_PCM_DMA
->>          select SND_SOC_IMX_PCM_FIQ if SND_IMX_SOC != n && (MXC_TZIC || MXC_AVIC)
->>          help
->>            Say Y if you want to add Sony/Philips Digital Interface (SPDIF)
->> @@ -48,7 +48,7 @@ config SND_SOC_FSL_SPDIF
->>   config SND_SOC_FSL_ESAI
->>          tristate "Enhanced Serial Audio Interface (ESAI) module support"
->>          select REGMAP_MMIO
->> -       select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
->> +       select SND_SOC_IMX_PCM_DMA
->>          help
->>            Say Y if you want to add Enhanced Synchronous Audio Interface
->>            (ESAI) support for the Freescale CPUs.
->> @@ -76,6 +76,7 @@ config SND_SOC_FSL_ASOC_CARD
->>
->>   config SND_SOC_IMX_PCM_DMA
->>          tristate
->> +       depends on SND_IMX_SOC
->>          select SND_SOC_GENERIC_DMAENGINE_PCM
->>
->>   config SND_SOC_IMX_AUDMUX
->
-> I see the problem has been addressed, so JFYI: a reverse selection
-> doesn't resolve "depends on".  It's a known shortcoming.  That is, a
-> selected item can select further others, but cannot depend on others.
+As we do for other fsl-mpic related cascaded irqchips
+(e.g. error ints, mpic timers), use a normal irq handler
+for msi irqs too.
+This brings some advantages such as mask/unmask/ack/eoi
+and irq state taken care behind the scenes, kstats
+updates a.s.o plus access to features provided by mpic,
+such as affinity.
 
-The item will still be selected regardless of its dependencies, but Kconfig 
-will print a warning if one or more of the dependencies are not met along 
-with the dependency chain that causes the warning. So you'll have a clue why 
-things go wrong.
+Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c | 56 ++++++++++++++-----------------------------
+ 1 file changed, 18 insertions(+), 38 deletions(-)
 
-- Lars
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 05a0dd9..0cfc32a 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -18,6 +18,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/of_platform.h>
++#include <linux/interrupt.h>
+ #include <sysdev/fsl_soc.h>
+ #include <asm/prom.h>
+ #include <asm/hw_irq.h>
+@@ -241,40 +242,24 @@ out_free:
+ 	return rc;
+ }
+ 
+-static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
++static irqreturn_t fsl_msi_cascade(int irq, void *data)
+ {
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct irq_data *idata = irq_desc_get_irq_data(desc);
+ 	unsigned int cascade_irq;
+ 	struct fsl_msi *msi_data;
+ 	int msir_index = -1;
+ 	u32 msir_value = 0;
+ 	u32 intr_index;
+ 	u32 have_shift = 0;
+-	struct fsl_msi_cascade_data *cascade_data;
++	struct fsl_msi_cascade_data *cascade_data = data;
++	irqreturn_t ret = IRQ_NONE;
+ 
+-	cascade_data = irq_get_handler_data(irq);
+ 	msi_data = cascade_data->msi_data;
+ 
+-	raw_spin_lock(&desc->lock);
+-	if ((msi_data->feature &  FSL_PIC_IP_MASK) == FSL_PIC_IP_IPIC) {
+-		if (chip->irq_mask_ack)
+-			chip->irq_mask_ack(idata);
+-		else {
+-			chip->irq_mask(idata);
+-			chip->irq_ack(idata);
+-		}
+-	}
+-
+-	if (unlikely(irqd_irq_inprogress(idata)))
+-		goto unlock;
+-
+ 	msir_index = cascade_data->index;
+ 
+ 	if (msir_index >= NR_MSI_REG_MAX)
+ 		cascade_irq = NO_IRQ;
+ 
+-	irqd_set_chained_irq_inprogress(idata);
+ 	switch (msi_data->feature & FSL_PIC_IP_MASK) {
+ 	case FSL_PIC_IP_MPIC:
+ 		msir_value = fsl_msi_read(msi_data->msi_regs,
+@@ -303,25 +288,15 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 		cascade_irq = irq_linear_revmap(msi_data->irqhost,
+ 				msi_hwirq(msi_data, msir_index,
+ 					  intr_index + have_shift));
+-		if (cascade_irq != NO_IRQ)
++		if (cascade_irq != NO_IRQ) {
+ 			generic_handle_irq(cascade_irq);
++			ret = IRQ_HANDLED;
++		}
+ 		have_shift += intr_index + 1;
+ 		msir_value = msir_value >> (intr_index + 1);
+ 	}
+-	irqd_clr_chained_irq_inprogress(idata);
+ 
+-	switch (msi_data->feature & FSL_PIC_IP_MASK) {
+-	case FSL_PIC_IP_MPIC:
+-	case FSL_PIC_IP_VMPIC:
+-		chip->irq_eoi(idata);
+-		break;
+-	case FSL_PIC_IP_IPIC:
+-		if (!irqd_irq_disabled(idata) && chip->irq_unmask)
+-			chip->irq_unmask(idata);
+-		break;
+-	}
+-unlock:
+-	raw_spin_unlock(&desc->lock);
++	return ret;
+ }
+ 
+ static int fsl_of_msi_remove(struct platform_device *ofdev)
+@@ -336,9 +311,8 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
+ 			virq = msi->cascade_array[i]->virq;
+ 
+ 			BUG_ON(virq == NO_IRQ);
+-			BUG_ON(msi->cascade_array[i] !=
+-				irq_get_handler_data(virq));
+ 
++			free_irq(virq, msi->cascade_array[i]);
+ 			kfree(msi->cascade_array[i]);
+ 			irq_dispose_mapping(virq);
+ 		}
+@@ -358,7 +332,7 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
+ 			       int offset, int irq_index)
+ {
+ 	struct fsl_msi_cascade_data *cascade_data = NULL;
+-	int virt_msir, i;
++	int virt_msir, i, ret;
+ 
+ 	virt_msir = irq_of_parse_and_map(dev->dev.of_node, irq_index);
+ 	if (virt_msir == NO_IRQ) {
+@@ -377,8 +351,14 @@ static int fsl_msi_setup_hwirq(struct fsl_msi *msi, struct platform_device *dev,
+ 	cascade_data->msi_data = msi;
+ 	cascade_data->virq = virt_msir;
+ 	msi->cascade_array[irq_index] = cascade_data;
+-	irq_set_handler_data(virt_msir, cascade_data);
+-	irq_set_chained_handler(virt_msir, fsl_msi_cascade);
++
++	ret = request_irq(virt_msir, fsl_msi_cascade, 0,
++			  "fsl-msi-cascade", cascade_data);
++	if (ret) {
++		dev_err(&dev->dev, "failed to request_irq(%d), ret = %d\n",
++			virt_msir, ret);
++		return ret;
++	}
+ 
+ 	/* Release the hwirqs corresponding to this MSI register */
+ 	for (i = 0; i < IRQS_PER_MSI_REG; i++)
+-- 
+1.9.2
