@@ -1,21 +1,14 @@
 Return-Path: <bobby.prani@gmail.com>
-Received: from mail-yk0-x22e.google.com (mail-yk0-x22e.google.com
- [IPv6:2607:f8b0:4002:c07::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 226A81A001A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 07:01:07 +1000 (EST)
-Received: by mail-yk0-f174.google.com with SMTP id q9so5862629ykb.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 14:01:05 -0700 (PDT)
 From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linuxppc-dev@lists.ozlabs.org (open list:CELL BROADBAND EN...),
+ cbe-oss-dev@lists.ozlabs.org (open list:CELL BROADBAND EN...),
  linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powerpc: Fix build failure when MEMORY_HOTPLUG=y
-Date: Tue, 19 Aug 2014 17:01:05 -0400
-Message-Id: <1408482065-18457-1-git-send-email-bobby.prani@gmail.com>
-Cc: Andew Morton <akpm@linux-foundation.org>
+Subject: [RFC PATCH] powerpc: Make SPU_FS depend on SPARSEMEM
+Date: Tue, 19 Aug 2014 17:16:50 -0400
+Message-Id: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ARCH_ENABLE_MEMORY_HOTPLUG is enabled by default for powerpc. This causes build
-failures when SPARSEMEM=n as memory hotplug needs definition which are defined
-only when SPARSEMEM=y. The error is as follows:
+SPU_FS unconditionally enables MEMORY_HOTPLUG, which will fail to build if
+SPARSEMEM=n.
 
-arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
-arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: note: each undeclared identifier is reported only once for each function it appears in
-arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'pseries_remove_memblock':
-arch/powerpc/platforms/pseries/hotplug-memory.c:98:34: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
-make[2]: *** [arch/powerpc/platforms/pseries/hotplug-memory.o] Error 1
+Make SPU_FS depend on SPARSEMEM so that hotplug-memory.c does not fail to
+compile.
 
 Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-CC: Andew Morton <akpm@linux-foundation.org>
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/cell/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9c1aa77..da16ffe 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -383,6 +383,7 @@ config ARCH_CPU_PROBE_RELEASE
- 
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
-+	depends on SPARSEMEM
- 
- config ARCH_HAS_WALK_MEMORY
- 	def_bool y
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 9978f59..832872e 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -60,7 +60,7 @@ menu "Cell Broadband Engine options"
+ config SPU_FS
+ 	tristate "SPU file system"
+ 	default m
+-	depends on PPC_CELL
++	depends on PPC_CELL && SPARSEMEM
+ 	select SPU_BASE
+ 	select MEMORY_HOTPLUG
+ 	help
 -- 
 1.9.1
