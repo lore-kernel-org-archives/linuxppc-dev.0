@@ -1,21 +1,23 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-134.synserver.de (smtp-out-134.synserver.de
- [212.40.185.134])
- by lists.ozlabs.org (Postfix) with ESMTP id 71C111A015F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 18:46:15 +1000 (EST)
-Message-ID: <53F30E90.8080902@metafoo.de>
-Date: Tue, 19 Aug 2014 10:45:04 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
-MIME-Version: 1.0
-To: Shengjiu Wang <shengjiu.wang@freescale.com>
-Subject: Re: [alsa-devel] [PATCH V1 1/3] ASoC: fsl: Kconfig: remove dependence
- of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA3661A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 18:55:47 +1000 (EST)
+Date: Tue, 19 Aug 2014 16:55:34 +0800
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [alsa-devel] [PATCH V1 1/3] ASoC: fsl: Kconfig: remove
+ dependence of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA
+Message-ID: <20140819085533.GC5806@audiosh1>
 References: <cover.1408350626.git.shengjiu.wang@freescale.com>
  <f30ba4e2c4eb6702fa40bd255036e6e9ad6eb47d.1408350626.git.shengjiu.wang@freescale.com>
  <53F22F5E.2090601@metafoo.de> <20140819074103.GA5806@audiosh1>
- <53F30C91.7080700@metafoo.de>
-In-Reply-To: <53F30C91.7080700@metafoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <53F30C91.7080700@metafoo.de> <53F30E90.8080902@metafoo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <53F30E90.8080902@metafoo.de>
 Cc: fabio.estevam@freescale.com, sfr@canb.auug.org.au,
  alsa-devel@alsa-project.org, arnd@arndb.de, shc_work@mail.ru, tiwai@suse.de,
  linux-kernel@vger.kernel.org, broonie@kernel.org, timur@tabi.org,
@@ -30,54 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2014 10:36 AM, Lars-Peter Clausen wrote:
-> On 08/19/2014 09:41 AM, Shengjiu Wang wrote:
->> On Mon, Aug 18, 2014 at 06:52:46PM +0200, Lars-Peter Clausen wrote:
->>> On 08/18/2014 10:38 AM, Shengjiu Wang wrote:
->>>> Build kernel with SND_SOC_IMC_PCM_DMA=m && SND_IMX_SOC=n leads the
->>>> following
->>>> error:
->>>>
->>>>     sound/built-in.o: In function `fsl_sai_probe':
->>>>>> fsl_sai.c:(.text+0x5f662): undefined reference to `imx_pcm_dma_init'
->>>>     sound/built-in.o: In function `fsl_esai_probe':
->>>>>> fsl_esai.c:(.text+0x6044b): undefined reference to `imx_pcm_dma_init'
->>>>
->>>> Most cpu driver in soc/fsl has use the function 'imx_pcm_dma_init' which is
->>>> defined in imx-pcm-dma.c, so need to select SND_SOC_IMX_PCM_DMA, but it
->>>> depends
->>>> on SND_IMX_SOC, if SND_IMX_SOC=n, then SND_SOC_IMX_PCM_DMA will not be
->>>> selected.
->>>> So remove the dependence of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA.
->>>>
->>>> Reported-by: kbuild test robot <fengguang.wu@intel.com>
->>>> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
->>>
->>> Those if conditions where just added[1] by Arnd to avoid other build
->>> failures. So just removing them again makes little sense.
->>>
->>> As far as I can see imx_pcm_dma_init() should be stubbed out when
->>> SND_SOC_IMX_PCM_DMA is not selected. So what's going on here?
->>>
->>> [1]
->>> http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff40260f79dc0436604452bccd449bffd25ebafb
->>>
->>>
->> Lars-Peter Clausen & Arnd
->>
->> The purpose of Arnd's patch is same with me, which is to resolve the build
->> error when SND_SOC_IMX_PCM_DMA=m & SND_SOC_FSL_SSI/SAI/ESAI/SPDIF=y, the
->> error is "undefined reference to `imx_pcm_dma_init'".
->> But Arnd's patch didn't involve this situation that SND_IMX_SOC=n &
->> SND_SOC_IMX_PCM_DMA=m.
+On Tue, Aug 19, 2014 at 10:45:04AM +0200, Lars-Peter Clausen wrote:
+> On 08/19/2014 10:36 AM, Lars-Peter Clausen wrote:
+> >On 08/19/2014 09:41 AM, Shengjiu Wang wrote:
+> >>On Mon, Aug 18, 2014 at 06:52:46PM +0200, Lars-Peter Clausen wrote:
+> >>>On 08/18/2014 10:38 AM, Shengjiu Wang wrote:
+> >>>>Build kernel with SND_SOC_IMC_PCM_DMA=m && SND_IMX_SOC=n leads the
+> >>>>following
+> >>>>error:
+> >>>>
+> >>>>    sound/built-in.o: In function `fsl_sai_probe':
+> >>>>>>fsl_sai.c:(.text+0x5f662): undefined reference to `imx_pcm_dma_init'
+> >>>>    sound/built-in.o: In function `fsl_esai_probe':
+> >>>>>>fsl_esai.c:(.text+0x6044b): undefined reference to `imx_pcm_dma_init'
+> >>>>
+> >>>>Most cpu driver in soc/fsl has use the function 'imx_pcm_dma_init' which is
+> >>>>defined in imx-pcm-dma.c, so need to select SND_SOC_IMX_PCM_DMA, but it
+> >>>>depends
+> >>>>on SND_IMX_SOC, if SND_IMX_SOC=n, then SND_SOC_IMX_PCM_DMA will not be
+> >>>>selected.
+> >>>>So remove the dependence of SND_IMX_SOC for SND_SOC_IMX_PCM_DMA.
+> >>>>
+> >>>>Reported-by: kbuild test robot <fengguang.wu@intel.com>
+> >>>>Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+> >>>
+> >>>Those if conditions where just added[1] by Arnd to avoid other build
+> >>>failures. So just removing them again makes little sense.
+> >>>
+> >>>As far as I can see imx_pcm_dma_init() should be stubbed out when
+> >>>SND_SOC_IMX_PCM_DMA is not selected. So what's going on here?
+> >>>
+> >>>[1]
+> >>>http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ff40260f79dc0436604452bccd449bffd25ebafb
+> >>>
+> >>>
+> >>Lars-Peter Clausen & Arnd
+> >>
+> >>The purpose of Arnd's patch is same with me, which is to resolve the build
+> >>error when SND_SOC_IMX_PCM_DMA=m & SND_SOC_FSL_SSI/SAI/ESAI/SPDIF=y, the
+> >>error is "undefined reference to `imx_pcm_dma_init'".
+> >>But Arnd's patch didn't involve this situation that SND_IMX_SOC=n &
+> >>SND_SOC_IMX_PCM_DMA=m.
+> >
+> >Having SND_SOC_IMX_PCM_DMA selected if SND_IMX_SOC is not selected makes no
+> >sense. I think the proper fix is to find out why it is selected and make
+> >sure that it is not selected when SND_IMX_SOC is not selected.
+> 
+> 
+> I guess the issue happens if SND_SOC_FSL_ASOC_CARD=m and
+> SND_SOC_FSL_{ESAI,SAI,SSI}=y. In this case the fix is simply to drop
+> the select SND_SOC_IMX_PCM_DMA from SND_SOC_FSL_ASOC_CARD.
+> 
+> - Lars
 >
-> Having SND_SOC_IMX_PCM_DMA selected if SND_IMX_SOC is not selected makes no
-> sense. I think the proper fix is to find out why it is selected and make
-> sure that it is not selected when SND_IMX_SOC is not selected.
 
+Yes, you are right. Thanks. I will send another patch.
 
-I guess the issue happens if SND_SOC_FSL_ASOC_CARD=m and 
-SND_SOC_FSL_{ESAI,SAI,SSI}=y. In this case the fix is simply to drop the 
-select SND_SOC_IMX_PCM_DMA from SND_SOC_FSL_ASOC_CARD.
-
-- Lars
+best regards
+wang shengjiu 
