@@ -1,17 +1,16 @@
 Return-Path: <Laurentiu.Tudor@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
+ (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3462C1A0BF9
+ by lists.ozlabs.org (Postfix) with ESMTPS id A46361A15F7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 21:25:50 +1000 (EST)
-Message-ID: <53F33411.2090209@freescale.com>
-Date: Tue, 19 Aug 2014 14:25:05 +0300
+Message-ID: <53F33413.3050009@freescale.com>
+Date: Tue, 19 Aug 2014 14:25:07 +0300
 From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/4] powerpc/fsl_msi: show more meaningful names in
- /proc/interrupts
+Subject: [PATCH 4/4] powerpc/fsl_msi: spread msi ints across different MSIRs
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Scott Wood <scottwood@freescale.com>,
  Mihai Caraman <mihai.caraman@freescale.com>,
@@ -25,82 +24,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rename the irq controller associated with a MSI
-interrupt to fsl-msi-<V>, where <V> is the virq
-of the cascade irq backing up this MSI interrupt.
-This way, one can set the affinity of a MSI
-through the cascade irq associated with said MSI
-interrupt.
-Given this example /proc/interrupts snippet:
-
-           CPU0       CPU1       CPU2       CPU3
- 16:          0          0          0          0   OpenPIC    16 Edge      mpic-error-int
- 17:          0          4          0          0  fsl-msi-224   0 Edge      eth0-rx-0
- 18:          0          5          0          0  fsl-msi-225   1 Edge      eth0-tx-0
- 19:          0          2          0          0  fsl-msi-226   2 Edge      eth0
- [...]
-224:          0         11          0          0   OpenPIC   224 Edge      fsl-msi-cascade
-225:          0          0          0          0   OpenPIC   225 Edge      fsl-msi-cascade
-226:          0          0          0          0   OpenPIC   226 Edge      fsl-msi-cascade
- [...]
-
-To change the affinity of MSI interrupt 17
-(having the irq controller named "fsl-msi-224")
-instead of writing /proc/irq/17/smp_affinity, use
-the associated MSI cascade irq, in this case,
-interrupt 224, e.g.:
-
-   echo 6 > /proc/irq/224/smp_affinity
-
-Note that a MSI cascade irq covers several MSI
-interrupts, so changing the affinity on the
-cascade will impact all of the associated MSI
-interrupts.
+Allocate msis such that each time a new
+interrupt is requested, the SRS (MSIR
+register select) to be used is allocated
+in a round-robin fashion.
+The end result is that the msi interrupts
+will be spread across distinct MSIRs with
+the main benefit that now users can set
+affinity to each msi int through the mpic
+irq backing up the MSIR register.
+This is achieved with the help of a newly
+introduced msi bitmap api that allows
+specifying the starting point when
+searching for a free msi interrupt.
 
 Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
 Cc: Scott Wood <scottwood@freescale.com>
 Cc: Mihai Caraman <mihai.caraman@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_msi.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/msi_bitmap.h |  2 ++
+ arch/powerpc/sysdev/fsl_msi.c         | 31 ++++++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/fsl_msi.h         |  5 +++++
+ arch/powerpc/sysdev/msi_bitmap.c      | 25 +++++++++++++++----------
+ 4 files changed, 52 insertions(+), 11 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include/asm/msi_bitmap.h
+index 97ac3f4..96c2f95 100644
+--- a/arch/powerpc/include/asm/msi_bitmap.h
++++ b/arch/powerpc/include/asm/msi_bitmap.h
+@@ -25,6 +25,8 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num);
+ void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
+ 			    unsigned int num);
+ void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq);
++int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
++					int num);
+ 
+ int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp);
+ 
 diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 0cfc32a..e2ee226 100644
+index e2ee226..a0682fb 100644
 --- a/arch/powerpc/sysdev/fsl_msi.c
 +++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -19,6 +19,7 @@
- #include <linux/slab.h>
- #include <linux/of_platform.h>
- #include <linux/interrupt.h>
-+#include <linux/seq_file.h>
- #include <sysdev/fsl_soc.h>
- #include <asm/prom.h>
- #include <asm/hw_irq.h>
-@@ -67,11 +68,24 @@ static void fsl_msi_end_irq(struct irq_data *d)
- {
- }
+@@ -213,6 +213,8 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		 * available interrupt.
+ 		 */
+ 		list_for_each_entry(msi_data, &msi_head, list) {
++			int off;
++
+ 			/*
+ 			 * If the PCI node has an fsl,msi property, then we
+ 			 * restrict our search to the corresponding MSI node.
+@@ -224,7 +226,28 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 			if (phandle && (phandle != msi_data->phandle))
+ 				continue;
  
-+static void fsl_msi_print_chip(struct irq_data *irqd, struct seq_file *p)
-+{
-+	struct fsl_msi *msi_data = irqd->domain->host_data;
-+	irq_hw_number_t hwirq = irqd_to_hwirq(irqd);
-+	int cascade_virq, srs;
+-			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
++			/*
++			 * Allocate the msi message so that it fits on distinct
++			 * MSIR registers. Obviously, since MSIR registers are
++			 * limited they will overlap at one point.
++			 *
++			 * Due to the format of the newly introduced MSIIR1 in
++			 * mpic 4.3, consecutive msi message values map to
++			 * distinct MSIRs, thus distinct msi irq cascades, so
++			 * nothing special needs to be done in this case.
++			 * On older mpic versions the chose distinct SRS
++			 * values by aligning the msi message value to the
++			 * SRS field shift.
++			 */
++			if (msi_data->feature & FSL_PIC_FTR_MPIC_4_3) {
++				off = 0;
++			} else {
++				off = (atomic_inc_return(&msi_data->msi_alloc_cnt) %
++					msi_data->msir_num);
++				off *= (1 << msi_data->srs_shift);
++			}
++			hwirq = msi_bitmap_alloc_hwirqs_from_offset(
++						&msi_data->bitmap, off, 1);
+ 			if (hwirq >= 0)
+ 				break;
+ 		}
+@@ -464,12 +487,17 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ 		goto error_out;
+ 	}
+ 
++	atomic_set(&msi->msi_alloc_cnt, -1);
 +
-+	srs = (hwirq >> msi_data->srs_shift) & MSI_SRS_MASK;
-+	cascade_virq = msi_data->cascade_array[srs]->virq;
+ 	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
+ 
+ 	if (of_device_is_compatible(dev->dev.of_node, "fsl,mpic-msi-v4.3") ||
+ 	    of_device_is_compatible(dev->dev.of_node, "fsl,vmpic-msi-v4.3")) {
+ 		msi->srs_shift = MSIIR1_SRS_SHIFT;
+ 		msi->ibs_shift = MSIIR1_IBS_SHIFT;
++		msi->msir_num = NR_MSI_REG_MSIIR1;
++		msi->feature |= FSL_PIC_FTR_MPIC_4_3;
 +
-+	seq_printf(p, " fsl-msi-%d", cascade_virq);
+ 		if (p)
+ 			dev_warn(&dev->dev, "%s: dose not support msi-available-ranges property\n",
+ 				__func__);
+@@ -487,6 +515,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+ 
+ 		msi->srs_shift = MSIIR_SRS_SHIFT;
+ 		msi->ibs_shift = MSIIR_IBS_SHIFT;
++		msi->msir_num = NR_MSI_REG_MSIIR;
+ 
+ 		if (p && len % (2 * sizeof(u32)) != 0) {
+ 			dev_err(&dev->dev, "%s: Malformed msi-available-ranges property\n",
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index 420cfcb..50ec4b0 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/of.h>
+ #include <asm/msi_bitmap.h>
++#include <asm/atomic.h>
+ 
+ #define NR_MSI_REG_MSIIR	8  /* MSIIR can index 8 MSI registers */
+ #define NR_MSI_REG_MSIIR1	16 /* MSIIR1 can index 16 MSI registers */
+@@ -27,6 +28,8 @@
+ #define FSL_PIC_IP_IPIC   0x00000002
+ #define FSL_PIC_IP_VMPIC  0x00000003
+ 
++#define FSL_PIC_FTR_MPIC_4_3 0x00000010
++
+ struct fsl_msi_cascade_data;
+ 
+ struct fsl_msi {
+@@ -37,6 +40,8 @@ struct fsl_msi {
+ 	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
+ 	u32 ibs_shift; /* Shift of interrupt bit select */
+ 	u32 srs_shift; /* Shift of the shared interrupt register select */
++	u32 msir_num; /* Number of available MSIR regs */
++	atomic_t msi_alloc_cnt; /* Counter for MSI hwirq allocations */
+ 	void __iomem *msi_regs;
+ 	u32 feature;
+ 	struct fsl_msi_cascade_data *cascade_array[NR_MSI_REG_MAX];
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index 2ff6302..8b7d8fc 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -14,23 +14,28 @@
+ #include <asm/msi_bitmap.h>
+ #include <asm/setup.h>
+ 
+-int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
++int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
++					int num)
+ {
+ 	unsigned long flags;
+-	int offset, order = get_count_order(num);
++	int index;
++	int order = get_count_order(num);
+ 
+ 	spin_lock_irqsave(&bmp->lock, flags);
+-	/*
+-	 * This is fast, but stricter than we need. We might want to add
+-	 * a fallback routine which does a linear search with no alignment.
+-	 */
+-	offset = bitmap_find_free_region(bmp->bitmap, bmp->irq_count, order);
++	index = bitmap_find_next_zero_area(bmp->bitmap, bmp->irq_count,
++					   offset, num, (1 << order) - 1);
++	bitmap_set(bmp->bitmap, index, num);
+ 	spin_unlock_irqrestore(&bmp->lock, flags);
+ 
+-	pr_debug("msi_bitmap: allocated 0x%x (2^%d) at offset 0x%x\n",
+-		 num, order, offset);
++	pr_debug("msi_bitmap: found %d free bits starting from offset %d at index %d\n",
++		 num, offset, index);
+ 
+-	return offset;
++	return index;
 +}
 +
-+
- static struct irq_chip fsl_msi_chip = {
- 	.irq_mask	= mask_msi_irq,
- 	.irq_unmask	= unmask_msi_irq,
- 	.irq_ack	= fsl_msi_end_irq,
--	.name		= "FSL-MSI",
-+	.irq_print_chip = fsl_msi_print_chip,
- };
++int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
++{
++	return msi_bitmap_alloc_hwirqs_from_offset(bmp, 0, num);
+ }
  
- static int fsl_msi_host_map(struct irq_domain *h, unsigned int virq,
+ void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
 -- 
 1.9.2
