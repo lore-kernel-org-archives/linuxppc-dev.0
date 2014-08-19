@@ -1,20 +1,26 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A46361A15F7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 21:25:50 +1000 (EST)
-Message-ID: <53F33413.3050009@freescale.com>
-Date: Tue, 19 Aug 2014 14:25:07 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BB821A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 02:20:01 +1000 (EST)
+Date: Tue, 19 Aug 2014 11:12:17 -0500
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
+Message-ID: <20140819161217.GK24407@sirena.org.uk>
+References: <bfed4dfd3cf1ef134dac1f114f3d2b8cedf55c68.1408440952.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] powerpc/fsl_msi: spread msi ints across different MSIRs
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Scott Wood <scottwood@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>,
- Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="zPXeIxDajdrcF2en"
+In-Reply-To: <bfed4dfd3cf1ef134dac1f114f3d2b8cedf55c68.1408440952.git.shengjiu.wang@freescale.com>
+Subject: Re: [PATCH V2] ASoC: fsl-asoc-card: move 'config
+ SND_SOC_FSL_ASOC_CARD' to 'if SND_IMX_SOC'
+Cc: fabio.estevam@freescale.com, sfr@canb.auug.org.au,
+ alsa-devel@alsa-project.org, timur@tabi.org, arnd@arndb.de, shc_work@mail.ru,
+ tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
+ perex@perex.cz, nicoleotsuka@gmail.com, Li.Xiubo@freescale.com,
+ xobs@kosagi.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,184 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allocate msis such that each time a new
-interrupt is requested, the SRS (MSIR
-register select) to be used is allocated
-in a round-robin fashion.
-The end result is that the msi interrupts
-will be spread across distinct MSIRs with
-the main benefit that now users can set
-affinity to each msi int through the mpic
-irq backing up the MSIR register.
-This is achieved with the help of a newly
-introduced msi bitmap api that allows
-specifying the starting point when
-searching for a free msi interrupt.
 
-Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/include/asm/msi_bitmap.h |  2 ++
- arch/powerpc/sysdev/fsl_msi.c         | 31 ++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_msi.h         |  5 +++++
- arch/powerpc/sysdev/msi_bitmap.c      | 25 +++++++++++++++----------
- 4 files changed, 52 insertions(+), 11 deletions(-)
+--zPXeIxDajdrcF2en
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include/asm/msi_bitmap.h
-index 97ac3f4..96c2f95 100644
---- a/arch/powerpc/include/asm/msi_bitmap.h
-+++ b/arch/powerpc/include/asm/msi_bitmap.h
-@@ -25,6 +25,8 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num);
- void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
- 			    unsigned int num);
- void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq);
-+int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
-+					int num);
- 
- int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp);
- 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index e2ee226..a0682fb 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -213,6 +213,8 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 		 * available interrupt.
- 		 */
- 		list_for_each_entry(msi_data, &msi_head, list) {
-+			int off;
-+
- 			/*
- 			 * If the PCI node has an fsl,msi property, then we
- 			 * restrict our search to the corresponding MSI node.
-@@ -224,7 +226,28 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 			if (phandle && (phandle != msi_data->phandle))
- 				continue;
- 
--			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
-+			/*
-+			 * Allocate the msi message so that it fits on distinct
-+			 * MSIR registers. Obviously, since MSIR registers are
-+			 * limited they will overlap at one point.
-+			 *
-+			 * Due to the format of the newly introduced MSIIR1 in
-+			 * mpic 4.3, consecutive msi message values map to
-+			 * distinct MSIRs, thus distinct msi irq cascades, so
-+			 * nothing special needs to be done in this case.
-+			 * On older mpic versions the chose distinct SRS
-+			 * values by aligning the msi message value to the
-+			 * SRS field shift.
-+			 */
-+			if (msi_data->feature & FSL_PIC_FTR_MPIC_4_3) {
-+				off = 0;
-+			} else {
-+				off = (atomic_inc_return(&msi_data->msi_alloc_cnt) %
-+					msi_data->msir_num);
-+				off *= (1 << msi_data->srs_shift);
-+			}
-+			hwirq = msi_bitmap_alloc_hwirqs_from_offset(
-+						&msi_data->bitmap, off, 1);
- 			if (hwirq >= 0)
- 				break;
- 		}
-@@ -464,12 +487,17 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 		goto error_out;
- 	}
- 
-+	atomic_set(&msi->msi_alloc_cnt, -1);
-+
- 	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
- 
- 	if (of_device_is_compatible(dev->dev.of_node, "fsl,mpic-msi-v4.3") ||
- 	    of_device_is_compatible(dev->dev.of_node, "fsl,vmpic-msi-v4.3")) {
- 		msi->srs_shift = MSIIR1_SRS_SHIFT;
- 		msi->ibs_shift = MSIIR1_IBS_SHIFT;
-+		msi->msir_num = NR_MSI_REG_MSIIR1;
-+		msi->feature |= FSL_PIC_FTR_MPIC_4_3;
-+
- 		if (p)
- 			dev_warn(&dev->dev, "%s: dose not support msi-available-ranges property\n",
- 				__func__);
-@@ -487,6 +515,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 
- 		msi->srs_shift = MSIIR_SRS_SHIFT;
- 		msi->ibs_shift = MSIIR_IBS_SHIFT;
-+		msi->msir_num = NR_MSI_REG_MSIIR;
- 
- 		if (p && len % (2 * sizeof(u32)) != 0) {
- 			dev_err(&dev->dev, "%s: Malformed msi-available-ranges property\n",
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 420cfcb..50ec4b0 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -15,6 +15,7 @@
- 
- #include <linux/of.h>
- #include <asm/msi_bitmap.h>
-+#include <asm/atomic.h>
- 
- #define NR_MSI_REG_MSIIR	8  /* MSIIR can index 8 MSI registers */
- #define NR_MSI_REG_MSIIR1	16 /* MSIIR1 can index 16 MSI registers */
-@@ -27,6 +28,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
- 
-+#define FSL_PIC_FTR_MPIC_4_3 0x00000010
-+
- struct fsl_msi_cascade_data;
- 
- struct fsl_msi {
-@@ -37,6 +40,8 @@ struct fsl_msi {
- 	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
- 	u32 ibs_shift; /* Shift of interrupt bit select */
- 	u32 srs_shift; /* Shift of the shared interrupt register select */
-+	u32 msir_num; /* Number of available MSIR regs */
-+	atomic_t msi_alloc_cnt; /* Counter for MSI hwirq allocations */
- 	void __iomem *msi_regs;
- 	u32 feature;
- 	struct fsl_msi_cascade_data *cascade_array[NR_MSI_REG_MAX];
-diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-index 2ff6302..8b7d8fc 100644
---- a/arch/powerpc/sysdev/msi_bitmap.c
-+++ b/arch/powerpc/sysdev/msi_bitmap.c
-@@ -14,23 +14,28 @@
- #include <asm/msi_bitmap.h>
- #include <asm/setup.h>
- 
--int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
-+int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
-+					int num)
- {
- 	unsigned long flags;
--	int offset, order = get_count_order(num);
-+	int index;
-+	int order = get_count_order(num);
- 
- 	spin_lock_irqsave(&bmp->lock, flags);
--	/*
--	 * This is fast, but stricter than we need. We might want to add
--	 * a fallback routine which does a linear search with no alignment.
--	 */
--	offset = bitmap_find_free_region(bmp->bitmap, bmp->irq_count, order);
-+	index = bitmap_find_next_zero_area(bmp->bitmap, bmp->irq_count,
-+					   offset, num, (1 << order) - 1);
-+	bitmap_set(bmp->bitmap, index, num);
- 	spin_unlock_irqrestore(&bmp->lock, flags);
- 
--	pr_debug("msi_bitmap: allocated 0x%x (2^%d) at offset 0x%x\n",
--		 num, order, offset);
-+	pr_debug("msi_bitmap: found %d free bits starting from offset %d at index %d\n",
-+		 num, offset, index);
- 
--	return offset;
-+	return index;
-+}
-+
-+int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
-+{
-+	return msi_bitmap_alloc_hwirqs_from_offset(bmp, 0, num);
- }
- 
- void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
--- 
-1.9.2
+On Tue, Aug 19, 2014 at 05:36:41PM +0800, Shengjiu Wang wrote:
+> Build kernel with SND_SOC_FSL_ASOC_CARD=m && SND_SOC_FSL_{SSI,SAI,ESAI}=y
+> leads the following error:
+
+Applied, thanks.
+
+--zPXeIxDajdrcF2en
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT83deAAoJELSic+t+oim9uToP/i3y1fRfHj1rQn0Iv+LEJd91
+MjSO6dPrx5Bvb7AOzfSNTYpu2i3vnHiDfb/tu9/316WllJFZPf96rECTqJJAYnT0
+63BM1UfkYtSR3nXB1EEa9vpKc2GJbEZthz3ONRiB8UGVmH0RHNhql6ErGig09TgZ
+v6EylmP6t18LhL9rFzzZK0CpjaLAKADk59rTCqIYU+tyh3YEtQwAnqBOzsVtCfwU
+SemBNPD3SkOoq8zoi1Pc9Ohc2pOgws2BSMOZDURZiU2vqNASJUIrb3Tgq7yiFqFA
+Pf6xVBBZ0b3wS4I8FcWzyOnSs8PWGPTHQfUbeCqDmD1IBH6BYpTnzwS114PXZaNk
+aThJnaYVEzhR5LZGCbfpfNMeDyKEXCOk99R7H7UCowBEAWBdzziZ6vz00sDLrACR
+Z8pe4s0EqklPtYYBNqMu/OMR5Q5R5wJIGIrr0LiEZFs4O7vZ0rfDaqOw5N+f7VQ4
+16vL4aTPIR3g2F4ehzUFldgL/Q5LdQlaTO9cGJ+x4B1Suim72Wboe0OywIeUlJXy
+Sq7c+MHPHiEw/PnXrnhHvjjBV+vFx8UfR0wLyVge9QILofkccz4SiEzu9CClNDBN
+O6TbXLcMnB3OsakT+qHe16dk5PuMKfIC+XUgA9DrXlKLgHt8yc+eJUQLJcMBGrmO
+ZtHiCPbS2Qz3htw0LZrY
+=V7E/
+-----END PGP SIGNATURE-----
+
+--zPXeIxDajdrcF2en--
