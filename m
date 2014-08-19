@@ -1,16 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id DCD0A1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 19:21:15 +1000 (EST)
-Message-ID: <53F31707.4040300@c-s.fr>
-Date: Tue, 19 Aug 2014 11:21:11 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6DECF1A0877
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 19:36:59 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
+ <tiwai@suse.de>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
+ <shc_work@mail.ru>, <fabio.estevam@freescale.com>,
+ <shengjiu.wang@freescale.com>, <xobs@kosagi.com>, <arnd@arndb.de>,
+ <sfr@canb.auug.org.au>, <timur@tabi.org>
+Subject: [PATCH V2] ASoC: fsl-asoc-card: move 'config SND_SOC_FSL_ASOC_CARD'
+ to 'if SND_IMX_SOC'
+Date: Tue, 19 Aug 2014 17:36:41 +0800
+Message-ID: <bfed4dfd3cf1ef134dac1f114f3d2b8cedf55c68.1408440952.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-spi@vger.kernel.org
-Subject: Linux 3.16: all my drivers on SPI bus report WARNING: at
- drivers/base/dd.c:286
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,69 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since Linux 3.16, for all drivers tied to SPI bus, I get the following 
-warning on a PowerPC 8xx.
-It doesn't happen with Linux 3.15
+Build kernel with SND_SOC_FSL_ASOC_CARD=m && SND_SOC_FSL_{SSI,SAI,ESAI}=y
+leads the following error:
 
-What can be the reason / what should I look at ?
+   sound/built-in.o: In function `fsl_sai_probe':
+>> fsl_sai.c:(.text+0x5f662): undefined reference to `imx_pcm_dma_init'
+   sound/built-in.o: In function `fsl_esai_probe':
+>> fsl_esai.c:(.text+0x6044b): undefined reference to `imx_pcm_dma_init'
 
-[    3.086957] device: 'spi32766.1': device_add
-[    3.087179] bus: 'spi': add device spi32766.1
-[    3.087653] bus: 'spi': driver_probe_device: matched device 
-spi32766.1 with driver lm70
-[    3.087743] bus: 'spi': really_probe: probing driver lm70 with device 
-spi32766.1
-[    3.088014] ------------[ cut here ]------------
-[    3.092348] WARNING: at drivers/base/dd.c:286
-[    3.096637] Modules linked in:
-[    3.099697] CPU: 0 PID: 25 Comm: kworker/u2:1 Tainted: G W     
-3.16.1-s3k-drv-999-svn5771_knld-999 #158
-[    3.109610] Workqueue: deferwq deferred_probe_work_func
-[    3.114736] task: c787f020 ti: c790c000 task.ti: c790c000
-[    3.120062] NIP: c01df158 LR: c01df144 CTR: 00000000
-[    3.124983] REGS: c790db30 TRAP: 0700   Tainted: G        W 
-(3.16.1-s3k-drv-999-svn5771_knld-999)
-[    3.134162] MSR: 00029032 <EE,ME,IR,DR,RI>  CR: 22002082 XER: 20000000
-[    3.140703]
-[    3.140703] GPR00: 00000001 c790dbe0 c787f020 00000044 00000054 
-00000308 c056da0e 20737069
-[    3.140703] GPR08: 33323736 000ebfe0 00000308 000ebfdf 22002082 
-00000000 c046c5a0 c046c608
-[    3.140703] GPR16: c046c614 c046c620 c046c62c c046c638 c046c648 
-c046c654 c046c68c c046c6c4
-[    3.140703] GPR24: 00000000 00000000 00000003 c0401aa0 c0596638 
-c059662c c054e7a8 c7996800
-[    3.170102] NIP [c01df158] driver_probe_device+0xf8/0x334
-[    3.175431] LR [c01df144] driver_probe_device+0xe4/0x334
-[    3.180633] Call Trace:
-[    3.183093] [c790dbe0] [c01df144] driver_probe_device+0xe4/0x334 
-(unreliable)
-[    3.190147] [c790dc10] [c01dd15c] bus_for_each_drv+0x7c/0xc0
-[    3.195741] [c790dc40] [c01df5fc] device_attach+0xcc/0xf8
-[    3.201076] [c790dc60] [c01dd6d4] bus_probe_device+0xb4/0xc4
-[    3.206666] [c790dc80] [c01db9f8] device_add+0x270/0x564
-[    3.211923] [c790dcc0] [c0219e84] spi_add_device+0xc0/0x190
-[    3.217427] [c790dce0] [c021a79c] spi_register_master+0x720/0x834
-[    3.223455] [c790dd40] [c021cb48] of_fsl_spi_probe+0x55c/0x614
-[    3.229234] [c790dda0] [c01e0d2c] platform_drv_probe+0x30/0x74
-[    3.234987] [c790ddb0] [c01df18c] driver_probe_device+0x12c/0x334
-[    3.241008] [c790dde0] [c01dd15c] bus_for_each_drv+0x7c/0xc0
-[    3.246602] [c790de10] [c01df5fc] device_attach+0xcc/0xf8
-[    3.251937] [c790de30] [c01dd6d4] bus_probe_device+0xb4/0xc4
-[    3.257536] [c790de50] [c01de9d8] deferred_probe_work_func+0x98/0xe0
-[    3.263816] [c790de70] [c00305b8] process_one_work+0x18c/0x440
-[    3.269577] [c790dea0] [c0030a00] worker_thread+0x194/0x67c
-[    3.275105] [c790def0] [c0039198] kthread+0xd0/0xe4
-[    3.279911] [c790df40] [c000c6d0] ret_from_kernel_thread+0x5c/0x64
-[    3.285970] Instruction dump:
-[    3.288900] 80de0000 419e01d0 3b7b0038 3c60c046 7f65db78 38635264 
-48211b99 813f00a0
-[    3.296559] 381f00a0 7d290278 3169ffff 7c0b4910 <0f000000> 93df0044 
-7fe3fb78 4bfffd4d
-[    3.304401] ---[ end trace c75d3461bf9e2961 ]---
-[    3.309598] device: 'hwmon1': device_add
-[    3.310246] driver: 'lm70': driver_bound: bound to device 'spi32766.1'
-[    3.310342] bus: 'spi': really_probe: bound device spi32766.1 to 
-driver lm70
+The config SND_SOC_FSL_ASOC_CARD is for IMX SOC, So move it under condition
+of 'if SND_IMX_SOC'.
 
-Christophe
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+---
+ sound/soc/fsl/Kconfig |   34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 417ff70..9348fef 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -58,23 +58,6 @@ config SND_SOC_FSL_ESAI
+ config SND_SOC_FSL_UTILS
+ 	tristate
+ 
+-config SND_SOC_FSL_ASOC_CARD
+-	tristate "Generic ASoC Sound Card with ASRC support"
+-	depends on OF && I2C
+-	select SND_SOC_IMX_AUDMUX
+-	select SND_SOC_IMX_PCM_DMA
+-	select SND_SOC_FSL_ESAI
+-	select SND_SOC_FSL_SAI
+-	select SND_SOC_FSL_SSI
+-	select SND_SOC_CS42XX8_I2C
+-	select SND_SOC_SGTL5000
+-	select SND_SOC_WM8962
+-	help
+-	 ALSA SoC Audio support with ASRC feature for Freescale SoCs that have
+-	 ESAI/SAI/SSI and connect with external CODECs such as WM8962, CS42888
+-	 and SGTL5000.
+-	 Say Y if you want to add support for Freescale Generic ASoC Sound Card.
+-
+ config SND_SOC_IMX_PCM_DMA
+ 	tristate
+ 	select SND_SOC_GENERIC_DMAENGINE_PCM
+@@ -285,6 +268,23 @@ config SND_SOC_IMX_MC13783
+ 	select SND_SOC_MC13783
+ 	select SND_SOC_IMX_PCM_DMA
+ 
++config SND_SOC_FSL_ASOC_CARD
++	tristate "Generic ASoC Sound Card with ASRC support"
++	depends on OF && I2C
++	select SND_SOC_IMX_AUDMUX
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_ESAI
++	select SND_SOC_FSL_SAI
++	select SND_SOC_FSL_SSI
++	select SND_SOC_CS42XX8_I2C
++	select SND_SOC_SGTL5000
++	select SND_SOC_WM8962
++	help
++	 ALSA SoC Audio support with ASRC feature for Freescale SoCs that have
++	 ESAI/SAI/SSI and connect with external CODECs such as WM8962, CS42888
++	 and SGTL5000.
++	 Say Y if you want to add support for Freescale Generic ASoC Sound Card.
++
+ endif # SND_IMX_SOC
+ 
+ endmenu
+-- 
+1.7.9.5
