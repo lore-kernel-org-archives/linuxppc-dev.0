@@ -1,24 +1,20 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
- [IPv6:2607:f8b0:4002:c07::22c])
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
+ [IPv6:2607:f8b0:4002:c01::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85C461A004D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 07:19:49 +1000 (EST)
-Received: by mail-yk0-f172.google.com with SMTP id 10so5936938ykt.17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 14:19:47 -0700 (PDT)
-Date: Tue, 19 Aug 2014 15:19:42 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V7 00/17] Enable SRIOV on POWER8
-Message-ID: <20140819211942.GA6295@google.com>
-References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- qiudayu@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A1DA1A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 07:36:08 +1000 (EST)
+Received: by mail-yh0-f49.google.com with SMTP id b6so6208788yha.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2014 14:36:06 -0700 (PDT)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] powerpc: Make 256k pages depend on PPC32=n
+Date: Tue, 19 Aug 2014 17:36:06 -0400
+Message-Id: <1408484166-20711-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,107 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 24, 2014 at 02:22:10PM +0800, Wei Yang wrote:
-> This patch set enables the SRIOV on POWER8.
-> 
-> The gerneral idea is put each VF into one individual PE and allocate required
-> resources like DMA/MSI.
-> 
-> One thing special for VF PE is we use M64BT to cover the IOV BAR. M64BT is one
-> hardware on POWER platform to map MMIO address to PE. By using M64BT, we could
-> map one individual VF to a VF PE, which introduce more flexiblity to users.
-> 
-> To achieve this effect, we need to do some hack on pci devices's resources.
-> 1. Expand the IOV BAR properly.
->    Done by pnv_pci_ioda_fixup_iov_resources().
-> 2. Shift the IOV BAR properly.
->    Done by pnv_pci_vf_resource_shift().
-> 3. IOV BAR alignment is the total size instead of an individual size on
->    powernv platform.
->    Done by pnv_pcibios_sriov_resource_alignment().
-> 4. Take the IOV BAR alignment into consideration in the sizing and assigning.
->    This is achieved by commit: "PCI: Take additional IOV BAR alignment in
->    sizing and assigning"
-> 
-> Test Environment:
->        The SRIOV device tested is Emulex Lancer and Mellanox ConnectX-3 on
->        POWER8.
-> 
-> Examples on pass through a VF to guest through vfio:
-> 	1. install necessary modules
-> 	   modprobe vfio
-> 	   modprobe vfio-pci
-> 	2. retrieve the iommu_group the device belongs to
-> 	   readlink /sys/bus/pci/devices/0000:06:0d.0/iommu_group
-> 	   ../../../../kernel/iommu_groups/26
-> 	   This means it belongs to group 26
-> 	3. see how many devices under this iommu_group
-> 	   ls /sys/kernel/iommu_groups/26/devices/
-> 	4. unbind the original driver and bind to vfio-pci driver
-> 	   echo 0000:06:0d.0 > /sys/bus/pci/devices/0000:06:0d.0/driver/unbind
-> 	   echo  1102 0002 > /sys/bus/pci/drivers/vfio-pci/new_id
-> 	   Note: this should be done for each device in the same iommu_group
-> 	5. Start qemu and pass device through vfio
-> 	   /home/ywywyang/git/qemu-impreza/ppc64-softmmu/qemu-system-ppc64 \
-> 		   -M pseries -m 2048 -enable-kvm -nographic \
-> 		   -drive file=/home/ywywyang/kvm/fc19.img \
-> 		   -monitor telnet:localhost:5435,server,nowait -boot cd \
-> 		   -device "spapr-pci-vfio-host-bridge,id=CXGB3,iommu=26,index=6"
-> 
-> Verify this is the exact VF response:
-> 	1. ping from a machine in the same subnet(the broadcast domain)
-> 	2. run arp -n on this machine
-> 	   9.115.251.20             ether   00:00:c9:df:ed:bf   C eth0
-> 	3. ifconfig in the guest
-> 	   # ifconfig eth1
-> 	   eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-> 	        inet 9.115.251.20  netmask 255.255.255.0  broadcast 9.115.251.255
-> 		inet6 fe80::200:c9ff:fedf:edbf  prefixlen 64  scopeid 0x20<link>
-> 	        ether 00:00:c9:df:ed:bf  txqueuelen 1000 (Ethernet)
-> 	        RX packets 175  bytes 13278 (12.9 KiB)
-> 	        RX errors 0  dropped 0  overruns 0  frame 0
-> 		TX packets 58  bytes 9276 (9.0 KiB)
-> 	        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-> 	4. They have the same MAC address
-> 
-> 	Note: make sure you shutdown other network interfaces in guest.
-> 
-> ---
-> v6 -> v7:
->    1. add IORESOURCE_ARCH flag for IOV BAR on powernv platform.
->    2. when IOV BAR has IORESOURCE_ARCH flag, the size is retrieved from
->       hardware directly. If not, calculate as usual.
->    3. reorder the patch set, group them by subsystem:
->       PCI, powerpc, powernv
->    4. rebase it on 3.16-rc6
+256k pages are not tested on PPC32. On a randconfig I got the following error:
 
-This doesn't apply for me on v3.16-rc6:
+arch/powerpc/kernel/misc_32.S:1171: Error: operand out of range (0x0000000000010000 is not between 0xffffffffffff8000 and 0x0000000000007fff)
 
-  02:48:57 ~/linux$ stg rebase v3.16-rc6
-  Checking for changes in the working directory ... done
-  Rebasing to "v3.16-rc6" ... done
-  No patches applied
-  02:49:14 ~/linux$ stg import -M --sign m/wy
-  Checking for changes in the working directory ... done
-  Importing patch "pci-iov-export-interface-for" ... done
-  Importing patch "pci-iov-get-vf-bar-size-from" ... done
-  Importing patch "pci-add-weak" ... done
-  Importing patch "pci-take-additional-iov-bar" ... done
-  Importing patch "powerpc-pci-don-t-unset-pci" ... done
-  Importing patch "powerpc-pci-define" ... done
-  Importing patch "powrepc-pci-refactor-pci_dn" ... done
-  Importing patch "powerpc-powernv-use-pci_dn-in" ... error: patch failed:
-  arch/powerpc/platforms/powernv/pci.c:376
-  error: arch/powerpc/platforms/powernv/pci.c: patch does not apply
-  stg import: Diff does not apply cleanly
+Disable 256K pages if PPC32=y
 
-What am I missing?
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I assume you intend these all to go through my tree just to keep them all
-together.  The ideal rebase target for me would be v3.17-rc1.
-
-Given the arch/powerpc parts, I'll want an ack from Ben.  I just chatted
-with him about these, so I assume that's not a problem, but we should make
-it explicit.
-
-Bjorn
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index da16ffe..6cc518f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -556,7 +556,7 @@ config PPC_64K_PAGES
+ 
+ config PPC_256K_PAGES
+ 	bool "256k page size" if 44x
+-	depends on !STDBINUTILS
++	depends on !PPC32 && !STDBINUTILS
+ 	help
+ 	  Make the page size 256k.
+ 
+-- 
+1.9.1
