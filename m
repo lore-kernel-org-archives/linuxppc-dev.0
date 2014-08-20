@@ -1,41 +1,18 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17D1E1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 16:14:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 20 Aug 2014 11:44:08 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 16F7E394005C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:44:06 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7K6EXww37814332
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:44:33 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7K6E49h015728
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:44:04 +0530
-Date: Wed, 20 Aug 2014 14:14:02 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH V7 04/17] PCI: Take additional IOV BAR alignment in
- sizing and assigning
-Message-ID: <20140820061402.GA8381@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1406182947-11302-5-git-send-email-weiyang@linux.vnet.ibm.com>
- <20140820030841.GD6295@google.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140820030841.GD6295@google.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
- qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
+References: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
+Date: Wed, 20 Aug 2014 09:49:27 +0200
+Message-ID: <CAMuHMdX4HXf91RcuxzdU=HRvqtikBd=7Q62msQUMGVFuHuJ4+g@mail.gmail.com>
+Subject: Re: [RFC PATCH] powerpc: Make SPU_FS depend on SPARSEMEM
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "open list:CELL BROADBAND EN..." <cbe-oss-dev@lists.ozlabs.org>,
+ Arnd Bergmann <arnd@arndb.de>, open list <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "open list:CELL BROADBAND EN..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,237 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 19, 2014 at 09:08:41PM -0600, Bjorn Helgaas wrote:
->On Thu, Jul 24, 2014 at 02:22:14PM +0800, Wei Yang wrote:
->> At resource sizing/assigning stage, resources are divided into two lists,
->> requested list and additional list, while the alignement of the additional
->> IOV BAR is not taken into the sizeing and assigning procedure.
->> 
->> This is reasonable in the original implementation, since IOV BAR's alignment is
->> mostly the size of a PF BAR alignemt. This means the alignment is already taken
->> into consideration. While this rule may be violated on some platform.
->> 
->> This patch take the additional IOV BAR alignment in sizing and assigning stage
->> explicitly.
->> 
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> ---
->>  drivers/pci/setup-bus.c |   68 +++++++++++++++++++++++++++++++++++++++++------
->>  1 file changed, 60 insertions(+), 8 deletions(-)
->> 
->> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
->> index a5a63ec..d83681f 100644
->> --- a/drivers/pci/setup-bus.c
->> +++ b/drivers/pci/setup-bus.c
->> @@ -120,6 +120,28 @@ static resource_size_t get_res_add_size(struct list_head *head,
->>  	return 0;
->>  }
->>  
->> +static resource_size_t get_res_add_align(struct list_head *head,
->> +		struct resource *res)
->> +{
->> +	struct pci_dev_resource *dev_res;
->> +
->> +	list_for_each_entry(dev_res, head, list) {
->> +		if (dev_res->res == res) {
->> +			int idx = res - &dev_res->dev->resource[0];
->> +
->> +			dev_printk(KERN_DEBUG, &dev_res->dev->dev,
->> +				   "res[%d]=%pR get_res_add_align min_align %llx\n",
->> +				   idx, dev_res->res,
->> +				   (unsigned long long)dev_res->min_align);
->> +
->> +			return dev_res->min_align;
->> +		}
->> +	}
->> +
->> +	return 0;
->> +}
+Hi Pranith,
+
+On Tue, Aug 19, 2014 at 11:16 PM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+> SPU_FS unconditionally enables MEMORY_HOTPLUG, which will fail to build if
+> SPARSEMEM=n.
 >
->I see that you copied the structure of the existing get_res_add_size()
->here.  But I don't understand *that* function.  It looks basically like
->this:
+> Make SPU_FS depend on SPARSEMEM so that hotplug-memory.c does not fail to
+> compile.
 >
->  resource_size_t get_res_add_size(list, res)
->  {
->    list_for_each_entry(dev_res, head, list) {
->      if (dev_res->res == res)
->        return dev_res->add_size;
->    }
->    return 0;
->  }
+> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+> ---
+>  arch/powerpc/platforms/cell/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
->and we call it like this:
->
->  dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
->
->So we start out with dev_res", pass in dev_res->res, search the
->realloc_head list to find dev_res again, and return dev_res->add_size.
->That looks equivalent to just:
->
->  dev_res->res->end += dev_res->add_size;
->
->It looks like get_res_add_size() merely adds a printk and some complexity.
->Am I missing something?
->
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+> index 9978f59..832872e 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -60,7 +60,7 @@ menu "Cell Broadband Engine options"
+>  config SPU_FS
+>         tristate "SPU file system"
+>         default m
+> -       depends on PPC_CELL
+> +       depends on PPC_CELL && SPARSEMEM
+>         select SPU_BASE
+>         select MEMORY_HOTPLUG
+>         help
+> --
+> 1.9.1
 
-Let me try to explain it, if not correct, please let know :-)
+Is this a randconfig kernel?
 
-  dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
+config ARCH_SPARSEMEM_DEFAULT
+       def_bool y
+       depends on (SMP && PPC_PSERIES) || PPC_PS3
 
-would be expanded to:
+Why is this not enabled? !SMP? !PPC_PSERIES? !PPC_PS3?
 
-  dev_res->res->end += dev_res_1->add_size;
+If PPC_CELL is enabled, this issue was introduced by
 
-with the dev_res_1 is another one from dev_res which is stored in realloc_head.
+commit 78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Feb 13 11:46:06 2007 +1100
 
->I do see that there are other callers where we don't actually start with
->dev_res, which makes it a little more complicated.  But I think you should
->either add something like this:
->
->  struct pci_dev_resource *res_to_dev_res(list, res)
->  {
->    list_for_each_entry(dev_res, head, list) {
->      if (dev_res->res == res)
->        return dev_res;
->    }
->    return NULL;
->  }
->
+    [POWERPC] spufs: remove need for struct page for SPEs
 
-Ok, we can extract the common part of these two functions.
+    This patch removes the need for struct page for SPE local store
+    and registers from spufs. It also makes the locking much more
+    obvious and no longer relying on the truncate logic black magic
+    for protecting against races between unmap_mapping_range() and
+    new pages faulted in. It does so by switching to a nopfn() handler
+    and using the new vm_insert_pfn() to setup the PTEs itself while
+    holding a lock on the SPE.
 
->which can be used to replace get_res_add_size() and get_res_add_align(), OR
->figure out whether the dev_res of interest is always one we've just added.
->If it is, maybe you can just make add_to_list() return the dev_res pointer
->instead of an errno, and hang onto the pointer.  I'd like that much better
->if that's possible.
->
+    The nice thing is that this patch actually removes a lot more code
+    than it adds :-)
 
-Sorry, I don't get this point.
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-add_to_list() is used to create the pci_dev_resource list, get_res_add_size()
-and get_res_add_align() is to retrieve the information in the list. I am not
-sure how to leverage add_to_list() in these two functions?
 
->> +
->> +
->>  /* Sort resources by alignment */
->>  static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
->>  {
->> @@ -368,8 +390,9 @@ static void __assign_resources_sorted(struct list_head *head,
->>  	LIST_HEAD(save_head);
->>  	LIST_HEAD(local_fail_head);
->>  	struct pci_dev_resource *save_res;
->> -	struct pci_dev_resource *dev_res, *tmp_res;
->> +	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
->>  	unsigned long fail_type;
->> +	resource_size_t add_align, align;
->>  
->>  	/* Check if optional add_size is there */
->>  	if (!realloc_head || list_empty(realloc_head))
->> @@ -384,10 +407,31 @@ static void __assign_resources_sorted(struct list_head *head,
->>  	}
->>  
->>  	/* Update res in head list with add_size in realloc_head list */
->> -	list_for_each_entry(dev_res, head, list)
->> +	list_for_each_entry_safe(dev_res, tmp_res, head, list) {
->>  		dev_res->res->end += get_res_add_size(realloc_head,
->>  							dev_res->res);
->>  
->> +		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
->> +			continue;
->> +
->> +		add_align = get_res_add_align(realloc_head, dev_res->res);
->> +
->> +		if (add_align > dev_res->res->start) {
->> +			dev_res->res->start = add_align;
->> +			dev_res->res->end = add_align +
->> +				            resource_size(dev_res->res);
->> +
->> +			list_for_each_entry(dev_res2, head, list) {
->> +				align = pci_resource_alignment(dev_res2->dev,
->> +							       dev_res2->res);
->> +				if (add_align > align)
->> +					list_move_tail(&dev_res->list,
->> +						       &dev_res2->list);
->> +			}
->> +               }
->> +
->> +	}
->> +
->>  	/* Try updated head list with add_size added */
->>  	assign_requested_resources_sorted(head, &local_fail_head);
->>  
->> @@ -930,6 +974,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>  	struct resource *b_res = find_free_bus_resource(bus,
->>  					mask | IORESOURCE_PREFETCH, type);
->>  	resource_size_t children_add_size = 0;
->> +	resource_size_t children_add_align = 0;
->> +	resource_size_t add_align = 0;
->>  
->>  	if (!b_res)
->>  		return -ENOSPC;
->> @@ -954,6 +1000,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>  			/* put SRIOV requested res to the optional list */
->>  			if (realloc_head && i >= PCI_IOV_RESOURCES &&
->>  					i <= PCI_IOV_RESOURCE_END) {
->> +				add_align = max(pci_resource_alignment(dev, r), add_align);
->>  				r->end = r->start - 1;
->>  				add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
->>  				children_add_size += r_size;
->> @@ -984,8 +1031,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>  			if (order > max_order)
->>  				max_order = order;
->>  
->> -			if (realloc_head)
->> +			if (realloc_head) {
->>  				children_add_size += get_res_add_size(realloc_head, r);
->> +				children_add_align = get_res_add_align(realloc_head, r);
->> +				add_align = max(add_align, children_add_align);
->> +			}
->>  		}
->>  	}
->>  
->> @@ -996,7 +1046,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>  		add_size = children_add_size;
->>  	size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
->>  		calculate_memsize(size, min_size, add_size,
->> -				resource_size(b_res), min_align);
->> +				resource_size(b_res), max(min_align, add_align));
->>  	if (!size0 && !size1) {
->>  		if (b_res->start || b_res->end)
->>  			dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
->> @@ -1008,10 +1058,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>  	b_res->end = size0 + min_align - 1;
->>  	b_res->flags |= IORESOURCE_STARTALIGN;
->>  	if (size1 > size0 && realloc_head) {
->> -		add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
->> -		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
->> -			   b_res, &bus->busn_res,
->> -			   (unsigned long long)size1-size0);
->> +		add_to_list(realloc_head, bus->self, b_res, size1-size0,
->> +				max(min_align, add_align));
->> +		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
->> +				 "%pR to %pR add_size %llx add_align %llx\n", b_res,
->> +				 &bus->busn_res, (unsigned long long)size1-size0,
->> +				 max(min_align, add_align));
->
->Factor out this "max(min_align, add_align)" thing so we don't have to
->change these lines.  Bonus points if you can also factor it out of the
->calculate_memsize() call above.  That one is a pretty complicated ternary
->expression that should probably be turned into an "if" instead anyway.
->
+Another question: why does SPU_FS select MEMORY_HOTPLUG?
 
-Ok, I get your point. Let me make it more easy to read.
+commit 4da30d15b6d5036b0d96422d6946ca758111fae3
+Author: Geoff Levand <geoffrey.levand@am.sony.com>
+Date:   Fri Jun 23 20:57:49 2006 +0200
 
->>  	}
->>  	return 0;
->>  }
->> -- 
->> 1.7.9.5
->> 
+    [POWERPC] spufs: fix memory hotplug dependency
 
--- 
-Richard Yang
-Help you, Help me
+    spufs_base.c calls __add_pages, which depends on CONFIG_MEMORY_HOTPLUG.
+
+    Moved the selection of CONFIG_MEMORY_HOTPLUG from CONFIG_SPUFS_MMAP
+    to CONFIG_SPU_FS.
+
+    Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+However, the call to __add_pages() has been moved a few times afterwards,
+to be finally removed in the aforementioned commit
+78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d.
+
+Does it still build/work if you just drop the "select MEMORY_HOTPLUG"?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
