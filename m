@@ -1,22 +1,23 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 63D551A000C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 10:08:21 +1000 (EST)
-Message-ID: <1408493285.4058.55.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5D8E1A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 10:20:47 +1000 (EST)
+Message-ID: <1408494032.4058.61.camel@snotra.buserror.net>
+Subject: Re: [PATCH 4/4] powerpc/fsl_msi: spread msi ints across different
+ MSIRs
 From: Scott Wood <scottwood@freescale.com>
-To: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 19 Aug 2014 19:08:05 -0500
-In-Reply-To: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
-References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
+To: Laurentiu Tudor <b10716@freescale.com>
+Date: Tue, 19 Aug 2014 19:20:32 -0500
+In-Reply-To: <53F33413.3050009@freescale.com>
+References: <53F33413.3050009@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Prabhakar
- Kushwaha <prabhakar@freescale.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>,
+ Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-08-15 at 16:07 -0500, Aaron Sierra wrote:
-> Freescale's QorIQ T Series processors support 8 IFC chip selects
-> within a memory map backward compatible with previous P Series
-> processors which supported only 4 chip selects.
-> 
-> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> ---
->  include/linux/fsl_ifc.h | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-> index 84d60cb..62762ff 100644
-> --- a/include/linux/fsl_ifc.h
-> +++ b/include/linux/fsl_ifc.h
-> @@ -29,7 +29,7 @@
->  #include <linux/of_platform.h>
->  #include <linux/interrupt.h>
->  
-> -#define FSL_IFC_BANK_COUNT 4
-> +#define FSL_IFC_BANK_COUNT 8
+A couple nits that don't necessarily warrant a respin:
 
-First please modify fsl_ifc_nand.c to limit itself to the number of
-banks it dynamically determines are present based on the IFC version.
+On Tue, 2014-08-19 at 14:25 +0300, Laurentiu Tudor wrote:
+> Allocate msis such that each time a new
+> interrupt is requested, the SRS (MSIR
+> register select) to be used is allocated
+> in a round-robin fashion.
+> The end result is that the msi interrupts
+> will be spread across distinct MSIRs with
+> the main benefit that now users can set
+> affinity to each msi int through the mpic
+> irq backing up the MSIR register.
+> This is achieved with the help of a newly
+> introduced msi bitmap api that allows
+> specifying the starting point when
+> searching for a free msi interrupt.
+
+Please wrap at around 60-70 columns.
+
+> +			} else {
+> +				off = (atomic_inc_return(&msi_data->msi_alloc_cnt) %
+> +					msi_data->msir_num);
+> +				off *= (1 << msi_data->srs_shift);
+
+This is an unusual way to write "off <<= msi->data->srs_shift"...
 
 -Scott
