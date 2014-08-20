@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D1E81A0367
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:21:46 +1000 (EST)
-Message-ID: <1408576886.4058.73.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
-From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Date: Wed, 20 Aug 2014 18:21:26 -0500
-In-Reply-To: <53F4179F.1010803@freescale.com>
-References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
- <1408493285.4058.55.camel@snotra.buserror.net>
- <53F4179F.1010803@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3064D1A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:26:53 +1000 (EST)
+Date: Thu, 21 Aug 2014 09:26:52 +1000
+From: Anton Blanchard <anton@samba.org>
+To: bhelgaas@google.com
+Subject: [PATCH] PCI: Increase BAR size quirk for IBM ipr SAS Crocodile
+ adapters
+Message-ID: <20140821092652.604d7484@kryten>
 MIME-Version: 1.0
-Cc: Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Aaron Sierra <asierra@xes-inc.com>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-pci@vger.kernel.org, miltonm@us.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, dllehr@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,62 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-08-20 at 09:05 +0530, Prabhakar Kushwaha wrote:
-> On 8/20/2014 5:38 AM, Scott Wood wrote:
-> > On Fri, 2014-08-15 at 16:07 -0500, Aaron Sierra wrote:
-> >> Freescale's QorIQ T Series processors support 8 IFC chip selects
-> >> within a memory map backward compatible with previous P Series
-> >> processors which supported only 4 chip selects.
-> >>
-> >> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> >> ---
-> >>   include/linux/fsl_ifc.h | 10 +++++-----
-> >>   1 file changed, 5 insertions(+), 5 deletions(-)
-> >>
-> >> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-> >> index 84d60cb..62762ff 100644
-> >> --- a/include/linux/fsl_ifc.h
-> >> +++ b/include/linux/fsl_ifc.h
-> >> @@ -29,7 +29,7 @@
-> >>   #include <linux/of_platform.h>
-> >>   #include <linux/interrupt.h>
-> >>   
-> >> -#define FSL_IFC_BANK_COUNT 4
-> >> +#define FSL_IFC_BANK_COUNT 8
-> > First please modify fsl_ifc_nand.c to limit itself to the number of
-> > banks it dynamically determines are present based on the IFC version.
-> >
-> >
-> 
-> Number of available bank/chip select are defined by SoC and it is 
-> independent of SoC.
+From: Douglas Lehr <dllehr@us.ibm.com>
 
-Do you mean defined by the SoC and independent of the IFC version?
+The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.
+Due to an errata, setting the SR-IOV page size causes the physical
+function BARs to expand to the system page size.  Since ppc64 uses
+64k pages, when Linux tries to assign the smaller resource sizes
+to the now 64k BARs the address will be truncated and the BARs will
+overlap.
 
-> It should be fix in following way
-> 
-> Option 1:
-> u-boot:  fix device tree with number of available chip select. It may 
-> require IFC binding change
-> Linux: Read device tree and determine the Chip Selects
+This quirk will force Linux to allocate the resource as a full page,
+which will avoid the overlap.
 
-If we do this then it will need to be an optional property that defaults
-to the current assumption being made (4).
+Cc: <stable@vger.kernel.org> 
+Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Milton Miller <miltonm@us.ibm.com>
+---
+ drivers/pci/quirks.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-In the future we really ought to check whether there are integration
-parameters when coming up with the initial binding for a hardware
-block...
-
-> Option 2:
-> Make it static because any way IFC NAND driver polls to 
-> FSL_IFC_BANK_COUNT to know NAND flash chip select. This patch is doing same.
-
-I don't understand what you're saying here.  The driver does not know at
-compile time how many there are.  What this patch does is assume it's OK
-to access non-existent registers in the rare case that there's no match
-in the registers that exist.
-
-Aaron tested this on P1010 and it seemed to work, though I'm not
-generally fond of relying on such things.
-
--Scott
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 80c2d01..45b946d 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -24,6 +24,7 @@
+ #include <linux/ioport.h>
+ #include <linux/sched.h>
+ #include <linux/ktime.h>
++#include <linux/mm.h>
+ #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+ #include "pci.h"
+ 
+@@ -287,6 +288,24 @@ static void quirk_citrine(struct pci_dev *dev)
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
+ 
++/*  On IBM Crocodile ipr SAS adapters, expand bar size to system page size. */
++static void quirk_extend_bar_to_page(struct pci_dev *dev)
++{
++	int i;
++
++	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
++		struct resource *r = &dev->resource[i];
++
++		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
++			dev_info(&dev->dev, "Setting Bar size to Page size");
++			r->end = PAGE_SIZE-1;
++			r->start = 0;
++			r->flags |= IORESOURCE_UNSET;
++		}
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
++
+ /*
+  *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
+  *  If it's needed, re-allocate the region.
+-- 
+1.7.9.5
