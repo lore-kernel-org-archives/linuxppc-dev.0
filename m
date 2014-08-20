@@ -1,18 +1,25 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x231.google.com (mail-la0-x231.google.com
+ [IPv6:2a00:1450:4010:c03::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C46031A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 18:00:54 +1000 (EST)
+Received: by mail-la0-f49.google.com with SMTP id hz20so6853931lab.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 01:00:50 -0700 (PDT)
 MIME-Version: 1.0
 Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
-References: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
-Date: Wed, 20 Aug 2014 09:49:27 +0200
-Message-ID: <CAMuHMdX4HXf91RcuxzdU=HRvqtikBd=7Q62msQUMGVFuHuJ4+g@mail.gmail.com>
-Subject: Re: [RFC PATCH] powerpc: Make SPU_FS depend on SPARSEMEM
+In-Reply-To: <1408482065-18457-1-git-send-email-bobby.prani@gmail.com>
+References: <1408482065-18457-1-git-send-email-bobby.prani@gmail.com>
+Date: Wed, 20 Aug 2014 10:00:50 +0200
+Message-ID: <CAMuHMdWz+4ctGr92fJmi0GB1QrxRMy3GKC_KDpZfK-sriYP-FQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix build failure when MEMORY_HOTPLUG=y
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Pranith Kumar <bobby.prani@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: "open list:CELL BROADBAND EN..." <cbe-oss-dev@lists.ozlabs.org>,
- Arnd Bergmann <arnd@arndb.de>, open list <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "open list:CELL BROADBAND EN..." <linuxppc-dev@lists.ozlabs.org>
+Cc: open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Andew Morton <akpm@linux-foundation.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,89 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Pranith,
-
-On Tue, Aug 19, 2014 at 11:16 PM, Pranith Kumar <bobby.prani@gmail.com> wrote:
-> SPU_FS unconditionally enables MEMORY_HOTPLUG, which will fail to build if
-> SPARSEMEM=n.
+On Tue, Aug 19, 2014 at 11:01 PM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+> ARCH_ENABLE_MEMORY_HOTPLUG is enabled by default for powerpc. This causes build
+> failures when SPARSEMEM=n as memory hotplug needs definition which are defined
+> only when SPARSEMEM=y. The error is as follows:
 >
-> Make SPU_FS depend on SPARSEMEM so that hotplug-memory.c does not fail to
-> compile.
+> arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
+> arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: note: each undeclared identifier is reported only once for each function it appears in
+> arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'pseries_remove_memblock':
+> arch/powerpc/platforms/pseries/hotplug-memory.c:98:34: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
+> make[2]: *** [arch/powerpc/platforms/pseries/hotplug-memory.o] Error 1
 >
 > Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+> CC: Andew Morton <akpm@linux-foundation.org>
 > ---
->  arch/powerpc/platforms/cell/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-> index 9978f59..832872e 100644
-> --- a/arch/powerpc/platforms/cell/Kconfig
-> +++ b/arch/powerpc/platforms/cell/Kconfig
-> @@ -60,7 +60,7 @@ menu "Cell Broadband Engine options"
->  config SPU_FS
->         tristate "SPU file system"
->         default m
-> -       depends on PPC_CELL
-> +       depends on PPC_CELL && SPARSEMEM
->         select SPU_BASE
->         select MEMORY_HOTPLUG
->         help
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 9c1aa77..da16ffe 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -383,6 +383,7 @@ config ARCH_CPU_PROBE_RELEASE
+>
+>  config ARCH_ENABLE_MEMORY_HOTPLUG
+>         def_bool y
+> +       depends on SPARSEMEM
+>
+>  config ARCH_HAS_WALK_MEMORY
+>         def_bool y
 > --
 > 1.9.1
 
-Is this a randconfig kernel?
-
-config ARCH_SPARSEMEM_DEFAULT
-       def_bool y
-       depends on (SMP && PPC_PSERIES) || PPC_PS3
-
-Why is this not enabled? !SMP? !PPC_PSERIES? !PPC_PS3?
-
-If PPC_CELL is enabled, this issue was introduced by
-
-commit 78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Tue Feb 13 11:46:06 2007 +1100
-
-    [POWERPC] spufs: remove need for struct page for SPEs
-
-    This patch removes the need for struct page for SPE local store
-    and registers from spufs. It also makes the locking much more
-    obvious and no longer relying on the truncate logic black magic
-    for protecting against races between unmap_mapping_range() and
-    new pages faulted in. It does so by switching to a nopfn() handler
-    and using the new vm_insert_pfn() to setup the PTEs itself while
-    holding a lock on the SPE.
-
-    The nice thing is that this patch actually removes a lot more code
-    than it adds :-)
-
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-
-Another question: why does SPU_FS select MEMORY_HOTPLUG?
-
-commit 4da30d15b6d5036b0d96422d6946ca758111fae3
-Author: Geoff Levand <geoffrey.levand@am.sony.com>
-Date:   Fri Jun 23 20:57:49 2006 +0200
-
-    [POWERPC] spufs: fix memory hotplug dependency
-
-    spufs_base.c calls __add_pages, which depends on CONFIG_MEMORY_HOTPLUG.
-
-    Moved the selection of CONFIG_MEMORY_HOTPLUG from CONFIG_SPUFS_MMAP
-    to CONFIG_SPU_FS.
-
-    Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-However, the call to __add_pages() has been moved a few times afterwards,
-to be finally removed in the aforementioned commit
-78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d.
-
-Does it still build/work if you just drop the "select MEMORY_HOTPLUG"?
+In light of my investigation for your spufs patch, I guess this is a non-SMP
+PSERIES config?
 
 Gr{oetje,eeting}s,
 
