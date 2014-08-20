@@ -3,14 +3,14 @@ Received: from metis.ext.pengutronix.de (unknown
  [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C33571A003B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 19:04:29 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E3DD1A0A70
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 19:04:41 +1000 (EST)
 From: Philipp Zabel <p.zabel@pengutronix.de>
 To: devicetree@vger.kernel.org
-Subject: [RFC PATCH 6/6] rtc: rtc-isl12057: Change vendor prefix for Intersil
+Subject: [RFC PATCH 4/6] powerpc/85xx: Change vendor prefix for Intersil
  Corporation to isil
-Date: Wed, 20 Aug 2014 10:43:04 +0200
-Message-Id: <1408524184-31928-7-git-send-email-p.zabel@pengutronix.de>
+Date: Wed, 20 Aug 2014 10:43:02 +0200
+Message-Id: <1408524184-31928-5-git-send-email-p.zabel@pengutronix.de>
 In-Reply-To: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
 References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -33,28 +33,24 @@ compatibles in the kernel. At this point, changing the vendor
 symbol to the most often used variant, which is equal to the
 NASDAQ symbol, isil, should not hurt, since the isl1208 driver
 doesn't care either way.
-Patch 70e123373c05 added this driver with device tree support
-using the then documented isl vendor prefix, so we keep that
-around for backwards compatibility.
 
 Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/rtc/rtc-isl12057.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/dts/ppa8548.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/rtc/rtc-isl12057.c b/drivers/rtc/rtc-isl12057.c
-index 455b601..8276bd6 100644
---- a/drivers/rtc/rtc-isl12057.c
-+++ b/drivers/rtc/rtc-isl12057.c
-@@ -279,7 +279,8 @@ static int isl12057_probe(struct i2c_client *client,
- 
- #ifdef CONFIG_OF
- static const struct of_device_id isl12057_dt_match[] = {
--	{ .compatible = "isl,isl12057" },
-+	{ .compatible = "isil,isl12057" },
-+	{ .compatible = "isl,isl12057" }, /* for backwards compatibility */
- 	{ },
- };
- #endif
+diff --git a/arch/powerpc/boot/dts/ppa8548.dts b/arch/powerpc/boot/dts/ppa8548.dts
+index 27b0699..000262b 100644
+--- a/arch/powerpc/boot/dts/ppa8548.dts
++++ b/arch/powerpc/boot/dts/ppa8548.dts
+@@ -89,7 +89,7 @@
+ &soc {
+ 	i2c@3000 {
+ 		rtc@6f {
+-			compatible = "intersil,isl1208";
++			compatible = "isil,isl1208";
+ 			reg = <0x6f>;
+ 		};
+ 	};
 -- 
 2.1.0.rc1
