@@ -1,15 +1,15 @@
 Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6070B1A045B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 23:36:53 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C901A1A0BBE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 23:37:12 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH v4 6/6] KVM: PPC: Booke: Add ONE_REG support for IVPR and IVORs
-Date: Wed, 20 Aug 2014 16:36:27 +0300
-Message-ID: <1408541787-24625-7-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH v4 3/6] KVM: PPC: Make ONE_REG powerpc generic
+Date: Wed, 20 Aug 2014 16:36:24 +0300
+Message-ID: <1408541787-24625-4-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1408541787-24625-1-git-send-email-mihai.caraman@freescale.com>
 References: <1408541787-24625-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -25,328 +25,538 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add ONE_REG support for IVPR and IVORs registers. Implement IVPR, IVORs 0-15
-and 35 in booke common layer.
+Make ONE_REG generic for server and embedded architectures by moving
+kvm_vcpu_ioctl_get_one_reg() and kvm_vcpu_ioctl_set_one_reg() functions
+to powerpc layer.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
 v4:
- - add ONE_REG IVPR
- - use IVPR, IVOR2 and IVOR8 setters
- - add api documentation for ONE_REG IVPR and IVORs
+ - split ONE_REG powerpc generic and ONE_REG AltiVec
 
 v3:
- - new patch
+ - make ONE_REG AltiVec support powerpc generic
 
- Documentation/virtual/kvm/api.txt   |   7 ++
- arch/powerpc/include/uapi/asm/kvm.h |  25 +++++++
- arch/powerpc/kvm/booke.c            | 145 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/e500.c             |  42 ++++++++++-
- arch/powerpc/kvm/e500mc.c           |  16 ++++
- 5 files changed, 233 insertions(+), 2 deletions(-)
+v2:
+ - add comment describing VCSR register representation in KVM vs kernel
 
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index beae3fd..cd7b171 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -1917,6 +1917,13 @@ registers, find a list below:
-   PPC   | KVM_REG_PPC_TM_VSCR           | 32
-   PPC   | KVM_REG_PPC_TM_DSCR           | 64
-   PPC   | KVM_REG_PPC_TM_TAR            | 64
-+  PPC   | KVM_REG_PPC_IVPR              | 64
-+  PPC   | KVM_REG_PPC_IVOR0             | 32
-+          ...
-+  PPC   | KVM_REG_PPC_IVOR15            | 32
-+  PPC   | KVM_REG_PPC_IVOR32            | 32
-+          ...
-+  PPC   | KVM_REG_PPC_IVOR37            | 32
-         |                               |
-   MIPS  | KVM_REG_MIPS_R0               | 64
-           ...
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index ab4d473..c97f119 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -564,6 +564,31 @@ struct kvm_get_htab_header {
- #define KVM_REG_PPC_SPRG9	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xba)
- #define KVM_REG_PPC_DBSR	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbb)
+ arch/powerpc/kvm/book3s.c  | 121 +++++++++++++++++++--------------------------
+ arch/powerpc/kvm/booke.c   |  91 +++++++++++++---------------------
+ arch/powerpc/kvm/powerpc.c |  55 +++++++++++++++++++++
+ 3 files changed, 138 insertions(+), 129 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index dd03f6b..26868e2 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -535,33 +535,28 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
+ 	return -ENOTSUPP;
+ }
  
-+/* Booke IVPR & IVOR registers */
-+#define KVM_REG_PPC_IVPR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbc)
-+#define KVM_REG_PPC_IVOR0	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbd)
-+#define KVM_REG_PPC_IVOR1	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbe)
-+#define KVM_REG_PPC_IVOR2	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbf)
-+#define KVM_REG_PPC_IVOR3	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc0)
-+#define KVM_REG_PPC_IVOR4	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc1)
-+#define KVM_REG_PPC_IVOR5	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc2)
-+#define KVM_REG_PPC_IVOR6	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc3)
-+#define KVM_REG_PPC_IVOR7	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc4)
-+#define KVM_REG_PPC_IVOR8	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc5)
-+#define KVM_REG_PPC_IVOR9	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc6)
-+#define KVM_REG_PPC_IVOR10	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc7)
-+#define KVM_REG_PPC_IVOR11	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc8)
-+#define KVM_REG_PPC_IVOR12	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xc9)
-+#define KVM_REG_PPC_IVOR13	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xca)
-+#define KVM_REG_PPC_IVOR14	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xcb)
-+#define KVM_REG_PPC_IVOR15	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xcc)
-+#define KVM_REG_PPC_IVOR32	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xcd)
-+#define KVM_REG_PPC_IVOR33	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xce)
-+#define KVM_REG_PPC_IVOR34	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xcf)
-+#define KVM_REG_PPC_IVOR35	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xd0)
-+#define KVM_REG_PPC_IVOR36	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xd1)
-+#define KVM_REG_PPC_IVOR37	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xd2)
-+
- /* Transactional Memory checkpointed state:
-  * This is all GPRs, all VSX regs and a subset of SPRs
-  */
+-int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
++			union kvmppc_one_reg *val)
+ {
+-	int r;
+-	union kvmppc_one_reg val;
+-	int size;
++	int r = 0;
+ 	long int i;
+ 
+-	size = one_reg_size(reg->id);
+-	if (size > sizeof(val))
+-		return -EINVAL;
+-
+-	r = vcpu->kvm->arch.kvm_ops->get_one_reg(vcpu, reg->id, &val);
++	r = vcpu->kvm->arch.kvm_ops->get_one_reg(vcpu, id, val);
+ 	if (r == -EINVAL) {
+ 		r = 0;
+-		switch (reg->id) {
++		switch (id) {
+ 		case KVM_REG_PPC_DAR:
+-			val = get_reg_val(reg->id, kvmppc_get_dar(vcpu));
++			*val = get_reg_val(id, kvmppc_get_dar(vcpu));
+ 			break;
+ 		case KVM_REG_PPC_DSISR:
+-			val = get_reg_val(reg->id, kvmppc_get_dsisr(vcpu));
++			*val = get_reg_val(id, kvmppc_get_dsisr(vcpu));
+ 			break;
+ 		case KVM_REG_PPC_FPR0 ... KVM_REG_PPC_FPR31:
+-			i = reg->id - KVM_REG_PPC_FPR0;
+-			val = get_reg_val(reg->id, VCPU_FPR(vcpu, i));
++			i = id - KVM_REG_PPC_FPR0;
++			*val = get_reg_val(id, VCPU_FPR(vcpu, i));
+ 			break;
+ 		case KVM_REG_PPC_FPSCR:
+-			val = get_reg_val(reg->id, vcpu->arch.fp.fpscr);
++			*val = get_reg_val(id, vcpu->arch.fp.fpscr);
+ 			break;
+ #ifdef CONFIG_ALTIVEC
+ 		case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
+@@ -569,110 +564,94 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			val.vval = vcpu->arch.vr.vr[reg->id - KVM_REG_PPC_VR0];
++			val->vval = vcpu->arch.vr.vr[id - KVM_REG_PPC_VR0];
+ 			break;
+ 		case KVM_REG_PPC_VSCR:
+ 			if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			val = get_reg_val(reg->id, vcpu->arch.vr.vscr.u[3]);
++			*val = get_reg_val(id, vcpu->arch.vr.vscr.u[3]);
+ 			break;
+ 		case KVM_REG_PPC_VRSAVE:
+-			val = get_reg_val(reg->id, vcpu->arch.vrsave);
++			*val = get_reg_val(id, vcpu->arch.vrsave);
+ 			break;
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ 		case KVM_REG_PPC_VSR0 ... KVM_REG_PPC_VSR31:
+ 			if (cpu_has_feature(CPU_FTR_VSX)) {
+-				long int i = reg->id - KVM_REG_PPC_VSR0;
+-				val.vsxval[0] = vcpu->arch.fp.fpr[i][0];
+-				val.vsxval[1] = vcpu->arch.fp.fpr[i][1];
++				i = id - KVM_REG_PPC_VSR0;
++				val->vsxval[0] = vcpu->arch.fp.fpr[i][0];
++				val->vsxval[1] = vcpu->arch.fp.fpr[i][1];
+ 			} else {
+ 				r = -ENXIO;
+ 			}
+ 			break;
+ #endif /* CONFIG_VSX */
+-		case KVM_REG_PPC_DEBUG_INST: {
+-			u32 opcode = INS_TW;
+-			r = copy_to_user((u32 __user *)(long)reg->addr,
+-					 &opcode, sizeof(u32));
++		case KVM_REG_PPC_DEBUG_INST:
++			*val = get_reg_val(id, INS_TW);
+ 			break;
+-		}
+ #ifdef CONFIG_KVM_XICS
+ 		case KVM_REG_PPC_ICP_STATE:
+ 			if (!vcpu->arch.icp) {
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			val = get_reg_val(reg->id, kvmppc_xics_get_icp(vcpu));
++			*val = get_reg_val(id, kvmppc_xics_get_icp(vcpu));
+ 			break;
+ #endif /* CONFIG_KVM_XICS */
+ 		case KVM_REG_PPC_FSCR:
+-			val = get_reg_val(reg->id, vcpu->arch.fscr);
++			*val = get_reg_val(id, vcpu->arch.fscr);
+ 			break;
+ 		case KVM_REG_PPC_TAR:
+-			val = get_reg_val(reg->id, vcpu->arch.tar);
++			*val = get_reg_val(id, vcpu->arch.tar);
+ 			break;
+ 		case KVM_REG_PPC_EBBHR:
+-			val = get_reg_val(reg->id, vcpu->arch.ebbhr);
++			*val = get_reg_val(id, vcpu->arch.ebbhr);
+ 			break;
+ 		case KVM_REG_PPC_EBBRR:
+-			val = get_reg_val(reg->id, vcpu->arch.ebbrr);
++			*val = get_reg_val(id, vcpu->arch.ebbrr);
+ 			break;
+ 		case KVM_REG_PPC_BESCR:
+-			val = get_reg_val(reg->id, vcpu->arch.bescr);
++			*val = get_reg_val(id, vcpu->arch.bescr);
+ 			break;
+ 		case KVM_REG_PPC_VTB:
+-			val = get_reg_val(reg->id, vcpu->arch.vtb);
++			*val = get_reg_val(id, vcpu->arch.vtb);
+ 			break;
+ 		case KVM_REG_PPC_IC:
+-			val = get_reg_val(reg->id, vcpu->arch.ic);
++			*val = get_reg_val(id, vcpu->arch.ic);
+ 			break;
+ 		default:
+ 			r = -EINVAL;
+ 			break;
+ 		}
+ 	}
+-	if (r)
+-		return r;
+-
+-	if (copy_to_user((char __user *)(unsigned long)reg->addr, &val, size))
+-		r = -EFAULT;
+ 
+ 	return r;
+ }
+ 
+-int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
++			union kvmppc_one_reg *val)
+ {
+-	int r;
+-	union kvmppc_one_reg val;
+-	int size;
++	int r = 0;
+ 	long int i;
+ 
+-	size = one_reg_size(reg->id);
+-	if (size > sizeof(val))
+-		return -EINVAL;
+-
+-	if (copy_from_user(&val, (char __user *)(unsigned long)reg->addr, size))
+-		return -EFAULT;
+-
+-	r = vcpu->kvm->arch.kvm_ops->set_one_reg(vcpu, reg->id, &val);
++	r = vcpu->kvm->arch.kvm_ops->set_one_reg(vcpu, id, val);
+ 	if (r == -EINVAL) {
+ 		r = 0;
+-		switch (reg->id) {
++		switch (id) {
+ 		case KVM_REG_PPC_DAR:
+-			kvmppc_set_dar(vcpu, set_reg_val(reg->id, val));
++			kvmppc_set_dar(vcpu, set_reg_val(id, *val));
+ 			break;
+ 		case KVM_REG_PPC_DSISR:
+-			kvmppc_set_dsisr(vcpu, set_reg_val(reg->id, val));
++			kvmppc_set_dsisr(vcpu, set_reg_val(id, *val));
+ 			break;
+ 		case KVM_REG_PPC_FPR0 ... KVM_REG_PPC_FPR31:
+-			i = reg->id - KVM_REG_PPC_FPR0;
+-			VCPU_FPR(vcpu, i) = set_reg_val(reg->id, val);
++			i = id - KVM_REG_PPC_FPR0;
++			VCPU_FPR(vcpu, i) = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_FPSCR:
+-			vcpu->arch.fp.fpscr = set_reg_val(reg->id, val);
++			vcpu->arch.fp.fpscr = set_reg_val(id, *val);
+ 			break;
+ #ifdef CONFIG_ALTIVEC
+ 		case KVM_REG_PPC_VR0 ... KVM_REG_PPC_VR31:
+@@ -680,29 +659,29 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			vcpu->arch.vr.vr[reg->id - KVM_REG_PPC_VR0] = val.vval;
++			vcpu->arch.vr.vr[id - KVM_REG_PPC_VR0] = val->vval;
+ 			break;
+ 		case KVM_REG_PPC_VSCR:
+ 			if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			vcpu->arch.vr.vscr.u[3] = set_reg_val(reg->id, val);
++			vcpu->arch.vr.vscr.u[3] = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_VRSAVE:
+ 			if (!cpu_has_feature(CPU_FTR_ALTIVEC)) {
+ 				r = -ENXIO;
+ 				break;
+ 			}
+-			vcpu->arch.vrsave = set_reg_val(reg->id, val);
++			vcpu->arch.vrsave = set_reg_val(id, *val);
+ 			break;
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ 		case KVM_REG_PPC_VSR0 ... KVM_REG_PPC_VSR31:
+ 			if (cpu_has_feature(CPU_FTR_VSX)) {
+-				long int i = reg->id - KVM_REG_PPC_VSR0;
+-				vcpu->arch.fp.fpr[i][0] = val.vsxval[0];
+-				vcpu->arch.fp.fpr[i][1] = val.vsxval[1];
++				i = id - KVM_REG_PPC_VSR0;
++				vcpu->arch.fp.fpr[i][0] = val->vsxval[0];
++				vcpu->arch.fp.fpr[i][1] = val->vsxval[1];
+ 			} else {
+ 				r = -ENXIO;
+ 			}
+@@ -715,29 +694,29 @@ int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+ 				break;
+ 			}
+ 			r = kvmppc_xics_set_icp(vcpu,
+-						set_reg_val(reg->id, val));
++						set_reg_val(id, *val));
+ 			break;
+ #endif /* CONFIG_KVM_XICS */
+ 		case KVM_REG_PPC_FSCR:
+-			vcpu->arch.fscr = set_reg_val(reg->id, val);
++			vcpu->arch.fscr = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_TAR:
+-			vcpu->arch.tar = set_reg_val(reg->id, val);
++			vcpu->arch.tar = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_EBBHR:
+-			vcpu->arch.ebbhr = set_reg_val(reg->id, val);
++			vcpu->arch.ebbhr = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_EBBRR:
+-			vcpu->arch.ebbrr = set_reg_val(reg->id, val);
++			vcpu->arch.ebbrr = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_BESCR:
+-			vcpu->arch.bescr = set_reg_val(reg->id, val);
++			vcpu->arch.bescr = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_VTB:
+-			vcpu->arch.vtb = set_reg_val(reg->id, val);
++			vcpu->arch.vtb = set_reg_val(id, *val);
+ 			break;
+ 		case KVM_REG_PPC_IC:
+-			vcpu->arch.ic = set_reg_val(reg->id, val);
++			vcpu->arch.ic = set_reg_val(id, *val);
+ 			break;
+ 		default:
+ 			r = -EINVAL;
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index d4df648..1cb2a2a 100644
+index 8ace612..831c1b4 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -1570,6 +1570,75 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
- 	int r = 0;
+@@ -1564,150 +1564,125 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
+ 	return vcpu->kvm->arch.kvm_ops->set_sregs(vcpu, sregs);
+ }
  
- 	switch (id) {
-+	case KVM_REG_PPC_IVPR:
-+		*val = get_reg_val(id, vcpu->arch.ivpr);
-+		break;
-+	case KVM_REG_PPC_IVOR0:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_CRITICAL]);
-+		break;
-+	case KVM_REG_PPC_IVOR1:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_MACHINE_CHECK]);
-+		break;
-+	case KVM_REG_PPC_IVOR2:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_DATA_STORAGE]);
-+		break;
-+	case KVM_REG_PPC_IVOR3:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_INST_STORAGE]);
-+		break;
-+	case KVM_REG_PPC_IVOR4:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_EXTERNAL]);
-+		break;
-+	case KVM_REG_PPC_IVOR5:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_ALIGNMENT]);
-+		break;
-+	case KVM_REG_PPC_IVOR6:
-+		*val = get_reg_val(id, vcpu->arch.ivor[BOOKE_IRQPRIO_PROGRAM]);
-+		break;
-+	case KVM_REG_PPC_IVOR7:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_FP_UNAVAIL]);
-+		break;
-+	case KVM_REG_PPC_IVOR8:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_CRITICAL]);
-+		break;
-+	case KVM_REG_PPC_IVOR9:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_AP_UNAVAIL]);
-+		break;
-+	case KVM_REG_PPC_IVOR10:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_DECREMENTER]);
-+		break;
-+	case KVM_REG_PPC_IVOR11:
-+		*val = get_reg_val(id, vcpu->arch.ivor[BOOKE_IRQPRIO_FIT]);
-+		break;
-+	case KVM_REG_PPC_IVOR12:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_WATCHDOG]);
-+		break;
-+	case KVM_REG_PPC_IVOR13:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_DTLB_MISS]);
-+		break;
-+	case KVM_REG_PPC_IVOR14:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_ITLB_MISS]);
-+		break;
-+	case KVM_REG_PPC_IVOR15:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_DEBUG]);
-+		break;
-+	case KVM_REG_PPC_IVOR35:
-+		*val = get_reg_val(id,
-+			vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR]);
-+		break;
- 	case KVM_REG_PPC_IAC1:
- 		*val = get_reg_val(id, vcpu->arch.dbg_reg.iac1);
- 		break;
-@@ -1626,6 +1695,82 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
- 	int r = 0;
- 
- 	switch (id) {
-+	case KVM_REG_PPC_IVPR: {
-+		ulong new_ivpr = set_reg_val(id, *val);
-+
-+		kvmppc_set_ivpr(vcpu, new_ivpr);
-+		break;
-+	}
-+	case KVM_REG_PPC_IVOR0:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_CRITICAL] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR1:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_MACHINE_CHECK] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR2: {
-+		u32 new_ivor = set_reg_val(id, *val);
-+
-+		kvmppc_set_ivor2(vcpu, new_ivor);
-+		break;
-+	}
-+	case KVM_REG_PPC_IVOR3:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_INST_STORAGE] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR4:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_EXTERNAL] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR5:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_ALIGNMENT] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR6:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_PROGRAM] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR7:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_FP_UNAVAIL] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR8: {
-+		u32 new_ivor = set_reg_val(id, *val);
-+
-+		kvmppc_set_ivor8(vcpu, new_ivor);
-+		break;
-+	}
-+	case KVM_REG_PPC_IVOR9:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_AP_UNAVAIL] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR10:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_DECREMENTER] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR11:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_FIT] = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR12:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_WATCHDOG] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR13:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_DTLB_MISS] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR14:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_ITLB_MISS] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR15:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_DEBUG] = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR35:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_PERFORMANCE_MONITOR] =
-+			set_reg_val(id, *val);
-+		break;
- 	case KVM_REG_PPC_IAC1:
- 		vcpu->arch.dbg_reg.iac1 = set_reg_val(id, *val);
- 		break;
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index 2e02ed8..08f61bf 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -433,14 +433,52 @@ static int kvmppc_core_set_sregs_e500(struct kvm_vcpu *vcpu,
- static int kvmppc_get_one_reg_e500(struct kvm_vcpu *vcpu, u64 id,
- 				   union kvmppc_one_reg *val)
+-int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
++			union kvmppc_one_reg *val)
  {
--	int r = kvmppc_get_one_reg_e500_tlb(vcpu, id, val);
-+	int r = 0;
-+
+ 	int r = 0;
+-	union kvmppc_one_reg val;
+-	int size;
+ 
+-	size = one_reg_size(reg->id);
+-	if (size > sizeof(val))
+-		return -EINVAL;
+-
+-	switch (reg->id) {
 +	switch (id) {
-+	case KVM_REG_PPC_IVOR32:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL]);
-+		break;
-+	case KVM_REG_PPC_IVOR33:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA]);
-+		break;
-+	case KVM_REG_PPC_IVOR34:
-+		*val = get_reg_val(id,
-+				vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND]);
-+		break;
-+	default:
-+		r = kvmppc_get_one_reg_e500_tlb(vcpu, id, val);
-+		break;
-+	}
-+
+ 	case KVM_REG_PPC_IAC1:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac1);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.iac1);
+ 		break;
+ 	case KVM_REG_PPC_IAC2:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac2);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.iac2);
+ 		break;
+ #if CONFIG_PPC_ADV_DEBUG_IACS > 2
+ 	case KVM_REG_PPC_IAC3:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac3);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.iac3);
+ 		break;
+ 	case KVM_REG_PPC_IAC4:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.iac4);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.iac4);
+ 		break;
+ #endif
+ 	case KVM_REG_PPC_DAC1:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac1);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.dac1);
+ 		break;
+ 	case KVM_REG_PPC_DAC2:
+-		val = get_reg_val(reg->id, vcpu->arch.dbg_reg.dac2);
+-		break;
+-	case KVM_REG_PPC_DBSR:
+-		val = get_reg_val(reg->id, vcpu->arch.dbsr);
++		*val = get_reg_val(id, vcpu->arch.dbg_reg.dac2);
+ 		break;
+ 	case KVM_REG_PPC_EPR: {
+ 		u32 epr = kvmppc_get_epr(vcpu);
+-		val = get_reg_val(reg->id, epr);
++		*val = get_reg_val(id, epr);
+ 		break;
+ 	}
+ #if defined(CONFIG_64BIT)
+ 	case KVM_REG_PPC_EPCR:
+-		val = get_reg_val(reg->id, vcpu->arch.epcr);
++		*val = get_reg_val(id, vcpu->arch.epcr);
+ 		break;
+ #endif
+ 	case KVM_REG_PPC_TCR:
+-		val = get_reg_val(reg->id, vcpu->arch.tcr);
++		*val = get_reg_val(id, vcpu->arch.tcr);
+ 		break;
+ 	case KVM_REG_PPC_TSR:
+-		val = get_reg_val(reg->id, vcpu->arch.tsr);
++		*val = get_reg_val(id, vcpu->arch.tsr);
+ 		break;
+ 	case KVM_REG_PPC_DEBUG_INST:
+-		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV_DEBUG);
++		*val = get_reg_val(id, KVMPPC_INST_EHPRIV_DEBUG);
+ 		break;
+ 	case KVM_REG_PPC_VRSAVE:
+-		val = get_reg_val(reg->id, vcpu->arch.vrsave);
++		*val = get_reg_val(id, vcpu->arch.vrsave);
+ 		break;
+ 	default:
+-		r = vcpu->kvm->arch.kvm_ops->get_one_reg(vcpu, reg->id, &val);
++		r = vcpu->kvm->arch.kvm_ops->get_one_reg(vcpu, id, val);
+ 		break;
+ 	}
+ 
+-	if (r)
+-		return r;
+-
+-	if (copy_to_user((char __user *)(unsigned long)reg->addr, &val, size))
+-		r = -EFAULT;
+-
  	return r;
  }
  
- static int kvmppc_set_one_reg_e500(struct kvm_vcpu *vcpu, u64 id,
- 				   union kvmppc_one_reg *val)
+-int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
++			union kvmppc_one_reg *val)
  {
--	int r = kvmppc_get_one_reg_e500_tlb(vcpu, id, val);
-+	int r = 0;
-+
+ 	int r = 0;
+-	union kvmppc_one_reg val;
+-	int size;
+ 
+-	size = one_reg_size(reg->id);
+-	if (size > sizeof(val))
+-		return -EINVAL;
+-
+-	if (copy_from_user(&val, (char __user *)(unsigned long)reg->addr, size))
+-		return -EFAULT;
+-
+-	switch (reg->id) {
 +	switch (id) {
-+	case KVM_REG_PPC_IVOR32:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR33:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_DATA] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_IVOR34:
-+		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_FP_ROUND] =
-+			set_reg_val(id, *val);
-+		break;
-+	default:
-+		r = kvmppc_get_one_reg_e500_tlb(vcpu, id, val);
-+		break;
+ 	case KVM_REG_PPC_IAC1:
+-		vcpu->arch.dbg_reg.iac1 = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.iac1 = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_IAC2:
+-		vcpu->arch.dbg_reg.iac2 = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.iac2 = set_reg_val(id, *val);
+ 		break;
+ #if CONFIG_PPC_ADV_DEBUG_IACS > 2
+ 	case KVM_REG_PPC_IAC3:
+-		vcpu->arch.dbg_reg.iac3 = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.iac3 = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_IAC4:
+-		vcpu->arch.dbg_reg.iac4 = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.iac4 = set_reg_val(id, *val);
+ 		break;
+ #endif
+ 	case KVM_REG_PPC_DAC1:
+-		vcpu->arch.dbg_reg.dac1 = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.dac1 = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_DAC2:
+-		vcpu->arch.dbg_reg.dac2 = set_reg_val(reg->id, val);
+-		break;
+-	case KVM_REG_PPC_DBSR:
+-		vcpu->arch.dbsr = set_reg_val(reg->id, val);
++		vcpu->arch.dbg_reg.dac2 = set_reg_val(id, *val);
+ 		break;
+ 	case KVM_REG_PPC_EPR: {
+-		u32 new_epr = set_reg_val(reg->id, val);
++		u32 new_epr = set_reg_val(id, *val);
+ 		kvmppc_set_epr(vcpu, new_epr);
+ 		break;
+ 	}
+ #if defined(CONFIG_64BIT)
+ 	case KVM_REG_PPC_EPCR: {
+-		u32 new_epcr = set_reg_val(reg->id, val);
++		u32 new_epcr = set_reg_val(id, *val);
+ 		kvmppc_set_epcr(vcpu, new_epcr);
+ 		break;
+ 	}
+ #endif
+ 	case KVM_REG_PPC_OR_TSR: {
+-		u32 tsr_bits = set_reg_val(reg->id, val);
++		u32 tsr_bits = set_reg_val(id, *val);
+ 		kvmppc_set_tsr_bits(vcpu, tsr_bits);
+ 		break;
+ 	}
+ 	case KVM_REG_PPC_CLEAR_TSR: {
+-		u32 tsr_bits = set_reg_val(reg->id, val);
++		u32 tsr_bits = set_reg_val(id, *val);
+ 		kvmppc_clr_tsr_bits(vcpu, tsr_bits);
+ 		break;
+ 	}
+ 	case KVM_REG_PPC_TSR: {
+-		u32 tsr = set_reg_val(reg->id, val);
++		u32 tsr = set_reg_val(id, *val);
+ 		kvmppc_set_tsr(vcpu, tsr);
+ 		break;
+ 	}
+ 	case KVM_REG_PPC_TCR: {
+-		u32 tcr = set_reg_val(reg->id, val);
++		u32 tcr = set_reg_val(id, *val);
+ 		kvmppc_set_tcr(vcpu, tcr);
+ 		break;
+ 	}
+ 	case KVM_REG_PPC_VRSAVE:
+-		vcpu->arch.vrsave = set_reg_val(reg->id, val);
++		vcpu->arch.vrsave = set_reg_val(id, *val);
+ 		break;
+ 	default:
+-		r = vcpu->kvm->arch.kvm_ops->set_one_reg(vcpu, reg->id, &val);
++		r = vcpu->kvm->arch.kvm_ops->set_one_reg(vcpu, id, val);
+ 		break;
+ 	}
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 4c79284..1326116 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -927,6 +927,61 @@ int kvmppc_handle_store(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_handle_store);
+ 
++int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++{
++	int r = 0;
++	union kvmppc_one_reg val;
++	int size;
++
++	size = one_reg_size(reg->id);
++	if (size > sizeof(val))
++		return -EINVAL;
++
++	r = kvmppc_get_one_reg(vcpu, reg->id, &val);
++	if (r == -EINVAL) {
++		r = 0;
++		switch (reg->id) {
++		default:
++			r = -EINVAL;
++			break;
++		}
 +	}
 +
- 	return r;
- }
- 
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 4549349..0668bc7 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -268,6 +268,22 @@ static int kvmppc_get_one_reg_e500mc(struct kvm_vcpu *vcpu, u64 id,
- 	int r = 0;
- 
- 	switch (id) {
-+	case KVM_REG_PPC_IVOR32:
-+		*val = get_reg_val(id,
-+			vcpu->arch.ivor[BOOKE_IRQPRIO_ALTIVEC_UNAVAIL]);
-+		break;
-+	case KVM_REG_PPC_IVOR33:
-+		*val = get_reg_val(id,
-+			vcpu->arch.ivor[BOOKE_IRQPRIO_ALTIVEC_ASSIST]);
-+		break;
-+	case KVM_REG_PPC_IVOR36:
-+		*val = get_reg_val(id,
-+			vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL]);
-+		break;
-+	case KVM_REG_PPC_IVOR37:
-+		*val = get_reg_val(id,
-+			vcpu->arch.ivor[BOOKE_IRQPRIO_DBELL_CRIT]);
-+		break;
- 	case KVM_REG_PPC_SPRG9:
- 		*val = get_reg_val(id, vcpu->arch.sprg9);
- 		break;
++	if (r)
++		return r;
++
++	if (copy_to_user((char __user *)(unsigned long)reg->addr, &val, size))
++		r = -EFAULT;
++
++	return r;
++}
++
++int kvm_vcpu_ioctl_set_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
++{
++	int r;
++	union kvmppc_one_reg val;
++	int size;
++
++	size = one_reg_size(reg->id);
++	if (size > sizeof(val))
++		return -EINVAL;
++
++	if (copy_from_user(&val, (char __user *)(unsigned long)reg->addr, size))
++		return -EFAULT;
++
++	r = kvmppc_set_one_reg(vcpu, reg->id, &val);
++	if (r == -EINVAL) {
++		r = 0;
++		switch (reg->id) {
++		default:
++			r = -EINVAL;
++			break;
++		}
++	}
++
++	return r;
++}
++
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ {
+ 	int r;
 -- 
 1.7.11.7
