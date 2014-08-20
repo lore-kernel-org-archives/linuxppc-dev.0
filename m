@@ -1,38 +1,36 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 153941A015E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 12:31:25 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D33D1A0053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 12:34:11 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 20 Aug 2014 08:01:23 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 15271E004B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:03:27 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7K2VhYK53543072
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:01:43 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7K2VJKd016665
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:01:19 +0530
-Date: Wed, 20 Aug 2014 10:31:18 +0800
+ Wed, 20 Aug 2014 08:04:09 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6AE5F125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:04:19 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7K2aUoO5308726
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:06:30 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7K2Y5VK006938
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 08:04:06 +0530
+Date: Wed, 20 Aug 2014 10:34:04 +0800
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH V7 02/17] PCI/IOV: Get VF BAR size from hardware directly
- when platform needs
-Message-ID: <20140820023118.GB6904@richard>
+Subject: Re: [PATCH V7 00/17] Enable SRIOV on POWER8
+Message-ID: <20140820023404.GC6904@richard>
 Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1406182947-11302-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <20140819214459.GC6295@google.com>
+ <20140819211942.GA6295@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140819214459.GC6295@google.com>
+In-Reply-To: <20140819211942.GA6295@google.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
  linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
  qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
@@ -45,97 +43,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 19, 2014 at 03:44:59PM -0600, Bjorn Helgaas wrote:
->On Thu, Jul 24, 2014 at 02:22:12PM +0800, Wei Yang wrote:
->> Current implementation calculates VF BAR size from dividing the total size of
->> IOV BAR by total VF number. It won't work on PowerNV platform because we're
->> going to expand IOV BAR size for finely alignment.
+On Tue, Aug 19, 2014 at 03:19:42PM -0600, Bjorn Helgaas wrote:
+>On Thu, Jul 24, 2014 at 02:22:10PM +0800, Wei Yang wrote:
+>> This patch set enables the SRIOV on POWER8.
 >> 
->> The patch enforces getting IOV BAR size from hardware and then calculate
->> the VF BAR size based on that when platform wants so.
+>> The gerneral idea is put each VF into one individual PE and allocate required
+>> resources like DMA/MSI.
 >> 
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> One thing special for VF PE is we use M64BT to cover the IOV BAR. M64BT is one
+>> hardware on POWER platform to map MMIO address to PE. By using M64BT, we could
+>> map one individual VF to a VF PE, which introduce more flexiblity to users.
+>> 
+>> To achieve this effect, we need to do some hack on pci devices's resources.
+>> 1. Expand the IOV BAR properly.
+>>    Done by pnv_pci_ioda_fixup_iov_resources().
+>> 2. Shift the IOV BAR properly.
+>>    Done by pnv_pci_vf_resource_shift().
+>> 3. IOV BAR alignment is the total size instead of an individual size on
+>>    powernv platform.
+>>    Done by pnv_pcibios_sriov_resource_alignment().
+>> 4. Take the IOV BAR alignment into consideration in the sizing and assigning.
+>>    This is achieved by commit: "PCI: Take additional IOV BAR alignment in
+>>    sizing and assigning"
+>> 
+>> Test Environment:
+>>        The SRIOV device tested is Emulex Lancer and Mellanox ConnectX-3 on
+>>        POWER8.
+>> 
+>> Examples on pass through a VF to guest through vfio:
+>> 	1. install necessary modules
+>> 	   modprobe vfio
+>> 	   modprobe vfio-pci
+>> 	2. retrieve the iommu_group the device belongs to
+>> 	   readlink /sys/bus/pci/devices/0000:06:0d.0/iommu_group
+>> 	   ../../../../kernel/iommu_groups/26
+>> 	   This means it belongs to group 26
+>> 	3. see how many devices under this iommu_group
+>> 	   ls /sys/kernel/iommu_groups/26/devices/
+>> 	4. unbind the original driver and bind to vfio-pci driver
+>> 	   echo 0000:06:0d.0 > /sys/bus/pci/devices/0000:06:0d.0/driver/unbind
+>> 	   echo  1102 0002 > /sys/bus/pci/drivers/vfio-pci/new_id
+>> 	   Note: this should be done for each device in the same iommu_group
+>> 	5. Start qemu and pass device through vfio
+>> 	   /home/ywywyang/git/qemu-impreza/ppc64-softmmu/qemu-system-ppc64 \
+>> 		   -M pseries -m 2048 -enable-kvm -nographic \
+>> 		   -drive file=/home/ywywyang/kvm/fc19.img \
+>> 		   -monitor telnet:localhost:5435,server,nowait -boot cd \
+>> 		   -device "spapr-pci-vfio-host-bridge,id=CXGB3,iommu=26,index=6"
+>> 
+>> Verify this is the exact VF response:
+>> 	1. ping from a machine in the same subnet(the broadcast domain)
+>> 	2. run arp -n on this machine
+>> 	   9.115.251.20             ether   00:00:c9:df:ed:bf   C eth0
+>> 	3. ifconfig in the guest
+>> 	   # ifconfig eth1
+>> 	   eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+>> 	        inet 9.115.251.20  netmask 255.255.255.0  broadcast 9.115.251.255
+>> 		inet6 fe80::200:c9ff:fedf:edbf  prefixlen 64  scopeid 0x20<link>
+>> 	        ether 00:00:c9:df:ed:bf  txqueuelen 1000 (Ethernet)
+>> 	        RX packets 175  bytes 13278 (12.9 KiB)
+>> 	        RX errors 0  dropped 0  overruns 0  frame 0
+>> 		TX packets 58  bytes 9276 (9.0 KiB)
+>> 	        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+>> 	4. They have the same MAC address
+>> 
+>> 	Note: make sure you shutdown other network interfaces in guest.
+>> 
 >> ---
->>  drivers/pci/iov.c      |   28 ++++++++++++++++++++++++----
->>  include/linux/ioport.h |    1 +
->>  2 files changed, 25 insertions(+), 4 deletions(-)
->> 
->> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
->> index 7566238..ef1c546 100644
->> --- a/drivers/pci/iov.c
->> +++ b/drivers/pci/iov.c
->> @@ -55,6 +55,9 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
->>  	struct resource *res;
->>  	struct pci_sriov *iov = dev->sriov;
->>  	struct pci_bus *bus;
->> +	struct resource tmp;
->> +	enum pci_bar_type type;
->> +	int reg;
->>  
->>  	mutex_lock(&iov->dev->sriov->lock);
->>  	bus = virtfn_add_bus(dev->bus, pci_iov_virtfn_bus(dev, id));
->> @@ -80,12 +83,29 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
->>  			continue;
->>  		virtfn->resource[i].name = pci_name(virtfn);
->>  		virtfn->resource[i].flags = res->flags;
->> -		size = resource_size(res);
->> -		do_div(size, iov->total_VFs);
->> +		/* When res has IORESOURCE_ARCH, retrieve the IOV BAR size
->> +		 * from hardware directly.
->> +		 */
->> +		if (res->flags & IORESOURCE_ARCH) {
->> +			reg = pci_iov_resource_bar(dev, i + PCI_IOV_RESOURCES, &type);
->> +			__pci_read_base(dev, type, &tmp, reg);
->> +			size = resource_size(&tmp);
->> +			/* When __pci_read_base fails, flags is set to 0.
->> +			 * In this case, reset size to 0, which means the VF
->> +			 * will not be enabled.
->> +			 */
->> +			if (!tmp.flags)
->> +				size = 0;
+>> v6 -> v7:
+>>    1. add IORESOURCE_ARCH flag for IOV BAR on powernv platform.
+>>    2. when IOV BAR has IORESOURCE_ARCH flag, the size is retrieved from
+>>       hardware directly. If not, calculate as usual.
+>>    3. reorder the patch set, group them by subsystem:
+>>       PCI, powerpc, powernv
+>>    4. rebase it on 3.16-rc6
 >
->I don't like the IORESOURCE_ARCH flag because it really doesn't have any
->specific meaning.  You're using it to enable some arch-specific code here
->for this specific case.  But there are any number of other places that
->could do something similar, and there's no way to coordinate them all.
+>This doesn't apply for me on v3.16-rc6:
 >
->I'd rather have some sort of pcibios_*() hook here where powerpc could
->override the default implementation.
+>  02:48:57 ~/linux$ stg rebase v3.16-rc6
+>  Checking for changes in the working directory ... done
+>  Rebasing to "v3.16-rc6" ... done
+>  No patches applied
+>  02:49:14 ~/linux$ stg import -M --sign m/wy
+>  Checking for changes in the working directory ... done
+>  Importing patch "pci-iov-export-interface-for" ... done
+>  Importing patch "pci-iov-get-vf-bar-size-from" ... done
+>  Importing patch "pci-add-weak" ... done
+>  Importing patch "pci-take-additional-iov-bar" ... done
+>  Importing patch "powerpc-pci-don-t-unset-pci" ... done
+>  Importing patch "powerpc-pci-define" ... done
+>  Importing patch "powrepc-pci-refactor-pci_dn" ... done
+>  Importing patch "powerpc-powernv-use-pci_dn-in" ... error: patch failed:
+>  arch/powerpc/platforms/powernv/pci.c:376
+>  error: arch/powerpc/platforms/powernv/pci.c: patch does not apply
+>  stg import: Diff does not apply cleanly
+>
+>What am I missing?
+>
+>I assume you intend these all to go through my tree just to keep them all
+>together.  The ideal rebase target for me would be v3.17-rc1.
 
-Yep, got it. I will write a pcibios_sriov_resource_size() and override it in
-powerpc arch.
+Ok, I will rebase it on v3.17-rc1 upstream. While I guess the conflict is due
+to some patches from Gavin, which is not merged at that moment. I will make
+sure it applies to v3.17-rc1.
 
 >
->> +		} else {
->> +			size = resource_size(res);
->> +			do_div(size, iov->total_VFs);
->> +		}
->>  		virtfn->resource[i].start = res->start + size * id;
->>  		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
->> -		rc = request_resource(res, &virtfn->resource[i]);
->> -		BUG_ON(rc);
->> +		if (resource_size(&virtfn->resource[i])) {
->> +			rc = request_resource(res, &virtfn->resource[i]);
->> +			BUG_ON(rc);
->> +		}
->>  	}
->>  
->>  	if (reset)
->> diff --git a/include/linux/ioport.h b/include/linux/ioport.h
->> index 5e3a906..de8b57c 100644
->> --- a/include/linux/ioport.h
->> +++ b/include/linux/ioport.h
->> @@ -48,6 +48,7 @@ struct resource {
->>  #define IORESOURCE_MEM_64	0x00100000
->>  #define IORESOURCE_WINDOW	0x00200000	/* forwarded by bridge */
->>  #define IORESOURCE_MUXED	0x00400000	/* Resource is software muxed */
->> +#define IORESOURCE_ARCH		0x00800000	/* Resource arch tagged */
->>
->>  #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
->>  #define IORESOURCE_DISABLED	0x10000000
->> -- 
->> 1.7.9.5
->> 
+>Given the arch/powerpc parts, I'll want an ack from Ben.  I just chatted
+>with him about these, so I assume that's not a problem, but we should make
+>it explicit.
+>
+>Bjorn
 
 -- 
 Richard Yang
