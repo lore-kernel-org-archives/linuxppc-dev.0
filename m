@@ -1,22 +1,23 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <asierra@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 341FB1A0162
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 00:16:49 +1000 (EST)
-Date: Wed, 20 Aug 2014 16:15:45 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 00/14] Add support for parameterized events from sysfs
-Message-ID: <20140820141545.GA3242@krava.brq.redhat.com>
-References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A07471A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 01:57:51 +1000 (EST)
+Date: Wed, 20 Aug 2014 10:54:38 -0500 (CDT)
+From: Aaron Sierra <asierra@xes-inc.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>,
+ Scott Wood <scottwood@freescale.com>
+Message-ID: <868471357.33583.1408550078450.JavaMail.zimbra@xes-inc.com>
+In-Reply-To: <53F4179F.1010803@freescale.com>
+References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
+ <1408493285.4058.55.camel@snotra.buserror.net>
+ <53F4179F.1010803@freescale.com>
+Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- peterz@infradead.org, linux-kernel@vger.kernel.org, eranian@google.com,
- dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 15, 2014 at 12:26:09AM -0700, Sukadev Bhattiprolu wrote:
-> From: Cody P Schafer <dev@codyps.com>
+> >> -#define FSL_IFC_BANK_COUNT 4
+> >> +#define FSL_IFC_BANK_COUNT 8
+> > First please modify fsl_ifc_nand.c to limit itself to the number of
+> > banks it dynamically determines are present based on the IFC version.
+> >
+> >
 > 
-> What this patchset does:
-> 
->  - the first patch (override sysfs in tools/perf via SYSFS_PATH) was sent out
->    previously, but needed a resend anyhow. Having it is useful for testing the
->    later changes to tools/perf.
->  - the second patch is a bugfix to the powerpc hv-24x7 code which was
->    previously sent out, which is a good idea to have when testing these patches
->    on POWER8 hardware.
-> 
->  - document perf sysfs and the changes to add parameterized events
->    - semi-notably: removes the growing list of specific POWER cpu events and
->      begins documenting them generically, much like the docs for
->      /sys/modules/MODULENAME do for modules.
->  - tools/perf changes to support parameterized events
->  - export some parameterized events from the powerpc pmus hv_24x7 and hv_gpci
-> 
-> Description of "event parameters" from the documentation patch:
-> 
->     Event parameters are a basic way for partial events to be specified in
->     sysfs with per-event names given to the fields that need to be filled in
->     when using a particular event.
-> 
->     It is intended for supporting cases where the single 'cpu' parameter is
->     insufficient. For example, POWER 8 has events for physical
->     sockets/cores/cpus that are accessible from with virtual machines. To
->     keep using the single 'cpu' parameter we'd need to perform a mapping
->     between Linux's cpus and the physical machine's cpus (in this case
->     Linux is running under a hypervisor). This isn't possible because
->     bindings between our cpus and physical cpus may not be fixed, and we
->     probably won't have a "cpu" on each physical cpu.
-> 
-> Description of the sysfs contents when events are parameterized (copied from an
-> included patch):
-> 
-> 	Examples:
-> 
-> 		domain=0x1,offset=0x8,starting_index=phys_cpu
-> 
-> 	In the case of the last example, a value replacing "phys_cpu"
-> 	would need to be provided by the user selecting the particular
-> 	event. This is refered to as "event parameterization". All
-> 	non-numerical values indicate an event parameter.
-> 
-> Notes on how perf-list displays parameterized events (and how to use them,
-> again culled from an included patch):
-> 
-> 	PARAMETERIZED EVENTS
-> 	--------------------
-> 
-> 	Some pmu events listed by 'perf-list' will be displayed with '?' in
-> 	them. For example:
-> 
-> 	  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
-> 
-> 	This means that when provided as an event, a value for
-> 	phys_processor_idx must also be supplied. For example:
-> 
-> 	  perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
+> Number of available bank/chip select are defined by SoC and it is
+> independent of SoC.
 
-hi,
-is the reason for this to document this field for event
-in "events/<event>" file?
+You mean that there is no way to tell from an IFC-specific register how
+many chip selects are valid for a given SoC, correct?
 
-Because once you have the field (phys_processor_idx) defined in
-"formats/phys_processor_idx" you should be able to use it as in
-your example:
+> It should be fix in following way
+> 
+> Option 1:
+> u-boot:  fix device tree with number of available chip select. It may
+> require IFC binding change
+> Linux: Read device tree and determine the Chip Selects
+> 
+> or
+> 
+> Option 2:
+> Make it static because any way IFC NAND driver polls to
+> FSL_IFC_BANK_COUNT to know NAND flash chip select. This patch is doing same.
 
-   perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/'
+My patch is based on the assumption that it is safe to access the addresses of
+the four nonexistent (unconnected?) chip selects in devices with fewer than
+eight chip selects.
 
-without any changes
+Also, the full FSL_IFC_BANK_COUNT range of chip selects should only be probed
+when no match is not found for a chip select's DTS-defined address base within
+any IFC bank. The typical case would be for the device tree to properly define
+the address space prepared by the bootloader, which would result in only banks
+present in the SoC being probed.
 
-thanks,
-jirka
+I have tested this patch on P1010 and T1042 processors, which feature four and
+eight chip selects respectively with no apparent ill effects.
+
+Our P1010 product has NAND attached to chip selects 0 and 1:
+
+    ranges = <0x0 0x0 0x0 0xef800000 0x0010000
+              0x1 0x0 0x0 0xef840000 0x0010000>;
+
+I mangled chip-select 0 so that the DTS-defined base would not match the
+address programmed by firmware, so that all eight chip selects would be
+scanned on this four chip-select part:
+
+    ranges = <0x0 0x0 0x0 0xefc00000 0x0010000
+              0x1 0x0 0x0 0xef840000 0x0010000>;
+
+This resulted in the following kernel message:
+
+fsl,ifc-nand efc00000.nand0: fsl_ifc_nand_probe: address did not match any chip selects
+
+The NAND device at chip select 1 was properly detected.
+
+> Regards,
+> Prabhakar
