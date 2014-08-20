@@ -1,19 +1,18 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <asierra@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3064D1A0191
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:26:53 +1000 (EST)
-Date: Thu, 21 Aug 2014 09:26:52 +1000
-From: Anton Blanchard <anton@samba.org>
-To: bhelgaas@google.com
-Subject: [PATCH] PCI: Increase BAR size quirk for IBM ipr SAS Crocodile
- adapters
-Message-ID: <20140821092652.604d7484@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 911D91A0068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:53:53 +1000 (EST)
+Date: Wed, 20 Aug 2014 18:51:44 -0500 (CDT)
+From: Aaron Sierra <asierra@xes-inc.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <1335064415.96829.1408578704825.JavaMail.zimbra@xes-inc.com>
+In-Reply-To: <1884375274.96749.1408578481814.JavaMail.zimbra@xes-inc.com>
+Subject: [PATCH] powerpc: fsl_pci: Fix PCI/PCI-X regression
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-pci@vger.kernel.org, miltonm@us.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, dllehr@us.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Douglas Lehr <dllehr@us.ibm.com>
+The following commit prevents the MPC8548E on the XPedite5200 PrPMC
+module from enumerating its PCI/PCI-X bus, though it was previously
+able to:
 
-The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.
-Due to an errata, setting the SR-IOV page size causes the physical
-function BARs to expand to the system page size.  Since ppc64 uses
-64k pages, when Linux tries to assign the smaller resource sizes
-to the now 64k BARs the address will be truncated and the BARs will
-overlap.
+    powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
 
-This quirk will force Linux to allocate the resource as a full page,
-which will avoid the overlap.
+The previous patch prevents any Freescale PCI-X bridge from enumerating
+the bus, if it is hardware strapped into Agent mode.
 
-Cc: <stable@vger.kernel.org> 
-Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Acked-by: Milton Miller <miltonm@us.ibm.com>
+In PCI-X, the Host is responsible for driving the PCI-X initialization
+pattern to devices on the bus, so that they know whether to operate in
+conventional PCI or PCI-X mode as well as what the bus timing will be.
+For a PCI-X PrPMC, the pattern is driven by the mezzanine carrier it is
+installed onto. Therefore, PrPMCs are PCI-X Agents, but they may still
+enumerate the bus.
+
+This patch depends on firmware to determine if the bridge should
+perform enumeration based on factors other than the Host/Agent mode,
+such as the state of the VITA 32-defined MONARCH# signal. If firmware
+has determined that enumeration should be allowed, then it will set the
+bridge's Bus Master bit in the Command register.
+
+Without firmware intervention, the Bus Master bit defaults to 1 in Host
+mode and 0 in Agent mode.
+
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
 ---
- drivers/pci/quirks.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/sysdev/fsl_pci.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 80c2d01..45b946d 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -24,6 +24,7 @@
- #include <linux/ioport.h>
- #include <linux/sched.h>
- #include <linux/ktime.h>
-+#include <linux/mm.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 4bd091a..88d8844 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -463,7 +463,7 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+-	u8 hdr_type, progif;
++	u8 hdr_type;
+ 	struct device_node *dev;
+ 	struct ccsr_pci __iomem *pci;
  
-@@ -287,6 +288,24 @@ static void quirk_citrine(struct pci_dev *dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
+@@ -520,9 +520,22 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 			goto no_bridge;
  
-+/*  On IBM Crocodile ipr SAS adapters, expand bar size to system page size. */
-+static void quirk_extend_bar_to_page(struct pci_dev *dev)
-+{
-+	int i;
+ 	} else {
+-		/* For PCI read PROG to identify controller mode */
+-		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
+-		if ((progif & 1) == 1)
++		u16 master;
 +
-+	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
-+		struct resource *r = &dev->resource[i];
-+
-+		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
-+			dev_info(&dev->dev, "Setting Bar size to Page size");
-+			r->end = PAGE_SIZE-1;
-+			r->start = 0;
-+			r->flags |= IORESOURCE_UNSET;
-+		}
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
-+
- /*
-  *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
-  *  If it's needed, re-allocate the region.
++		/*
++		 * If the controller is PCI-X, then Host mode refers to a
++		 * bridge that drives the PCI-X initialization pattern to
++		 * indicate bus operating mode/frequency to devices on the bus.
++		 * Some hardware (specifically PrPMC modules) are Agents, since
++		 * the mezzanine carrier is responsible for driving the
++		 * pattern, but they still may perform bus enumeration.
++		 *
++		 * Allow the bridge to be used for enumeration, if hardware
++		 * strapping (Host mode) or firmware (Agent mode) has enabled
++		 * bus mastering.
++		 */
++		early_read_config_word(hose, 0, 0, PCI_COMMAND, &master);
++		if (!(master & PCI_COMMAND_MASTER))
+ 			goto no_bridge;
+ 	}
+ 
 -- 
-1.7.9.5
+1.9.1
