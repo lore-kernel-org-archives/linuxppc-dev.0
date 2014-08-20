@@ -1,25 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-la0-x231.google.com (mail-la0-x231.google.com
- [IPv6:2a00:1450:4010:c03::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <p.zabel@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C46031A0044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 18:00:54 +1000 (EST)
-Received: by mail-la0-f49.google.com with SMTP id hz20so6853931lab.22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 01:00:50 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1408482065-18457-1-git-send-email-bobby.prani@gmail.com>
-References: <1408482065-18457-1-git-send-email-bobby.prani@gmail.com>
-Date: Wed, 20 Aug 2014 10:00:50 +0200
-Message-ID: <CAMuHMdWz+4ctGr92fJmi0GB1QrxRMy3GKC_KDpZfK-sriYP-FQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix build failure when MEMORY_HOTPLUG=y
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Andew Morton <akpm@linux-foundation.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C33571A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 19:04:29 +1000 (EST)
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: devicetree@vger.kernel.org
+Subject: [RFC PATCH 6/6] rtc: rtc-isl12057: Change vendor prefix for Intersil
+ Corporation to isil
+Date: Wed, 20 Aug 2014 10:43:04 +0200
+Message-Id: <1408524184-31928-7-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
+References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 19, 2014 at 11:01 PM, Pranith Kumar <bobby.prani@gmail.com> wrote:
-> ARCH_ENABLE_MEMORY_HOTPLUG is enabled by default for powerpc. This causes build
-> failures when SPARSEMEM=n as memory hotplug needs definition which are defined
-> only when SPARSEMEM=y. The error is as follows:
->
-> arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
-> arch/powerpc/platforms/pseries/hotplug-memory.c:27:31: note: each undeclared identifier is reported only once for each function it appears in
-> arch/powerpc/platforms/pseries/hotplug-memory.c: In function 'pseries_remove_memblock':
-> arch/powerpc/platforms/pseries/hotplug-memory.c:98:34: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
-> make[2]: *** [arch/powerpc/platforms/pseries/hotplug-memory.o] Error 1
->
-> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-> CC: Andew Morton <akpm@linux-foundation.org>
-> ---
->  arch/powerpc/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 9c1aa77..da16ffe 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -383,6 +383,7 @@ config ARCH_CPU_PROBE_RELEASE
->
->  config ARCH_ENABLE_MEMORY_HOTPLUG
->         def_bool y
-> +       depends on SPARSEMEM
->
->  config ARCH_HAS_WALK_MEMORY
->         def_bool y
-> --
-> 1.9.1
+Currently there is a wild mixture of isl, isil, and intersil
+compatibles in the kernel. At this point, changing the vendor
+symbol to the most often used variant, which is equal to the
+NASDAQ symbol, isil, should not hurt, since the isl1208 driver
+doesn't care either way.
+Patch 70e123373c05 added this driver with device tree support
+using the then documented isl vendor prefix, so we keep that
+around for backwards compatibility.
 
-In light of my investigation for your spufs patch, I guess this is a non-SMP
-PSERIES config?
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+ drivers/rtc/rtc-isl12057.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/rtc/rtc-isl12057.c b/drivers/rtc/rtc-isl12057.c
+index 455b601..8276bd6 100644
+--- a/drivers/rtc/rtc-isl12057.c
++++ b/drivers/rtc/rtc-isl12057.c
+@@ -279,7 +279,8 @@ static int isl12057_probe(struct i2c_client *client,
+ 
+ #ifdef CONFIG_OF
+ static const struct of_device_id isl12057_dt_match[] = {
+-	{ .compatible = "isl,isl12057" },
++	{ .compatible = "isil,isl12057" },
++	{ .compatible = "isl,isl12057" }, /* for backwards compatibility */
+ 	{ },
+ };
+ #endif
+-- 
+2.1.0.rc1
