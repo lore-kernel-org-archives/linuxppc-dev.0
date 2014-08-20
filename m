@@ -1,22 +1,33 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A6D61A01C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 13:51:27 +1000 (EST)
-Message-ID: <53F4179F.1010803@freescale.com>
-Date: Wed, 20 Aug 2014 09:05:59 +0530
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Aaron Sierra <asierra@xes-inc.com>
-Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
-References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
- <1408493285.4058.55.camel@snotra.buserror.net>
-In-Reply-To: <1408493285.4058.55.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 929721A012F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 15:52:22 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 20 Aug 2014 11:22:19 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5A18E125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:22:29 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7K5qcYD57278634
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:22:39 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7K5qFek029480
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 11:22:15 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Subject: [PATCH v4] powerpc/kvm: support to handle sw breakpoint
+Date: Wed, 20 Aug 2014 11:22:09 +0530
+Message-Id: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +37,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch adds kernel side support for software breakpoint.
+Design is that, by using an illegal instruction, we trap to hypervisor
+via Emulation Assistance interrupt, where we check for the illegal instruction
+and accordingly we return to Host or Guest. Patch also adds support for
+software breakpoint in PR KVM.
 
-On 8/20/2014 5:38 AM, Scott Wood wrote:
-> On Fri, 2014-08-15 at 16:07 -0500, Aaron Sierra wrote:
->> Freescale's QorIQ T Series processors support 8 IFC chip selects
->> within a memory map backward compatible with previous P Series
->> processors which supported only 4 chip selects.
->>
->> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
->> ---
->>   include/linux/fsl_ifc.h | 10 +++++-----
->>   1 file changed, 5 insertions(+), 5 deletions(-)
->>
->> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
->> index 84d60cb..62762ff 100644
->> --- a/include/linux/fsl_ifc.h
->> +++ b/include/linux/fsl_ifc.h
->> @@ -29,7 +29,7 @@
->>   #include <linux/of_platform.h>
->>   #include <linux/interrupt.h>
->>   
->> -#define FSL_IFC_BANK_COUNT 4
->> +#define FSL_IFC_BANK_COUNT 8
-> First please modify fsl_ifc_nand.c to limit itself to the number of
-> banks it dynamically determines are present based on the IFC version.
->
->
+Changes v3->v4:
+ Made changes to code comments and removed #define of zero opcode
+ Added a new function to handle the debug instruction emulation in book3s_hv
+ Rebased the code to latest upstream source.
 
-Number of available bank/chip select are defined by SoC and it is 
-independent of SoC.
-It should be fix in following way
+Changes v2->v3:
+ Changed the debug instructions. Using the all zero opcode in the instruction word
+  as illegal instruction as mentioned in Power ISA instead of ABS
+ Removed reg updated in emulation assist and added a call to
+  kvmppc_emulate_instruction for reg update.
 
-Option 1:
-u-boot:  fix device tree with number of available chip select. It may 
-require IFC binding change
-Linux: Read device tree and determine the Chip Selects
+Changes v1->v2:
 
-or
+ Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
+ Added code to use KVM get one reg infrastructure to get debug opcode.
+ Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
+ Made changes to commit message.
 
-Option 2:
-Make it static because any way IFC NAND driver polls to 
-FSL_IFC_BANK_COUNT to know NAND flash chip select. This patch is doing same.
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_book3s.h |  7 +++++++
+ arch/powerpc/kvm/book3s.c             |  3 ++-
+ arch/powerpc/kvm/book3s_hv.c          | 32 ++++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_pr.c          |  3 +++
+ arch/powerpc/kvm/emulate.c            | 11 +++++++++++
+ 5 files changed, 53 insertions(+), 3 deletions(-)
 
-Regards,
-Prabhakar
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 6acf0c2..a1944f8 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -24,6 +24,13 @@
+ #include <linux/kvm_host.h>
+ #include <asm/kvm_book3s_asm.h>
+ 
++/*
++ * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
++ * Based on PowerISA v2.07, Instruction with primary opcode 0 will be treated as illegal
++ * instruction.
++ */
++#define KVMPPC_INST_BOOK3S_DEBUG	0x00dddd00
++
+ struct kvmppc_bat {
+ 	u64 raw;
+ 	u32 bepi;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index dd03f6b..00e9c9f 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+ 					struct kvm_guest_debug *dbg)
+ {
+-	return -EINVAL;
++	vcpu->guest_debug = dbg->control;
++	return 0;
+ }
+ 
+ void kvmppc_decrementer_func(unsigned long data)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 27cced9..0a92e45 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -725,6 +725,14 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+ 	return kvmppc_hcall_impl_hv_realmode(cmd);
+ }
+ 
++static int kvmppc_emulate_debug_instruction_hv(struct kvm_run *run,
++					struct kvm_vcpu *vcpu)
++{
++	run->exit_reason = KVM_EXIT_DEBUG;
++	run->debug.arch.address = kvmppc_get_pc(vcpu);
++	return 0;
++}
++
+ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 				 struct task_struct *tsk)
+ {
+@@ -811,9 +819,26 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	 * we don't emulate any guest instructions at this stage.
+ 	 */
+ 	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+-		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+-		r = RESUME_GUEST;
++	{
++		u32 last_inst;
++		if(kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
++					EMULATE_DONE) {
++			/*
++			 * Fetch failed, so return to guest and
++			 * try executing it again.
++			 */
++			r = RESUME_GUEST;
++		} else {
++			if (last_inst == KVMPPC_INST_BOOK3S_DEBUG) {
++				kvmppc_emulate_debug_instruction_hv(run, vcpu);
++				r = RESUME_HOST;
++			} else {
++				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
++				r = RESUME_GUEST;
++			}
++		}
+ 		break;
++	}
+ 	/*
+ 	 * This occurs if the guest (kernel or userspace), does something that
+ 	 * is prohibited by HFSCR.  We just generate a program interrupt to
+@@ -922,6 +947,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 	long int i;
+ 
+ 	switch (id) {
++	case KVM_REG_PPC_DEBUG_INST:
++		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
++		break;
+ 	case KVM_REG_PPC_HIOR:
+ 		*val = get_reg_val(id, 0);
+ 		break;
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index faffb27..cd2a39d 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1319,6 +1319,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
+ 	int r = 0;
+ 
+ 	switch (id) {
++	case KVM_REG_PPC_DEBUG_INST:
++		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
++		break;
+ 	case KVM_REG_PPC_HIOR:
+ 		*val = get_reg_val(id, to_book3s(vcpu)->hior);
+ 		break;
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index e96b50d..68f38b2 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -274,6 +274,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 		}
+ 		break;
+ 
++	case 0:
++		/*
++		 * Instruction with primary opcode 0. Based on PowerISA
++		 * these are illegal instructions.
++		 */
++		run->exit_reason = KVM_EXIT_DEBUG;
++		run->debug.arch.address = kvmppc_get_pc(vcpu);
++		emulated = EMULATE_EXIT_USER;
++		advance = 0;
++		break;
++
+ 	default:
+ 		emulated = EMULATE_FAIL;
+ 	}
+-- 
+1.7.11.4
