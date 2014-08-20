@@ -1,21 +1,18 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F2661A087D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 23:09:34 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 1/2] powerpc/booke: Restrict SPE exception handlers to
- e200/e500 cores
-Date: Wed, 20 Aug 2014 16:09:03 +0300
-Message-ID: <1408540144-24436-1-git-send-email-mihai.caraman@freescale.com>
+Return-Path: <bobby.prani@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org
+In-Reply-To: <CAMuHMdX4HXf91RcuxzdU=HRvqtikBd=7Q62msQUMGVFuHuJ4+g@mail.gmail.com>
+References: <1408483010-32689-1-git-send-email-bobby.prani@gmail.com>
+ <CAMuHMdX4HXf91RcuxzdU=HRvqtikBd=7Q62msQUMGVFuHuJ4+g@mail.gmail.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Wed, 20 Aug 2014 09:09:04 -0400
+Message-ID: <CAJhHMCBzRy_-nKmW3Wpsck9KhzoL1JCkaNvok1JOFU0r44m19Q@mail.gmail.com>
+Subject: Re: [RFC PATCH] powerpc: Make SPU_FS depend on SPARSEMEM
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "open list:CELL BROADBAND EN..." <cbe-oss-dev@lists.ozlabs.org>,
+ Geoff Levand <geoffrey.levand@am.sony.com>, Arnd Bergmann <arnd@arndb.de>,
+ open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "open list:CELL BROADBAND EN..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,212 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SPE exception handlers are now defined for 32-bit e500mc cores even though
-SPE unit is not present and CONFIG_SPE is undefined.
+On Wed, Aug 20, 2014 at 3:49 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
 
-Restrict SPE exception handlers to e200/e500 cores adding CONFIG_SPE_POSSIBLE
-and consequently guard __stup_ivors and __setup_cpu functions.
+> Is this a randconfig kernel?
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Alexander Graf <agraf@suse.de>
----
-v2:
- - use CONFIG_PPC_E500MC without CONFIG_E500
- - use elif defined()
+Yes, randconfig with ARCH=powerpc.
 
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 12 +++++++++++-
- arch/powerpc/kernel/cputable.c            |  5 +++++
- arch/powerpc/kernel/head_fsl_booke.S      | 18 +++++++++++++-----
- arch/powerpc/platforms/Kconfig.cputype    |  6 +++++-
- 4 files changed, 34 insertions(+), 7 deletions(-)
+>
+> config ARCH_SPARSEMEM_DEFAULT
+>        def_bool y
+>        depends on (SMP && PPC_PSERIES) || PPC_PS3
+>
+> Why is this not enabled? !SMP? !PPC_PSERIES? !PPC_PS3?
 
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 4f1393d..dddba3e 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -91,6 +91,7 @@ _GLOBAL(setup_altivec_idle)
- 
- 	blr
- 
-+#ifdef CONFIG_PPC_E500MC
- _GLOBAL(__setup_cpu_e6500)
- 	mflr	r6
- #ifdef CONFIG_PPC64
-@@ -107,14 +108,20 @@ _GLOBAL(__setup_cpu_e6500)
- 	bl	__setup_cpu_e5500
- 	mtlr	r6
- 	blr
-+#endif /* CONFIG_PPC_E500MC */
- 
- #ifdef CONFIG_PPC32
-+#ifdef CONFIG_E200
- _GLOBAL(__setup_cpu_e200)
- 	/* enable dedicated debug exception handling resources (Debug APU) */
- 	mfspr	r3,SPRN_HID0
- 	ori	r3,r3,HID0_DAPUEN@l
- 	mtspr	SPRN_HID0,r3
- 	b	__setup_e200_ivors
-+#endif /* CONFIG_E200 */
-+
-+#ifdef CONFIG_E500
-+#ifndef CONFIG_PPC_E500MC
- _GLOBAL(__setup_cpu_e500v1)
- _GLOBAL(__setup_cpu_e500v2)
- 	mflr	r4
-@@ -129,6 +136,7 @@ _GLOBAL(__setup_cpu_e500v2)
- #endif
- 	mtlr	r4
- 	blr
-+#else /* CONFIG_PPC_E500MC */
- _GLOBAL(__setup_cpu_e500mc)
- _GLOBAL(__setup_cpu_e5500)
- 	mflr	r5
-@@ -159,7 +167,9 @@ _GLOBAL(__setup_cpu_e5500)
- 2:
- 	mtlr	r5
- 	blr
--#endif
-+#endif /* CONFIG_PPC_E500MC */
-+#endif /* CONFIG_E500 */
-+#endif /* CONFIG_PPC32 */
- 
- #ifdef CONFIG_PPC_BOOK3E_64
- _GLOBAL(__restore_cpu_e6500)
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 0c15764..df979c5f 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2051,6 +2051,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif /* CONFIG_PPC32 */
- #ifdef CONFIG_E500
- #ifdef CONFIG_PPC32
-+#ifndef CONFIG_PPC_E500MC
- 	{	/* e500 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x80200000,
-@@ -2090,6 +2091,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
- 	},
-+#else
- 	{	/* e500mc */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x80230000,
-@@ -2108,7 +2110,9 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce500mc",
- 	},
-+#endif /* CONFIG_PPC_E500MC */
- #endif /* CONFIG_PPC32 */
-+#ifdef CONFIG_PPC_E500MC
- 	{	/* e5500 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x80240000,
-@@ -2152,6 +2156,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce6500",
- 	},
-+#endif /* CONFIG_PPC_E500MC */
- #ifdef CONFIG_PPC32
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index b497188..90f487f 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -613,6 +613,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	mfspr	r10, SPRN_SPRG_RSCRATCH0
- 	b	InstructionStorage
- 
-+/* Define SPE handlers for e200 and e500v2 */
- #ifdef CONFIG_SPE
- 	/* SPE Unavailable */
- 	START_EXCEPTION(SPEUnavailable)
-@@ -622,10 +623,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	b	fast_exception_return
- 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE_LITE(0x2010, KernelSPE)
--#else
-+#elif defined(CONFIG_SPE_POSSIBLE)
- 	EXCEPTION(0x2020, SPE_ALTIVEC_UNAVAIL, SPEUnavailable, \
- 		  unknown_exception, EXC_XFER_EE)
--#endif /* CONFIG_SPE */
-+#endif /* CONFIG_SPE_POSSIBLE */
- 
- 	/* SPE Floating Point Data */
- #ifdef CONFIG_SPE
-@@ -635,12 +636,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- 	/* SPE Floating Point Round */
- 	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
- 		  SPEFloatingPointRoundException, EXC_XFER_EE)
--#else
-+#elif defined(CONFIG_SPE_POSSIBLE)
- 	EXCEPTION(0x2040, SPE_FP_DATA_ALTIVEC_ASSIST, SPEFloatingPointData,
- 		  unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
- 		  unknown_exception, EXC_XFER_EE)
--#endif /* CONFIG_SPE */
-+#endif /* CONFIG_SPE_POSSIBLE */
-+
- 
- 	/* Performance Monitor */
- 	EXCEPTION(0x2060, PERFORMANCE_MONITOR, PerformanceMonitor, \
-@@ -947,6 +949,7 @@ get_phys_addr:
-  * Global functions
-  */
- 
-+#ifdef CONFIG_E200
- /* Adjust or setup IVORs for e200 */
- _GLOBAL(__setup_e200_ivors)
- 	li	r3,DebugDebug@l
-@@ -959,7 +962,10 @@ _GLOBAL(__setup_e200_ivors)
- 	mtspr	SPRN_IVOR34,r3
- 	sync
- 	blr
-+#endif
- 
-+#ifdef CONFIG_E500
-+#ifndef CONFIG_PPC_E500MC
- /* Adjust or setup IVORs for e500v1/v2 */
- _GLOBAL(__setup_e500_ivors)
- 	li	r3,DebugCrit@l
-@@ -974,7 +980,7 @@ _GLOBAL(__setup_e500_ivors)
- 	mtspr	SPRN_IVOR35,r3
- 	sync
- 	blr
--
-+#else
- /* Adjust or setup IVORs for e500mc */
- _GLOBAL(__setup_e500mc_ivors)
- 	li	r3,DebugDebug@l
-@@ -1000,6 +1006,8 @@ _GLOBAL(__setup_ehv_ivors)
- 	mtspr	SPRN_IVOR41,r3
- 	sync
- 	blr
-+#endif /* CONFIG_PPC_E500MC */
-+#endif /* CONFIG_E500 */
- 
- #ifdef CONFIG_SPE
- /*
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a41bd02..bb81571 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -311,9 +311,13 @@ config PPC_ICSWX_USE_SIGILL
- 
- 	  If in doubt, say N here.
- 
-+config SPE_POSSIBLE
-+	def_bool y
-+	depends on E200 || (E500 && !PPC_E500MC)
-+
- config SPE
- 	bool "SPE Support"
--	depends on E200 || (E500 && !PPC_E500MC)
-+	depends on SPE_POSSIBLE
- 	default y
- 	---help---
- 	  This option enables kernel support for the Signal Processing
+This was indeed enabled, but that does not do much. We will need
+CONFIG_SPARSEMEM which depends on CONFIG_SPARSEMEM_MANUAL which was
+not enabled.
+
+
+>
+> If PPC_CELL is enabled, this issue was introduced by
+>
+> commit 78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d
+> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date:   Tue Feb 13 11:46:06 2007 +1100
+>
+>     [POWERPC] spufs: remove need for struct page for SPEs
+>
+>     This patch removes the need for struct page for SPE local store
+>     and registers from spufs. It also makes the locking much more
+>     obvious and no longer relying on the truncate logic black magic
+>     for protecting against races between unmap_mapping_range() and
+>     new pages faulted in. It does so by switching to a nopfn() handler
+>     and using the new vm_insert_pfn() to setup the PTEs itself while
+>     holding a lock on the SPE.
+>
+>     The nice thing is that this patch actually removes a lot more code
+>     than it adds :-)
+>
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     Signed-off-by: Paul Mackerras <paulus@samba.org>
+>
+>
+> Another question: why does SPU_FS select MEMORY_HOTPLUG?
+
+Not really sure :(
+
+>
+> commit 4da30d15b6d5036b0d96422d6946ca758111fae3
+> Author: Geoff Levand <geoffrey.levand@am.sony.com>
+> Date:   Fri Jun 23 20:57:49 2006 +0200
+>
+>     [POWERPC] spufs: fix memory hotplug dependency
+>
+>     spufs_base.c calls __add_pages, which depends on CONFIG_MEMORY_HOTPLUG.
+>
+>     Moved the selection of CONFIG_MEMORY_HOTPLUG from CONFIG_SPUFS_MMAP
+>     to CONFIG_SPU_FS.
+>
+>     Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+>     Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+>     Signed-off-by: Paul Mackerras <paulus@samba.org>
+>
+> However, the call to __add_pages() has been moved a few times afterwards,
+> to be finally removed in the aforementioned commit
+> 78bde53e351bc89cff85d1c2c7e6d7c2ffdf120d.
+>
+> Does it still build/work if you just drop the "select MEMORY_HOTPLUG"?
+
+I should have saved the config file :(. I think it will build since
+the problem was that hotplug-memory.o needs CONFIG_SPARSEMEM.
+
+
+
 -- 
-1.7.11.7
+Pranith
