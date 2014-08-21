@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <zhouzhouyi@gmail.com>
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B1641A1798
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 11:58:33 +1000 (EST)
-Message-ID: <1408586298.4058.97.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 2/2] powerpc/booke: Revert SPE/AltiVec common defines
- for interrupt numbers
-From: Scott Wood <scottwood@freescale.com>
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Date: Wed, 20 Aug 2014 20:58:18 -0500
-In-Reply-To: <1408540144-24436-2-git-send-email-mihai.caraman@freescale.com>
-References: <1408540144-24436-1-git-send-email-mihai.caraman@freescale.com>
- <1408540144-24436-2-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE2501A0273
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 12:41:47 +1000 (EST)
+Received: by mail-pd0-f172.google.com with SMTP id y13so13236169pdi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2014 19:41:45 -0700 (PDT)
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <paulmck@linux.vnet.ibm.com>, <anton@samba.org>,
+ <aneesh.kumar@linux.vnet.ibm.com>, <jk@ozlabs.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <jbaron@akamai.com>
+Subject: [PATCH 1/1] powerpc/jump_label: use HAVE_JUMP_LABEL?  
+Date: Thu, 21 Aug 2014 10:41:23 +0800
+Message-Id: <1408588883-26783-1-git-send-email-yizhouzhou@ict.ac.cn>
+Cc: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-08-20 at 16:09 +0300, Mihai Caraman wrote:
-> Book3E specification defines shared interrupt numbers for SPE and AltiVec
-> units. Still SPE is present in e200/e500v2 cores while AltiVec is present in
-> e6500 core. So we can currently decide at compile-time which unit to support
-> exclusively. As Alexander Graf suggested, this will improve code readability
-> especially in KVM.
-> 
-> Use distinct defines to identify SPE/AltiVec interrupt numbers, reverting
-> c58ce397 and 6b310fc5 patches that added common defines.
-> 
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
-> Cc: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kernel/exceptions-64e.S | 4 ++--
->  arch/powerpc/kernel/head_fsl_booke.S | 8 ++++----
->  2 files changed, 6 insertions(+), 6 deletions(-)
+CONFIG_JUMP_LABEL doesn't ensure HAVE_JUMP_LABEL, if it
+is not the case use maintainers's own mutex to guard
+the modification of global values.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
 
--Scott
+Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+---
+ arch/powerpc/platforms/powernv/opal-tracepoints.c |    2 +-
+ arch/powerpc/platforms/pseries/lpar.c             |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-tracepoints.c b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+index d8a000a..ae14c40 100644
+--- a/arch/powerpc/platforms/powernv/opal-tracepoints.c
++++ b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+@@ -2,7 +2,7 @@
+ #include <linux/jump_label.h>
+ #include <asm/trace.h>
+ 
+-#ifdef CONFIG_JUMP_LABEL
++#ifdef HAVE_JUMP_LABEL
+ struct static_key opal_tracepoint_key = STATIC_KEY_INIT;
+ 
+ void opal_tracepoint_regfunc(void)
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 34e6423..059cfe0 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -642,7 +642,7 @@ EXPORT_SYMBOL(arch_free_page);
+ #endif
+ 
+ #ifdef CONFIG_TRACEPOINTS
+-#ifdef CONFIG_JUMP_LABEL
++#ifdef HAVE_JUMP_LABEL
+ struct static_key hcall_tracepoint_key = STATIC_KEY_INIT;
+ 
+ void hcall_tracepoint_regfunc(void)
+-- 
+1.7.10.4
