@@ -1,21 +1,18 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93A0E1A0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:24:31 +1000 (EST)
-Message-ID: <53F5C847.3000402@huawei.com>
-Date: Thu, 21 Aug 2014 18:21:59 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A6B71A011C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:31:12 +1000 (EST)
+From: Nikhil Badola <nikhil.badola@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
+Date: Thu, 21 Aug 2014 16:01:30 +0530
+Message-ID: <1408617090-29692-1-git-send-email-nikhil.badola@freescale.com>
 MIME-Version: 1.0
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] MSI: Use __read_msi_msg() instead of read_msi_msg()
-References: <1408072469-9959-1-git-send-email-wangyijing@huawei.com>
- <20140821093839.GA15667@richard>
-In-Reply-To: <20140821093839.GA15667@richard>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Nikhil Badola <nikhil.badola@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,111 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/8/21 17:38, Wei Yang wrote:
-> On Fri, Aug 15, 2014 at 11:14:29AM +0800, Yijing Wang wrote:
->> Read_msi_msg() only be called in rtas_setup_msi_irqs(),
-> 
->  read_msi_msg()
-> 
-> This code looks good to me, while I can't apply on top of 3.17-rc1.
-> If you rebase it, it would be more convenient for maintainer to merge.
+Change USB controller version to 2.5 in compatible string for T2080/T2081
 
-OK, thanks!
+Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+---
+	Checkpatch warnings handled by commit 61a8c2c6fe71082de3ea8629589dcdd0cc5c3f02
+	Documentation: dts: fsl-usb: Document USB node compatible string for IP version	
 
-> 
->> use __read_msi_msg() instead of read_msi_msg for
->> simplification. And rename __read_msi_msg() to
->> read_msi_msg().
->>
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: linuxppc-dev@lists.ozlabs.org
->> ---
->> arch/powerpc/platforms/pseries/msi.c |    2 +-
->> arch/x86/pci/xen.c                   |    2 +-
->> drivers/pci/msi.c                    |    9 +--------
->> include/linux/msi.h                  |    3 +--
->> 4 files changed, 4 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
->> index 0c882e8..591650b 100644
->> --- a/arch/powerpc/platforms/pseries/msi.c
->> +++ b/arch/powerpc/platforms/pseries/msi.c
->> @@ -484,7 +484,7 @@ again:
->> 		irq_set_msi_desc(virq, entry);
->>
->> 		/* Read config space back so we can restore after reset */
->> -		read_msi_msg(virq, &msg);
->> +		read_msi_msg(entry, &msg);
->> 		entry->msg = msg;
->> 	}
->>
->> diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
->> index 905956f..4656099 100644
->> --- a/arch/x86/pci/xen.c
->> +++ b/arch/x86/pci/xen.c
->> @@ -228,7 +228,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->> 		return 1;
->>
->> 	list_for_each_entry(msidesc, &dev->msi_list, list) {
->> -		__read_msi_msg(msidesc, &msg);
->> +		read_msi_msg(msidesc, &msg);
->> 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
->> 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
->> 		if (msg.data != XEN_PIRQ_MSI_DATA ||
->> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
->> index 988224f..cbb41d6 100644
->> --- a/drivers/pci/msi.c
->> +++ b/drivers/pci/msi.c
->> @@ -259,7 +259,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
->> 	}
->> }
->>
->> -void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->> +void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->> {
->> 	BUG_ON(entry->dev->current_state != PCI_D0);
->>
->> @@ -289,13 +289,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->> 	}
->> }
->>
->> -void read_msi_msg(unsigned int irq, struct msi_msg *msg)
->> -{
->> -	struct msi_desc *entry = irq_get_msi_desc(irq);
->> -
->> -	__read_msi_msg(entry, msg);
->> -}
->> -
->> void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->> {
->> 	/* Assert that the cache is valid, assuming that
->> diff --git a/include/linux/msi.h b/include/linux/msi.h
->> index e3adf93..4d7c0f5 100644
->> --- a/include/linux/msi.h
->> +++ b/include/linux/msi.h
->> @@ -15,10 +15,9 @@ struct irq_data;
->> struct msi_desc;
->> void mask_msi_irq(struct irq_data *data);
->> void unmask_msi_irq(struct irq_data *data);
->> -void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
->> +void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
->> void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
->> void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
->> -void read_msi_msg(unsigned int irq, struct msi_msg *msg);
->> void write_msi_msg(unsigned int irq, struct msi_msg *msg);
->>
->> struct msi_desc {
->> -- 
->> 1.7.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
+diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+index 97479f0..aecee96 100644
+--- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+@@ -410,7 +410,7 @@
+ /include/ "qoriq-gpio-3.dtsi"
+ /include/ "qoriq-usb2-mph-0.dtsi"
+ 	usb0: usb@210000 {
+-		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
++		compatible = "fsl-usb2-mph-v2.5", "fsl-usb2-mph";
+ 		fsl,iommu-parent = <&pamu1>;
+ 		fsl,liodn-reg = <&guts 0x520>; /* USB1LIODNR */
+ 		phy_type = "utmi";
+@@ -418,7 +418,7 @@
+ 	};
+ /include/ "qoriq-usb2-dr-0.dtsi"
+ 	usb1: usb@211000 {
+-		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
++		compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
+ 		fsl,iommu-parent = <&pamu1>;
+ 		fsl,liodn-reg = <&guts 0x524>; /* USB1LIODNR */
+ 		dr_mode = "host";
 -- 
-Thanks!
-Yijing
+1.7.11.7
