@@ -1,18 +1,17 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A22751A01BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 08:23:11 +1000 (EST)
-Message-ID: <1408659774.2395.21.camel@snotra.buserror.net>
-Subject: Re: [PATCH] Documentation: dts: fsl-usb: Document USB node
- compatible string for IP version
+ by lists.ozlabs.org (Postfix) with ESMTPS id 115431A0197
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 08:36:47 +1000 (EST)
+Message-ID: <1408660593.6510.0.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
 From: Scott Wood <scottwood@freescale.com>
 To: Nikhil Badola <nikhil.badola@freescale.com>
-Date: Thu, 21 Aug 2014 17:22:54 -0500
-In-Reply-To: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
-References: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
+Date: Thu, 21 Aug 2014 17:36:33 -0500
+In-Reply-To: <1408617090-29692-1-git-send-email-nikhil.badola@freescale.com>
+References: <1408617090-29692-1-git-send-email-nikhil.badola@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -25,72 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-08-21 at 14:48 +0530, Nikhil Badola wrote:
-> Document compatible string containing IP version in USB device tree node
+On Thu, 2014-08-21 at 16:01 +0530, Nikhil Badola wrote:
+> Change USB controller version to 2.5 in compatible string for T2080/T2081
 > 
 > Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
 > ---
->  Documentation/devicetree/bindings/usb/fsl-usb.txt | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+> 	Checkpatch warnings handled by commit 61a8c2c6fe71082de3ea8629589dcdd0cc5c3f02
 
-Please CC devicetree@vger.kernel.org on all device tree patches (in
-addition to linuxppc-dev).
+That checkpatch warning is known to have false positives in cases where
+the binding says "<CHIPNAME>-device" or "device-<VERSION>".  If you want
+to update the binding to give an example with a version, that's fine,
+but checkpatch shouldn't be why.  We're not going to update the binding
+example again to match a different version the next time one is added to
+a device tree...
 
+> 	Documentation: dts: fsl-usb: Document USB node compatible string for IP version	
 > 
-> diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-> index 4779c02..5a3a0a8 100644
-> --- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
-> +++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-> @@ -10,7 +10,10 @@ Required properties :
->     controllers, or "fsl-usb2-dr" for dual role USB controllers
->     or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121.
->     Wherever applicable, the IP version of the USB controller should
-> -   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
-> +   also be mentioned in another string.
-> +   For multi port host USB controller with IP version <IP_Ver>, it should be
-> +   "fsl-usb2-mph-<IP_Ver>". For dual role USB controller with IP version
-> +   <IP_Ver>, it should be "fsl-usb2-dr-<IP_Ver>".
-
-It was documented before -- this is just making it more explicit, right?
-
-FWIW, the version number can be read out of a USB register, so I'd
-rather remove the suggestion to specify the version number and replace
-it with a reference to the ID register.
-
->   - phy_type : For multi port host USB controllers, should be one of
->     "ulpi", or "serial". For dual role USB controllers, should be
->     one of "ulpi", "utmi", "utmi_wide", or "serial".
-> @@ -42,9 +45,9 @@ Optional properties :
->   - fsl,invert-pwr-fault : boolean; for MPC5121 USB0 only. Indicates
->     the PWR_FAULT signal polarity is inverted.
->  
-> -Example multi port host USB controller device node :
-> +Example multi port host USB controller version 2.5 device node :
->  	usb@22000 {
-> -		compatible = "fsl-usb2-mph";
+>  arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+> index 97479f0..aecee96 100644
+> --- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+> @@ -410,7 +410,7 @@
+>  /include/ "qoriq-gpio-3.dtsi"
+>  /include/ "qoriq-usb2-mph-0.dtsi"
+>  	usb0: usb@210000 {
+> -		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
 > +		compatible = "fsl-usb2-mph-v2.5", "fsl-usb2-mph";
->  		reg = <22000 1000>;
->  		#address-cells = <1>;
->  		#size-cells = <0>;
-> @@ -55,9 +58,9 @@ Example multi port host USB controller device node :
->  		port1;
->  	};
->  
-> -Example dual role USB controller device node :
-> +Example dual role USB controller version 2.5 device node :
->  	usb@23000 {
-> -		compatible = "fsl-usb2-dr";
-> +		compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
->  		reg = <23000 1000>;
->  		#address-cells = <1>;
->  		#size-cells = <0>;
 
-This example doesn't correspond to any device tree I see.  Even after
-your next patch that sets t2080's USB to v2.5, the addresses are
-different.
-
-Also, if you're going to update the example, please also update it to be
-modern in other respects, such as using 0x for hex numbers (outside the
-unit address).
+This is an example of why it's better to rely on version registers when
+present.
 
 -Scott
