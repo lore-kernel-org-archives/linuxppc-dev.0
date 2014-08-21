@@ -1,37 +1,20 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3289C1A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 18:14:13 +1000 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 21 Aug 2014 09:14:08 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 94B75219005E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:13:48 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7L8E6Oh31457500
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 08:14:06 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7L8E5xp014131
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 02:14:05 -0600
-Message-ID: <1408608842.3003.20.camel@TP420>
-Subject: [RFC PATCH powerpc] Fix warning reported by verify_cpu_node_mapping()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 21 Aug 2014 16:14:02 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F22371A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:10:28 +1000 (EST)
+Message-ID: <53F5B77D.3000007@suse.de>
+Date: Thu, 21 Aug 2014 11:10:21 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v4] powerpc/kvm: support to handle sw breakpoint
+References: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +24,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-uses cpu_to_node() to check whether siblings are in the same node. 
 
-It skips the checking for siblings that are not online yet. So the only
-check done here is for the bootcpu, which is online at that time. But
-the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-will be set up in smp_prepare_cpus()).
 
-So I could see something like following reported:
-[    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-node!
+On 20.08.14 07:52, Madhavan Srinivasan wrote:
+> This patch adds kernel side support for software breakpoint.
+> Design is that, by using an illegal instruction, we trap to hypervisor
+> via Emulation Assistance interrupt, where we check for the illegal instruction
+> and accordingly we return to Host or Guest. Patch also adds support for
+> software breakpoint in PR KVM.
+> 
+> Changes v3->v4:
+>  Made changes to code comments and removed #define of zero opcode
+>  Added a new function to handle the debug instruction emulation in book3s_hv
+>  Rebased the code to latest upstream source.
+> 
+> Changes v2->v3:
+>  Changed the debug instructions. Using the all zero opcode in the instruction word
+>   as illegal instruction as mentioned in Power ISA instead of ABS
+>  Removed reg updated in emulation assist and added a call to
+>   kvmppc_emulate_instruction for reg update.
+> 
+> Changes v1->v2:
+> 
+>  Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
+>  Added code to use KVM get one reg infrastructure to get debug opcode.
+>  Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
+>  Made changes to commit message.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s.h |  7 +++++++
+>  arch/powerpc/kvm/book3s.c             |  3 ++-
+>  arch/powerpc/kvm/book3s_hv.c          | 32 ++++++++++++++++++++++++++++++--
+>  arch/powerpc/kvm/book3s_pr.c          |  3 +++
+>  arch/powerpc/kvm/emulate.c            | 11 +++++++++++
+>  5 files changed, 53 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+> index 6acf0c2..a1944f8 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> @@ -24,6 +24,13 @@
+>  #include <linux/kvm_host.h>
+>  #include <asm/kvm_book3s_asm.h>
+>  
+> +/*
+> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
+> + * Based on PowerISA v2.07, Instruction with primary opcode 0 will be treated as illegal
+> + * instruction.
+> + */
+> +#define KVMPPC_INST_BOOK3S_DEBUG	0x00dddd00
 
-As we don't actually do the checking during this early stage, so maybe
-we could directly call numa_setup_cpu() in do_init_bootmem()?
+Please change the BookE version of this as well, put the define in a
+common header and use a non book specific name.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> +
+>  struct kvmppc_bat {
+>  	u64 raw;
+>  	u32 bepi;
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index dd03f6b..00e9c9f 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+>  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+>  					struct kvm_guest_debug *dbg)
+>  {
+> -	return -EINVAL;
+> +	vcpu->guest_debug = dbg->control;
+> +	return 0;
+>  }
+>  
+>  void kvmppc_decrementer_func(unsigned long data)
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 27cced9..0a92e45 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -725,6 +725,14 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+>  	return kvmppc_hcall_impl_hv_realmode(cmd);
+>  }
+>  
+> +static int kvmppc_emulate_debug_instruction_hv(struct kvm_run *run,
+> +					struct kvm_vcpu *vcpu)
+> +{
+> +	run->exit_reason = KVM_EXIT_DEBUG;
+> +	run->debug.arch.address = kvmppc_get_pc(vcpu);
+> +	return 0;
+> +}
+> +
+>  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  				 struct task_struct *tsk)
+>  {
+> @@ -811,9 +819,26 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  	 * we don't emulate any guest instructions at this stage.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d7737a5..9918c02 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1128,8 +1128,7 @@ void __init do_init_bootmem(void)
- 	 * early in boot, cf. smp_prepare_cpus().
- 	 */
- 	for_each_possible_cpu(cpu) {
--		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
--				  (void *)(unsigned long)cpu);
-+		numa_setup_cpu((unsigned long)cpu);
- 	}
- }
- 
+This comment is no longer true, it should get changed.
+
+>  	 */
+>  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+> -		r = RESUME_GUEST;
+> +	{
+> +		u32 last_inst;
+> +		if(kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
+> +					EMULATE_DONE) {
+
+Please only do this if debugging is active.
+
+> +			/*
+> +			 * Fetch failed, so return to guest and
+> +			 * try executing it again.
+> +			 */
+> +			r = RESUME_GUEST;
+> +		} else {
+> +			if (last_inst == KVMPPC_INST_BOOK3S_DEBUG) {
+> +				kvmppc_emulate_debug_instruction_hv(run, vcpu);
+> +				r = RESUME_HOST;
+> +			} else {
+> +				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+> +				r = RESUME_GUEST;
+> +			}
+> +		}
+>  		break;
+> +	}
+>  	/*
+>  	 * This occurs if the guest (kernel or userspace), does something that
+>  	 * is prohibited by HFSCR.  We just generate a program interrupt to
+> @@ -922,6 +947,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+>  	long int i;
+>  
+>  	switch (id) {
+> +	case KVM_REG_PPC_DEBUG_INST:
+> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
+> +		break;
+>  	case KVM_REG_PPC_HIOR:
+>  		*val = get_reg_val(id, 0);
+>  		break;
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index faffb27..cd2a39d 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -1319,6 +1319,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
+>  	int r = 0;
+>  
+>  	switch (id) {
+> +	case KVM_REG_PPC_DEBUG_INST:
+> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
+> +		break;
+>  	case KVM_REG_PPC_HIOR:
+>  		*val = get_reg_val(id, to_book3s(vcpu)->hior);
+>  		break;
+> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+> index e96b50d..68f38b2 100644
+> --- a/arch/powerpc/kvm/emulate.c
+> +++ b/arch/powerpc/kvm/emulate.c
+> @@ -274,6 +274,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+>  		}
+>  		break;
+>  
+> +	case 0:
+> +		/*
+> +		 * Instruction with primary opcode 0. Based on PowerISA
+> +		 * these are illegal instructions.
+> +		 */
+> +		run->exit_reason = KVM_EXIT_DEBUG;
+
+This is wrong. We need to check that the instruction is 0x00dddd00. Any
+other op0 instruction should trigger an invalid instruction trap.
+
+
+Alex
+
+> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
+> +		emulated = EMULATE_EXIT_USER;
+> +		advance = 0;
+> +		break;
+> +
+>  	default:
+>  		emulated = EMULATE_FAIL;
+>  	}
+> 
