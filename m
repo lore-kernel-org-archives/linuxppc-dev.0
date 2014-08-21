@@ -1,39 +1,26 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rcj4747@gmail.com>
+Received: from mail-oi0-x231.google.com (mail-oi0-x231.google.com
+ [IPv6:2607:f8b0:4003:c06::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D0881A013A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 01:45:49 +1000 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 21 Aug 2014 09:45:47 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E5A7619D8039
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:45:32 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7LDfoqF2359590
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 15:41:50 +0200
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7LFjh0D011553
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:45:44 -0600
-Date: Thu, 21 Aug 2014 08:45:29 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH powerpc] Fix warning reported by
- verify_cpu_node_mapping()
-Message-ID: <20140821154529.GB10478@linux.vnet.ibm.com>
-References: <1408608842.3003.20.camel@TP420>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 194FA1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 01:51:40 +1000 (EST)
+Received: by mail-oi0-f49.google.com with SMTP id u20so6743282oif.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 08:51:38 -0700 (PDT)
+Message-ID: <53F61586.3000107@gmail.com>
+Date: Thu, 21 Aug 2014 10:51:34 -0500
+From: Robert Jennings <rcj4747@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1408608842.3003.20.camel@TP420>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Himangi Saraogi <himangi774@gmail.com>
+Subject: Re: [PATCH] powerpc/pseries: Drop unnecessary continue
+References: <20140813091847.GA3078@himangi-Dell>
+ <1408596086.9307.3.camel@concordia>
+In-Reply-To: <1408596086.9307.3.camel@concordia>
+Content-Type: text/plain; charset=utf-8
+Cc: linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
+ Paul Mackerras <paulus@samba.org>, Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,48 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21.08.2014 [16:14:02 +0800], Li Zhong wrote:
-> With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-> earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-> uses cpu_to_node() to check whether siblings are in the same node. 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+
+
+On 08/20/2014 11:41 PM, Michael Ellerman wrote:
+> On Wed, 2014-08-13 at 14:48 +0530, Himangi Saraogi wrote:
+>> Continue is not needed at the bottom of a loop.
 > 
-> It skips the checking for siblings that are not online yet. So the only
-> check done here is for the bootcpu, which is online at that time. But
-> the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-> will be set up in smp_prepare_cpus()).
+> True.
 > 
-> So I could see something like following reported:
-> [    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-> node!
-
-You mean you did see this, right? (as opposed to "could" based upon code
-inspection or something)
-
+> I wonder though, is the code trying to continue to the outer loop?
+> I stared at it for a minute but it wasn't obvious.
 > 
-> As we don't actually do the checking during this early stage, so maybe
-> we could directly call numa_setup_cpu() in do_init_bootmem()?
+> I wonder if Robert still remembers?
+
+I don't recall what the intent was here.  Can't believe that it's been
+almost 5 years since I wrote this.  I wish I had left a few more
+comments in the code for me to go on.
+
+Obviously the continue should be removed since it's not doing
+anything.  I don't believe that we'd want a continue statement in
+there to get outer loop.  That would change the current cmm_page_array
+pointer (pa_curr) to the next in the list after it may have just been
+reassigned to pa_last->next.
+
+It may be the case that an earlier version of the code had statements
+in the inner loop after that continue that I wanted to skip, or I just
+did something silly.
+
+- --Rob
+
+> cheers
 > 
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-
-Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-
-> ---
->  arch/powerpc/mm/numa.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>> diff --git a/arch/powerpc/platforms/pseries/cmm.c
+>> b/arch/powerpc/platforms/pseries/cmm.c index 2d8bf15..fc44ad0
+>> 100644 --- a/arch/powerpc/platforms/pseries/cmm.c +++
+>> b/arch/powerpc/platforms/pseries/cmm.c @@ -555,7 +555,6 @@ static
+>> int cmm_mem_going_offline(void *arg) pa_last = pa_last->next; 
+>> free_page((unsigned long)cmm_page_list); cmm_page_list =
+>> pa_last; -				continue; } } pa_curr = pa_curr->next;
 > 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index d7737a5..9918c02 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1128,8 +1128,7 @@ void __init do_init_bootmem(void)
->  	 * early in boot, cf. smp_prepare_cpus().
->  	 */
->  	for_each_possible_cpu(cpu) {
-> -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-> -				  (void *)(unsigned long)cpu);
-> +		numa_setup_cpu((unsigned long)cpu);
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-This is a good change, thanks for catching it. I must have glossed over
-those messages in my testing, my apologies!
-
--Nish
+iQIcBAEBCgAGBQJT9hV/AAoJEHQMPZ7t8u1zkNIP/1UMhxuNOHaYucs6nuiKT+HY
+i0fDGKAluFrF7pv1Onon9LPUEPSL4Smr7l+FoSSJOP59vHg7F3HnkMu43GQi9X9o
+KTQTzt5v0XjKeoKaZcgRD5wIp2J9Rz7CVd3RuYrXZGbIo5WC793Ko+8bEMQkSZv3
+75e15WuK1J37e7RHIEmj82oeNj8HAWphkS2+c4JyBWCwVABNLOmC9oY0H2UjPQKe
+IOsd8GfHMc4ML+Mrfe14ejsNl7XAfy+Q+Mvot/tuZqSq6G1YiX6MQAXk2yW7QAvE
+7tfKZvyPVHylERs5Otk4wwh1YmA0RMTjbf3rkPUyUQs14esOa9aOiVDbFci++C/t
+m8c3bF3RbdlWaygnDAodWMH4IP7q9mmLMgk6TZ0LNypOUsqedblHrsNKKnC3jm/y
+ju/PzLeU5vJ5UoKF+X6jKpHJB5pLh6v4PVWixXKc0nMiGsg/U/RLDxgow+aA2tfx
+psttc5DsxucUqlt1X7Y3yUULOI5mNx4tB/Pd37vTG+KJ16UOzAwuc8oQ/9ulVIj0
+omW1+qW0MzXQ0Mezt1iqtN8bqarkj3z/aLZ6vjetnDg60JNlEofpSnJb6ANixJlj
+PL/nk3LZjjY6UW79ttikrSnsp6fAUIv8ykxukGZLdO/tUj4pUA5H/2Ab5P1SR0Cx
+4M1e9AUR+xvU7KDfYryr
+=9qwq
+-----END PGP SIGNATURE-----
