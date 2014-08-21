@@ -1,18 +1,22 @@
-Return-Path: <asierra@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 911D91A0068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 09:53:53 +1000 (EST)
-Date: Wed, 20 Aug 2014 18:51:44 -0500 (CDT)
-From: Aaron Sierra <asierra@xes-inc.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <1335064415.96829.1408578704825.JavaMail.zimbra@xes-inc.com>
-In-Reply-To: <1884375274.96749.1408578481814.JavaMail.zimbra@xes-inc.com>
-Subject: [PATCH] powerpc: fsl_pci: Fix PCI/PCI-X regression
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9ACE01A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 11:57:41 +1000 (EST)
+Message-ID: <1408586243.4058.96.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] powerpc/booke: Restrict SPE exception handlers
+ to e200/e500 cores
+From: Scott Wood <scottwood@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Date: Wed, 20 Aug 2014 20:57:23 -0500
+In-Reply-To: <1408540144-24436-1-git-send-email-mihai.caraman@freescale.com>
+References: <1408540144-24436-1-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following commit prevents the MPC8548E on the XPedite5200 PrPMC
-module from enumerating its PCI/PCI-X bus, though it was previously
-able to:
+On Wed, 2014-08-20 at 16:09 +0300, Mihai Caraman wrote:
+> SPE exception handlers are now defined for 32-bit e500mc cores even though
+> SPE unit is not present and CONFIG_SPE is undefined.
+> 
+> Restrict SPE exception handlers to e200/e500 cores adding CONFIG_SPE_POSSIBLE
+> and consequently guard __stup_ivors and __setup_cpu functions.
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> Cc: Scott Wood <scottwood@freescale.com>
+> Cc: Alexander Graf <agraf@suse.de>
+> ---
+> v2:
+>  - use CONFIG_PPC_E500MC without CONFIG_E500
+>  - use elif defined()
+> 
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S | 12 +++++++++++-
+>  arch/powerpc/kernel/cputable.c            |  5 +++++
+>  arch/powerpc/kernel/head_fsl_booke.S      | 18 +++++++++++++-----
+>  arch/powerpc/platforms/Kconfig.cputype    |  6 +++++-
+>  4 files changed, 34 insertions(+), 7 deletions(-)
 
-    powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-The previous patch prevents any Freescale PCI-X bridge from enumerating
-the bus, if it is hardware strapped into Agent mode.
-
-In PCI-X, the Host is responsible for driving the PCI-X initialization
-pattern to devices on the bus, so that they know whether to operate in
-conventional PCI or PCI-X mode as well as what the bus timing will be.
-For a PCI-X PrPMC, the pattern is driven by the mezzanine carrier it is
-installed onto. Therefore, PrPMCs are PCI-X Agents, but they may still
-enumerate the bus.
-
-This patch depends on firmware to determine if the bridge should
-perform enumeration based on factors other than the Host/Agent mode,
-such as the state of the VITA 32-defined MONARCH# signal. If firmware
-has determined that enumeration should be allowed, then it will set the
-bridge's Bus Master bit in the Command register.
-
-Without firmware intervention, the Bus Master bit defaults to 1 in Host
-mode and 0 in Agent mode.
-
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
----
- arch/powerpc/sysdev/fsl_pci.c | 21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4bd091a..88d8844 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -463,7 +463,7 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 	struct pci_controller *hose;
- 	struct resource rsrc;
- 	const int *bus_range;
--	u8 hdr_type, progif;
-+	u8 hdr_type;
- 	struct device_node *dev;
- 	struct ccsr_pci __iomem *pci;
- 
-@@ -520,9 +520,22 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 			goto no_bridge;
- 
- 	} else {
--		/* For PCI read PROG to identify controller mode */
--		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
--		if ((progif & 1) == 1)
-+		u16 master;
-+
-+		/*
-+		 * If the controller is PCI-X, then Host mode refers to a
-+		 * bridge that drives the PCI-X initialization pattern to
-+		 * indicate bus operating mode/frequency to devices on the bus.
-+		 * Some hardware (specifically PrPMC modules) are Agents, since
-+		 * the mezzanine carrier is responsible for driving the
-+		 * pattern, but they still may perform bus enumeration.
-+		 *
-+		 * Allow the bridge to be used for enumeration, if hardware
-+		 * strapping (Host mode) or firmware (Agent mode) has enabled
-+		 * bus mastering.
-+		 */
-+		early_read_config_word(hose, 0, 0, PCI_COMMAND, &master);
-+		if (!(master & PCI_COMMAND_MASTER))
- 			goto no_bridge;
- 	}
- 
--- 
-1.9.1
+-Scott
