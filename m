@@ -1,21 +1,37 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D34C81A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:34:15 +1000 (EST)
-Message-ID: <53F5BD01.3060909@freescale.com>
-Date: Thu, 21 Aug 2014 12:33:53 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC5121A0181
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:38:49 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 21 Aug 2014 15:08:45 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5D381E004C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 15:10:49 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7L9f5bi64684088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 15:11:05 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7L9cffL029794
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 15:08:41 +0530
+Date: Thu, 21 Aug 2014 17:38:39 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 2/3] MSI: Use __read_msi_msg() instead of read_msi_msg()
+Message-ID: <20140821093839.GA15667@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1408072469-9959-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4][v2] powerpc/fsl_msi: spread msi ints across different
- MSIRs
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Scott Wood <scottwood@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>,
- Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1408072469-9959-1-git-send-email-wangyijing@huawei.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,185 +41,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allocate msis such that each time a new interrupt is requested,
-the SRS (MSIR register select) to be used is allocated in a
-round-robin fashion.
-The end result is that the msi interrupts will be spread across
-distinct MSIRs with the main benefit that now users can set
-affinity to each msi int through the mpic irq backing up the
-MSIR register.
-This is achieved with the help of a newly introduced msi bitmap
-api that allows specifying the starting point when searching
-for a free msi interrupt.
+On Fri, Aug 15, 2014 at 11:14:29AM +0800, Yijing Wang wrote:
+>Read_msi_msg() only be called in rtas_setup_msi_irqs(),
 
-Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>
----
-v2:
- - re-wrapped commit message
- - fixed weird way of doing a simple A <<= B
+ read_msi_msg()
 
- arch/powerpc/include/asm/msi_bitmap.h |  2 ++
- arch/powerpc/sysdev/fsl_msi.c         | 31 ++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_msi.h         |  5 +++++
- arch/powerpc/sysdev/msi_bitmap.c      | 25 +++++++++++++++----------
- 4 files changed, 52 insertions(+), 11 deletions(-)
+This code looks good to me, while I can't apply on top of 3.17-rc1.
+If you rebase it, it would be more convenient for maintainer to merge.
 
-diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include/asm/msi_bitmap.h
-index 97ac3f4..96c2f95 100644
---- a/arch/powerpc/include/asm/msi_bitmap.h
-+++ b/arch/powerpc/include/asm/msi_bitmap.h
-@@ -25,6 +25,8 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num);
- void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
- 			    unsigned int num);
- void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq);
-+int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
-+					int num);
- 
- int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp);
- 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index e2ee226..37254ef 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -213,6 +213,8 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 		 * available interrupt.
- 		 */
- 		list_for_each_entry(msi_data, &msi_head, list) {
-+			int off;
-+
- 			/*
- 			 * If the PCI node has an fsl,msi property, then we
- 			 * restrict our search to the corresponding MSI node.
-@@ -224,7 +226,28 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 			if (phandle && (phandle != msi_data->phandle))
- 				continue;
- 
--			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
-+			/*
-+			 * Allocate the msi message so that it fits on distinct
-+			 * MSIR registers. Obviously, since MSIR registers are
-+			 * limited they will overlap at one point.
-+			 *
-+			 * Due to the format of the newly introduced MSIIR1 in
-+			 * mpic 4.3, consecutive msi message values map to
-+			 * distinct MSIRs, thus distinct msi irq cascades, so
-+			 * nothing special needs to be done in this case.
-+			 * On older mpic versions the chose distinct SRS
-+			 * values by aligning the msi message value to the
-+			 * SRS field shift.
-+			 */
-+			if (msi_data->feature & FSL_PIC_FTR_MPIC_4_3) {
-+				off = 0;
-+			} else {
-+				off = atomic_inc_return(&msi_data->msi_alloc_cnt) %
-+					msi_data->msir_num;
-+				off <<= msi_data->srs_shift;
-+			}
-+			hwirq = msi_bitmap_alloc_hwirqs_from_offset(
-+						&msi_data->bitmap, off, 1);
- 			if (hwirq >= 0)
- 				break;
- 		}
-@@ -464,12 +487,17 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 		goto error_out;
- 	}
- 
-+	atomic_set(&msi->msi_alloc_cnt, -1);
-+
- 	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
- 
- 	if (of_device_is_compatible(dev->dev.of_node, "fsl,mpic-msi-v4.3") ||
- 	    of_device_is_compatible(dev->dev.of_node, "fsl,vmpic-msi-v4.3")) {
- 		msi->srs_shift = MSIIR1_SRS_SHIFT;
- 		msi->ibs_shift = MSIIR1_IBS_SHIFT;
-+		msi->msir_num = NR_MSI_REG_MSIIR1;
-+		msi->feature |= FSL_PIC_FTR_MPIC_4_3;
-+
- 		if (p)
- 			dev_warn(&dev->dev, "%s: dose not support msi-available-ranges property\n",
- 				__func__);
-@@ -487,6 +515,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 
- 		msi->srs_shift = MSIIR_SRS_SHIFT;
- 		msi->ibs_shift = MSIIR_IBS_SHIFT;
-+		msi->msir_num = NR_MSI_REG_MSIIR;
- 
- 		if (p && len % (2 * sizeof(u32)) != 0) {
- 			dev_err(&dev->dev, "%s: Malformed msi-available-ranges property\n",
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 420cfcb..50ec4b0 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -15,6 +15,7 @@
- 
- #include <linux/of.h>
- #include <asm/msi_bitmap.h>
-+#include <asm/atomic.h>
- 
- #define NR_MSI_REG_MSIIR	8  /* MSIIR can index 8 MSI registers */
- #define NR_MSI_REG_MSIIR1	16 /* MSIIR1 can index 16 MSI registers */
-@@ -27,6 +28,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
- 
-+#define FSL_PIC_FTR_MPIC_4_3 0x00000010
-+
- struct fsl_msi_cascade_data;
- 
- struct fsl_msi {
-@@ -37,6 +40,8 @@ struct fsl_msi {
- 	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
- 	u32 ibs_shift; /* Shift of interrupt bit select */
- 	u32 srs_shift; /* Shift of the shared interrupt register select */
-+	u32 msir_num; /* Number of available MSIR regs */
-+	atomic_t msi_alloc_cnt; /* Counter for MSI hwirq allocations */
- 	void __iomem *msi_regs;
- 	u32 feature;
- 	struct fsl_msi_cascade_data *cascade_array[NR_MSI_REG_MAX];
-diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-index 2ff6302..8b7d8fc 100644
---- a/arch/powerpc/sysdev/msi_bitmap.c
-+++ b/arch/powerpc/sysdev/msi_bitmap.c
-@@ -14,23 +14,28 @@
- #include <asm/msi_bitmap.h>
- #include <asm/setup.h>
- 
--int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
-+int msi_bitmap_alloc_hwirqs_from_offset(struct msi_bitmap *bmp, int offset,
-+					int num)
- {
- 	unsigned long flags;
--	int offset, order = get_count_order(num);
-+	int index;
-+	int order = get_count_order(num);
- 
- 	spin_lock_irqsave(&bmp->lock, flags);
--	/*
--	 * This is fast, but stricter than we need. We might want to add
--	 * a fallback routine which does a linear search with no alignment.
--	 */
--	offset = bitmap_find_free_region(bmp->bitmap, bmp->irq_count, order);
-+	index = bitmap_find_next_zero_area(bmp->bitmap, bmp->irq_count,
-+					   offset, num, (1 << order) - 1);
-+	bitmap_set(bmp->bitmap, index, num);
- 	spin_unlock_irqrestore(&bmp->lock, flags);
- 
--	pr_debug("msi_bitmap: allocated 0x%x (2^%d) at offset 0x%x\n",
--		 num, order, offset);
-+	pr_debug("msi_bitmap: found %d free bits starting from offset %d at index %d\n",
-+		 num, offset, index);
- 
--	return offset;
-+	return index;
-+}
-+
-+int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
-+{
-+	return msi_bitmap_alloc_hwirqs_from_offset(bmp, 0, num);
- }
- 
- void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
+>use __read_msi_msg() instead of read_msi_msg for
+>simplification. And rename __read_msi_msg() to
+>read_msi_msg().
+>
+>Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>CC: linuxppc-dev@lists.ozlabs.org
+>---
+> arch/powerpc/platforms/pseries/msi.c |    2 +-
+> arch/x86/pci/xen.c                   |    2 +-
+> drivers/pci/msi.c                    |    9 +--------
+> include/linux/msi.h                  |    3 +--
+> 4 files changed, 4 insertions(+), 12 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+>index 0c882e8..591650b 100644
+>--- a/arch/powerpc/platforms/pseries/msi.c
+>+++ b/arch/powerpc/platforms/pseries/msi.c
+>@@ -484,7 +484,7 @@ again:
+> 		irq_set_msi_desc(virq, entry);
+>
+> 		/* Read config space back so we can restore after reset */
+>-		read_msi_msg(virq, &msg);
+>+		read_msi_msg(entry, &msg);
+> 		entry->msg = msg;
+> 	}
+>
+>diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+>index 905956f..4656099 100644
+>--- a/arch/x86/pci/xen.c
+>+++ b/arch/x86/pci/xen.c
+>@@ -228,7 +228,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> 		return 1;
+>
+> 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+>-		__read_msi_msg(msidesc, &msg);
+>+		read_msi_msg(msidesc, &msg);
+> 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
+> 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
+> 		if (msg.data != XEN_PIRQ_MSI_DATA ||
+>diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+>index 988224f..cbb41d6 100644
+>--- a/drivers/pci/msi.c
+>+++ b/drivers/pci/msi.c
+>@@ -259,7 +259,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
+> 	}
+> }
+>
+>-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+>+void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+> {
+> 	BUG_ON(entry->dev->current_state != PCI_D0);
+>
+>@@ -289,13 +289,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+> 	}
+> }
+>
+>-void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+>-{
+>-	struct msi_desc *entry = irq_get_msi_desc(irq);
+>-
+>-	__read_msi_msg(entry, msg);
+>-}
+>-
+> void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+> {
+> 	/* Assert that the cache is valid, assuming that
+>diff --git a/include/linux/msi.h b/include/linux/msi.h
+>index e3adf93..4d7c0f5 100644
+>--- a/include/linux/msi.h
+>+++ b/include/linux/msi.h
+>@@ -15,10 +15,9 @@ struct irq_data;
+> struct msi_desc;
+> void mask_msi_irq(struct irq_data *data);
+> void unmask_msi_irq(struct irq_data *data);
+>-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+>+void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+> void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+> void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+>-void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+> void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+>
+> struct msi_desc {
+>-- 
+>1.7.1
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 -- 
-1.8.3.1
+Richard Yang
+Help you, Help me
