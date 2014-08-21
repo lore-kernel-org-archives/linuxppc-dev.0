@@ -1,20 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F22371A003C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:10:28 +1000 (EST)
-Message-ID: <53F5B77D.3000007@suse.de>
-Date: Thu, 21 Aug 2014 11:10:21 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F09A81A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:19:31 +1000 (EST)
+From: Nikhil Badola <nikhil.badola@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] Documentation: dts: fsl-usb: Document USB node compatible
+ string for IP version
+Date: Thu, 21 Aug 2014 14:48:47 +0530
+Message-ID: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
 MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v4] powerpc/kvm: support to handle sw breakpoint
-References: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Content-Type: text/plain
+Cc: Nikhil Badola <nikhil.badola@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,183 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Document compatible string containing IP version in USB device tree node
 
+Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+---
+ Documentation/devicetree/bindings/usb/fsl-usb.txt | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-On 20.08.14 07:52, Madhavan Srinivasan wrote:
-> This patch adds kernel side support for software breakpoint.
-> Design is that, by using an illegal instruction, we trap to hypervisor
-> via Emulation Assistance interrupt, where we check for the illegal instruction
-> and accordingly we return to Host or Guest. Patch also adds support for
-> software breakpoint in PR KVM.
-> 
-> Changes v3->v4:
->  Made changes to code comments and removed #define of zero opcode
->  Added a new function to handle the debug instruction emulation in book3s_hv
->  Rebased the code to latest upstream source.
-> 
-> Changes v2->v3:
->  Changed the debug instructions. Using the all zero opcode in the instruction word
->   as illegal instruction as mentioned in Power ISA instead of ABS
->  Removed reg updated in emulation assist and added a call to
->   kvmppc_emulate_instruction for reg update.
-> 
-> Changes v1->v2:
-> 
->  Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
->  Added code to use KVM get one reg infrastructure to get debug opcode.
->  Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
->  Made changes to commit message.
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kvm_book3s.h |  7 +++++++
->  arch/powerpc/kvm/book3s.c             |  3 ++-
->  arch/powerpc/kvm/book3s_hv.c          | 32 ++++++++++++++++++++++++++++++--
->  arch/powerpc/kvm/book3s_pr.c          |  3 +++
->  arch/powerpc/kvm/emulate.c            | 11 +++++++++++
->  5 files changed, 53 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index 6acf0c2..a1944f8 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -24,6 +24,13 @@
->  #include <linux/kvm_host.h>
->  #include <asm/kvm_book3s_asm.h>
->  
-> +/*
-> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
-> + * Based on PowerISA v2.07, Instruction with primary opcode 0 will be treated as illegal
-> + * instruction.
-> + */
-> +#define KVMPPC_INST_BOOK3S_DEBUG	0x00dddd00
-
-Please change the BookE version of this as well, put the define in a
-common header and use a non book specific name.
-
-> +
->  struct kvmppc_bat {
->  	u64 raw;
->  	u32 bepi;
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index dd03f6b..00e9c9f 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
->  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->  					struct kvm_guest_debug *dbg)
->  {
-> -	return -EINVAL;
-> +	vcpu->guest_debug = dbg->control;
-> +	return 0;
->  }
->  
->  void kvmppc_decrementer_func(unsigned long data)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 27cced9..0a92e45 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -725,6 +725,14 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
->  	return kvmppc_hcall_impl_hv_realmode(cmd);
->  }
->  
-> +static int kvmppc_emulate_debug_instruction_hv(struct kvm_run *run,
-> +					struct kvm_vcpu *vcpu)
-> +{
-> +	run->exit_reason = KVM_EXIT_DEBUG;
-> +	run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +	return 0;
-> +}
-> +
->  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  				 struct task_struct *tsk)
->  {
-> @@ -811,9 +819,26 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  	 * we don't emulate any guest instructions at this stage.
-
-This comment is no longer true, it should get changed.
-
->  	 */
->  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
-> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> -		r = RESUME_GUEST;
-> +	{
-> +		u32 last_inst;
-> +		if(kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
-> +					EMULATE_DONE) {
-
-Please only do this if debugging is active.
-
-> +			/*
-> +			 * Fetch failed, so return to guest and
-> +			 * try executing it again.
-> +			 */
-> +			r = RESUME_GUEST;
-> +		} else {
-> +			if (last_inst == KVMPPC_INST_BOOK3S_DEBUG) {
-> +				kvmppc_emulate_debug_instruction_hv(run, vcpu);
-> +				r = RESUME_HOST;
-> +			} else {
-> +				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +				r = RESUME_GUEST;
-> +			}
-> +		}
->  		break;
-> +	}
->  	/*
->  	 * This occurs if the guest (kernel or userspace), does something that
->  	 * is prohibited by HFSCR.  We just generate a program interrupt to
-> @@ -922,6 +947,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
->  	long int i;
->  
->  	switch (id) {
-> +	case KVM_REG_PPC_DEBUG_INST:
-> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
-> +		break;
->  	case KVM_REG_PPC_HIOR:
->  		*val = get_reg_val(id, 0);
->  		break;
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index faffb27..cd2a39d 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1319,6 +1319,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
->  	int r = 0;
->  
->  	switch (id) {
-> +	case KVM_REG_PPC_DEBUG_INST:
-> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
-> +		break;
->  	case KVM_REG_PPC_HIOR:
->  		*val = get_reg_val(id, to_book3s(vcpu)->hior);
->  		break;
-> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> index e96b50d..68f38b2 100644
-> --- a/arch/powerpc/kvm/emulate.c
-> +++ b/arch/powerpc/kvm/emulate.c
-> @@ -274,6 +274,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
->  		}
->  		break;
->  
-> +	case 0:
-> +		/*
-> +		 * Instruction with primary opcode 0. Based on PowerISA
-> +		 * these are illegal instructions.
-> +		 */
-> +		run->exit_reason = KVM_EXIT_DEBUG;
-
-This is wrong. We need to check that the instruction is 0x00dddd00. Any
-other op0 instruction should trigger an invalid instruction trap.
-
-
-Alex
-
-> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +		emulated = EMULATE_EXIT_USER;
-> +		advance = 0;
-> +		break;
-> +
->  	default:
->  		emulated = EMULATE_FAIL;
->  	}
-> 
+diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+index 4779c02..5a3a0a8 100644
+--- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
++++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+@@ -10,7 +10,10 @@ Required properties :
+    controllers, or "fsl-usb2-dr" for dual role USB controllers
+    or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121.
+    Wherever applicable, the IP version of the USB controller should
+-   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
++   also be mentioned in another string.
++   For multi port host USB controller with IP version <IP_Ver>, it should be
++   "fsl-usb2-mph-<IP_Ver>". For dual role USB controller with IP version
++   <IP_Ver>, it should be "fsl-usb2-dr-<IP_Ver>".
+  - phy_type : For multi port host USB controllers, should be one of
+    "ulpi", or "serial". For dual role USB controllers, should be
+    one of "ulpi", "utmi", "utmi_wide", or "serial".
+@@ -42,9 +45,9 @@ Optional properties :
+  - fsl,invert-pwr-fault : boolean; for MPC5121 USB0 only. Indicates
+    the PWR_FAULT signal polarity is inverted.
+ 
+-Example multi port host USB controller device node :
++Example multi port host USB controller version 2.5 device node :
+ 	usb@22000 {
+-		compatible = "fsl-usb2-mph";
++		compatible = "fsl-usb2-mph-v2.5", "fsl-usb2-mph";
+ 		reg = <22000 1000>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -55,9 +58,9 @@ Example multi port host USB controller device node :
+ 		port1;
+ 	};
+ 
+-Example dual role USB controller device node :
++Example dual role USB controller version 2.5 device node :
+ 	usb@23000 {
+-		compatible = "fsl-usb2-dr";
++		compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
+ 		reg = <23000 1000>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-- 
+1.7.11.7
