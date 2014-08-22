@@ -1,24 +1,45 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-qc0-x235.google.com (mail-qc0-x235.google.com
- [IPv6:2607:f8b0:400d:c01::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E48D91A00ED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 12:19:50 +1000 (EST)
-Received: by mail-qc0-f181.google.com with SMTP id x13so10169294qcv.40
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:19:48 -0700 (PDT)
-From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list),
- linux-edac@vger.kernel.org (open list:EDAC-CORE)
-Subject: [PATCH] powerpc: edac: Fix build error
-Date: Thu, 21 Aug 2014 22:19:51 -0400
-Message-Id: <1408673991-17892-1-git-send-email-bobby.prani@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 024291A01C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 12:48:15 +1000 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 21 Aug 2014 20:48:13 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DDF9A1FF003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:48:10 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7M2mB5822872206
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 04:48:11 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7M2mB8W004387
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:48:11 -0600
+Message-ID: <53F6AF66.10204@linux.vnet.ibm.com>
+Date: Fri, 22 Aug 2014 08:18:06 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ Shilpasri G Bhat <shilpabhatppc@gmail.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
+References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com>
+ <53F57E51.4060200@gmail.com>
+ <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
+In-Reply-To: <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +49,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix the following build error:
+Hi Viresh,
 
-drivers/edac/ppc4xx_edac.c: In function 'mfsdram':
-drivers/edac/ppc4xx_edac.c:249: error: implicit declaration of function
-'__mfdcri'
-drivers/edac/ppc4xx_edac.c: In function 'mtsdram':
-drivers/edac/ppc4xx_edac.c:266: error: implicit declaration of function
-'__mtdcri'
-drivers/edac/ppc4xx_edac.c:269: warning: 'return' with a value, in function
-returning void
-drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_init_csrows':
-drivers/edac/ppc4xx_edac.c:924: warning: initialization from incompatible
-pointer type
-drivers/edac/ppc4xx_edac.c:977: error: request for member 'dimm' in something
-not a structure or union
-drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_map_dcrs':
-drivers/edac/ppc4xx_edac.c:1209: warning: passing argument 1 of 'dcr_map_mmio'
-discards qualifiers from pointer target type
+On 08/21/2014 11:56 AM, Viresh Kumar wrote:
+> On 21 August 2014 10:36, Shilpasri G Bhat <shilpabhatppc@gmail.com> wrote:
+>> The intention here is stop the cpufreq governor and then to set the cpus to
+>> nominal frequency so as to ensure that the frequency won't be changed later.
+>>
+>> The .suspend callback of the driver is not called during reboot/kexec.
+>> So we need an explicit reboot notifier to call cpufreq-suspend() to
+>> suffice the requirement.
+> 
+> Hi Shilpa,
+> 
+> No, we can't allow any platform driver to misuse cpufreq_suspend().
+> Platform drivers aren't *allowed* to call this routine.
 
-This driver depends on PPC_DCR_NATIVE to be set for the relevant headers to be
-included. Also if PPC_DCR_MMIO=n the build fails. So make PPC_DCR depend on both
-these options.
+At the moment this looks like the best way forward. We need to do this
+cleanly by ensuring that we stop the governors and then call into the
+driver to deal with the cpu frequency in its own way during reboot. The
+best way to do this would be by calling this routine. Either this or
+cpufreq_suspend() should be called in the reboot path generically. The
+latter might not be an enticing option for other platforms.
 
-This is compile tested only.
-
-Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
----
- arch/powerpc/Kconfig       | 6 +++---
- drivers/edac/ppc4xx_edac.c | 8 ++++----
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4bc7b62..9b90c1c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -233,15 +233,15 @@ config ARCH_SUSPEND_POSSIBLE
- 
- config PPC_DCR_NATIVE
- 	bool
--	default n
-+	default y
- 
- config PPC_DCR_MMIO
- 	bool
--	default n
-+	default y
- 
- config PPC_DCR
- 	bool
--	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
-+	depends on PPC_DCR_NATIVE && PPC_DCR_MMIO
- 	default y
- 
- config PPC_OF_PLATFORM_PCI
-diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
-index ef6b7e0..8725b73 100644
---- a/drivers/edac/ppc4xx_edac.c
-+++ b/drivers/edac/ppc4xx_edac.c
-@@ -246,8 +246,8 @@ static const char * const ppc4xx_plb_masters[9] = {
- static inline u32
- mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
- {
--	return __mfdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
--			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
-+	return __mfdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
-+			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
- 			idcr_n);
- }
- 
-@@ -263,8 +263,8 @@ mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
- static inline void
- mtsdram(const dcr_host_t *dcr_host, unsigned int idcr_n, u32 value)
- {
--	return __mtdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
--			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
-+	return __mtdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
-+			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
- 			idcr_n,
- 			value);
- }
--- 
-1.9.1
+Regards
+Preeti U Murthy
+> 
+> Now the deal is how do we move to nominal frequency on reboot..
+> @Rafael: Any suggestions? How do we ensure that governors
+> are stopped on these notifiers, or if there is some other solution here?
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
