@@ -1,25 +1,20 @@
-Return-Path: <ramneek.mehresh@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BE101A00FF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 15:20:51 +1000 (EST)
-From: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-To: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH] Documentation: dts: fsl-usb: Document USB node compatible
- string for IP version
-Date: Fri, 22 Aug 2014 05:05:41 +0000
-Message-ID: <3fdd7732a9954d13a90ece684771d932@BL2PR03MB161.namprd03.prod.outlook.com>
-References: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
- <1408659774.2395.21.camel@snotra.buserror.net>
- <af7cc70458bf471cb20938ce6498ccfe@BN1PR0301MB0593.namprd03.prod.outlook.com>
-In-Reply-To: <af7cc70458bf471cb20938ce6498ccfe@BN1PR0301MB0593.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29AC81A00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 17:45:36 +1000 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v2 5/5] MSI: Use __read_msi_msg() instead of read_msi_msg()
+Date: Fri, 22 Aug 2014 16:08:00 +0800
+Message-ID: <1408694880-8260-6-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1408694880-8260-1-git-send-email-wangyijing@huawei.com>
+References: <1408694880-8260-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Yijing Wang <wangyijing@huawei.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,78 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBCYWRvbGEgTmlraGlsLUI0NjE3
-MiANClNlbnQ6IEZyaWRheSwgQXVndXN0IDIyLCAyMDE0IDEwOjE4IEFNDQpUbzogV29vZCBTY290
-dC1CMDc0MjENCkNjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2
-Z2VyLmtlcm5lbC5vcmc7IE1laHJlc2ggUmFtbmVlay1CMzEzODMNClN1YmplY3Q6IFJFOiBbUEFU
-Q0hdIERvY3VtZW50YXRpb246IGR0czogZnNsLXVzYjogRG9jdW1lbnQgVVNCIG5vZGUgY29tcGF0
-aWJsZSBzdHJpbmcgZm9yIElQIHZlcnNpb24NCg0KQWRkaW5nIFJhbW5lZWsNCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBG
-cmlkYXksIEF1Z3VzdCAyMiwgMjAxNCAzOjUzIEFNDQo+IFRvOiBCYWRvbGEgTmlraGlsLUI0NjE3
-Mg0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5r
-ZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIERvY3VtZW50YXRpb246IGR0czogZnNs
-LXVzYjogRG9jdW1lbnQgVVNCIG5vZGUgDQo+IGNvbXBhdGlibGUgc3RyaW5nIGZvciBJUCB2ZXJz
-aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTQtMDgtMjEgYXQgMTQ6NDggKzA1MzAsIE5pa2hpbCBCYWRv
-bGEgd3JvdGU6DQo+ID4gRG9jdW1lbnQgY29tcGF0aWJsZSBzdHJpbmcgY29udGFpbmluZyBJUCB2
-ZXJzaW9uIGluIFVTQiBkZXZpY2UgdHJlZSANCj4gPiBub2RlDQo+ID4NCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBOaWtoaWwgQmFkb2xhIDxuaWtoaWwuYmFkb2xhQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0t
-DQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvZnNsLXVzYi50eHQg
-fCAxMyANCj4gPiArKysrKysrKy0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlv
-bnMoKyksIDUgZGVsZXRpb25zKC0pDQo+IA0KPiBQbGVhc2UgQ0MgZGV2aWNldHJlZUB2Z2VyLmtl
-cm5lbC5vcmcgb24gYWxsIGRldmljZSB0cmVlIHBhdGNoZXMgKGluIA0KPiBhZGRpdGlvbiB0byBs
-aW51eHBwYy1kZXYpLg0KPiANCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4gaW5kZXggNDc3OWMwMi4uNWEz
-YTBhOCAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
-dXNiL2ZzbC11c2IudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL3VzYi9mc2wtdXNiLnR4dA0KPiA+IEBAIC0xMCw3ICsxMCwxMCBAQCBSZXF1aXJlZCBwcm9w
-ZXJ0aWVzIDoNCj4gPiAgICAgY29udHJvbGxlcnMsIG9yICJmc2wtdXNiMi1kciIgZm9yIGR1YWwg
-cm9sZSBVU0IgY29udHJvbGxlcnMNCj4gPiAgICAgb3IgImZzbCxtcGM1MTIxLXVzYjItZHIiIGZv
-ciBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXJzIG9mIE1QQzUxMjEuDQo+ID4gICAgIFdoZXJldmVy
-IGFwcGxpY2FibGUsIHRoZSBJUCB2ZXJzaW9uIG9mIHRoZSBVU0IgY29udHJvbGxlciBzaG91bGQN
-Cj4gPiAtICAgYWxzbyBiZSBtZW50aW9uZWQgKGZvciBlZy4gZnNsLXVzYjItZHItdjIuMiBmb3Ig
-YnNjOTEzMikuDQo+ID4gKyAgIGFsc28gYmUgbWVudGlvbmVkIGluIGFub3RoZXIgc3RyaW5nLg0K
-PiA+ICsgICBGb3IgbXVsdGkgcG9ydCBob3N0IFVTQiBjb250cm9sbGVyIHdpdGggSVAgdmVyc2lv
-biA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlDQo+ID4gKyAgICJmc2wtdXNiMi1tcGgtPElQX1Zlcj4i
-LiBGb3IgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIHdpdGggSVAgdmVyc2lvbg0KPiA+ICsgICA8
-SVBfVmVyPiwgaXQgc2hvdWxkIGJlICJmc2wtdXNiMi1kci08SVBfVmVyPiIuDQo+IA0KPiBJdCB3
-YXMgZG9jdW1lbnRlZCBiZWZvcmUgLS0gdGhpcyBpcyBqdXN0IG1ha2luZyBpdCBtb3JlIGV4cGxp
-Y2l0LCByaWdodD8NCj4gDQo+IEZXSVcsIHRoZSB2ZXJzaW9uIG51bWJlciBjYW4gYmUgcmVhZCBv
-dXQgb2YgYSBVU0IgcmVnaXN0ZXIsIHNvIEknZCANCj4gcmF0aGVyIHJlbW92ZSB0aGUgc3VnZ2Vz
-dGlvbiB0byBzcGVjaWZ5IHRoZSB2ZXJzaW9uIG51bWJlciBhbmQgcmVwbGFjZSANCj4gaXQgd2l0
-aCBhIHJlZmVyZW5jZSB0byB0aGUgSUQgcmVnaXN0ZXIuDQp3ZSBoYXZlIGZvbGxvd2luZyB0d28g
-aXNzdWVzIC0NCihhKSBvdXIgVVNCSVAgdmVyc2lvbiByZWdpc3RlciBkb2Vzbid0IGhhdmUgY29u
-c2lzdGVudCAidmVyc2lvbiBmaWVsZCBzaXplIiBvdmVyIA0KbXVsdGlwbGUgdmVyc2lvbihzKS4g
-VGhpcyBpcyB3aHkgd2UgY291bGRuJ3QgdXNlIGl0IGZvciByZWFkaW5nIHZlcnNpb24gaW5mbyBh
-Y3Jvc3MNCnZhcmlvdXMgSVAgdmVyc2lvbnMNCihiKSB0aGlzIHJlZ2lzdGVyIGlzIG5vdCBleHBv
-c2VkIGluIGFsbCBTb0MgUk1zIChwcm9iYWJseSBiZWNhdXNlIG9mIGFib3ZlIHJlYXNvbikNCj4g
-DQo+ID4gICAtIHBoeV90eXBlIDogRm9yIG11bHRpIHBvcnQgaG9zdCBVU0IgY29udHJvbGxlcnMs
-IHNob3VsZCBiZSBvbmUgb2YNCj4gPiAgICAgInVscGkiLCBvciAic2VyaWFsIi4gRm9yIGR1YWwg
-cm9sZSBVU0IgY29udHJvbGxlcnMsIHNob3VsZCBiZQ0KPiA+ICAgICBvbmUgb2YgInVscGkiLCAi
-dXRtaSIsICJ1dG1pX3dpZGUiLCBvciAic2VyaWFsIi4NCj4gPiBAQCAtNDIsOSArNDUsOSBAQCBP
-cHRpb25hbCBwcm9wZXJ0aWVzIDoNCj4gPiAgIC0gZnNsLGludmVydC1wd3ItZmF1bHQgOiBib29s
-ZWFuOyBmb3IgTVBDNTEyMSBVU0IwIG9ubHkuIEluZGljYXRlcw0KPiA+ICAgICB0aGUgUFdSX0ZB
-VUxUIHNpZ25hbCBwb2xhcml0eSBpcyBpbnZlcnRlZC4NCj4gPg0KPiA+IC1FeGFtcGxlIG11bHRp
-IHBvcnQgaG9zdCBVU0IgY29udHJvbGxlciBkZXZpY2Ugbm9kZSA6DQo+ID4gK0V4YW1wbGUgbXVs
-dGkgcG9ydCBob3N0IFVTQiBjb250cm9sbGVyIHZlcnNpb24gMi41IGRldmljZSBub2RlIDoNCj4g
-PiAgCXVzYkAyMjAwMCB7DQo+ID4gLQkJY29tcGF0aWJsZSA9ICJmc2wtdXNiMi1tcGgiOw0KPiA+
-ICsJCWNvbXBhdGlibGUgPSAiZnNsLXVzYjItbXBoLXYyLjUiLCAiZnNsLXVzYjItbXBoIjsNCj4g
-PiAgCQlyZWcgPSA8MjIwMDAgMTAwMD47DQo+ID4gIAkJI2FkZHJlc3MtY2VsbHMgPSA8MT47DQo+
-ID4gIAkJI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gQEAgLTU1LDkgKzU4LDkgQEAgRXhhbXBsZSBt
-dWx0aSBwb3J0IGhvc3QgVVNCIGNvbnRyb2xsZXIgZGV2aWNlIG5vZGUgOg0KPiA+ICAJCXBvcnQx
-Ow0KPiA+ICAJfTsNCj4gPg0KPiA+IC1FeGFtcGxlIGR1YWwgcm9sZSBVU0IgY29udHJvbGxlciBk
-ZXZpY2Ugbm9kZSA6DQo+ID4gK0V4YW1wbGUgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIHZlcnNp
-b24gMi41IGRldmljZSBub2RlIDoNCj4gPiAgCXVzYkAyMzAwMCB7DQo+ID4gLQkJY29tcGF0aWJs
-ZSA9ICJmc2wtdXNiMi1kciI7DQo+ID4gKwkJY29tcGF0aWJsZSA9ICJmc2wtdXNiMi1kci12Mi41
-IiwgImZzbC11c2IyLWRyIjsNCj4gPiAgCQlyZWcgPSA8MjMwMDAgMTAwMD47DQo+ID4gIAkJI2Fk
-ZHJlc3MtY2VsbHMgPSA8MT47DQo+ID4gIAkJI3NpemUtY2VsbHMgPSA8MD47DQo+IA0KPiBUaGlz
-IGV4YW1wbGUgZG9lc24ndCBjb3JyZXNwb25kIHRvIGFueSBkZXZpY2UgdHJlZSBJIHNlZS4gIEV2
-ZW4gYWZ0ZXIgDQo+IHlvdXIgbmV4dCBwYXRjaCB0aGF0IHNldHMgdDIwODAncyBVU0IgdG8gdjIu
-NSwgdGhlIGFkZHJlc3NlcyBhcmUgZGlmZmVyZW50Lg0KPiANCkkgcmVja29uIHRoYXQgdGhlIGV4
-YW1wbGUgZW1waGFzaXplcyBvbiBzaG93aW5nIGhvdyBJUCB2ZXJzaW9uIGluZm9ybWF0aW9uIGlz
-DQp0byBiZSBzdG9yZWQgaW4gImNvbXBhdGlibGUgc3RyaW5nIi4gSXMgaXQgbmVjZXNzYXJ5IHRv
-IG1ha2Ugc3VyZSB0aGF0IHdlIHNob3VsZCANCmFsd2F5cyBzaXRlIGFjdHVhbCB2YWx1ZXMgYWxy
-ZWFkeSB1c2VkPw0KPiBBbHNvLCBpZiB5b3UncmUgZ29pbmcgdG8gdXBkYXRlIHRoZSBleGFtcGxl
-LCBwbGVhc2UgYWxzbyB1cGRhdGUgaXQgdG8gDQo+IGJlIG1vZGVybiBpbiBvdGhlciByZXNwZWN0
-cywgc3VjaCBhcyB1c2luZyAweCBmb3IgaGV4IG51bWJlcnMgKG91dHNpZGUgdGhlIHVuaXQgYWRk
-cmVzcykuDQo+IA0KPiAtU2NvdHQNCj4gDQoNCg==
+Read_msi_msg() only be called in rtas_setup_msi_irqs(),
+use __read_msi_msg() instead of read_msi_msg for
+simplification. And rename __read_msi_msg() to
+read_msi_msg().
+
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
+ arch/x86/pci/xen.c                   |    2 +-
+ drivers/pci/msi.c                    |    9 +--------
+ include/linux/msi.h                  |    3 +--
+ 4 files changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 18ff462..7e87878 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -485,7 +485,7 @@ again:
+ 		irq_set_msi_desc(virq, entry);
+ 
+ 		/* Read config space back so we can restore after reset */
+-		read_msi_msg(virq, &msg);
++		read_msi_msg(entry, &msg);
+ 		entry->msg = msg;
+ 	}
+ 
+diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+index 093f5f4..ad03739 100644
+--- a/arch/x86/pci/xen.c
++++ b/arch/x86/pci/xen.c
+@@ -229,7 +229,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 		return 1;
+ 
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		__read_msi_msg(msidesc, &msg);
++		read_msi_msg(msidesc, &msg);
+ 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
+ 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
+ 		if (msg.data != XEN_PIRQ_MSI_DATA ||
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 8746ecd..aff384a 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -259,7 +259,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
+ 	}
+ }
+ 
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
++void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	BUG_ON(entry->dev->current_state != PCI_D0);
+ 
+@@ -289,13 +289,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ 	}
+ }
+ 
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+-{
+-	struct msi_desc *entry = irq_get_msi_desc(irq);
+-
+-	__read_msi_msg(entry, msg);
+-}
+-
+ void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	/* Assert that the cache is valid, assuming that
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 329ec73..6be66f4 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -15,10 +15,9 @@ struct irq_data;
+ struct msi_desc;
+ void mask_msi_irq(struct irq_data *data);
+ void unmask_msi_irq(struct irq_data *data);
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
++void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+ void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+ 
+ struct msi_desc {
+-- 
+1.7.1
