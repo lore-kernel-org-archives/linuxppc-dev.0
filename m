@@ -1,45 +1,31 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-vc0-x22a.google.com (mail-vc0-x22a.google.com
+ [IPv6:2607:f8b0:400c:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 024291A01C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 12:48:15 +1000 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 21 Aug 2014 20:48:13 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DDF9A1FF003E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:48:10 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7M2mB5822872206
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 04:48:11 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7M2mB8W004387
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:48:11 -0600
-Message-ID: <53F6AF66.10204@linux.vnet.ibm.com>
-Date: Fri, 22 Aug 2014 08:18:06 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB74A1A0160
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 13:13:10 +1000 (EST)
+Received: by mail-vc0-f170.google.com with SMTP id lf12so11834639vcb.29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:13:08 -0700 (PDT)
 MIME-Version: 1.0
-To: Viresh Kumar <viresh.kumar@linaro.org>,
- Shilpasri G Bhat <shilpabhatppc@gmail.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
-References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com>
- <53F57E51.4060200@gmail.com>
- <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
-In-Reply-To: <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
+In-Reply-To: <1408524184-31928-5-git-send-email-p.zabel@pengutronix.de>
+References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
+ <1408524184-31928-5-git-send-email-p.zabel@pengutronix.de>
+From: Rob Herring <robherring2@gmail.com>
+Date: Thu, 21 Aug 2014 22:12:47 -0500
+Message-ID: <CAL_JsqK3Wi9b=7w=Npu3HN8SSkyFgVT0Qoc48LUyoiEaBjSCTA@mail.gmail.com>
+Subject: Re: [RFC PATCH 4/6] powerpc/85xx: Change vendor prefix for Intersil
+ Corporation to isil
+To: Philipp Zabel <p.zabel@pengutronix.de>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Kumar Gala <galak@codeaurora.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,37 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Viresh,
+On Wed, Aug 20, 2014 at 3:43 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> Currently there is a wild mixture of isl, isil, and intersil
+> compatibles in the kernel. At this point, changing the vendor
+> symbol to the most often used variant, which is equal to the
+> NASDAQ symbol, isil, should not hurt, since the isl1208 driver
+> doesn't care either way.
+>
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+>  arch/powerpc/boot/dts/ppa8548.dts | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/boot/dts/ppa8548.dts b/arch/powerpc/boot/dts/ppa8548.dts
+> index 27b0699..000262b 100644
+> --- a/arch/powerpc/boot/dts/ppa8548.dts
+> +++ b/arch/powerpc/boot/dts/ppa8548.dts
+> @@ -89,7 +89,7 @@
+>  &soc {
+>         i2c@3000 {
+>                 rtc@6f {
+> -                       compatible = "intersil,isl1208";
+> +                       compatible = "isil,isl1208";
 
-On 08/21/2014 11:56 AM, Viresh Kumar wrote:
-> On 21 August 2014 10:36, Shilpasri G Bhat <shilpabhatppc@gmail.com> wrote:
->> The intention here is stop the cpufreq governor and then to set the cpus to
->> nominal frequency so as to ensure that the frequency won't be changed later.
->>
->> The .suspend callback of the driver is not called during reboot/kexec.
->> So we need an explicit reboot notifier to call cpufreq-suspend() to
->> suffice the requirement.
-> 
-> Hi Shilpa,
-> 
-> No, we can't allow any platform driver to misuse cpufreq_suspend().
-> Platform drivers aren't *allowed* to call this routine.
+This is a mature platform. You cannot change it. You can add the new
+string, but the dts and kernel need both strings.
 
-At the moment this looks like the best way forward. We need to do this
-cleanly by ensuring that we stop the governors and then call into the
-driver to deal with the cpu frequency in its own way during reboot. The
-best way to do this would be by calling this routine. Either this or
-cpufreq_suspend() should be called in the reboot path generically. The
-latter might not be an enticing option for other platforms.
+I would just leave it all alone and add the new prefix and mark the
+others deprecated.
 
-Regards
-Preeti U Murthy
-> 
-> Now the deal is how do we move to nominal frequency on reboot..
-> @Rafael: Any suggestions? How do we ensure that governors
-> are stopped on these notifiers, or if there is some other solution here?
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Rob
+
+>                         reg = <0x6f>;
+>                 };
+>         };
+> --
+> 2.1.0.rc1
+>
