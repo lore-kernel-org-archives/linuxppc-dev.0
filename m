@@ -1,41 +1,23 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFE6A1A003F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 14:54:06 +1000 (EST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2C0C4140093
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 14:54:05 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 22 Aug 2014 10:24:02 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2A682394004E
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:01 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7M4sTQH56033526
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:29 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7M4s0jv018549
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:00 +0530
-Subject: [PATCH] powerpc/book3s: Deliver machine check with MSR(RI=0) to
- guest as MCE
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Fri, 22 Aug 2014 10:23:59 +0530
-Message-ID: <20140822045332.16250.41099.stgit@mars>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id EFBC11A00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 15:15:24 +1000 (EST)
+Date: Fri, 22 Aug 2014 07:07:37 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Pranith Kumar <bobby.prani@gmail.com>,
+ Grant Erickson <gerickson@nuovations.com>
+Subject: Re: [PATCH] powerpc: edac: Fix build error
+Message-ID: <20140822050737.GD11381@nazgul.tnic>
+References: <1408673991-17892-1-git-send-email-bobby.prani@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1408673991-17892-1-git-send-email-bobby.prani@gmail.com>
+Cc: open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Doug Thompson <dougthompson@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "open list:EDAC-CORE" <linux-edac@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,61 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, Aug 21, 2014 at 10:19:51PM -0400, Pranith Kumar wrote:
+> Fix the following build error:
+> 
+> drivers/edac/ppc4xx_edac.c: In function 'mfsdram':
+> drivers/edac/ppc4xx_edac.c:249: error: implicit declaration of function
+> '__mfdcri'
+> drivers/edac/ppc4xx_edac.c: In function 'mtsdram':
+> drivers/edac/ppc4xx_edac.c:266: error: implicit declaration of function
+> '__mtdcri'
+> drivers/edac/ppc4xx_edac.c:269: warning: 'return' with a value, in function
+> returning void
+> drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_init_csrows':
+> drivers/edac/ppc4xx_edac.c:924: warning: initialization from incompatible
+> pointer type
+> drivers/edac/ppc4xx_edac.c:977: error: request for member 'dimm' in something
+> not a structure or union
+> drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_map_dcrs':
+> drivers/edac/ppc4xx_edac.c:1209: warning: passing argument 1 of 'dcr_map_mmio'
+> discards qualifiers from pointer target type
+> 
+> This driver depends on PPC_DCR_NATIVE to be set for the relevant headers to be
+> included. Also if PPC_DCR_MMIO=n the build fails. So make PPC_DCR depend on both
+> these options.
+> 
+> This is compile tested only.
 
-For machine check occurring while in guest, KVM layer tries recovery
-and deliver MCE to guest if recovery is failed. For recovered errors
-we just go back to normal functioning of guest. But there are cases
-where we may hit MCE in guest with MSR(RI=0), which means MCE interrupt is
-not recoverable and guest can not function normally it should go down to
-panic path. The current implementation does not have check for MSR(RI=0)
-which can cause guest to crash with Bad kernel stack pointer instead of
-machine check oops message.
+This driver has been carried through the years from misc people after
+its initial drop in 2009. And frankly, I'd prefer if someone with the
+hardware could actually test it before we break it any further.
 
-[26281.490060] Bad kernel stack pointer 3fff9ccce5b0 at c00000000000490c
-[26281.490434] Oops: Bad kernel stack pointer, sig: 6 [#1]
-[26281.490472] SMP NR_CPUS=2048 NUMA pSeries
+Alternatively, if it is obsolete and no one uses it, we could very well
+delete it instead. Initial commit talks about the hw it supports:
 
-This patch fixes this issue by checking MSR(RI=0) in KVM layer and forwarding
-unrecoverable interrupt to guest which then panics with proper machine check
-Oops message.
+dba7a77c0e40 ("edac: new ppc4xx driver module")
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+So it would be good if we got some opinions from the PPC crowd. Who are
+on CC.
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f0c4db7..b6844fb 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2275,7 +2275,6 @@ machine_check_realmode:
- 	mr	r3, r9		/* get vcpu pointer */
- 	bl	kvmppc_realmode_machine_check
- 	nop
--	cmpdi	r3, 0		/* Did we handle MCE ? */
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	/*
-@@ -2288,13 +2287,18 @@ machine_check_realmode:
- 	 * The old code used to return to host for unhandled errors which
- 	 * was causing guest to hang with soft lockups inside guest and
- 	 * makes it difficult to recover guest instance.
-+	 *
-+	 * if we receive machine check with MSR(RI=0) then deliver it to
-+	 * guest as machine check causing guest to crash.
- 	 */
--	ld	r10, VCPU_PC(r9)
- 	ld	r11, VCPU_MSR(r9)
-+	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
-+	beq	1f			/* Deliver a machine check to guest */
-+	ld	r10, VCPU_PC(r9)
-+	cmpdi	r3, 0		/* Did we handle MCE ? */
- 	bne	2f	/* Continue guest execution. */
- 	/* If not, deliver a machine check.  SRR0/1 are already set */
--	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
--	ld	r11, VCPU_MSR(r9)
-+1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	bl	kvmppc_msr_interrupt
- 2:	b	fast_interrupt_c_return
- 
+(leaving in the rest for context).
+
+> 
+> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  arch/powerpc/Kconfig       | 6 +++---
+>  drivers/edac/ppc4xx_edac.c | 8 ++++----
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 4bc7b62..9b90c1c 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -233,15 +233,15 @@ config ARCH_SUSPEND_POSSIBLE
+>  
+>  config PPC_DCR_NATIVE
+>  	bool
+> -	default n
+> +	default y
+>  
+>  config PPC_DCR_MMIO
+>  	bool
+> -	default n
+> +	default y
+>  
+>  config PPC_DCR
+>  	bool
+> -	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
+> +	depends on PPC_DCR_NATIVE && PPC_DCR_MMIO
+>  	default y
+>  
+>  config PPC_OF_PLATFORM_PCI
+> diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
+> index ef6b7e0..8725b73 100644
+> --- a/drivers/edac/ppc4xx_edac.c
+> +++ b/drivers/edac/ppc4xx_edac.c
+> @@ -246,8 +246,8 @@ static const char * const ppc4xx_plb_masters[9] = {
+>  static inline u32
+>  mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
+>  {
+> -	return __mfdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
+> -			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
+> +	return __mfdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
+> +			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
+>  			idcr_n);
+>  }
+>  
+> @@ -263,8 +263,8 @@ mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
+>  static inline void
+>  mtsdram(const dcr_host_t *dcr_host, unsigned int idcr_n, u32 value)
+>  {
+> -	return __mtdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
+> -			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
+> +	return __mtdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
+> +			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
+>  			idcr_n,
+>  			value);
+>  }
+> -- 
+> 1.9.1
+> 
+> 
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
