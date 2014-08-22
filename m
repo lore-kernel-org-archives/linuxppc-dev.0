@@ -1,41 +1,24 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-qc0-x235.google.com (mail-qc0-x235.google.com
+ [IPv6:2607:f8b0:400d:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B43861A011F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 12:13:19 +1000 (EST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 22 Aug 2014 03:13:16 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3A19F219002D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 03:12:57 +0100 (BST)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7M2DEio33751218
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 02:13:14 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7M2DDsb006007
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:13:14 -0600
-Message-ID: <1408673576.2448.6.camel@TP420>
-Subject: Re: [RFC PATCH powerpc] Fix warning reported by
- verify_cpu_node_mapping()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Fri, 22 Aug 2014 10:12:56 +0800
-In-Reply-To: <20140821154529.GB10478@linux.vnet.ibm.com>
-References: <1408608842.3003.20.camel@TP420>
- <20140821154529.GB10478@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E48D91A00ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 12:19:50 +1000 (EST)
+Received: by mail-qc0-f181.google.com with SMTP id x13so10169294qcv.40
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 19:19:48 -0700 (PDT)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list),
+ linux-edac@vger.kernel.org (open list:EDAC-CORE)
+Subject: [PATCH] powerpc: edac: Fix build error
+Date: Thu, 21 Aug 2014 22:19:51 -0400
+Message-Id: <1408673991-17892-1-git-send-email-bobby.prani@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,58 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 四, 2014-08-21 at 08:45 -0700, Nishanth Aravamudan wrote:
-> On 21.08.2014 [16:14:02 +0800], Li Zhong wrote:
-> > With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-> > earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-> > uses cpu_to_node() to check whether siblings are in the same node. 
-> > 
-> > It skips the checking for siblings that are not online yet. So the only
-> > check done here is for the bootcpu, which is online at that time. But
-> > the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-> > will be set up in smp_prepare_cpus()).
-> > 
-> > So I could see something like following reported:
-> > [    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-> > node!
-> 
-> You mean you did see this, right? (as opposed to "could" based upon code
-> inspection or something)
+Fix the following build error:
 
-Yes, I did see the warnings. Seems I didn't express it precisely in
-English ...
+drivers/edac/ppc4xx_edac.c: In function 'mfsdram':
+drivers/edac/ppc4xx_edac.c:249: error: implicit declaration of function
+'__mfdcri'
+drivers/edac/ppc4xx_edac.c: In function 'mtsdram':
+drivers/edac/ppc4xx_edac.c:266: error: implicit declaration of function
+'__mtdcri'
+drivers/edac/ppc4xx_edac.c:269: warning: 'return' with a value, in function
+returning void
+drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_init_csrows':
+drivers/edac/ppc4xx_edac.c:924: warning: initialization from incompatible
+pointer type
+drivers/edac/ppc4xx_edac.c:977: error: request for member 'dimm' in something
+not a structure or union
+drivers/edac/ppc4xx_edac.c: In function 'ppc4xx_edac_map_dcrs':
+drivers/edac/ppc4xx_edac.c:1209: warning: passing argument 1 of 'dcr_map_mmio'
+discards qualifiers from pointer target type
 
-> 
-> > 
-> > As we don't actually do the checking during this early stage, so maybe
-> > we could directly call numa_setup_cpu() in do_init_bootmem()?
-> > 
-> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> 
-> Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+This driver depends on PPC_DCR_NATIVE to be set for the relevant headers to be
+included. Also if PPC_DCR_MMIO=n the build fails. So make PPC_DCR depend on both
+these options.
 
-Thank you for the review,
+This is compile tested only.
 
-Zhong
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ arch/powerpc/Kconfig       | 6 +++---
+ drivers/edac/ppc4xx_edac.c | 8 ++++----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-> 
-> > ---
-> >  arch/powerpc/mm/numa.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > index d7737a5..9918c02 100644
-> > --- a/arch/powerpc/mm/numa.c
-> > +++ b/arch/powerpc/mm/numa.c
-> > @@ -1128,8 +1128,7 @@ void __init do_init_bootmem(void)
-> >  	 * early in boot, cf. smp_prepare_cpus().
-> >  	 */
-> >  	for_each_possible_cpu(cpu) {
-> > -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-> > -				  (void *)(unsigned long)cpu);
-> > +		numa_setup_cpu((unsigned long)cpu);
-> 
-> This is a good change, thanks for catching it. I must have glossed over
-> those messages in my testing, my apologies!
-> 
-> -Nish
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4bc7b62..9b90c1c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -233,15 +233,15 @@ config ARCH_SUSPEND_POSSIBLE
+ 
+ config PPC_DCR_NATIVE
+ 	bool
+-	default n
++	default y
+ 
+ config PPC_DCR_MMIO
+ 	bool
+-	default n
++	default y
+ 
+ config PPC_DCR
+ 	bool
+-	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
++	depends on PPC_DCR_NATIVE && PPC_DCR_MMIO
+ 	default y
+ 
+ config PPC_OF_PLATFORM_PCI
+diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
+index ef6b7e0..8725b73 100644
+--- a/drivers/edac/ppc4xx_edac.c
++++ b/drivers/edac/ppc4xx_edac.c
+@@ -246,8 +246,8 @@ static const char * const ppc4xx_plb_masters[9] = {
+ static inline u32
+ mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
+ {
+-	return __mfdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
+-			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
++	return __mfdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
++			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
+ 			idcr_n);
+ }
+ 
+@@ -263,8 +263,8 @@ mfsdram(const dcr_host_t *dcr_host, unsigned int idcr_n)
+ static inline void
+ mtsdram(const dcr_host_t *dcr_host, unsigned int idcr_n, u32 value)
+ {
+-	return __mtdcri(dcr_host->base + SDRAM_DCR_ADDR_OFFSET,
+-			dcr_host->base + SDRAM_DCR_DATA_OFFSET,
++	return __mtdcri(dcr_host->host.native.base + SDRAM_DCR_ADDR_OFFSET,
++			dcr_host->host.native.base + SDRAM_DCR_DATA_OFFSET,
+ 			idcr_n,
+ 			value);
+ }
+-- 
+1.9.1
