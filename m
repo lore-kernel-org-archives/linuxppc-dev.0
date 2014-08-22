@@ -1,42 +1,17 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B1C6C1A003F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 11:10:32 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 21 Aug 2014 19:10:30 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 64CC838C8059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 21:10:27 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7M1AR3P66715814
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 01:10:27 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7M1APNe026952
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 21:10:27 -0400
-Date: Thu, 21 Aug 2014 18:10:11 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH 0/4] Improve slab consumption with memoryless nodes
-Message-ID: <20140822011011.GF13999@linux.vnet.ibm.com>
-References: <20140814001301.GI11121@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C23A1A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 11:36:52 +1000 (EST)
+Date: Fri, 22 Aug 2014 11:36:52 +1000
+From: Anton Blanchard <anton@samba.org>
+To: santil@linux.vnet.ibm.com, paulus@samba.org
+Subject: [PATCH] ibmveth: Fix endian issues with rx_no_buffer statistic
+Message-ID: <20140822113652.7e4bdc78@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140814001301.GI11121@linux.vnet.ibm.com>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- David Rientjes <rientjes@google.com>, Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Tejun Heo <tj@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@linux.com>, Wanpeng Li <liwanp@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,57 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.08.2014 [17:13:01 -0700], Nishanth Aravamudan wrote:
-> Anton noticed (http://www.spinics.net/lists/linux-mm/msg67489.html) that
-> on ppc LPARs with memoryless nodes, a large amount of memory was
-> consumed by slabs and was marked unreclaimable. He tracked it down to
-> slab deactivations in the SLUB core when we allocate remotely, leading
-> to poor efficiency always when memoryless nodes are present.
-> 
-> After much discussion, Joonsoo provided a few patches that help
-> significantly. They don't resolve the problem altogether:
-> 
->  - memory hotplug still needs testing, that is when a memoryless node
->    becomes memory-ful, we want to dtrt
->  - there are other reasons for going off-node than memoryless nodes,
->    e.g., fully exhausted local nodes
-> 
-> Neither case is resolved with this series, but I don't think that should
-> block their acceptance, as they can be explored/resolved with follow-on
-> patches.
-> 
-> The series consists of:
-> 
-> [1/4] topology: add support for node_to_mem_node() to determine the fallback node
-> [2/4] slub: fallback to node_to_mem_node() node if allocating on memoryless node
-> 
->  - Joonsoo's patches to cache the nearest node with memory for each
->    NUMA node
-> 
-> [3/4] Partial revert of 81c98869faa5 (""kthread: ensure locality of task_struct allocations")
-> 
->  - At Tejun's request, keep the knowledge of memoryless node fallback to
->    the allocator core.
-> 
-> [4/4] powerpc: reorder per-cpu NUMA information's initialization
-> 
->  - Fix what appears to be a bug with when the NUMA topology information
->    is stored in the powerpc initialization code.
+Hidden away in the last 8 bytes of the buffer_list page is a solitary
+statistic. It needs to be byte swapped or else ethtool -S will
+produce numbers that terrify the user.
 
-Andrew & others,
+Since we do this in multiple places, create a helper function with a
+comment explaining what is going on.
 
-I know kernel summit is going on, so I'll be patient, but was just
-curious if anyone had any further comments other than Christoph's on the
-naming.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@vger.kernel.org
+---
 
-Thanks,
-Nish
-
-> 
->  arch/powerpc/kernel/smp.c | 12 ++++++------
->  arch/powerpc/mm/numa.c    | 13 ++++++++++---
->  include/linux/topology.h  | 17 +++++++++++++++++
->  kernel/kthread.c          |  2 +-
->  mm/page_alloc.c           |  1 +
->  mm/slub.c                 | 24 ++++++++++++++++++------
->  6 files changed, 53 insertions(+), 16 deletions(-)
+Index: b/drivers/net/ethernet/ibm/ibmveth.c
+===================================================================
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -292,6 +292,18 @@ failure:
+ 	atomic_add(buffers_added, &(pool->available));
+ }
+ 
++/*
++ * The final 8 bytes of the buffer list is a counter of frames dropped
++ * because there was not a buffer in the buffer list capable of holding
++ * the frame.
++ */
++static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
++{
++	__be64 *p = adapter->buffer_list_addr + 4096 - 8;
++
++	adapter->rx_no_buffer = be64_to_cpup(p);
++}
++
+ /* replenish routine */
+ static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
+ {
+@@ -307,8 +319,7 @@ static void ibmveth_replenish_task(struc
+ 			ibmveth_replenish_buffer_pool(adapter, pool);
+ 	}
+ 
+-	adapter->rx_no_buffer = *(u64 *)(((char*)adapter->buffer_list_addr) +
+-						4096 - 8);
++	ibmveth_update_rx_no_buffer(adapter);
+ }
+ 
+ /* empty and free ana buffer pool - also used to do cleanup in error paths */
+@@ -698,8 +709,7 @@ static int ibmveth_close(struct net_devi
+ 
+ 	free_irq(netdev->irq, netdev);
+ 
+-	adapter->rx_no_buffer = *(u64 *)(((char *)adapter->buffer_list_addr) +
+-						4096 - 8);
++	ibmveth_update_rx_no_buffer(adapter);
+ 
+ 	ibmveth_cleanup(adapter);
+ 
