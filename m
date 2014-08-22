@@ -1,24 +1,41 @@
-Return-Path: <nikhil.badola@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C84D91A0074
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 14:48:30 +1000 (EST)
-From: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] Documentation: dts: fsl-usb: Document USB node compatible
- string for IP version
-Date: Fri, 22 Aug 2014 04:48:23 +0000
-Message-ID: <af7cc70458bf471cb20938ce6498ccfe@BN1PR0301MB0593.namprd03.prod.outlook.com>
-References: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
- <1408659774.2395.21.camel@snotra.buserror.net>
-In-Reply-To: <1408659774.2395.21.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFE6A1A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 14:54:06 +1000 (EST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2C0C4140093
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 14:54:05 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 22 Aug 2014 10:24:02 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2A682394004E
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:01 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7M4sTQH56033526
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:29 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7M4s0jv018549
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2014 10:24:00 +0530
+Subject: [PATCH] powerpc/book3s: Deliver machine check with MSR(RI=0) to
+ guest as MCE
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Fri, 22 Aug 2014 10:23:59 +0530
+Message-ID: <20140822045332.16250.41099.stgit@mars>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +45,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QWRkaW5nIFJhbW5lZWsNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBX
-b29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIEF1Z3VzdCAyMiwgMjAxNCAzOjUzIEFN
-DQo+IFRvOiBCYWRvbGEgTmlraGlsLUI0NjE3Mg0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0hdIERvY3VtZW50YXRpb246IGR0czogZnNsLXVzYjogRG9jdW1lbnQgVVNCIG5vZGUNCj4gY29t
-cGF0aWJsZSBzdHJpbmcgZm9yIElQIHZlcnNpb24NCj4gDQo+IE9uIFRodSwgMjAxNC0wOC0yMSBh
-dCAxNDo0OCArMDUzMCwgTmlraGlsIEJhZG9sYSB3cm90ZToNCj4gPiBEb2N1bWVudCBjb21wYXRp
-YmxlIHN0cmluZyBjb250YWluaW5nIElQIHZlcnNpb24gaW4gVVNCIGRldmljZSB0cmVlDQo+ID4g
-bm9kZQ0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTmlraGlsIEJhZG9sYSA8bmlraGlsLmJhZG9s
-YUBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
-YmluZGluZ3MvdXNiL2ZzbC11c2IudHh0IHwgMTMgKysrKysrKystLS0tLQ0KPiA+ICAxIGZpbGUg
-Y2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQ0KPiANCj4gUGxlYXNlIEND
-IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnIG9uIGFsbCBkZXZpY2UgdHJlZSBwYXRjaGVzIChp
-biBhZGRpdGlvbiB0bw0KPiBsaW51eHBwYy1kZXYpLg0KPiANCj4gPg0KPiA+IGRpZmYgLS1naXQg
-YS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4g
-Yi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4g
-aW5kZXggNDc3OWMwMi4uNWEzYTBhOCAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL3VzYi9mc2wtdXNiLnR4dA0KPiA+IEBAIC0xMCw3ICsxMCwx
-MCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzIDoNCj4gPiAgICAgY29udHJvbGxlcnMsIG9yICJmc2wt
-dXNiMi1kciIgZm9yIGR1YWwgcm9sZSBVU0IgY29udHJvbGxlcnMNCj4gPiAgICAgb3IgImZzbCxt
-cGM1MTIxLXVzYjItZHIiIGZvciBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXJzIG9mIE1QQzUxMjEu
-DQo+ID4gICAgIFdoZXJldmVyIGFwcGxpY2FibGUsIHRoZSBJUCB2ZXJzaW9uIG9mIHRoZSBVU0Ig
-Y29udHJvbGxlciBzaG91bGQNCj4gPiAtICAgYWxzbyBiZSBtZW50aW9uZWQgKGZvciBlZy4gZnNs
-LXVzYjItZHItdjIuMiBmb3IgYnNjOTEzMikuDQo+ID4gKyAgIGFsc28gYmUgbWVudGlvbmVkIGlu
-IGFub3RoZXIgc3RyaW5nLg0KPiA+ICsgICBGb3IgbXVsdGkgcG9ydCBob3N0IFVTQiBjb250cm9s
-bGVyIHdpdGggSVAgdmVyc2lvbiA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlDQo+ID4gKyAgICJmc2wt
-dXNiMi1tcGgtPElQX1Zlcj4iLiBGb3IgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIHdpdGggSVAg
-dmVyc2lvbg0KPiA+ICsgICA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlICJmc2wtdXNiMi1kci08SVBf
-VmVyPiIuDQo+IA0KPiBJdCB3YXMgZG9jdW1lbnRlZCBiZWZvcmUgLS0gdGhpcyBpcyBqdXN0IG1h
-a2luZyBpdCBtb3JlIGV4cGxpY2l0LCByaWdodD8NCj4gDQo+IEZXSVcsIHRoZSB2ZXJzaW9uIG51
-bWJlciBjYW4gYmUgcmVhZCBvdXQgb2YgYSBVU0IgcmVnaXN0ZXIsIHNvIEknZCByYXRoZXINCj4g
-cmVtb3ZlIHRoZSBzdWdnZXN0aW9uIHRvIHNwZWNpZnkgdGhlIHZlcnNpb24gbnVtYmVyIGFuZCBy
-ZXBsYWNlIGl0IHdpdGggYQ0KPiByZWZlcmVuY2UgdG8gdGhlIElEIHJlZ2lzdGVyLg0KPiANCj4g
-PiAgIC0gcGh5X3R5cGUgOiBGb3IgbXVsdGkgcG9ydCBob3N0IFVTQiBjb250cm9sbGVycywgc2hv
-dWxkIGJlIG9uZSBvZg0KPiA+ICAgICAidWxwaSIsIG9yICJzZXJpYWwiLiBGb3IgZHVhbCByb2xl
-IFVTQiBjb250cm9sbGVycywgc2hvdWxkIGJlDQo+ID4gICAgIG9uZSBvZiAidWxwaSIsICJ1dG1p
-IiwgInV0bWlfd2lkZSIsIG9yICJzZXJpYWwiLg0KPiA+IEBAIC00Miw5ICs0NSw5IEBAIE9wdGlv
-bmFsIHByb3BlcnRpZXMgOg0KPiA+ICAgLSBmc2wsaW52ZXJ0LXB3ci1mYXVsdCA6IGJvb2xlYW47
-IGZvciBNUEM1MTIxIFVTQjAgb25seS4gSW5kaWNhdGVzDQo+ID4gICAgIHRoZSBQV1JfRkFVTFQg
-c2lnbmFsIHBvbGFyaXR5IGlzIGludmVydGVkLg0KPiA+DQo+ID4gLUV4YW1wbGUgbXVsdGkgcG9y
-dCBob3N0IFVTQiBjb250cm9sbGVyIGRldmljZSBub2RlIDoNCj4gPiArRXhhbXBsZSBtdWx0aSBw
-b3J0IGhvc3QgVVNCIGNvbnRyb2xsZXIgdmVyc2lvbiAyLjUgZGV2aWNlIG5vZGUgOg0KPiA+ICAJ
-dXNiQDIyMDAwIHsNCj4gPiAtCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waCI7DQo+ID4gKwkJ
-Y29tcGF0aWJsZSA9ICJmc2wtdXNiMi1tcGgtdjIuNSIsICJmc2wtdXNiMi1tcGgiOw0KPiA+ICAJ
-CXJlZyA9IDwyMjAwMCAxMDAwPjsNCj4gPiAgCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiAg
-CQkjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiBAQCAtNTUsOSArNTgsOSBAQCBFeGFtcGxlIG11bHRp
-IHBvcnQgaG9zdCBVU0IgY29udHJvbGxlciBkZXZpY2Ugbm9kZSA6DQo+ID4gIAkJcG9ydDE7DQo+
-ID4gIAl9Ow0KPiA+DQo+ID4gLUV4YW1wbGUgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIGRldmlj
-ZSBub2RlIDoNCj4gPiArRXhhbXBsZSBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXIgdmVyc2lvbiAy
-LjUgZGV2aWNlIG5vZGUgOg0KPiA+ICAJdXNiQDIzMDAwIHsNCj4gPiAtCQljb21wYXRpYmxlID0g
-ImZzbC11c2IyLWRyIjsNCj4gPiArCQljb21wYXRpYmxlID0gImZzbC11c2IyLWRyLXYyLjUiLCAi
-ZnNsLXVzYjItZHIiOw0KPiA+ICAJCXJlZyA9IDwyMzAwMCAxMDAwPjsNCj4gPiAgCQkjYWRkcmVz
-cy1jZWxscyA9IDwxPjsNCj4gPiAgCQkjc2l6ZS1jZWxscyA9IDwwPjsNCj4gDQo+IFRoaXMgZXhh
-bXBsZSBkb2Vzbid0IGNvcnJlc3BvbmQgdG8gYW55IGRldmljZSB0cmVlIEkgc2VlLiAgRXZlbiBh
-ZnRlciB5b3VyIG5leHQNCj4gcGF0Y2ggdGhhdCBzZXRzIHQyMDgwJ3MgVVNCIHRvIHYyLjUsIHRo
-ZSBhZGRyZXNzZXMgYXJlIGRpZmZlcmVudC4NCj4gDQo+IEFsc28sIGlmIHlvdSdyZSBnb2luZyB0
-byB1cGRhdGUgdGhlIGV4YW1wbGUsIHBsZWFzZSBhbHNvIHVwZGF0ZSBpdCB0byBiZSBtb2Rlcm4N
-Cj4gaW4gb3RoZXIgcmVzcGVjdHMsIHN1Y2ggYXMgdXNpbmcgMHggZm9yIGhleCBudW1iZXJzIChv
-dXRzaWRlIHRoZSB1bml0IGFkZHJlc3MpLg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+
+For machine check occurring while in guest, KVM layer tries recovery
+and deliver MCE to guest if recovery is failed. For recovered errors
+we just go back to normal functioning of guest. But there are cases
+where we may hit MCE in guest with MSR(RI=0), which means MCE interrupt is
+not recoverable and guest can not function normally it should go down to
+panic path. The current implementation does not have check for MSR(RI=0)
+which can cause guest to crash with Bad kernel stack pointer instead of
+machine check oops message.
+
+[26281.490060] Bad kernel stack pointer 3fff9ccce5b0 at c00000000000490c
+[26281.490434] Oops: Bad kernel stack pointer, sig: 6 [#1]
+[26281.490472] SMP NR_CPUS=2048 NUMA pSeries
+
+This patch fixes this issue by checking MSR(RI=0) in KVM layer and forwarding
+unrecoverable interrupt to guest which then panics with proper machine check
+Oops message.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index f0c4db7..b6844fb 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -2275,7 +2275,6 @@ machine_check_realmode:
+ 	mr	r3, r9		/* get vcpu pointer */
+ 	bl	kvmppc_realmode_machine_check
+ 	nop
+-	cmpdi	r3, 0		/* Did we handle MCE ? */
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	/*
+@@ -2288,13 +2287,18 @@ machine_check_realmode:
+ 	 * The old code used to return to host for unhandled errors which
+ 	 * was causing guest to hang with soft lockups inside guest and
+ 	 * makes it difficult to recover guest instance.
++	 *
++	 * if we receive machine check with MSR(RI=0) then deliver it to
++	 * guest as machine check causing guest to crash.
+ 	 */
+-	ld	r10, VCPU_PC(r9)
+ 	ld	r11, VCPU_MSR(r9)
++	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
++	beq	1f			/* Deliver a machine check to guest */
++	ld	r10, VCPU_PC(r9)
++	cmpdi	r3, 0		/* Did we handle MCE ? */
+ 	bne	2f	/* Continue guest execution. */
+ 	/* If not, deliver a machine check.  SRR0/1 are already set */
+-	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+-	ld	r11, VCPU_MSR(r9)
++1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	bl	kvmppc_msr_interrupt
+ 2:	b	fast_interrupt_c_return
+ 
