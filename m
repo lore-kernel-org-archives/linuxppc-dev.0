@@ -1,27 +1,21 @@
-Return-Path: <p.zabel@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CA8F1A00FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 18:57:41 +1000 (EST)
-Message-ID: <1408697829.3118.28.camel@paszta.hi.pengutronix.de>
-Subject: Re: [RFC PATCH 5/6] rtc: rtc-isl12022: Change vendor prefix for
- Intersil Corporation to isil
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: devicetree@vger.kernel.org
-Date: Fri, 22 Aug 2014 10:57:09 +0200
-In-Reply-To: <1408524184-31928-6-git-send-email-p.zabel@pengutronix.de>
-References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
- <1408524184-31928-6-git-send-email-p.zabel@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@codeaurora.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA6E71A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 20:40:41 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: <mturquette@linaro.org>
+Subject: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
+ CLK_OF_DECLARE support
+Date: Fri, 22 Aug 2014 17:34:56 +0800
+Message-ID: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Mittwoch, den 20.08.2014, 10:43 +0200 schrieb Philipp Zabel:
-> Currently there is a wild mixture of isl, isil, and intersil
-> compatibles in the kernel. At this point, changing the vendor
-> symbol to the most often used variant, which is equal to the
-> NASDAQ symbol, isil, should not hurt, since the isl1208 driver
-> doesn't care either way.
-> Patch db04d6284e2a added device tree support using the then
-> documented isl vendor prefix, so we keep that around for
-> backwards compatibility.
-> 
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
->  drivers/rtc/rtc-isl12022.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/rtc/rtc-isl12022.c b/drivers/rtc/rtc-isl12022.c
-> index aa55f08..df20f18 100644
-> --- a/drivers/rtc/rtc-isl12022.c
-> +++ b/drivers/rtc/rtc-isl12022.c
-> @@ -275,7 +275,8 @@ static int isl12022_probe(struct i2c_client *client,
->  
->  #ifdef CONFIG_OF
->  static struct of_device_id isl12022_dt_match[] = {
-> -	{ .compatible = "isl,isl12022" },
-> +	{ .compatible = "isil,isl12022" },
-> +	{ .compatible = "isl,isl12022" }, /* for backwards compatibility */
+Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
+---
+ drivers/clk/Kconfig           | 7 ++++---
+ drivers/clk/clk-ppc-corenet.c | 5 +++++
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-Actually, is it even necessary to keep this around in here?
-If of_driver_match_device fails, i2c_device_match will continue to try
-i2c_match_id if driver->id_table is set, which matches against the
-result of of_modalias_node (dropping the vendor prefix altogether).
-
-regards
-Philipp
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index cfd3af7..8784704 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -82,11 +82,12 @@ config COMMON_CLK_AXI_CLKGEN
+ 	  FPGAs. It is commonly used in Analog Devices' reference designs.
+ 
+ config CLK_PPC_CORENET
+-	bool "Clock driver for PowerPC corenet platforms"
+-	depends on PPC_E500MC && OF
++	bool "Clock driver for PowerPC corenet and compatible ARM-based platforms"
++	depends on (PPC_E500MC || ARM) && OF
+ 	---help---
+ 	  This adds the clock driver support for Freescale PowerPC corenet
+-	  platforms using common clock framework.
++	  platforms and compatible Freescale ARM based platforms using common
++	  clock framework.
+ 
+ config COMMON_CLK_XGENE
+ 	bool "Clock driver for APM XGene SoC"
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+index 8e58edf..7692cac 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -305,3 +305,8 @@ static int __init ppc_corenet_clk_init(void)
+ 	return platform_driver_register(&ppc_corenet_clk_driver);
+ }
+ subsys_initcall(ppc_corenet_clk_init);
++
++CLK_OF_DECLARE(ppc_core_pll_v1, "fsl,qoriq-core-pll-1.0", core_pll_init);
++CLK_OF_DECLARE(ppc_core_pll_v2, "fsl,qoriq-core-pll-2.0", core_pll_init);
++CLK_OF_DECLARE(ppc_core_mux_v1, "fsl,qoriq-core-mux-1.0", core_mux_init);
++CLK_OF_DECLARE(ppc_core_mux_v2, "fsl,qoriq-core-mux-2.0", core_mux_init);
+-- 
+1.8.0
