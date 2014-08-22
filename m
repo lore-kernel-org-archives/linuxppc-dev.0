@@ -1,31 +1,24 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-vc0-x22a.google.com (mail-vc0-x22a.google.com
- [IPv6:2607:f8b0:400c:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB74A1A0160
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 13:13:10 +1000 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id lf12so11834639vcb.29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2014 20:13:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C84D91A0074
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 14:48:30 +1000 (EST)
+From: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] Documentation: dts: fsl-usb: Document USB node compatible
+ string for IP version
+Date: Fri, 22 Aug 2014 04:48:23 +0000
+Message-ID: <af7cc70458bf471cb20938ce6498ccfe@BN1PR0301MB0593.namprd03.prod.outlook.com>
+References: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
+ <1408659774.2395.21.camel@snotra.buserror.net>
+In-Reply-To: <1408659774.2395.21.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1408524184-31928-5-git-send-email-p.zabel@pengutronix.de>
-References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
- <1408524184-31928-5-git-send-email-p.zabel@pengutronix.de>
-From: Rob Herring <robherring2@gmail.com>
-Date: Thu, 21 Aug 2014 22:12:47 -0500
-Message-ID: <CAL_JsqK3Wi9b=7w=Npu3HN8SSkyFgVT0Qoc48LUyoiEaBjSCTA@mail.gmail.com>
-Subject: Re: [RFC PATCH 4/6] powerpc/85xx: Change vendor prefix for Intersil
- Corporation to isil
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Kumar Gala <galak@codeaurora.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 20, 2014 at 3:43 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
-> Currently there is a wild mixture of isl, isil, and intersil
-> compatibles in the kernel. At this point, changing the vendor
-> symbol to the most often used variant, which is equal to the
-> NASDAQ symbol, isil, should not hurt, since the isl1208 driver
-> doesn't care either way.
->
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
->  arch/powerpc/boot/dts/ppa8548.dts | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/boot/dts/ppa8548.dts b/arch/powerpc/boot/dts/ppa8548.dts
-> index 27b0699..000262b 100644
-> --- a/arch/powerpc/boot/dts/ppa8548.dts
-> +++ b/arch/powerpc/boot/dts/ppa8548.dts
-> @@ -89,7 +89,7 @@
->  &soc {
->         i2c@3000 {
->                 rtc@6f {
-> -                       compatible = "intersil,isl1208";
-> +                       compatible = "isil,isl1208";
-
-This is a mature platform. You cannot change it. You can add the new
-string, but the dts and kernel need both strings.
-
-I would just leave it all alone and add the new prefix and mark the
-others deprecated.
-
-Rob
-
->                         reg = <0x6f>;
->                 };
->         };
-> --
-> 2.1.0.rc1
->
+QWRkaW5nIFJhbW5lZWsNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBX
+b29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIEF1Z3VzdCAyMiwgMjAxNCAzOjUzIEFN
+DQo+IFRvOiBCYWRvbGEgTmlraGlsLUI0NjE3Mg0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0hdIERvY3VtZW50YXRpb246IGR0czogZnNsLXVzYjogRG9jdW1lbnQgVVNCIG5vZGUNCj4gY29t
+cGF0aWJsZSBzdHJpbmcgZm9yIElQIHZlcnNpb24NCj4gDQo+IE9uIFRodSwgMjAxNC0wOC0yMSBh
+dCAxNDo0OCArMDUzMCwgTmlraGlsIEJhZG9sYSB3cm90ZToNCj4gPiBEb2N1bWVudCBjb21wYXRp
+YmxlIHN0cmluZyBjb250YWluaW5nIElQIHZlcnNpb24gaW4gVVNCIGRldmljZSB0cmVlDQo+ID4g
+bm9kZQ0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTmlraGlsIEJhZG9sYSA8bmlraGlsLmJhZG9s
+YUBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvdXNiL2ZzbC11c2IudHh0IHwgMTMgKysrKysrKystLS0tLQ0KPiA+ICAxIGZpbGUg
+Y2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQ0KPiANCj4gUGxlYXNlIEND
+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnIG9uIGFsbCBkZXZpY2UgdHJlZSBwYXRjaGVzIChp
+biBhZGRpdGlvbiB0bw0KPiBsaW51eHBwYy1kZXYpLg0KPiANCj4gPg0KPiA+IGRpZmYgLS1naXQg
+YS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4g
+Yi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4g
+aW5kZXggNDc3OWMwMi4uNWEzYTBhOCAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL3VzYi9mc2wtdXNiLnR4dA0KPiA+IEBAIC0xMCw3ICsxMCwx
+MCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzIDoNCj4gPiAgICAgY29udHJvbGxlcnMsIG9yICJmc2wt
+dXNiMi1kciIgZm9yIGR1YWwgcm9sZSBVU0IgY29udHJvbGxlcnMNCj4gPiAgICAgb3IgImZzbCxt
+cGM1MTIxLXVzYjItZHIiIGZvciBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXJzIG9mIE1QQzUxMjEu
+DQo+ID4gICAgIFdoZXJldmVyIGFwcGxpY2FibGUsIHRoZSBJUCB2ZXJzaW9uIG9mIHRoZSBVU0Ig
+Y29udHJvbGxlciBzaG91bGQNCj4gPiAtICAgYWxzbyBiZSBtZW50aW9uZWQgKGZvciBlZy4gZnNs
+LXVzYjItZHItdjIuMiBmb3IgYnNjOTEzMikuDQo+ID4gKyAgIGFsc28gYmUgbWVudGlvbmVkIGlu
+IGFub3RoZXIgc3RyaW5nLg0KPiA+ICsgICBGb3IgbXVsdGkgcG9ydCBob3N0IFVTQiBjb250cm9s
+bGVyIHdpdGggSVAgdmVyc2lvbiA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlDQo+ID4gKyAgICJmc2wt
+dXNiMi1tcGgtPElQX1Zlcj4iLiBGb3IgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIHdpdGggSVAg
+dmVyc2lvbg0KPiA+ICsgICA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlICJmc2wtdXNiMi1kci08SVBf
+VmVyPiIuDQo+IA0KPiBJdCB3YXMgZG9jdW1lbnRlZCBiZWZvcmUgLS0gdGhpcyBpcyBqdXN0IG1h
+a2luZyBpdCBtb3JlIGV4cGxpY2l0LCByaWdodD8NCj4gDQo+IEZXSVcsIHRoZSB2ZXJzaW9uIG51
+bWJlciBjYW4gYmUgcmVhZCBvdXQgb2YgYSBVU0IgcmVnaXN0ZXIsIHNvIEknZCByYXRoZXINCj4g
+cmVtb3ZlIHRoZSBzdWdnZXN0aW9uIHRvIHNwZWNpZnkgdGhlIHZlcnNpb24gbnVtYmVyIGFuZCBy
+ZXBsYWNlIGl0IHdpdGggYQ0KPiByZWZlcmVuY2UgdG8gdGhlIElEIHJlZ2lzdGVyLg0KPiANCj4g
+PiAgIC0gcGh5X3R5cGUgOiBGb3IgbXVsdGkgcG9ydCBob3N0IFVTQiBjb250cm9sbGVycywgc2hv
+dWxkIGJlIG9uZSBvZg0KPiA+ICAgICAidWxwaSIsIG9yICJzZXJpYWwiLiBGb3IgZHVhbCByb2xl
+IFVTQiBjb250cm9sbGVycywgc2hvdWxkIGJlDQo+ID4gICAgIG9uZSBvZiAidWxwaSIsICJ1dG1p
+IiwgInV0bWlfd2lkZSIsIG9yICJzZXJpYWwiLg0KPiA+IEBAIC00Miw5ICs0NSw5IEBAIE9wdGlv
+bmFsIHByb3BlcnRpZXMgOg0KPiA+ICAgLSBmc2wsaW52ZXJ0LXB3ci1mYXVsdCA6IGJvb2xlYW47
+IGZvciBNUEM1MTIxIFVTQjAgb25seS4gSW5kaWNhdGVzDQo+ID4gICAgIHRoZSBQV1JfRkFVTFQg
+c2lnbmFsIHBvbGFyaXR5IGlzIGludmVydGVkLg0KPiA+DQo+ID4gLUV4YW1wbGUgbXVsdGkgcG9y
+dCBob3N0IFVTQiBjb250cm9sbGVyIGRldmljZSBub2RlIDoNCj4gPiArRXhhbXBsZSBtdWx0aSBw
+b3J0IGhvc3QgVVNCIGNvbnRyb2xsZXIgdmVyc2lvbiAyLjUgZGV2aWNlIG5vZGUgOg0KPiA+ICAJ
+dXNiQDIyMDAwIHsNCj4gPiAtCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waCI7DQo+ID4gKwkJ
+Y29tcGF0aWJsZSA9ICJmc2wtdXNiMi1tcGgtdjIuNSIsICJmc2wtdXNiMi1tcGgiOw0KPiA+ICAJ
+CXJlZyA9IDwyMjAwMCAxMDAwPjsNCj4gPiAgCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiAg
+CQkjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiBAQCAtNTUsOSArNTgsOSBAQCBFeGFtcGxlIG11bHRp
+IHBvcnQgaG9zdCBVU0IgY29udHJvbGxlciBkZXZpY2Ugbm9kZSA6DQo+ID4gIAkJcG9ydDE7DQo+
+ID4gIAl9Ow0KPiA+DQo+ID4gLUV4YW1wbGUgZHVhbCByb2xlIFVTQiBjb250cm9sbGVyIGRldmlj
+ZSBub2RlIDoNCj4gPiArRXhhbXBsZSBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXIgdmVyc2lvbiAy
+LjUgZGV2aWNlIG5vZGUgOg0KPiA+ICAJdXNiQDIzMDAwIHsNCj4gPiAtCQljb21wYXRpYmxlID0g
+ImZzbC11c2IyLWRyIjsNCj4gPiArCQljb21wYXRpYmxlID0gImZzbC11c2IyLWRyLXYyLjUiLCAi
+ZnNsLXVzYjItZHIiOw0KPiA+ICAJCXJlZyA9IDwyMzAwMCAxMDAwPjsNCj4gPiAgCQkjYWRkcmVz
+cy1jZWxscyA9IDwxPjsNCj4gPiAgCQkjc2l6ZS1jZWxscyA9IDwwPjsNCj4gDQo+IFRoaXMgZXhh
+bXBsZSBkb2Vzbid0IGNvcnJlc3BvbmQgdG8gYW55IGRldmljZSB0cmVlIEkgc2VlLiAgRXZlbiBh
+ZnRlciB5b3VyIG5leHQNCj4gcGF0Y2ggdGhhdCBzZXRzIHQyMDgwJ3MgVVNCIHRvIHYyLjUsIHRo
+ZSBhZGRyZXNzZXMgYXJlIGRpZmZlcmVudC4NCj4gDQo+IEFsc28sIGlmIHlvdSdyZSBnb2luZyB0
+byB1cGRhdGUgdGhlIGV4YW1wbGUsIHBsZWFzZSBhbHNvIHVwZGF0ZSBpdCB0byBiZSBtb2Rlcm4N
+Cj4gaW4gb3RoZXIgcmVzcGVjdHMsIHN1Y2ggYXMgdXNpbmcgMHggZm9yIGhleCBudW1iZXJzIChv
+dXRzaWRlIHRoZSB1bml0IGFkZHJlc3MpLg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
