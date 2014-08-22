@@ -1,22 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E1F01A0128
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 01:29:48 +1000 (EST)
-Date: Sat, 23 Aug 2014 01:29:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/4] powerpc: Move htab_remove_mapping function
- prototype into header file
-Message-ID: <20140823012940.303e3ebc@canb.auug.org.au>
-In-Reply-To: <1408488921-19187-4-git-send-email-anton@samba.org>
-References: <1408488921-19187-1-git-send-email-anton@samba.org>
- <1408488921-19187-4-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BC171A0182
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 03:51:58 +1000 (EST)
+Message-ID: <1408729900.6510.2.camel@snotra.buserror.net>
+Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
+From: Scott Wood <scottwood@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Fri, 22 Aug 2014 12:51:40 -0500
+In-Reply-To: <53F755A0.8020504@freescale.com>
+References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
+ <1408493285.4058.55.camel@snotra.buserror.net>
+ <53F4179F.1010803@freescale.com>
+ <1408576886.4058.73.camel@snotra.buserror.net>
+ <53F755A0.8020504@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/CfQ_GlLeKUiSj91Mojnk+54"; protocol="application/pgp-signature"
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Aaron Sierra <asierra@xes-inc.com>,
+ linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/CfQ_GlLeKUiSj91Mojnk+54
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2014-08-22 at 20:07 +0530, Prabhakar Kushwaha wrote:
+> Sorry Scott for late reply,
+> 
+> Please find my reply in-lined
+> 
+> 
+> On 8/21/2014 4:51 AM, Scott Wood wrote:
+> > On Wed, 2014-08-20 at 09:05 +0530, Prabhakar Kushwaha wrote:
+> >> On 8/20/2014 5:38 AM, Scott Wood wrote:
+> >>> On Fri, 2014-08-15 at 16:07 -0500, Aaron Sierra wrote:
+> >>>> Freescale's QorIQ T Series processors support 8 IFC chip selects
+> >>>> within a memory map backward compatible with previous P Series
+> >>>> processors which supported only 4 chip selects.
+> >>>>
+> >>>> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+> >>>> ---
+> >>>>    include/linux/fsl_ifc.h | 10 +++++-----
+> >>>>    1 file changed, 5 insertions(+), 5 deletions(-)
+> >>>>
+> >>>> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+> >>>> index 84d60cb..62762ff 100644
+> >>>> --- a/include/linux/fsl_ifc.h
+> >>>> +++ b/include/linux/fsl_ifc.h
+> >>>> @@ -29,7 +29,7 @@
+> >>>>    #include <linux/of_platform.h>
+> >>>>    #include <linux/interrupt.h>
+> >>>>    
+> >>>> -#define FSL_IFC_BANK_COUNT 4
+> >>>> +#define FSL_IFC_BANK_COUNT 8
+> >>> First please modify fsl_ifc_nand.c to limit itself to the number of
+> >>> banks it dynamically determines are present based on the IFC version.
+> >>>
+> >>>
+> >> Number of available bank/chip select are defined by SoC and it is
+> >> independent of SoC.
+> > Do you mean defined by the SoC and independent of the IFC version?
+> 
+> IFC v 1.0.0 supports 4 Chip Select.
+> IFC v 1.1.0 onwards, IFC supports 8 chip select.
+> 
+> But SoC finally defines number of chip select coming out of SoC. Like 
+> LS1021A with IFC ver 1.4.0 have only 7 Chip Select.
 
-Hi Anton,
+What matters here is whether the registers are implemented, not whether
+a chip select is pinned out -- so use the IFC version.
 
-On Wed, 20 Aug 2014 08:55:21 +1000 Anton Blanchard <anton@samba.org> wrote:
->
-> A recent patch added a function prototype for htab_remove_mapping in
-> c code. Fix it.
->=20
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h | 2 ++
->  arch/powerpc/mm/init_64.c             | 3 ---
->  2 files changed, 2 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include=
-/asm/mmu-hash64.h
-> index d765144..92bc3a6 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -342,6 +342,8 @@ extern void hash_failure_debug(unsigned long ea, unsi=
-gned long access,
->  extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
->  			     unsigned long pstart, unsigned long prot,
->  			     int psize, int ssize);
-> +int htab_remove_mapping(unsigned long vstart, unsigned long vend,
-> +			int psize, int ssize);
-
-Please be consistent about "extern" use (unless this file is already
-inconsistent, I guess).  (I know that the current trend is to remove
-"extern" in header files - I just happen to disagree with that
-trend. :-))
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/CfQ_GlLeKUiSj91Mojnk+54
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJT92HpAAoJEMDTa8Ir7ZwVfZQP+wSjsAgZQO5B4xUdkjOUFIka
-CP0YJGhZ+p221WfEWXtOGOaRC3b8KHreKwkylzpfrBwmf0JWntpIiZcqIzvnbmzQ
-3uICy7nc1NSrsJ6EGjHAfMPPqOXusZ6iyKTgQ/FtIPl4Hgl1pdiLhsXezMLoJIyD
-yXVr5VrSTm5pV1AG7tTlWFRQr7yvaoszL9X7oScWnqsMHjd3NHymrzfeCDZO0gLT
-+mK2nE6bTIWNnf6/aGxHrgmfBdmeSgNcMDg0JU3u6kD/0/W3M168wESRAKU99dFz
-8qZ61cFoTsKhGZ4g88fE43wnQeN1WXca2sxmLjbelO8/LgZHvPoqFs0BREPH+nfe
-HVn0Kilpr8D3fQJXOVI9/JfRsvDRa90EGMmrnxDXbeiKNVGkTI5Wcs/wK6lsx7h9
-1eetvv05cQvx0dvPmFheN3voaAmZO0kV3JiPngO7lhKuZojE3gdtUrnlSuJ8T/Lg
-7nVfSTfA7iPycTV2v5Su+AL5iFnl9gSgB/5inXaQxgGoZ7c4HdUGUxIQ3jJDNKe6
-sM1X2KEw1sUJBXzK7WYzqYKZ3s7fESQhUOMyBPP0Ov06Xisvwhx8n+mWpZt3AgJH
-GetOQ9p/ajIc9j9FVeUfzgXUzZltxtYZz7LBYfmu2IlKpjyY9O4S2FLOIlsMEGxt
-7sFVgH7h3Bf9g+vzpHX1
-=G+Vr
------END PGP SIGNATURE-----
-
---Sig_/CfQ_GlLeKUiSj91Mojnk+54--
+-Scott
