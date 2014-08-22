@@ -1,24 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D08C1A0455
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 04:36:47 +1000 (EST)
-Message-ID: <1408732591.6510.5.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc: fsl_pci: Fix PCI/PCI-X regression
-From: Scott Wood <scottwood@freescale.com>
-To: Aaron Sierra <asierra@xes-inc.com>
-Date: Fri, 22 Aug 2014 13:36:31 -0500
-In-Reply-To: <964109192.130707.1408730093575.JavaMail.zimbra@xes-inc.com>
-References: <1335064415.96829.1408578704825.JavaMail.zimbra@xes-inc.com>
- <1408655996.2395.7.camel@snotra.buserror.net>
- <529271512.72955.1408658076028.JavaMail.zimbra@xes-inc.com>
- <1408658506.2395.11.camel@snotra.buserror.net>
- <964109192.130707.1408730093575.JavaMail.zimbra@xes-inc.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B8C01A0624
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 04:40:07 +1000 (EST)
+Message-Id: <115373b6ac68ee7a305975896e1c4971e8e51d4c.1408731991.git.geoff@infradead.org>
+In-Reply-To: <cover.1408731991.git.geoff@infradead.org>
+References: <cover.1408731991.git.geoff@infradead.org>
+From: Geoff Levand <geoff@infradead.org>
+Subject: [PATCH 1/5] kexec: Fix make headers_check
+To: Eric Biederman <ebiederm@xmission.com>
+Date: Fri, 22 Aug 2014 18:39:47 +0000
+Cc: Andrew Morton <akpm@linux-foundation.org>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-08-22 at 12:54 -0500, Aaron Sierra wrote:
-> ----- Original Message -----
-> > From: "Scott Wood" <scottwood@freescale.com>
-> > Sent: Thursday, August 21, 2014 5:01:46 PM
-> > 
-> > On Thu, 2014-08-21 at 16:54 -0500, Aaron Sierra wrote:
-> > > ----- Original Message -----
-> > > > From: "Scott Wood" <scottwood@freescale.com>
-> > > > Sent: Thursday, August 21, 2014 4:19:56 PM
-> > > > 
-> > > > Why wouldn't a normal PCI agent be able to bus master?
-> > > > 
-> > > > -Scott
-> > > > 
-> > > 
-> > > Short answer:
-> > > 
-> > > Simply because the hardware strapping for Host/Agent determines the
-> > > default state of the Bus Master bit in the Command register. Without
-> > > that bit being set, an Agent won't be able to send the PCI cycles
-> > > necessary to enumerate the bus.
-> > 
-> > But what if the host has already set that bit before Linux boots?
-> 
-> That's a very good point. I think that concern can be addressed by looking
-> for another telltale sign of enumeration, whether an address has been
-> assigned to the bridge's BAR 0 (PCSRBAR).
+Remove the unneded declaration for a kexec_load() routine.
 
-I don't see how that's any different.  The host may or may not have
-assigned an address.
+Fixes errors like these when running 'make headers_check':
 
-> > I understand why you need to do this -- I just don't think this is a
-> > reliable way of detecting that you're in that situation.  How about a
-> > kernel command line setting?
-> 
-> I'd like to avoid requiring a kernel command-line option for this.
+include/uapi/linux/kexec.h: userspace cannot reference function or variable defined in the kernel
 
-It's hardware description, so you could use a device tree property.
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ include/uapi/linux/kexec.h | 6 ------
+ 1 file changed, 6 deletions(-)
 
--Scott
+diff --git a/include/uapi/linux/kexec.h b/include/uapi/linux/kexec.h
+index 6925f5b..99048e5 100644
+--- a/include/uapi/linux/kexec.h
++++ b/include/uapi/linux/kexec.h
+@@ -55,12 +55,6 @@ struct kexec_segment {
+ 	size_t memsz;
+ };
+ 
+-/* Load a new kernel image as described by the kexec_segment array
+- * consisting of passed number of segments at the entry-point address.
+- * The flags allow different useage types.
+- */
+-extern int kexec_load(void *, size_t, struct kexec_segment *,
+-		unsigned long int);
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _UAPILINUX_KEXEC_H */
+-- 
+1.9.1
