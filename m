@@ -1,20 +1,27 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <p.zabel@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 29AC81A00FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 17:45:36 +1000 (EST)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 5/5] MSI: Use __read_msi_msg() instead of read_msi_msg()
-Date: Fri, 22 Aug 2014 16:08:00 +0800
-Message-ID: <1408694880-8260-6-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1408694880-8260-1-git-send-email-wangyijing@huawei.com>
-References: <1408694880-8260-1-git-send-email-wangyijing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yijing Wang <wangyijing@huawei.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CA8F1A00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 18:57:41 +1000 (EST)
+Message-ID: <1408697829.3118.28.camel@paszta.hi.pengutronix.de>
+Subject: Re: [RFC PATCH 5/6] rtc: rtc-isl12022: Change vendor prefix for
+ Intersil Corporation to isil
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: devicetree@vger.kernel.org
+Date: Fri, 22 Aug 2014 10:57:09 +0200
+In-Reply-To: <1408524184-31928-6-git-send-email-p.zabel@pengutronix.de>
+References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
+ <1408524184-31928-6-git-send-email-p.zabel@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@codeaurora.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,89 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Read_msi_msg() only be called in rtas_setup_msi_irqs(),
-use __read_msi_msg() instead of read_msi_msg for
-simplification. And rename __read_msi_msg() to
-read_msi_msg().
+Am Mittwoch, den 20.08.2014, 10:43 +0200 schrieb Philipp Zabel:
+> Currently there is a wild mixture of isl, isil, and intersil
+> compatibles in the kernel. At this point, changing the vendor
+> symbol to the most often used variant, which is equal to the
+> NASDAQ symbol, isil, should not hurt, since the isl1208 driver
+> doesn't care either way.
+> Patch db04d6284e2a added device tree support using the then
+> documented isl vendor prefix, so we keep that around for
+> backwards compatibility.
+> 
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+>  drivers/rtc/rtc-isl12022.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/rtc/rtc-isl12022.c b/drivers/rtc/rtc-isl12022.c
+> index aa55f08..df20f18 100644
+> --- a/drivers/rtc/rtc-isl12022.c
+> +++ b/drivers/rtc/rtc-isl12022.c
+> @@ -275,7 +275,8 @@ static int isl12022_probe(struct i2c_client *client,
+>  
+>  #ifdef CONFIG_OF
+>  static struct of_device_id isl12022_dt_match[] = {
+> -	{ .compatible = "isl,isl12022" },
+> +	{ .compatible = "isil,isl12022" },
+> +	{ .compatible = "isl,isl12022" }, /* for backwards compatibility */
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/platforms/pseries/msi.c |    2 +-
- arch/x86/pci/xen.c                   |    2 +-
- drivers/pci/msi.c                    |    9 +--------
- include/linux/msi.h                  |    3 +--
- 4 files changed, 4 insertions(+), 12 deletions(-)
+Actually, is it even necessary to keep this around in here?
+If of_driver_match_device fails, i2c_device_match will continue to try
+i2c_match_id if driver->id_table is set, which matches against the
+result of of_modalias_node (dropping the vendor prefix altogether).
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 18ff462..7e87878 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -485,7 +485,7 @@ again:
- 		irq_set_msi_desc(virq, entry);
- 
- 		/* Read config space back so we can restore after reset */
--		read_msi_msg(virq, &msg);
-+		read_msi_msg(entry, &msg);
- 		entry->msg = msg;
- 	}
- 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 093f5f4..ad03739 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -229,7 +229,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 		return 1;
- 
- 	list_for_each_entry(msidesc, &dev->msi_list, list) {
--		__read_msi_msg(msidesc, &msg);
-+		read_msi_msg(msidesc, &msg);
- 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
- 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
- 		if (msg.data != XEN_PIRQ_MSI_DATA ||
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 8746ecd..aff384a 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -259,7 +259,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
- 	}
- }
- 
--void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
-+void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
- {
- 	BUG_ON(entry->dev->current_state != PCI_D0);
- 
-@@ -289,13 +289,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
- 	}
- }
- 
--void read_msi_msg(unsigned int irq, struct msi_msg *msg)
--{
--	struct msi_desc *entry = irq_get_msi_desc(irq);
--
--	__read_msi_msg(entry, msg);
--}
--
- void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
- {
- 	/* Assert that the cache is valid, assuming that
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 329ec73..6be66f4 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -15,10 +15,9 @@ struct irq_data;
- struct msi_desc;
- void mask_msi_irq(struct irq_data *data);
- void unmask_msi_irq(struct irq_data *data);
--void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
-+void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
- void get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
- void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
--void read_msi_msg(unsigned int irq, struct msi_msg *msg);
- void write_msi_msg(unsigned int irq, struct msi_msg *msg);
- 
- struct msi_desc {
--- 
-1.7.1
+regards
+Philipp
