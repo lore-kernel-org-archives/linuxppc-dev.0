@@ -1,41 +1,37 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F5791A0071
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 10:23:29 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 992761A0173
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 20:17:54 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 22 Aug 2014 20:23:26 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9757C38C804D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 20:23:24 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7N0NOLW7537040
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 00:23:24 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7N0NNEV001247
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 20:23:24 -0400
-Date: Fri, 22 Aug 2014 17:23:21 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v2 00/14] Add support for parameterized events from sysfs
-Message-ID: <20140823002321.GA22172@us.ibm.com>
-References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20140820141545.GA3242@krava.brq.redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sat, 23 Aug 2014 20:17:53 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id EF3AD2BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 20:17:49 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7NAIlBF16777356
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 20:18:48 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7NAHn4B012854
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 20:17:49 +1000
+Message-ID: <53F86A4A.6080303@linux.vnet.ibm.com>
+Date: Sat, 23 Aug 2014 15:47:46 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140820141545.GA3242@krava.brq.redhat.com>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- peterz@infradead.org, linux-kernel@vger.kernel.org, eranian@google.com,
- dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Subject: Re: [PATCH v4] powerpc/kvm: support to handle sw breakpoint
+References: <1408513929-5267-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <53F5B77D.3000007@suse.de>
+In-Reply-To: <53F5B77D.3000007@suse.de>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,93 +41,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Olsa [jolsa@redhat.com] wrote:
+On Thursday 21 August 2014 02:40 PM, Alexander Graf wrote:
+> 
+> 
+> On 20.08.14 07:52, Madhavan Srinivasan wrote:
+>> This patch adds kernel side support for software breakpoint.
+>> Design is that, by using an illegal instruction, we trap to hypervisor
+>> via Emulation Assistance interrupt, where we check for the illegal instruction
+>> and accordingly we return to Host or Guest. Patch also adds support for
+>> software breakpoint in PR KVM.
+>>
+>> Changes v3->v4:
+>>  Made changes to code comments and removed #define of zero opcode
+>>  Added a new function to handle the debug instruction emulation in book3s_hv
+>>  Rebased the code to latest upstream source.
+>>
+>> Changes v2->v3:
+>>  Changed the debug instructions. Using the all zero opcode in the instruction word
+>>   as illegal instruction as mentioned in Power ISA instead of ABS
+>>  Removed reg updated in emulation assist and added a call to
+>>   kvmppc_emulate_instruction for reg update.
+>>
+>> Changes v1->v2:
+>>
+>>  Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
+>>  Added code to use KVM get one reg infrastructure to get debug opcode.
+>>  Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
+>>  Made changes to commit message.
+>>
+>> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/kvm_book3s.h |  7 +++++++
+>>  arch/powerpc/kvm/book3s.c             |  3 ++-
+>>  arch/powerpc/kvm/book3s_hv.c          | 32 ++++++++++++++++++++++++++++++--
+>>  arch/powerpc/kvm/book3s_pr.c          |  3 +++
+>>  arch/powerpc/kvm/emulate.c            | 11 +++++++++++
+>>  5 files changed, 53 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+>> index 6acf0c2..a1944f8 100644
+>> --- a/arch/powerpc/include/asm/kvm_book3s.h
+>> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+>> @@ -24,6 +24,13 @@
+>>  #include <linux/kvm_host.h>
+>>  #include <asm/kvm_book3s_asm.h>
+>>  
+>> +/*
+>> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
+>> + * Based on PowerISA v2.07, Instruction with primary opcode 0 will be treated as illegal
+>> + * instruction.
+>> + */
+>> +#define KVMPPC_INST_BOOK3S_DEBUG	0x00dddd00
+> 
+> Please change the BookE version of this as well, put the define in a
+> common header and use a non book specific name.
+> 
 
-<snip>
-| > Description of the sysfs contents when events are parameterized (copied from an
-| > included patch):
-| > 
-| > 	Examples:
-| > 
-| > 		domain=0x1,offset=0x8,starting_index=phys_cpu
-| > 
-| > 	In the case of the last example, a value replacing "phys_cpu"
-| > 	would need to be provided by the user selecting the particular
-| > 	event. This is refered to as "event parameterization". All
-| > 	non-numerical values indicate an event parameter.
-| > 
-| > Notes on how perf-list displays parameterized events (and how to use them,
-| > again culled from an included patch):
-| > 
-| > 	PARAMETERIZED EVENTS
-| > 	--------------------
-| > 
-| > 	Some pmu events listed by 'perf-list' will be displayed with '?' in
-| > 	them. For example:
-| > 
-| > 	  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
-| > 
-| > 	This means that when provided as an event, a value for
-| > 	phys_processor_idx must also be supplied. For example:
-| > 
-| > 	  perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
-| 
-| hi,
-| is the reason for this to document this field for event
-| in "events/<event>" file?
+I first wanted to get the server side in and then take up this, but i
+can do it with this, just concerned incase of booke testing :(
 
-We are trying to document that for the parameters that have the ? in
-perf list, the parameter must be specified otherwise the event will
-not be recognized.
+>> +
+>>  struct kvmppc_bat {
+>>  	u64 raw;
+>>  	u32 bepi;
+>> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+>> index dd03f6b..00e9c9f 100644
+>> --- a/arch/powerpc/kvm/book3s.c
+>> +++ b/arch/powerpc/kvm/book3s.c
+>> @@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+>>  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+>>  					struct kvm_guest_debug *dbg)
+>>  {
+>> -	return -EINVAL;
+>> +	vcpu->guest_debug = dbg->control;
+>> +	return 0;
+>>  }
+>>  
+>>  void kvmppc_decrementer_func(unsigned long data)
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 27cced9..0a92e45 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -725,6 +725,14 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+>>  	return kvmppc_hcall_impl_hv_realmode(cmd);
+>>  }
+>>  
+>> +static int kvmppc_emulate_debug_instruction_hv(struct kvm_run *run,
+>> +					struct kvm_vcpu *vcpu)
+>> +{
+>> +	run->exit_reason = KVM_EXIT_DEBUG;
+>> +	run->debug.arch.address = kvmppc_get_pc(vcpu);
+>> +	return 0;
+>> +}
+>> +
+>>  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  				 struct task_struct *tsk)
+>>  {
+>> @@ -811,9 +819,26 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  	 * we don't emulate any guest instructions at this stage.
+> 
+> This comment is no longer true, it should get changed.
+> 
 
-| 
-| Because once you have the field (phys_processor_idx) defined in
-| "formats/phys_processor_idx" you should be able to use it as in
-| your example:
-| 
-|    perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/'
-| 
-| without any changes
+Will change it.
 
-For some events 'starting_index' refers to physical processor index
-as shown in the sysfs entry:
+>>  	 */
+>>  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+>> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+>> -		r = RESUME_GUEST;
+>> +	{
+>> +		u32 last_inst;
+>> +		if(kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
+>> +					EMULATE_DONE) {
+> 
+> Please only do this if debugging is active.
+> 
 
-	$ cd /sys/bus/event_source/devices/hv_gpci/events
- 	$ cat dispatch_timebase_by_processor_processor_time_in_timebase_cycles
-	request=0x10,starting_index=phys_processor_idx,counter_info_version=0x8,length=8,offset=0
+Ok sure. But i will add in the else part of the check. Since we do the
+instruction check there.
 
-and 'perf list' for this entry shows 'starting_index' with a ?
-indicating it is a requireed parameter.
+>> +			/*
+>> +			 * Fetch failed, so return to guest and
+>> +			 * try executing it again.
+>> +			 */
+>> +			r = RESUME_GUEST;
+>> +		} else {
+>> +			if (last_inst == KVMPPC_INST_BOOK3S_DEBUG) {
+>> +				kvmppc_emulate_debug_instruction_hv(run, vcpu);
+>> +				r = RESUME_HOST;
+>> +			} else {
+>> +				kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+>> +				r = RESUME_GUEST;
+>> +			}
+>> +		}
+>>  		break;
+>> +	}
+>>  	/*
+>>  	 * This occurs if the guest (kernel or userspace), does something that
+>>  	 * is prohibited by HFSCR.  We just generate a program interrupt to
+>> @@ -922,6 +947,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+>>  	long int i;
+>>  
+>>  	switch (id) {
+>> +	case KVM_REG_PPC_DEBUG_INST:
+>> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
+>> +		break;
+>>  	case KVM_REG_PPC_HIOR:
+>>  		*val = get_reg_val(id, 0);
+>>  		break;
+>> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+>> index faffb27..cd2a39d 100644
+>> --- a/arch/powerpc/kvm/book3s_pr.c
+>> +++ b/arch/powerpc/kvm/book3s_pr.c
+>> @@ -1319,6 +1319,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
+>>  	int r = 0;
+>>  
+>>  	switch (id) {
+>> +	case KVM_REG_PPC_DEBUG_INST:
+>> +		*val = get_reg_val(id, KVMPPC_INST_BOOK3S_DEBUG);
+>> +		break;
+>>  	case KVM_REG_PPC_HIOR:
+>>  		*val = get_reg_val(id, to_book3s(vcpu)->hior);
+>>  		break;
+>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+>> index e96b50d..68f38b2 100644
+>> --- a/arch/powerpc/kvm/emulate.c
+>> +++ b/arch/powerpc/kvm/emulate.c
+>> @@ -274,6 +274,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+>>  		}
+>>  		break;
+>>  
+>> +	case 0:
+>> +		/*
+>> +		 * Instruction with primary opcode 0. Based on PowerISA
+>> +		 * these are illegal instructions.
+>> +		 */
+>> +		run->exit_reason = KVM_EXIT_DEBUG;
+> 
+> This is wrong. We need to check that the instruction is 0x00dddd00. Any
+> other op0 instruction should trigger an invalid instruction trap.
+> 
 
-IIUC, rather than have the user specify a value for 'phys_processor_idx'
+Ok.
 
-	-e hv_gpci/dtbp_ptitc,phys_processor_idx=4/'
-
-we would use following right ?
-
-	-e hv_gpci/dtbp_ptitc,starting_index=4/'
-
-If so, I think the interface change makes sense.  perf list would also
-show 'starting_index=?' for the event. 
-
-But in the sysfs entry, rather than show 'starting_index=?', should we
-leave it as:
-
-	'starting_index=phys_processor_idx' 
-
-For some events 'startind_index' refers to a physical processor id
-and for others it is virtual processor id. So, showing phys_processor_idx
-could serve as a hint.
-
-Michael, Cody, Ingo, Peter, let me know if you agree or have other
-comments on the inteface.
-
-Thanks,
-
-Sukadev
-
-
-
-| 
-| thanks,
-| jirka
+Thanks for review
+Regards
+Maddy
+> 
+> Alex
+> 
+>> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
+>> +		emulated = EMULATE_EXIT_USER;
+>> +		advance = 0;
+>> +		break;
+>> +
+>>  	default:
+>>  		emulated = EMULATE_FAIL;
+>>  	}
+>>
+> 
