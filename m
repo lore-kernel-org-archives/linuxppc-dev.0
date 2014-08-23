@@ -1,41 +1,41 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
+Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95DBD1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 08:04:26 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F5791A0071
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 10:23:29 +1000 (EST)
 Received: from /spool/local
  by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 22 Aug 2014 18:04:23 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D09ACC90026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 18:04:13 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7MM4LAx9044376
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 22:04:21 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7MM4L0f000764
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 18:04:21 -0400
-Date: Fri, 22 Aug 2014 15:04:06 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH powerpc] Fix warning reported by
- verify_cpu_node_mapping()
-Message-ID: <20140822220406.GA20951@linux.vnet.ibm.com>
-References: <1408608842.3003.20.camel@TP420>
- <20140821154529.GB10478@linux.vnet.ibm.com>
- <1408673576.2448.6.camel@TP420>
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 22 Aug 2014 20:23:26 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9757C38C804D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 20:23:24 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7N0NOLW7537040
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2014 00:23:24 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7N0NNEV001247
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2014 20:23:24 -0400
+Date: Fri, 22 Aug 2014 17:23:21 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Subject: Re: [PATCH v2 00/14] Add support for parameterized events from sysfs
+Message-ID: <20140823002321.GA22172@us.ibm.com>
+References: <1408087583-32239-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20140820141545.GA3242@krava.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1408673576.2448.6.camel@TP420>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20140820141545.GA3242@krava.brq.redhat.com>
+Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
+ peterz@infradead.org, linux-kernel@vger.kernel.org, eranian@google.com,
+ dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,67 +45,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22.08.2014 [10:12:56 +0800], Li Zhong wrote:
-> On ???, 2014-08-21 at 08:45 -0700, Nishanth Aravamudan wrote:
-> > On 21.08.2014 [16:14:02 +0800], Li Zhong wrote:
-> > > With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-> > > earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-> > > uses cpu_to_node() to check whether siblings are in the same node. 
-> > > 
-> > > It skips the checking for siblings that are not online yet. So the only
-> > > check done here is for the bootcpu, which is online at that time. But
-> > > the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-> > > will be set up in smp_prepare_cpus()).
-> > > 
-> > > So I could see something like following reported:
-> > > [    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-> > > node!
-> > 
-> > You mean you did see this, right? (as opposed to "could" based upon code
-> > inspection or something)
-> 
-> Yes, I did see the warnings. Seems I didn't express it precisely in
-> English ...
-> 
-> > 
-> > > 
-> > > As we don't actually do the checking during this early stage, so maybe
-> > > we could directly call numa_setup_cpu() in do_init_bootmem()?
-> > > 
-> > > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> > 
-> > Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> 
-> Thank you for the review,
-> 
-> Zhong
-> 
-> > 
-> > > ---
-> > >  arch/powerpc/mm/numa.c | 3 +--
-> > >  1 file changed, 1 insertion(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > > index d7737a5..9918c02 100644
-> > > --- a/arch/powerpc/mm/numa.c
-> > > +++ b/arch/powerpc/mm/numa.c
-> > > @@ -1128,8 +1128,7 @@ void __init do_init_bootmem(void)
-> > >  	 * early in boot, cf. smp_prepare_cpus().
-> > >  	 */
-> > >  	for_each_possible_cpu(cpu) {
-> > > -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-> > > -				  (void *)(unsigned long)cpu);
-> > > +		numa_setup_cpu((unsigned long)cpu);
-> > 
-> > This is a good change, thanks for catching it. I must have glossed over
-> > those messages in my testing, my apologies!
+Jiri Olsa [jolsa@redhat.com] wrote:
 
-Actually, thinking about this more, do you think it makes more sense to
-do:
+<snip>
+| > Description of the sysfs contents when events are parameterized (copied from an
+| > included patch):
+| > 
+| > 	Examples:
+| > 
+| > 		domain=0x1,offset=0x8,starting_index=phys_cpu
+| > 
+| > 	In the case of the last example, a value replacing "phys_cpu"
+| > 	would need to be provided by the user selecting the particular
+| > 	event. This is refered to as "event parameterization". All
+| > 	non-numerical values indicate an event parameter.
+| > 
+| > Notes on how perf-list displays parameterized events (and how to use them,
+| > again culled from an included patch):
+| > 
+| > 	PARAMETERIZED EVENTS
+| > 	--------------------
+| > 
+| > 	Some pmu events listed by 'perf-list' will be displayed with '?' in
+| > 	them. For example:
+| > 
+| > 	  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
+| > 
+| > 	This means that when provided as an event, a value for
+| > 	phys_processor_idx must also be supplied. For example:
+| > 
+| > 	  perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
+| 
+| hi,
+| is the reason for this to document this field for event
+| in "events/<event>" file?
 
-for_each_present_cpu(cpu) in this loop? That is, at boot, ensure all
-present (but possibly offline) CPUs have their NUMA mapping set up. CPUs
-that aren't present (but are possible) might trigger other warnings,
-right? (e.g., the WARN_ON(1) in numa_setup_cpu)
+We are trying to document that for the parameters that have the ? in
+perf list, the parameter must be specified otherwise the event will
+not be recognized.
 
--Nish
+| 
+| Because once you have the field (phys_processor_idx) defined in
+| "formats/phys_processor_idx" you should be able to use it as in
+| your example:
+| 
+|    perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/'
+| 
+| without any changes
+
+For some events 'starting_index' refers to physical processor index
+as shown in the sysfs entry:
+
+	$ cd /sys/bus/event_source/devices/hv_gpci/events
+ 	$ cat dispatch_timebase_by_processor_processor_time_in_timebase_cycles
+	request=0x10,starting_index=phys_processor_idx,counter_info_version=0x8,length=8,offset=0
+
+and 'perf list' for this entry shows 'starting_index' with a ?
+indicating it is a requireed parameter.
+
+IIUC, rather than have the user specify a value for 'phys_processor_idx'
+
+	-e hv_gpci/dtbp_ptitc,phys_processor_idx=4/'
+
+we would use following right ?
+
+	-e hv_gpci/dtbp_ptitc,starting_index=4/'
+
+If so, I think the interface change makes sense.  perf list would also
+show 'starting_index=?' for the event. 
+
+But in the sysfs entry, rather than show 'starting_index=?', should we
+leave it as:
+
+	'starting_index=phys_processor_idx' 
+
+For some events 'startind_index' refers to a physical processor id
+and for others it is virtual processor id. So, showing phys_processor_idx
+could serve as a hint.
+
+Michael, Cody, Ingo, Peter, let me know if you agree or have other
+comments on the inteface.
+
+Thanks,
+
+Sukadev
+
+
+
+| 
+| thanks,
+| jirka
