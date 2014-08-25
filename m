@@ -1,41 +1,31 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oi0-f47.google.com (mail-oi0-f47.google.com
+ [209.85.218.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2B331A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 17:22:46 +1000 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 25 Aug 2014 08:22:42 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 963AF17D8059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 08:24:33 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7P7Md3028508174
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 07:22:39 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7P7Mcus002486
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 01:22:39 -0600
-Message-ID: <1408951355.2477.8.camel@TP420>
-Subject: [PATCH v2] powerpc: Fix warning reported by verify_cpu_node_mapping()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Mon, 25 Aug 2014 15:22:35 +0800
-In-Reply-To: <20140822220406.GA20951@linux.vnet.ibm.com>
-References: <1408608842.3003.20.camel@TP420>
- <20140821154529.GB10478@linux.vnet.ibm.com> <1408673576.2448.6.camel@TP420>
- <20140822220406.GA20951@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BC8A1A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 20:30:47 +1000 (EST)
+Received: by mail-oi0-f47.google.com with SMTP id x69so9477401oia.20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 03:30:45 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <53F6AF66.10204@linux.vnet.ibm.com>
+References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com>
+ <53F57E51.4060200@gmail.com>
+ <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
+ <53F6AF66.10204@linux.vnet.ibm.com>
+Date: Mon, 25 Aug 2014 16:00:45 +0530
+Message-ID: <CAKohpokMXSC_oTbg1b0adPxFsht7aZJd61YwSpzqsUi=KOAwXw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Shilpasri G Bhat <shilpabhatppc@gmail.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,40 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-uses cpu_to_node() to check whether siblings are in the same node. 
+On 22 August 2014 08:18, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
+> At the moment this looks like the best way forward. We need to do this
+> cleanly by ensuring that we stop the governors and then call into the
+> driver to deal with the cpu frequency in its own way during reboot. The
+> best way to do this would be by calling this routine. Either this or
+> cpufreq_suspend() should be called in the reboot path generically. The
+> latter might not be an enticing option for other platforms.
 
-It skips the checking for siblings that are not online yet. So the only
-check done here is for the bootcpu, which is online at that time. But
-the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-will be set up in smp_prepare_cpus()).
+Its not that I am doubting if this will work or not. But this Hack is using
+routines not meant for this purpose. And that being a core routine,
+things aren't that straightforward anymore.
 
-So I saw something like following reported:
-[    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-node!
-
-As we don't actually do the checking during this early stage, so maybe
-we could directly call numa_setup_cpu() in do_init_bootmem().
-
-Also, as Nish suggested, here it's better to use present cpu mask
-instead of possible mask to avoid warning in numa_setup_cpu().
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d7737a5..3a9061e 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1127,9 +1127,8 @@ void __init do_init_bootmem(void)
- 	 * even before we online them, so that we can use cpu_to_{node,mem}
- 	 * early in boot, cf. smp_prepare_cpus().
- 	 */
--	for_each_possible_cpu(cpu) {
--		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
--				  (void *)(unsigned long)cpu);
-+	for_each_present_cpu(cpu) {
-+		numa_setup_cpu((unsigned long)cpu);
- 	}
- }
- 
+@Rafael: Ping!!
