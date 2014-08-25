@@ -1,31 +1,31 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD2F91A003C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 03:58:41 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9806E1A043F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 04:01:43 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 25 Aug 2014 13:58:38 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 63A4A6E801A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 13:58:24 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7PHwZLf44433526
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 17:58:35 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7PHwYYn024641
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 13:58:35 -0400
+ Mon, 25 Aug 2014 14:01:41 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4C242C90026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 14:01:30 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7PI1cOI52953170
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 18:01:38 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7PI1a5Y008107
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 14:01:38 -0400
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Subject: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-Date: Mon, 25 Aug 2014 23:27:52 +0530
-Message-Id: <1408989481-13891-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Date: Mon, 25 Aug 2014 23:31:04 +0530
+Message-Id: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>,
  linux-pm@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
