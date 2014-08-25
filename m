@@ -1,27 +1,41 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A65F11A0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 16:28:32 +1000 (EST)
-Message-ID: <53FAD771.7010304@freescale.com>
-Date: Mon, 25 Aug 2014 11:58:01 +0530
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] fsl_ifc: Support all 8 IFC chip selects
-References: <1234993482.57039.1408136876321.JavaMail.zimbra@xes-inc.com>
- <1408493285.4058.55.camel@snotra.buserror.net>
- <53F4179F.1010803@freescale.com>
- <1408576886.4058.73.camel@snotra.buserror.net>
- <53F755A0.8020504@freescale.com>
- <1408729900.6510.2.camel@snotra.buserror.net>
-In-Reply-To: <1408729900.6510.2.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Aaron Sierra <asierra@xes-inc.com>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2B331A01E4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 17:22:46 +1000 (EST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 25 Aug 2014 08:22:42 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 963AF17D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 08:24:33 +0100 (BST)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7P7Md3028508174
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 07:22:39 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7P7Mcus002486
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 01:22:39 -0600
+Message-ID: <1408951355.2477.8.camel@TP420>
+Subject: [PATCH v2] powerpc: Fix warning reported by verify_cpu_node_mapping()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Mon, 25 Aug 2014 15:22:35 +0800
+In-Reply-To: <20140822220406.GA20951@linux.vnet.ibm.com>
+References: <1408608842.3003.20.camel@TP420>
+ <20140821154529.GB10478@linux.vnet.ibm.com> <1408673576.2448.6.camel@TP420>
+ <20140822220406.GA20951@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +45,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+With commit 2fabf084b, during boottime, cpu_numa_callback() is called
+earlier(before their online) for each cpu, and verify_cpu_node_mapping()
+uses cpu_to_node() to check whether siblings are in the same node. 
 
-On 8/22/2014 11:21 PM, Scott Wood wrote:
-> On Fri, 2014-08-22 at 20:07 +0530, Prabhakar Kushwaha wrote:
->> Sorry Scott for late reply,
->>
->> Please find my reply in-lined
->>
->>
->> On 8/21/2014 4:51 AM, Scott Wood wrote:
->>> On Wed, 2014-08-20 at 09:05 +0530, Prabhakar Kushwaha wrote:
->>>> On 8/20/2014 5:38 AM, Scott Wood wrote:
->>>>> On Fri, 2014-08-15 at 16:07 -0500, Aaron Sierra wrote:
->>>>>> Freescale's QorIQ T Series processors support 8 IFC chip selects
->>>>>> within a memory map backward compatible with previous P Series
->>>>>> processors which supported only 4 chip selects.
->>>>>>
->>>>>> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
->>>>>> ---
->>>>>>     include/linux/fsl_ifc.h | 10 +++++-----
->>>>>>     1 file changed, 5 insertions(+), 5 deletions(-)
->>>>>>
->>>>>> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
->>>>>> index 84d60cb..62762ff 100644
->>>>>> --- a/include/linux/fsl_ifc.h
->>>>>> +++ b/include/linux/fsl_ifc.h
->>>>>> @@ -29,7 +29,7 @@
->>>>>>     #include <linux/of_platform.h>
->>>>>>     #include <linux/interrupt.h>
->>>>>>     
->>>>>> -#define FSL_IFC_BANK_COUNT 4
->>>>>> +#define FSL_IFC_BANK_COUNT 8
->>>>> First please modify fsl_ifc_nand.c to limit itself to the number of
->>>>> banks it dynamically determines are present based on the IFC version.
->>>>>
->>>>>
->>>> Number of available bank/chip select are defined by SoC and it is
->>>> independent of SoC.
->>> Do you mean defined by the SoC and independent of the IFC version?
->> IFC v 1.0.0 supports 4 Chip Select.
->> IFC v 1.1.0 onwards, IFC supports 8 chip select.
->>
->> But SoC finally defines number of chip select coming out of SoC. Like
->> LS1021A with IFC ver 1.4.0 have only 7 Chip Select.
-> What matters here is whether the registers are implemented, not whether
-> a chip select is pinned out -- so use the IFC version.
+It skips the checking for siblings that are not online yet. So the only
+check done here is for the bootcpu, which is online at that time. But
+the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
+will be set up in smp_prepare_cpus()).
 
-I checked with IFC IP team " There is no side-effect of reading CS-8  
-register if only 7 CS exposed by SoC"
+So I saw something like following reported:
+[    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
+node!
 
-IFC version can be used.
+As we don't actually do the checking during this early stage, so maybe
+we could directly call numa_setup_cpu() in do_init_bootmem().
 
-Regards,
-Prabhakar
+Also, as Nish suggested, here it's better to use present cpu mask
+instead of possible mask to avoid warning in numa_setup_cpu().
+
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d7737a5..3a9061e 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1127,9 +1127,8 @@ void __init do_init_bootmem(void)
+ 	 * even before we online them, so that we can use cpu_to_{node,mem}
+ 	 * early in boot, cf. smp_prepare_cpus().
+ 	 */
+-	for_each_possible_cpu(cpu) {
+-		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
+-				  (void *)(unsigned long)cpu);
++	for_each_present_cpu(cpu) {
++		numa_setup_cpu((unsigned long)cpu);
+ 	}
+ }
+ 
