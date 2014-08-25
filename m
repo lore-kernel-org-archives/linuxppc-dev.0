@@ -1,32 +1,19 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
- [209.85.219.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nikhil.badola@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FB61A004F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 20:41:23 +1000 (EST)
-Received: by mail-oa0-f41.google.com with SMTP id j17so10552616oag.14
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 03:41:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3046C1A0702
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 21:10:21 +1000 (EST)
+From: Nikhil Badola <nikhil.badola@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: configs: Add VFAT file-system configs
+Date: Mon, 25 Aug 2014 16:40:05 +0530
+Message-ID: <1408965005-10923-1-git-send-email-nikhil.badola@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CAKohpokMXSC_oTbg1b0adPxFsht7aZJd61YwSpzqsUi=KOAwXw@mail.gmail.com>
-References: <1408015178-21745-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAKohponDNHYrD9b==cp+pVmAi2ygA9-HcLZWqr4w3DDivB=-Ng@mail.gmail.com>
- <53F57E51.4060200@gmail.com>
- <CAKohpon8ANWoy52B=_nSuNyHALrsQOLX4cA+690E=CifnVRFtg@mail.gmail.com>
- <53F6AF66.10204@linux.vnet.ibm.com>
- <CAKohpokMXSC_oTbg1b0adPxFsht7aZJd61YwSpzqsUi=KOAwXw@mail.gmail.com>
-Date: Mon, 25 Aug 2014 16:11:21 +0530
-Message-ID: <CAKohponpWL1Wjo=HcDrwDYvuykRVPMVSeEzKDWg1Mi075c8KEA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: powernv: Register the driver with reboot notifier
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Shilpasri G Bhat <shilpabhatppc@gmail.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Nikhil Badola <nikhil.badola@freescale.com>,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,71 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25 August 2014 16:00, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Its not that I am doubting if this will work or not. But this Hack is using
-> routines not meant for this purpose. And that being a core routine,
-> things aren't that straightforward anymore.
+Add CONFIG_NLS_CODEPAGE_437, CONFIG_NLS_CODEPAGE_850,
+CONFIG_NLS_ISO8859_1 in default configs for 85xx
+and 86xx socs. Required for mounting vfat file-systems
+on USB devices
 
-Well if you want a working HACK for solving this, what about following ?
+Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig | 2 ++
+ arch/powerpc/configs/corenet64_smp_defconfig | 2 ++
+ arch/powerpc/configs/mpc85xx_defconfig       | 3 +++
+ arch/powerpc/configs/mpc85xx_smp_defconfig   | 3 +++
+ arch/powerpc/configs/mpc86xx_defconfig       | 3 +++
+ 5 files changed, 13 insertions(+)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c
-b/drivers/cpufreq/powernv-cpufreq.c
-index af49688..d6a1742 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -34,6 +34,7 @@
- #define POWERNV_MAX_PSTATES    256
-
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+static bool rebooting;
-
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -283,6 +284,9 @@ static int powernv_cpufreq_target_index(struct
-cpufreq_policy *policy,
- {
-        struct powernv_smp_call_data freq_data;
-
-+       if (unlikely(rebooting))
-+               return -EBUSY;
-+
-        freq_data.pstate_id = powernv_freqs[new_index].driver_data;
-
-        /*
-@@ -317,6 +321,19 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
-        .attr           = powernv_cpu_freq_attr,
- };
-
-+static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-+               unsigned long action, void *unused)
-+{
-+       /* TODO: Get policy & index */
-+       powernv_cpufreq_target_index(policy, index);
-+       rebooting = true;
-+       return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block powernv_cpufreq_reboot_nb = {
-+       .notifier_call = powernv_cpufreq_reboot_notifier,
-+};
-+
- static int __init powernv_cpufreq_init(void)
- {
-        int rc = 0;
-@@ -328,12 +345,15 @@ static int __init powernv_cpufreq_init(void)
-                return rc;
-        }
-
--       return cpufreq_register_driver(&powernv_cpufreq_driver);
-+       rc = cpufreq_register_driver(&powernv_cpufreq_driver);
-+       register_reboot_notifier(&powernv_cpufreq_reboot_nb);
-+       return rc;
- }
- module_init(powernv_cpufreq_init);
-
- static void __exit powernv_cpufreq_exit(void)
- {
-+       unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
-        cpufreq_unregister_driver(&powernv_cpufreq_driver);
- }
- module_exit(powernv_cpufreq_exit);
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 6a3c58a..688e9e4 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -165,6 +165,8 @@ CONFIG_NFS_FS=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=m
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
+ CONFIG_MAGIC_SYSRQ=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 4b07bad..f54eb44 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -157,6 +157,8 @@ CONFIG_NFS_FS=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=m
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
+ CONFIG_CRC_T10DIF=y
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index fa1bfd3..8b2d759 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -227,6 +227,9 @@ CONFIG_UDF_FS=m
+ CONFIG_MSDOS_FS=m
+ CONFIG_VFAT_FS=y
+ CONFIG_NTFS_FS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
++CONFIG_NLS_ISO8859_1=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_HUGETLBFS=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 0b452eb..a3003b2 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -228,6 +228,9 @@ CONFIG_UDF_FS=m
+ CONFIG_MSDOS_FS=m
+ CONFIG_VFAT_FS=y
+ CONFIG_NTFS_FS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
++CONFIG_NLS_ISO8859_1=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_HUGETLBFS=y
+diff --git a/arch/powerpc/configs/mpc86xx_defconfig b/arch/powerpc/configs/mpc86xx_defconfig
+index 35595ea..fc58aa8 100644
+--- a/arch/powerpc/configs/mpc86xx_defconfig
++++ b/arch/powerpc/configs/mpc86xx_defconfig
+@@ -145,6 +145,9 @@ CONFIG_UDF_FS=m
+ CONFIG_MSDOS_FS=m
+ CONFIG_VFAT_FS=y
+ CONFIG_NTFS_FS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
++CONFIG_NLS_ISO8859_1=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_ADFS_FS=m
+-- 
+1.7.11.7
