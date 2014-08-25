@@ -1,36 +1,21 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <vgoyal@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 134DC1A0068
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 23:00:26 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Mon, 25 Aug 2014 07:00:24 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 93CFC3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 07:00:23 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (b03eismtpcl100.ahe.boulder.ibm.com
- [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7PD0Nal21496016
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 15:00:23 +0200
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7PD0NBL026302
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 07:00:23 -0600
-Subject: [PATCH] Add private HCALL to inform updated RTAS base and entry
-To: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Date: Mon, 25 Aug 2014 18:30:10 +0530
-Message-ID: <20140825130010.1029.65141.stgit@aravindap>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BC1421A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 03:00:11 +1000 (EST)
+Date: Mon, 25 Aug 2014 12:59:17 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 0/5] kexec: minor fixups and enhancements
+Message-ID: <20140825165916.GC14379@redhat.com>
+References: <cover.1408731991.git.geoff@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: mahesh@linux.vnet.ibm.com, benh@au1.ibm.com, paulus@samba.org,
- "Nikunj A. Dadhania" <nikunj@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1408731991.git.geoff@infradead.org>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Eric Biederman <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,81 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a private HCALL to inform qemu the updated
-rtas-base and rtas-entry address when OS invokes the call
-"instantiate-rtas". This is required as qemu allocates the
-error reporting structure in RTAS space upon a machine check
-exception and hence needs to know the updated RTAS.
+On Fri, Aug 22, 2014 at 06:39:47PM +0000, Geoff Levand wrote:
+> Hi,
+> 
+> Here are a few minor fixups and enhancements for kexec support. 
+> 
+> Patch 3 and 4 that add preprocessor macros for the kimage list flags are
+> ones that I use in the arm64 kexec support I am working on, so it would
+> be nice for those to go in.
+> 
+> Please consider.
 
-Enhancements to qemu to handle the private HCALL, prepare
-error log and invoke machine check notification routine
-are in a separate patch.
+Hi Geoff,
 
-Signed-off-by: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
-Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
----
- board-qemu/slof/rtas.fs   |    6 +++++-
- lib/libhvcall/hvcall.code |    6 ++++++
- lib/libhvcall/hvcall.in   |    1 +
- lib/libhvcall/libhvcall.h |    4 +++-
- 4 files changed, 15 insertions(+), 2 deletions(-)
+Does arm64 has secureboot? If yes, then it might make sense to
+enable the new syscall kexec_file_load() on arm64 instead of trying
+to make old syscall work first.
 
-diff --git a/board-qemu/slof/rtas.fs b/board-qemu/slof/rtas.fs
-index 41e30c2..c081b57 100644
---- a/board-qemu/slof/rtas.fs
-+++ b/board-qemu/slof/rtas.fs
-@@ -174,7 +174,11 @@ rtas-node set-node
- 
- : instantiate-rtas ( adr -- entry )
-     dup rtas-base swap rtas-size move
--    rtas-entry rtas-base - +
-+    dup rtas-entry rtas-base - +
-+    2dup hv-rtas-update 0 <> IF
-+    ." Failed to update RTAS " cr
-+    THEN
-+    nip   
- ;
- 
- device-end
-diff --git a/lib/libhvcall/hvcall.code b/lib/libhvcall/hvcall.code
-index 744469f..0ff50f2 100644
---- a/lib/libhvcall/hvcall.code
-+++ b/lib/libhvcall/hvcall.code
-@@ -111,6 +111,12 @@ PRIM(hv_X2d_cas)
- 	TOS.u = hv_cas(vec, buf, size);
- MIRP
- 
-+PRIM(hv_X2d_rtas_X2d_update)
-+	unsigned long rtas_entry   = TOS.u; POP;
-+	unsigned long rtas_base    = TOS.u;
-+	TOS.u = hv_generic(KVMPPC_H_RTAS_UPDATE, rtas_base, rtas_entry);
-+MIRP
-+
- PRIM(get_X2d_print_X2d_version)
- 	unsigned long addr = TOS.u; POP;
- 	get_print_banner(addr);
-diff --git a/lib/libhvcall/hvcall.in b/lib/libhvcall/hvcall.in
-index e99d6d1..4437b77 100644
---- a/lib/libhvcall/hvcall.in
-+++ b/lib/libhvcall/hvcall.in
-@@ -30,4 +30,5 @@ cod(RX!)
- 
- cod(hv-logical-memop)
- cod(hv-cas)
-+cod(hv-rtas-update)
- cod(get-print-version)
-diff --git a/lib/libhvcall/libhvcall.h b/lib/libhvcall/libhvcall.h
-index 6356a62..193b738 100644
---- a/lib/libhvcall/libhvcall.h
-+++ b/lib/libhvcall/libhvcall.h
-@@ -24,7 +24,9 @@
- #define KVMPPC_H_LOGICAL_MEMOP  (KVMPPC_HCALL_BASE + 0x1)
- /* Client Architecture support */
- #define KVMPPC_H_CAS            (KVMPPC_HCALL_BASE + 0x2)
--#define KVMPPC_HCALL_MAX        KVMPPC_H_CAS
-+#define KVMPPC_H_RTAS_UPDATE    (KVMPPC_HCALL_BASE + 0x3)
-+#define KVMPPC_H_REPORT_MC_ERR  (KVMPPC_HCALL_BASE + 0x4)
-+#define KVMPPC_HCALL_MAX        KVMPPC_H_NMI_MCE
- 
- #ifndef __ASSEMBLY__
- 
+Thanks
+Vivek
+
+> 
+> -Geoff
+>     
+> The following changes since commit 7d1311b93e58ed55f3a31cc8f94c4b8fe988a2b9:
+> 
+>   Linux 3.17-rc1 (2014-08-16 10:40:26 -0600)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/geoff.levand/linux-kexec.git for-kexec
+> 
+> for you to fetch changes up to dc3c63e69815e00dce5454bd50e2991e9ea33f64:
+> 
+>   powerpc/kexec: Use global IND_FLAGS macro (2014-08-22 11:15:18 -0700)
+> 
+> ----------------------------------------------------------------
+> Geoff Levand (5):
+>       kexec: Fix make headers_check
+>       kexec: Simplify conditional
+>       kexec: Add bit definitions for kimage entry flags
+>       kexec: Add IND_FLAGS macro
+>       powerpc/kexec: Use global IND_FLAGS macro
+> 
+>  arch/powerpc/kernel/machine_kexec_64.c |  2 --
+>  include/linux/kexec.h                  | 20 ++++++++++++++++----
+>  include/uapi/linux/kexec.h             |  6 ------
+>  kernel/kexec.c                         | 17 ++++++++++-------
+>  4 files changed, 26 insertions(+), 19 deletions(-)
+> 
+> -- 
+> 1.9.1
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
