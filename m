@@ -1,36 +1,54 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gang.chen.5i5j@gmail.com>
+Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
+ [IPv6:2607:f8b0:400e:c02::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A21BB1A1855
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 04:02:45 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 25 Aug 2014 14:02:43 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A08E76E8048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 14:02:30 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7PI2fVF9830818
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 18:02:41 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7PI2dCk017284
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 14:02:40 -0400
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 9/9] powerpc/powernv: Enter deepest supported idle state in
- offline
-Date: Mon, 25 Aug 2014 23:31:13 +0530
-Message-Id: <1408989673-14137-10-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC8FD1A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 22:27:13 +1000 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id v10so20144021pde.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 05:27:06 -0700 (PDT)
+Message-ID: <53FB2B77.8070606@gmail.com>
+Date: Mon, 25 Aug 2014 20:26:31 +0800
+From: Chen Gang <gang.chen.5i5j@gmail.com>
+MIME-Version: 1.0
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
+ explicitly
+References: <53ECE9DD.80004@gmail.com> <20140814180418.GA20777@linux-mips.org>
+ <53ED34CE.3040001@gmail.com> <53EDCC60.5040608@gmail.com>
+ <53F9A48F.3020803@gmail.com>
+In-Reply-To: <53F9A48F.3020803@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-m68k@vger.kernel.org, a-jacquiot@ti.com, catalin.marinas@arm.com,
+ linux@openrisc.net, will.deacon@arm.com, dhowells@redhat.com,
+ jcmvbkbc@gmail.com, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
+ Jean Delvare <jdelvare@suse.de>, egtvedt@samfundet.no, jonas@southpole.se,
+ Liqin Chen <liqin.linux@gmail.com>, jesper.nilsson@axis.com,
+ linux-am33-list@redhat.com, linux@arm.linux.org.uk,
+ linux-c6x-dev@linux-c6x.org, "David S. Miller" <davem@davemloft.net>,
+ linux-xtensa@linux-xtensa.org, takata@linux-m32r.org, x86@kernel.org,
+ jejb@parisc-linux.org, torvalds@linux-foundation.org, linux-sh@vger.kernel.org,
+ mingo@redhat.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Lennox Wu <lennox.wu@gmail.com>, msalter@redhat.com, mattst88@gmail.com,
+ hskinnemoen@gmail.com, fenghua.yu@intel.com, james.hogan@imgtec.com,
+ Arnd Bergmann <arnd@arndb.de>, realmz6@gmail.com, heiko.carstens@de.ibm.com,
+ jdike@addtoit.com, linux-alpha@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, cmetcalf@tilera.com,
+ starvik@axis.com, linux-m32r@ml.linux-m32r.org, ink@jurassic.park.msu.ru,
+ user-mode-linux-user@lists.sourceforge.net, tglx@linutronix.de,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ rth@twiddle.net, chris@zankel.net, Michal Simek <monstr@monstr.eu>,
+ tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, vgupta@synopsys.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ rkuo@codeaurora.org, user-mode-linux-devel@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ akpm@linux-foundation.org, yasutake.koichi@jp.panasonic.com,
+ linuxppc-dev@lists.ozlabs.org, deller@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +58,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enter winkle during offline if supported, else revert to sleep or nap.
+Hello all:
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/smp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+It seems no any additional rejections for it. I guess, I need split the
+'big' patch into pieces, and each send to its' related mailing list, so
+let it not like a spam. And the schedule may like:
 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 3ad31d2..e3fc2c9 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -169,8 +169,10 @@ static void pnv_smp_cpu_kill_self(void)
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
- 
--		/* If sleep is supported, go to sleep, instead of nap */
--		if (idle_states & IDLE_USE_SLEEP)
-+		/* Go to deepest supported idle state */
-+		if (idle_states & IDLE_USE_WINKLE)
-+			power7_winkle();
-+		else if (idle_states & IDLE_USE_SLEEP)
- 			power7_sleep();
- 		else
- 			power7_nap(1);
+ - Firstly, send patch for "init/Kconfig" to add CPU_*_ENDIAN. If pass
+   checking (hope it can be passed checking), then
+
+ - Send each related patch to each related architectures which already
+   knew their ENDIAN attributes in config time (24 patches, I guess),
+   then
+
+ - Make patch for Kbuild to support __BUILDING_TIME_BIG_ENDIAN__, and
+   pass checking (hope I can finish), then
+
+ - Finish left architectures which need __BUILDING_TIME_BIG_ENDIAN__
+   (4 patches, I guess).
+
+Welcome any ideas, suggestions, or completions. And if no additional
+reply, I shall not send any additional information any more to avoid
+spam to other members.
+
+
+Thanks.
+
+On 08/24/2014 04:38 PM, Chen Gang wrote:
+> Hello Maintainers:
+> 
+> Is this patch OK? If it pass basic checking, please let me know, and I
+> shall try to make another related patch for KBuild (I can do nothing
+> related with Kbuild, before get confirmation for this patch).
+> 
+> Thanks.
+> 
+> On 8/15/14 17:01, Chen Gang wrote:
+>>
+>>
+>> On 8/15/14 6:14, Chen Gang wrote:
+>>> On 08/15/2014 02:04 AM, Ralf Baechle wrote:
+>>>>
+>>>
+>>> OK, thanks, I assumes when support both endian, the default choice is
+>>> CPU_BIG_ENDIAN, although no default value for choice (originally, I did
+>>> worry about it).
+>>>
+>>>> So I think you can just drop the MIPS segment from your patch.
+>>>>
+>>>
+>>> If what I assumes is correct, what you said sounds reasonable to me.
+>>>
+>>>
+>>
+>> So for me, it is harmless to add CPU_*_ENDIAN explicitly, and can let
+>> other members don't need think of.
+>>
+>> By the way, for sh, it is almost the same case, except it contents the
+>> default value, for me, it is clear enough, so I skip sh architecture in
+>> this patch.
+>>
+>>
+>> Thanks
+>>
+> 
+
 -- 
-1.9.0
+Chen Gang
+
+Open, share, and attitude like air, water, and life which God blessed
