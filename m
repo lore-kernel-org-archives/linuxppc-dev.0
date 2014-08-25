@@ -1,54 +1,19 @@
-Return-Path: <gang.chen.5i5j@gmail.com>
-Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
- [IPv6:2607:f8b0:400e:c02::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <asierra@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC8FD1A0006
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 22:27:13 +1000 (EST)
-Received: by mail-pd0-f180.google.com with SMTP id v10so20144021pde.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2014 05:27:06 -0700 (PDT)
-Message-ID: <53FB2B77.8070606@gmail.com>
-Date: Mon, 25 Aug 2014 20:26:31 +0800
-From: Chen Gang <gang.chen.5i5j@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 840671A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 09:56:25 +1000 (EST)
+Date: Mon, 25 Aug 2014 18:54:17 -0500 (CDT)
+From: Aaron Sierra <asierra@xes-inc.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <2036664217.106423.1409010857961.JavaMail.zimbra@xes-inc.com>
+In-Reply-To: <1335786600.106191.1409010734055.JavaMail.zimbra@xes-inc.com>
+Subject: [PATCH v2] powerpc: fsl_pci: Add forced PCI Agent enumeration
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v3] arch: Kconfig: Let all architectures set endian
- explicitly
-References: <53ECE9DD.80004@gmail.com> <20140814180418.GA20777@linux-mips.org>
- <53ED34CE.3040001@gmail.com> <53EDCC60.5040608@gmail.com>
- <53F9A48F.3020803@gmail.com>
-In-Reply-To: <53F9A48F.3020803@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, a-jacquiot@ti.com, catalin.marinas@arm.com,
- linux@openrisc.net, will.deacon@arm.com, dhowells@redhat.com,
- jcmvbkbc@gmail.com, paulus@samba.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
- Jean Delvare <jdelvare@suse.de>, egtvedt@samfundet.no, jonas@southpole.se,
- Liqin Chen <liqin.linux@gmail.com>, jesper.nilsson@axis.com,
- linux-am33-list@redhat.com, linux@arm.linux.org.uk,
- linux-c6x-dev@linux-c6x.org, "David S. Miller" <davem@davemloft.net>,
- linux-xtensa@linux-xtensa.org, takata@linux-m32r.org, x86@kernel.org,
- jejb@parisc-linux.org, torvalds@linux-foundation.org, linux-sh@vger.kernel.org,
- mingo@redhat.com, Geert Uytterhoeven <geert@linux-m68k.org>,
- Lennox Wu <lennox.wu@gmail.com>, msalter@redhat.com, mattst88@gmail.com,
- hskinnemoen@gmail.com, fenghua.yu@intel.com, james.hogan@imgtec.com,
- Arnd Bergmann <arnd@arndb.de>, realmz6@gmail.com, heiko.carstens@de.ibm.com,
- jdike@addtoit.com, linux-alpha@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, cmetcalf@tilera.com,
- starvik@axis.com, linux-m32r@ml.linux-m32r.org, ink@jurassic.park.msu.ru,
- user-mode-linux-user@lists.sourceforge.net, tglx@linutronix.de,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, chris@zankel.net, Michal Simek <monstr@monstr.eu>,
- tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, vgupta@synopsys.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- rkuo@codeaurora.org, user-mode-linux-devel@lists.sourceforge.net,
- Richard Weinberger <richard@nod.at>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- akpm@linux-foundation.org, yasutake.koichi@jp.panasonic.com,
- linuxppc-dev@lists.ozlabs.org, deller@gmx.de
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>,
+ Minghuan Lian <minghuan.lian@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,72 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello all:
+The following commit prevents the MPC8548E on the XPedite5200 PrPMC
+module from enumerating its PCI/PCI-X bus:
 
-It seems no any additional rejections for it. I guess, I need split the
-'big' patch into pieces, and each send to its' related mailing list, so
-let it not like a spam. And the schedule may like:
+    powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
 
- - Firstly, send patch for "init/Kconfig" to add CPU_*_ENDIAN. If pass
-   checking (hope it can be passed checking), then
+The previous patch prevents any Freescale PCI-X bridge from enumerating
+the bus, if it is hardware strapped into Agent mode.
 
- - Send each related patch to each related architectures which already
-   knew their ENDIAN attributes in config time (24 patches, I guess),
-   then
+In PCI-X, the Host is responsible for driving the PCI-X initialization
+pattern to devices on the bus, so that they know whether to operate in
+conventional PCI or PCI-X mode as well as what the bus timing will be.
+For a PCI-X PrPMC, the pattern is driven by the mezzanine carrier it is
+installed onto. Therefore, PrPMCs are PCI-X Agents, but one per system
+may still enumerate the bus.
 
- - Make patch for Kbuild to support __BUILDING_TIME_BIG_ENDIAN__, and
-   pass checking (hope I can finish), then
+This patch causes the device node of any PCI/PCI-X bridge strapped into
+Agent mode to be checked for the fsl,pci-agent-force-enum property. If
+the property is present in the node, the bridge will be allowed to
+enumerate the bus.
 
- - Finish left architectures which need __BUILDING_TIME_BIG_ENDIAN__
-   (4 patches, I guess).
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+---
+ .../bindings/pci/fsl,pci-agent-force-enum.txt      | 27 ++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.c                      |  3 ++-
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
 
-Welcome any ideas, suggestions, or completions. And if no additional
-reply, I shall not send any additional information any more to avoid
-spam to other members.
-
-
-Thanks.
-
-On 08/24/2014 04:38 PM, Chen Gang wrote:
-> Hello Maintainers:
-> 
-> Is this patch OK? If it pass basic checking, please let me know, and I
-> shall try to make another related patch for KBuild (I can do nothing
-> related with Kbuild, before get confirmation for this patch).
-> 
-> Thanks.
-> 
-> On 8/15/14 17:01, Chen Gang wrote:
->>
->>
->> On 8/15/14 6:14, Chen Gang wrote:
->>> On 08/15/2014 02:04 AM, Ralf Baechle wrote:
->>>>
->>>
->>> OK, thanks, I assumes when support both endian, the default choice is
->>> CPU_BIG_ENDIAN, although no default value for choice (originally, I did
->>> worry about it).
->>>
->>>> So I think you can just drop the MIPS segment from your patch.
->>>>
->>>
->>> If what I assumes is correct, what you said sounds reasonable to me.
->>>
->>>
->>
->> So for me, it is harmless to add CPU_*_ENDIAN explicitly, and can let
->> other members don't need think of.
->>
->> By the way, for sh, it is almost the same case, except it contents the
->> default value, for me, it is clear enough, so I skip sh architecture in
->> this patch.
->>
->>
->> Thanks
->>
-> 
-
+diff --git a/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt b/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
+new file mode 100644
+index 0000000..d8ac4a7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
+@@ -0,0 +1,27 @@
++* Bus Enumeration by Freescale PCI-X Agent
++
++Typically any Freescale PCI-X bridge hardware strapped into Agent mode
++is prevented from enumerating the bus. The PrPMC form-factor requires
++all mezzanines to be PCI-X Agents, but one per system may still
++enumerate the bus.
++
++The property defined below will allow a PCI-X bridge to be used for bus
++enumeration despite being strapped into Agent mode.
++
++Required properties:
++- fsl,pci-agent-force-enum : There is no value associated with this
++  property. The property itself is treated as a boolean.
++
++Example:
++
++	/* PCI-X bridge known to be PrPMC Monarch */
++	pci0: pci@ef008000 {
++		fsl,pci-agent-force-enum;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
++		device_type = "pci";
++		...
++		...
++	};
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 4bd091a..d13663f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -522,7 +522,8 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	} else {
+ 		/* For PCI read PROG to identify controller mode */
+ 		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
+-		if ((progif & 1) == 1)
++		if ((progif & 1) &&
++		    !of_property_read_bool(dev, "fsl,pci-agent-force-enum"))
+ 			goto no_bridge;
+ 	}
+ 
 -- 
-Chen Gang
-
-Open, share, and attitude like air, water, and life which God blessed
+1.9.1
