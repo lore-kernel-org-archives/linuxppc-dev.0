@@ -1,19 +1,18 @@
-Return-Path: <asierra@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 840671A005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 09:56:25 +1000 (EST)
-Date: Mon, 25 Aug 2014 18:54:17 -0500 (CDT)
-From: Aaron Sierra <asierra@xes-inc.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <2036664217.106423.1409010857961.JavaMail.zimbra@xes-inc.com>
-In-Reply-To: <1335786600.106191.1409010734055.JavaMail.zimbra@xes-inc.com>
-Subject: [PATCH v2] powerpc: fsl_pci: Add forced PCI Agent enumeration
+ by lists.ozlabs.org (Postfix) with ESMTPS id CEDBD1A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 12:44:15 +1000 (EST)
+Date: Tue, 26 Aug 2014 12:44:15 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ sukadev@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/perf: Fix ABIv2 kernel backtraces
+Message-ID: <20140826124415.153c861c@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>,
- Minghuan Lian <minghuan.lian@freescale.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following commit prevents the MPC8548E on the XPedite5200 PrPMC
-module from enumerating its PCI/PCI-X bus:
+ABIv2 kernels are failing to backtrace through the kernel. An example:
 
-    powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
+39.30%  readseek2_proce  [kernel.kallsyms]    [k] find_get_entry                     
+            |
+            --- find_get_entry
+               __GI___libc_read
 
-The previous patch prevents any Freescale PCI-X bridge from enumerating
-the bus, if it is hardware strapped into Agent mode.
+The problem is in valid_next_sp() where we check that the new stack
+pointer is at least STACK_FRAME_OVERHEAD below the previous one.
 
-In PCI-X, the Host is responsible for driving the PCI-X initialization
-pattern to devices on the bus, so that they know whether to operate in
-conventional PCI or PCI-X mode as well as what the bus timing will be.
-For a PCI-X PrPMC, the pattern is driven by the mezzanine carrier it is
-installed onto. Therefore, PrPMCs are PCI-X Agents, but one per system
-may still enumerate the bus.
+ABIv1 has a minimum stack frame size of 112 bytes consisting of 48 bytes
+and 64 bytes of parameter save area. ABIv2 changes that to 32 bytes
+with no paramter save area.
 
-This patch causes the device node of any PCI/PCI-X bridge strapped into
-Agent mode to be checked for the fsl,pci-agent-force-enum property. If
-the property is present in the node, the bridge will be allowed to
-enumerate the bus.
+STACK_FRAME_OVERHEAD is in theory the minimum stack frame size,
+but we over 240 uses of it, some of which assume that it includes
+space for the parameter area.
 
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+We need to work through all our stack defines and rationalise them
+but let's fix perf now by creating STACK_FRAME_MIN_SIZE and using
+in valid_next_sp(). This fixes the issue:
+
+30.64%  readseek2_proce  [kernel.kallsyms]    [k] find_get_entry                      
+            |
+            --- find_get_entry
+               pagecache_get_page
+               generic_file_read_iter
+               new_sync_read
+               vfs_read
+               sys_read
+               syscall_exit
+               __GI___libc_read
+
+Cc: stable@vger.kernel.org # 3.16+
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- .../bindings/pci/fsl,pci-agent-force-enum.txt      | 27 ++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_pci.c                      |  3 ++-
- 2 files changed, 29 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
 
-diff --git a/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt b/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
-new file mode 100644
-index 0000000..d8ac4a7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pci/fsl,pci-agent-force-enum.txt
-@@ -0,0 +1,27 @@
-+* Bus Enumeration by Freescale PCI-X Agent
-+
-+Typically any Freescale PCI-X bridge hardware strapped into Agent mode
-+is prevented from enumerating the bus. The PrPMC form-factor requires
-+all mezzanines to be PCI-X Agents, but one per system may still
-+enumerate the bus.
-+
-+The property defined below will allow a PCI-X bridge to be used for bus
-+enumeration despite being strapped into Agent mode.
-+
-+Required properties:
-+- fsl,pci-agent-force-enum : There is no value associated with this
-+  property. The property itself is treated as a boolean.
-+
-+Example:
-+
-+	/* PCI-X bridge known to be PrPMC Monarch */
-+	pci0: pci@ef008000 {
-+		fsl,pci-agent-force-enum;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
-+		device_type = "pci";
-+		...
-+		...
-+	};
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4bd091a..d13663f 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -522,7 +522,8 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 	} else {
- 		/* For PCI read PROG to identify controller mode */
- 		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
--		if ((progif & 1) == 1)
-+		if ((progif & 1) &&
-+		    !of_property_read_bool(dev, "fsl,pci-agent-force-enum"))
- 			goto no_bridge;
- 	}
+Index: b/arch/powerpc/include/asm/ptrace.h
+===================================================================
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -47,6 +47,12 @@
+ 				 STACK_FRAME_OVERHEAD + KERNEL_REDZONE_SIZE)
+ #define STACK_FRAME_MARKER	12
  
--- 
-1.9.1
++#if defined(_CALL_ELF) && _CALL_ELF == 2
++#define STACK_FRAME_MIN_SIZE	32
++#else
++#define STACK_FRAME_MIN_SIZE	STACK_FRAME_OVERHEAD
++#endif
++
+ /* Size of dummy stack frame allocated when calling signal handler. */
+ #define __SIGNAL_FRAMESIZE	128
+ #define __SIGNAL_FRAMESIZE32	64
+@@ -60,6 +66,7 @@
+ #define STACK_FRAME_REGS_MARKER	ASM_CONST(0x72656773)
+ #define STACK_INT_FRAME_SIZE	(sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD)
+ #define STACK_FRAME_MARKER	2
++#define STACK_FRAME_MIN_SIZE	STACK_FRAME_OVERHEAD
+ 
+ /* Size of stack frame allocated when calling signal handler. */
+ #define __SIGNAL_FRAMESIZE	64
+Index: b/arch/powerpc/perf/callchain.c
+===================================================================
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -35,7 +35,7 @@ static int valid_next_sp(unsigned long s
+ 		return 0;		/* must be 16-byte aligned */
+ 	if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
+ 		return 0;
+-	if (sp >= prev_sp + STACK_FRAME_OVERHEAD)
++	if (sp >= prev_sp + STACK_FRAME_MIN_SIZE)
+ 		return 1;
+ 	/*
+ 	 * sp could decrease when we jump off an interrupt stack
