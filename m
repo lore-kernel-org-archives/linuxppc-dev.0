@@ -1,24 +1,22 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 531141A0716
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 07:48:48 +1000 (EST)
-Message-ID: <1409089692.6510.86.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2] fsl_ifc: Support all 8 IFC chip selects
+ by lists.ozlabs.org (Postfix) with ESMTPS id 789911A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 08:51:18 +1000 (EST)
+Message-ID: <1409093463.6510.92.camel@snotra.buserror.net>
+Subject: Re: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
+ CLK_OF_DECLARE support
 From: Scott Wood <scottwood@freescale.com>
-To: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 26 Aug 2014 16:48:12 -0500
-In-Reply-To: <1923004045.447083.1409088847731.JavaMail.zimbra@xes-inc.com>
-References: <1720585700.271372.1409074298919.JavaMail.zimbra@xes-inc.com>
- <1409086131.6510.80.camel@snotra.buserror.net>
- <1923004045.447083.1409088847731.JavaMail.zimbra@xes-inc.com>
+To: Jingchang Lu <jingchang.lu@freescale.com>
+Date: Tue, 26 Aug 2014 17:51:03 -0500
+In-Reply-To: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
+References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mturquette@linaro.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-08-26 at 16:34 -0500, Aaron Sierra wrote:
-> > > +static inline u32 fsl_ifc_version(struct fsl_ifc_regs *regs) {
-> > > +	return ioread32be(&regs->ifc_rev) & FSL_IFC_VERSION_MASK;
-> > > +}
-> > > +
-> > > +static inline int fsl_ifc_bank_count(struct fsl_ifc_regs *regs) {
-> > > +	return (fsl_ifc_version(regs) == FSL_IFC_VERSION_1_0_0) ? 4 : 8;
-> > > +}
-> > 
-> > Whitespace
+On Fri, 2014-08-22 at 17:34 +0800, Jingchang Lu wrote:
+> Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
+> ---
+>  drivers/clk/Kconfig           | 7 ++++---
+>  drivers/clk/clk-ppc-corenet.c | 5 +++++
+>  2 files changed, 9 insertions(+), 3 deletions(-)
 > 
-> Oops.
-> 
-> > Do we really need the bank count here, as opposed to just checking it in
-> > probe()?  I also don't really care for reading the registers over and
-> > over, even though it's not performance critical.
-> 
-> The bank count is used in fsl_ifc_nand.c and fsl_ifc.c, so I thought it
-> was a good idea to have the version to bank count mapping defined in one
-> place rather than two.
+> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+> index cfd3af7..8784704 100644
+> --- a/drivers/clk/Kconfig
+> +++ b/drivers/clk/Kconfig
+> @@ -82,11 +82,12 @@ config COMMON_CLK_AXI_CLKGEN
+>  	  FPGAs. It is commonly used in Analog Devices' reference designs.
+>  
+>  config CLK_PPC_CORENET
+> -	bool "Clock driver for PowerPC corenet platforms"
+> -	depends on PPC_E500MC && OF
+> +	bool "Clock driver for PowerPC corenet and compatible ARM-based platforms"
+> +	depends on (PPC_E500MC || ARM) && OF
 
-OK.
+Should the symbol and driver be renamed to something like CLK_FSL_QORIQ?
 
-> > The reserved bits of the version register are defined as zero for
-> > current versions -- I think just comparing ifc_rev to the version
-> > constant, as is currently done, is fine.
-> 
-> I wasn't sure because the manuals I have only say that reserved values
-> are zero at reset.
+> diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+> index 8e58edf..7692cac 100644
+> --- a/drivers/clk/clk-ppc-corenet.c
+> +++ b/drivers/clk/clk-ppc-corenet.c
+> @@ -305,3 +305,8 @@ static int __init ppc_corenet_clk_init(void)
+>  	return platform_driver_register(&ppc_corenet_clk_driver);
+>  }
+>  subsys_initcall(ppc_corenet_clk_init);
+> +
+> +CLK_OF_DECLARE(ppc_core_pll_v1, "fsl,qoriq-core-pll-1.0", core_pll_init);
+> +CLK_OF_DECLARE(ppc_core_pll_v2, "fsl,qoriq-core-pll-2.0", core_pll_init);
+> +CLK_OF_DECLARE(ppc_core_mux_v1, "fsl,qoriq-core-mux-1.0", core_mux_init);
+> +CLK_OF_DECLARE(ppc_core_mux_v2, "fsl,qoriq-core-mux-2.0", core_mux_init);
 
-Well, we already have a version check that assumes they're zero, but if
-you want to be especially safe I guess that's OK. :-)
+What does this do that the existing platform driver and match table
+don't?  Why is it needed for ARM when PPC didn't need it?
 
 -Scott
