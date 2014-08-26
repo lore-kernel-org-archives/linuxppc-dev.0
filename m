@@ -1,18 +1,22 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CEDBD1A003C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 12:44:15 +1000 (EST)
-Date: Tue, 26 Aug 2014 12:44:15 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- sukadev@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf: Fix ABIv2 kernel backtraces
-Message-ID: <20140826124415.153c861c@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC83B1A0053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 17:41:08 +1000 (EST)
+Date: Tue, 26 Aug 2014 15:41:43 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH 0/5] kexec: minor fixups and enhancements
+Message-ID: <20140826074143.GG11693@darkstar.nay.redhat.com>
+References: <cover.1408731991.git.geoff@infradead.org>
+ <20140825165916.GC14379@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140825165916.GC14379@redhat.com>
+Cc: Geoff Levand <geoff@infradead.org>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,79 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ABIv2 kernels are failing to backtrace through the kernel. An example:
+On 08/25/14 at 12:59pm, Vivek Goyal wrote:
+> On Fri, Aug 22, 2014 at 06:39:47PM +0000, Geoff Levand wrote:
+> > Hi,
+> > 
+> > Here are a few minor fixups and enhancements for kexec support. 
+> > 
+> > Patch 3 and 4 that add preprocessor macros for the kimage list flags are
+> > ones that I use in the arm64 kexec support I am working on, so it would
+> > be nice for those to go in.
+> > 
+> > Please consider.
+> 
+> Hi Geoff,
+> 
+> Does arm64 has secureboot? If yes, then it might make sense to
+> enable the new syscall kexec_file_load() on arm64 instead of trying
+> to make old syscall work first.
 
-39.30%  readseek2_proce  [kernel.kallsyms]    [k] find_get_entry                     
-            |
-            --- find_get_entry
-               __GI___libc_read
+It will save efforts for efi support as well, for the in-kernel loader we do not
+necessary to save the efi physical addresses or runtime ranges to sysfs and
+passing them to 2nd kernel, we can just copy them in kernel.
 
-The problem is in valid_next_sp() where we check that the new stack
-pointer is at least STACK_FRAME_OVERHEAD below the previous one.
-
-ABIv1 has a minimum stack frame size of 112 bytes consisting of 48 bytes
-and 64 bytes of parameter save area. ABIv2 changes that to 32 bytes
-with no paramter save area.
-
-STACK_FRAME_OVERHEAD is in theory the minimum stack frame size,
-but we over 240 uses of it, some of which assume that it includes
-space for the parameter area.
-
-We need to work through all our stack defines and rationalise them
-but let's fix perf now by creating STACK_FRAME_MIN_SIZE and using
-in valid_next_sp(). This fixes the issue:
-
-30.64%  readseek2_proce  [kernel.kallsyms]    [k] find_get_entry                      
-            |
-            --- find_get_entry
-               pagecache_get_page
-               generic_file_read_iter
-               new_sync_read
-               vfs_read
-               sys_read
-               syscall_exit
-               __GI___libc_read
-
-Cc: stable@vger.kernel.org # 3.16+
-Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: b/arch/powerpc/include/asm/ptrace.h
-===================================================================
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -47,6 +47,12 @@
- 				 STACK_FRAME_OVERHEAD + KERNEL_REDZONE_SIZE)
- #define STACK_FRAME_MARKER	12
- 
-+#if defined(_CALL_ELF) && _CALL_ELF == 2
-+#define STACK_FRAME_MIN_SIZE	32
-+#else
-+#define STACK_FRAME_MIN_SIZE	STACK_FRAME_OVERHEAD
-+#endif
-+
- /* Size of dummy stack frame allocated when calling signal handler. */
- #define __SIGNAL_FRAMESIZE	128
- #define __SIGNAL_FRAMESIZE32	64
-@@ -60,6 +66,7 @@
- #define STACK_FRAME_REGS_MARKER	ASM_CONST(0x72656773)
- #define STACK_INT_FRAME_SIZE	(sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD)
- #define STACK_FRAME_MARKER	2
-+#define STACK_FRAME_MIN_SIZE	STACK_FRAME_OVERHEAD
- 
- /* Size of stack frame allocated when calling signal handler. */
- #define __SIGNAL_FRAMESIZE	64
-Index: b/arch/powerpc/perf/callchain.c
-===================================================================
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -35,7 +35,7 @@ static int valid_next_sp(unsigned long s
- 		return 0;		/* must be 16-byte aligned */
- 	if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
- 		return 0;
--	if (sp >= prev_sp + STACK_FRAME_OVERHEAD)
-+	if (sp >= prev_sp + STACK_FRAME_MIN_SIZE)
- 		return 1;
- 	/*
- 	 * sp could decrease when we jump off an interrupt stack
+Thanks
+Dave
