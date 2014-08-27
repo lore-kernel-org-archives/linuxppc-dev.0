@@ -1,24 +1,47 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C977B1A003D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 05:05:00 +1000 (EST)
-Message-ID: <53FE2BBD.5000006@Freescale.com>
-Date: Wed, 27 Aug 2014 14:04:29 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2FB0C1A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 07:35:26 +1000 (EST)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3CDF614010F
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2014 07:35:25 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 27 Aug 2014 15:35:22 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id AA2FB1FF0028
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2014 15:35:17 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7RJVL4I1245492
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2014 21:31:21 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7RLZHlF004505
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2014 15:35:18 -0600
+Date: Wed, 27 Aug 2014 14:35:14 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 2/3] powerpc, ptrace: Enable support for transactional
+ memory register sets
+Message-ID: <20140827213514.GA11489@us.ibm.com>
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1400858138-3939-3-git-send-email-khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Priyanka Jain <Priyanka.Jain@Freescale.com>,
- <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <scottwood@Freescale.com>
-Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T1040/T1042 RDB
- board support
-References: <1407741488-2661-1-git-send-email-Priyanka.Jain__34501.3199876577$1407741762$gmane$org@freescale.com>
-In-Reply-To: <1407741488-2661-1-git-send-email-Priyanka.Jain__34501.3199876577$1407741762$gmane$org@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-Cc: Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
- Prabhakar Kushwaha <prabhakar@Freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1400858138-3939-3-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
+ palves@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
+ dhowells@redhat.com, linuxppc-dev@ozlabs.org, davej@redhat.com,
+ akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,390 +51,1061 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Priyanka,
+Anshuman Khandual [khandual@linux.vnet.ibm.com] wrote:
+| This patch enables get and set of transactional memory related register
+| sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
+| four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
+| REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
+| ELF core note types added previously in this regard.
+| 
+| 	(1) NT_PPC_TM_SPR
+| 	(2) NT_PPC_TM_CGPR
+| 	(3) NT_PPC_TM_CFPR
+| 	(4) NT_PPC_TM_CVMX
+| 
+| Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+| ---
+|  arch/powerpc/include/asm/switch_to.h |   8 +
+|  arch/powerpc/kernel/process.c        |  24 ++
+|  arch/powerpc/kernel/ptrace.c         | 792 +++++++++++++++++++++++++++++++++--
+|  3 files changed, 795 insertions(+), 29 deletions(-)
+| 
+| diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+| index 0e83e7d..2737f46 100644
+| --- a/arch/powerpc/include/asm/switch_to.h
+| +++ b/arch/powerpc/include/asm/switch_to.h
+| @@ -80,6 +80,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
+|  }
+|  #endif
+|  
+| +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+| +extern void flush_tmregs_to_thread(struct task_struct *);
+| +#else
+| +static inline void flush_tmregs_to_thread(struct task_struct *t)
+| +{
+| +}
+| +#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+| +
+|  static inline void clear_task_ebb(struct task_struct *t)
+|  {
+|  #ifdef CONFIG_PPC_BOOK3S_64
+| diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+| index 31d0215..e247898 100644
+| --- a/arch/powerpc/kernel/process.c
+| +++ b/arch/powerpc/kernel/process.c
+| @@ -695,6 +695,30 @@ static inline void __switch_to_tm(struct task_struct *prev)
+|  	}
+|  }
+|  
+| +void flush_tmregs_to_thread(struct task_struct *tsk)
+| +{
+| +	/*
+| +	 * If task is not current, it should have been flushed
+| +	 * already to it's thread_struct during __switch_to().
+| +	 */
+| +	if (tsk != current)
+| +		return;
+| +
+| +	preempt_disable();
+| +	if (tsk->thread.regs) {
+| +		/*
+| +		 * If we are still current, the TM state need to
+| +		 * be flushed to thread_struct as it will be still
+| +		 * present in the current cpu.
+| +		 */
+| +		if (MSR_TM_ACTIVE(tsk->thread.regs->msr)) {
+| +			__switch_to_tm(tsk);
+| +			tm_recheckpoint_new_task(tsk);
+| +		}
+| +	}
+| +	preempt_enable();
+| +}
+| +
+|  /*
+|   * This is called if we are on the way out to userspace and the
+|   * TIF_RESTORE_TM flag is set.  It checks if we need to reload
+| diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+| index 2e3d2bf..17642ef 100644
+| --- a/arch/powerpc/kernel/ptrace.c
+| +++ b/arch/powerpc/kernel/ptrace.c
+| @@ -357,6 +357,17 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
+|  	return ret;
+|  }
+|  
+| +/*
+| + * When any transaction is active, "thread_struct->transact_fp" holds
+| + * the current running value of all FPR registers and "thread_struct->
+| + * fp_state" holds the last checkpointed FPR registers state for the
+| + * current transaction.
+| + *
+| + * struct data {
+| + * 	u64	fpr[32];
+| + * 	u64	fpscr;
+| + * };
+| + */
+
+Maybe a reference to 'struct thread_fp_state' in the comments will help ?
 
 
-On 08/11/2014 02:18 AM, Priyanka Jain wrote:
-> T1040/T1042RDB is Freescale Reference Design Board.
-> The board can support both T1040/T1042 QorIQ Power Architecture™ processor.
-> 
-> T1040/T1042RDB board Overview
-> -----------------------
-> - SERDES Connections, 8 lanes supporting:
-> 	- PCI
-> 	- SGMII
->     	- QSGMII
->     	- SATA 2.0
-> - DDR Controller
->     	- Supports rates of up to 1600 MHz data-rate
->     	- Supports one DDR3LP UDIMM
-> -IFC/Local Bus
->     	- NAND flash: 1GB 8-bit NAND flash
->     	- NOR: 128MB 16-bit NOR Flash
-> - Ethernet
->     	- Two on-board RGMII 10/100/1G ethernet ports.
->     	- PHY #0 remains powered up during deep-sleep
-> - CPLD
-> - Clocks
->     	- System and DDR clock (SYSCLK, “DDRCLK”)
->     	- SERDES clocks
-> - Power Supplies
-> - USB
->     	- Supports two USB 2.0 ports with integrated PHYs
->     	- Two type A ports with 5V@1.5A per port.
-> - SDHC
->     	- SDHC/SDXC connector
-> - SPI
->     	- On-board 64MB SPI flash
-> - I2C
->     	- Devices connected: EEPROM, thermal monitor, VID controller
-> - Other IO
->     	- Two Serial ports
->     	- ProfiBus port
-> 
-> Add support for T1040/T1042 RDB board:
->     -add device tree
->     -add entry in Kconfig to build
->     -Add entry in corenet_generic.c, as it is similar to other corenet platforms
-> 
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> ---
-> changes for v3: Incorporated Scott comments on moving cpld compatible
->  field to board specific file as cpld binaries are different
-> 
-> changes for v2: Incorporated Scott comments on using common name
->  for compatible string for cpld as register set is same
-> 
->  arch/powerpc/boot/dts/t1040rdb.dts            |   48 ++++++++
->  arch/powerpc/boot/dts/t1042rdb.dts            |   48 ++++++++
->  arch/powerpc/boot/dts/t104xrdb.dtsi           |  156 +++++++++++++++++++++++++
->  arch/powerpc/platforms/85xx/Kconfig           |    2 +-
->  arch/powerpc/platforms/85xx/corenet_generic.c |    2 +
->  5 files changed, 255 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/t1040rdb.dts
->  create mode 100644 arch/powerpc/boot/dts/t1042rdb.dts
->  create mode 100644 arch/powerpc/boot/dts/t104xrdb.dtsi
-> 
-> diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
-> new file mode 100644
-> index 0000000..79a0bed
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/t1040rdb.dts
-> @@ -0,0 +1,48 @@
-> +/*
-> + * T1040RDB Device Tree Source
-> + *
-> + * Copyright 2014 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *	 notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *	 notice, this list of conditions and the following disclaimer in the
-> + *	 documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *	 names of its contributors may be used to endorse or promote products
-> + *	 derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/include/ "fsl/t104xsi-pre.dtsi"
-> +/include/ "t104xrdb.dtsi"
-> +
-> +/ {
-> +	model = "fsl,T1040RDB";
-> +	compatible = "fsl,T1040RDB";
+|  static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+|  		   unsigned int pos, unsigned int count,
+|  		   void *kbuf, void __user *ubuf)
+| @@ -365,21 +376,41 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+|  	u64 buf[33];
+|  	int i;
+|  #endif
+| -	flush_fp_to_thread(target);
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		flush_fp_to_thread(target);
+| +		flush_altivec_to_thread(target);
+| +		flush_tmregs_to_thread(target);
+| +	} else {
+| +		flush_fp_to_thread(target);
+| +	}
 
-I suggest you leave an empty line between the properties and subnodes
+flush_fp_to_thread(target) is uncondtional - so could be outside
+the if and else blocks ?
 
-> +	ifc: localbus@ffe124000 {
-> +		cpld@3,0 {
-> +			compatible = "fsl,t1040rdb-cpld";
-> +		};
-> +	};
+|  
+|  #ifdef CONFIG_VSX
+|  	/* copy to local buffer then write that out */
+| -	for (i = 0; i < 32 ; i++)
+| -		buf[i] = target->thread.TS_FPR(i);
+| -	buf[32] = target->thread.fp_state.fpscr;
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		for (i = 0; i < 32 ; i++)
+| +			buf[i] = target->thread.TS_TRANS_FPR(i);
+| +		buf[32] = target->thread.transact_fp.fpscr;
+| +	} else {
+| +		for (i = 0; i < 32 ; i++)
+| +			buf[i] = target->thread.TS_FPR(i);
+| +		buf[32] = target->thread.fp_state.fpscr;
+| +	}
+|  	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+|  
+|  #else
+| -	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| -		     offsetof(struct thread_fp_state, fpr[32][0]));
+| +	if (MSR_TM_ACTIVE(tsk->thread.regs->msr)) {
+| +		BUILD_BUG_ON(offsetof(struct transact_fp, fpscr) !=
+| +				offsetof(struct transact_fp, fpr[32][0]));
 
-I believe Scott's point was that you shouldn't have a plethora of
-compatibles in a common file for a device that's identical across
-boards. If the device is not really identical and a separate compatible
-is needed to differentiate it across boards, then the node should move
-into the board specific file with different compatibles. Here, you've
-moved the CPLD node in the board specific file but you used the same
-compatible
+Is MSR_TM_ACTIVE() a run time check or compile time ?
+ie is there a reason to move the compile time check into the if block ?
 
-> +};
-> +
-> +/include/ "fsl/t1040si-post.dtsi"
-> diff --git a/arch/powerpc/boot/dts/t1042rdb.dts b/arch/powerpc/boot/dts/t1042rdb.dts
-> new file mode 100644
-> index 0000000..228a635
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/t1042rdb.dts
-> @@ -0,0 +1,48 @@
-> +/*
-> + * T1042RDB Device Tree Source
-> + *
-> + * Copyright 2014 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *	 notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *	 notice, this list of conditions and the following disclaimer in the
-> + *	 documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *	 names of its contributors may be used to endorse or promote products
-> + *	 derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/include/ "fsl/t104xsi-pre.dtsi"
-> +/include/ "t104xrdb.dtsi"
-> +
-> +/ {
-> +	model = "fsl,T1042RDB";
-> +	compatible = "fsl,T1042RDB";
-> +	ifc: localbus@ffe124000 {
-> +		cpld@3,0 {
-> +			compatible = "fsl,t1040rdb-cpld";
-> +		};
-> +	};
+|  
+| -	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +				   &target->thread.transact_fp, 0, -1);
+| +	} esle {
+| +		BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| +			     offsetof(struct thread_fp_state, fpr[32][0]));
+| +
+| +		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+|  				   &target->thread.fp_state, 0, -1);
+| +	}
+|  #endif
+|  }
+|  
+| @@ -391,23 +422,44 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
+|  	u64 buf[33];
+|  	int i;
+|  #endif
+| -	flush_fp_to_thread(target);
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		flush_fp_to_thread(target);
+| +		flush_altivec_to_thread(target);
+| +		flush_tmregs_to_thread(target);
+| +	} else {
+| +		flush_fp_to_thread(target);
+| +	}
+|  
 
-Same as above
+As mentioned above, flush_fp_to_thread() could be outside the if block.
+|  #ifdef CONFIG_VSX
+|  	/* copy to local buffer then write that out */
+|  	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+|  	if (i)
+|  		return i;
+| -	for (i = 0; i < 32 ; i++)
+| -		target->thread.TS_FPR(i) = buf[i];
+| -	target->thread.fp_state.fpscr = buf[32];
+| +	for (i = 0; i < 32 ; i++) {
+| +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +			target->thread.TS_TRANS_FPR(i) = buf[i];
+| +		else
+| +			target->thread.TS_FPR(i) = buf[i];
+| +	}
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		target->thread.transact_fp.fpscr = buf[32];
+| +	else
+| +		target->thread.fp_state.fpscr = buf[32];
 
-> +};
-> +
-> +/include/ "fsl/t1042si-post.dtsi"
-> diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> new file mode 100644
-> index 0000000..1cf0f3c
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
-> @@ -0,0 +1,156 @@
-> +/*
-> + * T1040RDB/T1042RDB Device Tree Source
-> + *
-> + * Copyright 2014 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *	 notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *	 notice, this list of conditions and the following disclaimer in the
-> + *	 documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *	 names of its contributors may be used to endorse or promote products
-> + *	 derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/ {
-> +
+I think this code is easier to read than the similar code above
+in fpr_get() where you have the 'for' loop in both if and else blocks.
 
-Remove the empty line
+|  	return 0;
+|  #else
+| -	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| -		     offsetof(struct thread_fp_state, fpr[32][0]));
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		BUILD_BUG_ON(offsetof(struct transact_fp, fpscr) !=
+| +			     offsetof(struct transact_fp, fpr[32][0]));
+|  
+| -	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| -				  &target->thread.fp_state, 0, -1);
+| +		return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +					  &target->thread.transact_fp, 0, -1);
+| +	} else {
+| +		BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| +			     offsetof(struct thread_fp_state, fpr[32][0]));
+| +
+| +		return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.fp_state, 0, -1);
+| +	}
+|  #endif
+|  }
+|  
+| @@ -432,20 +484,44 @@ static int vr_active(struct task_struct *target,
+|  	return target->thread.used_vr ? regset->n : 0;
+|  }
+|  
+| +/*
+| + * When any transaction is active, "thread_struct->transact_vr" holds
+| + * the current running value of all VMX registers and "thread_struct->
+| + * vr_state" holds the last checkpointed value of VMX registers for the
+| + * current transaction.
+| + *
+| + * struct data {
+| + * 	vector128	vr[32];
+| + * 	vector128	vscr;
+| + * 	vector128	vrsave;
+| + * };
+| + */
+|  static int vr_get(struct task_struct *target, const struct user_regset *regset,
+|  		  unsigned int pos, unsigned int count,
+|  		  void *kbuf, void __user *ubuf)
+|  {
+|  	int ret;
+| +	struct thread_vr_state *addr;
+|  
+| -	flush_altivec_to_thread(target);
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		flush_fp_to_thread(target);
+| +		flush_altivec_to_thread(target);
 
-> +	ifc: localbus@ffe124000 {
-> +		reg = <0xf 0xfe124000 0 0x2000>;
-> +		ranges = <0 0 0xf 0xe8000000 0x08000000
-> +			  2 0 0xf 0xff800000 0x00010000
-> +			  3 0 0xf 0xffdf0000 0x00008000>;
-> +
-> +		nor@0,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "cfi-flash";
-> +			reg = <0x0 0x0 0x8000000>;
-> +			bank-width = <2>;
-> +			device-width = <1>;
-> +		};
-> +
-> +		nand@2,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,ifc-nand";
-> +			reg = <0x2 0x0 0x10000>;
-> +		};
-> +
-> +		cpld@3,0 {
-> +			reg = <3 0 0x300>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +	};
-> +
-> +	dcsr: dcsr@f00000000 {
-> +		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-> +	};
-> +
-> +	soc: soc@ffe000000 {
-> +		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-> +		reg = <0xf 0xfe000000 0 0x00001000>;
-> +
-> +		spi@110000 {
-> +			flash@0 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
-> +				compatible = "micron,n25q512a";
-> +				reg = <0>;
-> +				spi-max-frequency = <10000000>; /* input clock */
-> +			};
-> +		};
-> +
-> +		i2c@118100 {
-> +			pca9546@77 {
-> +				compatible = "nxp,pca9546";
-> +				reg = <0x77>;
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +			};
-> +		};
-> +
+Is order of flush_fp_to_thread() and flush_altivec_to_thread()
+significant or can we call flush_altivec_to_thread() unconditionally
+outside the if block ?
+| +		flush_tmregs_to_thread(target);
+| +	} else {
+| +		flush_altivec_to_thread(target);
+| +	}
+|  
+|  	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+|  		     offsetof(struct thread_vr_state, vr[32]));
+|  
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		addr = &target->thread.transact_vr;
+| +	else
+| +		addr = &target->thread.vr_state;
+| +
+|  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| -				  &target->thread.vr_state, 0,
+| -				  33 * sizeof(vector128));
+| +				addr, 0, 33 * sizeof(vector128));
+| +
+|  	if (!ret) {
+|  		/*
+|  		 * Copy out only the low-order word of vrsave.
+| @@ -455,11 +531,14 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+|  			u32 word;
+|  		} vrsave;
+|  		memset(&vrsave, 0, sizeof(vrsave));
+| -		vrsave.word = target->thread.vrsave;
+| +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +			vrsave.word = target->thread.transact_vrsave;
+| +		else
+| +			vrsave.word = target->thread.vrsave;
+| +
+|  		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+|  					  33 * sizeof(vector128), -1);
+|  	}
+| -
+|  	return ret;
+|  }
+|  
+| @@ -467,16 +546,27 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+|  		  unsigned int pos, unsigned int count,
+|  		  const void *kbuf, const void __user *ubuf)
+|  {
+| +	struct thread_vr_state *addr;
+|  	int ret;
+|  
+| -	flush_altivec_to_thread(target);
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+| +		flush_fp_to_thread(target);
+| +		flush_altivec_to_thread(target);
+| +		flush_tmregs_to_thread(target);
+| +	} else {
+| +		flush_altivec_to_thread(target);
+| +	}
+|  
+|  	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+|  		     offsetof(struct thread_vr_state, vr[32]));
+|  
+| +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		addr = &target->thread.transact_vr;
+| +	else
+| +		addr = &target->thread.vr_state;
+|  	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| -				 &target->thread.vr_state, 0,
+| -				 33 * sizeof(vector128));
+| +			addr, 0, 33 * sizeof(vector128));
+| +
+|  	if (!ret && count > 0) {
+|  		/*
+|  		 * We use only the first word of vrsave.
+| @@ -486,13 +576,21 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+|  			u32 word;
+|  		} vrsave;
+|  		memset(&vrsave, 0, sizeof(vrsave));
+| -		vrsave.word = target->thread.vrsave;
+| +
+| +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +			vrsave.word = target->thread.transact_vrsave;
+| +		else
+| +			vrsave.word = target->thread.vrsave;
+| +
+|  		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+|  					 33 * sizeof(vector128), -1);
+| -		if (!ret)
+| -			target->thread.vrsave = vrsave.word;
+| +		if (!ret) {
+| +			if (MSR_TM_ACTIVE(target->thread.regs->msr))
+| +				target->thread.transact_vrsave = vrsave.word;
+| +			else
+| +				target->thread.vrsave = vrsave.word;
+| +		}
+|  	}
+| -
+|  	return ret;
+|  }
+|  #endif /* CONFIG_ALTIVEC */
+| @@ -613,6 +711,442 @@ static int evr_set(struct task_struct *target, const struct user_regset *regset,
+|  }
+|  #endif /* CONFIG_SPE */
+|  
+| +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+| +
+| +static int tm_spr_active(struct task_struct *target,
+| +				const struct user_regset *regset)
+| +{
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return 0;
+| +
+| +	return regset->n;
+| +}
+| +/*
+| + *  Transactional memory SPR
+| + *
+| + * struct {
+| + * 	u64		tm_tfhar;
+| + *	u64		tm_texasr;
+| + *	u64		tm_tfiar;
+| + *	unsigned long	tm_orig_msr;
+| + * 	unsigned long	tm_tar;
+| + *	unsigned long	tm_ppr;
+| + *	unsigned long	tm_dscr;
+| + * };
+| + */
+| +static int tm_spr_get(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   void *kbuf, void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
 
-Remove the empty line
+Can we copy all the values ot a local buf and then do a single
+copyout to user space ?
 
+| +	/* TFHAR register */
+| +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_tfhar, 0, sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfhar) +
+| +			sizeof(u64) != offsetof(struct thread_struct, tm_texasr));
+| +
+| +	/* TEXASR register */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_texasr, sizeof(u64), 2 * sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_texasr) +
+| +			sizeof(u64) != offsetof(struct thread_struct, tm_tfiar));
+| +
+| +	/* TFIAR register */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_tfiar, 2 * sizeof(u64), 3 * sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfiar) +
+| +			sizeof(u64) != offsetof(struct thread_struct, tm_orig_msr));
+| +
+| +	/* TM checkpointed original MSR */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_orig_msr, 3 * sizeof(u64),
+| +				3 * sizeof(u64) + sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_orig_msr) +
+| +			sizeof(unsigned long) + sizeof(struct pt_regs)
+| +				!= offsetof(struct thread_struct, tm_tar));
+| +
+| +	/* TM checkpointed TAR register */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_tar, 3 * sizeof(u64) +
+| +				sizeof(unsigned long) , 3 * sizeof(u64) +
+| +					2 * sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tar)
+| +			+ sizeof(unsigned long) !=
+| +				offsetof(struct thread_struct, tm_ppr));
+| +
+| +	/* TM checkpointed PPR register */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.tm_ppr, 3 * sizeof(u64) +
+| +					2 * sizeof(unsigned long), 3 * sizeof(u64) +
+| +						3 * sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_ppr) +
+| +			sizeof(unsigned long) !=
+| +				offsetof(struct thread_struct, tm_dscr));
+| +
+| +	/* TM checkpointed DSCR register */
+| +	if (!ret)
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_dscr, 3 * sizeof(u64)
+| +				+ 3 * sizeof(unsigned long), 3 * sizeof(u64)
+| +						+ 4 * sizeof(unsigned long));
+| +	return ret;
+| +}
+| +
+| +static int tm_spr_set(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   const void *kbuf, const void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +	/* TFHAR register */
+| +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.tm_tfhar, 0, sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfhar)
+| +		+ sizeof(u64) != offsetof(struct thread_struct, tm_texasr));
 
-Cheers,
+A single copyin into a local buffer followed by a local assignment would
+be easier to read ?
 
+It could be easier to read if all BUILD_BUG_ON() calls are in one place
+maybe near the beginning of the function or in the header file.
 
-> +	};
-> +
-> +	pci0: pcie@ffe240000 {
-> +		reg = <0xf 0xfe240000 0 0x10000>;
-> +		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x10000000
-> +			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-> +		pcie@0 {
-> +			ranges = <0x02000000 0 0xe0000000
-> +				  0x02000000 0 0xe0000000
-> +				  0 0x10000000
-> +
-> +				  0x01000000 0 0x00000000
-> +				  0x01000000 0 0x00000000
-> +				  0 0x00010000>;
-> +		};
-> +	};
-> +
-> +	pci1: pcie@ffe250000 {
-> +		reg = <0xf 0xfe250000 0 0x10000>;
-> +		ranges = <0x02000000 0x0 0xe0000000 0xc 0x10000000 0x0 0x10000000
-> +			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-> +		pcie@0 {
-> +			ranges = <0x02000000 0 0xe0000000
-> +				  0x02000000 0 0xe0000000
-> +				  0 0x10000000
-> +
-> +				  0x01000000 0 0x00000000
-> +				  0x01000000 0 0x00000000
-> +				  0 0x00010000>;
-> +		};
-> +	};
-> +
-> +	pci2: pcie@ffe260000 {
-> +		reg = <0xf 0xfe260000 0 0x10000>;
-> +		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
-> +			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-> +		pcie@0 {
-> +			ranges = <0x02000000 0 0xe0000000
-> +				  0x02000000 0 0xe0000000
-> +				  0 0x10000000
-> +
-> +				  0x01000000 0 0x00000000
-> +				  0x01000000 0 0x00000000
-> +				  0 0x00010000>;
-> +		};
-> +	};
-> +
-> +	pci3: pcie@ffe270000 {
-> +		reg = <0xf 0xfe270000 0 0x10000>;
-> +		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
-> +			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-> +		pcie@0 {
-> +			ranges = <0x02000000 0 0xe0000000
-> +				  0x02000000 0 0xe0000000
-> +				  0 0x10000000
-> +
-> +				  0x01000000 0 0x00000000
-> +				  0x01000000 0 0x00000000
-> +				  0 0x00010000>;
-> +		};
-> +	};
-> +};
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index 5063696..157a1a4 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -276,7 +276,7 @@ config CORENET_GENERIC
->  	  For 64bit kernel, the following boards are supported:
->  	    T208x QDS, T4240 QDS/RDB and B4 QDS
->  	  The following boards are supported for both 32bit and 64bit kernel:
-> -	    P5020 DS, P5040 DS and T104xQDS
-> +	    P5020 DS, P5040 DS and T104xQDS/RDB
->  
->  endif # FSL_SOC_BOOKE
->  
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index 4f22ad1..c268f89 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -128,6 +128,8 @@ static const char * const boards[] __initconst = {
->  	"fsl,B4220QDS",
->  	"fsl,T1040QDS",
->  	"fsl,T1042QDS",
-> +	"fsl,T1040RDB",
-> +	"fsl,T1042RDB",
->  	"keymile,kmcoge4",
->  	NULL
->  };
+| +
+| +	/* TEXASR register */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_texasr, sizeof(u64), 2 * sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_texasr)
+| +		+ sizeof(u64) != offsetof(struct thread_struct, tm_tfiar));
+| +
+| +	/* TFIAR register */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_tfiar, 2 * sizeof(u64), 3 * sizeof(u64));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfiar)
+| +		+ sizeof(u64) != offsetof(struct thread_struct, tm_orig_msr));
+| +
+| +	/* TM checkpointed orig MSR */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_orig_msr, 3 * sizeof(u64),
+| +				3 * sizeof(u64) + sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_orig_msr)
+| +		+ sizeof(unsigned long) + sizeof(struct pt_regs) !=
+| +			offsetof(struct thread_struct, tm_tar));
+| +
+| +	/* TM checkpointed TAR register */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.tm_tar, 3 * sizeof(u64) +
+| +				sizeof(unsigned long), 3 * sizeof(u64) +
+| +					2 * sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tar)
+| +			+ sizeof(unsigned long) != offsetof(struct thread_struct, tm_ppr));
+| +
+| +	/* TM checkpointed PPR register */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.tm_ppr, 3 * sizeof(u64)
+| +					+ 2 * sizeof(unsigned long), 3 * sizeof(u64)
+| +					+ 3 * sizeof(unsigned long));
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_ppr) +
+| +			sizeof(unsigned long) !=
+| +				offsetof(struct thread_struct, tm_dscr));
+| +
+| +	/* TM checkpointed DSCR register */
+| +	if (!ret)
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.tm_dscr,
+| +					3 * sizeof(u64) + 3 * sizeof(unsigned long),
+| +					3 * sizeof(u64) + 4 * sizeof(unsigned long));
+| +
+| +	return ret;
+| +}
+| +
+| +static int tm_cgpr_active(struct task_struct *target,
+| +				const struct user_regset *regset)
+| +{
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return 0;
+| +
+| +	return regset->n;
+| +}
+| +
+| +/*
+| + * TM Checkpointed GPR
+| + *
+| + * struct data {
+| + * 	struct pt_regs ckpt_regs;
+| + * };
+| + */
+| +static int tm_cgpr_get(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   void *kbuf, void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.ckpt_regs, 0,
+| +				sizeof(struct pt_regs));
+| +	return ret;
+| +}
+| +
+| +static int tm_cgpr_set(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   const void *kbuf, const void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +					&target->thread.ckpt_regs, 0,
+| +						sizeof(struct pt_regs));
+| +	return ret;
+| +}
+| +
+| +static int tm_cfpr_active(struct task_struct *target,
+| +				const struct user_regset *regset)
+| +{
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return 0;
+| +
+| +	return regset->n;
+| +}
+| +
+| +/*
+| + * TM Checkpointed FPR
+| + *
+| + * struct data {
+| + * 	u64	fpr[32];
+| + * 	u64	fpscr;
+| + * };
+| + */
+| +static int tm_cfpr_get(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   void *kbuf, void __user *ubuf)
+| +{
+| +#ifdef CONFIG_VSX
+| +	u64 buf[33];
+| +	int i;
+| +#endif
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +#ifdef CONFIG_VSX
+| +	/* copy to local buffer then write that out */
+| +	for (i = 0; i < 32 ; i++)
+| +		buf[i] = target->thread.TS_FPR(i);
+| +	buf[32] = target->thread.fp_state.fpscr;
+| +	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+| +
+| +#else
+| +	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| +		offsetof(struct thread_fp_state, fpr[32][0]));
+| +
+| +	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +			&target->thread.thread_fp_state, 0, -1);
+| +#endif
+| +}
+| +
+| +static int tm_cfpr_set(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   const void *kbuf, const void __user *ubuf)
+| +{
+| +#ifdef CONFIG_VSX
+| +	u64 buf[33];
+| +	int i;
+| +#endif
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +#ifdef CONFIG_VSX
+| +	/* copy to local buffer then write that out */
+| +	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+| +	if (i)
+| +		return i;
+| +	for (i = 0; i < 32 ; i++)
+| +		target->thread.TS_FPR(i) = buf[i];
+| +	target->thread.fp_state.fpscr = buf[32];
+| +	return 0;
+| +#else
+| +	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+| +		      offsetof(struct thread_fp_state, fpr[32][0]));
+| +
+| +	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				&target->thread.fp_state, 0, -1);
+| +#endif
+| +}
+| +
+| +static int tm_cvmx_active(struct task_struct *target,
+| +				const struct user_regset *regset)
+| +{
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return 0;
+| +
+| +	return regset->n;
+| +}
+
+All these tm_*_active() functions do the same checks - maybe they could all
+call a common function ?
+
+| +
+| +/*
+| + * TM Checkpointed VMX
+| + *
+| + * struct data {
+| + * 	vector128	vr[32];
+| + * 	vector128	vscr;
+| + * 	vector128	vrsave;
+| + *};
+| + */
+| +static int tm_cvmx_get(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   void *kbuf, void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+| +		     offsetof(struct thread_vr_state, vr[32]));
+| +
+| +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+| +				  &target->thread.vr_state, 0,
+| +				  33 * sizeof(vector128));
+| +	if (!ret) {
+| +		/*
+| +		 * Copy out only the low-order word of vrsave.
+| +		 */
+| +		union {
+| +			elf_vrreg_t reg;
+| +			u32 word;
+| +		} vrsave;
+| +		memset(&vrsave, 0, sizeof(vrsave));
+| +		vrsave.word = target->thread.vrsave;
+| +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+| +					  33 * sizeof(vector128), -1);
+| +	}
+| +	return ret;
+| +}
+| +
+| +static int tm_cvmx_set(struct task_struct *target, const struct user_regset *regset,
+| +		   unsigned int pos, unsigned int count,
+| +		   const void *kbuf, const void __user *ubuf)
+| +{
+| +	int ret;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+| +		offsetof(struct thread_vr_state, vr[32]));
+| +
+| +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+| +				 &target->thread.vr_state, 0,
+| +				 33 * sizeof(vector128));
+| +	if (!ret && count > 0) {
+| +		/*
+| +		 * We use only the first word of vrsave.
+| +		 */
+| +		union {
+| +			elf_vrreg_t reg;
+| +			u32 word;
+| +		} vrsave;
+| +		memset(&vrsave, 0, sizeof(vrsave));
+| +		vrsave.word = target->thread.vrsave;
+| +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+| +					 33 * sizeof(vector128), -1);
+| +		if (!ret)
+| +			target->thread.vrsave = vrsave.word;
+| +	}
+| +	return ret;
+| +}
+| +#endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
+|  
+|  /*
+|   * These are our native regset flavors.
+| @@ -629,6 +1163,12 @@ enum powerpc_regset {
+|  #ifdef CONFIG_SPE
+|  	REGSET_SPE,
+|  #endif
+| +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+| +	REGSET_TM_SPR,		/* TM specific SPR */
+| +	REGSET_TM_CGPR,		/* TM checkpointed GPR */
+| +	REGSET_TM_CFPR,		/* TM checkpointed FPR */
+| +	REGSET_TM_CVMX,		/* TM checkpointed VMX */
+| +#endif
+|  };
+|  
+|  static const struct user_regset native_regsets[] = {
+| @@ -663,6 +1203,28 @@ static const struct user_regset native_regsets[] = {
+|  		.active = evr_active, .get = evr_get, .set = evr_set
+|  	},
+|  #endif
+| +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+| +	[REGSET_TM_SPR] = {
+| +		.core_note_type = NT_PPC_TM_SPR, .n = 7,
+
+How about adding a macro ELF_NSPRREG for the 7 special registers ?
+
+| +		.size = sizeof(u64), .align = sizeof(u64),
+| +		.active = tm_spr_active, .get = tm_spr_get, .set = tm_spr_set
+| +	},
+| +	[REGSET_TM_CGPR] = {
+| +		.core_note_type = NT_PPC_TM_CGPR, .n = ELF_NGREG,
+| +		.size = sizeof(long), .align = sizeof(long),
+| +		.active = tm_cgpr_active, .get = tm_cgpr_get, .set = tm_cgpr_set
+| +	},
+| +	[REGSET_TM_CFPR] = {
+| +		.core_note_type = NT_PPC_TM_CFPR, .n = ELF_NFPREG,
+| +		.size = sizeof(double), .align = sizeof(double),
+| +		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
+| +	},
+| +	[REGSET_TM_CVMX] = {
+| +		.core_note_type = NT_PPC_TM_CVMX, .n = 34,
+
+Similarly for the .n = 34
+
+| +		.size = sizeof(vector128), .align = sizeof(vector128),
+| +		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
+| +	},
+| +#endif
+|  };
+|  
+|  static const struct user_regset_view user_ppc_native_view = {
+| @@ -690,7 +1252,7 @@ static int gpr32_get(struct task_struct *target,
+|  	if (!FULL_REGS(target->thread.regs)) {
+|  		/* We have a partial register set.  Fill 14-31 with bogus values */
+|  		for (i = 14; i < 32; i++)
+| -			target->thread.regs->gpr[i] = NV_REG_POISON; 
+| +			target->thread.regs->gpr[i] = NV_REG_POISON;
+|  	}
+|  
+|  	pos /= sizeof(reg);
+| @@ -803,6 +1365,157 @@ static int gpr32_set(struct task_struct *target,
+|  					 (PT_TRAP + 1) * sizeof(reg), -1);
+|  }
+|  
+| +static int tm_cgpr32_get(struct task_struct *target,
+| +		     const struct user_regset *regset,
+| +		     unsigned int pos, unsigned int count,
+| +		     void *kbuf, void __user *ubuf)
+| +{
+| +	const unsigned long *regs = &target->thread.ckpt_regs.gpr[0];
+| +	compat_ulong_t *k = kbuf;
+| +	compat_ulong_t __user *u = ubuf;
+| +	compat_ulong_t reg;
+| +	int i;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +	if (target->thread.regs == NULL)
+| +		return -EIO;
+| +
+| +	if (!FULL_REGS(target->thread.regs)) {
+| +		/* We have a partial register set.  Fill 14-31 with bogus values */
+| +		for (i = 14; i < 32; i++)
+| +			target->thread.regs->gpr[i] = NV_REG_POISON; 
+| +	}
+| +
+| +	pos /= sizeof(reg);
+| +	count /= sizeof(reg);
+| +
+| +	if (kbuf)
+| +		for (; count > 0 && pos < PT_MSR; --count)
+| +			*k++ = regs[pos++];
+| +	else
+| +		for (; count > 0 && pos < PT_MSR; --count)
+| +			if (__put_user((compat_ulong_t) regs[pos++], u++))
+| +				return -EFAULT;
+| +
+| +	if (count > 0 && pos == PT_MSR) {
+| +		reg = get_user_msr(target);
+| +		if (kbuf)
+| +			*k++ = reg;
+| +		else if (__put_user(reg, u++))
+| +			return -EFAULT;
+| +		++pos;
+| +		--count;
+| +	}
+| +
+| +	if (kbuf)
+| +		for (; count > 0 && pos < PT_REGS_COUNT; --count)
+| +			*k++ = regs[pos++];
+| +	else
+| +		for (; count > 0 && pos < PT_REGS_COUNT; --count)
+| +			if (__put_user((compat_ulong_t) regs[pos++], u++))
+| +				return -EFAULT;
+| +
+| +	kbuf = k;
+| +	ubuf = u;
+| +	pos *= sizeof(reg);
+| +	count *= sizeof(reg);
+| +	return user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
+| +					PT_REGS_COUNT * sizeof(reg), -1);
+| +}
+| +
+| +static int tm_cgpr32_set(struct task_struct *target,
+| +		     const struct user_regset *regset,
+| +		     unsigned int pos, unsigned int count,
+| +		     const void *kbuf, const void __user *ubuf)
+| +{
+| +	unsigned long *regs = &target->thread.ckpt_regs.gpr[0];
+| +	const compat_ulong_t *k = kbuf;
+| +	const compat_ulong_t __user *u = ubuf;
+| +	compat_ulong_t reg;
+| +
+| +	if (!cpu_has_feature(CPU_FTR_TM))
+| +		return -ENODEV;
+| +
+| +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+| +		return -ENODATA;
+| +
+| +	flush_fp_to_thread(target);
+| +	flush_altivec_to_thread(target);
+| +	flush_tmregs_to_thread(target);
+| +
+| +	if (target->thread.regs == NULL)
+| +		return -EIO;
+| +
+| +	CHECK_FULL_REGS(target->thread.regs);
+| +
+| +	pos /= sizeof(reg);
+| +	count /= sizeof(reg);
+| +
+| +	if (kbuf)
+| +		for (; count > 0 && pos < PT_MSR; --count)
+| +			regs[pos++] = *k++;
+| +	else
+| +		for (; count > 0 && pos < PT_MSR; --count) {
+| +			if (__get_user(reg, u++))
+| +				return -EFAULT;
+| +			regs[pos++] = reg;
+| +		}
+| +
+| +
+| +	if (count > 0 && pos == PT_MSR) {
+| +		if (kbuf)
+| +			reg = *k++;
+| +		else if (__get_user(reg, u++))
+| +			return -EFAULT;
+| +		set_user_msr(target, reg);
+| +		++pos;
+| +		--count;
+| +	}
+| +
+| +	if (kbuf) {
+| +		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
+| +			regs[pos++] = *k++;
+| +		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
+| +			++k;
+| +	} else {
+| +		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
+| +			if (__get_user(reg, u++))
+| +				return -EFAULT;
+| +			regs[pos++] = reg;
+| +		}
+| +		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
+| +			if (__get_user(reg, u++))
+| +				return -EFAULT;
+| +	}
+| +
+| +	if (count > 0 && pos == PT_TRAP) {
+| +		if (kbuf)
+| +			reg = *k++;
+| +		else if (__get_user(reg, u++))
+| +			return -EFAULT;
+| +		set_user_trap(target, reg);
+| +		++pos;
+| +		--count;
+| +	}
+| +
+| +	kbuf = k;
+| +	ubuf = u;
+| +	pos *= sizeof(reg);
+| +	count *= sizeof(reg);
+| +	return user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
+| +					 (PT_TRAP + 1) * sizeof(reg), -1);
+| +}
+| +
+| +
+|  /*
+|   * These are the regset flavors matching the CONFIG_PPC32 native set.
+|   */
+| @@ -831,6 +1544,28 @@ static const struct user_regset compat_regsets[] = {
+|  		.active = evr_active, .get = evr_get, .set = evr_set
+|  	},
+|  #endif
+| +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+| +	[REGSET_TM_SPR] = {
+| +		.core_note_type = NT_PPC_TM_SPR, .n = 7,
+| +		.size = sizeof(u64), .align = sizeof(u64),
+| +		.active = tm_spr_active, .get = tm_spr_get, .set = tm_spr_set
+| +	},
+| +	[REGSET_TM_CGPR] = {
+| +		.core_note_type = NT_PPC_TM_CGPR, .n = ELF_NGREG,
+| +		.size = sizeof(long), .align = sizeof(long),
+| +		.active = tm_cgpr_active, .get = tm_cgpr32_get, .set = tm_cgpr32_set
+| +	},
+| +	[REGSET_TM_CFPR] = {
+| +		.core_note_type = NT_PPC_TM_CFPR, .n = ELF_NFPREG,
+| +		.size = sizeof(double), .align = sizeof(double),
+| +		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
+| +	},
+| +	[REGSET_TM_CVMX] = {
+| +		.core_note_type = NT_PPC_TM_CVMX, .n = 34,
+| +		.size = sizeof(vector128), .align = sizeof(vector128),
+| +		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
+| +	},
+| +#endif
+|  };
+|  
+|  static const struct user_regset_view user_ppc_compat_view = {
+| @@ -1754,7 +2489,6 @@ long arch_ptrace(struct task_struct *child, long request,
+|  					     REGSET_SPE, 0, 35 * sizeof(u32),
+|  					     datavp);
+|  #endif
+| -
+|  	default:
+|  		ret = ptrace_request(child, request, addr, data);
+|  		break;
+| -- 
+| 1.7.11.7
+| 
+| _______________________________________________
+| Linuxppc-dev mailing list
+| Linuxppc-dev@lists.ozlabs.org
+| https://lists.ozlabs.org/listinfo/linuxppc-dev
