@@ -1,19 +1,20 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED76D1A170D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 22:16:44 +1000 (EST)
-Message-ID: <53FDCC2A.4050708@suse.de>
-Date: Wed, 27 Aug 2014 14:16:42 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BA7B1A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 00:11:57 +1000 (EST)
+Message-ID: <53FDE6A3.3080303@freescale.com>
+Date: Wed, 27 Aug 2014 17:09:39 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-To: Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v4 0/6] KVM: PPC: Book3e: AltiVec support
-References: <1408541787-24625-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1408541787-24625-1-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+To: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] of: make sure of_alias is initialized before accessing it
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Grant Likely <grant.likely@linaro.org>,
+ Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Simply swap of_alias and of_chosen initialization so
+that of_alias ends up read first. This must be done
+because it is accessed couple of lines below when
+trying to initialize the of_stdout using the alias
+based legacy method.
 
+[Fixes a752ee5 - tty: Update hypervisor tty drivers to                          
+use core stdout parsing code]
 
-On 20.08.14 15:36, Mihai Caraman wrote:
-> Add KVM Book3e AltiVec support.
-> 
-> Changes:
-> 
-> v4:
->  - use CONFIG_SPE_POSSIBLE and a new ifdef for CONFIG_ALTIVEC
->  - remove SPE handlers from bookehv
->  - split ONE_REG powerpc generic and ONE_REG AltiVec
->  - add setters for IVPR, IVOR2 and IVOR8
->  - add api documentation for ONE_REG IVPR and IVORs
->  - don't enable e6500 core since hardware threads are not yet supported
-> 
-> v3:
->  - use distinct SPE/AltiVec exception handlers
->  - make ONE_REG AltiVec support powerpc generic
->  - add ONE_REG IVORs support
-> 
->  v2:
->  - integrate Paul's FP/VMX/VSX changes that landed in kvm-ppc-queue
->    in January and take into account feedback
-> 
-> Mihai Caraman (6):
->   KVM: PPC: Book3E: Increase FPU laziness
->   KVM: PPC: Book3e: Add AltiVec support
->   KVM: PPC: Make ONE_REG powerpc generic
->   KVM: PPC: Move ONE_REG AltiVec support to powerpc
->   KVM: PPC: Booke: Add setter functions for IVPR, IVOR2 and IVOR8
->     emulation
->   KVM: PPC: Booke: Add ONE_REG support for IVPR and IVORs
+Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+---
+ drivers/of/base.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Thanks, applied 1-4 to kvm-ppc-queue.
-
-
-Alex
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index d8574ad..52f8506 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -1847,6 +1847,10 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+ {
+ 	struct property *pp;
+ 
++	of_aliases = of_find_node_by_path("/aliases");
++	if (!of_aliases)
++		return;
++
+ 	of_chosen = of_find_node_by_path("/chosen");
+ 	if (of_chosen == NULL)
+ 		of_chosen = of_find_node_by_path("/chosen@0");
+@@ -1862,10 +1866,6 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+ 			of_stdout = of_find_node_by_path(name);
+ 	}
+ 
+-	of_aliases = of_find_node_by_path("/aliases");
+-	if (!of_aliases)
+-		return;
+-
+ 	for_each_property_of_node(of_aliases, pp) {
+ 		const char *start = pp->name;
+ 		const char *end = start + strlen(start);
+-- 
+1.8.3.1
