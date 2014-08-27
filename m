@@ -1,36 +1,27 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ramneek.mehresh@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B3E21A00EB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 15:17:56 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 27 Aug 2014 10:47:53 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id D614CE0057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:50:03 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7R5IDmu20316318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:48:14 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7R5HnKK002396
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:47:49 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>, aik@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] Add private HCALL to inform updated RTAS base and entry
-In-Reply-To: <20140825130010.1029.65141.stgit@aravindap>
-References: <20140825130010.1029.65141.stgit@aravindap>
-Date: Wed, 27 Aug 2014 10:47:46 +0530
-Message-ID: <87bnr67bph.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C56421A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 16:02:25 +1000 (EST)
+From: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] Documentation: dts: fsl-usb: Document USB node compatible
+ string for IP version
+Date: Wed, 27 Aug 2014 05:46:05 +0000
+Message-ID: <7032a06004444bc3af8d71c799e974e0@BL2PR03MB161.namprd03.prod.outlook.com>
+References: <1408612727-6774-1-git-send-email-nikhil.badola@freescale.com>
+ <1408659774.2395.21.camel@snotra.buserror.net>
+ <af7cc70458bf471cb20938ce6498ccfe@BN1PR0301MB0593.namprd03.prod.outlook.com>
+ <3fdd7732a9954d13a90ece684771d932@BL2PR03MB161.namprd03.prod.outlook.com>
+ <1409093581.6510.94.camel@snotra.buserror.net>
+In-Reply-To: <1409093581.6510.94.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mahesh@linux.vnet.ibm.com, benh@au1.ibm.com, paulus@samba.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,85 +31,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
-
-> This patch adds a private HCALL to inform qemu the updated
-> rtas-base and rtas-entry address when OS invokes the call
-> "instantiate-rtas". This is required as qemu allocates the
-> error reporting structure in RTAS space upon a machine check
-> exception and hence needs to know the updated RTAS.
->
-> Enhancements to qemu to handle the private HCALL, prepare
-> error log and invoke machine check notification routine
-> are in a separate patch.
->
-> Signed-off-by: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
-> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-
-Thanks, applied.
-
-> ---
->  board-qemu/slof/rtas.fs   |    6 +++++-
->  lib/libhvcall/hvcall.code |    6 ++++++
->  lib/libhvcall/hvcall.in   |    1 +
->  lib/libhvcall/libhvcall.h |    4 +++-
->  4 files changed, 15 insertions(+), 2 deletions(-)
->
-> diff --git a/board-qemu/slof/rtas.fs b/board-qemu/slof/rtas.fs
-> index 41e30c2..c081b57 100644
-> --- a/board-qemu/slof/rtas.fs
-> +++ b/board-qemu/slof/rtas.fs
-> @@ -174,7 +174,11 @@ rtas-node set-node
->
->  : instantiate-rtas ( adr -- entry )
->      dup rtas-base swap rtas-size move
-> -    rtas-entry rtas-base - +
-> +    dup rtas-entry rtas-base - +
-> +    2dup hv-rtas-update 0 <> IF
-> +    ." Failed to update RTAS " cr
-> +    THEN
-> +    nip   
->  ;
->
->  device-end
-> diff --git a/lib/libhvcall/hvcall.code b/lib/libhvcall/hvcall.code
-> index 744469f..0ff50f2 100644
-> --- a/lib/libhvcall/hvcall.code
-> +++ b/lib/libhvcall/hvcall.code
-> @@ -111,6 +111,12 @@ PRIM(hv_X2d_cas)
->  	TOS.u = hv_cas(vec, buf, size);
->  MIRP
->
-> +PRIM(hv_X2d_rtas_X2d_update)
-> +	unsigned long rtas_entry   = TOS.u; POP;
-> +	unsigned long rtas_base    = TOS.u;
-> +	TOS.u = hv_generic(KVMPPC_H_RTAS_UPDATE, rtas_base, rtas_entry);
-> +MIRP
-> +
->  PRIM(get_X2d_print_X2d_version)
->  	unsigned long addr = TOS.u; POP;
->  	get_print_banner(addr);
-> diff --git a/lib/libhvcall/hvcall.in b/lib/libhvcall/hvcall.in
-> index e99d6d1..4437b77 100644
-> --- a/lib/libhvcall/hvcall.in
-> +++ b/lib/libhvcall/hvcall.in
-> @@ -30,4 +30,5 @@ cod(RX!)
->
->  cod(hv-logical-memop)
->  cod(hv-cas)
-> +cod(hv-rtas-update)
->  cod(get-print-version)
-> diff --git a/lib/libhvcall/libhvcall.h b/lib/libhvcall/libhvcall.h
-> index 6356a62..193b738 100644
-> --- a/lib/libhvcall/libhvcall.h
-> +++ b/lib/libhvcall/libhvcall.h
-> @@ -24,7 +24,9 @@
->  #define KVMPPC_H_LOGICAL_MEMOP  (KVMPPC_HCALL_BASE + 0x1)
->  /* Client Architecture support */
->  #define KVMPPC_H_CAS            (KVMPPC_HCALL_BASE + 0x2)
-> -#define KVMPPC_HCALL_MAX        KVMPPC_H_CAS
-> +#define KVMPPC_H_RTAS_UPDATE    (KVMPPC_HCALL_BASE + 0x3)
-> +#define KVMPPC_H_REPORT_MC_ERR  (KVMPPC_HCALL_BASE + 0x4)
-> +#define KVMPPC_HCALL_MAX        KVMPPC_H_NMI_MCE
->
->  #ifndef __ASSEMBLY__
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjcsIDIwMTQgNDoyMyBBTQ0KPiBUbzogTWVo
+cmVzaCBSYW1uZWVrLUIzMTM4Mw0KPiBDYzogQmFkb2xhIE5pa2hpbC1CNDYxNzI7IGxpbnV4cHBj
+LWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPiBT
+dWJqZWN0OiBSZTogW1BBVENIXSBEb2N1bWVudGF0aW9uOiBkdHM6IGZzbC11c2I6IERvY3VtZW50
+IFVTQiBub2RlDQo+IGNvbXBhdGlibGUgc3RyaW5nIGZvciBJUCB2ZXJzaW9uDQo+IA0KPiBPbiBG
+cmksIDIwMTQtMDgtMjIgYXQgMDA6MDUgLTA1MDAsIE1laHJlc2ggUmFtbmVlay1CMzEzODMgd3Jv
+dGU6DQo+ID4NCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IEJhZG9s
+YSBOaWtoaWwtQjQ2MTcyDQo+ID4gU2VudDogRnJpZGF5LCBBdWd1c3QgMjIsIDIwMTQgMTA6MTgg
+QU0NCj4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiBDYzogbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBNZWhyZXNoDQo+ID4gUmFt
+bmVlay1CMzEzODMNCj4gPiBTdWJqZWN0OiBSRTogW1BBVENIXSBEb2N1bWVudGF0aW9uOiBkdHM6
+IGZzbC11c2I6IERvY3VtZW50IFVTQiBub2RlDQo+ID4gY29tcGF0aWJsZSBzdHJpbmcgZm9yIElQ
+IHZlcnNpb24NCj4gPg0KPiA+IEFkZGluZyBSYW1uZWVrDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2Vu
+dDogRnJpZGF5LCBBdWd1c3QgMjIsIDIwMTQgMzo1MyBBTQ0KPiA+ID4gVG86IEJhZG9sYSBOaWto
+aWwtQjQ2MTcyDQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmlj
+ZXRyZWVAdmdlci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEb2N1bWVu
+dGF0aW9uOiBkdHM6IGZzbC11c2I6IERvY3VtZW50IFVTQiBub2RlDQo+ID4gPiBjb21wYXRpYmxl
+IHN0cmluZyBmb3IgSVAgdmVyc2lvbg0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAxNC0wOC0yMSBh
+dCAxNDo0OCArMDUzMCwgTmlraGlsIEJhZG9sYSB3cm90ZToNCj4gPiA+ID4gRG9jdW1lbnQgY29t
+cGF0aWJsZSBzdHJpbmcgY29udGFpbmluZyBJUCB2ZXJzaW9uIGluIFVTQiBkZXZpY2UNCj4gPiA+
+ID4gdHJlZSBub2RlDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IE5pa2hpbCBCYWRv
+bGEgPG5pa2hpbC5iYWRvbGFAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gLS0tDQo+ID4gPiA+ICBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0IHwgMTMNCj4g
+PiA+ID4gKysrKysrKystLS0tLQ0KPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDggaW5zZXJ0aW9u
+cygrKSwgNSBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBQbGVhc2UgQ0MgZGV2aWNldHJlZUB2
+Z2VyLmtlcm5lbC5vcmcgb24gYWxsIGRldmljZSB0cmVlIHBhdGNoZXMgKGluDQo+ID4gPiBhZGRp
+dGlvbiB0byBsaW51eHBwYy1kZXYpLg0KPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdp
+dCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvZnNsLXVzYi50eHQNCj4g
+PiA+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdXNiL2ZzbC11c2IudHh0
+DQo+ID4gPiA+IGluZGV4IDQ3NzljMDIuLjVhM2EwYTggMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvZnNsLXVzYi50eHQNCj4gPiA+ID4g
+KysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3VzYi9mc2wtdXNiLnR4dA0K
+PiA+ID4gPiBAQCAtMTAsNyArMTAsMTAgQEAgUmVxdWlyZWQgcHJvcGVydGllcyA6DQo+ID4gPiA+
+ICAgICBjb250cm9sbGVycywgb3IgImZzbC11c2IyLWRyIiBmb3IgZHVhbCByb2xlIFVTQiBjb250
+cm9sbGVycw0KPiA+ID4gPiAgICAgb3IgImZzbCxtcGM1MTIxLXVzYjItZHIiIGZvciBkdWFsIHJv
+bGUgVVNCIGNvbnRyb2xsZXJzIG9mIE1QQzUxMjEuDQo+ID4gPiA+ICAgICBXaGVyZXZlciBhcHBs
+aWNhYmxlLCB0aGUgSVAgdmVyc2lvbiBvZiB0aGUgVVNCIGNvbnRyb2xsZXIgc2hvdWxkDQo+ID4g
+PiA+IC0gICBhbHNvIGJlIG1lbnRpb25lZCAoZm9yIGVnLiBmc2wtdXNiMi1kci12Mi4yIGZvciBi
+c2M5MTMyKS4NCj4gPiA+ID4gKyAgIGFsc28gYmUgbWVudGlvbmVkIGluIGFub3RoZXIgc3RyaW5n
+Lg0KPiA+ID4gPiArICAgRm9yIG11bHRpIHBvcnQgaG9zdCBVU0IgY29udHJvbGxlciB3aXRoIElQ
+IHZlcnNpb24gPElQX1Zlcj4sIGl0IHNob3VsZA0KPiBiZQ0KPiA+ID4gPiArICAgImZzbC11c2Iy
+LW1waC08SVBfVmVyPiIuIEZvciBkdWFsIHJvbGUgVVNCIGNvbnRyb2xsZXIgd2l0aCBJUCB2ZXJz
+aW9uDQo+ID4gPiA+ICsgICA8SVBfVmVyPiwgaXQgc2hvdWxkIGJlICJmc2wtdXNiMi1kci08SVBf
+VmVyPiIuDQo+ID4gPg0KPiA+ID4gSXQgd2FzIGRvY3VtZW50ZWQgYmVmb3JlIC0tIHRoaXMgaXMg
+anVzdCBtYWtpbmcgaXQgbW9yZSBleHBsaWNpdCwgcmlnaHQ/DQo+ID4gPg0KPiA+ID4gRldJVywg
+dGhlIHZlcnNpb24gbnVtYmVyIGNhbiBiZSByZWFkIG91dCBvZiBhIFVTQiByZWdpc3Rlciwgc28g
+SSdkDQo+ID4gPiByYXRoZXIgcmVtb3ZlIHRoZSBzdWdnZXN0aW9uIHRvIHNwZWNpZnkgdGhlIHZl
+cnNpb24gbnVtYmVyIGFuZA0KPiA+ID4gcmVwbGFjZSBpdCB3aXRoIGEgcmVmZXJlbmNlIHRvIHRo
+ZSBJRCByZWdpc3Rlci4NCj4gPiB3ZSBoYXZlIGZvbGxvd2luZyB0d28gaXNzdWVzIC0NCj4gPiAo
+YSkgb3VyIFVTQklQIHZlcnNpb24gcmVnaXN0ZXIgZG9lc24ndCBoYXZlIGNvbnNpc3RlbnQgInZl
+cnNpb24gZmllbGQNCj4gPiBzaXplIiBvdmVyIG11bHRpcGxlIHZlcnNpb24ocykuIFRoaXMgaXMg
+d2h5IHdlIGNvdWxkbid0IHVzZSBpdCBmb3INCj4gPiByZWFkaW5nIHZlcnNpb24gaW5mbyBhY3Jv
+c3MgdmFyaW91cyBJUCB2ZXJzaW9ucw0KPiA+IChiKSB0aGlzIHJlZ2lzdGVyIGlzIG5vdCBleHBv
+c2VkIGluIGFsbCBTb0MgUk1zIChwcm9iYWJseSBiZWNhdXNlIG9mDQo+ID4gYWJvdmUgcmVhc29u
+KQ0KPiANCj4gOi0oDQo+IA0KPiBJZiB0aGlzIGlzIGp1c3QgYSBwcm9ibGVtIHdpdGggb2xkZXIg
+Y2hpcHMsIHdlIGNvdWxkIGhhdmUgYSBuZXcgY29tcGF0aWJsZSBuYW1lDQo+IHRoYXQgZGVzaWdu
+YXRlcyB0aGUgZmFtaWx5IG9mIFVTQiBibG9jayB2ZXJzaW9ucyB3aXRoIGEgc2FuZSB2ZXJzaW9u
+IHJlZ2lzdGVyLg0KPiANCndlIGNvdWxkIGhhdmUgZG9uZS4uLmJ1dCB3ZSBoYXZlIGEgcmVxdWly
+ZW1lbnQgdG8gd3JpdGUgdmVyc2lvbiBzcGVjaWZpYyBjb2RlLi4uDQpmb3IgaW5zdGFuY2UsIHVz
+YiBjb250cm9sbGVyIGluaXQgc2VxdWVuY2UgaGFzIGNoYW5nZXMgZnJvbSB2ZXJzaW9uIDIuNSBv
+bndhcmRzLi4uDQp0aGVuIHRoZXJlIGFyZSB2ZXJzaW9uIHNwZWNpZmljIGVycmF0YSBmaXhlKHMp
+IGFsc28uIEhlbmNlIHdlIGRlY2lkZWQgdG8gZ28gZm9yDQpjb21wYXRpYmxlIHN0cmluZyBjb250
+YWluaW5nIGh3IGlwIHZlcnNpb24gKG1ham9yIG5vLikgc28gdGhhdCBvdXIgd29ya2Fyb3VuZC9j
+b2RlIGlzDQpjb25zaXN0ZW50IHdpdGggaHcgaXAgdmVyc2lvbihzKSBwdWJsaXNoZWQgaW4gZXJy
+YXRhKHMpDQogDQo+ID4gPiA+IEBAIC01NSw5ICs1OCw5IEBAIEV4YW1wbGUgbXVsdGkgcG9ydCBo
+b3N0IFVTQiBjb250cm9sbGVyIGRldmljZSBub2RlIDoNCj4gPiA+ID4gIAkJcG9ydDE7DQo+ID4g
+PiA+ICAJfTsNCj4gPiA+ID4NCj4gPiA+ID4gLUV4YW1wbGUgZHVhbCByb2xlIFVTQiBjb250cm9s
+bGVyIGRldmljZSBub2RlIDoNCj4gPiA+ID4gK0V4YW1wbGUgZHVhbCByb2xlIFVTQiBjb250cm9s
+bGVyIHZlcnNpb24gMi41IGRldmljZSBub2RlIDoNCj4gPiA+ID4gIAl1c2JAMjMwMDAgew0KPiA+
+ID4gPiAtCQljb21wYXRpYmxlID0gImZzbC11c2IyLWRyIjsNCj4gPiA+ID4gKwkJY29tcGF0aWJs
+ZSA9ICJmc2wtdXNiMi1kci12Mi41IiwgImZzbC11c2IyLWRyIjsNCj4gPiA+ID4gIAkJcmVnID0g
+PDIzMDAwIDEwMDA+Ow0KPiA+ID4gPiAgCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiA+ID4g
+IAkJI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gPg0KPiA+ID4gVGhpcyBleGFtcGxlIGRvZXNuJ3Qg
+Y29ycmVzcG9uZCB0byBhbnkgZGV2aWNlIHRyZWUgSSBzZWUuICBFdmVuDQo+ID4gPiBhZnRlciB5
+b3VyIG5leHQgcGF0Y2ggdGhhdCBzZXRzIHQyMDgwJ3MgVVNCIHRvIHYyLjUsIHRoZSBhZGRyZXNz
+ZXMgYXJlDQo+IGRpZmZlcmVudC4NCj4gPiA+DQo+ID4gSSByZWNrb24gdGhhdCB0aGUgZXhhbXBs
+ZSBlbXBoYXNpemVzIG9uIHNob3dpbmcgaG93IElQIHZlcnNpb24NCj4gPiBpbmZvcm1hdGlvbiBp
+cyB0byBiZSBzdG9yZWQgaW4gImNvbXBhdGlibGUgc3RyaW5nIi4gSXMgaXQgbmVjZXNzYXJ5IHRv
+DQo+ID4gbWFrZSBzdXJlIHRoYXQgd2Ugc2hvdWxkIGFsd2F5cyBzaXRlIGFjdHVhbCB2YWx1ZXMg
+YWxyZWFkeSB1c2VkPw0KPiANCj4gVGhlIG1vcmUgcmVhbGlzdGljIHRoZSBleGFtcGxlcyBhcmUs
+IHRoZSBiZXR0ZXIuDQo+IA0KdW5kZXJzdG9vZC4uLndlIGFncmVlIA0KDQo+IC1TY290dA0KPiAN
+Cg0K
