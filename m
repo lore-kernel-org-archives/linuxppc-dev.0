@@ -2,21 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B85131A0886
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 21:20:52 +1000 (EST)
-Message-ID: <53FDBF11.3030004@suse.de>
-Date: Wed, 27 Aug 2014 13:20:49 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 77A1A1A001C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 22:16:07 +1000 (EST)
+Message-ID: <53FDCC04.9000605@suse.de>
+Date: Wed, 27 Aug 2014 14:16:04 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3S HV: Add register name when loading
- toc
-References: <1408424370-16960-1-git-send-email-mikey@neuling.org>
- <1408424370-16960-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1408424370-16960-2-git-send-email-mikey@neuling.org>
+To: Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v4 5/6] KVM: PPC: Booke: Add setter functions for IVPR,
+ IVOR2 and IVOR8 emulation
+References: <1408541787-24625-1-git-send-email-mihai.caraman@freescale.com>
+ <1408541787-24625-6-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1408541787-24625-6-git-send-email-mihai.caraman@freescale.com>
 Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +27,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 19.08.14 06:59, Michael Neuling wrote:
-> Add 'r' to register name r2 in kvmppc_hv_enter.
+On 20.08.14 15:36, Mihai Caraman wrote:
+> Add setter functions for IVPR, IVOR2 and IVOR8 emulation in preparation
+> for ONE_REG support.
 > 
-> Also update comment at the top of kvmppc_hv_enter to indicate that R2/TOC is
-> non-volatile.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 
-Thanks, applied to kvm-ppc-queue.
+What about the other GIVORs?
+
+Also, I would prefer to have a common helper for IVOR setting that
+simply covers SPRN_GIVOR setting along the way. Something like
+
+void kvmppc_set_ivor(struct kvm_vcpu *vcpu, int irqprio_ivor, u16 new_ivor)
+{
+    vcpu->arch.ivor[irqprio_ivor] = new_ivor;
+    switch (irqprio_ivor) {
+    case BOOKE_IRQPRIO_DATA_STORAGE:
+        mtspr(SPRN_GIVOR2, new_ivor);
+        break;
+    ...
+    }
+}
+
+which you can just call from all the IVOR setters. In fact, you can
+probably combine all of the ONE_REG handlers into a single handler that
+just does a quick table lookup for its irqprio.
 
 
 Alex
