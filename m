@@ -1,44 +1,25 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 748011A001D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 11:41:22 +1000 (EST)
-Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 27 Aug 2014 02:41:19 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id E41AD2190023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 02:40:58 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7R1fGt334996460
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 01:41:17 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7QKdxlE011283
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2014 16:40:00 -0400
-Message-ID: <1409103671.2466.15.camel@TP420>
-Subject: Re: [PATCH v2] powerpc: Fix warning reported by
- verify_cpu_node_mapping()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 27 Aug 2014 09:41:11 +0800
-In-Reply-To: <53FC8736.8080000@linux.vnet.ibm.com>
-References: <1408608842.3003.20.camel@TP420>
- <20140821154529.GB10478@linux.vnet.ibm.com> <1408673576.2448.6.camel@TP420>
- <20140822220406.GA20951@linux.vnet.ibm.com> <1408951355.2477.8.camel@TP420>
- <53FC8736.8080000@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A37BF1A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 12:33:48 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
+ CLK_OF_DECLARE support
+Date: Wed, 27 Aug 2014 02:19:10 +0000
+Message-ID: <164af7b3be3747a0be3fe3a6cf83d3b1@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
+ <1409093463.6510.92.camel@snotra.buserror.net>
+In-Reply-To: <1409093463.6510.92.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mturquette@linaro.org" <mturquette@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,125 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 二, 2014-08-26 at 08:10 -0500, Nathan Fontenot wrote:
-> On 08/25/2014 02:22 AM, Li Zhong wrote:
-> > With commit 2fabf084b, during boottime, cpu_numa_callback() is called
-> > earlier(before their online) for each cpu, and verify_cpu_node_mapping()
-> > uses cpu_to_node() to check whether siblings are in the same node. 
-> > 
-> > It skips the checking for siblings that are not online yet. So the only
-> > check done here is for the bootcpu, which is online at that time. But
-> > the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
-> > will be set up in smp_prepare_cpus()).
-> > 
-> > So I saw something like following reported:
-> > [    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
-> > node!
-> > 
-> > As we don't actually do the checking during this early stage, so maybe
-> > we could directly call numa_setup_cpu() in do_init_bootmem().
-> > 
-> > Also, as Nish suggested, here it's better to use present cpu mask
-> > instead of possible mask to avoid warning in numa_setup_cpu().
-> > 
-> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> > ---
-> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > index d7737a5..3a9061e 100644
-> > --- a/arch/powerpc/mm/numa.c
-> > +++ b/arch/powerpc/mm/numa.c
-> > @@ -1127,9 +1127,8 @@ void __init do_init_bootmem(void)
-> >  	 * even before we online them, so that we can use cpu_to_{node,mem}
-> >  	 * early in boot, cf. smp_prepare_cpus().
-> >  	 */
-> > -	for_each_possible_cpu(cpu) {
-> > -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-> > -				  (void *)(unsigned long)cpu);
-> > +	for_each_present_cpu(cpu) {
-> > +		numa_setup_cpu((unsigned long)cpu);
-> >  	}
-> >  }
-> >  
-> 
-> I am getting the following error on my system booting with this patch.
-> 
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.16.0-202712-g9e81330-dirty #42
-> task: c0000000fea40000 ti: c0000000fea80000 task.ti: c0000000fea80000
-> NIP: c0000000001afad8 LR: c000000000193b68 CTR: 0000000000000000
-> REGS: c0000000fea839e0 TRAP: 0300   Not tainted  (3.16.0-202712-g9e81330-dirty)
-> MSR: 8000000100009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24000000  XER: 20000004
-> CFAR: c0000000000084d4 DAR: 0000000000001690 DSISR: 40000000 SOFTE: 1 
-> GPR00: c000000000b6db9c c0000000fea83c60 c000000000cd0628 0000000000001688 
-> GPR04: 0000000000000001 0000000000000000 c0000000fea83c80 0000000009900000 
-> GPR08: c000000000d531e0 c000000000d66218 c000000000d60628 ffffffffffffffff 
-> GPR12: ffffffffffffffff c00000000ec60000 c00000000000bc88 0000000000000000 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR20: 0000000000000000 0000000000000000 c000000000c21b88 c000000000c03738 
-> GPR24: c000000000c03638 c000000000d24b10 c000000000c03638 c000000000c03738 
-> GPR28: 0000000000000080 0000000000000080 c000000000d208e8 0000000000000010 
-> NIP [c0000000001afad8] next_zones_zonelist+0x8/0xa0
-> LR [c000000000193b68] local_memory_node+0x38/0x60
-> Call Trace:
-> [c0000000fea83c60] [c0000000fea83c90] 0xc0000000fea83c90 (unreliable)
-> [c0000000fea83c90] [c000000000b6db9c] smp_prepare_cpus+0x16c/0x278
-> [c0000000fea83d00] [c000000000b64098] kernel_init_freeable+0x150/0x340
-> [c0000000fea83dc0] [c00000000000bca4] kernel_init+0x24/0x140
-> [c0000000fea83e30] [c000000000009560] ret_from_kernel_thread+0x5c/0x7c
-> Instruction dump:
-> e9230038 39490f00 7fa35040 409c000c 38630780 4e800020 7d234b78 4bffff64 
-> 60000000 60420000 2c250000 40c2004c <81230008> 7f892040 419d0014 48000030 
-> ---[ end trace cb88537fdc8fa200 ]---
-> 
-> Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-> 
-> I think the loop needs to go back to initializing all possibe cpus instead of
-> only the present cpus. We can add a check for present cpus in numa_setup_cpu()
-> to avoid printing the WARN_ON() for cpus that are not present, something like
-> the following...
-
-Ah, yes, seems the panic was caused by smp_prepare_cpus() using
-uninitialized numa_cpu_lookup_table for cpus which are possible but not
-present during boottime. 
-
-However, by following change, it seems those cpus will be set to node 0
-at boottime, and not be changed after they become present, because of
-the following check in numa_setup_cpu(): 
-        if ((nid = numa_cpu_lookup_table[lcpu]) >= 0) {
-                map_cpu_to_node(lcpu, nid);
-                return nid;
-        }
-
-Maybe we could change the smp_prepare_cpus() to set numa information for
-present cpus instead? 
-
-And for those possible, !present cpus, we could do the setup after they
-are started. 
-
-Thanks, Zhong
-
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index d7737a5..b827f2e 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -554,7 +554,8 @@ static int numa_setup_cpu(unsigned long lcpu)
->  	cpu = of_get_cpu_node(lcpu, NULL);
-> 
->  	if (!cpu) {
-> -		WARN_ON(1);
-> +		if (cpu_present(lcpu))
-> +			WARN_ON(1);
->  		nid = 0;
->  		goto out;
->  	}
-> @@ -1128,8 +1129,7 @@ void __init do_init_bootmem(void)
->  	 * early in boot, cf. smp_prepare_cpus().
->  	 */
->  	for_each_possible_cpu(cpu) {
-> -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
-> -				  (void *)(unsigned long)cpu);
-> +		numa_setup_cpu((unsigned long)cpu);
->  	}
->  }
-> 
-> 
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
+ZW50OiBXZWRuZXNkYXksIEF1Z3VzdCAyNywgMjAxNCA2OjUxIEFNDQo+VG86IEx1IEppbmdjaGFu
+Zy1CMzUwODMNCj5DYzogbXR1cnF1ZXR0ZUBsaW5hcm8ub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMu
+b3psYWJzLm9yZzsgbGludXgtDQo+a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtl
+cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+U3ViamVjdDogUmU6IFtSRVNFTkRdIGNsazogcHBj
+LWNvcmVuZXQ6IEFkZCBGcmVlc2NhbGUgQVJNLWJhc2VkIHBsYXRmb3Jtcw0KPkNMS19PRl9ERUNM
+QVJFIHN1cHBvcnQNCj4NCj5PbiBGcmksIDIwMTQtMDgtMjIgYXQgMTc6MzQgKzA4MDAsIEppbmdj
+aGFuZyBMdSB3cm90ZToNCj4+IFNpZ25lZC1vZmYtYnk6IEppbmdjaGFuZyBMdSA8amluZ2NoYW5n
+Lmx1QGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+ICBkcml2ZXJzL2Nsay9LY29uZmlnICAgICAg
+ICAgICB8IDcgKysrKy0tLQ0KPj4gIGRyaXZlcnMvY2xrL2Nsay1wcGMtY29yZW5ldC5jIHwgNSAr
+KysrKw0KPj4gIDIgZmlsZXMgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygt
+KQ0KPj4NCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9LY29uZmlnIGIvZHJpdmVycy9jbGsv
+S2NvbmZpZw0KPj4gaW5kZXggY2ZkM2FmNy4uODc4NDcwNCAxMDA2NDQNCj4+IC0tLSBhL2RyaXZl
+cnMvY2xrL0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMvY2xrL0tjb25maWcNCj4+IEBAIC04Miwx
+MSArODIsMTIgQEAgY29uZmlnIENPTU1PTl9DTEtfQVhJX0NMS0dFTg0KPj4gIAkgIEZQR0FzLiBJ
+dCBpcyBjb21tb25seSB1c2VkIGluIEFuYWxvZyBEZXZpY2VzJyByZWZlcmVuY2UgZGVzaWducy4N
+Cj4+DQo+PiAgY29uZmlnIENMS19QUENfQ09SRU5FVA0KPj4gLQlib29sICJDbG9jayBkcml2ZXIg
+Zm9yIFBvd2VyUEMgY29yZW5ldCBwbGF0Zm9ybXMiDQo+PiAtCWRlcGVuZHMgb24gUFBDX0U1MDBN
+QyAmJiBPRg0KPj4gKwlib29sICJDbG9jayBkcml2ZXIgZm9yIFBvd2VyUEMgY29yZW5ldCBhbmQg
+Y29tcGF0aWJsZSBBUk0tYmFzZWQNCj5wbGF0Zm9ybXMiDQo+PiArCWRlcGVuZHMgb24gKFBQQ19F
+NTAwTUMgfHwgQVJNKSAmJiBPRg0KPg0KPlNob3VsZCB0aGUgc3ltYm9sIGFuZCBkcml2ZXIgYmUg
+cmVuYW1lZCB0byBzb21ldGhpbmcgbGlrZSBDTEtfRlNMX1FPUklRPw0KPg0KVGhpcyBuYW1lIGlz
+IGJldHRlciBmb3Igc2hhcmluZyBvbiBBUk0gYW5kIFBvd2VyUEMsIEkgd2lsbCByZW5hbWUgdGhl
+bS4gVGhhbmtzLg0KDQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jbGsvY2xrLXBwYy1jb3JlbmV0
+LmMgYi9kcml2ZXJzL2Nsay9jbGstcHBjLQ0KPmNvcmVuZXQuYw0KPj4gaW5kZXggOGU1OGVkZi4u
+NzY5MmNhYyAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvY2xrL2Nsay1wcGMtY29yZW5ldC5jDQo+
+PiArKysgYi9kcml2ZXJzL2Nsay9jbGstcHBjLWNvcmVuZXQuYw0KPj4gQEAgLTMwNSwzICszMDUs
+OCBAQCBzdGF0aWMgaW50IF9faW5pdCBwcGNfY29yZW5ldF9jbGtfaW5pdCh2b2lkKQ0KPj4gIAly
+ZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZwcGNfY29yZW5ldF9jbGtfZHJpdmVyKTsN
+Cj4+ICB9DQo+PiAgc3Vic3lzX2luaXRjYWxsKHBwY19jb3JlbmV0X2Nsa19pbml0KTsNCj4+ICsN
+Cj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9wbGxfdjEsICJmc2wscW9yaXEtY29yZS1wbGwt
+MS4wIiwNCj5jb3JlX3BsbF9pbml0KTsNCj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9wbGxf
+djIsICJmc2wscW9yaXEtY29yZS1wbGwtMi4wIiwNCj5jb3JlX3BsbF9pbml0KTsNCj4+ICtDTEtf
+T0ZfREVDTEFSRShwcGNfY29yZV9tdXhfdjEsICJmc2wscW9yaXEtY29yZS1tdXgtMS4wIiwNCj5j
+b3JlX211eF9pbml0KTsNCj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9tdXhfdjIsICJmc2ws
+cW9yaXEtY29yZS1tdXgtMi4wIiwNCj5jb3JlX211eF9pbml0KTsNCj4NCj5XaGF0IGRvZXMgdGhp
+cyBkbyB0aGF0IHRoZSBleGlzdGluZyBwbGF0Zm9ybSBkcml2ZXIgYW5kIG1hdGNoIHRhYmxlDQo+
+ZG9uJ3Q/ICBXaHkgaXMgaXQgbmVlZGVkIGZvciBBUk0gd2hlbiBQUEMgZGlkbid0IG5lZWQgaXQ/
+DQo+DQo+LVNjb3R0DQo+DQpDb21tb24gY2xrIGluaXQgb24gQVJNIHBsYXRmb3JtIGlzIGluaXRp
+YWxpemVkIGVhcmxpZXIgdmlhIG9mX2Nsa19pbml0KCkgaW5zdGVhZCBvZg0KZHJpdmVyIHByb2Jl
+IG1ldGhvZCwgdGhlIG9mX2Nsa19pbml0IHdpbGwgd2FsayBhIF9fY2xrX29mX3RhYmxlIHRvIGlu
+aXQgZWFjaCBjbGsgcHJvdmlkZXINCmluIHRoZSB0YWJsZSwgdGhlIENMS19PRl9ERUNMQVJFKCkg
+bWFjcm8gcHV0cyBhIHN1cHBvcnRlZCBjbGsgaW4gdGhlIF9fY2xrX29mX3RhYmxlIGZvcg0KaXQg
+aW5pdGlhbGl6aW5nIG9uIHN0YXJ1cCwgYW5kIHRoZSBjbGsgc3lzdGVtIGhhcyBhZGRlZCBzb21l
+IGNvbW1vbiBjbGsgc3VjaCBhcyAiZml4ZWQtY2xrIg0KdG8gdGhpcyB0YWJsZSBhbHJlYWR5Lg0K
+U28gaGVyZSBJIGFkZCBvdXIgc3BlY2lmaWMgY2xrIGluaXQgZGVjbGFyYXRpb24gdG8gY29uc2lz
+dCB0aGlzIGZyYW1ld29yaywgYW5kIHRoZSBkcml2ZXINCnByb2JlIGZ1bmN0aW9uIHdpbGwgbm90
+IGJlIG5lZWRlZCBvbiBBUk0uDQoNCg0KDQpCZXN0IFJlZ2FyZHMsDQpKaW5nY2hhbmcNCg0KDQoN
+Cg==
