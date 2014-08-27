@@ -1,25 +1,36 @@
-Return-Path: <jingchang.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A37BF1A0052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 12:33:48 +1000 (EST)
-From: Jingchang Lu <jingchang.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
- CLK_OF_DECLARE support
-Date: Wed, 27 Aug 2014 02:19:10 +0000
-Message-ID: <164af7b3be3747a0be3fe3a6cf83d3b1@BL2PR03MB467.namprd03.prod.outlook.com>
-References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
- <1409093463.6510.92.camel@snotra.buserror.net>
-In-Reply-To: <1409093463.6510.92.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B3E21A00EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 15:17:56 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Wed, 27 Aug 2014 10:47:53 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id D614CE0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:50:03 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7R5IDmu20316318
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:48:14 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7R5HnKK002396
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2014 10:47:49 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>, aik@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] Add private HCALL to inform updated RTAS base and entry
+In-Reply-To: <20140825130010.1029.65141.stgit@aravindap>
+References: <20140825130010.1029.65141.stgit@aravindap>
+Date: Wed, 27 Aug 2014 10:47:46 +0530
+Message-ID: <87bnr67bph.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mturquette@linaro.org" <mturquette@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Cc: mahesh@linux.vnet.ibm.com, benh@au1.ibm.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +40,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
-ZW50OiBXZWRuZXNkYXksIEF1Z3VzdCAyNywgMjAxNCA2OjUxIEFNDQo+VG86IEx1IEppbmdjaGFu
-Zy1CMzUwODMNCj5DYzogbXR1cnF1ZXR0ZUBsaW5hcm8ub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZzsgbGludXgtDQo+a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtl
-cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+U3ViamVjdDogUmU6IFtSRVNFTkRdIGNsazogcHBj
-LWNvcmVuZXQ6IEFkZCBGcmVlc2NhbGUgQVJNLWJhc2VkIHBsYXRmb3Jtcw0KPkNMS19PRl9ERUNM
-QVJFIHN1cHBvcnQNCj4NCj5PbiBGcmksIDIwMTQtMDgtMjIgYXQgMTc6MzQgKzA4MDAsIEppbmdj
-aGFuZyBMdSB3cm90ZToNCj4+IFNpZ25lZC1vZmYtYnk6IEppbmdjaGFuZyBMdSA8amluZ2NoYW5n
-Lmx1QGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+ICBkcml2ZXJzL2Nsay9LY29uZmlnICAgICAg
-ICAgICB8IDcgKysrKy0tLQ0KPj4gIGRyaXZlcnMvY2xrL2Nsay1wcGMtY29yZW5ldC5jIHwgNSAr
-KysrKw0KPj4gIDIgZmlsZXMgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygt
-KQ0KPj4NCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9LY29uZmlnIGIvZHJpdmVycy9jbGsv
-S2NvbmZpZw0KPj4gaW5kZXggY2ZkM2FmNy4uODc4NDcwNCAxMDA2NDQNCj4+IC0tLSBhL2RyaXZl
-cnMvY2xrL0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMvY2xrL0tjb25maWcNCj4+IEBAIC04Miwx
-MSArODIsMTIgQEAgY29uZmlnIENPTU1PTl9DTEtfQVhJX0NMS0dFTg0KPj4gIAkgIEZQR0FzLiBJ
-dCBpcyBjb21tb25seSB1c2VkIGluIEFuYWxvZyBEZXZpY2VzJyByZWZlcmVuY2UgZGVzaWducy4N
-Cj4+DQo+PiAgY29uZmlnIENMS19QUENfQ09SRU5FVA0KPj4gLQlib29sICJDbG9jayBkcml2ZXIg
-Zm9yIFBvd2VyUEMgY29yZW5ldCBwbGF0Zm9ybXMiDQo+PiAtCWRlcGVuZHMgb24gUFBDX0U1MDBN
-QyAmJiBPRg0KPj4gKwlib29sICJDbG9jayBkcml2ZXIgZm9yIFBvd2VyUEMgY29yZW5ldCBhbmQg
-Y29tcGF0aWJsZSBBUk0tYmFzZWQNCj5wbGF0Zm9ybXMiDQo+PiArCWRlcGVuZHMgb24gKFBQQ19F
-NTAwTUMgfHwgQVJNKSAmJiBPRg0KPg0KPlNob3VsZCB0aGUgc3ltYm9sIGFuZCBkcml2ZXIgYmUg
-cmVuYW1lZCB0byBzb21ldGhpbmcgbGlrZSBDTEtfRlNMX1FPUklRPw0KPg0KVGhpcyBuYW1lIGlz
-IGJldHRlciBmb3Igc2hhcmluZyBvbiBBUk0gYW5kIFBvd2VyUEMsIEkgd2lsbCByZW5hbWUgdGhl
-bS4gVGhhbmtzLg0KDQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jbGsvY2xrLXBwYy1jb3JlbmV0
-LmMgYi9kcml2ZXJzL2Nsay9jbGstcHBjLQ0KPmNvcmVuZXQuYw0KPj4gaW5kZXggOGU1OGVkZi4u
-NzY5MmNhYyAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvY2xrL2Nsay1wcGMtY29yZW5ldC5jDQo+
-PiArKysgYi9kcml2ZXJzL2Nsay9jbGstcHBjLWNvcmVuZXQuYw0KPj4gQEAgLTMwNSwzICszMDUs
-OCBAQCBzdGF0aWMgaW50IF9faW5pdCBwcGNfY29yZW5ldF9jbGtfaW5pdCh2b2lkKQ0KPj4gIAly
-ZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZwcGNfY29yZW5ldF9jbGtfZHJpdmVyKTsN
-Cj4+ICB9DQo+PiAgc3Vic3lzX2luaXRjYWxsKHBwY19jb3JlbmV0X2Nsa19pbml0KTsNCj4+ICsN
-Cj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9wbGxfdjEsICJmc2wscW9yaXEtY29yZS1wbGwt
-MS4wIiwNCj5jb3JlX3BsbF9pbml0KTsNCj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9wbGxf
-djIsICJmc2wscW9yaXEtY29yZS1wbGwtMi4wIiwNCj5jb3JlX3BsbF9pbml0KTsNCj4+ICtDTEtf
-T0ZfREVDTEFSRShwcGNfY29yZV9tdXhfdjEsICJmc2wscW9yaXEtY29yZS1tdXgtMS4wIiwNCj5j
-b3JlX211eF9pbml0KTsNCj4+ICtDTEtfT0ZfREVDTEFSRShwcGNfY29yZV9tdXhfdjIsICJmc2ws
-cW9yaXEtY29yZS1tdXgtMi4wIiwNCj5jb3JlX211eF9pbml0KTsNCj4NCj5XaGF0IGRvZXMgdGhp
-cyBkbyB0aGF0IHRoZSBleGlzdGluZyBwbGF0Zm9ybSBkcml2ZXIgYW5kIG1hdGNoIHRhYmxlDQo+
-ZG9uJ3Q/ICBXaHkgaXMgaXQgbmVlZGVkIGZvciBBUk0gd2hlbiBQUEMgZGlkbid0IG5lZWQgaXQ/
-DQo+DQo+LVNjb3R0DQo+DQpDb21tb24gY2xrIGluaXQgb24gQVJNIHBsYXRmb3JtIGlzIGluaXRp
-YWxpemVkIGVhcmxpZXIgdmlhIG9mX2Nsa19pbml0KCkgaW5zdGVhZCBvZg0KZHJpdmVyIHByb2Jl
-IG1ldGhvZCwgdGhlIG9mX2Nsa19pbml0IHdpbGwgd2FsayBhIF9fY2xrX29mX3RhYmxlIHRvIGlu
-aXQgZWFjaCBjbGsgcHJvdmlkZXINCmluIHRoZSB0YWJsZSwgdGhlIENMS19PRl9ERUNMQVJFKCkg
-bWFjcm8gcHV0cyBhIHN1cHBvcnRlZCBjbGsgaW4gdGhlIF9fY2xrX29mX3RhYmxlIGZvcg0KaXQg
-aW5pdGlhbGl6aW5nIG9uIHN0YXJ1cCwgYW5kIHRoZSBjbGsgc3lzdGVtIGhhcyBhZGRlZCBzb21l
-IGNvbW1vbiBjbGsgc3VjaCBhcyAiZml4ZWQtY2xrIg0KdG8gdGhpcyB0YWJsZSBhbHJlYWR5Lg0K
-U28gaGVyZSBJIGFkZCBvdXIgc3BlY2lmaWMgY2xrIGluaXQgZGVjbGFyYXRpb24gdG8gY29uc2lz
-dCB0aGlzIGZyYW1ld29yaywgYW5kIHRoZSBkcml2ZXINCnByb2JlIGZ1bmN0aW9uIHdpbGwgbm90
-IGJlIG5lZWRlZCBvbiBBUk0uDQoNCg0KDQpCZXN0IFJlZ2FyZHMsDQpKaW5nY2hhbmcNCg0KDQoN
-Cg==
+Aravinda Prasad <aravinda@linux.vnet.ibm.com> writes:
+
+> This patch adds a private HCALL to inform qemu the updated
+> rtas-base and rtas-entry address when OS invokes the call
+> "instantiate-rtas". This is required as qemu allocates the
+> error reporting structure in RTAS space upon a machine check
+> exception and hence needs to know the updated RTAS.
+>
+> Enhancements to qemu to handle the private HCALL, prepare
+> error log and invoke machine check notification routine
+> are in a separate patch.
+>
+> Signed-off-by: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
+> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+
+Thanks, applied.
+
+> ---
+>  board-qemu/slof/rtas.fs   |    6 +++++-
+>  lib/libhvcall/hvcall.code |    6 ++++++
+>  lib/libhvcall/hvcall.in   |    1 +
+>  lib/libhvcall/libhvcall.h |    4 +++-
+>  4 files changed, 15 insertions(+), 2 deletions(-)
+>
+> diff --git a/board-qemu/slof/rtas.fs b/board-qemu/slof/rtas.fs
+> index 41e30c2..c081b57 100644
+> --- a/board-qemu/slof/rtas.fs
+> +++ b/board-qemu/slof/rtas.fs
+> @@ -174,7 +174,11 @@ rtas-node set-node
+>
+>  : instantiate-rtas ( adr -- entry )
+>      dup rtas-base swap rtas-size move
+> -    rtas-entry rtas-base - +
+> +    dup rtas-entry rtas-base - +
+> +    2dup hv-rtas-update 0 <> IF
+> +    ." Failed to update RTAS " cr
+> +    THEN
+> +    nip   
+>  ;
+>
+>  device-end
+> diff --git a/lib/libhvcall/hvcall.code b/lib/libhvcall/hvcall.code
+> index 744469f..0ff50f2 100644
+> --- a/lib/libhvcall/hvcall.code
+> +++ b/lib/libhvcall/hvcall.code
+> @@ -111,6 +111,12 @@ PRIM(hv_X2d_cas)
+>  	TOS.u = hv_cas(vec, buf, size);
+>  MIRP
+>
+> +PRIM(hv_X2d_rtas_X2d_update)
+> +	unsigned long rtas_entry   = TOS.u; POP;
+> +	unsigned long rtas_base    = TOS.u;
+> +	TOS.u = hv_generic(KVMPPC_H_RTAS_UPDATE, rtas_base, rtas_entry);
+> +MIRP
+> +
+>  PRIM(get_X2d_print_X2d_version)
+>  	unsigned long addr = TOS.u; POP;
+>  	get_print_banner(addr);
+> diff --git a/lib/libhvcall/hvcall.in b/lib/libhvcall/hvcall.in
+> index e99d6d1..4437b77 100644
+> --- a/lib/libhvcall/hvcall.in
+> +++ b/lib/libhvcall/hvcall.in
+> @@ -30,4 +30,5 @@ cod(RX!)
+>
+>  cod(hv-logical-memop)
+>  cod(hv-cas)
+> +cod(hv-rtas-update)
+>  cod(get-print-version)
+> diff --git a/lib/libhvcall/libhvcall.h b/lib/libhvcall/libhvcall.h
+> index 6356a62..193b738 100644
+> --- a/lib/libhvcall/libhvcall.h
+> +++ b/lib/libhvcall/libhvcall.h
+> @@ -24,7 +24,9 @@
+>  #define KVMPPC_H_LOGICAL_MEMOP  (KVMPPC_HCALL_BASE + 0x1)
+>  /* Client Architecture support */
+>  #define KVMPPC_H_CAS            (KVMPPC_HCALL_BASE + 0x2)
+> -#define KVMPPC_HCALL_MAX        KVMPPC_H_CAS
+> +#define KVMPPC_H_RTAS_UPDATE    (KVMPPC_HCALL_BASE + 0x3)
+> +#define KVMPPC_H_REPORT_MC_ERR  (KVMPPC_HCALL_BASE + 0x4)
+> +#define KVMPPC_HCALL_MAX        KVMPPC_H_NMI_MCE
+>
+>  #ifndef __ASSEMBLY__
