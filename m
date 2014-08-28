@@ -1,15 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 763F11A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 18:40:51 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Check flat device tree version at boot
-Date: Thu, 28 Aug 2014 18:40:47 +1000
-Message-Id: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
-Cc: grant.likely@linaro.org, robh+dt@kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E4001A043A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 20:05:24 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
+ CLK_OF_DECLARE support
+Date: Thu, 28 Aug 2014 10:05:15 +0000
+Message-ID: <f7b4263f189346a391d66c85756b4907@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
+ <1409093463.6510.92.camel@snotra.buserror.net>
+ <164af7b3be3747a0be3fe3a6cf83d3b1@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1409182412.6510.129.camel@snotra.buserror.net>
+In-Reply-To: <1409182412.6510.129.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mturquette@linaro.org" <mturquette@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,40 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit e6a6928c3ea1 "of/fdt: Convert FDT functions to use libfdt",
-the kernel stopped supporting old flat device tree formats. The minimum
-supported version is now 0x10.
-
-There was a checking function added, early_init_dt_verify(), but it's
-not called on powerpc.
-
-The result is, if you boot with an old flat device tree, the kernel will
-fail to parse it correctly, think you have no memory etc. and hilarity
-ensues.
-
-We can't really fix it, but we can at least catch the fact that the
-device tree is in an unsupported format and panic(). We can't call
-BUG(), it's too early.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/prom.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 4e139f8a69ef..bb777b255b1c 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -641,6 +641,10 @@ void __init early_init_devtree(void *params)
- 
- 	DBG(" -> early_init_devtree(%p)\n", params);
- 
-+	/* Too early to BUG_ON(), do it by hand */
-+	if (!early_init_dt_verify(params))
-+		panic("BUG: Failed verifying flat device tree, bad version?");
-+
- 	/* Setup flat device-tree pointer */
- 	initial_boot_params = params;
- 
--- 
-1.9.1
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
+ZW50OiBUaHVyc2RheSwgQXVndXN0IDI4LCAyMDE0IDc6MzQgQU0NCj5UbzogTHUgSmluZ2NoYW5n
+LUIzNTA4Mw0KPkNjOiBtdHVycXVldHRlQGxpbmFyby5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnOyBsaW51eC0NCj5rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2Vy
+bmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj5TdWJqZWN0OiBSZTogW1JFU0VORF0gY2xrOiBwcGMt
+Y29yZW5ldDogQWRkIEZyZWVzY2FsZSBBUk0tYmFzZWQgcGxhdGZvcm1zDQo+Q0xLX09GX0RFQ0xB
+UkUgc3VwcG9ydA0KPg0KPk9uIFR1ZSwgMjAxNC0wOC0yNiBhdCAyMToxOSAtMDUwMCwgTHUgSmlu
+Z2NoYW5nLUIzNTA4MyB3cm90ZToNCj4+ID4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPj4g
+PkZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+PiA+U2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjcs
+IDIwMTQgNjo1MSBBTQ0KPj4gPlRvOiBMdSBKaW5nY2hhbmctQjM1MDgzDQo+PiA+Q2M6IG10dXJx
+dWV0dGVAbGluYXJvLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0K
+Pj4gPmtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
+ZWFkLm9yZw0KPj4gPlN1YmplY3Q6IFJlOiBbUkVTRU5EXSBjbGs6IHBwYy1jb3JlbmV0OiBBZGQg
+RnJlZXNjYWxlIEFSTS1iYXNlZA0KPj4gPnBsYXRmb3JtcyBDTEtfT0ZfREVDTEFSRSBzdXBwb3J0
+DQo+PiA+DQo+PiA+T24gRnJpLCAyMDE0LTA4LTIyIGF0IDE3OjM0ICswODAwLCBKaW5nY2hhbmcg
+THUgd3JvdGU6DQo+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfcGxsX3YxLCAiZnNsLHFv
+cmlxLWNvcmUtcGxsLTEuMCIsDQo+PiA+Y29yZV9wbGxfaW5pdCk7DQo+PiA+PiArQ0xLX09GX0RF
+Q0xBUkUocHBjX2NvcmVfcGxsX3YyLCAiZnNsLHFvcmlxLWNvcmUtcGxsLTIuMCIsDQo+PiA+Y29y
+ZV9wbGxfaW5pdCk7DQo+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfbXV4X3YxLCAiZnNs
+LHFvcmlxLWNvcmUtbXV4LTEuMCIsDQo+PiA+Y29yZV9tdXhfaW5pdCk7DQo+PiA+PiArQ0xLX09G
+X0RFQ0xBUkUocHBjX2NvcmVfbXV4X3YyLCAiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCIsDQo+PiA+
+Y29yZV9tdXhfaW5pdCk7DQo+PiA+DQo+PiA+V2hhdCBkb2VzIHRoaXMgZG8gdGhhdCB0aGUgZXhp
+c3RpbmcgcGxhdGZvcm0gZHJpdmVyIGFuZCBtYXRjaCB0YWJsZQ0KPj4gPmRvbid0PyAgV2h5IGlz
+IGl0IG5lZWRlZCBmb3IgQVJNIHdoZW4gUFBDIGRpZG4ndCBuZWVkIGl0Pw0KPj4gPg0KPj4gPi1T
+Y290dA0KPj4gPg0KPj4gQ29tbW9uIGNsayBpbml0IG9uIEFSTSBwbGF0Zm9ybSBpcyBpbml0aWFs
+aXplZCBlYXJsaWVyIHZpYQ0KPj4gb2ZfY2xrX2luaXQoKSBpbnN0ZWFkIG9mIGRyaXZlciBwcm9i
+ZSBtZXRob2QsIHRoZSBvZl9jbGtfaW5pdCB3aWxsDQo+PiB3YWxrIGEgX19jbGtfb2ZfdGFibGUg
+dG8gaW5pdCBlYWNoIGNsayBwcm92aWRlciBpbiB0aGUgdGFibGUsIHRoZQ0KPj4gQ0xLX09GX0RF
+Q0xBUkUoKSBtYWNybyBwdXRzIGEgc3VwcG9ydGVkIGNsayBpbiB0aGUgX19jbGtfb2ZfdGFibGUg
+Zm9yIGl0DQo+aW5pdGlhbGl6aW5nIG9uIHN0YXJ1cCwgYW5kIHRoZSBjbGsgc3lzdGVtIGhhcyBh
+ZGRlZCBzb21lIGNvbW1vbiBjbGsgc3VjaA0KPmFzICJmaXhlZC1jbGsiDQo+PiB0byB0aGlzIHRh
+YmxlIGFscmVhZHkuDQo+PiBTbyBoZXJlIEkgYWRkIG91ciBzcGVjaWZpYyBjbGsgaW5pdCBkZWNs
+YXJhdGlvbiB0byBjb25zaXN0IHRoaXMNCj4+IGZyYW1ld29yaywgYW5kIHRoZSBkcml2ZXIgcHJv
+YmUgZnVuY3Rpb24gd2lsbCBub3QgYmUgbmVlZGVkIG9uIEFSTS4NCj4NCj5PSy4uLiBJcyB0aGVy
+ZSBhbnkgcmVhc29uIHdoeSB0aGUgbmV3IG1ldGhvZCB3b24ndCB3b3JrIG9uIFBQQz8NCj4NClBQ
+QyBoYXMgbGl0dGxlIGRlcGVuZGVuY2Ugb24gdGhlIGNsb2NrIHRyZWUgYnV0IGZyZXF1ZW5jeSwg
+aXQgd2lsbCB3b3JrIHdlbGwNCmlmIGFkb3B0ZWQgSSB0aGluay4NCg0KDQoNCkJlc3QgUmVnYXJk
+cywNCkppbmdjaGFuZw0KDQoNCg0K
