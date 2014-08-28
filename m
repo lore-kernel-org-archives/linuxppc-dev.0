@@ -1,34 +1,28 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D2DC71A0788
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 00:07:26 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 28 Aug 2014 19:37:22 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 62F56125804D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:38 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7SE7ers57540762
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:41 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7SE7GAe008755
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:16 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: viresh.kumar@linaro.org, benh@kernel.crashing.org
-Subject: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency during
- reboot/kexec
-Date: Thu, 28 Aug 2014 19:36:56 +0530
-Message-Id: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD2721A007C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 00:27:37 +1000 (EST)
+Received: from mail-vc0-x232.google.com (mail-vc0-x232.google.com
+ [IPv6:2607:f8b0:400c:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 36C6D140120
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2014 00:27:37 +1000 (EST)
+Received: by mail-vc0-f178.google.com with SMTP id la4so871905vcb.23
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2014 07:27:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
+References: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
+From: Rob Herring <robherring2@gmail.com>
+Date: Thu, 28 Aug 2014 09:27:12 -0500
+Message-ID: <CAL_Jsq+DSC4DW-ULuFfUjowsCOXbRnXvYSQcLY4inuBuztuh7A@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Check flat device tree version at boot
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: Grant Likely <grant.likely@linaro.org>, linuxppc-dev@ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,116 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch ensures the cpus to kexec/reboot at nominal frequency.
-Nominal frequency is the highest cpu frequency on PowerPC at
-which the cores can run without getting throttled.
+On Thu, Aug 28, 2014 at 3:40 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> In commit e6a6928c3ea1 "of/fdt: Convert FDT functions to use libfdt",
+> the kernel stopped supporting old flat device tree formats. The minimum
+> supported version is now 0x10.
 
-If the host kernel had set the cpus to a low pstate and then it
-kexecs/reboots to a cpufreq disabled kernel it would cause the target
-kernel to perform poorly. It will also increase the boot up time of
-the target kernel. So set the cpus to high pstate, in this case to
-nominal frequency before rebooting to avoid such scenarios.
+Ugg. Is that something which needs to be supported? Supporting it at
+this point would mean adding support to libfdt.
 
-The reboot notifier will set the cpus to nominal frequncy.
+Rob
 
-Changes v1->v2:
-Invoke .target() driver callback to set the cpus to nominal frequency
-in reboot notifier, instead of calling cpufreq_suspend() as suggested
-by Viresh Kumar.
-Modified the commit message.
-
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 379c083..ba27c49 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -26,6 +26,7 @@
- #include <linux/cpufreq.h>
- #include <linux/smp.h>
- #include <linux/of.h>
-+#include <linux/reboot.h>
- 
- #include <asm/cputhreads.h>
- #include <asm/firmware.h>
-@@ -35,6 +36,7 @@
- #define POWERNV_MAX_PSTATES	256
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+static bool rebooting;
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
- }
- 
- /*
-+ * get_nominal_index: Returns the index corresponding to the nominal
-+ * pstate in the cpufreq table
-+ */
-+static inline unsigned int get_nominal_index(void)
-+{
-+	return powernv_pstate_info.max - powernv_pstate_info.nominal;
-+}
-+
-+/*
-  * powernv_cpufreq_target_index: Sets the frequency corresponding to
-  * the cpufreq table entry indexed by new_index on the cpus in the
-  * mask policy->cpus
-@@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- {
- 	struct powernv_smp_call_data freq_data;
- 
-+	if (unlikely(rebooting) && new_index != get_nominal_index())
-+		return -EBUSY;
-+
- 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
- 	/*
-@@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
- 
-+static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-+				unsigned long action, void *unused)
-+{
-+	int cpu;
-+	struct cpufreq_policy cpu_policy;
-+
-+	rebooting = true;
-+	for_each_online_cpu(cpu) {
-+		cpufreq_get_policy(&cpu_policy, cpu);
-+		powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block powernv_cpufreq_reboot_nb = {
-+	.notifier_call = powernv_cpufreq_reboot_notifier,
-+};
-+
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
- 		return rc;
- 	}
- 
-+	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
- 	return cpufreq_register_driver(&powernv_cpufreq_driver);
- }
- module_init(powernv_cpufreq_init);
- 
- static void __exit powernv_cpufreq_exit(void)
- {
-+	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
- 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
- }
- module_exit(powernv_cpufreq_exit);
--- 
-1.9.3
+> There was a checking function added, early_init_dt_verify(), but it's
+> not called on powerpc.
+>
+> The result is, if you boot with an old flat device tree, the kernel will
+> fail to parse it correctly, think you have no memory etc. and hilarity
+> ensues.
+>
+> We can't really fix it, but we can at least catch the fact that the
+> device tree is in an unsupported format and panic(). We can't call
+> BUG(), it's too early.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/prom.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 4e139f8a69ef..bb777b255b1c 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -641,6 +641,10 @@ void __init early_init_devtree(void *params)
+>
+>         DBG(" -> early_init_devtree(%p)\n", params);
+>
+> +       /* Too early to BUG_ON(), do it by hand */
+> +       if (!early_init_dt_verify(params))
+> +               panic("BUG: Failed verifying flat device tree, bad version?");
+> +
+>         /* Setup flat device-tree pointer */
+>         initial_boot_params = params;
+>
+> --
+> 1.9.1
+>
