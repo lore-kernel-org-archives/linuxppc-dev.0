@@ -1,18 +1,15 @@
-Return-Path: <nikhil.badola@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0882B1A0019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 13:52:01 +1000 (EST)
-From: Nikhil Badola <nikhil.badola@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: dts: t4240: Change T4240 USB controller version
-Date: Thu, 28 Aug 2014 09:21:46 +0530
-Message-ID: <1409197906-19734-1-git-send-email-nikhil.badola@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, Nikhil Badola <nikhil.badola@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 763F11A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 18:40:51 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Check flat device tree version at boot
+Date: Thu, 28 Aug 2014 18:40:47 +1000
+Message-Id: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
+Cc: grant.likely@linaro.org, robh+dt@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change USB controller version to 2.5 in compatible string for T4240
+In commit e6a6928c3ea1 "of/fdt: Convert FDT functions to use libfdt",
+the kernel stopped supporting old flat device tree formats. The minimum
+supported version is now 0x10.
 
-Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+There was a checking function added, early_init_dt_verify(), but it's
+not called on powerpc.
+
+The result is, if you boot with an old flat device tree, the kernel will
+fail to parse it correctly, think you have no memory etc. and hilarity
+ensues.
+
+We can't really fix it, but we can at least catch the fact that the
+device tree is in an unsupported format and panic(). We can't call
+BUG(), it's too early.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/prom.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index a3d582e..7e2fc7c 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -498,13 +498,13 @@
- /include/ "qoriq-gpio-3.dtsi"
- /include/ "qoriq-usb2-mph-0.dtsi"
- 		usb0: usb@210000 {
--			compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-+			compatible = "fsl-usb2-mph-v2.5", "fsl-usb2-mph";
- 			phy_type = "utmi";
- 			port0;
- 		};
- /include/ "qoriq-usb2-dr-0.dtsi"
- 		usb1: usb@211000 {
--			compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-+			compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
- 			dr_mode = "host";
- 			phy_type = "utmi";
- 		};
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 4e139f8a69ef..bb777b255b1c 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -641,6 +641,10 @@ void __init early_init_devtree(void *params)
+ 
+ 	DBG(" -> early_init_devtree(%p)\n", params);
+ 
++	/* Too early to BUG_ON(), do it by hand */
++	if (!early_init_dt_verify(params))
++		panic("BUG: Failed verifying flat device tree, bad version?");
++
+ 	/* Setup flat device-tree pointer */
+ 	initial_boot_params = params;
+ 
 -- 
-1.7.11.7
+1.9.1
