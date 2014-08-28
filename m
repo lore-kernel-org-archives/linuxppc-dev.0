@@ -1,27 +1,34 @@
-Return-Path: <jingchang.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E4001A043A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 20:05:24 +1000 (EST)
-From: Jingchang Lu <jingchang.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
- CLK_OF_DECLARE support
-Date: Thu, 28 Aug 2014 10:05:15 +0000
-Message-ID: <f7b4263f189346a391d66c85756b4907@BL2PR03MB467.namprd03.prod.outlook.com>
-References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
- <1409093463.6510.92.camel@snotra.buserror.net>
- <164af7b3be3747a0be3fe3a6cf83d3b1@BL2PR03MB467.namprd03.prod.outlook.com>
- <1409182412.6510.129.camel@snotra.buserror.net>
-In-Reply-To: <1409182412.6510.129.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mturquette@linaro.org" <mturquette@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2DC71A0788
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 00:07:26 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 28 Aug 2014 19:37:22 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 62F56125804D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:38 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s7SE7ers57540762
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:41 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s7SE7GAe008755
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 19:37:16 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: viresh.kumar@linaro.org, benh@kernel.crashing.org
+Subject: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency during
+ reboot/kexec
+Date: Thu, 28 Aug 2014 19:36:56 +0530
+Message-Id: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +38,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
-ZW50OiBUaHVyc2RheSwgQXVndXN0IDI4LCAyMDE0IDc6MzQgQU0NCj5UbzogTHUgSmluZ2NoYW5n
-LUIzNTA4Mw0KPkNjOiBtdHVycXVldHRlQGxpbmFyby5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnOyBsaW51eC0NCj5rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2Vy
-bmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj5TdWJqZWN0OiBSZTogW1JFU0VORF0gY2xrOiBwcGMt
-Y29yZW5ldDogQWRkIEZyZWVzY2FsZSBBUk0tYmFzZWQgcGxhdGZvcm1zDQo+Q0xLX09GX0RFQ0xB
-UkUgc3VwcG9ydA0KPg0KPk9uIFR1ZSwgMjAxNC0wOC0yNiBhdCAyMToxOSAtMDUwMCwgTHUgSmlu
-Z2NoYW5nLUIzNTA4MyB3cm90ZToNCj4+ID4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPj4g
-PkZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+PiA+U2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjcs
-IDIwMTQgNjo1MSBBTQ0KPj4gPlRvOiBMdSBKaW5nY2hhbmctQjM1MDgzDQo+PiA+Q2M6IG10dXJx
-dWV0dGVAbGluYXJvLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0K
-Pj4gPmtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
-ZWFkLm9yZw0KPj4gPlN1YmplY3Q6IFJlOiBbUkVTRU5EXSBjbGs6IHBwYy1jb3JlbmV0OiBBZGQg
-RnJlZXNjYWxlIEFSTS1iYXNlZA0KPj4gPnBsYXRmb3JtcyBDTEtfT0ZfREVDTEFSRSBzdXBwb3J0
-DQo+PiA+DQo+PiA+T24gRnJpLCAyMDE0LTA4LTIyIGF0IDE3OjM0ICswODAwLCBKaW5nY2hhbmcg
-THUgd3JvdGU6DQo+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfcGxsX3YxLCAiZnNsLHFv
-cmlxLWNvcmUtcGxsLTEuMCIsDQo+PiA+Y29yZV9wbGxfaW5pdCk7DQo+PiA+PiArQ0xLX09GX0RF
-Q0xBUkUocHBjX2NvcmVfcGxsX3YyLCAiZnNsLHFvcmlxLWNvcmUtcGxsLTIuMCIsDQo+PiA+Y29y
-ZV9wbGxfaW5pdCk7DQo+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfbXV4X3YxLCAiZnNs
-LHFvcmlxLWNvcmUtbXV4LTEuMCIsDQo+PiA+Y29yZV9tdXhfaW5pdCk7DQo+PiA+PiArQ0xLX09G
-X0RFQ0xBUkUocHBjX2NvcmVfbXV4X3YyLCAiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCIsDQo+PiA+
-Y29yZV9tdXhfaW5pdCk7DQo+PiA+DQo+PiA+V2hhdCBkb2VzIHRoaXMgZG8gdGhhdCB0aGUgZXhp
-c3RpbmcgcGxhdGZvcm0gZHJpdmVyIGFuZCBtYXRjaCB0YWJsZQ0KPj4gPmRvbid0PyAgV2h5IGlz
-IGl0IG5lZWRlZCBmb3IgQVJNIHdoZW4gUFBDIGRpZG4ndCBuZWVkIGl0Pw0KPj4gPg0KPj4gPi1T
-Y290dA0KPj4gPg0KPj4gQ29tbW9uIGNsayBpbml0IG9uIEFSTSBwbGF0Zm9ybSBpcyBpbml0aWFs
-aXplZCBlYXJsaWVyIHZpYQ0KPj4gb2ZfY2xrX2luaXQoKSBpbnN0ZWFkIG9mIGRyaXZlciBwcm9i
-ZSBtZXRob2QsIHRoZSBvZl9jbGtfaW5pdCB3aWxsDQo+PiB3YWxrIGEgX19jbGtfb2ZfdGFibGUg
-dG8gaW5pdCBlYWNoIGNsayBwcm92aWRlciBpbiB0aGUgdGFibGUsIHRoZQ0KPj4gQ0xLX09GX0RF
-Q0xBUkUoKSBtYWNybyBwdXRzIGEgc3VwcG9ydGVkIGNsayBpbiB0aGUgX19jbGtfb2ZfdGFibGUg
-Zm9yIGl0DQo+aW5pdGlhbGl6aW5nIG9uIHN0YXJ1cCwgYW5kIHRoZSBjbGsgc3lzdGVtIGhhcyBh
-ZGRlZCBzb21lIGNvbW1vbiBjbGsgc3VjaA0KPmFzICJmaXhlZC1jbGsiDQo+PiB0byB0aGlzIHRh
-YmxlIGFscmVhZHkuDQo+PiBTbyBoZXJlIEkgYWRkIG91ciBzcGVjaWZpYyBjbGsgaW5pdCBkZWNs
-YXJhdGlvbiB0byBjb25zaXN0IHRoaXMNCj4+IGZyYW1ld29yaywgYW5kIHRoZSBkcml2ZXIgcHJv
-YmUgZnVuY3Rpb24gd2lsbCBub3QgYmUgbmVlZGVkIG9uIEFSTS4NCj4NCj5PSy4uLiBJcyB0aGVy
-ZSBhbnkgcmVhc29uIHdoeSB0aGUgbmV3IG1ldGhvZCB3b24ndCB3b3JrIG9uIFBQQz8NCj4NClBQ
-QyBoYXMgbGl0dGxlIGRlcGVuZGVuY2Ugb24gdGhlIGNsb2NrIHRyZWUgYnV0IGZyZXF1ZW5jeSwg
-aXQgd2lsbCB3b3JrIHdlbGwNCmlmIGFkb3B0ZWQgSSB0aGluay4NCg0KDQoNCkJlc3QgUmVnYXJk
-cywNCkppbmdjaGFuZw0KDQoNCg0K
+This patch ensures the cpus to kexec/reboot at nominal frequency.
+Nominal frequency is the highest cpu frequency on PowerPC at
+which the cores can run without getting throttled.
+
+If the host kernel had set the cpus to a low pstate and then it
+kexecs/reboots to a cpufreq disabled kernel it would cause the target
+kernel to perform poorly. It will also increase the boot up time of
+the target kernel. So set the cpus to high pstate, in this case to
+nominal frequency before rebooting to avoid such scenarios.
+
+The reboot notifier will set the cpus to nominal frequncy.
+
+Changes v1->v2:
+Invoke .target() driver callback to set the cpus to nominal frequency
+in reboot notifier, instead of calling cpufreq_suspend() as suggested
+by Viresh Kumar.
+Modified the commit message.
+
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 379c083..ba27c49 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -26,6 +26,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/smp.h>
+ #include <linux/of.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/cputhreads.h>
+ #include <asm/firmware.h>
+@@ -35,6 +36,7 @@
+ #define POWERNV_MAX_PSTATES	256
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++static bool rebooting;
+ 
+ /*
+  * Note: The set of pstates consists of contiguous integers, the
+@@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
+ }
+ 
+ /*
++ * get_nominal_index: Returns the index corresponding to the nominal
++ * pstate in the cpufreq table
++ */
++static inline unsigned int get_nominal_index(void)
++{
++	return powernv_pstate_info.max - powernv_pstate_info.nominal;
++}
++
++/*
+  * powernv_cpufreq_target_index: Sets the frequency corresponding to
+  * the cpufreq table entry indexed by new_index on the cpus in the
+  * mask policy->cpus
+@@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ {
+ 	struct powernv_smp_call_data freq_data;
+ 
++	if (unlikely(rebooting) && new_index != get_nominal_index())
++		return -EBUSY;
++
+ 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+ 
+ 	/*
+@@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
++static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
++				unsigned long action, void *unused)
++{
++	int cpu;
++	struct cpufreq_policy cpu_policy;
++
++	rebooting = true;
++	for_each_online_cpu(cpu) {
++		cpufreq_get_policy(&cpu_policy, cpu);
++		powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
++	}
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block powernv_cpufreq_reboot_nb = {
++	.notifier_call = powernv_cpufreq_reboot_notifier,
++};
++
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.name		= "powernv-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
+ 		return rc;
+ 	}
+ 
++	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	return cpufreq_register_driver(&powernv_cpufreq_driver);
+ }
+ module_init(powernv_cpufreq_init);
+ 
+ static void __exit powernv_cpufreq_exit(void)
+ {
++	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
+-- 
+1.9.3
