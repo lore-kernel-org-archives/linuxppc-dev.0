@@ -1,14 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2744A1A0B1E
+ by lists.ozlabs.org (Postfix) with ESMTP id 024E81A0B1E
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 19:14:44 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 18/19] powerpc/8xx: _PMD_PRESENT already set in level 1
- entries
-Message-Id: <20140829091440.A2DD91ABD63@localhost.localdomain>
-Date: Fri, 29 Aug 2014 11:14:40 +0200 (CEST)
+Subject: [PATCH v2 09/19] powerpc/8xx: Optimize verification in FixupDAR
+Message-Id: <20140829091438.D8D851ABD67@localhost.localdomain>
+Date: Fri, 29 Aug 2014 11:14:38 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,34 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a PMD entry is valid, _PMD_PRESENT is set. Therefore, forcing that bit
-during TLB loading is useless.
+By XORing the upper part of the instruction code, we get a value that can
+directly be verified with the second test and we can remove the first test.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 48d3de8..bb7c816 100644
+index e5a250c..5037420 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -340,7 +340,6 @@ InstructionTLBMiss:
- 	/* We have a pte table, so load the MI_TWC with the attributes
- 	 * for this "segment."
- 	 */
--	ori	r11,r11,1		/* Set valid bit */
- 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	/* Extract level 2 index */
-@@ -417,7 +416,6 @@ DataStoreTLBMiss:
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
- 
--	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
- 	/* Insert the Guarded flag into the TWC from the Linux PTE.
- 	 * It is bit 27 of both the Linux PTE and the TWC (at least
- 	 * I got that right :-).  It will be better when we can put
+@@ -542,10 +542,8 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ /* Check if it really is a dcbx instruction. */
+ /* dcbt and dcbtst does not generate DTLB Misses/Errors,
+  * no need to include them here */
+-	srwi	r10, r11, 26	/* check if major OP code is 31 */
+-	cmpwi	cr0, r10, 31
+-	bne-	141f
+-	rlwinm	r10, r11, 0, 21, 30
++	xoris	r10, r11, 0x7c00	/* check if major OP code is 31 */
++	rlwinm	r10, r10, 0, 21, 5
+ 	cmpwi	cr0, r10, 2028	/* Is dcbz? */
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 940	/* Is dcbi? */
 -- 
 1.7.1
