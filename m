@@ -1,21 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 789551A0028
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 04:41:31 +1000 (EST)
-Message-ID: <1409337669.24184.0.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 17/19] powerpc/8xx: set PTE bit 22 off TLBmiss
+ by lists.ozlabs.org (Postfix) with ESMTPS id D6E0E1A006A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 05:38:30 +1000 (EST)
+Message-ID: <1409341095.24184.18.camel@snotra.buserror.net>
+Subject: Re: [PATCHv2] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
 From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Fri, 29 Aug 2014 13:41:09 -0500
-In-Reply-To: <20140829091440.6DAD91ABD66@localhost.localdomain>
-References: <20140829091440.6DAD91ABD66@localhost.localdomain>
+To: Jingchang Lu <jingchang.lu@freescale.com>
+Date: Fri, 29 Aug 2014 14:38:15 -0500
+In-Reply-To: <1409301354-13699-1-git-send-email-jingchang.lu@freescale.com>
+References: <1409301354-13699-1-git-send-email-jingchang.lu@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, mturquette@linaro.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,109 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-08-29 at 11:14 +0200, Christophe Leroy wrote:
-> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
+On Fri, 2014-08-29 at 16:35 +0800, Jingchang Lu wrote:
+> The IP is shared on PPC and ARM, this rename it to qoriq for better
+> represention, and this also add the CLK_OF_DECLARE support for being
+> initialized by of_clk_init() on ARM.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> 
+> Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
 > ---
->  arch/powerpc/include/asm/pgtable-ppc32.h |   21 +++++++++++++++++++++
->  arch/powerpc/include/asm/pte-8xx.h       |    7 +++++--
->  arch/powerpc/kernel/head_8xx.S           |   10 ++--------
->  3 files changed, 28 insertions(+), 10 deletions(-)
+> changes in v2:
+>  rename the driver name to ppc-qoriq.c for shared on PPC and ARM.
 > 
+>  drivers/clk/Kconfig           |   9 +-
+>  drivers/clk/Makefile          |   2 +-
+>  drivers/clk/clk-ppc-corenet.c | 307 -----------------------------------------
+>  drivers/clk/clk-qoriq.c       | 312 ++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 318 insertions(+), 312 deletions(-)
+>  delete mode 100644 drivers/clk/clk-ppc-corenet.c
+>  create mode 100644 drivers/clk/clk-qoriq.c
 
-When you post a vN+1 please indicate below the --- what changed sinced
-vN.
+Please use -M -C with git format-patch to detect the rename, so we can
+see what changed during the rename.
 
 -Scott
-
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-> index 47edde8..c261792 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> @@ -172,6 +172,26 @@ static inline unsigned long pte_update(pte_t *p,
->  #ifdef PTE_ATOMIC_UPDATES
->  	unsigned long old, tmp;
->  
-> +#ifdef CONFIG_PPC_8xx
-> +	unsigned long tmp2;
-> +
-> +	__asm__ __volatile__("\
-> +1:	lwarx	%0,0,%4\n\
-> +	andc	%1,%0,%5\n\
-> +	or	%1,%1,%6\n\
-> +	/* 0x200 == Extended encoding, bit 22 */ \
-> +	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
-> +	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
-> +	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
-> +	or	%1,%3,%1\n\
-> +	xori	%1,%1,0x200\n"
-> +	PPC405_ERR77(0,%4)
-> +"	stwcx.	%1,0,%4\n\
-> +	bne-	1b"
-> +	: "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
-> +	: "r" (p), "r" (clr), "r" (set), "m" (*p)
-> +	: "cc" );
-> +#else /* CONFIG_PPC_8xx */
->  	__asm__ __volatile__("\
->  1:	lwarx	%0,0,%3\n\
->  	andc	%1,%0,%4\n\
-> @@ -182,6 +202,7 @@ static inline unsigned long pte_update(pte_t *p,
->  	: "=&r" (old), "=&r" (tmp), "=m" (*p)
->  	: "r" (p), "r" (clr), "r" (set), "m" (*p)
->  	: "cc" );
-> +#endif /* CONFIG_PPC_8xx */
->  #else /* PTE_ATOMIC_UPDATES */
->  	unsigned long old = pte_val(*p);
->  	*p = __pte((old & ~clr) | set);
-> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-> index d44826e..dede1e7 100644
-> --- a/arch/powerpc/include/asm/pte-8xx.h
-> +++ b/arch/powerpc/include/asm/pte-8xx.h
-> @@ -48,19 +48,22 @@
->   */
->  #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
->  #define _PAGE_USER	0x0800	/* msb PP bits */
-> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
-> +#define _PAGE_KNLRO	0x0200
->  
->  #define _PMD_PRESENT	0x0001
->  #define _PMD_BAD	0x0ff0
->  #define _PMD_PAGE_MASK	0x000c
->  #define _PMD_PAGE_8M	0x000c
->  
-> -#define _PTE_NONE_MASK _PAGE_ACCESSED
-> +#define _PTE_NONE_MASK (_PAGE_ACCESSED | _PAGE_KNLRO)
->  
->  /* Until my rework is finished, 8xx still needs atomic PTE updates */
->  #define PTE_ATOMIC_UPDATES	1
->  
->  /* We need to add _PAGE_SHARED to kernel pages */
-> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
-> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
-> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
->  #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
->  
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index a7af26e..48d3de8 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -445,14 +445,8 @@ DataStoreTLBMiss:
->  	and	r11, r11, r10
->  	rlwimi	r10, r11, 0, _PAGE_PRESENT
->  #endif
-> -	/* Honour kernel RO, User NA */
-> -	/* 0x200 == Extended encoding, bit 22 */
-> -	rlwimi	r10, r10, 32-2, 0x200 /* Copy USER to bit 22, 0x200 */
-> -	/* r11 =  (r10 & _PAGE_RW) >> 1 */
-> -	rlwinm	r11, r10, 32-1, 0x200
-> -	or	r10, r11, r10
-> -	/* invert RW and 0x200 bits */
-> -	xori	r10, r10, _PAGE_RW | 0x200
-> +	/* invert RW */
-> +	xori	r10, r10, _PAGE_RW
->  
->  	/* The Linux PTE won't go exactly into the MMU TLB.
->  	 * Software indicator bits 22 and 28 must be clear.
