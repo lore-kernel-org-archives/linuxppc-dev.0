@@ -1,16 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id ECBFB1A162B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 19:32:07 +1000 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 16/19] powerpc/8xx: Better readibility of ERRATA CPU6
- handling
-Message-Id: <20140829091440.3F7BE1ABD65@localhost.localdomain>
-Date: Fri, 29 Aug 2014 11:14:40 +0200 (CEST)
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1E481A0121
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 21:13:49 +1000 (EST)
+Received: from mail-ig0-f176.google.com (mail-ig0-f176.google.com
+ [209.85.213.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6E9AC1400DE
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2014 21:13:48 +1000 (EST)
+Received: by mail-ig0-f176.google.com with SMTP id hn18so9480335igb.3
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2014 04:13:46 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1409277356.9191.4.camel@concordia>
+References: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
+ <CAL_Jsq+DSC4DW-ULuFfUjowsCOXbRnXvYSQcLY4inuBuztuh7A@mail.gmail.com>
+ <1409277356.9191.4.camel@concordia>
+From: Grant Likely <grant.likely@linaro.org>
+Date: Fri, 29 Aug 2014 12:13:26 +0100
+Message-ID: <CACxGe6u7xK13UEgjM_BWtmXoskgVtJbVSB_wR2LUnAFgfybGSw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Check flat device tree version at boot
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Rob Herring <robh+dt@kernel.org>,
+ Rob Herring <robherring2@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,83 +35,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch hiddes that SPR address needed for CPU6 ERRATA handling in the macro.
-Then we don't have to worry about this address directly in the code.
+On 29 Aug 2014 02:56, "Michael Ellerman" <mpe@ellerman.id.au> wrote:
+>
+> On Thu, 2014-08-28 at 09:27 -0500, Rob Herring wrote:
+> > On Thu, Aug 28, 2014 at 3:40 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > > In commit e6a6928c3ea1 "of/fdt: Convert FDT functions to use libfdt",
+> > > the kernel stopped supporting old flat device tree formats. The minimum
+> > > supported version is now 0x10.
+> >
+> > Ugg. Is that something which needs to be supported? Supporting it at
+> > this point would mean adding support to libfdt.
+>
+> Well it would have been nice to keep supporting v2, dropping it broke
+> kexec-tools for example. But it's done now, so we'll just deal with the
+> fallout.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Umm, so we broke userspace? That's not okay. At the very least we
+should investigate how much work is needed to bring v2 support into
+libfdt, or up-rev the flat tree at runtime before we parse it.
 
----
- arch/powerpc/kernel/head_8xx.S |   29 ++++++++++++++++-------------
- 1 files changed, 16 insertions(+), 13 deletions(-)
+We should be able to update it in-line. IIRC, the main difference
+between v2 and v0x10 is that only the leaf node name is encoded into
+the node instead of the full name. We can loop over the tree and
+truncate all the names while filling the unused bytes with FDT NOP
+tags. Should be simple. Something like the following:
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 4dd6be0..a7af26e 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -33,12 +33,19 @@
- 
- /* Macro to make the code more readable. */
- #ifdef CONFIG_8xx_CPU6
--#define DO_8xx_CPU6(val, reg)	\
--	li	reg, val;	\
--	stw	reg, 12(r0);	\
--	lwz	reg, 12(r0);
-+#define SPRN_MI_TWC_ADDR	0x2b80
-+#define SPRN_MI_RPN_ADDR	0x2d80
-+#define SPRN_MD_TWC_ADDR	0x3b80
-+#define SPRN_MD_RPN_ADDR	0x3d80
-+
-+#define MTSPR_CPU6(spr, reg, treg)	\
-+	li	treg, spr##_ADDR;	\
-+	stw	treg, 12(r0);		\
-+	lwz	treg, 12(r0);		\
-+	mtspr	spr, reg
- #else
--#define DO_8xx_CPU6(val, reg)
-+#define MTSPR_CPU6(spr, reg, treg)	\
-+	mtspr	spr, reg
- #endif
- 
- /*
-@@ -334,8 +341,7 @@ InstructionTLBMiss:
- 	 * for this "segment."
- 	 */
- 	ori	r11,r11,1		/* Set valid bit */
--	DO_8xx_CPU6(0x2b80, r3)
--	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
-+	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	/* Extract level 2 index */
- 	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-@@ -354,8 +360,7 @@ InstructionTLBMiss:
- 	 */
- 	li	r11, RPN_PATTERN
- 	rlwimi	r10, r11, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
--	DO_8xx_CPU6(0x2d80, r3)
--	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
-+	MTSPR_CPU6(SPRN_MI_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
- #ifdef CONFIG_8xx_CPU6
-@@ -424,8 +429,7 @@ DataStoreTLBMiss:
- 	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
- 	 */
- 	rlwimi	r11, r10, 32-5, 30, 30
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11
-+	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
- 
- 	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
- 	 * We also need to know if the insn is a load/store, so:
-@@ -458,8 +462,7 @@ DataStoreTLBMiss:
- 	 */
- 2:	li	r11, RPN_PATTERN
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
--	DO_8xx_CPU6(0x3d80, r3)
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
- #ifdef CONFIG_8xx_CPU6
--- 
-1.7.1
+fixup_old_device_tree(blob)
+{
+       for (offset = fdt_next_node(blob, -1, &depth);
+             offset >= 0 && depth >= 0 && !rc;
+             offset = fdt_next_node(blob, offset, &depth)) {
+                char *pathp = fdt_get_name(blob, offset, NULL);
+                if (*pathp == '/') {
+                        char *leaf = kbasename(pathp);
+                        int len = strlen(pathp);
+                        int newlen = strlen(leaf);
+                        strcpy(pathp, leaf); /* copying in place, need
+to check make sure this code is safe */
+                        node->size = newlen /* fixme - this is just
+pseudocode */
+                        newlen = FDT_TAGALIGN(newlen);
+                        while (newlen < len) {
+                                *(pathp + newlen) = FDT_NOP;
+                                newlen = FDT_TAGALIGN(newlen+1);
+                        }
+                }
+       }
+
+}
+
+There's probable some more elegance that can be put into the above
+block, but you get the idea. That could be run in-place without
+copying the tree to another location, and it could possibly be done in
+the boot wrapper. Then we'd also be able to get rid of the v2
+compatibility code elsewhere in drivers/of/fdt.c because it would
+already be taken care of.
+
+g.
