@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 999C91A0AE3
+ by lists.ozlabs.org (Postfix) with ESMTP id 831D11A0161
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 19:14:40 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 05/19] powerpc/8xx: Fix comment about DIRTY update
-Message-Id: <20140829091438.2C7F21ABD63@localhost.localdomain>
-Date: Fri, 29 Aug 2014 11:14:38 +0200 (CEST)
+Subject: [PATCH v2 04/19] powerpc/8xx: Remove loading of r10 at end of FixupDAR
+Message-Id: <20140829091437.E7E861ABD65@localhost.localdomain>
+Date: Fri, 29 Aug 2014 11:14:37 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,33 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, dirty handling is not
-handled here anymore. So we fix the comment.
+Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, r10 is not used anymore
+after FixupDAR. There is therefore no need to set it up with the value of DAR.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index e59e39e..171c6ef 100644
+index fbe5d10..e59e39e 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -477,12 +477,8 @@ InstructionTLBError:
- 	EXC_XFER_LITE(0x1300, handle_page_fault)
+@@ -495,7 +495,7 @@ DataTLBError:
+ 	mfspr	r10, SPRN_DAR
+ 	cmpwi	cr0, r10, 0x00f0
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+-DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
++DARFixed:/* Return from dcbx instruction bug workaround */
+ #ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
+ #endif
+@@ -524,7 +524,7 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
  
- /* This is the data TLB error on the MPC8xx.  This could be due to
-- * many reasons, including a dirty update to a pte.  We can catch that
-- * one here, but anything else is an error.  First, we track down the
-- * Linux pte.  If it is valid, write access is allowed, but the
-- * page dirty bit is not set, we will set it and reload the TLB.  For
-- * any other case, we bail out to a higher level function that can
-- * handle it.
-+ * many reasons, including a dirty update to a pte.  We bail out to
-+ * a higher level function that can handle it.
+ /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
+  * by decoding the registers used by the dcbx instruction and adding them.
+- * DAR is set to the calculated address and r10 also holds the EA on exit.
++ * DAR is set to the calculated address.
   */
- 	. = 0x1400
- DataTLBError:
+  /* define if you don't want to use self modifying code */
+ #define NO_SELF_MODIFYING_CODE
+@@ -564,8 +564,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 1964	/* Is icbi? */
+ 	beq+	142f
+-141:	mfspr	r10, SPRN_DAR	/* r10 must hold DAR at exit */
+-	b	DARFixed	/* Nope, go back to normal TLB processing */
++141:	b	DARFixed	/* Nope, go back to normal TLB processing */
+ 
+ 144:	mfspr	r10, SPRN_DSISR
+ 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
 -- 
 1.7.1
