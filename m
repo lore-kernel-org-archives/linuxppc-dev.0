@@ -1,15 +1,16 @@
 Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 65B4A1A001B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 00:39:56 +1000 (EST)
-In-Reply-To: <20140829091440.6DAD91ABD66@localhost.localdomain>
-References: <20140829091440.6DAD91ABD66@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTP id 0794B1A006A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 01:06:08 +1000 (EST)
+In-Reply-To: <20140829091437.832C41ABD65@localhost.localdomain>
+References: <20140829091437.832C41ABD65@localhost.localdomain>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 17/19] powerpc/8xx: set PTE bit 22 off TLBmiss
+Subject: Re: [PATCH v2 02/19] powerpc/8xx: Use SCRATCH0 and SCRATCH1 also for
+ TLB handlers
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <OFC266DD00.56C086CA-ONC1257D43.005005B3-C1257D43.00508E4E@transmode.se>
-Date: Fri, 29 Aug 2014 16:39:52 +0200
+Message-ID: <OF79DA9719.90FA0859-ONC1257D43.0052506D-C1257D43.0052F4B4@transmode.se>
+Date: Fri, 29 Aug 2014 17:06:05 +0200
 Content-Type: text/plain; charset="US-ASCII"
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
@@ -22,119 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> wrote on 2014/08/29 11:14:40:
+Christophe Leroy <christophe.leroy@c-s.fr> wrote on 2014/08/29 11:14:37:
 > 
-> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
+> SCRATCH0 and SCRATCH1 are only used in Exceptions prologs where no other
+> exception can happen. There is therefore no need to preserve them 
+accross
+> TLB handlers, we can use them there as in other exceptions. One of the
+> advantages is that they do not suffer CPU6 errata unlike M_TW register.
+
+Really nice! Some comments below
+
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
 > ---
->  arch/powerpc/include/asm/pgtable-ppc32.h |   21 +++++++++++++++++++++
->  arch/powerpc/include/asm/pte-8xx.h       |    7 +++++--
->  arch/powerpc/kernel/head_8xx.S           |   10 ++--------
->  3 files changed, 28 insertions(+), 10 deletions(-)
+>  arch/powerpc/kernel/head_8xx.S |  104 
+++++++++++++----------------------
+>  1 files changed, 36 insertions(+), 68 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h 
-b/arch/powerpc/include/asm/pgtable-ppc32.h
-> index 47edde8..c261792 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> @@ -172,6 +172,26 @@ static inline unsigned long pte_update(pte_t *p,
->  #ifdef PTE_ATOMIC_UPDATES
->     unsigned long old, tmp;
-> 
-> +#ifdef CONFIG_PPC_8xx
-> +   unsigned long tmp2;
-> +
-> +   __asm__ __volatile__("\
-> +1:   lwarx   %0,0,%4\n\
-> +   andc   %1,%0,%5\n\
-> +   or   %1,%1,%6\n\
-> +   /* 0x200 == Extended encoding, bit 22 */ \
-> +   /* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ 
-\
-> +   rlwimi   %1,%1,32-2,0x200\n /* get _PAGE_USER */ \
-> +   rlwinm   %3,%1,32-1,0x200\n /* get _PAGE_RW */ \
-> +   or   %1,%3,%1\n\
-> +   xori   %1,%1,0x200\n"
-> +   PPC405_ERR77(0,%4)
-
-Should above PPC405_XXXX really be there? This is 8xx only
-
-> +"   stwcx.   %1,0,%4\n\
-> +   bne-   1b"
-> +   : "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
-> +   : "r" (p), "r" (clr), "r" (set), "m" (*p)
-> +   : "cc" );
-> +#else /* CONFIG_PPC_8xx */
->     __asm__ __volatile__("\
->  1:   lwarx   %0,0,%3\n\
->     andc   %1,%0,%4\n\
-> @@ -182,6 +202,7 @@ static inline unsigned long pte_update(pte_t *p,
->     : "=&r" (old), "=&r" (tmp), "=m" (*p)
->     : "r" (p), "r" (clr), "r" (set), "m" (*p)
->     : "cc" );
-> +#endif /* CONFIG_PPC_8xx */
->  #else /* PTE_ATOMIC_UPDATES */
->     unsigned long old = pte_val(*p);
->     *p = __pte((old & ~clr) | set);
-> diff --git a/arch/powerpc/include/asm/pte-8xx.h 
-b/arch/powerpc/include/asm/pte-8xx.h
-> index d44826e..dede1e7 100644
-> --- a/arch/powerpc/include/asm/pte-8xx.h
-> +++ b/arch/powerpc/include/asm/pte-8xx.h
-> @@ -48,19 +48,22 @@
->   */
->  #define _PAGE_RW   0x0400   /* lsb PP bits, inverted in HW */
->  #define _PAGE_USER   0x0800   /* msb PP bits */
-> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
-> +#define _PAGE_KNLRO   0x0200
-> 
->  #define _PMD_PRESENT   0x0001
->  #define _PMD_BAD   0x0ff0
->  #define _PMD_PAGE_MASK   0x000c
->  #define _PMD_PAGE_8M   0x000c
-> 
-> -#define _PTE_NONE_MASK _PAGE_ACCESSED
-> +#define _PTE_NONE_MASK (_PAGE_ACCESSED | _PAGE_KNLRO)
-
-_PAGE_ACCESSED can be removed from PTE_NONE_MASK as 8xx no longer cheets.
-See 2.4 commit 
-https://git.kernel.org/cgit/linux/kernel/git/wtarreau/linux-2.4.git/commit/?id=82582b970d04ad4bcfaa9d3f9c3c256619fd889f
-
-> 
->  /* Until my rework is finished, 8xx still needs atomic PTE updates */
->  #define PTE_ATOMIC_UPDATES   1
-> 
->  /* We need to add _PAGE_SHARED to kernel pages */
-> -#define _PAGE_KERNEL_RO   (_PAGE_SHARED)
-> +#define _PAGE_KERNEL_RO   (_PAGE_SHARED | _PAGE_KNLRO)
-> +#define _PAGE_KERNEL_ROX   (_PAGE_EXEC | _PAGE_KNLRO)
->  #define _PAGE_KERNEL_RW   (_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-> 
->  #endif /* __KERNEL__ */
 > diff --git a/arch/powerpc/kernel/head_8xx.S 
 b/arch/powerpc/kernel/head_8xx.S
-> index a7af26e..48d3de8 100644
+> index 1329c5a..3af6db1 100644
 > --- a/arch/powerpc/kernel/head_8xx.S
 > +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -445,14 +445,8 @@ DataStoreTLBMiss:
->     and   r11, r11, r10
->     rlwimi   r10, r11, 0, _PAGE_PRESENT
->  #endif
-> -   /* Honour kernel RO, User NA */
-> -   /* 0x200 == Extended encoding, bit 22 */
-> -   rlwimi   r10, r10, 32-2, 0x200 /* Copy USER to bit 22, 0x200 */
-> -   /* r11 =  (r10 & _PAGE_RW) >> 1 */
-> -   rlwinm   r11, r10, 32-1, 0x200
-> -   or   r10, r11, r10
-> -   /* invert RW and 0x200 bits */
-> -   xori   r10, r10, _PAGE_RW | 0x200
-> +   /* invert RW */
-> +   xori   r10, r10, _PAGE_RW
+> @@ -104,12 +104,15 @@ turn_on_mmu:
+>   * task's thread_struct.
+>   */
+>  #define EXCEPTION_PROLOG   \
+> -   mtspr   SPRN_SPRG_SCRATCH0,r10;   \
+> -   mtspr   SPRN_SPRG_SCRATCH1,r11;   \
+> -   mfcr   r10;      \
+> +   EXCEPTION_PROLOG_0;   \
+>     EXCEPTION_PROLOG_1;   \
+>     EXCEPTION_PROLOG_2
 > 
->     /* The Linux PTE won't go exactly into the MMU TLB.
->      * Software indicator bits 22 and 28 must be clear.
-> -- 
-> 1.7.1
+> +#define EXCEPTION_PROLOG_0   \
+> +   mtspr   SPRN_SPRG_SCRATCH0,r10;   \
+> +   mtspr   SPRN_SPRG_SCRATCH1,r11;   \
+> +   mfcr   r10
+> +
+>  #define EXCEPTION_PROLOG_1   \
+>     mfspr   r11,SPRN_SRR1;      /* check whether user or kernel */ \
+>     andi.   r11,r11,MSR_PR;   \
+> @@ -145,6 +148,14 @@ turn_on_mmu:
+>     SAVE_2GPRS(7, r11)
 > 
+>  /*
+> + * Exception exit code.
+> + */
+> +#define EXCEPTION_EPILOG_0   \
+> +   mtcr   r10;      \
+> +   mfspr   r10,SPRN_SPRG_SCRATCH0;   \
+> +   mfspr   r11,SPRN_SPRG_SCRATCH1
+> +
+> +/*
+>   * Note: code which follows this uses cr0.eq (set if from kernel),
+>   * r11, r12 (SRR0), and r9 (SRR1).
+>   *
+> @@ -293,16 +304,8 @@ InstructionTLBMiss:
+>  #ifdef CONFIG_8xx_CPU6
+>     stw   r3, 8(r0)
+
+Perhaps you can use SPRN_DAR to stash R3 now that it is free ?
+
+     Jocke
