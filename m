@@ -1,27 +1,21 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-f181.google.com (mail-ob0-f181.google.com
- [209.85.214.181])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B9F01A0023
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 10:03:34 +1000 (EST)
-Received: by mail-ob0-f181.google.com with SMTP id vb8so1276747obc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 17:03:32 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Fri, 29 Aug 2014 05:33:31 +0530
-Message-ID: <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
- during reboot/kexec
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54B2D1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 11:55:57 +1000 (EST)
+Message-ID: <1409277356.9191.4.camel@concordia>
+Subject: Re: [PATCH] powerpc: Check flat device tree version at boot
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robherring2@gmail.com>
+Date: Fri, 29 Aug 2014 11:55:56 +1000
+In-Reply-To: <CAL_Jsq+DSC4DW-ULuFfUjowsCOXbRnXvYSQcLY4inuBuztuh7A@mail.gmail.com>
+References: <1409215247-10195-1-git-send-email-mpe@ellerman.id.au>
+ <CAL_Jsq+DSC4DW-ULuFfUjowsCOXbRnXvYSQcLY4inuBuztuh7A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Grant Likely <grant.likely@linaro.org>, linuxppc-dev@ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,126 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28 August 2014 19:36, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patch ensures the cpus to kexec/reboot at nominal frequency.
-> Nominal frequency is the highest cpu frequency on PowerPC at
-> which the cores can run without getting throttled.
->
-> If the host kernel had set the cpus to a low pstate and then it
-> kexecs/reboots to a cpufreq disabled kernel it would cause the target
-> kernel to perform poorly. It will also increase the boot up time of
-> the target kernel. So set the cpus to high pstate, in this case to
-> nominal frequency before rebooting to avoid such scenarios.
->
-> The reboot notifier will set the cpus to nominal frequncy.
->
-> Changes v1->v2:
-> Invoke .target() driver callback to set the cpus to nominal frequency
-> in reboot notifier, instead of calling cpufreq_suspend() as suggested
-> by Viresh Kumar.
-> Modified the commit message.
+On Thu, 2014-08-28 at 09:27 -0500, Rob Herring wrote:
+> On Thu, Aug 28, 2014 at 3:40 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > In commit e6a6928c3ea1 "of/fdt: Convert FDT functions to use libfdt",
+> > the kernel stopped supporting old flat device tree formats. The minimum
+> > supported version is now 0x10.
+> 
+> Ugg. Is that something which needs to be supported? Supporting it at
+> this point would mean adding support to libfdt.
 
-This changelog will get commited, is this what you want?
+Well it would have been nice to keep supporting v2, dropping it broke
+kexec-tools for example. But it's done now, so we'll just deal with the
+fallout.
 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
->  1 file changed, 35 insertions(+)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 379c083..ba27c49 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -26,6 +26,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/smp.h>
->  #include <linux/of.h>
-> +#include <linux/reboot.h>
->
->  #include <asm/cputhreads.h>
->  #include <asm/firmware.h>
-> @@ -35,6 +36,7 @@
->  #define POWERNV_MAX_PSTATES    256
->
->  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> +static bool rebooting;
->
->  /*
->   * Note: The set of pstates consists of contiguous integers, the
-> @@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
->  }
->
->  /*
-> + * get_nominal_index: Returns the index corresponding to the nominal
-> + * pstate in the cpufreq table
-> + */
-> +static inline unsigned int get_nominal_index(void)
-> +{
-> +       return powernv_pstate_info.max - powernv_pstate_info.nominal;
-> +}
-> +
-> +/*
->   * powernv_cpufreq_target_index: Sets the frequency corresponding to
->   * the cpufreq table entry indexed by new_index on the cpus in the
->   * mask policy->cpus
-> @@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  {
->         struct powernv_smp_call_data freq_data;
->
-> +       if (unlikely(rebooting) && new_index != get_nominal_index())
-> +               return -EBUSY;
+If you can CC linuxppc-dev in future on patches that fundamentally change the
+device tree parsing that would be appreciated :)
 
-Have you placed the unlikely only around 'rebooting' intentionally or
-should it cover whole if statement?
-
-> +
->         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
->
->         /*
-> @@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         return cpufreq_table_validate_and_show(policy, powernv_freqs);
->  }
->
-> +static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-> +                               unsigned long action, void *unused)
-> +{
-> +       int cpu;
-> +       struct cpufreq_policy cpu_policy;
-> +
-> +       rebooting = true;
-> +       for_each_online_cpu(cpu) {
-> +               cpufreq_get_policy(&cpu_policy, cpu);
-> +               powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
-> +       }
-> +
-> +       return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block powernv_cpufreq_reboot_nb = {
-> +       .notifier_call = powernv_cpufreq_reboot_notifier,
-> +};
-> +
->  static struct cpufreq_driver powernv_cpufreq_driver = {
->         .name           = "powernv-cpufreq",
->         .flags          = CPUFREQ_CONST_LOOPS,
-> @@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
->                 return rc;
->         }
->
-> +       register_reboot_notifier(&powernv_cpufreq_reboot_nb);
->         return cpufreq_register_driver(&powernv_cpufreq_driver);
->  }
->  module_init(powernv_cpufreq_init);
->
->  static void __exit powernv_cpufreq_exit(void)
->  {
-> +       unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
->         cpufreq_unregister_driver(&powernv_cpufreq_driver);
->  }
->  module_exit(powernv_cpufreq_exit);
-
-Looks fine otherwise.
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+cheers
