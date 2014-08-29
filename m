@@ -1,27 +1,27 @@
-Return-Path: <highguy@gmail.com>
-Received: from mail-wg0-x232.google.com (mail-wg0-x232.google.com
- [IPv6:2a00:1450:400c:c00::232])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-ob0-f181.google.com (mail-ob0-f181.google.com
+ [209.85.214.181])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5794E1A0020
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 06:26:54 +1000 (EST)
-Received: by mail-wg0-f50.google.com with SMTP id x12so1251373wgg.21
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 13:26:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B9F01A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 10:03:34 +1000 (EST)
+Received: by mail-ob0-f181.google.com with SMTP id vb8so1276747obc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2014 17:03:32 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <53FF5097.7090000@c-s.fr>
-References: <53F31707.4040300@c-s.fr>
-	<53FF5097.7090000@c-s.fr>
-Date: Thu, 28 Aug 2014 22:26:48 +0200
-Message-ID: <CAOY=C6H=VwoQC7xPvKzsnY17Wd7UB=nrZ30SE-27+o9XqKDjpQ@mail.gmail.com>
-Subject: Re: Linux 3.16: all my drivers on SPI bus report WARNING: at
- drivers/base/dd.c:286
-From: Stijn Devriendt <highguy@gmail.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Content-Type: multipart/alternative; boundary=089e01227b862a55a20501b65bf7
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-spi@vger.kernel.org,
- Axel Lin <axel.lin@ingics.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Mark Brown <broonie@linaro.org>
+In-Reply-To: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1409234816-10802-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Fri, 29 Aug 2014 05:33:31 +0530
+Message-ID: <CAKohpokbYkL=cYQ+9-59vPhBmbAWqhrEz7RBPj5-edDB25DPgw@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: powernv: Set the cpus to nominal frequency
+ during reboot/kexec
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,68 +31,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e01227b862a55a20501b65bf7
-Content-Type: text/plain; charset=UTF-8
-
-On Thu, Aug 28, 2014 at 5:53 PM, leroy christophe <christophe.leroy@c-s.fr>
-wrote:
-
-> I've been able to identify the origin of the issue. It happens since the
-> below commit.
-> Do you know what should be done to fix that ?
+On 28 August 2014 19:36, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> This patch ensures the cpus to kexec/reboot at nominal frequency.
+> Nominal frequency is the highest cpu frequency on PowerPC at
+> which the cores can run without getting throttled.
 >
-> Christophe
+> If the host kernel had set the cpus to a low pstate and then it
+> kexecs/reboots to a cpufreq disabled kernel it would cause the target
+> kernel to perform poorly. It will also increase the boot up time of
+> the target kernel. So set the cpus to high pstate, in this case to
+> nominal frequency before rebooting to avoid such scenarios.
 >
+> The reboot notifier will set the cpus to nominal frequncy.
+>
+> Changes v1->v2:
+> Invoke .target() driver callback to set the cpus to nominal frequency
+> in reboot notifier, instead of calling cpufreq_suspend() as suggested
+> by Viresh Kumar.
+> Modified the commit message.
 
-Actually, more things are wrong with what the driver is doing.
-If inside spi_add_device() the call to device_add() fails, then that
-code bails out without any call to spi_cleanup() and the same
-memory will leak (Is this intended?).
+This changelog will get commited, is this what you want?
 
-Basically, fsl_spi_setup allocates memory using devm_kzalloc, while
-device_add expects that any memory allocated via this way is only
-done in the device's probe function.
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 379c083..ba27c49 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/cpufreq.h>
+>  #include <linux/smp.h>
+>  #include <linux/of.h>
+> +#include <linux/reboot.h>
+>
+>  #include <asm/cputhreads.h>
+>  #include <asm/firmware.h>
+> @@ -35,6 +36,7 @@
+>  #define POWERNV_MAX_PSTATES    256
+>
+>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+> +static bool rebooting;
+>
+>  /*
+>   * Note: The set of pstates consists of contiguous integers, the
+> @@ -284,6 +286,15 @@ static void set_pstate(void *freq_data)
+>  }
+>
+>  /*
+> + * get_nominal_index: Returns the index corresponding to the nominal
+> + * pstate in the cpufreq table
+> + */
+> +static inline unsigned int get_nominal_index(void)
+> +{
+> +       return powernv_pstate_info.max - powernv_pstate_info.nominal;
+> +}
+> +
+> +/*
+>   * powernv_cpufreq_target_index: Sets the frequency corresponding to
+>   * the cpufreq table entry indexed by new_index on the cpus in the
+>   * mask policy->cpus
+> @@ -293,6 +304,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  {
+>         struct powernv_smp_call_data freq_data;
+>
+> +       if (unlikely(rebooting) && new_index != get_nominal_index())
+> +               return -EBUSY;
 
-The simple fix would be to do a normal allocation (revert the patch) and
-add a free to the cleanup() function. Unfortunately that doesn't fix the
-memleak I mentioned above.
+Have you placed the unlikely only around 'rebooting' intentionally or
+should it cover whole if statement?
 
-So, some outside-the-box thinking brings me to conclude that another way
-to fix this problem is to allocate the devm_kzalloc not on the device's
-resource
-list but on the controller's resources (it's controller state after all...).
+> +
+>         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+>
+>         /*
+> @@ -317,6 +331,25 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return cpufreq_table_validate_and_show(policy, powernv_freqs);
+>  }
+>
+> +static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
+> +                               unsigned long action, void *unused)
+> +{
+> +       int cpu;
+> +       struct cpufreq_policy cpu_policy;
+> +
+> +       rebooting = true;
+> +       for_each_online_cpu(cpu) {
+> +               cpufreq_get_policy(&cpu_policy, cpu);
+> +               powernv_cpufreq_target_index(&cpu_policy, get_nominal_index());
+> +       }
+> +
+> +       return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block powernv_cpufreq_reboot_nb = {
+> +       .notifier_call = powernv_cpufreq_reboot_notifier,
+> +};
+> +
+>  static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .name           = "powernv-cpufreq",
+>         .flags          = CPUFREQ_CONST_LOOPS,
+> @@ -342,12 +375,14 @@ static int __init powernv_cpufreq_init(void)
+>                 return rc;
+>         }
+>
+> +       register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>         return cpufreq_register_driver(&powernv_cpufreq_driver);
+>  }
+>  module_init(powernv_cpufreq_init);
+>
+>  static void __exit powernv_cpufreq_exit(void)
+>  {
+> +       unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+>         cpufreq_unregister_driver(&powernv_cpufreq_driver);
+>  }
+>  module_exit(powernv_cpufreq_exit);
 
-Regards,
-Stijn
+Looks fine otherwise.
 
---089e01227b862a55a20501b65bf7
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><br><div class=3D"gmail=
-_quote">On Thu, Aug 28, 2014 at 5:53 PM, leroy christophe <span dir=3D"ltr"=
->&lt;<a href=3D"mailto:christophe.leroy@c-s.fr" target=3D"_blank">christoph=
-e.leroy@c-s.fr</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">I&#39;ve been able to identify the origin of=
- the issue. It happens since the below commit.<br>
-Do you know what should be done to fix that ?<br>
-<br>
-Christophe<br></blockquote><div><br></div><div>Actually, more things are wr=
-ong with what the driver is doing.<br>If inside spi_add_device()  the call =
-to device_add() fails, then that<br>code bails out without any call to spi_=
-cleanup() and the same<br>
-memory will leak (Is this intended?).<br><br></div><div>Basically, fsl_spi_=
-setup allocates memory using devm_kzalloc, while<br></div><div>device_add e=
-xpects that any memory allocated via this way is only<br>done in the device=
-&#39;s probe function.<br>
-<br></div><div>The simple fix would be to do a normal allocation (revert th=
-e patch) and<br>add a free to the cleanup() function. Unfortunately that do=
-esn&#39;t fix the<br>memleak I mentioned above.<br><br></div><div>So, some =
-outside-the-box thinking brings me to conclude that another way<br>
-to fix this problem is to allocate the devm_kzalloc not on the device&#39;s=
- resource<br>list but on the controller&#39;s resources (it&#39;s controlle=
-r state after all...).<br></div><div><br></div><div>Regards,<br>Stijn<br>
-</div></div></div></div>
-
---089e01227b862a55a20501b65bf7--
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
