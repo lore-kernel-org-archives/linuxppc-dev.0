@@ -1,25 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B04481A05C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:33 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 Aug 2014 17:59:33 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/13] vfio: powerpc/spapr: Enable Dynamic DMA windows
-Date: Fri, 29 Aug 2014 17:59:16 +1000
-Message-Id: <1409299156-618-14-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
-References: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
-Cc: cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linux-api@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 585921A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 18:41:33 +1000 (EST)
+Message-ID: <1409301692.30345.1.camel@concordia>
+Subject: Re: [PATCH 1/2] PCI/MSI/PPC: Remove arch_msi_check_device()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexander Gordeev <agordeev@redhat.com>
+Date: Fri, 29 Aug 2014 18:41:32 +1000
+In-Reply-To: <18276ae8c0b212b8d40dfd186e1c84b8ae949525.1405160163.git.agordeev@redhat.com>
+References: <cover.1405160163.git.agordeev@redhat.com>
+ <18276ae8c0b212b8d40dfd186e1c84b8ae949525.1405160163.git.agordeev@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,255 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines and implements VFIO IOMMU API which lets the userspace
-create and remove DMA windows.
+On Sat, 2014-07-12 at 13:21 +0200, Alexander Gordeev wrote:
+> PowerPC is the only architecture that makes use of hook
+> arch_msi_check_device() and does perform some checks to
+> figure out if MSI/MSI-X could be enabled for a device.
+> However, there are no reasons why those checks could not
+> be done within arch_setup_msi_irqs() hook.
+> 
+> Moving MSI checks into arch_setup_msi_irqs() makes code
+> more readable and allows getting rid of unnecessary hook
+> arch_msi_check_device().
 
-This updates VFIO_IOMMU_SPAPR_TCE_GET_INFO to return the number of
-available windows and page mask.
+The intention was that this hook allowed a platform to reject the request
+early, ie. before all the setup had been done. But if no one except us is using
+it then fine, get rid of it.
 
-This adds VFIO_IOMMU_SPAPR_TCE_CREATE and VFIO_IOMMU_SPAPR_TCE_REMOVE
-to allow the user space to create and remove window(s).
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-The VFIO IOMMU driver does basic sanity checks and calls corresponding
-SPAPR TCE functions. At the moment only IODA2 (POWER8 PCI host bridge)
-implements them.
-
-This advertises VFIO_IOMMU_SPAPR_TCE_FLAG_DDW capability via
-VFIO_IOMMU_SPAPR_TCE_GET_INFO.
-
-This calls platform DDW reset() callback when IOMMU is being disabled
-to reset the DMA configuration to its original state.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 135 ++++++++++++++++++++++++++++++++++--
- include/uapi/linux/vfio.h           |  25 ++++++-
- 2 files changed, 153 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 0dccbc4..b518891 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -190,18 +190,25 @@ static void tce_iommu_disable(struct tce_container *container)
- 
- 	container->enabled = false;
- 
--	if (!container->grp || !current->mm)
-+	if (!container->grp)
- 		return;
- 
- 	data = iommu_group_get_iommudata(container->grp);
- 	if (!data || !data->iommu_owner || !data->ops->get_table)
- 		return;
- 
--	tbl = data->ops->get_table(data, 0);
--	if (!tbl)
--		return;
-+	if (current->mm) {
-+		tbl = data->ops->get_table(data, 0);
-+		if (tbl)
-+			decrement_locked_vm(tbl);
- 
--	decrement_locked_vm(tbl);
-+		tbl = data->ops->get_table(data, 1);
-+		if (tbl)
-+			decrement_locked_vm(tbl);
-+	}
-+
-+	if (data->ops->reset)
-+		data->ops->reset(data);
- }
- 
- static void *tce_iommu_open(unsigned long arg)
-@@ -243,7 +250,7 @@ static long tce_iommu_ioctl(void *iommu_data,
- 				 unsigned int cmd, unsigned long arg)
- {
- 	struct tce_container *container = iommu_data;
--	unsigned long minsz;
-+	unsigned long minsz, ddwsz;
- 	long ret;
- 
- 	switch (cmd) {
-@@ -288,6 +295,28 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
- 		info.flags = 0;
- 
-+		ddwsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-+				page_size_mask);
-+
-+		if (info.argsz == ddwsz) {
-+			if (data->ops->query && data->ops->create &&
-+					data->ops->remove) {
-+				info.flags |= VFIO_IOMMU_SPAPR_TCE_FLAG_DDW;
-+
-+				ret = data->ops->query(data,
-+						&info.current_windows,
-+						&info.windows_available,
-+						&info.page_size_mask);
-+				if (ret)
-+					return ret;
-+			} else {
-+				info.current_windows = 0;
-+				info.windows_available = 0;
-+				info.page_size_mask = 0;
-+			}
-+			minsz = ddwsz;
-+		}
-+
- 		if (copy_to_user((void __user *)arg, &info, minsz))
- 			return -EFAULT;
- 
-@@ -412,12 +441,106 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		tce_iommu_disable(container);
- 		mutex_unlock(&container->lock);
- 		return 0;
-+
- 	case VFIO_EEH_PE_OP:
- 		if (!container->grp)
- 			return -ENODEV;
- 
- 		return vfio_spapr_iommu_eeh_ioctl(container->grp,
- 						  cmd, arg);
-+
-+	case VFIO_IOMMU_SPAPR_TCE_CREATE: {
-+		struct vfio_iommu_spapr_tce_create create;
-+		struct spapr_tce_iommu_group *data;
-+		struct iommu_table *tbl;
-+
-+		if (WARN_ON(!container->grp))
-+			return -ENXIO;
-+
-+		data = iommu_group_get_iommudata(container->grp);
-+
-+		minsz = offsetofend(struct vfio_iommu_spapr_tce_create,
-+				start_addr);
-+
-+		if (copy_from_user(&create, (void __user *)arg, minsz))
-+			return -EFAULT;
-+
-+		if (create.argsz < minsz)
-+			return -EINVAL;
-+
-+		if (create.flags)
-+			return -EINVAL;
-+
-+		if (!data->ops->create || !data->iommu_owner)
-+			return -ENOSYS;
-+
-+		BUG_ON(!data || !data->ops || !data->ops->remove);
-+
-+		ret = data->ops->create(data, create.page_shift,
-+				create.window_shift, &tbl);
-+		if (ret)
-+			return ret;
-+
-+		ret = try_increment_locked_vm(tbl);
-+		if (ret) {
-+			data->ops->remove(data, tbl);
-+			return ret;
-+		}
-+
-+		create.start_addr = tbl->it_offset << tbl->it_page_shift;
-+
-+		if (copy_to_user((void __user *)arg, &create, minsz)) {
-+			data->ops->remove(data, tbl);
-+			decrement_locked_vm(tbl);
-+			return -EFAULT;
-+		}
-+		mutex_lock(&container->lock);
-+		++container->windows_num;
-+		mutex_unlock(&container->lock);
-+
-+		return ret;
-+	}
-+	case VFIO_IOMMU_SPAPR_TCE_REMOVE: {
-+		struct vfio_iommu_spapr_tce_remove remove;
-+		struct spapr_tce_iommu_group *data;
-+		struct iommu_table *tbl;
-+
-+		if (WARN_ON(!container->grp))
-+			return -ENXIO;
-+
-+		data = iommu_group_get_iommudata(container->grp);
-+
-+		minsz = offsetofend(struct vfio_iommu_spapr_tce_remove,
-+				start_addr);
-+
-+		if (copy_from_user(&remove, (void __user *)arg, minsz))
-+			return -EFAULT;
-+
-+		if (remove.argsz < minsz)
-+			return -EINVAL;
-+
-+		if (remove.flags)
-+			return -EINVAL;
-+
-+		if (!data->ops->remove || !data->iommu_owner)
-+			return -ENOSYS;
-+
-+		tbl = spapr_tce_find_table(container, data, remove.start_addr);
-+		if (!tbl)
-+			return -EINVAL;
-+
-+		ret = data->ops->remove(data, tbl);
-+		if (ret)
-+			return ret;
-+
-+		decrement_locked_vm(tbl);
-+
-+		mutex_lock(&container->lock);
-+		--container->windows_num;
-+		mutex_unlock(&container->lock);
-+
-+		return 0;
-+	}
- 	}
- 
- 	return -ENOTTY;
-diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index 6612974..e71a6ef 100644
---- a/include/uapi/linux/vfio.h
-+++ b/include/uapi/linux/vfio.h
-@@ -451,9 +451,13 @@ struct vfio_iommu_type1_dma_unmap {
-  */
- struct vfio_iommu_spapr_tce_info {
- 	__u32 argsz;
--	__u32 flags;			/* reserved for future use */
-+	__u32 flags;
-+#define VFIO_IOMMU_SPAPR_TCE_FLAG_DDW	1 /* Support dynamic windows */
- 	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
- 	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
-+	__u32 current_windows;
-+	__u32 windows_available;
-+	__u32 page_size_mask;
- };
- 
- #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-@@ -489,6 +493,25 @@ struct vfio_eeh_pe_op {
- 
- #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
- 
-+struct vfio_iommu_spapr_tce_create {
-+	__u32 argsz;
-+	__u32 flags;
-+	/* in */
-+	__u32 page_shift;
-+	__u32 window_shift;
-+	/* out */
-+	__u64 start_addr;
-+};
-+#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 18)
-+
-+struct vfio_iommu_spapr_tce_remove {
-+	__u32 argsz;
-+	__u32 flags;
-+	/* in */
-+	__u64 start_addr;
-+};
-+#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 19)
-+
- /* ***************************************************************** */
- 
- #endif /* _UAPIVFIO_H */
--- 
-2.0.0
+cheers
