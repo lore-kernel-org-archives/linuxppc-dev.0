@@ -1,19 +1,20 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93C8E1A0826
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:30 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BAF61A01A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:31 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 Aug 2014 17:59:29 +1000
+ Fri, 29 Aug 2014 17:59:30 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/13] powerpc/pseries/lpar: Enable VFIO
-Date: Fri, 29 Aug 2014 17:59:12 +1000
-Message-Id: <1409299156-618-10-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 11/13] vfio: powerpc/spapr: Move locked_vm accounting to
+ helpers
+Date: Fri, 29 Aug 2014 17:59:14 +1000
+Message-Id: <1409299156-618-12-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
 References: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
 Cc: cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
@@ -29,111 +30,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch introduced iommu_table_ops::exchange() callback
-which effectively disabled VFIO on pseries. This implements exchange()
-for pseries/lpar so VFIO can work in nested guests.
+There moves locked pages accounting to helpers.
+Later they will be reused for Dynamic DMA windows (DDW).
 
-Since exchaange() callback returns an old TCE, it has to call H_GET_TCE
-for every TCE being put to the table so VFIO performance in guests
-running under PR KVM is expected to be slower than in guests running under
-HV KVM or bare metal hosts.
+While we are here, update the comment explaining why RLIMIT_MEMLOCK
+might be required to be bigger than the guest RAM.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 71 +++++++++++++++++++++++++++----------
+ 1 file changed, 53 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 9a7364f..ae15b5a 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -138,13 +138,14 @@ static void tce_freemulti_pSeriesLP(struct iommu_table*, long, long);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 1c1a9c4..c9fac97 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -29,6 +29,46 @@
+ static void tce_iommu_detach_group(void *iommu_data,
+ 		struct iommu_group *iommu_group);
  
- static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				long npages, unsigned long uaddr,
-+				unsigned long *old_tces,
- 				enum dma_data_direction direction,
- 				struct dma_attrs *attrs)
- {
- 	u64 rc = 0;
- 	u64 proto_tce, tce;
- 	u64 rpn;
--	int ret = 0;
-+	int ret = 0, i = 0;
- 	long tcenum_start = tcenum, npages_start = npages;
- 
- 	rpn = __pa(uaddr) >> TCE_SHIFT;
-@@ -154,6 +155,9 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 
- 	while (npages--) {
- 		tce = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
-+		if (old_tces)
-+			plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12,
-+					&old_tces[i++]);
- 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, tce);
- 
- 		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
-@@ -179,8 +183,9 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 
- static DEFINE_PER_CPU(__be64 *, tce_page);
- 
--static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+static int tce_xchg_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				     long npages, unsigned long uaddr,
-+				     unsigned long *old_tces,
- 				     enum dma_data_direction direction,
- 				     struct dma_attrs *attrs)
- {
-@@ -195,6 +200,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 
- 	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_MULTITCE)) {
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					   old_tces,
- 		                           direction, attrs);
- 	}
- 
-@@ -211,6 +217,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		if (!tcep) {
- 			local_irq_restore(flags);
- 			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					    old_tces,
- 					    direction, attrs);
- 		}
- 		__get_cpu_var(tce_page) = tcep;
-@@ -232,6 +239,10 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		for (l = 0; l < limit; l++) {
- 			tcep[l] = cpu_to_be64(proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT);
- 			rpn++;
-+			if (old_tces)
-+				plpar_tce_get((u64)tbl->it_index,
-+						(u64)(tcenum + l) << 12,
-+						&old_tces[tcenum + l]);
- 		}
- 
- 		rc = plpar_tce_put_indirect((u64)tbl->it_index,
-@@ -262,6 +273,15 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 	return ret;
- }
- 
-+static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+				     long npages, unsigned long uaddr,
-+				     enum dma_data_direction direction,
-+				     struct dma_attrs *attrs)
++static long try_increment_locked_vm(struct iommu_table *tbl)
 +{
-+	return tce_xchg_pSeriesLP(tbl, tcenum, npages, uaddr, NULL,
-+			direction, attrs);
++	long ret = 0, locked, lock_limit, npages;
++
++	if (!current || !current->mm)
++		return -ESRCH; /* process exited */
++
++	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++
++	down_write(&current->mm->mmap_sem);
++	locked = current->mm->locked_vm + npages;
++	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
++	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
++		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
++				rlimit(RLIMIT_MEMLOCK));
++		ret = -ENOMEM;
++	} else {
++		current->mm->locked_vm += npages;
++	}
++	up_write(&current->mm->mmap_sem);
++
++	return ret;
 +}
 +
- static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
++static void decrement_locked_vm(struct iommu_table *tbl)
++{
++	long npages;
++
++	if (!current || !current->mm)
++		return; /* process exited */
++
++	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++
++	down_write(&current->mm->mmap_sem);
++	if (npages > current->mm->locked_vm)
++		npages = current->mm->locked_vm;
++	current->mm->locked_vm -= npages;
++	up_write(&current->mm->mmap_sem);
++}
++
+ /*
+  * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
+  *
+@@ -86,7 +126,6 @@ static void tce_iommu_take_ownership_notify(struct spapr_tce_iommu_group *data,
+ static int tce_iommu_enable(struct tce_container *container)
  {
- 	u64 rc;
-@@ -637,6 +657,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	int ret = 0;
+-	unsigned long locked, lock_limit, npages;
+ 	struct iommu_table *tbl;
+ 	struct spapr_tce_iommu_group *data;
  
- struct iommu_table_ops iommu_table_lpar_multi_ops = {
- 	.set = tce_buildmulti_pSeriesLP,
-+	.exchange = tce_xchg_pSeriesLP,
- 	.clear = tce_freemulti_pSeriesLP,
- 	.get = tce_get_pSeriesLP
- };
+@@ -120,24 +159,23 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
+ 	 * that would effectively kill the guest at random points, much better
+ 	 * enforcing the limit based on the max that the guest can map.
++	 *
++	 * Unfortunately at the moment it counts whole tables, no matter how
++	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
++	 * each with 2GB DMA window, 8GB will be counted here. The reason for
++	 * this is that we cannot tell here the amount of RAM used by the guest
++	 * as this information is only available from KVM and VFIO is
++	 * KVM agnostic.
+ 	 */
+ 	tbl = data->ops->get_table(data, 0);
+ 	if (!tbl)
+ 		return -ENXIO;
+ 
+-	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+-	locked = current->mm->locked_vm + npages;
+-	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+-		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+-				rlimit(RLIMIT_MEMLOCK));
+-		ret = -ENOMEM;
+-	} else {
+-		current->mm->locked_vm += npages;
+-		container->enabled = true;
+-	}
+-	up_write(&current->mm->mmap_sem);
++	ret = try_increment_locked_vm(tbl);
++	if (ret)
++		return ret;
++
++	container->enabled = true;
+ 
+ 	return ret;
+ }
+@@ -163,10 +201,7 @@ static void tce_iommu_disable(struct tce_container *container)
+ 	if (!tbl)
+ 		return;
+ 
+-	down_write(&current->mm->mmap_sem);
+-	current->mm->locked_vm -= (tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
+-	up_write(&current->mm->mmap_sem);
++	decrement_locked_vm(tbl);
+ }
+ 
+ static void *tce_iommu_open(unsigned long arg)
 -- 
 2.0.0
