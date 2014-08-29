@@ -1,20 +1,19 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE9691A0199
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:25 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EB951A0074
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:26 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 Aug 2014 17:59:25 +1000
+ Fri, 29 Aug 2014 17:59:26 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 04/13] powerpc/powernv: Convert/move set_bypass() callback to
- take_ownership()
-Date: Fri, 29 Aug 2014 17:59:07 +1000
-Message-Id: <1409299156-618-5-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 02/13] powerpc/powernv: Make invalidate() a callback
+Date: Fri, 29 Aug 2014 17:59:05 +1000
+Message-Id: <1409299156-618-3-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
 References: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
 Cc: cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
@@ -30,179 +29,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the iommu_table struct has a set_bypass() which enables/
-disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
-which calls this callback when external IOMMU users such as VFIO are
-about to get over a PHB.
+At the moment pnv_pci_ioda_tce_invalidate() gets the PE pointer via
+container_of(tbl). Since we are going to have to add Dynamic DMA windows
+and that means having 2 IOMMU tables per PE, this is not going to work.
 
-Since the set_bypass() is not really an iommu_table function but PE's
-function, and we have an ops struct per IOMMU owner, let's move
-set_bypass() to the spapr_tce_iommu_ops struct.
+This implements pnv_pci_ioda(1|2)_tce_invalidate as a pnv_ioda_pe callback.
 
-As arch/powerpc/kernel/iommu.c is more about POWERPC IOMMU tables and
-has very little to do with PEs, this moves take_ownership() calls to
-the VFIO SPAPR TCE driver.
+This adds a pnv_iommu_table wrapper around iommu_table and stores a pointer
+to PE there. PNV's ppc_md.tce_build() call uses this to find PE and
+do the invalidation. This will be used later for Dynamic DMA windows too.
 
-This renames set_bypass() to take_ownership() as it is not necessarily
-just enabling bypassing, it can be something else/more so let's give it
-a generic name. The bool parameter is inverted.
+This registers invalidate() callbacks for IODA1 and IODA2:
+- pnv_pci_ioda1_tce_invalidate;
+- pnv_pci_ioda2_tce_invalidate.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/iommu.h          |  1 -
- arch/powerpc/include/asm/tce.h            |  2 ++
- arch/powerpc/kernel/iommu.c               | 12 ------------
- arch/powerpc/platforms/powernv/pci-ioda.c | 20 ++++++++++++--------
- drivers/vfio/vfio_iommu_spapr_tce.c       | 16 ++++++++++++++++
- 5 files changed, 30 insertions(+), 21 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 35 ++++++++++++-------------------
+ arch/powerpc/platforms/powernv/pci.c      | 31 ++++++++++++++++++++-------
+ arch/powerpc/platforms/powernv/pci.h      | 13 +++++++++++-
+ 3 files changed, 48 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 84ee339..2b0b01d 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -77,7 +77,6 @@ struct iommu_table {
- #ifdef CONFIG_IOMMU_API
- 	struct iommu_group *it_group;
- #endif
--	void (*set_bypass)(struct iommu_table *tbl, bool enable);
- };
- 
- /* Pure 2^n version of get_order */
-diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
-index 9f159eb..e6355f9 100644
---- a/arch/powerpc/include/asm/tce.h
-+++ b/arch/powerpc/include/asm/tce.h
-@@ -56,6 +56,8 @@ struct spapr_tce_iommu_ops {
- 	struct iommu_table *(*get_table)(
- 			struct spapr_tce_iommu_group *data,
- 			int num);
-+	void (*take_ownership)(struct spapr_tce_iommu_group *data,
-+			bool enable);
- };
- 
- struct spapr_tce_iommu_group {
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 1c5dae7..c2c8d9d 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1139,14 +1139,6 @@ int iommu_take_ownership(struct iommu_table *tbl)
- 	memset(tbl->it_map, 0xff, sz);
- 	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
- 
--	/*
--	 * Disable iommu bypass, otherwise the user can DMA to all of
--	 * our physical memory via the bypass window instead of just
--	 * the pages that has been explicitly mapped into the iommu
--	 */
--	if (tbl->set_bypass)
--		tbl->set_bypass(tbl, false);
--
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(iommu_take_ownership);
-@@ -1161,10 +1153,6 @@ void iommu_release_ownership(struct iommu_table *tbl)
- 	/* Restore bit#0 set by iommu_init_table() */
- 	if (tbl->it_offset == 0)
- 		set_bit(0, tbl->it_map);
--
--	/* The kernel owns the device now, we can restore the iommu bypass */
--	if (tbl->set_bypass)
--		tbl->set_bypass(tbl, true);
- }
- EXPORT_SYMBOL_GPL(iommu_release_ownership);
- 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 2d32a1c..8cb2f31 100644
+index df241b1..136e765 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1105,10 +1105,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+@@ -857,7 +857,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+ 
+ 	pe = &phb->ioda.pe_array[pdn->pe_number];
+ 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+-	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
++	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32.table);
  }
  
--static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
-+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
- {
+ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+@@ -884,7 +884,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+ 	} else {
+ 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+ 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+-		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
++		set_iommu_table_base(&pdev->dev, &pe->tce32.table);
+ 	}
+ 	*pdev->dev.dma_mask = dma_mask;
+ 	return 0;
+@@ -899,9 +899,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		if (add_to_iommu_group)
+ 			set_iommu_table_base_and_group(&dev->dev,
+-						       &pe->tce32_table);
++						       &pe->tce32.table);
+ 		else
+-			set_iommu_table_base(&dev->dev, &pe->tce32_table);
++			set_iommu_table_base(&dev->dev, &pe->tce32.table);
+ 
+ 		if (dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
+@@ -988,19 +988,6 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	}
+ }
+ 
+-void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+-				 __be64 *startp, __be64 *endp, bool rm)
+-{
 -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
--					      tce32.table);
+-					      tce32_table);
+-	struct pnv_phb *phb = pe->phb;
+-
+-	if (phb->type == PNV_PHB_IODA1)
+-		pnv_pci_ioda1_tce_invalidate(pe, tbl, startp, endp, rm);
+-	else
+-		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+-}
+-
+ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 				      struct pnv_ioda_pe *pe, unsigned int base,
+ 				      unsigned int segs)
+@@ -1058,9 +1045,11 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 
+ 	/* Setup linux iommu table */
+-	tbl = &pe->tce32_table;
++	tbl = &pe->tce32.table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+ 				  base << 28, IOMMU_PAGE_SHIFT_4K);
++	pe->tce32.pe = pe;
++	pe->tce32.invalidate_fn = pnv_pci_ioda1_tce_invalidate;
+ 
+ 	/* OPAL variant of P7IOC SW invalidated TCEs */
+ 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+@@ -1097,7 +1086,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+ {
+ 	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++					      tce32.table);
  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
  	int64_t rc;
  
-@@ -1136,7 +1134,7 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
- 		 * host side.
- 		 */
- 		if (pe->pdev)
--			set_iommu_table_base(&pe->pdev->dev, tbl);
-+			set_iommu_table_base(&pe->pdev->dev, &pe->tce32.table);
- 		else
- 			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
- 	}
-@@ -1152,15 +1150,21 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
- 	/* TVE #1 is selected by PCI address bit 59 */
+@@ -1142,10 +1131,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
  	pe->tce_bypass_base = 1ull << 59;
  
--	/* Install set_bypass callback for VFIO */
--	pe->tce32.table.set_bypass = pnv_pci_ioda2_set_bypass;
--
- 	/* Enable bypass by default */
--	pnv_pci_ioda2_set_bypass(&pe->tce32.table, true);
-+	pnv_pci_ioda2_set_bypass(pe, true);
-+}
-+
-+static void pnv_ioda2_take_ownership(struct spapr_tce_iommu_group *data,
-+				     bool enable)
-+{
-+	struct pnv_ioda_pe *pe = data->iommu_owner;
-+
-+	pnv_pci_ioda2_set_bypass(pe, !enable);
- }
+ 	/* Install set_bypass callback for VFIO */
+-	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
++	pe->tce32.table.set_bypass = pnv_pci_ioda2_set_bypass;
  
- static struct spapr_tce_iommu_ops pnv_pci_ioda2_ops = {
- 	.get_table = pnv_ioda1_iommu_get_table,
-+	.take_ownership = pnv_ioda2_take_ownership,
- };
+ 	/* Enable bypass by default */
+-	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
++	pnv_pci_ioda2_set_bypass(&pe->tce32.table, true);
+ }
  
  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index a8adfbd..1c1a9c4 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -76,6 +76,13 @@ static struct iommu_table *spapr_tce_find_table(
- 	return ret;
- }
+@@ -1193,9 +1182,11 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	}
  
-+static void tce_iommu_take_ownership_notify(struct spapr_tce_iommu_group *data,
-+		bool enable)
+ 	/* Setup linux iommu table */
+-	tbl = &pe->tce32_table;
++	tbl = &pe->tce32.table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+ 			IOMMU_PAGE_SHIFT_4K);
++	pe->tce32.pe = pe;
++	pe->tce32.invalidate_fn = pnv_pci_ioda2_tce_invalidate;
+ 
+ 	/* OPAL variant of PHB3 invalidated TCEs */
+ 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index b854b57..97895d4 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -599,6 +599,27 @@ struct pci_ops pnv_pci_ops = {
+ 	.write = pnv_pci_write_config,
+ };
+ 
++static void pnv_tce_invalidate(struct iommu_table *tbl, __be64 *startp,
++	__be64 *endp, bool rm)
 +{
-+	if (data && data->ops && data->ops->take_ownership)
-+		data->ops->take_ownership(data, enable);
++	struct pnv_iommu_table *ptbl = container_of(tbl,
++			struct pnv_iommu_table, table);
++	struct pnv_ioda_pe *pe = ptbl->pe;
++
++	/*
++	 * Some implementations won't cache invalid TCEs and thus may not
++	 * need that flush. We'll probably turn it_type into a bit mask
++	 * of flags if that becomes the case
++	 */
++	if (!(tbl->it_type & TCE_PCI_SWINV_FREE))
++		return;
++
++	if (!pe || !ptbl->invalidate_fn)
++		return;
++
++	ptbl->invalidate_fn(pe, tbl, startp, endp, rm);
 +}
 +
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
-@@ -413,6 +420,12 @@ static int tce_iommu_attach_group(void *iommu_data,
- 		ret = iommu_take_ownership(tbl);
- 		if (!ret)
- 			container->grp = iommu_group;
-+		/*
-+		 * Disable iommu bypass, otherwise the user can DMA to all of
-+		 * our physical memory via the bypass window instead of just
-+		 * the pages that has been explicitly mapped into the iommu
-+		 */
-+		tce_iommu_take_ownership_notify(data, true);
- 	}
+ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 			 unsigned long uaddr, enum dma_data_direction direction,
+ 			 struct dma_attrs *attrs, bool rm)
+@@ -619,12 +640,7 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 		*(tcep++) = cpu_to_be64(proto_tce |
+ 				(rpn++ << tbl->it_page_shift));
  
- 	mutex_unlock(&container->lock);
-@@ -450,6 +463,9 @@ static void tce_iommu_detach_group(void *iommu_data,
- 		BUG_ON(!tbl);
+-	/* Some implementations won't cache invalid TCEs and thus may not
+-	 * need that flush. We'll probably turn it_type into a bit mask
+-	 * of flags if that becomes the case
+-	 */
+-	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
++	pnv_tce_invalidate(tbl, tces, tcep - 1, rm);
  
- 		iommu_release_ownership(tbl);
-+
-+		/* Kernel owns the device now, we can restore bypass */
-+		tce_iommu_take_ownership_notify(data, false);
- 	}
- 	mutex_unlock(&container->lock);
+ 	return 0;
  }
+@@ -648,8 +664,7 @@ static void pnv_tce_free(struct iommu_table *tbl, long index, long npages,
+ 	while (npages--)
+ 		*(tcep++) = cpu_to_be64(0);
+ 
+-	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, rm);
++	pnv_tce_invalidate(tbl, tces, tcep - 1, rm);
+ }
+ 
+ static void pnv_tce_free_vm(struct iommu_table *tbl, long index, long npages)
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 48494d4..095db43 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -24,6 +24,17 @@ enum pnv_phb_model {
+ #define PNV_IODA_PE_MASTER	(1 << 3)	/* Master PE in compound case	*/
+ #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	*/
+ 
++struct pnv_ioda_pe;
++typedef void (*pnv_invalidate_fn)(struct pnv_ioda_pe *pe,
++		struct iommu_table *tbl,
++		__be64 *startp, __be64 *endp, bool rm);
++
++struct pnv_iommu_table {
++	struct iommu_table	table;
++	struct pnv_ioda_pe	*pe;
++	pnv_invalidate_fn	invalidate_fn;
++};
++
+ /* Data associated with a PE, including IOMMU tracking etc.. */
+ struct pnv_phb;
+ struct pnv_ioda_pe {
+@@ -53,7 +64,7 @@ struct pnv_ioda_pe {
+ 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+ 	int			tce32_seg;
+ 	int			tce32_segcount;
+-	struct iommu_table	tce32_table;
++	struct pnv_iommu_table	tce32;
+ 	phys_addr_t		tce_inval_reg_phys;
+ 
+ 	/* 64-bit TCE bypass region */
 -- 
 2.0.0
