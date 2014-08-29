@@ -1,13 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id AAD181A0B93
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 19:14:48 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 9A00D1A0B10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 19:14:49 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 12/19] powerpc/8xx: Don't use MD_TWC for walk
-Message-Id: <20140829091439.74F471ABD63@localhost.localdomain>
-Date: Fri, 29 Aug 2014 11:14:39 +0200 (CEST)
+Subject: [PATCH v2 08/19] powerpc/8xx: No need to restore registers and save
+ them again.
+Message-Id: <20140829091438.B32551ABD63@localhost.localdomain>
+Date: Fri, 29 Aug 2014 11:14:38 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,82 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MD_TWC can only be used properly with 4k pages.
-So lets calculate level 2 table index by ourselves.
+In DTLBError handler there is not need to restore r10, r11 and cr registers
+after fixing DAR as they are saved again to the same place just after.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S |   28 ++++++++++++----------------
- 1 files changed, 12 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index ad15070..0f571f5 100644
+index 5f04d5f..e5a250c 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -297,8 +297,6 @@ InstructionTLBMiss:
- 	addi	r11, r10, -0x1000
- 	tlbie	r11
- #endif
--	DO_8xx_CPU6(0x3780, r3)
--	mtspr	SPRN_MD_EPN, r10	/* Have to use MD_EPN for walk, MI_EPN can't */
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
-@@ -326,10 +324,9 @@ InstructionTLBMiss:
- 	ori	r11,r11,1		/* Set valid bit */
- 	DO_8xx_CPU6(0x2b80, r3)
- 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
--	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
--	lwz	r10, 0(r11)	/* Get the pte */
-+	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
-+	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	lwzx	r10, r10, r11	/* Get the pte */
- 
- #ifdef CONFIG_SWAP
- 	andi.	r11, r10, _PAGE_ACCESSED | _PAGE_PRESENT
-@@ -395,12 +392,13 @@ DataStoreTLBMiss:
- 
- 	/* We have a pte table, so load fetch the pte from the table.
- 	 */
--	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
--	mfspr	r10, SPRN_MD_TWC	/* ....and get the pte address */
-+	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
-+	/* Extract level 2 index */
-+	rlwinm	r10, r10, 22, 20, 29
-+	rlwimi	r10, r11, 0, 0, 19	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
- 
-+	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
- 	/* Insert the Guarded flag into the TWC from the Linux PTE.
- 	 * It is bit 27 of both the Linux PTE and the TWC (at least
- 	 * I got that right :-).  It will be better when we can put
-@@ -524,18 +522,16 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
- 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
--	DO_8xx_CPU6(0x3780, r3)
--	mtspr	SPRN_MD_EPN, r10
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
- 	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
--	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
--	lwz	r11, 0(r11)	/* Get the pte */
-+	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
-+	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
-+	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	lwzx	r11, r10, r11	/* Get the pte */
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)	/* restore r3 from memory */
- #endif
+@@ -478,8 +478,8 @@ DataTLBError:
+ 	cmpwi	cr0, r11, 0x00f0
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+ DARFixed:/* Return from dcbx instruction bug workaround */
+-	EXCEPTION_EPILOG_0
+-	EXCEPTION_PROLOG
++	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_2
+ 	mfspr	r10,SPRN_DSISR
+ 	stw	r10,_DSISR(r11)
+ 	mr	r5,r10
 -- 
 1.7.1
