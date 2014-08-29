@@ -1,31 +1,29 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7003F1A0021
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:09:50 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 29 Aug 2014 12:39:46 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 00BBD125804F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 12:40:02 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s7T7C4l966191478
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 12:42:04 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s7T79fJD021057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 12:39:41 +0530
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/eeh: Clear frozen device state in time
-Date: Fri, 29 Aug 2014 17:09:35 +1000
-Message-Id: <1409296175-5600-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, stable@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44E591A0053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:32:25 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [RESEND] clk: ppc-corenet: Add Freescale ARM-based platforms
+ CLK_OF_DECLARE support
+Date: Fri, 29 Aug 2014 07:17:35 +0000
+Message-ID: <c5564f8aa16b4156837a5fc4134036fb@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1408700096-25415-1-git-send-email-jingchang.lu@freescale.com>
+ <1409093463.6510.92.camel@snotra.buserror.net>
+ <164af7b3be3747a0be3fe3a6cf83d3b1@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1409182412.6510.129.camel@snotra.buserror.net>
+ <f7b4263f189346a391d66c85756b4907@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1409243145.6510.160.camel@snotra.buserror.net>
+In-Reply-To: <1409243145.6510.160.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mturquette@linaro.org" <mturquette@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,62 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The problem was reported by Carol: In the scenario of passing mlx4
-adapter to guest, EEH error could be recovered successfully. When
-returning the device back to host, the driver (mlx4_core.ko)
-couldn't be loaded successfully because of error number -5 (-EIO)
-returned from mlx4_get_ownership(), which hits offlined PCI device.
-The root cause is that we missed to put the affected devices into
-normal state on clearing PE isolated state right after PE reset.
-
-The patch fixes above issue by putting the affected devices to
-normal state when clearing PE isolated state in eeh_pe_state_clear().
-
-Cc: stable@vger.kernel.org
-Reported-by: Carol L. Soto <clsoto@us.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_pe.c | 21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 00e3844..eef08f0 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -584,6 +584,8 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
- {
- 	struct eeh_pe *pe = (struct eeh_pe *)data;
- 	int state = *((int *)flag);
-+	struct eeh_dev *edev, *tmp;
-+	struct pci_dev *pdev;
- 
- 	/* Keep the state of permanently removed PE intact */
- 	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
-@@ -592,9 +594,22 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
- 
- 	pe->state &= ~state;
- 
--	/* Clear check count since last isolation */
--	if (state & EEH_PE_ISOLATED)
--		pe->check_count = 0;
-+	/*
-+	 * Special treatment on clearing isolated state. Clear
-+	 * check count since last isolation and put all affected
-+	 * devices to normal state.
-+	 */
-+	if (!(state & EEH_PE_ISOLATED))
-+		return NULL;
-+
-+	pe->check_count = 0;
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		pdev = eeh_dev_to_pci_dev(edev);
-+		if (!pdev)
-+			continue;
-+
-+		pdev->error_state = pci_channel_io_normal;
-+	}
- 
- 	return NULL;
- }
--- 
-1.8.3.2
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
+ZW50OiBGcmlkYXksIEF1Z3VzdCAyOSwgMjAxNCAxMjoyNiBBTQ0KPlRvOiBMdSBKaW5nY2hhbmct
+QjM1MDgzDQo+Q2M6IG10dXJxdWV0dGVAbGluYXJvLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IGxpbnV4LQ0KPmtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJu
+ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPlN1YmplY3Q6IFJlOiBbUkVTRU5EXSBjbGs6IHBwYy1j
+b3JlbmV0OiBBZGQgRnJlZXNjYWxlIEFSTS1iYXNlZCBwbGF0Zm9ybXMNCj5DTEtfT0ZfREVDTEFS
+RSBzdXBwb3J0DQo+DQo+T24gVGh1LCAyMDE0LTA4LTI4IGF0IDA1OjA1IC0wNTAwLCBMdSBKaW5n
+Y2hhbmctQjM1MDgzIHdyb3RlOg0KPj4gPi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+PiA+
+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj4+ID5TZW50OiBUaHVyc2RheSwgQXVndXN0IDI4LCAy
+MDE0IDc6MzQgQU0NCj4+ID5UbzogTHUgSmluZ2NoYW5nLUIzNTA4Mw0KPj4gPkNjOiBtdHVycXVl
+dHRlQGxpbmFyby5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4+
+ID5rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmcNCj4+ID5TdWJqZWN0OiBSZTogW1JFU0VORF0gY2xrOiBwcGMtY29yZW5ldDogQWRkIEZy
+ZWVzY2FsZSBBUk0tYmFzZWQNCj4+ID5wbGF0Zm9ybXMgQ0xLX09GX0RFQ0xBUkUgc3VwcG9ydA0K
+Pj4gPg0KPj4gPk9uIFR1ZSwgMjAxNC0wOC0yNiBhdCAyMToxOSAtMDUwMCwgTHUgSmluZ2NoYW5n
+LUIzNTA4MyB3cm90ZToNCj4+ID4+ID4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPj4gPj4g
+PkZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+PiA+PiA+U2VudDogV2VkbmVzZGF5LCBBdWd1c3Qg
+MjcsIDIwMTQgNjo1MSBBTQ0KPj4gPj4gPlRvOiBMdSBKaW5nY2hhbmctQjM1MDgzDQo+PiA+PiA+
+Q2M6IG10dXJxdWV0dGVAbGluYXJvLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
+IGxpbnV4LQ0KPj4gPj4gPmtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxA
+bGlzdHMuaW5mcmFkZWFkLm9yZw0KPj4gPj4gPlN1YmplY3Q6IFJlOiBbUkVTRU5EXSBjbGs6IHBw
+Yy1jb3JlbmV0OiBBZGQgRnJlZXNjYWxlIEFSTS1iYXNlZA0KPj4gPj4gPnBsYXRmb3JtcyBDTEtf
+T0ZfREVDTEFSRSBzdXBwb3J0DQo+PiA+PiA+DQo+PiA+PiA+T24gRnJpLCAyMDE0LTA4LTIyIGF0
+IDE3OjM0ICswODAwLCBKaW5nY2hhbmcgTHUgd3JvdGU6DQo+PiA+PiA+PiArQ0xLX09GX0RFQ0xB
+UkUocHBjX2NvcmVfcGxsX3YxLCAiZnNsLHFvcmlxLWNvcmUtcGxsLTEuMCIsDQo+PiA+PiA+Y29y
+ZV9wbGxfaW5pdCk7DQo+PiA+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfcGxsX3YyLCAi
+ZnNsLHFvcmlxLWNvcmUtcGxsLTIuMCIsDQo+PiA+PiA+Y29yZV9wbGxfaW5pdCk7DQo+PiA+PiA+
+PiArQ0xLX09GX0RFQ0xBUkUocHBjX2NvcmVfbXV4X3YxLCAiZnNsLHFvcmlxLWNvcmUtbXV4LTEu
+MCIsDQo+PiA+PiA+Y29yZV9tdXhfaW5pdCk7DQo+PiA+PiA+PiArQ0xLX09GX0RFQ0xBUkUocHBj
+X2NvcmVfbXV4X3YyLCAiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCIsDQo+PiA+PiA+Y29yZV9tdXhf
+aW5pdCk7DQo+PiA+PiA+DQo+PiA+PiA+V2hhdCBkb2VzIHRoaXMgZG8gdGhhdCB0aGUgZXhpc3Rp
+bmcgcGxhdGZvcm0gZHJpdmVyIGFuZCBtYXRjaA0KPj4gPj4gPnRhYmxlIGRvbid0PyAgV2h5IGlz
+IGl0IG5lZWRlZCBmb3IgQVJNIHdoZW4gUFBDIGRpZG4ndCBuZWVkIGl0Pw0KPj4gPj4gPg0KPj4g
+Pj4gPi1TY290dA0KPj4gPj4gPg0KPj4gPj4gQ29tbW9uIGNsayBpbml0IG9uIEFSTSBwbGF0Zm9y
+bSBpcyBpbml0aWFsaXplZCBlYXJsaWVyIHZpYQ0KPj4gPj4gb2ZfY2xrX2luaXQoKSBpbnN0ZWFk
+IG9mIGRyaXZlciBwcm9iZSBtZXRob2QsIHRoZSBvZl9jbGtfaW5pdCB3aWxsDQo+PiA+PiB3YWxr
+IGEgX19jbGtfb2ZfdGFibGUgdG8gaW5pdCBlYWNoIGNsayBwcm92aWRlciBpbiB0aGUgdGFibGUs
+IHRoZQ0KPj4gPj4gQ0xLX09GX0RFQ0xBUkUoKSBtYWNybyBwdXRzIGEgc3VwcG9ydGVkIGNsayBp
+biB0aGUgX19jbGtfb2ZfdGFibGUNCj4+ID4+IGZvciBpdA0KPj4gPmluaXRpYWxpemluZyBvbiBz
+dGFydXAsIGFuZCB0aGUgY2xrIHN5c3RlbSBoYXMgYWRkZWQgc29tZSBjb21tb24gY2xrDQo+PiA+
+c3VjaCBhcyAiZml4ZWQtY2xrIg0KPj4gPj4gdG8gdGhpcyB0YWJsZSBhbHJlYWR5Lg0KPj4gPj4g
+U28gaGVyZSBJIGFkZCBvdXIgc3BlY2lmaWMgY2xrIGluaXQgZGVjbGFyYXRpb24gdG8gY29uc2lz
+dCB0aGlzDQo+PiA+PiBmcmFtZXdvcmssIGFuZCB0aGUgZHJpdmVyIHByb2JlIGZ1bmN0aW9uIHdp
+bGwgbm90IGJlIG5lZWRlZCBvbiBBUk0uDQo+PiA+DQo+PiA+T0suLi4gSXMgdGhlcmUgYW55IHJl
+YXNvbiB3aHkgdGhlIG5ldyBtZXRob2Qgd29uJ3Qgd29yayBvbiBQUEM/DQo+PiA+DQo+PiBQUEMg
+aGFzIGxpdHRsZSBkZXBlbmRlbmNlIG9uIHRoZSBjbG9jayB0cmVlIGJ1dCBmcmVxdWVuY3ksIGl0
+IHdpbGwNCj4+IHdvcmsgd2VsbCBpZiBhZG9wdGVkIEkgdGhpbmsuDQo+DQo+SSdtIGp1c3Qgc2F5
+aW5nIGl0IHNlZW1zIHJlZHVuZGFudCB0byBoYXZlIGJvdGguICBFdmVuIG9uIEFSTSwgd29uJ3Qg
+dGhpcw0KPnJlc3VsdCBpbiB0aGUgY2xvY2sgZ2V0dGluZyByZWdpc3RlcmVkIHR3aWNlIChhbGJl
+aXQgd2l0aCBvbmUgb2YgdGhvc2UNCj50aW1lcyBiZWluZyB0b28gbGF0ZSk/DQo+DQo+UmVnYXJk
+bGVzcyBvZiB3aGF0IGRlcGVuZGVuY2UgUFBDIGhhcyBvbiB0aGUgY2xvY2sgdHJlZSwgd2hhdCBz
+dG9wcyB0aGlzDQo+bWV0aG9kIG9mIGVudW1lcmF0aW9uIGZyb20gd29ya2luZyBvbiBQUEM/ICBJ
+cyB0aGVyZSBhbnl0aGluZyByZXF1aXJlZA0KPm90aGVyIHRoYW4gaW5zZXJ0aW5nIGEgY2FsbCB0
+byBvZl9jbGtfaW5pdChOVUxMKSBpbiB0aGUgYXJjaCBpbml0IGNvZGU/DQo+DQo+LVNjb3R0DQo+
+DQpUaGUgb2ZfY2xrX2luaXQgaXMgYW4gYWx0ZXJuYXRpdmUgd2F5IHRvIHRoZSBsZWdhY3kgZHJp
+dmVyLiANCkxhdGVzdCBBUk0gc3RhbmRhcmQgc3VwcG9ydCBhIGRlZmF1bHQgY2FsbCB0byBvZl9j
+bGtfaW5pdChOVUxMKSBpbiBpdHMgdGltZV9pbml0KCkuDQpTbyB0aGlzIGlzIHRoZSBnZW5lcmFs
+IHdheSBmb3IgQVJNLWJhc2VkIHBsYXRmb3JtLg0KVGhlIGNsayByZWdpc3RlciBsYXllciBjYW4g
+ZGV0ZWN0IHRoZSB0d2ljZSByZWdpc3RyYXRpb24gb2YgYSBzYW1lIGNsayBhbmQNCmF2b2lkIHRo
+ZSBkdXBsaWNhdGUgcmVnaXN0cmF0aW9uLiBUaGUgZHRiIHNob3VsZCBzZWxlY3QgdGhlIGNvbXBh
+dGlibGUgZm9yIGVpdGhlciwNCmJ1dCBub3QgYm90aC4gT24gTFMxMDIxQSB0aGUgZHJpdmVyIHBy
+b2JlIG1ldGhvZCB3aWxsIG5vdCBiZSB0cmlnZ2VyZWQuDQpBbmQgZm9yIHN1cHBvcnQgb2Ygb2Zf
+Y2xrX2luaXQgb24gUFBDLCBJIHRoaW5rIGp1c3QgYWRkIGEgY2FsbCB0byBpdCBhcyBBUk0gZG8N
+CmluIHRpbWVfaW5pdCgpW2FyY2gvYXJtL2tlcm5lbC90aW1lLmNdIHdvdWxkIGJlIG9rLg0KDQoN
+Cg0KQmVzdCBSZWdhcmRzLA0KSmluZ2NoYW5nDQoNCg0KDQoNCg0K
