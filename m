@@ -1,19 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 259CB1A00CD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 01:22:00 +1000 (EST)
-In-Reply-To: <20140829091324.D71E61ABD63@localhost.localdomain>
-References: <20140829091324.D71E61ABD63@localhost.localdomain>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 789551A0028
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 04:41:31 +1000 (EST)
+Message-ID: <1409337669.24184.0.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 17/19] powerpc/8xx: set PTE bit 22 off TLBmiss
+From: Scott Wood <scottwood@freescale.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 29 Aug 2014 13:41:09 -0500
+In-Reply-To: <20140829091440.6DAD91ABD66@localhost.localdomain>
+References: <20140829091440.6DAD91ABD66@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 00/19] powerpc/8xx: Optimise MMU TLB handling and add
- support of 16k pages
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <OF844FADBC.6B73E319-ONC1257D43.005106B8-C1257D43.005467D6@transmode.se>
-Date: Fri, 29 Aug 2014 17:21:55 +0200
-Content-Type: text/plain; charset="US-ASCII"
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> wrote on 2014/08/29 11:13:24:
-> 
-> This patchset:
-> 1) provides several MMU TLB handling optimisation on MPC8xx.
-> 2) adds support of 16k pages on MPC8xx.
-> All changes have been successfully tested on a custom board equipped 
-with MPC885
-> 
-> The two differences with first version of the patch are:
-> 1) I removed the patch number 10, which was implementing a 16 bit 
-alignment of the
-> PGDIR. It is not worth potentially wasting up to 64k of memory just for 
-removing one
-> instruction (ori).
-> 2) I managed to preserve r11 while calculating the level 2 address, 
-therefore
-> no more need to save r11 into CR.
+On Fri, 2014-08-29 at 11:14 +0200, Christophe Leroy wrote:
+> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc32.h |   21 +++++++++++++++++++++
+>  arch/powerpc/include/asm/pte-8xx.h       |    7 +++++--
+>  arch/powerpc/kernel/head_8xx.S           |   10 ++--------
+>  3 files changed, 28 insertions(+), 10 deletions(-)
+> 
 
-This looks good but I need to look harder, some minor critique 
-though(already sent)
- 
-As you are optimizing I think the impl.of powerpc/8xx: Invalidate non 
-present TLBs 
-in 2.4 is better than 3.x, compare:
-http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/arch/powerpc/mm/fault.c?id=5efab4a02c89c252fb4cce097aafde5f8208dbfe
-with
-https://git.kernel.org/cgit/linux/kernel/git/wtarreau/linux-2.4.git/commit/?id=da5c5609e86fb12061f2c05a6ddd80ffc46592b2
+When you post a vN+1 please indicate below the --- what changed sinced
+vN.
 
+-Scott
 
-This will free the TLB before you jump to xxx_page_fault which might need 
-a TLB before invalidation
-and it isolates this 8xx quirk in 8xx specific code.
-
- Jocke
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+> index 47edde8..c261792 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -172,6 +172,26 @@ static inline unsigned long pte_update(pte_t *p,
+>  #ifdef PTE_ATOMIC_UPDATES
+>  	unsigned long old, tmp;
+>  
+> +#ifdef CONFIG_PPC_8xx
+> +	unsigned long tmp2;
+> +
+> +	__asm__ __volatile__("\
+> +1:	lwarx	%0,0,%4\n\
+> +	andc	%1,%0,%5\n\
+> +	or	%1,%1,%6\n\
+> +	/* 0x200 == Extended encoding, bit 22 */ \
+> +	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
+> +	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
+> +	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
+> +	or	%1,%3,%1\n\
+> +	xori	%1,%1,0x200\n"
+> +	PPC405_ERR77(0,%4)
+> +"	stwcx.	%1,0,%4\n\
+> +	bne-	1b"
+> +	: "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
+> +	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+> +	: "cc" );
+> +#else /* CONFIG_PPC_8xx */
+>  	__asm__ __volatile__("\
+>  1:	lwarx	%0,0,%3\n\
+>  	andc	%1,%0,%4\n\
+> @@ -182,6 +202,7 @@ static inline unsigned long pte_update(pte_t *p,
+>  	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+>  	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+>  	: "cc" );
+> +#endif /* CONFIG_PPC_8xx */
+>  #else /* PTE_ATOMIC_UPDATES */
+>  	unsigned long old = pte_val(*p);
+>  	*p = __pte((old & ~clr) | set);
+> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
+> index d44826e..dede1e7 100644
+> --- a/arch/powerpc/include/asm/pte-8xx.h
+> +++ b/arch/powerpc/include/asm/pte-8xx.h
+> @@ -48,19 +48,22 @@
+>   */
+>  #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
+>  #define _PAGE_USER	0x0800	/* msb PP bits */
+> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
+> +#define _PAGE_KNLRO	0x0200
+>  
+>  #define _PMD_PRESENT	0x0001
+>  #define _PMD_BAD	0x0ff0
+>  #define _PMD_PAGE_MASK	0x000c
+>  #define _PMD_PAGE_8M	0x000c
+>  
+> -#define _PTE_NONE_MASK _PAGE_ACCESSED
+> +#define _PTE_NONE_MASK (_PAGE_ACCESSED | _PAGE_KNLRO)
+>  
+>  /* Until my rework is finished, 8xx still needs atomic PTE updates */
+>  #define PTE_ATOMIC_UPDATES	1
+>  
+>  /* We need to add _PAGE_SHARED to kernel pages */
+> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
+> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
+> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
+>  #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+>  
+>  #endif /* __KERNEL__ */
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+> index a7af26e..48d3de8 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -445,14 +445,8 @@ DataStoreTLBMiss:
+>  	and	r11, r11, r10
+>  	rlwimi	r10, r11, 0, _PAGE_PRESENT
+>  #endif
+> -	/* Honour kernel RO, User NA */
+> -	/* 0x200 == Extended encoding, bit 22 */
+> -	rlwimi	r10, r10, 32-2, 0x200 /* Copy USER to bit 22, 0x200 */
+> -	/* r11 =  (r10 & _PAGE_RW) >> 1 */
+> -	rlwinm	r11, r10, 32-1, 0x200
+> -	or	r10, r11, r10
+> -	/* invert RW and 0x200 bits */
+> -	xori	r10, r10, _PAGE_RW | 0x200
+> +	/* invert RW */
+> +	xori	r10, r10, _PAGE_RW
+>  
+>  	/* The Linux PTE won't go exactly into the MMU TLB.
+>  	 * Software indicator bits 22 and 28 must be clear.
