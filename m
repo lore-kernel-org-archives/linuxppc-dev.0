@@ -2,18 +2,21 @@ Return-Path: <aik@ozlabs.ru>
 Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 992A41A0165
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE80C1A0189
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 17:59:25 +1000 (EST)
 Received: from /spool/local
  by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 Aug 2014 17:59:24 +1000
+ Fri, 29 Aug 2014 17:59:25 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 00/13] powerpc/iommu/vfio: Enable Dynamic DMA windows
-Date: Fri, 29 Aug 2014 17:59:03 +1000
-Message-Id: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 01/13] powerpc/iommu: Check that TCE page size is equal to
+ it_page_size
+Date: Fri, 29 Aug 2014 17:59:04 +1000
+Message-Id: <1409299156-618-2-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
+References: <1409299156-618-1-git-send-email-aik@ozlabs.ru>
 Cc: cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
  Alexey Kardashevskiy <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
  linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
@@ -27,76 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables PAPR defined feature called Dynamic DMA windows (DDW).
+This checks that the TCE table page size is not bigger that the size of
+a page we just pinned and going to put its physical address to the table.
 
-Each Partitionable Endpoint (IOMMU group) has a separate DMA window on
-a PCI bus where devices are allows to perform DMA. By default there is
-1 or 2GB window allocated at the host boot time and these windows are
-used when an IOMMU group is passed to the userspace (guest). These windows
-are mapped at zero offset on a PCI bus.
+Otherwise the hardware gets unwanted access to physical memory between
+the end of the actual page and the end of the aligned up TCE page.
 
-Hi-speed devices may suffer from limited size of this window. On the host
-side a TCE bypass mode is enabled on POWER8 CPU which implements
-direct mapping of the host memory to a PCI bus at 1<<59.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kernel/iommu.c | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
-For the guest, PAPR defines a DDW RTAS API which allows the pseries guest
-to query the hypervisor if it supports DDW and what are the parameters
-of possible windows.
-
-Currently POWER8 supports 2 DMA windows per PE - already mentioned and used
-small 32bit window and 64bit window which can only start from 1<<59 and
-can support various page sizes.
-
-This patchset reworks PPC IOMMU code and adds necessary structures
-to extend it to support big windows.
-
-When the guest detectes the feature and the PE is capable of 64bit DMA,
-it does:
-1. query to hypervisor about number of available windows and page masks;
-2. creates a window with the biggest possible page size (current guests can do
-64K or 16MB TCEs);
-3. maps the entire guest RAM via H_PUT_TCE* hypercalls
-4. switches dma_ops to direct_dma_ops on the selected PE.
-
-Once this is done, H_PUT_TCE is not called anymore and the guest gets
-maximum performance.
-
-
-Please comment. Thanks!
-
-
-Alexey Kardashevskiy (13):
-  powerpc/iommu: Check that TCE page size is equal to it_page_size
-  powerpc/powernv: Make invalidate() a callback
-  powerpc/spapr: vfio: Implement spapr_tce_iommu_ops
-  powerpc/powernv: Convert/move set_bypass() callback to
-    take_ownership()
-  powerpc/iommu: Fix IOMMU ownership control functions
-  powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table
-  powerpc/powernv: Do not set "read" flag if direction==DMA_NONE
-  powerpc/powernv: Release replaced TCE
-  powerpc/pseries/lpar: Enable VFIO
-  powerpc/powernv: Implement Dynamic DMA windows (DDW) for IODA
-  vfio: powerpc/spapr: Move locked_vm accounting to helpers
-  vfio: powerpc/spapr: Use it_page_size
-  vfio: powerpc/spapr: Enable Dynamic DMA windows
-
- arch/powerpc/include/asm/iommu.h            |  35 ++-
- arch/powerpc/include/asm/machdep.h          |  25 --
- arch/powerpc/include/asm/tce.h              |  37 +++
- arch/powerpc/kernel/iommu.c                 | 213 +++++++++------
- arch/powerpc/kernel/vio.c                   |   5 +-
- arch/powerpc/platforms/cell/iommu.c         |   9 +-
- arch/powerpc/platforms/pasemi/iommu.c       |   8 +-
- arch/powerpc/platforms/powernv/pci-ioda.c   | 233 +++++++++++++++--
- arch/powerpc/platforms/powernv/pci-p5ioc2.c |   4 +-
- arch/powerpc/platforms/powernv/pci.c        | 113 +++++---
- arch/powerpc/platforms/powernv/pci.h        |  15 +-
- arch/powerpc/platforms/pseries/iommu.c      |  77 ++++--
- arch/powerpc/sysdev/dart_iommu.c            |  13 +-
- drivers/vfio/vfio_iommu_spapr_tce.c         | 384 +++++++++++++++++++++++-----
- include/uapi/linux/vfio.h                   |  25 +-
- 15 files changed, 925 insertions(+), 271 deletions(-)
-
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index a10642a..b378f78 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -38,6 +38,7 @@
+ #include <linux/pci.h>
+ #include <linux/iommu.h>
+ #include <linux/sched.h>
++#include <linux/hugetlb.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/iommu.h>
+@@ -1059,16 +1060,37 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
+ 				tce, entry << tbl->it_page_shift, ret); */
+ 		return -EFAULT;
+ 	}
++
++	/*
++	 * Check that the TCE table granularity is not bigger than the size of
++	 * a page we just found. Otherwise the hardware can get access to
++	 * a bigger memory chunk that it should.
++	 */
++	if (PageHuge(page)) {
++		struct page *head = compound_head(page);
++		long shift = PAGE_SHIFT + compound_order(head);
++
++		if (shift < tbl->it_page_shift) {
++			ret = -EINVAL;
++			goto put_page_exit;
++		}
++
++	}
++
+ 	hwaddr = (unsigned long) page_address(page) + offset;
+ 
+ 	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
+ 	if (ret)
+-		put_page(page);
++		goto put_page_exit;
+ 
+-	if (ret < 0)
+-		pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%d\n",
++	return 0;
++
++put_page_exit:
++	pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%d\n",
+ 			__func__, entry << tbl->it_page_shift, tce, ret);
+ 
++	put_page(page);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
 -- 
 2.0.0
