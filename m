@@ -1,22 +1,23 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
- [IPv6:2607:f8b0:4002:c07::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83BB41A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 13:37:20 +1000 (EST)
-Received: by mail-yk0-f181.google.com with SMTP id 131so1959293ykp.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2014 20:37:17 -0700 (PDT)
-From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, Fabian Frederick <fabf@skynet.be>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list)
-Subject: [RFC PATCH] powerpc: Wire up three syscalls
-Date: Fri, 29 Aug 2014 23:36:25 -0400
-Message-Id: <1409369788-22563-1-git-send-email-bobby.prani@gmail.com>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews02.kpnxchange.com (cpsmtpb-ews02.kpnxchange.com
+ [213.75.39.5])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3B4BF1A0069
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 23:00:37 +1000 (EST)
+Message-ID: <1409402838.21896.99.camel@x220>
+Subject: Re: [PATCH 1/5] kexec: Fix make headers_check
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Vivek Goyal <vgoyal@redhat.com>
+Date: Sat, 30 Aug 2014 14:47:18 +0200
+In-Reply-To: <20140825172234.GD14379@redhat.com>
+References: <cover.1408731991.git.geoff@infradead.org>
+ <115373b6ac68ee7a305975896e1c4971e8e51d4c.1408731991.git.geoff@infradead.org>
+ <20140825172234.GD14379@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: maximilian attems <max@stro.at>, Geoff Levand <geoff@infradead.org>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Eric Biederman <ebiederm@xmission.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I see that the three syscalls seccomp, getrandom and memfd_create are not wired
-because of which we get a warning while compilation.
+[Added Peter Anvin.]
 
-So I wired them up in this patch. What else needs to be done? I tried the
-memfd_test after compiling this kernel, but it is failing. What am I missing for
-this to work? Any advice is really appreciated! :)
+On Mon, 2014-08-25 at 13:22 -0400, Vivek Goyal wrote:
+> On Fri, Aug 22, 2014 at 06:39:47PM +0000, Geoff Levand wrote:
+> > Remove the unneded declaration for a kexec_load() routine.
+> > 
+> > Fixes errors like these when running 'make headers_check':
+> > 
+> > include/uapi/linux/kexec.h: userspace cannot reference function or variable defined in the kernel
+> > 
+> > Signed-off-by: Geoff Levand <geoff@infradead.org>
+> 
+> I think Paul Bolle tried to remove this in the past and maximilian
+> had objections.
+> 
+> http://lists.infradead.org/pipermail/kexec/2014-January/010902.html
 
-Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
----
- arch/powerpc/include/asm/systbl.h      | 3 +++
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 3 +++
- 3 files changed, 7 insertions(+), 1 deletion(-)
+I've wanted to resend my patch, perhaps with a new commit explanation,
+for quite some time now. I never got around doing that.
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 542bc0f..7d8a600 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -362,3 +362,6 @@ SYSCALL(ni_syscall) /* sys_kcmp */
- SYSCALL_SPU(sched_setattr)
- SYSCALL_SPU(sched_getattr)
- SYSCALL_SPU(renameat2)
-+SYSCALL_SPU(seccomp)
-+SYSCALL_SPU(getrandom)
-+SYSCALL_SPU(memfd_create)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 5ce5552..4e9af3f 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		358
-+#define __NR_syscalls		361
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 2d526f7..0688fc0 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -380,5 +380,8 @@
- #define __NR_sched_setattr	355
- #define __NR_sched_getattr	356
- #define __NR_renameat2		357
-+#define __NR_seccomp		358
-+#define __NR_getrandom		359
-+#define __NR_memfd_create	360
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.1.0
+> I can't see that how exporting kernel prototype helps here.
+
+It doesn't, for the reasons I've set out in
+http://lists.infradead.org/pipermail/kexec/2014-January/010900.html . In
+short: why bother using this prototype if one still needs to define the
+matching function oneself?
+
+> kexec-tools
+> seems to be using syscall(__NR_kexec_load) directly for non-xen case. So
+> I would be fine with removing this definition. Just trying to make sure
+> that it does not break any other library or users of this declaration.
+
+Obviously, this can only break compiling those libraries, or other
+users. It can't break already compiled binaries. Besides I don't think
+those libraries, etc actually exist. Maximilian mentioned klibc in
+January, but I wasn't able to find a version of klibc that cared about
+this prototype. No one pointed me at a version that does (or any other
+library, etc., for that matter).
+
+(If we do decide to keep this prototype, we should special case this
+prototype in headers_check.pl just to silence the build.)
+
+The above can be summarized like this:
+    Acked-by: Paul Bolle <pebolle@tiscali.nl>
+
+
+Paul Bolle
