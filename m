@@ -1,23 +1,26 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-lb0-x231.google.com (mail-lb0-x231.google.com
+ [IPv6:2a00:1450:4010:c04::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A1651A0007
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 22:52:14 +1000 (EST)
-Date: Sun, 31 Aug 2014 13:51:49 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Axel Lin <axel.lin@ingics.com>
-Message-ID: <20140831125149.GF29327@sirena.org.uk>
-References: <1409460249.31873.2.camel@phoenix>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E5431A160F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 22:52:40 +1000 (EST)
+Received: by mail-lb0-f177.google.com with SMTP id z11so4618587lbi.22
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 05:52:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="K/+MhuhYzqQJJ3Xj"
-In-Reply-To: <1409460249.31873.2.camel@phoenix>
-Subject: Re: [PATCH] spi: fsl: Don't use devm_kzalloc in master->setup callback
-Cc: linux-spi <linux-spi@vger.kernel.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Stijn Devriendt <highguy@gmail.com>
+In-Reply-To: <CAMuHMdV_naTfQOLwOshWq1Q15kSE39a8GWChsjt3RrWRcd6peg@mail.gmail.com>
+References: <1409369788-22563-1-git-send-email-bobby.prani@gmail.com>
+ <CAMuHMdV_naTfQOLwOshWq1Q15kSE39a8GWChsjt3RrWRcd6peg@mail.gmail.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Sun, 31 Aug 2014 08:52:04 -0400
+Message-ID: <CAJhHMCDaSAzU3zvhY2FRFoBaQH4oQBTsUsYMU6pvBbCXydROZQ@mail.gmail.com>
+Subject: Re: [RFC PATCH] powerpc: Wire up three syscalls
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: open list <linux-kernel@vger.kernel.org>, Fabian Frederick <fabf@skynet.be>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Geert,
 
---K/+MhuhYzqQJJ3Xj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Sun, Aug 31, 2014 at 4:53 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Pranith,
+>
+> On Sat, Aug 30, 2014 at 5:36 AM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+>> I see that the three syscalls seccomp, getrandom and memfd_create are not wired
+>> because of which we get a warning while compilation.
+>>
+>> So I wired them up in this patch. What else needs to be done? I tried the
+>> memfd_test after compiling this kernel, but it is failing. What am I missing for
+>> this to work? Any advice is really appreciated! :)
+>
+> Did it fail due to the (silly) "ifeq ($(ARCH),X86)" checks in
+> tools/testing/selftests/memfd/Makefile?
+>
 
-On Sun, Aug 31, 2014 at 12:44:09PM +0800, Axel Lin wrote:
-> device_add() expects that any memory allocated via devm_* API is only
-> done in the device's probe function.
+I removed that check and compiled memfd_test.c by hand. This is the
+following error which I get when I run the test:
 
-Applied, thanks.
+$ ./memfd_test
+memfd: CREATE
+memfd: BASIC
+10 != 0 = GET_SEALS(3)
+Aborted
 
---K/+MhuhYzqQJJ3Xj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+This is basically when checking the seals which we already added. It
+should return 10 (F_SEAL_SHRINK | F_SEAL_WRITE), instead it is returning 0.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+What else needs to be done for this to properly work? I see that for
+m68k, you just wired it up like in this patch. Did it work after that?
 
-iQIcBAEBAgAGBQJUAxpiAAoJELSic+t+oim9XOoP/2GKmi2YYyRGRcH8M7IvUYQS
-o2yPlZfs273g8asFcOPRtdUMBz97BsvonhScZ76zQ0gQ9ri0J4rNUFyPymAsQkLw
-f3XKWjWLZ2bxMPW26ImGxtDwm2fx9q0XF4zbJpopUBsbWTEipdfx1D+z5qtOR8WR
-ARtVnDC8x4FdzRQ+QSkbq/sqN/tO2UEV7jZKRGepYpryDNu1Q5hKYdBSLr5ctigT
-Iqevx4TRIy45Z6HnWTAc2ezCITtwNQtTtVcQUvt/AwCkqQFz6+6wz4DlrqddJ71a
-b8dH1a6zGLidePUgZx2jPXtkh8zh07nmJefKjzqAm2PwaStg03uh+rL3mqcOHega
-NmLjgX4yChZCpSBbzUyiun3F/l10bCSJ+2I/bm+OYMKQMF0frFEFKBYcGfeHKd9+
-5487RNCj/nhZz7WTi5FOnrNVZQptFIC4L4iJWphJPusLFjT+gz+lmpWoCqK3BwR+
-3l3qGqiySAK9vN94lKsfRTvy1DtJiVgFfurlY7MOcjd3TJ9UONmS8c0Qd8AZr9s3
-nq0dwgbhLYBMv+ZmcAMZuW4/+16/xFxq4XX2YuvREClWJm+Sxpsfw8OQhy6Jm9bG
-Hr3i+erfYZ2R7kKOM+KZ9GKaueYSQWutAdmmtR+MYoNUU3JSDFACK8qcDYrixtev
-d5k9pjiwDfK8Cc5SPMlz
-=H6Sh
------END PGP SIGNATURE-----
-
---K/+MhuhYzqQJJ3Xj--
+-- 
+Pranith
