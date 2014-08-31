@@ -1,22 +1,20 @@
-Return-Path: <axel.lin@ingics.com>
-Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
- [209.85.220.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67AF11A0069
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 14:44:17 +1000 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id hz1so9552116pad.34
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2014 21:44:14 -0700 (PDT)
-Message-ID: <1409460249.31873.2.camel@phoenix>
-Subject: [PATCH] spi: fsl: Don't use devm_kzalloc in master->setup callback
-From: Axel Lin <axel.lin@ingics.com>
-To: Mark Brown <broonie@kernel.org>
-Date: Sun, 31 Aug 2014 12:44:09 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-spi <linux-spi@vger.kernel.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Stijn Devriendt <highguy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEFA21A001F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 22:01:38 +1000 (EST)
+From: Igal.Liberman <igal.liberman@freescale.com>
+To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <netdev@vger.kernel.org>
+Subject: [PATCH] Freescale Frame Manager Device Tree binding document
+Date: Sun, 31 Aug 2014 14:49:20 +0300
+Message-ID: <1409485760-18844-1-git-send-email-igal.liberman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>,
+ Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,143 +24,489 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-device_add() expects that any memory allocated via devm_* API is only
-done in the device's probe function.
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-Fix below boot warning:
-[    3.092348] WARNING: at drivers/base/dd.c:286
-[    3.096637] Modules linked in:
-[    3.099697] CPU: 0 PID: 25 Comm: kworker/u2:1 Tainted: G W 3.16.1-s3k-drv-999-svn5771_knld-999 #158
-[ 3.109610] Workqueue: deferwq deferred_probe_work_func
-[    3.114736] task: c787f020 ti: c790c000 task.ti: c790c000
-[    3.120062] NIP: c01df158 LR: c01df144 CTR: 00000000
-[    3.124983] REGS: c790db30 TRAP: 0700   Tainted: G        W (3.16.1-s3k-drv-999-svn5771_knld-999)
-[    3.134162] MSR: 00029032 <EE,ME,IR,DR,RI>  CR: 22002082 XER: 20000000
-[    3.140703]
-[    3.140703] GPR00: 00000001 c790dbe0 c787f020 00000044 00000054 00000308 c056da0e 20737069
-[    3.140703] GPR08: 33323736 000ebfe0 00000308 000ebfdf 22002082 00000000 c046c5a0 c046c608
-[    3.140703] GPR16: c046c614 c046c620 c046c62c c046c638 c046c648 c046c654 c046c68c c046c6c4
-[    3.140703] GPR24: 00000000 00000000 00000003 c0401aa0 c0596638 c059662c c054e7a8 c7996800
-[    3.170102] NIP [c01df158] driver_probe_device+0xf8/0x334
-[    3.175431] LR [c01df144] driver_probe_device+0xe4/0x334
-[    3.180633] Call Trace:
-[    3.183093] [c790dbe0] [c01df144] driver_probe_device+0xe4/0x334 (unreliable)
-[    3.190147] [c790dc10] [c01dd15c] bus_for_each_drv+0x7c/0xc0
-[    3.195741] [c790dc40] [c01df5fc] device_attach+0xcc/0xf8
-[    3.201076] [c790dc60] [c01dd6d4] bus_probe_device+0xb4/0xc4
-[    3.206666] [c790dc80] [c01db9f8] device_add+0x270/0x564
-[    3.211923] [c790dcc0] [c0219e84] spi_add_device+0xc0/0x190
-[    3.217427] [c790dce0] [c021a79c] spi_register_master+0x720/0x834
-[    3.223455] [c790dd40] [c021cb48] of_fsl_spi_probe+0x55c/0x614
-[    3.229234] [c790dda0] [c01e0d2c] platform_drv_probe+0x30/0x74
-[    3.234987] [c790ddb0] [c01df18c] driver_probe_device+0x12c/0x334
-[    3.241008] [c790dde0] [c01dd15c] bus_for_each_drv+0x7c/0xc0
-[    3.246602] [c790de10] [c01df5fc] device_attach+0xcc/0xf8
-[    3.251937] [c790de30] [c01dd6d4] bus_probe_device+0xb4/0xc4
-[    3.257536] [c790de50] [c01de9d8] deferred_probe_work_func+0x98/0xe0
-[    3.263816] [c790de70] [c00305b8] process_one_work+0x18c/0x440
-[    3.269577] [c790dea0] [c0030a00] worker_thread+0x194/0x67c
-[    3.275105] [c790def0] [c0039198] kthread+0xd0/0xe4
-[    3.279911] [c790df40] [c000c6d0] ret_from_kernel_thread+0x5c/0x64
-[    3.285970] Instruction dump:
-[    3.288900] 80de0000 419e01d0 3b7b0038 3c60c046 7f65db78 38635264 48211b99 813f00a0
-[    3.296559] 381f00a0 7d290278 3169ffff 7c0b4910 <0f000000> 93df0044 7fe3fb78 4bfffd4d
+The Frame Manager (FMan) combines the Ethernet network interfaces with packet
+distribution logic to provide intelligent distribution and queuing decisions
+for incoming traffic at line rate.
 
-Reported-by: leroy christophe <christophe.leroy@c-s.fr>
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
+This binding document describes Freescale's Frame Manager hardware attributes
+that are used by the Frame Manager driver for its basic initialization and
+configuration.
+
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
-Hi Leroy,
-  Can you test this path?
-Thanks,
-Axel
- drivers/spi/spi-fsl-espi.c | 15 ++++++++++++---
- drivers/spi/spi-fsl-spi.c  | 10 +++++++---
- 2 files changed, 19 insertions(+), 6 deletions(-)
+ .../devicetree/bindings/powerpc/fsl/fman.txt       |  462 ++++++++++++++++++++
+ 1 file changed, 462 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/fman.txt
 
-diff --git a/drivers/spi/spi-fsl-espi.c b/drivers/spi/spi-fsl-espi.c
-index 8ebd724..b5d879a 100644
---- a/drivers/spi/spi-fsl-espi.c
-+++ b/drivers/spi/spi-fsl-espi.c
-@@ -452,16 +452,16 @@ static int fsl_espi_setup(struct spi_device *spi)
- 	int retval;
- 	u32 hw_mode;
- 	u32 loop_mode;
--	struct spi_mpc8xxx_cs *cs = spi->controller_state;
-+	struct spi_mpc8xxx_cs *cs = spi_get_ctldata(spi);
- 
- 	if (!spi->max_speed_hz)
- 		return -EINVAL;
- 
- 	if (!cs) {
--		cs = devm_kzalloc(&spi->dev, sizeof(*cs), GFP_KERNEL);
-+		cs = kzalloc(sizeof(*cs), GFP_KERNEL);
- 		if (!cs)
- 			return -ENOMEM;
--		spi->controller_state = cs;
-+		spi_set_ctldata(spi, cs);
- 	}
- 
- 	mpc8xxx_spi = spi_master_get_devdata(spi->master);
-@@ -496,6 +496,14 @@ static int fsl_espi_setup(struct spi_device *spi)
- 	return 0;
- }
- 
-+static void fsl_espi_cleanup(struct spi_device *spi)
-+{
-+	struct spi_mpc8xxx_cs *cs = spi_get_ctldata(spi);
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+new file mode 100644
+index 0000000..ce0793f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+@@ -0,0 +1,462 @@
++=============================================================================
++Freescale Frame Manager Device Bindings
 +
-+	kfree(cs);
-+	spi_set_ctldata(spi, NULL);
-+}
++CONTENTS
++  - FMan Node
++  - FMan Port Node
++  - FMan MURAM Node
++  - FMan dTSEC/XGEC/mEMAC Node
++  - FMan IEEE 1588 Node
++  - Example
 +
- void fsl_espi_cpu_irq(struct mpc8xxx_spi *mspi, u32 events)
- {
- 	struct fsl_espi_reg *reg_base = mspi->reg_base;
-@@ -605,6 +613,7 @@ static struct spi_master * fsl_espi_probe(struct device *dev,
- 
- 	master->bits_per_word_mask = SPI_BPW_RANGE_MASK(4, 16);
- 	master->setup = fsl_espi_setup;
-+	master->cleanup = fsl_espi_cleanup;
- 
- 	mpc8xxx_spi = spi_master_get_devdata(master);
- 	mpc8xxx_spi->spi_do_one_msg = fsl_espi_do_one_msg;
-diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
-index 9452f674..590f31b 100644
---- a/drivers/spi/spi-fsl-spi.c
-+++ b/drivers/spi/spi-fsl-spi.c
-@@ -425,16 +425,16 @@ static int fsl_spi_setup(struct spi_device *spi)
- 	struct fsl_spi_reg *reg_base;
- 	int retval;
- 	u32 hw_mode;
--	struct spi_mpc8xxx_cs	*cs = spi->controller_state;
-+	struct spi_mpc8xxx_cs *cs = spi_get_ctldata(spi);
- 
- 	if (!spi->max_speed_hz)
- 		return -EINVAL;
- 
- 	if (!cs) {
--		cs = devm_kzalloc(&spi->dev, sizeof(*cs), GFP_KERNEL);
-+		cs = kzalloc(sizeof(*cs), GFP_KERNEL);
- 		if (!cs)
- 			return -ENOMEM;
--		spi->controller_state = cs;
-+		spi_set_ctldata(spi, cs);
- 	}
- 	mpc8xxx_spi = spi_master_get_devdata(spi->master);
- 
-@@ -496,9 +496,13 @@ static int fsl_spi_setup(struct spi_device *spi)
- static void fsl_spi_cleanup(struct spi_device *spi)
- {
- 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-+	struct spi_mpc8xxx_cs *cs = spi_get_ctldata(spi);
- 
- 	if (mpc8xxx_spi->type == TYPE_GRLIB && gpio_is_valid(spi->cs_gpio))
- 		gpio_free(spi->cs_gpio);
++=============================================================================
++FMan Node
 +
-+	kfree(cs);
-+	spi_set_ctldata(spi, NULL);
- }
- 
- static void fsl_spi_cpu_irq(struct mpc8xxx_spi *mspi, u32 events)
++DESCRIPTION
++
++Due to the fact that the FMan is an aggregation of sub-engines (ports, MACs,
++etc.) the FMan node will have child nodes for each of them.
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: Must include "fsl,fman"
++		FMan version can be determined via FM_IP_REV_1 register in the
++		FMan block. The offset is 0xc4 from the beginning of the
++		Frame Processing Manager memory map (0xc3000 from the
++		beginning of the FMan node).
++
++- cell-index
++		Usage: required
++		Value type: <u32>
++		Definition: Specifies the index of the FMan unit.
++
++		The cell-index value may be used, for example, to disable or
++		enable the FMan via "Device disable register 2"
++		(DCFG_DEVDISR2, located at the SoC reference manual under
++		"Device Configuration and Pin Control Memory Map").
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property. Specifies the offset of the
++		following configuration registers:
++		- BMI configuration registers.
++		- QMI configuration registers.
++		- DMA configuration registers.
++		- FPM configuration registers.
++		- FMan controller configuration registers.
++
++- ranges
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property.
++
++- clocks
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: phandle for fman clock.
++
++- clock-names
++		usage: optional
++		Value type: <stringlist>
++		Definition: A standard property
++
++- interrupts
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A pair of IRQs are specified in this property.
++		The first element is associated with the event interrupts and
++		the second element is associated with the error interrupts.
++
++- fsl,qman-channel-range
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: Specifies the ranges of the available dedicated
++		channels in the FMan. The first cell specifies the beginning
++		of the range and the second cell specifies the number of
++		channels.
++		Further information available at:
++		"Work Queue (WQ) Channel Assignments in the QMan" section
++		in DPAA Reference Manual.
++
++=============================================================================
++FMan MURAM Node
++
++DESCRIPTION
++
++FMan Internal memory - shared between all the FMan modules.
++It contains data structures that are common and written to or read by
++the modules.
++FMan internal memory is split into the following parts:
++	Packet buffering (Tx/Rx FIFOs)
++	Frames internal context
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: Must include "fsl,fman-muram"
++
++- ranges
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property. Specifies the physical
++		address and length of the FMan memory space
++
++EXAMPLE
++
++muram@0 {
++	compatible = "fsl,fman-muram";
++	ranges = <0 0x000000 0x28000>;
++};
++
++=============================================================================
++FMan Port Node
++
++DESCRIPTION
++
++The Frame Manager (FMan) supports several types of hardware ports:
++	Ethernet receiver (RX)
++	Ethernet transmitter (TX)
++	Offline/Host command (O/H)
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: A standard property.
++		Must include one of the following:
++			- "fsl,fman-v2-port-oh" for FManV2 OH ports
++			- "fsl,fman-v2-port-rx" for FManV2 RX ports
++			- "fsl,fman-v2-port-tx" for FManV2 TX ports
++			- "fsl,fman-v3-port-oh" for FManV3 OH ports
++			- "fsl,fman-v3-port-rx" for FManV3 RX ports
++			- "fsl,fman-v3-port-tx" for FManV3 TX ports
++
++- cell-index
++		Usage: required
++		Value type: <u32>
++		Definition: Specifies the hardware port id.
++		Each hardware port on the FMan has its own hardware PortID.
++		Super set of all hardware Port IDs available at FMan Reference
++		Manual under "FMan Hardware Ports in Freescale Devices" table.
++
++		Each hardware port is assigned a 4KB, port-specific page in
++		the FMan hardware port memory region (which is part of the
++		FMan memory map). The first 4 KB in the FMan hardware ports
++		memory region is used for what are called common registers.
++		The subsequent 63 4KB pages are allocated to the hardware
++		ports.
++		The page of a specific port is determined by the cell-index.
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: There is one reg region describing the port
++		configuration registers.
++
++EXAMPLE
++
++port@a8000 {
++	cell-index = <0x28>;
++	compatible = "fsl,fman-v2-port-tx";
++	reg = <0xa8000 0x1000>;
++};
++
++port@88000 {
++	cell-index = <0x8>;
++	compatible = "fsl,fman-v2-port-rx";
++	reg = <0x88000 0x1000>;
++};
++
++port@81000 {
++	cell-index = <0x1>;
++	compatible = "fsl,fman-v2-port-oh";
++	reg = <0x81000 0x1000>;
++};
++
++=============================================================================
++FMan dTSEC/XGEC/mEMAC Node
++
++DESCRIPTION
++
++mEMAC/dTSEC/XGEC are the Ethernet network interfaces
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: A standard property.
++		Must include one of the following:
++		- "fsl,fman-dtsec" for dTSEC MAC
++		- "fsl,fman-xgec" for XGEC MAC
++		- "fsl,fman-memac for mEMAC MAC
++
++- cell-index
++		Usage: required
++		Value type: <u32>
++		Definition: Specifies the MAC id.
++		This value is used to identify the MAC id in some registers
++		in the FMan memory map, for example:
++		The FMan Error Pending Interrupt Register (FM_EPI) -
++		This register holds a bit for each MAC.
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property.
++
++- fsl,fman-ports
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: An array of two phandles - the first references is
++		the FMan RX port and the second is the TX port used by this
++		MAC.
++
++- ptp-timer
++		Usage required
++		Value type: <phandle>
++		Definition: A phandle for 1EEE1588 timer.
++
++EXAMPLE
++
++fman1_tx28: port@a8000 {
++	cell-index = <0x28>;
++	compatible = "fsl,fman-v2-port-tx";
++	reg = <0xa8000 0x1000>;
++};
++
++fman1_rx8: port@88000 {
++	cell-index = <0x8>;
++	compatible = "fsl,fman-v2-port-rx";
++	reg = <0x88000 0x1000>;
++};
++
++ptp-timer: ptp_timer@fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0xfe000 0x1000>;
++};
++
++ethernet@e0000 {
++	compatible = "fsl,fman-dtsec";
++	cell-index = <0>;
++	reg = <0xe0000 0x1000>;
++	fsl,fman-ports = <&fman1_rx8 &fman1_tx28>;
++	ptp-timer = <&ptp-timer>;
++};
++
++============================================================================
++FMan IEEE 1588 Node
++
++DESCRIPTION
++
++The FMan interface to support IEEE 1588
++
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: A standard property.
++		Must include "fsl,fman-ptp-timer".
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property.
++
++EXAMPLE
++
++ptp-timer@fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0xfe000 0x1000>;
++};
++
++=============================================================================
++Example
++
++fman@400000 {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	cell-index = <1>;
++	compatible = "fsl,fman"
++	ranges = <0 0x400000 0x100000>;
++	reg = <0x480000 0x00400
++	       0x480400 0x00400
++	       0x4c2000 0x01000
++	       0x4c3000 0x01000
++	       0x4c4000 0x01000
++	       0x4c7000 0x01000>;
++	clocks = <&fman_clk>;
++	clock-names = "fmanclk";
++	interrupts = <
++		96 2 0 0
++		16 2 1 1>;
++	fsl,qman-channel-range = <0x40 0xc>;
++
++	muram@0 {
++		compatible = "fsl,fman-muram";
++		reg = <0x0 0x28000>;
++	};
++
++	port@81000 {
++		cell-index = <1>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x81000 0x1000>;
++	};
++
++	port@82000 {
++		cell-index = <2>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x82000 0x1000>;
++	};
++
++	port@83000 {
++		cell-index = <3>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x83000 0x1000>;
++	};
++
++	port@84000 {
++		cell-index = <4>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x84000 0x1000>;
++	};
++
++	port@85000 {
++		cell-index = <5>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x85000 0x1000>;
++	};
++
++	port@86000 {
++		cell-index = <6>;
++		compatible = "fsl,fman-v2-port-oh";
++		reg = <0x86000 0x1000>;
++	};
++
++	fman1_rx_0x8: port@88000 {
++		cell-index = <0x8>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x88000 0x1000>;
++	};
++
++	fman1_rx_0x9: port@89000 {
++		cell-index = <0x9>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x89000 0x1000>;
++	};
++
++	fman1_rx_0xa: port@8a000 {
++		cell-index = <0xa>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x8a000 0x1000>;
++	};
++
++	fman1_rx_0xb: port@8b000 {
++		cell-index = <0xb>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x8b000 0x1000>;
++	};
++
++	fman1_rx_0xc: port@8c000 {
++		cell-index = <0xc>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x8c000 0x1000>;
++	};
++
++	fman1_rx_0x10: port@90000 {
++		cell-index = <0x10>;
++		compatible = "fsl,fman-v2-port-rx";
++		reg = <0x90000 0x1000>;
++	};
++
++	fman1_tx_0x28: port@a8000 {
++		cell-index = <0x28>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xa8000 0x1000>;
++	};
++
++	fman1_tx_0x29: port@a9000 {
++		cell-index = <0x29>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xa9000 0x1000>;
++	};
++
++	fman1_tx_0x2a: port@aa000 {
++		cell-index = <0x2a>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xaa000 0x1000>;
++	};
++
++	fman1_tx_0x2b: port@ab000 {
++		cell-index = <0x2b>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xab000 0x1000>;
++	};
++
++	fman1_tx_0x2c: port@ac0000 {
++		cell-index = <0x2c>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xac000 0x1000>;
++	};
++
++	fman1_tx_0x30: port@b0000 {
++		cell-index = <0x30>;
++		compatible = "fsl,fman-v2-port-tx";
++		reg = <0xb0000 0x1000>;
++	};
++
++	ethernet@e0000 {
++		compatible = "fsl,fman-dtsec";
++		cell-index = <0>;
++		reg = <0xe0000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0x8 &fman1_tx_0x28>;
++	};
++
++	ethernet@e2000 {
++		compatible = "fsl,fman-dtsec";
++		cell-index = <1>;
++		reg = <0xe2000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0x9 &fman1_tx_0x29>;
++	};
++
++	ethernet@e4000 {
++		compatible = "fsl,fman-dtsec";
++		cell-index = <2>;
++		reg = <0xe4000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0xa &fman1_tx_0x2a>;
++	};
++
++	ethernet@e6000 {
++		compatible = "fsl,fman-dtsec";
++		cell-index = <3>;
++		reg = <0xe6000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0xb &fman1_tx_0x2b>;
++	};
++
++	ethernet@e8000 {
++		compatible = "fsl,fman-dtsec";
++		cell-index = <4>;
++		reg = <0xf0000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0xc &fman1_tx_0x2c>;
++
++	ethernet@f0000 {
++		cell-index = <8>;
++		compatible = "fsl,fman-xgec";
++		reg = <0xf0000 0x1000>;
++		fsl,fman-ports = <&fman1_rx_0x10 &fman1_tx_0x30>;
++	};
++
++	ptp-timer@fe000 {
++		compatible = "fsl,fman-ptp-timer";
++		reg = <0xfe000 0x1000>;
++	};
++};
 -- 
-1.9.1
+1.7.9.5
