@@ -1,26 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x22f.google.com (mail-lb0-x22f.google.com
- [IPv6:2a00:1450:4010:c04::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C85261A0029
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 18:53:33 +1000 (EST)
-Received: by mail-lb0-f175.google.com with SMTP id u10so4454005lbd.6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 01:53:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A1651A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Aug 2014 22:52:14 +1000 (EST)
+Date: Sun, 31 Aug 2014 13:51:49 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Axel Lin <axel.lin@ingics.com>
+Message-ID: <20140831125149.GF29327@sirena.org.uk>
+References: <1409460249.31873.2.camel@phoenix>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1409369788-22563-1-git-send-email-bobby.prani@gmail.com>
-References: <1409369788-22563-1-git-send-email-bobby.prani@gmail.com>
-Date: Sun, 31 Aug 2014 10:53:28 +0200
-Message-ID: <CAMuHMdV_naTfQOLwOshWq1Q15kSE39a8GWChsjt3RrWRcd6peg@mail.gmail.com>
-Subject: Re: [RFC PATCH] powerpc: Wire up three syscalls
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: open list <linux-kernel@vger.kernel.org>, Fabian Frederick <fabf@skynet.be>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="K/+MhuhYzqQJJ3Xj"
+In-Reply-To: <1409460249.31873.2.camel@phoenix>
+Subject: Re: [PATCH] spi: fsl: Don't use devm_kzalloc in master->setup callback
+Cc: linux-spi <linux-spi@vger.kernel.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Stijn Devriendt <highguy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Pranith,
 
-On Sat, Aug 30, 2014 at 5:36 AM, Pranith Kumar <bobby.prani@gmail.com> wrote:
-> I see that the three syscalls seccomp, getrandom and memfd_create are not wired
-> because of which we get a warning while compilation.
->
-> So I wired them up in this patch. What else needs to be done? I tried the
-> memfd_test after compiling this kernel, but it is failing. What am I missing for
-> this to work? Any advice is really appreciated! :)
+--K/+MhuhYzqQJJ3Xj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Did it fail due to the (silly) "ifeq ($(ARCH),X86)" checks in
-tools/testing/selftests/memfd/Makefile?
+On Sun, Aug 31, 2014 at 12:44:09PM +0800, Axel Lin wrote:
+> device_add() expects that any memory allocated via devm_* API is only
+> done in the device's probe function.
 
-Gr{oetje,eeting}s,
+Applied, thanks.
 
-                        Geert
+--K/+MhuhYzqQJJ3Xj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+iQIcBAEBAgAGBQJUAxpiAAoJELSic+t+oim9XOoP/2GKmi2YYyRGRcH8M7IvUYQS
+o2yPlZfs273g8asFcOPRtdUMBz97BsvonhScZ76zQ0gQ9ri0J4rNUFyPymAsQkLw
+f3XKWjWLZ2bxMPW26ImGxtDwm2fx9q0XF4zbJpopUBsbWTEipdfx1D+z5qtOR8WR
+ARtVnDC8x4FdzRQ+QSkbq/sqN/tO2UEV7jZKRGepYpryDNu1Q5hKYdBSLr5ctigT
+Iqevx4TRIy45Z6HnWTAc2ezCITtwNQtTtVcQUvt/AwCkqQFz6+6wz4DlrqddJ71a
+b8dH1a6zGLidePUgZx2jPXtkh8zh07nmJefKjzqAm2PwaStg03uh+rL3mqcOHega
+NmLjgX4yChZCpSBbzUyiun3F/l10bCSJ+2I/bm+OYMKQMF0frFEFKBYcGfeHKd9+
+5487RNCj/nhZz7WTi5FOnrNVZQptFIC4L4iJWphJPusLFjT+gz+lmpWoCqK3BwR+
+3l3qGqiySAK9vN94lKsfRTvy1DtJiVgFfurlY7MOcjd3TJ9UONmS8c0Qd8AZr9s3
+nq0dwgbhLYBMv+ZmcAMZuW4/+16/xFxq4XX2YuvREClWJm+Sxpsfw8OQhy6Jm9bG
+Hr3i+erfYZ2R7kKOM+KZ9GKaueYSQWutAdmmtR+MYoNUU3JSDFACK8qcDYrixtev
+d5k9pjiwDfK8Cc5SPMlz
+=H6Sh
+-----END PGP SIGNATURE-----
+
+--K/+MhuhYzqQJJ3Xj--
