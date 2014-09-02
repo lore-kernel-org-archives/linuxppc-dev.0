@@ -1,21 +1,58 @@
-Return-Path: <paulus@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-la0-f44.google.com (mail-la0-f44.google.com
+ [209.85.215.44])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77C281A0037
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2014 14:35:21 +1000 (EST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 187F51400DE
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2014 14:35:21 +1000 (EST)
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc: Implement emulation of string loads and stores
-Date: Tue,  2 Sep 2014 14:35:09 +1000
-Message-Id: <1409632509-32510-4-git-send-email-paulus@samba.org>
-In-Reply-To: <1409632509-32510-1-git-send-email-paulus@samba.org>
-References: <1409632509-32510-1-git-send-email-paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36B441A0028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2014 17:13:19 +1000 (EST)
+Received: by mail-la0-f44.google.com with SMTP id hz20so7237870lab.31
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Sep 2014 00:13:14 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1409585574-26673-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <1409585377-26091-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1409585574-26673-1-git-send-email-tomeu.vizoso@collabora.com>
+Date: Tue, 2 Sep 2014 09:13:14 +0200
+Message-ID: <CAPDyKFq2vzUT+NSkC8ZTau=sbFW_frpQ+paLM_EsYLyp_5ivag@mail.gmail.com>
+Subject: Re: [PATCH v8 3/7] clk: Move all drivers to use internal API
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org,
+ Prashant Gaikwad <pgaikwad@nvidia.com>, Tony Lindgren <tony@atomide.com>,
+ Tomasz Figa <t.figa@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
+ Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>,
+ =?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>,
+ Takashi Iwai <tiwai@suse.de>, Michal Simek <michal.simek@xilinx.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Kevin Hilman <khilman@deeprootsystems.com>,
+ linux-omap <linux-omap@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ patches@opensource.wolfsonmicro.com, Viresh Kumar <viresh.linux@gmail.com>,
+ David Brown <davidb@codeaurora.org>, Anatolij Gustschin <agust@denx.de>,
+ Dinh Nguyen <dinguyen@altera.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+ spear-devel@list.st.com, Barry Song <baohua@kernel.org>,
+ Mark Brown <broonie@kernel.org>, linux-rpi-kernel@lists.infradead.org,
+ Ben Dooks <ben-linux@fluff.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Jaroslav Kysela <perex@perex.cz>,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@freescale.com>,
+ Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rabin@rab.in,
+ Bryan Huntsman <bryanh@codeaurora.org>,
+ Santosh Shilimkar <santosh.shilimkar@ti.com>,
+ =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>, linux-media@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,140 +62,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The size field of the op.type word is now the total number of bytes
-to be loaded or stored.
+On 1 September 2014 17:32, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> In preparation to change the public API to return a per-user clk structure,
+> remove any usage of this public API from the clock implementations.
+>
+> The reason for having this in a separate commit from the one that introduces
+> the implementation of the new functions is to separate the changes generated
+> with Coccinelle from the rest, and keep the patches' size reasonable.
+>
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Tested-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> Tested-by: Heiko Stuebner <heiko@sntech.de>
+> Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/lib/sstep.c | 59 ++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 10 deletions(-)
+Hi Tomeu,
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 209a506..54651fc 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1433,11 +1433,24 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
- 
- #endif
-+		case 533:	/* lswx */
-+			op->type = MKOP(LOAD_MULTI, 0, regs->xer & 0x7f);
-+			break;
- 
- 		case 534:	/* lwbrx */
- 			op->type = MKOP(LOAD, BYTEREV, 4);
- 			break;
- 
-+		case 597:	/* lswi */
-+			if (rb == 0)
-+				rb = 32;	/* # bytes to load */
-+			op->type = MKOP(LOAD_MULTI, 0, rb);
-+			op->ea = 0;
-+			if (ra)
-+				op->ea = truncate_if_32bit(regs->msr,
-+							   regs->gpr[ra]);
-+			break;
-+
- #ifdef CONFIG_PPC_FPU
- 		case 535:	/* lfsx */
- 		case 567:	/* lfsux */
-@@ -1475,11 +1488,25 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			break;
- 
- #endif
-+		case 661:	/* stswx */
-+			op->type = MKOP(STORE_MULTI, 0, regs->xer & 0x7f);
-+			break;
-+
- 		case 662:	/* stwbrx */
- 			op->type = MKOP(STORE, BYTEREV, 4);
- 			op->val = byterev_4(regs->gpr[rd]);
- 			break;
- 
-+		case 725:
-+			if (rb == 0)
-+				rb = 32;	/* # bytes to store */
-+			op->type = MKOP(STORE_MULTI, 0, rb);
-+			op->ea = 0;
-+			if (ra)
-+				op->ea = truncate_if_32bit(regs->msr,
-+							   regs->gpr[ra]);
-+			break;
-+
- 		case 790:	/* lhbrx */
- 			op->type = MKOP(LOAD, BYTEREV, 2);
- 			break;
-@@ -1553,15 +1580,14 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 		break;
- 
- 	case 46:	/* lmw */
--		ra = (instr >> 16) & 0x1f;
- 		if (ra >= rd)
- 			break;		/* invalid form, ra in range to load */
--		op->type = MKOP(LOAD_MULTI, 0, 4);
-+		op->type = MKOP(LOAD_MULTI, 0, 4 * (32 - rd));
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
- 	case 47:	/* stmw */
--		op->type = MKOP(STORE_MULTI, 0, 4);
-+		op->type = MKOP(STORE_MULTI, 0, 4 * (32 - rd));
- 		op->ea = dform_ea(instr, regs);
- 		break;
- 
-@@ -1744,7 +1770,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 	int r, err, size;
- 	unsigned long val;
- 	unsigned int cr;
--	int rd;
-+	int i, rd, nb;
- 
- 	r = analyse_instr(&op, regs, instr);
- 	if (r != 0)
-@@ -1866,12 +1892,18 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		if (regs->msr & MSR_LE)
- 			return 0;
- 		rd = op.reg;
--		do {
--			err = read_mem(&regs->gpr[rd], op.ea, 4, regs);
-+		for (i = 0; i < size; i += 4) {
-+			nb = size - i;
-+			if (nb > 4)
-+				nb = 4;
-+			err = read_mem(&regs->gpr[rd], op.ea, nb, regs);
- 			if (err)
- 				return 0;
-+			if (nb < 4)	/* left-justify last bytes */
-+				regs->gpr[rd] <<= 32 - 8 * nb;
- 			op.ea += 4;
--		} while (++rd < 32);
-+			++rd;
-+		}
- 		goto instr_done;
- 
- 	case STORE:
-@@ -1914,12 +1946,19 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		if (regs->msr & MSR_LE)
- 			return 0;
- 		rd = op.reg;
--		do {
--			err = write_mem(regs->gpr[rd], op.ea, 4, regs);
-+		for (i = 0; i < size; i += 4) {
-+			val = regs->gpr[rd];
-+			nb = size - i;
-+			if (nb > 4)
-+				nb = 4;
-+			else
-+				val >>= 32 - 8 * nb;
-+			err = write_mem(val, op.ea, nb, regs);
- 			if (err)
- 				return 0;
- 			op.ea += 4;
--		} while (++rd < 32);
-+			++rd;
-+		}
- 		goto instr_done;
- 
- 	case MFMSR:
--- 
-2.1.0.rc1
+Huh, what a patch. :-) Great work you are doing here!
+
+By just looking at the ux500 changes, I realize that you now have
+removed the dependency to "struct clk", thus we shouldn't include the
+header file linux/clk.h in any file located in driver/clk/ux500/*,
+right!?
+
+I suppose this comment may also applicable for others than the ux500
+clk driver, but haven't checked.
+
+Kind regards
+Uffe
