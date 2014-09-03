@@ -1,23 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9715C1A0024
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 09:01:22 +1000 (EST)
-Date: Wed, 3 Sep 2014 18:01:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Subject: Re: [1/2, v3] powerpc/fsl-booke: Add initial T1040/T1042 RDB board
- support
-Message-ID: <20140903230106.GA5830@home.buserror.net>
-References: <1407741488-2661-1-git-send-email-Priyanka.Jain@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-In-Reply-To: <1407741488-2661-1-git-send-email-Priyanka.Jain@freescale.com>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Prabhakar Kushwaha <prabhakar@freescale.com>, Poonam
- Aggrwal <poonam.aggrwal@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55EE21A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 09:11:57 +1000 (EST)
+Message-ID: <1409785893.30640.118.camel@pasglop>
+Subject: Re: bit fields && data tearing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Hurley <peter@hurleysoftware.com>
+Date: Thu, 04 Sep 2014 09:11:33 +1000
+In-Reply-To: <54079B70.4050200@hurleysoftware.com>
+References: <20140712181328.GA8738@redhat.com>
+ <54079B70.4050200@hurleysoftware.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jakub Jelinek <jakub@redhat.com>, linux-arch@vger.kernel.org,
+ Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 11, 2014 at 12:48:08PM +0530, Priyanka Jain wrote:
-> T1040/T1042RDB is Freescale Reference Design Board.
-> The board can support both T1040/T1042 QorIQ Power Architecture™ processor.
+On Wed, 2014-09-03 at 18:51 -0400, Peter Hurley wrote:
+
+> Apologies for hijacking this thread but I need to extend this discussion
+> somewhat regarding what a compiler might do with adjacent fields in a structure.
 > 
-> T1040/T1042RDB board Overview
-> -----------------------
-> - SERDES Connections, 8 lanes supporting:
-> 	- PCI
-> 	- SGMII
->     	- QSGMII
->     	- SATA 2.0
-> - DDR Controller
->     	- Supports rates of up to 1600 MHz data-rate
->     	- Supports one DDR3LP UDIMM
-> -IFC/Local Bus
->     	- NAND flash: 1GB 8-bit NAND flash
->     	- NOR: 128MB 16-bit NOR Flash
-> - Ethernet
->     	- Two on-board RGMII 10/100/1G ethernet ports.
->     	- PHY #0 remains powered up during deep-sleep
-> - CPLD
-> - Clocks
->     	- System and DDR clock (SYSCLK, “DDRCLK”)
->     	- SERDES clocks
-> - Power Supplies
-> - USB
->     	- Supports two USB 2.0 ports with integrated PHYs
->     	- Two type A ports with 5V@1.5A per port.
-> - SDHC
->     	- SDHC/SDXC connector
-> - SPI
->     	- On-board 64MB SPI flash
-> - I2C
->     	- Devices connected: EEPROM, thermal monitor, VID controller
-> - Other IO
->     	- Two Serial ports
->     	- ProfiBus port
+> The tty subsystem defines a large aggregate structure, struct tty_struct.
+> Importantly, several different locks apply to different fields within that
+> structure; ie., a specific spinlock will be claimed before updating or accessing
+> certain fields while a different spinlock will be claimed before updating or
+> accessing certain _adjacent_ fields.
 > 
-> Add support for T1040/T1042 RDB board:
->     -add device tree
->     -add entry in Kconfig to build
->     -Add entry in corenet_generic.c, as it is similar to other corenet platforms
+> What is necessary and sufficient to prevent accidental false-sharing?
+> The patch below was flagged as insufficient on ia64, and possibly ARM.
+
+We expect native aligned scalar types to be accessed atomically (the
+read/modify/write of a larger quantity that gcc does on some bitfield
+cases has been flagged as a gcc bug, but shouldn't happen on normal
+scalar types).
+
+I am not 100% certain of "bool" here, I assume it's treated as a normal
+scalar and thus atomic but if unsure, you can always use int.
+
+Another option is to use the atomic bitops and make these bits in a
+bitmask but that is probably unnecessary if you have locks already.
+
+Cheers,
+Ben.
+
+
+> Regards,
+> Peter Hurley
 > 
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> --- >% ---
+> Subject: [PATCH 21/26] tty: Convert tty_struct bitfield to bools
+> 
+> The stopped, hw_stopped, flow_stopped and packet bits are smp-unsafe
+> and interrupt-unsafe. For example,
+> 
+> CPU 0                         | CPU 1
+>                               |
+> tty->flow_stopped = 1         | tty->hw_stopped = 0
+> 
+> One of these updates will be corrupted, as the bitwise operation
+> on the bitfield is non-atomic.
+> 
+> Ensure each flag has a separate memory location, so concurrent
+> updates do not corrupt orthogonal states.
+> 
+> Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
 > ---
-> changes for v3: Incorporated Scott comments on moving cpld compatible
->  field to board specific file as cpld binaries are different
-[snip]
-> diff --git a/arch/powerpc/boot/dts/t1042rdb.dts b/arch/powerpc/boot/dts/t1042rdb.dts
-> new file mode 100644
-> index 0000000..228a635
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/t1042rdb.dts
-[snip]
-> +/include/ "fsl/t104xsi-pre.dtsi"
-> +/include/ "t104xrdb.dtsi"
-> +
-> +/ {
-> +	model = "fsl,T1042RDB";
-> +	compatible = "fsl,T1042RDB";
-> +	ifc: localbus@ffe124000 {
-> +		cpld@3,0 {
-> +			compatible = "fsl,t1040rdb-cpld";
-> +		};
-> +	};
-> +};
-
-The point of moving the cpld compatible is so that they can match the
-exact CPLD binary being used.  The above does not match.
-
-Likewise in patch 2/2
-
--Scott
+>  include/linux/tty.h | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/tty.h b/include/linux/tty.h
+> index 1c3316a..7cf61cb 100644
+> --- a/include/linux/tty.h
+> +++ b/include/linux/tty.h
+> @@ -261,7 +261,10 @@ struct tty_struct {
+>  	unsigned long flags;
+>  	int count;
+>  	struct winsize winsize;		/* winsize_mutex */
+> -	unsigned char stopped:1, hw_stopped:1, flow_stopped:1, packet:1;
+> +	bool stopped;
+> +	bool hw_stopped;
+> +	bool flow_stopped;
+> +	bool packet;
+>  	unsigned char ctrl_status;	/* ctrl_lock */
+>  	unsigned int receive_room;	/* Bytes free for queue */
+>  	int flow_change;
