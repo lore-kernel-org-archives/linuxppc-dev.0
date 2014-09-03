@@ -1,39 +1,21 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 383111A0037
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2014 13:03:02 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 2 Sep 2014 23:03:00 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 855DA38C8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2014 23:02:57 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8332vQh7405942
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Sep 2014 03:02:57 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8332uVJ001034
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Sep 2014 23:02:57 -0400
-Date: Tue, 2 Sep 2014 20:02:47 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 2/3] powerpc: Only set numa node information for
- present cpus at boottime
-Message-ID: <20140903030247.GB31420@linux.vnet.ibm.com>
-References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
- <1409132041-11890-2-git-send-email-zhong@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48E551A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2014 13:28:12 +1000 (EST)
+Message-ID: <1409714855.24184.110.camel@snotra.buserror.net>
+Subject: Re: [PATCH] Freescale Frame Manager Device Tree binding document
+From: Scott Wood <scottwood@freescale.com>
+To: Igal.Liberman <igal.liberman@freescale.com>
+Date: Tue, 2 Sep 2014 22:27:35 -0500
+In-Reply-To: <1409485760-18844-1-git-send-email-igal.liberman@freescale.com>
+References: <1409485760-18844-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1409132041-11890-2-git-send-email-zhong@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- paulus@samba.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Emilian.Medve@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,69 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.08.2014 [17:34:00 +0800], Li Zhong wrote:
-> As Nish suggested, it makes more sense to init the numa node informatiion
-> for present cpus at boottime, which could also avoid WARN_ON(1) in
-> numa_setup_cpu().
-> 
-> With this change, we also need to change the smp_prepare_cpus() to set up
-> numa information only on present cpus.
-> 
-> For those possible, but not present cpus, their numa information
-> will be set up after they are started, as the original code did before commit
-> 2fabf084b6ad.
-> 
-> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-
-Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/smp.c | 10 ++++++++--
->  arch/powerpc/mm/numa.c    |  2 +-
->  2 files changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index a0738af..dc0e774 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -379,8 +379,11 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
->  		/*
->  		 * numa_node_id() works after this.
->  		 */
-> -		set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
-> -		set_cpu_numa_mem(cpu, local_memory_node(numa_cpu_lookup_table[cpu]));
-> +		if (cpu_present(cpu)) {
-> +			set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
-> +			set_cpu_numa_mem(cpu,
-> +				local_memory_node(numa_cpu_lookup_table[cpu]));
-> +		}
->  	}
-> 
->  	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
-> @@ -728,6 +731,9 @@ void start_secondary(void *unused)
->  	}
->  	traverse_core_siblings(cpu, true);
-> 
-> +	set_numa_node(numa_cpu_lookup_table[cpu]);
-> +	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
+On Sun, 2014-08-31 at 14:49 +0300, Igal.Liberman wrote:
+> +- cell-index
+> +		Usage: required
+> +		Value type: <u32>
+> +		Definition: Specifies the index of the FMan unit.
 > +
->  	smp_wmb();
->  	notify_cpu_starting(cpu);
->  	set_cpu_online(cpu, true);
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 9918c02..3a9061e 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1127,7 +1127,7 @@ void __init do_init_bootmem(void)
->  	 * even before we online them, so that we can use cpu_to_{node,mem}
->  	 * early in boot, cf. smp_prepare_cpus().
->  	 */
-> -	for_each_possible_cpu(cpu) {
-> +	for_each_present_cpu(cpu) {
->  		numa_setup_cpu((unsigned long)cpu);
->  	}
->  }
-> -- 
-> 1.9.1
-> 
+> +		The cell-index value may be used, for example, to disable or
+> +		enable the FMan via "Device disable register 2"
+> +		(DCFG_DEVDISR2, located at the SoC reference manual under
+> +		"Device Configuration and Pin Control Memory Map").
+
+OK, but what is the specific cell-index value?  I don't think it's the
+bit position within DEVDISR2.  Is this used anywhere other than DEVDISR2
+and similar registers like IPPDEXPCR?  I'm not sure how helpful this is
+for those registers, as you generally need to know enough about the
+specific SoC to use them that you'd be able to make the correspondence
+based on register address.
+
+> +- fsl,qman-channel-range
+> +		Usage: required
+> +		Value type: <prop-encoded-array>
+> +		Definition: Specifies the ranges of the available dedicated
+> +		channels in the FMan. 
+
+s/ranges/range/ unless it's possible to list multiple ranges.
+
+> +=============================================================================
+> +FMan MURAM Node
+> +
+> +DESCRIPTION
+> +
+> +FMan Internal memory - shared between all the FMan modules.
+> +It contains data structures that are common and written to or read by
+> +the modules.
+> +FMan internal memory is split into the following parts:
+> +	Packet buffering (Tx/Rx FIFOs)
+> +	Frames internal context
+> +
+> +PROPERTIES
+> +
+> +- compatible
+> +		Usage: required
+> +		Value type: <stringlist>
+> +		Definition: Must include "fsl,fman-muram"
+> +
+> +- ranges
+> +		Usage: required
+> +		Value type: <prop-encoded-array>
+> +		Definition: A standard property. Specifies the physical
+> +		address and length of the FMan memory space
+
+It's the offset within FMan, not the physical address.  As with other
+nodes, just say that there is one reg region describing the multi-user
+memory.
+
+> +- cell-index
+> +		Usage: required
+> +		Value type: <u32>
+> +		Definition: Specifies the MAC id.
+> +		This value is used to identify the MAC id in some registers
+> +		in the FMan memory map, for example:
+> +		The FMan Error Pending Interrupt Register (FM_EPI) -
+> +		This register holds a bit for each MAC.
+
+I don't see a bit for each MAC in FM_EPI in DPAARM -- and in any case,
+as with DEVDISR2, this doesn't tell me how to turn that register
+description into a cell-index value.
+
+> +=============================================================================
+> +Example
+> +
+> +fman@400000 {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	cell-index = <1>;
+> +	compatible = "fsl,fman"
+> +	ranges = <0 0x400000 0x100000>;
+> +	reg = <0x480000 0x00400
+> +	       0x480400 0x00400
+> +	       0x4c2000 0x01000
+> +	       0x4c3000 0x01000
+> +	       0x4c4000 0x01000
+> +	       0x4c7000 0x01000>;
+
+You've got six regions here but you only documented five.
+
+I'm wondering if there's any value to splitting these regions out,
+versus having reg cover the entire thing (and overlap with the child
+regs).
+
+-Scott
