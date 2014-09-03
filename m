@@ -1,55 +1,38 @@
-Return-Path: <tomeu.vizoso@collabora.com>
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [93.93.135.160])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D7661A002C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2014 22:59:54 +1000 (EST)
-Message-ID: <540710BA.60108@collabora.com>
-Date: Wed, 03 Sep 2014 14:59:38 +0200
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 121E01A0029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 00:27:12 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 2 Sep 2014 23:04:39 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DCB84C90063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2014 23:04:13 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8334Mi95636440
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Sep 2014 03:04:22 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8334LwI010487
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Sep 2014 23:04:22 -0400
+Date: Tue, 2 Sep 2014 20:04:18 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 3/3] powerpc: some changes in numa_setup_cpu()
+Message-ID: <20140903030418.GC31420@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1409132041-11890-3-git-send-email-zhong@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 3/7] clk: Move all drivers to use internal API
-References: <1409585377-26091-1-git-send-email-tomeu.vizoso@collabora.com>	<1409585574-26673-1-git-send-email-tomeu.vizoso@collabora.com>
- <CAPDyKFq2vzUT+NSkC8ZTau=sbFW_frpQ+paLM_EsYLyp_5ivag@mail.gmail.com>
-In-Reply-To: <CAPDyKFq2vzUT+NSkC8ZTau=sbFW_frpQ+paLM_EsYLyp_5ivag@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org,
- Prashant Gaikwad <pgaikwad@nvidia.com>, Tony Lindgren <tony@atomide.com>,
- Tomasz Figa <t.figa@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Daniel Walker <dwalker@fifo99.com>, linux-arch@vger.kernel.org,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>,
- =?UTF-8?B?RW1pbGlvIEzDs3Bleg==?= <emilio@elopez.com.ar>,
- Takashi Iwai <tiwai@suse.de>, Michal Simek <michal.simek@xilinx.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Kevin Hilman <khilman@deeprootsystems.com>,
- linux-omap <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- patches@opensource.wolfsonmicro.com, Viresh Kumar <viresh.linux@gmail.com>,
- David Brown <davidb@codeaurora.org>, Anatolij Gustschin <agust@denx.de>,
- Dinh Nguyen <dinguyen@altera.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Warren <swarren@wwwdotorg.org>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
- spear-devel@list.st.com, Barry Song <baohua@kernel.org>,
- Mark Brown <broonie@kernel.org>, linux-rpi-kernel@lists.infradead.org,
- Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- Russell King <linux@arm.linux.org.uk>, Jaroslav Kysela <perex@perex.cz>,
- Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@freescale.com>,
- Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rabin@rab.in,
- Bryan Huntsman <bryanh@codeaurora.org>,
- Santosh Shilimkar <santosh.shilimkar@ti.com>,
- =?UTF-8?B?QmVub8OudCBDb3Vzc29u?= <bcousson@baylibre.com>,
- Maxime Ripard <maxime.ripard@free-electrons.com>, linux-media@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1409132041-11890-3-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,43 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/02/2014 09:13 AM, Ulf Hansson wrote:
-> On 1 September 2014 17:32, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
->> In preparation to change the public API to return a per-user clk structure,
->> remove any usage of this public API from the clock implementations.
->>
->> The reason for having this in a separate commit from the one that introduces
->> the implementation of the new functions is to separate the changes generated
->> with Coccinelle from the rest, and keep the patches' size reasonable.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> Tested-by: Boris Brezillon <boris.brezillon@free-electrons.com>
->> Tested-by: Heiko Stuebner <heiko@sntech.de>
->> Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
->
-> Hi Tomeu,
->
-> Huh, what a patch. :-) Great work you are doing here!
+On 27.08.2014 [17:34:01 +0800], Li Zhong wrote:
+> this patches changes some error handling logics in numa_setup_cpu(),
+> when cpu node is not found, so:
+> 
+> if the cpu is possible, but not present, -1 is kept in numa_cpu_lookup_table,
+> so later, if the cpu is added, we could set correct numa information for it.
+> 
+> if the cpu is present, then we set the first online node to
+> numa_cpu_lookup_table instead of 0 ( in case 0 might not be an online node? )
 
-Thanks!
+Not currently possible (Node 0 is always online), but I'm working on
+changing that :)
 
-> By just looking at the ux500 changes, I realize that you now have
-> removed the dependency to "struct clk", thus we shouldn't include the
-> header file linux/clk.h in any file located in driver/clk/ux500/*,
-> right!?
->
-> I suppose this comment may also applicable for others than the ux500
-> clk driver, but haven't checked.
+> 
+> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 
-You are right. I have gone ahead and removed the include from all files 
-that are fed to the coccinelle script. Everything builds fine in all 
-configurations I have tested, so I will be adding it to v9.
-
-Thanks for the idea,
-
-Tomeu
-
-
-> Kind regards
-> Uffe
->
+Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 3a9061e..ec32d46 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -538,7 +538,7 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+>   */
+>  static int numa_setup_cpu(unsigned long lcpu)
+>  {
+> -	int nid;
+> +	int nid = -1;
+>  	struct device_node *cpu;
+> 
+>  	/*
+> @@ -555,19 +555,21 @@ static int numa_setup_cpu(unsigned long lcpu)
+> 
+>  	if (!cpu) {
+>  		WARN_ON(1);
+> -		nid = 0;
+> -		goto out;
+> +		if (cpu_present(lcpu))
+> +			goto out_present;
+> +		else
+> +			goto out;
+>  	}
+> 
+>  	nid = of_node_to_nid_single(cpu);
+> 
+> +out_present:
+>  	if (nid < 0 || !node_online(nid))
+>  		nid = first_online_node;
+> -out:
+> -	map_cpu_to_node(lcpu, nid);
+> 
+> +	map_cpu_to_node(lcpu, nid);
+>  	of_node_put(cpu);
+> -
+> +out:
+>  	return nid;
+>  }
+> 
+> -- 
+> 1.9.1
+> 
