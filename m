@@ -1,30 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59B9F1A0061
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:08:10 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9864C140080
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 18:08:09 +1000 (EST)
-Message-ID: <1409818074.4246.53.camel@pasglop>
-Subject: Re: TTM placement & caching issue/questions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Date: Thu, 04 Sep 2014 18:07:54 +1000
-In-Reply-To: <54081BC5.8000703@daenzer.net>
-References: <1409789547.30640.136.camel@pasglop>
- <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
- <1409797523.25089.8.camel@pasglop> <20140904023117.GD4835@gmail.com>
- <20140904023656.GF4835@gmail.com> <54081282.3040005@daenzer.net>
- <1409817275.4246.40.camel@pasglop> <54081BC5.8000703@daenzer.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@ozlabs.org,
- Michel =?ISO-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
- Christian Koenig <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 1FBE61A00FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:44:29 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 08139-08 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu,  4 Sep 2014 09:44:25 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Peter Hurley
+ <peter@hurleysoftware.com>
+Subject: RE: bit fields && data tearing
+Date: Thu, 4 Sep 2014 08:43:13 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
+References: <20140712181328.GA8738@redhat.com>
+ <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>
+In-Reply-To: <1409785893.30640.118.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,20 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-09-04 at 16:59 +0900, Michel Dänzer wrote:
-> 
-> Define 'not reliably'. I have uptimes of weeks, and I'm pretty sure I'm 
-> not alone, at least with AGP 1x it seems to work quite well for most 
-> people. So I don't see the justification for intentionally breaking it 
-> completely for all of us.
-
-Oh I wasn't arguing for breaking it, just jesting. We need to keep it
-working. It's amazing how well broken stuff actually work though :-)
-
-I mean, it's architecturally broken and if we get a collision between
-the cache and the NCU, the chip will crash. We just get lucky I suppose.
-
-Anyway, I'll try a different approach tomorrow see how it goes.
-
-Cheers,
-Ben.
+RnJvbTogIEJlbmphbWluIEhlcnJlbnNjaG1pZHQNCj4gT24gV2VkLCAyMDE0LTA5LTAzIGF0IDE4
+OjUxIC0wNDAwLCBQZXRlciBIdXJsZXkgd3JvdGU6DQo+IA0KPiA+IEFwb2xvZ2llcyBmb3IgaGlq
+YWNraW5nIHRoaXMgdGhyZWFkIGJ1dCBJIG5lZWQgdG8gZXh0ZW5kIHRoaXMgZGlzY3Vzc2lvbg0K
+PiA+IHNvbWV3aGF0IHJlZ2FyZGluZyB3aGF0IGEgY29tcGlsZXIgbWlnaHQgZG8gd2l0aCBhZGph
+Y2VudCBmaWVsZHMgaW4gYSBzdHJ1Y3R1cmUuDQo+ID4NCj4gPiBUaGUgdHR5IHN1YnN5c3RlbSBk
+ZWZpbmVzIGEgbGFyZ2UgYWdncmVnYXRlIHN0cnVjdHVyZSwgc3RydWN0IHR0eV9zdHJ1Y3QuDQo+
+ID4gSW1wb3J0YW50bHksIHNldmVyYWwgZGlmZmVyZW50IGxvY2tzIGFwcGx5IHRvIGRpZmZlcmVu
+dCBmaWVsZHMgd2l0aGluIHRoYXQNCj4gPiBzdHJ1Y3R1cmU7IGllLiwgYSBzcGVjaWZpYyBzcGlu
+bG9jayB3aWxsIGJlIGNsYWltZWQgYmVmb3JlIHVwZGF0aW5nIG9yIGFjY2Vzc2luZw0KPiA+IGNl
+cnRhaW4gZmllbGRzIHdoaWxlIGEgZGlmZmVyZW50IHNwaW5sb2NrIHdpbGwgYmUgY2xhaW1lZCBi
+ZWZvcmUgdXBkYXRpbmcgb3INCj4gPiBhY2Nlc3NpbmcgY2VydGFpbiBfYWRqYWNlbnRfIGZpZWxk
+cy4NCj4gPg0KPiA+IFdoYXQgaXMgbmVjZXNzYXJ5IGFuZCBzdWZmaWNpZW50IHRvIHByZXZlbnQg
+YWNjaWRlbnRhbCBmYWxzZS1zaGFyaW5nPw0KPiA+IFRoZSBwYXRjaCBiZWxvdyB3YXMgZmxhZ2dl
+ZCBhcyBpbnN1ZmZpY2llbnQgb24gaWE2NCwgYW5kIHBvc3NpYmx5IEFSTS4NCj4gDQo+IFdlIGV4
+cGVjdCBuYXRpdmUgYWxpZ25lZCBzY2FsYXIgdHlwZXMgdG8gYmUgYWNjZXNzZWQgYXRvbWljYWxs
+eSAodGhlDQo+IHJlYWQvbW9kaWZ5L3dyaXRlIG9mIGEgbGFyZ2VyIHF1YW50aXR5IHRoYXQgZ2Nj
+IGRvZXMgb24gc29tZSBiaXRmaWVsZA0KPiBjYXNlcyBoYXMgYmVlbiBmbGFnZ2VkIGFzIGEgZ2Nj
+IGJ1ZywgYnV0IHNob3VsZG4ndCBoYXBwZW4gb24gbm9ybWFsDQo+IHNjYWxhciB0eXBlcykuDQoN
+ClRoYXQgaXNuJ3QgdHJ1ZSBvbiBhbGwgYXJjaGl0ZWN0dXJlcyBmb3IgaXRlbXMgc21hbGxlciB0
+aGFuIGEgbWFjaGluZSB3b3JkLg0KQXQgbGVhc3Qgb25lIGhhcyB0byBkbyBybXcgZm9yIGJ5dGUg
+YWNjZXNzZXMuDQoNCglEYXZpZA0KDQo+IEkgYW0gbm90IDEwMCUgY2VydGFpbiBvZiAiYm9vbCIg
+aGVyZSwgSSBhc3N1bWUgaXQncyB0cmVhdGVkIGFzIGEgbm9ybWFsDQo+IHNjYWxhciBhbmQgdGh1
+cyBhdG9taWMgYnV0IGlmIHVuc3VyZSwgeW91IGNhbiBhbHdheXMgdXNlIGludC4NCj4gDQo+IEFu
+b3RoZXIgb3B0aW9uIGlzIHRvIHVzZSB0aGUgYXRvbWljIGJpdG9wcyBhbmQgbWFrZSB0aGVzZSBi
+aXRzIGluIGENCj4gYml0bWFzayBidXQgdGhhdCBpcyBwcm9iYWJseSB1bm5lY2Vzc2FyeSBpZiB5
+b3UgaGF2ZSBsb2NrcyBhbHJlYWR5Lg0KPiANCj4gQ2hlZXJzLA0KPiBCZW4uDQo=
