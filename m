@@ -1,28 +1,28 @@
 Return-Path: <j.glisse@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF0711A018A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 12:32:51 +1000 (EST)
-Received: from mail-qa0-x229.google.com (mail-qa0-x229.google.com
- [IPv6:2607:f8b0:400d:c00::229])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 466151A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 12:37:03 +1000 (EST)
+Received: from mail-qc0-x229.google.com (mail-qc0-x229.google.com
+ [IPv6:2607:f8b0:400d:c01::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E675C1401F6
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 12:32:50 +1000 (EST)
-Received: by mail-qa0-f41.google.com with SMTP id m5so8945967qaj.28
- for <linuxppc-dev@ozlabs.org>; Wed, 03 Sep 2014 19:32:48 -0700 (PDT)
-Date: Wed, 3 Sep 2014 22:32:45 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 71CF41401F6
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 12:37:02 +1000 (EST)
+Received: by mail-qc0-f169.google.com with SMTP id l6so9969160qcy.14
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Sep 2014 19:37:00 -0700 (PDT)
+Date: Wed, 3 Sep 2014 22:36:57 -0400
 From: Jerome Glisse <j.glisse@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: TTM placement & caching issue/questions
-Message-ID: <20140904023245.GE4835@gmail.com>
+Message-ID: <20140904023656.GF4835@gmail.com>
 References: <1409789547.30640.136.camel@pasglop>
  <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
  <1409797523.25089.8.camel@pasglop>
  <20140904023117.GD4835@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="OBd5C1Lgu00Gd/Tn"
+Content-Type: multipart/mixed; boundary="NklN7DEeGtkPCoo3"
 In-Reply-To: <20140904023117.GD4835@gmail.com>
 Cc: Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@ozlabs.org,
  Michel =?iso-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
@@ -37,7 +37,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---OBd5C1Lgu00Gd/Tn
+--NklN7DEeGtkPCoo3
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
@@ -61,7 +61,8 @@ On Wed, Sep 03, 2014 at 10:31:18PM -0400, Jerome Glisse wrote:
 > 
 > Ok so this one should do the trick.
 
-And this one should build :)
+Ok final version ... famous last word.
+
 
 > 
 > 
@@ -223,12 +224,12 @@ And this one should build :)
 > 
 
 
---OBd5C1Lgu00Gd/Tn
+--NklN7DEeGtkPCoo3
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: attachment; filename="0001-drm-ttm-force-cached-mapping-on-non-x86-platform.patch"
 Content-Transfer-Encoding: 8bit
 
->From 6ed69ceee96873ab351881c6b9f931cec39f396a Mon Sep 17 00:00:00 2001
+>From 236038e18dc303bb9aa877922e01963d3fb0b7af Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>
 Date: Wed, 3 Sep 2014 22:04:34 -0400
 Subject: [PATCH] drm/ttm: force cached mapping on non x86 platform.
@@ -246,9 +247,9 @@ Signed-off-by: Jérôme Glisse <jglisse@redhat.com>
 ---
  drivers/gpu/drm/radeon/radeon_ttm.c |  2 +-
  drivers/gpu/drm/ttm/ttm_bo.c        |  2 +-
- drivers/gpu/drm/ttm/ttm_tt.c        | 47 ++++++++++++++++++++++++++++---------
+ drivers/gpu/drm/ttm/ttm_tt.c        | 32 +++++++++++++++++++++-----------
  include/drm/ttm/ttm_bo_driver.h     |  2 +-
- 4 files changed, 39 insertions(+), 14 deletions(-)
+ 4 files changed, 24 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/radeon_ttm.c
 index 72afe82..4dd5060 100644
@@ -277,7 +278,7 @@ index 3da89d5..4dc21c3 100644
  			goto out_err;
  
 diff --git a/drivers/gpu/drm/ttm/ttm_tt.c b/drivers/gpu/drm/ttm/ttm_tt.c
-index bf080ab..efd49b9 100644
+index bf080ab..a0df803 100644
 --- a/drivers/gpu/drm/ttm/ttm_tt.c
 +++ b/drivers/gpu/drm/ttm/ttm_tt.c
 @@ -89,14 +89,6 @@ static inline int ttm_tt_set_page_caching(struct page *p,
@@ -295,7 +296,7 @@ index bf080ab..efd49b9 100644
  
  /*
   * Change caching policy for the linear kernel map
-@@ -149,19 +141,52 @@ out_err:
+@@ -149,19 +141,37 @@ out_err:
  	return ret;
  }
  
@@ -320,6 +321,8 @@ index bf080ab..efd49b9 100644
 +{
 +	if (*placement & (TTM_PL_TT | TTM_PL_FLAG_SYSTEM)) {
 +		ttm->caching_state = tt_cached;
++		*placement &= ~TTM_PL_MASK_CACHING;
++		*placement |= TTM_PL_FLAG_CACHED;
 +	} else {
 +		if (*placement & TTM_PL_FLAG_WC)
 +			ttm->caching_state = tt_wc;
@@ -327,23 +330,6 @@ index bf080ab..efd49b9 100644
 +			ttm->caching_state = tt_uncached;
 +		else
 +			ttm->caching_state = tt_cached;
-+	}
-+	/*
-+	 * Some architecture force cached so we need to reflect the
-+	 * new ttm->caching_state into the mem->placement flags.
-+	 */
-+	*placement &= ~TTM_PL_MASK_CACHING;
-+	switch (bo->ttm->caching_state) {
-+	case tt_wc:
-+		*placement |= TTM_PL_FLAG_WC;
-+		break;
-+	case tt_uncached:
-+		*placement |= TTM_PL_FLAG_UNCACHED;
-+		break;
-+	case tt_cached:
-+	default:
-+		*placement |= TTM_PL_FLAG_CACHED;
-+		break;
 +	}
 +	return 0;
 +}
@@ -368,4 +354,4 @@ index 1d9f0f1..cbc5ad2 100644
 1.9.3
 
 
---OBd5C1Lgu00Gd/Tn--
+--NklN7DEeGtkPCoo3--
