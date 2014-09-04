@@ -1,25 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E3C21A0068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 10:12:42 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55EE21A0014
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 09:11:57 +1000 (EST)
-Message-ID: <1409785893.30640.118.camel@pasglop>
-Subject: Re: bit fields && data tearing
+ by ozlabs.org (Postfix) with ESMTPS id 6278914017B
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 10:12:40 +1000 (EST)
+Message-ID: <1409789547.30640.136.camel@pasglop>
+Subject: TTM placement & caching issue/questions
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Hurley <peter@hurleysoftware.com>
-Date: Thu, 04 Sep 2014 09:11:33 +1000
-In-Reply-To: <54079B70.4050200@hurleysoftware.com>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
+To: dri-devel@lists.freedesktop.org
+Date: Thu, 04 Sep 2014 10:12:27 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-arch@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+Cc: Dave Airlie <airlied@linux.ie>, linuxppc-dev@ozlabs.org,
+ Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-09-03 at 18:51 -0400, Peter Hurley wrote:
+Hi folks !
 
-> Apologies for hijacking this thread but I need to extend this discussion
-> somewhat regarding what a compiler might do with adjacent fields in a structure.
-> 
-> The tty subsystem defines a large aggregate structure, struct tty_struct.
-> Importantly, several different locks apply to different fields within that
-> structure; ie., a specific spinlock will be claimed before updating or accessing
-> certain fields while a different spinlock will be claimed before updating or
-> accessing certain _adjacent_ fields.
-> 
-> What is necessary and sufficient to prevent accidental false-sharing?
-> The patch below was flagged as insufficient on ia64, and possibly ARM.
+I've been tracking down some problems with the recent DRI on powerpc and
+stumbled upon something that doesn't look right, and not necessarily
+only for us.
 
-We expect native aligned scalar types to be accessed atomically (the
-read/modify/write of a larger quantity that gcc does on some bitfield
-cases has been flagged as a gcc bug, but shouldn't happen on normal
-scalar types).
+Now it's possible that I haven't fully understood the code here and I
+also don't know to what extent some of that behaviour is necessary for
+some platforms such as Intel GTT bits.
 
-I am not 100% certain of "bool" here, I assume it's treated as a normal
-scalar and thus atomic but if unsure, you can always use int.
+What I've observed with a simple/dumb (no DMA) driver like AST (but this
+probably happens more generally) is that when evicting a BO from VRAM
+into System memory, the TTM tries to preserve the existing caching
+attributes of the VRAM object.
 
-Another option is to use the atomic bitops and make these bits in a
-bitmask but that is probably unnecessary if you have locks already.
+>From what I can tell, we end up with going from VRAM to System memory
+type, and we eventually call ttm_bo_select_caching() to select the
+caching option for the target.
+
+This will, from what I can tell, try to use the same caching mode as the
+original object:
+
+	if ((cur_placement & caching) != 0)
+		result |= (cur_placement & caching);
+
+And cur_placement comes from bo->mem.placement which as far as I can
+tell is based on the placement array which the drivers set up.
+
+Now they tend to uniformly setup the placement for System memory as
+TTM_PL_MASK_CACHING which enables all caching modes.
+
+So I end up with, for example, my System memory BOs having
+TTM_PL_FLAG_CACHED not set (though they also don't have
+TTM_PL_FLAG_UNCACHED) and TTM_PL_FLAG_WC.
+
+We don't seem to use the man->default_caching (which will have
+TTM_PL_FLAG_CACHED) unless there is no matching bit at all between the
+proposed placement and the existing caching mode.
+
+Now this is a problem for several reason that I can think of:
+
+ - On a number of powerpc platforms, such as all our server 64-bit one
+for example, it's actually illegal to map system memory non-cached. The
+system is fully cache coherent for all possible DMA originators (that we
+care about at least) and mapping memory non-cachable while it's mapped
+cachable in the linear mapping can cause nasty cache paradox which, when
+detected by HW, can checkstop the system.
+
+ - A similar issue exists, afaik, on ARM >= v7, so anything mapped
+non-cachable must be removed from the linear mapping explicitly since
+otherwise it can be speculatively prefetched into the cache.
+
+ - I don't know about x86, but even then, it looks quite sub-optimal to
+map the memory backing of the BOs and access it using a WC rather than a
+cachable mapping attribute.
+
+Now, some folks on IRC mentioned that there might be reasons for the
+current behaviour as to not change the caching attributes when going
+in/out of the GTT on Intel, I don't know how that relates and how that
+works, but maybe that should be enforced by having a different placement
+mask specifically on those chipsets.
+
+Dave, should we change the various PCI drivers for generally coherent
+devices such that the System memory type doesn't allow placements
+without CACHED attribute ? Or at least on coherent platforms ? How do
+detect that ? Should we have a TTM helper to establish the default
+memory placement attributes that "normal PCI" drivers call to set that
+up so we can have all the necessary arch ifdefs in one single place, at
+least for "classic PCI/PCIe" stuff (AGP might need additional tweaks) ?
+
+Non-PCI and "special" drivers like Intel can use a different set of
+placement attributes to represent the requirements of those specific
+platforms (mostly thinking of embedded ARM here which under some
+circumstances might actually require non-cached mappings).
+Or am I missing another part of the puzzle ?
+
+As it-is, things are broken for me even for dumb drivers, and I suspect
+to a large extent with radeon and nouveau too, though in some case we
+might get away with it most of the time ... until the machine locks up
+for some unexplainable reason... This might cause problems on existing
+distros such as RHEL7 with our radeon adapters even.
+
+Any suggestion of what's the best approach to fix it ? I'm happy to
+produce the patches but I'm not that familiar with the TTM so I would
+like to make sure I'm the right track first :-)
 
 Cheers,
 Ben.
-
-
-> Regards,
-> Peter Hurley
-> 
-> --- >% ---
-> Subject: [PATCH 21/26] tty: Convert tty_struct bitfield to bools
-> 
-> The stopped, hw_stopped, flow_stopped and packet bits are smp-unsafe
-> and interrupt-unsafe. For example,
-> 
-> CPU 0                         | CPU 1
->                               |
-> tty->flow_stopped = 1         | tty->hw_stopped = 0
-> 
-> One of these updates will be corrupted, as the bitwise operation
-> on the bitfield is non-atomic.
-> 
-> Ensure each flag has a separate memory location, so concurrent
-> updates do not corrupt orthogonal states.
-> 
-> Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
-> ---
->  include/linux/tty.h | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/tty.h b/include/linux/tty.h
-> index 1c3316a..7cf61cb 100644
-> --- a/include/linux/tty.h
-> +++ b/include/linux/tty.h
-> @@ -261,7 +261,10 @@ struct tty_struct {
->  	unsigned long flags;
->  	int count;
->  	struct winsize winsize;		/* winsize_mutex */
-> -	unsigned char stopped:1, hw_stopped:1, flow_stopped:1, packet:1;
-> +	bool stopped;
-> +	bool hw_stopped;
-> +	bool flow_stopped;
-> +	bool packet;
->  	unsigned char ctrl_status;	/* ctrl_lock */
->  	unsigned int receive_room;	/* Bytes free for queue */
->  	int flow_change;
