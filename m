@@ -1,26 +1,26 @@
-Return-Path: <Varun.Sethi@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCC4A1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 21:59:48 +1000 (EST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E8DAF140271
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 21:59:46 +1000 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
- <alex.williamson@redhat.com>, <Emilian.Medve@freescale.com>,
- <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] iommu/fsl: Fix warning resulting from adding PCI device
- twice
-Date: Thu, 4 Sep 2014 17:08:45 +0530
-Message-ID: <1409830725-4469-1-git-send-email-Varun.Sethi@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A3A31A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 22:24:24 +1000 (EST)
+Message-ID: <540859EC.5000407@hurleysoftware.com>
+Date: Thu, 04 Sep 2014 08:24:12 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+To: Jakub Jelinek <jakub@redhat.com>, Mikael Pettersson <mikpelinux@gmail.com>
+Subject: Re: bit fields && data tearing
+References: <20140712181328.GA8738@redhat.com>
+ <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>
+ <21512.10628.412205.873477@gargle.gargle.HOWL>
+ <20140904090952.GW17454@tucnak.redhat.com>
+In-Reply-To: <20140904090952.GW17454@tucnak.redhat.com>
+Content-Type: text/plain; charset=utf-8
+Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,92 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-iommu_group_get_for_dev determines the iommu group for the PCI device and adds
-the device to the group.
+On 09/04/2014 05:09 AM, Jakub Jelinek wrote:
+> On Thu, Sep 04, 2014 at 10:57:40AM +0200, Mikael Pettersson wrote:
+>> Benjamin Herrenschmidt writes:
+>>  > On Wed, 2014-09-03 at 18:51 -0400, Peter Hurley wrote:
+>>  > 
+>>  > > Apologies for hijacking this thread but I need to extend this discussion
+>>  > > somewhat regarding what a compiler might do with adjacent fields in a structure.
+>>  > > 
+>>  > > The tty subsystem defines a large aggregate structure, struct tty_struct.
+>>  > > Importantly, several different locks apply to different fields within that
+>>  > > structure; ie., a specific spinlock will be claimed before updating or accessing
+>>  > > certain fields while a different spinlock will be claimed before updating or
+>>  > > accessing certain _adjacent_ fields.
+>>  > > 
+>>  > > What is necessary and sufficient to prevent accidental false-sharing?
+>>  > > The patch below was flagged as insufficient on ia64, and possibly ARM.
+>>  > 
+>>  > We expect native aligned scalar types to be accessed atomically (the
+>>  > read/modify/write of a larger quantity that gcc does on some bitfield
+>>  > cases has been flagged as a gcc bug, but shouldn't happen on normal
+>>  > scalar types).
+>>  > 
+>>  > I am not 100% certain of "bool" here, I assume it's treated as a normal
+>>  > scalar and thus atomic but if unsure, you can always use int.
+>>
+>> Please use an aligned int or long.  Some machines cannot do atomic
+>> accesses on sub-int/long quantities, so 'bool' may cause unexpected
+>> rmw cycles on adjacent fields.
+> 
+> Yeah, at least pre-EV56 Alpha performs rmw cycles on char/short accesses
+> and thus those are not atomic.
 
-In the PAMU driver we were again adding the device to the same group without checking
-if the device already had an iommu group. This resulted in the following warning.
+Ok, thanks.
 
-sysfs: cannot create duplicate filename '/devices/ffe200000.pcie/pci0000:00/0000:00:00.0/iommu_group'
-------------[ cut here ]------------
-WARNING: at fs/sysfs/dir.c:31
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.17.0-rc3-00002-g7505cea-dirty #126
-task: c0000001fe0a0000 ti: c0000001fe044000 task.ti: c0000001fe044000
-NIP: c00000000018879c LR: c000000000188798 CTR: c00000000001ea50
-REGS: c0000001fe047040 TRAP: 0700   Not tainted  (3.17.0-rc3-00002-g7505cea-dirty)
-MSR: 0000000080029000 <CE,EE,ME>  CR: 24ad8e22  XER: 20000000
-SOFTE: 1 
-GPR00: c000000000188798 c0000001fe0472c0 c0000000009a52e0 0000000000000065 
-GPR04: 0000000000000001 0000000000000000 3a30303a00000000 0000000027000000 
-GPR08: 2f696f6d00000000 c0000000008d3830 c0000000009b3938 c0000000009bb3d0 
-GPR12: 0000000028ad8e24 c00000000fff4000 c00000000000205c 0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000 c0000000008a4c70 
-GPR24: c0000000007e9010 c0000001fe0140a8 ffffffffffffffef 0000000000000001 
-GPR28: c0000001fe22ebb8 c0000000007e9010 c00000000090bf10 c0000001fe220000 
-NIP [c00000000018879c] .sysfs_warn_dup+0x74/0xa4
-LR [c000000000188798] .sysfs_warn_dup+0x70/0xa4
-Call Trace:
-[c0000001fe0472c0] [c000000000188798] .sysfs_warn_dup+0x70/0xa4 (unreliable)
-[c0000001fe047350] [c000000000188d34] .sysfs_do_create_link_sd.clone.2+0x168/0x174
-[c0000001fe047400] [c0000000004b3cf8] .iommu_group_add_device+0x78/0x244
-[c0000001fe0474b0] [c0000000004b6964] .fsl_pamu_add_device+0x88/0x1a8
-[c0000001fe047570] [c0000000004b3960] .iommu_bus_notifier+0xdc/0x15c
-[c0000001fe047600] [c000000000059848] .notifier_call_chain+0x8c/0xe8
-[c0000001fe0476a0] [c000000000059d04] .__blocking_notifier_call_chain+0x58/0x84
-[c0000001fe047750] [c00000000036619c] .device_add+0x464/0x5c8
-[c0000001fe047820] [c000000000300ebc] .pci_device_add+0x14c/0x17c
-[c0000001fe0478c0] [c000000000300fbc] .pci_scan_single_device+0xd0/0xf4
-[c0000001fe047970] [c00000000030104c] .pci_scan_slot+0x6c/0x18c
-[c0000001fe047a10] [c00000000030226c] .pci_scan_child_bus+0x40/0x114
-[c0000001fe047ac0] [c000000000021974] .pcibios_scan_phb+0x240/0x2c8
-[c0000001fe047b70] [c00000000085a970] .pcibios_init+0x64/0xc8
-[c0000001fe047c00] [c000000000001884] .do_one_initcall+0xbc/0x224
-[c0000001fe047d00] [c000000000852d50] .kernel_init_freeable+0x14c/0x21c
-[c0000001fe047db0] [c000000000002078] .kernel_init+0x1c/0xfa4
-[c0000001fe047e30] [c000000000000884] .ret_from_kernel_thread+0x58/0xd4
-Instruction dump:
-7c7f1b79 4182001c 7fe4fb78 7f83e378 38a01000 4bffc905 60000000 7c641b78 
-e87e8008 7fa5eb78 48482ff5 60000000 <0fe00000> 7fe3fb78 4bf7bd39 60000000 
+And I just confirmed with the Alpha cross-compiler that the fields are
+not 'padded out' if volatile either.
 
+Do any arches consider this an 'optimization'?  I ask because this kind of
+accidental adjacency sharing may be common. Even RCU has a char field,
+rcu_read_unlock_special, in the middle of the task_struct; luckily the
+adjacent field is a list_head.
 
+Besides updating the documentation, it may make sense to do something
+arch-specific. Just bumping out storage on arches that don't need it
+seems wasteful, as does generating bus locks on arches that don't need it.
+Unfortunately, the code churn looks unavoidable.
 
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
----
-v2 changes
-- directly check for the device iommu_group
-
- drivers/iommu/fsl_pamu_domain.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-index 61d1daf..56feed7 100644
---- a/drivers/iommu/fsl_pamu_domain.c
-+++ b/drivers/iommu/fsl_pamu_domain.c
-@@ -984,7 +984,7 @@ static int fsl_pamu_add_device(struct device *dev)
- 	struct iommu_group *group = ERR_PTR(-ENODEV);
- 	struct pci_dev *pdev;
- 	const u32 *prop;
--	int ret, len;
-+	int ret = 0, len;
- 
- 	/*
- 	 * For platform devices we allocate a separate group for
-@@ -1007,7 +1007,13 @@ static int fsl_pamu_add_device(struct device *dev)
- 	if (IS_ERR(group))
- 		return PTR_ERR(group);
- 
--	ret = iommu_group_add_device(group, dev);
-+	/*
-+	 * Check if device has already been added to an iommu group.
-+	 * Group could have already been created for a PCI device in
-+	 * the iommu_group_get_for_dev path.
-+	 */
-+	if (!dev->iommu_group)
-+		ret = iommu_group_add_device(group, dev);
- 
- 	iommu_group_put(group);
- 	return ret;
--- 
-1.7.9.5
+Regards,
+Peter Hurley
