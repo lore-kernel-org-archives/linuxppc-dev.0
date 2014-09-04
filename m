@@ -1,32 +1,40 @@
-Return-Path: <j.glisse@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyril.bur@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 466151A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 12:37:03 +1000 (EST)
-Received: from mail-qc0-x229.google.com (mail-qc0-x229.google.com
- [IPv6:2607:f8b0:400d:c01::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 71CF41401F6
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 12:37:02 +1000 (EST)
-Received: by mail-qc0-f169.google.com with SMTP id l6so9969160qcy.14
- for <linuxppc-dev@ozlabs.org>; Wed, 03 Sep 2014 19:37:00 -0700 (PDT)
-Date: Wed, 3 Sep 2014 22:36:57 -0400
-From: Jerome Glisse <j.glisse@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: TTM placement & caching issue/questions
-Message-ID: <20140904023656.GF4835@gmail.com>
-References: <1409789547.30640.136.camel@pasglop>
- <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
- <1409797523.25089.8.camel@pasglop>
- <20140904023117.GD4835@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 250A21A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 13:53:17 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyril.bur@au1.ibm.com>;
+ Thu, 4 Sep 2014 13:53:15 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id AFE003578054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 13:53:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s843sNKs34144494
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Sep 2014 13:54:23 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s843rAGW006979
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Sep 2014 13:53:10 +1000
+Message-ID: <5407E220.8030309@au1.ibm.com>
+Date: Thu, 04 Sep 2014 13:53:04 +1000
+From: Cyril Bur <cyril.bur@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="NklN7DEeGtkPCoo3"
-In-Reply-To: <20140904023117.GD4835@gmail.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@ozlabs.org,
- Michel =?iso-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
- Christian Koenig <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 2/3] powerpc: Only set numa node information for
+ present cpus at boottime
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <1409132041-11890-2-git-send-email-zhong@linux.vnet.ibm.com>
+ <20140903030247.GB31420@linux.vnet.ibm.com>
+In-Reply-To: <20140903030247.GB31420@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,321 +45,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---NklN7DEeGtkPCoo3
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 03, 2014 at 10:31:18PM -0400, Jerome Glisse wrote:
-> On Thu, Sep 04, 2014 at 12:25:23PM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2014-09-03 at 22:07 -0400, Jerome Glisse wrote:
-> > 
-> > > So in the meantime the attached patch should work, it just silently ignore
-> > > the caching attribute request on non x86 instead of pretending that things
-> > > are setup as expected and then latter the radeon ou nouveau hw unsetting
-> > > the snoop bit.
-> > > 
-> > > It's not tested but i think it should work.
-> > 
-> > I'm still getting placements with !CACHED going from bo_memcpy in
-> > ttm_io_prot() though ... I'm looking at filtering the placement
-> > attributes instead.
-> > 
-> > Ben.
-> 
-> Ok so this one should do the trick.
+On 03/09/14 13:02, Nishanth Aravamudan wrote:
+> On 27.08.2014 [17:34:00 +0800], Li Zhong wrote:
+>> As Nish suggested, it makes more sense to init the numa node informatiion
+>> for present cpus at boottime, which could also avoid WARN_ON(1) in
+>> numa_setup_cpu().
+Hit this on a Power8 LPAR. With the patchset applied the warnings no 
+longer present.
+>>
+>> With this change, we also need to change the smp_prepare_cpus() to set up
+>> numa information only on present cpus.
+>>
+>> For those possible, but not present cpus, their numa information
+>> will be set up after they are started, as the original code did before commit
+>> 2fabf084b6ad.
+>>
+>> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+>
+> Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-Ok final version ... famous last word.
-
-
-> 
-> 
-> > 
-> > > > 
-> > > > Cheers,
-> > > > Jérôme
-> > > > 
-> > > > > 
-> > > > > Cheers,
-> > > > > Ben.
-> > > > > 
-> > > > > 
-> > > > > _______________________________________________
-> > > > > dri-devel mailing list
-> > > > > dri-devel@lists.freedesktop.org
-> > > > > http://lists.freedesktop.org/mailman/listinfo/dri-devel
-> > 
-> > 
-
-> From def7a056d042220f91016d0a7c245ba8e96f90ba Mon Sep 17 00:00:00 2001
-> From: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>
-> Date: Wed, 3 Sep 2014 22:04:34 -0400
-> Subject: [PATCH] drm/ttm: force cached mapping on non x86 platform.
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 8bit
-> 
-> People interested in providing uncached or write combined mapping
-> on there architecture need to do the ground work inside there arch
-> specific code to allow to break the linear kernel mapping so that
-> page mapping attributes can be updated, in the meantime force cached
-> mapping for non x86 architecture.
-> 
-> Signed-off-by: Jérôme Glisse <jglisse@redhat.com>
-> ---
->  drivers/gpu/drm/radeon/radeon_ttm.c |  2 +-
->  drivers/gpu/drm/ttm/ttm_bo.c        |  2 +-
->  drivers/gpu/drm/ttm/ttm_tt.c        | 47 ++++++++++++++++++++++++++++---------
->  include/drm/ttm/ttm_bo_driver.h     |  2 +-
->  4 files changed, 39 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/radeon_ttm.c
-> index 72afe82..4dd5060 100644
-> --- a/drivers/gpu/drm/radeon/radeon_ttm.c
-> +++ b/drivers/gpu/drm/radeon/radeon_ttm.c
-> @@ -304,7 +304,7 @@ static int radeon_move_vram_ram(struct ttm_buffer_object *bo,
->  		return r;
->  	}
->  
-> -	r = ttm_tt_set_placement_caching(bo->ttm, tmp_mem.placement);
-> +	r = ttm_tt_set_placement_caching(bo->ttm, &tmp_mem.placement);
->  	if (unlikely(r)) {
->  		goto out_cleanup;
->  	}
-> diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
-> index 3da89d5..4dc21c3 100644
-> --- a/drivers/gpu/drm/ttm/ttm_bo.c
-> +++ b/drivers/gpu/drm/ttm/ttm_bo.c
-> @@ -305,7 +305,7 @@ static int ttm_bo_handle_move_mem(struct ttm_buffer_object *bo,
->  				goto out_err;
->  		}
->  
-> -		ret = ttm_tt_set_placement_caching(bo->ttm, mem->placement);
-> +		ret = ttm_tt_set_placement_caching(bo->ttm, &mem->placement);
->  		if (ret)
->  			goto out_err;
->  
-> diff --git a/drivers/gpu/drm/ttm/ttm_tt.c b/drivers/gpu/drm/ttm/ttm_tt.c
-> index bf080ab..7cbdb48 100644
-> --- a/drivers/gpu/drm/ttm/ttm_tt.c
-> +++ b/drivers/gpu/drm/ttm/ttm_tt.c
-> @@ -89,14 +89,6 @@ static inline int ttm_tt_set_page_caching(struct page *p,
->  
->  	return ret;
->  }
-> -#else /* CONFIG_X86 */
-> -static inline int ttm_tt_set_page_caching(struct page *p,
-> -					  enum ttm_caching_state c_old,
-> -					  enum ttm_caching_state c_new)
-> -{
-> -	return 0;
-> -}
-> -#endif /* CONFIG_X86 */
->  
->  /*
->   * Change caching policy for the linear kernel map
-> @@ -149,19 +141,52 @@ out_err:
->  	return ret;
->  }
->  
-> -int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement)
-> +int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
->  {
->  	enum ttm_caching_state state;
->  
-> -	if (placement & TTM_PL_FLAG_WC)
-> +	if (*placement & TTM_PL_FLAG_WC)
->  		state = tt_wc;
-> -	else if (placement & TTM_PL_FLAG_UNCACHED)
-> +	else if (*placement & TTM_PL_FLAG_UNCACHED)
->  		state = tt_uncached;
->  	else
->  		state = tt_cached;
->  
->  	return ttm_tt_set_caching(ttm, state);
->  }
-> +#else /* CONFIG_X86 */
-> +int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
-> +{
-> +	if (placement & (TTM_PL_TT | TTM_PL_FLAG_SYSTEM)) {
-> +		ttm->caching_state = tt_cached;
-> +	} else {
-> +		if (placement & TTM_PL_FLAG_WC)
-> +			ttm->caching_state = tt_wc;
-> +		else if (placement & TTM_PL_FLAG_UNCACHED)
-> +			ttm->caching_state = tt_uncached;
-> +		else
-> +			ttm->caching_state = tt_cached;
-> +	}
-> +	/*
-> +	 * Some architecture force cached so we need to reflect the
-> +	 * new ttm->caching_state into the mem->placement flags.
-> +	 */
-> +	*placement &= ~TTM_PL_MASK_CACHING;
-> +	switch (bo->ttm->caching_state) {
-> +	case tt_wc:
-> +		*placement |= TTM_PL_FLAG_WC;
-> +		break;
-> +	case tt_uncached:
-> +		*placement |= TTM_PL_FLAG_UNCACHED;
-> +		break;
-> +	case tt_cached:
-> +	default:
-> +		*placement |= TTM_PL_FLAG_CACHED;
-> +		break;
-> +	}
-> +	return 0;
-> +}
-> +#endif /* CONFIG_X86 */
->  EXPORT_SYMBOL(ttm_tt_set_placement_caching);
->  
->  void ttm_tt_destroy(struct ttm_tt *ttm)
-> diff --git a/include/drm/ttm/ttm_bo_driver.h b/include/drm/ttm/ttm_bo_driver.h
-> index 1d9f0f1..cbc5ad2 100644
-> --- a/include/drm/ttm/ttm_bo_driver.h
-> +++ b/include/drm/ttm/ttm_bo_driver.h
-> @@ -669,7 +669,7 @@ extern int ttm_tt_swapin(struct ttm_tt *ttm);
->   * hit RAM. This function may be very costly as it involves global TLB
->   * and cache flushes and potential page splitting / combining.
->   */
-> -extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement);
-> +extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement);
->  extern int ttm_tt_swapout(struct ttm_tt *ttm,
->  			  struct file *persistent_swap_storage);
->  
-> -- 
-> 1.9.3
-> 
-
-
---NklN7DEeGtkPCoo3
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: attachment; filename="0001-drm-ttm-force-cached-mapping-on-non-x86-platform.patch"
-Content-Transfer-Encoding: 8bit
-
->From 236038e18dc303bb9aa877922e01963d3fb0b7af Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>
-Date: Wed, 3 Sep 2014 22:04:34 -0400
-Subject: [PATCH] drm/ttm: force cached mapping on non x86 platform.
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-People interested in providing uncached or write combined mapping
-on there architecture need to do the ground work inside there arch
-specific code to allow to break the linear kernel mapping so that
-page mapping attributes can be updated, in the meantime force cached
-mapping for non x86 architecture.
-
-Signed-off-by: Jérôme Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_ttm.c |  2 +-
- drivers/gpu/drm/ttm/ttm_bo.c        |  2 +-
- drivers/gpu/drm/ttm/ttm_tt.c        | 32 +++++++++++++++++++++-----------
- include/drm/ttm/ttm_bo_driver.h     |  2 +-
- 4 files changed, 24 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/radeon_ttm.c
-index 72afe82..4dd5060 100644
---- a/drivers/gpu/drm/radeon/radeon_ttm.c
-+++ b/drivers/gpu/drm/radeon/radeon_ttm.c
-@@ -304,7 +304,7 @@ static int radeon_move_vram_ram(struct ttm_buffer_object *bo,
- 		return r;
- 	}
- 
--	r = ttm_tt_set_placement_caching(bo->ttm, tmp_mem.placement);
-+	r = ttm_tt_set_placement_caching(bo->ttm, &tmp_mem.placement);
- 	if (unlikely(r)) {
- 		goto out_cleanup;
- 	}
-diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
-index 3da89d5..4dc21c3 100644
---- a/drivers/gpu/drm/ttm/ttm_bo.c
-+++ b/drivers/gpu/drm/ttm/ttm_bo.c
-@@ -305,7 +305,7 @@ static int ttm_bo_handle_move_mem(struct ttm_buffer_object *bo,
- 				goto out_err;
- 		}
- 
--		ret = ttm_tt_set_placement_caching(bo->ttm, mem->placement);
-+		ret = ttm_tt_set_placement_caching(bo->ttm, &mem->placement);
- 		if (ret)
- 			goto out_err;
- 
-diff --git a/drivers/gpu/drm/ttm/ttm_tt.c b/drivers/gpu/drm/ttm/ttm_tt.c
-index bf080ab..a0df803 100644
---- a/drivers/gpu/drm/ttm/ttm_tt.c
-+++ b/drivers/gpu/drm/ttm/ttm_tt.c
-@@ -89,14 +89,6 @@ static inline int ttm_tt_set_page_caching(struct page *p,
- 
- 	return ret;
- }
--#else /* CONFIG_X86 */
--static inline int ttm_tt_set_page_caching(struct page *p,
--					  enum ttm_caching_state c_old,
--					  enum ttm_caching_state c_new)
--{
--	return 0;
--}
--#endif /* CONFIG_X86 */
- 
- /*
-  * Change caching policy for the linear kernel map
-@@ -149,19 +141,37 @@ out_err:
- 	return ret;
- }
- 
--int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement)
-+int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
- {
- 	enum ttm_caching_state state;
- 
--	if (placement & TTM_PL_FLAG_WC)
-+	if (*placement & TTM_PL_FLAG_WC)
- 		state = tt_wc;
--	else if (placement & TTM_PL_FLAG_UNCACHED)
-+	else if (*placement & TTM_PL_FLAG_UNCACHED)
- 		state = tt_uncached;
- 	else
- 		state = tt_cached;
- 
- 	return ttm_tt_set_caching(ttm, state);
- }
-+#else /* CONFIG_X86 */
-+int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
-+{
-+	if (*placement & (TTM_PL_TT | TTM_PL_FLAG_SYSTEM)) {
-+		ttm->caching_state = tt_cached;
-+		*placement &= ~TTM_PL_MASK_CACHING;
-+		*placement |= TTM_PL_FLAG_CACHED;
-+	} else {
-+		if (*placement & TTM_PL_FLAG_WC)
-+			ttm->caching_state = tt_wc;
-+		else if (placement & TTM_PL_FLAG_UNCACHED)
-+			ttm->caching_state = tt_uncached;
-+		else
-+			ttm->caching_state = tt_cached;
-+	}
-+	return 0;
-+}
-+#endif /* CONFIG_X86 */
- EXPORT_SYMBOL(ttm_tt_set_placement_caching);
- 
- void ttm_tt_destroy(struct ttm_tt *ttm)
-diff --git a/include/drm/ttm/ttm_bo_driver.h b/include/drm/ttm/ttm_bo_driver.h
-index 1d9f0f1..cbc5ad2 100644
---- a/include/drm/ttm/ttm_bo_driver.h
-+++ b/include/drm/ttm/ttm_bo_driver.h
-@@ -669,7 +669,7 @@ extern int ttm_tt_swapin(struct ttm_tt *ttm);
-  * hit RAM. This function may be very costly as it involves global TLB
-  * and cache flushes and potential page splitting / combining.
-  */
--extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement);
-+extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement);
- extern int ttm_tt_swapout(struct ttm_tt *ttm,
- 			  struct file *persistent_swap_storage);
- 
--- 
-1.9.3
-
-
---NklN7DEeGtkPCoo3--
+Tested-by: Cyril Bur <cyril.bur@au1.ibm.com>
+>> ---
+>>   arch/powerpc/kernel/smp.c | 10 ++++++++--
+>>   arch/powerpc/mm/numa.c    |  2 +-
+>>   2 files changed, 9 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index a0738af..dc0e774 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -379,8 +379,11 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+>>   		/*
+>>   		 * numa_node_id() works after this.
+>>   		 */
+>> -		set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
+>> -		set_cpu_numa_mem(cpu, local_memory_node(numa_cpu_lookup_table[cpu]));
+>> +		if (cpu_present(cpu)) {
+>> +			set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
+>> +			set_cpu_numa_mem(cpu,
+>> +				local_memory_node(numa_cpu_lookup_table[cpu]));
+>> +		}
+>>   	}
+>>
+>>   	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
+>> @@ -728,6 +731,9 @@ void start_secondary(void *unused)
+>>   	}
+>>   	traverse_core_siblings(cpu, true);
+>>
+>> +	set_numa_node(numa_cpu_lookup_table[cpu]);
+>> +	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
+>> +
+>>   	smp_wmb();
+>>   	notify_cpu_starting(cpu);
+>>   	set_cpu_online(cpu, true);
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index 9918c02..3a9061e 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -1127,7 +1127,7 @@ void __init do_init_bootmem(void)
+>>   	 * even before we online them, so that we can use cpu_to_{node,mem}
+>>   	 * early in boot, cf. smp_prepare_cpus().
+>>   	 */
+>> -	for_each_possible_cpu(cpu) {
+>> +	for_each_present_cpu(cpu) {
+>>   		numa_setup_cpu((unsigned long)cpu);
+>>   	}
+>>   }
+>> --
+>> 1.9.1
+>>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
