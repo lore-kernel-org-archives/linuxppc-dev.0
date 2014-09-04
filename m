@@ -1,28 +1,26 @@
-Return-Path: <jakub@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 02E761A015B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 19:10:22 +1000 (EST)
-Date: Thu, 4 Sep 2014 11:09:52 +0200
-From: Jakub Jelinek <jakub@redhat.com>
-To: Mikael Pettersson <mikpelinux@gmail.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140904090952.GW17454@tucnak.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <21512.10628.412205.873477@gargle.gargle.HOWL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <21512.10628.412205.873477@gargle.gargle.HOWL>
-Cc: linux-arch@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E793F1A00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 19:43:53 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 061B1140274
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 19:43:52 +1000 (EST)
+Message-ID: <1409823823.4246.61.camel@pasglop>
+Subject: Re: TTM placement & caching issue/questions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Vetter <daniel@ffwll.ch>
+Date: Thu, 04 Sep 2014 19:43:43 +1000
+In-Reply-To: <20140904093454.GG15520@phenom.ffwll.local>
+References: <1409789547.30640.136.camel@pasglop>
+ <54081844.7000604@vmware.com> <20140904093454.GG15520@phenom.ffwll.local>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Thomas Hellstrom <thellstrom@vmware.com>,
+ dri-devel@lists.freedesktop.org, Michel Danzer <daenzer@vmware.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2014 at 10:57:40AM +0200, Mikael Pettersson wrote:
-> Benjamin Herrenschmidt writes:
->  > On Wed, 2014-09-03 at 18:51 -0400, Peter Hurley wrote:
->  > 
->  > > Apologies for hijacking this thread but I need to extend this discussion
->  > > somewhat regarding what a compiler might do with adjacent fields in a structure.
->  > > 
->  > > The tty subsystem defines a large aggregate structure, struct tty_struct.
->  > > Importantly, several different locks apply to different fields within that
->  > > structure; ie., a specific spinlock will be claimed before updating or accessing
->  > > certain fields while a different spinlock will be claimed before updating or
->  > > accessing certain _adjacent_ fields.
->  > > 
->  > > What is necessary and sufficient to prevent accidental false-sharing?
->  > > The patch below was flagged as insufficient on ia64, and possibly ARM.
->  > 
->  > We expect native aligned scalar types to be accessed atomically (the
->  > read/modify/write of a larger quantity that gcc does on some bitfield
->  > cases has been flagged as a gcc bug, but shouldn't happen on normal
->  > scalar types).
->  > 
->  > I am not 100% certain of "bool" here, I assume it's treated as a normal
->  > scalar and thus atomic but if unsure, you can always use int.
+On Thu, 2014-09-04 at 11:34 +0200, Daniel Vetter wrote:
+> On Thu, Sep 04, 2014 at 09:44:04AM +0200, Thomas Hellstrom wrote:
+> > Last time I tested, (and it seems like Michel is on the same track),
+> > writing with the CPU to write-combined memory was substantially faster
+> > than writing to cached memory, with the additional side-effect that CPU
+> > caches are left unpolluted.
+> > 
+> > Moreover (although only tested on Intel's embedded chipsets), texturing
+> > from cpu-cache-coherent PCI memory was a real GPU performance hog
+> > compared to texturing from non-snooped memory. Hence, whenever a buffer
+> > could be classified as GPU-read-only (or almost at least), it should be
+> > placed in write-combined memory.
 > 
-> Please use an aligned int or long.  Some machines cannot do atomic
-> accesses on sub-int/long quantities, so 'bool' may cause unexpected
-> rmw cycles on adjacent fields.
+> Just a quick comment since this explicitly referes to intel chips: On
+> desktop/laptop chips with the big shared l3/l4 caches it's the other way
+> round. Cached uploads are substantially faster than wc and not using
+> coherent access is a severe perf hit for texturing. I guess the hw guys
+> worked really hard to hide the snooping costs so that the gpu can benefit
+> from the massive bandwidth these caches can provide.
 
-Yeah, at least pre-EV56 Alpha performs rmw cycles on char/short accesses
-and thus those are not atomic.
+This is similar to modern POWER chips as well. We have pretty big L3's
+(though not technically shared they are in a separate quadrant and we
+have a shared L4 in the memory buffer) and our fabric is generally
+optimized for cachable/coherent access performance. In fact, we only
+have so many credits for NC accesses on the bus...
 
-	Jakub
+What that tells me is that when setting up the desired cachability
+attributes for the mapping of a memory object, we need to consider these
+things here:
+
+  - The hard requirement of the HW (non-coherent GPUs require NC, AGP
+does in some cases, etc...) which I think is basically already handled
+using the placement attributes set by the GPU driver for the memory type
+
+  - The optimal attributes (and platform hard requirements) for fast
+memory accesses to an object by the processor.  From what I read here,
+this can be NC+WC on older Intel, cachable on newer, etc...)
+
+  - The optimal attributes for fast GPU DMA accesses to the object in
+system memory. Here too, this is fairly platform/chipset dependent.
+
+Do we have flags in the DRM that tell us whether an object in memory is
+more likely to be used by the GPU via DMA vs by the CPU via MMIO ? On
+powerpc (except in the old AGP case), I wouldn't care about require
+cachable in both case, but I can see the low latency crowd wanting the
+former to be non-cachable while the dumb GPUs like AST who don't do DMA
+would benefit greatly from the latter...
+
+Cheers,
+Ben.
