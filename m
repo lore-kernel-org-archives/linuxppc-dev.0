@@ -1,25 +1,30 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB64D1A012A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:06:14 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59B9F1A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:08:10 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 36F72140271
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 18:06:12 +1000 (EST)
-Message-ID: <1409817962.4246.51.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 9864C140080
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 18:08:09 +1000 (EST)
+Message-ID: <1409818074.4246.53.camel@pasglop>
 Subject: Re: TTM placement & caching issue/questions
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Hellstrom <thellstrom@vmware.com>
-Date: Thu, 04 Sep 2014 18:06:02 +1000
-In-Reply-To: <54081844.7000604@vmware.com>
-References: <1409789547.30640.136.camel@pasglop> <54081844.7000604@vmware.com>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Thu, 04 Sep 2014 18:07:54 +1000
+In-Reply-To: <54081BC5.8000703@daenzer.net>
+References: <1409789547.30640.136.camel@pasglop>
+ <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
+ <1409797523.25089.8.camel@pasglop> <20140904023117.GD4835@gmail.com>
+ <20140904023656.GF4835@gmail.com> <54081282.3040005@daenzer.net>
+ <1409817275.4246.40.camel@pasglop> <54081BC5.8000703@daenzer.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Jerome Glisse <j.glisse@gmail.com>, linuxppc-dev@ozlabs.org,
- Michel Danzer <daenzer@vmware.com>, dri-devel@lists.freedesktop.org
+Cc: Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@ozlabs.org,
+ Michel =?ISO-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
+ Christian Koenig <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-09-04 at 09:44 +0200, Thomas Hellstrom wrote:
-
-> > This will, from what I can tell, try to use the same caching mode as the
-> > original object:
-> >
-> > 	if ((cur_placement & caching) != 0)
-> > 		result |= (cur_placement & caching);
-> >
-> > And cur_placement comes from bo->mem.placement which as far as I can
-> > tell is based on the placement array which the drivers set up.
+On Thu, 2014-09-04 at 16:59 +0900, Michel Dänzer wrote:
 > 
-> This originates from the fact that when evicting GTT memory, on x86 it's
-> unnecessary and undesirable to switch caching mode when going to system.
+> Define 'not reliably'. I have uptimes of weeks, and I'm pretty sure I'm 
+> not alone, at least with AGP 1x it seems to work quite well for most 
+> people. So I don't see the justification for intentionally breaking it 
+> completely for all of us.
 
-But that's what I don't quite understand. We have two different mappings
-here. The VRAM and the memory object. We wouldn't be "switching"... we
-are creating a temporary mapping for the memory object in order to do
-the memcpy, but we seem to be doing it by using the caching attributes
-of the VRAM object.... or am I missing something ? I don't see how that
-makes sense so I suppose I'm missing something here :-)
+Oh I wasn't arguing for breaking it, just jesting. We need to keep it
+working. It's amazing how well broken stuff actually work though :-)
 
-> Last time I tested, (and it seems like Michel is on the same track),
-> writing with the CPU to write-combined memory was substantially faster
-> than writing to cached memory, with the additional side-effect that CPU
-> caches are left unpolluted.
+I mean, it's architecturally broken and if we get a collision between
+the cache and the NCU, the chip will crash. We just get lucky I suppose.
 
-That's very strange indeed. It's certainly an x86 specific artifact,
-even if we were allowed by our hypervisor to map memory non-cachable
-(the HW somewhat can), we tend to have a higher throughput by going
-cachable, but that could be due to the way the PowerBus works (it's
-basically very biased toward cachable transactions).
-
-> I dislike the approach of rewriting placements. In some cases I think it
-> won't even work, because placements are declared 'static const'
-> 
-> What I'd suggest is instead to intercept the driver response from
-> init_mem_type() and filter out undesired caching modes from
-> available_caching and default_caching, 
-
-This was my original intent but Jerome seems to have different ideas
-(see his proposed patches). I'm happy to revive mine as well and post it
-as an alternative after I've tested it a bit more (tomorrow).
-
-> perhaps also looking at whether
-> the memory type is mappable or not. This should have the additional
-> benefit of working everywhere, and if a caching mode is selected that's
-> not available on the platform, you'll simply get an error. (I guess?)
-
-You mean that if not mappable we don't bother filtering ?
-
-The rule is really for me pretty simple:
-
-   - If it's system memory (PL_SYSTEM/PL_TT), it MUST be cachable
-
-   - If it's PCIe memory space (VRAM, registers, ...) it MUST be
-non-cachable.
+Anyway, I'll try a different approach tomorrow see how it goes.
 
 Cheers,
 Ben.
-
-> /Thomas
-> 
-> 
-> >
-> > Cheers,
-> > Ben.
-> >
-> >
-> > _______________________________________________
-> > dri-devel mailing list
-> > dri-devel@lists.freedesktop.org
-> > http://lists.freedesktop.org/mailman/listinfo/dri-devel
