@@ -1,51 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <atomlin@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 287301A00C1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 10:18:00 +1000 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 4 Sep 2014 18:17:57 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 8A7531FF003F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:17:52 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s850HrD028508184
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 02:17:53 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s850MImN031728
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Sep 2014 18:22:18 -0600
-Date: Thu, 4 Sep 2014 17:17:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140905001751.GL5001@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <21512.10628.412205.873477@gargle.gargle.HOWL>
- <20140904090952.GW17454@tucnak.redhat.com>
- <540859EC.5000407@hurleysoftware.com>
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>
- <5408C0AB.6050801@hurleysoftware.com> <5408E4A3.2060303@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5408E4A3.2060303@zytor.com>
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Hurley <peter@hurleysoftware.com>,
- Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 343FF1A0213
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 00:52:55 +1000 (EST)
+From: Aaron Tomlin <atomlin@redhat.com>
+To: peterz@infradead.org
+Subject: [PATCH 1/2] sched: Add helper for task stack page overrun checking
+Date: Thu,  4 Sep 2014 15:50:23 +0100
+Message-Id: <1409842224-11847-2-git-send-email-atomlin@redhat.com>
+In-Reply-To: <1409842224-11847-1-git-send-email-atomlin@redhat.com>
+References: <1409842224-11847-1-git-send-email-atomlin@redhat.com>
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
+ minchan@kernel.org, bmr@redhat.com, x86@kernel.org, oleg@redhat.com,
+ rostedt@goodmis.org, linux-kernel@vger.kernel.org, hannes@cmpxchg.org,
+ mingo@redhat.com, aneesh.kumar@linux.vnet.ibm.com, atomlin@redhat.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,59 +26,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2014 at 03:16:03PM -0700, H. Peter Anvin wrote:
-> On 09/04/2014 12:42 PM, Peter Hurley wrote:
-> > 
-> > Or we could give up on the Alpha.
-> > 
-> 
-> If Alpha is turning into Voyager (kept alive only as a museum piece, but
-> actively causing problems) then please let's kill it.
+This facility is used in a few places so let's introduce
+a helper function to improve readability.
 
-Sorry for being slow to join this thread, but I propose the following
-patch.  If we can remove support for all CPUs that to not support
-direct access to bytes and shorts (which I would very much like to
-see happen), I will remove the last non-guarantee.
+Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
+---
+ arch/powerpc/mm/fault.c    | 6 ++----
+ arch/x86/mm/fault.c        | 5 +----
+ include/linux/sched.h      | 3 +++
+ kernel/trace/trace_stack.c | 5 ++---
+ 4 files changed, 8 insertions(+), 11 deletions(-)
 
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
-documentation: Record limitations of bitfields and small variables
-
-This commit documents the fact that it is not safe to use bitfields
-as shared variables in synchronization algorithms.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-index 87be0a8a78de..a28bfe4fd759 100644
---- a/Documentation/memory-barriers.txt
-+++ b/Documentation/memory-barriers.txt
-@@ -269,6 +269,26 @@ And there are a number of things that _must_ or _must_not_ be assumed:
- 	STORE *(A + 4) = Y; STORE *A = X;
- 	STORE {*A, *(A + 4) } = {X, Y};
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 51ab9e7..5cffc7c 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -30,7 +30,6 @@
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ #include <linux/perf_event.h>
+-#include <linux/magic.h>
+ #include <linux/ratelimit.h>
+ #include <linux/context_tracking.h>
  
-+And there are anti-guarantees:
-+
-+ (*) These guarantees do not apply to bitfields, because compilers often
-+     generate code to modify these using non-atomic read-modify-write
-+     sequences.  Do not attempt to use bitfields to synchronize parallel
-+     algorithms.
-+
-+ (*) Even in cases where bitfields are protected by locks, all fields
-+     in a given bitfield must be protected by one lock.  If two fields
-+     in a given bitfield are protected by different locks, the compiler's
-+     non-atomic read-modify-write sequences can cause an update to one
-+     field to corrupt the value of an adjacent field.
-+
-+ (*) These guarantees apply only to properly aligned and sized scalar
-+     variables.  "Properly sized" currently means "int" and "long",
-+     because some CPU families do not support loads and stores of
-+     other sizes.  ("Some CPU families" is currently believed to
-+     be only Alpha 21064.  If this is actually the case, a different
-+     non-guarantee is likely to be formulated.)
-+
+@@ -508,7 +507,6 @@ bail:
+ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ {
+ 	const struct exception_table_entry *entry;
+-	unsigned long *stackend;
  
- =========================
- WHAT ARE MEMORY BARRIERS?
+ 	/* Are we prepared to handle this fault?  */
+ 	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+@@ -537,8 +535,8 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+ 		regs->nip);
+ 
+-	stackend = end_of_stack(current);
+-	if (current != &init_task && *stackend != STACK_END_MAGIC)
++	if (current != &init_task &&
++		task_stack_end_corrupted(current))
+ 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+ 
+ 	die("Kernel access of bad area", regs, sig);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index a241946..b5b9c09 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -3,7 +3,6 @@
+  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
+  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
+  */
+-#include <linux/magic.h>		/* STACK_END_MAGIC		*/
+ #include <linux/sched.h>		/* test_thread_flag(), ...	*/
+ #include <linux/kdebug.h>		/* oops_begin/end, ...		*/
+ #include <linux/module.h>		/* search_exception_table	*/
+@@ -649,7 +648,6 @@ no_context(struct pt_regs *regs, unsigned long error_code,
+ 	   unsigned long address, int signal, int si_code)
+ {
+ 	struct task_struct *tsk = current;
+-	unsigned long *stackend;
+ 	unsigned long flags;
+ 	int sig;
+ 
+@@ -709,8 +707,7 @@ no_context(struct pt_regs *regs, unsigned long error_code,
+ 
+ 	show_fault_oops(regs, error_code, address);
+ 
+-	stackend = end_of_stack(tsk);
+-	if (tsk != &init_task && *stackend != STACK_END_MAGIC)
++	if (tsk != &init_task && task_stack_end_corrupted(tsk))
+ 		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
+ 
+ 	tsk->thread.cr2		= address;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5c2c885..36d93aa 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -57,6 +57,7 @@ struct sched_param {
+ #include <linux/llist.h>
+ #include <linux/uidgid.h>
+ #include <linux/gfp.h>
++#include <linux/magic.h>
+ 
+ #include <asm/processor.h>
+ 
+@@ -2614,6 +2615,8 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+ }
+ 
+ #endif
++#define task_stack_end_corrupted(task) \
++		(*(end_of_stack(task)) != STACK_END_MAGIC)
+ 
+ static inline int object_is_on_stack(void *obj)
+ {
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 8a4e5cb..06c7390 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -13,7 +13,6 @@
+ #include <linux/sysctl.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+-#include <linux/magic.h>
+ 
+ #include <asm/setup.h>
+ 
+@@ -171,8 +170,8 @@ check_stack(unsigned long ip, unsigned long *stack)
+ 			i++;
+ 	}
+ 
+-	if ((current != &init_task &&
+-		*(end_of_stack(current)) != STACK_END_MAGIC)) {
++	if (current != &init_task &&
++		task_stack_end_corrupted(current)) {
+ 		print_max_stack();
+ 		BUG();
+ 	}
+-- 
+1.9.3
