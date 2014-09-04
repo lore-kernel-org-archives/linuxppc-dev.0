@@ -1,20 +1,32 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews08.kpnxchange.com (cpsmtpb-ews08.kpnxchange.com
- [213.75.39.13])
- by lists.ozlabs.org (Postfix) with ESMTP id 93D4F1A0087
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 08:29:41 +1000 (EST)
-Message-ID: <1409869776.5546.123.camel@x220>
-Subject: Re: [4/5] IBM Akebono: Add the Akebono platform
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Alistair Popple <alistair@popple.id.au>
-Date: Fri, 05 Sep 2014 00:29:36 +0200
-In-Reply-To: <10214508.Vq3Ynjy2Co@mexican>
-References: <1394077948-8395-5-git-send-email-alistair@popple.id.au>
- <1398936447.4121.12.camel@x220> <10214508.Vq3Ynjy2Co@mexican>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3A8C1A00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 08:46:53 +1000 (EST)
+Message-ID: <5408E458.3@zytor.com>
+Date: Thu, 04 Sep 2014 15:14:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Laight <David.Laight@ACULAB.COM>
+Subject: Re: bit fields && data tearing
+References: <20140712181328.GA8738@redhat.com>	
+ <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>	
+ <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
+ <1409824374.4246.62.camel@pasglop>
+In-Reply-To: <1409824374.4246.62.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Peter Hurley <peter@hurleysoftware.com>, Oleg Nesterov <oleg@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +36,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alistair,
-
-On Fri, 2014-05-02 at 10:35 +1000, Alistair Popple wrote:
-> On Thu, 1 May 2014 11:27:27 Paul Bolle wrote:
-> > On Thu, 2014-03-06 at 14:52 +1100, Alistair Popple wrote:
-> > > This patch adds support for the IBM Akebono board.
-> > > +	select IBM_EMAC_RGMII_WOL
-> > 
-> > The patch that added this symbol (and the related driver) was submitted
-> > in https://lkml.org/lkml/2014/2/21/25 . It's not (yet) included in
-> > linux-next. Is it queued somewhere else?
+On 09/04/2014 02:52 AM, Benjamin Herrenschmidt wrote:
 > 
-> To be honest I'm not sure. I will follow this up on the netdev list.
+> Yeah correct, alpha and bytes right ? Is there any other ? That's why I
+> suggested int.
+> 
 
-I noticed that this symbol (and its driver) are still not in v3.17-rc3
-nor in next-20140904. Any update on this?
+Even for Alpha it is only the 21064 AFAIK.
 
-Thanks,
-
-
-Paul Bolle
+	-hpa
