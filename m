@@ -1,25 +1,31 @@
-Return-Path: <Varun.Sethi@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paubert@iram.es>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 916361A0053
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 16:40:35 +1000 (EST)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B9EF1A006D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 17:10:47 +1000 (EST)
+Received: from torres.puc.rediris.es (torres.puc.rediris.es
+ [IPv6:2001:720:418:ca00::9])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 94419140217
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 16:40:34 +1000 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
- <alex.williamson@redhat.com>, <Emilian.Medve@freescale.com>,
- <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] iommu/fsl: Fix warning resulting from adding PCI device twice
-Date: Thu, 4 Sep 2014 11:33:42 +0530
-Message-ID: <1409810622-742-1-git-send-email-Varun.Sethi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 31532140217
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 17:10:47 +1000 (EST)
+Date: Thu, 4 Sep 2014 08:45:16 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Jerome Glisse <j.glisse@gmail.com>
+Subject: Re: TTM placement & caching issue/questions
+Message-ID: <20140904064516.GA14765@visitor2.iram.es>
+References: <1409789547.30640.136.camel@pasglop>
+ <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
+ <1409797523.25089.8.camel@pasglop>
+ <20140904023117.GD4835@gmail.com> <20140904023656.GF4835@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20140904023656.GF4835@gmail.com>
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
+ dri-devel@lists.freedesktop.org, linuxppc-dev@ozlabs.org,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Christian Koenig <christian.koenig@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +35,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-iommu_group_get_for_dev determines the iommu group for the PCI device and adds
-the device to the group.
+On Wed, Sep 03, 2014 at 10:36:57PM -0400, Jerome Glisse wrote:
+> On Wed, Sep 03, 2014 at 10:31:18PM -0400, Jerome Glisse wrote:
+> > On Thu, Sep 04, 2014 at 12:25:23PM +1000, Benjamin Herrenschmidt wrote:
+> > > On Wed, 2014-09-03 at 22:07 -0400, Jerome Glisse wrote:
+> > > 
+> > > > So in the meantime the attached patch should work, it just silently ignore
+> > > > the caching attribute request on non x86 instead of pretending that things
+> > > > are setup as expected and then latter the radeon ou nouveau hw unsetting
+> > > > the snoop bit.
+> > > > 
+> > > > It's not tested but i think it should work.
+> > > 
+> > > I'm still getting placements with !CACHED going from bo_memcpy in
+> > > ttm_io_prot() though ... I'm looking at filtering the placement
+> > > attributes instead.
+> > > 
+> > > Ben.
+> > 
+> > Ok so this one should do the trick.
+> 
+> Ok final version ... famous last word.
+[snipped older version]
+> >From 236038e18dc303bb9aa877922e01963d3fb0b7af Mon Sep 17 00:00:00 2001
+> From: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>
+> Date: Wed, 3 Sep 2014 22:04:34 -0400
+> Subject: [PATCH] drm/ttm: force cached mapping on non x86 platform.
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> People interested in providing uncached or write combined mapping
+> on there architecture need to do the ground work inside there arch
 
-In the PAMU driver we were again adding the device to the same group without checking
-if the device already had an iommu group. This resulted in the following warning.
+s/there/their/g
 
-sysfs: cannot create duplicate filename '/devices/ffe200000.pcie/pci0000:00/0000:00:00.0/iommu_group'
-------------[ cut here ]------------
-WARNING: at fs/sysfs/dir.c:31
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.17.0-rc3-00002-g7505cea-dirty #126
-task: c0000001fe0a0000 ti: c0000001fe044000 task.ti: c0000001fe044000
-NIP: c00000000018879c LR: c000000000188798 CTR: c00000000001ea50
-REGS: c0000001fe047040 TRAP: 0700   Not tainted  (3.17.0-rc3-00002-g7505cea-dirty)
-MSR: 0000000080029000 <CE,EE,ME>  CR: 24ad8e22  XER: 20000000
-SOFTE: 1 
-GPR00: c000000000188798 c0000001fe0472c0 c0000000009a52e0 0000000000000065 
-GPR04: 0000000000000001 0000000000000000 3a30303a00000000 0000000027000000 
-GPR08: 2f696f6d00000000 c0000000008d3830 c0000000009b3938 c0000000009bb3d0 
-GPR12: 0000000028ad8e24 c00000000fff4000 c00000000000205c 0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000 c0000000008a4c70 
-GPR24: c0000000007e9010 c0000001fe0140a8 ffffffffffffffef 0000000000000001 
-GPR28: c0000001fe22ebb8 c0000000007e9010 c00000000090bf10 c0000001fe220000 
-NIP [c00000000018879c] .sysfs_warn_dup+0x74/0xa4
-LR [c000000000188798] .sysfs_warn_dup+0x70/0xa4
-Call Trace:
-[c0000001fe0472c0] [c000000000188798] .sysfs_warn_dup+0x70/0xa4 (unreliable)
-[c0000001fe047350] [c000000000188d34] .sysfs_do_create_link_sd.clone.2+0x168/0x174
-[c0000001fe047400] [c0000000004b3cf8] .iommu_group_add_device+0x78/0x244
-[c0000001fe0474b0] [c0000000004b6964] .fsl_pamu_add_device+0x88/0x1a8
-[c0000001fe047570] [c0000000004b3960] .iommu_bus_notifier+0xdc/0x15c
-[c0000001fe047600] [c000000000059848] .notifier_call_chain+0x8c/0xe8
-[c0000001fe0476a0] [c000000000059d04] .__blocking_notifier_call_chain+0x58/0x84
-[c0000001fe047750] [c00000000036619c] .device_add+0x464/0x5c8
-[c0000001fe047820] [c000000000300ebc] .pci_device_add+0x14c/0x17c
-[c0000001fe0478c0] [c000000000300fbc] .pci_scan_single_device+0xd0/0xf4
-[c0000001fe047970] [c00000000030104c] .pci_scan_slot+0x6c/0x18c
-[c0000001fe047a10] [c00000000030226c] .pci_scan_child_bus+0x40/0x114
-[c0000001fe047ac0] [c000000000021974] .pcibios_scan_phb+0x240/0x2c8
-[c0000001fe047b70] [c00000000085a970] .pcibios_init+0x64/0xc8
-[c0000001fe047c00] [c000000000001884] .do_one_initcall+0xbc/0x224
-[c0000001fe047d00] [c000000000852d50] .kernel_init_freeable+0x14c/0x21c
-[c0000001fe047db0] [c000000000002078] .kernel_init+0x1c/0xfa4
-[c0000001fe047e30] [c000000000000884] .ret_from_kernel_thread+0x58/0xd4
-Instruction dump:
-7c7f1b79 4182001c 7fe4fb78 7f83e378 38a01000 4bffc905 60000000 7c641b78 
-e87e8008 7fa5eb78 48482ff5 60000000 <0fe00000> 7fe3fb78 4bf7bd39 60000000 
+> specific code to allow to break the linear kernel mapping so that
+> page mapping attributes can be updated, in the meantime force cached
+> mapping for non x86 architecture.
+> 
+> Signed-off-by: Jérôme Glisse <jglisse@redhat.com>
+> ---
+>  drivers/gpu/drm/radeon/radeon_ttm.c |  2 +-
+>  drivers/gpu/drm/ttm/ttm_bo.c        |  2 +-
+>  drivers/gpu/drm/ttm/ttm_tt.c        | 32 +++++++++++++++++++++-----------
+>  include/drm/ttm/ttm_bo_driver.h     |  2 +-
+>  4 files changed, 24 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/radeon_ttm.c
+> index 72afe82..4dd5060 100644
+> --- a/drivers/gpu/drm/radeon/radeon_ttm.c
+> +++ b/drivers/gpu/drm/radeon/radeon_ttm.c
+> @@ -304,7 +304,7 @@ static int radeon_move_vram_ram(struct ttm_buffer_object *bo,
+>  		return r;
+>  	}
+>  
+> -	r = ttm_tt_set_placement_caching(bo->ttm, tmp_mem.placement);
+> +	r = ttm_tt_set_placement_caching(bo->ttm, &tmp_mem.placement);
+>  	if (unlikely(r)) {
+>  		goto out_cleanup;
+>  	}
+> diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
+> index 3da89d5..4dc21c3 100644
+> --- a/drivers/gpu/drm/ttm/ttm_bo.c
+> +++ b/drivers/gpu/drm/ttm/ttm_bo.c
+> @@ -305,7 +305,7 @@ static int ttm_bo_handle_move_mem(struct ttm_buffer_object *bo,
+>  				goto out_err;
+>  		}
+>  
+> -		ret = ttm_tt_set_placement_caching(bo->ttm, mem->placement);
+> +		ret = ttm_tt_set_placement_caching(bo->ttm, &mem->placement);
+>  		if (ret)
+>  			goto out_err;
+>  
+> diff --git a/drivers/gpu/drm/ttm/ttm_tt.c b/drivers/gpu/drm/ttm/ttm_tt.c
+> index bf080ab..a0df803 100644
+> --- a/drivers/gpu/drm/ttm/ttm_tt.c
+> +++ b/drivers/gpu/drm/ttm/ttm_tt.c
+> @@ -89,14 +89,6 @@ static inline int ttm_tt_set_page_caching(struct page *p,
+>  
+>  	return ret;
+>  }
+> -#else /* CONFIG_X86 */
+> -static inline int ttm_tt_set_page_caching(struct page *p,
+> -					  enum ttm_caching_state c_old,
+> -					  enum ttm_caching_state c_new)
+> -{
+> -	return 0;
+> -}
+> -#endif /* CONFIG_X86 */
+>  
+>  /*
+>   * Change caching policy for the linear kernel map
+> @@ -149,19 +141,37 @@ out_err:
+>  	return ret;
+>  }
+>  
+> -int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement)
+> +int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
+>  {
+>  	enum ttm_caching_state state;
+>  
+> -	if (placement & TTM_PL_FLAG_WC)
+> +	if (*placement & TTM_PL_FLAG_WC)
+>  		state = tt_wc;
+> -	else if (placement & TTM_PL_FLAG_UNCACHED)
+> +	else if (*placement & TTM_PL_FLAG_UNCACHED)
+>  		state = tt_uncached;
+>  	else
+>  		state = tt_cached;
+>  
+>  	return ttm_tt_set_caching(ttm, state);
+>  }
+> +#else /* CONFIG_X86 */
+> +int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement)
+> +{
+> +	if (*placement & (TTM_PL_TT | TTM_PL_FLAG_SYSTEM)) {
+> +		ttm->caching_state = tt_cached;
+> +		*placement &= ~TTM_PL_MASK_CACHING;
+> +		*placement |= TTM_PL_FLAG_CACHED;
+> +	} else {
+> +		if (*placement & TTM_PL_FLAG_WC)
+> +			ttm->caching_state = tt_wc;
+> +		else if (placement & TTM_PL_FLAG_UNCACHED)
+> +			ttm->caching_state = tt_uncached;
+> +		else
+> +			ttm->caching_state = tt_cached;
+> +	}
+> +	return 0;
+> +}
+> +#endif /* CONFIG_X86 */
+>  EXPORT_SYMBOL(ttm_tt_set_placement_caching);
+>  
+>  void ttm_tt_destroy(struct ttm_tt *ttm)
+> diff --git a/include/drm/ttm/ttm_bo_driver.h b/include/drm/ttm/ttm_bo_driver.h
+> index 1d9f0f1..cbc5ad2 100644
+> --- a/include/drm/ttm/ttm_bo_driver.h
+> +++ b/include/drm/ttm/ttm_bo_driver.h
+> @@ -669,7 +669,7 @@ extern int ttm_tt_swapin(struct ttm_tt *ttm);
+>   * hit RAM. This function may be very costly as it involves global TLB
+>   * and cache flushes and potential page splitting / combining.
+>   */
+> -extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t placement);
+> +extern int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t *placement);
+>  extern int ttm_tt_swapout(struct ttm_tt *ttm,
+>  			  struct file *persistent_swap_storage);
+>  
+> -- 
+> 1.9.3
+> 
 
-
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
----
- drivers/iommu/fsl_pamu_domain.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-index 61d1daf..af5a548 100644
---- a/drivers/iommu/fsl_pamu_domain.c
-+++ b/drivers/iommu/fsl_pamu_domain.c
-@@ -984,7 +984,7 @@ static int fsl_pamu_add_device(struct device *dev)
- 	struct iommu_group *group = ERR_PTR(-ENODEV);
- 	struct pci_dev *pdev;
- 	const u32 *prop;
--	int ret, len;
-+	int ret = 0, len;
- 
- 	/*
- 	 * For platform devices we allocate a separate group for
-@@ -1007,7 +1007,13 @@ static int fsl_pamu_add_device(struct device *dev)
- 	if (IS_ERR(group))
- 		return PTR_ERR(group);
- 
--	ret = iommu_group_add_device(group, dev);
-+	/*
-+	 * Check if device has already been added to an iommu group.
-+	 * Group could have already been created for a PCI device in
-+	 * the iommu_group_get_for_dev path.
-+	 */
-+	if (!iommu_group_get(dev))
-+		ret = iommu_group_add_device(group, dev);
- 
- 	iommu_group_put(group);
- 	return ret;
--- 
-1.7.9.5
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
