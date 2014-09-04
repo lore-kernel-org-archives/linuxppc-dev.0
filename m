@@ -1,25 +1,24 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C77FE1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 01:05:39 +1000 (EST)
-Date: Thu, 4 Sep 2014 17:02:34 +0200
-From: Oleg Nesterov <oleg@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EEC1F1A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 01:31:04 +1000 (EST)
+Date: Thu, 4 Sep 2014 17:30:47 +0200
+From: Peter Zijlstra <peterz@infradead.org>
 To: Aaron Tomlin <atomlin@redhat.com>
 Subject: Re: [PATCH 1/2] sched: Add helper for task stack page overrun checking
-Message-ID: <20140904150234.GA6480@redhat.com>
+Message-ID: <20140904153047.GD346@worktop.programming.kicks-ass.net>
 References: <1409842224-11847-1-git-send-email-atomlin@redhat.com>
  <1409842224-11847-2-git-send-email-atomlin@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1409842224-11847-2-git-send-email-atomlin@redhat.com>
-Cc: dzickus@redhat.com, pzijlstr@redhat.com, riel@redhat.com,
- peterz@infradead.org, bmr@redhat.com, x86@kernel.org,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org, minchan@kernel.org,
- mingo@redhat.com, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- jcastillo@redhat.com
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, bmr@redhat.com,
+ x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/04, Aaron Tomlin wrote:
->
-> +#define task_stack_end_corrupted(task) \
-> +		(*(end_of_stack(task)) != STACK_END_MAGIC)
+On Thu, Sep 04, 2014 at 03:50:23PM +0100, Aaron Tomlin wrote:
 
-and it is always used along with "tsk != init_task".
-
-But why we exclude swapper/0? Can't we add
-
-	end_of_stack(current) = STACK_END_MAGIC;
-
-somewhere at the start of start_kernel() ?
-
-If not, perhaps this new helper should check "task != &init_task"
-itself so that we can simplify its users?
-
-Oleg.
-
+> @@ -537,8 +535,8 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+>  	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+>  		regs->nip);
 >  
->  static inline int object_is_on_stack(void *obj)
->  {
-> diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-> index 8a4e5cb..06c7390 100644
-> --- a/kernel/trace/trace_stack.c
-> +++ b/kernel/trace/trace_stack.c
-> @@ -13,7 +13,6 @@
->  #include <linux/sysctl.h>
->  #include <linux/init.h>
->  #include <linux/fs.h>
-> -#include <linux/magic.h>
+> -	stackend = end_of_stack(current);
+> -	if (current != &init_task && *stackend != STACK_END_MAGIC)
+> +	if (current != &init_task &&
+> +		task_stack_end_corrupted(current))
+
+superfluous linebreak.
+
+> @@ -2614,6 +2615,8 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+>  }
 >  
->  #include <asm/setup.h>
->  
+>  #endif
+
+Here otoh we could do with some extra whitespace
+
 > @@ -171,8 +170,8 @@ check_stack(unsigned long ip, unsigned long *stack)
 >  			i++;
 >  	}
@@ -70,9 +56,5 @@ Oleg.
 > -		*(end_of_stack(current)) != STACK_END_MAGIC)) {
 > +	if (current != &init_task &&
 > +		task_stack_end_corrupted(current)) {
->  		print_max_stack();
->  		BUG();
->  	}
-> -- 
-> 1.9.3
-> 
+
+Again, superfluous linebreak.
