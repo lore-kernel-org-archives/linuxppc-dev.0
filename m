@@ -1,29 +1,29 @@
-Return-Path: <mikpelinux@gmail.com>
-Received: from mail-la0-x232.google.com (mail-la0-x232.google.com
- [IPv6:2a00:1450:4010:c03::232])
+Return-Path: <daniel@ffwll.ch>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4875E1A00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 19:34:40 +1000 (EST)
+Received: from mail-we0-x22e.google.com (mail-we0-x22e.google.com
+ [IPv6:2a00:1450:400c:c03::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 353F01A093E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 18:57:47 +1000 (EST)
-Received: by mail-la0-f50.google.com with SMTP id mc6so11325888lab.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Sep 2014 01:57:43 -0700 (PDT)
-From: Mikael Pettersson <mikpelinux@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8FE941400E9
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 19:34:38 +1000 (EST)
+Received: by mail-we0-f174.google.com with SMTP id u57so9880904wes.5
+ for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2014 02:34:34 -0700 (PDT)
+Sender: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Thu, 4 Sep 2014 11:34:54 +0200
+From: Daniel Vetter <daniel@ffwll.ch>
+To: Thomas Hellstrom <thellstrom@vmware.com>
+Subject: Re: TTM placement & caching issue/questions
+Message-ID: <20140904093454.GG15520@phenom.ffwll.local>
+References: <1409789547.30640.136.camel@pasglop> <54081844.7000604@vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <21512.10628.412205.873477@gargle.gargle.HOWL>
-Date: Thu, 4 Sep 2014 10:57:40 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: bit fields && data tearing
-In-Reply-To: <1409785893.30640.118.camel@pasglop>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-arch@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Hurley <peter@hurleysoftware.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+In-Reply-To: <54081844.7000604@vmware.com>
+Cc: dri-devel@lists.freedesktop.org, Michel Danzer <daenzer@vmware.com>,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,89 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
- > On Wed, 2014-09-03 at 18:51 -0400, Peter Hurley wrote:
- > 
- > > Apologies for hijacking this thread but I need to extend this discussion
- > > somewhat regarding what a compiler might do with adjacent fields in a structure.
- > > 
- > > The tty subsystem defines a large aggregate structure, struct tty_struct.
- > > Importantly, several different locks apply to different fields within that
- > > structure; ie., a specific spinlock will be claimed before updating or accessing
- > > certain fields while a different spinlock will be claimed before updating or
- > > accessing certain _adjacent_ fields.
- > > 
- > > What is necessary and sufficient to prevent accidental false-sharing?
- > > The patch below was flagged as insufficient on ia64, and possibly ARM.
- > 
- > We expect native aligned scalar types to be accessed atomically (the
- > read/modify/write of a larger quantity that gcc does on some bitfield
- > cases has been flagged as a gcc bug, but shouldn't happen on normal
- > scalar types).
- > 
- > I am not 100% certain of "bool" here, I assume it's treated as a normal
- > scalar and thus atomic but if unsure, you can always use int.
+On Thu, Sep 04, 2014 at 09:44:04AM +0200, Thomas Hellstrom wrote:
+> Last time I tested, (and it seems like Michel is on the same track),
+> writing with the CPU to write-combined memory was substantially faster
+> than writing to cached memory, with the additional side-effect that CPU
+> caches are left unpolluted.
+> 
+> Moreover (although only tested on Intel's embedded chipsets), texturing
+> from cpu-cache-coherent PCI memory was a real GPU performance hog
+> compared to texturing from non-snooped memory. Hence, whenever a buffer
+> could be classified as GPU-read-only (or almost at least), it should be
+> placed in write-combined memory.
 
-Please use an aligned int or long.  Some machines cannot do atomic
-accesses on sub-int/long quantities, so 'bool' may cause unexpected
-rmw cycles on adjacent fields.
-
-/Mikael
-
- > 
- > Another option is to use the atomic bitops and make these bits in a
- > bitmask but that is probably unnecessary if you have locks already.
- > 
- > Cheers,
- > Ben.
- > 
- > 
- > > Regards,
- > > Peter Hurley
- > > 
- > > --- >% ---
- > > Subject: [PATCH 21/26] tty: Convert tty_struct bitfield to bools
- > > 
- > > The stopped, hw_stopped, flow_stopped and packet bits are smp-unsafe
- > > and interrupt-unsafe. For example,
- > > 
- > > CPU 0                         | CPU 1
- > >                               |
- > > tty->flow_stopped = 1         | tty->hw_stopped = 0
- > > 
- > > One of these updates will be corrupted, as the bitwise operation
- > > on the bitfield is non-atomic.
- > > 
- > > Ensure each flag has a separate memory location, so concurrent
- > > updates do not corrupt orthogonal states.
- > > 
- > > Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
- > > ---
- > >  include/linux/tty.h | 5 ++++-
- > >  1 file changed, 4 insertions(+), 1 deletion(-)
- > > 
- > > diff --git a/include/linux/tty.h b/include/linux/tty.h
- > > index 1c3316a..7cf61cb 100644
- > > --- a/include/linux/tty.h
- > > +++ b/include/linux/tty.h
- > > @@ -261,7 +261,10 @@ struct tty_struct {
- > >  	unsigned long flags;
- > >  	int count;
- > >  	struct winsize winsize;		/* winsize_mutex */
- > > -	unsigned char stopped:1, hw_stopped:1, flow_stopped:1, packet:1;
- > > +	bool stopped;
- > > +	bool hw_stopped;
- > > +	bool flow_stopped;
- > > +	bool packet;
- > >  	unsigned char ctrl_status;	/* ctrl_lock */
- > >  	unsigned int receive_room;	/* Bytes free for queue */
- > >  	int flow_change;
- > 
- > 
- > --
- > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
- > the body of a message to majordomo@vger.kernel.org
- > More majordomo info at  http://vger.kernel.org/majordomo-info.html
- > Please read the FAQ at  http://www.tux.org/lkml/
-
+Just a quick comment since this explicitly referes to intel chips: On
+desktop/laptop chips with the big shared l3/l4 caches it's the other way
+round. Cached uploads are substantially faster than wc and not using
+coherent access is a severe perf hit for texturing. I guess the hw guys
+worked really hard to hide the snooping costs so that the gpu can benefit
+from the massive bandwidth these caches can provide.
+-Daniel
 -- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
