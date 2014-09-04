@@ -1,25 +1,31 @@
-Return-Path: <michel@daenzer.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 209621A0866
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 17:22:23 +1000 (EST)
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id A2C3A1401F6
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 17:22:22 +1000 (EST)
-Message-ID: <540810CE.7070107@daenzer.net>
-Date: Thu, 04 Sep 2014 16:12:14 +0900
-From: =?windows-1252?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-MIME-Version: 1.0
-To: Jerome Glisse <j.glisse@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87DFC1A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2014 17:54:56 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CA0AC1401F6
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2014 17:54:55 +1000 (EST)
+Message-ID: <1409817275.4246.40.camel@pasglop>
 Subject: Re: TTM placement & caching issue/questions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Thu, 04 Sep 2014 17:54:35 +1000
+In-Reply-To: <54081282.3040005@daenzer.net>
 References: <1409789547.30640.136.camel@pasglop>
- <20140904015548.GB4835@gmail.com>
-In-Reply-To: <20140904015548.GB4835@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@ozlabs.org,
- Christian Koenig <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org
+ <20140904015548.GB4835@gmail.com> <20140904020742.GC4835@gmail.com>
+ <1409797523.25089.8.camel@pasglop> <20140904023117.GD4835@gmail.com>
+ <20140904023656.GF4835@gmail.com> <54081282.3040005@daenzer.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org,
+ Michel =?ISO-8859-1?Q?D=E4nzer?= <michel.daenzer@amd.com>,
+ dri-devel@lists.freedesktop.org, Alex Deucher <alexander.deucher@amd.com>,
+ Jerome Glisse <j.glisse@gmail.com>,
+ Christian Koenig <christian.koenig@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04.09.2014 10:55, Jerome Glisse wrote:
->
-> While i agree about the issue of incoherent double map of same page, i
-> think we have more issue. For instance lattely AMD have been pushing a
-> lot of patches to move things to use uncached memory for radeon and as
-> usual thoses patches comes with no comment to the motivations of those
-> changes.
+On Thu, 2014-09-04 at 16:19 +0900, Michel DÃ¤nzer wrote:
+> > +#else /* CONFIG_X86 */
+> > +int ttm_tt_set_placement_caching(struct ttm_tt *ttm, uint32_t
+> *placement)
+> > +{
+> > +     if (*placement & (TTM_PL_TT | TTM_PL_FLAG_SYSTEM)) {
+> > +             ttm->caching_state = tt_cached;
+> > +             *placement &= ~TTM_PL_MASK_CACHING;
+> > +             *placement |= TTM_PL_FLAG_CACHED;
+> 
+> NAK, this will break AGP on PowerMacs.
 
-That would have been a fair review comment...
+ ... which doesn't work reliably anyway with DRI2 :-)
 
+The problem is ... with DRI1 I think we had tricks to take out the
+AGP from the linear mapping but that want away, didn't we ?
 
-> What i understand is that uncached mapping for some frequently use buffer
-> give a significant performance boost (i am assuming this has to do with
-> all the snoop pci transaction overhead).
+In any case, we are playing with fire on these by allowing the
+cache paradox. It just happens that those old CPUs aren't *that*
+aggressive at speculative prefetch and we probably rarely hit the
+lockups that they would cause...
 
-Exactly, although it's a win even if the data is written by the CPU only 
-once and read by the GPU only once.
+Michel, what do you recommend we do then ? The patch I sent to
+double check in ttm_io_prot() has a specific hack to avoid warning
+on PowerMac for the above reason, but we need to fix Jerome if we
+want to keep that broken-by-design Mac AGP functionality going :-)
 
+Maybe we could add a similar ifdef in the above ?
 
-> This also means that we need to fix ttm_tt_set_placement_caching so that
-> when it returns an error it switches to cached mapping. Which will always
-> work.
-
-GTT with AGP being one exception.
-
-
--- 
-Earthling Michel Dänzer            |                  http://www.amd.com
-Libre software enthusiast          |                Mesa and X developer
+Cheers,
+Ben.
