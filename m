@@ -1,36 +1,32 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <david.vrabel@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 848B71A00E4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 00:08:13 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 5 Sep 2014 10:08:10 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BF6ED6E8028
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 10:07:56 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s85E885R9634226
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 14:08:08 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s85E87AT001837
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 10:08:08 -0400
-Message-ID: <5409C3C6.90204@linux.vnet.ibm.com>
-Date: Fri, 05 Sep 2014 09:08:06 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34CB71A011C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 00:29:29 +1000 (EST)
+Message-ID: <5409C8C0.8020200@citrix.com>
+Date: Fri, 5 Sep 2014 15:29:20 +0100
+From: David Vrabel <david.vrabel@citrix.com>
 MIME-Version: 1.0
-To: bharata.rao@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pseries: Make CPU hotplug path endian safe
-References: <1409908577-10648-1-git-send-email-bharata.rao@gmail.com>
-In-Reply-To: <1409908577-10648-1-git-send-email-bharata.rao@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
+ to configure MSI/MSI-X irq
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Bharat.Bhushan@freescale.com,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,89 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2014 04:16 AM, bharata.rao@gmail.com wrote:
-> From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> 
-> - ibm,rtas-configure-connector should treat the RTAS data as big endian.
-> - Treat ibm,ppc-interrupt-server#s as big-endian when setting
->   smp_processor_id during hotplug.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c       | 10 +++++-----
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |  4 ++--
->  2 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index 2d0b4d6..dc55f9c 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -48,11 +48,11 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
->  	if (!prop)
->  		return NULL;
+On 05/09/14 11:09, Yijing Wang wrote:
+> Use MSI chip framework instead of arch MSI functions to configure
+> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+[...]
+> --- a/arch/x86/pci/xen.c
+> +++ b/arch/x86/pci/xen.c
+[...]
+> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
+>  #endif
 >  
-> -	name = (char *)ccwa + ccwa->name_offset;
-> +	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
->  	prop->name = kstrdup(name, GFP_KERNEL);
->  
-> -	prop->length = ccwa->prop_length;
-> -	value = (char *)ccwa + ccwa->prop_offset;
-> +	prop->length = be32_to_cpu(ccwa->prop_length);
-> +	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
->  	prop->value = kmemdup(value, prop->length, GFP_KERNEL);
->  	if (!prop->value) {
->  		dlpar_free_cc_property(prop);
-> @@ -78,7 +78,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
->  	if (!dn)
->  		return NULL;
->  
-> -	name = (char *)ccwa + ccwa->name_offset;
-> +	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
->  	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
->  	if (!dn->full_name) {
->  		kfree(dn);
-> @@ -148,7 +148,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index,
->  		return NULL;
->  
->  	ccwa = (struct cc_workarea *)&data_buf[0];
-> -	ccwa->drc_index = drc_index;
-> +	ccwa->drc_index = cpu_to_be32(drc_index);
+>  #ifdef CONFIG_PCI_MSI
+> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
+> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
+> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
+> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
+> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
+> +	x86_msi_chip = &xen_msi_chip;
+>  	msi_chip.irq_mask = xen_nop_msi_mask;
+>  	msi_chip.irq_unmask = xen_nop_msi_mask;
 
-I need to look at this some more but I think this may cause an issue for
-partition migration. If I am following the code correctly, starting in
-pseries_devicetree_update(), the drc_index value passed to 
-dlpar_configure_connector is pulled directly out of a buffer we get from
-firmware. This would mean the drc_index value is already in BE format.
+Why have these not been changed to set the x86_msi_chip.mask/unmask
+fields instead?
 
-Whereas for cpu hotplug the drc_index value is passed in from userspace
-via the cpu probe interface in sysfs. I assume that you are seeing the
-drc_index value getting passed in in LE format.
-
--Nathan
-
->  	ccwa->zero = 0;
->  
->  	do {
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 20d6297..447f8c6 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -247,7 +247,7 @@ static int pseries_add_processor(struct device_node *np)
->  	unsigned int cpu;
->  	cpumask_var_t candidate_mask, tmp;
->  	int err = -ENOSPC, len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv;
->  
->  	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
->  	if (!intserv)
-> @@ -293,7 +293,7 @@ static int pseries_add_processor(struct device_node *np)
->  	for_each_cpu(cpu, tmp) {
->  		BUG_ON(cpu_present(cpu));
->  		set_cpu_present(cpu, true);
-> -		set_hard_smp_processor_id(cpu, *intserv++);
-> +		set_hard_smp_processor_id(cpu, be32_to_cpu(*intserv++));
->  	}
->  	err = 0;
->  out_unlock:
-> 
+David
