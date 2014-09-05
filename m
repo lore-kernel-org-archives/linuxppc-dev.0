@@ -1,47 +1,39 @@
-Return-Path: <wangyijing0307@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <marc@cadence.com>
+Received: from mx0a-0014ca01.pphosted.com (mx0a-0014ca01.pphosted.com
+ [208.84.65.235])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 81E611A0174
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 21:33:17 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id fa1so22189642pad.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 04:33:12 -0700 (PDT)
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
- <540994D4.6040500@cogentembedded.com>
-Mime-Version: 1.0 (1.0)
-In-Reply-To: <540994D4.6040500@cogentembedded.com>
-Content-Type: text/plain;
-	charset=gb2312
-Message-Id: <43412AE0-85BB-4B4B-A4EA-2C6D3B8B85D7@gmail.com>
-From: wangyijing <wangyijing0307@gmail.com>
-Subject: Re: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-Date: Fri, 5 Sep 2014 19:33:08 +0800
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 662FE1A0028
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 06:29:57 +1000 (EST)
+From: Marc Gauthier <marc@cadence.com>
+To: "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, Peter Hurley
+ <peter@hurleysoftware.com>
+Date: Fri, 5 Sep 2014 12:38:56 -0700
+Subject: RE: bit fields && data tearing
+Message-ID: <8CA974F497CA064FA9926E10ABCC061F05F97E7B77@MAILSJ4.global.cadence.com>
+References: <54079B70.4050200@hurleysoftware.com>
+ <1409785893.30640.118.camel@pasglop>
+ <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
+ <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
+ <54090AF4.7060406@hurleysoftware.com> <54091B30.2090509@zytor.com>
+ <20140905081648.GB5281@omega> <20140905180950.GU5001@linux.vnet.ibm.com>
+ <540A05F7.1070202@hurleysoftware.com>
+ <20140905190506.GV5001@linux.vnet.ibm.com>
+In-Reply-To: <20140905190506.GV5001@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Jakub Jelinek <jakub@redhat.com>,
  "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "arnab.basu@freescale.com" <arnab.basu@freescale.com>,
- Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Wuyun <wuyun.wu@huawei.com>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Michael Cree <mcree@orcon.net.nz>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,62 +43,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Paul E. McKenney wrote:
+>On Fri, Sep 05, 2014 at 02:50:31PM -0400, Peter Hurley wrote:
+>>On 09/05/2014 02:09 PM, Paul E. McKenney wrote:
+>>> This commit documents the fact that it is not safe to use bitfields as
+>>> shared variables in synchronization algorithms.  It also documents that
+>>> CPUs must provide one-byte and two-byte load and store instructions
+>>                    ^
+>>                 atomic
+>=20
+> Here you meant non-atomic?  My guess is that you are referring to the
+> fact that you could emulate a one-byte store on pre-EV56 Alpha CPUs
+> using the ll and sc atomic-read-modify-write instructions, correct?
+>=20
+>>> in order to be supported by the Linux kernel.  (Michael Cree
+>>> has agreed to the resulting non-support of pre-EV56 Alpha CPUs:
+>>> https://lkml.org/lkml/2014/9/5/143.
+[...]
 
+>>> +     and 64-bit systems, respectively.  Note that this means that the
+>>> +     Linux kernel does not support pre-EV56 Alpha CPUs, because these
+>>> +     older CPUs do not provide one-byte and two-byte loads and stores.
+>>                                  ^
+>>                             non-atomic
+>=20
+> I took this, thank you!
 
-> =D4=DA 2014=C4=EA9=D4=C25=C8=D5=A3=AC18:47=A3=ACSergei Shtylyov <sergei.sh=
-tylyov@cogentembedded.com> =D0=B4=B5=C0=A3=BA
->=20
-> Hello.
->=20
->> On 9/5/2014 2:10 PM, Yijing Wang wrote:
->>=20
->> Use MSI chip framework instead of arch MSI functions to configure
->> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
->=20
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->> ---
->>  arch/powerpc/kernel/msi.c |   14 ++++++++++++--
->>  1 files changed, 12 insertions(+), 2 deletions(-)
->=20
->> diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
->> index 71bd161..01781a4 100644
->> --- a/arch/powerpc/kernel/msi.c
->> +++ b/arch/powerpc/kernel/msi.c
-> [...]
->> @@ -27,7 +27,17 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec,=
- int type)
->>      return ppc_md.setup_msi_irqs(dev, nvec, type);
->>  }
->>=20
->> -void arch_teardown_msi_irqs(struct pci_dev *dev)
->> +static void ppc_teardown_msi_irqs(struct pci_dev *dev)
->=20
->   Shouldn't this function take IRQ # instead?
+Eum, am I totally lost, or aren't both of these supposed to say "atomic" ?
 
-This function need to teardown all msi irqs of the pci dev, we should pass t=
-he pci dev as argument .
+Can't imagine requiring a CPU to provide non-atomic loads and stores
+(i.e. requiring old Alpha behavior?).
 
-Thanks!
-Yijing.
-
->=20
->>  {
->>      ppc_md.teardown_msi_irqs(dev);
->>  }
->> +
->> +static struct msi_chip ppc_msi_chip =3D {
->> +    .setup_irqs =3D ppc_setup_msi_irqs,
->> +    .teardown_irqs =3D ppc_teardown_msi_irqs,
->> +};
->> +
->> +struct msi_chip *arch_find_msi_chip(struct pci_dev *dev)
->> +{
->> +    return &ppc_msi_chip;
->> +}
->=20
-> WBR, Sergei
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-Marc
