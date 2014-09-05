@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 563571A0BB9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 19:46:12 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78CDC1A15E1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 19:46:13 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v1 16/21] s390/MSI: Use MSI chip framework to configure
+Subject: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to configure
  MSI/MSI-X irq
-Date: Fri, 5 Sep 2014 18:10:01 +0800
-Message-ID: <1409911806-10519-17-git-send-email-wangyijing@huawei.com>
+Date: Fri, 5 Sep 2014 18:10:00 +0800
+Message-ID: <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
 References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -42,59 +42,40 @@ MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/s390/pci/pci.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/msi.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-index 2fa7b14..da5316e 100644
---- a/arch/s390/pci/pci.c
-+++ b/arch/s390/pci/pci.c
-@@ -358,7 +358,7 @@ static void zpci_irq_handler(struct airq_struct *airq)
- 	}
- }
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index 71bd161..01781a4 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -13,7 +13,7 @@
  
--int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-+int zpci_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ #include <asm/machdep.h>
+ 
+-int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++static int ppc_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
  {
- 	struct zpci_dev *zdev = get_zdev(pdev);
- 	unsigned int hwirq, msi_vecs;
-@@ -434,7 +434,7 @@ out:
- 	return rc;
+ 	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
+ 		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
+@@ -27,7 +27,17 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	return ppc_md.setup_msi_irqs(dev, nvec, type);
  }
  
--void arch_teardown_msi_irqs(struct pci_dev *pdev)
-+static void zpci_teardown_msi_irqs(struct pci_dev *pdev)
+-void arch_teardown_msi_irqs(struct pci_dev *dev)
++static void ppc_teardown_msi_irqs(struct pci_dev *dev)
  {
- 	struct zpci_dev *zdev = get_zdev(pdev);
- 	struct msi_desc *msi;
-@@ -448,9 +448,9 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
- 	/* Release MSI interrupts */
- 	list_for_each_entry(msi, &pdev->msi_list, list) {
- 		if (msi->msi_attrib.is_msix)
--			default_msix_mask_irq(msi, 1);
-+			__msix_mask_irq(msi, 1);
- 		else
--			default_msi_mask_irq(msi, 1, 1);
-+			__msi_mask_irq(msi, 1, 1);
- 		irq_set_msi_desc(msi->irq, NULL);
- 		irq_free_desc(msi->irq);
- 		msi->msg.address_lo = 0;
-@@ -464,6 +464,16 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
- 	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
+ 	ppc_md.teardown_msi_irqs(dev);
  }
- 
-+static struct msi_chip zpci_msi_chip = {
-+	.setup_irqs = zpci_setup_msi_irqs,
-+	.teardown_irqs = zpci_teardown_msi_irqs,
++
++static struct msi_chip ppc_msi_chip = {
++	.setup_irqs = ppc_setup_msi_irqs,
++	.teardown_irqs = ppc_teardown_msi_irqs,
 +};
 +
 +struct msi_chip *arch_find_msi_chip(struct pci_dev *dev)
 +{
-+	return &zpci_msi_chip;
++	return &ppc_msi_chip;
 +}
-+
- static void zpci_map_resources(struct zpci_dev *zdev)
- {
- 	struct pci_dev *pdev = zdev->pdev;
 -- 
 1.7.1
