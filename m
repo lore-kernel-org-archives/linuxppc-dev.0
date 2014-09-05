@@ -1,36 +1,35 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mcree@orcon.net.nz>
+Received: from mail.orcon.net.nz (unknown [219.88.242.52])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B17D1A0087
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 06:35:15 +1000 (EST)
-Message-ID: <540A1E6C.2020005@zytor.com>
-Date: Fri, 05 Sep 2014 13:34:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: Peter Hurley <peter@hurleysoftware.com>, Marc Gauthier <marc@cadence.com>,
- "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 243361A00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 06:41:45 +1000 (EST)
+Date: Sat, 6 Sep 2014 08:39:51 +1200
+From: Michael Cree <mcree@orcon.net.nz>
+To: Peter Hurley <peter@hurleysoftware.com>
 Subject: Re: bit fields && data tearing
-References: <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
- <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
+Message-ID: <20140905203951.GA4053@omega>
+References: <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
  <54090AF4.7060406@hurleysoftware.com> <54091B30.2090509@zytor.com>
- <20140905081648.GB5281@omega> <20140905180950.GU5001@linux.vnet.ibm.com>
+ <20140905081648.GB5281@omega>
+ <20140905180950.GU5001@linux.vnet.ibm.com>
  <540A05F7.1070202@hurleysoftware.com>
  <20140905190506.GV5001@linux.vnet.ibm.com>
  <8CA974F497CA064FA9926E10ABCC061F05F97E7B77@MAILSJ4.global.cadence.com>
  <540A19B8.4010907@hurleysoftware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <540A19B8.4010907@hurleysoftware.com>
-Content-Type: text/plain; charset=UTF-8
 Cc: Jakub Jelinek <jakub@redhat.com>,
  "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Michael Cree <mcree@orcon.net.nz>, Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
+ Tony Luck <tony.luck@intel.com>, David Laight <David.Laight@ACULAB.COM>,
  "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Marc Gauthier <marc@cadence.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,23 +41,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2014 01:14 PM, Peter Hurley wrote:
-> 
-> Here's how I read the two statements.
-> 
-> First, the commit message:
-> 
-> "It [this commit] documents that CPUs [supported by the Linux kernel]
-> _must provide_ atomic one-byte and two-byte naturally aligned loads and stores."
-> 
+On Fri, Sep 05, 2014 at 04:14:48PM -0400, Peter Hurley wrote:
 > Second, in the body of the document:
 > 
 > "The Linux kernel no longer supports pre-EV56 Alpha CPUs, because these
 > older CPUs _do not provide_ atomic one-byte and two-byte loads and stores."
-> 
 
-Does this apply in general or only to SMP configurations?  I guess
-non-SMP configurations would still have problems if interrupted in the
-wrong place...
+Let's be clear here, the pre-EV56 Alpha CPUs do provide an atomic
+one-byte and two-byte load and store; it's just that one must use
+locked load and store sequences to achieve atomicity.  The point,
+I think, is that the pre-EV56 Alpha CPUs provide non-atomic one-byte
+and two-byte load and stores as the norm, and that is the problem.
 
-	-hpa
+Cheers
+Michael.
