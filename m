@@ -1,25 +1,33 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3263E1A006C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 02:13:55 +1000 (EST)
-Date: Thu, 4 Sep 2014 17:11:24 +0100
-From: Aaron Tomlin <atomlin@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/2] sched: BUG when stack end location is over written
-Message-ID: <20140904161124.GD1436@atomlin.usersys.redhat.com>
-References: <1409842224-11847-1-git-send-email-atomlin@redhat.com>
- <1409842224-11847-3-git-send-email-atomlin@redhat.com>
- <20140904153231.GE346@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 632681A00FA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 10:59:43 +1000 (EST)
+Message-ID: <54090AF4.7060406@hurleysoftware.com>
+Date: Thu, 04 Sep 2014 20:59:32 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Laight <David.Laight@ACULAB.COM>
+Subject: Re: bit fields && data tearing
+References: <20140712181328.GA8738@redhat.com>	
+ <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>	
+ <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
+ <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
+In-Reply-To: <5408E458.3@zytor.com>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20140904153231.GE346@worktop.programming.kicks-ass.net>
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, bmr@redhat.com,
- x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
- linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
- aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, hannes@cmpxchg.org,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, pzijlstr@redhat.com
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linux-alpha@vger.kernel.org,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2014 at 05:32:31PM +0200, Peter Zijlstra wrote:
-> On Thu, Sep 04, 2014 at 03:50:24PM +0100, Aaron Tomlin wrote:
-> > Currently in the event of a stack overrun a call to schedule()
-> > does not check for this type of corruption. This corruption is
-> > often silent and can go unnoticed. However once the corrupted
-> > region is examined at a later stage, the outcome is undefined
-> > and often results in a sporadic page fault which cannot be
-> > handled.
-> > 
-> > This patch checks for a stack overrun and takes appropriate
-> > action since the damage is already done, there is no point
-> > in continuing.
-> > 
-> > Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
-> > ---
-> >  kernel/sched/core.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index ec1a286..d6af6a0 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -2660,6 +2660,9 @@ static noinline void __schedule_bug(struct task_struct *prev)
-> >   */
-> >  static inline void schedule_debug(struct task_struct *prev)
-> >  {
-> > +	if (unlikely(prev != &init_task &&
-> > +		task_stack_end_corrupted(prev)))
-> > +		BUG();
-> 
-> superfluous linebreak, also we appear to have BUG_ON() for situations
-> just like these.
-> 
-> secondly, while I appreciate the 'feature' you're making schedule()
-> slower for everybody, what do you propose to do about that?
+[ +cc linux-alpha ]
 
-Understood. I will wrap this with a suitable Kconfig option.
+On 09/04/2014 06:14 PM, H. Peter Anvin wrote:
+> On 09/04/2014 02:52 AM, Benjamin Herrenschmidt wrote:
+>>
+>> Yeah correct, alpha and bytes right ? Is there any other ? That's why I
+>> suggested int.
+>>
+> 
+> Even for Alpha it is only the 21064 AFAIK.
 
--- 
-Aaron Tomlin
+For -mcpu=ev5 (21164) and the following test
+
+struct x {
+	long a;
+	char b;
+	char c;
+	char d;
+	char e;
+};
+
+void store_b(struct x *p) {
+	p->b = 1;
+}
+
+gcc generates:
+
+void store_b(struct x *p) {
+   0:	08 00 30 a0 	ldl	t0,8(a0)
+   4:	01 f1 3f 44 	andnot	t0,0xff,t0
+   8:	01 34 20 44 	or	t0,0x1,t0
+   c:	08 00 30 b0 	stl	t0,8(a0)
+  10:	01 80 fa 6b 	ret
+
+IOW, rmw on 3 adjacent bytes, which is bad :)
+For -mcpu=ev56 (21164A), the generated code is:
+
+void store_b(struct x *p) {
+   0:	01 00 3f 20 	lda	t0,1
+   4:	08 00 30 38 	stb	t0,8(a0)
+   8:	01 80 fa 6b 	ret
+
+which is ok.
+I have no idea how prevalent the ev56 is compared to the ev5.
+Still we're talking about a chip that came out in 1996.
+
+I still hate split caches though.
+
+Regards,
+Peter Hurley
