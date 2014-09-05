@@ -1,22 +1,22 @@
 Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
+Received: from mail-la0-f42.google.com (mail-la0-f42.google.com
+ [209.85.215.42])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 593A61A054D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 20:43:05 +1000 (EST)
-Received: by mail-lb0-f179.google.com with SMTP id p9so714474lbv.24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 03:43:01 -0700 (PDT)
-Message-ID: <540993B3.1000701@cogentembedded.com>
-Date: Fri, 05 Sep 2014 14:42:59 +0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D1EB1A017F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 20:47:54 +1000 (EST)
+Received: by mail-la0-f42.google.com with SMTP id mc6so13702249lab.15
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 03:47:51 -0700 (PDT)
+Message-ID: <540994D4.6040500@cogentembedded.com>
+Date: Fri, 05 Sep 2014 14:47:48 +0400
 From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
 To: Yijing Wang <wangyijing@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v1 09/21] Irq_remapping/MSI: Use MSI chip framework to
- configure MSI/MSI-X irq
+Subject: Re: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to configure
+ MSI/MSI-X irq
 References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-10-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1409911806-10519-10-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
@@ -42,34 +42,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hello.
 
-On 9/5/2014 2:09 PM, Yijing Wang wrote:
+On 9/5/2014 2:10 PM, Yijing Wang wrote:
 
 > Use MSI chip framework instead of arch MSI functions to configure
 > MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 > Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 > ---
->   drivers/iommu/irq_remapping.c |    8 +++++++-
->   1 files changed, 7 insertions(+), 1 deletions(-)
+>   arch/powerpc/kernel/msi.c |   14 ++++++++++++--
+>   1 files changed, 12 insertions(+), 2 deletions(-)
 
-> diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
-> index 33c4395..e75026e 100644
-> --- a/drivers/iommu/irq_remapping.c
-> +++ b/drivers/iommu/irq_remapping.c
+> diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+> index 71bd161..01781a4 100644
+> --- a/arch/powerpc/kernel/msi.c
+> +++ b/arch/powerpc/kernel/msi.c
 [...]
-> @@ -165,9 +170,10 @@ static void __init irq_remapping_modify_x86_ops(void)
->   	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
->   	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
->   	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
-> -	x86_msi.setup_msi_irqs		= irq_remapping_setup_msi_irqs;
-> +	x86_msi.setup_msi_irqs          = irq_remapping_setup_msi_irqs;
+> @@ -27,7 +27,17 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>   	return ppc_md.setup_msi_irqs(dev, nvec, type);
+>   }
+>
+> -void arch_teardown_msi_irqs(struct pci_dev *dev)
+> +static void ppc_teardown_msi_irqs(struct pci_dev *dev)
 
-    AFAICS, this change only converts tabs to spaces, so not needed at all.
+    Shouldn't this function take IRQ # instead?
 
->   	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
->   	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
-> +	x86_msi_chip = &remap_msi_chip;
-
-    Please align = with the rest of assignments.
+>   {
+>   	ppc_md.teardown_msi_irqs(dev);
+>   }
+> +
+> +static struct msi_chip ppc_msi_chip = {
+> +	.setup_irqs = ppc_setup_msi_irqs,
+> +	.teardown_irqs = ppc_teardown_msi_irqs,
+> +};
+> +
+> +struct msi_chip *arch_find_msi_chip(struct pci_dev *dev)
+> +{
+> +	return &ppc_msi_chip;
+> +}
 
 WBR, Sergei
