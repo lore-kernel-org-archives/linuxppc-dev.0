@@ -1,45 +1,28 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by lists.ozlabs.org (Postfix) with SMTP id 671F41A00C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 22:38:36 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 01063-10 for <linuxppc-dev@lists.ozlabs.org>;
- Fri,  5 Sep 2014 13:38:33 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Peter Hurley' <peter@hurleysoftware.com>, "'paulmck@linux.vnet.ibm.com'"
- <paulmck@linux.vnet.ibm.com>
-Subject: RE: bit fields && data tearing
-Date: Fri, 5 Sep 2014 12:37:17 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D17488265@AcuExch.aculab.com>
-References: <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <21512.10628.412205.873477@gargle.gargle.HOWL>
- <20140904090952.GW17454@tucnak.redhat.com>
- <540859EC.5000407@hurleysoftware.com>
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>
- <5408C0AB.6050801@hurleysoftware.com>
- <20140905001751.GL5001@linux.vnet.ibm.com>
- <1409883098.5078.14.camel@jarvis.lan> <5409243C.4080704@hurleysoftware.com>
- <20140905040645.GO5001@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D17487F66@AcuExch.aculab.com>
- <5409AD0A.5090305@hurleysoftware.com>
-In-Reply-To: <5409AD0A.5090305@hurleysoftware.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <joro@8bytes.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63DAB1A01C0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 00:04:22 +1000 (EST)
+Received: from theia.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E13A51400B9
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2014 00:04:21 +1000 (EST)
+Date: Fri, 5 Sep 2014 16:04:15 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH v2] iommu/fsl: Fix warning resulting from adding PCI
+ device twice
+Message-ID: <20140905140414.GA11931@8bytes.org>
+References: <1409830725-4469-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Mikael Pettersson <mikpelinux@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- Paul Mackerras <paulus@samba.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-arm@vger.kernel.org" <linux-arm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Miroslav
- Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1409830725-4469-1-git-send-email-Varun.Sethi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, iommu@lists.linux-foundation.org,
+ alex.williamson@redhat.com, Emilian.Medve@freescale.com,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,42 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogUGV0ZXIgSHVybGV5DQo+IFsgK2NjIGxpbnV4LWFybSBdDQo+IA0KPiBIaSBEYXZpZCwN
-Cj4gDQo+IE9uIDA5LzA1LzIwMTQgMDQ6MzAgQU0sIERhdmlkIExhaWdodCB3cm90ZToNCj4gPiBJ
-J3ZlIHNlZW4gZ2NjIGdlbmVyYXRlIDMyYml0IGFjY2Vzc2VzIGZvciAxNmJpdCBzdHJ1Y3R1cmUg
-bWVtYmVycyBvbiBhcm0uDQo+ID4gSXQgZG9lcyB0aGlzIGJlY2F1c2Ugb2YgdGhlIG1vcmUgbGlt
-aXRlZCByYW5nZSBvZiB0aGUgb2Zmc2V0cyBmb3IgdGhlIDE2Yml0IGFjY2Vzcy4NCj4gPiBPVE9I
-IEkgZG9uJ3Qga25vdyBpZiBpdCBldmVyIGRpZCB0aGlzIGZvciB3cml0ZXMgLSBzbyBpdCBtYXkg
-YmUgbW9vdC4NCj4gDQo+IENhbiB5b3UgcmVjYWxsIHRoZSBwYXJ0aWN1bGFycywgbGlrZSB3aGF0
-IEFSTSBjb25maWcgb3Igd2hhdCBjb2RlPw0KPiANCj4gSSB0cmllZCBhbiBvdmVybHktc2ltcGxl
-IHRlc3QgdG8gc2VlIGlmIGdjYyB3b3VsZCBidW1wIHVwIHRvIHRoZSB3b3JkIGxvYWQgZm9yDQo+
-IHRoZSAxMi1iaXQgb2Zmc2V0IG1vZGUsIGJ1dCBpdCBzdHVjayB3aXRoIHJlZ2lzdGVyIG9mZnNl
-dCByYXRoZXIgdGhhbiBpbW1lZGlhdGUNCj4gb2Zmc2V0LiBbSSB1c2VkIHRoZSBjb21waWxlciBv
-cHRpb25zIGZvciBhbGxtb2Rjb25maWcgYW5kIGEgNC44IGNyb3NzLWNvbXBpbGVyLl0NCj4gDQo+
-IE1heWJlIHRoZSB0ZXN0IGRvZXNuJ3QgZ2VuZXJhdGUgZW5vdWdoIHJlZ2lzdGVyIHByZXNzdXJl
-IG9uIHRoZSBjb21waWxlcj8NCg0KRHVubm8sIEkgd291bGQgaGF2ZSBiZWVuIHVzaW5nIGEgbXVj
-aCBvbGRlciB2ZXJzaW9uIG9mIHRoZSBjb21waWxlci4NCkl0IGlzIHBvc3NpYmxlIHRoYXQgaXQg
-ZG9lc24ndCBkbyBpdCBhbnkgbW9yZS4NCkl0IG1pZ2h0IG9ubHkgaGF2ZSBkb25lIGl0IGZvciBs
-b2Fkcy4NCg0KVGhlIGNvbXBpbGVyIHVzZWQgdG8gdXNlIG1pc2FsaWduZWQgMzJiaXQgbG9hZHMg
-Zm9yIHN0cnVjdHVyZQ0KbWVtYmVycyBvbiBsYXJnZSA0bisyIGJ5dGUgYm91bmRhcmllcyBhcyB3
-ZWxsLg0KSSdtIHByZXR0eSBzdXJlIGl0IGRvZXNuJ3QgZG8gdGhhdCBlaXRoZXIuDQoNClRoZXJl
-IGhhdmUgYmVlbiBhIGxvdCBvZiBjb21waWxlciB2ZXJzaW9ucyBzaW5jZSBJIHdhcyBjb21waWxp
-bmcNCmFueXRoaW5nIGZvciBhcm0uDQoNCglEYXZpZA0KDQo+IFJlZ2FyZHMsDQo+IFBldGVyIEh1
-cmxleQ0KPiANCj4gI2RlZmluZSBBUlJBWV9TSVpFKHgpICAoc2l6ZW9mKHgpL3NpemVvZigoeClb
-MF0pKQ0KPiANCj4gc3RydWN0IHggew0KPiAJbG9uZyB1bnVzZWRbNjRdOw0KPiAJc2hvcnQgYlsx
-Ml07DQo+IAlpbnQgdW51c2VkMlsxMF07DQo+IAlzaG9ydCBjOw0KPiB9Ow0KPiANCj4gdm9pZCBz
-dG9yZV9jKHN0cnVjdCB4ICpwLCBzaG9ydCBhW10pIHsNCj4gCWludCBpOw0KPiANCj4gCWZvciAo
-aSA9IDA7IGkgPCBBUlJBWV9TSVpFKHAtPmIpOyBpKyspDQo+IAkJcC0+YltpXSA9IGFbaV07DQo+
-IAlwLT5jID0gMjsNCj4gfQ0KPiANCj4gDQo+IHZvaWQgc3RvcmVfYyhzdHJ1Y3QgeCAqcCwgc2hv
-cnQgYVtdKSB7DQo+ICAgIDA6CWUxYTBjMDBkIAltb3YJaXAsIHNwDQo+ICAgIDQ6CWUzYTAzMDAw
-IAltb3YJcjMsICMwDQo+ICAgIDg6CWU5MmRkODAwIAlwdXNoCXtmcCwgaXAsIGxyLCBwY30NCj4g
-ICAgYzoJZTI0Y2IwMDQgCXN1YglmcCwgaXAsICM0DQo+IAlpbnQgaTsNCj4gDQo+IAlmb3IgKGkg
-PSAwOyBpIDwgQVJSQVlfU0laRShwLT5iKTsgaSsrKQ0KPiAJCXAtPmJbaV0gPSBhW2ldOw0KPiAg
-IDEwOgllMTkxYzBiMyAJbGRyaAlpcCwgW3IxLCByM10NCj4gICAxNDoJZTA4MDIwMDMgCWFkZAly
-MiwgcjAsIHIzDQo+ICAgMTg6CWUyODIyYzAxIAlhZGQJcjIsIHIyLCAjMjU2CTsgMHgxMDANCj4g
-ICAxYzoJZTI4MzMwMDIgCWFkZAlyMywgcjMsICMyDQo+ICAgMjA6CWUzNTMwMDE4IAljbXAJcjMs
-ICMyNA0KPiAgIDI0OgllMWMyYzBiMCAJc3RyaAlpcCwgW3IyXQ0KPiAgIDI4OgkxYWZmZmZmOCAJ
-Ym5lCTEwIDxzdG9yZV9jKzB4MTA+DQo+IAlwLT5jID0gMjsNCj4gICAyYzoJZTNhMDNkMDUgCW1v
-dglyMywgIzMyMAk7IDB4MTQwDQo+ICAgMzA6CWUzYTAyMDAyIAltb3YJcjIsICMyDQo+ICAgMzQ6
-CWUxODAyMGIzIAlzdHJoCXIyLCBbcjAsIHIzXQ0KPiAgIDM4OgllODlkYTgwMCAJbGRtCXNwLCB7
-ZnAsIHNwLCBwY30NCg0K
+On Thu, Sep 04, 2014 at 05:08:45PM +0530, Varun Sethi wrote:
+> iommu_group_get_for_dev determines the iommu group for the PCI device and adds
+> the device to the group.
+> 
+> In the PAMU driver we were again adding the device to the same group without checking
+> if the device already had an iommu group. This resulted in the following warning.
+>
+> [...]
+> 
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+> v2 changes
+> - directly check for the device iommu_group
+> 
+>  drivers/iommu/fsl_pamu_domain.c |   10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+
+Applied to iommu/fixes and added stable tag, thanks.
