@@ -1,47 +1,41 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
- [209.85.217.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E2C21A00C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 21:41:47 +1000 (EST)
-Received: by mail-lb0-f173.google.com with SMTP id c11so13316543lbj.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 04:41:42 -0700 (PDT)
-Message-ID: <5409A174.3050205@cogentembedded.com>
-Date: Fri, 05 Sep 2014 15:41:40 +0400
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05EC11A00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 22:09:36 +1000 (EST)
+Received: from /spool/local
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Fri, 5 Sep 2014 09:09:32 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id BEAE11DC005E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 08:09:28 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s85C8NLq37879890
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 09:08:24 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s85C9RmQ005251
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 08:09:27 -0400
+Date: Fri, 5 Sep 2014 09:09:25 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] deb-pkg: Add support for powerpc little endian
+Message-ID: <20140905120925.GB3846@oc0268524204.ibm.com>
+References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>
+ <20140905071344.GA16024@visitor2.iram.es>
+ <1409903718.11359.30.camel@ale.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: wangyijing <wangyijing0307@gmail.com>
-Subject: Re: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
- <540994D4.6040500@cogentembedded.com>
- <43412AE0-85BB-4B4B-A4EA-2C6D3B8B85D7@gmail.com>
-In-Reply-To: <43412AE0-85BB-4B4B-A4EA-2C6D3B8B85D7@gmail.com>
-Content-Type: text/plain; charset=gbk; format=flowed
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "arnab.basu@freescale.com" <arnab.basu@freescale.com>,
- Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Wuyun <wuyun.wu@huawei.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1409903718.11359.30.camel@ale.ozlabs.ibm.com>
+Cc: Michal Marek <mmarek@suse.cz>, linux-kbuild@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
+ Leann Ogasawara <leann.ogasawara@canonical.com>,
+ Ben Hutchings <ben@decadent.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,36 +45,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/5/2014 3:33 PM, wangyijing wrote:
+On Fri, Sep 05, 2014 at 05:55:18PM +1000, Michael Neuling wrote:
+> On Fri, 2014-09-05 at 09:13 +0200, Gabriel Paubert wrote:
+> > On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
+> > > The Debian powerpc little endian architecture is called ppc64le.  This
+> > 
+> > Huh? ppc64le or ppc64el?
+> 
+> ppc64el.  Commit message is wrong.  Fixed below.
+> 
+> Mikey
+> 
+> 
 
->>> Use MSI chip framework instead of arch MSI functions to configure
->>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+What about ppc64?
 
->>> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->>> ---
->>>   arch/powerpc/kernel/msi.c |   14 ++++++++++++--
->>>   1 files changed, 12 insertions(+), 2 deletions(-)
+Also, I sent that already a month ago. Both linuxppc-dev and Michal
+Marek were on cc.
 
->>> diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
->>> index 71bd161..01781a4 100644
->>> --- a/arch/powerpc/kernel/msi.c
->>> +++ b/arch/powerpc/kernel/msi.c
->> [...]
->>> @@ -27,7 +27,17 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->>>       return ppc_md.setup_msi_irqs(dev, nvec, type);
->>>   }
->>>
->>> -void arch_teardown_msi_irqs(struct pci_dev *dev)
->>> +static void ppc_teardown_msi_irqs(struct pci_dev *dev)
+http://marc.info/?l=linux-kernel&m=140744360328562&w=2
 
->>    Shouldn't this function take IRQ # instead?
+Cascardo.
 
-> This function need to teardown all msi irqs of the pci dev, we should pass the pci dev as argument .
-
-    Ah, I've mixed up the teardown_irqs() method with teardown_irq()! Too 
-similar. :-)
-
-> Thanks!
-> Yijing.
-
-WBR, Sergei
+> From: Michael Neuling <mikey@neuling.org>
+> 
+> deb-pkg: Add support for powerpc little endian
+> 
+> The Debian powerpc little endian architecture is called ppc64el.  This
+> is the default architecture used by Ubuntu for powerpc.
+> 
+> The below checks the kernel config to see if we are compiling little
+> endian and sets the Debian arch appropriately.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+> index 35d5a58..6f4a1af 100644
+> --- a/scripts/package/builddeb
+> +++ b/scripts/package/builddeb
+> @@ -37,7 +37,7 @@ create_package() {
+>  	s390*)
+>  		debarch=s390$(grep -q CONFIG_64BIT=y $KCONFIG_CONFIG && echo x || true) ;;
+>  	ppc*)
+> -		debarch=powerpc ;;
+> +		debarch=$(grep -q CPU_LITTLE_ENDIAN=y $KCONFIG_CONFIG && echo ppc64el || echo powerpc) ;;
+>  	parisc*)
+>  		debarch=hppa ;;
+>  	mips*)
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
