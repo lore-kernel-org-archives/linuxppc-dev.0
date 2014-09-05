@@ -1,35 +1,23 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paubert@iram.es>
+Received: from navarro.puc.rediris.es (unknown [IPv6:2001:720:418:ca01::139])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFE231A1934
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 17:41:25 +1000 (EST)
-Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
- [209.85.219.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2BFF914009C
- for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2014 17:41:24 +1000 (EST)
-Received: by mail-oa0-f41.google.com with SMTP id i7so8218740oag.0
- for <linuxppc-dev@ozlabs.org>; Fri, 05 Sep 2014 00:41:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 796141A01A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 17:50:48 +1000 (EST)
+Date: Fri, 5 Sep 2014 09:13:44 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: deb-pkg: Add support for powerpc little endian
+Message-ID: <20140905071344.GA16024@visitor2.iram.es>
+References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20140905073812.3629.29175.stgit@preeti.in.ibm.com>
-References: <20140905073812.3629.29175.stgit@preeti.in.ibm.com>
-Date: Fri, 5 Sep 2014 13:11:22 +0530
-Message-ID: <CAKohpo=chEW_TtXWCHa3OEwrqU25TPBES4icjMVxL6nezrf8+w@mail.gmail.com>
-Subject: Re: [PATCH V2 0/2] cpufreq/powernv: Set core pstate to a minimum just
- before hotplugging it out
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Dirk Brandewie <dirk.j.brandewie@intel.com>,
- Shreyas Prabhu <shreyas@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Patrick Marlier <patrick.marlier@gmail.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Dirk Brandewie <dirk.brandewie@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>
+Cc: Michal Marek <mmarek@suse.cz>, linux-kbuild@vger.kernel.org,
+ Ben Hutchings <ben@decadent.org.uk>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
+ Leann Ogasawara <leann.ogasawara@canonical.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,16 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5 September 2014 13:09, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
-> Today cpus go to winkle when they are offlined. Since it is the deepest
-> idle state that we have, it is expected to save good amount of power as compared
-> to online state, where cores can enter nap/fastsleep only which are
-> shallower idle states.
-> However we observed no powersavings with winkle as compared to nap/fastsleep
-> and traced the problem to the pstate of the core being kept at a high even
-> when the core is offline. This can keep the socket pstate high, thus burning
-> power unnecessarily. This patchset fixes this issue.
->
-> Changes in V2: Changed smp_call_function_any() to smp_call_function_single() in Patch[2/2]
+On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
+> The Debian powerpc little endian architecture is called ppc64le.  This
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Huh? ppc64le or ppc64el?
+
+> is the default architecture used by Ubuntu for powerpc.
+> 
+> The below checks the kernel config to see if we are compiling little
+> endian and sets the Debian arch appropriately.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+> index 35d5a58..6f4a1af 100644
+> --- a/scripts/package/builddeb
+> +++ b/scripts/package/builddeb
+> @@ -37,7 +37,7 @@ create_package() {
+>  	s390*)
+>  		debarch=s390$(grep -q CONFIG_64BIT=y $KCONFIG_CONFIG && echo x || true) ;;
+>  	ppc*)
+> -		debarch=powerpc ;;
+> +		debarch=$(grep -q CPU_LITTLE_ENDIAN=y $KCONFIG_CONFIG && echo ppc64el || echo powerpc) ;;
+>  	parisc*)
+>  		debarch=hppa ;;
+>  	mips*)
+
+
+	Gabriel
