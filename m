@@ -2,13 +2,15 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 664711A08F0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 19:46:00 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D56E1A0908
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 19:46:03 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v1 00/21] Use MSI chip to configure MSI/MSI-X in all platforms
-Date: Fri, 5 Sep 2014 18:09:45 +0800
-Message-ID: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v1 10/21] x86/MSI: Remove unused MSI weak arch functions
+Date: Fri, 5 Sep 2014 18:09:55 +0800
+Message-ID: <1409911806-10519-11-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
@@ -34,70 +36,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based Bjorn's pci-next branch + Alexander Gordeev's two patches
-"Remove arch_msi_check_device()" link: https://lkml.org/lkml/2014/7/12/41
+Now we can clean up MSI weak arch functions in x86.
 
-Currently, there are a lot of weak arch functions in MSI code.
-Thierry Reding Introduced MSI chip framework to configure MSI/MSI-X in arm.
-This series use MSI chip framework to refactor MSI code across all platforms
-to eliminate weak arch functions. It has been tested fine in x86(with or without
-irq remap).
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/x86/include/asm/pci.h      |    3 ---
+ arch/x86/include/asm/x86_init.h |    4 ----
+ arch/x86/kernel/apic/io_apic.c  |    2 +-
+ arch/x86/kernel/x86_init.c      |   24 ------------------------
+ drivers/iommu/irq_remapping.c   |    1 -
+ 5 files changed, 1 insertions(+), 33 deletions(-)
 
-
-RFC->v1: Updated "[patch 4/21] x86/xen/MSI: Eliminate...", export msi_chip instead
-         of #ifdef to fix MSI bug in xen running in x86. 
-		 Rename arch_get_match_msi_chip() to arch_find_msi_chip().
-		 Drop use struct device as the msi_chip argument, we will do that
-		 later in another patchset.
-
-Yijing Wang (21):
-  PCI/MSI: Clean up struct msi_chip argument
-  PCI/MSI: Remove useless bus->msi assignment
-  MSI: Remove the redundant irq_set_chip_data()
-  x86/xen/MSI: Eliminate arch_msix_mask_irq() and arch_msi_mask_irq()
-  PCI/MSI: Introduce weak arch_find_msi_chip() to find MSI chip
-  PCI/MSI: Refactor struct msi_chip to make it become more common
-  x86/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  x86/xen/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Irq_remapping/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  x86/MSI: Remove unused MSI weak arch functions
-  MIPS/Octeon/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  MIPS/Xlp: Remove the dead function destroy_irq() to fix build error
-  MIPS/Xlp/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  MIPS/Xlr/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Powerpc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  s390/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  arm/iop13xx/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  IA64/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Sparc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  tile/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  PCI/MSI: Clean up unused MSI arch functions
-
- arch/arm/mach-iop13xx/include/mach/pci.h |    2 +
- arch/arm/mach-iop13xx/iq81340mc.c        |    1 +
- arch/arm/mach-iop13xx/iq81340sc.c        |    1 +
- arch/arm/mach-iop13xx/msi.c              |    9 ++-
- arch/arm/mach-iop13xx/pci.c              |    6 ++
- arch/ia64/kernel/msi_ia64.c              |   18 ++++-
- arch/mips/pci/msi-octeon.c               |   35 +++++---
- arch/mips/pci/msi-xlp.c                  |   18 +++-
- arch/mips/pci/pci-xlr.c                  |   15 +++-
- arch/powerpc/kernel/msi.c                |   14 +++-
- arch/s390/pci/pci.c                      |   18 ++++-
- arch/sparc/kernel/pci.c                  |   14 +++-
- arch/tile/kernel/pci_gx.c                |   14 +++-
- arch/x86/include/asm/apic.h              |    4 +
- arch/x86/include/asm/pci.h               |    4 +-
- arch/x86/include/asm/x86_init.h          |    7 --
- arch/x86/kernel/apic/io_apic.c           |   16 ++++-
- arch/x86/kernel/x86_init.c               |   34 --------
- arch/x86/pci/xen.c                       |   60 +++++++++------
- drivers/iommu/irq_remapping.c            |    9 ++-
- drivers/irqchip/irq-armada-370-xp.c      |   12 +--
- drivers/pci/host/pci-tegra.c             |    8 +-
- drivers/pci/host/pcie-designware.c       |    4 +-
- drivers/pci/host/pcie-rcar.c             |    8 +-
- drivers/pci/msi.c                        |  123 +++++++++++++-----------------
- drivers/pci/probe.c                      |    1 -
- include/linux/msi.h                      |   26 ++-----
- 27 files changed, 268 insertions(+), 213 deletions(-)
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index 878a06d..34f9676 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -96,14 +96,11 @@ extern void pci_iommu_alloc(void);
+ #ifdef CONFIG_PCI_MSI
+ /* implemented in arch/x86/kernel/apic/io_apic. */
+ struct msi_desc;
+-int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+ void native_teardown_msi_irq(unsigned int irq);
+-void native_restore_msi_irqs(struct pci_dev *dev);
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 		  unsigned int irq_base, unsigned int irq_offset);
+ extern struct msi_chip *x86_msi_chip;
+ #else
+-#define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+ #endif
+ 
+diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
+index f58a9c7..2514f67 100644
+--- a/arch/x86/include/asm/x86_init.h
++++ b/arch/x86/include/asm/x86_init.h
+@@ -174,13 +174,9 @@ struct pci_dev;
+ struct msi_msg;
+ 
+ struct x86_msi_ops {
+-	int (*setup_msi_irqs)(struct pci_dev *dev, int nvec, int type);
+ 	void (*compose_msi_msg)(struct pci_dev *dev, unsigned int irq,
+ 				unsigned int dest, struct msi_msg *msg,
+ 			       u8 hpet_id);
+-	void (*teardown_msi_irq)(unsigned int irq);
+-	void (*teardown_msi_irqs)(struct pci_dev *dev);
+-	void (*restore_msi_irqs)(struct pci_dev *dev);
+ 	int  (*setup_hpet_msi)(unsigned int irq, unsigned int id);
+ };
+ 
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 882b95e..f998192 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3200,7 +3200,7 @@ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 	return 0;
+ }
+ 
+-int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++static int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *msidesc;
+ 	unsigned int irq;
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index 234b072..cc32568 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -110,34 +110,10 @@ EXPORT_SYMBOL_GPL(x86_platform);
+ 
+ #if defined(CONFIG_PCI_MSI)
+ struct x86_msi_ops x86_msi = {
+-	.setup_msi_irqs		= native_setup_msi_irqs,
+ 	.compose_msi_msg	= native_compose_msi_msg,
+-	.teardown_msi_irq	= native_teardown_msi_irq,
+-	.teardown_msi_irqs	= default_teardown_msi_irqs,
+-	.restore_msi_irqs	= default_restore_msi_irqs,
+ 	.setup_hpet_msi		= default_setup_hpet_msi,
+ };
+ 
+-/* MSI arch specific hooks */
+-int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+-{
+-	return x86_msi.setup_msi_irqs(dev, nvec, type);
+-}
+-
+-void arch_teardown_msi_irqs(struct pci_dev *dev)
+-{
+-	x86_msi.teardown_msi_irqs(dev);
+-}
+-
+-void arch_teardown_msi_irq(unsigned int irq)
+-{
+-	x86_msi.teardown_msi_irq(irq);
+-}
+-
+-void arch_restore_msi_irqs(struct pci_dev *dev)
+-{
+-	x86_msi.restore_msi_irqs(dev);
+-}
+ #endif
+ 
+ struct x86_io_apic_ops x86_io_apic_ops = {
+diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
+index e75026e..99b1c0f 100644
+--- a/drivers/iommu/irq_remapping.c
++++ b/drivers/iommu/irq_remapping.c
+@@ -170,7 +170,6 @@ static void __init irq_remapping_modify_x86_ops(void)
+ 	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
+ 	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
+ 	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
+-	x86_msi.setup_msi_irqs          = irq_remapping_setup_msi_irqs;
+ 	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
+ 	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
+ 	x86_msi_chip = &remap_msi_chip;
+-- 
+1.7.1
