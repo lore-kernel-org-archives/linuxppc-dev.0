@@ -1,22 +1,47 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0143.outbound.protection.outlook.com [157.56.111.143])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
+ [209.85.217.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9ECA1A174A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 21:19:07 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH 2/2][v4] powerpc/fsl-booke: Add initial T1042RDB_PI board
- support
-Date: Fri, 5 Sep 2014 16:15:00 +0530
-Message-ID: <1409913900-21638-1-git-send-email-Priyanka.Jain@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E2C21A00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 21:41:47 +1000 (EST)
+Received: by mail-lb0-f173.google.com with SMTP id c11so13316543lbj.32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 04:41:42 -0700 (PDT)
+Message-ID: <5409A174.3050205@cogentembedded.com>
+Date: Fri, 05 Sep 2014 15:41:40 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Cc: Priyanka Jain <Priyanka.Jain@freescale.com>,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+To: wangyijing <wangyijing0307@gmail.com>
+Subject: Re: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to configure
+ MSI/MSI-X irq
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
+ <540994D4.6040500@cogentembedded.com>
+ <43412AE0-85BB-4B4B-A4EA-2C6D3B8B85D7@gmail.com>
+In-Reply-To: <43412AE0-85BB-4B4B-A4EA-2C6D3B8B85D7@gmail.com>
+Content-Type: text/plain; charset=gbk; format=flowed
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Yijing Wang <wangyijing@huawei.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ "x86@kernel.org" <x86@kernel.org>, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ "arnab.basu@freescale.com" <arnab.basu@freescale.com>,
+ Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,139 +51,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1042RDB_PI is Freescale Reference Design Board supporting the T1042
-QorIQ Power Architecture™ processor. T1042 is a reduced personality
-of T1040 SoC without Integrated 8-port Gigabit. The board is designed
-with low power features targeted for Printing Image Market.
+On 9/5/2014 3:33 PM, wangyijing wrote:
 
-T1042RDB_PI is  similar to T1040RDB board with few differences like
-it has video interface, supports T1042 personality only
+>>> Use MSI chip framework instead of arch MSI functions to configure
+>>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
-T1042RDB_PI board Overview
------------------------
-- SERDES Connections, 8 lanes supporting:
-    	- PCI
-    	- SATA 2.0
-- DDR Controller
-    	- Supports rates of up to 1600 MHz data-rate
-    	- Supports one DDR3LP UDIMM
--IFC/Local Bus
-    	- NAND flash: 1GB 8-bit NAND flash
-    	- NOR: 128MB 16-bit NOR Flash
-- Ethernet
-    	- Two on-board RGMII 10/100/1G ethernet ports.
-    	- PHY #0 remains powered up during deep-sleep
-- CPLD
-- Clocks
-    	- System and DDR clock (SYSCLK, “DDRCLK”)
-    	- SERDES clocks
-- Power Supplies
-- USB
-    	- Supports two USB 2.0 ports with integrated PHYs
-    	- Two type A ports with 5V@1.5A per port.
-- SDHC
-    	- SDHC/SDXC connector
-- SPI
-    	- On-board 64MB SPI flash
-- I2C
-    	- Device connected: EEPROM, thermal monitor, VID controller, RTC
-- Other IO
-    	- Two Serial ports
-    	- ProfiBus port
+>>> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>>> ---
+>>>   arch/powerpc/kernel/msi.c |   14 ++++++++++++--
+>>>   1 files changed, 12 insertions(+), 2 deletions(-)
 
-Add support for T1042RDB_PI board:
-    -add device tree
-    -Add entry in corenet_generic.c, as it is similar to other corenet platforms
+>>> diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+>>> index 71bd161..01781a4 100644
+>>> --- a/arch/powerpc/kernel/msi.c
+>>> +++ b/arch/powerpc/kernel/msi.c
+>> [...]
+>>> @@ -27,7 +27,17 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>>>       return ppc_md.setup_msi_irqs(dev, nvec, type);
+>>>   }
+>>>
+>>> -void arch_teardown_msi_irqs(struct pci_dev *dev)
+>>> +static void ppc_teardown_msi_irqs(struct pci_dev *dev)
 
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
----
-changes for v4: Updated cpld compatible string field
+>>    Shouldn't this function take IRQ # instead?
 
-changes for v3: Incorporated Scott comments on moving cpld compatible
- field to board specific file as cpld binaries are different
+> This function need to teardown all msi irqs of the pci dev, we should pass the pci dev as argument .
 
-changes for v2: Incorporated Scott comments on using common name
- for compatible string for cpld as register set is same
+    Ah, I've mixed up the teardown_irqs() method with teardown_irq()! Too 
+similar. :-)
 
- arch/powerpc/boot/dts/t1042rdb_pi.dts         |   57 +++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |    1 +
- 2 files changed, 58 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/t1042rdb_pi.dts
+> Thanks!
+> Yijing.
 
-diff --git a/arch/powerpc/boot/dts/t1042rdb_pi.dts b/arch/powerpc/boot/dts/t1042rdb_pi.dts
-new file mode 100644
-index 0000000..b9d0877
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1042rdb_pi.dts
-@@ -0,0 +1,57 @@
-+/*
-+ * T1042RDB_PI Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t104xsi-pre.dtsi"
-+/include/ "t104xrdb.dtsi"
-+
-+/ {
-+	model = "fsl,T1042RDB_PI";
-+	compatible = "fsl,T1042RDB_PI";
-+	ifc: localbus@ffe124000 {
-+		cpld@3,0 {
-+			compatible = "fsl,t1042rdb_pi-cpld";
-+		};
-+	};
-+	soc: soc@ffe000000 {
-+		i2c@118000 {
-+			rtc@68 {
-+				compatible = "dallas,ds1337";
-+				reg = <0x68>;
-+				interrupts = <0x2 0x1 0 0>;
-+			};
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1042si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index c268f89..100e80d 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -130,6 +130,7 @@ static const char * const boards[] __initconst = {
- 	"fsl,T1042QDS",
- 	"fsl,T1040RDB",
- 	"fsl,T1042RDB",
-+	"fsl,T1042RDB_PI",
- 	"keymile,kmcoge4",
- 	NULL
- };
+WBR, Sergei
