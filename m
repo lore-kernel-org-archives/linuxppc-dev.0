@@ -1,32 +1,20 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143])
- by lists.ozlabs.org (Postfix) with ESMTP id 8EA691A0087
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 12:21:41 +1000 (EST)
-Message-ID: <1409883098.5078.14.camel@jarvis.lan>
-Subject: Re: bit fields && data tearing
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: paulmck@linux.vnet.ibm.com
-Date: Thu, 04 Sep 2014 19:11:38 -0700
-In-Reply-To: <20140905001751.GL5001@linux.vnet.ibm.com>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>
- <21512.10628.412205.873477@gargle.gargle.HOWL>
- <20140904090952.GW17454@tucnak.redhat.com>
- <540859EC.5000407@hurleysoftware.com>
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>
- <5408C0AB.6050801@hurleysoftware.com>
- <20140905001751.GL5001@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
- linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
- Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
- Richard Henderson <rth@twiddle.net>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [150.101.137.131])
+ by lists.ozlabs.org (Postfix) with ESMTP id A3DF11A013A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 12:39:56 +1000 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] IBM Akebono: Remove obsolete config select
+Date: Fri, 05 Sep 2014 12:39:42 +1000
+Message-ID: <2123312.7Ova8rjspK@mexican>
+In-Reply-To: <1409869242.5546.119.camel@x220>
+References: <1398998002.2925.15.camel@pasglop> <1774195.a1B25gz7RT@mexican>
+ <1409869242.5546.119.camel@x220>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: devicetree@vger.kernel.org, Paul Bolle <pebolle@tiscali.nl>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
-> +And there are anti-guarantees:
-> +
-> + (*) These guarantees do not apply to bitfields, because compilers often
-> +     generate code to modify these using non-atomic read-modify-write
-> +     sequences.  Do not attempt to use bitfields to synchronize parallel
-> +     algorithms.
-> +
-> + (*) Even in cases where bitfields are protected by locks, all fields
-> +     in a given bitfield must be protected by one lock.  If two fields
-> +     in a given bitfield are protected by different locks, the compiler's
-> +     non-atomic read-modify-write sequences can cause an update to one
-> +     field to corrupt the value of an adjacent field.
-> +
-> + (*) These guarantees apply only to properly aligned and sized scalar
-> +     variables.  "Properly sized" currently means "int" and "long",
-> +     because some CPU families do not support loads and stores of
-> +     other sizes.  ("Some CPU families" is currently believed to
-> +     be only Alpha 21064.  If this is actually the case, a different
-> +     non-guarantee is likely to be formulated.)
+On Fri, 5 Sep 2014 00:20:42 Paul Bolle wrote:
 
-This is a bit unclear.  Presumably you're talking about definiteness of
-the outcome (as in what's seen after multiple stores to the same
-variable).  The guarantees are only for natural width on Parisc as well,
-so you would get a mess if you did byte stores to adjacent memory
-locations.  But multiple 32 bit stores guarantees to see one of the
-stored values as the final outcome.
+<snip>
 
-James
+> > On Fri, 13 Jun 2014 13:56:32 Paul Bolle wrote:
+> > > On Fri, 2014-05-02 at 18:06 +1000, Alistair Popple wrote:
+> > > > The original implementation of MMC support for Akebono introduced a
+> > > > new configuration symbol (MMC_SDHCI_OF_476GTR). This symbol has been
+> > > > dropped in favour of using the generic platform driver however the
+> > > > select for this symbol was mistakenly left in the platform
+> > > > configuration.
+> > > > 
+> > > > This patch removes the obsolete symbol selection.
+> > > > 
+> > > > Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> > > 
+> > > This patch hasn't yet entered linux-next nor Linus' tree. Is it queued
+> > > somewhere? If not, would a
+> > > 
+> > >     Acked-by: Paul Bolle <pebolle@tiscali.nl>
+> > > 
+> > > help to get this trivial patch queued for either of those trees?
+> > > 
+> > > 
+> > > Paul Bolle
+> > > 
+> > > > ---
+> > > > 
+> > > >  arch/powerpc/platforms/44x/Kconfig | 1 -
+> > > >  1 file changed, 1 deletion(-)
+> > > > 
+> > > > diff --git a/arch/powerpc/platforms/44x/Kconfig
+> > > > b/arch/powerpc/platforms/44x/Kconfig index 8beec7d..908bf11 100644
+> > > > --- a/arch/powerpc/platforms/44x/Kconfig
+> > > > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > > > @@ -220,7 +220,6 @@ config AKEBONO
+> > > > 
+> > > >  	select USB_EHCI_HCD_PLATFORM
+> > > >  	select MMC_SDHCI
+> > > >  	select MMC_SDHCI_PLTFM
+> > > > 
+> > > > -	select MMC_SDHCI_OF_476GTR
+> > > > 
+> > > >  	select ATA
+> > > >  	select SATA_AHCI_PLATFORM
+> > > >  	help
+> 
+> This trivial cleanup is still not in linux-next nor in Linus' tree.
+> Could someone else please have a look at it?
+> 
+> Thanks,
+> 
+> 
+> Paul Bolle
+
+Ben,
+
+Any chance you could merge this? It's in patchwork (see 
+http://patchwork.ozlabs.org/patch/344894/).
+
+Regards,
+
+Alistair
