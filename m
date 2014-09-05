@@ -1,33 +1,31 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyril.bur@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 632681A00FA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 10:59:43 +1000 (EST)
-Message-ID: <54090AF4.7060406@hurleysoftware.com>
-Date: Thu, 04 Sep 2014 20:59:32 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Laight <David.Laight@ACULAB.COM>
-Subject: Re: bit fields && data tearing
-References: <20140712181328.GA8738@redhat.com>	
- <54079B70.4050200@hurleysoftware.com> <1409785893.30640.118.camel@pasglop>	
- <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
- <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
-In-Reply-To: <5408E458.3@zytor.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Jakub Jelinek <jakub@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linux-alpha@vger.kernel.org,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF6001A011C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 11:16:54 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyril.bur@au1.ibm.com>;
+ Fri, 5 Sep 2014 11:16:52 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A40993578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 11:16:51 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s850x2He50790424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 10:59:02 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s851GpKe014437
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Sep 2014 11:16:51 +1000
+From: Cyril Bur <cyril.bur@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Make CONFIG_FHANDLE=y for all 64 bit powerpc defconfigs
+Date: Fri,  5 Sep 2014 11:16:43 +1000
+Message-Id: <1409879803-18159-1-git-send-email-cyril.bur@au1.ibm.com>
+Cc: Cyril Bur <cyril.bur@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,53 +35,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ +cc linux-alpha ]
+CONFIG_FHANDLE is a requirement for systemd and with the increasing
+uptake of systemd within distros it makes sense for 64 bit defconfigs
+to include it.
 
-On 09/04/2014 06:14 PM, H. Peter Anvin wrote:
-> On 09/04/2014 02:52 AM, Benjamin Herrenschmidt wrote:
->>
->> Yeah correct, alpha and bytes right ? Is there any other ? That's why I
->> suggested int.
->>
-> 
-> Even for Alpha it is only the 21064 AFAIK.
+Signed-off-by: Cyril Bur <cyril.bur@au1.ibm.com>
+---
+ arch/powerpc/configs/cell_defconfig          | 1 +
+ arch/powerpc/configs/celleb_defconfig        | 1 +
+ arch/powerpc/configs/corenet64_smp_defconfig | 1 +
+ arch/powerpc/configs/g5_defconfig            | 1 +
+ arch/powerpc/configs/maple_defconfig         | 1 +
+ arch/powerpc/configs/pasemi_defconfig        | 1 +
+ arch/powerpc/configs/ppc64_defconfig         | 1 +
+ arch/powerpc/configs/ppc64e_defconfig        | 1 +
+ arch/powerpc/configs/ps3_defconfig           | 1 +
+ arch/powerpc/configs/pseries_defconfig       | 1 +
+ arch/powerpc/configs/pseries_le_defconfig    | 1 +
+ 11 files changed, 11 insertions(+)
 
-For -mcpu=ev5 (21164) and the following test
-
-struct x {
-	long a;
-	char b;
-	char c;
-	char d;
-	char e;
-};
-
-void store_b(struct x *p) {
-	p->b = 1;
-}
-
-gcc generates:
-
-void store_b(struct x *p) {
-   0:	08 00 30 a0 	ldl	t0,8(a0)
-   4:	01 f1 3f 44 	andnot	t0,0xff,t0
-   8:	01 34 20 44 	or	t0,0x1,t0
-   c:	08 00 30 b0 	stl	t0,8(a0)
-  10:	01 80 fa 6b 	ret
-
-IOW, rmw on 3 adjacent bytes, which is bad :)
-For -mcpu=ev56 (21164A), the generated code is:
-
-void store_b(struct x *p) {
-   0:	01 00 3f 20 	lda	t0,1
-   4:	08 00 30 38 	stb	t0,8(a0)
-   8:	01 80 fa 6b 	ret
-
-which is ok.
-I have no idea how prevalent the ev56 is compared to the ev5.
-Still we're talking about a chip that came out in 1996.
-
-I still hate split caches though.
-
-Regards,
-Peter Hurley
+diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
+index 4bee1a6..45fd06c 100644
+--- a/arch/powerpc/configs/cell_defconfig
++++ b/arch/powerpc/configs/cell_defconfig
+@@ -5,6 +5,7 @@ CONFIG_SMP=y
+ CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
++CONFIG_FHANDLE=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=15
+diff --git a/arch/powerpc/configs/celleb_defconfig b/arch/powerpc/configs/celleb_defconfig
+index 6d7b22f..77d7bf3 100644
+--- a/arch/powerpc/configs/celleb_defconfig
++++ b/arch/powerpc/configs/celleb_defconfig
+@@ -5,6 +5,7 @@ CONFIG_SMP=y
+ CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
++CONFIG_FHANDLE=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=15
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 4b07bad..269d6e4 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -4,6 +4,7 @@ CONFIG_ALTIVEC=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=24
+ CONFIG_SYSVIPC=y
++CONFIG_FHANDLE=y
+ CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index 3c72fa6..7594c5a 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -5,6 +5,7 @@ CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_BLK_DEV_INITRD=y
+diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
+index 95e545d..c8b6a9d 100644
+--- a/arch/powerpc/configs/maple_defconfig
++++ b/arch/powerpc/configs/maple_defconfig
+@@ -4,6 +4,7 @@ CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ # CONFIG_COMPAT_BRK is not set
+diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
+index cec044a..e5e7838 100644
+--- a/arch/powerpc/configs/pasemi_defconfig
++++ b/arch/powerpc/configs/pasemi_defconfig
+@@ -3,6 +3,7 @@ CONFIG_ALTIVEC=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=2
+ CONFIG_SYSVIPC=y
++CONFIG_FHANDLE=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index f26b267..f6c02f8 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -4,6 +4,7 @@ CONFIG_VSX=y
+ CONFIG_SMP=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+index 438e813..587f551 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -3,6 +3,7 @@ CONFIG_PPC_BOOK3E_64=y
+ CONFIG_SMP=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_TASKSTATS=y
+diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
+index fdee37f..2e637c8 100644
+--- a/arch/powerpc/configs/ps3_defconfig
++++ b/arch/powerpc/configs/ps3_defconfig
+@@ -5,6 +5,7 @@ CONFIG_SMP=y
+ CONFIG_NR_CPUS=2
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_RD_LZMA=y
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index a905063..50375f1 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -5,6 +5,7 @@ CONFIG_SMP=y
+ CONFIG_NR_CPUS=2048
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_AUDIT=y
+ CONFIG_AUDITSYSCALL=y
+ CONFIG_IRQ_DOMAIN_DEBUG=y
+diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
+index 58e3dbf..4428ee4 100644
+--- a/arch/powerpc/configs/pseries_le_defconfig
++++ b/arch/powerpc/configs/pseries_le_defconfig
+@@ -6,6 +6,7 @@ CONFIG_NR_CPUS=2048
+ CONFIG_CPU_LITTLE_ENDIAN=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_FHANDLE=y
+ CONFIG_AUDIT=y
+ CONFIG_AUDITSYSCALL=y
+ CONFIG_IRQ_DOMAIN_DEBUG=y
+-- 
+1.9.1
