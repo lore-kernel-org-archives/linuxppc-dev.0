@@ -1,33 +1,18 @@
-Return-Path: <mcree@orcon.net.nz>
-Received: from mail.orcon.net.nz (unknown [219.88.242.22])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bharata.rao@gmail.com>
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAB9C1A0880
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 18:50:08 +1000 (EST)
-Date: Fri, 5 Sep 2014 20:16:48 +1200
-From: Michael Cree <mcree@orcon.net.nz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140905081648.GB5281@omega>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
- <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
- <54090AF4.7060406@hurleysoftware.com> <54091B30.2090509@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54091B30.2090509@zytor.com>
-Cc: Jakub Jelinek <jakub@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Peter Hurley <peter@hurleysoftware.com>, Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
- linux-alpha@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63D631A011F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 19:16:37 +1000 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id tr6so13528774ieb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 02:16:34 -0700 (PDT)
+From: bharata.rao@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pseries: Make CPU hotplug path endian safe
+Date: Fri,  5 Sep 2014 14:46:17 +0530
+Message-Id: <1409908577-10648-1-git-send-email-bharata.rao@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Bharata B Rao <bharata@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2014 at 07:08:48PM -0700, H. Peter Anvin wrote:
-> On 09/04/2014 05:59 PM, Peter Hurley wrote:
-> > I have no idea how prevalent the ev56 is compared to the ev5.
-> > Still we're talking about a chip that came out in 1996.
-> 
-> Ah yes, I stand corrected.  According to Wikipedia, the affected CPUs
-> were all the 2106x CPUs (EV4, EV45, LCA4, LCA45) plus the 21164 with no
-> suffix (EV5).  However, we're still talking about museum pieces here.
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-Yes, that is correct, EV56 is the first Alpha CPU to have the byte-word
-extension (BWX) CPU instructions.
+- ibm,rtas-configure-connector should treat the RTAS data as big endian.
+- Treat ibm,ppc-interrupt-server#s as big-endian when setting
+  smp_processor_id during hotplug.
 
-It would not worry me if the kernel decided to assume atomic aligned
-scalar accesses for all arches, thus terminating support for Alphas
-without BWX.
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c       | 10 +++++-----
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |  4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-The X server, ever since the libpciaccess change, does not work on
-Alphas without BWX.
-
-Debian Alpha (pretty much up to date at Debian-Ports) is still compiled
-for all Alphas, i.e., without BWX.  The last attempt to start compiling
-Debian Alpha with BWX, about three years ago when Alpha was kicked out
-to Debian-Ports resulted in a couple or so complaints so got nowhere.
-It's frustrating supporting the lowest common demoninator as many of
-the bugs specific to Alpha can be resolved by recompiling with the BWX.
-The kernel no longer supporting Alphas without BWX might just be the
-incentive we need to switch Debian Alpha to compiling with BWX.
-
-Cheers
-Michael.
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 2d0b4d6..dc55f9c 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -48,11 +48,11 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
+ 	if (!prop)
+ 		return NULL;
+ 
+-	name = (char *)ccwa + ccwa->name_offset;
++	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
+ 	prop->name = kstrdup(name, GFP_KERNEL);
+ 
+-	prop->length = ccwa->prop_length;
+-	value = (char *)ccwa + ccwa->prop_offset;
++	prop->length = be32_to_cpu(ccwa->prop_length);
++	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
+ 	prop->value = kmemdup(value, prop->length, GFP_KERNEL);
+ 	if (!prop->value) {
+ 		dlpar_free_cc_property(prop);
+@@ -78,7 +78,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
+ 	if (!dn)
+ 		return NULL;
+ 
+-	name = (char *)ccwa + ccwa->name_offset;
++	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
+ 	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
+ 	if (!dn->full_name) {
+ 		kfree(dn);
+@@ -148,7 +148,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index,
+ 		return NULL;
+ 
+ 	ccwa = (struct cc_workarea *)&data_buf[0];
+-	ccwa->drc_index = drc_index;
++	ccwa->drc_index = cpu_to_be32(drc_index);
+ 	ccwa->zero = 0;
+ 
+ 	do {
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 20d6297..447f8c6 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -247,7 +247,7 @@ static int pseries_add_processor(struct device_node *np)
+ 	unsigned int cpu;
+ 	cpumask_var_t candidate_mask, tmp;
+ 	int err = -ENOSPC, len, nthreads, i;
+-	const u32 *intserv;
++	const __be32 *intserv;
+ 
+ 	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
+ 	if (!intserv)
+@@ -293,7 +293,7 @@ static int pseries_add_processor(struct device_node *np)
+ 	for_each_cpu(cpu, tmp) {
+ 		BUG_ON(cpu_present(cpu));
+ 		set_cpu_present(cpu, true);
+-		set_hard_smp_processor_id(cpu, *intserv++);
++		set_hard_smp_processor_id(cpu, be32_to_cpu(*intserv++));
+ 	}
+ 	err = 0;
+ out_unlock:
+-- 
+1.7.11.7
