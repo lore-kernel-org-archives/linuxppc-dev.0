@@ -2,9 +2,9 @@ Return-Path: <hpa@zytor.com>
 Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 13B611A0791
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 12:09:09 +1000 (EST)
-Message-ID: <54091B30.7080100@zytor.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7D7051A15D5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2014 12:09:12 +1000 (EST)
+Message-ID: <54091B30.2090509@zytor.com>
 Date: Thu, 04 Sep 2014 19:08:48 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
