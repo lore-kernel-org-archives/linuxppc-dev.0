@@ -1,37 +1,24 @@
-Return-Path: <mcree@orcon.net.nz>
-Received: from mail.orcon.net.nz (unknown [219.88.242.62])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 237D01A006B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 07:33:26 +1000 (EST)
-Date: Sat, 6 Sep 2014 09:27:27 +1200
-From: Michael Cree <mcree@orcon.net.nz>
-To: Peter Hurley <peter@hurleysoftware.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140905212727.GA6169@omega>
-References: <54090AF4.7060406@hurleysoftware.com> <54091B30.2090509@zytor.com>
- <20140905081648.GB5281@omega>
- <20140905180950.GU5001@linux.vnet.ibm.com>
- <540A05F7.1070202@hurleysoftware.com>
- <20140905190506.GV5001@linux.vnet.ibm.com>
- <8CA974F497CA064FA9926E10ABCC061F05F97E7B77@MAILSJ4.global.cadence.com>
- <540A19B8.4010907@hurleysoftware.com> <20140905203951.GA4053@omega>
- <540A273C.7020804@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F5241A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 10:19:07 +1000 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id lf10so1251784pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 17:19:05 -0700 (PDT)
+Date: Fri, 5 Sep 2014 18:18:59 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] PCI: Increase BAR size quirk for IBM ipr SAS Crocodile
+ adapters
+Message-ID: <20140906001859.GO8080@google.com>
+References: <20140821092652.604d7484@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <540A273C.7020804@hurleysoftware.com>
-Cc: Jakub Jelinek <jakub@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Tony Luck <tony.luck@intel.com>, David Laight <David.Laight@ACULAB.COM>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Marc Gauthier <marc@cadence.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+In-Reply-To: <20140821092652.604d7484@kryten>
+Cc: linux-pci@vger.kernel.org, miltonm@us.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, dllehr@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +28,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 05, 2014 at 05:12:28PM -0400, Peter Hurley wrote:
-> On 09/05/2014 04:39 PM, Michael Cree wrote:
-> > On Fri, Sep 05, 2014 at 04:14:48PM -0400, Peter Hurley wrote:
-> >> Second, in the body of the document:
-> >>
-> >> "The Linux kernel no longer supports pre-EV56 Alpha CPUs, because these
-> >> older CPUs _do not provide_ atomic one-byte and two-byte loads and stores."
-> > 
-> > Let's be clear here, the pre-EV56 Alpha CPUs do provide an atomic
-> > one-byte and two-byte load and store; it's just that one must use
-> > locked load and store sequences to achieve atomicity.  The point,
-> > I think, is that the pre-EV56 Alpha CPUs provide non-atomic one-byte
-> > and two-byte load and stores as the norm, and that is the problem.
+On Thu, Aug 21, 2014 at 09:26:52AM +1000, Anton Blanchard wrote:
+> From: Douglas Lehr <dllehr@us.ibm.com>
 > 
-> I'm all for an Alpha expert to jump in here and meet the criteria;
-> which is that byte stores cannot corrupt adjacent storage (nor can
-> aligned short stores).
+> The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.
+> Due to an errata, setting the SR-IOV page size causes the physical
+> function BARs to expand to the system page size.  Since ppc64 uses
+> 64k pages, when Linux tries to assign the smaller resource sizes
+> to the now 64k BARs the address will be truncated and the BARs will
+> overlap.
 > 
-> To my mind, a quick look at Documentation/circular-buffers.txt will
-> pretty much convince anyone that trying to differentiate by execution
-> context is undoable.
+> This quirk will force Linux to allocate the resource as a full page,
+> which will avoid the overlap.
 > 
-> If someone wants to make Alphas do cmpxchg loops for every byte store,
-> then ok. Or any other solution that doesn't require subsystem code
-> changes.
+> Cc: <stable@vger.kernel.org> 
+> Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Acked-by: Milton Miller <miltonm@us.ibm.com>
 
-I am not suggesting that anyone do that work.  I'm certainly not going
-to do it.
+Applied to pci/misc for v3.18, thanks!
 
-All I was pointing out is that the claim that "_do not provide_" made
-above with emphasis is, strictly interpreted, not true, thus should not
-be committed to the documentation without further clarification.
+I tweaked it to print the expanded resource, see below.
 
-Cheers
-Michael.
+> ---
+>  drivers/pci/quirks.c |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 80c2d01..45b946d 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/ioport.h>
+>  #include <linux/sched.h>
+>  #include <linux/ktime.h>
+> +#include <linux/mm.h>
+>  #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+>  #include "pci.h"
+>  
+> @@ -287,6 +288,24 @@ static void quirk_citrine(struct pci_dev *dev)
+>  }
+>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
+>  
+> +/*  On IBM Crocodile ipr SAS adapters, expand bar size to system page size. */
+> +static void quirk_extend_bar_to_page(struct pci_dev *dev)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
+> +		struct resource *r = &dev->resource[i];
+> +
+> +		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
+> +			dev_info(&dev->dev, "Setting Bar size to Page size");
+> +			r->end = PAGE_SIZE-1;
+> +			r->start = 0;
+> +			r->flags |= IORESOURCE_UNSET;
+> +		}
+> +	}
+> +}
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
+> +
+>  /*
+>   *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
+>   *  If it's needed, re-allocate the region.
+> -- 
+
+
+
+commit 86b6431a306ab5a5204c436a45a3337fb17efa21
+Author: Douglas Lehr <dllehr@us.ibm.com>
+Date:   Thu Aug 21 09:26:52 2014 +1000
+
+    PCI: Increase IBM ipr SAS Crocodile BARs to at least system page size
+    
+    The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.  Due to
+    an erratum, setting the SR-IOV page size causes the physical function BARs
+    to expand to the system page size.  Since ppc64 uses 64k pages, when Linux
+    tries to assign the smaller resource sizes to the now 64k BARs the address
+    will be truncated and the BARs will overlap.
+    
+    Force Linux to allocate the resource as a full page, which avoids the
+    overlap.
+    
+    [bhelgaas: print expanded resource, too]
+    Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
+    Signed-off-by: Anton Blanchard <anton@samba.org>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+    Acked-by: Milton Miller <miltonm@us.ibm.com>
+    CC: stable@vger.kernel.org
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 80c2d014283d..e73960311fb4 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -24,6 +24,7 @@
+ #include <linux/ioport.h>
+ #include <linux/sched.h>
+ #include <linux/ktime.h>
++#include <linux/mm.h>
+ #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+ #include "pci.h"
+ 
+@@ -287,6 +288,25 @@ static void quirk_citrine(struct pci_dev *dev)
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
+ 
++/*  On IBM Crocodile ipr SAS adapters, expand BAR to system page size */
++static void quirk_extend_bar_to_page(struct pci_dev *dev)
++{
++	int i;
++
++	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
++		struct resource *r = &dev->resource[i];
++
++		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
++			r->end = PAGE_SIZE - 1;
++			r->start = 0;
++			r->flags |= IORESOURCE_UNSET;
++			dev_info(&dev->dev, "expanded BAR %d to page size: %pR\n",
++				 r);
++		}
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
++
+ /*
+  *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
+  *  If it's needed, re-allocate the region.
