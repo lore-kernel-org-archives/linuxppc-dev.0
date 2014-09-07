@@ -1,36 +1,53 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 72AC41A002C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 06:41:57 +1000 (EST)
-Message-ID: <540CC305.8010407@hurleysoftware.com>
-Date: Sun, 07 Sep 2014 16:41:41 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
- paulmck@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 125C71A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 09:00:29 +1000 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 7 Sep 2014 17:00:27 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 866D419D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 17:00:10 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s87N0NKq23920894
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Sep 2014 01:00:23 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s87N4m7Y028729
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 17:04:49 -0600
+Date: Sun, 7 Sep 2014 16:00:19 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
 Subject: Re: bit fields && data tearing
-References: <21512.10628.412205.873477@gargle.gargle.HOWL>	
- <20140904090952.GW17454@tucnak.redhat.com>	
- <540859EC.5000407@hurleysoftware.com>	
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>	
- <5408C0AB.6050801@hurleysoftware.com>	
- <20140905001751.GL5001@linux.vnet.ibm.com>	
- <1409883098.5078.14.camel@jarvis.lan> <5409243C.4080704@hurleysoftware.com>	
- <20140905040645.GO5001@linux.vnet.ibm.com>	
- <1410066442.12512.13.camel@jarvis.lan>	
+Message-ID: <20140907230019.GO5001@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <540859EC.5000407@hurleysoftware.com>
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>
+ <5408C0AB.6050801@hurleysoftware.com>
+ <20140905001751.GL5001@linux.vnet.ibm.com>
+ <1409883098.5078.14.camel@jarvis.lan>
+ <5409243C.4080704@hurleysoftware.com>
+ <20140905040645.GO5001@linux.vnet.ibm.com>
+ <1410066442.12512.13.camel@jarvis.lan>
  <20140907162146.GK5001@linux.vnet.ibm.com>
  <1410116687.2027.19.camel@jarvis.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1410116687.2027.19.camel@jarvis.lan>
-Content-Type: text/plain; charset=utf-8
 Cc: Jakub Jelinek <jakub@redhat.com>,
  One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
- linux-ia64@vger.kernel.org, Mikael Pettersson <mikpelinux@gmail.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, linuxppc-dev@lists.ozlabs.org,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
+ Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,101 +57,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/07/2014 03:04 PM, James Bottomley wrote:
+On Sun, Sep 07, 2014 at 12:04:47PM -0700, James Bottomley wrote:
 > On Sun, 2014-09-07 at 09:21 -0700, Paul E. McKenney wrote:
->> On Sat, Sep 06, 2014 at 10:07:22PM -0700, James Bottomley wrote:
->>> On Thu, 2014-09-04 at 21:06 -0700, Paul E. McKenney wrote:
->>>> On Thu, Sep 04, 2014 at 10:47:24PM -0400, Peter Hurley wrote:
->>>>> Hi James,
->>>>>
->>>>> On 09/04/2014 10:11 PM, James Bottomley wrote:
->>>>>> On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
->>>>>>> +And there are anti-guarantees:
->>>>>>> +
->>>>>>> + (*) These guarantees do not apply to bitfields, because compilers often
->>>>>>> +     generate code to modify these using non-atomic read-modify-write
->>>>>>> +     sequences.  Do not attempt to use bitfields to synchronize parallel
->>>>>>> +     algorithms.
->>>>>>> +
->>>>>>> + (*) Even in cases where bitfields are protected by locks, all fields
->>>>>>> +     in a given bitfield must be protected by one lock.  If two fields
->>>>>>> +     in a given bitfield are protected by different locks, the compiler's
->>>>>>> +     non-atomic read-modify-write sequences can cause an update to one
->>>>>>> +     field to corrupt the value of an adjacent field.
->>>>>>> +
->>>>>>> + (*) These guarantees apply only to properly aligned and sized scalar
->>>>>>> +     variables.  "Properly sized" currently means "int" and "long",
->>>>>>> +     because some CPU families do not support loads and stores of
->>>>>>> +     other sizes.  ("Some CPU families" is currently believed to
->>>>>>> +     be only Alpha 21064.  If this is actually the case, a different
->>>>>>> +     non-guarantee is likely to be formulated.)
->>>>>>
->>>>>> This is a bit unclear.  Presumably you're talking about definiteness of
->>>>>> the outcome (as in what's seen after multiple stores to the same
->>>>>> variable).
->>>>>
->>>>> No, the last conditions refers to adjacent byte stores from different
->>>>> cpu contexts (either interrupt or SMP).
->>>>>
->>>>>> The guarantees are only for natural width on Parisc as well,
->>>>>> so you would get a mess if you did byte stores to adjacent memory
->>>>>> locations.
->>>>>
->>>>> For a simple test like:
->>>>>
->>>>> struct x {
->>>>> 	long a;
->>>>> 	char b;
->>>>> 	char c;
->>>>> 	char d;
->>>>> 	char e;
->>>>> };
->>>>>
->>>>> void store_bc(struct x *p) {
->>>>> 	p->b = 1;
->>>>> 	p->c = 2;
->>>>> }
->>>>>
->>>>> on parisc, gcc generates separate byte stores
->>>>>
->>>>> void store_bc(struct x *p) {
->>>>>    0:	34 1c 00 02 	ldi 1,ret0
->>>>>    4:	0f 5c 12 08 	stb ret0,4(r26)
->>>>>    8:	34 1c 00 04 	ldi 2,ret0
->>>>>    c:	e8 40 c0 00 	bv r0(rp)
->>>>>   10:	0f 5c 12 0a 	stb ret0,5(r26)
->>>>>
->>>>> which appears to confirm that on parisc adjacent byte data
->>>>> is safe from corruption by concurrent cpu updates; that is,
->>>>>
->>>>> CPU 0                | CPU 1
->>>>>                      |
->>>>> p->b = 1             | p->c = 2
->>>>>                      |
->>>>>
->>>>> will result in p->b == 1 && p->c == 2 (assume both values
->>>>> were 0 before the call to store_bc()).
->>>>
->>>> What Peter said.  I would ask for suggestions for better wording, but
->>>> I would much rather be able to say that single-byte reads and writes
->>>> are atomic and that aligned-short reads and writes are also atomic.
->>>>
->>>> Thus far, it looks like we lose only very old Alpha systems, so unless
->>>> I hear otherwise, I update my patch to outlaw these very old systems.
->>>
->>> This isn't universally true according to the architecture manual.  The
->>> PARISC CPU can make byte to long word stores atomic against the memory
->>> bus but not against the I/O bus for instance.  Atomicity is a property
->>> of the underlying substrate, not of the CPU.  Implying that atomicity is
->>> a CPU property is incorrect.
-
-To go back to this briefly, while it's true that atomicity is not
-a CPU property, atomicity is not possible if the CPU is not cooperating.
-
->> OK, fair point.
->>
->> But are there in-use-for-Linux PARISC memory fabrics (for normal memory,
->> not I/O) that do not support single-byte and double-byte stores?
+> > On Sat, Sep 06, 2014 at 10:07:22PM -0700, James Bottomley wrote:
+> > > On Thu, 2014-09-04 at 21:06 -0700, Paul E. McKenney wrote:
+> > > > On Thu, Sep 04, 2014 at 10:47:24PM -0400, Peter Hurley wrote:
+> > > > > Hi James,
+> > > > > 
+> > > > > On 09/04/2014 10:11 PM, James Bottomley wrote:
+> > > > > > On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
+> > > > > >> +And there are anti-guarantees:
+> > > > > >> +
+> > > > > >> + (*) These guarantees do not apply to bitfields, because compilers often
+> > > > > >> +     generate code to modify these using non-atomic read-modify-write
+> > > > > >> +     sequences.  Do not attempt to use bitfields to synchronize parallel
+> > > > > >> +     algorithms.
+> > > > > >> +
+> > > > > >> + (*) Even in cases where bitfields are protected by locks, all fields
+> > > > > >> +     in a given bitfield must be protected by one lock.  If two fields
+> > > > > >> +     in a given bitfield are protected by different locks, the compiler's
+> > > > > >> +     non-atomic read-modify-write sequences can cause an update to one
+> > > > > >> +     field to corrupt the value of an adjacent field.
+> > > > > >> +
+> > > > > >> + (*) These guarantees apply only to properly aligned and sized scalar
+> > > > > >> +     variables.  "Properly sized" currently means "int" and "long",
+> > > > > >> +     because some CPU families do not support loads and stores of
+> > > > > >> +     other sizes.  ("Some CPU families" is currently believed to
+> > > > > >> +     be only Alpha 21064.  If this is actually the case, a different
+> > > > > >> +     non-guarantee is likely to be formulated.)
+> > > > > > 
+> > > > > > This is a bit unclear.  Presumably you're talking about definiteness of
+> > > > > > the outcome (as in what's seen after multiple stores to the same
+> > > > > > variable).
+> > > > > 
+> > > > > No, the last conditions refers to adjacent byte stores from different
+> > > > > cpu contexts (either interrupt or SMP).
+> > > > > 
+> > > > > > The guarantees are only for natural width on Parisc as well,
+> > > > > > so you would get a mess if you did byte stores to adjacent memory
+> > > > > > locations.
+> > > > > 
+> > > > > For a simple test like:
+> > > > > 
+> > > > > struct x {
+> > > > > 	long a;
+> > > > > 	char b;
+> > > > > 	char c;
+> > > > > 	char d;
+> > > > > 	char e;
+> > > > > };
+> > > > > 
+> > > > > void store_bc(struct x *p) {
+> > > > > 	p->b = 1;
+> > > > > 	p->c = 2;
+> > > > > }
+> > > > > 
+> > > > > on parisc, gcc generates separate byte stores
+> > > > > 
+> > > > > void store_bc(struct x *p) {
+> > > > >    0:	34 1c 00 02 	ldi 1,ret0
+> > > > >    4:	0f 5c 12 08 	stb ret0,4(r26)
+> > > > >    8:	34 1c 00 04 	ldi 2,ret0
+> > > > >    c:	e8 40 c0 00 	bv r0(rp)
+> > > > >   10:	0f 5c 12 0a 	stb ret0,5(r26)
+> > > > > 
+> > > > > which appears to confirm that on parisc adjacent byte data
+> > > > > is safe from corruption by concurrent cpu updates; that is,
+> > > > > 
+> > > > > CPU 0                | CPU 1
+> > > > >                      |
+> > > > > p->b = 1             | p->c = 2
+> > > > >                      |
+> > > > > 
+> > > > > will result in p->b == 1 && p->c == 2 (assume both values
+> > > > > were 0 before the call to store_bc()).
+> > > > 
+> > > > What Peter said.  I would ask for suggestions for better wording, but
+> > > > I would much rather be able to say that single-byte reads and writes
+> > > > are atomic and that aligned-short reads and writes are also atomic.
+> > > > 
+> > > > Thus far, it looks like we lose only very old Alpha systems, so unless
+> > > > I hear otherwise, I update my patch to outlaw these very old systems.
+> > > 
+> > > This isn't universally true according to the architecture manual.  The
+> > > PARISC CPU can make byte to long word stores atomic against the memory
+> > > bus but not against the I/O bus for instance.  Atomicity is a property
+> > > of the underlying substrate, not of the CPU.  Implying that atomicity is
+> > > a CPU property is incorrect.
+> > 
+> > OK, fair point.
+> > 
+> > But are there in-use-for-Linux PARISC memory fabrics (for normal memory,
+> > not I/O) that do not support single-byte and double-byte stores?
 > 
 > For aligned access, I believe that's always the case for the memory bus
 > (on both 32 and 64 bit systems).  However, it only applies to machine
@@ -144,43 +158,73 @@ a CPU property, atomicity is not possible if the CPU is not cooperating.
 > two adjacent byte stores it can coalesce them into a short store
 > instead ... that screws up the atomicity guarantees.
 
-Two things: I think that gcc has given up on combining adjacent writes,
-perhaps because unaligned writes on some arches are prohibitive, so
-whatever minor optimization was believed to be gained was quickly lost,
-multi-fold. (Although this might not be the reason since one would
-expect that gcc would know the alignment of the promoted store).
+OK, that means that to make PARISC work reliably, we need to use
+ACCESS_ONCE() for loads and stores that could have racing accesses.
+If I understand correctly, this will -not- be needed for code guarded
+by locks, even with Peter's examples.
 
-But additionally, even if gcc combines adjacent writes _that are part
-of the program flow_ then I believe the situation is no worse than
-would otherwise exist.
+So if we have something like this:
 
-For instance, given the following:
+	struct foo {
+		char a;
+		char b;
+	};
+	struct foo *fp;
 
-struct x {
-	spinlock_t lock;
-	long a;
-	byte b;
-	byte c;
-};
+then this code would be bad:
 
-void locked_store_b(struct x *p)
-{
-	spin_lock(&p->lock);
-	p->b = 1;
-	spin_unlock(&p->lock);
-	p->c = 2;
-}
+	fp->a = 1;
+	fp->b = 2;
 
-Granted, the author probably expects ordered writes of
-	STORE B
-	STORE C
-but that's not guaranteed because there is no memory barrier
-ordering B before C.
+The reason is (as you say) that GCC would be happy to store 0x0102
+(or vice versa, depending on endianness) to the pair.  We instead
+need:
 
-I see no problem with gcc write-combining in the absence of
-memory barriers (as long as alignment is still respected,
-ie., the size-promoted write is still naturally aligned). The
-combined write is still atomic.
+	ACCESS_ONCE(fp->a) = 1;
+	ACCESS_ONCE(fp->b) = 2;
 
-Regards,
-Peter Hurley
+However, if the code is protected by locks, no problem:
+
+	struct foo {
+		spinlock_t lock_a;
+		spinlock_t lock_b;
+		char a;
+		char b;
+	};
+
+Then it is OK to do the following:
+
+	spin_lock(fp->lock_a);
+	fp->a = 1;
+	spin_unlock(fp->lock_a);
+	spin_lock(fp->lock_b);
+	fp->b = 1;
+	spin_unlock(fp->lock_b);
+
+Or even this, assuming ->lock_a precedes ->lock_b in the locking hierarchy:
+
+	spin_lock(fp->lock_a);
+	spin_lock(fp->lock_b);
+	fp->a = 1;
+	fp->b = 1;
+	spin_unlock(fp->lock_a);
+	spin_unlock(fp->lock_b);
+
+Here gcc might merge the assignments to fp->a and fp->b, but that is OK
+because both locks are held, presumably preventing other assignments or
+references to fp->a and fp->b.
+
+On the other hand, if either fp->a or fp->b are referenced outside of their
+respective locks, even once, then this last code fragment would still need
+ACCESS_ONCE() as follows:
+
+	spin_lock(fp->lock_a);
+	spin_lock(fp->lock_b);
+	ACCESS_ONCE(fp->a) = 1;
+	ACCESS_ONCE(fp->b) = 1;
+	spin_unlock(fp->lock_a);
+	spin_unlock(fp->lock_b);
+
+Does that cover it?  If so, I will update memory-barriers.txt accordingly.
+
+							Thanx, Paul
