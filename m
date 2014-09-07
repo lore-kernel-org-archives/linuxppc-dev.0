@@ -1,53 +1,33 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB1641A003B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 02:21:52 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6BBD1A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 02:31:44 +1000 (EST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sun, 7 Sep 2014 10:21:50 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 59EEF19D803D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 10:21:35 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s87EHk4G9109786
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 16:17:46 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s87GQD3h017330
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 10:26:14 -0600
-Date: Sun, 7 Sep 2014 09:21:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140907162146.GK5001@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <21512.10628.412205.873477@gargle.gargle.HOWL>
- <20140904090952.GW17454@tucnak.redhat.com>
- <540859EC.5000407@hurleysoftware.com>
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>
- <5408C0AB.6050801@hurleysoftware.com>
- <20140905001751.GL5001@linux.vnet.ibm.com>
- <1409883098.5078.14.camel@jarvis.lan>
- <5409243C.4080704@hurleysoftware.com>
- <20140905040645.GO5001@linux.vnet.ibm.com>
- <1410066442.12512.13.camel@jarvis.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1410066442.12512.13.camel@jarvis.lan>
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
- linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
- Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
- Richard Henderson <rth@twiddle.net>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 7 Sep 2014 22:01:41 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A2E9A394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 22:01:38 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s87GW3iU45154536
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 22:02:03 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s87GVbAE005750
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 22:01:38 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Subject: [PATCH 0/2 v5] powerpc/kvm: support to handle sw breakpoint
+Date: Sun,  7 Sep 2014 22:01:31 +0530
+Message-Id: <1410107494-25556-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,95 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 06, 2014 at 10:07:22PM -0700, James Bottomley wrote:
-> On Thu, 2014-09-04 at 21:06 -0700, Paul E. McKenney wrote:
-> > On Thu, Sep 04, 2014 at 10:47:24PM -0400, Peter Hurley wrote:
-> > > Hi James,
-> > > 
-> > > On 09/04/2014 10:11 PM, James Bottomley wrote:
-> > > > On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
-> > > >> +And there are anti-guarantees:
-> > > >> +
-> > > >> + (*) These guarantees do not apply to bitfields, because compilers often
-> > > >> +     generate code to modify these using non-atomic read-modify-write
-> > > >> +     sequences.  Do not attempt to use bitfields to synchronize parallel
-> > > >> +     algorithms.
-> > > >> +
-> > > >> + (*) Even in cases where bitfields are protected by locks, all fields
-> > > >> +     in a given bitfield must be protected by one lock.  If two fields
-> > > >> +     in a given bitfield are protected by different locks, the compiler's
-> > > >> +     non-atomic read-modify-write sequences can cause an update to one
-> > > >> +     field to corrupt the value of an adjacent field.
-> > > >> +
-> > > >> + (*) These guarantees apply only to properly aligned and sized scalar
-> > > >> +     variables.  "Properly sized" currently means "int" and "long",
-> > > >> +     because some CPU families do not support loads and stores of
-> > > >> +     other sizes.  ("Some CPU families" is currently believed to
-> > > >> +     be only Alpha 21064.  If this is actually the case, a different
-> > > >> +     non-guarantee is likely to be formulated.)
-> > > > 
-> > > > This is a bit unclear.  Presumably you're talking about definiteness of
-> > > > the outcome (as in what's seen after multiple stores to the same
-> > > > variable).
-> > > 
-> > > No, the last conditions refers to adjacent byte stores from different
-> > > cpu contexts (either interrupt or SMP).
-> > > 
-> > > > The guarantees are only for natural width on Parisc as well,
-> > > > so you would get a mess if you did byte stores to adjacent memory
-> > > > locations.
-> > > 
-> > > For a simple test like:
-> > > 
-> > > struct x {
-> > > 	long a;
-> > > 	char b;
-> > > 	char c;
-> > > 	char d;
-> > > 	char e;
-> > > };
-> > > 
-> > > void store_bc(struct x *p) {
-> > > 	p->b = 1;
-> > > 	p->c = 2;
-> > > }
-> > > 
-> > > on parisc, gcc generates separate byte stores
-> > > 
-> > > void store_bc(struct x *p) {
-> > >    0:	34 1c 00 02 	ldi 1,ret0
-> > >    4:	0f 5c 12 08 	stb ret0,4(r26)
-> > >    8:	34 1c 00 04 	ldi 2,ret0
-> > >    c:	e8 40 c0 00 	bv r0(rp)
-> > >   10:	0f 5c 12 0a 	stb ret0,5(r26)
-> > > 
-> > > which appears to confirm that on parisc adjacent byte data
-> > > is safe from corruption by concurrent cpu updates; that is,
-> > > 
-> > > CPU 0                | CPU 1
-> > >                      |
-> > > p->b = 1             | p->c = 2
-> > >                      |
-> > > 
-> > > will result in p->b == 1 && p->c == 2 (assume both values
-> > > were 0 before the call to store_bc()).
-> > 
-> > What Peter said.  I would ask for suggestions for better wording, but
-> > I would much rather be able to say that single-byte reads and writes
-> > are atomic and that aligned-short reads and writes are also atomic.
-> > 
-> > Thus far, it looks like we lose only very old Alpha systems, so unless
-> > I hear otherwise, I update my patch to outlaw these very old systems.
-> 
-> This isn't universally true according to the architecture manual.  The
-> PARISC CPU can make byte to long word stores atomic against the memory
-> bus but not against the I/O bus for instance.  Atomicity is a property
-> of the underlying substrate, not of the CPU.  Implying that atomicity is
-> a CPU property is incorrect.
+This patchset adds ppc64 server side support for software breakpoint
+and extends the use of illegal instruction as software
+breakpoint across ppc platform.
 
-OK, fair point.
+Patch 1, adds kernel side support for software breakpoint.
+Design is that, by using an illegal instruction, we trap to
+hypervisor via Emulation Assistance interrupt, where we check
+for the illegal instruction and accordingly we return to Host
+or Guest. Patch also adds support for software breakpoint
+in PR KVM.
 
-But are there in-use-for-Linux PARISC memory fabrics (for normal memory,
-not I/O) that do not support single-byte and double-byte stores?
+Patch 2,extends the use of illegal instruction as software
+breakpoint instruction across the ppc platform. Patch extends
+booke program interrupt code to support software breakpoint.
 
-							Thanx, Paul
+Patch 2 is only compile tested. Will really help if
+someone can try it out and let me know comments.
+
+Changes v4->v5:
+ Made changes to code comments and commit messages
+ Added debugging active checks for illegal instr comparison
+ Added debug instruction check in emulate code
+ Extended SW breakpoint to booke
+
+Changes v3->v4:
+ Made changes to code comments and removed #define of zero opcode
+ Added a new function to handle the debug instruction emulation in book3s_hv
+ Rebased the code to latest upstream source.
+
+Changes v2->v3:
+ Changed the debug instructions. Using the all zero opcode in the instruction word
+  as illegal instruction as mentioned in Power ISA instead of ABS
+ Removed reg updated in emulation assist and added a call to
+  kvmppc_emulate_instruction for reg update.
+
+Changes v1->v2:
+
+ Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
+ Added code to use KVM get one reg infrastructure to get debug opcode.
+ Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
+ Made changes to commit message.
+
+Madhavan Srinivasan (2):
+  powerpc/kvm: support to handle sw breakpoint
+  powerpc/kvm: common sw breakpoint instr across ppc
+
+ arch/powerpc/include/asm/kvm_ppc.h |  6 ++++++
+ arch/powerpc/kvm/book3s.c          |  3 ++-
+ arch/powerpc/kvm/book3s_hv.c       | 41 ++++++++++++++++++++++++++++++++++----
+ arch/powerpc/kvm/book3s_pr.c       |  3 +++
+ arch/powerpc/kvm/booke.c           | 18 +++++++++++++++--
+ arch/powerpc/kvm/emulate.c         | 18 +++++++++++++++++
+ 6 files changed, 82 insertions(+), 7 deletions(-)
+
+-- 
+1.7.11.4
