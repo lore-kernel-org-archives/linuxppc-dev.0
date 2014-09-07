@@ -1,28 +1,34 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1A681A000E
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 12:42:39 +1000 (EST)
-Message-ID: <1410057728.7389.24.camel@decadent.org.uk>
-Subject: Re: [PATCH v2] deb-pkg: Add support for powerpc little endian
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Date: Sun, 07 Sep 2014 03:42:08 +0100
-In-Reply-To: <20140905120925.GB3846@oc0268524204.ibm.com>
-References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>
- <20140905071344.GA16024@visitor2.iram.es>
- <1409903718.11359.30.camel@ale.ozlabs.ibm.com>
- <20140905120925.GB3846@oc0268524204.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-JmYE29X0qWPiP86bFq5H"
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+ [66.63.167.143])
+ by lists.ozlabs.org (Postfix) with ESMTP id 10D641A0990
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 15:07:26 +1000 (EST)
+Message-ID: <1410066442.12512.13.camel@jarvis.lan>
+Subject: Re: bit fields && data tearing
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: paulmck@linux.vnet.ibm.com
+Date: Sat, 06 Sep 2014 22:07:22 -0700
+In-Reply-To: <20140905040645.GO5001@linux.vnet.ibm.com>
+References: <54079B70.4050200@hurleysoftware.com>
+ <1409785893.30640.118.camel@pasglop>
+ <21512.10628.412205.873477@gargle.gargle.HOWL>
+ <20140904090952.GW17454@tucnak.redhat.com>
+ <540859EC.5000407@hurleysoftware.com>
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>
+ <5408C0AB.6050801@hurleysoftware.com>
+ <20140905001751.GL5001@linux.vnet.ibm.com>
+ <1409883098.5078.14.camel@jarvis.lan> <5409243C.4080704@hurleysoftware.com>
+ <20140905040645.GO5001@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Michal Marek <mmarek@suse.cz>, Michael Neuling <mikey@neuling.org>,
- linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>,
- Leann Ogasawara <leann.ogasawara@canonical.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
+ Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,91 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2014-09-04 at 21:06 -0700, Paul E. McKenney wrote:
+> On Thu, Sep 04, 2014 at 10:47:24PM -0400, Peter Hurley wrote:
+> > Hi James,
+> > 
+> > On 09/04/2014 10:11 PM, James Bottomley wrote:
+> > > On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
+> > >> +And there are anti-guarantees:
+> > >> +
+> > >> + (*) These guarantees do not apply to bitfields, because compilers often
+> > >> +     generate code to modify these using non-atomic read-modify-write
+> > >> +     sequences.  Do not attempt to use bitfields to synchronize parallel
+> > >> +     algorithms.
+> > >> +
+> > >> + (*) Even in cases where bitfields are protected by locks, all fields
+> > >> +     in a given bitfield must be protected by one lock.  If two fields
+> > >> +     in a given bitfield are protected by different locks, the compiler's
+> > >> +     non-atomic read-modify-write sequences can cause an update to one
+> > >> +     field to corrupt the value of an adjacent field.
+> > >> +
+> > >> + (*) These guarantees apply only to properly aligned and sized scalar
+> > >> +     variables.  "Properly sized" currently means "int" and "long",
+> > >> +     because some CPU families do not support loads and stores of
+> > >> +     other sizes.  ("Some CPU families" is currently believed to
+> > >> +     be only Alpha 21064.  If this is actually the case, a different
+> > >> +     non-guarantee is likely to be formulated.)
+> > > 
+> > > This is a bit unclear.  Presumably you're talking about definiteness of
+> > > the outcome (as in what's seen after multiple stores to the same
+> > > variable).
+> > 
+> > No, the last conditions refers to adjacent byte stores from different
+> > cpu contexts (either interrupt or SMP).
+> > 
+> > > The guarantees are only for natural width on Parisc as well,
+> > > so you would get a mess if you did byte stores to adjacent memory
+> > > locations.
+> > 
+> > For a simple test like:
+> > 
+> > struct x {
+> > 	long a;
+> > 	char b;
+> > 	char c;
+> > 	char d;
+> > 	char e;
+> > };
+> > 
+> > void store_bc(struct x *p) {
+> > 	p->b = 1;
+> > 	p->c = 2;
+> > }
+> > 
+> > on parisc, gcc generates separate byte stores
+> > 
+> > void store_bc(struct x *p) {
+> >    0:	34 1c 00 02 	ldi 1,ret0
+> >    4:	0f 5c 12 08 	stb ret0,4(r26)
+> >    8:	34 1c 00 04 	ldi 2,ret0
+> >    c:	e8 40 c0 00 	bv r0(rp)
+> >   10:	0f 5c 12 0a 	stb ret0,5(r26)
+> > 
+> > which appears to confirm that on parisc adjacent byte data
+> > is safe from corruption by concurrent cpu updates; that is,
+> > 
+> > CPU 0                | CPU 1
+> >                      |
+> > p->b = 1             | p->c = 2
+> >                      |
+> > 
+> > will result in p->b == 1 && p->c == 2 (assume both values
+> > were 0 before the call to store_bc()).
+> 
+> What Peter said.  I would ask for suggestions for better wording, but
+> I would much rather be able to say that single-byte reads and writes
+> are atomic and that aligned-short reads and writes are also atomic.
+> 
+> Thus far, it looks like we lose only very old Alpha systems, so unless
+> I hear otherwise, I update my patch to outlaw these very old systems.
 
---=-JmYE29X0qWPiP86bFq5H
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This isn't universally true according to the architecture manual.  The
+PARISC CPU can make byte to long word stores atomic against the memory
+bus but not against the I/O bus for instance.  Atomicity is a property
+of the underlying substrate, not of the CPU.  Implying that atomicity is
+a CPU property is incorrect.
 
-On Fri, 2014-09-05 at 09:09 -0300, Thadeu Lima de Souza Cascardo wrote:
-> On Fri, Sep 05, 2014 at 05:55:18PM +1000, Michael Neuling wrote:
-> > On Fri, 2014-09-05 at 09:13 +0200, Gabriel Paubert wrote:
-> > > On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
-> > > > The Debian powerpc little endian architecture is called ppc64le.  T=
-his
-> > >=20
-> > > Huh? ppc64le or ppc64el?
-> >=20
-> > ppc64el.  Commit message is wrong.  Fixed below.
-> >=20
-> > Mikey
-> >=20
-> >=20
->=20
-> What about ppc64?
->=20
-> Also, I sent that already a month ago. Both linuxppc-dev and Michal
-> Marek were on cc.
->=20
-> http://marc.info/?l=3Dlinux-kernel&m=3D140744360328562&w=3D2
-
-Anyone using powerpc (32-bit) will then need to add ppc64 as a foreign
-architecture before they can install a 64-bit custom kernel.  This is
-fine in principle, except that ppc64 is not an official Debian port and
-its packages are not mirrored on the same servers.
-
-I just tried something similar, which is to add x32 (also unofficial) as
-an alternate architecture to my biarch x86 system.  APT now complains:
-
-W: Failed to fetch http://http.debian.net/debian/dists/experimental/InRelea=
-se  Unable to find expected entry 'main/binary-x32/Packages' in Release fil=
-e (Wrong sources.list entry or malformed file)
-
-W: Failed to fetch http://http.debian.net/debian/dists/sid/Release  Unable =
-to find expected entry 'main/binary-x32/Packages' in Release file (Wrong so=
-urces.list entry or malformed file)
-
-W: Failed to fetch http://http.debian.net/debian/dists/testing/Release  Una=
-ble to find expected entry 'main/binary-x32/Packages' in Release file (Wron=
-g sources.list entry or malformed file)
-
-W: Failed to fetch http://http.debian.net/debian/dists/wheezy/Release  Unab=
-le to find expected entry 'main/binary-x32/Packages' in Release file (Wrong=
- sources.list entry or malformed file)
-
-E: Some index files failed to download. They have been ignored, or old ones=
- used instead.
-
-So I think Michael's version, leaving big-endian kernels as powerpc by
-default, is preferable for now.
-
-Ben.
-
---=20
-Ben Hutchings
-Experience is directly proportional to the value of equipment destroyed.
-                                                         - Carolyn Scheppne=
-r
-
---=-JmYE29X0qWPiP86bFq5H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIVAwUAVAvGBue/yOyVhhEJAQqPuhAAg7EuOtddbQWZUG/rVs+9HYNZcjimNvyL
-CYuQJju1WguqqYaoSlN7End5Io1yHjOoMBvLKcRvJHcX937237f7F7H3lKDl116B
-0rvJGJCOngiv5PnWqE3BpeLtVVS1uAl0MzVS3xwitcV5Yis2wRZggOspC5O3LMs6
-UnlKEE0BbAEA0Ht5vBr6WNJqj5Sgiqfh84LhLaDV2abftI5k2EM8ebc2tM4LDKH2
-/jG6SEBSqALWl1VZ70Y/pXBN8VhmgU2HfaB0KCMr8rI942wZyC84uTp/2f0roA90
-Eit2gMu/xLV5WsMTxZukh9ylSaYTqBoZcf1cULntws1rsC26xap4500stXSr15EU
-nq6M6j9DPbJxFMcLyTpYTLLDaIR1l86f2LUWHjqNnhVZfcfD8akLkqqGq5DD3Obk
-bP6Gb2sCOtQmyvM4d/blW9+p1LG7xabymLZmdvftQBPOVc2NlFwskwy74u5hX/DP
-PAGg3RGe2vBO/swxlExrssU0dX6AFJjovTNgKsW9kE3Ae8GDaNN7cDaUJ+KETYQW
-W3IP07oMaWCOfywokgw36/udeUyoEAHpgb7eCIXa3thzPn3nY2IcG9F4eAfDnjlO
-dlOFzF8sGbgnKfv+W/MLGIVV50vre1xJ0LlFonz07+Xv10/MOHJCvvhD/sDy+rjS
-qrpiAqWeIjM=
-=FfrF
------END PGP SIGNATURE-----
-
---=-JmYE29X0qWPiP86bFq5H--
+James
