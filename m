@@ -1,24 +1,28 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F5241A003D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2014 10:19:07 +1000 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id lf10so1251784pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Sep 2014 17:19:05 -0700 (PDT)
-Date: Fri, 5 Sep 2014 18:18:59 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] PCI: Increase BAR size quirk for IBM ipr SAS Crocodile
- adapters
-Message-ID: <20140906001859.GO8080@google.com>
-References: <20140821092652.604d7484@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140821092652.604d7484@kryten>
-Cc: linux-pci@vger.kernel.org, miltonm@us.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, dllehr@us.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1A681A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 12:42:39 +1000 (EST)
+Message-ID: <1410057728.7389.24.camel@decadent.org.uk>
+Subject: Re: [PATCH v2] deb-pkg: Add support for powerpc little endian
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Date: Sun, 07 Sep 2014 03:42:08 +0100
+In-Reply-To: <20140905120925.GB3846@oc0268524204.ibm.com>
+References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>
+ <20140905071344.GA16024@visitor2.iram.es>
+ <1409903718.11359.30.camel@ale.ozlabs.ibm.com>
+ <20140905120925.GB3846@oc0268524204.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-JmYE29X0qWPiP86bFq5H"
+Mime-Version: 1.0
+Cc: Michal Marek <mmarek@suse.cz>, Michael Neuling <mikey@neuling.org>,
+ linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>,
+ Leann Ogasawara <leann.ogasawara@canonical.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,130 +32,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 21, 2014 at 09:26:52AM +1000, Anton Blanchard wrote:
-> From: Douglas Lehr <dllehr@us.ibm.com>
-> 
-> The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.
-> Due to an errata, setting the SR-IOV page size causes the physical
-> function BARs to expand to the system page size.  Since ppc64 uses
-> 64k pages, when Linux tries to assign the smaller resource sizes
-> to the now 64k BARs the address will be truncated and the BARs will
-> overlap.
-> 
-> This quirk will force Linux to allocate the resource as a full page,
-> which will avoid the overlap.
-> 
-> Cc: <stable@vger.kernel.org> 
-> Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Acked-by: Milton Miller <miltonm@us.ibm.com>
 
-Applied to pci/misc for v3.18, thanks!
+--=-JmYE29X0qWPiP86bFq5H
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I tweaked it to print the expanded resource, see below.
+On Fri, 2014-09-05 at 09:09 -0300, Thadeu Lima de Souza Cascardo wrote:
+> On Fri, Sep 05, 2014 at 05:55:18PM +1000, Michael Neuling wrote:
+> > On Fri, 2014-09-05 at 09:13 +0200, Gabriel Paubert wrote:
+> > > On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
+> > > > The Debian powerpc little endian architecture is called ppc64le.  T=
+his
+> > >=20
+> > > Huh? ppc64le or ppc64el?
+> >=20
+> > ppc64el.  Commit message is wrong.  Fixed below.
+> >=20
+> > Mikey
+> >=20
+> >=20
+>=20
+> What about ppc64?
+>=20
+> Also, I sent that already a month ago. Both linuxppc-dev and Michal
+> Marek were on cc.
+>=20
+> http://marc.info/?l=3Dlinux-kernel&m=3D140744360328562&w=3D2
 
-> ---
->  drivers/pci/quirks.c |   19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index 80c2d01..45b946d 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -24,6 +24,7 @@
->  #include <linux/ioport.h>
->  #include <linux/sched.h>
->  #include <linux/ktime.h>
-> +#include <linux/mm.h>
->  #include <asm/dma.h>	/* isa_dma_bridge_buggy */
->  #include "pci.h"
->  
-> @@ -287,6 +288,24 @@ static void quirk_citrine(struct pci_dev *dev)
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
->  
-> +/*  On IBM Crocodile ipr SAS adapters, expand bar size to system page size. */
-> +static void quirk_extend_bar_to_page(struct pci_dev *dev)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
-> +		struct resource *r = &dev->resource[i];
-> +
-> +		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
-> +			dev_info(&dev->dev, "Setting Bar size to Page size");
-> +			r->end = PAGE_SIZE-1;
-> +			r->start = 0;
-> +			r->flags |= IORESOURCE_UNSET;
-> +		}
-> +	}
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
-> +
->  /*
->   *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
->   *  If it's needed, re-allocate the region.
-> -- 
+Anyone using powerpc (32-bit) will then need to add ppc64 as a foreign
+architecture before they can install a 64-bit custom kernel.  This is
+fine in principle, except that ppc64 is not an official Debian port and
+its packages are not mirrored on the same servers.
 
+I just tried something similar, which is to add x32 (also unofficial) as
+an alternate architecture to my biarch x86 system.  APT now complains:
 
+W: Failed to fetch http://http.debian.net/debian/dists/experimental/InRelea=
+se  Unable to find expected entry 'main/binary-x32/Packages' in Release fil=
+e (Wrong sources.list entry or malformed file)
 
-commit 86b6431a306ab5a5204c436a45a3337fb17efa21
-Author: Douglas Lehr <dllehr@us.ibm.com>
-Date:   Thu Aug 21 09:26:52 2014 +1000
+W: Failed to fetch http://http.debian.net/debian/dists/sid/Release  Unable =
+to find expected entry 'main/binary-x32/Packages' in Release file (Wrong so=
+urces.list entry or malformed file)
 
-    PCI: Increase IBM ipr SAS Crocodile BARs to at least system page size
-    
-    The Crocodile chip occasionally comes up with 4k and 8k BAR sizes.  Due to
-    an erratum, setting the SR-IOV page size causes the physical function BARs
-    to expand to the system page size.  Since ppc64 uses 64k pages, when Linux
-    tries to assign the smaller resource sizes to the now 64k BARs the address
-    will be truncated and the BARs will overlap.
-    
-    Force Linux to allocate the resource as a full page, which avoids the
-    overlap.
-    
-    [bhelgaas: print expanded resource, too]
-    Signed-off-by: Douglas Lehr <dllehr@us.ibm.com>
-    Signed-off-by: Anton Blanchard <anton@samba.org>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-    Acked-by: Milton Miller <miltonm@us.ibm.com>
-    CC: stable@vger.kernel.org
+W: Failed to fetch http://http.debian.net/debian/dists/testing/Release  Una=
+ble to find expected entry 'main/binary-x32/Packages' in Release file (Wron=
+g sources.list entry or malformed file)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 80c2d014283d..e73960311fb4 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -24,6 +24,7 @@
- #include <linux/ioport.h>
- #include <linux/sched.h>
- #include <linux/ktime.h>
-+#include <linux/mm.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
- 
-@@ -287,6 +288,25 @@ static void quirk_citrine(struct pci_dev *dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CITRINE,	quirk_citrine);
- 
-+/*  On IBM Crocodile ipr SAS adapters, expand BAR to system page size */
-+static void quirk_extend_bar_to_page(struct pci_dev *dev)
-+{
-+	int i;
-+
-+	for (i = 0; i < PCI_STD_RESOURCE_END; i++) {
-+		struct resource *r = &dev->resource[i];
-+
-+		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
-+			r->end = PAGE_SIZE - 1;
-+			r->start = 0;
-+			r->flags |= IORESOURCE_UNSET;
-+			dev_info(&dev->dev, "expanded BAR %d to page size: %pR\n",
-+				 r);
-+		}
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, 0x034a, quirk_extend_bar_to_page);
-+
- /*
-  *  S3 868 and 968 chips report region size equal to 32M, but they decode 64M.
-  *  If it's needed, re-allocate the region.
+W: Failed to fetch http://http.debian.net/debian/dists/wheezy/Release  Unab=
+le to find expected entry 'main/binary-x32/Packages' in Release file (Wrong=
+ sources.list entry or malformed file)
+
+E: Some index files failed to download. They have been ignored, or old ones=
+ used instead.
+
+So I think Michael's version, leaving big-endian kernels as powerpc by
+default, is preferable for now.
+
+Ben.
+
+--=20
+Ben Hutchings
+Experience is directly proportional to the value of equipment destroyed.
+                                                         - Carolyn Scheppne=
+r
+
+--=-JmYE29X0qWPiP86bFq5H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIVAwUAVAvGBue/yOyVhhEJAQqPuhAAg7EuOtddbQWZUG/rVs+9HYNZcjimNvyL
+CYuQJju1WguqqYaoSlN7End5Io1yHjOoMBvLKcRvJHcX937237f7F7H3lKDl116B
+0rvJGJCOngiv5PnWqE3BpeLtVVS1uAl0MzVS3xwitcV5Yis2wRZggOspC5O3LMs6
+UnlKEE0BbAEA0Ht5vBr6WNJqj5Sgiqfh84LhLaDV2abftI5k2EM8ebc2tM4LDKH2
+/jG6SEBSqALWl1VZ70Y/pXBN8VhmgU2HfaB0KCMr8rI942wZyC84uTp/2f0roA90
+Eit2gMu/xLV5WsMTxZukh9ylSaYTqBoZcf1cULntws1rsC26xap4500stXSr15EU
+nq6M6j9DPbJxFMcLyTpYTLLDaIR1l86f2LUWHjqNnhVZfcfD8akLkqqGq5DD3Obk
+bP6Gb2sCOtQmyvM4d/blW9+p1LG7xabymLZmdvftQBPOVc2NlFwskwy74u5hX/DP
+PAGg3RGe2vBO/swxlExrssU0dX6AFJjovTNgKsW9kE3Ae8GDaNN7cDaUJ+KETYQW
+W3IP07oMaWCOfywokgw36/udeUyoEAHpgb7eCIXa3thzPn3nY2IcG9F4eAfDnjlO
+dlOFzF8sGbgnKfv+W/MLGIVV50vre1xJ0LlFonz07+Xv10/MOHJCvvhD/sDy+rjS
+qrpiAqWeIjM=
+=FfrF
+-----END PGP SIGNATURE-----
+
+--=-JmYE29X0qWPiP86bFq5H--
