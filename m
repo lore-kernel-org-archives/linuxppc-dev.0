@@ -1,25 +1,53 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB6EF1A00C7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 23:32:39 +1000 (EST)
-Date: Sun, 7 Sep 2014 09:32:18 -0400
-From: Jason Cooper <jason@lakedaemon.net>
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [RFC PATCH 0/6] Change vendor prefix for Intersil Corporation
-Message-ID: <20140907133218.GA30828@titan.lakedaemon.net>
-References: <1408524184-31928-1-git-send-email-p.zabel@pengutronix.de>
- <20140820121643.GU12769@titan.lakedaemon.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB1641A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 02:21:52 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 7 Sep 2014 10:21:50 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 59EEF19D803D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2014 10:21:35 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s87EHk4G9109786
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 16:17:46 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s87GQD3h017330
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Sep 2014 10:26:14 -0600
+Date: Sun, 7 Sep 2014 09:21:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: bit fields && data tearing
+Message-ID: <20140907162146.GK5001@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>
+ <20140904090952.GW17454@tucnak.redhat.com>
+ <540859EC.5000407@hurleysoftware.com>
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>
+ <5408C0AB.6050801@hurleysoftware.com>
+ <20140905001751.GL5001@linux.vnet.ibm.com>
+ <1409883098.5078.14.camel@jarvis.lan>
+ <5409243C.4080704@hurleysoftware.com>
+ <20140905040645.GO5001@linux.vnet.ibm.com>
+ <1410066442.12512.13.camel@jarvis.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140820121643.GU12769@titan.lakedaemon.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Alessandro Zummo <a.zummo@towertech.it>, Russell King <linux@arm.linux.org.uk>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1410066442.12512.13.camel@jarvis.lan>
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>,
+ Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +57,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 20, 2014 at 08:16:43AM -0400, Jason Cooper wrote:
-> Philipp,
+On Sat, Sep 06, 2014 at 10:07:22PM -0700, James Bottomley wrote:
+> On Thu, 2014-09-04 at 21:06 -0700, Paul E. McKenney wrote:
+> > On Thu, Sep 04, 2014 at 10:47:24PM -0400, Peter Hurley wrote:
+> > > Hi James,
+> > > 
+> > > On 09/04/2014 10:11 PM, James Bottomley wrote:
+> > > > On Thu, 2014-09-04 at 17:17 -0700, Paul E. McKenney wrote:
+> > > >> +And there are anti-guarantees:
+> > > >> +
+> > > >> + (*) These guarantees do not apply to bitfields, because compilers often
+> > > >> +     generate code to modify these using non-atomic read-modify-write
+> > > >> +     sequences.  Do not attempt to use bitfields to synchronize parallel
+> > > >> +     algorithms.
+> > > >> +
+> > > >> + (*) Even in cases where bitfields are protected by locks, all fields
+> > > >> +     in a given bitfield must be protected by one lock.  If two fields
+> > > >> +     in a given bitfield are protected by different locks, the compiler's
+> > > >> +     non-atomic read-modify-write sequences can cause an update to one
+> > > >> +     field to corrupt the value of an adjacent field.
+> > > >> +
+> > > >> + (*) These guarantees apply only to properly aligned and sized scalar
+> > > >> +     variables.  "Properly sized" currently means "int" and "long",
+> > > >> +     because some CPU families do not support loads and stores of
+> > > >> +     other sizes.  ("Some CPU families" is currently believed to
+> > > >> +     be only Alpha 21064.  If this is actually the case, a different
+> > > >> +     non-guarantee is likely to be formulated.)
+> > > > 
+> > > > This is a bit unclear.  Presumably you're talking about definiteness of
+> > > > the outcome (as in what's seen after multiple stores to the same
+> > > > variable).
+> > > 
+> > > No, the last conditions refers to adjacent byte stores from different
+> > > cpu contexts (either interrupt or SMP).
+> > > 
+> > > > The guarantees are only for natural width on Parisc as well,
+> > > > so you would get a mess if you did byte stores to adjacent memory
+> > > > locations.
+> > > 
+> > > For a simple test like:
+> > > 
+> > > struct x {
+> > > 	long a;
+> > > 	char b;
+> > > 	char c;
+> > > 	char d;
+> > > 	char e;
+> > > };
+> > > 
+> > > void store_bc(struct x *p) {
+> > > 	p->b = 1;
+> > > 	p->c = 2;
+> > > }
+> > > 
+> > > on parisc, gcc generates separate byte stores
+> > > 
+> > > void store_bc(struct x *p) {
+> > >    0:	34 1c 00 02 	ldi 1,ret0
+> > >    4:	0f 5c 12 08 	stb ret0,4(r26)
+> > >    8:	34 1c 00 04 	ldi 2,ret0
+> > >    c:	e8 40 c0 00 	bv r0(rp)
+> > >   10:	0f 5c 12 0a 	stb ret0,5(r26)
+> > > 
+> > > which appears to confirm that on parisc adjacent byte data
+> > > is safe from corruption by concurrent cpu updates; that is,
+> > > 
+> > > CPU 0                | CPU 1
+> > >                      |
+> > > p->b = 1             | p->c = 2
+> > >                      |
+> > > 
+> > > will result in p->b == 1 && p->c == 2 (assume both values
+> > > were 0 before the call to store_bc()).
+> > 
+> > What Peter said.  I would ask for suggestions for better wording, but
+> > I would much rather be able to say that single-byte reads and writes
+> > are atomic and that aligned-short reads and writes are also atomic.
+> > 
+> > Thus far, it looks like we lose only very old Alpha systems, so unless
+> > I hear otherwise, I update my patch to outlaw these very old systems.
 > 
-> On Wed, Aug 20, 2014 at 10:42:58AM +0200, Philipp Zabel wrote:
-> > Hi,
-> > 
-> > currently there is a wild mixture of isl, isil, and intersil
-> > compatibles in the kernel. I figure at this point it is still
-> > possible to change this to use "isil" everywhere without too
-> > much pain, but it might be preferred to keep the already
-> > documented "isl" prefix, even though it doesn't follow the
-> > convention to use the NASDAQ symbol where available.
-> > 
-> > The current users of the "isil" prefix are the following drivers
-> > and device trees, so we could just as well change those instead:
-> > 	arch/arm/boot/dts/tegra20-seaboard.dts
-> > 	arch/arm/boot/dts/tegra20-ventana.dts
-> > 	arch/arm/boot/dts/tegra30-cardhu.dtsi
-> > 	arch/powerpc/boot/dts/p1022rdk.dts
-> > 	drivers/staging/iio/light/isl29018.c
-> > 	drivers/staging/iio/light/isl29028.c
-> > 
-> > regards
-> > Philipp
-> > 
-> > Philipp Zabel (6):
-> >   of: Change vendor prefix for Intersil Corporation to isil
-> >   Documentation: Add isl1208 and isl12022 to trivial-devices list
-> >   ARM: mvebu: Change vendor prefix for Intersil Corporation to isil
-> >   powerpc/85xx: Change vendor prefix for Intersil Corporation to isil
-> >   rtc: rtc-isl12022: Change vendor prefix for Intersil Corporation to
-> >     isil
-> >   rtc: rtc-isl12057: Change vendor prefix for Intersil Corporation to
-> >     isil
-> > 
-> >  Documentation/devicetree/bindings/i2c/trivial-devices.txt | 4 +++-
-> >  Documentation/devicetree/bindings/vendor-prefixes.txt     | 2 +-
-> >  arch/arm/boot/dts/armada-370-netgear-rn102.dts            | 2 +-
-> >  arch/arm/boot/dts/armada-370-netgear-rn104.dts            | 2 +-
-> >  arch/arm/boot/dts/armada-xp-netgear-rn2120.dts            | 2 +-
-> >  arch/powerpc/boot/dts/ppa8548.dts                         | 2 +-
-> >  drivers/rtc/rtc-isl12022.c                                | 3 ++-
-> >  drivers/rtc/rtc-isl12057.c                                | 3 ++-
-> >  8 files changed, 12 insertions(+), 8 deletions(-)
-> 
-> This looks good overall.  My only nit is that I'd like to see the legacy
-> name(s) captured in the binding docs.
-> 
-> I'll take the Armada dts changes through mvebu/arm-soc after a few days.
+> This isn't universally true according to the architecture manual.  The
+> PARISC CPU can make byte to long word stores atomic against the memory
+> bus but not against the I/O bus for instance.  Atomicity is a property
+> of the underlying substrate, not of the CPU.  Implying that atomicity is
+> a CPU property is incorrect.
 
-Just to dot our i's and cross our t's, would you mind sending out a
-non-rfc version of this series?
+OK, fair point.
 
-thx,
+But are there in-use-for-Linux PARISC memory fabrics (for normal memory,
+not I/O) that do not support single-byte and double-byte stores?
 
-Jason.
+							Thanx, Paul
