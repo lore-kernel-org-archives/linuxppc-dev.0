@@ -1,21 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-f178.google.com (mail-wi0-f178.google.com
+ [209.85.212.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67FCD1A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 23:09:52 +1000 (EST)
-Message-ID: <540DAA9E.1070102@suse.de>
-Date: Mon, 08 Sep 2014 15:09:50 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 2/2 v5] powerpc/kvm: common sw breakpoint instr across ppc
-References: <1410107494-25556-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1410107494-25556-3-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1410107494-25556-3-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E760A1A0087
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 23:30:24 +1000 (EST)
+Received: by mail-wi0-f178.google.com with SMTP id n3so2501861wiv.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Sep 2014 06:30:20 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] of: make sure of_alias is initialized before accessing it
+To: Laurentiu Tudor <b10716@freescale.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <53FDE6A3.3080303@freescale.com>
+References: <53FDE6A3.3080303@freescale.com>
+Date: Mon, 08 Sep 2014 14:29:56 +0100
+Message-Id: <20140908132956.646FEC40AE5@trevor.secretlab.ca>
+Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,88 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 07.09.14 18:31, Madhavan Srinivasan wrote:
-> This patch extends the use of illegal instruction as software
-> breakpoint instruction across the ppc platform. Patch extends
-> booke program interrupt code to support software breakpoint.
+On Wed, 27 Aug 2014 17:09:39 +0300, Laurentiu Tudor <b10716@freescale.com> wrote:
+> Simply swap of_alias and of_chosen initialization so
+> that of_alias ends up read first. This must be done
+> because it is accessed couple of lines below when
+> trying to initialize the of_stdout using the alias
+> based legacy method.
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> [Fixes a752ee5 - tty: Update hypervisor tty drivers to                          
+> use core stdout parsing code]
+> 
+> Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+> Cc: Grant Likely <grant.likely@linaro.org>
 > ---
+>  drivers/of/base.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> Patch is only compile tested. Will really help if
-> someone can try it out and let me know comments.
-> 
->  arch/powerpc/kvm/booke.c | 18 ++++++++++++++++--
->  1 file changed, 16 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index b4c89fa..1b84853 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -870,6 +870,10 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  	case BOOKE_INTERRUPT_HV_PRIV:
->  		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
->  		break;
-> +	case BOOKE_INTERRUPT_PROGRAM:
-> +		/*SW breakpoints arrive as illegal instructions on HV */
-
-Is it my email client or is there a space missing again? ;)
-
-Also, please only fetch the last instruction if debugging is active.
-
-> +		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
-> +		break;
->  	default:
->  		break;
->  	}
-> @@ -947,7 +951,17 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  		break;
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index d8574ad..52f8506 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -1847,6 +1847,10 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+>  {
+>  	struct property *pp;
 >  
->  	case BOOKE_INTERRUPT_PROGRAM:
-> -		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
-> +		if ((vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) &&
-> +			(last_inst == KVMPPC_INST_SW_BREAKPOINT)) {
+> +	of_aliases = of_find_node_by_path("/aliases");
+> +	if (!of_aliases)
+> +		return;
+> +
+>  	of_chosen = of_find_node_by_path("/chosen");
+>  	if (of_chosen == NULL)
+>  		of_chosen = of_find_node_by_path("/chosen@0");
+> @@ -1862,10 +1866,6 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+>  			of_stdout = of_find_node_by_path(name);
+>  	}
+>  
+> -	of_aliases = of_find_node_by_path("/aliases");
+> -	if (!of_aliases)
+> -		return;
+> -
 
-I think this is changing the logic from "if the guest is in user mode or
-we're in HV, deflect" to "if the guest is in user mode or an HV guest
-and the instruction is a breakpoint, treat it as debug. Otherwise
-deflect". So you're essentially breaking PR KVM here from what I can tell.
+Close, but not quite. The 'if (!of_aliases)' test should not be moved.
+Only the search for of_find_node_by_path(). I've fixed it up and
+applied.
 
-Why don't you just split the whole thing out to the beginning of
-BOOKE_INTERRUPT_PROGRAM and check for
+g.
 
-  a) debug is enabled
-  b) instruction is sw breakpoint
-
-instead?
-
-> +			/*
-> +			 * We are here because of an SW breakpoint instr,
-> +			 * so lets return to host to handle.
-> +			 */
-> +			r = kvmppc_handle_debug(run, vcpu);
-> +			run->exit_reason = KVM_EXIT_DEBUG;
-> +			kvmppc_account_exit(vcpu, DEBUG_EXITS);
-> +			break;
-> +		} else {	
->  			/*
->  			 * Program traps generated by user-level software must
->  			 * be handled by the guest kernel.
-> @@ -1505,7 +1519,7 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
->  		val = get_reg_val(reg->id, vcpu->arch.tsr);
->  		break;
->  	case KVM_REG_PPC_DEBUG_INST:
-> -		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV_DEBUG);
-
-Please also remove the definition of EHPRIV_DEBUG.
-
-
-Alex
-
-> +		val = get_reg_val(reg->id, KVMPPC_INST_SW_BREAKPOINT);
->  		break;
->  	case KVM_REG_PPC_VRSAVE:
->  		val = get_reg_val(reg->id, vcpu->arch.vrsave);
-> 
+>  	for_each_property_of_node(of_aliases, pp) {
+>  		const char *start = pp->name;
+>  		const char *end = start + strlen(start);
+> -- 
+> 1.8.3.1
