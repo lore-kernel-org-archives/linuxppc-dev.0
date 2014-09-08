@@ -1,35 +1,22 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0143.outbound.protection.outlook.com [65.55.169.143])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 724EB1A006C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 00:07:50 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 8 Sep 2014 08:07:47 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E74DC1FF003B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 08:07:43 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s88E7i7u25034888
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Sep 2014 16:07:45 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s88E7hat010490
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Sep 2014 08:07:44 -0600
-Message-ID: <540DB82D.9070403@linux.vnet.ibm.com>
-Date: Mon, 08 Sep 2014 09:07:41 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 832641A01DD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 00:49:10 +1000 (EST)
+Message-ID: <540DB995.7040406@freescale.com>
+Date: Mon, 8 Sep 2014 17:13:41 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] pseries: Fix endianness in cpu hotplug and hotremove
-References: <1409944146-6813-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <1409944146-6813-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Grant Likely <grant.likely@linaro.org>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] of: make sure of_alias is initialized before accessing it
+References: <53FDE6A3.3080303@freescale.com>
+ <20140908132956.646FEC40AE5@trevor.secretlab.ca>
+In-Reply-To: <20140908132956.646FEC40AE5@trevor.secretlab.ca>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,268 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It looks like you have a lot of the same changes as the patch Bharata
-sent out last week. Including the one issue I saw in Bharata's patch
-below.
-
-On 09/05/2014 02:09 PM, Thomas Falcon wrote:
-> This patch attempts to ensure that all values are in the proper
-> endianness format when both hotadding and hotremoving cpus.
+On 09/08/2014 04:29 PM, Grant Likely wrote:
+> On Wed, 27 Aug 2014 17:09:39 +0300, Laurentiu Tudor <b10716@freescale.com> wrote:
+>> Simply swap of_alias and of_chosen initialization so
+>> that of_alias ends up read first. This must be done
+>> because it is accessed couple of lines below when
+>> trying to initialize the of_stdout using the alias
+>> based legacy method.
+>>
+>> [Fixes a752ee5 - tty: Update hypervisor tty drivers to                          
+>> use core stdout parsing code]
+>>
+>> Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> ---
+>>  drivers/of/base.c | 8 ++++----
+>>  1 file changed, 4 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>> index d8574ad..52f8506 100644
+>> --- a/drivers/of/base.c
+>> +++ b/drivers/of/base.c
+>> @@ -1847,6 +1847,10 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+>>  {
+>>  	struct property *pp;
+>>  
+>> +	of_aliases = of_find_node_by_path("/aliases");
+>> +	if (!of_aliases)
+>> +		return;
+>> +
+>>  	of_chosen = of_find_node_by_path("/chosen");
+>>  	if (of_chosen == NULL)
+>>  		of_chosen = of_find_node_by_path("/chosen@0");
+>> @@ -1862,10 +1866,6 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
+>>  			of_stdout = of_find_node_by_path(name);
+>>  	}
+>>  
+>> -	of_aliases = of_find_node_by_path("/aliases");
+>> -	if (!of_aliases)
+>> -		return;
+>> -
 > 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c       | 56 ++++++++++++++--------------
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 20 +++++-----
->  2 files changed, 38 insertions(+), 38 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index a2450b8..c1d7e40 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -24,11 +24,11 @@
->  #include <asm/rtas.h>
->  
->  struct cc_workarea {
-> -	u32	drc_index;
-> -	u32	zero;
-> -	u32	name_offset;
-> -	u32	prop_length;
-> -	u32	prop_offset;
-> +	__be32	drc_index;
-> +	__be32	zero;
-> +	__be32	name_offset;
-> +	__be32	prop_length;
-> +	__be32	prop_offset;
->  };
->  
->  void dlpar_free_cc_property(struct property *prop)
-> @@ -48,11 +48,11 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
->  	if (!prop)
->  		return NULL;
->  
-> -	name = (char *)ccwa + ccwa->name_offset;
-> +	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
->  	prop->name = kstrdup(name, GFP_KERNEL);
->  
-> -	prop->length = ccwa->prop_length;
-> -	value = (char *)ccwa + ccwa->prop_offset;
-> +	prop->length = be32_to_cpu(ccwa->prop_length);
-> +	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
->  	prop->value = kmemdup(value, prop->length, GFP_KERNEL);
->  	if (!prop->value) {
->  		dlpar_free_cc_property(prop);
-> @@ -78,7 +78,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
->  	if (!dn)
->  		return NULL;
->  
-> -	name = (char *)ccwa + ccwa->name_offset;
-> +	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
->  	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
->  	if (!dn->full_name) {
->  		kfree(dn);
-> @@ -148,7 +148,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index,
->  		return NULL;
->  
->  	ccwa = (struct cc_workarea *)&data_buf[0];
-> -	ccwa->drc_index = drc_index;
-> +	ccwa->drc_index = cpu_to_be32(drc_index);
+> Close, but not quite. The 'if (!of_aliases)' test should not be moved.
+> Only the search for of_find_node_by_path().
 
-This will break partition migration.
+Eek, completely missed this. Sorry.
 
-The drc index valued passed into dlpar_configure_connector() from the migration
-path, pseries_devicetree_update(), is already in BE format.
+> I've fixed it up and applied.
+ 
+Thanks!
 
--Nathan
-
->  	ccwa->zero = 0;
->  
->  	do {
-> @@ -363,10 +363,10 @@ static int dlpar_online_cpu(struct device_node *dn)
->  	int rc = 0;
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv_be;
->  
-> -	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-> -	if (!intserv)
-> +	intserv_be = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-> +	if (!intserv_be)
->  		return -EINVAL;
->  
->  	nthreads = len / sizeof(u32);
-> @@ -374,7 +374,7 @@ static int dlpar_online_cpu(struct device_node *dn)
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != be32_to_cpu(intserv_be[i]))
->  				continue;
->  			BUG_ON(get_cpu_current_state(cpu)
->  					!= CPU_STATE_OFFLINE);
-> @@ -388,7 +388,7 @@ static int dlpar_online_cpu(struct device_node *dn)
->  		}
->  		if (cpu == num_possible_cpus())
->  			printk(KERN_WARNING "Could not find cpu to online "
-> -			       "with physical id 0x%x\n", intserv[i]);
-> +			       "with physical id 0x%x\n", be32_to_cpu(intserv_be[i]));
->  	}
->  	cpu_maps_update_done();
->  
-> @@ -442,18 +442,17 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  	int rc = 0;
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv_be;
->  
-> -	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-> -	if (!intserv)
-> +	intserv_be = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-> +	if (!intserv_be)
->  		return -EINVAL;
->  
->  	nthreads = len / sizeof(u32);
-> -
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != be32_to_cpu(intserv_be[i]))
->  				continue;
->  
->  			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
-> @@ -469,20 +468,19 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  				break;
->  
->  			}
-> -
->  			/*
->  			 * The cpu is in CPU_STATE_INACTIVE.
->  			 * Upgrade it's state to CPU_STATE_OFFLINE.
->  			 */
->  			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
-> -			BUG_ON(plpar_hcall_norets(H_PROD, intserv[i])
-> +			BUG_ON(plpar_hcall_norets(H_PROD, be32_to_cpu(intserv_be[i]))
->  								!= H_SUCCESS);
->  			__cpu_die(cpu);
->  			break;
->  		}
->  		if (cpu == num_possible_cpus())
->  			printk(KERN_WARNING "Could not find cpu to offline "
-> -			       "with physical id 0x%x\n", intserv[i]);
-> +			       "with physical id 0x%x\n", be32_to_cpu(intserv_be[i]));
->  	}
->  	cpu_maps_update_done();
->  
-> @@ -494,26 +492,28 @@ out:
->  static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  {
->  	struct device_node *dn;
-> -	const u32 *drc_index;
-> +	const __be32 *drc_index_be;
-> +	u32 drc_index;
->  	int rc;
->  
->  	dn = of_find_node_by_path(buf);
->  	if (!dn)
->  		return -EINVAL;
->  
-> -	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-> -	if (!drc_index) {
-> +	drc_index_be = of_get_property(dn, "ibm,my-drc-index", NULL);
-> +	if (!drc_index_be) {
->  		of_node_put(dn);
->  		return -EINVAL;
->  	}
->  
-> +	drc_index = be32_to_cpup(drc_index_be);
->  	rc = dlpar_offline_cpu(dn);
->  	if (rc) {
->  		of_node_put(dn);
->  		return -EINVAL;
->  	}
->  
-> -	rc = dlpar_release_drc(*drc_index);
-> +	rc = dlpar_release_drc(drc_index);
->  	if (rc) {
->  		of_node_put(dn);
->  		return rc;
-> @@ -521,7 +521,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  
->  	rc = dlpar_detach_node(dn);
->  	if (rc) {
-> -		dlpar_acquire_drc(*drc_index);
-> +		dlpar_acquire_drc(drc_index);
->  		return rc;
->  	}
->  
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 20d6297..fc9c2cd 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -90,7 +90,7 @@ static void rtas_stop_self(void)
->  {
->  	static struct rtas_args args = {
->  		.nargs = 0,
-> -		.nret = 1,
-> +		.nret = cpu_to_be32(1),
->  		.rets = &args.args[0],
->  	};
->  
-> @@ -247,10 +247,10 @@ static int pseries_add_processor(struct device_node *np)
->  	unsigned int cpu;
->  	cpumask_var_t candidate_mask, tmp;
->  	int err = -ENOSPC, len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv_be;
->  
-> -	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
-> -	if (!intserv)
-> +	intserv_be = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
-> +	if (!intserv_be)
->  		return 0;
->  
->  	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
-> @@ -293,7 +293,7 @@ static int pseries_add_processor(struct device_node *np)
->  	for_each_cpu(cpu, tmp) {
->  		BUG_ON(cpu_present(cpu));
->  		set_cpu_present(cpu, true);
-> -		set_hard_smp_processor_id(cpu, *intserv++);
-> +		set_hard_smp_processor_id(cpu, be32_to_cpu(*intserv_be++));
->  	}
->  	err = 0;
->  out_unlock:
-> @@ -312,10 +312,10 @@ static void pseries_remove_processor(struct device_node *np)
->  {
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv_be;
->  
-> -	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
-> -	if (!intserv)
-> +	intserv_be = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
-> +	if (!intserv_be)
->  		return;
->  
->  	nthreads = len / sizeof(u32);
-> @@ -323,7 +323,7 @@ static void pseries_remove_processor(struct device_node *np)
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != be32_to_cpu(intserv_be[i]))
->  				continue;
->  			BUG_ON(cpu_online(cpu));
->  			set_cpu_present(cpu, false);
-> @@ -332,7 +332,7 @@ static void pseries_remove_processor(struct device_node *np)
->  		}
->  		if (cpu >= nr_cpu_ids)
->  			printk(KERN_WARNING "Could not find cpu to remove "
-> -			       "with physical id 0x%x\n", intserv[i]);
-> +			       "with physical id 0x%x\n", be32_to_cpu(intserv_be[i]));
->  	}
->  	cpu_maps_update_done();
->  }
-> 
+---
+Best Regards, Laurentiu
