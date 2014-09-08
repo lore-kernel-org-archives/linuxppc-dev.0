@@ -2,18 +2,18 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2783A1A0171
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 23:05:10 +1000 (EST)
-Message-ID: <540DA980.1050708@suse.de>
-Date: Mon, 08 Sep 2014 15:05:04 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 67FCD1A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 23:09:52 +1000 (EST)
+Message-ID: <540DAA9E.1070102@suse.de>
+Date: Mon, 08 Sep 2014 15:09:50 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 1/2 v5] powerpc/kvm: support to handle sw breakpoint
+Subject: Re: [PATCH 2/2 v5] powerpc/kvm: common sw breakpoint instr across ppc
 References: <1410107494-25556-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1410107494-25556-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1410107494-25556-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <1410107494-25556-3-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1410107494-25556-3-git-send-email-maddy@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,176 +28,85 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On 07.09.14 18:31, Madhavan Srinivasan wrote:
-> This patch adds kernel side support for software breakpoint.
-> Design is that, by using an illegal instruction, we trap to hypervisor
-> via Emulation Assistance interrupt, where we check for the illegal instruction
-> and accordingly we return to Host or Guest. Patch also adds support for
-> software breakpoint in PR KVM.
+> This patch extends the use of illegal instruction as software
+> breakpoint instruction across the ppc platform. Patch extends
+> booke program interrupt code to support software breakpoint.
 > 
 > Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/kvm_ppc.h |  6 ++++++
->  arch/powerpc/kvm/book3s.c          |  3 ++-
->  arch/powerpc/kvm/book3s_hv.c       | 41 ++++++++++++++++++++++++++++++++++----
->  arch/powerpc/kvm/book3s_pr.c       |  3 +++
->  arch/powerpc/kvm/emulate.c         | 18 +++++++++++++++++
->  5 files changed, 66 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index fb86a22..dd83c9a 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -38,6 +38,12 @@
->  #include <asm/paca.h>
->  #endif
->  
-> +/*
-> + * KVMPPC_INST_SW_BREAKPOINT is debug Instruction
-> + * for supporting software breakpoint.
-> + */
-> +#define KVMPPC_INST_SW_BREAKPOINT	0x00dddd00
-> +
->  enum emulation_result {
->  	EMULATE_DONE,         /* no further processing */
->  	EMULATE_DO_MMIO,      /* kvm_run filled with MMIO request */
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index dd03f6b..00e9c9f 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
->  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->  					struct kvm_guest_debug *dbg)
->  {
-> -	return -EINVAL;
-> +	vcpu->guest_debug = dbg->control;
-> +	return 0;
->  }
->  
->  void kvmppc_decrementer_func(unsigned long data)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 27cced9..3a2414c 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -725,6 +725,30 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
->  	return kvmppc_hcall_impl_hv_realmode(cmd);
->  }
->  
-> +static int kvmppc_emulate_debug_inst(struct kvm_run *run,
-> +					struct kvm_vcpu *vcpu)
-> +{
-> +	u32 last_inst;
-> +
-> +	if(kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
-> +					EMULATE_DONE) {
-> +		/*
-> +		 * Fetch failed, so return to guest and
-> +		 * try executing it again.
-> +		 */
-> +		return RESUME_GUEST;
-
-Please end the if() here. In the kernel we usually treat abort
-situations as separate.
-
-> +	} else {
-> +		if (last_inst == KVMPPC_INST_SW_BREAKPOINT) {
-> +			run->exit_reason = KVM_EXIT_DEBUG;
-> +			run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +			return RESUME_HOST;
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			return RESUME_GUEST;
-> +		}
-> +	}
-> +}
-> +
->  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  				 struct task_struct *tsk)
->  {
-> @@ -807,12 +831,18 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> Patch is only compile tested. Will really help if
+> someone can try it out and let me know comments.
+> 
+>  arch/powerpc/kvm/booke.c | 18 ++++++++++++++++--
+>  1 file changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index b4c89fa..1b84853 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -870,6 +870,10 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  	case BOOKE_INTERRUPT_HV_PRIV:
+>  		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
 >  		break;
->  	/*
->  	 * This occurs if the guest executes an illegal instruction.
-> -	 * We just generate a program interrupt to the guest, since
-> -	 * we don't emulate any guest instructions at this stage.
-> +	 * If the guest debug is disabled, generate a program interrupt
-> +	 * to the guest. If guest debug is enabled, we need to check
-> +	 * whether the instruction is a software breakpoint instruction.
-> +	 * Accordingly return to Guest or Host.
->  	 */
->  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
-> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> -		r = RESUME_GUEST;
-> +		if(vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP) {
-> +			r = kvmppc_emulate_debug_inst(run, vcpu);
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			r = RESUME_GUEST;
-> +		}
->  		break;
->  	/*
->  	 * This occurs if the guest (kernel or userspace), does something that
-> @@ -922,6 +952,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
->  	long int i;
->  
->  	switch (id) {
-> +	case KVM_REG_PPC_DEBUG_INST:
-> +		*val = get_reg_val(id, KVMPPC_INST_SW_BREAKPOINT);
+> +	case BOOKE_INTERRUPT_PROGRAM:
+> +		/*SW breakpoints arrive as illegal instructions on HV */
+
+Is it my email client or is there a space missing again? ;)
+
+Also, please only fetch the last instruction if debugging is active.
+
+> +		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
 > +		break;
->  	case KVM_REG_PPC_HIOR:
->  		*val = get_reg_val(id, 0);
+>  	default:
 >  		break;
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index faffb27..6d73708 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1319,6 +1319,9 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
->  	int r = 0;
->  
->  	switch (id) {
-> +	case KVM_REG_PPC_DEBUG_INST:
-> +		*val = get_reg_val(id, KVMPPC_INST_SW_BREAKPOINT);
-> +		break;
->  	case KVM_REG_PPC_HIOR:
->  		*val = get_reg_val(id, to_book3s(vcpu)->hior);
->  		break;
-> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> index e96b50d..30f326b 100644
-> --- a/arch/powerpc/kvm/emulate.c
-> +++ b/arch/powerpc/kvm/emulate.c
-> @@ -274,6 +274,24 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
->  		}
+>  	}
+> @@ -947,7 +951,17 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
 >  		break;
 >  
-> +	case 0:
-> +		/*
-> +		 * Instruction with primary opcode 0. Based on PowerISA
-> +		 * these are illegal instructions.
-> +		 */
-> +		if(inst == KVMPPC_INST_SW_BREAKPOINT) {
+>  	case BOOKE_INTERRUPT_PROGRAM:
+> -		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
+> +		if ((vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) &&
+> +			(last_inst == KVMPPC_INST_SW_BREAKPOINT)) {
 
-Here you're missing a space between if and (. Are you sure that you ran
-checkpatch.pl?
+I think this is changing the logic from "if the guest is in user mode or
+we're in HV, deflect" to "if the guest is in user mode or an HV guest
+and the instruction is a breakpoint, treat it as debug. Otherwise
+deflect". So you're essentially breaking PR KVM here from what I can tell.
 
+Why don't you just split the whole thing out to the beginning of
+BOOKE_INTERRUPT_PROGRAM and check for
 
+  a) debug is enabled
+  b) instruction is sw breakpoint
+
+instead?
+
+> +			/*
+> +			 * We are here because of an SW breakpoint instr,
+> +			 * so lets return to host to handle.
+> +			 */
+> +			r = kvmppc_handle_debug(run, vcpu);
 > +			run->exit_reason = KVM_EXIT_DEBUG;
-> +			run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +			emulated = EMULATE_EXIT_USER;
-> +			advance = 0;
-> +			printk(KERN_INFO "pr_emulate: debug instr \n");
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			emulated = EMULATE_DONE;
-> +			advance = 0;
+> +			kvmppc_account_exit(vcpu, DEBUG_EXITS);
+> +			break;
+> +		} else {	
+>  			/*
+>  			 * Program traps generated by user-level software must
+>  			 * be handled by the guest kernel.
+> @@ -1505,7 +1519,7 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
+>  		val = get_reg_val(reg->id, vcpu->arch.tsr);
+>  		break;
+>  	case KVM_REG_PPC_DEBUG_INST:
+> -		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV_DEBUG);
 
-Just set emulated = EMULATE_FAIL here, the same as default:.
+Please also remove the definition of EHPRIV_DEBUG.
 
 
 Alex
 
-> +		}
-> +		break;	
-> +
->  	default:
->  		emulated = EMULATE_FAIL;
->  	}
+> +		val = get_reg_val(reg->id, KVMPPC_INST_SW_BREAKPOINT);
+>  		break;
+>  	case KVM_REG_PPC_VRSAVE:
+>  		val = get_reg_val(reg->id, vcpu->arch.vrsave);
 > 
