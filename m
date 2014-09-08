@@ -1,23 +1,39 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cmetcalf@tilera.com>
+Received: from USMAMAIL.TILERA.COM (usmamail.tilera.com [12.216.194.151])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 80DB71A08D9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 05:25:47 +1000 (EST)
-From: Aaron Tomlin <atomlin@redhat.com>
-To: peterz@infradead.org
-Subject: [PATCH 3/3] sched: BUG when stack end location is over written
-Date: Mon,  8 Sep 2014 20:23:17 +0100
-Message-Id: <1410204197-31204-4-git-send-email-atomlin@redhat.com>
-In-Reply-To: <1410204197-31204-1-git-send-email-atomlin@redhat.com>
-References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
- <1410204197-31204-1-git-send-email-atomlin@redhat.com>
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
- minchan@kernel.org, bmr@redhat.com, x86@kernel.org, oleg@redhat.com,
- rostedt@goodmis.org, linux-kernel@vger.kernel.org, hannes@cmpxchg.org,
- mingo@redhat.com, aneesh.kumar@linux.vnet.ibm.com, akpm@google.com,
- atomlin@redhat.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, pzijlstr@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05B331A0121
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 06:51:33 +1000 (EST)
+Message-ID: <540E1587.3060108@tilera.com>
+Date: Mon, 8 Sep 2014 16:45:59 -0400
+From: Chris Metcalf <cmetcalf@tilera.com>
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>, Peter Hurley
+ <peter@hurleysoftware.com>
+Subject: Re: bit fields && data tearing
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>		
+ <20140904090952.GW17454@tucnak.redhat.com>		
+ <540859EC.5000407@hurleysoftware.com>		
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>		
+ <5408C0AB.6050801@hurleysoftware.com>		
+ <20140905001751.GL5001@linux.vnet.ibm.com>		
+ <1409883098.5078.14.camel@jarvis.lan>	
+ <5409243C.4080704@hurleysoftware.com>		
+ <20140905040645.GO5001@linux.vnet.ibm.com>		
+ <1410066442.12512.13.camel@jarvis.lan>		
+ <20140907162146.GK5001@linux.vnet.ibm.com>	
+ <1410116687.2027.19.camel@jarvis.lan> <540CC305.8010407@hurleysoftware.com>
+ <1410155407.2027.29.camel@jarvis.lan>
+In-Reply-To: <1410155407.2027.29.camel@jarvis.lan>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Jakub Jelinek <jakub@redhat.com>, One
+ Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Mikael Pettersson <mikpelinux@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +43,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently in the event of a stack overrun a call to schedule()
-does not check for this type of corruption. This corruption is
-often silent and can go unnoticed. However once the corrupted
-region is examined at a later stage, the outcome is undefined
-and often results in a sporadic page fault which cannot be
-handled.
+On 9/8/2014 1:50 AM, James Bottomley wrote:
+> Actual alignment is pretty irrelevant.  That's why all architectures
+> which require alignment also have to implement misaligned traps ... this
+> is a fundamental requirement of the networking code, for instance.
 
-This patch checks for a stack overrun and takes appropriate
-action since the damage is already done, there is no point
-in continuing.
+Can you clarify what you think the requirement is?  The tile architecture
+doesn't support misaligned load/store in general, but we do support it for
+userspace (using a nifty JIT approach with a direct-map hash table kept
+in userspace), and also for get_user/put_user.  But that's it, and,
+the networking subsystem works fine for us.
 
-Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
----
- kernel/sched/core.c |  4 ++++
- lib/Kconfig.debug   | 12 ++++++++++++
- 2 files changed, 16 insertions(+)
+Occasionally we report bugs for driver code that doesn't use the
+get_unaligned_xxx() macros and friends, and our fixes are generally taken
+upstream.
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index ec1a286..182b2d1 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2660,6 +2660,10 @@ static noinline void __schedule_bug(struct task_struct *prev)
-  */
- static inline void schedule_debug(struct task_struct *prev)
- {
-+#ifdef CONFIG_SCHED_STACK_END_CHECK
-+	if (unlikely(task_stack_end_corrupted(prev)))
-+		BUG();
-+#endif
- 	/*
- 	 * Test if we are atomic. Since do_exit() needs to call into
- 	 * schedule() atomically, we ignore that path. Otherwise whine
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index a285900..2a8280a 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -824,6 +824,18 @@ config SCHEDSTATS
- 	  application, you can say N to avoid the very slight overhead
- 	  this adds.
- 
-+config SCHED_STACK_END_CHECK
-+	bool "Detect stack corruption on calls to schedule()"
-+	depends on DEBUG_KERNEL
-+	default y
-+	help
-+	  This option checks for a stack overrun on calls to schedule().
-+	  If the stack end location is found to be over written always panic as
-+	  the content of the corrupted region can no longer be trusted.
-+	  This is to ensure no erroneous behaviour occurs which could result in
-+	  data corruption or a sporadic crash at a later stage once the region
-+	  is examined. The runtime overhead introduced is minimal.
-+
- config TIMER_STATS
- 	bool "Collect kernel timers statistics"
- 	depends on DEBUG_KERNEL && PROC_FS
 -- 
-1.9.3
+Chris Metcalf, Tilera Corp.
+http://www.tilera.com
