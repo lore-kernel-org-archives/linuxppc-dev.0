@@ -1,40 +1,23 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+Return-Path: <atomlin@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408E61A0999
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 05:18:09 +1000 (EST)
-Message-ID: <540DFFB2.9040101@zytor.com>
-Date: Mon, 08 Sep 2014 12:12:50 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: bit fields && data tearing
-References: <5408C0AB.6050801@hurleysoftware.com>		
- <20140905001751.GL5001@linux.vnet.ibm.com>		
- <1409883098.5078.14.camel@jarvis.lan>	
- <5409243C.4080704@hurleysoftware.com>		
- <20140905040645.GO5001@linux.vnet.ibm.com>		
- <1410066442.12512.13.camel@jarvis.lan>		
- <20140907162146.GK5001@linux.vnet.ibm.com>		
- <1410116687.2027.19.camel@jarvis.lan>		
- <20140907230019.GO5001@linux.vnet.ibm.com>		
- <6092b453-e0c9-4f6d-922b-48bce988f774@email.android.com>		
- <20140907233655.GR5001@linux.vnet.ibm.com>		
- <154b540a-df47-4f3e-bdda-ab5d2e72723a@email.android.com>	
- <1410155802.2027.36.camel@jarvis.lan> <540DF17C.9080509@zytor.com>
- <1410203369.2027.56.camel@jarvis.lan>
-In-Reply-To: <1410203369.2027.56.camel@jarvis.lan>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Hurley <peter@hurleysoftware.com>,
- Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-arch@vger.kernel.org, paulmck@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
- Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F3D01A07E3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 05:25:46 +1000 (EST)
+From: Aaron Tomlin <atomlin@redhat.com>
+To: peterz@infradead.org
+Subject: [PATCH 2/3] sched: Add helper for task stack page overrun checking
+Date: Mon,  8 Sep 2014 20:23:16 +0100
+Message-Id: <1410204197-31204-3-git-send-email-atomlin@redhat.com>
+In-Reply-To: <1410204197-31204-1-git-send-email-atomlin@redhat.com>
+References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+ <1410204197-31204-1-git-send-email-atomlin@redhat.com>
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
+ minchan@kernel.org, bmr@redhat.com, x86@kernel.org, oleg@redhat.com,
+ rostedt@goodmis.org, linux-kernel@vger.kernel.org, hannes@cmpxchg.org,
+ mingo@redhat.com, aneesh.kumar@linux.vnet.ibm.com, akpm@google.com,
+ atomlin@redhat.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,21 +27,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/2014 12:09 PM, James Bottomley wrote:
-> 
-> Um, I think you need to re-read the thread; that's not what I said at
-> all. It's even written lower down: "PA can't do atomic bit sets (no
-> atomic RMW except the ldcw operation) it can do atomic writes to
-> fundamental sizes (byte, short, int, long) provided gcc emits the
-> correct primitive".  The original question was whether atomicity
-> required native bus width access, which we currently assume, so there's
-> no extant problem.
-> 
+This facility is used in a few places so let's introduce
+a helper function to improve code readability.
 
-The issue at hand was whether or not partially overlapped (but natually
-aligned) writes can pass each other.  *This* is the aggressive
-relaxation to which I am referring.
+Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
+---
+ arch/powerpc/mm/fault.c    | 4 +---
+ arch/x86/mm/fault.c        | 4 +---
+ include/linux/sched.h      | 2 ++
+ kernel/trace/trace_stack.c | 2 +-
+ 4 files changed, 5 insertions(+), 7 deletions(-)
 
-I would guess that that is a very unusual constraint.
-
-	-hpa
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 35d0760c..99b2f27 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -507,7 +507,6 @@ bail:
+ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ {
+ 	const struct exception_table_entry *entry;
+-	unsigned long *stackend;
+ 
+ 	/* Are we prepared to handle this fault?  */
+ 	if ((entry = search_exception_tables(regs->nip)) != NULL) {
+@@ -536,8 +535,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+ 		regs->nip);
+ 
+-	stackend = end_of_stack(current);
+-	if (*stackend != STACK_END_MAGIC)
++	if (task_stack_end_corrupted(current))
+ 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+ 
+ 	die("Kernel access of bad area", regs, sig);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index bc23a70..6240bc7 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -648,7 +648,6 @@ no_context(struct pt_regs *regs, unsigned long error_code,
+ 	   unsigned long address, int signal, int si_code)
+ {
+ 	struct task_struct *tsk = current;
+-	unsigned long *stackend;
+ 	unsigned long flags;
+ 	int sig;
+ 
+@@ -708,8 +707,7 @@ no_context(struct pt_regs *regs, unsigned long error_code,
+ 
+ 	show_fault_oops(regs, error_code, address);
+ 
+-	stackend = end_of_stack(tsk);
+-	if (*stackend != STACK_END_MAGIC)
++	if (task_stack_end_corrupted(tsk))
+ 		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
+ 
+ 	tsk->thread.cr2		= address;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 4dee9d7..6e07cb9 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2615,6 +2615,8 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+ }
+ 
+ #endif
++#define task_stack_end_corrupted(task) \
++		(*(end_of_stack(task)) != STACK_END_MAGIC)
+ 
+ static inline int object_is_on_stack(void *obj)
+ {
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 1636e41..16eddb3 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -170,7 +170,7 @@ check_stack(unsigned long ip, unsigned long *stack)
+ 			i++;
+ 	}
+ 
+-	if (*end_of_stack(current) != STACK_END_MAGIC) {
++	if (task_stack_end_corrupted(current)) {
+ 		print_max_stack();
+ 		BUG();
+ 	}
+-- 
+1.9.3
