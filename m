@@ -1,26 +1,25 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C86B41A001F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 04:15:52 +1000 (EST)
-Date: Tue, 9 Sep 2014 19:15:16 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20140909181516.GI2601@sirena.org.uk>
-References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
- <20140909112750.GS2601@sirena.org.uk>
- <20140909180309.GA6784@Asurada>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8lKUOMLFs7xrer6k"
-In-Reply-To: <20140909180309.GA6784@Asurada>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73B851A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 04:38:21 +1000 (EST)
+Received: by mail-pa0-f47.google.com with SMTP id ey11so7613179pad.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Sep 2014 11:38:19 -0700 (PDT)
+Date: Tue, 9 Sep 2014 11:38:05 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
 Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
-Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, tiwai@suse.de, linux-kernel@vger.kernel.org,
- timur@tabi.org, perex@perex.cz, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Message-ID: <20140909183804.GA6944@Asurada>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz, broonie@kernel.org,
+ mpa@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
+> @@ -1321,7 +1333,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  	}
+>  
+> -	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+> +	if (ssi_private->soc->imx)
+> +		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
+> +			"ipg", iomem, &fsl_ssi_regconfig);
+> +	else
+> +		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
 
---8lKUOMLFs7xrer6k
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+As Markus mentioned, the key point here is to be compatible with those
+non-clock-name platforms.
 
-On Tue, Sep 09, 2014 at 11:03:10AM -0700, Nicolin Chen wrote:
-> On Tue, Sep 09, 2014 at 12:27:50PM +0100, Mark Brown wrote:
-> > On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
-> > > -	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-> > > +	ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
+I think it would be safer to keep the current code while adding an extra
+clk_disable_unprepare() at the end of probe() as a common routine. And
+meantime, make sure to have the call for imx only because it seems that
+the other platforms do not depend on the clock. //a bit guessing here :)
 
-> > Why is this change being made?  It wasn't mentioned in the commit log
-> > and doesn't seem relevant to moving where the enable and disable are
-> > done which is what the patch is supposed to be doing...
+Then we can get a patch like:
+open() {
++	clk_prepare_enable();
+	....
+}
 
-> I think Shengjiu is trying to keep the clock disabled while SSI's idle.
-> The current driver enables ipg clock anyway even if there's no stream
-> running.
+close() {
+	....
++	clk_disable_unprepare()
+}
 
-> Apparently, these should be put into the comment log.
+probe() {
+	clk_get();
+	clk_prepare_enable();
+	....
+	if (xxx)
+-		goto err_xx;
++		return ret;
+	....
++	clk_disable_unprepare();
+	return 0;
+-err_xx:
+-	clk_disable_unprepare()
+}
 
-I got that bit.  However as well as changing where the enable and
-disable take place this is also changing from requesting a clock with a
-NULL to requesting one called "ipg".
+remove() {
+	....
+-	clk_disable_unprepare()
+}
 
---8lKUOMLFs7xrer6k
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+As long as you make the subject clear as 'Don't enable core/ipg clock
+when SSI's idle', I'm sure you can make them within a single patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+And an alternative way for open() and close() is to put those code into
+pm_runtime_resume/suspend() instead (since we might have some internal
+code need to be added by using pm_runtime as well), which would make
+the further code neater IMO.
 
-iQEcBAEBAgAGBQJUD0OsAAoJECTWi3JdVIfQbgwH/20teJPh6rqrGN8svTU/E6r4
-mZir/1YdrwwoMgjT0h7TmC5D+v5CoV4fo12fpPuXPzLjVSoGpmCxnoQH/89X92g/
-86BxCIZSh1haKI9YxNlysOgO9wO6OHvz6N1C+4hnWhWMSZ03SP97XEtzLcuYXwEu
-PZMq376RA1UAJUi72UFhdUGwSXK+dUlskBOo1OG3Lqh3XXjYdJT889Kt22o6dXJD
-/uFnSf4TDnVKmWRfFkmcTtapjNuhp4KFbxXB4ttQgymvHvUusscltgxdn2pDb/gz
-n75lx26dlHsRAnkp7uJd5FmPQDSZxRaE/bBx+bODPEIX9pKvwUsyEKWN5mtMpss=
-=4PvN
------END PGP SIGNATURE-----
-
---8lKUOMLFs7xrer6k--
+Thank you
+Nicolin
