@@ -1,24 +1,26 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0139.outbound.protection.outlook.com [207.46.100.139])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA2EF1A0814
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 19:45:03 +1000 (EST)
-From: Aaron Tomlin <atomlin@redhat.com>
-To: peterz@infradead.org
-Subject: [PATCH v2 2/3] sched: Add helper for task stack page overrun checking
-Date: Tue,  9 Sep 2014 10:42:28 +0100
-Message-Id: <1410255749-2956-3-git-send-email-atomlin@redhat.com>
-In-Reply-To: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
-References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
- <1410255749-2956-1-git-send-email-atomlin@redhat.com>
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
- akpm@linux-foundation.org, minchan@kernel.org, bmr@redhat.com,
- prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
- linux-kernel@vger.kernel.org, hannes@cmpxchg.org, mingo@redhat.com,
- aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, atomlin@redhat.com,
- jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
- pzijlstr@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id E44711A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 20:11:44 +1000 (EST)
+From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
+To: "shengjiu.wang@freescale.com" <shengjiu.wang@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>, "nicoleotsuka@gmail.com"
+ <nicoleotsuka@gmail.com>, "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>, "perex@perex.cz" <perex@perex.cz>,
+ "tiwai@suse.de" <tiwai@suse.de>
+Subject: RE: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+Date: Tue, 9 Sep 2014 09:55:41 +0000
+Message-ID: <a2df014417624f0790c01b0ccd21853f@BY2PR0301MB0613.namprd03.prod.outlook.com>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+In-Reply-To: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This facility is used in a few places so let's introduce
-a helper function to improve code readability.
+Hi,
 
-Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
----
- arch/powerpc/mm/fault.c    | 4 +---
- arch/x86/mm/fault.c        | 4 +---
- include/linux/sched.h      | 2 ++
- kernel/trace/trace_stack.c | 2 +-
- 4 files changed, 5 insertions(+), 7 deletions(-)
+> Subject: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+>=20
+> Move the ipg clock enable and disable operation to startup and shutdown,
+> that is only enable ipg clock when ssi is working. we don't need to enabl=
+e
+> ipg clock in probe.
+> Another register accessing need the ipg clock, so use
+> devm_regmap_init_mmio_clk
+> instead of devm_regmap_init_mmio.
+>
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 35d0760c..99b2f27 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -507,7 +507,6 @@ bail:
- void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
- {
- 	const struct exception_table_entry *entry;
--	unsigned long *stackend;
- 
- 	/* Are we prepared to handle this fault?  */
- 	if ((entry = search_exception_tables(regs->nip)) != NULL) {
-@@ -536,8 +535,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
- 	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
- 		regs->nip);
- 
--	stackend = end_of_stack(current);
--	if (*stackend != STACK_END_MAGIC)
-+	if (task_stack_end_corrupted(current))
- 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
- 
- 	die("Kernel access of bad area", regs, sig);
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index bc23a70..6240bc7 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -648,7 +648,6 @@ no_context(struct pt_regs *regs, unsigned long error_code,
- 	   unsigned long address, int signal, int si_code)
- {
- 	struct task_struct *tsk = current;
--	unsigned long *stackend;
- 	unsigned long flags;
- 	int sig;
- 
-@@ -708,8 +707,7 @@ no_context(struct pt_regs *regs, unsigned long error_code,
- 
- 	show_fault_oops(regs, error_code, address);
- 
--	stackend = end_of_stack(tsk);
--	if (*stackend != STACK_END_MAGIC)
-+	if (task_stack_end_corrupted(tsk))
- 		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
- 
- 	tsk->thread.cr2		= address;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4dee9d7..6e07cb9 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2615,6 +2615,8 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
- }
- 
- #endif
-+#define task_stack_end_corrupted(task) \
-+		(*(end_of_stack(task)) != STACK_END_MAGIC)
- 
- static inline int object_is_on_stack(void *obj)
- {
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index 1636e41..16eddb3 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -170,7 +170,7 @@ check_stack(unsigned long ip, unsigned long *stack)
- 			i++;
- 	}
- 
--	if (*end_of_stack(current) != STACK_END_MAGIC) {
-+	if (task_stack_end_corrupted(current)) {
- 		print_max_stack();
- 		BUG();
- 	}
--- 
-1.9.3
+You should split this into two separate patches, which will be more
+Easy to be reviewed.
+=20
+Thanks,
+
+BRs
+Xiubo
