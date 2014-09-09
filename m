@@ -1,24 +1,35 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F38F51A0044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 06:03:56 +1000 (EST)
-Message-ID: <540F5D29.7040309@tabi.org>
-Date: Tue, 09 Sep 2014 15:03:53 -0500
-From: Timur Tabi <timur@tabi.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3219D1A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 06:09:26 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 9 Sep 2014 16:09:24 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id DF2916E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 16:09:08 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s89K9KCG4981080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 20:09:20 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s89K9KgR007794
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 16:09:20 -0400
+Date: Tue, 9 Sep 2014 13:09:13 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [RFC PATCH] powerpc/numa: add ability to disable and debug topology
+ updates
+Message-ID: <20140909200913.GG22906@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
-References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
- <20140909183804.GA6944@Asurada> <540F5706.1050303@tabi.org>
- <20140909195928.GA5224@Asurada>
-In-Reply-To: <20140909195928.GA5224@Asurada>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
- tiwai@suse.de, linux-kernel@vger.kernel.org, broonie@kernel.org,
- lgirdwood@gmail.com, perex@perex.cz, Li.Xiubo@freescale.com,
- mpa@pengutronix.de, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +39,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2014 02:59 PM, Nicolin Chen wrote:
-> +	/*
-> +	 * Initially mark the clock to NULL for all platforms so that later
-> +	 * clk_prepare_enable() will ignore and return 0 for non-clock cases.
-> +	 */
-> +	ssi_private->clk = NULL;
+We have hit a few customer issues with the topology update code (VPHN
+and PRRN). It would be nice to be able to debug the notifications coming
+from the hypervisor in both cases to the LPAR, as well as to disable
+reacting to the notifications, to narrow down the source of the
+problems. Add a basic level of such functionality, similar to the numa=
+command-line parameter.
 
-According to Mark, NULL is a valid clock, so this should be instead:
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+---
+This is pretty rough, but has been useful in the field already. I'm not
+sure if more information would be useful than this basic amount.
 
-	ssi_private->clk = PTR_ERR(-EINVAL);
-
-although that doesn't sit well with me.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 5ae8608ca9f5..6e3b9e3a2ab4 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -3370,6 +3370,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			e.g. base its process migration decisions on it.
+ 			Default is on.
+ 
++	topology_updates= [KNL, PPC, NUMA]
++			Format: {off | debug}
++			Specify if the kernel should ignore (off) or
++			emit more information (debug) when the
++			hypervisor sends NUMA topology updates to an
++			LPAR.
++
+ 	tp720=		[HW,PS2]
+ 
+ 	tpm_suspend_pcr=[HW,TPM]
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d7737a542fd7..72c5ad313cbe 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1160,6 +1160,28 @@ static int __init early_numa(char *p)
+ }
+ early_param("numa", early_numa);
+ 
++static int topology_updates_enabled = 1;
++static int topology_updates_debug = 0;
++
++static int __init early_topology_updates(char *p)
++{
++	if (!p)
++		return 0;
++
++	if (strstr(p, "off")) {
++		printk(KERN_INFO "Disabling topology updates\n");
++		topology_updates_enabled = 0;
++	}
++
++	if (strstr(p, "debug")) {
++		printk(KERN_INFO "Enabling topology updates debug\n");
++		topology_updates_debug = 1;
++	}
++
++	return 0;
++}
++early_param("topology_updates", early_topology_updates);
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+  * Find the node associated with a hot added memory section for
+@@ -1546,6 +1568,9 @@ int arch_update_cpu_topology(void)
+ 	struct device *dev;
+ 	int weight, new_nid, i = 0;
+ 
++	if (!topology_updates_enabled)
++		return 0;
++
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+ 	if (!weight)
+ 		return 0;
+@@ -1610,6 +1635,25 @@ int arch_update_cpu_topology(void)
+ 	 *
+ 	 * And for the similar reason, we will skip all the following updating.
+ 	 */
++
++	if (topology_updates_debug) {
++		char *buf = kmalloc_array(NR_CPUS*5, sizeof(char), GFP_KERNEL);
++		cpumask_scnprintf(buf, NR_CPUS*5, &updated_cpus);
++		printk(KERN_DEBUG "Topology update for the following CPUs:\n");
++		printk(KERN_DEBUG " %s\n", buf);
++		printk(KERN_DEBUG "cpumask_weight(&updated_cpus)) = %u\n",
++						cpumask_weight(&updated_cpus));
++
++		if (cpumask_weight(&updated_cpus)) {
++			for (ud = &updates[0]; ud; ud = ud->next) {
++				printk(KERN_DEBUG "cpu %d moving from node %d "
++						  "to %d\n", ud->cpu,
++						  ud->old_nid, ud->new_nid);
++			}
++		}
++		kfree(buf);
++	}
++
+ 	if (!cpumask_weight(&updated_cpus))
+ 		goto out;
+ 
+@@ -1807,8 +1851,10 @@ static const struct file_operations topology_ops = {
+ 
+ static int topology_update_init(void)
+ {
+-	start_topology_update();
+-	proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops);
++	if (topology_updates_enabled) {
++		start_topology_update();
++		proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops);
++	}
+ 
+ 	return 0;
+ }
