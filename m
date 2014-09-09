@@ -2,18 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8111E1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 07:12:26 +1000 (EST)
-Message-ID: <540F6D34.3060205@suse.de>
-Date: Tue, 09 Sep 2014 23:12:20 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C2671A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 07:15:51 +1000 (EST)
+Message-ID: <540F6E04.1030601@suse.de>
+Date: Tue, 09 Sep 2014 23:15:48 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 1/2 v6] powerpc/kvm: support to handle sw breakpoint
+Subject: Re: [PATCH 0/2 v6] powerpc/kvm: support to handle sw breakpoint
 References: <1410282456-11287-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1410282456-11287-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1410282456-11287-2-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1410282456-11287-1-git-send-email-maddy@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,130 +27,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On 09.09.14 19:07, Madhavan Srinivasan wrote:
-> This patch adds kernel side support for software breakpoint.
-> Design is that, by using an illegal instruction, we trap to hypervisor
-> via Emulation Assistance interrupt, where we check for the illegal instruction
-> and accordingly we return to Host or Guest. Patch also adds support for
-> software breakpoint in PR KVM.
+> This patchset adds ppc64 server side support for software breakpoint
+> and extends the use of illegal instruction as software
+> breakpoint across ppc platform.
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h |  6 ++++++
->  arch/powerpc/kvm/book3s.c          |  3 ++-
->  arch/powerpc/kvm/book3s_hv.c       | 41 ++++++++++++++++++++++++++++++++++----
->  arch/powerpc/kvm/book3s_pr.c       |  3 +++
->  arch/powerpc/kvm/emulate.c         | 15 ++++++++++++++
->  5 files changed, 63 insertions(+), 5 deletions(-)
+> Patch 1, adds kernel side support for software breakpoint.
+> Design is that, by using an illegal instruction, we trap to
+> hypervisor via Emulation Assistance interrupt, where we check
+> for the illegal instruction and accordingly we return to Host
+> or Guest. Patch also adds support for software breakpoint
+> in PR KVM.
 > 
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index fb86a22..dd83c9a 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -38,6 +38,12 @@
->  #include <asm/paca.h>
->  #endif
->  
-> +/*
-> + * KVMPPC_INST_SW_BREAKPOINT is debug Instruction
-> + * for supporting software breakpoint.
-> + */
-> +#define KVMPPC_INST_SW_BREAKPOINT	0x00dddd00
-> +
->  enum emulation_result {
->  	EMULATE_DONE,         /* no further processing */
->  	EMULATE_DO_MMIO,      /* kvm_run filled with MMIO request */
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index dd03f6b..00e9c9f 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -778,7 +778,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
->  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->  					struct kvm_guest_debug *dbg)
->  {
-> -	return -EINVAL;
-> +	vcpu->guest_debug = dbg->control;
-> +	return 0;
->  }
->  
->  void kvmppc_decrementer_func(unsigned long data)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 27cced9..000fbec 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -725,6 +725,30 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
->  	return kvmppc_hcall_impl_hv_realmode(cmd);
->  }
->  
-> +static int kvmppc_emulate_debug_inst(struct kvm_run *run,
-> +					struct kvm_vcpu *vcpu)
-> +{
-> +	u32 last_inst;
-> +
-> +	if (kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
-> +					EMULATE_DONE) {
-> +		/*
-> +		 * Fetch failed, so return to guest and
-> +		 * try executing it again.
-> +		 */
-> +		return RESUME_GUEST;
-> +	}
-> +
-> +	if (last_inst == KVMPPC_INST_SW_BREAKPOINT) {
-> +		run->exit_reason = KVM_EXIT_DEBUG;
-> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +		return RESUME_HOST;
-> +	} else {
-> +		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +		return RESUME_GUEST;
-> +	}
-> +}
-> +
->  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  				 struct task_struct *tsk)
->  {
-> @@ -807,12 +831,18 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  		break;
->  	/*
->  	 * This occurs if the guest executes an illegal instruction.
-> -	 * We just generate a program interrupt to the guest, since
-> -	 * we don't emulate any guest instructions at this stage.
-> +	 * If the guest debug is disabled, generate a program interrupt
-> +	 * to the guest. If guest debug is enabled, we need to check
-> +	 * whether the instruction is a software breakpoint instruction.
-> +	 * Accordingly return to Guest or Host.
->  	 */
->  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
-> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> -		r = RESUME_GUEST;
-> +		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP) {
-> +			r = kvmppc_emulate_debug_inst(run, vcpu);
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			r = RESUME_GUEST;
-> +		}
->  		break;
->  	/*
->  	 * This occurs if the guest (kernel or userspace), does something that
-> @@ -922,6 +952,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
->  	long int i;
->  
->  	switch (id) {
-> +	case KVM_REG_PPC_DEBUG_INST:
-> +		*val = get_reg_val(id, KVMPPC_INST_SW_BREAKPOINT);
-> +		break;
->  	case KVM_REG_PPC_HIOR:
->  		*val = get_reg_val(id, 0);
->  		break;
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index faffb27..6d73708 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
+> Patch 2,extends the use of illegal instruction as software
+> breakpoint instruction across the ppc platform. Patch extends
+> booke program interrupt code to support software breakpoint.
 
-Very nice patch set :). The only thing we're missing now is that Book3S
-PR does not allow sw breakpoints to arrive in user mode (MSR.PR == 1),
-because there we're never going to arrive at kvmppc_emulate_instruction().
-
-But this can come as a follow-up patch.
+Thanks, applied to kvm-ppc-queue.
 
 
 Alex
