@@ -2,13 +2,13 @@ Return-Path: <atomlin@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D48361A003B
+ by lists.ozlabs.org (Postfix) with ESMTPS id D85DF1A0803
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 19:45:03 +1000 (EST)
 From: Aaron Tomlin <atomlin@redhat.com>
 To: peterz@infradead.org
-Subject: [PATCH v2 3/3] sched: BUG when stack end location is over written
-Date: Tue,  9 Sep 2014 10:42:29 +0100
-Message-Id: <1410255749-2956-4-git-send-email-atomlin@redhat.com>
+Subject: [PATCH v2 1/3] init/main.c: Give init_task a canary
+Date: Tue,  9 Sep 2014 10:42:27 +0100
+Message-Id: <1410255749-2956-2-git-send-email-atomlin@redhat.com>
 In-Reply-To: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
 References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
  <1410255749-2956-1-git-send-email-atomlin@redhat.com>
@@ -28,60 +28,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently in the event of a stack overrun a call to schedule()
-does not check for this type of corruption. This corruption is
-often silent and can go unnoticed. However once the corrupted
-region is examined at a later stage, the outcome is undefined
-and often results in a sporadic page fault which cannot be
-handled.
+Tasks get their end of stack set to STACK_END_MAGIC with the
+aim to catch stack overruns. Currently this feature does not
+apply to init_task. This patch removes this restriction.
 
-This patch checks for a stack overrun and takes appropriate
-action since the damage is already done, there is no point
-in continuing.
+Note that a similar patch was posted by Prarit Bhargava [1]
+some time ago but was never merged.
+
+[1]: http://marc.info/?l=linux-kernel&m=127144305403241&w=2
 
 Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
 ---
- kernel/sched/core.c |  4 ++++
- lib/Kconfig.debug   | 12 ++++++++++++
- 2 files changed, 16 insertions(+)
+ arch/powerpc/mm/fault.c    |  3 +--
+ arch/x86/mm/fault.c        |  3 +--
+ include/linux/sched.h      |  2 ++
+ init/main.c                |  1 +
+ kernel/fork.c              | 12 +++++++++---
+ kernel/trace/trace_stack.c |  4 +---
+ 6 files changed, 15 insertions(+), 10 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index ec1a286..182b2d1 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2660,6 +2660,10 @@ static noinline void __schedule_bug(struct task_struct *prev)
-  */
- static inline void schedule_debug(struct task_struct *prev)
- {
-+#ifdef CONFIG_SCHED_STACK_END_CHECK
-+	if (unlikely(task_stack_end_corrupted(prev)))
-+		BUG();
-+#endif
- 	/*
- 	 * Test if we are atomic. Since do_exit() needs to call into
- 	 * schedule() atomically, we ignore that path. Otherwise whine
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index a285900..2a8280a 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -824,6 +824,18 @@ config SCHEDSTATS
- 	  application, you can say N to avoid the very slight overhead
- 	  this adds.
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 51ab9e7..35d0760c 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -30,7 +30,6 @@
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ #include <linux/perf_event.h>
+-#include <linux/magic.h>
+ #include <linux/ratelimit.h>
+ #include <linux/context_tracking.h>
  
-+config SCHED_STACK_END_CHECK
-+	bool "Detect stack corruption on calls to schedule()"
-+	depends on DEBUG_KERNEL
-+	default y
-+	help
-+	  This option checks for a stack overrun on calls to schedule().
-+	  If the stack end location is found to be over written always panic as
-+	  the content of the corrupted region can no longer be trusted.
-+	  This is to ensure no erroneous behaviour occurs which could result in
-+	  data corruption or a sporadic crash at a later stage once the region
-+	  is examined. The runtime overhead introduced is minimal.
+@@ -538,7 +537,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 		regs->nip);
+ 
+ 	stackend = end_of_stack(current);
+-	if (current != &init_task && *stackend != STACK_END_MAGIC)
++	if (*stackend != STACK_END_MAGIC)
+ 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+ 
+ 	die("Kernel access of bad area", regs, sig);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index a241946..bc23a70 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -3,7 +3,6 @@
+  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
+  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
+  */
+-#include <linux/magic.h>		/* STACK_END_MAGIC		*/
+ #include <linux/sched.h>		/* test_thread_flag(), ...	*/
+ #include <linux/kdebug.h>		/* oops_begin/end, ...		*/
+ #include <linux/module.h>		/* search_exception_table	*/
+@@ -710,7 +709,7 @@ no_context(struct pt_regs *regs, unsigned long error_code,
+ 	show_fault_oops(regs, error_code, address);
+ 
+ 	stackend = end_of_stack(tsk);
+-	if (tsk != &init_task && *stackend != STACK_END_MAGIC)
++	if (*stackend != STACK_END_MAGIC)
+ 		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
+ 
+ 	tsk->thread.cr2		= address;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5c2c885..4dee9d7 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -57,6 +57,7 @@ struct sched_param {
+ #include <linux/llist.h>
+ #include <linux/uidgid.h>
+ #include <linux/gfp.h>
++#include <linux/magic.h>
+ 
+ #include <asm/processor.h>
+ 
+@@ -2636,6 +2637,7 @@ static inline unsigned long stack_not_used(struct task_struct *p)
+ 	return (unsigned long)n - (unsigned long)end_of_stack(p);
+ }
+ #endif
++extern void task_stack_end_magic(struct task_struct *tsk);
+ 
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+diff --git a/init/main.c b/init/main.c
+index bb1aed9..bcdabf3a 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -508,6 +508,7 @@ asmlinkage __visible void __init start_kernel(void)
+ 	 * lockdep hash:
+ 	 */
+ 	lockdep_init();
++	task_stack_end_magic(&init_task);
+ 	smp_setup_processor_id();
+ 	debug_objects_early_init();
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 0cf9cdb..67cb1e3 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -294,11 +294,18 @@ int __weak arch_dup_task_struct(struct task_struct *dst,
+ 	return 0;
+ }
+ 
++void task_stack_end_magic(struct task_struct *tsk)
++{
++	unsigned long *stackend;
 +
- config TIMER_STATS
- 	bool "Collect kernel timers statistics"
- 	depends on DEBUG_KERNEL && PROC_FS
++	stackend = end_of_stack(tsk);
++	*stackend = STACK_END_MAGIC;	/* for overflow detection */
++}
++
+ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ {
+ 	struct task_struct *tsk;
+ 	struct thread_info *ti;
+-	unsigned long *stackend;
+ 	int node = tsk_fork_get_node(orig);
+ 	int err;
+ 
+@@ -328,8 +335,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ 	setup_thread_stack(tsk, orig);
+ 	clear_user_return_notifier(tsk);
+ 	clear_tsk_need_resched(tsk);
+-	stackend = end_of_stack(tsk);
+-	*stackend = STACK_END_MAGIC;	/* for overflow detection */
++	task_stack_end_magic(tsk);
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	tsk->stack_canary = get_random_int();
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 8a4e5cb..1636e41 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -13,7 +13,6 @@
+ #include <linux/sysctl.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+-#include <linux/magic.h>
+ 
+ #include <asm/setup.h>
+ 
+@@ -171,8 +170,7 @@ check_stack(unsigned long ip, unsigned long *stack)
+ 			i++;
+ 	}
+ 
+-	if ((current != &init_task &&
+-		*(end_of_stack(current)) != STACK_END_MAGIC)) {
++	if (*end_of_stack(current) != STACK_END_MAGIC) {
+ 		print_max_stack();
+ 		BUG();
+ 	}
 -- 
 1.9.3
