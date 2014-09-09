@@ -1,38 +1,29 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B158A1A0053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 17:41:22 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 9 Sep 2014 17:41:22 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9797A2BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 17:41:18 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s897NO6L59441390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 17:23:24 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s897fH9j004864
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 17:41:18 +1000
-Message-ID: <540EAF14.8050201@linux.vnet.ibm.com>
-Date: Tue, 09 Sep 2014 13:11:08 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86F371A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 18:19:45 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: bit fields && data tearing
+Date: Tue, 09 Sep 2014 10:11:39 +0200
+Message-ID: <2998968.X0xyWHN7fU@wuerfel>
+In-Reply-To: <540E6582.9020403@zytor.com>
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>
+ <1410216228.2027.88.camel@jarvis.lan> <540E6582.9020403@zytor.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: Re: [PATCH 2/2 v5] powerpc/kvm: common sw breakpoint instr across ppc
-References: <1410107494-25556-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1410107494-25556-3-git-send-email-maddy@linux.vnet.ibm.com>
- <540DAA9E.1070102@suse.de>
-In-Reply-To: <540DAA9E.1070102@suse.de>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
+ Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Peter Hurley <peter@hurleysoftware.com>,
+ Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, linux-kernel@vger.kernel.org,
+ James Bottomley <James.Bottomley@hansenpartnership.com>,
+ Paul Mackerras <paulus@samba.org>, linux-arch@vger.kernel.org,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,104 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 08 September 2014 06:39 PM, Alexander Graf wrote:
-> 
-> 
-> On 07.09.14 18:31, Madhavan Srinivasan wrote:
->> This patch extends the use of illegal instruction as software
->> breakpoint instruction across the ppc platform. Patch extends
->> booke program interrupt code to support software breakpoint.
->>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> ---
->>
->> Patch is only compile tested. Will really help if
->> someone can try it out and let me know comments.
->>
->>  arch/powerpc/kvm/booke.c | 18 ++++++++++++++++--
->>  1 file changed, 16 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->> index b4c89fa..1b84853 100644
->> --- a/arch/powerpc/kvm/booke.c
->> +++ b/arch/powerpc/kvm/booke.c
->> @@ -870,6 +870,10 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>  	case BOOKE_INTERRUPT_HV_PRIV:
->>  		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
->>  		break;
->> +	case BOOKE_INTERRUPT_PROGRAM:
->> +		/*SW breakpoints arrive as illegal instructions on HV */
-> 
-> Is it my email client or is there a space missing again? ;)
-> 
+On Monday 08 September 2014 19:27:14 H. Peter Anvin wrote:
+> On 09/08/2014 03:43 PM, James Bottomley wrote:
+> > 
+> > This was years ago (possibly decades).  We had to implement in-kernel
+> > unaligned traps for the networking layer because it could access short
+> > and int fields that weren't of the correct alignment when processing
+> > packets.  It that's all corrected now, we wouldn't really notice (except
+> > a bit of a speed up since an unaligned trap effectively places the
+> > broken out instructions into the bit stream).
 
-Facepalm. Will fix it.
+I believe the current line of thinking is to consider it a bug in
+the device driver. Those bugs may still exist in some rare legacy
+drivers, but anything you'd see in practice should not require unaligned
+access any more.
 
-> Also, please only fetch the last instruction if debugging is active.
-> 
+> Well, ARM doesn't trap, it just silently gives garbage on unaligned
+> memory references.
 
-Will change it.
+ARMv6/v7 (anything that really matters these days) has efficient unaligned
+accesses that work. Older CPUs are normally set to trap on unaligned
+access, originally for the reason James mentions above, but there are
+some even older machines that rely on abusing unaligned accesses to do
+byte swapping.
 
->> +		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
->> +		break;
->>  	default:
->>  		break;
->>  	}
->> @@ -947,7 +951,17 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>  		break;
->>  
->>  	case BOOKE_INTERRUPT_PROGRAM:
->> -		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
->> +		if ((vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) &&
->> +			(last_inst == KVMPPC_INST_SW_BREAKPOINT)) {
-> 
-> I think this is changing the logic from "if the guest is in user mode or
-> we're in HV, deflect" to "if the guest is in user mode or an HV guest
-> and the instruction is a breakpoint, treat it as debug. Otherwise
-> deflect". So you're essentially breaking PR KVM here from what I can tell.
-> 
-> Why don't you just split the whole thing out to the beginning of
-> BOOKE_INTERRUPT_PROGRAM and check for
-> 
->   a) debug is enabled
->   b) instruction is sw breakpoint
-> 
-This is what we pretty much do for the server side. Will changes it.
-
-> instead?
-> 
->> +			/*
->> +			 * We are here because of an SW breakpoint instr,
->> +			 * so lets return to host to handle.
->> +			 */
->> +			r = kvmppc_handle_debug(run, vcpu);
->> +			run->exit_reason = KVM_EXIT_DEBUG;
->> +			kvmppc_account_exit(vcpu, DEBUG_EXITS);
->> +			break;
->> +		} else {	
->>  			/*
->>  			 * Program traps generated by user-level software must
->>  			 * be handled by the guest kernel.
->> @@ -1505,7 +1519,7 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
->>  		val = get_reg_val(reg->id, vcpu->arch.tsr);
->>  		break;
->>  	case KVM_REG_PPC_DEBUG_INST:
->> -		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV_DEBUG);
-> 
-> Please also remove the definition of EHPRIV_DEBUG.
-> 
-OK. Will do.
-
-
-Thanks for review
-Maddy
-
-> 
-> Alex
-> 
->> +		val = get_reg_val(reg->id, KVMPPC_INST_SW_BREAKPOINT);
->>  		break;
->>  	case KVM_REG_PPC_VRSAVE:
->>  		val = get_reg_val(reg->id, vcpu->arch.vrsave);
->>
-> 
+	Arnd
