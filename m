@@ -1,23 +1,31 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27A321A004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 21:00:28 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v2] QE: move qe code from arch/powerpc to drivers/soc
-Date: Tue, 9 Sep 2014 09:27:38 +0000
-Message-ID: <88ded7369c0546aabeececed5f1a4c06@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1409807186-45816-1-git-send-email-B45475@freescale.com>
- <1409870809.24184.163.camel@snotra.buserror.net>
-In-Reply-To: <1409870809.24184.163.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F5691A004D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 21:14:35 +1000 (EST)
+Message-ID: <540EE10F.5050802@hurleysoftware.com>
+Date: Tue, 09 Sep 2014 07:14:23 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+To: "H. Peter Anvin" <hpa@zytor.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: bit fields && data tearing
+References: <20140712181328.GA8738@redhat.com>	<54079B70.4050200@hurleysoftware.com>	<1409785893.30640.118.camel@pasglop>	<063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>	<1409824374.4246.62.camel@pasglop>	<5408E458.3@zytor.com>	<54090AF4.7060406@hurleysoftware.com>	<54091B30.7080100@zytor.com>	<5409D76D.2070203@hurleysoftware.com>	<5409D9C0.7030403@zytor.com>
+ <20140908185240.21f52ca0@alan.etchedpixels.co.uk>
+ <540DEE6C.2060904@zytor.com> <540E3207.7090007@hurleysoftware.com>
+In-Reply-To: <540E3207.7090007@hurleysoftware.com>
+Content-Type: text/plain; charset=utf-8
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Xiaobo Xie <X.Xie@freescale.com>
+ David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
+ linux-alpha@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCAyMDE0LTA5LTA1IGF0IDA2OjQ3IEFNLCBXb29kIFNjb3R0IHdyb3RlOg0KDQoNCg0K
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBRRTogbW92ZSBxZSBjb2RlIGZyb20gYXJjaC9wb3dl
-cnBjIHRvIGRyaXZlcnMvc29jDQo+IA0KPiBPbiBUaHUsIDIwMTQtMDktMDQgYXQgMTM6MDYgKzA4
-MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gTFMxIGlzIGFybSBjcHUgYW5kIGl0IGhhcyBxZSBp
-cCBibG9jay4NCj4gPiBtb3ZlIHFlIGNvZGUgZnJvbSBwbGF0Zm9ybSBkaXJlY3RvcnkgdG8gcHVi
-bGljIGRpcmVjdG9yeS4NCj4gPg0KPiA+IFFFIGlzIGFuIElQIGJsb2NrIGludGVncmF0ZXMgc2V2
-ZXJhbCBjb211bmljYXRpb25zIHBlcmlwaGVyYWwNCj4gPiBjb250cm9sbGVycy4gSXQgY2FuIGlt
-cGxlbWVudCBhIHZhcmlldHkgb2YgYXBwbGljYXRpb25zLCBzdWNoIGFzIHVhcnQsDQo+ID4gdXNi
-IGFuZCB0ZG0gYW5kIHNvIG9uLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFuZyA8
-QjQ1NDc1QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4g
-CS0gbXYgY29kZSB0byBkcml2ZXJzL3NvYw0KPiANCj4gV2hvIHdpbGwgYmUgdGhlIG1haW50YWlu
-ZXIgb2YgdGhpcyBjb2RlIG9uY2UgaXQgbGl2ZXMgaW4gZHJpdmVycy9zb2MsDQo+IGVzcGVjaWFs
-bHkgb25jZSBpdCBpcyBubyBsb25nZXIgdXNlZCBvbmx5IGJ5IFBQQz8NCg0KSSBoYXZlIG5vIGlk
-ZWEgYWJvdXQgdGhhdCwgY2FuIHlvdSBleHBsYWluIHdoeSB5b3Ugd2FudCB0byBrbm93IHdobyB3
-aWxsIGJlIHRoZSBtYWludGFpbmVyLg0KDQo+IA0KPiA+ICA0NCBmaWxlcyBjaGFuZ2VkLCAxMTMg
-aW5zZXJ0aW9ucygrKSwgMTEzIGRlbGV0aW9ucygtKSAgZGVsZXRlIG1vZGUNCj4gPiAxMDA2NDQg
-YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIvS2NvbmZpZw0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2
-NDQgZHJpdmVycy9zb2MvcWUvS2NvbmZpZyAgcmVuYW1lDQo+ID4ge2FyY2gvcG93ZXJwYy9zeXNk
-ZXYvcWVfbGliID0+IGRyaXZlcnMvc29jL3FlfS9NYWtlZmlsZSAoMTAwJSkgIHJlbmFtZQ0KPiA+
-IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYiA9PiBkcml2ZXJzL3NvYy9xZX0vZ3Bpby5jICg5
-OSUpICByZW5hbWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9z
-b2MvcWV9L3FlLmMgKDk5JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xp
-YiA9PiBkcml2ZXJzL3NvYy9xZX0vcWVfaWMuYyAoOTklKSAgcmVuYW1lDQo+ID4ge2FyY2gvcG93
-ZXJwYy9zeXNkZXYvcWVfbGliID0+IGRyaXZlcnMvc29jL3FlfS9xZV9pYy5oICg5OCUpICByZW5h
-bWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvcWV9L3Fl
-X2lvLmMgKDk5JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYiA9PiBk
-cml2ZXJzL3NvYy9xZX0vdWNjLmMgKDk4JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lz
-ZGV2L3FlX2xpYiA9PiBkcml2ZXJzL3NvYy9xZX0vdWNjX2Zhc3QuYyAoOTglKQ0KPiA+IHJlbmFt
-ZSB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvcWV9L3VjY19zbG93
-LmMgKDk4JSkNCj4gPiByZW5hbWUge2FyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliID0+IGRyaXZl
-cnMvc29jL3FlfS91c2IuYyAoOTYlKQ0KPiANCj4gZHJpdmVycy9zb2MvZnNsLXFlDQo+IA0KPiA+
-IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9NYWtlZmlsZSBiL2RyaXZlcnMvc29jL01ha2VmaWxl
-IGluZGV4DQo+ID4gMGY3YzQ0Ny4uNWRhMWE0ODIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9z
-b2MvTWFrZWZpbGUNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9NYWtlZmlsZQ0KPiA+IEBAIC0zLDMg
-KzMsNSBAQA0KPiA+ICAjDQo+ID4NCj4gPiAgb2JqLSQoQ09ORklHX0FSQ0hfUUNPTSkJCSs9IHFj
-b20vDQo+ID4gKw0KPiA+ICtvYmotJChDT05GSUdfUVVJQ0NfRU5HSU5FKSAgICAgKz0gcWUvDQo+
-IA0KPiBQbGVhc2Uga2VlcCB0aGUgZmlsZSBjb25zaXN0ZW50IHJlZ2FyZGluZyB0YWJzIHZlcnN1
-cyBzcGFjZXMuDQo+IA0KPiBQbHVzLCB3aHkgZG8geW91IG5lZWQgYSBuZXdsaW5lIGJldHdlZW4g
-dGhlbT8NCg0KSSB3aWxsIG1vZGlmeSBpdCBpbiB2Mw0KDQo+IA0KPiA+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL3NvYy9xZS9LY29uZmlnIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZpZyBuZXcgZmlsZQ0K
-PiA+IG1vZGUgMTAwNjQ0IGluZGV4IDAwMDAwMDAuLjhiMDNjYTINCj4gPiAtLS0gL2Rldi9udWxs
-DQo+ID4gKysrIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZpZw0KPiA+IEBAIC0wLDAgKzEsNDUgQEAN
-Cj4gPiArIw0KPiA+ICsjIFFFIENvbW11bmljYXRpb24gb3B0aW9ucw0KPiA+ICsjDQo+ID4gK2Nv
-bmZpZyBRVUlDQ19FTkdJTkUNCj4gPiArCWJvb2wgIkZyZWVzY2FsZSBRVUlDQyBFbmdpbmUgKFFF
-KSBTdXBwb3J0Ig0KPiA+ICsJZGVwZW5kcyBvbiBGU0xfU09DICYmIFBQQzMyDQo+ID4gKwlzZWxl
-Y3QgUFBDX0xJQl9SSEVBUA0KPiA+ICsJc2VsZWN0IENSQzMyDQo+ID4gKwloZWxwDQo+ID4gKwkg
-IFRoZSBRVUlDQyBFbmdpbmUgKFFFKSBpcyBhIG5ldyBnZW5lcmF0aW9uIG9mIGNvbW11bmljYXRp
-b25zDQo+ID4gKwkgIGNvcHJvY2Vzc29ycyBvbiBGcmVlc2NhbGUgZW1iZWRkZWQgQ1BVcyAoYWtp
-biB0byBDUE0gaW4gb2xkZXINCj4gY2hpcHMpLg0KPiA+ICsJICBTZWxlY3RpbmcgdGhpcyBvcHRp
-b24gbWVhbnMgdGhhdCB5b3Ugd2lzaCB0byBidWlsZCBhIGtlcm5lbA0KPiA+ICsJICBmb3IgYSBt
-YWNoaW5lIHdpdGggYSBRRSBjb3Byb2Nlc3Nvci4NCj4gPiArDQo+ID4gK2NvbmZpZyBRRV9HUElP
-DQo+ID4gKwlib29sICJRRSBHUElPIHN1cHBvcnQiDQo+ID4gKwlkZXBlbmRzIG9uIFFVSUNDX0VO
-R0lORQ0KPiA+ICsJc2VsZWN0IEFSQ0hfUkVRVUlSRV9HUElPTElCDQo+ID4gKwloZWxwDQo+ID4g
-KwkgIFNheSBZIGhlcmUgaWYgeW91J3JlIGdvaW5nIHRvIHVzZSBoYXJkd2FyZSB0aGF0IGNvbm5l
-Y3RzIHRvIHRoZQ0KPiA+ICsJICBRRSBHUElPcy4NCj4gPiArDQo+ID4gK2NvbmZpZyBVQ0NfU0xP
-Vw0KPiA+ICsJYm9vbA0KPiA+ICsJZGVmYXVsdCB5IGlmIFNFUklBTF9RRQ0KPiA+ICsJaGVscA0K
-PiA+ICsJICBUaGlzIG9wdGlvbiBwcm92aWRlcyBxZV9saWIgc3VwcG9ydCB0byBVQ0Mgc2xvdw0K
-PiA+ICsJICBwcm90b2NvbHM6IFVBUlQsIEJJU1lOQywgUU1DDQo+ID4gKw0KPiA+ICtjb25maWcg
-VUNDX0ZBU1QNCj4gPiArCWJvb2wNCj4gPiArCWRlZmF1bHQgeSBpZiBVQ0NfR0VUSA0KPiA+ICsJ
-aGVscA0KPiA+ICsJICBUaGlzIG9wdGlvbiBwcm92aWRlcyBxZV9saWIgc3VwcG9ydCB0byBVQ0Mg
-ZmFzdA0KPiA+ICsJICBwcm90b2NvbHM6IEhETEMsIEV0aGVybmV0LCBBVE0sIHRyYW5zcGFyZW50
-DQo+ID4gKw0KPiA+ICtjb25maWcgVUNDDQo+ID4gKwlib29sDQo+ID4gKwlkZWZhdWx0IHkgaWYg
-VUNDX0ZBU1QgfHwgVUNDX1NMT1cNCj4gPiArDQo+ID4gK2NvbmZpZyBRRV9VU0INCj4gPiArCWJv
-b2wNCj4gPiArCWRlZmF1bHQgeSBpZiBVU0JfRlNMX1FFDQo+ID4gKwloZWxwDQo+ID4gKwkgIFFF
-IFVTQiBDb250cm9sbGVyIHN1cHBvcnQNCj4gDQo+IEZpcnN0IGNvdWxkIHdlIGdpdmUgdGhlc2Ug
-bmFtZXMgYmV0dGVyIG5hbWVzcGFjaW5nPw0KDQpBZGQgRlNMIGFzIHByZWZpeD8NCg0KPiANCj4g
-LVNjb3R0DQo+IA0KUmVnYXJkcywNClpoYW8gUWlhbmcNCg==
+On 09/08/2014 06:47 PM, Peter Hurley wrote:
+> On 09/08/2014 01:59 PM, H. Peter Anvin wrote:
+>> On 09/08/2014 10:52 AM, One Thousand Gnomes wrote:
+>>> On Fri, 05 Sep 2014 08:41:52 -0700
+>>> "H. Peter Anvin" <hpa@zytor.com> wrote:
+>>>
+>>>> On 09/05/2014 08:31 AM, Peter Hurley wrote:
+>>>>>
+>>>>> Which is a bit ironic because I remember when Digital had a team
+>>>>> working on emulating native x86 apps on Alpha/NT.
+>>>>>
+>>>>
+>>>> Right, because the x86 architecture was obsolete and would never scale...
+>>>
+>>> Talking about "not scaling" can anyone explain how a "you need to use
+>>> set_bit() and friends" bug report scaled into a hundred message plus
+>>> discussion about ambiguous properties of processors (and nobody has
+>>> audited all the embedded platforms we support yet, or the weirder ARMs)
+>>> and a propsal to remove Alpha support.
+>>>
+>>> Wouldn't it be *much* simpler to do what I suggested in the first place
+>>> and use the existing intended for purpose, deliberately put there,
+>>> functions for atomic bitops, because they are fast on sane processors and
+>>> they work on everything else.
+
+And much simpler how?
+
+By turning a 4- line patch into a 400- line patch?
+
+And what about multi-value assignments for which set_bit() doesn't work, like
+the byte-sized ->ctrl_status field? Is the expectation to submit a patch
+which fixes that for a system from 1995, but already works for everything else?
+
+The extra complexity comes with real cost; reduced reliability for every other
+arch .
+
+>>> I think the whole "removing Alpha EV5" support is basically bonkers. Just
+>>> use set_bit in the tty layer. Alpha will continue to work as well as it
+>>> always has done and you won't design out support for any future processor
+>>> that turns out not to do byte aligned stores.
+
+I thought the overriding design principle of this kernel was to support
+what exists now, not design-in support for the future which may have
+different requirements than expected anyway.
+
+
+>> Is *that* what we are talking about?  I was added to this conversation
+>> in the middle where it had already generalized, so I had no idea.
+> 
+> No, this is just what brought this craziness to my attention.
+> 
+> For example, byte- and short-sized circular buffers could not possibly
+> be safe either, when the head nears the tail.
+> 
+> Who has audited global storage and ensured that _every_ byte-sized write
+> doesn't happen to be adjacent to some other storage that may not happen
+> to be protected by the same (or any) lock?
+
+And add to this list all bitfields because gcc ignores the type
+specifier and only allocates the minimum number of bytes to contain the
+declared fields.
+
+Regards,
+Peter Hurley
