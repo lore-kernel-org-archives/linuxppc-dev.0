@@ -1,15 +1,25 @@
-Return-Path: <simon.kagstrom@netinsight.net>
-Received: from ernst.netinsight.se (ernst.netinsight.se [194.16.221.21])
- by lists.ozlabs.org (Postfix) with SMTP id 7BCE11A002C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 00:40:18 +1000 (EST)
-Date: Tue, 9 Sep 2014 16:40:06 +0200
-From: Simon =?UTF-8?B?S8OlZ3N0csO2bQ==?= <simon.kagstrom@netinsight.net>
-To: linuxppc-dev@lists.ozlabs.org, grant.likely@linaro.org,
- geert@linux-m68k.org, scottwood@freescale.com
-Subject: [PATCH v2] PowerPC: boot: Parse chosen/cmdline-timeout parameter
-Message-ID: <20140909164006.0e3593f0@marrow.netinsight.se>
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C28141A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 01:22:13 +1000 (EST)
+Date: Tue, 9 Sep 2014 16:21:14 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Timur Tabi <timur@tabi.org>
+Message-ID: <20140909152114.GA2601@sirena.org.uk>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+ <540EFDFF.7050804@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="7A15IXT36zwL5BDA"
+In-Reply-To: <540EFDFF.7050804@tabi.org>
+Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
+ tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
+ perex@perex.cz, nicoleotsuka@gmail.com, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,103 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A 5 second timeout during boot might be too long, so make it
-configurable. Run the loop at least once to let the user stop the boot
-by holding a key pressed.
 
-The property is added to the chosen node, e.g.,
+--7A15IXT36zwL5BDA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-	chosen {
-		bootargs = "console=ttyUL0 root=/dev/ram0";
-		linux,stdout-path = "/plb@0/serial@46000000";
-		linux,cmdline-timeout = <100>;
-	} ;
+On Tue, Sep 09, 2014 at 08:17:51AM -0500, Timur Tabi wrote:
+> Shengjiu Wang wrote:
+> >+	if (ssi_private->soc->imx)
+> >+		clk_prepare_enable(ssi_private->clk);
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
----
+> How about this instead?
 
-ChangeLog:
+> if (ssi_private->clk)
+> 	clk_prepare_enable(ssi_private->clk);
 
-v2:
-- Rename the property linux,cmdline-timeout (Grant Likely)
-- Run the loop at least once to allow (Grant Likely)
+Should be a !IS_ERR() - NULL is a valid clock.
 
- arch/powerpc/boot/main.c   |   11 ++++++++++-
- arch/powerpc/boot/ops.h    |    2 +-
- arch/powerpc/boot/serial.c |    6 +++---
- 3 files changed, 14 insertions(+), 5 deletions(-)
+--7A15IXT36zwL5BDA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index a28f021..c1931bb 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -144,13 +144,22 @@ static char cmdline[COMMAND_LINE_SIZE]
- 
- static void prep_cmdline(void *chosen)
- {
-+	unsigned int getline_timeout = 5000;
-+	int v;
-+	int n;
-+
-+	/* Wait-for-input time */
-+	n = getprop(chosen, "linux,cmdline-timeout", &v, sizeof(v));
-+	if (n == sizeof(v))
-+		getline_timeout = v;
-+
- 	if (cmdline[0] == '\0')
- 		getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
- 
- 	printf("\n\rLinux/PowerPC load: %s", cmdline);
- 	/* If possible, edit the command line */
- 	if (console_ops.edit_cmdline)
--		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE);
-+		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE, getline_timeout);
- 	printf("\n\r");
- 
- 	/* Put the command line back into the devtree for the kernel */
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index b3218ce..c42ea70 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -58,7 +58,7 @@ extern struct dt_ops dt_ops;
- struct console_ops {
- 	int	(*open)(void);
- 	void	(*write)(const char *buf, int len);
--	void	(*edit_cmdline)(char *buf, int len);
-+	void	(*edit_cmdline)(char *buf, int len, unsigned int getline_timeout);
- 	void	(*close)(void);
- 	void	*data;
- };
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index f2156f0..167ee94 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -33,7 +33,7 @@ static void serial_write(const char *buf, int len)
- 		scdp->putc(*buf++);
- }
- 
--static void serial_edit_cmdline(char *buf, int len)
-+static void serial_edit_cmdline(char *buf, int len, unsigned int timeout)
- {
- 	int timer = 0, count;
- 	char ch, *cp;
-@@ -44,7 +44,7 @@ static void serial_edit_cmdline(char *buf, int len)
- 	cp = &buf[count];
- 	count++;
- 
--	while (timer++ < 5*1000) {
-+	do {
- 		if (scdp->tstc()) {
- 			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
- 				/* Test for backspace/delete */
-@@ -70,7 +70,7 @@ static void serial_edit_cmdline(char *buf, int len)
- 			break;  /* Exit 'timer' loop */
- 		}
- 		udelay(1000);  /* 1 msec */
--	}
-+	} while (timer++ < timeout);
- 	*cp = 0;
- }
- 
--- 
-1.7.9.6
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUDxrmAAoJECTWi3JdVIfQGHQH/iYPDA+Ux7C65f6IB8MrMaBa
+UekhxwGPUW+ixAdaweL1z04umskGJbbJHRbxkaFFyWi15lzF6KLN+ntWwxg7qpld
+H7yUxhQixGWicLewybTFxSj5TMId8yNmbuC3pXDEn9eRz46F1MHwznSCcuEP4ueA
+dsxAUoapO6cieCphAljMKOL/UEVOUmLbYCnpaVF/sOJThVY+IWWzZHVhjPqCiXx3
+2VXxbK5VG9bZRWirapyOV2O54iFWKtcVGxsZKmDieMj32YzVMtDPn15qsAk+2trZ
+ESajHSwBg45/QLRejykIoJC5Y+p3AeaWRmB48Hwb6SV+Z9udzliEf2+EblvVEbA=
+=xkyN
+-----END PGP SIGNATURE-----
+
+--7A15IXT36zwL5BDA--
