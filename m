@@ -2,15 +2,16 @@ Return-Path: <atomlin@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D68C71A06EB
+ by lists.ozlabs.org (Postfix) with ESMTPS id D48361A003B
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 19:45:03 +1000 (EST)
 From: Aaron Tomlin <atomlin@redhat.com>
 To: peterz@infradead.org
-Subject: [PATCH v2 0/3] sched: Always check the integrity of the canary
-Date: Tue,  9 Sep 2014 10:42:26 +0100
-Message-Id: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
-In-Reply-To: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+Subject: [PATCH v2 3/3] sched: BUG when stack end location is over written
+Date: Tue,  9 Sep 2014 10:42:29 +0100
+Message-Id: <1410255749-2956-4-git-send-email-atomlin@redhat.com>
+In-Reply-To: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
 References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+ <1410255749-2956-1-git-send-email-atomlin@redhat.com>
 Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
  akpm@linux-foundation.org, minchan@kernel.org, bmr@redhat.com,
  prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
@@ -27,9 +28,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Resending with "v2" added to each subject line:
-
-
 Currently in the event of a stack overrun a call to schedule()
 does not check for this type of corruption. This corruption is
 often silent and can go unnoticed. However once the corrupted
@@ -37,33 +35,53 @@ region is examined at a later stage, the outcome is undefined
 and often results in a sporadic page fault which cannot be
 handled.
 
-The first patch adds a canary to init_task's end of stack.
-While the second patch provides a helper to determine the
-integrity of the canary. The third checks for a stack
-overrun and takes appropriate action since the damage
-is already done, there is no point in continuing.
+This patch checks for a stack overrun and takes appropriate
+action since the damage is already done, there is no point
+in continuing.
 
-Changes since v1:
+Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
+---
+ kernel/sched/core.c |  4 ++++
+ lib/Kconfig.debug   | 12 ++++++++++++
+ 2 files changed, 16 insertions(+)
 
- * Rebased against v3.17-rc4
- * Add a canary to init_task - Oleg Nesterov
- * Fix various code formatting issues - Peter Zijlstra
- * Introduce Kconfig option - Peter Zijlstra
-
-Aaron Tomlin (3):
-  init/main.c: Give init_task a canary
-  sched: Add helper for task stack page overrun checking
-  sched: BUG when stack end location is over written
-
- arch/powerpc/mm/fault.c    |  5 +----
- arch/x86/mm/fault.c        |  5 +----
- include/linux/sched.h      |  4 ++++
- init/main.c                |  1 +
- kernel/fork.c              | 12 +++++++++---
- kernel/sched/core.c        |  4 ++++
- kernel/trace/trace_stack.c |  4 +---
- lib/Kconfig.debug          | 12 ++++++++++++
- 8 files changed, 33 insertions(+), 14 deletions(-)
-
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index ec1a286..182b2d1 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2660,6 +2660,10 @@ static noinline void __schedule_bug(struct task_struct *prev)
+  */
+ static inline void schedule_debug(struct task_struct *prev)
+ {
++#ifdef CONFIG_SCHED_STACK_END_CHECK
++	if (unlikely(task_stack_end_corrupted(prev)))
++		BUG();
++#endif
+ 	/*
+ 	 * Test if we are atomic. Since do_exit() needs to call into
+ 	 * schedule() atomically, we ignore that path. Otherwise whine
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index a285900..2a8280a 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -824,6 +824,18 @@ config SCHEDSTATS
+ 	  application, you can say N to avoid the very slight overhead
+ 	  this adds.
+ 
++config SCHED_STACK_END_CHECK
++	bool "Detect stack corruption on calls to schedule()"
++	depends on DEBUG_KERNEL
++	default y
++	help
++	  This option checks for a stack overrun on calls to schedule().
++	  If the stack end location is found to be over written always panic as
++	  the content of the corrupted region can no longer be trusted.
++	  This is to ensure no erroneous behaviour occurs which could result in
++	  data corruption or a sporadic crash at a later stage once the region
++	  is examined. The runtime overhead introduced is minimal.
++
+ config TIMER_STATS
+ 	bool "Collect kernel timers statistics"
+ 	depends on DEBUG_KERNEL && PROC_FS
 -- 
 1.9.3
