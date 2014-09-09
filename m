@@ -1,21 +1,23 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0136.outbound.protection.outlook.com [65.55.169.136])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <atomlin@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C9B71A0021
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 19:34:08 +1000 (EST)
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
- <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
- <tiwai@suse.de>
-Subject: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
-Date: Tue, 9 Sep 2014 17:18:07 +0800
-Message-ID: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D68C71A06EB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 19:45:03 +1000 (EST)
+From: Aaron Tomlin <atomlin@redhat.com>
+To: peterz@infradead.org
+Subject: [PATCH v2 0/3] sched: Always check the integrity of the canary
+Date: Tue,  9 Sep 2014 10:42:26 +0100
+Message-Id: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+In-Reply-To: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
+ akpm@linux-foundation.org, minchan@kernel.org, bmr@redhat.com,
+ prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, hannes@cmpxchg.org, mingo@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, atomlin@redhat.com,
+ jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
+ pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,109 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the ipg clock enable and disable operation to startup and shutdown,
-that is only enable ipg clock when ssi is working. we don't need to enable
-ipg clock in probe.
-Another register accessing need the ipg clock, so use devm_regmap_init_mmio_clk
-instead of devm_regmap_init_mmio.
+Resending with "v2" added to each subject line:
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
- sound/soc/fsl/fsl_ssi.c |   38 +++++++++++++++++++++++++++-----------
- 1 file changed, 27 insertions(+), 11 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2fc3e66..d32d0f5 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -531,6 +531,9 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 	struct fsl_ssi_private *ssi_private =
- 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
- 
-+	if (ssi_private->soc->imx)
-+		clk_prepare_enable(ssi_private->clk);
-+
- 	/* When using dual fifo mode, it is safer to ensure an even period
- 	 * size. If appearing to an odd number while DMA always starts its
- 	 * task from fifo0, fifo1 would be neglected at the end of each
-@@ -544,6 +547,22 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- }
- 
- /**
-+ * fsl_ssi_shutdown: shutdown the SSI
-+ *
-+ */
-+static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-+                             struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct fsl_ssi_private *ssi_private =
-+		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+
-+	if (ssi_private->soc->imx)
-+		clk_disable_unprepare(ssi_private->clk);
-+
-+}
-+
-+/**
-  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
-  *
-  * Note: This function can be only called when using SSI as DAI master
-@@ -1043,6 +1062,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- 
- static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.startup	= fsl_ssi_startup,
-+	.shutdown       = fsl_ssi_shutdown,
- 	.hw_params	= fsl_ssi_hw_params,
- 	.hw_free	= fsl_ssi_hw_free,
- 	.set_fmt	= fsl_ssi_set_dai_fmt,
-@@ -1168,16 +1188,10 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	u32 dmas[4];
- 	int ret;
- 
--	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-+	ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
- 	if (IS_ERR(ssi_private->clk)) {
- 		ret = PTR_ERR(ssi_private->clk);
--		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
--		return ret;
--	}
--
--	ret = clk_prepare_enable(ssi_private->clk);
--	if (ret) {
--		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
-+		dev_err(&pdev->dev, "could not get ipg clock: %d\n", ret);
- 		return ret;
- 	}
- 
-@@ -1236,7 +1250,6 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	return 0;
- 
- error_pcm:
--	clk_disable_unprepare(ssi_private->clk);
- 
- 	return ret;
- }
-@@ -1246,7 +1259,6 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
- {
- 	if (!ssi_private->use_dma)
- 		imx_pcm_fiq_exit(pdev);
--	clk_disable_unprepare(ssi_private->clk);
- }
- 
- static int fsl_ssi_probe(struct platform_device *pdev)
-@@ -1321,7 +1333,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
-+	if (ssi_private->soc->imx)
-+		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
-+			"ipg", iomem, &fsl_ssi_regconfig);
-+	else
-+		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
- 			&fsl_ssi_regconfig);
- 	if (IS_ERR(ssi_private->regs)) {
- 		dev_err(&pdev->dev, "Failed to init register map\n");
+Currently in the event of a stack overrun a call to schedule()
+does not check for this type of corruption. This corruption is
+often silent and can go unnoticed. However once the corrupted
+region is examined at a later stage, the outcome is undefined
+and often results in a sporadic page fault which cannot be
+handled.
+
+The first patch adds a canary to init_task's end of stack.
+While the second patch provides a helper to determine the
+integrity of the canary. The third checks for a stack
+overrun and takes appropriate action since the damage
+is already done, there is no point in continuing.
+
+Changes since v1:
+
+ * Rebased against v3.17-rc4
+ * Add a canary to init_task - Oleg Nesterov
+ * Fix various code formatting issues - Peter Zijlstra
+ * Introduce Kconfig option - Peter Zijlstra
+
+Aaron Tomlin (3):
+  init/main.c: Give init_task a canary
+  sched: Add helper for task stack page overrun checking
+  sched: BUG when stack end location is over written
+
+ arch/powerpc/mm/fault.c    |  5 +----
+ arch/x86/mm/fault.c        |  5 +----
+ include/linux/sched.h      |  4 ++++
+ init/main.c                |  1 +
+ kernel/fork.c              | 12 +++++++++---
+ kernel/sched/core.c        |  4 ++++
+ kernel/trace/trace_stack.c |  4 +---
+ lib/Kconfig.debug          | 12 ++++++++++++
+ 8 files changed, 33 insertions(+), 14 deletions(-)
+
 -- 
-1.7.9.5
+1.9.3
