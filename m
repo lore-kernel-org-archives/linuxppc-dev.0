@@ -1,39 +1,23 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C54E81A003B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 20:40:59 +1000 (EST)
-Message-ID: <540ED929.5040305@hurleysoftware.com>
-Date: Tue, 09 Sep 2014 06:40:41 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27A321A004D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 21:00:28 +1000 (EST)
+From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v2] QE: move qe code from arch/powerpc to drivers/soc
+Date: Tue, 9 Sep 2014 09:27:38 +0000
+Message-ID: <88ded7369c0546aabeececed5f1a4c06@BLUPR03MB341.namprd03.prod.outlook.com>
+References: <1409807186-45816-1-git-send-email-B45475@freescale.com>
+ <1409870809.24184.163.camel@snotra.buserror.net>
+In-Reply-To: <1409870809.24184.163.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: bit fields && data tearing
-References: <21512.10628.412205.873477@gargle.gargle.HOWL>			
- <20140904090952.GW17454@tucnak.redhat.com>			
- <540859EC.5000407@hurleysoftware.com>			
- <20140904175044.4697aee4@alan.etchedpixels.co.uk>			
- <5408C0AB.6050801@hurleysoftware.com>			
- <20140905001751.GL5001@linux.vnet.ibm.com>			
- <1409883098.5078.14.camel@jarvis.lan>		
- <5409243C.4080704@hurleysoftware.com>			
- <20140905040645.GO5001@linux.vnet.ibm.com>			
- <1410066442.12512.13.camel@jarvis.lan>			
- <20140907162146.GK5001@linux.vnet.ibm.com>		
- <1410116687.2027.19.camel@jarvis.lan>	 <540CC305.8010407@hurleysoftware.com>
- <1410155407.2027.29.camel@jarvis.lan>	 <540E3BFF.7080307@hurleysoftware.com>
- <1410231392.2028.15.camel@jarvis.lan>
-In-Reply-To: <1410231392.2028.15.camel@jarvis.lan>
-Content-Type: text/plain; charset=utf-8
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
- linux-ia64@vger.kernel.org, Mikael Pettersson <mikpelinux@gmail.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, paulmck@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
- Richard Henderson <rth@twiddle.net>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Xiaobo Xie <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,82 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/2014 10:56 PM, James Bottomley wrote:
-> On Mon, 2014-09-08 at 19:30 -0400, Peter Hurley wrote:
->> On 09/08/2014 01:50 AM, James Bottomley wrote:
->>>> But additionally, even if gcc combines adjacent writes _that are part
->>>> of the program flow_ then I believe the situation is no worse than
->>>> would otherwise exist.
->>>>
->>>> For instance, given the following:
->>>>
->>>> struct x {
->>>> 	spinlock_t lock;
->>>> 	long a;
->>>> 	byte b;
->>>> 	byte c;
->>>> };
->>>>
->>>> void locked_store_b(struct x *p)
->>>> {
->>>> 	spin_lock(&p->lock);
->>>> 	p->b = 1;
->>>> 	spin_unlock(&p->lock);
->>>> 	p->c = 2;
->>>> }
->>>>
->>>> Granted, the author probably expects ordered writes of
->>>> 	STORE B
->>>> 	STORE C
->>>> but that's not guaranteed because there is no memory barrier
->>>> ordering B before C.
->>>
->>> Yes, there is: loads and stores may not migrate into or out of critical
->>> sections.
->>
->> That's a common misconception.
->>
->> The processor is free to re-order this to:
->>
->> 	STORE C
->> 	STORE B
->> 	UNLOCK
->>
->> That's because the unlock() only guarantees that:
->>
->> Stores before the unlock in program order are guaranteed to complete
->> before the unlock completes. Stores after the unlock _may_ complete
->> before the unlock completes.
->>
->> My point was that even if compiler barriers had the same semantics
->> as memory barriers, the situation would be no worse. That is, code
->> that is sensitive to memory barriers (like the example I gave above)
->> would merely have the same fragility with one-way compiler barriers
->> (with respect to the compiler combining writes).
->>
->> That's what I meant by "no worse than would otherwise exist".
-> 
-> Actually, that's not correct.  This is actually deja vu with me on the
-> other side of the argument.  When we first did spinlocks on PA, I argued
-> as you did: lock only a barrier for code after and unlock for code
-> before.  The failing case is that you can have a critical section which
-> performs an atomically required operation and a following unit which
-> depends on it being performed.  If you begin the following unit before
-> the atomic requirement, you may end up losing.  It turns out this kind
-> of pattern is inherent in a lot of mail box device drivers: you need to
-> set up the mailbox atomically then poke it.  Setup is usually atomic,
-> deciding which mailbox to prime and actually poking it is in the
-> following unit.  Priming often involves an I/O bus transaction and if
-> you poke before priming, you get a misfire.
-
-Take it up with the man because this was discussed extensively last
-year and it was decided that unlocks would not be full barriers.
-Thus the changes to memory-barriers.txt that explicitly note this
-and the addition of smp_mb__after_unlock_lock() (for two different
-locks; an unlock followed by a lock on the same lock is a full barrier).
-
-Code that expects ordered writes after an unlock needs to explicitly
-add the memory barrier.
-
-Regards,
-Peter Hurley
+T24gRnJpLCAyMDE0LTA5LTA1IGF0IDA2OjQ3IEFNLCBXb29kIFNjb3R0IHdyb3RlOg0KDQoNCg0K
+PiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBRRTogbW92ZSBxZSBjb2RlIGZyb20gYXJjaC9wb3dl
+cnBjIHRvIGRyaXZlcnMvc29jDQo+IA0KPiBPbiBUaHUsIDIwMTQtMDktMDQgYXQgMTM6MDYgKzA4
+MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gTFMxIGlzIGFybSBjcHUgYW5kIGl0IGhhcyBxZSBp
+cCBibG9jay4NCj4gPiBtb3ZlIHFlIGNvZGUgZnJvbSBwbGF0Zm9ybSBkaXJlY3RvcnkgdG8gcHVi
+bGljIGRpcmVjdG9yeS4NCj4gPg0KPiA+IFFFIGlzIGFuIElQIGJsb2NrIGludGVncmF0ZXMgc2V2
+ZXJhbCBjb211bmljYXRpb25zIHBlcmlwaGVyYWwNCj4gPiBjb250cm9sbGVycy4gSXQgY2FuIGlt
+cGxlbWVudCBhIHZhcmlldHkgb2YgYXBwbGljYXRpb25zLCBzdWNoIGFzIHVhcnQsDQo+ID4gdXNi
+IGFuZCB0ZG0gYW5kIHNvIG9uLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFuZyA8
+QjQ1NDc1QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4g
+CS0gbXYgY29kZSB0byBkcml2ZXJzL3NvYw0KPiANCj4gV2hvIHdpbGwgYmUgdGhlIG1haW50YWlu
+ZXIgb2YgdGhpcyBjb2RlIG9uY2UgaXQgbGl2ZXMgaW4gZHJpdmVycy9zb2MsDQo+IGVzcGVjaWFs
+bHkgb25jZSBpdCBpcyBubyBsb25nZXIgdXNlZCBvbmx5IGJ5IFBQQz8NCg0KSSBoYXZlIG5vIGlk
+ZWEgYWJvdXQgdGhhdCwgY2FuIHlvdSBleHBsYWluIHdoeSB5b3Ugd2FudCB0byBrbm93IHdobyB3
+aWxsIGJlIHRoZSBtYWludGFpbmVyLg0KDQo+IA0KPiA+ICA0NCBmaWxlcyBjaGFuZ2VkLCAxMTMg
+aW5zZXJ0aW9ucygrKSwgMTEzIGRlbGV0aW9ucygtKSAgZGVsZXRlIG1vZGUNCj4gPiAxMDA2NDQg
+YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIvS2NvbmZpZw0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2
+NDQgZHJpdmVycy9zb2MvcWUvS2NvbmZpZyAgcmVuYW1lDQo+ID4ge2FyY2gvcG93ZXJwYy9zeXNk
+ZXYvcWVfbGliID0+IGRyaXZlcnMvc29jL3FlfS9NYWtlZmlsZSAoMTAwJSkgIHJlbmFtZQ0KPiA+
+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYiA9PiBkcml2ZXJzL3NvYy9xZX0vZ3Bpby5jICg5
+OSUpICByZW5hbWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9z
+b2MvcWV9L3FlLmMgKDk5JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xp
+YiA9PiBkcml2ZXJzL3NvYy9xZX0vcWVfaWMuYyAoOTklKSAgcmVuYW1lDQo+ID4ge2FyY2gvcG93
+ZXJwYy9zeXNkZXYvcWVfbGliID0+IGRyaXZlcnMvc29jL3FlfS9xZV9pYy5oICg5OCUpICByZW5h
+bWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvcWV9L3Fl
+X2lvLmMgKDk5JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYiA9PiBk
+cml2ZXJzL3NvYy9xZX0vdWNjLmMgKDk4JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lz
+ZGV2L3FlX2xpYiA9PiBkcml2ZXJzL3NvYy9xZX0vdWNjX2Zhc3QuYyAoOTglKQ0KPiA+IHJlbmFt
+ZSB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvcWV9L3VjY19zbG93
+LmMgKDk4JSkNCj4gPiByZW5hbWUge2FyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliID0+IGRyaXZl
+cnMvc29jL3FlfS91c2IuYyAoOTYlKQ0KPiANCj4gZHJpdmVycy9zb2MvZnNsLXFlDQo+IA0KPiA+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9NYWtlZmlsZSBiL2RyaXZlcnMvc29jL01ha2VmaWxl
+IGluZGV4DQo+ID4gMGY3YzQ0Ny4uNWRhMWE0ODIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9z
+b2MvTWFrZWZpbGUNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9NYWtlZmlsZQ0KPiA+IEBAIC0zLDMg
+KzMsNSBAQA0KPiA+ICAjDQo+ID4NCj4gPiAgb2JqLSQoQ09ORklHX0FSQ0hfUUNPTSkJCSs9IHFj
+b20vDQo+ID4gKw0KPiA+ICtvYmotJChDT05GSUdfUVVJQ0NfRU5HSU5FKSAgICAgKz0gcWUvDQo+
+IA0KPiBQbGVhc2Uga2VlcCB0aGUgZmlsZSBjb25zaXN0ZW50IHJlZ2FyZGluZyB0YWJzIHZlcnN1
+cyBzcGFjZXMuDQo+IA0KPiBQbHVzLCB3aHkgZG8geW91IG5lZWQgYSBuZXdsaW5lIGJldHdlZW4g
+dGhlbT8NCg0KSSB3aWxsIG1vZGlmeSBpdCBpbiB2Mw0KDQo+IA0KPiA+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL3NvYy9xZS9LY29uZmlnIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZpZyBuZXcgZmlsZQ0K
+PiA+IG1vZGUgMTAwNjQ0IGluZGV4IDAwMDAwMDAuLjhiMDNjYTINCj4gPiAtLS0gL2Rldi9udWxs
+DQo+ID4gKysrIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZpZw0KPiA+IEBAIC0wLDAgKzEsNDUgQEAN
+Cj4gPiArIw0KPiA+ICsjIFFFIENvbW11bmljYXRpb24gb3B0aW9ucw0KPiA+ICsjDQo+ID4gK2Nv
+bmZpZyBRVUlDQ19FTkdJTkUNCj4gPiArCWJvb2wgIkZyZWVzY2FsZSBRVUlDQyBFbmdpbmUgKFFF
+KSBTdXBwb3J0Ig0KPiA+ICsJZGVwZW5kcyBvbiBGU0xfU09DICYmIFBQQzMyDQo+ID4gKwlzZWxl
+Y3QgUFBDX0xJQl9SSEVBUA0KPiA+ICsJc2VsZWN0IENSQzMyDQo+ID4gKwloZWxwDQo+ID4gKwkg
+IFRoZSBRVUlDQyBFbmdpbmUgKFFFKSBpcyBhIG5ldyBnZW5lcmF0aW9uIG9mIGNvbW11bmljYXRp
+b25zDQo+ID4gKwkgIGNvcHJvY2Vzc29ycyBvbiBGcmVlc2NhbGUgZW1iZWRkZWQgQ1BVcyAoYWtp
+biB0byBDUE0gaW4gb2xkZXINCj4gY2hpcHMpLg0KPiA+ICsJICBTZWxlY3RpbmcgdGhpcyBvcHRp
+b24gbWVhbnMgdGhhdCB5b3Ugd2lzaCB0byBidWlsZCBhIGtlcm5lbA0KPiA+ICsJICBmb3IgYSBt
+YWNoaW5lIHdpdGggYSBRRSBjb3Byb2Nlc3Nvci4NCj4gPiArDQo+ID4gK2NvbmZpZyBRRV9HUElP
+DQo+ID4gKwlib29sICJRRSBHUElPIHN1cHBvcnQiDQo+ID4gKwlkZXBlbmRzIG9uIFFVSUNDX0VO
+R0lORQ0KPiA+ICsJc2VsZWN0IEFSQ0hfUkVRVUlSRV9HUElPTElCDQo+ID4gKwloZWxwDQo+ID4g
+KwkgIFNheSBZIGhlcmUgaWYgeW91J3JlIGdvaW5nIHRvIHVzZSBoYXJkd2FyZSB0aGF0IGNvbm5l
+Y3RzIHRvIHRoZQ0KPiA+ICsJICBRRSBHUElPcy4NCj4gPiArDQo+ID4gK2NvbmZpZyBVQ0NfU0xP
+Vw0KPiA+ICsJYm9vbA0KPiA+ICsJZGVmYXVsdCB5IGlmIFNFUklBTF9RRQ0KPiA+ICsJaGVscA0K
+PiA+ICsJICBUaGlzIG9wdGlvbiBwcm92aWRlcyBxZV9saWIgc3VwcG9ydCB0byBVQ0Mgc2xvdw0K
+PiA+ICsJICBwcm90b2NvbHM6IFVBUlQsIEJJU1lOQywgUU1DDQo+ID4gKw0KPiA+ICtjb25maWcg
+VUNDX0ZBU1QNCj4gPiArCWJvb2wNCj4gPiArCWRlZmF1bHQgeSBpZiBVQ0NfR0VUSA0KPiA+ICsJ
+aGVscA0KPiA+ICsJICBUaGlzIG9wdGlvbiBwcm92aWRlcyBxZV9saWIgc3VwcG9ydCB0byBVQ0Mg
+ZmFzdA0KPiA+ICsJICBwcm90b2NvbHM6IEhETEMsIEV0aGVybmV0LCBBVE0sIHRyYW5zcGFyZW50
+DQo+ID4gKw0KPiA+ICtjb25maWcgVUNDDQo+ID4gKwlib29sDQo+ID4gKwlkZWZhdWx0IHkgaWYg
+VUNDX0ZBU1QgfHwgVUNDX1NMT1cNCj4gPiArDQo+ID4gK2NvbmZpZyBRRV9VU0INCj4gPiArCWJv
+b2wNCj4gPiArCWRlZmF1bHQgeSBpZiBVU0JfRlNMX1FFDQo+ID4gKwloZWxwDQo+ID4gKwkgIFFF
+IFVTQiBDb250cm9sbGVyIHN1cHBvcnQNCj4gDQo+IEZpcnN0IGNvdWxkIHdlIGdpdmUgdGhlc2Ug
+bmFtZXMgYmV0dGVyIG5hbWVzcGFjaW5nPw0KDQpBZGQgRlNMIGFzIHByZWZpeD8NCg0KPiANCj4g
+LVNjb3R0DQo+IA0KUmVnYXJkcywNClpoYW8gUWlhbmcNCg==
