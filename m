@@ -1,52 +1,33 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6EF31A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 11:59:39 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 8 Sep 2014 19:59:37 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9F0CAC40001
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Sep 2014 19:59:33 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s88NtWWo65601590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 01:55:32 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s89240li020181
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Sep 2014 20:04:01 -0600
-Date: Mon, 8 Sep 2014 18:59:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Hurley <peter@hurleysoftware.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140909015933.GA4704@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
- <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
- <54090AF4.7060406@hurleysoftware.com> <54091B30.7080100@zytor.com>
- <5409D76D.2070203@hurleysoftware.com> <5409D9C0.7030403@zytor.com>
- <20140908185240.21f52ca0@alan.etchedpixels.co.uk>
- <540DEE6C.2060904@zytor.com> <540E3207.7090007@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D79D1A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 12:08:20 +1000 (EST)
+Message-ID: <540E6095.8030409@huawei.com>
+Date: Tue, 9 Sep 2014 10:06:13 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <540E3207.7090007@hurleysoftware.com>
-Cc: Jakub Jelinek <jakub@redhat.com>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+To: David Vrabel <david.vrabel@citrix.com>, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
+ to configure MSI/MSI-X irq
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
+ <5409C8C0.8020200@citrix.com>
+In-Reply-To: <5409C8C0.8020200@citrix.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Joerg
+ Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Bharat.Bhushan@freescale.com,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,51 +37,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 08, 2014 at 06:47:35PM -0400, Peter Hurley wrote:
-> On 09/08/2014 01:59 PM, H. Peter Anvin wrote:
-> > On 09/08/2014 10:52 AM, One Thousand Gnomes wrote:
-> >> On Fri, 05 Sep 2014 08:41:52 -0700
-> >> "H. Peter Anvin" <hpa@zytor.com> wrote:
-> >>
-> >>> On 09/05/2014 08:31 AM, Peter Hurley wrote:
-> >>>>
-> >>>> Which is a bit ironic because I remember when Digital had a team
-> >>>> working on emulating native x86 apps on Alpha/NT.
-> >>>>
-> >>>
-> >>> Right, because the x86 architecture was obsolete and would never scale...
-> >>
-> >> Talking about "not scaling" can anyone explain how a "you need to use
-> >> set_bit() and friends" bug report scaled into a hundred message plus
-> >> discussion about ambiguous properties of processors (and nobody has
-> >> audited all the embedded platforms we support yet, or the weirder ARMs)
-> >> and a propsal to remove Alpha support.
-> >>
-> >> Wouldn't it be *much* simpler to do what I suggested in the first place
-> >> and use the existing intended for purpose, deliberately put there,
-> >> functions for atomic bitops, because they are fast on sane processors and
-> >> they work on everything else.
-> >>
-> >> I think the whole "removing Alpha EV5" support is basically bonkers. Just
-> >> use set_bit in the tty layer. Alpha will continue to work as well as it
-> >> always has done and you won't design out support for any future processor
-> >> that turns out not to do byte aligned stores.
-> >>
-> >> Alan
-> >>
-> > 
-> > Is *that* what we are talking about?  I was added to this conversation
-> > in the middle where it had already generalized, so I had no idea.
+On 2014/9/5 22:29, David Vrabel wrote:
+> On 05/09/14 11:09, Yijing Wang wrote:
+>> Use MSI chip framework instead of arch MSI functions to configure
+>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+> [...]
+>> --- a/arch/x86/pci/xen.c
+>> +++ b/arch/x86/pci/xen.c
+> [...]
+>> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
+>>  #endif
+>>  
+>>  #ifdef CONFIG_PCI_MSI
+>> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
+>> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
+>> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
+>> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
+>> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
+>> +	x86_msi_chip = &xen_msi_chip;
+>>  	msi_chip.irq_mask = xen_nop_msi_mask;
+>>  	msi_chip.irq_unmask = xen_nop_msi_mask;
 > 
-> No, this is just what brought this craziness to my attention.
-> 
-> For example, byte- and short-sized circular buffers could not possibly
-> be safe either, when the head nears the tail.
-> 
-> Who has audited global storage and ensured that _every_ byte-sized write
-> doesn't happen to be adjacent to some other storage that may not happen
-> to be protected by the same (or any) lock?
+> Why have these not been changed to set the x86_msi_chip.mask/unmask
+> fields instead?
 
-This was my concern as well.
+Hi David, x86_msi_chip here is struct msi_chip data type, used to configure MSI/MSI-X
+irq. msi_chip above is struct irq_chip data type, represent the MSI irq controller. They are
+not the same object. Their name easily confusing people.
 
-							Thanx, Paul
+Defined in arch/x86/kernel/apic/io_apic.c
+/*
+ * IRQ Chip for MSI PCI/PCI-X/PCI-Express Devices,
+ * which implement the MSI or MSI-X Capability Structure.
+ */
+static struct irq_chip msi_chip = {
+	.name			= "PCI-MSI",
+	.irq_unmask		= unmask_msi_irq,
+	.irq_mask		= mask_msi_irq,
+	.irq_ack		= ack_apic_edge,
+	.irq_set_affinity	= msi_set_affinity,
+	.irq_retrigger		= ioapic_retrigger_irq,
+};
+
+
+Defined in arch/x86/kernel/apic/io_apic.c, introduced in patch 7/21
+struct msi_chip apic_msi_chip = {
+	.setup_irqs = native_setup_msi_irqs,
+	.teardown_irq = native_teardown_msi_irq,
+};
+[...]
+struct msi_chip *x86_msi_chip = &apic_msi_chip;
+
+
+Thanks!
+Yijing.
+
+> 
+> David
+> 
+> .
+> 
+
+
+-- 
+Thanks!
+Yijing
