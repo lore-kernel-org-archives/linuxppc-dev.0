@@ -1,33 +1,41 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D79D1A0061
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 12:08:20 +1000 (EST)
-Message-ID: <540E6095.8030409@huawei.com>
-Date: Tue, 9 Sep 2014 10:06:13 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E68A1A021A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 12:32:40 +1000 (EST)
+Message-ID: <540E6582.9020403@zytor.com>
+Date: Mon, 08 Sep 2014 19:27:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-To: David Vrabel <david.vrabel@citrix.com>, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
- to configure MSI/MSI-X irq
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
- <5409C8C0.8020200@citrix.com>
-In-Reply-To: <5409C8C0.8020200@citrix.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Joerg
- Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Bharat.Bhushan@freescale.com,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+ Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: bit fields && data tearing
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>			
+ <20140904090952.GW17454@tucnak.redhat.com>			
+ <540859EC.5000407@hurleysoftware.com>			
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>			
+ <5408C0AB.6050801@hurleysoftware.com>			
+ <20140905001751.GL5001@linux.vnet.ibm.com>			
+ <1409883098.5078.14.camel@jarvis.lan>		
+ <5409243C.4080704@hurleysoftware.com>			
+ <20140905040645.GO5001@linux.vnet.ibm.com>			
+ <1410066442.12512.13.camel@jarvis.lan>			
+ <20140907162146.GK5001@linux.vnet.ibm.com>		
+ <1410116687.2027.19.camel@jarvis.lan>	 <540CC305.8010407@hurleysoftware.com>
+ <1410155407.2027.29.camel@jarvis.lan>	 <540E1587.3060108@tilera.com>
+ <1410216228.2027.88.camel@jarvis.lan>
+In-Reply-To: <1410216228.2027.88.camel@jarvis.lan>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
+ Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Peter Hurley <peter@hurleysoftware.com>,
+ Mikael Pettersson <mikpelinux@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-arch@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,68 +45,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/5 22:29, David Vrabel wrote:
-> On 05/09/14 11:09, Yijing Wang wrote:
->> Use MSI chip framework instead of arch MSI functions to configure
->> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
-> [...]
->> --- a/arch/x86/pci/xen.c
->> +++ b/arch/x86/pci/xen.c
-> [...]
->> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
->>  #endif
->>  
->>  #ifdef CONFIG_PCI_MSI
->> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
->> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
->> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
->> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
->> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
->> +	x86_msi_chip = &xen_msi_chip;
->>  	msi_chip.irq_mask = xen_nop_msi_mask;
->>  	msi_chip.irq_unmask = xen_nop_msi_mask;
+On 09/08/2014 03:43 PM, James Bottomley wrote:
 > 
-> Why have these not been changed to set the x86_msi_chip.mask/unmask
-> fields instead?
-
-Hi David, x86_msi_chip here is struct msi_chip data type, used to configure MSI/MSI-X
-irq. msi_chip above is struct irq_chip data type, represent the MSI irq controller. They are
-not the same object. Their name easily confusing people.
-
-Defined in arch/x86/kernel/apic/io_apic.c
-/*
- * IRQ Chip for MSI PCI/PCI-X/PCI-Express Devices,
- * which implement the MSI or MSI-X Capability Structure.
- */
-static struct irq_chip msi_chip = {
-	.name			= "PCI-MSI",
-	.irq_unmask		= unmask_msi_irq,
-	.irq_mask		= mask_msi_irq,
-	.irq_ack		= ack_apic_edge,
-	.irq_set_affinity	= msi_set_affinity,
-	.irq_retrigger		= ioapic_retrigger_irq,
-};
-
-
-Defined in arch/x86/kernel/apic/io_apic.c, introduced in patch 7/21
-struct msi_chip apic_msi_chip = {
-	.setup_irqs = native_setup_msi_irqs,
-	.teardown_irq = native_teardown_msi_irq,
-};
-[...]
-struct msi_chip *x86_msi_chip = &apic_msi_chip;
-
-
-Thanks!
-Yijing.
-
+> This was years ago (possibly decades).  We had to implement in-kernel
+> unaligned traps for the networking layer because it could access short
+> and int fields that weren't of the correct alignment when processing
+> packets.  It that's all corrected now, we wouldn't really notice (except
+> a bit of a speed up since an unaligned trap effectively places the
+> broken out instructions into the bit stream).
 > 
-> David
-> 
-> .
+> James
 > 
 
+Well, ARM doesn't trap, it just silently gives garbage on unaligned
+memory references.
 
--- 
-Thanks!
-Yijing
+	-hpa
