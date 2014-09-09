@@ -1,31 +1,24 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACC2E1A012A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 10:03:19 +1000 (EST)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id C7D40140190
- for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2014 10:03:16 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 0/2] cpufreq/powernv: Set core pstate to a minimum just
- before hotplugging it out
-Date: Tue, 09 Sep 2014 02:16:03 +0200
-Message-ID: <7863288.1rO87QF8NW@vostro.rjw.lan>
-In-Reply-To: <CAKohpo=chEW_TtXWCHa3OEwrqU25TPBES4icjMVxL6nezrf8+w@mail.gmail.com>
-References: <20140905073812.3629.29175.stgit@preeti.in.ibm.com>
- <CAKohpo=chEW_TtXWCHa3OEwrqU25TPBES4icjMVxL6nezrf8+w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Dirk Brandewie <dirk.j.brandewie@intel.com>,
- Shreyas Prabhu <shreyas@linux.vnet.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Patrick Marlier <patrick.marlier@gmail.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Dirk Brandewie <dirk.brandewie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4982B1A0214
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 10:43:02 +1000 (EST)
+Message-ID: <1410223381.3223.1.camel@concordia>
+Subject: Re: [PATCH 0/2] PCI/MSI: Remove arch_msi_check_device()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 09 Sep 2014 10:43:01 +1000
+In-Reply-To: <CAErSpo4XN01hgTUpcca=i-=LFV_bM-Cok8614LJzrOfVbx8MAA@mail.gmail.com>
+References: <cover.1405160163.git.agordeev@redhat.com>
+ <20140905212528.GG8080@google.com>
+ <CAErSpo4XN01hgTUpcca=i-=LFV_bM-Cok8614LJzrOfVbx8MAA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Alexander Gordeev <agordeev@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,23 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, September 05, 2014 01:11:22 PM Viresh Kumar wrote:
-> On 5 September 2014 13:09, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
-> > Today cpus go to winkle when they are offlined. Since it is the deepest
-> > idle state that we have, it is expected to save good amount of power as compared
-> > to online state, where cores can enter nap/fastsleep only which are
-> > shallower idle states.
-> > However we observed no powersavings with winkle as compared to nap/fastsleep
-> > and traced the problem to the pstate of the core being kept at a high even
-> > when the core is offline. This can keep the socket pstate high, thus burning
-> > power unnecessarily. This patchset fixes this issue.
+On Fri, 2014-09-05 at 15:27 -0600, Bjorn Helgaas wrote:
+> On Fri, Sep 5, 2014 at 3:25 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> > On Sat, Jul 12, 2014 at 01:21:06PM +0200, Alexander Gordeev wrote:
+> >> Hello,
+> >>
+> >> This is a cleanup effort to get rid of useless arch_msi_check_device().
+> >> I am not sure what were the reasons for its existence in the first place,
+> >> but at the moment it appears totally unnecessary.
+> >>
+> >> Thanks!
+> >>
+> >> Cc: linuxppc-dev@lists.ozlabs.org
+> >> Cc: linux-pci@vger.kernel.org
+> >>
+> >> Alexander Gordeev (2):
+> >>   PCI/MSI/PPC: Remove arch_msi_check_device()
+> >>   PCI/MSI: Remove arch_msi_check_device()
 > >
-> > Changes in V2: Changed smp_call_function_any() to smp_call_function_single() in Patch[2/2]
+> > I applied these (with Michael's ack on the first, and v2 of the second) to
+> > pci/msi for v3.18, thanks!
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Oh, I forgot -- if you'd rather take the first one through the PPC
+> tree, you can do that and I can merge the second one later.  Let me
+> know if you want to do that.
 
-I've queued up the two patches for 3.18, thanks!
+You take them all, that code shouldn't be changing much in the powerpc tree.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+If the merge gets messy closer to the merge window we can always take the first
+patch into the powerpc tree then.
+
+cheers
