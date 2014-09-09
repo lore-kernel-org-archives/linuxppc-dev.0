@@ -1,24 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4982B1A0214
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 10:43:02 +1000 (EST)
-Message-ID: <1410223381.3223.1.camel@concordia>
-Subject: Re: [PATCH 0/2] PCI/MSI: Remove arch_msi_check_device()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 09 Sep 2014 10:43:01 +1000
-In-Reply-To: <CAErSpo4XN01hgTUpcca=i-=LFV_bM-Cok8614LJzrOfVbx8MAA@mail.gmail.com>
-References: <cover.1405160163.git.agordeev@redhat.com>
- <20140905212528.GG8080@google.com>
- <CAErSpo4XN01hgTUpcca=i-=LFV_bM-Cok8614LJzrOfVbx8MAA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Alexander Gordeev <agordeev@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 521C21A07B1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 11:03:13 +1000 (EST)
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7F89F140086
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2014 11:03:12 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 8 Sep 2014 21:03:10 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 61AC238C804A
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2014 21:03:08 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s89138H764225320
+ for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2014 01:03:08 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s89137tV017774
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Sep 2014 21:03:08 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add macros for the ibm_architecture_vec[] lengths
+In-Reply-To: <1409295703-31174-1-git-send-email-mpe@ellerman.id.au>
+References: <1409295703-31174-1-git-send-email-mpe@ellerman.id.au>
+Date: Tue, 09 Sep 2014 11:03:03 +1000
+Message-ID: <m3a969sj08.fsf@oc8180480414.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-09-05 at 15:27 -0600, Bjorn Helgaas wrote:
-> On Fri, Sep 5, 2014 at 3:25 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> > On Sat, Jul 12, 2014 at 01:21:06PM +0200, Alexander Gordeev wrote:
-> >> Hello,
-> >>
-> >> This is a cleanup effort to get rid of useless arch_msi_check_device().
-> >> I am not sure what were the reasons for its existence in the first place,
-> >> but at the moment it appears totally unnecessary.
-> >>
-> >> Thanks!
-> >>
-> >> Cc: linuxppc-dev@lists.ozlabs.org
-> >> Cc: linux-pci@vger.kernel.org
-> >>
-> >> Alexander Gordeev (2):
-> >>   PCI/MSI/PPC: Remove arch_msi_check_device()
-> >>   PCI/MSI: Remove arch_msi_check_device()
-> >
-> > I applied these (with Michael's ack on the first, and v2 of the second) to
-> > pci/msi for v3.18, thanks!
-> 
-> Oh, I forgot -- if you'd rather take the first one through the PPC
-> tree, you can do that and I can merge the second one later.  Let me
-> know if you want to do that.
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> The encoding of the lengths in the ibm_architecture_vec array is
+> "interesting" to say the least. It's non-obvious how the number of bytes
+> we provide relates to the length value.
+>
+> In fact we already got it wrong once, see 11e9ed43ca8a "Fix up
+> ibm_architecture_vec definition".
+>
+> So add some macros to make it (hopefully) clearer. These at least have
+> the property that the integer present in the code is equal to the number
+> of bytes that follows it.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-You take them all, that code shouldn't be changing much in the powerpc tree.
+Seems at least as correct as the code was before... so,
 
-If the merge gets messy closer to the merge window we can always take the first
-patch into the powerpc tree then.
+Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-cheers
+(not actually compiled or tested or anything, but my internal C
+preprocesser says it looks okay :)
