@@ -1,35 +1,29 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
+ [IPv6:2607:f8b0:400d:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3219D1A003D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 06:09:26 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 9 Sep 2014 16:09:24 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id DF2916E8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 16:09:08 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s89K9KCG4981080
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 20:09:20 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s89K9KgR007794
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 16:09:20 -0400
-Date: Tue, 9 Sep 2014 13:09:13 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [RFC PATCH] powerpc/numa: add ability to disable and debug topology
- updates
-Message-ID: <20140909200913.GG22906@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A42DC1A0AD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 06:10:09 +1000 (EST)
+Received: by mail-qc0-f178.google.com with SMTP id x13so17915871qcv.37
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Sep 2014 13:10:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20140820061402.GA8381@richard>
+References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1406182947-11302-5-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140820030841.GD6295@google.com> <20140820061402.GA8381@richard>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 9 Sep 2014 14:09:46 -0600
+Message-ID: <CAErSpo5ZSB-=aQtiM5OenfWWfn2b=TOwxM-BkpwxBGRnmMyAzw@mail.gmail.com>
+Subject: Re: [PATCH V7 04/17] PCI: Take additional IOV BAR alignment in sizing
+ and assigning
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
+ Guo Chao <yan@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,115 +33,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have hit a few customer issues with the topology update code (VPHN
-and PRRN). It would be nice to be able to debug the notifications coming
-from the hypervisor in both cases to the LPAR, as well as to disable
-reacting to the notifications, to narrow down the source of the
-problems. Add a basic level of such functionality, similar to the numa=
-command-line parameter.
+On Wed, Aug 20, 2014 at 12:14 AM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
+> On Tue, Aug 19, 2014 at 09:08:41PM -0600, Bjorn Helgaas wrote:
+>>On Thu, Jul 24, 2014 at 02:22:14PM +0800, Wei Yang wrote:
+>>> At resource sizing/assigning stage, resources are divided into two lists,
+>>> requested list and additional list, while the alignement of the additional
+>>> IOV BAR is not taken into the sizeing and assigning procedure.
+>>>
+>>> This is reasonable in the original implementation, since IOV BAR's alignment is
+>>> mostly the size of a PF BAR alignemt. This means the alignment is already taken
+>>> into consideration. While this rule may be violated on some platform.
+>>>
+>>> This patch take the additional IOV BAR alignment in sizing and assigning stage
+>>> explicitly.
+>>>
+>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>> ---
+>>>  drivers/pci/setup-bus.c |   68 +++++++++++++++++++++++++++++++++++++++++------
+>>>  1 file changed, 60 insertions(+), 8 deletions(-)
+>>>
+>>> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+>>> index a5a63ec..d83681f 100644
+>>> --- a/drivers/pci/setup-bus.c
+>>> +++ b/drivers/pci/setup-bus.c
+>>> @@ -120,6 +120,28 @@ static resource_size_t get_res_add_size(struct list_head *head,
+>>>      return 0;
+>>>  }
+>>>
+>>> +static resource_size_t get_res_add_align(struct list_head *head,
+>>> +            struct resource *res)
+>>> +{
+>>> +    struct pci_dev_resource *dev_res;
+>>> +
+>>> +    list_for_each_entry(dev_res, head, list) {
+>>> +            if (dev_res->res == res) {
+>>> +                    int idx = res - &dev_res->dev->resource[0];
+>>> +
+>>> +                    dev_printk(KERN_DEBUG, &dev_res->dev->dev,
+>>> +                               "res[%d]=%pR get_res_add_align min_align %llx\n",
+>>> +                               idx, dev_res->res,
+>>> +                               (unsigned long long)dev_res->min_align);
+>>> +
+>>> +                    return dev_res->min_align;
+>>> +            }
+>>> +    }
+>>> +
+>>> +    return 0;
+>>> +}
+>>
+>>I see that you copied the structure of the existing get_res_add_size()
+>>here.  But I don't understand *that* function.  It looks basically like
+>>this:
+>>
+>>  resource_size_t get_res_add_size(list, res)
+>>  {
+>>    list_for_each_entry(dev_res, head, list) {
+>>      if (dev_res->res == res)
+>>        return dev_res->add_size;
+>>    }
+>>    return 0;
+>>  }
+>>
+>>and we call it like this:
+>>
+>>  dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
+>>
+>>So we start out with dev_res", pass in dev_res->res, search the
+>>realloc_head list to find dev_res again, and return dev_res->add_size.
+>>That looks equivalent to just:
+>>
+>>  dev_res->res->end += dev_res->add_size;
+>>
+>>It looks like get_res_add_size() merely adds a printk and some complexity.
+>>Am I missing something?
+>>
+>
+> Let me try to explain it, if not correct, please let know :-)
+>
+>   dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
+>
+> would be expanded to:
+>
+>   dev_res->res->end += dev_res_1->add_size;
+>
+> with the dev_res_1 is another one from dev_res which is stored in realloc_head.
 
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
----
-This is pretty rough, but has been useful in the field already. I'm not
-sure if more information would be useful than this basic amount.
+Yep, I see now.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 5ae8608ca9f5..6e3b9e3a2ab4 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -3370,6 +3370,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			e.g. base its process migration decisions on it.
- 			Default is on.
- 
-+	topology_updates= [KNL, PPC, NUMA]
-+			Format: {off | debug}
-+			Specify if the kernel should ignore (off) or
-+			emit more information (debug) when the
-+			hypervisor sends NUMA topology updates to an
-+			LPAR.
-+
- 	tp720=		[HW,PS2]
- 
- 	tpm_suspend_pcr=[HW,TPM]
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d7737a542fd7..72c5ad313cbe 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1160,6 +1160,28 @@ static int __init early_numa(char *p)
- }
- early_param("numa", early_numa);
- 
-+static int topology_updates_enabled = 1;
-+static int topology_updates_debug = 0;
-+
-+static int __init early_topology_updates(char *p)
-+{
-+	if (!p)
-+		return 0;
-+
-+	if (strstr(p, "off")) {
-+		printk(KERN_INFO "Disabling topology updates\n");
-+		topology_updates_enabled = 0;
-+	}
-+
-+	if (strstr(p, "debug")) {
-+		printk(KERN_INFO "Enabling topology updates debug\n");
-+		topology_updates_debug = 1;
-+	}
-+
-+	return 0;
-+}
-+early_param("topology_updates", early_topology_updates);
-+
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
-  * Find the node associated with a hot added memory section for
-@@ -1546,6 +1568,9 @@ int arch_update_cpu_topology(void)
- 	struct device *dev;
- 	int weight, new_nid, i = 0;
- 
-+	if (!topology_updates_enabled)
-+		return 0;
-+
- 	weight = cpumask_weight(&cpu_associativity_changes_mask);
- 	if (!weight)
- 		return 0;
-@@ -1610,6 +1635,25 @@ int arch_update_cpu_topology(void)
- 	 *
- 	 * And for the similar reason, we will skip all the following updating.
- 	 */
-+
-+	if (topology_updates_debug) {
-+		char *buf = kmalloc_array(NR_CPUS*5, sizeof(char), GFP_KERNEL);
-+		cpumask_scnprintf(buf, NR_CPUS*5, &updated_cpus);
-+		printk(KERN_DEBUG "Topology update for the following CPUs:\n");
-+		printk(KERN_DEBUG " %s\n", buf);
-+		printk(KERN_DEBUG "cpumask_weight(&updated_cpus)) = %u\n",
-+						cpumask_weight(&updated_cpus));
-+
-+		if (cpumask_weight(&updated_cpus)) {
-+			for (ud = &updates[0]; ud; ud = ud->next) {
-+				printk(KERN_DEBUG "cpu %d moving from node %d "
-+						  "to %d\n", ud->cpu,
-+						  ud->old_nid, ud->new_nid);
-+			}
-+		}
-+		kfree(buf);
-+	}
-+
- 	if (!cpumask_weight(&updated_cpus))
- 		goto out;
- 
-@@ -1807,8 +1851,10 @@ static const struct file_operations topology_ops = {
- 
- static int topology_update_init(void)
- {
--	start_topology_update();
--	proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops);
-+	if (topology_updates_enabled) {
-+		start_topology_update();
-+		proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops);
-+	}
- 
- 	return 0;
- }
+>>I do see that there are other callers where we don't actually start with
+>>dev_res, which makes it a little more complicated.  But I think you should
+>>either add something like this:
+>>
+>>  struct pci_dev_resource *res_to_dev_res(list, res)
+>>  {
+>>    list_for_each_entry(dev_res, head, list) {
+>>      if (dev_res->res == res)
+>>        return dev_res;
+>>    }
+>>    return NULL;
+>>  }
+>>
+>
+> Ok, we can extract the common part of these two functions.
+>
+>>which can be used to replace get_res_add_size() and get_res_add_align(), OR
+>>figure out whether the dev_res of interest is always one we've just added.
+>>If it is, maybe you can just make add_to_list() return the dev_res pointer
+>>instead of an errno, and hang onto the pointer.  I'd like that much better
+>>if that's possible.
+>>
+>
+> Sorry, I don't get this point.
+
+Don't worry, it didn't make sense.  I was thinking that we knew the
+dev_res up front and didn't need to look it up, but that's not the
+case.
+
+Sorry it took me so long to respond to this; I'm a bit swamped dealing
+with some regressions.
+
+Bjorn
+
+> add_to_list() is used to create the pci_dev_resource list, get_res_add_size()
+> and get_res_add_align() is to retrieve the information in the list. I am not
+> sure how to leverage add_to_list() in these two functions?
+>
+>>> +
+>>> +
+>>>  /* Sort resources by alignment */
+>>>  static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
+>>>  {
+>>> @@ -368,8 +390,9 @@ static void __assign_resources_sorted(struct list_head *head,
+>>>      LIST_HEAD(save_head);
+>>>      LIST_HEAD(local_fail_head);
+>>>      struct pci_dev_resource *save_res;
+>>> -    struct pci_dev_resource *dev_res, *tmp_res;
+>>> +    struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
+>>>      unsigned long fail_type;
+>>> +    resource_size_t add_align, align;
+>>>
+>>>      /* Check if optional add_size is there */
+>>>      if (!realloc_head || list_empty(realloc_head))
+>>> @@ -384,10 +407,31 @@ static void __assign_resources_sorted(struct list_head *head,
+>>>      }
+>>>
+>>>      /* Update res in head list with add_size in realloc_head list */
+>>> -    list_for_each_entry(dev_res, head, list)
+>>> +    list_for_each_entry_safe(dev_res, tmp_res, head, list) {
+>>>              dev_res->res->end += get_res_add_size(realloc_head,
+>>>                                                      dev_res->res);
+>>>
+>>> +            if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
+>>> +                    continue;
+>>> +
+>>> +            add_align = get_res_add_align(realloc_head, dev_res->res);
+>>> +
+>>> +            if (add_align > dev_res->res->start) {
+>>> +                    dev_res->res->start = add_align;
+>>> +                    dev_res->res->end = add_align +
+>>> +                                        resource_size(dev_res->res);
+>>> +
+>>> +                    list_for_each_entry(dev_res2, head, list) {
+>>> +                            align = pci_resource_alignment(dev_res2->dev,
+>>> +                                                           dev_res2->res);
+>>> +                            if (add_align > align)
+>>> +                                    list_move_tail(&dev_res->list,
+>>> +                                                   &dev_res2->list);
+>>> +                    }
+>>> +               }
+>>> +
+>>> +    }
+>>> +
+>>>      /* Try updated head list with add_size added */
+>>>      assign_requested_resources_sorted(head, &local_fail_head);
+>>>
+>>> @@ -930,6 +974,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>>      struct resource *b_res = find_free_bus_resource(bus,
+>>>                                      mask | IORESOURCE_PREFETCH, type);
+>>>      resource_size_t children_add_size = 0;
+>>> +    resource_size_t children_add_align = 0;
+>>> +    resource_size_t add_align = 0;
+>>>
+>>>      if (!b_res)
+>>>              return -ENOSPC;
+>>> @@ -954,6 +1000,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>>                      /* put SRIOV requested res to the optional list */
+>>>                      if (realloc_head && i >= PCI_IOV_RESOURCES &&
+>>>                                      i <= PCI_IOV_RESOURCE_END) {
+>>> +                            add_align = max(pci_resource_alignment(dev, r), add_align);
+>>>                              r->end = r->start - 1;
+>>>                              add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
+>>>                              children_add_size += r_size;
+>>> @@ -984,8 +1031,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>>                      if (order > max_order)
+>>>                              max_order = order;
+>>>
+>>> -                    if (realloc_head)
+>>> +                    if (realloc_head) {
+>>>                              children_add_size += get_res_add_size(realloc_head, r);
+>>> +                            children_add_align = get_res_add_align(realloc_head, r);
+>>> +                            add_align = max(add_align, children_add_align);
+>>> +                    }
+>>>              }
+>>>      }
+>>>
+>>> @@ -996,7 +1046,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>>              add_size = children_add_size;
+>>>      size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
+>>>              calculate_memsize(size, min_size, add_size,
+>>> -                            resource_size(b_res), min_align);
+>>> +                            resource_size(b_res), max(min_align, add_align));
+>>>      if (!size0 && !size1) {
+>>>              if (b_res->start || b_res->end)
+>>>                      dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
+>>> @@ -1008,10 +1058,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>>      b_res->end = size0 + min_align - 1;
+>>>      b_res->flags |= IORESOURCE_STARTALIGN;
+>>>      if (size1 > size0 && realloc_head) {
+>>> -            add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
+>>> -            dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
+>>> -                       b_res, &bus->busn_res,
+>>> -                       (unsigned long long)size1-size0);
+>>> +            add_to_list(realloc_head, bus->self, b_res, size1-size0,
+>>> +                            max(min_align, add_align));
+>>> +            dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
+>>> +                             "%pR to %pR add_size %llx add_align %llx\n", b_res,
+>>> +                             &bus->busn_res, (unsigned long long)size1-size0,
+>>> +                             max(min_align, add_align));
+>>
+>>Factor out this "max(min_align, add_align)" thing so we don't have to
+>>change these lines.  Bonus points if you can also factor it out of the
+>>calculate_memsize() call above.  That one is a pretty complicated ternary
+>>expression that should probably be turned into an "if" instead anyway.
+>>
+>
+> Ok, I get your point. Let me make it more easy to read.
+>
+>>>      }
+>>>      return 0;
+>>>  }
+>>> --
+>>> 1.7.9.5
+>>>
+>
+> --
+> Richard Yang
+> Help you, Help me
+>
