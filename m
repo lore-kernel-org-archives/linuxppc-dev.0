@@ -1,35 +1,26 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pd0-x22a.google.com (mail-pd0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c02::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33E541A08C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 03:07:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 9 Sep 2014 22:37:51 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7D94B3940048
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 22:37:49 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s89H8EL449676528
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 22:38:14 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s89H7mUW021726
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Sep 2014 22:37:48 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH 2/2 v6] powerpc/kvm: common sw breakpoint instr across ppc
-Date: Tue,  9 Sep 2014 22:37:36 +0530
-Message-Id: <1410282456-11287-3-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1410282456-11287-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1410282456-11287-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C5421A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 04:03:27 +1000 (EST)
+Received: by mail-pd0-f170.google.com with SMTP id fp1so1684629pdb.29
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Sep 2014 11:03:25 -0700 (PDT)
+Date: Tue, 9 Sep 2014 11:03:10 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140909180309.GA6784@Asurada>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+ <20140909112750.GS2601@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140909112750.GS2601@sirena.org.uk>
+Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, tiwai@suse.de, linux-kernel@vger.kernel.org,
+ timur@tabi.org, perex@perex.cz, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,75 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch extends the use of illegal instruction as software
-breakpoint instruction across the ppc platform. Patch extends
-booke program interrupt code to support software breakpoint.
+On Tue, Sep 09, 2014 at 12:27:50PM +0100, Mark Brown wrote:
+> On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
+> > -	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
+> > +	ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
+> >  	if (IS_ERR(ssi_private->clk)) {
+> >  		ret = PTR_ERR(ssi_private->clk);
+> > -		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
+> > -		return ret;
+> 
+> Why is this change being made?  It wasn't mentioned in the commit log
+> and doesn't seem relevant to moving where the enable and disable are
+> done which is what the patch is supposed to be doing...
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
-Patch is only compile tested. Will really help if
-someone can try it out and let me know the comments.
+I think Shengjiu is trying to keep the clock disabled while SSI's idle.
+The current driver enables ipg clock anyway even if there's no stream
+running.
 
- arch/powerpc/include/asm/kvm_booke.h |  2 --
- arch/powerpc/kvm/booke.c             | 19 ++++++++++++++++++-
- 2 files changed, 18 insertions(+), 3 deletions(-)
+Apparently, these should be put into the comment log.
 
-diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
-index f7aa5cc..ab7123a 100644
---- a/arch/powerpc/include/asm/kvm_booke.h
-+++ b/arch/powerpc/include/asm/kvm_booke.h
-@@ -30,8 +30,6 @@
- #define EHPRIV_OC_SHIFT			11
- /* "ehpriv 1" : ehpriv with OC = 1 is used for debug emulation */
- #define EHPRIV_OC_DEBUG			1
--#define KVMPPC_INST_EHPRIV_DEBUG	(KVMPPC_INST_EHPRIV | \
--					 (EHPRIV_OC_DEBUG << EHPRIV_OC_SHIFT))
- 
- static inline void kvmppc_set_gpr(struct kvm_vcpu *vcpu, int num, ulong val)
- {
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index b4c89fa..365e85d 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -870,6 +870,11 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	case BOOKE_INTERRUPT_HV_PRIV:
- 		emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
- 		break;
-+	case BOOKE_INTERRUPT_PROGRAM:
-+		/* SW breakpoints arrive as illegal instructions on HV */
-+		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP)
-+			emulated = kvmppc_get_last_inst(vcpu, false, &last_inst);
-+		break;
- 	default:
- 		break;
- 	}
-@@ -947,6 +952,18 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		break;
- 
- 	case BOOKE_INTERRUPT_PROGRAM:
-+		if ((vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP) &&
-+			(last_inst == KVMPPC_INST_SW_BREAKPOINT)) {
-+			/*
-+			 * We are here because of an SW breakpoint instr,
-+			 * so lets return to host to handle.
-+			 */
-+			r = kvmppc_handle_debug(run, vcpu);
-+			run->exit_reason = KVM_EXIT_DEBUG;
-+			kvmppc_account_exit(vcpu, DEBUG_EXITS);
-+			break;
-+		}
-+
- 		if (vcpu->arch.shared->msr & (MSR_PR | MSR_GS)) {
- 			/*
- 			 * Program traps generated by user-level software must
-@@ -1505,7 +1522,7 @@ int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- 		val = get_reg_val(reg->id, vcpu->arch.tsr);
- 		break;
- 	case KVM_REG_PPC_DEBUG_INST:
--		val = get_reg_val(reg->id, KVMPPC_INST_EHPRIV_DEBUG);
-+		val = get_reg_val(reg->id, KVMPPC_INST_SW_BREAKPOINT);
- 		break;
- 	case KVM_REG_PPC_VRSAVE:
- 		val = get_reg_val(reg->id, vcpu->arch.vrsave);
--- 
-1.7.11.4
+Thank you
+Nicolin
