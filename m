@@ -1,26 +1,39 @@
-Return-Path: <Li.Xiubo@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0139.outbound.protection.outlook.com [207.46.100.139])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E44711A003B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 20:11:44 +1000 (EST)
-From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
-To: "shengjiu.wang@freescale.com" <shengjiu.wang@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "nicoleotsuka@gmail.com"
- <nicoleotsuka@gmail.com>, "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "perex@perex.cz" <perex@perex.cz>,
- "tiwai@suse.de" <tiwai@suse.de>
-Subject: RE: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
-Date: Tue, 9 Sep 2014 09:55:41 +0000
-Message-ID: <a2df014417624f0790c01b0ccd21853f@BY2PR0301MB0613.namprd03.prod.outlook.com>
-References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
-In-Reply-To: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C54E81A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2014 20:40:59 +1000 (EST)
+Message-ID: <540ED929.5040305@hurleysoftware.com>
+Date: Tue, 09 Sep 2014 06:40:41 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: bit fields && data tearing
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>			
+ <20140904090952.GW17454@tucnak.redhat.com>			
+ <540859EC.5000407@hurleysoftware.com>			
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>			
+ <5408C0AB.6050801@hurleysoftware.com>			
+ <20140905001751.GL5001@linux.vnet.ibm.com>			
+ <1409883098.5078.14.camel@jarvis.lan>		
+ <5409243C.4080704@hurleysoftware.com>			
+ <20140905040645.GO5001@linux.vnet.ibm.com>			
+ <1410066442.12512.13.camel@jarvis.lan>			
+ <20140907162146.GK5001@linux.vnet.ibm.com>		
+ <1410116687.2027.19.camel@jarvis.lan>	 <540CC305.8010407@hurleysoftware.com>
+ <1410155407.2027.29.camel@jarvis.lan>	 <540E3BFF.7080307@hurleysoftware.com>
+ <1410231392.2028.15.camel@jarvis.lan>
+In-Reply-To: <1410231392.2028.15.camel@jarvis.lan>
+Content-Type: text/plain; charset=utf-8
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Mikael Pettersson <mikpelinux@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +43,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 09/08/2014 10:56 PM, James Bottomley wrote:
+> On Mon, 2014-09-08 at 19:30 -0400, Peter Hurley wrote:
+>> On 09/08/2014 01:50 AM, James Bottomley wrote:
+>>>> But additionally, even if gcc combines adjacent writes _that are part
+>>>> of the program flow_ then I believe the situation is no worse than
+>>>> would otherwise exist.
+>>>>
+>>>> For instance, given the following:
+>>>>
+>>>> struct x {
+>>>> 	spinlock_t lock;
+>>>> 	long a;
+>>>> 	byte b;
+>>>> 	byte c;
+>>>> };
+>>>>
+>>>> void locked_store_b(struct x *p)
+>>>> {
+>>>> 	spin_lock(&p->lock);
+>>>> 	p->b = 1;
+>>>> 	spin_unlock(&p->lock);
+>>>> 	p->c = 2;
+>>>> }
+>>>>
+>>>> Granted, the author probably expects ordered writes of
+>>>> 	STORE B
+>>>> 	STORE C
+>>>> but that's not guaranteed because there is no memory barrier
+>>>> ordering B before C.
+>>>
+>>> Yes, there is: loads and stores may not migrate into or out of critical
+>>> sections.
+>>
+>> That's a common misconception.
+>>
+>> The processor is free to re-order this to:
+>>
+>> 	STORE C
+>> 	STORE B
+>> 	UNLOCK
+>>
+>> That's because the unlock() only guarantees that:
+>>
+>> Stores before the unlock in program order are guaranteed to complete
+>> before the unlock completes. Stores after the unlock _may_ complete
+>> before the unlock completes.
+>>
+>> My point was that even if compiler barriers had the same semantics
+>> as memory barriers, the situation would be no worse. That is, code
+>> that is sensitive to memory barriers (like the example I gave above)
+>> would merely have the same fragility with one-way compiler barriers
+>> (with respect to the compiler combining writes).
+>>
+>> That's what I meant by "no worse than would otherwise exist".
+> 
+> Actually, that's not correct.  This is actually deja vu with me on the
+> other side of the argument.  When we first did spinlocks on PA, I argued
+> as you did: lock only a barrier for code after and unlock for code
+> before.  The failing case is that you can have a critical section which
+> performs an atomically required operation and a following unit which
+> depends on it being performed.  If you begin the following unit before
+> the atomic requirement, you may end up losing.  It turns out this kind
+> of pattern is inherent in a lot of mail box device drivers: you need to
+> set up the mailbox atomically then poke it.  Setup is usually atomic,
+> deciding which mailbox to prime and actually poking it is in the
+> following unit.  Priming often involves an I/O bus transaction and if
+> you poke before priming, you get a misfire.
 
-> Subject: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
->=20
-> Move the ipg clock enable and disable operation to startup and shutdown,
-> that is only enable ipg clock when ssi is working. we don't need to enabl=
-e
-> ipg clock in probe.
-> Another register accessing need the ipg clock, so use
-> devm_regmap_init_mmio_clk
-> instead of devm_regmap_init_mmio.
->
+Take it up with the man because this was discussed extensively last
+year and it was decided that unlocks would not be full barriers.
+Thus the changes to memory-barriers.txt that explicitly note this
+and the addition of smp_mb__after_unlock_lock() (for two different
+locks; an unlock followed by a lock on the same lock is a full barrier).
 
-You should split this into two separate patches, which will be more
-Easy to be reviewed.
-=20
-Thanks,
+Code that expects ordered writes after an unlock needs to explicitly
+add the memory barrier.
 
-BRs
-Xiubo
+Regards,
+Peter Hurley
