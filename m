@@ -1,30 +1,24 @@
-Return-Path: <cebbert.lkml@gmail.com>
-Received: from mail-oa0-x231.google.com (mail-oa0-x231.google.com
- [IPv6:2607:f8b0:4003:c02::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B778A1A009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 17:27:01 +1000 (EST)
-Received: by mail-oa0-f49.google.com with SMTP id m19so1508285oag.22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 00:26:59 -0700 (PDT)
-Date: Wed, 10 Sep 2014 02:26:54 -0500
-From: Chuck Ebbert <cebbert.lkml@gmail.com>
-To: Aaron Tomlin <atomlin@redhat.com>
-Subject: Re: [PATCH v2 1/3] init/main.c: Give init_task a canary
-Message-ID: <20140910022654.29abc9f3@as>
-In-Reply-To: <1410255749-2956-2-git-send-email-atomlin@redhat.com>
-References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
- <1410255749-2956-1-git-send-email-atomlin@redhat.com>
- <1410255749-2956-2-git-send-email-atomlin@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1882E1A05F1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 18:27:50 +1000 (EST)
+Date: Wed, 10 Sep 2014 16:12:53 +0800
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140910081251.GA14662@audiosh1>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+ <20140909183804.GA6944@Asurada>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
- akpm@linux-foundation.org, peterz@infradead.org, bmr@redhat.com,
- prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
- linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
- aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, hannes@cmpxchg.org,
- jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
- pzijlstr@redhat.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140909183804.GA6944@Asurada>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz, broonie@kernel.org,
+ mpa@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  9 Sep 2014 10:42:27 +0100
-Aaron Tomlin <atomlin@redhat.com> wrote:
-
-> +void task_stack_end_magic(struct task_struct *tsk)
-> +{
-> +	unsigned long *stackend;
-> +
-> +	stackend = end_of_stack(tsk);
-> +	*stackend = STACK_END_MAGIC;	/* for overflow detection */
-> +}
-> +
-
-For clarity this should probably be called set_task_stack_end_magic().
-
-And has this been tested on parisc and metag, which use STACK_GROWSUP ?
-I can't see how end_of_stack() as it's defined now could work on those archs.
+On Tue, Sep 09, 2014 at 11:38:05AM -0700, Nicolin Chen wrote:
+> On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
+> > @@ -1321,7 +1333,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+> >  		return -ENOMEM;
+> >  	}
+> >  
+> > -	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+> > +	if (ssi_private->soc->imx)
+> > +		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
+> > +			"ipg", iomem, &fsl_ssi_regconfig);
+> > +	else
+> > +		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+> 
+> As Markus mentioned, the key point here is to be compatible with those
+> non-clock-name platforms.
+> 
+> I think it would be safer to keep the current code while adding an extra
+> clk_disable_unprepare() at the end of probe() as a common routine. And
+> meantime, make sure to have the call for imx only because it seems that
+> the other platforms do not depend on the clock. //a bit guessing here :)
+> 
+> Then we can get a patch like:
+> open() {
+> +	clk_prepare_enable();
+> 	....
+> }
+> 
+> close() {
+> 	....
+> +	clk_disable_unprepare()
+> }
+what is the open() and close()? do you mean the fsl_ssi_startup()
+and fsl_ssi_shutdown()?
+> 
+> probe() {
+> 	clk_get();
+> 	clk_prepare_enable();
+> 	....
+> 	if (xxx)
+> -		goto err_xx;
+> +		return ret;
+> 	....
+> +	clk_disable_unprepare();
+> 	return 0;
+> -err_xx:
+> -	clk_disable_unprepare()
+> }
+If this probe() is fsl_ssi_imx_probe(), I think no need to add
+clk_prepare_enable() or clk_disable_unprepare(), seems there is no 
+registers accessing in this probe.
+> 
+> remove() {
+> 	....
+> -	clk_disable_unprepare()
+> }
+> 
+> As long as you make the subject clear as 'Don't enable core/ipg clock
+> when SSI's idle', I'm sure you can make them within a single patch.
+> 
+> And an alternative way for open() and close() is to put those code into
+> pm_runtime_resume/suspend() instead (since we might have some internal
+> code need to be added by using pm_runtime as well), which would make
+> the further code neater IMO.
+> 
+> Thank you
+> Nicolin
