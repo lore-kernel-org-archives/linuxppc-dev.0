@@ -1,22 +1,33 @@
-Return-Path: <nikhil.badola@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0147.outbound.protection.outlook.com [157.56.111.147])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 243F21A003B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 15:19:55 +1000 (EST)
-From: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
-Date: Wed, 10 Sep 2014 04:45:01 +0000
-Message-ID: <5b5401b39f83458bb5ada39d13abee29@BN1PR0301MB0593.namprd03.prod.outlook.com>
-References: <1408617090-29692-1-git-send-email-nikhil.badola@freescale.com>
- <1408660593.6510.0.camel@snotra.buserror.net>
-In-Reply-To: <1408660593.6510.0.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C06731A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 15:39:59 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Wed, 10 Sep 2014 11:09:56 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 419013940043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 11:09:51 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8A5eHnV66257040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 11:10:18 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8A5dnBU011423
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 11:09:50 +0530
+Subject: [PATCH] rtc/tpo: Driver to support rtc and wakeup on PowerNV platform
+To: linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Wed, 10 Sep 2014 11:08:47 +0530
+Message-ID: <20140910053232.11176.35140.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: a.zummo@towertech.it, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +37,560 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
-ZW50OiBGcmlkYXksIEF1Z3VzdCAyMiwgMjAxNCA0OjA3IEFNDQo+VG86IEJhZG9sYSBOaWtoaWwt
-QjQ2MTcyDQo+Q2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0cmVlQHZn
-ZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGM6IGR0czogdDIwOHg6
-IENoYW5nZSBUMjA4eCBVU0IgY29udHJvbGxlciB2ZXJzaW9uDQo+DQo+T24gVGh1LCAyMDE0LTA4
-LTIxIGF0IDE2OjAxICswNTMwLCBOaWtoaWwgQmFkb2xhIHdyb3RlOg0KPj4gQ2hhbmdlIFVTQiBj
-b250cm9sbGVyIHZlcnNpb24gdG8gMi41IGluIGNvbXBhdGlibGUgc3RyaW5nIGZvcg0KPj4gVDIw
-ODAvVDIwODENCj4+DQo+PiBTaWduZWQtb2ZmLWJ5OiBOaWtoaWwgQmFkb2xhIDxuaWtoaWwuYmFk
-b2xhQGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+IAlDaGVja3BhdGNoIHdhcm5pbmdzIGhhbmRs
-ZWQgYnkgY29tbWl0DQo+PiA2MWE4YzJjNmZlNzEwODJkZTNlYTg2Mjk1ODlkY2RkMGNjNWMzZjAy
-DQo+DQo+VGhhdCBjaGVja3BhdGNoIHdhcm5pbmcgaXMga25vd24gdG8gaGF2ZSBmYWxzZSBwb3Np
-dGl2ZXMgaW4gY2FzZXMgd2hlcmUgdGhlDQo+YmluZGluZyBzYXlzICI8Q0hJUE5BTUU+LWRldmlj
-ZSIgb3IgImRldmljZS08VkVSU0lPTj4iLiAgSWYgeW91IHdhbnQgdG8NCj51cGRhdGUgdGhlIGJp
-bmRpbmcgdG8gZ2l2ZSBhbiBleGFtcGxlIHdpdGggYSB2ZXJzaW9uLCB0aGF0J3MgZmluZSwgYnV0
-DQo+Y2hlY2twYXRjaCBzaG91bGRuJ3QgYmUgd2h5LiAgV2UncmUgbm90IGdvaW5nIHRvIHVwZGF0
-ZSB0aGUgYmluZGluZyBleGFtcGxlDQo+YWdhaW4gdG8gbWF0Y2ggYSBkaWZmZXJlbnQgdmVyc2lv
-biB0aGUgbmV4dCB0aW1lIG9uZSBpcyBhZGRlZCB0byBhIGRldmljZSB0cmVlLi4uDQo+DQo+PiAJ
-RG9jdW1lbnRhdGlvbjogZHRzOiBmc2wtdXNiOiBEb2N1bWVudCBVU0Igbm9kZSBjb21wYXRpYmxl
-IHN0cmluZyBmb3INCj5JUCB2ZXJzaW9uDQo+Pg0KPj4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9m
-c2wvdDIwODFzaS1wb3N0LmR0c2kgfCA0ICsrLS0NCj4+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPj4NCj4+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
-cGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNpDQo+PiBiL2FyY2gvcG93ZXJwYy9ib290
-L2R0cy9mc2wvdDIwODFzaS1wb3N0LmR0c2kNCj4+IGluZGV4IDk3NDc5ZjAuLmFlY2VlOTYgMTAw
-NjQ0DQo+PiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNp
-DQo+PiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNpDQo+
-PiBAQCAtNDEwLDcgKzQxMCw3IEBADQo+PiAgL2luY2x1ZGUvICJxb3JpcS1ncGlvLTMuZHRzaSIN
-Cj4+ICAvaW5jbHVkZS8gInFvcmlxLXVzYjItbXBoLTAuZHRzaSINCj4+ICAJdXNiMDogdXNiQDIx
-MDAwMCB7DQo+PiAtCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waC12Mi40IiwgImZzbC11c2Iy
-LW1waCI7DQo+PiArCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waC12Mi41IiwgImZzbC11c2Iy
-LW1waCI7DQo+DQo+VGhpcyBpcyBhbiBleGFtcGxlIG9mIHdoeSBpdCdzIGJldHRlciB0byByZWx5
-IG9uIHZlcnNpb24gcmVnaXN0ZXJzIHdoZW4gcHJlc2VudC4NCj4NCj4tU2NvdHQNCj4NCkhpIHNj
-b3R0LA0KDQpJIGNhbiBzZWUgdGhpcyBwYXRjaCBpbiAic3VwZXJzZWRlZCIgc3RhdGUgaW4gcGF0
-Y2h3b3JrLiBBcyBwZXIgb3VyIGRpc2N1c3Npb24gdGhlIElQIHZlcnNpb24gY2hlY2tpbmcgaXMg
-dG8gYmUgZG9uZSBieSBjb21wYXRpYmxlIHN0cmluZyBvbmx5LCBzbyBjYW4gSSBwcm9jZWVkIHRv
-IHNlbmQgdGhpcyBwYXRjaCBhZ2Fpbj8NCg==
+The patch implements the OPAL rtc driver that binds with the rtc
+driver subsystem. The driver uses the platform device infrastructure
+to probe the rtc device and register it to rtc class framework. The
+'wakeup' is supported depending upon the property 'has-tpo' present
+in the OF node. It provides a way to load the generic rtc driver in
+in the absence of an OPAL driver.
+
+The patch also moves the existing OPAL rtc get/set time interfaces to the
+new driver and exposes the necessary OPAL calls using EXPORT_SYMBOL_GPL.
+
+Test results:
+-------------
+
+Host:
+[root@tul169p1 linus]# ls -l /sys/class/rtc/
+total 0
+lrwxrwxrwx 1 root root 0 Aug 28 03:21 rtc0 -> ../../devices/opal-rtc/rtc/rtc0
+[root@tul169p1 linus]#
+[root@tul169p1 linus]# cat /sys/devices/opal-rtc/rtc/rtc0/time 
+08:22:16
+[root@tul169p1 linus]# cat /sys/devices/opal-rtc/rtc/rtc0/time 
+08:23:30
+[root@tul169p1 linus]# echo `date '+%s' -d '+ 3 minutes'` > /sys/class/rtc/rtc0/wakealarm
+[root@tul169p1 linus]# cat /sys/class/rtc/rtc0/wakealarm
+1409214402
+[root@tul169p1 linus]#
+
+FSP:
+$ smgr mfgState
+standby
+$ rtim timeofday
+
+System time is valid: 2014/08/28 08:25:16.128924
+
+$ smgr mfgState
+ipling
+$
+
+Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+---
+
+Note:
+This patch depends upon the below patch posted on 'linuxppc-dev@lists.ozlabs.org'
+[PATCH 1/4] powerpc/powernv: Add OPAL check token call
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+ arch/powerpc/include/asm/opal.h                |    7 -
+ arch/powerpc/kernel/time.c                     |    1 
+ arch/powerpc/platforms/powernv/opal-async.c    |    3 
+ arch/powerpc/platforms/powernv/opal-rtc.c      |   63 ++----
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 
+ arch/powerpc/platforms/powernv/opal.c          |    6 +
+ arch/powerpc/platforms/powernv/setup.c         |    2 
+ drivers/rtc/Kconfig                            |   11 +
+ drivers/rtc/Makefile                           |    1 
+ drivers/rtc/rtc-opal.c                         |  257 ++++++++++++++++++++++++
+ 10 files changed, 305 insertions(+), 48 deletions(-)
+ create mode 100644 drivers/rtc/rtc-opal.c
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 4593a93..215c560 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -152,6 +152,8 @@ struct opal_sg_list {
+ #define OPAL_HANDLE_HMI				98
+ #define OPAL_REGISTER_DUMP_REGION		101
+ #define OPAL_UNREGISTER_DUMP_REGION		102
++#define OPAL_WRITE_TPO				103
++#define OPAL_READ_TPO				104
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -790,6 +792,9 @@ int64_t opal_rtc_read(__be32 *year_month_day,
+ 		      __be64 *hour_minute_second_millisecond);
+ int64_t opal_rtc_write(uint32_t year_month_day,
+ 		       uint64_t hour_minute_second_millisecond);
++int64_t opal_tpo_read(uint64_t token, __be32 *year_mon_day, __be32 *hour_min);
++int64_t opal_tpo_write(uint64_t token, uint32_t year_mon_day,
++		       uint32_t hour_min);
+ int64_t opal_cec_power_down(uint64_t request);
+ int64_t opal_cec_reboot(void);
+ int64_t opal_read_nvram(uint64_t buffer, uint64_t size, uint64_t offset);
+@@ -960,8 +965,6 @@ extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
+ extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
+ 
+ struct rtc_time;
+-extern int opal_set_rtc_time(struct rtc_time *tm);
+-extern void opal_get_rtc_time(struct rtc_time *tm);
+ extern unsigned long opal_get_boot_time(void);
+ extern void opal_nvram_init(void);
+ extern void opal_flash_init(void);
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 368ab37..149dc80 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -989,6 +989,7 @@ void GregorianDay(struct rtc_time * tm)
+ 
+ 	tm->tm_wday = day % 7;
+ }
++EXPORT_SYMBOL_GPL(GregorianDay);
+ 
+ void to_tm(int tim, struct rtc_time * tm)
+ {
+diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+index e462ab9..693b6cd 100644
+--- a/arch/powerpc/platforms/powernv/opal-async.c
++++ b/arch/powerpc/platforms/powernv/opal-async.c
+@@ -71,6 +71,7 @@ int opal_async_get_token_interruptible(void)
+ 
+ 	return token;
+ }
++EXPORT_SYMBOL_GPL(opal_async_get_token_interruptible);
+ 
+ int __opal_async_release_token(int token)
+ {
+@@ -102,6 +103,7 @@ int opal_async_release_token(int token)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(opal_async_release_token);
+ 
+ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ {
+@@ -120,6 +122,7 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(opal_async_wait_response);
+ 
+ static int opal_async_comp_event(struct notifier_block *nb,
+ 		unsigned long msg_type, void *msg)
+diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
+index b1885db..a3c1b43 100644
+--- a/arch/powerpc/platforms/powernv/opal-rtc.c
++++ b/arch/powerpc/platforms/powernv/opal-rtc.c
+@@ -15,6 +15,8 @@
+ #include <linux/bcd.h>
+ #include <linux/rtc.h>
+ #include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+@@ -49,11 +51,9 @@ unsigned long __init opal_get_boot_time(void)
+ 		else
+ 			mdelay(10);
+ 	}
+-	if (rc != OPAL_SUCCESS) {
+-		ppc_md.get_rtc_time = NULL;
+-		ppc_md.set_rtc_time = NULL;
++	if (rc != OPAL_SUCCESS)
+ 		return 0;
+-	}
++
+ 	y_m_d = be32_to_cpu(__y_m_d);
+ 	h_m_s_ms = be64_to_cpu(__h_m_s_ms);
+ 	opal_to_tm(y_m_d, h_m_s_ms, &tm);
+@@ -61,49 +61,24 @@ unsigned long __init opal_get_boot_time(void)
+ 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
+ }
+ 
+-void opal_get_rtc_time(struct rtc_time *tm)
++static __init int opal_time_init(void)
+ {
+-	long rc = OPAL_BUSY;
+-	u32 y_m_d;
+-	u64 h_m_s_ms;
+-	__be32 __y_m_d;
+-	__be64 __h_m_s_ms;
++	struct platform_device *pdev;
++	struct device_node *rtc;
+ 
+-	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+-		rc = opal_rtc_read(&__y_m_d, &__h_m_s_ms);
+-		if (rc == OPAL_BUSY_EVENT)
+-			opal_poll_events(NULL);
++	rtc = of_find_node_by_path("/ibm,opal/rtc");
++	if (rtc) {
++		pdev = of_platform_device_create(rtc, "opal-rtc", NULL);
++		of_node_put(rtc);
++	} else {
++		if (opal_check_token(OPAL_RTC_READ) == OPAL_TOKEN_PRESENT ||
++		    opal_check_token(OPAL_READ_TPO) == OPAL_TOKEN_PRESENT)
++			pdev = platform_device_register_simple("opal-rtc", -1,
++							       NULL, 0);
+ 		else
+-			mdelay(10);
++			return -ENODEV;
+ 	}
+-	if (rc != OPAL_SUCCESS)
+-		return;
+-	y_m_d = be32_to_cpu(__y_m_d);
+-	h_m_s_ms = be64_to_cpu(__h_m_s_ms);
+-	opal_to_tm(y_m_d, h_m_s_ms, tm);
+-}
+-
+-int opal_set_rtc_time(struct rtc_time *tm)
+-{
+-	long rc = OPAL_BUSY;
+-	u32 y_m_d = 0;
+-	u64 h_m_s_ms = 0;
+-
+-	y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) / 100)) << 24;
+-	y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) % 100)) << 16;
+-	y_m_d |= ((u32)bin2bcd((tm->tm_mon + 1))) << 8;
+-	y_m_d |= ((u32)bin2bcd(tm->tm_mday));
+ 
+-	h_m_s_ms |= ((u64)bin2bcd(tm->tm_hour)) << 56;
+-	h_m_s_ms |= ((u64)bin2bcd(tm->tm_min)) << 48;
+-	h_m_s_ms |= ((u64)bin2bcd(tm->tm_sec)) << 40;
+-
+-	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+-		rc = opal_rtc_write(y_m_d, h_m_s_ms);
+-		if (rc == OPAL_BUSY_EVENT)
+-			opal_poll_events(NULL);
+-		else
+-			mdelay(10);
+-	}
+-	return rc == OPAL_SUCCESS ? 0 : -EIO;
++	return PTR_ERR_OR_ZERO(pdev);
+ }
++machine_subsys_initcall(powernv, opal_time_init);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 5718855..3dfe93e95 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -248,3 +248,5 @@ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
+ OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
+ OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
+ OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
++OPAL_CALL(opal_tpo_write,			OPAL_WRITE_TPO);
++OPAL_CALL(opal_tpo_read,			OPAL_READ_TPO);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index b44eec3..c87f6d9 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -784,3 +784,9 @@ void opal_free_sg_list(struct opal_sg_list *sg)
+ 			sg = NULL;
+ 	}
+ }
++
++EXPORT_SYMBOL_GPL(opal_poll_events);
++EXPORT_SYMBOL_GPL(opal_rtc_read);
++EXPORT_SYMBOL_GPL(opal_rtc_write);
++EXPORT_SYMBOL_GPL(opal_tpo_read);
++EXPORT_SYMBOL_GPL(opal_tpo_write);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 5a0e2dc..8179c26 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -257,8 +257,6 @@ static unsigned long pnv_memory_block_size(void)
+ static void __init pnv_setup_machdep_opal(void)
+ {
+ 	ppc_md.get_boot_time = opal_get_boot_time;
+-	ppc_md.get_rtc_time = opal_get_rtc_time;
+-	ppc_md.set_rtc_time = opal_set_rtc_time;
+ 	ppc_md.restart = pnv_restart;
+ 	ppc_md.power_off = pnv_power_off;
+ 	ppc_md.halt = pnv_halt;
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index a168e96..4229e00 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -949,6 +949,17 @@ config RTC_DRV_NUC900
+ 	  If you say yes here you get support for the RTC subsystem of the
+ 	  NUC910/NUC920 used in embedded systems.
+ 
++config RTC_DRV_OPAL
++	tristate "IBM OPAL RTC driver"
++	depends on PPC_POWERNV
++	default y
++	help
++	  If you say yes here you get support for the PowerNV platform RTC
++	  driver based on OPAL interfaces.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-opal.
++
+ comment "on-CPU RTC drivers"
+ 
+ config RTC_DRV_DAVINCI
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 56f061c..c4e7d1e 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -91,6 +91,7 @@ obj-$(CONFIG_RTC_DRV_MSM6242)	+= rtc-msm6242.o
+ obj-$(CONFIG_RTC_DRV_MPC5121)	+= rtc-mpc5121.o
+ obj-$(CONFIG_RTC_DRV_MV)	+= rtc-mv.o
+ obj-$(CONFIG_RTC_DRV_NUC900)	+= rtc-nuc900.o
++obj-$(CONFIG_RTC_DRV_OPAL)	+= rtc-opal.o
+ obj-$(CONFIG_RTC_DRV_OMAP)	+= rtc-omap.o
+ obj-$(CONFIG_RTC_DRV_PALMAS)	+= rtc-palmas.o
+ obj-$(CONFIG_RTC_DRV_PCAP)	+= rtc-pcap.o
+diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+new file mode 100644
+index 0000000..583db51
+--- /dev/null
++++ b/drivers/rtc/rtc-opal.c
+@@ -0,0 +1,257 @@
++/*
++ * IBM OPAL RTC driver
++ * Copyright (C) 2014 IBM
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.
++ */
++
++#define DRVNAME		"rtc-opal"
++#define pr_fmt(fmt)	DRVNAME ": " fmt
++
++#include <linux/module.h>
++#include <linux/err.h>
++#include <linux/rtc.h>
++#include <linux/delay.h>
++#include <linux/bcd.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <asm/opal.h>
++#include <asm/firmware.h>
++
++static void opal_to_tm(u32 y_m_d, u64 h_m_s_ms, struct rtc_time *tm)
++{
++	tm->tm_year = ((bcd2bin(y_m_d >> 24) * 100) +
++		       bcd2bin((y_m_d >> 16) & 0xff)) - 1900;
++	tm->tm_mon  = bcd2bin((y_m_d >> 8) & 0xff) - 1;
++	tm->tm_mday = bcd2bin(y_m_d & 0xff);
++	tm->tm_hour = bcd2bin((h_m_s_ms >> 56) & 0xff);
++	tm->tm_min  = bcd2bin((h_m_s_ms >> 48) & 0xff);
++	tm->tm_sec  = bcd2bin((h_m_s_ms >> 40) & 0xff);
++
++	GregorianDay(tm);
++}
++
++static void tm_to_opal(struct rtc_time *tm, u32 *y_m_d, u64 *h_m_s_ms)
++{
++	*y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) / 100)) << 24;
++	*y_m_d |= ((u32)bin2bcd((tm->tm_year + 1900) % 100)) << 16;
++	*y_m_d |= ((u32)bin2bcd((tm->tm_mon + 1))) << 8;
++	*y_m_d |= ((u32)bin2bcd(tm->tm_mday));
++
++	*h_m_s_ms |= ((u64)bin2bcd(tm->tm_hour)) << 56;
++	*h_m_s_ms |= ((u64)bin2bcd(tm->tm_min)) << 48;
++	*h_m_s_ms |= ((u64)bin2bcd(tm->tm_sec)) << 40;
++}
++
++static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
++{
++	long rc = OPAL_BUSY;
++	u32 y_m_d;
++	u64 h_m_s_ms;
++	__be32 __y_m_d;
++	__be64 __h_m_s_ms;
++
++	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
++		rc = opal_rtc_read(&__y_m_d, &__h_m_s_ms);
++		if (rc == OPAL_BUSY_EVENT)
++			opal_poll_events(NULL);
++		else
++			msleep(10);
++	}
++
++	if (rc != OPAL_SUCCESS)
++		return -EIO;
++
++	y_m_d = be32_to_cpu(__y_m_d);
++	h_m_s_ms = be64_to_cpu(__h_m_s_ms);
++	opal_to_tm(y_m_d, h_m_s_ms, tm);
++
++	return 0;
++}
++
++static int opal_set_rtc_time(struct device *dev, struct rtc_time *tm)
++{
++	long rc = OPAL_BUSY;
++	u32 y_m_d = 0;
++	u64 h_m_s_ms = 0;
++
++	tm_to_opal(tm, &y_m_d, &h_m_s_ms);
++	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
++		rc = opal_rtc_write(y_m_d, h_m_s_ms);
++		if (rc == OPAL_BUSY_EVENT)
++			opal_poll_events(NULL);
++		else
++			msleep(10);
++	}
++
++	return rc == OPAL_SUCCESS ? 0 : -EIO;
++}
++
++/*
++ * TPO	Timed Power-On
++ *
++ * TPO get/set OPAL calls care about the hour and min and to make it consistent
++ * with the rtc utility time conversion functions, we use the 'u64' to store
++ * its value and perform bit shift by 32 before use..
++ */
++static int opal_get_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
++{
++	__be32 __y_m_d, __h_m;
++	struct opal_msg msg;
++	int rc, token;
++	u64 h_m_s_ms;
++	u32 y_m_d;
++
++	token = opal_async_get_token_interruptible();
++	if (token < 0) {
++		if (token != -ERESTARTSYS)
++			pr_err("Failed to get the async token\n");
++
++		return token;
++	}
++
++	rc = opal_tpo_read(token, &__y_m_d, &__h_m);
++	if (rc != OPAL_ASYNC_COMPLETION) {
++		rc = -EIO;
++		goto exit;
++	}
++
++	rc = opal_async_wait_response(token, &msg);
++	if (rc) {
++		rc = -EIO;
++		goto exit;
++	}
++
++	rc = be64_to_cpu(msg.params[1]);
++	if (rc != OPAL_SUCCESS) {
++		rc = -EIO;
++		goto exit;
++	}
++
++	y_m_d = be32_to_cpu(__y_m_d);
++	h_m_s_ms = ((u64)be32_to_cpu(__h_m) << 32);
++	opal_to_tm(y_m_d, h_m_s_ms, &alarm->time);
++
++exit:
++	opal_async_release_token(token);
++	return rc;
++}
++
++/* Set Timed Power-On */
++static int opal_set_tpo_time(struct device *dev, struct rtc_wkalrm *alarm)
++{
++	u64 h_m_s_ms = 0, token;
++	struct opal_msg msg;
++	u32 y_m_d = 0;
++	int rc;
++
++	tm_to_opal(&alarm->time, &y_m_d, &h_m_s_ms);
++
++	token = opal_async_get_token_interruptible();
++	if (token < 0) {
++		if (token != -ERESTARTSYS)
++			pr_err("Failed to get the async token\n");
++
++		return token;
++	}
++
++	/* TPO, we care about hour and minute */
++	rc = opal_tpo_write(token, y_m_d,
++			    (u32)((h_m_s_ms >> 32) & 0xffff0000));
++	if (rc != OPAL_ASYNC_COMPLETION) {
++		rc = -EIO;
++		goto exit;
++	}
++
++	rc = opal_async_wait_response(token, &msg);
++	if (rc) {
++		rc = -EIO;
++		goto exit;
++	}
++
++	rc = be64_to_cpu(msg.params[1]);
++	if (rc != OPAL_SUCCESS)
++		rc = -EIO;
++
++exit:
++	opal_async_release_token(token);
++	return rc;
++}
++
++static const struct rtc_class_ops opal_rtc_ops = {
++	.read_time	= opal_get_rtc_time,
++	.set_time	= opal_set_rtc_time,
++	.read_alarm	= opal_get_tpo_time,
++	.set_alarm	= opal_set_tpo_time,
++};
++
++static int opal_rtc_probe(struct platform_device *pdev)
++{
++	struct rtc_device *rtc;
++
++	if (pdev->dev.of_node && of_get_property(pdev->dev.of_node, "has-tpo",
++						 NULL))
++		device_set_wakeup_capable(&pdev->dev, true);
++
++	rtc = devm_rtc_device_register(&pdev->dev, DRVNAME, &opal_rtc_ops,
++				       THIS_MODULE);
++
++	return PTR_ERR_OR_ZERO(rtc);
++}
++
++static const struct of_device_id opal_rtc_match[] = {
++	{
++		.compatible	= "ibm,opal-rtc",
++	},
++	{ }
++};
++MODULE_DEVICE_TABLE(of, opal_rtc_match);
++
++static const struct platform_device_id opal_rtc_driver_ids[] = {
++	{
++		.name		= "opal-rtc",
++	},
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, opal_rtc_driver_ids);
++
++static struct platform_driver opal_rtc_driver = {
++	.probe		= opal_rtc_probe,
++	.id_table	= opal_rtc_driver_ids,
++	.driver		= {
++		.name		= DRVNAME,
++		.owner		= THIS_MODULE,
++		.of_match_table	= opal_rtc_match,
++	},
++};
++
++static int __init opal_rtc_init(void)
++{
++	if (!firmware_has_feature(FW_FEATURE_OPAL))
++		return -ENODEV;
++
++	return platform_driver_register(&opal_rtc_driver);
++}
++
++static void __exit opal_rtc_exit(void)
++{
++	platform_driver_unregister(&opal_rtc_driver);
++}
++
++MODULE_AUTHOR("Neelesh Gupta <neelegup@linux.vnet.ibm.com>");
++MODULE_DESCRIPTION("IBM OPAL RTC driver");
++MODULE_LICENSE("GPL");
++
++module_init(opal_rtc_init);
++module_exit(opal_rtc_exit);
