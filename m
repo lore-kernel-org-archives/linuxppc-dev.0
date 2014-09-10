@@ -1,23 +1,27 @@
-Return-Path: <mpa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c02::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2DA21A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 16:21:40 +1000 (EST)
-Date: Wed, 10 Sep 2014 08:21:18 +0200
-From: Markus Pargmann <mpa@pengutronix.de>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
-Message-ID: <20140910062118.GA26348@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D33C11A043B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 16:42:29 +1000 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id p10so7648246pdj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Sep 2014 23:42:26 -0700 (PDT)
+Date: Tue, 9 Sep 2014 23:42:12 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Markus Pargmann <mpa@pengutronix.de>
+Subject: Re: [alsa-devel] [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in
+ this module
+Message-ID: <20140910064211.GA7652@Asurada>
 References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
  <20140909183804.GA6944@Asurada>
+ <20140910062118.GA26348@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-In-Reply-To: <20140909183804.GA6944@Asurada>
-Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, tiwai@suse.de, linux-kernel@vger.kernel.org,
- broonie@kernel.org, timur@tabi.org, perex@perex.cz, Li.Xiubo@freescale.com,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140910062118.GA26348@pengutronix.de>
+Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, timur@tabi.org,
+ alsa-devel@alsa-project.org, tiwai@suse.de, Li.Xiubo@freescale.com,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,99 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Sep 10, 2014 at 08:21:18AM +0200, Markus Pargmann wrote:
+> On Tue, Sep 09, 2014 at 11:38:05AM -0700, Nicolin Chen wrote:
+> > On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
+> > > @@ -1321,7 +1333,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+> > >  		return -ENOMEM;
+> > >  	}
+> > >  
+> > > -	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+> > > +	if (ssi_private->soc->imx)
+> > > +		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
+> > > +			"ipg", iomem, &fsl_ssi_regconfig);
+> > > +	else
+> > > +		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+> > 
+> > As Markus mentioned, the key point here is to be compatible with those
+> > non-clock-name platforms.
+> > 
+> > I think it would be safer to keep the current code while adding an extra
+> > clk_disable_unprepare() at the end of probe() as a common routine. And
+> > meantime, make sure to have the call for imx only because it seems that
+> > the other platforms do not depend on the clock. //a bit guessing here :)
+> > 
+> > Then we can get a patch like:
+> > open() {
+> > +	clk_prepare_enable();
+> > 	....
+> > }
+> > 
+> > close() {
+> > 	....
+> > +	clk_disable_unprepare()
+> > }
+> > 
+> > probe() {
+> > 	clk_get();
+> > 	clk_prepare_enable();
+> > 	....
+> > 	if (xxx)
+> > -		goto err_xx;
+> > +		return ret;
+> > 	....
+> > +	clk_disable_unprepare();
+> > 	return 0;
+> > -err_xx:
+> > -	clk_disable_unprepare()
+> > }
+> > 
+> > remove() {
+> > 	....
+> > -	clk_disable_unprepare()
+> > }
+> 
+> If I remember correctly, there may be AC97 communication with the codec
+> before any substream is created. That's why we enable the SSI unit right
+> at the beginning for AC97 in fsl_ssi_setup_reg_vals(). So we need to
+> check for AC97 before disabling clocks.
 
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thank you for the input. That's the exact part I couldn't be sure.
+And I agree that adding a check for AC97 will be safer while this
+may keeps itself removable if being unnecessary.
 
-On Tue, Sep 09, 2014 at 11:38:05AM -0700, Nicolin Chen wrote:
-> On Tue, Sep 09, 2014 at 05:18:07PM +0800, Shengjiu Wang wrote:
-> > @@ -1321,7 +1333,11 @@ static int fsl_ssi_probe(struct platform_device =
-*pdev)
-> >  		return -ENOMEM;
-> >  	}
-> > =20
-> > -	ssi_private->regs =3D devm_regmap_init_mmio(&pdev->dev, iomem,
-> > +	if (ssi_private->soc->imx)
-> > +		ssi_private->regs =3D devm_regmap_init_mmio_clk(&pdev->dev,
-> > +			"ipg", iomem, &fsl_ssi_regconfig);
-> > +	else
-> > +		ssi_private->regs =3D devm_regmap_init_mmio(&pdev->dev, iomem,
->=20
-> As Markus mentioned, the key point here is to be compatible with those
-> non-clock-name platforms.
->=20
-> I think it would be safer to keep the current code while adding an extra
-> clk_disable_unprepare() at the end of probe() as a common routine. And
-> meantime, make sure to have the call for imx only because it seems that
-> the other platforms do not depend on the clock. //a bit guessing here :)
->=20
-> Then we can get a patch like:
-> open() {
-> +	clk_prepare_enable();
-> 	....
-> }
->=20
-> close() {
-> 	....
-> +	clk_disable_unprepare()
-> }
->=20
-> probe() {
-> 	clk_get();
-> 	clk_prepare_enable();
-> 	....
-> 	if (xxx)
-> -		goto err_xx;
-> +		return ret;
-> 	....
-> +	clk_disable_unprepare();
-> 	return 0;
-> -err_xx:
-> -	clk_disable_unprepare()
-> }
->=20
-> remove() {
-> 	....
-> -	clk_disable_unprepare()
-> }
-
-If I remember correctly, there may be AC97 communication with the codec
-before any substream is created. That's why we enable the SSI unit right
-at the beginning for AC97 in fsl_ssi_setup_reg_vals(). So we need to
-check for AC97 before disabling clocks.
-
-Best regards,
-
-Markus
-
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJUD+3eAAoJEEpcgKtcEGQQpIwP/13uS6ra+9yDsKky0JK7ndGC
-Rh2J1DaRbJLJ3xw0iDbY9FzccLVUCfhyxc1fRtkr4o2fjPztA5fBKv9lj1j0cWpk
-LhsW4ceHxZECUNOFIq+ZzW8C7dEk9fVYTVGsMeC5phbrGrg0C860B5Sa0S0ZbF8u
-wRxpKr1GElW0+Z5fXlzhWbORxO5oqKQhMYJoyM9hPdmM51olzI4AtqylgddmbURO
-jjebQv6XG25rbYdlHgWxjwJ7QjePEdmKC1lATApANItTEZtMtEG9Swm37PS+D+Yf
-efLXDhWYyw9cj/vSxBoze0cBG90SUaHn10rbjOSlYyYm7of78uisyeG7IFL0h20e
-+dOaT5YbxC/JDLpjCWOo77aMdrfYmkU9hKlaZXs2XM1N0Eour1zVjPB4TUZVAa0a
-foE6+66vOkM8XfmHQBEH4z/L7yq/8PIJBtTVBYdN+41/0Ql3cu70OHFKzoXdW+QG
-GEffwkIOJYts0SAtVRUSb2ZIvIdU8U8SEM335zqOwOy1iPKDtBQa40WAWYJFz/Sy
-hZyqsb68uW7TZENSh5m24JCwzpxUOg3C7YDoQCmpKTxWjeSIwdhnsMO+0k4C9aXT
-d1xXFaHh9+mPjmJ+AngG+U2b6Vbd7lxkxcbteGE35XuFHA6+wj5KL43XQmKympFT
-P4R0PBncjKGHy82hV++M
-=KAho
------END PGP SIGNATURE-----
-
---OXfL5xGRrasGEqWY--
+Thanks
+Nicolin
