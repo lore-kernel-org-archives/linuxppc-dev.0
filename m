@@ -1,24 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9ACA31A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 11:01:21 +1000 (EST)
-Message-ID: <1410305198.24184.336.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2] QE: move qe code from arch/powerpc to drivers/soc
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-Date: Tue, 9 Sep 2014 18:26:38 -0500
-In-Reply-To: <88ded7369c0546aabeececed5f1a4c06@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1409807186-45816-1-git-send-email-B45475@freescale.com>
- <1409870809.24184.163.camel@snotra.buserror.net>
- <88ded7369c0546aabeececed5f1a4c06@BLUPR03MB341.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F15B91A009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 12:26:37 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 10 Sep 2014 12:26:36 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DAA3E2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 12:26:33 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8A2RrIA30474358
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 12:27:53 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8A2QWwb015149
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 12:26:33 +1000
+Date: Wed, 10 Sep 2014 10:26:30 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: fix crashing when passing VF
+Message-ID: <20140910022630.GA14609@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1408415229-16765-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140820020735.GA12789@shangw>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140820020735.GA12789@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,92 +42,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-09 at 04:27 -0500, Zhao Qiang-B45475 wrote:
-> On Fri, 2014-09-05 at 06:47 AM, Wood Scott wrote:
-> 
-> 
-> 
-> > Subject: Re: [PATCH v2] QE: move qe code from arch/powerpc to drivers/soc
-> > 
-> > On Thu, 2014-09-04 at 13:06 +0800, Zhao Qiang wrote:
-> > > LS1 is arm cpu and it has qe ip block.
-> > > move qe code from platform directory to public directory.
-> > >
-> > > QE is an IP block integrates several comunications peripheral
-> > > controllers. It can implement a variety of applications, such as uart,
-> > > usb and tdm and so on.
-> > >
-> > > Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> > > ---
-> > > Changes for v2:
-> > > 	- mv code to drivers/soc
-> > 
-> > Who will be the maintainer of this code once it lives in drivers/soc,
-> > especially once it is no longer used only by PPC?
-> 
-> I have no idea about that, can you explain why you want to know who will be the maintainer.
+Hi, Ben
 
-Currently it falls within "Freescale PPC" which I maintain.  This moves
-it out of arch/powerpc and is the first step towards making it not be
-PPC-specific.  Whose tree are you expecting patches to
-drivers/soc/fsl-qe to go through?
+Sounds this is not merged in the mainline yet.
 
-> > > diff --git a/drivers/soc/qe/Kconfig b/drivers/soc/qe/Kconfig new file
-> > > mode 100644 index 0000000..8b03ca2
-> > > --- /dev/null
-> > > +++ b/drivers/soc/qe/Kconfig
-> > > @@ -0,0 +1,45 @@
-> > > +#
-> > > +# QE Communication options
-> > > +#
-> > > +config QUICC_ENGINE
-> > > +	bool "Freescale QUICC Engine (QE) Support"
-> > > +	depends on FSL_SOC && PPC32
-> > > +	select PPC_LIB_RHEAP
-> > > +	select CRC32
-> > > +	help
-> > > +	  The QUICC Engine (QE) is a new generation of communications
-> > > +	  coprocessors on Freescale embedded CPUs (akin to CPM in older
-> > chips).
-> > > +	  Selecting this option means that you wish to build a kernel
-> > > +	  for a machine with a QE coprocessor.
-> > > +
-> > > +config QE_GPIO
-> > > +	bool "QE GPIO support"
-> > > +	depends on QUICC_ENGINE
-> > > +	select ARCH_REQUIRE_GPIOLIB
-> > > +	help
-> > > +	  Say Y here if you're going to use hardware that connects to the
-> > > +	  QE GPIOs.
-> > > +
-> > > +config UCC_SLOW
-> > > +	bool
-> > > +	default y if SERIAL_QE
-> > > +	help
-> > > +	  This option provides qe_lib support to UCC slow
-> > > +	  protocols: UART, BISYNC, QMC
-> > > +
-> > > +config UCC_FAST
-> > > +	bool
-> > > +	default y if UCC_GETH
-> > > +	help
-> > > +	  This option provides qe_lib support to UCC fast
-> > > +	  protocols: HDLC, Ethernet, ATM, transparent
-> > > +
-> > > +config UCC
-> > > +	bool
-> > > +	default y if UCC_FAST || UCC_SLOW
-> > > +
-> > > +config QE_USB
-> > > +	bool
-> > > +	default y if USB_FSL_QE
-> > > +	help
-> > > +	  QE USB Controller support
-> > 
-> > First could we give these names better namespacing?
-> 
-> Add FSL as prefix?
+Would you like me sending a new version with those fix? Or you don't like
+this?
 
-Yes.
+On Wed, Aug 20, 2014 at 12:07:35PM +1000, Gavin Shan wrote:
+>On Tue, Aug 19, 2014 at 10:27:09AM +0800, Wei Yang wrote:
+>
+>The subject would be "powerpc/eeh: Fix kernel crash when passing through VF".
+>
+>>When doing vfio passthrough a VF, the kernel will crash with following
+>>message:
+>>
+>>[  442.656459] Unable to handle kernel paging request for data at address 0x00000060
+>>[  442.656593] Faulting instruction address: 0xc000000000038b88
+>>[  442.656706] Oops: Kernel access of bad area, sig: 11 [#1]
+>>[  442.656798] SMP NR_CPUS=1024 NUMA PowerNV
+>>[  442.656890] Modules linked in: vfio_pci mlx4_core nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT xt_conntrack bnep bluetooth rfkill ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw tg3 nfsd be2net nfs_acl ses lockd ptp enclosure pps_core kvm_hv kvm_pr shpchp binfmt_misc kvm sunrpc uinput lpfc scsi_transport_fc ipr scsi_tgt [last unloaded: mlx4_core]
+>>[  442.658152] CPU: 40 PID: 14948 Comm: qemu-system-ppc Not tainted 3.10.42yw-pkvm+ #37
+>>[  442.658219] task: c000000f7e2a9a00 ti: c000000f6dc3c000 task.ti: c000000f6dc3c000
+>>[  442.658287] NIP: c000000000038b88 LR: c0000000004435a8 CTR: c000000000455bc0
+>>[  442.658352] REGS: c000000f6dc3f580 TRAP: 0300   Not tainted  (3.10.42yw-pkvm+)
+>>[  442.658419] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 28004882  XER: 20000000
+>>[  442.658577] CFAR: c00000000000908c DAR: 0000000000000060 DSISR: 40000000 SOFTE: 1
+>>GPR00: c0000000004435a8 c000000f6dc3f800 c0000000012b1c10 c00000000da24000
+>>GPR04: 0000000000000003 0000000000001004 00000000000015b3 000000000000ffff
+>>GPR08: c00000000127f5d8 0000000000000000 000000000000ffff 0000000000000000
+>>GPR12: c000000000068078 c00000000fdd6800 000001003c320c80 000001003c3607f0
+>>GPR16: 0000000000000001 00000000105480c8 000000001055aaa8 000001003c31ab18
+>>GPR20: 000001003c10fb40 000001003c360ae8 000000001063bcf0 000000001063bdb0
+>>GPR24: 000001003c15ed70 0000000010548f40 c000001fe5514c88 c000001fe5514cb0
+>>GPR28: c00000000da24000 0000000000000000 c00000000da24000 0000000000000003
+>>[  442.659471] NIP [c000000000038b88] .pcibios_set_pcie_reset_state+0x28/0x130
+>>[  442.659530] LR [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
+>>[  442.659585] Call Trace:
+>>[  442.659610] [c000000f6dc3f800] [00000000000719e0] 0x719e0 (unreliable)
+>>[  442.659677] [c000000f6dc3f880] [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
+>>[  442.659757] [c000000f6dc3f900] [c000000000455bf8] .reset_fundamental+0x38/0x80
+>>[  442.659835] [c000000f6dc3f980] [c0000000004562a8] .pci_dev_specific_reset+0xa8/0xf0
+>>[  442.659913] [c000000f6dc3fa00] [c0000000004448c4] .__pci_dev_reset+0x44/0x430
+>>[  442.659980] [c000000f6dc3fab0] [c000000000444d5c] .pci_reset_function+0x7c/0xc0
+>>[  442.660059] [c000000f6dc3fb30] [d00000001c141ab8] .vfio_pci_open+0xe8/0x2b0 [vfio_pci]
+>>[  442.660139] [c000000f6dc3fbd0] [c000000000586c30] .vfio_group_fops_unl_ioctl+0x3a0/0x630
+>>[  442.660219] [c000000f6dc3fc90] [c000000000255fbc] .do_vfs_ioctl+0x4ec/0x7c0
+>>[  442.660286] [c000000f6dc3fd80] [c000000000256364] .SyS_ioctl+0xd4/0xf0
+>>[  442.660354] [c000000f6dc3fe30] [c000000000009e54] syscall_exit+0x0/0x98
+>>[  442.660420] Instruction dump:
+>>[  442.660454] 4bfffce9 4bfffee4 7c0802a6 fbc1fff0 fbe1fff8 f8010010 f821ff81 7c7e1b78
+>>[  442.660566] 7c9f2378 60000000 60000000 e93e02c8 <e8690060> 2fa30000 41de00c4 2b9f0002
+>>[  442.660679] ---[ end trace a64ac9546bcf0328 ]---
+>>[  442.660724]
+>>
+>>The reason is current VF is not EEH enabled.
+>>
+>>This patch is a quick fix for this problem.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>
+>With all minor comments fixed:
+>
+>Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>>---
+>> arch/powerpc/kernel/eeh.c |    2 +-
+>> 1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>>index 0ba4392..d2d2130 100644
+>>--- a/arch/powerpc/kernel/eeh.c
+>>+++ b/arch/powerpc/kernel/eeh.c
+>>@@ -630,7 +630,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+>> int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>> {
+>> 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+>>-	struct eeh_pe *pe = edev->pe;
+>>+	struct eeh_pe *pe = edev ? edev->pe:NULL;
+>
+>It would be:
+>
+>	struct eeh_pe *pe = edev ? edev->pe : NULL;
+>
+>>
+>> 	if (!pe) {
+>> 		pr_err("%s: No PE found on PCI device %s\n",
+>
+>Thanks,
+>Gavin
 
--Scott
+-- 
+Richard Yang
+Help you, Help me
