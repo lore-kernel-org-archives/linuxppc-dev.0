@@ -1,33 +1,28 @@
-Return-Path: <david.vrabel@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <atomlin@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5608F1A01C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 22:38:34 +1000 (EST)
-Message-ID: <54104641.7020007@citrix.com>
-Date: Wed, 10 Sep 2014 13:38:25 +0100
-From: David Vrabel <david.vrabel@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46FFA1A018A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 23:32:28 +1000 (EST)
+Date: Wed, 10 Sep 2014 14:29:33 +0100
+From: Aaron Tomlin <atomlin@redhat.com>
+To: Chuck Ebbert <cebbert.lkml@gmail.com>
+Subject: Re: [PATCH v2 1/3] init/main.c: Give init_task a canary
+Message-ID: <20140910132933.GG1436@atomlin.usersys.redhat.com>
+References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+ <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+ <1410255749-2956-2-git-send-email-atomlin@redhat.com>
+ <20140910022654.29abc9f3@as>
 MIME-Version: 1.0
-To: Yijing Wang <wangyijing@huawei.com>, David Vrabel
- <david.vrabel@citrix.com>, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
- to configure MSI/MSI-X irq
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>	<1409911806-10519-9-git-send-email-wangyijing@huawei.com>	<5409C8C0.8020200@citrix.com>
- <540E6095.8030409@huawei.com>
-In-Reply-To: <540E6095.8030409@huawei.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Bharat.Bhushan@freescale.com,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20140910022654.29abc9f3@as>
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
+ akpm@linux-foundation.org, peterz@infradead.org, bmr@redhat.com,
+ prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, hannes@cmpxchg.org,
+ jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
+ pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,37 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/14 03:06, Yijing Wang wrote:
-> On 2014/9/5 22:29, David Vrabel wrote:
->> On 05/09/14 11:09, Yijing Wang wrote:
->>> Use MSI chip framework instead of arch MSI functions to configure
->>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
->> [...]
->>> --- a/arch/x86/pci/xen.c
->>> +++ b/arch/x86/pci/xen.c
->> [...]
->>> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
->>>  #endif
->>>  
->>>  #ifdef CONFIG_PCI_MSI
->>> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
->>> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
->>> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
->>> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
->>> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
->>> +	x86_msi_chip = &xen_msi_chip;
->>>  	msi_chip.irq_mask = xen_nop_msi_mask;
->>>  	msi_chip.irq_unmask = xen_nop_msi_mask;
->>
->> Why have these not been changed to set the x86_msi_chip.mask/unmask
->> fields instead?
+On Wed, Sep 10, 2014 at 02:26:54AM -0500, Chuck Ebbert wrote:
+> On Tue,  9 Sep 2014 10:42:27 +0100
+> Aaron Tomlin <atomlin@redhat.com> wrote:
 > 
-> Hi David, x86_msi_chip here is struct msi_chip data type, used to configure MSI/MSI-X
-> irq. msi_chip above is struct irq_chip data type, represent the MSI irq controller. They are
-> not the same object. Their name easily confusing people.
+> > +void task_stack_end_magic(struct task_struct *tsk)
+> > +{
+> > +	unsigned long *stackend;
+> > +
+> > +	stackend = end_of_stack(tsk);
+> > +	*stackend = STACK_END_MAGIC;	/* for overflow detection */
+> > +}
+> > +
+> 
+> For clarity this should probably be called set_task_stack_end_magic().
 
-Ok, it all makes sense now.
+Agreed.
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
+> And has this been tested on parisc and metag, which use STACK_GROWSUP ?
+> I can't see how end_of_stack() as it's defined now could work on those archs.
 
-David
+AFAIU, dup_task_struct() has always done this explicitly.
+I see no reason why init_task requires special attention.
+
+-- 
+Aaron Tomlin
