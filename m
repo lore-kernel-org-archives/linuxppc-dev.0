@@ -1,45 +1,25 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0131.outbound.protection.outlook.com [157.56.110.131])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97F361A041B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 13:27:51 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 10 Sep 2014 08:57:48 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 27276E0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 09:00:11 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8A3SCNp63832306
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 08:58:12 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8A3Ripg006172
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 08:57:45 +0530
-Date: Wed, 10 Sep 2014 11:27:43 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH V7 04/17] PCI: Take additional IOV BAR alignment in
- sizing and assigning
-Message-ID: <20140910032743.GA25108@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1406182947-11302-5-git-send-email-weiyang@linux.vnet.ibm.com>
- <20140820030841.GD6295@google.com> <20140820061402.GA8381@richard>
- <CAErSpo5ZSB-=aQtiM5OenfWWfn2b=TOwxM-BkpwxBGRnmMyAzw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 224BA1A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 14:11:19 +1000 (EST)
+From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v2] QE: move qe code from arch/powerpc to drivers/soc
+Date: Wed, 10 Sep 2014 03:38:18 +0000
+Message-ID: <fcf0691e6fe7410bb72ddb459da9a315@BLUPR03MB341.namprd03.prod.outlook.com>
+References: <1409807186-45816-1-git-send-email-B45475@freescale.com>
+ <1409870809.24184.163.camel@snotra.buserror.net>
+ <88ded7369c0546aabeececed5f1a4c06@BLUPR03MB341.namprd03.prod.outlook.com>
+ <1410305198.24184.336.camel@snotra.buserror.net>
+In-Reply-To: <1410305198.24184.336.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAErSpo5ZSB-=aQtiM5OenfWWfn2b=TOwxM-BkpwxBGRnmMyAzw@mail.gmail.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Guo Chao <yan@linux.vnet.ibm.com>,
- Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Xiaobo Xie <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,262 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 09, 2014 at 02:09:46PM -0600, Bjorn Helgaas wrote:
->On Wed, Aug 20, 2014 at 12:14 AM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
->> On Tue, Aug 19, 2014 at 09:08:41PM -0600, Bjorn Helgaas wrote:
->>>On Thu, Jul 24, 2014 at 02:22:14PM +0800, Wei Yang wrote:
->>>> At resource sizing/assigning stage, resources are divided into two lists,
->>>> requested list and additional list, while the alignement of the additional
->>>> IOV BAR is not taken into the sizeing and assigning procedure.
->>>>
->>>> This is reasonable in the original implementation, since IOV BAR's alignment is
->>>> mostly the size of a PF BAR alignemt. This means the alignment is already taken
->>>> into consideration. While this rule may be violated on some platform.
->>>>
->>>> This patch take the additional IOV BAR alignment in sizing and assigning stage
->>>> explicitly.
->>>>
->>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>> ---
->>>>  drivers/pci/setup-bus.c |   68 +++++++++++++++++++++++++++++++++++++++++------
->>>>  1 file changed, 60 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
->>>> index a5a63ec..d83681f 100644
->>>> --- a/drivers/pci/setup-bus.c
->>>> +++ b/drivers/pci/setup-bus.c
->>>> @@ -120,6 +120,28 @@ static resource_size_t get_res_add_size(struct list_head *head,
->>>>      return 0;
->>>>  }
->>>>
->>>> +static resource_size_t get_res_add_align(struct list_head *head,
->>>> +            struct resource *res)
->>>> +{
->>>> +    struct pci_dev_resource *dev_res;
->>>> +
->>>> +    list_for_each_entry(dev_res, head, list) {
->>>> +            if (dev_res->res == res) {
->>>> +                    int idx = res - &dev_res->dev->resource[0];
->>>> +
->>>> +                    dev_printk(KERN_DEBUG, &dev_res->dev->dev,
->>>> +                               "res[%d]=%pR get_res_add_align min_align %llx\n",
->>>> +                               idx, dev_res->res,
->>>> +                               (unsigned long long)dev_res->min_align);
->>>> +
->>>> +                    return dev_res->min_align;
->>>> +            }
->>>> +    }
->>>> +
->>>> +    return 0;
->>>> +}
->>>
->>>I see that you copied the structure of the existing get_res_add_size()
->>>here.  But I don't understand *that* function.  It looks basically like
->>>this:
->>>
->>>  resource_size_t get_res_add_size(list, res)
->>>  {
->>>    list_for_each_entry(dev_res, head, list) {
->>>      if (dev_res->res == res)
->>>        return dev_res->add_size;
->>>    }
->>>    return 0;
->>>  }
->>>
->>>and we call it like this:
->>>
->>>  dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
->>>
->>>So we start out with dev_res", pass in dev_res->res, search the
->>>realloc_head list to find dev_res again, and return dev_res->add_size.
->>>That looks equivalent to just:
->>>
->>>  dev_res->res->end += dev_res->add_size;
->>>
->>>It looks like get_res_add_size() merely adds a printk and some complexity.
->>>Am I missing something?
->>>
->>
->> Let me try to explain it, if not correct, please let know :-)
->>
->>   dev_res->res->end += get_res_add_size(realloc_head, dev_res->res);
->>
->> would be expanded to:
->>
->>   dev_res->res->end += dev_res_1->add_size;
->>
->> with the dev_res_1 is another one from dev_res which is stored in realloc_head.
->
->Yep, I see now.
->
->>>I do see that there are other callers where we don't actually start with
->>>dev_res, which makes it a little more complicated.  But I think you should
->>>either add something like this:
->>>
->>>  struct pci_dev_resource *res_to_dev_res(list, res)
->>>  {
->>>    list_for_each_entry(dev_res, head, list) {
->>>      if (dev_res->res == res)
->>>        return dev_res;
->>>    }
->>>    return NULL;
->>>  }
->>>
->>
->> Ok, we can extract the common part of these two functions.
->>
->>>which can be used to replace get_res_add_size() and get_res_add_align(), OR
->>>figure out whether the dev_res of interest is always one we've just added.
->>>If it is, maybe you can just make add_to_list() return the dev_res pointer
->>>instead of an errno, and hang onto the pointer.  I'd like that much better
->>>if that's possible.
->>>
->>
->> Sorry, I don't get this point.
->
->Don't worry, it didn't make sense.  I was thinking that we knew the
->dev_res up front and didn't need to look it up, but that's not the
->case.
->
->Sorry it took me so long to respond to this; I'm a bit swamped dealing
->with some regressions.
-
-:-) Never mind, those regressions are with higher priority then this new
-feature.
-
-And I found some bugs in this version during the test, and will merge those
-fixes in the next version.
-
->
->Bjorn
->
->> add_to_list() is used to create the pci_dev_resource list, get_res_add_size()
->> and get_res_add_align() is to retrieve the information in the list. I am not
->> sure how to leverage add_to_list() in these two functions?
->>
->>>> +
->>>> +
->>>>  /* Sort resources by alignment */
->>>>  static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
->>>>  {
->>>> @@ -368,8 +390,9 @@ static void __assign_resources_sorted(struct list_head *head,
->>>>      LIST_HEAD(save_head);
->>>>      LIST_HEAD(local_fail_head);
->>>>      struct pci_dev_resource *save_res;
->>>> -    struct pci_dev_resource *dev_res, *tmp_res;
->>>> +    struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
->>>>      unsigned long fail_type;
->>>> +    resource_size_t add_align, align;
->>>>
->>>>      /* Check if optional add_size is there */
->>>>      if (!realloc_head || list_empty(realloc_head))
->>>> @@ -384,10 +407,31 @@ static void __assign_resources_sorted(struct list_head *head,
->>>>      }
->>>>
->>>>      /* Update res in head list with add_size in realloc_head list */
->>>> -    list_for_each_entry(dev_res, head, list)
->>>> +    list_for_each_entry_safe(dev_res, tmp_res, head, list) {
->>>>              dev_res->res->end += get_res_add_size(realloc_head,
->>>>                                                      dev_res->res);
->>>>
->>>> +            if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
->>>> +                    continue;
->>>> +
->>>> +            add_align = get_res_add_align(realloc_head, dev_res->res);
->>>> +
->>>> +            if (add_align > dev_res->res->start) {
->>>> +                    dev_res->res->start = add_align;
->>>> +                    dev_res->res->end = add_align +
->>>> +                                        resource_size(dev_res->res);
->>>> +
->>>> +                    list_for_each_entry(dev_res2, head, list) {
->>>> +                            align = pci_resource_alignment(dev_res2->dev,
->>>> +                                                           dev_res2->res);
->>>> +                            if (add_align > align)
->>>> +                                    list_move_tail(&dev_res->list,
->>>> +                                                   &dev_res2->list);
->>>> +                    }
->>>> +               }
->>>> +
->>>> +    }
->>>> +
->>>>      /* Try updated head list with add_size added */
->>>>      assign_requested_resources_sorted(head, &local_fail_head);
->>>>
->>>> @@ -930,6 +974,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>>>      struct resource *b_res = find_free_bus_resource(bus,
->>>>                                      mask | IORESOURCE_PREFETCH, type);
->>>>      resource_size_t children_add_size = 0;
->>>> +    resource_size_t children_add_align = 0;
->>>> +    resource_size_t add_align = 0;
->>>>
->>>>      if (!b_res)
->>>>              return -ENOSPC;
->>>> @@ -954,6 +1000,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>>>                      /* put SRIOV requested res to the optional list */
->>>>                      if (realloc_head && i >= PCI_IOV_RESOURCES &&
->>>>                                      i <= PCI_IOV_RESOURCE_END) {
->>>> +                            add_align = max(pci_resource_alignment(dev, r), add_align);
->>>>                              r->end = r->start - 1;
->>>>                              add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
->>>>                              children_add_size += r_size;
->>>> @@ -984,8 +1031,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>>>                      if (order > max_order)
->>>>                              max_order = order;
->>>>
->>>> -                    if (realloc_head)
->>>> +                    if (realloc_head) {
->>>>                              children_add_size += get_res_add_size(realloc_head, r);
->>>> +                            children_add_align = get_res_add_align(realloc_head, r);
->>>> +                            add_align = max(add_align, children_add_align);
->>>> +                    }
->>>>              }
->>>>      }
->>>>
->>>> @@ -996,7 +1046,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>>>              add_size = children_add_size;
->>>>      size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
->>>>              calculate_memsize(size, min_size, add_size,
->>>> -                            resource_size(b_res), min_align);
->>>> +                            resource_size(b_res), max(min_align, add_align));
->>>>      if (!size0 && !size1) {
->>>>              if (b_res->start || b_res->end)
->>>>                      dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
->>>> @@ -1008,10 +1058,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->>>>      b_res->end = size0 + min_align - 1;
->>>>      b_res->flags |= IORESOURCE_STARTALIGN;
->>>>      if (size1 > size0 && realloc_head) {
->>>> -            add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
->>>> -            dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
->>>> -                       b_res, &bus->busn_res,
->>>> -                       (unsigned long long)size1-size0);
->>>> +            add_to_list(realloc_head, bus->self, b_res, size1-size0,
->>>> +                            max(min_align, add_align));
->>>> +            dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
->>>> +                             "%pR to %pR add_size %llx add_align %llx\n", b_res,
->>>> +                             &bus->busn_res, (unsigned long long)size1-size0,
->>>> +                             max(min_align, add_align));
->>>
->>>Factor out this "max(min_align, add_align)" thing so we don't have to
->>>change these lines.  Bonus points if you can also factor it out of the
->>>calculate_memsize() call above.  That one is a pretty complicated ternary
->>>expression that should probably be turned into an "if" instead anyway.
->>>
->>
->> Ok, I get your point. Let me make it more easy to read.
->>
->>>>      }
->>>>      return 0;
->>>>  }
->>>> --
->>>> 1.7.9.5
->>>>
->>
->> --
->> Richard Yang
->> Help you, Help me
->>
-
--- 
-Richard Yang
-Help you, Help me
+T24gV2VkLCAyMDE0LTA5LTEwIGF0IDA3OjI3IC0wNTAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90
+ZToNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAxMCwgMjAxNCA3OjI3IEFNDQo+IFRv
+OiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogTGkgWWFuZy1MZW8tUjU4NDcyOyBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFhpYW9iby1SNjMwNjE7DQo+IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2Ml0gUUU6IG1vdmUgcWUgY29k
+ZSBmcm9tIGFyY2gvcG93ZXJwYyB0byBkcml2ZXJzL3NvYw0KPiANCj4gT24gVHVlLCAyMDE0LTA5
+LTA5IGF0IDA0OjI3IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiBPbiBGcmks
+IDIwMTQtMDktMDUgYXQgMDY6NDcgQU0sIFdvb2QgU2NvdHQgd3JvdGU6DQo+ID4NCj4gPg0KPiA+
+DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBRRTogbW92ZSBxZSBjb2RlIGZyb20gYXJj
+aC9wb3dlcnBjIHRvDQo+ID4gPiBkcml2ZXJzL3NvYw0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAx
+NC0wOS0wNCBhdCAxMzowNiArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiA+ID4gTFMxIGlz
+IGFybSBjcHUgYW5kIGl0IGhhcyBxZSBpcCBibG9jay4NCj4gPiA+ID4gbW92ZSBxZSBjb2RlIGZy
+b20gcGxhdGZvcm0gZGlyZWN0b3J5IHRvIHB1YmxpYyBkaXJlY3RvcnkuDQo+ID4gPiA+DQo+ID4g
+PiA+IFFFIGlzIGFuIElQIGJsb2NrIGludGVncmF0ZXMgc2V2ZXJhbCBjb211bmljYXRpb25zIHBl
+cmlwaGVyYWwNCj4gPiA+ID4gY29udHJvbGxlcnMuIEl0IGNhbiBpbXBsZW1lbnQgYSB2YXJpZXR5
+IG9mIGFwcGxpY2F0aW9ucywgc3VjaCBhcw0KPiA+ID4gPiB1YXJ0LCB1c2IgYW5kIHRkbSBhbmQg
+c28gb24uDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFpoYW8gUWlhbmcgPEI0NTQ3
+NUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+
+ID4gPiA+IAktIG12IGNvZGUgdG8gZHJpdmVycy9zb2MNCj4gPiA+DQo+ID4gPiBXaG8gd2lsbCBi
+ZSB0aGUgbWFpbnRhaW5lciBvZiB0aGlzIGNvZGUgb25jZSBpdCBsaXZlcyBpbg0KPiA+ID4gZHJp
+dmVycy9zb2MsIGVzcGVjaWFsbHkgb25jZSBpdCBpcyBubyBsb25nZXIgdXNlZCBvbmx5IGJ5IFBQ
+Qz8NCj4gPg0KPiA+IEkgaGF2ZSBubyBpZGVhIGFib3V0IHRoYXQsIGNhbiB5b3UgZXhwbGFpbiB3
+aHkgeW91IHdhbnQgdG8ga25vdyB3aG8NCj4gd2lsbCBiZSB0aGUgbWFpbnRhaW5lci4NCj4gDQo+
+IEN1cnJlbnRseSBpdCBmYWxscyB3aXRoaW4gIkZyZWVzY2FsZSBQUEMiIHdoaWNoIEkgbWFpbnRh
+aW4uICBUaGlzIG1vdmVzDQo+IGl0IG91dCBvZiBhcmNoL3Bvd2VycGMgYW5kIGlzIHRoZSBmaXJz
+dCBzdGVwIHRvd2FyZHMgbWFraW5nIGl0IG5vdCBiZQ0KPiBQUEMtc3BlY2lmaWMuICBXaG9zZSB0
+cmVlIGFyZSB5b3UgZXhwZWN0aW5nIHBhdGNoZXMgdG8gZHJpdmVycy9zb2MvZnNsLXFlDQo+IHRv
+IGdvIHRocm91Z2g/DQoNCkhvdyBhYm91dCBuZXR3b3JrIHRyZWU/DQoNCj4gDQo+ID4gPiA+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9xZS9LY29uZmlnIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZp
+ZyBuZXcNCj4gPiA+ID4gZmlsZSBtb2RlIDEwMDY0NCBpbmRleCAwMDAwMDAwLi44YjAzY2EyDQo+
+ID4gPiA+IC0tLSAvZGV2L251bGwNCj4gPiA+ID4gKysrIGIvZHJpdmVycy9zb2MvcWUvS2NvbmZp
+Zw0KPiA+ID4gPiBAQCAtMCwwICsxLDQ1IEBADQo+ID4gPiA+ICsjDQo+ID4gPiA+ICsjIFFFIENv
+bW11bmljYXRpb24gb3B0aW9ucw0KPiA+ID4gPiArIw0KPiA+ID4gPiArY29uZmlnIFFVSUNDX0VO
+R0lORQ0KPiA+ID4gPiArCWJvb2wgIkZyZWVzY2FsZSBRVUlDQyBFbmdpbmUgKFFFKSBTdXBwb3J0
+Ig0KPiA+ID4gPiArCWRlcGVuZHMgb24gRlNMX1NPQyAmJiBQUEMzMg0KPiA+ID4gPiArCXNlbGVj
+dCBQUENfTElCX1JIRUFQDQo+ID4gPiA+ICsJc2VsZWN0IENSQzMyDQo+ID4gPiA+ICsJaGVscA0K
+PiA+ID4gPiArCSAgVGhlIFFVSUNDIEVuZ2luZSAoUUUpIGlzIGEgbmV3IGdlbmVyYXRpb24gb2Yg
+Y29tbXVuaWNhdGlvbnMNCj4gPiA+ID4gKwkgIGNvcHJvY2Vzc29ycyBvbiBGcmVlc2NhbGUgZW1i
+ZWRkZWQgQ1BVcyAoYWtpbiB0byBDUE0gaW4NCj4gb2xkZXINCj4gPiA+IGNoaXBzKS4NCj4gPiA+
+ID4gKwkgIFNlbGVjdGluZyB0aGlzIG9wdGlvbiBtZWFucyB0aGF0IHlvdSB3aXNoIHRvIGJ1aWxk
+IGEga2VybmVsDQo+ID4gPiA+ICsJICBmb3IgYSBtYWNoaW5lIHdpdGggYSBRRSBjb3Byb2Nlc3Nv
+ci4NCj4gPiA+ID4gKw0KPiA+ID4gPiArY29uZmlnIFFFX0dQSU8NCj4gPiA+ID4gKwlib29sICJR
+RSBHUElPIHN1cHBvcnQiDQo+ID4gPiA+ICsJZGVwZW5kcyBvbiBRVUlDQ19FTkdJTkUNCj4gPiA+
+ID4gKwlzZWxlY3QgQVJDSF9SRVFVSVJFX0dQSU9MSUINCj4gPiA+ID4gKwloZWxwDQo+ID4gPiA+
+ICsJICBTYXkgWSBoZXJlIGlmIHlvdSdyZSBnb2luZyB0byB1c2UgaGFyZHdhcmUgdGhhdCBjb25u
+ZWN0cyB0bw0KPiB0aGUNCj4gPiA+ID4gKwkgIFFFIEdQSU9zLg0KPiA+ID4gPiArDQo+ID4gPiA+
+ICtjb25maWcgVUNDX1NMT1cNCj4gPiA+ID4gKwlib29sDQo+ID4gPiA+ICsJZGVmYXVsdCB5IGlm
+IFNFUklBTF9RRQ0KPiA+ID4gPiArCWhlbHANCj4gPiA+ID4gKwkgIFRoaXMgb3B0aW9uIHByb3Zp
+ZGVzIHFlX2xpYiBzdXBwb3J0IHRvIFVDQyBzbG93DQo+ID4gPiA+ICsJICBwcm90b2NvbHM6IFVB
+UlQsIEJJU1lOQywgUU1DDQo+ID4gPiA+ICsNCj4gPiA+ID4gK2NvbmZpZyBVQ0NfRkFTVA0KPiA+
+ID4gPiArCWJvb2wNCj4gPiA+ID4gKwlkZWZhdWx0IHkgaWYgVUNDX0dFVEgNCj4gPiA+ID4gKwlo
+ZWxwDQo+ID4gPiA+ICsJICBUaGlzIG9wdGlvbiBwcm92aWRlcyBxZV9saWIgc3VwcG9ydCB0byBV
+Q0MgZmFzdA0KPiA+ID4gPiArCSAgcHJvdG9jb2xzOiBIRExDLCBFdGhlcm5ldCwgQVRNLCB0cmFu
+c3BhcmVudA0KPiA+ID4gPiArDQo+ID4gPiA+ICtjb25maWcgVUNDDQo+ID4gPiA+ICsJYm9vbA0K
+PiA+ID4gPiArCWRlZmF1bHQgeSBpZiBVQ0NfRkFTVCB8fCBVQ0NfU0xPVw0KPiA+ID4gPiArDQo+
+ID4gPiA+ICtjb25maWcgUUVfVVNCDQo+ID4gPiA+ICsJYm9vbA0KPiA+ID4gPiArCWRlZmF1bHQg
+eSBpZiBVU0JfRlNMX1FFDQo+ID4gPiA+ICsJaGVscA0KPiA+ID4gPiArCSAgUUUgVVNCIENvbnRy
+b2xsZXIgc3VwcG9ydA0KPiA+ID4NCj4gPiA+IEZpcnN0IGNvdWxkIHdlIGdpdmUgdGhlc2UgbmFt
+ZXMgYmV0dGVyIG5hbWVzcGFjaW5nPw0KPiA+DQo+ID4gQWRkIEZTTCBhcyBwcmVmaXg/DQo+IA0K
+PiBZZXMuDQoNCklmIHRoZSBuYW1lcyBjaGFuZ2VkLCB0aGVyZSB3aWxsIGJlIHNvIGEgbG90IG9m
+IGNoYW5nZXMuDQpDYW4gSSBzZW5kIGFub3RoZXIgcGF0Y2ggdG8gY2hhbmdlIGl0Pw0KDQo+IA0K
+PiAtU2NvdHQNCj4gDQpSZWdhcmRzLA0KWmhhbyBRaWFuZw0K
