@@ -1,47 +1,41 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EDDC11A001B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 08:50:04 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 10 Sep 2014 16:50:02 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 47C251FF001D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 16:49:59 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8AMo0Ig43516008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 00:50:00 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8AMnwrb022043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 16:49:59 -0600
-Date: Wed, 10 Sep 2014 15:49:50 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3] topology: add support for node_to_mem_node() to
- determine the fallback node
-Message-ID: <20140910224950.GC9333@linux.vnet.ibm.com>
-References: <20140909190154.GC22906@linux.vnet.ibm.com>
- <20140909190326.GD22906@linux.vnet.ibm.com>
- <20140909171115.75c7702c37dfb23b9e053636@linux-foundation.org>
- <20140910004723.GH22906@linux.vnet.ibm.com>
- <20140910120616.4aa03ed0c0c88fdd1b3fd6c2@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D33EE1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 09:50:23 +1000 (EST)
+Message-ID: <5410E3AE.8020609@hurleysoftware.com>
+Date: Wed, 10 Sep 2014 19:50:06 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140910120616.4aa03ed0c0c88fdd1b3fd6c2@linux-foundation.org>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- David Rientjes <rientjes@google.com>, Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Tejun Heo <tj@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@linux.com>, Wanpeng Li <liwanp@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: bit fields && data tearing
+References: <21512.10628.412205.873477@gargle.gargle.HOWL>				
+ <20140904090952.GW17454@tucnak.redhat.com>				
+ <540859EC.5000407@hurleysoftware.com>				
+ <20140904175044.4697aee4@alan.etchedpixels.co.uk>				
+ <5408C0AB.6050801@hurleysoftware.com>				
+ <20140905001751.GL5001@linux.vnet.ibm.com>				
+ <1409883098.5078.14.camel@jarvis.lan>			
+ <5409243C.4080704@hurleysoftware.com>				
+ <20140905040645.GO5001@linux.vnet.ibm.com>				
+ <1410066442.12512.13.camel@jarvis.lan>				
+ <20140907162146.GK5001@linux.vnet.ibm.com>			
+ <1410116687.2027.19.camel@jarvis.lan>		
+ <540CC305.8010407@hurleysoftware.com>	
+ <1410155407.2027.29.camel@jarvis.lan>		
+ <540E3BFF.7080307@hurleysoftware.com>	 <1410231392.2028.15.camel@jarvis.lan>
+ <540ED929.5040305@hurleysoftware.com> <1410385686.28237.5.camel@jarvis>
+In-Reply-To: <1410385686.28237.5.camel@jarvis>
+Content-Type: text/plain; charset=utf-8
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-arch@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Mikael Pettersson <mikpelinux@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Miroslav Franc <mfranc@redhat.com>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,87 +45,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10.09.2014 [12:06:16 -0700], Andrew Morton wrote:
-> On Tue, 9 Sep 2014 17:47:23 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
+On 09/10/2014 05:48 PM, James Bottomley wrote:
+> On Tue, 2014-09-09 at 06:40 -0400, Peter Hurley wrote:
+>> On 09/08/2014 10:56 PM, James Bottomley wrote:
+>>> On Mon, 2014-09-08 at 19:30 -0400, Peter Hurley wrote:
+>>>> On 09/08/2014 01:50 AM, James Bottomley wrote:
+>>>>>> But additionally, even if gcc combines adjacent writes _that are part
+>>>>>> of the program flow_ then I believe the situation is no worse than
+>>>>>> would otherwise exist.
+>>>>>>
+>>>>>> For instance, given the following:
+>>>>>>
+>>>>>> struct x {
+>>>>>> 	spinlock_t lock;
+>>>>>> 	long a;
+>>>>>> 	byte b;
+>>>>>> 	byte c;
+>>>>>> };
+>>>>>>
+>>>>>> void locked_store_b(struct x *p)
+>>>>>> {
+>>>>>> 	spin_lock(&p->lock);
+>>>>>> 	p->b = 1;
+>>>>>> 	spin_unlock(&p->lock);
+>>>>>> 	p->c = 2;
+>>>>>> }
+>>>>>>
+>>>>>> Granted, the author probably expects ordered writes of
+>>>>>> 	STORE B
+>>>>>> 	STORE C
+>>>>>> but that's not guaranteed because there is no memory barrier
+>>>>>> ordering B before C.
+>>>>>
+>>>>> Yes, there is: loads and stores may not migrate into or out of critical
+>>>>> sections.
+>>>>
+>>>> That's a common misconception.
+>>>>
+>>>> The processor is free to re-order this to:
+>>>>
+>>>> 	STORE C
+>>>> 	STORE B
+>>>> 	UNLOCK
+>>>>
+>>>> That's because the unlock() only guarantees that:
+>>>>
+>>>> Stores before the unlock in program order are guaranteed to complete
+>>>> before the unlock completes. Stores after the unlock _may_ complete
+>>>> before the unlock completes.
+>>>>
+>>>> My point was that even if compiler barriers had the same semantics
+>>>> as memory barriers, the situation would be no worse. That is, code
+>>>> that is sensitive to memory barriers (like the example I gave above)
+>>>> would merely have the same fragility with one-way compiler barriers
+>>>> (with respect to the compiler combining writes).
+>>>>
+>>>> That's what I meant by "no worse than would otherwise exist".
+>>>
+>>> Actually, that's not correct.  This is actually deja vu with me on the
+>>> other side of the argument.  When we first did spinlocks on PA, I argued
+>>> as you did: lock only a barrier for code after and unlock for code
+>>> before.  The failing case is that you can have a critical section which
+>>> performs an atomically required operation and a following unit which
+>>> depends on it being performed.  If you begin the following unit before
+>>> the atomic requirement, you may end up losing.  It turns out this kind
+>>> of pattern is inherent in a lot of mail box device drivers: you need to
+>>> set up the mailbox atomically then poke it.  Setup is usually atomic,
+>>> deciding which mailbox to prime and actually poking it is in the
+>>> following unit.  Priming often involves an I/O bus transaction and if
+>>> you poke before priming, you get a misfire.
+>>
+>> Take it up with the man because this was discussed extensively last
+>> year and it was decided that unlocks would not be full barriers.
+>> Thus the changes to memory-barriers.txt that explicitly note this
+>> and the addition of smp_mb__after_unlock_lock() (for two different
+>> locks; an unlock followed by a lock on the same lock is a full barrier).
+>>
+>> Code that expects ordered writes after an unlock needs to explicitly
+>> add the memory barrier.
 > 
-> > On 09.09.2014 [17:11:15 -0700], Andrew Morton wrote:
-> > > On Tue, 9 Sep 2014 12:03:27 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> > > > 
-> > > > We need to determine the fallback node in slub allocator if the
-> > > > allocation target node is memoryless node. Without it, the SLUB wrongly
-> > > > select the node which has no memory and can't use a partial slab,
-> > > > because of node mismatch. Introduced function, node_to_mem_node(X), will
-> > > > return a node Y with memory that has the nearest distance. If X is
-> > > > memoryless node, it will return nearest distance node, but, if X is
-> > > > normal node, it will return itself.
-> > > > 
-> > > > We will use this function in following patch to determine the fallback
-> > > > node.
-> > > > 
-> > > > ...
-> > > >
-> > > > --- a/include/linux/topology.h
-> > > > +++ b/include/linux/topology.h
-> > > > @@ -119,11 +119,20 @@ static inline int numa_node_id(void)
-> > > >   * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
-> > > 
-> > > This comment could be updated.
-> > 
-> > Will do, do you prefer a follow-on patch or one that replaces this one?
-> 
-> Either is OK for me.  I always turn replacement patches into
-> incrementals so I (and others) can see what changed.
+> I don't really care what ARM does; spin locks are full barriers on
+> architectures that need them.  The driver problem we had that detected
+> our semi permeable spinlocks was an LSI 53c875 which is enterprise class
+> PCI, so presumably not relevant to ARM anyway.
 
-Ok, I'll probably send you just an incremental then myself.
-
-> > > >   */
-> > > >  DECLARE_PER_CPU(int, _numa_mem_);
-> > > > +extern int _node_numa_mem_[MAX_NUMNODES];
-> > > >  
-> > > >  #ifndef set_numa_mem
-> > > >  static inline void set_numa_mem(int node)
-> > > >  {
-> > > >  	this_cpu_write(_numa_mem_, node);
-> > > > +	_node_numa_mem_[numa_node_id()] = node;
-> > > > +}
-> > > > +#endif
-> > > > +
-> > > > +#ifndef node_to_mem_node
-> > > > +static inline int node_to_mem_node(int node)
-> > > > +{
-> > > > +	return _node_numa_mem_[node];
-> > > >  }
-> > > 
-> > > A wee bit of documentation wouldn't hurt.
-> 
-> This?
-
-Yep, I'll make sure it gets added.
-
-> > > > --- a/mm/page_alloc.c
-> > > > +++ b/mm/page_alloc.c
-> > > > @@ -85,6 +85,7 @@ EXPORT_PER_CPU_SYMBOL(numa_node);
-> > > >   */
-> > > >  DEFINE_PER_CPU(int, _numa_mem_);		/* Kernel "local memory" node */
-> > > >  EXPORT_PER_CPU_SYMBOL(_numa_mem_);
-> > > > +int _node_numa_mem_[MAX_NUMNODES];
-> > > 
-> > > How does this get updated as CPUs, memory and nodes are hot-added and
-> > > removed?
-> > 
-> > As CPUs are added, the architecture code in the CPU bringup will update
-> > the NUMA topology. Memory and node hotplug are still open issues, I
-> > mentioned the former in the cover letter. I should have mentioned it in
-> > this commit message as well.
-> 
-> Please define "open issue".  The computer will crash and catch fire?
-> If not that, then what?
-
-Umm, let's call it "undefined" (untested?). Which is no different than
-where we are today, afaict, with memoryless nodes. I think going from
-memoryless->memoryful probably works, but the other direction may not
-(and may not be possible in the common case).
-
--Nish
+Almost certainly ia64 arch_spin_unlock() is not a full barrier.
