@@ -1,20 +1,19 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <nikhil.badola@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
+ (mail-bn1bon0147.outbound.protection.outlook.com [157.56.111.147])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D67521A003B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 15:16:16 +1000 (EST)
-Message-ID: <1410326161.24184.340.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
-From: Scott Wood <scottwood@freescale.com>
-To: Badola Nikhil-B46172 <nikhil.badola@freescale.com>
-Date: Wed, 10 Sep 2014 00:16:01 -0500
-In-Reply-To: <5b5401b39f83458bb5ada39d13abee29@BN1PR0301MB0593.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 243F21A003B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 15:19:55 +1000 (EST)
+From: "nikhil.badola@freescale.com" <nikhil.badola@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
+Date: Wed, 10 Sep 2014 04:45:01 +0000
+Message-ID: <5b5401b39f83458bb5ada39d13abee29@BN1PR0301MB0593.namprd03.prod.outlook.com>
 References: <1408617090-29692-1-git-send-email-nikhil.badola@freescale.com>
  <1408660593.6510.0.camel@snotra.buserror.net>
- <5b5401b39f83458bb5ada39d13abee29@BN1PR0301MB0593.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1408660593.6510.0.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -27,58 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-09 at 23:45 -0500, Badola Nikhil-B46172 wrote:
-> >-----Original Message-----
-> >From: Wood Scott-B07421
-> >Sent: Friday, August 22, 2014 4:07 AM
-> >To: Badola Nikhil-B46172
-> >Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org
-> >Subject: Re: [PATCH] powerpc: dts: t208x: Change T208x USB controller version
-> >
-> >On Thu, 2014-08-21 at 16:01 +0530, Nikhil Badola wrote:
-> >> Change USB controller version to 2.5 in compatible string for
-> >> T2080/T2081
-> >>
-> >> Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
-> >> ---
-> >> 	Checkpatch warnings handled by commit
-> >> 61a8c2c6fe71082de3ea8629589dcdd0cc5c3f02
-> >
-> >That checkpatch warning is known to have false positives in cases where the
-> >binding says "<CHIPNAME>-device" or "device-<VERSION>".  If you want to
-> >update the binding to give an example with a version, that's fine, but
-> >checkpatch shouldn't be why.  We're not going to update the binding example
-> >again to match a different version the next time one is added to a device tree...
-> >
-> >> 	Documentation: dts: fsl-usb: Document USB node compatible string for
-> >IP version
-> >>
-> >>  arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 4 ++--
-> >>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> >> b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> >> index 97479f0..aecee96 100644
-> >> --- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> >> +++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> >> @@ -410,7 +410,7 @@
-> >>  /include/ "qoriq-gpio-3.dtsi"
-> >>  /include/ "qoriq-usb2-mph-0.dtsi"
-> >>  	usb0: usb@210000 {
-> >> -		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-> >> +		compatible = "fsl-usb2-mph-v2.5", "fsl-usb2-mph";
-> >
-> >This is an example of why it's better to rely on version registers when present.
-> >
-> >-Scott
-> >
-> Hi scott,
-> 
-> I can see this patch in "superseded" state in patchwork. As per our discussion the IP version checking is to be done by compatible string only, so can I proceed to send this patch again?
-
-Sorry, apparently I thought that
-http://patchwork.ozlabs.org/patch/383670/ was a newer version of the
-patch, and didn't notice they were for different chips.  No need to
-resend.  Thanks for pointing this out.
-
--Scott
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj5T
+ZW50OiBGcmlkYXksIEF1Z3VzdCAyMiwgMjAxNCA0OjA3IEFNDQo+VG86IEJhZG9sYSBOaWtoaWwt
+QjQ2MTcyDQo+Q2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0cmVlQHZn
+ZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGM6IGR0czogdDIwOHg6
+IENoYW5nZSBUMjA4eCBVU0IgY29udHJvbGxlciB2ZXJzaW9uDQo+DQo+T24gVGh1LCAyMDE0LTA4
+LTIxIGF0IDE2OjAxICswNTMwLCBOaWtoaWwgQmFkb2xhIHdyb3RlOg0KPj4gQ2hhbmdlIFVTQiBj
+b250cm9sbGVyIHZlcnNpb24gdG8gMi41IGluIGNvbXBhdGlibGUgc3RyaW5nIGZvcg0KPj4gVDIw
+ODAvVDIwODENCj4+DQo+PiBTaWduZWQtb2ZmLWJ5OiBOaWtoaWwgQmFkb2xhIDxuaWtoaWwuYmFk
+b2xhQGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+IAlDaGVja3BhdGNoIHdhcm5pbmdzIGhhbmRs
+ZWQgYnkgY29tbWl0DQo+PiA2MWE4YzJjNmZlNzEwODJkZTNlYTg2Mjk1ODlkY2RkMGNjNWMzZjAy
+DQo+DQo+VGhhdCBjaGVja3BhdGNoIHdhcm5pbmcgaXMga25vd24gdG8gaGF2ZSBmYWxzZSBwb3Np
+dGl2ZXMgaW4gY2FzZXMgd2hlcmUgdGhlDQo+YmluZGluZyBzYXlzICI8Q0hJUE5BTUU+LWRldmlj
+ZSIgb3IgImRldmljZS08VkVSU0lPTj4iLiAgSWYgeW91IHdhbnQgdG8NCj51cGRhdGUgdGhlIGJp
+bmRpbmcgdG8gZ2l2ZSBhbiBleGFtcGxlIHdpdGggYSB2ZXJzaW9uLCB0aGF0J3MgZmluZSwgYnV0
+DQo+Y2hlY2twYXRjaCBzaG91bGRuJ3QgYmUgd2h5LiAgV2UncmUgbm90IGdvaW5nIHRvIHVwZGF0
+ZSB0aGUgYmluZGluZyBleGFtcGxlDQo+YWdhaW4gdG8gbWF0Y2ggYSBkaWZmZXJlbnQgdmVyc2lv
+biB0aGUgbmV4dCB0aW1lIG9uZSBpcyBhZGRlZCB0byBhIGRldmljZSB0cmVlLi4uDQo+DQo+PiAJ
+RG9jdW1lbnRhdGlvbjogZHRzOiBmc2wtdXNiOiBEb2N1bWVudCBVU0Igbm9kZSBjb21wYXRpYmxl
+IHN0cmluZyBmb3INCj5JUCB2ZXJzaW9uDQo+Pg0KPj4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9m
+c2wvdDIwODFzaS1wb3N0LmR0c2kgfCA0ICsrLS0NCj4+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNl
+cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPj4NCj4+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
+cGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNpDQo+PiBiL2FyY2gvcG93ZXJwYy9ib290
+L2R0cy9mc2wvdDIwODFzaS1wb3N0LmR0c2kNCj4+IGluZGV4IDk3NDc5ZjAuLmFlY2VlOTYgMTAw
+NjQ0DQo+PiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNp
+DQo+PiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDgxc2ktcG9zdC5kdHNpDQo+
+PiBAQCAtNDEwLDcgKzQxMCw3IEBADQo+PiAgL2luY2x1ZGUvICJxb3JpcS1ncGlvLTMuZHRzaSIN
+Cj4+ICAvaW5jbHVkZS8gInFvcmlxLXVzYjItbXBoLTAuZHRzaSINCj4+ICAJdXNiMDogdXNiQDIx
+MDAwMCB7DQo+PiAtCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waC12Mi40IiwgImZzbC11c2Iy
+LW1waCI7DQo+PiArCQljb21wYXRpYmxlID0gImZzbC11c2IyLW1waC12Mi41IiwgImZzbC11c2Iy
+LW1waCI7DQo+DQo+VGhpcyBpcyBhbiBleGFtcGxlIG9mIHdoeSBpdCdzIGJldHRlciB0byByZWx5
+IG9uIHZlcnNpb24gcmVnaXN0ZXJzIHdoZW4gcHJlc2VudC4NCj4NCj4tU2NvdHQNCj4NCkhpIHNj
+b3R0LA0KDQpJIGNhbiBzZWUgdGhpcyBwYXRjaCBpbiAic3VwZXJzZWRlZCIgc3RhdGUgaW4gcGF0
+Y2h3b3JrLiBBcyBwZXIgb3VyIGRpc2N1c3Npb24gdGhlIElQIHZlcnNpb24gY2hlY2tpbmcgaXMg
+dG8gYmUgZG9uZSBieSBjb21wYXRpYmxlIHN0cmluZyBvbmx5LCBzbyBjYW4gSSBwcm9jZWVkIHRv
+IHNlbmQgdGhpcyBwYXRjaCBhZ2Fpbj8NCg==
