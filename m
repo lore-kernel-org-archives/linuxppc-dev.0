@@ -1,35 +1,26 @@
-Return-Path: <konrad.wilk@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sudipm.mukherjee@gmail.com>
+Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c02::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 196651A0052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 01:01:45 +1000 (EST)
-Date: Wed, 10 Sep 2014 10:59:57 -0400
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: David Vrabel <david.vrabel@citrix.com>
-Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
- to configure MSI/MSI-X irq
-Message-ID: <20140910145957.GD12893@laptop.dumpdata.com>
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
- <5409C8C0.8020200@citrix.com> <540E6095.8030409@huawei.com>
- <54104641.7020007@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DABDA1A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 01:08:02 +1000 (EST)
+Received: by mail-pd0-f173.google.com with SMTP id ft15so9367663pdb.32
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2014 08:08:00 -0700 (PDT)
+Date: Wed, 10 Sep 2014 20:37:50 +0530
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH] sound: aoa: printk replacement
+Message-ID: <20140910150749.GA30775@sudip-PC>
+References: <1410357107-29933-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <1410357424.2761.5.camel@jlt4.sipsolutions.net>
+ <20140910143204.GA30695@sudip-PC> <s5hk35b4juw.wl-tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54104641.7020007@citrix.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Arnd Bergmann <arnd@arndb.de>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Bharat.Bhushan@freescale.com,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <s5hk35b4juw.wl-tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ Jaroslav Kysela <perex@perex.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,50 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 10, 2014 at 01:38:25PM +0100, David Vrabel wrote:
-> On 09/09/14 03:06, Yijing Wang wrote:
-> > On 2014/9/5 22:29, David Vrabel wrote:
-> >> On 05/09/14 11:09, Yijing Wang wrote:
-> >>> Use MSI chip framework instead of arch MSI functions to configure
-> >>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
-> >> [...]
-> >>> --- a/arch/x86/pci/xen.c
-> >>> +++ b/arch/x86/pci/xen.c
-> >> [...]
-> >>> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
-> >>>  #endif
-> >>>  
-> >>>  #ifdef CONFIG_PCI_MSI
-> >>> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
-> >>> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-> >>> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
-> >>> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
-> >>> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
-> >>> +	x86_msi_chip = &xen_msi_chip;
-> >>>  	msi_chip.irq_mask = xen_nop_msi_mask;
-> >>>  	msi_chip.irq_unmask = xen_nop_msi_mask;
-> >>
-> >> Why have these not been changed to set the x86_msi_chip.mask/unmask
-> >> fields instead?
+On Wed, Sep 10, 2014 at 04:43:03PM +0200, Takashi Iwai wrote:
+> At Wed, 10 Sep 2014 20:02:04 +0530,
+> Sudip Mukherjee wrote:
 > > 
-> > Hi David, x86_msi_chip here is struct msi_chip data type, used to configure MSI/MSI-X
-> > irq. msi_chip above is struct irq_chip data type, represent the MSI irq controller. They are
-> > not the same object. Their name easily confusing people.
+> > On Wed, Sep 10, 2014 at 03:57:04PM +0200, Johannes Berg wrote:
+> > > On Wed, 2014-09-10 at 19:21 +0530, Sudip Mukherjee wrote:
+> > > > as pr_* macros are more preffered over printk, so printk replaced
+> > > > with corresponding pr_* macros.
+> > > 
+> > > Are you simply running checkpatch on every file and decided to do
+> > > something about it? :)
+> > > 
+> > i am running checkpatch on the patch generated. if i am doing checkpatch
+> > cleanups then that i do it only in the staging.
+> > only exception : printk .. :)
+> > 
+> > > I'll let Takashi decide whether to take this or not as I no longer care
+> > > about this code, but IMHO this changes is completely pointless since you
+> > > don't also clean up the code to have a common prefix with #define pr_fmt
+> > > and then clean up the callers etc.
+> > > 
+> > i mentioned in the comment that in a future patch we can have pr_fmt,
+> > it was not done in this patch since the changes for this patch is
+> > generated by a script and not manually.
+> > if Takashi accepts this then the next patch will have pr_fmt.
 > 
-> Ok, it all makes sense now.
+> If you're going to work on it, please give a patch series and let me
+> merge once.  There is no good merit to merge a half-baked piece by
+> piece.
 > 
-> Acked-by: David Vrabel <david.vrabel@citrix.com>
-
-You can also add 'Tested-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>'
-
-on the whole series - I ran it through on Xen and on baremetal with a mix of 32/64 builds.
-
-Oh, and also Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> the Xen parts.
+> Regarding the changes you've made: so far, I've merged two such
+> patches just because it's a good exercise for newbies.  You've played
+> it and experienced it enough.  So it's time to go up to a higher
+> stage, more "real" fixes.
+can you please give me some hint of fixes that can be attempted by
+newbies. except printk :)
+so far i have started with fixing the sparse warnings in staging.
 
 > 
-> David
+> For example, if you are still interested in printk stuff, try to
+> change the calls to dev_err() and co.  Of course, this needs more
+> understanding of the code you'll handle, which object is passed for
+> which messages.
 > 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xen.org
-> http://lists.xen.org/xen-devel
+sure , i will send you this one.
+
+thanks
+sudip
+
+
+> 
+> thanks,
+> 
+> Takashi
