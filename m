@@ -1,36 +1,15 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (unknown [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D5EA1A00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 11:30:57 +1000 (EST)
-Message-ID: <5410FAD9.40702@huawei.com>
-Date: Thu, 11 Sep 2014 09:28:57 +0800
-From: Yijing Wang <wangyijing@huawei.com>
-MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, David Vrabel
- <david.vrabel@citrix.com>
-Subject: Re: [Xen-devel] [PATCH v1 08/21] x86/xen/MSI: Use MSI chip framework
- to configure MSI/MSI-X irq
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-9-git-send-email-wangyijing@huawei.com>
- <5409C8C0.8020200@citrix.com> <540E6095.8030409@huawei.com>
- <54104641.7020007@citrix.com> <20140910145957.GD12893@laptop.dumpdata.com>
-In-Reply-To: <20140910145957.GD12893@laptop.dumpdata.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Bharat.Bhushan@freescale.com, Tony Luck <tony.luck@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F109D1A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 12:49:33 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org
+Subject: [PATCH 1/2] powerpc: Add smp_mb() to arch_spin_is_locked()
+Date: Thu, 11 Sep 2014 12:49:21 +1000
+Message-Id: <1410403762-14067-1-git-send-email-mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,65 +19,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/10 22:59, Konrad Rzeszutek Wilk wrote:
-> On Wed, Sep 10, 2014 at 01:38:25PM +0100, David Vrabel wrote:
->> On 09/09/14 03:06, Yijing Wang wrote:
->>> On 2014/9/5 22:29, David Vrabel wrote:
->>>> On 05/09/14 11:09, Yijing Wang wrote:
->>>>> Use MSI chip framework instead of arch MSI functions to configure
->>>>> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
->>>> [...]
->>>>> --- a/arch/x86/pci/xen.c
->>>>> +++ b/arch/x86/pci/xen.c
->>>> [...]
->>>>> @@ -418,9 +430,9 @@ int __init pci_xen_init(void)
->>>>>  #endif
->>>>>  
->>>>>  #ifdef CONFIG_PCI_MSI
->>>>> -	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
->>>>> -	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
->>>>> -	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
->>>>> +	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
->>>>> +	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
->>>>> +	x86_msi_chip = &xen_msi_chip;
->>>>>  	msi_chip.irq_mask = xen_nop_msi_mask;
->>>>>  	msi_chip.irq_unmask = xen_nop_msi_mask;
->>>>
->>>> Why have these not been changed to set the x86_msi_chip.mask/unmask
->>>> fields instead?
->>>
->>> Hi David, x86_msi_chip here is struct msi_chip data type, used to configure MSI/MSI-X
->>> irq. msi_chip above is struct irq_chip data type, represent the MSI irq controller. They are
->>> not the same object. Their name easily confusing people.
->>
->> Ok, it all makes sense now.
->>
->> Acked-by: David Vrabel <david.vrabel@citrix.com>
-> 
-> You can also add 'Tested-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>'
-> 
-> on the whole series - I ran it through on Xen and on baremetal with a mix of 32/64 builds.
-> 
-> Oh, and also Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> the Xen parts.
+Backported from 51d7d5205d33 upstream, for stable 3.14 and 3.16.
 
-Thanks very much for your test and review!
+The kernel defines the function spin_is_locked(), which can be used to
+check if a spinlock is currently locked.
 
-Thanks!
-Yijing.
+Using spin_is_locked() on a lock you don't hold is obviously racy. That
+is, even though you may observe that the lock is unlocked, it may become
+locked at any time.
 
-> 
->>
->> David
->>
->> _______________________________________________
->> Xen-devel mailing list
->> Xen-devel@lists.xen.org
->> http://lists.xen.org/xen-devel
-> 
-> .
-> 
+There is (at least) one exception to that, which is if two locks are
+used as a pair, and the holder of each checks the status of the other
+before doing any update.
 
+Assuming *A and *B are two locks, and *COUNTER is a shared non-atomic
+value:
 
+The first CPU does:
+
+	spin_lock(*A)
+
+	if spin_is_locked(*B)
+		# nothing
+	else
+		smp_mb()
+		LOAD r = *COUNTER
+		r++
+		STORE *COUNTER = r
+
+	spin_unlock(*A)
+
+And the second CPU does:
+
+	spin_lock(*B)
+
+	if spin_is_locked(*A)
+		# nothing
+	else
+		smp_mb()
+		LOAD r = *COUNTER
+		r++
+		STORE *COUNTER = r
+
+	spin_unlock(*B)
+
+Although this is a strange locking construct, it should work.
+
+It seems to be understood, but not documented, that spin_is_locked() is
+not a memory barrier, so in the examples above and below the caller
+inserts its own memory barrier before acting on the result of
+spin_is_locked().
+
+For now we assume spin_is_locked() is implemented as below, and we break
+it out in our examples:
+
+	bool spin_is_locked(*LOCK) {
+		LOAD l = *LOCK
+		return l.locked
+	}
+
+Our intuition is that there should be no problem even if the two code
+sequences run simultaneously such as:
+
+	CPU 0			CPU 1
+	==================================================
+	spin_lock(*A)		spin_lock(*B)
+	LOAD b = *B		LOAD a = *A
+	if b.locked # true	if a.locked # true
+	# nothing		# nothing
+	spin_unlock(*A)		spin_unlock(*B)
+
+If one CPU gets the lock before the other then it will do the update and
+the other CPU will back off:
+
+	CPU 0			CPU 1
+	==================================================
+	spin_lock(*A)
+	LOAD b = *B
+				spin_lock(*B)
+	if b.locked # false	LOAD a = *A
+	else			if a.locked # true
+	smp_mb()		# nothing
+	LOAD r1 = *COUNTER	spin_unlock(*B)
+	r1++
+	STORE *COUNTER = r1
+	spin_unlock(*A)
+
+However in reality spin_lock() itself is not indivisible. On powerpc we
+implement it as a load-and-reserve and store-conditional.
+
+Ignoring the retry logic for the lost reservation case, it boils down to:
+	spin_lock(*LOCK) {
+		LOAD l = *LOCK
+		l.locked = true
+		STORE *LOCK = l
+		ACQUIRE_BARRIER
+	}
+
+The ACQUIRE_BARRIER is required to give spin_lock() ACQUIRE semantics as
+defined in memory-barriers.txt:
+
+     This acts as a one-way permeable barrier.  It guarantees that all
+     memory operations after the ACQUIRE operation will appear to happen
+     after the ACQUIRE operation with respect to the other components of
+     the system.
+
+On modern powerpc systems we use lwsync for ACQUIRE_BARRIER. lwsync is
+also know as "lightweight sync", or "sync 1".
+
+As described in Power ISA v2.07 section B.2.1.1, in this scenario the
+lwsync is not the barrier itself. It instead causes the LOAD of *LOCK to
+act as the barrier, preventing any loads or stores in the locked region
+from occurring prior to the load of *LOCK.
+
+Whether this behaviour is in accordance with the definition of ACQUIRE
+semantics in memory-barriers.txt is open to discussion, we may switch to
+a different barrier in future.
+
+What this means in practice is that the following can occur:
+
+	CPU 0			CPU 1
+	==================================================
+	LOAD a = *A 		LOAD b = *B
+	a.locked = true		b.locked = true
+	LOAD b = *B		LOAD a = *A
+	STORE *A = a		STORE *B = b
+	if b.locked # false	if a.locked # false
+	else			else
+	smp_mb()		smp_mb()
+	LOAD r1 = *COUNTER	LOAD r2 = *COUNTER
+	r1++			r2++
+	STORE *COUNTER = r1
+				STORE *COUNTER = r2	# Lost update
+	spin_unlock(*A)		spin_unlock(*B)
+
+That is, the load of *B can occur prior to the store that makes *A
+visibly locked. And similarly for CPU 1. The result is both CPUs hold
+their lock and believe the other lock is unlocked.
+
+The easiest fix for this is to add a full memory barrier to the start of
+spin_is_locked(), so adding to our previous definition would give us:
+
+	bool spin_is_locked(*LOCK) {
+		smp_mb()
+		LOAD l = *LOCK
+		return l.locked
+	}
+
+The new barrier orders the store to the lock we are locking vs the load
+of the other lock:
+
+	CPU 0			CPU 1
+	==================================================
+	LOAD a = *A 		LOAD b = *B
+	a.locked = true		b.locked = true
+	STORE *A = a		STORE *B = b
+	smp_mb()		smp_mb()
+	LOAD b = *B		LOAD a = *A
+	if b.locked # true	if a.locked # true
+	# nothing		# nothing
+	spin_unlock(*A)		spin_unlock(*B)
+
+Although the above example is theoretical, there is code similar to this
+example in sem_lock() in ipc/sem.c. This commit in addition to the next
+commit appears to be a fix for crashes we are seeing in that code where
+we believe this race happens in practice.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/spinlock.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index 35aa339410bd..4dbe072eecbe 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -61,6 +61,7 @@ static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
+ 
+ static inline int arch_spin_is_locked(arch_spinlock_t *lock)
+ {
++	smp_mb();
+ 	return !arch_spin_value_unlocked(*lock);
+ }
+ 
 -- 
-Thanks!
-Yijing
+1.9.1
