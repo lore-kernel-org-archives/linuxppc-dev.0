@@ -1,21 +1,45 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0121.outbound.protection.outlook.com [65.55.169.121])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B9F871A0024
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 15:39:02 +1000 (EST)
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
- <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
- <tiwai@suse.de>
-Subject: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
-Date: Thu, 11 Sep 2014 13:38:29 +0800
-Message-ID: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E873F1A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 16:15:05 +1000 (EST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7FA3F14012A
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 16:15:03 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 11 Sep 2014 11:44:57 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id B8B033940045
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:44:55 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8B6FKgq57868314
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:45:21 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8B6ErnC029274
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:44:54 +0530
+Message-ID: <54113DDD.1030804@linux.vnet.ibm.com>
+Date: Thu, 11 Sep 2014 11:44:53 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de
+Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, palves@redhat.com, oleg@redhat.com,
+ dhowells@redhat.com, davej@redhat.com,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, davem@davemloft.net,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,154 +49,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the ipg clock enable and disable operation to startup and shutdown,
-that is only enable ipg clock when ssi is working. Keep clock is disabled
-when ssi is in idle.
-otherwise, _fsl_ssi_set_dai_fmt function need to be called in probe,
-so add ipg clock control for it.
+On 05/23/2014 08:45 PM, Anshuman Khandual wrote:
+> 	This patch series adds five new ELF core note sections which can be
+> used with existing ptrace request PTRACE_GETREGSET/SETREGSET for accessing
+> various transactional memory and miscellaneous register sets on PowerPC
+> platform. Please find a test program exploiting these new ELF core note
+> types on a POWER8 system.
+> 
+> RFC: https://lkml.org/lkml/2014/4/1/292
+> V1:  https://lkml.org/lkml/2014/4/2/43
+> V2:  https://lkml.org/lkml/2014/5/5/88
+> 
+> Changes in V3
+> =============
+> (1) Added two new error paths in every TM related get/set functions when regset
+>     support is not present on the system (ENODEV) or when the process does not
+>     have any transaction active (ENODATA) in the context
+> 
+> (2) Installed the active hooks for all the newly added regset core note types
+> 
+> Changes in V2
+> =============
+> (1) Removed all the power specific ptrace requests corresponding to new NT_PPC_*
+>     elf core note types. Now all the register sets can be accessed from ptrace
+>     through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual NT_PPC* core
+>     note type instead
+> (2) Fixed couple of attribute values for REGSET_TM_CGPR register set
+> (3) Renamed flush_tmreg_to_thread as flush_tmregs_to_thread
+> (4) Fixed 32 bit checkpointed GPR support
+> (5) Changed commit messages accordingly
+> 
+> Outstanding Issues
+> ==================
+> (1) Running DSCR register value inside a transaction does not seem to be saved
+>     at thread.dscr when the process stops for ptrace examination.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
+Hey Sam and Suka,
 
-change log
-v2: update patch according to maintainer's review comments.
+Thanks for reviewing this patch series. I was busy with some other work
+for last couple of months. Went through your comments, will get back to
+this patch series in some time and work on the comments.
 
- sound/soc/fsl/fsl_ssi.c |   39 +++++++++++++++++++++++++++++++--------
- 1 file changed, 31 insertions(+), 8 deletions(-)
+Thanks again.
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2fc3e66..4447f95 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -530,6 +530,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi_private *ssi_private =
- 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+	int ret;
-+
-+	ret = clk_prepare_enable(ssi_private->clk);
-+	if (ret)
-+		return ret;
- 
- 	/* When using dual fifo mode, it is safer to ensure an even period
- 	 * size. If appearing to an odd number while DMA always starts its
-@@ -544,6 +549,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- }
- 
- /**
-+ * fsl_ssi_shutdown: shutdown the SSI
-+ *
-+ */
-+static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-+                             struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct fsl_ssi_private *ssi_private =
-+		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+
-+	clk_disable_unprepare(ssi_private->clk);
-+
-+}
-+
-+/**
-  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
-  *
-  * Note: This function can be only called when using SSI as DAI master
-@@ -771,6 +791,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 	struct regmap *regs = ssi_private->regs;
- 	u32 strcr = 0, stcr, srcr, scr, mask;
- 	u8 wm;
-+	int ret;
- 
- 	ssi_private->dai_fmt = fmt;
- 
-@@ -779,6 +800,10 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 		return -EINVAL;
- 	}
- 
-+	ret = clk_prepare_enable(ssi_private->clk);
-+	if (ret)
-+		return ret;
-+
- 	fsl_ssi_setup_reg_vals(ssi_private);
- 
- 	regmap_read(regs, CCSR_SSI_SCR, &scr);
-@@ -811,6 +836,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 			ssi_private->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_SLAVE;
- 			break;
- 		default:
-+			clk_disable_unprepare(ssi_private->clk);
- 			return -EINVAL;
- 		}
- 
-@@ -836,6 +862,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 		ssi_private->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_NORMAL;
- 		break;
- 	default:
-+		clk_disable_unprepare(ssi_private->clk);
- 		return -EINVAL;
- 	}
- 	scr |= ssi_private->i2s_mode;
-@@ -859,6 +886,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 		strcr ^= CCSR_SSI_STCR_TFSI;
- 		break;
- 	default:
-+		clk_disable_unprepare(ssi_private->clk);
- 		return -EINVAL;
- 	}
- 
-@@ -877,6 +905,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
- 		break;
- 	default:
-+		clk_disable_unprepare(ssi_private->clk);
- 		return -EINVAL;
- 	}
- 
-@@ -925,6 +954,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi_private *ssi_private,
- 	if (fmt & SND_SOC_DAIFMT_AC97)
- 		fsl_ssi_setup_ac97(ssi_private);
- 
-+	clk_disable_unprepare(ssi_private->clk);
- 	return 0;
- 
- }
-@@ -1043,6 +1073,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- 
- static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.startup	= fsl_ssi_startup,
-+	.shutdown       = fsl_ssi_shutdown,
- 	.hw_params	= fsl_ssi_hw_params,
- 	.hw_free	= fsl_ssi_hw_free,
- 	.set_fmt	= fsl_ssi_set_dai_fmt,
-@@ -1175,12 +1206,6 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 		return ret;
- 	}
- 
--	ret = clk_prepare_enable(ssi_private->clk);
--	if (ret) {
--		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
--		return ret;
--	}
--
- 	/* For those SLAVE implementations, we ingore non-baudclk cases
- 	 * and, instead, abandon MASTER mode that needs baud clock.
- 	 */
-@@ -1236,7 +1261,6 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	return 0;
- 
- error_pcm:
--	clk_disable_unprepare(ssi_private->clk);
- 
- 	return ret;
- }
-@@ -1246,7 +1270,6 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
- {
- 	if (!ssi_private->use_dma)
- 		imx_pcm_fiq_exit(pdev);
--	clk_disable_unprepare(ssi_private->clk);
- }
- 
- static int fsl_ssi_probe(struct platform_device *pdev)
--- 
-1.7.9.5
+Regards
+Anshuman
