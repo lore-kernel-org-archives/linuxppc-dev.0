@@ -1,41 +1,23 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <atomlin@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2CFA1A0179
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 01:17:31 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 11 Sep 2014 20:47:28 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1B2321258048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 20:47:54 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8BFHouq57802754
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 20:47:50 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8BFHNdd029750
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 20:47:24 +0530
-Message-ID: <5411BD03.3010206@linux.vnet.ibm.com>
-Date: Thu, 11 Sep 2014 20:47:23 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C35A1A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 01:44:04 +1000 (EST)
+From: Aaron Tomlin <atomlin@redhat.com>
+To: peterz@infradead.org
+Subject: [PATCH v3 0/3] sched: Always check the integrity of the canary
+Date: Thu, 11 Sep 2014 16:41:25 +0100
+Message-Id: <1410450088-18236-1-git-send-email-atomlin@redhat.com>
+In-Reply-To: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
+ akpm@linux-foundation.org, minchan@kernel.org, mingo@kernel.com,
+ bmr@redhat.com, prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, hannes@cmpxchg.org, mingo@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, atomlin@redhat.com,
+ jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
+ pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,76 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-Any updates on this patch series?
+Hi Peter,
 
-On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
-> Fast sleep is an idle state, where the core and the L1 and L2
-> caches are brought down to a threshold voltage. This also means that
-> the communication between L2 and L3 caches have to be fenced. However
-> the current P8 chips have a bug wherein this fencing between L2 and
-> L3 caches get delayed by a cpu cycle. This can delay L3 response to
-> the other cpus if they request for data during this time. Thus they
-> would fetch the same data from the memory which could lead to data
-> corruption if L3 cache is not flushed.
-> Patch 4 adds support to work around this.
-> 
-> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
-> off. While it offers higher power savings, it is at the cost of losing
-> hypervisor register state and higher latency.
-> Patch 5-9 adds support for winkle and uses it for offline cpus.
-> 
-> Patch 1 - Moves parameters required discover idle states to a location 
-> common to both cpuidle driver and powernv core code
-> Patch 2 - Populates idle state details from device tree
-> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
-> 
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> 
-> Preeti U Murthy (2):
->   cpuidle/powernv: Populate cpuidle state details by querying the
->     device-tree
->   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
-> 
-> Shreyas B. Prabhu (6):
->   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
->     fast-sleep
->   powerpc/powernv: Add OPAL call to save and restore
->   powerpc: Adding macro for accessing Thread Switch Control Register
->   powerpc/powernv: Add winkle infrastructure
->   powerpc/powernv: Discover and enable winkle
->   powerpc/powernv: Enter deepest supported idle state in offline
-> 
-> Srivatsa S. Bhat (1):
->   powerpc/powernv: Enable Offline CPUs to enter deep idle states
-> 
->  arch/powerpc/include/asm/machdep.h             |   4 +
->  arch/powerpc/include/asm/opal.h                |  10 ++
->  arch/powerpc/include/asm/paca.h                |   3 +
->  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
->  arch/powerpc/include/asm/processor.h           |   6 +-
->  arch/powerpc/include/asm/reg.h                 |   1 +
->  arch/powerpc/kernel/asm-offsets.c              |   1 +
->  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
->  arch/powerpc/kernel/idle.c                     |  30 ++++
->  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
->  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
->  arch/powerpc/platforms/powernv/powernv.h       |   8 +
->  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/smp.c           |  13 +-
->  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
->  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
->  16 files changed, 439 insertions(+), 33 deletions(-)
-> 
+Please let me know if this iteration is satisfactory. Thanks.
+
+
+Currently in the event of a stack overrun a call to schedule()
+does not check for this type of corruption. This corruption is
+often silent and can go unnoticed. However once the corrupted
+region is examined at a later stage, the outcome is undefined
+and often results in a sporadic page fault which cannot be
+handled.
+
+The first patch adds a canary to init_task's end of stack.
+While the second patch provides a helper to determine the
+integrity of the canary. The third checks for a stack
+overrun and takes appropriate action since the damage
+is already done, there is no point in continuing.
+
+Changes since v2:
+
+ * Use BUG_ON in schedule_debug() - Peter Zijlstra
+ * Use a more explicit function
+   name for setting the canary - Chuck Ebbert
+
+Changes since v1:
+
+ * Rebased against v3.17-rc4
+ * Add a canary to init_task - Oleg Nesterov
+ * Fix various code formatting issues - Peter Zijlstra
+ * Introduce Kconfig option - Peter Zijlstra
+
+Aaron Tomlin (3):
+  init/main.c: Give init_task a canary
+  sched: Add helper for task stack page overrun checking
+  sched: BUG when stack end location is over written
+
+ arch/powerpc/mm/fault.c    |  5 +----
+ arch/x86/mm/fault.c        |  5 +----
+ include/linux/sched.h      |  4 ++++
+ init/main.c                |  1 +
+ kernel/fork.c              | 12 +++++++++---
+ kernel/sched/core.c        |  3 +++
+ kernel/trace/trace_stack.c |  4 +---
+ lib/Kconfig.debug          | 12 ++++++++++++
+ 8 files changed, 32 insertions(+), 14 deletions(-)
+
+-- 
+1.9.3
