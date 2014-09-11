@@ -1,31 +1,19 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E5471A0019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 13:42:25 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 11 Sep 2014 09:12:23 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0ED741258048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 09:12:49 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8B3gBT254067438
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 09:12:11 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8B3gJVf028717
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 09:12:19 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V2] powerpc/eeh: Fix kernel crash when passing through VF
-Date: Thu, 11 Sep 2014 11:42:01 +0800
-Message-Id: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3A0A81A002C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 14:42:04 +1000 (EST)
+Message-ID: <1410410523.23087.3.camel@concordia>
+Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 11 Sep 2014 14:42:03 +1000
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-iwEjJ9J59fEMISQc3Y3t"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,75 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When doing vfio passthrough a VF, the kernel will crash with following
-message:
 
-[  442.656459] Unable to handle kernel paging request for data at address 0x00000060
-[  442.656593] Faulting instruction address: 0xc000000000038b88
-[  442.656706] Oops: Kernel access of bad area, sig: 11 [#1]
-[  442.656798] SMP NR_CPUS=1024 NUMA PowerNV
-[  442.656890] Modules linked in: vfio_pci mlx4_core nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT xt_conntrack bnep bluetooth rfkill ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw tg3 nfsd be2net nfs_acl ses lockd ptp enclosure pps_core kvm_hv kvm_pr shpchp binfmt_misc kvm sunrpc uinput lpfc scsi_transport_fc ipr scsi_tgt [last unloaded: mlx4_core]
-[  442.658152] CPU: 40 PID: 14948 Comm: qemu-system-ppc Not tainted 3.10.42yw-pkvm+ #37
-[  442.658219] task: c000000f7e2a9a00 ti: c000000f6dc3c000 task.ti: c000000f6dc3c000
-[  442.658287] NIP: c000000000038b88 LR: c0000000004435a8 CTR: c000000000455bc0
-[  442.658352] REGS: c000000f6dc3f580 TRAP: 0300   Not tainted  (3.10.42yw-pkvm+)
-[  442.658419] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 28004882  XER: 20000000
-[  442.658577] CFAR: c00000000000908c DAR: 0000000000000060 DSISR: 40000000 SOFTE: 1
-GPR00: c0000000004435a8 c000000f6dc3f800 c0000000012b1c10 c00000000da24000
-GPR04: 0000000000000003 0000000000001004 00000000000015b3 000000000000ffff
-GPR08: c00000000127f5d8 0000000000000000 000000000000ffff 0000000000000000
-GPR12: c000000000068078 c00000000fdd6800 000001003c320c80 000001003c3607f0
-GPR16: 0000000000000001 00000000105480c8 000000001055aaa8 000001003c31ab18
-GPR20: 000001003c10fb40 000001003c360ae8 000000001063bcf0 000000001063bdb0
-GPR24: 000001003c15ed70 0000000010548f40 c000001fe5514c88 c000001fe5514cb0
-GPR28: c00000000da24000 0000000000000000 c00000000da24000 0000000000000003
-[  442.659471] NIP [c000000000038b88] .pcibios_set_pcie_reset_state+0x28/0x130
-[  442.659530] LR [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
-[  442.659585] Call Trace:
-[  442.659610] [c000000f6dc3f800] [00000000000719e0] 0x719e0 (unreliable)
-[  442.659677] [c000000f6dc3f880] [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
-[  442.659757] [c000000f6dc3f900] [c000000000455bf8] .reset_fundamental+0x38/0x80
-[  442.659835] [c000000f6dc3f980] [c0000000004562a8] .pci_dev_specific_reset+0xa8/0xf0
-[  442.659913] [c000000f6dc3fa00] [c0000000004448c4] .__pci_dev_reset+0x44/0x430
-[  442.659980] [c000000f6dc3fab0] [c000000000444d5c] .pci_reset_function+0x7c/0xc0
-[  442.660059] [c000000f6dc3fb30] [d00000001c141ab8] .vfio_pci_open+0xe8/0x2b0 [vfio_pci]
-[  442.660139] [c000000f6dc3fbd0] [c000000000586c30] .vfio_group_fops_unl_ioctl+0x3a0/0x630
-[  442.660219] [c000000f6dc3fc90] [c000000000255fbc] .do_vfs_ioctl+0x4ec/0x7c0
-[  442.660286] [c000000f6dc3fd80] [c000000000256364] .SyS_ioctl+0xd4/0xf0
-[  442.660354] [c000000f6dc3fe30] [c000000000009e54] syscall_exit+0x0/0x98
-[  442.660420] Instruction dump:
-[  442.660454] 4bfffce9 4bfffee4 7c0802a6 fbc1fff0 fbe1fff8 f8010010 f821ff81 7c7e1b78
-[  442.660566] 7c9f2378 60000000 60000000 e93e02c8 <e8690060> 2fa30000 41de00c4 2b9f0002
-[  442.660679] ---[ end trace a64ac9546bcf0328 ]---
-[  442.660724]
+--=-iwEjJ9J59fEMISQc3Y3t
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The reason is current VF is not EEH enabled.
+Hi Linus,
 
-This patch is a quick fix for this problem.
+Hopefully you saw the message from Ben adding me as a co-maintainer for pow=
+erpc:
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-V1 -> V2: 
-   1. code style and patch subject adjustment
-
----
- arch/powerpc/kernel/eeh.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?i=
+d=3Dea668936b708029a0a11422ff834b651ac434c2d
 
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 4a45ba8..403445e 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -625,7 +625,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
- int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
- {
- 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
--	struct eeh_pe *pe = edev->pe;
-+	struct eeh_pe *pe = edev ? edev->pe : NULL;
- 
- 	if (!pe) {
- 		pr_err("%s: No PE found on PCI device %s\n",
--- 
-1.7.9.5
+Ben's travelling so this is my first attempt at a pull request.
+
+There's nothing too exciting. The CONFIG_FHANDLE one is annoying, I know yo=
+u
+love defconfig changes. But we've had a couple of developers waste time
+debugging boxes that wouldn't boot, only to realise it's just that systemd
+needs CONFIG_FHANDLE and our defconfigs don't have it.
+
+The new syscalls seem to be working, I've run the selftests that exist, and
+also let trinity bash on them for a while.
+
+
+The following changes since commit 2ce7598c9a453e0acd0e07be7be3f5eb39608ebd=
+:
+
+  Linux 3.17-rc4 (2014-09-07 16:09:43 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
+
+for you to fetch changes up to 7d59deb50aafbdc01b52aed209d202d827261cb0:
+
+  powerpc: Wire up sys_seccomp(), sys_getrandom() and sys_memfd_create() (2=
+014-09-09 19:02:47 +1000)
+
+----------------------------------------------------------------
+Anton Blanchard (1):
+      powerpc/perf: Fix ABIv2 kernel backtraces
+
+Cyril Bur (1):
+      powerpc: Make CONFIG_FHANDLE=3Dy for all 64 bit powerpc defconfigs
+
+Li Zhong (1):
+      powerpc: use machine_subsys_initcall() for opal_hmi_handler_init()
+
+Pranith Kumar (1):
+      powerpc: Wire up sys_seccomp(), sys_getrandom() and sys_memfd_create(=
+)
+
+Thomas Falcon (1):
+      powerpc/pseries: Fix endian issues in memory hotplug
+
+ arch/powerpc/configs/cell_defconfig             |  1 +
+ arch/powerpc/configs/celleb_defconfig           |  1 +
+ arch/powerpc/configs/corenet64_smp_defconfig    |  1 +
+ arch/powerpc/configs/g5_defconfig               |  1 +
+ arch/powerpc/configs/maple_defconfig            |  1 +
+ arch/powerpc/configs/pasemi_defconfig           |  1 +
+ arch/powerpc/configs/ppc64_defconfig            |  1 +
+ arch/powerpc/configs/ppc64e_defconfig           |  1 +
+ arch/powerpc/configs/ps3_defconfig              |  1 +
+ arch/powerpc/configs/pseries_defconfig          |  1 +
+ arch/powerpc/configs/pseries_le_defconfig       |  1 +
+ arch/powerpc/include/asm/ptrace.h               |  7 +++++++
+ arch/powerpc/include/asm/systbl.h               |  3 +++
+ arch/powerpc/include/asm/unistd.h               |  2 +-
+ arch/powerpc/include/uapi/asm/unistd.h          |  3 +++
+ arch/powerpc/perf/callchain.c                   |  2 +-
+ arch/powerpc/platforms/powernv/opal-hmi.c       |  3 ++-
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 36 +++++++++++++++++++--=
+---------------
+ 18 files changed, 47 insertions(+), 20 deletions(-)
+
+
+
+
+--=-iwEjJ9J59fEMISQc3Y3t
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAABAgAGBQJUESgbAAoJEFHr6jzI4aWAyGwP/jjp4Y9XG89OEnASp4TfD6vf
+0VbsK5Yo3HAn6Ci4H7HLWLsO3Hc9FbtTC84K6ZbyddWvDMGpkh6Xi0e+2pSE/ZKS
+RJ8NdVziKfUdTx7wi3lsbh5RB5t8Qs8CkALL27WuWtSMYUs/4m9jeRRUq3pm3lIR
+IdXtu0Gcv+zugo9S88sMKidyqtP+ITZLkjrSFphKGhnq4T2nLJb7pAEcpwISSMxi
++gtbVHRWGQ97Le8bADvq7NMLTe17fas45kOFaJ8RN1CGlV0cY4+IfEPOi5VsOhhS
+4Oji7peR/DBx0bbeTtOxJZL8m0GPQ9/0is3L+/8MUiVlU8GvCNSc4LU7UGcP/Iqf
+ZdeUGKKwNGRqaClUcdpwNKvtpQXlczVsOWBEPtIMuipdblsSQWDinoQPx4xhkay+
+f7gZkzeCjqToGLzbtz6GRdyVqDyGPAC73uAhX1phtoHDve5iN+dbR4BE0o2xaR5I
+TJKlvE2dDL/KExeBjzbUKXqeqAnNrrw4iE5M788mwmemafVE9mgJ0GILp4v7xxUv
+ap5dQpXAbx/plARyNl6w/d5tINvUCd8I07Q4W6vqtXCearaNvtFT5jRI2iTBuj20
+CplO7wY6XcbhPiIQSk0n+8mOWV7SXFVEA2xPlpoaYZUGNnk2mrOE+OpQG/nO3mte
+cXQmaHLDr7X0Yvo+ua6d
+=yc6X
+-----END PGP SIGNATURE-----
+
+--=-iwEjJ9J59fEMISQc3Y3t--
