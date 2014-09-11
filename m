@@ -1,45 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E873F1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 16:15:05 +1000 (EST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7FA3F14012A
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 16:15:03 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 11 Sep 2014 11:44:57 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B8B033940045
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:44:55 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8B6FKgq57868314
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:45:21 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8B6ErnC029274
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2014 11:44:54 +0530
-Message-ID: <54113DDD.1030804@linux.vnet.ibm.com>
-Date: Thu, 11 Sep 2014 11:44:53 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 701341A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 16:37:16 +1000 (EST)
+Date: Thu, 11 Sep 2014 08:36:51 +0200
+From: Markus Pargmann <mpa@pengutronix.de>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [PATCH V1] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140911063651.GD16489@pengutronix.de>
+References: <e5a50d8bfde3aea5fcd092118da5aea4072c7e2f.1410254125.git.shengjiu.wang@freescale.com>
+ <20140909183804.GA6944@Asurada> <20140910081251.GA14662@audiosh1>
+ <20140910174204.GA4628@Asurada>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, palves@redhat.com, oleg@redhat.com,
- dhowells@redhat.com, davej@redhat.com,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, davem@davemloft.net,
- Sam Bobroff <sam.bobroff@au1.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="KDt/GgjP6HVcx58l"
+In-Reply-To: <20140910174204.GA4628@Asurada>
+Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, tiwai@suse.de, linux-kernel@vger.kernel.org,
+ broonie@kernel.org, timur@tabi.org, perex@perex.cz, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,48 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/23/2014 08:45 PM, Anshuman Khandual wrote:
-> 	This patch series adds five new ELF core note sections which can be
-> used with existing ptrace request PTRACE_GETREGSET/SETREGSET for accessing
-> various transactional memory and miscellaneous register sets on PowerPC
-> platform. Please find a test program exploiting these new ELF core note
-> types on a POWER8 system.
-> 
-> RFC: https://lkml.org/lkml/2014/4/1/292
-> V1:  https://lkml.org/lkml/2014/4/2/43
-> V2:  https://lkml.org/lkml/2014/5/5/88
-> 
-> Changes in V3
-> =============
-> (1) Added two new error paths in every TM related get/set functions when regset
->     support is not present on the system (ENODEV) or when the process does not
->     have any transaction active (ENODATA) in the context
-> 
-> (2) Installed the active hooks for all the newly added regset core note types
-> 
-> Changes in V2
-> =============
-> (1) Removed all the power specific ptrace requests corresponding to new NT_PPC_*
->     elf core note types. Now all the register sets can be accessed from ptrace
->     through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual NT_PPC* core
->     note type instead
-> (2) Fixed couple of attribute values for REGSET_TM_CGPR register set
-> (3) Renamed flush_tmreg_to_thread as flush_tmregs_to_thread
-> (4) Fixed 32 bit checkpointed GPR support
-> (5) Changed commit messages accordingly
-> 
-> Outstanding Issues
-> ==================
-> (1) Running DSCR register value inside a transaction does not seem to be saved
->     at thread.dscr when the process stops for ptrace examination.
 
-Hey Sam and Suka,
+--KDt/GgjP6HVcx58l
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for reviewing this patch series. I was busy with some other work
-for last couple of months. Went through your comments, will get back to
-this patch series in some time and work on the comments.
+On Wed, Sep 10, 2014 at 10:42:04AM -0700, Nicolin Chen wrote:
+> On Wed, Sep 10, 2014 at 04:12:53PM +0800, Shengjiu Wang wrote:
+> > > Then we can get a patch like:
+> > > open() {
+> > > +	clk_prepare_enable();
+> > > 	....
+> > > }
+> > >=20
+> > > close() {
+> > > 	....
+> > > +	clk_disable_unprepare()
+> > > }
+>=20
+> > what is the open() and close()? do you mean the fsl_ssi_startup()
+> > and fsl_ssi_shutdown()?
+>=20
+> Yea.
+>=20
+> > > probe() {
+> > > 	clk_get();
+> > > 	clk_prepare_enable();
+> > > 	....
+> > > 	if (xxx)
+> > > -		goto err_xx;
+> > > +		return ret;
+> > > 	....
+> > > +	clk_disable_unprepare();
+> > > 	return 0;
+> > > -err_xx:
+> > > -	clk_disable_unprepare()
+> > > }
+>=20
+> > If this probe() is fsl_ssi_imx_probe(), I think no need to add
+> > clk_prepare_enable() or clk_disable_unprepare(), seems there is no=20
+> > registers accessing in this probe.
+>=20
+> This is trying to be safe, especially for such a driver being used
+> by multiple platforms. You can omit this as long as the patch can
+> pass the test on old imx, PowerPC, and AC97 platforms.
+>=20
+> >
+>=20
+> And another risk just came to my mind is that there would be a
+> possibility that a machine driver would call set_dai_fmt() early,
+> after SSI's probe() and before SSI's startup(), if the machine
+> driver contains dai_fmt assignment in its probe(). Then, without
+> regmap_mmio_clk(), it'll be tough for us over here because we may
+> also need to add clock enable/disable for set_dai_fmt/set_sysclk(),
+> even if there might be still tiny risk that we missed something.
 
-Thanks again.
+Thanks, didn't thought about that. As there are no restrictions on when
+these functions may be called, it has to be handled.
 
-Regards
-Anshuman
+>=20
+> Then there could be a selfish approach to circumvent it is to use
+> regmap_mmio_clk() with "ipg" at the beginning and call regmap_mmio()
+> without "ipg" if getting a failed return value from regmap_mmio_clk,
+> and meanwhile to keep the clock always enabled for the regmap_mmio()
+> case just like what the current driver is doing. This may result
+> those non-ipg-clk platforms can't benefit from this refinement
+> unless they update their DT bindings -- use "ipg" for core clock
+> This might be the safest and simplest way for us, I'm not sure
+> everyone would be comfortable with this idea though.
+
+I like the "selfish" approach. It would save a lot of clock
+enabling/disabling and error handling and at the same time it doesn't break
+the DT compatibility. The platforms with an old DT would have the old
+behaviour, but that could be changed by updating the devicetrees which
+should be easy to do for all the imx SoCs.
+
+Best regards,
+
+Markus
+
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+--KDt/GgjP6HVcx58l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJUEUMDAAoJEEpcgKtcEGQQ1RIP+wd4IRjhvx2YWqVobh+NQuor
+VwnuuI0u6whpi+X7WaSzvbsKJTOkZop1qO+zxTLkkTwSi96oTuQyvcEXCth+tTfp
+JRVAGJGeZ2/QlbKregLCb5Yh9XRQcE0w0F1TkxwXnEez3MxHOIrGqh+UJwnInO3k
+pyZhjwKqNehUbPfRp93T6QzdI1H479cvctRBk4NC7lSqMb1XxO0yyl6VQvAryHLH
+6QhWTP+lTRUnS4RyoUwfoKycGpi19/l4JqcDUVKKbpZSKygdjOJsyzMmvjd/u6EK
+cwGC/n3D0e0HdbjRPsumiJQ1GG5vMzE7JU6vpueGPYGE8NqX+E/BF3D2ewHtxZUr
+jaY6LH0K5kmtrRjMpKl8KR1BQba/aW2qN+b2vsdfqR15zqlw1UkvnJbNNgeNTxRh
+onVh+DBs4A/mY1r7kugtCDnOmGjuCoJp+ChyvKC0MEgvpsk2t7Oeq1ujRrrwGwXo
+py4ABKjXY8Td/3UyHVDG6Bll1YmFQZpEGwG7oVtiE5M6G5LNzsB2U+Fb2oSFOfYT
+NxXrr1FWcVRHiNxM6DsqIl8Oreo+TBV7YmBFR6uxY1g2R1GTozTaRBbFPdJy8UYu
+z/8a8e4BZ/6NauP5x2W+a9eg8XEbLfSSgakB3/98jOkWA3pyNc5HRz5MY5p/6cCI
+5cXbFRIiq9/S2avbfXzg
+=I04H
+-----END PGP SIGNATURE-----
+
+--KDt/GgjP6HVcx58l--
