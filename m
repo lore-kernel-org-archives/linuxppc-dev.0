@@ -1,28 +1,32 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-f169.google.com (mail-ob0-f169.google.com
- [209.85.214.169])
+Return-Path: <cebbert.lkml@gmail.com>
+Received: from mail-oa0-x22b.google.com (mail-oa0-x22b.google.com
+ [IPv6:2607:f8b0:4003:c02::22b])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 338761A006C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 21:33:24 +1000 (EST)
-Received: by mail-ob0-f169.google.com with SMTP id wp18so5192666obc.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 04:33:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 12D7C1A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 22:23:53 +1000 (EST)
+Received: by mail-oa0-f43.google.com with SMTP id m19so2861262oag.30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2014 05:23:50 -0700 (PDT)
+Date: Thu, 11 Sep 2014 07:23:45 -0500
+From: Chuck Ebbert <cebbert.lkml@gmail.com>
+To: Aaron Tomlin <atomlin@redhat.com>
+Subject: Re: [PATCH v2 1/3] init/main.c: Give init_task a canary
+Message-ID: <20140911072345.012f4ef3@as>
+In-Reply-To: <20140910132933.GG1436@atomlin.usersys.redhat.com>
+References: <20140904161124.GD1436@atomlin.usersys.redhat.com>
+ <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+ <1410255749-2956-2-git-send-email-atomlin@redhat.com>
+ <20140910022654.29abc9f3@as>
+ <20140910132933.GG1436@atomlin.usersys.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1410430423-1246-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1410430423-1246-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Thu, 11 Sep 2014 17:03:22 +0530
-Message-ID: <CAKohpo=uB252XLfx3tHPA8uk5RPkWB0SPQ_UxzVw70c-DWuHWg@mail.gmail.com>
-Subject: Re: [PATCH v3] cpufreq: powernv: Set the cpus to nominal frequency
- during reboot/kexec
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- David Laight <David.Laight@aculab.com>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
+ akpm@linux-foundation.org, peterz@infradead.org, bmr@redhat.com,
+ prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, akpm@google.com, hannes@cmpxchg.org,
+ jgh@redhat.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de,
+ pzijlstr@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11 September 2014 15:43, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patch ensures the cpus to kexec/reboot at nominal frequency.
-> Nominal frequency is the highest cpu frequency on PowerPC at
-> which the cores can run without getting throttled.
->
-> If the host kernel had set the cpus to a low pstate and then it
-> kexecs/reboots to a cpufreq disabled kernel it would cause the target
-> kernel to perform poorly. It will also increase the boot up time of
-> the target kernel. So set the cpus to high pstate, in this case to
-> nominal frequency before rebooting to avoid such scenarios.
->
-> The reboot notifier will set the cpus to nominal frequncy.
->
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> Changes v2->v3:
-> We return EBUSY when cpufreq governor tries to change the frequency
-> after rebooting is set to true. This results in console being flushed
-> with error messages indicating failed attempts to change the
-> frequency. So instead of returning EBUSY we return 0 to stop the
-> governor from changing the frequency without alerting a failure to
-> do the same on reboot, as this  is not an errorneaos condition.
+On Wed, 10 Sep 2014 14:29:33 +0100
+Aaron Tomlin <atomlin@redhat.com> wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On Wed, Sep 10, 2014 at 02:26:54AM -0500, Chuck Ebbert wrote:
+> > And has this been tested on parisc and metag, which use STACK_GROWSUP ?
+> > I can't see how end_of_stack() as it's defined now could work on those archs.
+> 
+> AFAIU, dup_task_struct() has always done this explicitly.
+> I see no reason why init_task requires special attention.
+> 
+
+I guess what I'm saying is, I can't see how the stack canary could have ever
+detected any problems on parisc and metag. How did you test your patches on x86?
+Maybe someone could run tests on those other archs.
