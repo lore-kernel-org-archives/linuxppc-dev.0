@@ -1,38 +1,30 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 854A71A0019
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 03:47:11 +1000 (EST)
-Date: Thu, 11 Sep 2014 18:44:09 +0100
-From: Aaron Tomlin <atomlin@redhat.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH v3 0/3] sched: Always check the integrity of the canary
-Message-ID: <20140911174408.GA1873@atomlin.usersys.redhat.com>
-References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
- <1410450088-18236-1-git-send-email-atomlin@redhat.com>
- <063D6719AE5E284EB5DD2968C1650D6D17490245@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97A181A002C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 06:02:11 +1000 (EST)
+Message-ID: <5411FFB6.2080702@hurleysoftware.com>
+Date: Thu, 11 Sep 2014 16:01:58 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: bit fields && data tearing
+References: <20140712181328.GA8738@redhat.com>	<54079B70.4050200@hurleysoftware.com>	<1409785893.30640.118.camel@pasglop>	<063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>	<1409824374.4246.62.camel@pasglop>	<5408E458.3@zytor.com>	<54090AF4.7060406@hurleysoftware.com>	<54091B30.7080100@zytor.com>	<5409D76D.2070203@hurleysoftware.com>	<5409D9C0.7030403@zytor.com>	<20140908185240.21f52ca0@alan.etchedpixels.co.uk>	<540DEE6C.2060904@zytor.com>	<540E3207.7090007@hurleysoftware.com>
+ <20140911110411.2de01944@alan.etchedpixels.co.uk>
+In-Reply-To: <20140911110411.2de01944@alan.etchedpixels.co.uk>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D17490245@AcuExch.aculab.com>
-Cc: "dzickus@redhat.com" <dzickus@redhat.com>,
- "jcastillo@redhat.com" <jcastillo@redhat.com>,
- "riel@redhat.com" <riel@redhat.com>, "prarit@redhat.com" <prarit@redhat.com>,
- "mingo@kernel.com" <mingo@kernel.com>,
- "pzijlstr@redhat.com" <pzijlstr@redhat.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "bmr@redhat.com" <bmr@redhat.com>, "x86@kernel.org" <x86@kernel.org>,
- "oleg@redhat.com" <oleg@redhat.com>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
+Cc: Jakub Jelinek <jakub@redhat.com>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-alpha@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "minchan@kernel.org" <minchan@kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>,
- "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "jgh@redhat.com" <jgh@redhat.com>, "akpm@google.com" <akpm@google.com>
+ Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 11, 2014 at 04:02:45PM +0000, David Laight wrote:
-> From: Aaron Tomlin
-> > Currently in the event of a stack overrun a call to schedule()
-> > does not check for this type of corruption. This corruption is
-> > often silent and can go unnoticed. However once the corrupted
-> > region is examined at a later stage, the outcome is undefined
-> > and often results in a sporadic page fault which cannot be
-> > handled.
-> > 
-> > The first patch adds a canary to init_task's end of stack.
-> > While the second patch provides a helper to determine the
-> > integrity of the canary. The third checks for a stack
-> > overrun and takes appropriate action since the damage
-> > is already done, there is no point in continuing.
+On 09/11/2014 06:04 AM, One Thousand Gnomes wrote:
+>>> Is *that* what we are talking about?  I was added to this conversation
+>>> in the middle where it had already generalized, so I had no idea.
+>>
+>> No, this is just what brought this craziness to my attention.
 > 
-> Clearly you've just been 'bitten' by a kernel stack overflow.
-> But a simple 'canary' isn't going to find most of the overflows
-> and will give an incorrect 'sense of security'.
+> None of it is craziness. It's the real world leaking into the crazy
+> delusional world of sequential programming. Machines are going to get
+> more not less parallel.
+> 
+>> For example, byte- and short-sized circular buffers could not possibly
+>> be safe either, when the head nears the tail.
+>>
+>> Who has audited global storage and ensured that _every_ byte-sized write
+>> doesn't happen to be adjacent to some other storage that may not happen
+>> to be protected by the same (or any) lock?
+> 
+> Thats a meaningless question. Have you audited it all for correctness of
+> any other form. Have you mathematically verified the functionality as a
+> set of formal proofs ? If you can't prove its formally mathematically
+> functionally correct why are you worried about this ?
+> 
+> Alpha works, maybe it has a near theoretical race on that point. It's not
+> any worse than it was 15 years ago and nobody has really hit a problem
+> with it. So from that you can usefully infer that those buffer cases are
+> not proving a real problem.
+>
+> The tty locks together on the other hand are asking to hit it, and the
+> problem you were trying to fix were the ones that need set_bit() to make
+> the guarantees.
 
-Please note that this is not suppose to be a 'perfect' solution.
-Rather a worth while check in this particular code path.
-Let's assume that the canary is damaged. In this situation it is
-rather likely that the thread_info object has been compromised too.
+So a problem that no one has ever complained about on _any_ arch is suddenly
+a problem on a subset of Alpha cpus, but a problem I know exists on Alpha
+isn't important because no one's filed a bug about it?
 
--- 
-Aaron Tomlin
+The only Alpha person in this discussion has come out clearly in favor
+of dropping EV4/5 support.
+
+The fact is that the kernel itself is much more parallel than it was
+15 years ago, and that trend is going to continue. Paired with the fact
+that the Alpha is the least-parallel-friendly arch, makes improving
+parallelism and correctness even harder within kernel subsystems; harder
+than it has to be and harder than it should be.
+
+Linus has repeatedly stated that non-arch code should be as
+arch-independent as possible, so I believe that working around problems
+created by a cpu from 1995 _which no other arch exhibits_ is ludicrous.
+Especially in generic kernel code.
+
+That said, if the Alpha community wants to keep _actively_ supporting
+the Alpha arch, fine. They could be working toward solutions for
+making Alpha workarounds in generic kernel code unnecessary. If that means
+compiler changes, ok. If that means arch-independent macros, well, they
+can float that idea.
+
+Or if they're comfortable with the status quo, also fine. By that, I mean
+the Alpha arch gets no workarounds in generic kernel code, and if something
+goes a little sideways only on Alpha, that's to be expected.
+
+As Paul pointed out, a good first step would be for the Alpha community
+to contribute byte and short versions of smp_load_acquire() and
+smp_store_release() so that the rest of the kernel community can make
+forward progress on more parallelism without Alpha-only limitations.
+
+Regards,
+Peter Hurley
