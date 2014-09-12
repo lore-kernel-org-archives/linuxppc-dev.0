@@ -1,37 +1,32 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <umgwanakikbuti@gmail.com>
+Received: from mail-la0-x22a.google.com (mail-la0-x22a.google.com
+ [IPv6:2a00:1450:4010:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82F9F1A009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 21:01:51 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 12 Sep 2014 05:01:49 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BE7F51FF0028
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 05:01:44 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8CB1jIR48824528
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 13:01:45 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8CB1jvg002960
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 05:01:45 -0600
-Subject: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep idle
- states are allowed
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: mikey@neuling.org, mpe@ellerman.id.au, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Fri, 12 Sep 2014 16:31:32 +0530
-Message-ID: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-pm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3EA11A009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 20:59:03 +1000 (EST)
+Received: by mail-la0-f42.google.com with SMTP id hz20so694589lab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 03:58:58 -0700 (PDT)
+Message-ID: <1410519533.5547.49.camel@marge.simpson.net>
+Subject: Re: [PATCH v3 3/3] sched: BUG when stack end location is over written
+From: Mike Galbraith <umgwanakikbuti@gmail.com>
+To: Aaron Tomlin <atomlin@redhat.com>
+Date: Fri, 12 Sep 2014 12:58:53 +0200
+In-Reply-To: <20140912094419.GD1873@atomlin.usersys.redhat.com>
+References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-4-git-send-email-atomlin@redhat.com>
+ <1410494817.17540.4.camel@concordia>
+ <20140912094419.GD1873@atomlin.usersys.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
+ prarit@redhat.com, pzijlstr@redhat.com, peterz@infradead.org, bmr@redhat.com,
+ x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
+ tglx@linutronix.de, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, jgh@redhat.com,
+ akpm@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,31 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
-entry into deep idle states beyond snooze. Check for the value of this
-parameter before entering fastsleep. We already do this check for nap in
-power7_idle().
+On Fri, 2014-09-12 at 10:44 +0100, Aaron Tomlin wrote: 
+> On Fri, Sep 12, 2014 at 02:06:57PM +1000, Michael Ellerman wrote:
+> > On Thu, 2014-09-11 at 16:41 +0100, Aaron Tomlin wrote:
+> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > > index a285900..2a8280a 100644
+> > > --- a/lib/Kconfig.debug
+> > > +++ b/lib/Kconfig.debug
+> > > @@ -824,6 +824,18 @@ config SCHEDSTATS
+> > >  	  application, you can say N to avoid the very slight overhead
+> > >  	  this adds.
+> > >  
+> > > +config SCHED_STACK_END_CHECK
+> > > +	bool "Detect stack corruption on calls to schedule()"
+> > > +	depends on DEBUG_KERNEL
+> > > +	default y
+> > 
+> > Did you really mean default y?
+> > 
+> > Doing so means it will be turned on more or less everywhere, which defeats the
+> > purpose of having a config option in the first place.
+> 
+> Only if Kconfig CONFIG_DEBUG_KERNEL is enabled in the first place.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+Which is likely enabled just about everywhere on the planet.
 
- drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index a64be57..b8ba52e 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 	unsigned long old_lpcr = mfspr(SPRN_LPCR);
- 	unsigned long new_lpcr;
- 
-+	/*
-+	 * Verify if snooze is the only valid cpuidle state
-+	 */
-+	if (!(powersave_nap > 0))
-+		return index;
-+
- 	if (unlikely(system_state < SYSTEM_RUNNING))
- 		return index;
- 
+-Mike
