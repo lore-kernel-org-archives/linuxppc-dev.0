@@ -1,21 +1,26 @@
 Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B74C1A0012
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 20:35:49 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F6CD1A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 20:41:18 +1000 (EST)
+Date: Fri, 12 Sep 2014 18:40:55 +0800
 From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
- <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
- <tiwai@suse.de>, <mpa@pengutronix.de>
-Subject: [PATCH V3] ASoC: fsl_ssi: refine ipg clock usage in this module
-Date: Fri, 12 Sep 2014 18:35:15 +0800
-Message-ID: <894383e00876763f22988fc5f3f9f232f939f923.1410517971.git.shengjiu.wang@freescale.com>
+To: Markus Pargmann <mpa@pengutronix.de>
+Subject: Re: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140912104054.GA6420@audiosh1>
+References: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
+ <20140911225737.GA13926@Alpha> <20140912020110.GA414@audiosh1>
+ <20140912061706.GA10680@pengutronix.de> <20140912071426.GA30261@audiosh1>
+ <20140912085446.GA8844@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140912085446.GA8844@pengutronix.de>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz,
+ Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,141 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check if ipg clock is in clock-names property, then we can move the
-ipg clock enable and disable operation to startup and shutdown, that
-is only enable ipg clock when ssi is working and keep clock is disabled
-when ssi is in idle.
-But when the checking is failed, remain the clock control as before.
+On Fri, Sep 12, 2014 at 10:54:46AM +0200, Markus Pargmann wrote:
+> On Fri, Sep 12, 2014 at 03:14:28PM +0800, Shengjiu Wang wrote:
+> > On Fri, Sep 12, 2014 at 08:17:06AM +0200, Markus Pargmann wrote:
+> > > Hi,
+> > > 
+> > > On Fri, Sep 12, 2014 at 10:01:12AM +0800, Shengjiu Wang wrote:
+> > > > On Thu, Sep 11, 2014 at 03:57:37PM -0700, Nicolin Chen wrote:
+> > > > > On Thu, Sep 11, 2014 at 01:38:29PM +0800, Shengjiu Wang wrote:
+> > > > > > Move the ipg clock enable and disable operation to startup and shutdown,
+> > > > > > that is only enable ipg clock when ssi is working. Keep clock is disabled
+> > > > > > when ssi is in idle.
+> > > > > > otherwise, _fsl_ssi_set_dai_fmt function need to be called in probe,
+> > > > > > so add ipg clock control for it.
+> > > > > 
+> > > > > It seems to be no objection so far against my last suggestion to
+> > > > > use regmap's mmio_clk() for named ipg clk only. So you may still
+> > > > > consider about that.
+> > > > >
+> > > > I think mmio_clk() can be put to another patch. and this patch only for clk_enable()
+> > > > and clk_disable() operation.
+> > > 
+> > > I would also prefer Nicolin's suggestion using regmap's mmio clk. I
+> > > think it may be better to not add this particular patch at all and just
+> > > go with the mmio_clk patch. It should be easy enough to just add the
+> > > clock names to the devicetrees. That way we can avoid all those clock
+> > > enable/disable function calls.
+> > >
+> > I considered if use Nicolin's suggestion, I still need ot add those
+> > enable/disable function calls, because I want to remove the enable/disable
+> > function call in fsl_ssi_imx_probe, then I need to add enable/disable 
+> > function call in _fsl_ssi_set_dai_fmt(), which is called in fsl_ssi_probe().
+> > _fsl_ssi_set_dai_fmt() need to access the registers.
+> 
+> I think Nicolin's suggestion was to check for a clock named "ipg". If it
+> exists, you can simply use devm_regmap_init_mmio_clk(). Otherwise you
+> could fallback to the old behaviour and get the first clock and enable
+> it without disabling it after the probe function.
+> 
+> After that, you could add the clock-names property to the devicetrees
+> and have the same result.
+>
+Ok, I have sent V3 for review. please check.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
-V3 change log:
-update patch according Nicolin and markus's comments
-
-
- sound/soc/fsl/fsl_ssi.c |   53 ++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 45 insertions(+), 8 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2fc3e66..6d1dfd5 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -169,6 +169,7 @@ struct fsl_ssi_private {
- 	u8 i2s_mode;
- 	bool use_dma;
- 	bool use_dual_fifo;
-+	bool has_ipg_clk_name;
- 	unsigned int fifo_depth;
- 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
- 
-@@ -530,6 +531,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi_private *ssi_private =
- 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+	int ret;
-+
-+	ret = clk_prepare_enable(ssi_private->clk);
-+	if (ret)
-+		return ret;
- 
- 	/* When using dual fifo mode, it is safer to ensure an even period
- 	 * size. If appearing to an odd number while DMA always starts its
-@@ -544,6 +550,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- }
- 
- /**
-+ * fsl_ssi_shutdown: shutdown the SSI
-+ *
-+ */
-+static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-+                             struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct fsl_ssi_private *ssi_private =
-+		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+
-+	clk_disable_unprepare(ssi_private->clk);
-+
-+}
-+
-+/**
-  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
-  *
-  * Note: This function can be only called when using SSI as DAI master
-@@ -1043,6 +1064,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- 
- static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.startup	= fsl_ssi_startup,
-+	.shutdown       = fsl_ssi_shutdown,
- 	.hw_params	= fsl_ssi_hw_params,
- 	.hw_free	= fsl_ssi_hw_free,
- 	.set_fmt	= fsl_ssi_set_dai_fmt,
-@@ -1168,17 +1190,22 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	u32 dmas[4];
- 	int ret;
- 
--	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-+	if (ssi_private->has_ipg_clk_name)
-+		ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
-+	else
-+		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(ssi_private->clk)) {
- 		ret = PTR_ERR(ssi_private->clk);
- 		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
- 		return ret;
- 	}
- 
--	ret = clk_prepare_enable(ssi_private->clk);
--	if (ret) {
--		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
--		return ret;
-+	if (!ssi_private->has_ipg_clk_name) {
-+		ret = clk_prepare_enable(ssi_private->clk);
-+		if (ret) {
-+			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
-+			return ret;
-+		}
- 	}
- 
- 	/* For those SLAVE implementations, we ingore non-baudclk cases
-@@ -1236,8 +1263,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	return 0;
- 
- error_pcm:
--	clk_disable_unprepare(ssi_private->clk);
- 
-+	if (!ssi_private->has_ipg_clk_name)
-+		clk_disable_unprepare(ssi_private->clk);
- 	return ret;
- }
- 
-@@ -1246,7 +1274,8 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
- {
- 	if (!ssi_private->use_dma)
- 		imx_pcm_fiq_exit(pdev);
--	clk_disable_unprepare(ssi_private->clk);
-+	if (!ssi_private->has_ipg_clk_name)
-+		clk_disable_unprepare(ssi_private->clk);
- }
- 
- static int fsl_ssi_probe(struct platform_device *pdev)
-@@ -1321,8 +1350,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
-+	ret = of_property_match_string(np, "clock-names", "ipg");
-+	if (ret < 0) {
-+		ssi_private->has_ipg_clk_name = false;
-+		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
- 			&fsl_ssi_regconfig);
-+	} else {
-+		ssi_private->has_ipg_clk_name = true;
-+		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
-+			"ipg", iomem, &fsl_ssi_regconfig);
-+	}
- 	if (IS_ERR(ssi_private->regs)) {
- 		dev_err(&pdev->dev, "Failed to init register map\n");
- 		return PTR_ERR(ssi_private->regs);
--- 
-1.7.9.5
+wang shengjiu 
+> > 
+> > > >  
+> > > > > Anyway, I'd like to do thing in parallel. So I just simply tested
+> > > > > it on my side and its works fine, it may still need to be tested
+> > > > > by others though.
+> > > > > 
+> > > > > Nicolina
+> > > > 
+> > > > Hi Markus
+> > > > 
+> > > > could you please review it, and share your comments?
+> > > 
+> > > I think the clock enabling for AC97 is missing in your patch.
+> > > 
+> > I add clock enable in fsl_ssi_startup(), I think it is enough for AC97, does it?
+> 
+> No. We export ac97 read/write ops for the whole AC97 stuff. These may be
+> used outside of the usual startup/shutdown which is done for substreams.
+> It may work to have the ipg clock enabled in
+> fsl_ssi_ac97_read/fsl_ssi_ac97_write.
+> 
+> Best regards,
+> 
+> Markus
+> 
+> -- 
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
