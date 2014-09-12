@@ -1,22 +1,19 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E0531A006C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 12:44:05 +1000 (EST)
-Message-ID: <54125DEF.4090101@tabi.org>
-Date: Thu, 11 Sep 2014 21:43:59 -0500
-From: Timur Tabi <timur@tabi.org>
-MIME-Version: 1.0
-To: Shengjiu Wang <shengjiu.wang@freescale.com>, nicoleotsuka@gmail.com,
- Li.Xiubo@freescale.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.de
-Subject: Re: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
-References: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
-In-Reply-To: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8C051A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 13:55:23 +1000 (EST)
+Message-ID: <1410494123.17540.2.camel@concordia>
+Subject: Re: [PATCH V2] powerpc/eeh: Fix kernel crash when passing through VF
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Date: Fri, 12 Sep 2014 13:55:23 +1000
+In-Reply-To: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,9 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shengjiu Wang wrote:
-> +	ret = clk_prepare_enable(ssi_private->clk);
-> +	if (ret)
-> +		return ret;
+On Thu, 2014-09-11 at 11:42 +0800, Wei Yang wrote:
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 4a45ba8..403445e 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -625,7 +625,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+>  int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>  {
+>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+> -	struct eeh_pe *pe = edev->pe;
+> +	struct eeh_pe *pe = edev ? edev->pe : NULL;
+>  
+>  	if (!pe) {
+>  		pr_err("%s: No PE found on PCI device %s\n",
 
-Will this work on PowerPC, where ssi_private->clk is always NULL?
+
+We seem to do this or something similar in a few places. Is it worth having a
+pci_dev_to_eeh_pe() inline?
+
+cheers
