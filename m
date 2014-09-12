@@ -1,27 +1,24 @@
-Return-Path: <mmarek@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF6961A013A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2014 00:12:27 +1000 (EST)
-Message-ID: <5412FF45.30208@suse.cz>
-Date: Fri, 12 Sep 2014 16:12:21 +0200
-From: Michal Marek <mmarek@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C44DB1A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2014 04:33:33 +1000 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id hz1so1837593pad.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 11:33:30 -0700 (PDT)
+Date: Fri, 12 Sep 2014 11:33:24 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>, timur@tabi.org
+Subject: Re: [PATCH V3] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140912183324.GA2738@Alpha>
+References: <894383e00876763f22988fc5f3f9f232f939f923.1410517971.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-To: Ben Hutchings <ben@decadent.org.uk>, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v2] deb-pkg: Add support for powerpc little endian
-References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>	
- <20140905071344.GA16024@visitor2.iram.es>	
- <1409903718.11359.30.camel@ale.ozlabs.ibm.com>	
- <20140905120925.GB3846@oc0268524204.ibm.com>
- <1410057728.7389.24.camel@decadent.org.uk>
-In-Reply-To: <1410057728.7389.24.camel@decadent.org.uk>
-Content-Type: text/plain; charset=utf-8
-Cc: linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Leann Ogasawara <leann.ogasawara@canonical.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <894383e00876763f22988fc5f3f9f232f939f923.1410517971.git.shengjiu.wang@freescale.com>
+Cc: alsa-devel@alsa-project.org, tiwai@suse.de, Li.Xiubo@freescale.com,
+ lgirdwood@gmail.com, perex@perex.cz, broonie@kernel.org, mpa@pengutronix.de,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,36 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014-09-07 04:42, Ben Hutchings wrote:
-> On Fri, 2014-09-05 at 09:09 -0300, Thadeu Lima de Souza Cascardo wrote:
->> On Fri, Sep 05, 2014 at 05:55:18PM +1000, Michael Neuling wrote:
->>> On Fri, 2014-09-05 at 09:13 +0200, Gabriel Paubert wrote:
->>>> On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
->>>>> The Debian powerpc little endian architecture is called ppc64le.  This
->>>>
->>>> Huh? ppc64le or ppc64el?
->>>
->>> ppc64el.  Commit message is wrong.  Fixed below.
->>>
->>> Mikey
->>>
->>>
->>
->> What about ppc64?
->>
->> Also, I sent that already a month ago. Both linuxppc-dev and Michal
->> Marek were on cc.
->>
->> http://marc.info/?l=linux-kernel&m=140744360328562&w=2
+On Fri, Sep 12, 2014 at 06:35:15PM +0800, Shengjiu Wang wrote:
+> Check if ipg clock is in clock-names property, then we can move the
+> ipg clock enable and disable operation to startup and shutdown, that
+> is only enable ipg clock when ssi is working and keep clock is disabled
+> when ssi is in idle.
+> But when the checking is failed, remain the clock control as before.
 > 
-> Anyone using powerpc (32-bit) will then need to add ppc64 as a foreign
-> architecture before they can install a 64-bit custom kernel.  This is
-> fine in principle, except that ppc64 is not an official Debian port and
-> its packages are not mirrored on the same servers.
-[...]
-> So I think Michael's version, leaving big-endian kernels as powerpc by
-> default, is preferable for now.
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
 
-I applied v2 of Michael's patch to kbuild.git#misc.
+The patch looks fine to me. I tested the has_ipg_clk_name == true
+case, and it works fine. As long as there's no further objection,
+I can give an Acked-by. (I think Timur and Markus may like to have
+a test as well.)
 
-Michal
+Thank you
+Nicolin
