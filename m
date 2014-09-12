@@ -1,25 +1,27 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7BAB1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 17:14:58 +1000 (EST)
-Date: Fri, 12 Sep 2014 15:14:28 +0800
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: Markus Pargmann <mpa@pengutronix.de>
-Subject: Re: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
-Message-ID: <20140912071426.GA30261@audiosh1>
-References: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
- <20140911225737.GA13926@Alpha> <20140912020110.GA414@audiosh1>
- <20140912061706.GA10680@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140912061706.GA10680@pengutronix.de>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz,
- Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 352EE1A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 17:28:58 +1000 (EST)
+Message-ID: <1410506936.17540.7.camel@concordia>
+Subject: Re: [PATCH v3 1/3] init/main.c: Give init_task a canary
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Aaron Tomlin <atomlin@redhat.com>
+Date: Fri, 12 Sep 2014 17:28:56 +1000
+In-Reply-To: <1410450088-18236-2-git-send-email-atomlin@redhat.com>
+References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-2-git-send-email-atomlin@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
+ prarit@redhat.com, pzijlstr@redhat.com, peterz@infradead.org, bmr@redhat.com,
+ x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, minchan@kernel.org, mingo@redhat.com,
+ tglx@linutronix.de, aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, jgh@redhat.com,
+ akpm@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 12, 2014 at 08:17:06AM +0200, Markus Pargmann wrote:
-> Hi,
+On Thu, 2014-09-11 at 16:41 +0100, Aaron Tomlin wrote:
+> Tasks get their end of stack set to STACK_END_MAGIC with the
+> aim to catch stack overruns. Currently this feature does not
+> apply to init_task. This patch removes this restriction.
 > 
-> On Fri, Sep 12, 2014 at 10:01:12AM +0800, Shengjiu Wang wrote:
-> > On Thu, Sep 11, 2014 at 03:57:37PM -0700, Nicolin Chen wrote:
-> > > On Thu, Sep 11, 2014 at 01:38:29PM +0800, Shengjiu Wang wrote:
-> > > > Move the ipg clock enable and disable operation to startup and shutdown,
-> > > > that is only enable ipg clock when ssi is working. Keep clock is disabled
-> > > > when ssi is in idle.
-> > > > otherwise, _fsl_ssi_set_dai_fmt function need to be called in probe,
-> > > > so add ipg clock control for it.
-> > > 
-> > > It seems to be no objection so far against my last suggestion to
-> > > use regmap's mmio_clk() for named ipg clk only. So you may still
-> > > consider about that.
-> > >
-> > I think mmio_clk() can be put to another patch. and this patch only for clk_enable()
-> > and clk_disable() operation.
-> 
-> I would also prefer Nicolin's suggestion using regmap's mmio clk. I
-> think it may be better to not add this particular patch at all and just
-> go with the mmio_clk patch. It should be easy enough to just add the
-> clock names to the devicetrees. That way we can avoid all those clock
-> enable/disable function calls.
->
-I considered if use Nicolin's suggestion, I still need ot add those
-enable/disable function calls, because I want to remove the enable/disable
-function call in fsl_ssi_imx_probe, then I need to add enable/disable 
-function call in _fsl_ssi_set_dai_fmt(), which is called in fsl_ssi_probe().
-_fsl_ssi_set_dai_fmt() need to access the registers.
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 51ab9e7..35d0760c 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -30,7 +30,6 @@
+>  #include <linux/kprobes.h>
+>  #include <linux/kdebug.h>
+>  #include <linux/perf_event.h>
+> -#include <linux/magic.h>
+>  #include <linux/ratelimit.h>
+>  #include <linux/context_tracking.h>
+>  
+> @@ -538,7 +537,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+>  		regs->nip);
+>  
+>  	stackend = end_of_stack(current);
+> -	if (current != &init_task && *stackend != STACK_END_MAGIC)
+> +	if (*stackend != STACK_END_MAGIC)
+>  		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
 
-> >  
-> > > Anyway, I'd like to do thing in parallel. So I just simply tested
-> > > it on my side and its works fine, it may still need to be tested
-> > > by others though.
-> > > 
-> > > Nicolina
-> > 
-> > Hi Markus
-> > 
-> > could you please review it, and share your comments?
-> 
-> I think the clock enabling for AC97 is missing in your patch.
-> 
-I add clock enable in fsl_ssi_startup(), I think it is enough for AC97, does it?
+This part looks fine.
 
-wang shengjiu
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> Best regards,
-> 
-> Markus
-> 
-> -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+cheers
