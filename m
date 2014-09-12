@@ -1,19 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB3BB1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 18:53:39 +1000 (EST)
-Message-ID: <1410512019.17540.12.camel@concordia>
-Subject: Re: [PATCH 2/2] pseries: Fix endian issues in cpu hot-removal
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Fri, 12 Sep 2014 18:53:39 +1000
-In-Reply-To: <1410388904-20061-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1410388904-20061-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD51F1A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 18:55:04 +1000 (EST)
+Date: Fri, 12 Sep 2014 10:54:46 +0200
+From: Markus Pargmann <mpa@pengutronix.de>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
+Subject: Re: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
+Message-ID: <20140912085446.GA8844@pengutronix.de>
+References: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
+ <20140911225737.GA13926@Alpha> <20140912020110.GA414@audiosh1>
+ <20140912061706.GA10680@pengutronix.de>
+ <20140912071426.GA30261@audiosh1>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
+In-Reply-To: <20140912071426.GA30261@audiosh1>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz,
+ Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +31,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-09-10 at 17:41 -0500, Thomas Falcon wrote:
-> When removing a cpu, this patch makes sure that values
-> gotten from or passed to firmware are in the correct
-> endian format.
-> 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c       | 14 +++++++-------
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |  8 ++++----
->  2 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index cd425dc..c5ecfdb 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -442,7 +442,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  	int rc = 0;
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv;
->  
->  	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
->  	if (!intserv)
-> @@ -453,7 +453,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
 
-Can you please do the conversion once here for each value of i.
+--gBBFr7Ir9EOA20Yy
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You can call the converted value "thread" ?
+On Fri, Sep 12, 2014 at 03:14:28PM +0800, Shengjiu Wang wrote:
+> On Fri, Sep 12, 2014 at 08:17:06AM +0200, Markus Pargmann wrote:
+> > Hi,
+> >=20
+> > On Fri, Sep 12, 2014 at 10:01:12AM +0800, Shengjiu Wang wrote:
+> > > On Thu, Sep 11, 2014 at 03:57:37PM -0700, Nicolin Chen wrote:
+> > > > On Thu, Sep 11, 2014 at 01:38:29PM +0800, Shengjiu Wang wrote:
+> > > > > Move the ipg clock enable and disable operation to startup and sh=
+utdown,
+> > > > > that is only enable ipg clock when ssi is working. Keep clock is =
+disabled
+> > > > > when ssi is in idle.
+> > > > > otherwise, _fsl_ssi_set_dai_fmt function need to be called in pro=
+be,
+> > > > > so add ipg clock control for it.
+> > > >=20
+> > > > It seems to be no objection so far against my last suggestion to
+> > > > use regmap's mmio_clk() for named ipg clk only. So you may still
+> > > > consider about that.
+> > > >
+> > > I think mmio_clk() can be put to another patch. and this patch only f=
+or clk_enable()
+> > > and clk_disable() operation.
+> >=20
+> > I would also prefer Nicolin's suggestion using regmap's mmio clk. I
+> > think it may be better to not add this particular patch at all and just
+> > go with the mmio_clk patch. It should be easy enough to just add the
+> > clock names to the devicetrees. That way we can avoid all those clock
+> > enable/disable function calls.
+> >
+> I considered if use Nicolin's suggestion, I still need ot add those
+> enable/disable function calls, because I want to remove the enable/disable
+> function call in fsl_ssi_imx_probe, then I need to add enable/disable=20
+> function call in _fsl_ssi_set_dai_fmt(), which is called in fsl_ssi_probe=
+().
+> _fsl_ssi_set_dai_fmt() need to access the registers.
 
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != be32_to_cpu(intserv[i]))
->  				continue;
+I think Nicolin's suggestion was to check for a clock named "ipg". If it
+exists, you can simply use devm_regmap_init_mmio_clk(). Otherwise you
+could fallback to the old behaviour and get the first clock and enable
+it without disabling it after the probe function.
 
-Rather than doing it for every cpu in the system for every value of i.
+After that, you could add the clock-names property to the devicetrees
+and have the same result.
 
-Not that performance is really an issue, but it's just ugly.
+>=20
+> > > =20
+> > > > Anyway, I'd like to do thing in parallel. So I just simply tested
+> > > > it on my side and its works fine, it may still need to be tested
+> > > > by others though.
+> > > >=20
+> > > > Nicolina
+> > >=20
+> > > Hi Markus
+> > >=20
+> > > could you please review it, and share your comments?
+> >=20
+> > I think the clock enabling for AC97 is missing in your patch.
+> >=20
+> I add clock enable in fsl_ssi_startup(), I think it is enough for AC97, d=
+oes it?
 
-And obviously the other places that use it in the loop should use the converted
-value.
+No. We export ac97 read/write ops for the whole AC97 stuff. These may be
+used outside of the usual startup/shutdown which is done for substreams.
+It may work to have the ipg clock enabled in
+fsl_ssi_ac97_read/fsl_ssi_ac97_write.
 
+Best regards,
 
-> @@ -494,7 +494,7 @@ out:
->  static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  {
->  	struct device_node *dn;
-> -	const u32 *drc_index;
-> +	const __be32 *drc_index;
->  	int rc;
->  
->  	dn = of_find_node_by_path(buf);
-> @@ -513,7 +513,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  		return -EINVAL;
->  	}
+Markus
 
-Here again you should do the conversion once.
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
-Better still use of_property_read_u32().
+--gBBFr7Ir9EOA20Yy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> -	rc = dlpar_release_drc(*drc_index);
-> +	rc = dlpar_release_drc(be32_to_cpup(drc_index));
->  	if (rc) {
->  		of_node_put(dn);
->  		return rc;
-> @@ -521,7 +521,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  
->  	rc = dlpar_detach_node(dn);
->  	if (rc) {
-> -		dlpar_acquire_drc(*drc_index);
-> +		dlpar_acquire_drc(be32_to_cpup(drc_index));
->  		return rc;
->  	}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-cheers
+iQIcBAEBAgAGBQJUErTVAAoJEEpcgKtcEGQQ6aUP/3GSn5/tAw3ARNYKf/56uDKh
+s/AXf1c1SPUey2pJ9faODh3y1Q2PUmyvzok35sxaPNuLQhtMhMR0fonCBe/MZRjr
+IdjnrTOlmQc6aVT9aSWz7FGQ2ICl2tN5rD7NV7J9XESGlIAisV8lop2DVJSjSY2G
+e+VCWGWyAT8DVDC/F0M9yfho8orRlM+vDX5dRGXUv7sU+3IqKm/B9VlfbARNyGuR
+j8rJqqsu1uPYsvaDN6e5hnVCBW+VHpyQFI0WDzGfoPNOfFVZQP0QGsIN5gL3aZHQ
+w2unf7Dtq755Cw3IucswlX7uob8hInOBjssyL59W97O/fSNOdQrZl5FxiJGdx5Vj
+lOxcXGtb0N53HgTjA5je7N2Sh8Vi7T8KgUzl1Py/Wr6LGZtZO4e0GfKbo6q9S/Wv
+JUtQJfOhxeY93xqmFegREXiO6bKNlPfc55braby7V1mYRXE6d4M8XRyxR1aEKUcu
+wD8eeX67D9BLrFfvv8Y7j1TtB7oW1M2BrpeKiQTet9EXQFzTwRis8v0XkO5x1MMX
+ZmX5wLUhhCt63aCI8r/0ltKiE82lWztKGBRzYl9mqlhrtCsZBD5W+5VrFemG5C/7
+2khOWizpjOoF52RaTLLmbHyp+/uIue8N+RAFKxjqSMD+8lnVI4q4TiEy7sdQwbrz
+bAravHewusqplz1XkukA
+=qmHV
+-----END PGP SIGNATURE-----
+
+--gBBFr7Ir9EOA20Yy--
