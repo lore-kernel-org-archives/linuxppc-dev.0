@@ -1,20 +1,27 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mmarek@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEF521A0AD8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 23:19:12 +1000 (EST)
-From: Aaron Tomlin <atomlin@redhat.com>
-To: peterz@infradead.org
-Subject: [PATCH v4 0/3] sched: Always check the integrity of the canary
-Date: Fri, 12 Sep 2014 14:16:16 +0100
-Message-Id: <1410527779-8133-1-git-send-email-atomlin@redhat.com>
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com, x86@kernel.org,
- akpm@linux-foundation.org, minchan@kernel.org, bmr@redhat.com,
- prarit@redhat.com, oleg@redhat.com, rostedt@goodmis.org,
- linux-kernel@vger.kernel.org, hannes@cmpxchg.org, mingo@redhat.com,
- aneesh.kumar@linux.vnet.ibm.com, atomlin@redhat.com, jgh@redhat.com,
- linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de, akpm@google.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF6961A013A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2014 00:12:27 +1000 (EST)
+Message-ID: <5412FF45.30208@suse.cz>
+Date: Fri, 12 Sep 2014 16:12:21 +0200
+From: Michal Marek <mmarek@suse.cz>
+MIME-Version: 1.0
+To: Ben Hutchings <ben@decadent.org.uk>, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] deb-pkg: Add support for powerpc little endian
+References: <1409894927.11359.26.camel@ale.ozlabs.ibm.com>	
+ <20140905071344.GA16024@visitor2.iram.es>	
+ <1409903718.11359.30.camel@ale.ozlabs.ibm.com>	
+ <20140905120925.GB3846@oc0268524204.ibm.com>
+ <1410057728.7389.24.camel@decadent.org.uk>
+In-Reply-To: <1410057728.7389.24.camel@decadent.org.uk>
+Content-Type: text/plain; charset=utf-8
+Cc: linux-kbuild@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Leann Ogasawara <leann.ogasawara@canonical.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+On 2014-09-07 04:42, Ben Hutchings wrote:
+> On Fri, 2014-09-05 at 09:09 -0300, Thadeu Lima de Souza Cascardo wrote:
+>> On Fri, Sep 05, 2014 at 05:55:18PM +1000, Michael Neuling wrote:
+>>> On Fri, 2014-09-05 at 09:13 +0200, Gabriel Paubert wrote:
+>>>> On Fri, Sep 05, 2014 at 03:28:47PM +1000, Michael Neuling wrote:
+>>>>> The Debian powerpc little endian architecture is called ppc64le.  This
+>>>>
+>>>> Huh? ppc64le or ppc64el?
+>>>
+>>> ppc64el.  Commit message is wrong.  Fixed below.
+>>>
+>>> Mikey
+>>>
+>>>
+>>
+>> What about ppc64?
+>>
+>> Also, I sent that already a month ago. Both linuxppc-dev and Michal
+>> Marek were on cc.
+>>
+>> http://marc.info/?l=linux-kernel&m=140744360328562&w=2
+> 
+> Anyone using powerpc (32-bit) will then need to add ppc64 as a foreign
+> architecture before they can install a 64-bit custom kernel.  This is
+> fine in principle, except that ppc64 is not an official Debian port and
+> its packages are not mirrored on the same servers.
+[...]
+> So I think Michael's version, leaving big-endian kernels as powerpc by
+> default, is preferable for now.
 
-Please let me know if this iteration is satisfactory. Thanks.
+I applied v2 of Michael's patch to kbuild.git#misc.
 
-
-Currently in the event of a stack overrun a call to schedule()
-does not check for this type of corruption. This corruption is
-often silent and can go unnoticed. However once the corrupted
-region is examined at a later stage, the outcome is undefined
-and often results in a sporadic page fault which cannot be
-handled.
-
-The first patch adds a canary to init_task's end of stack.
-While the second patch provides a helper to determine the
-integrity of the canary. The third checks for a stack
-overrun and takes appropriate action since the damage
-is already done, there is no point in continuing.
-
-
-Changes since v3:
-
- * Add Michael Ellerman's Acked-by to first patch
-   (for powerpc)
- * Fix compiler error - Michael Ellerman
- * Set default Kconfig option to n - Michael Ellerman
-
-Changes since v2:
-
- * Use BUG_ON in schedule_debug() - Peter Zijlstra
- * Use a more explicit function
-   name for setting the canary - Chuck Ebbert
-
-Changes since v1:
-
- * Rebased against v3.17-rc4
- * Add a canary to init_task - Oleg Nesterov
- * Fix various code formatting issues - Peter Zijlstra
- * Introduce Kconfig option - Peter Zijlstra
-
-Aaron Tomlin (3):
-  init/main.c: Give init_task a canary
-  sched: Add helper for task stack page overrun checking
-  sched: BUG when stack end location is over written
-
- arch/powerpc/mm/fault.c    |  5 +----
- arch/x86/mm/fault.c        |  5 +----
- include/linux/sched.h      |  4 ++++
- init/main.c                |  1 +
- kernel/fork.c              | 12 +++++++++---
- kernel/sched/core.c        |  3 +++
- kernel/trace/trace_stack.c |  4 +---
- lib/Kconfig.debug          | 12 ++++++++++++
- 8 files changed, 32 insertions(+), 14 deletions(-)
-
--- 
-1.9.3
+Michal
