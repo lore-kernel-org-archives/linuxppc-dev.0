@@ -1,27 +1,21 @@
-Return-Path: <atomlin@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6651C1A00CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 19:53:07 +1000 (EST)
-Date: Fri, 12 Sep 2014 10:50:21 +0100
-From: Aaron Tomlin <atomlin@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/3] sched: BUG when stack end location is over written
-Message-ID: <20140912095021.GE1873@atomlin.usersys.redhat.com>
-References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
- <1410450088-18236-1-git-send-email-atomlin@redhat.com>
- <1410450088-18236-4-git-send-email-atomlin@redhat.com>
- <1410501891.17540.6.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B74C1A0012
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 20:35:49 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
+ <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
+ <tiwai@suse.de>, <mpa@pengutronix.de>
+Subject: [PATCH V3] ASoC: fsl_ssi: refine ipg clock usage in this module
+Date: Fri, 12 Sep 2014 18:35:15 +0800
+Message-ID: <894383e00876763f22988fc5f3f9f232f939f923.1410517971.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1410501891.17540.6.camel@concordia>
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
- prarit@redhat.com, peterz@infradead.org, bmr@redhat.com, x86@kernel.org,
- oleg@redhat.com, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
- minchan@kernel.org, mingo@redhat.com, tglx@linutronix.de,
- aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, jgh@redhat.com, akpm@google.com
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +25,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 12, 2014 at 04:04:51PM +1000, Michael Ellerman wrote:
-> On Thu, 2014-09-11 at 16:41 +0100, Aaron Tomlin wrote:
-> > Currently in the event of a stack overrun a call to schedule()
-> > does not check for this type of corruption. This corruption is
-> > often silent and can go unnoticed. However once the corrupted
-> > region is examined at a later stage, the outcome is undefined
-> > and often results in a sporadic page fault which cannot be
-> > handled.
-> > 
-> > This patch checks for a stack overrun and takes appropriate
-> > action since the damage is already done, there is no point
-> > in continuing.
-> > 
-> > Signed-off-by: Aaron Tomlin <atomlin@redhat.com>
-> > ---
-> >  kernel/sched/core.c |  3 +++
-> >  lib/Kconfig.debug   | 12 ++++++++++++
-> >  2 files changed, 15 insertions(+)
-> > 
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index ec1a286..0b70b73 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -2660,6 +2660,9 @@ static noinline void __schedule_bug(struct task_struct *prev)
-> >   */
-> >  static inline void schedule_debug(struct task_struct *prev)
-> >  {
-> > +#ifdef CONFIG_SCHED_STACK_END_CHECK
-> > +	BUG_ON(unlikely(task_stack_end_corrupted(prev)))
-> > +#endif
-> 
-> Spot the bug? Please compile your code in future.
+Check if ipg clock is in clock-names property, then we can move the
+ipg clock enable and disable operation to startup and shutdown, that
+is only enable ipg clock when ssi is working and keep clock is disabled
+when ssi is in idle.
+But when the checking is failed, remain the clock control as before.
 
-Oops! Sorry about that.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+---
+V3 change log:
+update patch according Nicolin and markus's comments
 
+
+ sound/soc/fsl/fsl_ssi.c |   53 ++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 45 insertions(+), 8 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 2fc3e66..6d1dfd5 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -169,6 +169,7 @@ struct fsl_ssi_private {
+ 	u8 i2s_mode;
+ 	bool use_dma;
+ 	bool use_dual_fifo;
++	bool has_ipg_clk_name;
+ 	unsigned int fifo_depth;
+ 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
+ 
+@@ -530,6 +531,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct fsl_ssi_private *ssi_private =
+ 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
++	int ret;
++
++	ret = clk_prepare_enable(ssi_private->clk);
++	if (ret)
++		return ret;
+ 
+ 	/* When using dual fifo mode, it is safer to ensure an even period
+ 	 * size. If appearing to an odd number while DMA always starts its
+@@ -544,6 +550,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ }
+ 
+ /**
++ * fsl_ssi_shutdown: shutdown the SSI
++ *
++ */
++static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
++                             struct snd_soc_dai *dai)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct fsl_ssi_private *ssi_private =
++		snd_soc_dai_get_drvdata(rtd->cpu_dai);
++
++	clk_disable_unprepare(ssi_private->clk);
++
++}
++
++/**
+  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
+  *
+  * Note: This function can be only called when using SSI as DAI master
+@@ -1043,6 +1064,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ 
+ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ 	.startup	= fsl_ssi_startup,
++	.shutdown       = fsl_ssi_shutdown,
+ 	.hw_params	= fsl_ssi_hw_params,
+ 	.hw_free	= fsl_ssi_hw_free,
+ 	.set_fmt	= fsl_ssi_set_dai_fmt,
+@@ -1168,17 +1190,22 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	u32 dmas[4];
+ 	int ret;
+ 
+-	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
++	if (ssi_private->has_ipg_clk_name)
++		ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
++	else
++		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(ssi_private->clk)) {
+ 		ret = PTR_ERR(ssi_private->clk);
+ 		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+-	ret = clk_prepare_enable(ssi_private->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
+-		return ret;
++	if (!ssi_private->has_ipg_clk_name) {
++		ret = clk_prepare_enable(ssi_private->clk);
++		if (ret) {
++			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
++			return ret;
++		}
+ 	}
+ 
+ 	/* For those SLAVE implementations, we ingore non-baudclk cases
+@@ -1236,8 +1263,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	return 0;
+ 
+ error_pcm:
+-	clk_disable_unprepare(ssi_private->clk);
+ 
++	if (!ssi_private->has_ipg_clk_name)
++		clk_disable_unprepare(ssi_private->clk);
+ 	return ret;
+ }
+ 
+@@ -1246,7 +1274,8 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
+ {
+ 	if (!ssi_private->use_dma)
+ 		imx_pcm_fiq_exit(pdev);
+-	clk_disable_unprepare(ssi_private->clk);
++	if (!ssi_private->has_ipg_clk_name)
++		clk_disable_unprepare(ssi_private->clk);
+ }
+ 
+ static int fsl_ssi_probe(struct platform_device *pdev)
+@@ -1321,8 +1350,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
+-	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
++	ret = of_property_match_string(np, "clock-names", "ipg");
++	if (ret < 0) {
++		ssi_private->has_ipg_clk_name = false;
++		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+ 			&fsl_ssi_regconfig);
++	} else {
++		ssi_private->has_ipg_clk_name = true;
++		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
++			"ipg", iomem, &fsl_ssi_regconfig);
++	}
+ 	if (IS_ERR(ssi_private->regs)) {
+ 		dev_err(&pdev->dev, "Failed to init register map\n");
+ 		return PTR_ERR(ssi_private->regs);
 -- 
-Aaron Tomlin
+1.7.9.5
