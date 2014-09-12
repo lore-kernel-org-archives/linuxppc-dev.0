@@ -1,27 +1,38 @@
-Return-Path: <mpa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD51F1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 18:55:04 +1000 (EST)
-Date: Fri, 12 Sep 2014 10:54:46 +0200
-From: Markus Pargmann <mpa@pengutronix.de>
-To: Shengjiu Wang <shengjiu.wang@freescale.com>
-Subject: Re: [PATCH V2] ASoC: fsl_ssi: refine ipg clock usage in this module
-Message-ID: <20140912085446.GA8844@pengutronix.de>
-References: <27584da8e3ab291ab8dbcbb411579613f8384a59.1410413734.git.shengjiu.wang@freescale.com>
- <20140911225737.GA13926@Alpha> <20140912020110.GA414@audiosh1>
- <20140912061706.GA10680@pengutronix.de>
- <20140912071426.GA30261@audiosh1>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2D6B1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 19:35:39 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 12 Sep 2014 15:05:31 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C65811258048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 15:05:58 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8C9ZtUe43909300
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 15:05:56 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8C9ZRDJ003079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2014 15:05:28 +0530
+Date: Fri, 12 Sep 2014 17:35:25 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/eeh: Fix kernel crash when passing through VF
+Message-ID: <20140912093525.GA6916@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1410494123.17540.2.camel@concordia>
+ <20140912050518.GA17933@shangw>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
-In-Reply-To: <20140912071426.GA30261@audiosh1>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz,
- Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140912050518.GA17933@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,109 +42,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Sep 12, 2014 at 03:05:18PM +1000, Gavin Shan wrote:
+>On Fri, Sep 12, 2014 at 01:55:23PM +1000, Michael Ellerman wrote:
+>>On Thu, 2014-09-11 at 11:42 +0800, Wei Yang wrote:
+>>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>>> index 4a45ba8..403445e 100644
+>>> --- a/arch/powerpc/kernel/eeh.c
+>>> +++ b/arch/powerpc/kernel/eeh.c
+>>> @@ -625,7 +625,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+>>>  int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>>>  {
+>>>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+>>> -	struct eeh_pe *pe = edev->pe;
+>>> +	struct eeh_pe *pe = edev ? edev->pe : NULL;
+>>>  
+>>>  	if (!pe) {
+>>>  		pr_err("%s: No PE found on PCI device %s\n",
+>>
+>>
+>>We seem to do this or something similar in a few places. Is it worth having a
+>>pci_dev_to_eeh_pe() inline?
+>>
+>
+>Yes, maybe we just need a eeh_dev_to_pe() because converting
+>pci_dev to eeh_dev is already coverred by pci_dev_to_eeh_dev().
+>
+>With eeh_dev_to_pe(), it looks like this:
+>
+>struct pci_dev *pdev;
+>struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+>struct eeh_pe *pe = eeh_dev_to_pe(edev);
+>
+>Or another case:
+>
+>struct device_node *dn;
+>struct eeh_dev *edev = of_node_to_eeh_dev(dn);
+>struct eeh_pe *pe = eeh_dev_to_pe(edev);
 
---gBBFr7Ir9EOA20Yy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+With these helper, it would be more consolidate to jump between those data.
 
-On Fri, Sep 12, 2014 at 03:14:28PM +0800, Shengjiu Wang wrote:
-> On Fri, Sep 12, 2014 at 08:17:06AM +0200, Markus Pargmann wrote:
-> > Hi,
-> >=20
-> > On Fri, Sep 12, 2014 at 10:01:12AM +0800, Shengjiu Wang wrote:
-> > > On Thu, Sep 11, 2014 at 03:57:37PM -0700, Nicolin Chen wrote:
-> > > > On Thu, Sep 11, 2014 at 01:38:29PM +0800, Shengjiu Wang wrote:
-> > > > > Move the ipg clock enable and disable operation to startup and sh=
-utdown,
-> > > > > that is only enable ipg clock when ssi is working. Keep clock is =
-disabled
-> > > > > when ssi is in idle.
-> > > > > otherwise, _fsl_ssi_set_dai_fmt function need to be called in pro=
-be,
-> > > > > so add ipg clock control for it.
-> > > >=20
-> > > > It seems to be no objection so far against my last suggestion to
-> > > > use regmap's mmio_clk() for named ipg clk only. So you may still
-> > > > consider about that.
-> > > >
-> > > I think mmio_clk() can be put to another patch. and this patch only f=
-or clk_enable()
-> > > and clk_disable() operation.
-> >=20
-> > I would also prefer Nicolin's suggestion using regmap's mmio clk. I
-> > think it may be better to not add this particular patch at all and just
-> > go with the mmio_clk patch. It should be easy enough to just add the
-> > clock names to the devicetrees. That way we can avoid all those clock
-> > enable/disable function calls.
-> >
-> I considered if use Nicolin's suggestion, I still need ot add those
-> enable/disable function calls, because I want to remove the enable/disable
-> function call in fsl_ssi_imx_probe, then I need to add enable/disable=20
-> function call in _fsl_ssi_set_dai_fmt(), which is called in fsl_ssi_probe=
-().
-> _fsl_ssi_set_dai_fmt() need to access the registers.
+Gavin,
 
-I think Nicolin's suggestion was to check for a clock named "ipg". If it
-exists, you can simply use devm_regmap_init_mmio_clk(). Otherwise you
-could fallback to the old behaviour and get the first clock and enable
-it without disabling it after the probe function.
+You would add these helpers? Or would like me to add them?
 
-After that, you could add the clock-names property to the devicetrees
-and have the same result.
+>
+>Thanks,
+>Gavin
+>
+>>cheers
+>>
+>>
 
->=20
-> > > =20
-> > > > Anyway, I'd like to do thing in parallel. So I just simply tested
-> > > > it on my side and its works fine, it may still need to be tested
-> > > > by others though.
-> > > >=20
-> > > > Nicolina
-> > >=20
-> > > Hi Markus
-> > >=20
-> > > could you please review it, and share your comments?
-> >=20
-> > I think the clock enabling for AC97 is missing in your patch.
-> >=20
-> I add clock enable in fsl_ssi_startup(), I think it is enough for AC97, d=
-oes it?
-
-No. We export ac97 read/write ops for the whole AC97 stuff. These may be
-used outside of the usual startup/shutdown which is done for substreams.
-It may work to have the ipg clock enabled in
-fsl_ssi_ac97_read/fsl_ssi_ac97_write.
-
-Best regards,
-
-Markus
-
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
---gBBFr7Ir9EOA20Yy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJUErTVAAoJEEpcgKtcEGQQ6aUP/3GSn5/tAw3ARNYKf/56uDKh
-s/AXf1c1SPUey2pJ9faODh3y1Q2PUmyvzok35sxaPNuLQhtMhMR0fonCBe/MZRjr
-IdjnrTOlmQc6aVT9aSWz7FGQ2ICl2tN5rD7NV7J9XESGlIAisV8lop2DVJSjSY2G
-e+VCWGWyAT8DVDC/F0M9yfho8orRlM+vDX5dRGXUv7sU+3IqKm/B9VlfbARNyGuR
-j8rJqqsu1uPYsvaDN6e5hnVCBW+VHpyQFI0WDzGfoPNOfFVZQP0QGsIN5gL3aZHQ
-w2unf7Dtq755Cw3IucswlX7uob8hInOBjssyL59W97O/fSNOdQrZl5FxiJGdx5Vj
-lOxcXGtb0N53HgTjA5je7N2Sh8Vi7T8KgUzl1Py/Wr6LGZtZO4e0GfKbo6q9S/Wv
-JUtQJfOhxeY93xqmFegREXiO6bKNlPfc55braby7V1mYRXE6d4M8XRyxR1aEKUcu
-wD8eeX67D9BLrFfvv8Y7j1TtB7oW1M2BrpeKiQTet9EXQFzTwRis8v0XkO5x1MMX
-ZmX5wLUhhCt63aCI8r/0ltKiE82lWztKGBRzYl9mqlhrtCsZBD5W+5VrFemG5C/7
-2khOWizpjOoF52RaTLLmbHyp+/uIue8N+RAFKxjqSMD+8lnVI4q4TiEy7sdQwbrz
-bAravHewusqplz1XkukA
-=qmHV
------END PGP SIGNATURE-----
-
---gBBFr7Ir9EOA20Yy--
+-- 
+Richard Yang
+Help you, Help me
