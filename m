@@ -1,21 +1,38 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D4FA1A0418
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2014 18:28:06 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: av1474@comtv.ru
-Subject: [PATCH] Simplify symbol check in prom_init_check.sh
-References: <87zjfkvyha.fsf@comtv.ru> <1410510342.17540.10.camel@concordia>
- <87r3zgd5xx.fsf_-___23348.7322264866$1410551821$gmane$org@comtv.ru>
-Date: Sat, 13 Sep 2014 10:20:17 +0200
-In-Reply-To: <87r3zgd5xx.fsf_-___23348.7322264866$1410551821$gmane$org@comtv.ru>
- (av's message of "Fri, 12 Sep 2014 22:55:38 +0400")
-Message-ID: <87oauk6if2.fsf_-_@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 622CE1A012E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2014 11:19:35 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sun, 14 Sep 2014 11:19:34 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 948953578047
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2014 11:19:31 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8E1KxrD15991014
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2014 11:20:59 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8E1JUYN009287
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2014 11:19:31 +1000
+Date: Sun, 14 Sep 2014 11:19:29 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/eeh: Fix kernel crash when passing through VF
+Message-ID: <20140914011929.GA4475@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1410494123.17540.2.camel@concordia>
+ <20140912050518.GA17933@shangw> <20140912093525.GA6916@richard>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140912093525.GA6916@richard>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +42,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/kernel/prom_init_check.sh | 22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
+On Fri, Sep 12, 2014 at 05:35:25PM +0800, Wei Yang wrote:
+>On Fri, Sep 12, 2014 at 03:05:18PM +1000, Gavin Shan wrote:
+>>On Fri, Sep 12, 2014 at 01:55:23PM +1000, Michael Ellerman wrote:
+>>>On Thu, 2014-09-11 at 11:42 +0800, Wei Yang wrote:
+>>>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>>>> index 4a45ba8..403445e 100644
+>>>> --- a/arch/powerpc/kernel/eeh.c
+>>>> +++ b/arch/powerpc/kernel/eeh.c
+>>>> @@ -625,7 +625,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+>>>>  int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>>>>  {
+>>>>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+>>>> -	struct eeh_pe *pe = edev->pe;
+>>>> +	struct eeh_pe *pe = edev ? edev->pe : NULL;
+>>>>  
+>>>>  	if (!pe) {
+>>>>  		pr_err("%s: No PE found on PCI device %s\n",
+>>>
+>>>
+>>>We seem to do this or something similar in a few places. Is it worth having a
+>>>pci_dev_to_eeh_pe() inline?
+>>>
+>>
+>>Yes, maybe we just need a eeh_dev_to_pe() because converting
+>>pci_dev to eeh_dev is already coverred by pci_dev_to_eeh_dev().
+>>
+>>With eeh_dev_to_pe(), it looks like this:
+>>
+>>struct pci_dev *pdev;
+>>struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+>>struct eeh_pe *pe = eeh_dev_to_pe(edev);
+>>
+>>Or another case:
+>>
+>>struct device_node *dn;
+>>struct eeh_dev *edev = of_node_to_eeh_dev(dn);
+>>struct eeh_pe *pe = eeh_dev_to_pe(edev);
+>
+>With these helper, it would be more consolidate to jump between those data.
+>
+>Gavin,
+>
+>You would add these helpers? Or would like me to add them?
+>
 
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index fe8e54b..12640f7 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -50,24 +50,14 @@ do
- 	done
- 
- 	# ignore register save/restore funcitons
--	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
-+	case $UNDEF in
-+	_restgpr_*|_restgpr0_*|_rest32gpr_*)
- 		OK=1
--	fi
--	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
-+		;;
-+	_savegpr_*|_savegpr0_*|_save32gpr_*)
- 		OK=1
--	fi
--	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
--		OK=1
--	fi
--	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
--		OK=1
--	fi
-+		;;
-+	esac
- 
- 	if [ $OK -eq 0 ]; then
- 		ERROR=1
--- 
-2.1.0
+It would be Richard to help on this :-)
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Thanks,
+Gavin
