@@ -1,34 +1,20 @@
-Return-Path: <l.stach@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sudipm.mukherjee@gmail.com>
+Received: from mail-pd0-x22e.google.com (mail-pd0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c02::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93A9C1A00C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 00:47:46 +1000 (EST)
-Message-ID: <1410792430.3314.10.camel@pengutronix.de>
-Subject: Re: [PATCH v1 21/21] PCI/MSI: Clean up unused MSI arch functions
-From: Lucas Stach <l.stach@pengutronix.de>
-To: Yijing Wang <wangyijing@huawei.com>
-Date: Mon, 15 Sep 2014 16:47:10 +0200
-In-Reply-To: <1409911806-10519-22-git-send-email-wangyijing@huawei.com>
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
- <1409911806-10519-22-git-send-email-wangyijing@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37BD71A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 01:01:34 +1000 (EST)
+Received: by mail-pd0-f174.google.com with SMTP id v10so6349108pde.19
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 08:01:31 -0700 (PDT)
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Olof Johansson <olof@lixom.net>
+Subject: [PATCH v2] drivers: char: hw_random: printk replacement
+Date: Mon, 15 Sep 2014 20:31:20 +0530
+Message-Id: <1410793281-30305-1-git-send-email-sudipm.mukherjee@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ linux-geode@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,254 +24,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Freitag, den 05.09.2014, 18:10 +0800 schrieb Yijing Wang:
-> Now we use struct msi_chip in all platforms to configure
-> MSI/MSI-X. We can clean up the unused arch functions.
-> 
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+as pr_* macros are more preffered over printk, so printk replaced with corresponding pr_* macros
 
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
 
-> ---
->  drivers/iommu/irq_remapping.c |    2 +-
->  drivers/pci/msi.c             |   99 ++++++++++++++++-------------------------
->  include/linux/msi.h           |   14 ------
->  3 files changed, 39 insertions(+), 76 deletions(-)
-> 
-> diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
-> index 99b1c0f..6e645f0 100644
-> --- a/drivers/iommu/irq_remapping.c
-> +++ b/drivers/iommu/irq_remapping.c
-> @@ -92,7 +92,7 @@ error:
->  
->  	/*
->  	 * Restore altered MSI descriptor fields and prevent just destroyed
-> -	 * IRQs from tearing down again in default_teardown_msi_irqs()
-> +	 * IRQs from tearing down again in teardown_msi_irqs()
->  	 */
->  	msidesc->irq = 0;
->  	msidesc->nvec_used = 0;
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index d78d637..e3e7f4f 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -34,50 +34,31 @@ struct msi_chip * __weak arch_find_msi_chip(struct pci_dev *dev)
->  	return dev->bus->msi;
->  }
->  
-> -int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-> -{
-> -	struct msi_chip *chip = arch_find_msi_chip(dev);
-> -	int err;
-> -
-> -	if (!chip || !chip->setup_irq)
-> -		return -EINVAL;
-> -
-> -	err = chip->setup_irq(dev, desc);
-> -	if (err < 0)
-> -		return err;
-> -
-> -	return 0;
-> -}
-> -
-> -void __weak arch_teardown_msi_irq(unsigned int irq)
-> -{
-> -	struct msi_chip *chip = irq_get_chip_data(irq);
-> -
-> -	if (!chip || !chip->teardown_irq)
-> -		return;
-> -
-> -	chip->teardown_irq(irq);
-> -}
-> -
-> -int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-> +int setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->  {
->  	struct msi_desc *entry;
->  	int ret;
->  	struct msi_chip *chip;
->  
->  	chip = arch_find_msi_chip(dev);
-> -	if (chip && chip->setup_irqs)
-> +	if (!chip)
-> +		return -EINVAL;
-> +
-> +	if (chip->setup_irqs)
->  		return chip->setup_irqs(dev, nvec, type);
->  
->  	/*
->  	 * If an architecture wants to support multiple MSI, it needs to
-> -	 * override arch_setup_msi_irqs()
-> +	 * implement chip->setup_irqs().
->  	 */
->  	if (type == PCI_CAP_ID_MSI && nvec > 1)
->  		return 1;
->  
-> +	if (!chip->setup_irq)
-> +		return -EINVAL;
-> +
->  	list_for_each_entry(entry, &dev->msi_list, list) {
-> -		ret = arch_setup_msi_irq(dev, entry);
-> +		ret = chip->setup_irq(dev, entry);
->  		if (ret < 0)
->  			return ret;
->  		if (ret > 0)
-> @@ -87,13 +68,20 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->  	return 0;
->  }
->  
-> -/*
-> - * We have a default implementation available as a separate non-weak
-> - * function, as it is used by the Xen x86 PCI code
-> - */
-> -void default_teardown_msi_irqs(struct pci_dev *dev)
-> +static void teardown_msi_irqs(struct pci_dev *dev)
->  {
->  	struct msi_desc *entry;
-> +	struct msi_chip *chip;
-> +
-> +	chip = arch_find_msi_chip(dev);
-> +	if (!chip)
-> +		return;
-> +
-> +	if (chip->teardown_irqs)
-> +		return chip->teardown_irqs(dev);
-> +
-> +	if (!chip->teardown_irq)
-> +		return;
->  
->  	list_for_each_entry(entry, &dev->msi_list, list) {
->  		int i, nvec;
-> @@ -104,20 +92,10 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
->  		else
->  			nvec = 1 << entry->msi_attrib.multiple;
->  		for (i = 0; i < nvec; i++)
-> -			arch_teardown_msi_irq(entry->irq + i);
-> +			chip->teardown_irq(entry->irq + i);
->  	}
->  }
->  
-> -void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
-> -{
-> -	struct msi_chip *chip = arch_find_msi_chip(dev);
-> -
-> -	if (chip && chip->teardown_irqs)
-> -		return chip->teardown_irqs(dev);
-> -
-> -	return default_teardown_msi_irqs(dev);
-> -}
-> -
->  static void default_restore_msi_irq(struct pci_dev *dev, int irq)
->  {
->  	struct msi_desc *entry;
-> @@ -136,10 +114,18 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
->  		write_msi_msg(irq, &entry->msg);
->  }
->  
-> -void __weak arch_restore_msi_irqs(struct pci_dev *dev)
-> +static void default_restore_msi_irqs(struct pci_dev *dev)
->  {
-> -	struct msi_chip *chip = arch_find_msi_chip(dev);
-> +	struct msi_desc *entry = NULL;
-> +
-> +	list_for_each_entry(entry, &dev->msi_list, list) {
-> +		default_restore_msi_irq(dev, entry->irq);
-> +	}
-> +}
->  
-> +static void restore_msi_irqs(struct pci_dev *dev)
-> +{
-> +	struct msi_chip *chip = arch_find_msi_chip(dev);
->  	if (chip && chip->restore_irqs)
->  		return chip->restore_irqs(dev);
->  
-> @@ -248,15 +234,6 @@ void unmask_msi_irq(struct irq_data *data)
->  	msi_set_mask_bit(data, 0);
->  }
->  
-> -void default_restore_msi_irqs(struct pci_dev *dev)
-> -{
-> -	struct msi_desc *entry;
-> -
-> -	list_for_each_entry(entry, &dev->msi_list, list) {
-> -		default_restore_msi_irq(dev, entry->irq);
-> -	}
-> -}
-> -
->  void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->  {
->  	BUG_ON(entry->dev->current_state != PCI_D0);
-> @@ -360,7 +337,7 @@ static void free_msi_irqs(struct pci_dev *dev)
->  			BUG_ON(irq_has_action(entry->irq + i));
->  	}
->  
-> -	arch_teardown_msi_irqs(dev);
-> +	teardown_msi_irqs(dev);
->  
->  	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
->  		if (entry->msi_attrib.is_msix) {
-> @@ -430,7 +407,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
->  
->  	pci_intx_for_msi(dev, 0);
->  	msi_set_enable(dev, 0);
-> -	arch_restore_msi_irqs(dev);
-> +	restore_msi_irqs(dev);
->  
->  	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &control);
->  	msi_mask_irq(entry, msi_mask(entry->msi_attrib.multi_cap),
-> @@ -453,7 +430,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
->  	msix_clear_and_set_ctrl(dev, 0,
->  				PCI_MSIX_FLAGS_ENABLE | PCI_MSIX_FLAGS_MASKALL);
->  
-> -	arch_restore_msi_irqs(dev);
-> +	restore_msi_irqs(dev);
->  	list_for_each_entry(entry, &dev->msi_list, list) {
->  		msix_mask_irq(entry, entry->masked);
->  	}
-> @@ -624,7 +601,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
->  	list_add_tail(&entry->list, &dev->msi_list);
->  
->  	/* Configure MSI capability structure */
-> -	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
-> +	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
->  	if (ret) {
->  		msi_mask_irq(entry, mask, ~mask);
->  		free_msi_irqs(dev);
-> @@ -740,7 +717,7 @@ static int msix_capability_init(struct pci_dev *dev,
->  	if (ret)
->  		return ret;
->  
-> -	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-> +	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
->  	if (ret)
->  		goto out_avail;
->  
-> diff --git a/include/linux/msi.h b/include/linux/msi.h
-> index 92a51e7..d6e1f7c 100644
-> --- a/include/linux/msi.h
-> +++ b/include/linux/msi.h
-> @@ -51,20 +51,6 @@ struct msi_desc {
->  	struct kobject kobj;
->  };
->  
-> -/*
-> - * The arch hooks to setup up msi irqs. Those functions are
-> - * implemented as weak symbols so that they /can/ be overriden by
-> - * architecture specific code if needed.
-> - */
-> -int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
-> -void arch_teardown_msi_irq(unsigned int irq);
-> -int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-> -void arch_teardown_msi_irqs(struct pci_dev *dev);
-> -void arch_restore_msi_irqs(struct pci_dev *dev);
-> -
-> -void default_teardown_msi_irqs(struct pci_dev *dev);
-> -void default_restore_msi_irqs(struct pci_dev *dev);
-> -
->  struct msi_chip {
->  	struct module *owner;
->  	struct device *dev;
+The replacement was done by a bash script to avoid copy paste error. The script is as follows :
 
+OLD="printk(KERN_ERR \?"
+OLD1="printk(KERN_NOTICE \?"
+OLD2="printk(KERN_WARNING \?"
+OLD3="printk(KERN_INFO \?"
+NEW="pr_err("
+NEW1="pr_notice("
+NEW2="pr_warn("
+NEW3="pr_info("
+TFILE="/tmp/out.tmp.$$"
+for f in *.c
+do
+sed -e "s/$OLD/$NEW/g" -e "s/$OLD1/$NEW1/g" -e "s/$OLD2/$NEW2/g" -e "s/$OLD3/$NEW3/g" "$f" > $TFILE && mv $TFILE "$f"
+done
+
+exception is intel-rng.c . 
+in v1 the build failed due to intel-rng.c . 
+it has been corrected and has been carefully build tested.
+
+ drivers/char/hw_random/amd-rng.c     |  4 ++--
+ drivers/char/hw_random/geode-rng.c   |  4 ++--
+ drivers/char/hw_random/intel-rng.c   | 13 ++++++-------
+ drivers/char/hw_random/pasemi-rng.c  |  2 +-
+ drivers/char/hw_random/pseries-rng.c |  2 +-
+ drivers/char/hw_random/via-rng.c     |  8 ++++----
+ 6 files changed, 16 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/char/hw_random/amd-rng.c b/drivers/char/hw_random/amd-rng.c
+index c6af038..48f6a83 100644
+--- a/drivers/char/hw_random/amd-rng.c
++++ b/drivers/char/hw_random/amd-rng.c
+@@ -142,10 +142,10 @@ found:
+ 	amd_rng.priv = (unsigned long)pmbase;
+ 	amd_pdev = pdev;
+ 
+-	printk(KERN_INFO "AMD768 RNG detected\n");
++	pr_info("AMD768 RNG detected\n");
+ 	err = hwrng_register(&amd_rng);
+ 	if (err) {
+-		printk(KERN_ERR PFX "RNG registering failed (%d)\n",
++		pr_err(PFX "RNG registering failed (%d)\n",
+ 		       err);
+ 		release_region(pmbase + 0xF0, 8);
+ 		goto out;
+diff --git a/drivers/char/hw_random/geode-rng.c b/drivers/char/hw_random/geode-rng.c
+index 4c4d4e1..0d0579f 100644
+--- a/drivers/char/hw_random/geode-rng.c
++++ b/drivers/char/hw_random/geode-rng.c
+@@ -109,10 +109,10 @@ found:
+ 		goto out;
+ 	geode_rng.priv = (unsigned long)mem;
+ 
+-	printk(KERN_INFO "AMD Geode RNG detected\n");
++	pr_info("AMD Geode RNG detected\n");
+ 	err = hwrng_register(&geode_rng);
+ 	if (err) {
+-		printk(KERN_ERR PFX "RNG registering failed (%d)\n",
++		pr_err(PFX "RNG registering failed (%d)\n",
+ 		       err);
+ 		goto err_unmap;
+ 	}
+diff --git a/drivers/char/hw_random/intel-rng.c b/drivers/char/hw_random/intel-rng.c
+index 86fe45c..290c880 100644
+--- a/drivers/char/hw_random/intel-rng.c
++++ b/drivers/char/hw_random/intel-rng.c
+@@ -199,7 +199,7 @@ static int intel_rng_init(struct hwrng *rng)
+ 	if ((hw_status & INTEL_RNG_ENABLED) == 0)
+ 		hw_status = hwstatus_set(mem, hw_status | INTEL_RNG_ENABLED);
+ 	if ((hw_status & INTEL_RNG_ENABLED) == 0) {
+-		printk(KERN_ERR PFX "cannot enable RNG, aborting\n");
++		pr_err(PFX "cannot enable RNG, aborting\n");
+ 		goto out;
+ 	}
+ 	err = 0;
+@@ -216,7 +216,7 @@ static void intel_rng_cleanup(struct hwrng *rng)
+ 	if (hw_status & INTEL_RNG_ENABLED)
+ 		hwstatus_set(mem, hw_status & ~INTEL_RNG_ENABLED);
+ 	else
+-		printk(KERN_WARNING PFX "unusual: RNG already disabled\n");
++		pr_warn(PFX "unusual: RNG already disabled\n");
+ }
+ 
+ 
+@@ -274,7 +274,7 @@ static int __init intel_rng_hw_init(void *_intel_rng_hw)
+ 	if (mfc != INTEL_FWH_MANUFACTURER_CODE ||
+ 	    (dvc != INTEL_FWH_DEVICE_CODE_8M &&
+ 	     dvc != INTEL_FWH_DEVICE_CODE_4M)) {
+-		printk(KERN_NOTICE PFX "FWH not detected\n");
++		pr_notice(PFX "FWH not detected\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -306,7 +306,6 @@ static int __init intel_init_hw_struct(struct intel_rng_hw *intel_rng_hw,
+ 	     (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK))
+ 	    == BIOS_CNTL_LOCK_ENABLE_MASK) {
+ 		static __initdata /*const*/ char warning[] =
+-			KERN_WARNING
+ PFX "Firmware space is locked read-only. If you can't or\n"
+ PFX "don't want to disable this in firmware setup, and if\n"
+ PFX "you are certain that your system has a functional\n"
+@@ -314,7 +313,7 @@ PFX "RNG, try using the 'no_fwh_detect' option.\n";
+ 
+ 		if (no_fwh_detect)
+ 			return -ENODEV;
+-		printk(warning);
++		pr_warn("%s", warning);
+ 		return -EBUSY;
+ 	}
+ 
+@@ -392,10 +391,10 @@ fwh_done:
+ 		goto out;
+ 	}
+ 
+-	printk(KERN_INFO "Intel 82802 RNG detected\n");
++	pr_info("Intel 82802 RNG detected\n");
+ 	err = hwrng_register(&intel_rng);
+ 	if (err) {
+-		printk(KERN_ERR PFX "RNG registering failed (%d)\n",
++		pr_err(PFX "RNG registering failed (%d)\n",
+ 		       err);
+ 		iounmap(mem);
+ 	}
+diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
+index c66279b..c0347d1 100644
+--- a/drivers/char/hw_random/pasemi-rng.c
++++ b/drivers/char/hw_random/pasemi-rng.c
+@@ -113,7 +113,7 @@ static int rng_probe(struct platform_device *ofdev)
+ 
+ 	pasemi_rng.priv = (unsigned long)rng_regs;
+ 
+-	printk(KERN_INFO "Registering PA Semi RNG\n");
++	pr_info("Registering PA Semi RNG\n");
+ 
+ 	err = hwrng_register(&pasemi_rng);
+ 
+diff --git a/drivers/char/hw_random/pseries-rng.c b/drivers/char/hw_random/pseries-rng.c
+index ab7ffde..6226aa0 100644
+--- a/drivers/char/hw_random/pseries-rng.c
++++ b/drivers/char/hw_random/pseries-rng.c
+@@ -86,7 +86,7 @@ static struct vio_driver pseries_rng_driver = {
+ 
+ static int __init rng_init(void)
+ {
+-	printk(KERN_INFO "Registering IBM pSeries RNG driver\n");
++	pr_info("Registering IBM pSeries RNG driver\n");
+ 	return vio_register_driver(&pseries_rng_driver);
+ }
+ 
+diff --git a/drivers/char/hw_random/via-rng.c b/drivers/char/hw_random/via-rng.c
+index de5a6dc..a3bebef 100644
+--- a/drivers/char/hw_random/via-rng.c
++++ b/drivers/char/hw_random/via-rng.c
+@@ -141,7 +141,7 @@ static int via_rng_init(struct hwrng *rng)
+ 	 * register */
+ 	if ((c->x86 == 6) && (c->x86_model >= 0x0f)) {
+ 		if (!cpu_has_xstore_enabled) {
+-			printk(KERN_ERR PFX "can't enable hardware RNG "
++			pr_err(PFX "can't enable hardware RNG "
+ 				"if XSTORE is not enabled\n");
+ 			return -ENODEV;
+ 		}
+@@ -180,7 +180,7 @@ static int via_rng_init(struct hwrng *rng)
+ 	   unneeded */
+ 	rdmsr(MSR_VIA_RNG, lo, hi);
+ 	if ((lo & VIA_RNG_ENABLE) == 0) {
+-		printk(KERN_ERR PFX "cannot enable VIA C3 RNG, aborting\n");
++		pr_err(PFX "cannot enable VIA C3 RNG, aborting\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -202,10 +202,10 @@ static int __init mod_init(void)
+ 
+ 	if (!cpu_has_xstore)
+ 		return -ENODEV;
+-	printk(KERN_INFO "VIA RNG detected\n");
++	pr_info("VIA RNG detected\n");
+ 	err = hwrng_register(&via_rng);
+ 	if (err) {
+-		printk(KERN_ERR PFX "RNG registering failed (%d)\n",
++		pr_err(PFX "RNG registering failed (%d)\n",
+ 		       err);
+ 		goto out;
+ 	}
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+1.8.1.2
