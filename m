@@ -1,21 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B02961A092F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 22:04:18 +1000 (EST)
-Date: Mon, 15 Sep 2014 19:41:23 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Subject: Re: [PATCH] drivers: char: hw_random: printk replacement
-Message-ID: <20140915114123.GA4843@gondor.apana.org.au>
-References: <1409238178-16496-1-git-send-email-sudipm.mukherjee@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1409238178-16496-1-git-send-email-sudipm.mukherjee@gmail.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
- Matt Mackall <mpm@selenic.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B259E1A0027
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 22:23:31 +1000 (EST)
+Message-ID: <1410783796.31754.85.camel@pasglop>
+Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
+ idle states are allowed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2014 08:23:16 -0400
+In-Reply-To: <5416A8B0.8040603@linux.vnet.ibm.com>
+References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
+ <1410764352.32643.2.camel@concordia> <5416A8B0.8040603@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: mikey@neuling.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 28, 2014 at 08:32:58PM +0530, Sudip Mukherjee wrote:
-> as pr_* macros are more preffered over printk, so printk replaced with corresponding pr_* macros
+On Mon, 2014-09-15 at 14:22 +0530, Preeti U Murthy wrote:
+> > We were talking about getting rid of powersave_nap altogether, but I
+> think we
+> > decided we couldn't, I forget.
 > 
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> Isn't this a helpful knob to disable cpuidle at runtime? Currently we
+> check the value of powersave_nap before entering both nap and
+> fastsleep.
 
-Your patch doesn't even build:
-
-  CC [M]  drivers/char/hw_random/intel-rng.o
-  CC [M]  drivers/char/hw_random/amd-rng.o
-  CC [M]  drivers/char/hw_random/via-rng.o
-  drivers/char/hw_random/intel-rng.c: In function ‘intel_init_hw_struct’:
-  drivers/char/hw_random/intel-rng.c:317:3: error: expected ‘)’ before ‘warning’
-  drivers/char/hw_random/intel-rng.c:308:36: warning: unused variable ‘warning’ [-Wunused-variable]
-  make[1]: *** [drivers/char/hw_random/intel-rng.o] Error 1
+It's useful when diagnosing some problems that can be caused by idle
+states.
 
 Cheers,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ben.
