@@ -1,22 +1,25 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
+ [209.85.220.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B3271A0121
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:25:18 +1000 (EST)
-Date: Mon, 15 Sep 2014 09:34:20 +0100
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] PCI/MSI/PPC: Remove arch_msi_check_device()
-Message-ID: <20140915083418.GC8793@agordeev.usersys.redhat.com>
-References: <cover.1410078503.git.agordeev@redhat.com>
- <a7a806c4f531ba80386e9d0baf69571a827ea59c.1410078503.git.agordeev@redhat.com>
- <1410748970.24738.3.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2C191A0070
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:42:02 +1000 (EST)
+Received: by mail-pa0-f50.google.com with SMTP id bj1so5900561pad.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 01:41:59 -0700 (PDT)
+Message-ID: <5416A64E.1060005@ozlabs.ru>
+Date: Mon, 15 Sep 2014 18:41:50 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1410748970.24738.3.camel@concordia>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/iommu/ddw: Fix endianness
+References: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r
+Cc: Alexander Graf <agraf@suse.de>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +29,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 15, 2014 at 12:42:50PM +1000, Michael Ellerman wrote:
-> On Sun, 2014-09-07 at 20:57 +0200, Alexander Gordeev wrote:
-> > Moving MSI checks from arch_msi_check_device() function to
-> > arch_setup_msi_irqs() function makes code more compact and
-> > allows removing unnecessary hook arch_msi_check_device()
-> > from generic MSI code.
-> > 
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-pci@vger.kernel.org
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+On 09/09/2014 09:22 PM, Alexey Kardashevskiy wrote:
+> rtas_call() accepts and returns values in CPU endianness.
 > 
-> I already acked the previous version, but if you didn't want it that's fine :)
+> of_read_number() accepts big-endian values but create.addr_hi/lo returned
+> by rtas_call() are in CPU endiannes.
+> 
+> The dynamic_dma_window_prop struct defines all members as BE so let's
+> make it true.
+> 
+> struct dynamic_dma_window_prop {
+>         __be32  liobn;          /* tce table number */
+>         __be64  dma_base;       /* address hi,lo */
+>         __be32  tce_shift;      /* ilog2(tce_page_size) */
+>         __be32  window_shift;   /* ilog2(tce_window_size) */
+> };
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Alexander Graf <agraf@suse.de>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I do want it, but I thought you may not agree with the new changelog ;)
 
-> cheers
+
+Ping, anyone?
+
+
+
+> ---
+>  arch/powerpc/platforms/pseries/iommu.c | 24 +++++++++++++-----------
+>  1 file changed, 13 insertions(+), 11 deletions(-)
 > 
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 7c1d77c..700020a 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -750,7 +750,7 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+>  		pr_debug("%s successfully cleared tces in window.\n",
+>  			 np->full_name);
+>  
+> -	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
+> +	ret = rtas_call(be32_to_cpu(ddw_avail[2]), 1, 1, NULL, liobn);
+>  	if (ret)
+>  		pr_warning("%s: failed to remove direct window: rtas returned "
+>  			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
+> @@ -842,7 +842,7 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+>  		cfg_addr = edev->pe_config_addr;
+>  	buid = edev->phb->buid;
+>  
+> -	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
+> +	ret = rtas_call(be32_to_cpu(ddw_avail[0]), 3, 5, (u32 *)query,
+>  		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
+>  	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
+>  		" returned %d\n", ddw_avail[0], cfg_addr, BUID_HI(buid),
+> @@ -874,8 +874,9 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+>  
+>  	do {
+>  		/* extra outputs are LIOBN and dma-addr (hi, lo) */
+> -		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create, cfg_addr,
+> -				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
+> +		ret = rtas_call(be32_to_cpu(ddw_avail[1]), 5, 4, (u32 *)create,
+> +				cfg_addr, BUID_HI(buid), BUID_LO(buid),
+> +				page_shift, window_shift);
+>  	} while (rtas_busy_delay(ret));
+>  	dev_info(&dev->dev,
+>  		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
+> @@ -972,11 +973,11 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>  		dev_dbg(&dev->dev, "no free dynamic windows");
+>  		goto out_failed;
+>  	}
+> -	if (be32_to_cpu(query.page_size) & 4) {
+> +	if (query.page_size & 4) {
+>  		page_shift = 24; /* 16MB */
+> -	} else if (be32_to_cpu(query.page_size) & 2) {
+> +	} else if (query.page_size & 2) {
+>  		page_shift = 16; /* 64kB */
+> -	} else if (be32_to_cpu(query.page_size) & 1) {
+> +	} else if (query.page_size & 1) {
+>  		page_shift = 12; /* 4kB */
+>  	} else {
+>  		dev_dbg(&dev->dev, "no supported direct page size in mask %x",
+> @@ -987,7 +988,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>  	/* verify the window * number of ptes will map the partition */
+>  	/* check largest block * page size > max memory hotplug addr */
+>  	max_addr = memory_hotplug_max();
+> -	if (be32_to_cpu(query.largest_available_block) < (max_addr >> page_shift)) {
+> +	if (query.largest_available_block < (max_addr >> page_shift)) {
+>  		dev_dbg(&dev->dev, "can't map partiton max 0x%llx with %u "
+>  			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
+>  			  1ULL << page_shift);
+> @@ -1014,8 +1015,9 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>  	if (ret != 0)
+>  		goto out_free_prop;
+>  
+> -	ddwprop->liobn = create.liobn;
+> -	ddwprop->dma_base = cpu_to_be64(of_read_number(&create.addr_hi, 2));
+> +	ddwprop->liobn = cpu_to_be32(create.liobn);
+> +	ddwprop->dma_base = cpu_to_be64(((u64)create.addr_hi << 32) |
+> +			create.addr_lo);
+>  	ddwprop->tce_shift = cpu_to_be32(page_shift);
+>  	ddwprop->window_shift = cpu_to_be32(len);
+>  
+> @@ -1048,7 +1050,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>  	list_add(&window->list, &direct_window_list);
+>  	spin_unlock(&direct_window_list_lock);
+>  
+> -	dma_addr = of_read_number(&create.addr_hi, 2);
+> +	dma_addr = be64_to_cpu(ddwprop->dma_base);
+>  	goto out_unlock;
+>  
+>  out_free_window:
 > 
+
 
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Alexey
