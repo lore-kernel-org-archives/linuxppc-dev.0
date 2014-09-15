@@ -1,16 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 213E11A0121
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:10:24 +1000 (EST)
-Message-ID: <1410750623.24738.9.camel@concordia>
-Subject: Re: [PATCH 1/4] powerpc/powernv: Add OPAL check token call
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB4921A00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:13:22 +1000 (EST)
+Message-ID: <1410750802.24738.10.camel@concordia>
+Subject: Re: [PATCH 3/4] powerpc/powernv: Check OPAL elog calls exist before
+ using
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Michael Neuling <mikey@neuling.org>
-Date: Mon, 15 Sep 2014 13:10:23 +1000
-In-Reply-To: <1408423682-14297-1-git-send-email-mikey@neuling.org>
+Date: Mon, 15 Sep 2014 13:13:22 +1000
+In-Reply-To: <1408423682-14297-3-git-send-email-mikey@neuling.org>
 References: <1408423682-14297-1-git-send-email-mikey@neuling.org>
+ <1408423682-14297-3-git-send-email-mikey@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
@@ -23,44 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-08-19 at 14:47 +1000, Michael Neuling wrote:
-> Currently there is no way to generically check if an OPAL call exists or not
-> from the host kernel.
+On Tue, 2014-08-19 at 14:48 +1000, Michael Neuling wrote:
+> Check that the OPAL_ELOG_READ token exists before initalising the elog
+> infrastructure.
 > 
-> This adds an OPAL call opal_check_token() which tells you if the given token is
-> present in OPAL or not.
+> This avoids littering the OPAL console with:
+>   "OPAL: Called with bad token 74"
 > 
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
 > ---
->  arch/powerpc/include/asm/opal.h                | 7 +++++++
->  arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
->  2 files changed, 8 insertions(+)
+>  arch/powerpc/platforms/powernv/opal-elog.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 86055e5..4593a93 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -135,6 +135,7 @@ struct opal_sg_list {
->  #define OPAL_FLASH_MANAGE			77
->  #define OPAL_FLASH_UPDATE			78
->  #define OPAL_RESYNC_TIMEBASE			79
-> +#define OPAL_CHECK_TOKEN			80
->  #define OPAL_DUMP_INIT				81
->  #define OPAL_DUMP_INFO				82
->  #define OPAL_DUMP_READ				83
-> @@ -417,6 +418,11 @@ struct opal_msg {
->  	__be64 params[8];
->  };
+> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+> index bbdb3ff..518fe95 100644
+> --- a/arch/powerpc/platforms/powernv/opal-elog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
+> @@ -295,6 +295,10 @@ int __init opal_elog_init(void)
+>  {
+>  	int rc = 0;
 >  
-> +enum OpalCheckTokenStatus {
-> +       OPAL_TOKEN_ABSENT = 0,
-> +       OPAL_TOKEN_PRESENT = 1
-> +};
+> +	/* ELOG not supported by firmware */
+> +	if (!opal_check_token(OPAL_ELOG_READ))
+> +		return -1;
+> +
 
-I don't see this used anywhere?
+The only caller does:
 
-And NoCamelCase !
+			/* Setup error log interface */
+			rc = opal_elog_init();
+			/* Setup code update interface */
+			opal_flash_init();
+			/* Setup platform dump extract interface */
+			opal_platform_dump_init();
+			/* Setup system parameters interface */
+			opal_sys_param_init();
+			/* Setup message log interface. */
+			opal_msglog_init();
+		}
+	
+		return 0;
+	}
 
-Yes I know there's lots in that file, but I didn't merge that :)
+
+So we may as well have it return void. Wanna send a follow-up patch for that.
 
 cheers
