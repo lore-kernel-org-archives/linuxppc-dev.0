@@ -1,34 +1,22 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2B6D1A08D4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:08:34 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 15 Sep 2014 13:38:27 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 015253940053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:24 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8F88n9l4325856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:51 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8F88KuZ014950
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:20 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Subject: [PATCH] powerpc/eeh: Fix kernel crash when passing through VF
-Date: Mon, 15 Sep 2014 16:08:00 +0800
-Message-Id: <1410768481-27325-1-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B3271A0121
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:25:18 +1000 (EST)
+Date: Mon, 15 Sep 2014 09:34:20 +0100
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/3] PCI/MSI/PPC: Remove arch_msi_check_device()
+Message-ID: <20140915083418.GC8793@agordeev.usersys.redhat.com>
+References: <cover.1410078503.git.agordeev@redhat.com>
+ <a7a806c4f531ba80386e9d0baf69571a827ea59c.1410078503.git.agordeev@redhat.com>
+ <1410748970.24738.3.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1410748970.24738.3.camel@concordia>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,119 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When doing vfio passthrough a VF, the kernel will crash with following
-message:
+On Mon, Sep 15, 2014 at 12:42:50PM +1000, Michael Ellerman wrote:
+> On Sun, 2014-09-07 at 20:57 +0200, Alexander Gordeev wrote:
+> > Moving MSI checks from arch_msi_check_device() function to
+> > arch_setup_msi_irqs() function makes code more compact and
+> > allows removing unnecessary hook arch_msi_check_device()
+> > from generic MSI code.
+> > 
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: linux-pci@vger.kernel.org
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> I already acked the previous version, but if you didn't want it that's fine :)
 
-[  442.656459] Unable to handle kernel paging request for data at address 0x00000060
-[  442.656593] Faulting instruction address: 0xc000000000038b88
-[  442.656706] Oops: Kernel access of bad area, sig: 11 [#1]
-[  442.656798] SMP NR_CPUS=1024 NUMA PowerNV
-[  442.656890] Modules linked in: vfio_pci mlx4_core nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT xt_conntrack bnep bluetooth rfkill ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw tg3 nfsd be2net nfs_acl ses lockd ptp enclosure pps_core kvm_hv kvm_pr shpchp binfmt_misc kvm sunrpc uinput lpfc scsi_transport_fc ipr scsi_tgt [last unloaded: mlx4_core]
-[  442.658152] CPU: 40 PID: 14948 Comm: qemu-system-ppc Not tainted 3.10.42yw-pkvm+ #37
-[  442.658219] task: c000000f7e2a9a00 ti: c000000f6dc3c000 task.ti: c000000f6dc3c000
-[  442.658287] NIP: c000000000038b88 LR: c0000000004435a8 CTR: c000000000455bc0
-[  442.658352] REGS: c000000f6dc3f580 TRAP: 0300   Not tainted  (3.10.42yw-pkvm+)
-[  442.658419] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 28004882  XER: 20000000
-[  442.658577] CFAR: c00000000000908c DAR: 0000000000000060 DSISR: 40000000 SOFTE: 1
-GPR00: c0000000004435a8 c000000f6dc3f800 c0000000012b1c10 c00000000da24000
-GPR04: 0000000000000003 0000000000001004 00000000000015b3 000000000000ffff
-GPR08: c00000000127f5d8 0000000000000000 000000000000ffff 0000000000000000
-GPR12: c000000000068078 c00000000fdd6800 000001003c320c80 000001003c3607f0
-GPR16: 0000000000000001 00000000105480c8 000000001055aaa8 000001003c31ab18
-GPR20: 000001003c10fb40 000001003c360ae8 000000001063bcf0 000000001063bdb0
-GPR24: 000001003c15ed70 0000000010548f40 c000001fe5514c88 c000001fe5514cb0
-GPR28: c00000000da24000 0000000000000000 c00000000da24000 0000000000000003
-[  442.659471] NIP [c000000000038b88] .pcibios_set_pcie_reset_state+0x28/0x130
-[  442.659530] LR [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
-[  442.659585] Call Trace:
-[  442.659610] [c000000f6dc3f800] [00000000000719e0] 0x719e0 (unreliable)
-[  442.659677] [c000000f6dc3f880] [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
-[  442.659757] [c000000f6dc3f900] [c000000000455bf8] .reset_fundamental+0x38/0x80
-[  442.659835] [c000000f6dc3f980] [c0000000004562a8] .pci_dev_specific_reset+0xa8/0xf0
-[  442.659913] [c000000f6dc3fa00] [c0000000004448c4] .__pci_dev_reset+0x44/0x430
-[  442.659980] [c000000f6dc3fab0] [c000000000444d5c] .pci_reset_function+0x7c/0xc0
-[  442.660059] [c000000f6dc3fb30] [d00000001c141ab8] .vfio_pci_open+0xe8/0x2b0 [vfio_pci]
-[  442.660139] [c000000f6dc3fbd0] [c000000000586c30] .vfio_group_fops_unl_ioctl+0x3a0/0x630
-[  442.660219] [c000000f6dc3fc90] [c000000000255fbc] .do_vfs_ioctl+0x4ec/0x7c0
-[  442.660286] [c000000f6dc3fd80] [c000000000256364] .SyS_ioctl+0xd4/0xf0
-[  442.660354] [c000000f6dc3fe30] [c000000000009e54] syscall_exit+0x0/0x98
-[  442.660420] Instruction dump:
-[  442.660454] 4bfffce9 4bfffee4 7c0802a6 fbc1fff0 fbe1fff8 f8010010 f821ff81 7c7e1b78
-[  442.660566] 7c9f2378 60000000 60000000 e93e02c8 <e8690060> 2fa30000 41de00c4 2b9f0002
-[  442.660679] ---[ end trace a64ac9546bcf0328 ]---
-[  442.660724]
+I do want it, but I thought you may not agree with the new changelog ;)
 
-The reason is current VF is not EEH enabled.
+> cheers
+> 
+> 
 
-This patch introduces a marco to convert eeh_dev to eeh_pe. By doing so, it
-will prevent converting with NULL pointer.
-
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-V2 -> V3:
-   1. rebased on 3.17-rc4
-   2. introduce a marco
-   3. use this marco in several other places
-
-V1 -> V2:
-   1. code style and patch subject adjustment
----
- arch/powerpc/kernel/eeh.c    |    4 ++--
- arch/powerpc/kernel/eeh_pe.c |    2 +-
- include/linux/pci.h          |    5 +++++
- 3 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 59a64f8..0f1b637 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -410,7 +410,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	}
- 	dn = eeh_dev_to_of_node(edev);
- 	dev = eeh_dev_to_pci_dev(edev);
--	pe = edev->pe;
-+	pe = eeh_dev_to_pe(edev);
- 
- 	/* Access to IO BARs might get this far and still not want checking. */
- 	if (!pe) {
-@@ -634,7 +634,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
- int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
- {
- 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
--	struct eeh_pe *pe = edev->pe;
-+	struct eeh_pe *pe = eeh_dev_to_pe(edev);
- 
- 	if (!pe) {
- 		pr_err("%s: No PE found on PCI device %s\n",
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 00e3844..5864017 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -428,7 +428,7 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
- 	}
- 
- 	/* Remove the EEH device */
--	pe = edev->pe;
-+	pe = eeh_dev_to_pe(edev);
- 	edev->pe = NULL;
- 	list_del(&edev->list);
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index fd03e819..9656f92 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1824,6 +1824,11 @@ static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
- {
- 	return pdev->dev.archdata.edev;
- }
-+
-+static inline struct eeh_pe *eeh_dev_to_pe(struct eeh_dev* edev)
-+{
-+	return edev ? edev->pe : NULL;
-+}
- #endif
- 
- int pci_for_each_dma_alias(struct pci_dev *pdev,
 -- 
-1.7.9.5
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
