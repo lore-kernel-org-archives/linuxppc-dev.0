@@ -1,39 +1,24 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B51B1A006C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:52:10 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 15 Sep 2014 02:52:08 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CA2503E4003D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 02:52:04 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id s8F6lxYK10027428
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 08:47:59 +0200
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8F8q4lo023116
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 02:52:04 -0600
-Message-ID: <5416A8B0.8040603@linux.vnet.ibm.com>
-Date: Mon, 15 Sep 2014 14:22:00 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
- idle states are allowed
-References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
- <1410764352.32643.2.camel@concordia>
-In-Reply-To: <1410764352.32643.2.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F3241A012A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 19:18:10 +1000 (EST)
+Message-ID: <1410772688.3931.0.camel@concordia>
+Subject: Re: [PATCH] powerpc/iommu/ddw: Fix endianness
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 15 Sep 2014 19:18:08 +1000
+In-Reply-To: <5416A64E.1060005@ozlabs.ru>
+References: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>
+ <5416A64E.1060005@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Alexander Graf <agraf@suse.de>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,62 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/15/2014 12:29 PM, Michael Ellerman wrote:
-> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
->> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
->> entry into deep idle states beyond snooze. Check for the value of this
->> parameter before entering fastsleep. We already do this check for nap in
->> power7_idle().
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->>
->>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->> index a64be57..b8ba52e 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
->>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
->>  	unsigned long new_lpcr;
->>  
->> +	/*
->> +	 * Verify if snooze is the only valid cpuidle state
->> +	 */
->> +	if (!(powersave_nap > 0))
->> +		return index;
->> +
->>  	if (unlikely(system_state < SYSTEM_RUNNING))
->>  		return index;
-> 
-> Doesn't the above mean we are just going to keep trying to go into fastsleep
-> again and again? Or does the idle code work out that it didn't work based on
-> the fact that we didn't sleep for the right period?
+On Mon, 2014-09-15 at 18:41 +1000, Alexey Kardashevskiy wrote:
+> On 09/09/2014 09:22 PM, Alexey Kardashevskiy wrote:
+> > rtas_call() accepts and returns values in CPU endianness.
 
-Thats right. The idle code figures that its judgment to enter fastsleep
-was not correct and applies a correction factor to its future decisions
-. This correction factor is intended to influence the cpuidle governor's
-decision on choosing an idle state for the cpu based on the history of
-wakeups. Hence a shallower idle state will be chosen here on in the
-above circumstance.
+Sounds right.
 
-> 
-> We were talking about getting rid of powersave_nap altogether, but I think we
-> decided we couldn't, I forget.
+> > of_read_number() accepts big-endian values but create.addr_hi/lo returned
+> > by rtas_call() are in CPU endiannes.
 
-Isn't this a helpful knob to disable cpuidle at runtime? Currently we
-check the value of powersave_nap before entering both nap and fastsleep.
+Also sounds right.
 
-Regards
-Preeti U Murthy
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> > The dynamic_dma_window_prop struct defines all members as BE so let's
+> > make it true.
+
+It does. But why does it do that? It seems to be allocated and setup in
+enable_ddw() and then the only place I see it used is in
+tce_setrange_multi_pSeriesLP()/tce_clearrange_multi_pSeriesLP(), which both
+unpack it again. What am I missing?
+
+> > struct dynamic_dma_window_prop {
+> >         __be32  liobn;          /* tce table number */
+> >         __be64  dma_base;       /* address hi,lo */
+> >         __be32  tce_shift;      /* ilog2(tce_page_size) */
+> >         __be32  window_shift;   /* ilog2(tce_window_size) */
+> > };
+
+We do read them from the device tree in find_existing_ddw_windows(), but if
+that's the only place then the conversion to cpu endian should happen there.
+
+> > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > index 7c1d77c..700020a 100644
+> > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > @@ -750,7 +750,7 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+> >  		pr_debug("%s successfully cleared tces in window.\n",
+> >  			 np->full_name);
+> >  
+> > -	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
+> > +	ret = rtas_call(be32_to_cpu(ddw_avail[2]), 1, 1, NULL, liobn);
+
+The conversion should happen once where ever ddw_avail comes out of the device
+tree, rather than everywhere it's used.
+
+cheers
