@@ -1,20 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA1391A0161
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:19:19 +1000 (EST)
-Message-ID: <1410751158.18144.7.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH 1/4] powerpc/powernv: Add OPAL check token call
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 15 Sep 2014 13:19:18 +1000
-In-Reply-To: <1410750623.24738.9.camel@concordia>
-References: <1408423682-14297-1-git-send-email-mikey@neuling.org>
- <1410750623.24738.9.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E60F1A00FD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:28:19 +1000 (EST)
+Message-ID: <1410751698.24738.13.camel@concordia>
+Subject: Re: [PATCH] rtc/tpo: Driver to support rtc and wakeup on PowerNV
+ platform
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2014 13:28:18 +1000
+In-Reply-To: <20140910053232.11176.35140.stgit@localhost.localdomain>
+References: <20140910053232.11176.35140.stgit@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: a.zummo@towertech.it, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,63 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-15 at 13:10 +1000, Michael Ellerman wrote:
-> On Tue, 2014-08-19 at 14:47 +1000, Michael Neuling wrote:
-> > Currently there is no way to generically check if an OPAL call exists o=
-r not
-> > from the host kernel.
-> >=20
-> > This adds an OPAL call opal_check_token() which tells you if the given =
-token is
-> > present in OPAL or not.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> >  arch/powerpc/include/asm/opal.h                | 7 +++++++
-> >  arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
-> >  2 files changed, 8 insertions(+)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm=
-/opal.h
-> > index 86055e5..4593a93 100644
-> > --- a/arch/powerpc/include/asm/opal.h
-> > +++ b/arch/powerpc/include/asm/opal.h
-> > @@ -135,6 +135,7 @@ struct opal_sg_list {
-> >  #define OPAL_FLASH_MANAGE			77
-> >  #define OPAL_FLASH_UPDATE			78
-> >  #define OPAL_RESYNC_TIMEBASE			79
-> > +#define OPAL_CHECK_TOKEN			80
-> >  #define OPAL_DUMP_INIT				81
-> >  #define OPAL_DUMP_INFO				82
-> >  #define OPAL_DUMP_READ				83
-> > @@ -417,6 +418,11 @@ struct opal_msg {
-> >  	__be64 params[8];
-> >  };
-> > =20
-> > +enum OpalCheckTokenStatus {
-> > +       OPAL_TOKEN_ABSENT =3D 0,
-> > +       OPAL_TOKEN_PRESENT =3D 1
-> > +};
->=20
-> I don't see this used anywhere?
->=20
-> And NoCamelCase !
-
-We can probably just delete the enum since we are just doing this in
-code anyway:
-
-       if (!opal_check_token(OPAL_RTC_READ))
-               goto out;
-
-OK?  Or would you prefer the usage to read:
-
-       if (opal_check_token(OPAL_RTC_READ) =3D=3D OPAL_TOKEN_ABSENT)
-               goto out;
+On Wed, 2014-09-10 at 11:08 +0530, Neelesh Gupta wrote:
+> The patch implements the OPAL rtc driver that binds with the rtc
+> driver subsystem. The driver uses the platform device infrastructure
+> to probe the rtc device and register it to rtc class framework. The
+> 'wakeup' is supported depending upon the property 'has-tpo' present
+> in the OF node. It provides a way to load the generic rtc driver in
+> in the absence of an OPAL driver.
+> 
+> The patch also moves the existing OPAL rtc get/set time interfaces to the
+> new driver and exposes the necessary OPAL calls using EXPORT_SYMBOL_GPL.
+> 
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> ---
+> 
+> Note:
+> This patch depends upon the below patch posted on 'linuxppc-dev@lists.ozlabs.org'
+> [PATCH 1/4] powerpc/powernv: Add OPAL check token call
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+>  arch/powerpc/include/asm/opal.h                |    7 -
+>  arch/powerpc/kernel/time.c                     |    1 
+>  arch/powerpc/platforms/powernv/opal-async.c    |    3 
+>  arch/powerpc/platforms/powernv/opal-rtc.c      |   63 ++----
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |    2 
+>  arch/powerpc/platforms/powernv/opal.c          |    6 +
+>  arch/powerpc/platforms/powernv/setup.c         |    2 
+>  drivers/rtc/Kconfig                            |   11 +
+>  drivers/rtc/Makefile                           |    1 
+>  drivers/rtc/rtc-opal.c                         |  257 ++++++++++++++++++++++++
+>  10 files changed, 305 insertions(+), 48 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-opal.c
 
 
-> Yes I know there's lots in that file, but I didn't merge that :)
+Alessandro, given this depends on other things in the powerpc tree do you mind
+if we take this through the powerpc tree with your Ack?
 
-Fickle bloody maintainers.  I thought I never say this but... I want our
-crazy Frenchman back! :-P
+Or I can create a topic branch with the required powerpc changes.
 
-Mikey
+cheers
