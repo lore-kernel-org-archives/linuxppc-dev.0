@@ -1,24 +1,27 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0148.outbound.protection.outlook.com [65.55.169.148])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f174.google.com (mail-pd0-f174.google.com
+ [209.85.192.174])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F3921A0184
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 20:22:56 +1000 (EST)
-Date: Mon, 15 Sep 2014 18:22:27 +0800
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: Markus Pargmann <mpa@pengutronix.de>
-Subject: Re: [PATCH V3] ASoC: fsl_ssi: refine ipg clock usage in this module
-Message-ID: <20140915102224.GA23877@audiosh1>
-References: <894383e00876763f22988fc5f3f9f232f939f923.1410517971.git.shengjiu.wang@freescale.com>
- <20140915100541.GD8844@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C62771A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 20:26:22 +1000 (EST)
+Received: by mail-pd0-f174.google.com with SMTP id v10so5949387pde.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 03:26:20 -0700 (PDT)
+Message-ID: <5416BEC2.8040906@ozlabs.ru>
+Date: Mon, 15 Sep 2014 20:26:10 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140915100541.GD8844@pengutronix.de>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz, nicoleotsuka@gmail.com,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/iommu/ddw: Fix endianness
+References: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>	
+ <5416A64E.1060005@ozlabs.ru> <1410772688.3931.0.camel@concordia>
+In-Reply-To: <1410772688.3931.0.camel@concordia>
+Content-Type: text/plain; charset=koi8-r
+Cc: Alexander Graf <agraf@suse.de>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,184 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 15, 2014 at 12:05:41PM +0200, Markus Pargmann wrote:
-> On Fri, Sep 12, 2014 at 06:35:15PM +0800, Shengjiu Wang wrote:
-> > Check if ipg clock is in clock-names property, then we can move the
-> > ipg clock enable and disable operation to startup and shutdown, that
-> > is only enable ipg clock when ssi is working and keep clock is disabled
-> > when ssi is in idle.
-> > But when the checking is failed, remain the clock control as before.
-> > 
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
-> > ---
-> > V3 change log:
-> > update patch according Nicolin and markus's comments
-> > 
-> > 
-> >  sound/soc/fsl/fsl_ssi.c |   53 ++++++++++++++++++++++++++++++++++++++++-------
-> >  1 file changed, 45 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> > index 2fc3e66..6d1dfd5 100644
-> > --- a/sound/soc/fsl/fsl_ssi.c
-> > +++ b/sound/soc/fsl/fsl_ssi.c
-> > @@ -169,6 +169,7 @@ struct fsl_ssi_private {
-> >  	u8 i2s_mode;
-> >  	bool use_dma;
-> >  	bool use_dual_fifo;
-> > +	bool has_ipg_clk_name;
-> >  	unsigned int fifo_depth;
-> >  	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
-> >  
-> > @@ -530,6 +531,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
-> >  	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-> >  	struct fsl_ssi_private *ssi_private =
-> >  		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-> > +	int ret;
-> > +
-> > +	ret = clk_prepare_enable(ssi_private->clk);
-> > +	if (ret)
-> > +		return ret;
-> >  
-> >  	/* When using dual fifo mode, it is safer to ensure an even period
-> >  	 * size. If appearing to an odd number while DMA always starts its
-> > @@ -544,6 +550,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
-> >  }
-> >  
-> >  /**
-> > + * fsl_ssi_shutdown: shutdown the SSI
-> > + *
-> > + */
-> > +static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-> > +                             struct snd_soc_dai *dai)
-> > +{
-> > +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-> > +	struct fsl_ssi_private *ssi_private =
-> > +		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-> > +
-> > +	clk_disable_unprepare(ssi_private->clk);
-> > +
-> > +}
-> > +
-> > +/**
-> >   * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
-> >   *
-> >   * Note: This function can be only called when using SSI as DAI master
-> > @@ -1043,6 +1064,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
-> >  
-> >  static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
-> >  	.startup	= fsl_ssi_startup,
-> > +	.shutdown       = fsl_ssi_shutdown,
-> >  	.hw_params	= fsl_ssi_hw_params,
-> >  	.hw_free	= fsl_ssi_hw_free,
-> >  	.set_fmt	= fsl_ssi_set_dai_fmt,
-> > @@ -1168,17 +1190,22 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
-> >  	u32 dmas[4];
-> >  	int ret;
-> >  
-> > -	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-> > +	if (ssi_private->has_ipg_clk_name)
-> > +		ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
-> > +	else
-> > +		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-> >  	if (IS_ERR(ssi_private->clk)) {
-> >  		ret = PTR_ERR(ssi_private->clk);
-> >  		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
-> >  		return ret;
-> >  	}
-> >  
-> > -	ret = clk_prepare_enable(ssi_private->clk);
-> > -	if (ret) {
-> > -		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
-> > -		return ret;
-> > +	if (!ssi_private->has_ipg_clk_name) {
-> > +		ret = clk_prepare_enable(ssi_private->clk);
-> > +		if (ret) {
-> > +			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
-> > +			return ret;
-> > +		}
-> >  	}
-> >  
-> >  	/* For those SLAVE implementations, we ingore non-baudclk cases
-> > @@ -1236,8 +1263,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
-> >  	return 0;
-> >  
-> >  error_pcm:
-> > -	clk_disable_unprepare(ssi_private->clk);
-> >  
-> > +	if (!ssi_private->has_ipg_clk_name)
-> > +		clk_disable_unprepare(ssi_private->clk);
-> >  	return ret;
-> >  }
-> >  
-> > @@ -1246,7 +1274,8 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
-> >  {
-> >  	if (!ssi_private->use_dma)
-> >  		imx_pcm_fiq_exit(pdev);
-> > -	clk_disable_unprepare(ssi_private->clk);
-> > +	if (!ssi_private->has_ipg_clk_name)
-> > +		clk_disable_unprepare(ssi_private->clk);
-> >  }
-> >  
-> >  static int fsl_ssi_probe(struct platform_device *pdev)
-> > @@ -1321,8 +1350,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
-> >  		return -ENOMEM;
-> >  	}
-> >  
-> > -	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
-> > +	ret = of_property_match_string(np, "clock-names", "ipg");
-> > +	if (ret < 0) {
-> > +		ssi_private->has_ipg_clk_name = false;
-> > +		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
-> >  			&fsl_ssi_regconfig);
+On 09/15/2014 07:18 PM, Michael Ellerman wrote:
+> On Mon, 2014-09-15 at 18:41 +1000, Alexey Kardashevskiy wrote:
+>> On 09/09/2014 09:22 PM, Alexey Kardashevskiy wrote:
+>>> rtas_call() accepts and returns values in CPU endianness.
 > 
-> Sorry if I was unclear about that. My suggestion was to enable the clock
-> right here:
-> 		clk_prepare_enable(ssi_private->clk);
+> Sounds right.
 > 
-> Then you can remove ssi_private->has_ipg_clk_name and all
-> clk_prepare_enable() and clk_disable_unprepare() from above. Also you
-> can move the devm_clk_get() into this block.
->
+>>> of_read_number() accepts big-endian values but create.addr_hi/lo returned
+>>> by rtas_call() are in CPU endiannes.
+> 
+> Also sounds right.
+> 
+>>> The dynamic_dma_window_prop struct defines all members as BE so let's
+>>> make it true.
+> 
+> It does. But why does it do that? It seems to be allocated and setup in
+> enable_ddw() and then the only place I see it used is in
+> tce_setrange_multi_pSeriesLP()/tce_clearrange_multi_pSeriesLP(), which both
+> unpack it again. What am I missing?
 
-ipg clock not only need to be enabled when accessing register, but also 
-need to be enabled when ssi is working. So I add clk_enable in startup.
- 
-> It seems you really want to implement this for devicetrees where the
-> "ipg" clock-name is missing, but I don't understand why? I really can't
-> see any benefit of adding all these clk_prepare_enable() calls for all
-> cornercases that may occure. For example the clocks for AC97 are still
-> missing in this version.
+I do not know why they are BE. I just know that create_ddw() returns
+ddw_create_response struct which members are declared as BE but they are
+not as rtas_call() already made them CPU-endian.
 
-When ipg clock-name is missing, I just remain the code logic as before.
-So AC97 case is same as before too. 
-When have ipg clock-name, register it to regmap for accessing register,
-and enabling ipg clock in startup also is useful for AC97.
+May be rtas_call() must not be used for structs. Or these structs must be
+fixed to be CPU endian. Cannot choose what/how to fix here. Sure I still
+can miss something here and it is all correct and I have to fix QEMU.
 
-I don't understand why you think clock for AC97 is still missing?
 
-wang shengjiu
+>>> struct dynamic_dma_window_prop {
+>>>         __be32  liobn;          /* tce table number */
+>>>         __be64  dma_base;       /* address hi,lo */
+>>>         __be32  tce_shift;      /* ilog2(tce_page_size) */
+>>>         __be32  window_shift;   /* ilog2(tce_window_size) */
+>>> };
+> 
+> We do read them from the device tree in find_existing_ddw_windows(), but if
+> that's the only place then the conversion to cpu endian should happen there.
+
+
+enable_ddw() kmalloc's ddwprop which is of this dynamic_dma_window_prop type.
+
+Then enable_ddw() initializes properties of that ddwprop thing but does it
+incorrectly.
+
+Then it calls walk_system_ram_range() which eventually calls
+tce_setrange_multi_pSeriesLP() to map every single page of guest's ram, the
+dynamic_dma_window_prop struct pointer is a void* argument of that callback.
+
+
+
+find_existing_ddw_windows() handles something called
+"linux,direct64-ddr-window-info" which is not a part of DDW at all and it
+is not from PAPR and this patch is not about it.
+
+
+
+>>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+>>> index 7c1d77c..700020a 100644
+>>> --- a/arch/powerpc/platforms/pseries/iommu.c
+>>> +++ b/arch/powerpc/platforms/pseries/iommu.c
+>>> @@ -750,7 +750,7 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+>>>  		pr_debug("%s successfully cleared tces in window.\n",
+>>>  			 np->full_name);
+>>>  
+>>> -	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
+>>> +	ret = rtas_call(be32_to_cpu(ddw_avail[2]), 1, 1, NULL, liobn);
+> 
+> The conversion should happen once where ever ddw_avail comes out of the device
+> tree, rather than everywhere it's used.
+
+ddw_avail is a pointer to device tree property value:
+ddw_avail = of_get_property(np, "ibm,ddw-applicable", &len);
+
+This contains 3 tokens, only 2 of them are actually used by the DDW code in
+its current state and each of them is used just once in the guest's
+lifetime. Older guest kernels would use the "reset" extension token but
+again - only once. I fail to see the point in caching CPU-endian values of
+these tokens.
+
+
 
 > 
-> Best regards,
+> cheers
 > 
-> Markus
 > 
-> > +	} else {
-> > +		ssi_private->has_ipg_clk_name = true;
-> > +		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
-> > +			"ipg", iomem, &fsl_ssi_regconfig);
-> > +	}
-> >  	if (IS_ERR(ssi_private->regs)) {
-> >  		dev_err(&pdev->dev, "Failed to init register map\n");
-> >  		return PTR_ERR(ssi_private->regs);
-> > -- 
-> > 1.7.9.5
-> > 
-> > 
 > 
-> -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+
+-- 
+Alexey
