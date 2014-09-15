@@ -1,37 +1,37 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E27C1A0077
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 06:31:55 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6125F1A014D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 06:32:56 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 15 Sep 2014 14:31:53 -0600
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B168338C8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:31:51 -0400 (EDT)
+ Mon, 15 Sep 2014 16:32:53 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 301F96E8029
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:32:40 -0400 (EDT)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8FKVpYK2949398
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 20:31:51 GMT
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8FKWqOf4260294
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 20:32:52 GMT
 Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8FKVpIA023247
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:31:51 -0400
+ s8FKWpCG027398
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:32:52 -0400
 Received: from localhost.localdomain (dhcp-9-41-149-95.austin.ibm.com
  [9.41.149.95])
  by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s8FKVpU3023226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:31:51 -0400
-Message-ID: <54174CB7.2080704@linux.vnet.ibm.com>
-Date: Mon, 15 Sep 2014 15:31:51 -0500
+ s8FKWpt5027367
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 16:32:51 -0400
+Message-ID: <54174CF3.1010802@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2014 15:32:51 -0500
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/5] pseries: Create device hotplug entry point
+Subject: [PATCH 4/5] pseries: Implement memory hotplug add in the kernel
 References: <54174B81.50504@linux.vnet.ibm.com>
 In-Reply-To: <54174B81.50504@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
@@ -44,185 +44,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For pseries system the kernel will be notified of hotplug requests in
-the form of rtas hotplug events. This patch creates a common routine that
-can handle these requests in both the PowerVM anbd PowerKVM environments,
-handle_dlpar_errorlog(). This also creates the initial memory hotplug
-request handling stub.
+This patch adds the ability to do memory hotplug adding in the kernel.
 
-For PowerVM this patch also creates a new /proc file that the drmgr
-command will use to write rtas hotplug events to.
-
-For future PowerKVM handling the rtas check-exception code can pass
-any rtas hotplug events received to handle_dlpar_errorlog().
+Currently the hotplug add/remove of memory is handled by the drmgr
+command. The drmgr command performs the add/remove by performing
+some work in user-space and making requests to the kernel to handle 
+other pieces. By moving all of the work to the kernel we can do the
+add and remove faster, and provide a common place to do memory hotplug
+for both the PowerVM and PowerKVM environments.
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c          |   63 +++++++++++++++++++++++
- arch/powerpc/platforms/pseries/hotplug-memory.c |   22 ++++++++
- arch/powerpc/platforms/pseries/pseries.h        |   10 ++++
- 3 files changed, 94 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  170 +++++++++++++++++++++++
+ 1 file changed, 170 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a2450b8..574ec73 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -16,7 +16,9 @@
- #include <linux/cpu.h>
- #include <linux/slab.h>
- #include <linux/of.h>
-+#include <linux/proc_fs.h>
- #include "offline_states.h"
-+#include "pseries.h"
- 
- #include <asm/prom.h>
- #include <asm/machdep.h>
-@@ -530,13 +532,72 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- 	return count;
- }
- 
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
-+static int handle_dlpar_errorlog(struct rtas_error_log *error_log)
-+{
-+	struct pseries_errorlog *pseries_log;
-+	struct pseries_hp_errorlog *hp_elog;
-+	int rc = -EINVAL;
-+
-+	pseries_log = get_pseries_errorlog(error_log,
-+					   PSERIES_ELOG_SECT_ID_HOTPLUG);
-+	if (!pseries_log)
-+		return rc;
-+
-+	hp_elog = (struct pseries_hp_errorlog *)pseries_log->data;
-+	if (!hp_elog)
-+		return rc;
-+
-+	switch (hp_elog->resource) {
-+	case PSERIES_HP_ELOG_RESOURCE_MEM:
-+		rc = dlpar_memory(hp_elog);
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static ssize_t dlpar_write(struct file *file, const char __user *buf,
-+			   size_t count, loff_t *offset)
-+{
-+	char *event_buf;
-+	int rc;
-+
-+	event_buf = kmalloc(count + 1, GFP_KERNEL);
-+	if (!event_buf)
-+		return -ENOMEM;
-+
-+	rc = copy_from_user(event_buf, buf, count);
-+	if (rc) {
-+		kfree(event_buf);
-+		return rc;
-+	}
-+
-+	rc = handle_dlpar_errorlog((struct rtas_error_log *)event_buf);
-+	kfree(event_buf);
-+	return rc ? rc : count;
-+}
-+
-+static const struct file_operations dlpar_fops = {
-+	.write = dlpar_write,
-+	.llseek = noop_llseek,
-+};
-+
- static int __init pseries_dlpar_init(void)
- {
-+	struct proc_dir_entry *proc_ent;
-+
-+	proc_ent = proc_create("powerpc/dlpar", S_IWUSR, NULL, &dlpar_fops);
-+	if (proc_ent)
-+		proc_set_size(proc_ent, 0);
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 	ppc_md.cpu_probe = dlpar_cpu_probe;
- 	ppc_md.cpu_release = dlpar_cpu_release;
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- 
- 	return 0;
- }
- machine_device_initcall(pseries, pseries_dlpar_init);
- 
--#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 24abc5c..0e60e15 100644
+index 0e60e15..b254773 100644
 --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
 +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -9,6 +9,8 @@
-  *      2 of the License, or (at your option) any later version.
-  */
+@@ -17,6 +17,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/memory.h>
+ #include <linux/memory_hotplug.h>
++#include <linux/slab.h>
  
-+#define pr_fmt(fmt)	"pseries-hotplug: " fmt
-+
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/memblock.h>
-@@ -20,6 +22,9 @@
+ #include <asm/firmware.h>
  #include <asm/machdep.h>
- #include <asm/prom.h>
+@@ -24,6 +25,8 @@
  #include <asm/sparsemem.h>
-+#include <asm/rtas.h>
+ #include <asm/rtas.h>
+ 
++#include "pseries.h"
 +
-+DEFINE_MUTEX(dlpar_mem_mutex);
+ DEFINE_MUTEX(dlpar_mem_mutex);
  
  unsigned long pseries_memory_block_size(void)
+@@ -69,6 +72,53 @@ unsigned long pseries_memory_block_size(void)
+ 	return memblock_size;
+ }
+ 
++static void dlpar_free_drconf_property(struct property *prop)
++{
++	kfree(prop->name);
++	kfree(prop->value);
++	kfree(prop);
++}
++
++static struct property *dlpar_clone_drconf_property(struct device_node *dn)
++{
++	struct property *prop, *new_prop;
++
++	prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	if (!prop)
++		return NULL;
++
++	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
++	new_prop->value = kmalloc(prop->length + 1, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		dlpar_free_drconf_property(new_prop);
++		return NULL;
++	}
++
++	memcpy(new_prop->value, prop->value, prop->length);
++	new_prop->length = prop->length;
++	*(((char *)new_prop->value) + new_prop->length) = 0;
++
++	return new_prop;
++}
++
++static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
++{
++	unsigned long section_nr;
++	struct mem_section *mem_sect;
++	struct memory_block *mem_block;
++	u64 phys_addr = be64_to_cpu(lmb->base_addr);
++
++	section_nr = pfn_to_section_nr(PFN_DOWN(phys_addr));
++	mem_sect = __nr_to_section(section_nr);
++
++	mem_block = find_memory_block(mem_sect);
++	return mem_block;
++}
++
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ static int pseries_remove_memory(u64 start, u64 size)
  {
-@@ -150,6 +155,23 @@ static inline int pseries_remove_mem_node(struct device_node *np)
+@@ -155,13 +205,133 @@ static inline int pseries_remove_mem_node(struct device_node *np)
  }
  #endif /* CONFIG_MEMORY_HOTREMOVE */
  
-+int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
++static int dlpar_add_one_lmb(struct of_drconf_cell *lmb)
 +{
-+	int rc = 0;
++	struct memory_block *mem_block;
++	u64 phys_addr;
++	unsigned long pages_per_block;
++	unsigned long block_sz;
++	int nid, sections_per_block;
++	int rc;
 +
-+	mutex_lock(&dlpar_mem_mutex);
++	phys_addr = be64_to_cpu(lmb->base_addr);
++	block_sz = memory_block_size_bytes();
++	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
++	pages_per_block = PAGES_PER_SECTION * sections_per_block;
 +
-+	switch (hp_elog->action) {
-+	default:
-+		pr_err("Invalid action (%d) specified\n", hp_elog->action);
-+		rc = -EINVAL;
-+		break;
++	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
++		return -EINVAL;
++
++	nid = memory_add_physaddr_to_nid(phys_addr);
++	rc = add_memory(nid, phys_addr, block_sz);
++	if (rc)
++		return rc;
++
++	rc = memblock_add(phys_addr, block_sz);
++	if (rc) {
++		remove_memory(nid, phys_addr, block_sz);
++		return rc;
 +	}
 +
-+	mutex_unlock(&dlpar_mem_mutex);
++	mem_block = lmb_to_memblock(lmb);
++	if (!mem_block) {
++		remove_memory(nid, phys_addr, block_sz);
++		return -EINVAL;
++	}
++
++	rc = device_online(&mem_block->dev);
++	put_device(&mem_block->dev);
++	if (rc)
++		remove_memory(nid, phys_addr, block_sz);
++
 +	return rc;
 +}
 +
- static int pseries_add_mem_node(struct device_node *np)
- {
- 	const char *type;
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index b94516b..28bd994 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -11,6 +11,7 @@
- #define _PSERIES_PSERIES_H
- 
- #include <linux/interrupt.h>
-+#include <asm/rtas.h>
- 
- struct device_node;
- 
-@@ -62,6 +63,15 @@ extern int dlpar_detach_node(struct device_node *);
- extern int dlpar_acquire_drc(u32);
- extern int dlpar_release_drc(u32);
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+extern int dlpar_memory(struct pseries_hp_errorlog *);
-+#else
-+static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
++static int dlpar_memory_add(struct pseries_hp_errorlog *hp_elog)
 +{
-+	return -ENOTSUPP;
-+}
-+#endif
++	struct of_drconf_cell *lmb;
++	struct device_node *dn;
++	struct property *prop;
++	uint32_t entries, *p;
++	int i, lmbs_to_add;
++	int lmbs_added = 0;
++	int rc = -EINVAL;
 +
- /* PCI root bridge prepare function override for pseries */
- struct pci_host_bridge;
- int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
++	if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
++		lmbs_to_add = be32_to_cpu(hp_elog->_drc_u.drc_count);
++		pr_info("Attempting to hot-add %d LMB(s)\n", lmbs_to_add);
++	} else {
++		lmbs_to_add = 1;
++		pr_info("Attempting to hot-add LMB, drc index %x\n",
++			be32_to_cpu(hp_elog->_drc_u.drc_index));
++	}
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	prop = dlpar_clone_drconf_property(dn);
++	if (!prop) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	p = prop->value;
++	entries = be32_to_cpu(*p++);
++	lmb = (struct of_drconf_cell *)p;
++
++	for (i = 0; i < entries; i++, lmb++) {
++		u32 drc_index = be32_to_cpu(lmb->drc_index);
++
++		if (lmbs_to_add == lmbs_added)
++			break;
++
++		if (be32_to_cpu(lmb->flags) & DRCONF_MEM_ASSIGNED)
++			continue;
++
++		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX
++		    && lmb->drc_index != hp_elog->_drc_u.drc_index)
++			continue;
++
++		rc = dlpar_acquire_drc(drc_index);
++		if (rc)
++			continue;
++
++		rc = dlpar_add_one_lmb(lmb);
++		if (rc) {
++			dlpar_release_drc(drc_index);
++			continue;
++		}
++
++		lmb->flags |= cpu_to_be32(DRCONF_MEM_ASSIGNED);
++		lmbs_added++;
++		pr_info("Memory at %llx (drc index %x) has been hot-added\n",
++			be64_to_cpu(lmb->base_addr), drc_index);
++	}
++
++	if (lmbs_added)
++		rc = of_update_property(dn, prop);
++	else
++		dlpar_free_drconf_property(prop);
++
++	of_node_put(dn);
++	return rc ? rc : lmbs_added;
++}
++
+ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ {
+ 	int rc = 0;
+ 
++	if (hp_elog->id_type != PSERIES_HP_ELOG_ID_DRC_COUNT
++	    && hp_elog->id_type != PSERIES_HP_ELOG_ID_DRC_INDEX)
++		return -EINVAL;
++
+ 	mutex_lock(&dlpar_mem_mutex);
+ 
+ 	switch (hp_elog->action) {
++	case PSERIES_HP_ELOG_ACTION_ADD:
++		rc = dlpar_memory_add(hp_elog);
++		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+ 		rc = -EINVAL;
