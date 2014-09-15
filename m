@@ -1,30 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D27871A006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 12:39:54 +1000 (EST)
-Message-ID: <1410748793.24738.2.camel@concordia>
-Subject: Re: [PATCH v3 3/3] sched: BUG when stack end location is over written
+ by lists.ozlabs.org (Postfix) with ESMTPS id D00561A0001
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 12:42:50 +1000 (EST)
+Message-ID: <1410748970.24738.3.camel@concordia>
+Subject: Re: [PATCH v2 1/3] PCI/MSI/PPC: Remove arch_msi_check_device()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Date: Mon, 15 Sep 2014 12:39:53 +1000
-In-Reply-To: <1410519533.5547.49.camel@marge.simpson.net>
-References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
- <1410450088-18236-1-git-send-email-atomlin@redhat.com>
- <1410450088-18236-4-git-send-email-atomlin@redhat.com>
- <1410494817.17540.4.camel@concordia>
- <20140912094419.GD1873@atomlin.usersys.redhat.com>
- <1410519533.5547.49.camel@marge.simpson.net>
+To: Alexander Gordeev <agordeev@redhat.com>
+Date: Mon, 15 Sep 2014 12:42:50 +1000
+In-Reply-To: <a7a806c4f531ba80386e9d0baf69571a827ea59c.1410078503.git.agordeev@redhat.com>
+References: <cover.1410078503.git.agordeev@redhat.com>
+ <a7a806c4f531ba80386e9d0baf69571a827ea59c.1410078503.git.agordeev@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
- prarit@redhat.com, pzijlstr@redhat.com, peterz@infradead.org, bmr@redhat.com,
- x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
- linux-kernel@vger.kernel.org, hannes@cmpxchg.org, minchan@kernel.org,
- mingo@redhat.com, tglx@linutronix.de, aneesh.kumar@linux.vnet.ibm.com,
- Aaron Tomlin <atomlin@redhat.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, jgh@redhat.com, akpm@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,32 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-09-12 at 12:58 +0200, Mike Galbraith wrote:
-> On Fri, 2014-09-12 at 10:44 +0100, Aaron Tomlin wrote: 
-> > On Fri, Sep 12, 2014 at 02:06:57PM +1000, Michael Ellerman wrote:
-> > > On Thu, 2014-09-11 at 16:41 +0100, Aaron Tomlin wrote:
-> > > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > > > index a285900..2a8280a 100644
-> > > > --- a/lib/Kconfig.debug
-> > > > +++ b/lib/Kconfig.debug
-> > > > @@ -824,6 +824,18 @@ config SCHEDSTATS
-> > > >  	  application, you can say N to avoid the very slight overhead
-> > > >  	  this adds.
-> > > >  
-> > > > +config SCHED_STACK_END_CHECK
-> > > > +	bool "Detect stack corruption on calls to schedule()"
-> > > > +	depends on DEBUG_KERNEL
-> > > > +	default y
-> > > 
-> > > Did you really mean default y?
-> > > 
-> > > Doing so means it will be turned on more or less everywhere, which defeats the
-> > > purpose of having a config option in the first place.
-> > 
-> > Only if Kconfig CONFIG_DEBUG_KERNEL is enabled in the first place.
+On Sun, 2014-09-07 at 20:57 +0200, Alexander Gordeev wrote:
+> Moving MSI checks from arch_msi_check_device() function to
+> arch_setup_msi_irqs() function makes code more compact and
+> allows removing unnecessary hook arch_msi_check_device()
+> from generic MSI code.
 > 
-> Which is likely enabled just about everywhere on the planet.
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-pci@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
 
-Yes, including all distros I'm aware of.
+I already acked the previous version, but if you didn't want it that's fine :)
 
 cheers
