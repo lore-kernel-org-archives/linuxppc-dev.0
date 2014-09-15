@@ -1,19 +1,34 @@
-Return-Path: <bharata.rao@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 361111A0027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 17:04:06 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id rd3so5698287pab.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 00:04:03 -0700 (PDT)
-From: bharata.rao@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/1] pseries: Make CPU hotplug path endian safe
-Date: Mon, 15 Sep 2014 12:33:26 +0530
-Message-Id: <1410764606-14746-1-git-send-email-bharata.rao@gmail.com>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2B6D1A08D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:08:34 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 15 Sep 2014 13:38:27 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 015253940053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:24 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8F88n9l4325856
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:51 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8F88KuZ014950
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:38:20 +0530
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Subject: [PATCH] powerpc/eeh: Fix kernel crash when passing through VF
+Date: Mon, 15 Sep 2014 16:08:00 +0800
+Message-Id: <1410768481-27325-1-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,129 +38,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+When doing vfio passthrough a VF, the kernel will crash with following
+message:
 
-- ibm,rtas-configure-connector should treat the RTAS data as big endian.
-- Treat ibm,ppc-interrupt-server#s as big-endian when setting
-  smp_processor_id during hotplug.
+[  442.656459] Unable to handle kernel paging request for data at address 0x00000060
+[  442.656593] Faulting instruction address: 0xc000000000038b88
+[  442.656706] Oops: Kernel access of bad area, sig: 11 [#1]
+[  442.656798] SMP NR_CPUS=1024 NUMA PowerNV
+[  442.656890] Modules linked in: vfio_pci mlx4_core nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT xt_conntrack bnep bluetooth rfkill ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw tg3 nfsd be2net nfs_acl ses lockd ptp enclosure pps_core kvm_hv kvm_pr shpchp binfmt_misc kvm sunrpc uinput lpfc scsi_transport_fc ipr scsi_tgt [last unloaded: mlx4_core]
+[  442.658152] CPU: 40 PID: 14948 Comm: qemu-system-ppc Not tainted 3.10.42yw-pkvm+ #37
+[  442.658219] task: c000000f7e2a9a00 ti: c000000f6dc3c000 task.ti: c000000f6dc3c000
+[  442.658287] NIP: c000000000038b88 LR: c0000000004435a8 CTR: c000000000455bc0
+[  442.658352] REGS: c000000f6dc3f580 TRAP: 0300   Not tainted  (3.10.42yw-pkvm+)
+[  442.658419] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 28004882  XER: 20000000
+[  442.658577] CFAR: c00000000000908c DAR: 0000000000000060 DSISR: 40000000 SOFTE: 1
+GPR00: c0000000004435a8 c000000f6dc3f800 c0000000012b1c10 c00000000da24000
+GPR04: 0000000000000003 0000000000001004 00000000000015b3 000000000000ffff
+GPR08: c00000000127f5d8 0000000000000000 000000000000ffff 0000000000000000
+GPR12: c000000000068078 c00000000fdd6800 000001003c320c80 000001003c3607f0
+GPR16: 0000000000000001 00000000105480c8 000000001055aaa8 000001003c31ab18
+GPR20: 000001003c10fb40 000001003c360ae8 000000001063bcf0 000000001063bdb0
+GPR24: 000001003c15ed70 0000000010548f40 c000001fe5514c88 c000001fe5514cb0
+GPR28: c00000000da24000 0000000000000000 c00000000da24000 0000000000000003
+[  442.659471] NIP [c000000000038b88] .pcibios_set_pcie_reset_state+0x28/0x130
+[  442.659530] LR [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
+[  442.659585] Call Trace:
+[  442.659610] [c000000f6dc3f800] [00000000000719e0] 0x719e0 (unreliable)
+[  442.659677] [c000000f6dc3f880] [c0000000004435a8] .pci_set_pcie_reset_state+0x28/0x40
+[  442.659757] [c000000f6dc3f900] [c000000000455bf8] .reset_fundamental+0x38/0x80
+[  442.659835] [c000000f6dc3f980] [c0000000004562a8] .pci_dev_specific_reset+0xa8/0xf0
+[  442.659913] [c000000f6dc3fa00] [c0000000004448c4] .__pci_dev_reset+0x44/0x430
+[  442.659980] [c000000f6dc3fab0] [c000000000444d5c] .pci_reset_function+0x7c/0xc0
+[  442.660059] [c000000f6dc3fb30] [d00000001c141ab8] .vfio_pci_open+0xe8/0x2b0 [vfio_pci]
+[  442.660139] [c000000f6dc3fbd0] [c000000000586c30] .vfio_group_fops_unl_ioctl+0x3a0/0x630
+[  442.660219] [c000000f6dc3fc90] [c000000000255fbc] .do_vfs_ioctl+0x4ec/0x7c0
+[  442.660286] [c000000f6dc3fd80] [c000000000256364] .SyS_ioctl+0xd4/0xf0
+[  442.660354] [c000000f6dc3fe30] [c000000000009e54] syscall_exit+0x0/0x98
+[  442.660420] Instruction dump:
+[  442.660454] 4bfffce9 4bfffee4 7c0802a6 fbc1fff0 fbe1fff8 f8010010 f821ff81 7c7e1b78
+[  442.660566] 7c9f2378 60000000 60000000 e93e02c8 <e8690060> 2fa30000 41de00c4 2b9f0002
+[  442.660679] ---[ end trace a64ac9546bcf0328 ]---
+[  442.660724]
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+The reason is current VF is not EEH enabled.
+
+This patch introduces a marco to convert eeh_dev to eeh_pe. By doing so, it
+will prevent converting with NULL pointer.
+
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+V2 -> V3:
+   1. rebased on 3.17-rc4
+   2. introduce a marco
+   3. use this marco in several other places
+
+V1 -> V2:
+   1. code style and patch subject adjustment
 ---
+ arch/powerpc/kernel/eeh.c    |    4 ++--
+ arch/powerpc/kernel/eeh_pe.c |    2 +-
+ include/linux/pci.h          |    5 +++++
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
-Changes in v2:
-- Don't convert drc_index to BE in dlpar_configure_connector() but instead
-  convert in the caller dlpar_cpu_probe() so that migration path isn't
-  affected.
-- Mark members of cc_workarea struct as __be32 instead of u32 (Thomas)
-- Based on top of Thomas Falcon's two patches.
-  (http://patchwork.ozlabs.org/patch/388767/)
-
-v1: http://patchwork.ozlabs.org/patch/386216/
-
- arch/powerpc/platforms/pseries/dlpar.c       | 22 +++++++++++-----------
- arch/powerpc/platforms/pseries/hotplug-cpu.c |  4 ++--
- arch/powerpc/platforms/pseries/pseries.h     |  3 ++-
- 3 files changed, 15 insertions(+), 14 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 8718227..52aeb37 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -24,11 +24,11 @@
- #include <asm/rtas.h>
- 
- struct cc_workarea {
--	u32	drc_index;
--	u32	zero;
--	u32	name_offset;
--	u32	prop_length;
--	u32	prop_offset;
-+	__be32	drc_index;
-+	__be32	zero;
-+	__be32	name_offset;
-+	__be32	prop_length;
-+	__be32	prop_offset;
- };
- 
- void dlpar_free_cc_property(struct property *prop)
-@@ -48,11 +48,11 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
- 	if (!prop)
- 		return NULL;
- 
--	name = (char *)ccwa + ccwa->name_offset;
-+	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
- 	prop->name = kstrdup(name, GFP_KERNEL);
- 
--	prop->length = ccwa->prop_length;
--	value = (char *)ccwa + ccwa->prop_offset;
-+	prop->length = be32_to_cpu(ccwa->prop_length);
-+	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
- 	prop->value = kmemdup(value, prop->length, GFP_KERNEL);
- 	if (!prop->value) {
- 		dlpar_free_cc_property(prop);
-@@ -78,7 +78,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
- 	if (!dn)
- 		return NULL;
- 
--	name = (char *)ccwa + ccwa->name_offset;
-+	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
- 	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
- 	if (!dn->full_name) {
- 		kfree(dn);
-@@ -125,7 +125,7 @@ void dlpar_free_cc_nodes(struct device_node *dn)
- #define CALL_AGAIN	-2
- #define ERR_CFG_USE     -9003
- 
--struct device_node *dlpar_configure_connector(u32 drc_index,
-+struct device_node *dlpar_configure_connector(__be32 drc_index,
- 					      struct device_node *parent)
- {
- 	struct device_node *dn;
-@@ -413,7 +413,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 	if (!parent)
- 		return -ENODEV;
- 
--	dn = dlpar_configure_connector(drc_index, parent);
-+	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
- 	if (!dn)
- 		return -EINVAL;
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index b174fa7..5c375f9 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -247,7 +247,7 @@ static int pseries_add_processor(struct device_node *np)
- 	unsigned int cpu;
- 	cpumask_var_t candidate_mask, tmp;
- 	int err = -ENOSPC, len, nthreads, i;
--	const u32 *intserv;
-+	const __be32 *intserv;
- 
- 	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
- 	if (!intserv)
-@@ -293,7 +293,7 @@ static int pseries_add_processor(struct device_node *np)
- 	for_each_cpu(cpu, tmp) {
- 		BUG_ON(cpu_present(cpu));
- 		set_cpu_present(cpu, true);
--		set_hard_smp_processor_id(cpu, *intserv++);
-+		set_hard_smp_processor_id(cpu, be32_to_cpu(*intserv++));
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 59a64f8..0f1b637 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -410,7 +410,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
  	}
- 	err = 0;
- out_unlock:
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 361add6..1796c54 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -56,7 +56,8 @@ extern void hvc_vio_init_early(void);
- /* Dynamic logical Partitioning/Mobility */
- extern void dlpar_free_cc_nodes(struct device_node *);
- extern void dlpar_free_cc_property(struct property *);
--extern struct device_node *dlpar_configure_connector(u32, struct device_node *);
-+extern struct device_node *dlpar_configure_connector(__be32,
-+						struct device_node *);
- extern int dlpar_attach_node(struct device_node *);
- extern int dlpar_detach_node(struct device_node *);
+ 	dn = eeh_dev_to_of_node(edev);
+ 	dev = eeh_dev_to_pci_dev(edev);
+-	pe = edev->pe;
++	pe = eeh_dev_to_pe(edev);
  
+ 	/* Access to IO BARs might get this far and still not want checking. */
+ 	if (!pe) {
+@@ -634,7 +634,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+ {
+ 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+-	struct eeh_pe *pe = edev->pe;
++	struct eeh_pe *pe = eeh_dev_to_pe(edev);
+ 
+ 	if (!pe) {
+ 		pr_err("%s: No PE found on PCI device %s\n",
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 00e3844..5864017 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -428,7 +428,7 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ 	}
+ 
+ 	/* Remove the EEH device */
+-	pe = edev->pe;
++	pe = eeh_dev_to_pe(edev);
+ 	edev->pe = NULL;
+ 	list_del(&edev->list);
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index fd03e819..9656f92 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1824,6 +1824,11 @@ static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
+ {
+ 	return pdev->dev.archdata.edev;
+ }
++
++static inline struct eeh_pe *eeh_dev_to_pe(struct eeh_dev* edev)
++{
++	return edev ? edev->pe : NULL;
++}
+ #endif
+ 
+ int pci_for_each_dma_alias(struct pci_dev *pdev,
 -- 
-1.7.11.7
+1.7.9.5
