@@ -1,25 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
- [209.85.220.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2C191A0070
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:42:02 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id bj1so5900561pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 01:41:59 -0700 (PDT)
-Message-ID: <5416A64E.1060005@ozlabs.ru>
-Date: Mon, 15 Sep 2014 18:41:50 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B51B1A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 18:52:10 +1000 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 15 Sep 2014 02:52:08 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CA2503E4003D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 02:52:04 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id s8F6lxYK10027428
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 08:47:59 +0200
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8F8q4lo023116
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 02:52:04 -0600
+Message-ID: <5416A8B0.8040603@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2014 14:22:00 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH] powerpc/iommu/ddw: Fix endianness
-References: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1410261723-21810-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
-Cc: Alexander Graf <agraf@suse.de>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
+ idle states are allowed
+References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
+ <1410764352.32643.2.camel@concordia>
+In-Reply-To: <1410764352.32643.2.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,117 +43,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2014 09:22 PM, Alexey Kardashevskiy wrote:
-> rtas_call() accepts and returns values in CPU endianness.
+On 09/15/2014 12:29 PM, Michael Ellerman wrote:
+> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
+>> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
+>> entry into deep idle states beyond snooze. Check for the value of this
+>> parameter before entering fastsleep. We already do this check for nap in
+>> power7_idle().
+>>
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>> ---
+>>
+>>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>> index a64be57..b8ba52e 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
+>>  	unsigned long new_lpcr;
+>>  
+>> +	/*
+>> +	 * Verify if snooze is the only valid cpuidle state
+>> +	 */
+>> +	if (!(powersave_nap > 0))
+>> +		return index;
+>> +
+>>  	if (unlikely(system_state < SYSTEM_RUNNING))
+>>  		return index;
 > 
-> of_read_number() accepts big-endian values but create.addr_hi/lo returned
-> by rtas_call() are in CPU endiannes.
+> Doesn't the above mean we are just going to keep trying to go into fastsleep
+> again and again? Or does the idle code work out that it didn't work based on
+> the fact that we didn't sleep for the right period?
+
+Thats right. The idle code figures that its judgment to enter fastsleep
+was not correct and applies a correction factor to its future decisions
+. This correction factor is intended to influence the cpuidle governor's
+decision on choosing an idle state for the cpu based on the history of
+wakeups. Hence a shallower idle state will be chosen here on in the
+above circumstance.
+
 > 
-> The dynamic_dma_window_prop struct defines all members as BE so let's
-> make it true.
+> We were talking about getting rid of powersave_nap altogether, but I think we
+> decided we couldn't, I forget.
+
+Isn't this a helpful knob to disable cpuidle at runtime? Currently we
+check the value of powersave_nap before entering both nap and fastsleep.
+
+Regards
+Preeti U Murthy
 > 
-> struct dynamic_dma_window_prop {
->         __be32  liobn;          /* tce table number */
->         __be64  dma_base;       /* address hi,lo */
->         __be32  tce_shift;      /* ilog2(tce_page_size) */
->         __be32  window_shift;   /* ilog2(tce_window_size) */
-> };
+> cheers
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Alexander Graf <agraf@suse.de>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-
-
-Ping, anyone?
-
-
-
-> ---
->  arch/powerpc/platforms/pseries/iommu.c | 24 +++++++++++++-----------
->  1 file changed, 13 insertions(+), 11 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 7c1d77c..700020a 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -750,7 +750,7 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
->  		pr_debug("%s successfully cleared tces in window.\n",
->  			 np->full_name);
->  
-> -	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
-> +	ret = rtas_call(be32_to_cpu(ddw_avail[2]), 1, 1, NULL, liobn);
->  	if (ret)
->  		pr_warning("%s: failed to remove direct window: rtas returned "
->  			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
-> @@ -842,7 +842,7 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
->  		cfg_addr = edev->pe_config_addr;
->  	buid = edev->phb->buid;
->  
-> -	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
-> +	ret = rtas_call(be32_to_cpu(ddw_avail[0]), 3, 5, (u32 *)query,
->  		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
->  	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
->  		" returned %d\n", ddw_avail[0], cfg_addr, BUID_HI(buid),
-> @@ -874,8 +874,9 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
->  
->  	do {
->  		/* extra outputs are LIOBN and dma-addr (hi, lo) */
-> -		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create, cfg_addr,
-> -				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
-> +		ret = rtas_call(be32_to_cpu(ddw_avail[1]), 5, 4, (u32 *)create,
-> +				cfg_addr, BUID_HI(buid), BUID_LO(buid),
-> +				page_shift, window_shift);
->  	} while (rtas_busy_delay(ret));
->  	dev_info(&dev->dev,
->  		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
-> @@ -972,11 +973,11 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->  		dev_dbg(&dev->dev, "no free dynamic windows");
->  		goto out_failed;
->  	}
-> -	if (be32_to_cpu(query.page_size) & 4) {
-> +	if (query.page_size & 4) {
->  		page_shift = 24; /* 16MB */
-> -	} else if (be32_to_cpu(query.page_size) & 2) {
-> +	} else if (query.page_size & 2) {
->  		page_shift = 16; /* 64kB */
-> -	} else if (be32_to_cpu(query.page_size) & 1) {
-> +	} else if (query.page_size & 1) {
->  		page_shift = 12; /* 4kB */
->  	} else {
->  		dev_dbg(&dev->dev, "no supported direct page size in mask %x",
-> @@ -987,7 +988,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->  	/* verify the window * number of ptes will map the partition */
->  	/* check largest block * page size > max memory hotplug addr */
->  	max_addr = memory_hotplug_max();
-> -	if (be32_to_cpu(query.largest_available_block) < (max_addr >> page_shift)) {
-> +	if (query.largest_available_block < (max_addr >> page_shift)) {
->  		dev_dbg(&dev->dev, "can't map partiton max 0x%llx with %u "
->  			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
->  			  1ULL << page_shift);
-> @@ -1014,8 +1015,9 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->  	if (ret != 0)
->  		goto out_free_prop;
->  
-> -	ddwprop->liobn = create.liobn;
-> -	ddwprop->dma_base = cpu_to_be64(of_read_number(&create.addr_hi, 2));
-> +	ddwprop->liobn = cpu_to_be32(create.liobn);
-> +	ddwprop->dma_base = cpu_to_be64(((u64)create.addr_hi << 32) |
-> +			create.addr_lo);
->  	ddwprop->tce_shift = cpu_to_be32(page_shift);
->  	ddwprop->window_shift = cpu_to_be32(len);
->  
-> @@ -1048,7 +1050,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->  	list_add(&window->list, &direct_window_list);
->  	spin_unlock(&direct_window_list_lock);
->  
-> -	dma_addr = of_read_number(&create.addr_hi, 2);
-> +	dma_addr = be64_to_cpu(ddwprop->dma_base);
->  	goto out_unlock;
->  
->  out_free_window:
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-
-
--- 
-Alexey
