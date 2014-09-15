@@ -1,20 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 745C11A0020
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:00:48 +1000 (EST)
-Message-ID: <1410750047.24738.7.camel@concordia>
-Subject: Re: [PATCH] powerpc: Add macros for the ibm_architecture_vec[] lengths
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34DA11A0AD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 13:01:32 +1000 (EST)
+Message-ID: <1410750091.24738.8.camel@concordia>
+Subject: Re: [PATCH v2 1/2] pseries: Fix endian issues in onlining cpu threads
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Date: Mon, 15 Sep 2014 13:00:47 +1000
-In-Reply-To: <m3a969sj08.fsf@oc8180480414.ibm.com>
-References: <1409295703-31174-1-git-send-email-mpe@ellerman.id.au>
- <m3a969sj08.fsf@oc8180480414.ibm.com>
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2014 13:01:31 +1000
+In-Reply-To: <1410549102-8410-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1410549102-8410-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-09 at 11:03 +1000, Stewart Smith wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> > The encoding of the lengths in the ibm_architecture_vec array is
-> > "interesting" to say the least. It's non-obvious how the number of bytes
-> > we provide relates to the length value.
-> >
-> > In fact we already got it wrong once, see 11e9ed43ca8a "Fix up
-> > ibm_architecture_vec definition".
-> >
-> > So add some macros to make it (hopefully) clearer. These at least have
-> > the property that the integer present in the code is equal to the number
-> > of bytes that follows it.
-> >
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Fri, 2014-09-12 at 14:11 -0500, Thomas Falcon wrote:
+> The ibm,ppc-interrupt-server#s property is in big endian format.
+> These values need to be converted when used by little endian
+> architectures.
 > 
-> Seems at least as correct as the code was before... so,
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+> ---
+> Changes in v2:
 > 
-> Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-> 
-> (not actually compiled or tested or anything, but my internal C
-> preprocesser says it looks okay :)
+>  Followed suggestions from Michael Ellerman
+>    conversion of intserv values occur once
 
-Thanks for the review, it's one of those patches it would be easy to get wrong
-because it's so simple in theory.
+Thanks Tom.
 
-As a test I deliberately broke the NUM_VECTORS value, and .. my system booted
-just fine! So I think I'll give this a bit more scrutiny and work out what's
-going on there first :)
+I think I saw that you'd already discussed these with Nathan in another thread,
+so I'll assume he's OK with them unless he says otherwise.
 
 cheers
