@@ -1,41 +1,30 @@
-Return-Path: <gnomes@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk
- (7.3.c.8.2.a.e.f.f.f.8.1.0.3.2.0.9.6.0.7.2.3.f.b.0.b.8.0.1.0.0.2.ip6.arpa
- [IPv6:2001:8b0:bf32:7069:230:18ff:fea2:8c37])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B1D31A0077
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 09:24:52 +1000 (EST)
-Date: Mon, 15 Sep 2014 00:24:27 +0100
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-To: Peter Hurley <peter@hurleysoftware.com>
-Subject: Re: bit fields && data tearing
-Message-ID: <20140915002427.6ce18965@alan.etchedpixels.co.uk>
-In-Reply-To: <5411FFB6.2080702@hurleysoftware.com>
-References: <20140712181328.GA8738@redhat.com>
- <54079B70.4050200@hurleysoftware.com>
- <1409785893.30640.118.camel@pasglop>
- <063D6719AE5E284EB5DD2968C1650D6D17487172@AcuExch.aculab.com>
- <1409824374.4246.62.camel@pasglop> <5408E458.3@zytor.com>
- <54090AF4.7060406@hurleysoftware.com> <54091B30.7080100@zytor.com>
- <5409D76D.2070203@hurleysoftware.com> <5409D9C0.7030403@zytor.com>
- <20140908185240.21f52ca0@alan.etchedpixels.co.uk>
- <540DEE6C.2060904@zytor.com> <540E3207.7090007@hurleysoftware.com>
- <20140911110411.2de01944@alan.etchedpixels.co.uk>
- <5411FFB6.2080702@hurleysoftware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jakub Jelinek <jakub@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-alpha@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Miroslav Franc <mfranc@redhat.com>, Richard Henderson <rth@twiddle.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D27871A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 12:39:54 +1000 (EST)
+Message-ID: <1410748793.24738.2.camel@concordia>
+Subject: Re: [PATCH v3 3/3] sched: BUG when stack end location is over written
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mike Galbraith <umgwanakikbuti@gmail.com>
+Date: Mon, 15 Sep 2014 12:39:53 +1000
+In-Reply-To: <1410519533.5547.49.camel@marge.simpson.net>
+References: <1410255749-2956-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-1-git-send-email-atomlin@redhat.com>
+ <1410450088-18236-4-git-send-email-atomlin@redhat.com>
+ <1410494817.17540.4.camel@concordia>
+ <20140912094419.GD1873@atomlin.usersys.redhat.com>
+ <1410519533.5547.49.camel@marge.simpson.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: dzickus@redhat.com, jcastillo@redhat.com, riel@redhat.com,
+ prarit@redhat.com, pzijlstr@redhat.com, peterz@infradead.org, bmr@redhat.com,
+ x86@kernel.org, oleg@redhat.com, rostedt@goodmis.org,
+ linux-kernel@vger.kernel.org, hannes@cmpxchg.org, minchan@kernel.org,
+ mingo@redhat.com, tglx@linutronix.de, aneesh.kumar@linux.vnet.ibm.com,
+ Aaron Tomlin <atomlin@redhat.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, jgh@redhat.com, akpm@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,44 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> So a problem that no one has ever complained about on _any_ arch is suddenly
-> a problem on a subset of Alpha cpus, but a problem I know exists on Alpha
-> isn't important because no one's filed a bug about it?
-
-Yes - because if you think about it that tells you that nobody is hitting
-it with the old code and it probably doesn't matter.
- 
-> The only Alpha person in this discussion has come out clearly in favor
-> of dropping EV4/5 support.
-
-That's not a statistically valid sample size btw
-
-Plus as I pointed out (and you ignored) you are shutting out any future
-processors with this kind of oddity, and you have not audited all the
-embedded devices we support or may support in future.
- 
-> The fact is that the kernel itself is much more parallel than it was
-> 15 years ago, and that trend is going to continue. Paired with the fact
-> that the Alpha is the least-parallel-friendly arch, makes improving
-> parallelism and correctness even harder within kernel subsystems; harder
-> than it has to be and harder than it should be.
+On Fri, 2014-09-12 at 12:58 +0200, Mike Galbraith wrote:
+> On Fri, 2014-09-12 at 10:44 +0100, Aaron Tomlin wrote: 
+> > On Fri, Sep 12, 2014 at 02:06:57PM +1000, Michael Ellerman wrote:
+> > > On Thu, 2014-09-11 at 16:41 +0100, Aaron Tomlin wrote:
+> > > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > > > index a285900..2a8280a 100644
+> > > > --- a/lib/Kconfig.debug
+> > > > +++ b/lib/Kconfig.debug
+> > > > @@ -824,6 +824,18 @@ config SCHEDSTATS
+> > > >  	  application, you can say N to avoid the very slight overhead
+> > > >  	  this adds.
+> > > >  
+> > > > +config SCHED_STACK_END_CHECK
+> > > > +	bool "Detect stack corruption on calls to schedule()"
+> > > > +	depends on DEBUG_KERNEL
+> > > > +	default y
+> > > 
+> > > Did you really mean default y?
+> > > 
+> > > Doing so means it will be turned on more or less everywhere, which defeats the
+> > > purpose of having a config option in the first place.
+> > 
+> > Only if Kconfig CONFIG_DEBUG_KERNEL is enabled in the first place.
 > 
-> Linus has repeatedly stated that non-arch code should be as
-> arch-independent as possible
+> Which is likely enabled just about everywhere on the planet.
 
-That's why many many years ago we added set_bit() and the other bit
-functions. On sane processors they are very fast. On insane ones they
-work. They understand byte tearing, they understand store ordering (which
-a simple variable does not so you've got to audit all your memory
-barriers too). In many cases they are faster than using memory barriers
-to guide the compiler because they invalidate less and allow the compiler
-more freedom.
+Yes, including all distros I'm aware of.
 
-All this started because I suggested you use set_bit and friends and for
-some reason you've decided to try and find another way to do it. We have
-the bit operations for a reason. On x86 they are very very fast, on
-uniprocessor anything they are very fast, on multiprocessor in general
-they are very fast, or you are dealing with boxes that have sanity
-problems of other kinds.
-
-Alan
+cheers
