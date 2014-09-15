@@ -2,21 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B259E1A0027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 22:23:31 +1000 (EST)
-Message-ID: <1410783796.31754.85.camel@pasglop>
-Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
- idle states are allowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7277B1A0121
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2014 22:25:04 +1000 (EST)
+Message-ID: <1410783892.31754.88.camel@pasglop>
+Subject: Re: [PATCH 1/4] powerpc/powernv: Add OPAL check token call
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Mon, 15 Sep 2014 08:23:16 -0400
-In-Reply-To: <5416A8B0.8040603@linux.vnet.ibm.com>
-References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
- <1410764352.32643.2.camel@concordia> <5416A8B0.8040603@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 15 Sep 2014 08:24:52 -0400
+In-Reply-To: <1410750623.24738.9.camel@concordia>
+References: <1408423682-14297-1-git-send-email-mikey@neuling.org>
+ <1410750623.24738.9.camel@concordia>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mikey@neuling.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-15 at 14:22 +0530, Preeti U Murthy wrote:
-> > We were talking about getting rid of powersave_nap altogether, but I
-> think we
-> > decided we couldn't, I forget.
+On Mon, 2014-09-15 at 13:10 +1000, Michael Ellerman wrote:
+> > +enum OpalCheckTokenStatus {
+> > +       OPAL_TOKEN_ABSENT = 0,
+> > +       OPAL_TOKEN_PRESENT = 1
+> > +};
 > 
-> Isn't this a helpful knob to disable cpuidle at runtime? Currently we
-> check the value of powersave_nap before entering both nap and
-> fastsleep.
+> I don't see this used anywhere?
+> 
+> And NoCamelCase !
+> 
+> Yes I know there's lots in that file, but I didn't merge that :)
 
-It's useful when diagnosing some problems that can be caused by idle
-states.
+The original OPAL APIs were like that and I chose to not "fix" them
+because I've been aiming at reconciling the Linux and the FW versions
+of the file, which I haven't had a chance to do yet (Cyril & Sam have
+some WIP in that area afaik).
+
+We could de-camelify them both but I'd rather do the reunification
+first.
 
 Cheers,
 Ben.
