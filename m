@@ -1,39 +1,35 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <l.stach@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96E431A0188
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 17:14:34 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 16 Sep 2014 17:14:34 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 318502CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 17:14:31 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8G6uSij26148884
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 16:56:28 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8G7EUDm015890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 17:14:30 +1000
-Date: Tue, 16 Sep 2014 17:14:26 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: Fix kernel crash when passing through VF
-Message-ID: <20140916071426.GA28267@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1410768481-27325-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1410840236.12488.1.camel@concordia>
- <20140916060218.GA20909@richard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140916060218.GA20909@richard>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA1A91A00FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 20:30:31 +1000 (EST)
+Message-ID: <1410863349.2746.5.camel@pengutronix.de>
+Subject: Re: [PATCH v1 03/21] MSI: Remove the redundant irq_set_chip_data()
+From: Lucas Stach <l.stach@pengutronix.de>
+To: Yijing Wang <wangyijing@huawei.com>
+Date: Tue, 16 Sep 2014 12:29:09 +0200
+In-Reply-To: <541792C0.9090303@huawei.com>
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-4-git-send-email-wangyijing@huawei.com>
+ <1410789648.3314.5.camel@pengutronix.de> <541792C0.9090303@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,67 +39,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 16, 2014 at 02:02:18PM +0800, Wei Yang wrote:
->On Tue, Sep 16, 2014 at 02:03:56PM +1000, Michael Ellerman wrote:
->>On Mon, 2014-09-15 at 16:08 +0800, Wei Yang wrote:
->>> This patch introduces a marco to convert eeh_dev to eeh_pe. By doing so, it
->>> will prevent converting with NULL pointer.
->>> 
->>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> 
->>> V2 -> V3:
->>>    1. rebased on 3.17-rc4
->>>    2. introduce a marco
->>>    3. use this marco in several other places
->>
->>Macro :)
->
->:-)
->
->>
->>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->>> index 59a64f8..0f1b637 100644
->>> --- a/arch/powerpc/kernel/eeh.c
->>> +++ b/arch/powerpc/kernel/eeh.c
->>> @@ -410,7 +410,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
->>>  	}
->>>  	dn = eeh_dev_to_of_node(edev);
->>>  	dev = eeh_dev_to_pci_dev(edev);
->>> -	pe = edev->pe;
->>> +	pe = eeh_dev_to_pe(edev);
->>
->>This looks good, but ..
->>
->>> diff --git a/include/linux/pci.h b/include/linux/pci.h
->>> index fd03e819..9656f92 100644
->>> --- a/include/linux/pci.h
->>> +++ b/include/linux/pci.h
->>> @@ -1824,6 +1824,11 @@ static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
->>>  {
->>>  	return pdev->dev.archdata.edev;
->>>  }
->>> +
->>> +static inline struct eeh_pe *eeh_dev_to_pe(struct eeh_dev* edev)
->>> +{
->>> +	return edev ? edev->pe : NULL;
->>> +}
->>>  #endif
->>
->>Why is it in linux/pci.h ? It's powerpc specific, it should be in arch/powerpc/include/asm/pci.h
->>
->
->Good question, let me move to powerpc directory and have a try.
->
+Am Dienstag, den 16.09.2014, 09:30 +0800 schrieb Yijing Wang:
+> On 2014/9/15 22:00, Lucas Stach wrote:
+> > Am Freitag, den 05.09.2014, 18:09 +0800 schrieb Yijing Wang:
+> >> Currently, pcie-designware, pcie-rcar, pci-tegra drivers
+> >> use irq chip_data to save the msi_chip pointer. They
+> >> already call irq_set_chip_data() in their own MSI irq map
+> >> functions. So irq_set_chip_data() in arch_setup_msi_irq()
+> >> is useless.
+> >>
+> >> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+> >> ---
+> >>  drivers/pci/msi.c |    2 --
+> >>  1 files changed, 0 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> >> index f6cb317..d547f7f 100644
+> >> --- a/drivers/pci/msi.c
+> >> +++ b/drivers/pci/msi.c
+> >> @@ -41,8 +41,6 @@ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+> >>  	if (err < 0)
+> >>  		return err;
+> >>  
+> >> -	irq_set_chip_data(desc->irq, chip);
+> >> -
+> >>  	return 0;
+> >>  }
+> >>  
+> > 
+> > arch_teardown_msi_irq() expects to find the msi_chip in the irq
+> > chip_data field. As this means drivers don't have any reasonable other
+> > possibility to stuff things into this field, I think it would make sense
+> > to do the cleanup the other way around: keep the irq_set_chip_data
+> > arch_setup_msi_irq() and rip it out of the individual drivers.
+> 
+> Hi Lucas, thanks for your review and comments!
+> irq_set_chip_data() should not be placed in MSI core functions, because other arch like x86,
+> use irq_data->chip_data to stores irq_cfg. So how to set the chip_data is arch dependent.
+> And this series is mainly to use MSI chip framework in all platforms.
+> Currently, only ARM platform MSI drivers use the chip_data to store msi_chip, and the drivers call
+> irq_set_chip_data() in their driver already. So I thought we should clean up it in MSI core code.
+> 
+Okay I see your point, so the cleanup done this way is okay.
 
-It would be part of arch/powerpc/include/asm/eeh.h :-)
+But then this still introduces a problem: arch_teardown_msi_irq()
+expects to find the msi_chip in the chip_data field, which is okay for
+all ARM PCI host drivers, but not for other arch MSI chips.
 
-Thanks,
-Gavin
+You fix this by completely removing arch_teardown_msi_irq() at the end
+of the series, but this still has the potential to introduce issues for
+other arches than ARM within the series. So this patch should include a
+change to replace the line
 
->>cheers
->>
->
->-- 
->Richard Yang
->Help you, Help me
+struct msi_chip *chip = irq_get_chip_data(irq);
+
+with something that doesn't rely on the msi_chip being in the irq
+chip_data field.
+
+Regards,
+Lucas
+
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
