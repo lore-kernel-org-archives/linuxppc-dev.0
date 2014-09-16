@@ -1,21 +1,20 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E7BB1A00A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 12:13:44 +1000 (EST)
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
- <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
- <tiwai@suse.de>, <mpa@pengutronix.de>
-Subject: [PATCH V4] ASoC: fsl_ssi: refine ipg clock usage in this module
-Date: Tue, 16 Sep 2014 10:13:16 +0800
-Message-ID: <5dc0f13cdb62904ae0f104f9112faec672adea6f.1410833402.git.shengjiu.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9532E1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 14:03:57 +1000 (EST)
+Message-ID: <1410840236.12488.1.camel@concordia>
+Subject: Re: [PATCH] powerpc/eeh: Fix kernel crash when passing through VF
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Date: Tue, 16 Sep 2014 14:03:56 +1000
+In-Reply-To: <1410768481-27325-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1410406921-8557-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1410768481-27325-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,141 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check if ipg clock is in clock-names property, then we can move the
-ipg clock enable and disable operation to startup and shutdown, that
-is only enable ipg clock when ssi is working and keep clock is disabled
-when ssi is in idle.
-But when the checking is failed, remain the clock control as before.
+On Mon, 2014-09-15 at 16:08 +0800, Wei Yang wrote:
+> This patch introduces a marco to convert eeh_dev to eeh_pe. By doing so, it
+> will prevent converting with NULL pointer.
+> 
+> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> 
+> V2 -> V3:
+>    1. rebased on 3.17-rc4
+>    2. introduce a marco
+>    3. use this marco in several other places
 
-Tested-by: Markus Pargmann <mpa@pengutronix.de>
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
-v4 change log:
-fix the code indent issue.
+Macro :)
 
- sound/soc/fsl/fsl_ssi.c |   53 ++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 45 insertions(+), 8 deletions(-)
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 59a64f8..0f1b637 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -410,7 +410,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+>  	}
+>  	dn = eeh_dev_to_of_node(edev);
+>  	dev = eeh_dev_to_pci_dev(edev);
+> -	pe = edev->pe;
+> +	pe = eeh_dev_to_pe(edev);
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2fc3e66..16a1361 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -169,6 +169,7 @@ struct fsl_ssi_private {
- 	u8 i2s_mode;
- 	bool use_dma;
- 	bool use_dual_fifo;
-+	bool has_ipg_clk_name;
- 	unsigned int fifo_depth;
- 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
- 
-@@ -530,6 +531,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi_private *ssi_private =
- 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+	int ret;
-+
-+	ret = clk_prepare_enable(ssi_private->clk);
-+	if (ret)
-+		return ret;
- 
- 	/* When using dual fifo mode, it is safer to ensure an even period
- 	 * size. If appearing to an odd number while DMA always starts its
-@@ -544,6 +550,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- }
- 
- /**
-+ * fsl_ssi_shutdown: shutdown the SSI
-+ *
-+ */
-+static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-+				struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct fsl_ssi_private *ssi_private =
-+		snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+
-+	clk_disable_unprepare(ssi_private->clk);
-+
-+}
-+
-+/**
-  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
-  *
-  * Note: This function can be only called when using SSI as DAI master
-@@ -1043,6 +1064,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- 
- static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.startup	= fsl_ssi_startup,
-+	.shutdown       = fsl_ssi_shutdown,
- 	.hw_params	= fsl_ssi_hw_params,
- 	.hw_free	= fsl_ssi_hw_free,
- 	.set_fmt	= fsl_ssi_set_dai_fmt,
-@@ -1168,17 +1190,22 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	u32 dmas[4];
- 	int ret;
- 
--	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-+	if (ssi_private->has_ipg_clk_name)
-+		ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
-+	else
-+		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(ssi_private->clk)) {
- 		ret = PTR_ERR(ssi_private->clk);
- 		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
- 		return ret;
- 	}
- 
--	ret = clk_prepare_enable(ssi_private->clk);
--	if (ret) {
--		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
--		return ret;
-+	if (!ssi_private->has_ipg_clk_name) {
-+		ret = clk_prepare_enable(ssi_private->clk);
-+		if (ret) {
-+			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
-+			return ret;
-+		}
- 	}
- 
- 	/* For those SLAVE implementations, we ingore non-baudclk cases
-@@ -1236,8 +1263,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 	return 0;
- 
- error_pcm:
--	clk_disable_unprepare(ssi_private->clk);
- 
-+	if (!ssi_private->has_ipg_clk_name)
-+		clk_disable_unprepare(ssi_private->clk);
- 	return ret;
- }
- 
-@@ -1246,7 +1274,8 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
- {
- 	if (!ssi_private->use_dma)
- 		imx_pcm_fiq_exit(pdev);
--	clk_disable_unprepare(ssi_private->clk);
-+	if (!ssi_private->has_ipg_clk_name)
-+		clk_disable_unprepare(ssi_private->clk);
- }
- 
- static int fsl_ssi_probe(struct platform_device *pdev)
-@@ -1321,8 +1350,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
-+	ret = of_property_match_string(np, "clock-names", "ipg");
-+	if (ret < 0) {
-+		ssi_private->has_ipg_clk_name = false;
-+		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
- 			&fsl_ssi_regconfig);
-+	} else {
-+		ssi_private->has_ipg_clk_name = true;
-+		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
-+			"ipg", iomem, &fsl_ssi_regconfig);
-+	}
- 	if (IS_ERR(ssi_private->regs)) {
- 		dev_err(&pdev->dev, "Failed to init register map\n");
- 		return PTR_ERR(ssi_private->regs);
--- 
-1.7.9.5
+This looks good, but ..
+
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index fd03e819..9656f92 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1824,6 +1824,11 @@ static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
+>  {
+>  	return pdev->dev.archdata.edev;
+>  }
+> +
+> +static inline struct eeh_pe *eeh_dev_to_pe(struct eeh_dev* edev)
+> +{
+> +	return edev ? edev->pe : NULL;
+> +}
+>  #endif
+
+Why is it in linux/pci.h ? It's powerpc specific, it should be in arch/powerpc/include/asm/pci.h
+
+cheers
