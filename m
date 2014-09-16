@@ -1,20 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0131.outbound.protection.outlook.com [157.56.110.131])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F17771A003D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 14:23:38 +1000 (EST)
-Message-ID: <1410841400.24184.494.camel@snotra.buserror.net>
-Subject: Re: Data Cache Push Parity Error
-From: Scott Wood <scottwood@freescale.com>
-To: <Jay_Chen@alphanetworks.com>
-Date: Mon, 15 Sep 2014 23:23:20 -0500
-In-Reply-To: <5538ce4d2de54f2fb7a29a66b33d70b0@HQMBS02.alphanetworks.com>
-References: <5538ce4d2de54f2fb7a29a66b33d70b0@HQMBS02.alphanetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A4061A0027
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 15:28:39 +1000 (EST)
+Message-ID: <1410845317.12488.2.camel@concordia>
+Subject: Re: [PATCH v1 15/21] Powerpc/MSI: Use MSI chip framework to
+ configure MSI/MSI-X irq
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Yijing Wang <wangyijing@huawei.com>
+Date: Tue, 16 Sep 2014 15:28:37 +1000
+In-Reply-To: <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+ <1409911806-10519-16-git-send-email-wangyijing@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Bharat.Bhushan@freescale.com, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +38,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-15 at 08:15 +0000, Jay_Chen@alphanetworks.com wrote:
-> Hi all,
+On Fri, 2014-09-05 at 18:10 +0800, Yijing Wang wrote:
+> Use MSI chip framework instead of arch MSI functions to configure
+> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 > 
->  
-> 
-> I am using P2020 with Linux kernel 3.8.13.
-> 
-> Sometimes my system encounters machine check exception and it shows
-> “Caused by (from MCSR=20000000): Data Cache Push Parity Error”.
-> 
-> Could anyone show me some hints to dig into this issue? Any comment is
-> welcome.
-> 
-> Thanks in advance.
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 
-I suggest contacting Freescale support about this
-(support@freescale.com) -- I don't think this is the type of error that
-you'd normally see from software misbehavior.
+This looks fine and seems to boot OK.
 
--Scott
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
