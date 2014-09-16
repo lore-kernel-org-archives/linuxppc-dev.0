@@ -1,33 +1,21 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <shengjiu.wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 470AF1A09A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 12:10:16 +1000 (EST)
-Message-ID: <54179BE3.5030303@huawei.com>
-Date: Tue, 16 Sep 2014 10:09:39 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E7BB1A00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2014 12:13:44 +1000 (EST)
+From: Shengjiu Wang <shengjiu.wang@freescale.com>
+To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Li.Xiubo@freescale.com>,
+ <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
+ <tiwai@suse.de>, <mpa@pengutronix.de>
+Subject: [PATCH V4] ASoC: fsl_ssi: refine ipg clock usage in this module
+Date: Tue, 16 Sep 2014 10:13:16 +0800
+Message-ID: <5dc0f13cdb62904ae0f104f9112faec672adea6f.1410833402.git.shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-To: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v1 21/21] PCI/MSI: Clean up unused MSI arch functions
-References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>	
- <1409911806-10519-22-git-send-email-wangyijing@huawei.com>
- <1410792430.3314.10.camel@pengutronix.de>
-In-Reply-To: <1410792430.3314.10.camel@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Xinwei Hu <huxinwei@huawei.com>,
- Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,260 +25,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/15 22:47, Lucas Stach wrote:
-> Am Freitag, den 05.09.2014, 18:10 +0800 schrieb Yijing Wang:
->> Now we use struct msi_chip in all platforms to configure
->> MSI/MSI-X. We can clean up the unused arch functions.
->>
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> 
-> Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+Check if ipg clock is in clock-names property, then we can move the
+ipg clock enable and disable operation to startup and shutdown, that
+is only enable ipg clock when ssi is working and keep clock is disabled
+when ssi is in idle.
+But when the checking is failed, remain the clock control as before.
 
-Thanks!
+Tested-by: Markus Pargmann <mpa@pengutronix.de>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
+---
+v4 change log:
+fix the code indent issue.
 
-> 
->> ---
->>  drivers/iommu/irq_remapping.c |    2 +-
->>  drivers/pci/msi.c             |   99 ++++++++++++++++-------------------------
->>  include/linux/msi.h           |   14 ------
->>  3 files changed, 39 insertions(+), 76 deletions(-)
->>
->> diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
->> index 99b1c0f..6e645f0 100644
->> --- a/drivers/iommu/irq_remapping.c
->> +++ b/drivers/iommu/irq_remapping.c
->> @@ -92,7 +92,7 @@ error:
->>  
->>  	/*
->>  	 * Restore altered MSI descriptor fields and prevent just destroyed
->> -	 * IRQs from tearing down again in default_teardown_msi_irqs()
->> +	 * IRQs from tearing down again in teardown_msi_irqs()
->>  	 */
->>  	msidesc->irq = 0;
->>  	msidesc->nvec_used = 0;
->> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
->> index d78d637..e3e7f4f 100644
->> --- a/drivers/pci/msi.c
->> +++ b/drivers/pci/msi.c
->> @@ -34,50 +34,31 @@ struct msi_chip * __weak arch_find_msi_chip(struct pci_dev *dev)
->>  	return dev->bus->msi;
->>  }
->>  
->> -int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
->> -{
->> -	struct msi_chip *chip = arch_find_msi_chip(dev);
->> -	int err;
->> -
->> -	if (!chip || !chip->setup_irq)
->> -		return -EINVAL;
->> -
->> -	err = chip->setup_irq(dev, desc);
->> -	if (err < 0)
->> -		return err;
->> -
->> -	return 0;
->> -}
->> -
->> -void __weak arch_teardown_msi_irq(unsigned int irq)
->> -{
->> -	struct msi_chip *chip = irq_get_chip_data(irq);
->> -
->> -	if (!chip || !chip->teardown_irq)
->> -		return;
->> -
->> -	chip->teardown_irq(irq);
->> -}
->> -
->> -int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->> +int setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->>  {
->>  	struct msi_desc *entry;
->>  	int ret;
->>  	struct msi_chip *chip;
->>  
->>  	chip = arch_find_msi_chip(dev);
->> -	if (chip && chip->setup_irqs)
->> +	if (!chip)
->> +		return -EINVAL;
->> +
->> +	if (chip->setup_irqs)
->>  		return chip->setup_irqs(dev, nvec, type);
->>  
->>  	/*
->>  	 * If an architecture wants to support multiple MSI, it needs to
->> -	 * override arch_setup_msi_irqs()
->> +	 * implement chip->setup_irqs().
->>  	 */
->>  	if (type == PCI_CAP_ID_MSI && nvec > 1)
->>  		return 1;
->>  
->> +	if (!chip->setup_irq)
->> +		return -EINVAL;
->> +
->>  	list_for_each_entry(entry, &dev->msi_list, list) {
->> -		ret = arch_setup_msi_irq(dev, entry);
->> +		ret = chip->setup_irq(dev, entry);
->>  		if (ret < 0)
->>  			return ret;
->>  		if (ret > 0)
->> @@ -87,13 +68,20 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
->>  	return 0;
->>  }
->>  
->> -/*
->> - * We have a default implementation available as a separate non-weak
->> - * function, as it is used by the Xen x86 PCI code
->> - */
->> -void default_teardown_msi_irqs(struct pci_dev *dev)
->> +static void teardown_msi_irqs(struct pci_dev *dev)
->>  {
->>  	struct msi_desc *entry;
->> +	struct msi_chip *chip;
->> +
->> +	chip = arch_find_msi_chip(dev);
->> +	if (!chip)
->> +		return;
->> +
->> +	if (chip->teardown_irqs)
->> +		return chip->teardown_irqs(dev);
->> +
->> +	if (!chip->teardown_irq)
->> +		return;
->>  
->>  	list_for_each_entry(entry, &dev->msi_list, list) {
->>  		int i, nvec;
->> @@ -104,20 +92,10 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
->>  		else
->>  			nvec = 1 << entry->msi_attrib.multiple;
->>  		for (i = 0; i < nvec; i++)
->> -			arch_teardown_msi_irq(entry->irq + i);
->> +			chip->teardown_irq(entry->irq + i);
->>  	}
->>  }
->>  
->> -void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
->> -{
->> -	struct msi_chip *chip = arch_find_msi_chip(dev);
->> -
->> -	if (chip && chip->teardown_irqs)
->> -		return chip->teardown_irqs(dev);
->> -
->> -	return default_teardown_msi_irqs(dev);
->> -}
->> -
->>  static void default_restore_msi_irq(struct pci_dev *dev, int irq)
->>  {
->>  	struct msi_desc *entry;
->> @@ -136,10 +114,18 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
->>  		write_msi_msg(irq, &entry->msg);
->>  }
->>  
->> -void __weak arch_restore_msi_irqs(struct pci_dev *dev)
->> +static void default_restore_msi_irqs(struct pci_dev *dev)
->>  {
->> -	struct msi_chip *chip = arch_find_msi_chip(dev);
->> +	struct msi_desc *entry = NULL;
->> +
->> +	list_for_each_entry(entry, &dev->msi_list, list) {
->> +		default_restore_msi_irq(dev, entry->irq);
->> +	}
->> +}
->>  
->> +static void restore_msi_irqs(struct pci_dev *dev)
->> +{
->> +	struct msi_chip *chip = arch_find_msi_chip(dev);
->>  	if (chip && chip->restore_irqs)
->>  		return chip->restore_irqs(dev);
->>  
->> @@ -248,15 +234,6 @@ void unmask_msi_irq(struct irq_data *data)
->>  	msi_set_mask_bit(data, 0);
->>  }
->>  
->> -void default_restore_msi_irqs(struct pci_dev *dev)
->> -{
->> -	struct msi_desc *entry;
->> -
->> -	list_for_each_entry(entry, &dev->msi_list, list) {
->> -		default_restore_msi_irq(dev, entry->irq);
->> -	}
->> -}
->> -
->>  void read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
->>  {
->>  	BUG_ON(entry->dev->current_state != PCI_D0);
->> @@ -360,7 +337,7 @@ static void free_msi_irqs(struct pci_dev *dev)
->>  			BUG_ON(irq_has_action(entry->irq + i));
->>  	}
->>  
->> -	arch_teardown_msi_irqs(dev);
->> +	teardown_msi_irqs(dev);
->>  
->>  	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
->>  		if (entry->msi_attrib.is_msix) {
->> @@ -430,7 +407,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
->>  
->>  	pci_intx_for_msi(dev, 0);
->>  	msi_set_enable(dev, 0);
->> -	arch_restore_msi_irqs(dev);
->> +	restore_msi_irqs(dev);
->>  
->>  	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &control);
->>  	msi_mask_irq(entry, msi_mask(entry->msi_attrib.multi_cap),
->> @@ -453,7 +430,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
->>  	msix_clear_and_set_ctrl(dev, 0,
->>  				PCI_MSIX_FLAGS_ENABLE | PCI_MSIX_FLAGS_MASKALL);
->>  
->> -	arch_restore_msi_irqs(dev);
->> +	restore_msi_irqs(dev);
->>  	list_for_each_entry(entry, &dev->msi_list, list) {
->>  		msix_mask_irq(entry, entry->masked);
->>  	}
->> @@ -624,7 +601,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
->>  	list_add_tail(&entry->list, &dev->msi_list);
->>  
->>  	/* Configure MSI capability structure */
->> -	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
->> +	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
->>  	if (ret) {
->>  		msi_mask_irq(entry, mask, ~mask);
->>  		free_msi_irqs(dev);
->> @@ -740,7 +717,7 @@ static int msix_capability_init(struct pci_dev *dev,
->>  	if (ret)
->>  		return ret;
->>  
->> -	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
->> +	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
->>  	if (ret)
->>  		goto out_avail;
->>  
->> diff --git a/include/linux/msi.h b/include/linux/msi.h
->> index 92a51e7..d6e1f7c 100644
->> --- a/include/linux/msi.h
->> +++ b/include/linux/msi.h
->> @@ -51,20 +51,6 @@ struct msi_desc {
->>  	struct kobject kobj;
->>  };
->>  
->> -/*
->> - * The arch hooks to setup up msi irqs. Those functions are
->> - * implemented as weak symbols so that they /can/ be overriden by
->> - * architecture specific code if needed.
->> - */
->> -int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
->> -void arch_teardown_msi_irq(unsigned int irq);
->> -int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
->> -void arch_teardown_msi_irqs(struct pci_dev *dev);
->> -void arch_restore_msi_irqs(struct pci_dev *dev);
->> -
->> -void default_teardown_msi_irqs(struct pci_dev *dev);
->> -void default_restore_msi_irqs(struct pci_dev *dev);
->> -
->>  struct msi_chip {
->>  	struct module *owner;
->>  	struct device *dev;
-> 
+ sound/soc/fsl/fsl_ssi.c |   53 ++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 45 insertions(+), 8 deletions(-)
 
-
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 2fc3e66..16a1361 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -169,6 +169,7 @@ struct fsl_ssi_private {
+ 	u8 i2s_mode;
+ 	bool use_dma;
+ 	bool use_dual_fifo;
++	bool has_ipg_clk_name;
+ 	unsigned int fifo_depth;
+ 	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
+ 
+@@ -530,6 +531,11 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct fsl_ssi_private *ssi_private =
+ 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
++	int ret;
++
++	ret = clk_prepare_enable(ssi_private->clk);
++	if (ret)
++		return ret;
+ 
+ 	/* When using dual fifo mode, it is safer to ensure an even period
+ 	 * size. If appearing to an odd number while DMA always starts its
+@@ -544,6 +550,21 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ }
+ 
+ /**
++ * fsl_ssi_shutdown: shutdown the SSI
++ *
++ */
++static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
++				struct snd_soc_dai *dai)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct fsl_ssi_private *ssi_private =
++		snd_soc_dai_get_drvdata(rtd->cpu_dai);
++
++	clk_disable_unprepare(ssi_private->clk);
++
++}
++
++/**
+  * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
+  *
+  * Note: This function can be only called when using SSI as DAI master
+@@ -1043,6 +1064,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ 
+ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ 	.startup	= fsl_ssi_startup,
++	.shutdown       = fsl_ssi_shutdown,
+ 	.hw_params	= fsl_ssi_hw_params,
+ 	.hw_free	= fsl_ssi_hw_free,
+ 	.set_fmt	= fsl_ssi_set_dai_fmt,
+@@ -1168,17 +1190,22 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	u32 dmas[4];
+ 	int ret;
+ 
+-	ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
++	if (ssi_private->has_ipg_clk_name)
++		ssi_private->clk = devm_clk_get(&pdev->dev, "ipg");
++	else
++		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(ssi_private->clk)) {
+ 		ret = PTR_ERR(ssi_private->clk);
+ 		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+-	ret = clk_prepare_enable(ssi_private->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
+-		return ret;
++	if (!ssi_private->has_ipg_clk_name) {
++		ret = clk_prepare_enable(ssi_private->clk);
++		if (ret) {
++			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
++			return ret;
++		}
+ 	}
+ 
+ 	/* For those SLAVE implementations, we ingore non-baudclk cases
+@@ -1236,8 +1263,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	return 0;
+ 
+ error_pcm:
+-	clk_disable_unprepare(ssi_private->clk);
+ 
++	if (!ssi_private->has_ipg_clk_name)
++		clk_disable_unprepare(ssi_private->clk);
+ 	return ret;
+ }
+ 
+@@ -1246,7 +1274,8 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev,
+ {
+ 	if (!ssi_private->use_dma)
+ 		imx_pcm_fiq_exit(pdev);
+-	clk_disable_unprepare(ssi_private->clk);
++	if (!ssi_private->has_ipg_clk_name)
++		clk_disable_unprepare(ssi_private->clk);
+ }
+ 
+ static int fsl_ssi_probe(struct platform_device *pdev)
+@@ -1321,8 +1350,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
+-	ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
++	ret = of_property_match_string(np, "clock-names", "ipg");
++	if (ret < 0) {
++		ssi_private->has_ipg_clk_name = false;
++		ssi_private->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+ 			&fsl_ssi_regconfig);
++	} else {
++		ssi_private->has_ipg_clk_name = true;
++		ssi_private->regs = devm_regmap_init_mmio_clk(&pdev->dev,
++			"ipg", iomem, &fsl_ssi_regconfig);
++	}
+ 	if (IS_ERR(ssi_private->regs)) {
+ 		dev_err(&pdev->dev, "Failed to init register map\n");
+ 		return PTR_ERR(ssi_private->regs);
 -- 
-Thanks!
-Yijing
+1.7.9.5
