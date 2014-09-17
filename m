@@ -1,37 +1,29 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D073E1A24C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:50:46 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 17 Sep 2014 12:50:42 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E596A6E803F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 12:50:26 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8HGocYx6685084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 16:50:38 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8HGocb9032125
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 12:50:38 -0400
-Message-ID: <5419BBDE.1060201@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 11:50:38 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <sudeep.holla@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 69CD91A092A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 03:40:40 +1000 (EST)
+Message-ID: <5419C3F6.4050607@arm.com>
+Date: Wed, 17 Sep 2014 18:25:10 +0100
+From: Sudeep Holla <sudeep.holla@arm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [2/5] pseries: Export drc_[acquire|release]_drc() routines
-References: <54174C5F.4090604@linux.vnet.ibm.com>
- <1410937625.27681.10.camel@concordia>
-In-Reply-To: <1410937625.27681.10.camel@concordia>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v4 04/11] drivers: base: support cpu cache information
+ interface to userspace via sysfs
+References: <1409763617-17074-1-git-send-email-sudeep.holla@arm.com>
+ <1409763617-17074-5-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <1409763617-17074-5-git-send-email-sudeep.holla@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Cc: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sudeep Holla <Sudeep.Holla@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stephen Boyd <sboyd@codeaurora.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,28 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/17/2014 02:07 AM, Michael Ellerman wrote:
-> 
-> On Mon, 2014-09-15 at 15:30 -0500, Nathan Fontenot wrote:
->> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
->> index 361add6..b94516b 100644
->> --- a/arch/powerpc/platforms/pseries/pseries.h
->> +++ b/arch/powerpc/platforms/pseries/pseries.h
->> @@ -59,6 +59,8 @@ extern void dlpar_free_cc_property(struct property *);
->>  extern struct device_node *dlpar_configure_connector(u32, struct device_node *);
->>  extern int dlpar_attach_node(struct device_node *);
->>  extern int dlpar_detach_node(struct device_node *);
->> +extern int dlpar_acquire_drc(u32);
->> +extern int dlpar_release_drc(u32);
-> 
-> Please name the parameters.
+Hi Greg,
 
-Will do.
+On 03/09/14 18:00, Sudeep Holla wrote:
+> From: Sudeep Holla <sudeep.holla@arm.com>
+>
+> This patch adds initial support for providing processor cache information
+> to userspace through sysfs interface. This is based on already existing
+> implementations(x86, ia64, s390 and powerpc) and hence the interface is
+> intended to be fully compatible.
+>
+> The main purpose of this generic support is to avoid further code
+> duplication to support new architectures and also to unify all the existi=
+ng
+> different implementations.
+>
+> This implementation maintains the hierarchy of cache objects which reflec=
+ts
+> the system's cache topology. Cache devices are instantiated as needed as
+> CPUs come online. The cache information is replicated per-cpu even if the=
+y are
+> shared. A per-cpu array of cache information maintained is used mainly fo=
+r
+> sysfs-related book keeping.
+>
+> It also implements the shared_cpu_map attribute, which is essential for
+> enabling both kernel and user-space to discover the system's overall cach=
+e
+> topology.
+>
+> This patch also add the missing ABI documentation for the cacheinfo sysfs
+> interface already, which is well defined and widely used.
+>
 
-> 
-> And don't bother with extern.
+Can you review the first 4 patches in this series please ?
 
-I was following the convention used in the file, droppping the
-extern is fine with me though.
-
--Nathan
+Regards,
+Sudeep
