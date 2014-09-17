@@ -1,21 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9C7E1A00FF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:31:06 +1000 (EST)
-Message-ID: <1410924666.1586.2.camel@concordia>
-Subject: Re: [PATCH 1/4] powerpc: Make a bunch of things static
+ by lists.ozlabs.org (Postfix) with ESMTPS id DBB8B1A00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:38:30 +1000 (EST)
+Message-ID: <1410925110.1586.3.camel@concordia>
+Subject: Re: [RFC PATCH] powerpc/numa: add ability to disable and debug
+ topology updates
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 13:31:06 +1000
-In-Reply-To: <54183371.7020901@linux.vnet.ibm.com>
-References: <1408488921-19187-1-git-send-email-anton@samba.org>
- <54183371.7020901@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 13:38:30 +1000
+In-Reply-To: <20140915235455.GB5238@linux.vnet.ibm.com>
+References: <20140909200913.GG22906@linux.vnet.ibm.com>
+ <1410757536.32643.1.camel@concordia>
+ <20140915235455.GB5238@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-16 at 07:56 -0500, Nathan Fontenot wrote:
-> On 08/19/2014 05:55 PM, Anton Blanchard wrote:
-> > diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> > index a2450b8..d37ba4f 100644
-> > --- a/arch/powerpc/platforms/pseries/dlpar.c
-> > +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> > @@ -334,7 +334,7 @@ int dlpar_acquire_drc(u32 drc_index)
-> >  	return 0;
-> >  }
-> >  
-> > -int dlpar_release_drc(u32 drc_index)
-> > +static int dlpar_release_drc(u32 drc_index)
-> >  {
-> >  	int dr_status, rc;
+On Mon, 2014-09-15 at 16:54 -0700, Nishanth Aravamudan wrote:
+> On 15.09.2014 [15:05:36 +1000], Michael Ellerman wrote:
+> > On Tue, 2014-09-09 at 13:09 -0700, Nishanth Aravamudan wrote:
 > 
-> Anton, if you're going to do a v2 of these patches you could leave out
-> the routines in dlpar.c. I just sent a patch out that exports these two
-> functions for memory hotplug updates.
+> > Does it really need to be a boot param, or could it be a debugfs or
+> > sysctl flag? ie. do we need to disable it immediately at boot or would
+> > it be OK if it was /etc/rc.local or similar that turned it off ?
+> 
+> We need it off at boot, potentially. An LPAR does not indicate that it
+> will or will not respond to the events in any synchronous fashion, so
+> the hypervisor is free to send them to us whenever.
 
-Yep I've dropped those hunks in my tree.
+OK. I guess we're stuck with a boot time parameter for on/off then.
 
-ps. Please trim your replies :)
+> > As far as the debug goes, we could just use pr_debug() with
+> > CONFIG_DYNAMIC_DEBUG, it's not quite as easy to enable as a kernel
+> > parameter but for the odd bit of debugging it should be fine.
+> 
+> That's a good point, I wonder with that mechanism if we should perhaps
+> extend/remove other static debugging methods in favor of that (e.g.,
+> numa=debug)?
+
+Yes definitely.
+
+It's slightly more arcane to enable, ie. to turn on dynamic debugging in numa.c
+at boot your command line needs:
+
+  dyndbg="file numa.c +p"
+
+But that's fine unless it's an option you expect users to be using regularly
+which none of these are.
 
 cheers
