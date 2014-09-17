@@ -1,42 +1,20 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2EF471A0184
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 05:58:54 +1000 (EST)
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 743FD140180
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2014 05:58:53 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 17 Sep 2014 13:58:51 -0600
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id BD163C90045
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 15:58:38 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8HJwlIq56950886
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 19:58:47 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8HJwkOr018248
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 15:58:46 -0400
-Message-ID: <5419E7F5.2040000@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 14:58:45 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id ACF161A009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 06:33:42 +1000 (EST)
+Message-ID: <5419F017.8010603@c-s.fr>
+Date: Wed, 17 Sep 2014 22:33:27 +0200
+From: christophe leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [5/5] pseries: Implement memory hotplug remove in the kernel
-References: <54174D36.4000002@linux.vnet.ibm.com>
- <1410937650.27681.13.camel@concordia>
-In-Reply-To: <1410937650.27681.13.camel@concordia>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 00/21] powerpc/8xx: Optimise MMU TLB handling and add
+ support of 16k pages
+References: <20140917163656.E09D81AB026@localhost.localdomain>
+ <1410972043.24184.532.camel@snotra.buserror.net>
+In-Reply-To: <1410972043.24184.532.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,89 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/17/2014 02:07 AM, Michael Ellerman wrote:
-> 
-> On Mon, 2014-09-15 at 15:33 -0500, Nathan Fontenot wrote:
->> This patch adds the ability to do memory hotplug remove in the kernel.
+
+Le 17/09/2014 18:40, Scott Wood a écrit :
+> On Wed, 2014-09-17 at 18:36 +0200, Christophe Leroy wrote:
+>> This patchset:
+>> 1) provides several MMU TLB handling optimisation on MPC8xx.
+>> 2) adds support of 16k pages on MPC8xx.
+>> All changes have been successfully tested on a custom board equipped with MPC885
 >>
->> Currently the hotplug add/remove of memory is handled by the drmgr
->> command. The drmgr command performs the add/remove by performing
->> some work in user-space and making requests to the kernel to handle
->> other pieces. By moving all of the work to the kernel we can do the
->> add and remove faster, and provide a common place to do memory hotplug
->> for both the PowerVM and PowerKVM environments.
->>
->> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/hotplug-memory.c |  140 +++++++++++++++++++++++
->>  1 file changed, 139 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> index b254773..160c424 100644
->> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
->> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> @@ -193,7 +193,137 @@ static int pseries_remove_mem_node(struct device_node *np)
->>  	pseries_remove_memblock(base, lmb_size);
->>  	return 0;
->>  }
->> +
->> +static int lmb_is_removable(struct of_drconf_cell *lmb)
->> +{
-> 
-> Do we not already have something like this?
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> I've already applied patches 1, 2, 4, 5, 6, 9, and 10 from the previous
+> patchset -- have they changed?
+>
+> -Scott
+>
+No, only 3, 7, 17 are changed, and 20,21 are new.
+I didn't notice you already applied some. How should I then proceed now 
+for the remaining ones ? Submit a new set ?
 
-No. Perhaps your thinking of the code in drivers/base/memory.c that
-handles the sysfs removable file. That code just calls the same
-is_mem_section_removable() routine.
+Thanks
+Christophe
 
-> 
->> +	int i, scns_per_block;
->> +	int rc = 1;
-> 
-> I can see this makes the &= work below.
-> 
-> But what if block_sz / MIN_MEMORY_BLOCK_SIZE = 0 ?
-
-If that happens, something else is really wrong. Most
-likely a malformed device tree.
-
-For pseries MIN_MEMORY_BLOCK_SIZE is defined to be the smallest
-LMB size we suppport, 16MB.
-
-I can add a pr_warn() statement here and bail if that happens.
-
-> 
->> +	unsigned long pfn, block_sz;
->> +	u64 phys_addr;
->> +
->> +	phys_addr = be64_to_cpu(lmb->base_addr);
->> +	block_sz = memory_block_size_bytes();
->> +	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
->> +
->> +	for (i = 0; i < scns_per_block; i++) {
->> +		pfn = PFN_DOWN(phys_addr);
->> +		if (!pfn_present(pfn))
->> +			continue;
->> +
->> +		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
->> +		phys_addr += MIN_MEMORY_BLOCK_SIZE;
->> +	}
->> +
->> +	return rc;
->> +}
-> 
->> +static int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
->> +{
-> 
-> ...
-> 
->> +}
-> 
-> Most of the same comments as for add.
-> 
-
-ok, I'll go through them and apply them to the remove code.
-
-Thanks for the review.
-
--Nathan
+---
+Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
+http://www.avast.com
