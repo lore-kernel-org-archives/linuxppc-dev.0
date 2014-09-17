@@ -2,14 +2,14 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F0C451A0A62
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:07 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B862F1A0A72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:09 +1000 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  rostedt@goodmis.org
-Subject: [PATCH 2/3] powerpc/ftrace: Remove mod_return_to_handler
-Date: Wed, 17 Sep 2014 17:07:03 +1000
-Message-Id: <1410937624-25140-2-git-send-email-anton@samba.org>
+Subject: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
+Date: Wed, 17 Sep 2014 17:07:04 +1000
+Message-Id: <1410937624-25140-3-git-send-email-anton@samba.org>
 In-Reply-To: <1410937624-25140-1-git-send-email-anton@samba.org>
 References: <1410937624-25140-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -22,124 +22,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mod_return_to_handler is the same as return_to_handler, except
-it handles the change of the TOC (r2). Add this into
-return_to_handler and remove mod_return_to_handler.
+Instead of passing in the stack address of the link register
+to be modified, just pass in the old value and return the
+new value and rely on ftrace_graph_caller to do the
+modification.
+
+This removes the exception handling around the stack update -
+it isn't needed and we weren't consistent about it. Later on
+we would do an unprotected modification:
+
+       if (!ftrace_graph_entry(&trace)) {
+               *parent = old;
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/entry_64.S | 24 +-----------------------
- arch/powerpc/kernel/ftrace.c   | 14 ++------------
- arch/powerpc/kernel/process.c  |  9 +--------
- 3 files changed, 4 insertions(+), 43 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 10 +++++--
+ arch/powerpc/kernel/entry_64.S | 11 ++++++--
+ arch/powerpc/kernel/ftrace.c   | 59 ++++++++++--------------------------------
+ 3 files changed, 30 insertions(+), 50 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 22b45a4..ad837d8 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -1424,12 +1424,18 @@ _GLOBAL(ftrace_graph_caller)
+ 	lwz	r4, 44(r1)
+ 	subi	r4, r4, MCOUNT_INSN_SIZE
+ 
+-	/* get the parent address */
+-	addi	r3, r1, 52
++	/* Grab the LR out of the caller stack frame */
++	lwz	r3,52(r1)
+ 
+ 	bl	prepare_ftrace_return
+ 	nop
+ 
++        /*
++         * prepare_ftrace_return gives us the address we divert to.
++         * Change the LR in the callers stack frame to this.
++         */
++	stw	r3,52(r1)
++
+ 	MCOUNT_RESTORE_FRAME
+ 	/* old link register ends up in ctr reg */
+ 	bctr
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 5bbd1bc..955d509 100644
+index 955d509..9caab69 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -1235,28 +1235,6 @@ _GLOBAL(ftrace_graph_caller)
+@@ -1221,13 +1221,20 @@ _GLOBAL(ftrace_graph_caller)
+ 	ld	r4, 128(r1)
+ 	subi	r4, r4, MCOUNT_INSN_SIZE
  
- _GLOBAL(return_to_handler)
- 	/* need to save return values */
--	std	r4,  -24(r1)
--	std	r3,  -16(r1)
--	std	r31, -8(r1)
--	mr	r31, r1
--	stdu	r1, -112(r1)
--
--	bl	ftrace_return_to_handler
--	nop
--
--	/* return value has real return address */
--	mtlr	r3
--
--	ld	r1, 0(r1)
--	ld	r4,  -24(r1)
--	ld	r3,  -16(r1)
--	ld	r31, -8(r1)
--
--	/* Jump back to real return address */
--	blr
--
--_GLOBAL(mod_return_to_handler)
--	/* need to save return values */
- 	std	r4,  -32(r1)
- 	std	r3,  -24(r1)
- 	/* save TOC */
-@@ -1266,7 +1244,7 @@ _GLOBAL(mod_return_to_handler)
- 	stdu	r1, -112(r1)
+-	/* get the parent address */
++	/* Grab the LR out of the caller stack frame */
+ 	ld	r11, 112(r1)
+-	addi	r3, r11, 16
++	ld	r3, 16(r11)
  
- 	/*
--	 * We are in a module using the module's TOC.
-+	 * We might be called from a module.
- 	 * Switch to our TOC to run inside the core kernel.
- 	 */
- 	ld	r2, PACATOC(r13)
+ 	bl	prepare_ftrace_return
+ 	nop
+ 
++	/*
++	 * prepare_ftrace_return gives us the address we divert to.
++	 * Change the LR in the callers stack frame to this.
++	 */
++	ld	r11, 112(r1)
++	std	r3, 16(r11)
++
+ 	ld	r0, 128(r1)
+ 	mtlr	r0
+ 	addi	r1, r1, 112
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 390311c..abf7921 100644
+index abf7921..d795031 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -510,10 +510,6 @@ int ftrace_disable_ftrace_graph_caller(void)
- }
- #endif /* CONFIG_DYNAMIC_FTRACE */
+@@ -512,67 +512,34 @@ int ftrace_disable_ftrace_graph_caller(void)
  
--#ifdef CONFIG_PPC64
--extern void mod_return_to_handler(void);
--#endif
--
  /*
   * Hook the return address and push it in the stack of return addrs
-  * in current thread info.
-@@ -523,7 +519,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	unsigned long old;
- 	int faulted;
+- * in current thread info.
++ * in current thread info. Return the address we want to divert to.
+  */
+-void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
++unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ {
+-	unsigned long old;
+-	int faulted;
  	struct ftrace_graph_ent trace;
--	unsigned long return_hooker = (unsigned long)&return_to_handler;
-+	unsigned long return_hooker;
+ 	unsigned long return_hooker;
  
  	if (unlikely(ftrace_graph_is_dead()))
- 		return;
-@@ -531,13 +527,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+-		return;
++		goto out;
+ 
  	if (unlikely(atomic_read(&current->tracing_graph_pause)))
- 		return;
+-		return;
++		goto out;
  
--#ifdef CONFIG_PPC64
--	/* non core kernel code needs to save and restore the TOC */
--	if (REGION_ID(self_addr) != KERNEL_REGION_ID)
--		return_hooker = (unsigned long)&mod_return_to_handler;
--#endif
+ 	return_hooker = ppc_function_entry(return_to_handler);
+ 
+-	/*
+-	 * Protect against fault, even if it shouldn't
+-	 * happen. This tool is too much intrusive to
+-	 * ignore such a protection.
+-	 */
+-	asm volatile(
+-		"1: " PPC_LL "%[old], 0(%[parent])\n"
+-		"2: " PPC_STL "%[return_hooker], 0(%[parent])\n"
+-		"   li %[faulted], 0\n"
+-		"3:\n"
 -
--	return_hooker = ppc_function_entry((void *)return_hooker);
-+	return_hooker = ppc_function_entry(return_to_handler);
+-		".section .fixup, \"ax\"\n"
+-		"4: li %[faulted], 1\n"
+-		"   b 3b\n"
+-		".previous\n"
+-
+-		".section __ex_table,\"a\"\n"
+-			PPC_LONG_ALIGN "\n"
+-			PPC_LONG "1b,4b\n"
+-			PPC_LONG "2b,4b\n"
+-		".previous"
+-
+-		: [old] "=&r" (old), [faulted] "=r" (faulted)
+-		: [parent] "r" (parent), [return_hooker] "r" (return_hooker)
+-		: "memory"
+-	);
+-
+-	if (unlikely(faulted)) {
+-		ftrace_graph_stop();
+-		WARN_ON(1);
+-		return;
+-	}
+-
+-	trace.func = self_addr;
++	trace.func = ip;
+ 	trace.depth = current->curr_ret_stack + 1;
  
- 	/*
- 	 * Protect against fault, even if it shouldn't
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index aa1df89..080c0b9 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1531,13 +1531,6 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 	int curr_frame = current->curr_ret_stack;
- 	extern void return_to_handler(void);
- 	unsigned long rth = (unsigned long)return_to_handler;
--	unsigned long mrth = -1;
--#ifdef CONFIG_PPC64
--	extern void mod_return_to_handler(void);
--	rth = *(unsigned long *)rth;
--	mrth = (unsigned long)mod_return_to_handler;
--	mrth = *(unsigned long *)mrth;
--#endif
- #endif
+ 	/* Only trace if the calling function expects to */
+-	if (!ftrace_graph_entry(&trace)) {
+-		*parent = old;
+-		return;
+-	}
++	if (!ftrace_graph_entry(&trace))
++		goto out;
++
++	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0) == -EBUSY)
++		goto out;
  
- 	sp = (unsigned long) stack;
-@@ -1562,7 +1555,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		if (!firstframe || ip != lr) {
- 			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--			if ((ip == rth || ip == mrth) && curr_frame >= 0) {
-+			if ((ip == rth) && curr_frame >= 0) {
- 				printk(" (%pS)",
- 				       (void *)current->ret_stack[curr_frame].ret);
- 				curr_frame--;
+-	if (ftrace_push_return_trace(old, self_addr, &trace.depth, 0) == -EBUSY)
+-		*parent = old;
++	parent = return_hooker;
++out:
++	return parent;
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
 -- 
 1.9.1
