@@ -2,17 +2,15 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5488A1A08E4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:39:49 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD3FF1A00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 15:58:25 +1000 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
 	paulus@samba.org,
 	mpe@ellerman.id.au
-Subject: [PATCH 6/6] powerpc: Add printk levels to powerpc code
-Date: Wed, 17 Sep 2014 14:39:39 +1000
-Message-Id: <1410928779-20938-6-git-send-email-anton@samba.org>
-In-Reply-To: <1410928779-20938-1-git-send-email-anton@samba.org>
-References: <1410928779-20938-1-git-send-email-anton@samba.org>
+Subject: [PATCH 1/5] powerpc: Remove bootmem allocator
+Date: Wed, 17 Sep 2014 15:58:20 +1000
+Message-Id: <1410933504-28564-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,149 +21,516 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add printk levels to some places in the powerpc port.
+At the moment we transition from the memblock alloctor to the bootmem
+allocator. Gitting rid of the bootmem allocator removes a bunch of
+complicated code (most of which I owe the dubious honour of being
+responsible for writing).
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/pgtable-ppc32.h    |  4 ++--
- arch/powerpc/include/asm/pgtable-ppc64-4k.h |  2 +-
- arch/powerpc/include/asm/pgtable-ppc64.h    |  6 +++---
- arch/powerpc/kernel/irq.c                   |  6 +++---
- arch/powerpc/kernel/setup-common.c          |  2 +-
- arch/powerpc/kernel/setup_64.c              | 20 ++++++++++----------
- 6 files changed, 20 insertions(+), 20 deletions(-)
+ arch/powerpc/Kconfig             |   1 +
+ arch/powerpc/include/asm/setup.h |   3 +-
+ arch/powerpc/kernel/setup_32.c   |   5 +-
+ arch/powerpc/kernel/setup_64.c   |   3 +-
+ arch/powerpc/mm/init_32.c        |   9 --
+ arch/powerpc/mm/mem.c            |  62 +----------
+ arch/powerpc/mm/numa.c           | 224 ++++++---------------------------------
+ arch/powerpc/mm/pgtable_32.c     |   3 +-
+ arch/powerpc/mm/pgtable_64.c     |   6 +-
+ 9 files changed, 43 insertions(+), 273 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index 622672f..945e47a 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -48,10 +48,10 @@ extern int icache_44x_need_flush;
- #define FIRST_USER_ADDRESS	0
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 90fe77a..3eeeb9d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -148,6 +148,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select HAVE_PERF_EVENTS_NMI if PPC64
++	select NO_BOOTMEM
  
- #define pte_ERROR(e) \
--	printk("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
-+	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
- 		(unsigned long long)pte_val(e))
- #define pgd_ERROR(e) \
--	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
-+	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 11ba86e..fbdf18c 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -8,7 +8,6 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
  
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-index 12798c9..7b93568 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-@@ -64,7 +64,7 @@
-     (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1)))
+ extern unsigned int rtas_data;
+ extern int mem_init_done;	/* set on boot once kmalloc can be called */
+-extern int init_bootmem_done;	/* set once bootmem is available */
+ extern unsigned long long memory_limit;
+ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+@@ -24,7 +23,7 @@ extern void reloc_got2(unsigned long);
+ #define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
  
- #define pud_ERROR(e) \
--	printk("%s:%d: bad pud %08lx.\n", __FILE__, __LINE__, pud_val(e))
-+	pr_err("%s:%d: bad pud %08lx.\n", __FILE__, __LINE__, pud_val(e))
+ void check_for_initrd(void);
+-void do_init_bootmem(void);
++void initmem_init(void);
+ void setup_panic(void);
+ #define ARCH_PANIC_TIMEOUT 180
  
- /*
-  * On all 4K setups, remap_4k_pfn() equates to remap_pfn_range() */
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 7b3d54f..ae153c4 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -328,11 +328,11 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HPTEFLAGS) == 0)
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index ea4fda6..e2bc044 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -311,9 +311,8 @@ void __init setup_arch(char **cmdline_p)
  
- #define pte_ERROR(e) \
--	printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
-+	pr_err("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
- #define pmd_ERROR(e) \
--	printk("%s:%d: bad pmd %08lx.\n", __FILE__, __LINE__, pmd_val(e))
-+	pr_err("%s:%d: bad pmd %08lx.\n", __FILE__, __LINE__, pmd_val(e))
- #define pgd_ERROR(e) \
--	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
-+	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ 	irqstack_early_init();
  
- /* Encode and de-code a swap entry */
- #define __swp_type(entry)	(((entry).val >> 1) & 0x3f)
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 4c5891d..8eb857f 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -444,13 +444,13 @@ void migrate_irqs(void)
+-	/* set up the bootmem stuff with available memory */
+-	do_init_bootmem();
+-	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
++	initmem_init();
++	if ( ppc_md.progress ) ppc_md.progress("setup_arch: initmem", 0x3eab);
  
- 		cpumask_and(mask, data->affinity, map);
- 		if (cpumask_any(mask) >= nr_cpu_ids) {
--			printk("Breaking affinity for irq %i\n", irq);
-+			pr_warn("Breaking affinity for irq %i\n", irq);
- 			cpumask_copy(mask, map);
- 		}
- 		if (chip->irq_set_affinity)
- 			chip->irq_set_affinity(data, mask, true);
- 		else if (desc->action && !(warned++))
--			printk("Cannot set affinity for irq %i\n", irq);
-+			pr_err("Cannot set affinity for irq %i\n", irq);
- 	}
- 
- 	free_cpumask_var(mask);
-@@ -470,7 +470,7 @@ static inline void check_stack_overflow(void)
- 
- 	/* check for stack overflow: is there less than 2KB free? */
- 	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
--		printk("do_IRQ: stack overflow: %ld\n",
-+		pr_err("do_IRQ: stack overflow: %ld\n",
- 			sp - sizeof(struct thread_info));
- 		dump_stack();
- 	}
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 0df37f5..1362cd6 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -383,7 +383,7 @@ void __init check_for_initrd(void)
- 		initrd_start = initrd_end = 0;
- 
- 	if (initrd_start)
--		printk("Found initrd at 0x%lx:0x%lx\n", initrd_start, initrd_end);
-+		pr_info("Found initrd at 0x%lx:0x%lx\n", initrd_start, initrd_end);
- 
- 	DBG(" <- check_for_initrd()\n");
- #endif /* CONFIG_BLK_DEV_INITRD */
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index a3ba9d0..a8c9620 100644
+index fa17c94..9f8f472 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -522,26 +522,26 @@ void __init setup_system(void)
- 	smp_release_cpus();
+@@ -681,8 +681,7 @@ void __init setup_arch(char **cmdline_p)
+ 	exc_lvl_early_init();
+ 	emergency_stack_init();
+ 
+-	/* set up the bootmem stuff with available memory */
+-	do_init_bootmem();
++	initmem_init();
+ 	sparse_init();
+ 
+ #ifdef CONFIG_DUMMY_CONSOLE
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index cff59f1..9d1bde2 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -195,15 +195,6 @@ void __init MMU_init(void)
+ 	memblock_set_current_limit(lowmem_end_addr);
+ }
+ 
+-/* This is only called until mem_init is done. */
+-void __init *early_get_page(void)
+-{
+-	if (init_bootmem_done)
+-		return alloc_bootmem_pages(PAGE_SIZE);
+-	else
+-		return __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
+-}
+-
+ #ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index e0f7a18..aa067b7 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -60,7 +60,6 @@
+ #define CPU_FTR_NOEXECUTE	0
  #endif
  
--	printk("Starting Linux PPC64 %s\n", init_utsname()->version);
-+	pr_info("Starting Linux PPC64 %s\n", init_utsname()->version);
+-int init_bootmem_done;
+ int mem_init_done;
+ unsigned long long memory_limit;
  
--	printk("-----------------------------------------------------\n");
--	printk("ppc64_pft_size                = 0x%llx\n", ppc64_pft_size);
--	printk("physicalMemorySize            = 0x%llx\n", memblock_phys_mem_size());
-+	pr_info("-----------------------------------------------------\n");
-+	pr_info("ppc64_pft_size                = 0x%llx\n", ppc64_pft_size);
-+	pr_info("physicalMemorySize            = 0x%llx\n", memblock_phys_mem_size());
- 	if (ppc64_caches.dline_size != 0x80)
--		printk("ppc64_caches.dcache_line_size = 0x%x\n",
-+		pr_info("ppc64_caches.dcache_line_size = 0x%x\n",
- 		       ppc64_caches.dline_size);
- 	if (ppc64_caches.iline_size != 0x80)
--		printk("ppc64_caches.icache_line_size = 0x%x\n",
-+		pr_info("ppc64_caches.icache_line_size = 0x%x\n",
- 		       ppc64_caches.iline_size);
- #ifdef CONFIG_PPC_STD_MMU_64
- 	if (htab_address)
--		printk("htab_address                  = 0x%p\n", htab_address);
--	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
-+		pr_info("htab_address                  = 0x%p\n", htab_address);
-+	pr_info("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 	if (PHYSICAL_START > 0)
--		printk("physical_start                = 0x%llx\n",
-+		pr_info("physical_start                = 0x%llx\n",
- 		       (unsigned long long)PHYSICAL_START);
--	printk("-----------------------------------------------------\n");
-+	pr_info("-----------------------------------------------------\n");
- 
- 	DBG(" <- setup_system()\n");
+@@ -180,70 +179,22 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
  }
+ EXPORT_SYMBOL_GPL(walk_system_ram_range);
+ 
+-/*
+- * Initialize the bootmem system and give it all the memory we
+- * have available.  If we are using highmem, we only put the
+- * lowmem into the bootmem system.
+- */
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-void __init do_init_bootmem(void)
++void __init initmem_init(void)
+ {
+-	unsigned long start, bootmap_pages;
+-	unsigned long total_pages;
+-	struct memblock_region *reg;
+-	int boot_mapsize;
+-
+ 	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
+-	total_pages = (memblock_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
++	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
+ #ifdef CONFIG_HIGHMEM
+-	total_pages = total_lowmem >> PAGE_SHIFT;
+ 	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
+ #endif
+ 
+-	/*
+-	 * Find an area to use for the bootmem bitmap.  Calculate the size of
+-	 * bitmap required as (Total Memory) / PAGE_SIZE / BITS_PER_BYTE.
+-	 * Add 1 additional page in case the address isn't page-aligned.
+-	 */
+-	bootmap_pages = bootmem_bootmap_pages(total_pages);
+-
+-	start = memblock_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
+-
+-	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
+-	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
+-
+ 	/* Place all memblock_regions in the same node and merge contiguous
+ 	 * memblock_regions
+ 	 */
+ 	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
+ 
+-	/* Add all physical memory to the bootmem map, mark each area
+-	 * present.
+-	 */
+-#ifdef CONFIG_HIGHMEM
+-	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
+-
+-	/* reserve the sections we're already using */
+-	for_each_memblock(reserved, reg) {
+-		unsigned long top = reg->base + reg->size - 1;
+-		if (top < lowmem_end_addr)
+-			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
+-		else if (reg->base < lowmem_end_addr) {
+-			unsigned long trunc_size = lowmem_end_addr - reg->base;
+-			reserve_bootmem(reg->base, trunc_size, BOOTMEM_DEFAULT);
+-		}
+-	}
+-#else
+-	free_bootmem_with_active_regions(0, max_pfn);
+-
+-	/* reserve the sections we're already using */
+-	for_each_memblock(reserved, reg)
+-		reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
+-#endif
+ 	/* XXX need to clip this if using highmem? */
+ 	sparse_memory_present_with_active_regions(0);
+-
+-	init_bootmem_done = 1;
+ }
+ 
+ /* mark pages that don't exist as nosave */
+@@ -303,14 +254,6 @@ void __init paging_init(void)
+ }
+ #endif /* ! CONFIG_NEED_MULTIPLE_NODES */
+ 
+-static void __init register_page_bootmem_info(void)
+-{
+-	int i;
+-
+-	for_each_online_node(i)
+-		register_page_bootmem_info_node(NODE_DATA(i));
+-}
+-
+ void __init mem_init(void)
+ {
+ 	/*
+@@ -323,7 +266,6 @@ void __init mem_init(void)
+ 	swiotlb_init(0);
+ #endif
+ 
+-	register_page_bootmem_info();
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 	set_max_mapnr(max_pfn);
+ 	free_all_bootmem();
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index ec32d46..4f9c18a 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -132,28 +132,6 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+ 	return 0;
+ }
+ 
+-/*
+- * get_node_active_region - Return active region containing pfn
+- * Active range returned is empty if none found.
+- * @pfn: The page to return the region for
+- * @node_ar: Returned set to the active region containing @pfn
+- */
+-static void __init get_node_active_region(unsigned long pfn,
+-					  struct node_active_region *node_ar)
+-{
+-	unsigned long start_pfn, end_pfn;
+-	int i, nid;
+-
+-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
+-		if (pfn >= start_pfn && pfn < end_pfn) {
+-			node_ar->nid = nid;
+-			node_ar->start_pfn = start_pfn;
+-			node_ar->end_pfn = end_pfn;
+-			break;
+-		}
+-	}
+-}
+-
+ static void reset_numa_cpu_lookup_table(void)
+ {
+ 	unsigned int cpu;
+@@ -926,134 +904,48 @@ static void __init dump_numa_memory_topology(void)
+ 	}
+ }
+ 
+-/*
+- * Allocate some memory, satisfying the memblock or bootmem allocator where
+- * required. nid is the preferred node and end is the physical address of
+- * the highest address in the node.
+- *
+- * Returns the virtual address of the memory.
+- */
+-static void __init *careful_zallocation(int nid, unsigned long size,
+-				       unsigned long align,
+-				       unsigned long end_pfn)
+-{
+-	void *ret;
+-	int new_nid;
+-	unsigned long ret_paddr;
+-
+-	ret_paddr = __memblock_alloc_base(size, align, end_pfn << PAGE_SHIFT);
+-
+-	/* retry over all memory */
+-	if (!ret_paddr)
+-		ret_paddr = __memblock_alloc_base(size, align, memblock_end_of_DRAM());
+-
+-	if (!ret_paddr)
+-		panic("numa.c: cannot allocate %lu bytes for node %d",
+-		      size, nid);
+-
+-	ret = __va(ret_paddr);
+-
+-	/*
+-	 * We initialize the nodes in numeric order: 0, 1, 2...
+-	 * and hand over control from the MEMBLOCK allocator to the
+-	 * bootmem allocator.  If this function is called for
+-	 * node 5, then we know that all nodes <5 are using the
+-	 * bootmem allocator instead of the MEMBLOCK allocator.
+-	 *
+-	 * So, check the nid from which this allocation came
+-	 * and double check to see if we need to use bootmem
+-	 * instead of the MEMBLOCK.  We don't free the MEMBLOCK memory
+-	 * since it would be useless.
+-	 */
+-	new_nid = early_pfn_to_nid(ret_paddr >> PAGE_SHIFT);
+-	if (new_nid < nid) {
+-		ret = __alloc_bootmem_node(NODE_DATA(new_nid),
+-				size, align, 0);
+-
+-		dbg("alloc_bootmem %p %lx\n", ret, size);
+-	}
+-
+-	memset(ret, 0, size);
+-	return ret;
+-}
+-
+ static struct notifier_block ppc64_numa_nb = {
+ 	.notifier_call = cpu_numa_callback,
+ 	.priority = 1 /* Must run before sched domains notifier. */
+ };
+ 
+-static void __init mark_reserved_regions_for_nid(int nid)
++/* Initialize NODE_DATA for a node on the local memory */
++static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ {
+-	struct pglist_data *node = NODE_DATA(nid);
+-	struct memblock_region *reg;
+-
+-	for_each_memblock(reserved, reg) {
+-		unsigned long physbase = reg->base;
+-		unsigned long size = reg->size;
+-		unsigned long start_pfn = physbase >> PAGE_SHIFT;
+-		unsigned long end_pfn = PFN_UP(physbase + size);
+-		struct node_active_region node_ar;
+-		unsigned long node_end_pfn = pgdat_end_pfn(node);
+-
+-		/*
+-		 * Check to make sure that this memblock.reserved area is
+-		 * within the bounds of the node that we care about.
+-		 * Checking the nid of the start and end points is not
+-		 * sufficient because the reserved area could span the
+-		 * entire node.
+-		 */
+-		if (end_pfn <= node->node_start_pfn ||
+-		    start_pfn >= node_end_pfn)
+-			continue;
+-
+-		get_node_active_region(start_pfn, &node_ar);
+-		while (start_pfn < end_pfn &&
+-			node_ar.start_pfn < node_ar.end_pfn) {
+-			unsigned long reserve_size = size;
+-			/*
+-			 * if reserved region extends past active region
+-			 * then trim size to active region
+-			 */
+-			if (end_pfn > node_ar.end_pfn)
+-				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+-					- physbase;
+-			/*
+-			 * Only worry about *this* node, others may not
+-			 * yet have valid NODE_DATA().
+-			 */
+-			if (node_ar.nid == nid) {
+-				dbg("reserve_bootmem %lx %lx nid=%d\n",
+-					physbase, reserve_size, node_ar.nid);
+-				reserve_bootmem_node(NODE_DATA(node_ar.nid),
+-						physbase, reserve_size,
+-						BOOTMEM_DEFAULT);
+-			}
+-			/*
+-			 * if reserved region is contained in the active region
+-			 * then done.
+-			 */
+-			if (end_pfn <= node_ar.end_pfn)
+-				break;
+-
+-			/*
+-			 * reserved region extends past the active region
+-			 *   get next active region that contains this
+-			 *   reserved region
+-			 */
+-			start_pfn = node_ar.end_pfn;
+-			physbase = start_pfn << PAGE_SHIFT;
+-			size = size - reserve_size;
+-			get_node_active_region(start_pfn, &node_ar);
+-		}
+-	}
++	u64 spanned_pages = end_pfn - start_pfn;
++	const size_t nd_size = roundup(sizeof(pg_data_t), SMP_CACHE_BYTES);
++	u64 nd_pa;
++	void *nd;
++	int tnid;
++
++	if (spanned_pages)
++		pr_info("Initmem setup node %d [mem %#010Lx-%#010Lx]\n",
++			nid, start_pfn << PAGE_SHIFT,
++			(end_pfn << PAGE_SHIFT) - 1);
++	else
++		pr_info("Initmem setup node %d\n", nid);
++
++	nd_pa = memblock_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
++	nd = __va(nd_pa);
++
++	/* report and initialize */
++	pr_info("  NODE_DATA [mem %#010Lx-%#010Lx]\n",
++		nd_pa, nd_pa + nd_size - 1);
++	tnid = early_pfn_to_nid(nd_pa >> PAGE_SHIFT);
++	if (tnid != nid)
++		pr_info("    NODE_DATA(%d) on node %d\n", nid, tnid);
++
++	node_data[nid] = nd;
++	memset(NODE_DATA(nid), 0, sizeof(pg_data_t));
++	NODE_DATA(nid)->node_id = nid;
++	NODE_DATA(nid)->node_start_pfn = start_pfn;
++	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
+ }
+ 
+-
+-void __init do_init_bootmem(void)
++void __init initmem_init(void)
+ {
+ 	int nid, cpu;
+ 
+-	min_low_pfn = 0;
+ 	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
+ 	max_pfn = max_low_pfn;
+ 
+@@ -1062,64 +954,16 @@ void __init do_init_bootmem(void)
+ 	else
+ 		dump_numa_memory_topology();
+ 
++	memblock_dump_all();
++
+ 	for_each_online_node(nid) {
+ 		unsigned long start_pfn, end_pfn;
+-		void *bootmem_vaddr;
+-		unsigned long bootmap_pages;
+ 
+ 		get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
+-
+-		/*
+-		 * Allocate the node structure node local if possible
+-		 *
+-		 * Be careful moving this around, as it relies on all
+-		 * previous nodes' bootmem to be initialized and have
+-		 * all reserved areas marked.
+-		 */
+-		NODE_DATA(nid) = careful_zallocation(nid,
+-					sizeof(struct pglist_data),
+-					SMP_CACHE_BYTES, end_pfn);
+-
+-  		dbg("node %d\n", nid);
+-		dbg("NODE_DATA() = %p\n", NODE_DATA(nid));
+-
+-		NODE_DATA(nid)->bdata = &bootmem_node_data[nid];
+-		NODE_DATA(nid)->node_start_pfn = start_pfn;
+-		NODE_DATA(nid)->node_spanned_pages = end_pfn - start_pfn;
+-
+-		if (NODE_DATA(nid)->node_spanned_pages == 0)
+-  			continue;
+-
+-  		dbg("start_paddr = %lx\n", start_pfn << PAGE_SHIFT);
+-  		dbg("end_paddr = %lx\n", end_pfn << PAGE_SHIFT);
+-
+-		bootmap_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
+-		bootmem_vaddr = careful_zallocation(nid,
+-					bootmap_pages << PAGE_SHIFT,
+-					PAGE_SIZE, end_pfn);
+-
+-		dbg("bootmap_vaddr = %p\n", bootmem_vaddr);
+-
+-		init_bootmem_node(NODE_DATA(nid),
+-				  __pa(bootmem_vaddr) >> PAGE_SHIFT,
+-				  start_pfn, end_pfn);
+-
+-		free_bootmem_with_active_regions(nid, end_pfn);
+-		/*
+-		 * Be very careful about moving this around.  Future
+-		 * calls to careful_zallocation() depend on this getting
+-		 * done correctly.
+-		 */
+-		mark_reserved_regions_for_nid(nid);
++		setup_node_data(nid, start_pfn, end_pfn);
+ 		sparse_memory_present_with_active_regions(nid);
+ 	}
+ 
+-	init_bootmem_done = 1;
+-
+-	/*
+-	 * Now bootmem is initialised we can create the node to cpumask
+-	 * lookup tables and setup the cpu callback to populate them.
+-	 */
+ 	setup_node_to_cpumask_map();
+ 
+ 	reset_numa_cpu_lookup_table();
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index cf11342..d545b12 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -100,12 +100,11 @@ __init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long add
+ {
+ 	pte_t *pte;
+ 	extern int mem_init_done;
+-	extern void *early_get_page(void);
+ 
+ 	if (mem_init_done) {
+ 		pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
+ 	} else {
+-		pte = (pte_t *)early_get_page();
++		pte = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
+ 		if (pte)
+ 			clear_page(pte);
+ 	}
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index c8d709a..cdb19ab 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -75,11 +75,7 @@ static __ref void *early_alloc_pgtable(unsigned long size)
+ {
+ 	void *pt;
+ 
+-	if (init_bootmem_done)
+-		pt = __alloc_bootmem(size, size, __pa(MAX_DMA_ADDRESS));
+-	else
+-		pt = __va(memblock_alloc_base(size, size,
+-					 __pa(MAX_DMA_ADDRESS)));
++	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
+ 	memset(pt, 0, size);
+ 
+ 	return pt;
 -- 
 1.9.1
