@@ -1,17 +1,18 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B862F1A0A72
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:09 +1000 (EST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- rostedt@goodmis.org
-Subject: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
-Date: Wed, 17 Sep 2014 17:07:04 +1000
-Message-Id: <1410937624-25140-3-git-send-email-anton@samba.org>
-In-Reply-To: <1410937624-25140-1-git-send-email-anton@samba.org>
-References: <1410937624-25140-1-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3557A1A0AE1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:13 +1000 (EST)
+Message-ID: <1410937632.27681.11.camel@concordia>
+Subject: Re: [3/5] pseries: Create device hotplug entry point
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 17:07:12 +1000
+In-Reply-To: <54174CB7.2080704@linux.vnet.ibm.com>
+References: <54174CB7.2080704@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,161 +23,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of passing in the stack address of the link register
-to be modified, just pass in the old value and return the
-new value and rely on ftrace_graph_caller to do the
-modification.
 
-This removes the exception handling around the stack update -
-it isn't needed and we weren't consistent about it. Later on
-we would do an unprotected modification:
+On Mon, 2014-09-15 at 15:31 -0500, Nathan Fontenot wrote:
+> For pseries system the kernel will be notified of hotplug requests in
+> the form of rtas hotplug events. 
 
-       if (!ftrace_graph_entry(&trace)) {
-               *parent = old;
+Can you flesh that design out a bit for me, I don't entirely get how it's going
+to work.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/entry_32.S | 10 +++++--
- arch/powerpc/kernel/entry_64.S | 11 ++++++--
- arch/powerpc/kernel/ftrace.c   | 59 ++++++++++--------------------------------
- 3 files changed, 30 insertions(+), 50 deletions(-)
+The kernel gets the rtas hotplug events (in rtasd.c) and spits them out to
+userspace, which then writes them back in ?
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 22b45a4..ad837d8 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -1424,12 +1424,18 @@ _GLOBAL(ftrace_graph_caller)
- 	lwz	r4, 44(r1)
- 	subi	r4, r4, MCOUNT_INSN_SIZE
- 
--	/* get the parent address */
--	addi	r3, r1, 52
-+	/* Grab the LR out of the caller stack frame */
-+	lwz	r3,52(r1)
- 
- 	bl	prepare_ftrace_return
- 	nop
- 
-+        /*
-+         * prepare_ftrace_return gives us the address we divert to.
-+         * Change the LR in the callers stack frame to this.
-+         */
-+	stw	r3,52(r1)
-+
- 	MCOUNT_RESTORE_FRAME
- 	/* old link register ends up in ctr reg */
- 	bctr
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 955d509..9caab69 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1221,13 +1221,20 @@ _GLOBAL(ftrace_graph_caller)
- 	ld	r4, 128(r1)
- 	subi	r4, r4, MCOUNT_INSN_SIZE
- 
--	/* get the parent address */
-+	/* Grab the LR out of the caller stack frame */
- 	ld	r11, 112(r1)
--	addi	r3, r11, 16
-+	ld	r3, 16(r11)
- 
- 	bl	prepare_ftrace_return
- 	nop
- 
-+	/*
-+	 * prepare_ftrace_return gives us the address we divert to.
-+	 * Change the LR in the callers stack frame to this.
-+	 */
-+	ld	r11, 112(r1)
-+	std	r3, 16(r11)
-+
- 	ld	r0, 128(r1)
- 	mtlr	r0
- 	addi	r1, r1, 112
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index abf7921..d795031 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -512,67 +512,34 @@ int ftrace_disable_ftrace_graph_caller(void)
- 
- /*
-  * Hook the return address and push it in the stack of return addrs
-- * in current thread info.
-+ * in current thread info. Return the address we want to divert to.
-  */
--void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
-+unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
- {
--	unsigned long old;
--	int faulted;
- 	struct ftrace_graph_ent trace;
- 	unsigned long return_hooker;
- 
- 	if (unlikely(ftrace_graph_is_dead()))
--		return;
-+		goto out;
- 
- 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
--		return;
-+		goto out;
- 
- 	return_hooker = ppc_function_entry(return_to_handler);
- 
--	/*
--	 * Protect against fault, even if it shouldn't
--	 * happen. This tool is too much intrusive to
--	 * ignore such a protection.
--	 */
--	asm volatile(
--		"1: " PPC_LL "%[old], 0(%[parent])\n"
--		"2: " PPC_STL "%[return_hooker], 0(%[parent])\n"
--		"   li %[faulted], 0\n"
--		"3:\n"
--
--		".section .fixup, \"ax\"\n"
--		"4: li %[faulted], 1\n"
--		"   b 3b\n"
--		".previous\n"
--
--		".section __ex_table,\"a\"\n"
--			PPC_LONG_ALIGN "\n"
--			PPC_LONG "1b,4b\n"
--			PPC_LONG "2b,4b\n"
--		".previous"
--
--		: [old] "=&r" (old), [faulted] "=r" (faulted)
--		: [parent] "r" (parent), [return_hooker] "r" (return_hooker)
--		: "memory"
--	);
--
--	if (unlikely(faulted)) {
--		ftrace_graph_stop();
--		WARN_ON(1);
--		return;
--	}
--
--	trace.func = self_addr;
-+	trace.func = ip;
- 	trace.depth = current->curr_ret_stack + 1;
- 
- 	/* Only trace if the calling function expects to */
--	if (!ftrace_graph_entry(&trace)) {
--		*parent = old;
--		return;
--	}
-+	if (!ftrace_graph_entry(&trace))
-+		goto out;
-+
-+	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0) == -EBUSY)
-+		goto out;
- 
--	if (ftrace_push_return_trace(old, self_addr, &trace.depth, 0) == -EBUSY)
--		*parent = old;
-+	parent = return_hooker;
-+out:
-+	return parent;
- }
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
--- 
-1.9.1
+> This patch creates a common routine that can handle these requests in both
+> the PowerVM anbd PowerKVM environments, handle_dlpar_errorlog(). This also
+                ^
+> creates the initial memory hotplug request handling stub.
+>
+> For PowerVM this patch also creates a new /proc file that the drmgr
+> command will use to write rtas hotplug events to.
+
+Why is this different between phyp and KVM?
+
+> For future PowerKVM handling the rtas check-exception code can pass
+> any rtas hotplug events received to handle_dlpar_errorlog().
+
+Internally to the kernel you mean?
+
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index a2450b8..574ec73 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -16,7 +16,9 @@
+>  #include <linux/cpu.h>
+>  #include <linux/slab.h>
+>  #include <linux/of.h>
+> +#include <linux/proc_fs.h>
+>  #include "offline_states.h"
+> +#include "pseries.h"
+>  
+>  #include <asm/prom.h>
+>  #include <asm/machdep.h>
+> @@ -530,13 +532,72 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>  	return count;
+>  }
+>  
+> +#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+
+That is really confusing, but I think it's just a diff artifact?
+
+> +static int handle_dlpar_errorlog(struct rtas_error_log *error_log)
+> +{
+> +	struct pseries_errorlog *pseries_log;
+> +	struct pseries_hp_errorlog *hp_elog;
+> +	int rc = -EINVAL;
+> +
+> +	pseries_log = get_pseries_errorlog(error_log,
+> +					   PSERIES_ELOG_SECT_ID_HOTPLUG);
+> +	if (!pseries_log)
+> +		return rc;
+> +
+> +	hp_elog = (struct pseries_hp_errorlog *)pseries_log->data;
+> +	if (!hp_elog)
+> +		return rc;
+
+I don't see how that can happen?
+
+struct pseries_errorlog {
+	__be16 id;			/* 0x00 2-byte ASCII section ID	*/
+	__be16 length;			/* 0x02 Section length in bytes	*/
+	uint8_t version;		/* 0x04 Section version		*/
+	uint8_t subtype;		/* 0x05 Section subtype		*/
+	__be16 creator_component;	/* 0x06 Creator component ID	*/
+	uint8_t data[];			/* 0x08 Start of section data	*/
+};
+
+Should you be checking for length == 0 instead ?
+
+Also I think the code will probably end up cleaner if you do the endian
+conversions immediately when you read the hp_elog, rather than passing it
+around in BE and having to remember to convert at all the usages.
+
+> +	switch (hp_elog->resource) {
+> +	case PSERIES_HP_ELOG_RESOURCE_MEM:
+> +		rc = dlpar_memory(hp_elog);
+> +		break;
+
+Please add:
+
+  default:
+	pr_warn_ratelimited("Unknown resource ..")
+
+Or something.
+
+
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+> +static ssize_t dlpar_write(struct file *file, const char __user *buf,
+> +			   size_t count, loff_t *offset)
+> +{
+> +	char *event_buf;
+> +	int rc;
+> +
+> +	event_buf = kmalloc(count + 1, GFP_KERNEL);
+
+Why + 1 ? It's not null-terminated AFAICS.
+
+> +	if (!event_buf)
+> +		return -ENOMEM;
+> +
+> +	rc = copy_from_user(event_buf, buf, count);
+> +	if (rc) {
+> +		kfree(event_buf);
+> +		return rc;
+> +	}
+> +
+> +	rc = handle_dlpar_errorlog((struct rtas_error_log *)event_buf);
+
+If you start with a struct rtas_error_log * you shouldn't need any casts.
+
+> +	kfree(event_buf);
+> +	return rc ? rc : count;
+> +}
+> +
+> +static const struct file_operations dlpar_fops = {
+> +	.write = dlpar_write,
+> +	.llseek = noop_llseek,
+> +};
+> +
+>  static int __init pseries_dlpar_init(void)
+>  {
+> +	struct proc_dir_entry *proc_ent;
+> +
+> +	proc_ent = proc_create("powerpc/dlpar", S_IWUSR, NULL, &dlpar_fops);
+> +	if (proc_ent)
+> +		proc_set_size(proc_ent, 0);
+
+  else
+	error message at least please
+
+Why are we putting it in /proc, can't it go in /sys/kernel like the mobility
+stuff?
+
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 24abc5c..0e60e15 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -20,6 +22,9 @@
+>  #include <asm/machdep.h>
+>  #include <asm/prom.h>
+>  #include <asm/sparsemem.h>
+> +#include <asm/rtas.h>
+> +
+> +DEFINE_MUTEX(dlpar_mem_mutex);
+
+static ?
+
+> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+> index b94516b..28bd994 100644
+> --- a/arch/powerpc/platforms/pseries/pseries.h
+> +++ b/arch/powerpc/platforms/pseries/pseries.h
+> @@ -62,6 +63,15 @@ extern int dlpar_detach_node(struct device_node *);
+>  extern int dlpar_acquire_drc(u32);
+>  extern int dlpar_release_drc(u32);
+>  
+> +#ifdef CONFIG_MEMORY_HOTPLUG
+> +extern int dlpar_memory(struct pseries_hp_errorlog *);
+> +#else
+> +static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+> +{
+> +	return -ENOTSUPP;
+
+EOPNOTSUPP is a bit more standard.
+
+cheers
