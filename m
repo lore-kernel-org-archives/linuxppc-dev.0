@@ -1,16 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AC461A0070
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:06:59 +1000 (EST)
-Message-ID: <1410937582.27681.9.camel@concordia>
-Subject: Re: [1/5] pseries: Define rtas hotplug event sections
+ by lists.ozlabs.org (Postfix) with ESMTPS id 889921A0929
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:06 +1000 (EST)
+Message-ID: <1410937625.27681.10.camel@concordia>
+Subject: Re: [2/5] pseries: Export drc_[acquire|release]_drc() routines
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 17:06:22 +1000
-In-Reply-To: <54174C20.1000009@linux.vnet.ibm.com>
-References: <54174C20.1000009@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 17:07:05 +1000
+In-Reply-To: <54174C5F.4090604@linux.vnet.ibm.com>
+References: <54174C5F.4090604@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -24,40 +24,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mon, 2014-09-15 at 15:29 -0500, Nathan Fontenot wrote:
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index b390f55..a01879e 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -273,6 +273,7 @@ inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
->  #define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
->  #define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
->  #define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
-> +#define PSERIES_ELOG_SECT_ID_HOTPLUG		(('H' << 8) | 'P')
->  
->  /* Vendor specific Platform Event Log Format, Version 6, section header */
->  struct pseries_errorlog {
-> @@ -296,6 +297,31 @@ inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
->  	return be16_to_cpu(sect->length);
->  }
->  
-> +/* RTAS pseries hotplug errorlog section */
-> +struct pseries_hp_errorlog {
-> +	uint8_t	resource;
-> +	uint8_t	action;
-> +	uint8_t	id_type;
-> +	uint8_t	reserved;
+On Mon, 2014-09-15 at 15:30 -0500, Nathan Fontenot wrote:
+> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+> index 361add6..b94516b 100644
+> --- a/arch/powerpc/platforms/pseries/pseries.h
+> +++ b/arch/powerpc/platforms/pseries/pseries.h
+> @@ -59,6 +59,8 @@ extern void dlpar_free_cc_property(struct property *);
+>  extern struct device_node *dlpar_configure_connector(u32, struct device_node *);
+>  extern int dlpar_attach_node(struct device_node *);
+>  extern int dlpar_detach_node(struct device_node *);
+> +extern int dlpar_acquire_drc(u32);
+> +extern int dlpar_release_drc(u32);
 
-These should be u8.
+Please name the parameters.
 
-> +	union {
-> +		__be32	drc_index;
-> +		__be32	drc_count;
-> +		char	drc_name[1];
-
-I don't see drc_name used?
-
-> +	} _drc_u;
-> +};
+And don't bother with extern.
 
 cheers
