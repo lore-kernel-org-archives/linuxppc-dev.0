@@ -1,13 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 46D381A041C
+ by lists.ozlabs.org (Postfix) with ESMTP id 48EB91A043B
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:13 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 04/21] powerpc/8xx: Remove loading of r10 at end of FixupDAR
-Message-Id: <20140917163657.9BC8E1AB033@localhost.localdomain>
-Date: Wed, 17 Sep 2014 18:36:57 +0200 (CEST)
+Subject: [PATCH v3 00/21] powerpc/8xx: Optimise MMU TLB handling and add
+ support of 16k pages
+Message-Id: <20140917163656.E09D81AB026@localhost.localdomain>
+Date: Wed, 17 Sep 2014 18:36:56 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,52 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, r10 is not used anymore
-after FixupDAR. There is therefore no need to set it up with the value of DAR.
+This patchset:
+1) provides several MMU TLB handling optimisation on MPC8xx.
+2) adds support of 16k pages on MPC8xx.
+All changes have been successfully tested on a custom board equipped with MPC885
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 Changes in v2:
-- None
+- Patch number 10 removed, it was implementing a 16 bit alignment of the PGDIR.
+It is not worth potentially wasting up to 64k of memory just for removing one
+instruction (ori).
+- Preserve r11 while calculating the level 2 address, therefore no more need to
+save r11 into CR.
 
 Changes in v3:
-- None
+- Few fixes following review from Joachim Tjernlund
+- Removed the major hack which was saving resisters in memory for CPU6 errata
+- Invalidating non present TLB entries earlier (in head_8xx instead of fault.c)
 
- arch/powerpc/kernel/head_8xx.S |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index fbe5d10..e59e39e 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -495,7 +495,7 @@ DataTLBError:
- 	mfspr	r10, SPRN_DAR
- 	cmpwi	cr0, r10, 0x00f0
- 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
--DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
-+DARFixed:/* Return from dcbx instruction bug workaround */
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
-@@ -524,7 +524,7 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
- 
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-  * by decoding the registers used by the dcbx instruction and adding them.
-- * DAR is set to the calculated address and r10 also holds the EA on exit.
-+ * DAR is set to the calculated address.
-  */
-  /* define if you don't want to use self modifying code */
- #define NO_SELF_MODIFYING_CODE
-@@ -564,8 +564,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq+	142f
- 	cmpwi	cr0, r10, 1964	/* Is icbi? */
- 	beq+	142f
--141:	mfspr	r10, SPRN_DAR	/* r10 must hold DAR at exit */
--	b	DARFixed	/* Nope, go back to normal TLB processing */
-+141:	b	DARFixed	/* Nope, go back to normal TLB processing */
- 
- 144:	mfspr	r10, SPRN_DSISR
- 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
--- 
-1.7.1
+ arch/powerpc/Kconfig                     |   2 +-
+ arch/powerpc/include/asm/mmu-8xx.h       |   2 +
+ arch/powerpc/include/asm/pgtable-ppc32.h |  20 ++
+ arch/powerpc/include/asm/pte-8xx.h       |   7 +-
+ arch/powerpc/include/asm/reg.h           |   3 +-
+ arch/powerpc/kernel/head_8xx.S           | 370 ++++++++++++-------------
+ arch/powerpc/mm/fault.c                  |   9 +-
+ 7 files changed, 203 insertions(+), 210 deletions(-)
