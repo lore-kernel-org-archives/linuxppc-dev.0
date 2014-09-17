@@ -1,34 +1,33 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7EA1C1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 04:34:23 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 596ED1A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 04:34:26 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 17 Sep 2014 14:34:20 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 851FB38C8046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:34:19 -0400 (EDT)
+ Wed, 17 Sep 2014 14:34:23 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F3179C90045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:34:11 -0400 (EDT)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8HIYB4O2425322
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 18:34:19 GMT
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8HIYCjT56295630
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 18:34:20 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8HIXjjd027614
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:33:46 -0400
+ s8HIXkeN027651
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:33:48 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
  Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/4] powerpc/perf/hv-24x7: use kmem_cache instead of aligned
- stack allocations
-Date: Wed, 17 Sep 2014 11:33:04 -0700
-Message-Id: <1410978787-7375-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 2/4] Simplify catalog_read()
+Date: Wed, 17 Sep 2014 11:33:05 -0700
+Message-Id: <1410978787-7375-3-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1410978787-7375-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1410978787-7375-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
@@ -43,107 +42,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+catalog_read() implements the read interface for the sysfs file
 
-Ian pointed out the use of __aligned(4096) caused rather large stack
-consumption in single_24x7_request(), so use the kmem_cache
-hv_page_cache (which we've already got set up for other allocations)
-insead of allocating locally.
+	/sys/bus/event_source/devices/hv_24x7/interface/catalog
 
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Reported-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+It essentially takes a buffer, an offset and count as parameters
+to the read() call.  It makes a hypervisor call to read a specific
+page from the catalog and copy the required bytes into the given
+buffer. Each call to catalog_read() returns at most one 4K page.
+
+Given these requirements, we should be able to simplify the
+catalog_read().
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c |   52 ++++++++++++++++++++++++++++++-------------
- 1 file changed, 37 insertions(+), 15 deletions(-)
+ arch/powerpc/perf/hv-24x7.c |   92 +++++--------------------------------------
+ 1 file changed, 10 insertions(+), 82 deletions(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 70d4f74..2f2215c 100644
+index 2f2215c..9427ef7 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -294,7 +294,7 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
- 					 u16 lpar, u64 *res,
- 					 bool success_expected)
- {
--	unsigned long ret;
-+	unsigned long ret = -ENOMEM;
+@@ -75,86 +75,6 @@ static struct attribute_group format_group = {
  
- 	/*
- 	 * request_buffer and result_buffer are not required to be 4k aligned,
-@@ -304,7 +304,27 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
- 	struct reqb {
- 		struct hv_24x7_request_buffer buf;
- 		struct hv_24x7_request req;
--	} __packed __aligned(4096) request_buffer = {
-+	} __packed * request_buffer;
-+	struct resb {
-+		struct hv_24x7_data_result_buffer buf;
-+		struct hv_24x7_result res;
-+		struct hv_24x7_result_element elem;
-+		__be64 result;
-+	} __packed * result_buffer;
-+
-+	BUILD_BUG_ON(sizeof(*request_buffer) > 4096);
-+	BUILD_BUG_ON(sizeof(*result_buffer) > 4096);
-+
-+	request_buffer = kmem_cache_alloc(hv_page_cache, GFP_USER);
-+
-+	if (!request_buffer)
-+		goto out_reqb;
-+
-+	result_buffer = kmem_cache_zalloc(hv_page_cache, GFP_USER);
-+	if (!result_buffer)
-+		goto out_resb;
-+
-+	*request_buffer = (struct reqb) {
- 		.buf = {
- 			.interface_version = HV_24X7_IF_VERSION_CURRENT,
- 			.num_requests = 1,
-@@ -320,28 +340,30 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
- 		}
- 	};
+ static struct kmem_cache *hv_page_cache;
  
--	struct resb {
--		struct hv_24x7_data_result_buffer buf;
--		struct hv_24x7_result res;
--		struct hv_24x7_result_element elem;
--		__be64 result;
--	} __packed __aligned(4096) result_buffer = {};
+-/*
+- * read_offset_data - copy data from one buffer to another while treating the
+- *                    source buffer as a small view on the total avaliable
+- *                    source data.
+- *
+- * @dest: buffer to copy into
+- * @dest_len: length of @dest in bytes
+- * @requested_offset: the offset within the source data we want. Must be > 0
+- * @src: buffer to copy data from
+- * @src_len: length of @src in bytes
+- * @source_offset: the offset in the sorce data that (src,src_len) refers to.
+- *                 Must be > 0
+- *
+- * returns the number of bytes copied.
+- *
+- * The following ascii art shows the various buffer possitioning we need to
+- * handle, assigns some arbitrary varibles to points on the buffer, and then
+- * shows how we fiddle with those values to get things we care about (copy
+- * start in src and copy len)
+- *
+- * s = @src buffer
+- * d = @dest buffer
+- * '.' areas in d are written to.
+- *
+- *                       u
+- *   x         w	 v  z
+- * d           |.........|
+- * s |----------------------|
+- *
+- *                      u
+- *   x         w	z     v
+- * d           |........------|
+- * s |------------------|
+- *
+- *   x         w        u,z,v
+- * d           |........|
+- * s |------------------|
+- *
+- *   x,w                u,v,z
+- * d |..................|
+- * s |------------------|
+- *
+- *   x        u
+- *   w        v		z
+- * d |........|
+- * s |------------------|
+- *
+- *   x      z   w      v
+- * d            |------|
+- * s |------|
+- *
+- * x = source_offset
+- * w = requested_offset
+- * z = source_offset + src_len
+- * v = requested_offset + dest_len
+- *
+- * w_offset_in_s = w - x = requested_offset - source_offset
+- * z_offset_in_s = z - x = src_len
+- * v_offset_in_s = v - x = request_offset + dest_len - src_len
+- */
+-static ssize_t read_offset_data(void *dest, size_t dest_len,
+-				loff_t requested_offset, void *src,
+-				size_t src_len, loff_t source_offset)
+-{
+-	size_t w_offset_in_s = requested_offset - source_offset;
+-	size_t z_offset_in_s = src_len;
+-	size_t v_offset_in_s = requested_offset + dest_len - src_len;
+-	size_t u_offset_in_s = min(z_offset_in_s, v_offset_in_s);
+-	size_t copy_len = u_offset_in_s - w_offset_in_s;
 -
- 	ret = plpar_hcall_norets(H_GET_24X7_DATA,
--			virt_to_phys(&request_buffer), sizeof(request_buffer),
--			virt_to_phys(&result_buffer),  sizeof(result_buffer));
-+			virt_to_phys(request_buffer), sizeof(*request_buffer),
-+			virt_to_phys(result_buffer),  sizeof(*result_buffer));
+-	if (requested_offset < 0 || source_offset < 0)
+-		return -EINVAL;
+-
+-	if (z_offset_in_s <= w_offset_in_s)
+-		return 0;
+-
+-	memcpy(dest, src + w_offset_in_s, copy_len);
+-	return copy_len;
+-}
+-
+ static unsigned long h_get_24x7_catalog_page_(unsigned long phys_4096,
+ 					      unsigned long version,
+ 					      unsigned long index)
+@@ -185,6 +105,8 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
+ 	ssize_t ret = 0;
+ 	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
+ 	loff_t page_offset = 0;
++	loff_t offset_in_page;
++	size_t copy_len;
+ 	uint64_t catalog_version_num = 0;
+ 	void *page = kmem_cache_alloc(hv_page_cache, GFP_USER);
+ 	struct hv_24x7_catalog_page_0 *page_0 = page;
+@@ -203,6 +125,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
  
- 	if (ret) {
- 		if (success_expected)
- 			pr_err_ratelimited("hcall failed: %d %#x %#x %d => 0x%lx (%ld) detail=0x%x failing ix=%x\n",
- 					domain, offset, ix, lpar,
- 					ret, ret,
--					result_buffer.buf.detailed_rc,
--					result_buffer.buf.failing_request_ix);
--		return ret;
-+					result_buffer->buf.detailed_rc,
-+					result_buffer->buf.failing_request_ix);
-+		goto out_hcall;
+ 	page_offset = offset / 4096;
+ 	page_count  = count  / 4096;
++	offset_in_page = count % 4096;
+ 
+ 	if (page_offset >= catalog_page_len)
+ 		goto e_free;
+@@ -216,8 +139,13 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
+ 		}
  	}
  
--	*res = be64_to_cpu(result_buffer.result);
-+	*res = be64_to_cpu(result_buffer->result);
-+	kfree(result_buffer);
-+	kfree(request_buffer);
-+	return ret;
+-	ret = read_offset_data(buf, count, offset,
+-				page, 4096, page_offset * 4096);
++	copy_len = 4096 - offset_in_page;
++	if (copy_len > count)
++		copy_len = count;
 +
-+out_hcall:
-+	kfree(result_buffer);
-+out_resb:
-+	kfree(request_buffer);
-+out_reqb:
- 	return ret;
- }
- 
++	memcpy(buf, page+offset_in_page, copy_len);
++	ret = copy_len;
++
+ e_free:
+ 	if (hret)
+ 		pr_err("h_get_24x7_catalog_page(ver=%lld, page=%lld) failed:"
 -- 
 1.7.9.5
