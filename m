@@ -1,13 +1,12 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 4AF3C1A043D
+ by lists.ozlabs.org (Postfix) with ESMTP id 46D381A041C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:13 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 02/21] powerpc/8xx: Use SCRATCH0 and SCRATCH1 also for TLB
- handlers
-Message-Id: <20140917163657.5194A1AB029@localhost.localdomain>
+Subject: [PATCH v3 04/21] powerpc/8xx: Remove loading of r10 at end of FixupDAR
+Message-Id: <20140917163657.9BC8E1AB033@localhost.localdomain>
 Date: Wed, 17 Sep 2014 18:36:57 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -20,10 +19,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SCRATCH0 and SCRATCH1 are only used in Exceptions prologs where no other
-exception can happen. There is therefore no need to preserve them accross
-TLB handlers, we can use them there as in other exceptions. One of the
-advantages is that they do not suffer CPU6 errata unlike M_TW register.
+Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, r10 is not used anymore
+after FixupDAR. There is therefore no need to set it up with the value of DAR.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -34,204 +31,40 @@ Changes in v2:
 Changes in v3:
 - None
 
- arch/powerpc/kernel/head_8xx.S |  104 ++++++++++++----------------------
- 1 files changed, 36 insertions(+), 68 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1329c5a..3af6db1 100644
+index fbe5d10..e59e39e 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -104,12 +104,15 @@ turn_on_mmu:
-  * task's thread_struct.
-  */
- #define EXCEPTION_PROLOG	\
--	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
--	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
--	mfcr	r10;		\
-+	EXCEPTION_PROLOG_0;	\
- 	EXCEPTION_PROLOG_1;	\
- 	EXCEPTION_PROLOG_2
- 
-+#define EXCEPTION_PROLOG_0	\
-+	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
-+	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
-+	mfcr	r10
-+
- #define EXCEPTION_PROLOG_1	\
- 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel */ \
- 	andi.	r11,r11,MSR_PR;	\
-@@ -145,6 +148,14 @@ turn_on_mmu:
- 	SAVE_2GPRS(7, r11)
- 
- /*
-+ * Exception exit code.
-+ */
-+#define EXCEPTION_EPILOG_0	\
-+	mtcr	r10;		\
-+	mfspr	r10,SPRN_SPRG_SCRATCH0;	\
-+	mfspr	r11,SPRN_SPRG_SCRATCH1
-+
-+/*
-  * Note: code which follows this uses cr0.eq (set if from kernel),
-  * r11, r12 (SRR0), and r9 (SRR1).
-  *
-@@ -293,16 +304,8 @@ InstructionTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--#ifdef CONFIG_8xx_CPU6
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
--#else
--	mtspr	SPRN_DAR, r10
--	mtspr	SPRN_SPRG_SCRATCH2, r11
--#endif
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU15
- 	addi	r11, r10, 0x1000
-@@ -359,18 +362,11 @@ InstructionTLBMiss:
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	rfi
- 2:
- 	mfspr	r11, SPRN_SRR1
-@@ -381,19 +377,11 @@ InstructionTLBMiss:
- 	mtspr	SPRN_SRR1, r11
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	li	r11, 0x00f0
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	b	InstructionAccess
- 
- 	. = 0x1200
-@@ -401,16 +389,8 @@ DataStoreTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--#ifdef CONFIG_8xx_CPU6
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
--#else
--	mtspr	SPRN_DAR, r10
--	mtspr	SPRN_SPRG_SCRATCH2, r11
--#endif
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -483,19 +463,12 @@ DataStoreTLBMiss:
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	rfi
- 
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-@@ -519,23 +492,18 @@ DataTLBError:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 
+@@ -495,7 +495,7 @@ DataTLBError:
  	mfspr	r10, SPRN_DAR
  	cmpwi	cr0, r10, 0x00f0
  	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
- DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
+-DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
++DARFixed:/* Return from dcbx instruction bug workaround */
  #ifdef CONFIG_8xx_CPU6
  	lwz	r3, 8(r0)
  #endif
-+	mfspr	r10,SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	b	DataAccess
+@@ -524,7 +524,7 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
  
- 	EXCEPTION(0x1500, Trap_15, unknown_exception, EXC_XFER_EE)
-@@ -619,8 +587,8 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	stw	r11,0(r10)	/* store add/and instruction */
- 	dcbf	0,r10		/* flush new instr. to memory. */
- 	icbi	0,r10		/* invalidate instr. cache line */
--	lwz	r11, 4(r0)	/* restore r11 from memory */
--	mfspr	r10, SPRN_M_TW	/* restore r10 from M_TW */
-+	mfspr	r11, SPRN_SPRG_SCRATCH1	/* restore r11 */
-+	mfspr	r10, SPRN_SPRG_SCRATCH0	/* restore r10 */
- 	isync			/* Wait until new instr is loaded from memory */
- modified_instr:
- 	.space	4		/* this is where the add instr. is stored */
-@@ -683,9 +651,9 @@ modified_instr:
- 	b	DARFixed		/* Go back to normal TLB handling */
+ /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
+  * by decoding the registers used by the dcbx instruction and adding them.
+- * DAR is set to the calculated address and r10 also holds the EA on exit.
++ * DAR is set to the calculated address.
+  */
+  /* define if you don't want to use self modifying code */
+ #define NO_SELF_MODIFYING_CODE
+@@ -564,8 +564,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 1964	/* Is icbi? */
+ 	beq+	142f
+-141:	mfspr	r10, SPRN_DAR	/* r10 must hold DAR at exit */
+-	b	DARFixed	/* Nope, go back to normal TLB processing */
++141:	b	DARFixed	/* Nope, go back to normal TLB processing */
  
- 	/* special handling for r10,r11 since these are modified already */
--153:	lwz	r11, 4(r0)	/* load r11 from memory */
-+153:	mfspr	r11, SPRN_SPRG_SCRATCH1	/* load r11 from SPRN_SPRG_SCRATCH1 */
- 	b	155f
--154:	mfspr	r11, SPRN_M_TW	/* load r10 from M_TW */
-+154:	mfspr	r11, SPRN_SPRG_SCRATCH0	/* load r10 from SPRN_SPRG_SCRATCH0 */
- 155:	add	r10, r10, r11	/* add it */
- 	mfctr	r11		/* restore r11 */
- 	b	151b
+ 144:	mfspr	r10, SPRN_DSISR
+ 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
 -- 
 1.7.1
