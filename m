@@ -2,18 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C0E71A0AD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:20 +1000 (EST)
-Message-ID: <1410937639.27681.12.camel@concordia>
-Subject: Re: [4/5] pseries: Implement memory hotplug add in the kernel
+ by lists.ozlabs.org (Postfix) with ESMTPS id EEA8A1A0A72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:30 +1000 (EST)
+Message-ID: <1410937650.27681.13.camel@concordia>
+Subject: Re: [5/5] pseries: Implement memory hotplug remove in the kernel
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 17:07:19 +1000
-In-Reply-To: <54174CF3.1010802@linux.vnet.ibm.com>
-References: <54174CF3.1010802@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 17:07:30 +1000
+In-Reply-To: <54174D36.4000002@linux.vnet.ibm.com>
+References: <54174D36.4000002@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,271 +24,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Mon, 2014-09-15 at 15:32 -0500, Nathan Fontenot wrote:
-> This patch adds the ability to do memory hotplug adding in the kernel.
+On Mon, 2014-09-15 at 15:33 -0500, Nathan Fontenot wrote:
+> This patch adds the ability to do memory hotplug remove in the kernel.
 > 
 > Currently the hotplug add/remove of memory is handled by the drmgr
 > command. The drmgr command performs the add/remove by performing
-> some work in user-space and making requests to the kernel to handle 
+> some work in user-space and making requests to the kernel to handle
 > other pieces. By moving all of the work to the kernel we can do the
 > add and remove faster, and provide a common place to do memory hotplug
 > for both the PowerVM and PowerKVM environments.
 > 
 > Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c |  170 +++++++++++++++++++++++
->  1 file changed, 170 insertions(+)
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  140 +++++++++++++++++++++++
+>  1 file changed, 139 insertions(+), 1 deletion(-)
 > 
 > diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 0e60e15..b254773 100644
+> index b254773..160c424 100644
 > --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
 > +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -17,6 +17,7 @@
->  #include <linux/vmalloc.h>
->  #include <linux/memory.h>
->  #include <linux/memory_hotplug.h>
-> +#include <linux/slab.h>
->  
->  #include <asm/firmware.h>
->  #include <asm/machdep.h>
-> @@ -24,6 +25,8 @@
->  #include <asm/sparsemem.h>
->  #include <asm/rtas.h>
->  
-> +#include "pseries.h"
-> +
->  DEFINE_MUTEX(dlpar_mem_mutex);
->  
->  unsigned long pseries_memory_block_size(void)
-> @@ -69,6 +72,53 @@ unsigned long pseries_memory_block_size(void)
->  	return memblock_size;
+> @@ -193,7 +193,137 @@ static int pseries_remove_mem_node(struct device_node *np)
+>  	pseries_remove_memblock(base, lmb_size);
+>  	return 0;
 >  }
->  
-> +static void dlpar_free_drconf_property(struct property *prop)
+> +
+> +static int lmb_is_removable(struct of_drconf_cell *lmb)
 > +{
-> +	kfree(prop->name);
-> +	kfree(prop->value);
-> +	kfree(prop);
-> +}
-> +
-> +static struct property *dlpar_clone_drconf_property(struct device_node *dn)
-> +{
-> +	struct property *prop, *new_prop;
-> +
-> +	prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-> +	if (!prop)
-> +		return NULL;
-> +
-> +	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
-> +	if (!new_prop)
-> +		return NULL;
-> +
-> +	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
-> +	new_prop->value = kmalloc(prop->length + 1, GFP_KERNEL);
-> +	if (!new_prop->name || !new_prop->value) {
-> +		dlpar_free_drconf_property(new_prop);
-> +		return NULL;
-> +	}
-> +
-> +	memcpy(new_prop->value, prop->value, prop->length);
-> +	new_prop->length = prop->length;
-> +	*(((char *)new_prop->value) + new_prop->length) = 0;
 
-It's not a string, is it?
+Do we not already have something like this?
 
-> +	return new_prop;
-> +}
-> +
-> +static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
-> +{
-> +	unsigned long section_nr;
-> +	struct mem_section *mem_sect;
-> +	struct memory_block *mem_block;
-> +	u64 phys_addr = be64_to_cpu(lmb->base_addr);
-> +
-> +	section_nr = pfn_to_section_nr(PFN_DOWN(phys_addr));
-> +	mem_sect = __nr_to_section(section_nr);
-> +
-> +	mem_block = find_memory_block(mem_sect);
-> +	return mem_block;
-> +}
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  static int pseries_remove_memory(u64 start, u64 size)
->  {
-> @@ -155,13 +205,133 @@ static inline int pseries_remove_mem_node(struct device_node *np)
->  }
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
->  
-> +static int dlpar_add_one_lmb(struct of_drconf_cell *lmb)
-> +{
-> +	struct memory_block *mem_block;
+> +	int i, scns_per_block;
+> +	int rc = 1;
+
+I can see this makes the &= work below.
+
+But what if block_sz / MIN_MEMORY_BLOCK_SIZE = 0 ?
+
+> +	unsigned long pfn, block_sz;
 > +	u64 phys_addr;
-> +	unsigned long pages_per_block;
-> +	unsigned long block_sz;
-> +	int nid, sections_per_block;
-> +	int rc;
 > +
 > +	phys_addr = be64_to_cpu(lmb->base_addr);
-
-of_drconf_cell needs endian annotations.
-
 > +	block_sz = memory_block_size_bytes();
-> +	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
-> +	pages_per_block = PAGES_PER_SECTION * sections_per_block;
+> +	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
 > +
-> +	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
-> +		return -EINVAL;
+> +	for (i = 0; i < scns_per_block; i++) {
+> +		pfn = PFN_DOWN(phys_addr);
+> +		if (!pfn_present(pfn))
+> +			continue;
 > +
-> +	nid = memory_add_physaddr_to_nid(phys_addr);
-> +	rc = add_memory(nid, phys_addr, block_sz);
-> +	if (rc)
-> +		return rc;
-> +
-> +	rc = memblock_add(phys_addr, block_sz);
-> +	if (rc) {
-> +		remove_memory(nid, phys_addr, block_sz);
-> +		return rc;
+> +		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
+> +		phys_addr += MIN_MEMORY_BLOCK_SIZE;
 > +	}
-> +
-> +	mem_block = lmb_to_memblock(lmb);
-> +	if (!mem_block) {
-> +		remove_memory(nid, phys_addr, block_sz);
-> +		return -EINVAL;
-> +	}
-
-That could all use a lot of comments. ie. why do we have to add it twice?
-
-> +	rc = device_online(&mem_block->dev);
-> +	put_device(&mem_block->dev);
-> +	if (rc)
-> +		remove_memory(nid, phys_addr, block_sz);
 > +
 > +	return rc;
 > +}
-> +
-> +static int dlpar_memory_add(struct pseries_hp_errorlog *hp_elog)
+
+> +static int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
 > +{
-> +	struct of_drconf_cell *lmb;
-> +	struct device_node *dn;
-> +	struct property *prop;
-> +	uint32_t entries, *p;
 
-*p should be __be32.
+...
 
-> +	int i, lmbs_to_add;
-> +	int lmbs_added = 0;
-> +	int rc = -EINVAL;
+> +}
 
-Don't pre-initialise your rc variables.
-
-> +	if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
-> +		lmbs_to_add = be32_to_cpu(hp_elog->_drc_u.drc_count);
-> +		pr_info("Attempting to hot-add %d LMB(s)\n", lmbs_to_add);
-> +	} else {
-> +		lmbs_to_add = 1;
-> +		pr_info("Attempting to hot-add LMB, drc index %x\n",
-> +			be32_to_cpu(hp_elog->_drc_u.drc_index));
-> +	}
-> +
-> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> +	if (!dn)
-> +		return -EINVAL;
-> +
-> +	prop = dlpar_clone_drconf_property(dn);
-> +	if (!prop) {
-> +		of_node_put(dn);
-> +		return -EINVAL;
-> +	}
-> +
-> +	p = prop->value;
-> +	entries = be32_to_cpu(*p++);
-> +	lmb = (struct of_drconf_cell *)p;
-
-
-So if I'm reading this right the hp_elog either contains an index or a count of
-LMBs to add. But it doesn't contain anything about which address ranges to add
-or any of those details. That is all in the ibm,dynamic-memory property - but
-how did it get in there?
-
-> +
-> +	for (i = 0; i < entries; i++, lmb++) {
-> +		u32 drc_index = be32_to_cpu(lmb->drc_index);
-> +
-> +		if (lmbs_to_add == lmbs_added)
-> +			break;
-> +
-> +		if (be32_to_cpu(lmb->flags) & DRCONF_MEM_ASSIGNED)
-> +			continue;
-> +
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX
-> +		    && lmb->drc_index != hp_elog->_drc_u.drc_index)
-> +			continue;
-> +
-> +		rc = dlpar_acquire_drc(drc_index);
-> +		if (rc)
-> +			continue;
-> +
-> +		rc = dlpar_add_one_lmb(lmb);
-> +		if (rc) {
-> +			dlpar_release_drc(drc_index);
-> +			continue;
-> +		}
-
-In both the above error cases you just move along. That means we potentially
-hotplugged some memory but not everything that we were asked to. That seems
-like a bad idea, we should either do everything or nothing.
-
-
-> +
-> +		lmb->flags |= cpu_to_be32(DRCONF_MEM_ASSIGNED);
-> +		lmbs_added++;
-> +		pr_info("Memory at %llx (drc index %x) has been hot-added\n",
-> +			be64_to_cpu(lmb->base_addr), drc_index);
-> +	}
-> +
-> +	if (lmbs_added)
-> +		rc = of_update_property(dn, prop);
-> +	else
-> +		dlpar_free_drconf_property(prop);
-
-The value of rc here is not clear. It could be EINVAL or it could be the result
-of the last dlpar_add_one_lmb(lmb). gcc would have told you that if you hadn't
-initialised it.
-
-> +
-> +	of_node_put(dn);
-> +	return rc ? rc : lmbs_added;
-
-This looks wrong.
-
-Doesn't the rc eventually go back to dlpar_write(), which expects 0 for success?
-
-That should show up as the write failing in userspace.
-
-
->  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  {
->  	int rc = 0;
-
-Don't initialise to zero, that way gcc can tell you if there's a path where you
-forget to initialise it. It also means you can't accidentally return success.
-
-> +	if (hp_elog->id_type != PSERIES_HP_ELOG_ID_DRC_COUNT
-> +	    && hp_elog->id_type != PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		return -EINVAL;
-
-This would look nicer as a switch I think.
-
->  	mutex_lock(&dlpar_mem_mutex);
->  
->  	switch (hp_elog->action) {
-> +	case PSERIES_HP_ELOG_ACTION_ADD:
-> +		rc = dlpar_memory_add(hp_elog);
-> +		break;
->  	default:
->  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
->  		rc = -EINVAL;
-> 
+Most of the same comments as for add.
 
 cheers
