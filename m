@@ -1,15 +1,15 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 460D01A0930
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 22:15:44 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A987B1A0932
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 22:15:45 +1000 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Emilian.Medve@Freescale.com
-Subject: [PATCH 4/5] powerpc: Move sparse_init() into initmem_init
-Date: Wed, 17 Sep 2014 22:15:36 +1000
-Message-Id: <1410956137-4824-4-git-send-email-anton@samba.org>
+Subject: [PATCH 5/5] powerpc: make __ffs return unsigned long
+Date: Wed, 17 Sep 2014 22:15:37 +1000
+Message-Id: <1410956137-4824-5-git-send-email-anton@samba.org>
 In-Reply-To: <1410956137-4824-1-git-send-email-anton@samba.org>
 References: <1410956137-4824-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -22,53 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We did part of sparse initialisation in setup_arch and part in
-initmem_init. Put them together.
+I'm seeing a build warning in mm/nobootmem.c after removing
+bootmem:
+
+mm/nobootmem.c: In function '__free_pages_memory':
+include/linux/kernel.h:713:17: warning: comparison of distinct pointer types lacks a cast [enabled by default]
+  (void) (&_min1 == &_min2);  \
+                 ^
+mm/nobootmem.c:90:11: note: in expansion of macro 'min'
+   order = min(MAX_ORDER - 1UL, __ffs(start));
+           ^
+
+The rest of the worlds seems to define __ffs as returning unsigned long,
+so lets do that.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 Tested-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
- arch/powerpc/kernel/setup_64.c | 1 -
- arch/powerpc/mm/mem.c          | 1 +
- arch/powerpc/mm/numa.c         | 2 ++
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/bitops.h | 2 +-
+ arch/powerpc/sysdev/fsl_pci.c     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 9f8f472..8bc8f77 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -682,7 +682,6 @@ void __init setup_arch(char **cmdline_p)
- 	emergency_stack_init();
- 
- 	initmem_init();
--	sparse_init();
- 
- #ifdef CONFIG_DUMMY_CONSOLE
- 	conswitchp = &dummy_con;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index aa067b7..abbc55d 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -195,6 +195,7 @@ void __init initmem_init(void)
- 
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
-+	sparse_init();
+diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
+index bd3bd57..c633f05 100644
+--- a/arch/powerpc/include/asm/bitops.h
++++ b/arch/powerpc/include/asm/bitops.h
+@@ -213,7 +213,7 @@ static __inline__ unsigned long ffz(unsigned long x)
+ 	return __ilog2(x & -x);
  }
  
- /* mark pages that don't exist as nosave */
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 4f9c18a..52559ff 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -964,6 +964,8 @@ void __init initmem_init(void)
- 		sparse_memory_present_with_active_regions(nid);
- 	}
+-static __inline__ int __ffs(unsigned long x)
++static __inline__ unsigned long __ffs(unsigned long x)
+ {
+ 	return __ilog2(x & -x);
+ }
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index c507767..dae96fb 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -152,7 +152,7 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
+ 		flags |= 0x10000000; /* enable relaxed ordering */
  
-+	sparse_init();
-+
- 	setup_node_to_cpumask_map();
+ 	for (i = 0; size > 0; i++) {
+-		unsigned int bits = min(ilog2(size),
++		unsigned int bits = min_t(u32, ilog2(size),
+ 					__ffs(pci_addr | phys_addr));
  
- 	reset_numa_cpu_lookup_table();
+ 		if (index + i >= 5)
 -- 
 1.9.1
