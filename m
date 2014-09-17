@@ -1,39 +1,31 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D18281A0B7B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 04:52:32 +1000 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 17 Sep 2014 12:52:31 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A5A7619D803D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 12:52:14 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8HIqSxw44630196
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 20:52:28 +0200
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8HIqQTo006936
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 12:52:27 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
- Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 10/10] powerpc/perf/hv-24x7: Document sysfs event
- description entries
-Date: Wed, 17 Sep 2014 11:52:03 -0700
-Message-Id: <1410979923-7722-11-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1410979923-7722-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1410979923-7722-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- dev@codyps.com, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84A5D1A1B60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 05:01:40 +1000 (EST)
+Date: Wed, 17 Sep 2014 12:00:48 -0700
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 04/11] drivers: base: support cpu cache information
+ interface to userspace via sysfs
+Message-ID: <20140917190048.GA4063@kroah.com>
+References: <1409763617-17074-1-git-send-email-sudeep.holla@arm.com>
+ <1409763617-17074-5-git-send-email-sudeep.holla@arm.com>
+ <5419C3F6.4050607@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5419C3F6.4050607@arm.com>
+Cc: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
+ Stephen Boyd <sboyd@codeaurora.org>, LKML <linux-kernel@vger.kernel.org>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,45 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+On Wed, Sep 17, 2014 at 06:25:10PM +0100, Sudeep Holla wrote:
+> Hi Greg,
+> 
+> On 03/09/14 18:00, Sudeep Holla wrote:
+> >From: Sudeep Holla <sudeep.holla@arm.com>
+> >
+> >This patch adds initial support for providing processor cache information
+> >to userspace through sysfs interface. This is based on already existing
+> >implementations(x86, ia64, s390 and powerpc) and hence the interface is
+> >intended to be fully compatible.
+> >
+> >The main purpose of this generic support is to avoid further code
+> >duplication to support new architectures and also to unify all the existing
+> >different implementations.
+> >
+> >This implementation maintains the hierarchy of cache objects which reflects
+> >the system's cache topology. Cache devices are instantiated as needed as
+> >CPUs come online. The cache information is replicated per-cpu even if they are
+> >shared. A per-cpu array of cache information maintained is used mainly for
+> >sysfs-related book keeping.
+> >
+> >It also implements the shared_cpu_map attribute, which is essential for
+> >enabling both kernel and user-space to discover the system's overall cache
+> >topology.
+> >
+> >This patch also add the missing ABI documentation for the cacheinfo sysfs
+> >interface already, which is well defined and widely used.
+> >
+> 
+> Can you review the first 4 patches in this series please ?
 
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
----
- .../testing/sysfs-bus-event_source-devices-hv_24x7 |   22 ++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+It's in my todo queue, which is really long at the moment due to me
+going to conferences (at one right now...)  Will be working on this
+soon, thanks for your patience.
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-index e78ee79..5b501d7 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-@@ -21,3 +21,25 @@ Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
- Description:
- 		Exposes the "version" field of the 24x7 catalog. This is also
- 		extractable from the provided binary "catalog" sysfs entry.
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/event_descs/<event-name>
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		Provides the description of a particular event as provided by
-+		the firmware. If firmware does not provide a description, no
-+		file will be created.
-+
-+		Note that the event-name lacks the domain suffix appended for
-+		events in the events/ dir.
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/event_long_descs/<event-name>
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		Provides the "long" description of a particular event as
-+		provided by the firmware. If firmware does not provide a
-+		description, no file will be created.
-+
-+		Note that the event-name lacks the domain suffix appended for
-+		events in the events/ dir.
--- 
-1.7.9.5
+greg k-h
