@@ -1,25 +1,21 @@
-Return-Path: <Shawn.Guo@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0131.outbound.protection.outlook.com [65.55.169.131])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 574A51A0076
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:07:22 +1000 (EST)
-Date: Wed, 17 Sep 2014 09:32:52 +0800
-From: Shawn Guo <shawn.guo@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_spdif: don't change the root clock rate of
- spdif in driver
-Message-ID: <20140917013251.GA4796@dragon>
-References: <1410867994-32138-1-git-send-email-shengjiu.wang@freescale.com>
- <20140916180028.GA6784@Asurada>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140916180028.GA6784@Asurada>
-Cc: Shengjiu Wang <shengjiu.wang@freescale.com>, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, tiwai@suse.de, linux-kernel@vger.kernel.org,
- broonie@kernel.org, timur@tabi.org, perex@perex.cz, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9C7E1A00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:31:06 +1000 (EST)
+Message-ID: <1410924666.1586.2.camel@concordia>
+Subject: Re: [PATCH 1/4] powerpc: Make a bunch of things static
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 13:31:06 +1000
+In-Reply-To: <54183371.7020901@linux.vnet.ibm.com>
+References: <1408488921-19187-1-git-send-email-anton@samba.org>
+ <54183371.7020901@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 16, 2014 at 11:19:28AM -0700, Nicolin Chen wrote:
-> On Tue, Sep 16, 2014 at 07:46:34PM +0800, Shengjiu Wang wrote:
-> > The spdif root clock may be used by other module or defined with
-> > CLK_SET_RATE_GATE, so we can't change the clock rate in driver.
-> > In this patch remove the clk_set_rate and clk_round_rate to protect the
-> > clock.
+On Tue, 2014-09-16 at 07:56 -0500, Nathan Fontenot wrote:
+> On 08/19/2014 05:55 PM, Anton Blanchard wrote:
+> > diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> > index a2450b8..d37ba4f 100644
+> > --- a/arch/powerpc/platforms/pseries/dlpar.c
+> > +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> > @@ -334,7 +334,7 @@ int dlpar_acquire_drc(u32 drc_index)
+> >  	return 0;
+> >  }
+> >  
+> > -int dlpar_release_drc(u32 drc_index)
+> > +static int dlpar_release_drc(u32 drc_index)
+> >  {
+> >  	int dr_status, rc;
 > 
-> It's a quite convenient and conservative way to remove the clock
-> dealing code in the driver, however, it may result less flexible
-> functionalities.
-> 
-> The reason why I left the clk_set_rate() in the driver is to hope
-> we may find a better way to tackle those tough situations. For IP
-> itself, it doesn't matter if the clock the SoC provides to it is
-> being shared by other modules or not.
-> 
-> So I think, if it's a shared clock, we should not define it as a
-> rate-changeable one in the SoC level, as we might still have some
-> SoCs provide a dedicated clock to S/PDIF so as to get the maximum
-> range of clock support for users.
-> 
-> @Shawn
-> Sorry to involve you in this topic. I'm not so sure if we can do
-> this in the clock driver so that the clock rate would be fixed
-> even if the driver is trying to change it. If we can, I think we
-> may use a better solution here instead.
+> Anton, if you're going to do a v2 of these patches you could leave out
+> the routines in dlpar.c. I just sent a patch out that exports these two
+> functions for memory hotplug updates.
 
-No, we do not have anything like that today.
+Yep I've dropped those hunks in my tree.
 
-Shawn
+ps. Please trim your replies :)
+
+cheers
