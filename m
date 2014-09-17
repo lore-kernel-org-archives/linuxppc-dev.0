@@ -1,22 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Gang.Liu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0146.outbound.protection.outlook.com [65.55.169.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DBB8B1A00FF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:38:30 +1000 (EST)
-Message-ID: <1410925110.1586.3.camel@concordia>
-Subject: Re: [RFC PATCH] powerpc/numa: add ability to disable and debug
- topology updates
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 13:38:30 +1000
-In-Reply-To: <20140915235455.GB5238@linux.vnet.ibm.com>
-References: <20140909200913.GG22906@linux.vnet.ibm.com>
- <1410757536.32643.1.camel@concordia>
- <20140915235455.GB5238@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 784611A01A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 13:52:54 +1000 (EST)
+From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
+To: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH] fsl-rio: add support for mapping inbound windows
+Date: Wed, 17 Sep 2014 03:37:04 +0000
+Message-ID: <ceb96583f1a64e5d99326b1c391a4cbe@CY1PR0301MB0666.namprd03.prod.outlook.com>
+References: <1407246752-21639-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+ <1407274663.7427.7.camel@snotra.buserror.net>
+ <53E9D4C0.5030203@prodrive-technologies.com>
+In-Reply-To: <53E9D4C0.5030203@prodrive-technologies.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "Alexandre.Bounine@idt.com" <Alexandre.Bounine@idt.com>,
+ "Barry.Wood@idt.com" <Barry.Wood@idt.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "stef.van.os@prodrive-technologies.com"
+ <stef.van.os@prodrive-technologies.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-15 at 16:54 -0700, Nishanth Aravamudan wrote:
-> On 15.09.2014 [15:05:36 +1000], Michael Ellerman wrote:
-> > On Tue, 2014-09-09 at 13:09 -0700, Nishanth Aravamudan wrote:
-> 
-> > Does it really need to be a boot param, or could it be a debugfs or
-> > sysctl flag? ie. do we need to disable it immediately at boot or would
-> > it be OK if it was /etc/rc.local or similar that turned it off ?
-> 
-> We need it off at boot, potentially. An LPAR does not indicate that it
-> will or will not respond to the events in any synchronous fashion, so
-> the hypervisor is free to send them to us whenever.
-
-OK. I guess we're stuck with a boot time parameter for on/off then.
-
-> > As far as the debug goes, we could just use pr_debug() with
-> > CONFIG_DYNAMIC_DEBUG, it's not quite as easy to enable as a kernel
-> > parameter but for the odd bit of debugging it should be fine.
-> 
-> That's a good point, I wonder with that mechanism if we should perhaps
-> extend/remove other static debugging methods in favor of that (e.g.,
-> numa=debug)?
-
-Yes definitely.
-
-It's slightly more arcane to enable, ie. to turn on dynamic debugging in numa.c
-at boot your command line needs:
-
-  dyndbg="file numa.c +p"
-
-But that's fine unless it's an option you expect users to be using regularly
-which none of these are.
-
-cheers
+SXQgbG9va3MgZ29vZCBmb3IgbWUuDQoNCkxpdSBHYW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogTWFydGlqbiBkZSBHb3V3IFttYWlsdG86bWFydGlqbi5kZS5nb3V3
+QHByb2RyaXZlLXRlY2hub2xvZ2llcy5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAxMiwg
+MjAxNCA0OjQ4IFBNDQo+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogbGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmc7IEFsZXhhbmRyZS5Cb3VuaW5lQGlkdC5jb207DQo+IHN0ZWYudmFu
+Lm9zQHByb2RyaXZlLXRlY2hub2xvZ2llcy5jb207IEJhcnJ5Lldvb2RAaWR0LmNvbTsgTGl1IEdh
+bmctDQo+IEIzNDE4Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBmc2wtcmlvOiBhZGQgc3VwcG9y
+dCBmb3IgbWFwcGluZyBpbmJvdW5kIHdpbmRvd3MNCj4gDQo+IE9uIDA4LzA1LzIwMTQgMTE6Mzcg
+UE0sIFNjb3R0IFdvb2Qgd3JvdGU6DQo+ID4gT24gVHVlLCAyMDE0LTA4LTA1IGF0IDE1OjUyICsw
+MjAwLCBNYXJ0aWpuIGRlIEdvdXcgd3JvdGU6DQo+ID4+IEFkZCBzdXBwb3J0IGZvciBtYXBwaW5n
+IGFuZCB1bm1hcHBpbmcgb2YgaW5ib3VuZCByYXBpZGlvIHdpbmRvd3MuDQo+ID4+DQo+ID4+IFNp
+Z25lZC1vZmYtYnk6IE1hcnRpam4gZGUgR291dw0KPiA+PiA8bWFydGlqbi5kZS5nb3V3QHByb2Ry
+aXZlLXRlY2hub2xvZ2llcy5jb20+DQo+ID4NCj4gPiBDb3VsZCB5b3UgZWxhYm9yYXRlIGluIHRo
+ZSBjaGFuZ2Vsb2cgb24gd2hhdCB0aGlzIGZpeGVzIG9yIG1ha2VzDQo+ID4gcG9zc2libGU/ICBF
+LmcuIGRpZCB0aGUgZHJpdmVyIHByZXZpb3VzbHkgbm90IHN1cHBvcnQgaW5ib3VuZA0KPiA+IHRy
+YW5zYWN0aW9ucyBhdCBhbGwsIG9yIGRpZCBpdCBhc3N1bWUgdGhlIHdpbmRvdyB3YXMgc2V0IHVw
+IGJ5IGENCj4gPiBib290bG9hZGVyPw0KPiANCj4gU29tZXRoaW5nIGxpa2U6DQo+IA0KPiBmc2wt
+cmlvOiBhZGQgc3VwcG9ydCBmb3IgbWFwcGluZyBpbmJvdW5kIHdpbmRvd3MNCj4gDQo+ICAgICAg
+QWRkIHN1cHBvcnQgZm9yIG1hcHBpbmcgYW5kIHVubWFwcGluZyBvZiBpbmJvdW5kIHJhcGlkaW8g
+d2luZG93cy4NCj4gICAgICBUaGlzIGFsbG93cyBmb3IgZHJpdmVycyB0byBvcGVuIHVwIGEgcGFy
+dCBvZiBsb2NhbCBtZW1vcnkgb24gdGhlDQo+ICAgICAgcmFwaWRpbyBuZXR3b3JrLiBBbHNvIGFw
+cGxpY2F0aW9ucyBjYW4gdXNlIHRoaXMgYW5kIHRyYW5mZXIgYmxvY2tzDQo+ICAgICAgb2YgZGF0
+YSBvdmVyIHRoZSBuZXR3b3JrLg0KPiANCj4gPg0KPiA+IExpdSBHYW5nLCBjb3VsZCB5b3UgcmV2
+aWV3IHRoaXM/DQo+IA0KPiBJJ2xsIHdhaXQgZm9yIHRoZSByZXZpZXcgYmVmb3JlIEkgcG9zdCBh
+IG5ldyB2ZXJzaW9uLg0KPiANCj4gR3IsIE1hcnRpam4NCj4gDQo+IA0KPiAtLQ0KPiBNYXJ0aWpu
+IGRlIEdvdXcNCj4gRW5naW5lZXINCj4gUHJvZHJpdmUgVGVjaG5vbG9naWVzIEIuVi4NCj4gTW9i
+aWxlOiArMzEgNjMgMTcgNzYgMTYxDQo+IFBob25lOiAgKzMxIDQwIDI2IDc2IDIwMA0K
