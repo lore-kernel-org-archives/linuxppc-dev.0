@@ -1,18 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A987B1A0932
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 22:15:45 +1000 (EST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Emilian.Medve@Freescale.com
-Subject: [PATCH 5/5] powerpc: make __ffs return unsigned long
-Date: Wed, 17 Sep 2014 22:15:37 +1000
-Message-Id: <1410956137-4824-5-git-send-email-anton@samba.org>
-In-Reply-To: <1410956137-4824-1-git-send-email-anton@samba.org>
-References: <1410956137-4824-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
+ by lists.ozlabs.org (Postfix) with ESMTP id 99D111A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 01:26:03 +1000 (EST)
+Date: Wed, 17 Sep 2014 17:25:58 +0200
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Alexander Gordeev <agordeev@redhat.com>
+Subject: Re: [PATCH v2 0/3] PCI/MSI: Remove arch_msi_check_device()
+Message-ID: <20140917172558.5847e16f@free-electrons.com>
+In-Reply-To: <cover.1410078503.git.agordeev@redhat.com>
+References: <cover.1410078503.git.agordeev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Lior Amsalem <alior@marvell.com>, Jason Cooper <jason@lakedaemon.net>,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Nadav Haklai <nadavh@marvell.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Gregory =?UTF-8?B?Q2zDqW1lbnQ=?= <gregory.clement@free-electrons.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm seeing a build warning in mm/nobootmem.c after removing
-bootmem:
+Dear Alexander Gordeev,
 
-mm/nobootmem.c: In function '__free_pages_memory':
-include/linux/kernel.h:713:17: warning: comparison of distinct pointer types lacks a cast [enabled by default]
-  (void) (&_min1 == &_min2);  \
-                 ^
-mm/nobootmem.c:90:11: note: in expansion of macro 'min'
-   order = min(MAX_ORDER - 1UL, __ffs(start));
-           ^
+On Sun,  7 Sep 2014 20:57:52 +0200, Alexander Gordeev wrote:
 
-The rest of the worlds seems to define __ffs as returning unsigned long,
-so lets do that.
+> Alexander Gordeev (3):
+>   patch 1 - PCI/MSI/PPC: Remove arch_msi_check_device()
+>   patch 2 - PCI/MSI/Armada-370-xp: Remove arch_msi_check_device()
+>   patch 3 - PCI/MSI: Remove arch_msi_check_device()
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Tested-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- arch/powerpc/include/asm/bitops.h | 2 +-
- arch/powerpc/sysdev/fsl_pci.c     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+For the entire series:
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index bd3bd57..c633f05 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -213,7 +213,7 @@ static __inline__ unsigned long ffz(unsigned long x)
- 	return __ilog2(x & -x);
- }
- 
--static __inline__ int __ffs(unsigned long x)
-+static __inline__ unsigned long __ffs(unsigned long x)
- {
- 	return __ilog2(x & -x);
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index c507767..dae96fb 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -152,7 +152,7 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
- 		flags |= 0x10000000; /* enable relaxed ordering */
- 
- 	for (i = 0; size > 0; i++) {
--		unsigned int bits = min(ilog2(size),
-+		unsigned int bits = min_t(u32, ilog2(size),
- 					__ffs(pci_addr | phys_addr));
- 
- 		if (index + i >= 5)
+Tested-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+
+I tested on the Armada XP GP platform, which is particularly affected
+by PATCH 2/3, as it is using the irq-armada-370-xp irqchip driver. I
+tested with an igb PCIe NIC that supports MSI and MSI-X, and I verified
+that MSI-X is still rejected (since we don't support it on Armada XP,
+at least for now), and that MSI is accepted and actually works.
+
+Thanks for doing this, and sorry for the delay in getting the patches
+tested!
+
+Best regards,
+
+Thomas
 -- 
-1.9.1
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
