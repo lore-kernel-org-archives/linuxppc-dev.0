@@ -2,14 +2,16 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9440B1A0A31
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:06 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0C451A0A62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:07 +1000 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  rostedt@goodmis.org
-Subject: [PATCH 1/3] powerpc: Remove -mno-sched-epilog workaround
-Date: Wed, 17 Sep 2014 17:07:02 +1000
-Message-Id: <1410937624-25140-1-git-send-email-anton@samba.org>
+Subject: [PATCH 2/3] powerpc/ftrace: Remove mod_return_to_handler
+Date: Wed, 17 Sep 2014 17:07:03 +1000
+Message-Id: <1410937624-25140-2-git-send-email-anton@samba.org>
+In-Reply-To: <1410937624-25140-1-git-send-email-anton@samba.org>
+References: <1410937624-25140-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,74 +22,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We added -mno-sched-epilog in commit 7563dc645853 (powerpc:
-Work around gcc's -fno-omit-frame-pointer bug).
-
-We shouldn't apply -fno-omit-frame-pointer on powerpc any more (it's
-protected by CONFIG_FRAME_POINTER and CONFIG_SCHED_OMIT_FRAME_POINTER).
-
-It's also an undocumented gcc option, so lets remove it.
+mod_return_to_handler is the same as return_to_handler, except
+it handles the change of the TOC (r2). Add this into
+return_to_handler and remove mod_return_to_handler.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/Makefile                    |  5 -----
- arch/powerpc/kernel/Makefile             | 12 ++++++------
- arch/powerpc/platforms/powermac/Makefile |  2 +-
- 3 files changed, 7 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/entry_64.S | 24 +-----------------------
+ arch/powerpc/kernel/ftrace.c   | 14 ++------------
+ arch/powerpc/kernel/process.c  |  9 +--------
+ 3 files changed, 4 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 132d9c6..c6f64e2 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -198,11 +198,6 @@ ifeq ($(CONFIG_6xx),y)
- KBUILD_CFLAGS		+= -mcpu=powerpc
- endif
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 5bbd1bc..955d509 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -1235,28 +1235,6 @@ _GLOBAL(ftrace_graph_caller)
  
--# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
--ifeq ($(CONFIG_FUNCTION_TRACER),y)
--KBUILD_CFLAGS		+= -mno-sched-epilog
--endif
+ _GLOBAL(return_to_handler)
+ 	/* need to save return values */
+-	std	r4,  -24(r1)
+-	std	r3,  -16(r1)
+-	std	r31, -8(r1)
+-	mr	r31, r1
+-	stdu	r1, -112(r1)
 -
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_ALTIVEC)	+= -Wa,-maltivec
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 502cf69..e14bda6 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -17,14 +17,14 @@ endif
+-	bl	ftrace_return_to_handler
+-	nop
+-
+-	/* return value has real return address */
+-	mtlr	r3
+-
+-	ld	r1, 0(r1)
+-	ld	r4,  -24(r1)
+-	ld	r3,  -16(r1)
+-	ld	r31, -8(r1)
+-
+-	/* Jump back to real return address */
+-	blr
+-
+-_GLOBAL(mod_return_to_handler)
+-	/* need to save return values */
+ 	std	r4,  -32(r1)
+ 	std	r3,  -24(r1)
+ 	/* save TOC */
+@@ -1266,7 +1244,7 @@ _GLOBAL(mod_return_to_handler)
+ 	stdu	r1, -112(r1)
  
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
--CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_cputable.o = -pg
-+CFLAGS_REMOVE_prom_init.o = -pg
-+CFLAGS_REMOVE_btext.o = -pg
-+CFLAGS_REMOVE_prom.o = -pg
- # do not trace tracer code
--CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_ftrace.o = -pg
- # timers used by tracing
--CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_time.o = -pg
- endif
+ 	/*
+-	 * We are in a module using the module's TOC.
++	 * We might be called from a module.
+ 	 * Switch to our TOC to run inside the core kernel.
+ 	 */
+ 	ld	r2, PACATOC(r13)
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 390311c..abf7921 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -510,10 +510,6 @@ int ftrace_disable_ftrace_graph_caller(void)
+ }
+ #endif /* CONFIG_DYNAMIC_FTRACE */
  
- obj-y				:= cputable.o ptrace.o syscalls.o \
-diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-index 52c6ce1..e238872 100644
---- a/arch/powerpc/platforms/powermac/Makefile
-+++ b/arch/powerpc/platforms/powermac/Makefile
-@@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
+-#ifdef CONFIG_PPC64
+-extern void mod_return_to_handler(void);
+-#endif
+-
+ /*
+  * Hook the return address and push it in the stack of return addrs
+  * in current thread info.
+@@ -523,7 +519,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 	unsigned long old;
+ 	int faulted;
+ 	struct ftrace_graph_ent trace;
+-	unsigned long return_hooker = (unsigned long)&return_to_handler;
++	unsigned long return_hooker;
  
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
--CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_bootx_init.o = -pg
- endif
+ 	if (unlikely(ftrace_graph_is_dead()))
+ 		return;
+@@ -531,13 +527,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+ 		return;
  
- obj-y				+= pic.o setup.o time.o feature.o pci.o \
+-#ifdef CONFIG_PPC64
+-	/* non core kernel code needs to save and restore the TOC */
+-	if (REGION_ID(self_addr) != KERNEL_REGION_ID)
+-		return_hooker = (unsigned long)&mod_return_to_handler;
+-#endif
+-
+-	return_hooker = ppc_function_entry((void *)return_hooker);
++	return_hooker = ppc_function_entry(return_to_handler);
+ 
+ 	/*
+ 	 * Protect against fault, even if it shouldn't
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index aa1df89..080c0b9 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1531,13 +1531,6 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 	int curr_frame = current->curr_ret_stack;
+ 	extern void return_to_handler(void);
+ 	unsigned long rth = (unsigned long)return_to_handler;
+-	unsigned long mrth = -1;
+-#ifdef CONFIG_PPC64
+-	extern void mod_return_to_handler(void);
+-	rth = *(unsigned long *)rth;
+-	mrth = (unsigned long)mod_return_to_handler;
+-	mrth = *(unsigned long *)mrth;
+-#endif
+ #endif
+ 
+ 	sp = (unsigned long) stack;
+@@ -1562,7 +1555,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 		if (!firstframe || ip != lr) {
+ 			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-			if ((ip == rth || ip == mrth) && curr_frame >= 0) {
++			if ((ip == rth) && curr_frame >= 0) {
+ 				printk(" (%pS)",
+ 				       (void *)current->ret_stack[curr_frame].ret);
+ 				curr_frame--;
 -- 
 1.9.1
