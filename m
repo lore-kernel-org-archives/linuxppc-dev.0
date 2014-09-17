@@ -1,24 +1,36 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B62851A0027
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 04:31:36 +1000 (EST)
-Date: Wed, 17 Sep 2014 11:30:43 -0700
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@freescale.com>
-Message-ID: <20140917183043.GR7960@sirena.org.uk>
-References: <5dc0f13cdb62904ae0f104f9112faec672adea6f.1410833402.git.shengjiu.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="SorlIzCW0DSU55cr"
-In-Reply-To: <5dc0f13cdb62904ae0f104f9112faec672adea6f.1410833402.git.shengjiu.wang@freescale.com>
-Subject: Re: [PATCH V4] ASoC: fsl_ssi: refine ipg clock usage in this module
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, timur@tabi.org, perex@perex.cz,
- nicoleotsuka@gmail.com, Li.Xiubo@freescale.com, mpa@pengutronix.de,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 942A31A013E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 04:34:23 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 17 Sep 2014 14:34:21 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9DE7E38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:34:18 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8HIYAXf6226216
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 18:34:18 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8HIXi3w027564
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 14:33:45 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
+ Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/4] powerpc/perf: Miscellaneous fixes
+Date: Wed, 17 Sep 2014 11:33:03 -0700
+Message-Id: <1410978787-7375-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
+ Michael Ellerman <michaele@au1.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Miscellaenous fixes for perf and 24x7 counters in powerpc.
 
---SorlIzCW0DSU55cr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Patches 1,3,4 were submitted earlier as a part of the parametrized
+events for 24x7 counters. But they are not directly related to the
+parametrized events.
 
-On Tue, Sep 16, 2014 at 10:13:16AM +0800, Shengjiu Wang wrote:
-> Check if ipg clock is in clock-names property, then we can move the
-> ipg clock enable and disable operation to startup and shutdown, that
-> is only enable ipg clock when ssi is working and keep clock is disabled
-> when ssi is in idle.
-> But when the checking is failed, remain the clock control as before.
+Patch 2 simplifies and fixes a bug in catalog_read() which causes the
+catalog file to not read first page.
 
-Applied, thanks.
+Cody P Schafer (3):
+  powerpc/perf/hv-24x7: use kmem_cache instead of aligned stack
+    allocations
+  perf Documentation: sysfs events/ interfaces
+  perf Documentation: remove duplicated docs for powerpc cpu specific
+    events
 
---SorlIzCW0DSU55cr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Sukadev Bhattiprolu (1):
+  Simplify catalog_read()
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+ .../testing/sysfs-bus-event_source-devices-events  |  611 ++------------------
+ arch/powerpc/perf/hv-24x7.c                        |  144 ++---
+ 2 files changed, 96 insertions(+), 659 deletions(-)
 
-iQEcBAEBAgAGBQJUGdNOAAoJECTWi3JdVIfQMDYH/RwLDNitdtxPsO8VST2UHb0E
-IGx1uWvA+yJTVbJguO5NPuUWasSEgAzjBWPOxhsNNPOeKVut+LM1G633uZmLGlI+
-nqSwjIYmrH1SWBy9Inw0sfJMgcvbZ1i2jfTHb8Fpkc3GgKQb95Hy6nTz+2PqxINu
-x2hrVCpsf/1IjHcE56G47bLpXEHuyfqwRN1XxCbmX4Y8U+avQ/PPUVwW0f14s/Zm
-VMvTZveqoLGg9V53TaCGXv/7JF9StICmZG3rEzmhIG7SXyOfUPwSYNvqaUY03g8L
-Lr/dtHZ419yjLHXJICj4NbV+823G3f4iAPpZYk7+NWGEO/TZV70FzgBb3ziXi3Y=
-=G/8g
------END PGP SIGNATURE-----
-
---SorlIzCW0DSU55cr--
+-- 
+1.7.9.5
