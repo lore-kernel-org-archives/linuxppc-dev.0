@@ -1,19 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEA8A1A0A72
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:07:30 +1000 (EST)
-Message-ID: <1410937650.27681.13.camel@concordia>
-Subject: Re: [5/5] pseries: Implement memory hotplug remove in the kernel
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2014 17:07:30 +1000
-In-Reply-To: <54174D36.4000002@linux.vnet.ibm.com>
-References: <54174D36.4000002@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07ACD1A00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 19:05:50 +1000 (EST)
+Message-ID: <54194B21.6050105@Freescale.com>
+Date: Wed, 17 Sep 2014 03:49:37 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/5] powerpc: Remove superfluous bootmem includes
+References: <1410933504-28564-1-git-send-email-anton@samba.org>
+ <1410933504-28564-3-git-send-email-anton@samba.org>
+In-Reply-To: <1410933504-28564-3-git-send-email-anton@samba.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello Anton,
 
-On Mon, 2014-09-15 at 15:33 -0500, Nathan Fontenot wrote:
-> This patch adds the ability to do memory hotplug remove in the kernel.
+
+On 09/17/2014 12:58 AM, Anton Blanchard wrote:
+> Lots of places included bootmem.h even when not using bootmem.
 > 
-> Currently the hotplug add/remove of memory is handled by the drmgr
-> command. The drmgr command performs the add/remove by performing
-> some work in user-space and making requests to the kernel to handle
-> other pieces. By moving all of the work to the kernel we can do the
-> add and remove faster, and provide a common place to do memory hotplug
-> for both the PowerVM and PowerKVM environments.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c |  140 +++++++++++++++++++++++
->  1 file changed, 139 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index b254773..160c424 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -193,7 +193,137 @@ static int pseries_remove_mem_node(struct device_node *np)
->  	pseries_remove_memblock(base, lmb_size);
->  	return 0;
->  }
-> +
-> +static int lmb_is_removable(struct of_drconf_cell *lmb)
-> +{
+>  arch/powerpc/kernel/crash_dump.c               | 1 -
+>  arch/powerpc/kernel/irq.c                      | 1 -
+>  arch/powerpc/kernel/pci_64.c                   | 1 -
+>  arch/powerpc/kernel/rtas_pci.c                 | 1 -
+>  arch/powerpc/kernel/setup_32.c                 | 1 -
+>  arch/powerpc/kernel/vdso.c                     | 1 -
+>  arch/powerpc/kvm/book3s_hv_builtin.c           | 1 -
+>  arch/powerpc/mm/init_32.c                      | 1 -
+>  arch/powerpc/mm/init_64.c                      | 1 -
+>  arch/powerpc/mm/pgtable_64.c                   | 1 -
+>  arch/powerpc/platforms/cell/celleb_scc_epci.c  | 1 -
+>  arch/powerpc/platforms/cell/celleb_scc_pciex.c | 1 -
+>  arch/powerpc/platforms/maple/pci.c             | 1 -
+>  arch/powerpc/platforms/powermac/pci.c          | 1 -
+>  arch/powerpc/platforms/powernv/eeh-ioda.c      | 1 -
+>  arch/powerpc/platforms/powernv/pci.c           | 1 -
+>  arch/powerpc/sysdev/fsl_msi.c                  | 1 -
+>  arch/powerpc/sysdev/ipic.c                     | 1 -
+>  arch/powerpc/sysdev/mpic.c                     | 1 -
+>  arch/powerpc/sysdev/mpic_pasemi_msi.c          | 1 -
+>  arch/powerpc/sysdev/mpic_u3msi.c               | 1 -
+>  arch/powerpc/sysdev/ppc4xx_msi.c               | 1 -
+>  arch/powerpc/sysdev/ppc4xx_pci.c               | 1 -
+>  arch/powerpc/sysdev/qe_lib/qe.c                | 1 -
+>  arch/powerpc/sysdev/qe_lib/qe_ic.c             | 1 -
+>  arch/powerpc/sysdev/uic.c                      | 1 -
+>  26 files changed, 26 deletions(-)
+> ...
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index aa91737..feed47c 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -33,7 +33,6 @@
+>  #include <linux/swap.h>
+>  #include <linux/stddef.h>
+>  #include <linux/vmalloc.h>
+> -#include <linux/bootmem.h>
+>  #include <linux/memblock.h>
+>  #include <linux/slab.h>
 
-Do we not already have something like this?
+While building corenet64_smp I get this:
 
-> +	int i, scns_per_block;
-> +	int rc = 1;
+> ../arch/powerpc/mm/pgtable_64.c: In function 'early_alloc_pgtable':
+> ../arch/powerpc/mm/pgtable_64.c:77:95: error: 'MAX_DMA_ADDRESS' undeclared (first use in this function)
+> ../arch/powerpc/mm/pgtable_64.c:77:95: note: each undeclared identifier is reported only once for each function it appears in
 
-I can see this makes the &= work below.
+Adding '#include <asm/dma.h>' seems to fix it
 
-But what if block_sz / MIN_MEMORY_BLOCK_SIZE = 0 ?
+Other than that, for the entire set:
 
-> +	unsigned long pfn, block_sz;
-> +	u64 phys_addr;
-> +
-> +	phys_addr = be64_to_cpu(lmb->base_addr);
-> +	block_sz = memory_block_size_bytes();
-> +	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
-> +
-> +	for (i = 0; i < scns_per_block; i++) {
-> +		pfn = PFN_DOWN(phys_addr);
-> +		if (!pfn_present(pfn))
-> +			continue;
-> +
-> +		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
-> +		phys_addr += MIN_MEMORY_BLOCK_SIZE;
-> +	}
-> +
-> +	return rc;
-> +}
+Tested-by: Emil Medve <Emilian.Medve@Freescale.com>
 
-> +static int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
-> +{
 
-...
-
-> +}
-
-Most of the same comments as for add.
-
-cheers
+Cheers,
