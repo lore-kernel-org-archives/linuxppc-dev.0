@@ -1,18 +1,18 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F1FB1A0709
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 15:58:32 +1000 (EST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH 5/5] powerpc: make __ffs return unsigned long
-Date: Wed, 17 Sep 2014 15:58:24 +1000
-Message-Id: <1410933504-28564-5-git-send-email-anton@samba.org>
-In-Reply-To: <1410933504-28564-1-git-send-email-anton@samba.org>
-References: <1410933504-28564-1-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AC461A0070
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2014 17:06:59 +1000 (EST)
+Message-ID: <1410937582.27681.9.camel@concordia>
+Subject: Re: [1/5] pseries: Define rtas hotplug event sections
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 17:06:22 +1000
+In-Reply-To: <54174C20.1000009@linux.vnet.ibm.com>
+References: <54174C20.1000009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,51 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm seeing a build warning in mm/nobootmem.c after removing
-bootmem:
 
-mm/nobootmem.c: In function '__free_pages_memory':
-include/linux/kernel.h:713:17: warning: comparison of distinct pointer types lacks a cast [enabled by default]
-  (void) (&_min1 == &_min2);  \
-                 ^
-mm/nobootmem.c:90:11: note: in expansion of macro 'min'
-   order = min(MAX_ORDER - 1UL, __ffs(start));
-           ^
+On Mon, 2014-09-15 at 15:29 -0500, Nathan Fontenot wrote:
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index b390f55..a01879e 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -273,6 +273,7 @@ inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
+>  #define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
+>  #define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
+>  #define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
+> +#define PSERIES_ELOG_SECT_ID_HOTPLUG		(('H' << 8) | 'P')
+>  
+>  /* Vendor specific Platform Event Log Format, Version 6, section header */
+>  struct pseries_errorlog {
+> @@ -296,6 +297,31 @@ inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
+>  	return be16_to_cpu(sect->length);
+>  }
+>  
+> +/* RTAS pseries hotplug errorlog section */
+> +struct pseries_hp_errorlog {
+> +	uint8_t	resource;
+> +	uint8_t	action;
+> +	uint8_t	id_type;
+> +	uint8_t	reserved;
 
-The rest of the worlds seems to define __ffs as returning unsigned long,
-so lets do that.
+These should be u8.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/bitops.h | 2 +-
- arch/powerpc/sysdev/fsl_pci.c     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> +	union {
+> +		__be32	drc_index;
+> +		__be32	drc_count;
+> +		char	drc_name[1];
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index bd3bd57..c633f05 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -213,7 +213,7 @@ static __inline__ unsigned long ffz(unsigned long x)
- 	return __ilog2(x & -x);
- }
- 
--static __inline__ int __ffs(unsigned long x)
-+static __inline__ unsigned long __ffs(unsigned long x)
- {
- 	return __ilog2(x & -x);
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index c507767..dae96fb 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -152,7 +152,7 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
- 		flags |= 0x10000000; /* enable relaxed ordering */
- 
- 	for (i = 0; size > 0; i++) {
--		unsigned int bits = min(ilog2(size),
-+		unsigned int bits = min_t(u32, ilog2(size),
- 					__ffs(pci_addr | phys_addr));
- 
- 		if (index + i >= 5)
--- 
-1.9.1
+I don't see drc_name used?
+
+> +	} _drc_u;
+> +};
+
+cheers
