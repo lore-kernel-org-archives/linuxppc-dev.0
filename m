@@ -1,25 +1,42 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50])
- by lists.ozlabs.org (Postfix) with ESMTP id 6545B1A0194
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 05:46:46 +1000 (EST)
-Date: Wed, 17 Sep 2014 20:34:52 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Kumar Gala <galak@codeaurora.org>
-Subject: Re: [RFC PATCH] dt:numa: adding numa node mapping for memory nodes.
-Message-ID: <20140917193452.GD7983@leverpostej>
-References: <1410944189-3608-1-git-send-email-ganapatrao.kulkarni@caviumnetworks.com>
- <A4205FCA-D4DE-48A4-B19F-58400A3FBF5C@codeaurora.org>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2EF471A0184
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 05:58:54 +1000 (EST)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 743FD140180
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2014 05:58:53 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 17 Sep 2014 13:58:51 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id BD163C90045
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 15:58:38 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8HJwlIq56950886
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 19:58:47 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8HJwkOr018248
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2014 15:58:46 -0400
+Message-ID: <5419E7F5.2040000@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2014 14:58:45 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [5/5] pseries: Implement memory hotplug remove in the kernel
+References: <54174D36.4000002@linux.vnet.ibm.com>
+ <1410937650.27681.13.camel@concordia>
+In-Reply-To: <1410937650.27681.13.camel@concordia>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <A4205FCA-D4DE-48A4-B19F-58400A3FBF5C@codeaurora.org>
-Cc: "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
- Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Rob Herring <robh+dt@kernel.org>,
- Ganapatrao Kulkarni <ganapatrao.kulkarni@caviumnetworks.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "gpkulkarni@gmail.com" <gpkulkarni@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,113 +46,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 17, 2014 at 04:37:30PM +0100, Kumar Gala wrote:
+On 09/17/2014 02:07 AM, Michael Ellerman wrote:
 > 
-> On Sep 17, 2014, at 1:56 AM, Ganapatrao Kulkarni <ganapatrao.kulkarni@caviumnetworks.com> wrote:
+> On Mon, 2014-09-15 at 15:33 -0500, Nathan Fontenot wrote:
+>> This patch adds the ability to do memory hotplug remove in the kernel.
+>>
+>> Currently the hotplug add/remove of memory is handled by the drmgr
+>> command. The drmgr command performs the add/remove by performing
+>> some work in user-space and making requests to the kernel to handle
+>> other pieces. By moving all of the work to the kernel we can do the
+>> add and remove faster, and provide a common place to do memory hotplug
+>> for both the PowerVM and PowerKVM environments.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/hotplug-memory.c |  140 +++++++++++++++++++++++
+>>  1 file changed, 139 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index b254773..160c424 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -193,7 +193,137 @@ static int pseries_remove_mem_node(struct device_node *np)
+>>  	pseries_remove_memblock(base, lmb_size);
+>>  	return 0;
+>>  }
+>> +
+>> +static int lmb_is_removable(struct of_drconf_cell *lmb)
+>> +{
 > 
-> > From: Ganapatrao Kulkarni <ganapatrao.kulkarni@cavium.com>
-> > 
-> > This patch adds property "nid" to memory node to provide the memory range to
-> > numa node id mapping.
-> > 
-> > Signed-off-by: Ganapatrao Kulkarni <ganapatrao.kulkarni@cavium.com>
-> > 
-> > —
+> Do we not already have something like this?
+
+No. Perhaps your thinking of the code in drivers/base/memory.c that
+handles the sysfs removable file. That code just calls the same
+is_mem_section_removable() routine.
+
 > 
-> Adding the PPC guys as they’ve been doing NUMA on IBM Power Servers
-> for years with OF/DT.  So we should really try and follow what they’ve
-> done.
-
-Agreed.
-
-> > Documentation/devicetree/bindings/numa.txt | 58 ++++++++++++++++++++++++++++++
-> > 1 file changed, 58 insertions(+)
-> > create mode 100644 Documentation/devicetree/bindings/numa.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/numa.txt b/Documentation/devicetree/bindings/numa.txt
-> > new file mode 100644
-> > index 0000000..c4a94f2
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/numa.txt
-> > @@ -0,0 +1,58 @@
-> > +======================================================
-> > +numa id binding description
-> > +======================================================
-> > +
-> > +======================================================
-> > +1 - Introduction
-> > +======================================================
-> > +The device node  property "nid(numa node id)" can be added to memory
-
-Why the quotes?
-
-> > +device node to map the range of memory addresses as defined in property "reg".
-> > +The property "nid" maps the memory range to the numa node id, which is used to
-> > +find the local and remory pages on numa aware systems.
-
-What is a "numa node id", exactly, and how is the OS intended to use it?
-
-I don't see how this can be of any use as-is.
-
-Mark.
-
-> > +
-> > +======================================================
-> > +2 - nid property
-> > +======================================================
-> > +Numa node id, "nid" is required property of memory device node for 
-> > +numa enabled platforms.
-> > +
-> > +|------------------------------------------------------|
-> > +|Property Type  | Usage | Value Type | Definition      |
-> > +|------------------------------------------------------|
-> > +|  nid          |  R    |    <u32>   | Numa Node id    |
-> > +|               |       |            | for this memory |
-> > +|------------------------------------------------------|
-> > +
-> > +========================================================
-> > +4 - Example memory nodes with numa node id mapping
-> > +========================================================
-> > +
-> > +Example 1 (2 memory nodes, each mapped to a numa node.):
-> > +
-> > +	memory@00000000 {
-> > +		device_type = "memory";
-> > +		reg = <0x0 0x00000000 0x0 0x80000000>;
-> > +		nid = <0x0>;
-> > +	};
-> > +
-> > +	memory@10000000000 {
-> > +		device_type = "memory";
-> > +		reg = <0x100 0x00000000 0x0 0x80000000>;
-> > +		nid = <0x1>;
-> > +	};
-> > +
-> > +Example 2 (multiple memory ranges in each memory node and mapped to numa node):
-> > +
-> > +	memory@00000000 {
-> > +		device_type = "memory";
-> > +		reg = <0x0 0x00000000 0x0 0x80000000>,
-> > +		      <0x0 0x80000000 0x0 0x80000000>;
-> > +		nid = <0x0>;
-> > +	};
-> > +
-> > +	memory@10000000000 {
-> > +		device_type = "memory";
-> > +		reg = <0x100 0x00000000 0x0 0x80000000>,
-> > +		      <0x100 0x80000000 0x0 0x80000000>;
-> > +		nid = <0x1>;
-> > +	};
-> > -- 
-> > 1.8.1.4
-> > 
+>> +	int i, scns_per_block;
+>> +	int rc = 1;
 > 
-> -- 
-> Employee of Qualcomm Innovation Center, Inc.
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+> I can see this makes the &= work below.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> But what if block_sz / MIN_MEMORY_BLOCK_SIZE = 0 ?
+
+If that happens, something else is really wrong. Most
+likely a malformed device tree.
+
+For pseries MIN_MEMORY_BLOCK_SIZE is defined to be the smallest
+LMB size we suppport, 16MB.
+
+I can add a pr_warn() statement here and bail if that happens.
+
 > 
+>> +	unsigned long pfn, block_sz;
+>> +	u64 phys_addr;
+>> +
+>> +	phys_addr = be64_to_cpu(lmb->base_addr);
+>> +	block_sz = memory_block_size_bytes();
+>> +	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+>> +
+>> +	for (i = 0; i < scns_per_block; i++) {
+>> +		pfn = PFN_DOWN(phys_addr);
+>> +		if (!pfn_present(pfn))
+>> +			continue;
+>> +
+>> +		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
+>> +		phys_addr += MIN_MEMORY_BLOCK_SIZE;
+>> +	}
+>> +
+>> +	return rc;
+>> +}
+> 
+>> +static int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
+>> +{
+> 
+> ...
+> 
+>> +}
+> 
+> Most of the same comments as for add.
+> 
+
+ok, I'll go through them and apply them to the remove code.
+
+Thanks for the review.
+
+-Nathan
