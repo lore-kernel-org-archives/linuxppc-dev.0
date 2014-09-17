@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id C25CE1A0953
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:20 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 7EC861A0919
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:21 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 13/21] powerpc/8xx: Use PAGE size related consts
-Message-Id: <20140917163659.AC8AF1AB03E@localhost.localdomain>
-Date: Wed, 17 Sep 2014 18:36:59 +0200 (CEST)
+Subject: [PATCH v3 10/21] powerpc/8xx: Duplicate two insns instead of branching
+Message-Id: <20140917163658.A53861AB039@localhost.localdomain>
+Date: Wed, 17 Sep 2014 18:36:58 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,8 +19,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PAGE size related operations, use PAGE size consts in order to be able to
-use different page size in the futur.
+Branching takes two cycles on MPC8xx. Lets duplicate the two instructions
+and avoid the branching.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -31,105 +31,26 @@ Changes in v2:
 Changes in v3:
 - None
 
- arch/powerpc/kernel/head_8xx.S |   30 ++++++++++++++++++------------
- 1 files changed, 18 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 0f571f5..dcaee9f 100644
+index 5037420..4a49ff3 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -292,9 +292,9 @@ InstructionTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU15
--	addi	r11, r10, 0x1000
-+	addi	r11, r10, PAGE_SIZE
- 	tlbie	r11
--	addi	r11, r10, -0x1000
-+	addi	r11, r10, -PAGE_SIZE
- 	tlbie	r11
+@@ -638,9 +638,11 @@ modified_instr:
+ 
+ 	/* special handling for r10,r11 since these are modified already */
+ 153:	mfspr	r11, SPRN_SPRG_SCRATCH1	/* load r11 from SPRN_SPRG_SCRATCH1 */
+-	b	155f
++	add	r10, r10, r11	/* add it */
++	mfctr	r11		/* restore r11 */
++	b	151b
+ 154:	mfspr	r11, SPRN_SPRG_SCRATCH0	/* load r10 from SPRN_SPRG_SCRATCH0 */
+-155:	add	r10, r10, r11	/* add it */
++	add	r10, r10, r11	/* add it */
+ 	mfctr	r11		/* restore r11 */
+ 	b	151b
  #endif
- 
-@@ -313,7 +313,8 @@ InstructionTLBMiss:
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
- #endif
--	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-@@ -325,7 +326,8 @@ InstructionTLBMiss:
- 	DO_8xx_CPU6(0x2b80, r3)
- 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	/* Extract level 2 index */
-+	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r10, r10, r11	/* Get the pte */
- 
- #ifdef CONFIG_SWAP
-@@ -385,7 +387,8 @@ DataStoreTLBMiss:
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
--	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-@@ -394,8 +397,8 @@ DataStoreTLBMiss:
- 	 */
- 	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
- 	/* Extract level 2 index */
--	rlwinm	r10, r10, 22, 20, 29
--	rlwimi	r10, r11, 0, 0, 19	/* Add level 2 base */
-+	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
- 
- 	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
-@@ -526,18 +529,20 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
--3:	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	/* Extract level 2 index */
-+	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r11, r10, r11	/* Get the pte */
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)	/* restore r3 from memory */
- #endif
- 	/* concat physical page address(r11) and page offset(r10) */
- 	mfspr	r10, SPRN_SRR0
--	rlwimi	r11, r10, 0, 20, 31
-+	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
- 	lwz	r11,0(r11)
- /* Check if it really is a dcbx instruction. */
- /* dcbt and dcbtst does not generate DTLB Misses/Errors,
-@@ -913,12 +918,13 @@ set_dec_cpu6:
- 	.globl	sdata
- sdata:
- 	.globl	empty_zero_page
-+	.align	PAGE_SHIFT
- empty_zero_page:
--	.space	4096
-+	.space	PAGE_SIZE
- 
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	4096
-+	.space	PGD_TABLE_SIZE
- 
- /* Room for two PTE table poiners, usually the kernel and current user
-  * pointer to their respective root page table (pgdir).
 -- 
 1.7.1
