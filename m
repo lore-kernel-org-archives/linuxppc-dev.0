@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 7EC861A0919
+ by lists.ozlabs.org (Postfix) with ESMTP id 575D51A0187
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:21 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 10/21] powerpc/8xx: Duplicate two insns instead of branching
-Message-Id: <20140917163658.A53861AB039@localhost.localdomain>
-Date: Wed, 17 Sep 2014 18:36:58 +0200 (CEST)
+Subject: [PATCH v3 14/21] powerpc/8xx: Const for TLB RPN forced value
+Message-Id: <20140917163659.D720F1AB03F@localhost.localdomain>
+Date: Wed, 17 Sep 2014 18:36:59 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,8 +19,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Branching takes two cycles on MPC8xx. Lets duplicate the two instructions
-and avoid the branching.
+Value 0x00f0 is used to force bits in TLB level 2 entry. This value is linked
+to the page size and will vary when we change the page size. Lets define a const
+for it in order to have it at only one place.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -31,26 +32,80 @@ Changes in v2:
 Changes in v3:
 - None
 
- arch/powerpc/kernel/head_8xx.S |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 5037420..4a49ff3 100644
+index dcaee9f..8966262 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -638,9 +638,11 @@ modified_instr:
- 
- 	/* special handling for r10,r11 since these are modified already */
- 153:	mfspr	r11, SPRN_SPRG_SCRATCH1	/* load r11 from SPRN_SPRG_SCRATCH1 */
--	b	155f
-+	add	r10, r10, r11	/* add it */
-+	mfctr	r11		/* restore r11 */
-+	b	151b
- 154:	mfspr	r11, SPRN_SPRG_SCRATCH0	/* load r10 from SPRN_SPRG_SCRATCH0 */
--155:	add	r10, r10, r11	/* add it */
-+	add	r10, r10, r11	/* add it */
- 	mfctr	r11		/* restore r11 */
- 	b	151b
+@@ -40,6 +40,13 @@
+ #else
+ #define DO_8xx_CPU6(val, reg)
  #endif
++
++/*
++ * Value for the bits that have fixed value in RPN entries.
++ * Also used for tagging DAR for DTLBerror.
++ */
++#define RPN_PATTERN	0x00f0
++
+ 	__HEAD
+ _ENTRY(_stext);
+ _ENTRY(_start);
+@@ -211,7 +218,7 @@ MachineCheck:
+ 	EXCEPTION_PROLOG
+ 	mfspr r4,SPRN_DAR
+ 	stw r4,_DAR(r11)
+-	li r5,0x00f0
++	li r5,RPN_PATTERN
+ 	mtspr SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+ 	mfspr r5,SPRN_DSISR
+ 	stw r5,_DSISR(r11)
+@@ -237,7 +244,7 @@ Alignment:
+ 	EXCEPTION_PROLOG
+ 	mfspr	r4,SPRN_DAR
+ 	stw	r4,_DAR(r11)
+-	li	r5,0x00f0
++	li	r5,RPN_PATTERN
+ 	mtspr	SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+ 	mfspr	r5,SPRN_DSISR
+ 	stw	r5,_DSISR(r11)
+@@ -341,7 +348,7 @@ InstructionTLBMiss:
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+ 	 */
+-	li	r11, 0x00f0
++	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
+ 	DO_8xx_CPU6(0x2d80, r3)
+ 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+@@ -445,7 +452,7 @@ DataStoreTLBMiss:
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+ 	 */
+-2:	li	r11, 0x00f0
++2:	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+ 	DO_8xx_CPU6(0x3d80, r3)
+ 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+@@ -479,7 +486,7 @@ DataTLBError:
+ 	EXCEPTION_PROLOG_0
+ 
+ 	mfspr	r11, SPRN_DAR
+-	cmpwi	cr0, r11, 0x00f0
++	cmpwi	cr0, r11, RPN_PATTERN
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	EXCEPTION_PROLOG_1
+@@ -488,7 +495,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	stw	r10,_DSISR(r11)
+ 	mr	r5,r10
+ 	mfspr	r4,SPRN_DAR
+-	li	r10,0x00f0
++	li	r10,RPN_PATTERN
+ 	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
+ 	EXC_XFER_LITE(0x1400, handle_page_fault)
+ 
 -- 
 1.7.1
