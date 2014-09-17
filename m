@@ -1,14 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 833201A0933
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:24 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id C99EE1A0181
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 02:37:25 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 06/21] powerpc/8xx: No need to save r10 and r3 when not
- calling FixupDAR
-Message-Id: <20140917163657.EC2DB1AB035@localhost.localdomain>
-Date: Wed, 17 Sep 2014 18:36:57 +0200 (CEST)
+Subject: [PATCH v3 15/21] powerpc/8xx: Implement 16k pages
+Message-Id: <20140917163700.1426D1AB040@localhost.localdomain>
+Date: Wed, 17 Sep 2014 18:37:00 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,8 +19,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-r10 and r3 are only used inside FixupDAR function. So lets save them inside
-that function only.
+This patch activates the handling of 16k pages on the MPC8xx.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -32,90 +30,59 @@ Changes in v2:
 Changes in v3:
 - None
 
- arch/powerpc/kernel/head_8xx.S |   27 +++++++++++++--------------
- 1 files changed, 13 insertions(+), 14 deletions(-)
+ arch/powerpc/Kconfig               |    2 +-
+ arch/powerpc/include/asm/mmu-8xx.h |    2 ++
+ arch/powerpc/kernel/head_8xx.S     |    4 ++++
+ 3 files changed, 7 insertions(+), 1 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5f44d3b..dc5f64e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -518,7 +518,7 @@ config PPC_4K_PAGES
+ 	bool "4k page size"
+ 
+ config PPC_16K_PAGES
+-	bool "16k page size" if 44x
++	bool "16k page size" if 44x || PPC_8xx
+ 
+ config PPC_64K_PAGES
+ 	bool "64k page size" if 44x || PPC_STD_MMU_64 || PPC_BOOK3E_64
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index 3d11d3c..986b9e1 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -56,6 +56,7 @@
+  * additional information from the MI_EPN, and MI_TWC registers.
+  */
+ #define SPRN_MI_RPN	790
++#define MI_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
+ 
+ /* Define an RPN value for mapping kernel memory to large virtual
+  * pages for boot initialization.  This has real page number of 0,
+@@ -129,6 +130,7 @@
+  * additional information from the MD_EPN, and MD_TWC registers.
+  */
+ #define SPRN_MD_RPN	798
++#define MD_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
+ 
+ /* This is a temporary storage register that could be used to save
+  * a processor working register during a tablewalk.
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 171c6ef..845abf8 100644
+index 8966262..4dd6be0 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -482,20 +482,12 @@ InstructionTLBError:
+@@ -45,7 +45,11 @@
+  * Value for the bits that have fixed value in RPN entries.
+  * Also used for tagging DAR for DTLBerror.
   */
- 	. = 0x1400
- DataTLBError:
--#ifdef CONFIG_8xx_CPU6
--	stw	r3, 8(r0)
--#endif
- 	EXCEPTION_PROLOG_0
--	mtspr	SPRN_SPRG_SCRATCH2, r10
- 
--	mfspr	r10, SPRN_DAR
--	cmpwi	cr0, r10, 0x00f0
-+	mfspr	r11, SPRN_DAR
-+	cmpwi	cr0, r11, 0x00f0
- 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
- DARFixed:/* Return from dcbx instruction bug workaround */
--#ifdef CONFIG_8xx_CPU6
--	lwz	r3, 8(r0)
--#endif
--	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	EXCEPTION_EPILOG_0
- 	b	DataAccess
- 
-@@ -525,6 +517,10 @@ DARFixed:/* Return from dcbx instruction bug workaround */
-  /* define if you don't want to use self modifying code */
- #define NO_SELF_MODIFYING_CODE
- FixupDAR:/* Entry point for dcbx workaround. */
-+#ifdef CONFIG_8xx_CPU6
-+	stw	r3, 8(r0)
++#ifdef CONFIG_PPC_16K_PAGES
++#define RPN_PATTERN	(0x00f0 | MD_SPS16K)
++#else
+ #define RPN_PATTERN	0x00f0
 +#endif
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
- 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
-@@ -540,6 +536,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
- 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
- 	lwz	r11, 0(r11)	/* Get the pte */
-+#ifdef CONFIG_8xx_CPU6
-+	lwz	r3, 8(r0)	/* restore r3 from memory */
-+#endif
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 20, 31
- 	lwz	r11,0(r11)
-@@ -560,15 +559,13 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq+	142f
- 	cmpwi	cr0, r10, 1964	/* Is icbi? */
- 	beq+	142f
--141:	b	DARFixed	/* Nope, go back to normal TLB processing */
-+141:	mfspr	r10,SPRN_SPRG_SCRATCH2
-+	b	DARFixed	/* Nope, go back to normal TLB processing */
  
- 144:	mfspr	r10, SPRN_DSISR
- 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
- 	mtspr	SPRN_DSISR, r10
- 142:	/* continue, it was a dcbx, dcbi instruction. */
--#ifdef CONFIG_8xx_CPU6
--	lwz	r3, 8(r0)	/* restore r3 from memory */
--#endif
- #ifndef NO_SELF_MODIFYING_CODE
- 	andis.	r10,r11,0x1f	/* test if reg RA is r0 */
- 	li	r10,modified_instr@l
-@@ -587,6 +584,7 @@ modified_instr:
- 	bne+	143f
- 	subf	r10,r0,r10	/* r10=r10-r0, only if reg RA is r0 */
- 143:	mtdar	r10		/* store faulting EA in DAR */
-+	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	b	DARFixed	/* Go back to normal TLB handling */
- #else
- 	mfctr	r10
-@@ -640,6 +638,7 @@ modified_instr:
- 	mfdar	r11
- 	mtctr	r11			/* restore ctr reg from DAR */
- 	mtdar	r10			/* save fault EA to DAR */
-+	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	b	DARFixed		/* Go back to normal TLB handling */
- 
- 	/* special handling for r10,r11 since these are modified already */
+ 	__HEAD
+ _ENTRY(_stext);
 -- 
 1.7.1
