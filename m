@@ -1,39 +1,17 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99C601A06C5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 13:11:24 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 18 Sep 2014 13:11:19 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 98D3A2CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 13:11:17 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8I2rC7H65011930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 12:53:12 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8I3BFTN010162
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 13:11:16 +1000
-Message-ID: <541A4D4F.1090307@linux.vnet.ibm.com>
-Date: Thu, 18 Sep 2014 08:41:11 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F70E1A0278
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 18:27:13 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH 0/15] POWER8 Coherent Accelerator device driver
+Date: Thu, 18 Sep 2014 18:26:45 +1000
+Message-Id: <1411028820-29933-1-git-send-email-mikey@neuling.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,91 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This add support for the Coherent Accelerator (cxl) attached to POWER8
+processors.  This coherent accelerator interface is designed to allow the
+coherent connection of FPGA based accelerators (and other devices) to a POWER
+systems.
 
-In this patch series we use winkle for offlined cores. I successfully
-tested the working of this with subcore functionality.
+IBM refers to this as the Coherent Accelerator Processor Interface or CAPI.  In
+this driver it's referred to by the name cxl to avoid confusion with the ISDN
+CAPI subsystem.
 
-Test scenario was as follows:
-1. Set SMT mode to 1, Set subores-per-core to 1
-2. Offline a core, in this case cpu 32 (sending it to winkle)
-3. Set subcores-per-core to 4
-4. Online the core
-5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
-on cpu 36
+An overview of the patches:
+  Patches  1-2:  Split some of the old Cell co-processor code out so it can be
+		   reused.
+  Patches  3-9:  Add infrastructure to arch/powerpc needed by cxl.
+  Patches  10:   Add call backs needed for invalidating cxl mm contexts.
+  Patch    11:   Add cxl specific support that needs to be built in to the
+		   kernel (can't be a module).
+  Patches 12-15: Add the majority of the device driver and API header.
+  Patch    15:   Documentation.
 
-This works without any glitch.
+The documentation in this last patch gives an overview of the hardware
+architecture as well as the userspace API.
 
-Thanks,
-Shreyas
+The cxl driver has a user-space interface described in include/uapi/misc/cxl.h
+and Documentation/powerpc/cxl.txt.  There are two ioctls which can be used to
+talk to the driver once the new /dev/cxl/afu0.0 device is opened.  This device
+can also be read and mmaped.
 
-On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
-> Fast sleep is an idle state, where the core and the L1 and L2
-> caches are brought down to a threshold voltage. This also means that
-> the communication between L2 and L3 caches have to be fenced. However
-> the current P8 chips have a bug wherein this fencing between L2 and
-> L3 caches get delayed by a cpu cycle. This can delay L3 response to
-> the other cpus if they request for data during this time. Thus they
-> would fetch the same data from the memory which could lead to data
-> corruption if L3 cache is not flushed.
-> Patch 4 adds support to work around this.
-> 
-> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
-> off. While it offers higher power savings, it is at the cost of losing
-> hypervisor register state and higher latency.
-> Patch 5-9 adds support for winkle and uses it for offline cpus.
-> 
-> Patch 1 - Moves parameters required discover idle states to a location 
-> common to both cpuidle driver and powernv core code
-> Patch 2 - Populates idle state details from device tree
-> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
-> 
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> 
-> Preeti U Murthy (2):
->   cpuidle/powernv: Populate cpuidle state details by querying the
->     device-tree
->   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
-> 
-> Shreyas B. Prabhu (6):
->   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
->     fast-sleep
->   powerpc/powernv: Add OPAL call to save and restore
->   powerpc: Adding macro for accessing Thread Switch Control Register
->   powerpc/powernv: Add winkle infrastructure
->   powerpc/powernv: Discover and enable winkle
->   powerpc/powernv: Enter deepest supported idle state in offline
-> 
-> Srivatsa S. Bhat (1):
->   powerpc/powernv: Enable Offline CPUs to enter deep idle states
-> 
->  arch/powerpc/include/asm/machdep.h             |   4 +
->  arch/powerpc/include/asm/opal.h                |  10 ++
->  arch/powerpc/include/asm/paca.h                |   3 +
->  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
->  arch/powerpc/include/asm/processor.h           |   6 +-
->  arch/powerpc/include/asm/reg.h                 |   1 +
->  arch/powerpc/kernel/asm-offsets.c              |   1 +
->  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
->  arch/powerpc/kernel/idle.c                     |  30 ++++
->  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
->  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
->  arch/powerpc/platforms/powernv/powernv.h       |   8 +
->  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/smp.c           |  13 +-
->  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
->  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
->  16 files changed, 439 insertions(+), 33 deletions(-)
-> 
+There's also sysfs entries used to communicate information about the cxl
+configuration to userspace.  These are documented in
+Documentation/ABI/testing/sysfs-class-cxl.
+
+Many contributed to this device driver but Ian Munsie is the principal author.
+
+Driver can also be found here (based on 3.17-rc5):
+   git://github.com/mikey/linux.git cxl
+   https://github.com/mikey/linux/commits/cxl
+
+Please consider for inclusion.  Feedback welcome!
+
+Regards,
+Mikey
+
+ Documentation/ABI/testing/sysfs-class-cxl      | 125 ++++
+ Documentation/ioctl/ioctl-number.txt           |   1 +
+ Documentation/powerpc/00-INDEX                 |   2 +
+ Documentation/powerpc/cxl.txt                  | 310 ++++++++
+ MAINTAINERS                                    |   7 +
+ arch/powerpc/include/asm/copro.h               |  18 +
+ arch/powerpc/include/asm/mmu-hash64.h          |   3 +
+ arch/powerpc/include/asm/opal.h                |   2 +
+ arch/powerpc/include/asm/pnv-pci.h             |  27 +
+ arch/powerpc/include/asm/spu.h                 |   5 +-
+ arch/powerpc/mm/Makefile                       |   2 +
+ arch/powerpc/mm/copro_fault.c                  | 140 ++++
+ arch/powerpc/mm/hash_native_64.c               |   6 +-
+ arch/powerpc/mm/hash_utils_64.c                |  25 +-
+ arch/powerpc/mm/slb.c                          |   3 -
+ arch/powerpc/mm/slice.c                        |   3 +
+ arch/powerpc/platforms/cell/Makefile           |   2 +-
+ arch/powerpc/platforms/cell/spu_base.c         |  41 +-
+ arch/powerpc/platforms/cell/spu_fault.c        |  94 ---
+ arch/powerpc/platforms/cell/spufs/fault.c      |   4 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c      | 229 +++++-
+ arch/powerpc/sysdev/msi_bitmap.c               |  18 +-
+ drivers/misc/Kconfig                           |   1 +
+ drivers/misc/Makefile                          |   1 +
+ drivers/misc/cxl/Kconfig                       |  25 +
+ drivers/misc/cxl/Makefile                      |   4 +
+ drivers/misc/cxl/base.c                        | 102 +++
+ drivers/misc/cxl/context.c                     | 169 +++++
+ drivers/misc/cxl/cxl-pci.c                     | 977 +++++++++++++++++++++++++
+ drivers/misc/cxl/cxl.h                         | 605 +++++++++++++++
+ drivers/misc/cxl/debugfs.c                     | 116 +++
+ drivers/misc/cxl/fault.c                       | 298 ++++++++
+ drivers/misc/cxl/file.c                        | 503 +++++++++++++
+ drivers/misc/cxl/irq.c                         | 405 ++++++++++
+ drivers/misc/cxl/main.c                        | 238 ++++++
+ drivers/misc/cxl/native.c                      | 649 ++++++++++++++++
+ drivers/misc/cxl/sysfs.c                       | 348 +++++++++
+ include/misc/cxl.h                             |  34 +
+ include/uapi/Kbuild                            |   1 +
+ include/uapi/misc/Kbuild                       |   2 +
+ include/uapi/misc/cxl.h                        |  88 +++
+ 42 files changed, 5463 insertions(+), 171 deletions(-)
