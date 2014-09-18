@@ -1,15 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 747BF1A0440
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 18:27:15 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA6E01A0931
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 18:27:16 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH 02/15] powerpc/cell: Move data segment faulting code out of
- cell platform
-Date: Thu, 18 Sep 2014 18:26:47 +1000
-Message-Id: <1411028820-29933-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH 03/15] powerpc/msi: Improve IRQ bitmap allocator
+Date: Thu, 18 Sep 2014 18:26:48 +1000
+Message-Id: <1411028820-29933-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1411028820-29933-1-git-send-email-mikey@neuling.org>
 References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com,
@@ -26,157 +25,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-__spu_trap_data_seg() currently contains code to determine the VSID and ESID
-required for a particular EA and mm struct.
+Currently msi_bitmap_alloc_hwirqs() will round up any IRQ allocation requests
+to the nearest power of 2.  eg. ask for 5 IRQs and you'll get 8.  This wastes a
+lot of IRQs which can be a scarce resource.
 
-This code is generically useful for other co-processors.  This moves the code
-of the cell platform so it can be used by other powerpc code.
+For cxl we can require multiple IRQs for every contexts that is attached to the
+accelerator.  For AFU directed accelerators, there may be 1000s of contexts
+attached, hence we can easily run out of IRQs, especially if we are needlessly
+wasting them.
+
+This changes the msi_bitmap_alloc_hwirqs() to allocate only the required number
+of IRQs, hence avoiding this wastage.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/mmu-hash64.h  |  2 ++
- arch/powerpc/mm/copro_fault.c          | 48 ++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/slb.c                  |  3 ---
- arch/powerpc/platforms/cell/spu_base.c | 41 +++--------------------------
- 4 files changed, 54 insertions(+), 40 deletions(-)
+ arch/powerpc/sysdev/msi_bitmap.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index d765144..fd19a53 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -180,6 +180,8 @@ static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
-  * we work in all cases including 4k page size.
-  */
- #define VPN_SHIFT	12
-+#define slb_vsid_shift(ssize)	\
-+	((ssize) == MMU_SEGSIZE_256M ? SLB_VSID_SHIFT : SLB_VSID_SHIFT_1T)
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index 2ff6302..e001559 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -24,28 +24,36 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
+ 	 * This is fast, but stricter than we need. We might want to add
+ 	 * a fallback routine which does a linear search with no alignment.
+ 	 */
+-	offset = bitmap_find_free_region(bmp->bitmap, bmp->irq_count, order);
++	offset = bitmap_find_next_zero_area(bmp->bitmap, bmp->irq_count, 0,
++					    num, (1 << order) - 1);
++	if (offset > bmp->irq_count)
++		goto err;
++	bitmap_set(bmp->bitmap, offset, num);
+ 	spin_unlock_irqrestore(&bmp->lock, flags);
  
- /*
-  * HPTE Large Page (LP) details
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index ba7df14..4105a63 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -90,3 +90,51 @@ out_unlock:
- 	return ret;
+ 	pr_debug("msi_bitmap: allocated 0x%x (2^%d) at offset 0x%x\n",
+ 		 num, order, offset);
+ 
+ 	return offset;
++err:
++	spin_unlock_irqrestore(&bmp->lock, flags);
++	return -ENOMEM;
  }
- EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
-+
-+int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *vsid)
-+{
-+	int psize, ssize;
-+
-+	*esid = (ea & ESID_MASK) | SLB_ESID_V;
-+
-+	switch (REGION_ID(ea)) {
-+	case USER_REGION_ID:
-+		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
-+#ifdef CONFIG_PPC_MM_SLICES
-+		psize = get_slice_psize(mm, ea);
-+#else
-+		psize = mm->context.user_psize;
-+#endif
-+		ssize = user_segment_size(ea);
-+		*vsid = (get_vsid(mm->context.id, ea, ssize)
-+			<< slb_vsid_shift(ssize)) | SLB_VSID_USER
-+			| (ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-+		break;
-+	case VMALLOC_REGION_ID:
-+		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
-+		if (ea < VMALLOC_END)
-+			psize = mmu_vmalloc_psize;
-+		else
-+			psize = mmu_io_psize;
-+		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-+			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-+			| (mmu_kernel_ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-+		break;
-+	case KERNEL_REGION_ID:
-+		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
-+		psize = mmu_linear_psize;
-+		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-+			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-+			| (mmu_kernel_ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-+		break;
-+	default:
-+		/* Future: support kernel segments so that drivers can use the
-+		 * CoProcessors */
-+		pr_debug("invalid region access at %016llx\n", ea);
-+		return 1;
-+	}
-+	*vsid |= mmu_psize_defs[psize].sllp;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(copro_data_segment);
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 0399a67..6e450ca 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -46,9 +46,6 @@ static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
- 	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
++EXPORT_SYMBOL(msi_bitmap_alloc_hwirqs);
+ 
+ void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
+ 			    unsigned int num)
+ {
+ 	unsigned long flags;
+-	int order = get_count_order(num);
+ 
+-	pr_debug("msi_bitmap: freeing 0x%x (2^%d) at offset 0x%x\n",
+-		 num, order, offset);
++	pr_debug("msi_bitmap: freeing 0x%x at offset 0x%x\n",
++		 num, offset);
+ 
+ 	spin_lock_irqsave(&bmp->lock, flags);
+-	bitmap_release_region(bmp->bitmap, offset, order);
++	bitmap_clear(bmp->bitmap, offset, num);
+ 	spin_unlock_irqrestore(&bmp->lock, flags);
  }
++EXPORT_SYMBOL(msi_bitmap_free_hwirqs);
  
--#define slb_vsid_shift(ssize)	\
--	((ssize) == MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
--
- static inline unsigned long mk_vsid_data(unsigned long ea, int ssize,
- 					 unsigned long flags)
+ void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq)
  {
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 2930d1e..fe004b1 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -167,45 +167,12 @@ static inline void spu_load_slb(struct spu *spu, int slbe, struct spu_slb *slb)
- 
- static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
- {
--	struct mm_struct *mm = spu->mm;
- 	struct spu_slb slb;
--	int psize;
--
--	pr_debug("%s\n", __func__);
--
--	slb.esid = (ea & ESID_MASK) | SLB_ESID_V;
-+	int ret;
- 
--	switch(REGION_ID(ea)) {
--	case USER_REGION_ID:
--#ifdef CONFIG_PPC_MM_SLICES
--		psize = get_slice_psize(mm, ea);
--#else
--		psize = mm->context.user_psize;
--#endif
--		slb.vsid = (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
--		break;
--	case VMALLOC_REGION_ID:
--		if (ea < VMALLOC_END)
--			psize = mmu_vmalloc_psize;
--		else
--			psize = mmu_io_psize;
--		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
--		break;
--	case KERNEL_REGION_ID:
--		psize = mmu_linear_psize;
--		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
--		break;
--	default:
--		/* Future: support kernel segments so that drivers
--		 * can use SPUs.
--		 */
--		pr_debug("invalid region access at %016lx\n", ea);
--		return 1;
--	}
--	slb.vsid |= mmu_psize_defs[psize].sllp;
-+	ret = copro_data_segment(spu->mm, ea, &slb.esid, &slb.vsid);
-+	if (ret)
-+		return ret;
- 
- 	spu_load_slb(spu, spu->slb_replace, &slb);
- 
 -- 
 1.9.1
