@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 698511A094F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 18:27:23 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17EAF1A0955
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2014 18:27:24 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH 09/15] powerpc/opal: Add PHB to cxl mode call
-Date: Thu, 18 Sep 2014 18:26:54 +1000
-Message-Id: <1411028820-29933-10-git-send-email-mikey@neuling.org>
+Subject: [PATCH 10/15] powerpc/mm: Add hooks for cxl
+Date: Thu, 18 Sep 2014 18:26:55 +1000
+Message-Id: <1411028820-29933-11-git-send-email-mikey@neuling.org>
 In-Reply-To: <1411028820-29933-1-git-send-email-mikey@neuling.org>
 References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com,
@@ -25,43 +25,106 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This adds the OPAL call to change a PHB into cxl mode.
+This add a hook into tlbie() so that we use global invalidations when there are
+cxl contexts active.
+
+Normally cxl snoops broadcast tlbie.  cxl can have TLB entries invalidated via
+MMIO, but we aren't doing that yet.  So for now we are just disabling local
+tlbies when cxl contexts are active.  In future we can make tlbie() local mode
+smarter so that it invalidates cxl contexts explicitly when it needs to.
+
+This also adds a hooks for when SLBs are invalidated to ensure any
+corresponding SLBs in cxl are also invalidated at the same time.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/opal.h                | 2 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 2 files changed, 3 insertions(+)
+ arch/powerpc/mm/hash_native_64.c | 6 +++++-
+ arch/powerpc/mm/hash_utils_64.c  | 3 +++
+ arch/powerpc/mm/slice.c          | 3 +++
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 86055e5..84c37c4dbc 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -146,6 +146,7 @@ struct opal_sg_list {
- #define OPAL_GET_PARAM				89
- #define OPAL_SET_PARAM				90
- #define OPAL_DUMP_RESEND			91
-+#define OPAL_PCI_SET_PHB_CXL_MODE		93
- #define OPAL_DUMP_INFO2				94
- #define OPAL_PCI_EEH_FREEZE_SET			97
- #define OPAL_HANDLE_HMI				98
-@@ -924,6 +925,7 @@ int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
- int64_t opal_handle_hmi(void);
- int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
- int64_t opal_unregister_dump_region(uint32_t id);
-+int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index afc0a82..ae4962a 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -29,6 +29,8 @@
+ #include <asm/kexec.h>
+ #include <asm/ppc-opcode.h>
  
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 2e6ce1b..0fb56dc 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -247,3 +247,4 @@ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-+OPAL_CALL(opal_pci_set_phb_cxl_mode,		OPAL_PCI_SET_PHB_CXL_MODE);
++#include <misc/cxl.h>
++
+ #ifdef DEBUG_LOW
+ #define DBG_LOW(fmt...) udbg_printf(fmt)
+ #else
+@@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ static inline void tlbie(unsigned long vpn, int psize, int apsize,
+ 			 int ssize, int local)
+ {
+-	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
++	unsigned int use_local;
+ 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+ 
++	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
++
+ 	if (use_local)
+ 		use_local = mmu_psize_defs[psize].tlbiel;
+ 	if (lock_tlbie && !use_local)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 66071af..be40ff7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -34,6 +34,7 @@
+ #include <linux/signal.h>
+ #include <linux/memblock.h>
+ #include <linux/context_tracking.h>
++#include <misc/cxl.h>
+ 
+ #include <asm/processor.h>
+ #include <asm/pgtable.h>
+@@ -906,6 +907,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ #ifdef CONFIG_SPU_BASE
+ 	spu_flush_all_slbs(mm);
+ #endif
++	cxl_slbia(mm);
+ 	if (get_paca_psize(addr) != MMU_PAGE_4K) {
+ 		get_paca()->context = mm->context;
+ 		slb_flush_and_rebolt();
+@@ -1145,6 +1147,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, u
+ #ifdef CONFIG_SPU_BASE
+ 			spu_flush_all_slbs(mm);
+ #endif
++			cxl_slbia(mm);
+ 		}
+ 	}
+ 
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index b0c75cc..4d3a34b 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -30,6 +30,7 @@
+ #include <linux/err.h>
+ #include <linux/spinlock.h>
+ #include <linux/export.h>
++#include <misc/cxl.h>
+ #include <asm/mman.h>
+ #include <asm/mmu.h>
+ #include <asm/spu.h>
+@@ -235,6 +236,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ #ifdef CONFIG_SPU_BASE
+ 	spu_flush_all_slbs(mm);
+ #endif
++	cxl_slbia(mm);
+ }
+ 
+ /*
+@@ -674,6 +676,7 @@ void slice_set_psize(struct mm_struct *mm, unsigned long address,
+ #ifdef CONFIG_SPU_BASE
+ 	spu_flush_all_slbs(mm);
+ #endif
++	cxl_slbia(mm);
+ }
+ 
+ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
 -- 
 1.9.1
