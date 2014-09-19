@@ -2,29 +2,31 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D7C51A1748
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:23 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26F3C1A1789
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:24 +1000 (EST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Sep 2014 15:49:22 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1B80E2CE8047
+ Fri, 19 Sep 2014 15:49:23 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id EB07C2CE802D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:20 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8J5oYpx25035000
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:42 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8J5olUS14680078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:55 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8J5mlEq017923
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:47 +1000
+ s8J5mmOJ017949
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:48 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/5] powerpc/eeh: Fix improper condition in eeh_pci_enable()
-Date: Fri, 19 Sep 2014 15:48:19 +1000
-Message-Id: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/5] powerpc/eeh: Unfreeze PE on enabling EEH functionality
+Date: Fri, 19 Sep 2014 15:48:20 +1000
+Message-Id: <1411105703-30149-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,110 +37,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function eeh_pci_enable() is called to apply various requests
-to one particular PE: Enabling EEH, Disabling EEH, Enabling IO,
-Enabling DMA, Freezing PE. When enabling IO or DMA on one specific
-PE, we need check that IO or DMA isn't enabled previously. But
-the condition used to do the check isn't completely correct because
-one PE would be in DMA frozen state with workable IO path, or vice
-versa.
+When passing through PE to guest, that's possibly in frozen
+state. The driver for the pass-through devices on guest side
+can't be loaded successfully as reported. We already had one
+gate in eeh_dev_open() to clear PE frozen state accordingly,
+but that's not enough because the function is only called at
+QEMU startup for once.
 
-The patch fixes the improper condition.
+The patch adds another gate in eeh_pe_set_option() so that the
+PE frozen state can be cleared at QEMU restart time.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c | 58 ++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 42 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/eeh.h |  1 +
+ arch/powerpc/kernel/eeh.c      | 60 ++++++++++++++++++++++--------------------
+ 2 files changed, 33 insertions(+), 28 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 1951d07..9bf4a5e 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -281,6 +281,7 @@ void eeh_add_device_late(struct pci_dev *);
+ void eeh_add_device_tree_late(struct pci_bus *);
+ void eeh_add_sysfs_files(struct pci_bus *);
+ void eeh_remove_device(struct pci_dev *);
++int eeh_unfreeze_pe(struct eeh_pe *pe, bool sw_state);
+ int eeh_dev_open(struct pci_dev *pdev);
+ void eeh_dev_release(struct pci_dev *pdev);
+ struct eeh_pe *eeh_iommu_group_to_pe(struct iommu_group *group);
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index e436d5e..09bcf95 100644
+index 09bcf95..9678e16 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -579,25 +579,51 @@ EXPORT_SYMBOL(eeh_check_failure);
-  */
- int eeh_pci_enable(struct eeh_pe *pe, int function)
- {
--	int rc, flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
-+	int active_flag, rc;
- 
- 	/*
- 	 * pHyp doesn't allow to enable IO or DMA on unfrozen PE.
- 	 * Also, it's pointless to enable them on unfrozen PE. So
--	 * we have the check here.
-+	 * we have to check before enabling IO or DMA.
- 	 */
--	if (function == EEH_OPT_THAW_MMIO ||
--	    function == EEH_OPT_THAW_DMA) {
-+	switch (function) {
-+	case EEH_OPT_THAW_MMIO:
-+		active_flag = EEH_STATE_MMIO_ACTIVE;
-+		break;
-+	case EEH_OPT_THAW_DMA:
-+		active_flag = EEH_STATE_DMA_ACTIVE;
-+		break;
-+	case EEH_OPT_DISABLE:
-+	case EEH_OPT_ENABLE:
-+	case EEH_OPT_FREEZE_PE:
-+		active_flag = 0;
-+		break;
-+	default:
-+		pr_warn("%s: Invalid function %d\n",
-+			__func__, function);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Check if IO or DMA has been enabled before
-+	 * enabling them.
-+	 */
-+	if (active_flag) {
- 		rc = eeh_ops->get_state(pe, NULL);
- 		if (rc < 0)
- 			return rc;
- 
--		/* Needn't to enable or already enabled */
--		if ((rc == EEH_STATE_NOT_SUPPORT) ||
--		    ((rc & flags) == flags))
-+		/* Needn't enable it at all */
-+		if (rc == EEH_STATE_NOT_SUPPORT)
-+			return 0;
-+
-+		/* It's already enabled */
-+		if (rc & active_flag)
- 			return 0;
- 	}
- 
-+
-+	/* Issue the request */
- 	rc = eeh_ops->set_option(pe, function);
- 	if (rc)
- 		pr_warn("%s: Unexpected state change %d on "
-@@ -605,17 +631,17 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
- 			__func__, function, pe->phb->global_number,
- 			pe->addr, rc);
- 
--	rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--	if (rc <= 0)
--		return rc;
-+	/* Check if the request is finished successfully */
-+	if (active_flag) {
-+		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
-+		if (rc <= 0)
-+			return rc;
- 
--	if ((function == EEH_OPT_THAW_MMIO) &&
--	    (rc & EEH_STATE_MMIO_ENABLED))
--		return 0;
-+		if (rc & active_flag)
-+			return 0;
- 
--	if ((function == EEH_OPT_THAW_DMA) &&
--	    (rc & EEH_STATE_DMA_ENABLED))
--		return 0;
-+		return -EIO;
-+	}
- 
- 	return rc;
+@@ -1164,6 +1164,31 @@ void eeh_remove_device(struct pci_dev *dev)
+ 	edev->mode &= ~EEH_DEV_SYSFS;
  }
+ 
++int eeh_unfreeze_pe(struct eeh_pe *pe, bool sw_state)
++{
++	int ret;
++
++	ret = eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
++	if (ret) {
++		pr_warn("%s: Failure %d enabling IO on PHB#%x-PE#%x\n",
++			__func__, ret, pe->phb->global_number, pe->addr);
++		return ret;
++	}
++
++	ret = eeh_pci_enable(pe, EEH_OPT_THAW_DMA);
++	if (ret) {
++		pr_warn("%s: Failure %d enabling DMA on PHB#%x-PE#%x\n",
++			__func__, ret, pe->phb->global_number, pe->addr);
++		return ret;
++	}
++
++	/* Clear software isolated state */
++	if (sw_state && (pe->state & EEH_PE_ISOLATED))
++		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
++
++	return ret;
++}
++
+ /**
+  * eeh_dev_open - Increase count of pass through devices for PE
+  * @pdev: PCI device
+@@ -1176,7 +1201,6 @@ void eeh_remove_device(struct pci_dev *dev)
+ int eeh_dev_open(struct pci_dev *pdev)
+ {
+ 	struct eeh_dev *edev;
+-	int flag = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+ 	int ret = -ENODEV;
+ 
+ 	mutex_lock(&eeh_dev_mutex);
+@@ -1196,31 +1220,9 @@ int eeh_dev_open(struct pci_dev *pdev)
+ 	 * in frozen PE won't work properly. Clear the frozen state
+ 	 * in advance.
+ 	 */
+-	ret = eeh_ops->get_state(edev->pe, NULL);
+-	if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT &&
+-	    (ret & flag) != flag) {
+-		ret = eeh_ops->set_option(edev->pe, EEH_OPT_THAW_MMIO);
+-		if (ret) {
+-			pr_warn("%s: Failure %d enabling MMIO "
+-				"for PHB#%x-PE#%x\n",
+-				__func__, ret, edev->phb->global_number,
+-				edev->pe->addr);
+-			goto out;
+-		}
+-
+-		ret = eeh_ops->set_option(edev->pe, EEH_OPT_THAW_DMA);
+-		if (ret) {
+-			pr_warn("%s: Failure %d enabling DMA "
+-				"for PHB#%x-PE#%x\n",
+-				__func__, ret, edev->phb->global_number,
+-				edev->pe->addr);
+-			goto out;
+-		}
+-	}
+-
+-	/* Clear software isolated state */
+-	if (edev->pe->state & EEH_PE_ISOLATED)
+-		eeh_pe_state_clear(edev->pe, EEH_PE_ISOLATED);
++	ret = eeh_unfreeze_pe(edev->pe, true);
++	if (ret)
++		goto out;
+ 
+ 	/* Increase PE's pass through count */
+ 	atomic_inc(&edev->pe->pass_dev_cnt);
+@@ -1338,8 +1340,10 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option)
+ 	 */
+ 	switch (option) {
+ 	case EEH_OPT_ENABLE:
+-		if (eeh_enabled())
++		if (eeh_enabled()) {
++			ret = eeh_unfreeze_pe(pe, true);
+ 			break;
++		}
+ 		ret = -EIO;
+ 		break;
+ 	case EEH_OPT_DISABLE:
+@@ -1351,7 +1355,7 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option)
+ 			break;
+ 		}
+ 
+-		ret = eeh_ops->set_option(pe, option);
++		ret = eeh_pci_enable(pe, option);
+ 		break;
+ 	default:
+ 		pr_debug("%s: Option %d out of range (%d, %d)\n",
 -- 
 1.8.3.2
