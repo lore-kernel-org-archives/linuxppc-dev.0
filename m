@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 8D31C1A0AB3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:10 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 76D201A0B11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:15 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 04/21] powerpc/8xx: Remove loading of r10 at end of FixupDAR
-Message-Id: <20140919083607.46A451AB03F@localhost.localdomain>
-Date: Fri, 19 Sep 2014 10:36:07 +0200 (CEST)
+Subject: [PATCH v4 10/21] powerpc/8xx: Duplicate two insns instead of branching
+Message-Id: <20140919083608.6C7BA1AB03B@localhost.localdomain>
+Date: Fri, 19 Sep 2014 10:36:08 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,8 +19,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, r10 is not used anymore
-after FixupDAR. There is therefore no need to set it up with the value of DAR.
+Branching takes two cycles on MPC8xx. Lets duplicate the two instructions
+and avoid the branching.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -34,40 +34,26 @@ Changes in v3:
 Changes in v4:
 - None
 
- arch/powerpc/kernel/head_8xx.S |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index fbe5d10..e59e39e 100644
+index 5037420..4a49ff3 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -495,7 +495,7 @@ DataTLBError:
- 	mfspr	r10, SPRN_DAR
- 	cmpwi	cr0, r10, 0x00f0
- 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
--DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
-+DARFixed:/* Return from dcbx instruction bug workaround */
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
+@@ -638,9 +638,11 @@ modified_instr:
+ 
+ 	/* special handling for r10,r11 since these are modified already */
+ 153:	mfspr	r11, SPRN_SPRG_SCRATCH1	/* load r11 from SPRN_SPRG_SCRATCH1 */
+-	b	155f
++	add	r10, r10, r11	/* add it */
++	mfctr	r11		/* restore r11 */
++	b	151b
+ 154:	mfspr	r11, SPRN_SPRG_SCRATCH0	/* load r10 from SPRN_SPRG_SCRATCH0 */
+-155:	add	r10, r10, r11	/* add it */
++	add	r10, r10, r11	/* add it */
+ 	mfctr	r11		/* restore r11 */
+ 	b	151b
  #endif
-@@ -524,7 +524,7 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
- 
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-  * by decoding the registers used by the dcbx instruction and adding them.
-- * DAR is set to the calculated address and r10 also holds the EA on exit.
-+ * DAR is set to the calculated address.
-  */
-  /* define if you don't want to use self modifying code */
- #define NO_SELF_MODIFYING_CODE
-@@ -564,8 +564,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq+	142f
- 	cmpwi	cr0, r10, 1964	/* Is icbi? */
- 	beq+	142f
--141:	mfspr	r10, SPRN_DAR	/* r10 must hold DAR at exit */
--	b	DARFixed	/* Nope, go back to normal TLB processing */
-+141:	b	DARFixed	/* Nope, go back to normal TLB processing */
- 
- 144:	mfspr	r10, SPRN_DSISR
- 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
 -- 
 1.7.1
