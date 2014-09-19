@@ -1,33 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8098F1A04F7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 16:54:21 +1000 (EST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BAA41A0B89
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:25 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E1FF9140187
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2014 16:54:20 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Sep 2014 15:49:24 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id AD2003578048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:21 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8J5oaM923330916
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:44 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8J5mnmV017976
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:49 +1000
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 19 Sep 2014 16:54:19 +1000
+Date: Fri, 19 Sep 2014 16:54:12 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/5] powerpc/eeh: Block PCI config access during reset
-Date: Fri, 19 Sep 2014 15:48:22 +1000
-Message-Id: <1411105703-30149-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 05/15] powerpc/powernv: Split out set MSI IRQ chip code
+Message-ID: <20140919065412.GA27190@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
+ <1411028820-29933-6-git-send-email-mikey@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1411028820-29933-6-git-send-email-mikey@neuling.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, imunsie@au1.ibm.com,
+ anton@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +37,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function pcibios_set_pcie_reset_state() can be used to do PCI
-reset. PCI config access during the reset usually causes EEH
-errors unexpectedly. In order to avoid the EEH error, the patch
-blocks PCI config access during reset with the help of flag
-EEH_PE_RESET, which is similar to what we did in EEH PE reset
-path.
+On Thu, Sep 18, 2014 at 06:26:50PM +1000, Michael Neuling wrote:
+>From: Ian Munsie <imunsie@au1.ibm.com>
+>
+>Some of the MSI IRQ code in pnv_pci_ioda_msi_setup() is generically useful so
+>split it out.
+>
+>This will be used by some of the cxl PCIe code later.
+>
+>Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+>Signed-off-by: Michael Neuling <mikey@neuling.org>
+>---
+> arch/powerpc/platforms/powernv/pci-ioda.c | 43 ++++++++++++++++++-------------
+> 1 file changed, 25 insertions(+), 18 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index df241b1..194f90a 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -1306,14 +1306,36 @@ static void pnv_ioda2_msi_eoi(struct irq_data *d)
+> 	icp_native_eoi(d);
+> }
+> 
+>+
+>+static void set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
+>+{
+>+	struct irq_data *idata;
+>+	struct irq_chip *ichip;
+>+
+>+	/*
+>+	 * Change the IRQ chip for the MSI interrupts on PHB3.
+>+	 * The corresponding IRQ chip should be populated for
+>+	 * the first time.
+>+	 */
+>+	if (phb->type == PNV_PHB_IODA2) {
+>+		if (!phb->ioda.irq_chip_init) {
+>+			idata = irq_get_irq_data(virq);
+>+			ichip = irq_data_get_irq_chip(idata);
+>+			phb->ioda.irq_chip_init = 1;
+>+			phb->ioda.irq_chip = *ichip;
+>+			phb->ioda.irq_chip.irq_eoi = pnv_ioda2_msi_eoi;
+>+		}
+>+
+>+		irq_set_chip(virq, &phb->ioda.irq_chip);
+>+	}
+>+}
+>+
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Nitpick: to check PHB type and bail early could avoid nested code :)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 7004673..545860f 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -668,14 +668,18 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
- 	switch (state) {
- 	case pcie_deassert_reset:
- 		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
-+		eeh_pe_state_clear(pe, EEH_PE_RESET);
- 		break;
- 	case pcie_hot_reset:
-+		eeh_pe_state_mark(pe, EEH_PE_RESET);
- 		eeh_ops->reset(pe, EEH_RESET_HOT);
- 		break;
- 	case pcie_warm_reset:
-+		eeh_pe_state_mark(pe, EEH_PE_RESET);
- 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
- 		break;
- 	default:
-+		eeh_pe_state_clear(pe, EEH_PE_RESET);
- 		return -EINVAL;
- 	};
- 
--- 
-1.8.3.2
+	if (phb->type != PNV_PHB_IODA2)
+		return;
+
+> static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+> 				  unsigned int hwirq, unsigned int virq,
+> 				  unsigned int is_64, struct msi_msg *msg)
+> {
+> 	struct pnv_ioda_pe *pe = pnv_ioda_get_pe(dev);
+> 	struct pci_dn *pdn = pci_get_pdn(dev);
+>-	struct irq_data *idata;
+>-	struct irq_chip *ichip;
+> 	unsigned int xive_num = hwirq - phb->msi_base;
+> 	__be32 data;
+> 	int rc;
+>@@ -1365,22 +1387,7 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+> 	}
+> 	msg->data = be32_to_cpu(data);
+> 
+>-	/*
+>-	 * Change the IRQ chip for the MSI interrupts on PHB3.
+>-	 * The corresponding IRQ chip should be populated for
+>-	 * the first time.
+>-	 */
+>-	if (phb->type == PNV_PHB_IODA2) {
+>-		if (!phb->ioda.irq_chip_init) {
+>-			idata = irq_get_irq_data(virq);
+>-			ichip = irq_data_get_irq_chip(idata);
+>-			phb->ioda.irq_chip_init = 1;
+>-			phb->ioda.irq_chip = *ichip;
+>-			phb->ioda.irq_chip.irq_eoi = pnv_ioda2_msi_eoi;
+>-		}
+>-
+>-		irq_set_chip(virq, &phb->ioda.irq_chip);
+>-	}
+>+	set_msi_irq_chip(phb, virq);
+> 
+> 	pr_devel("%s: %s-bit MSI on hwirq %x (xive #%d),"
+> 		 " address=%x_%08x data=%x PE# %d\n",
+
+Thanks,
+Gavin
