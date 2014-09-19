@@ -1,13 +1,12 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 7D44B1A0ADB
+ by lists.ozlabs.org (Postfix) with ESMTP id C29531A0ADE
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:20 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 18/21] powerpc/8xx: _PMD_PRESENT already set in level 1
- entries
-Message-Id: <20140919083609.CF9D61AB030@localhost.localdomain>
+Subject: [PATCH v4 17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
+Message-Id: <20140919083609.A92871AB040@localhost.localdomain>
 Date: Fri, 19 Sep 2014 10:36:09 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -20,8 +19,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a PMD entry is valid, _PMD_PRESENT is set. Therefore, forcing that bit
-during TLB loading is useless.
+No need to re-set this bit at each TLB miss. Let's set it in the PTE.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -30,33 +28,104 @@ Changes in v2:
 - None
 
 Changes in v3:
-- None
+- Removed PPC405 related macro from PPC8xx specific code
+- PTE_NONE_MASK doesn't need PAGE_ACCESSED in Linux 2.6
 
 Changes in v4:
 - None
 
- arch/powerpc/kernel/head_8xx.S |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc32.h | 20 ++++++++++++++++++++
+ arch/powerpc/include/asm/pte-8xx.h       |  7 +++++--
+ arch/powerpc/kernel/head_8xx.S           | 10 ++--------
+ 3 files changed, 27 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+index 47edde8..35a9b44 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc32.h
++++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+@@ -172,6 +172,25 @@ static inline unsigned long pte_update(pte_t *p,
+ #ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long old, tmp;
+ 
++#ifdef CONFIG_PPC_8xx
++	unsigned long tmp2;
++
++	__asm__ __volatile__("\
++1:	lwarx	%0,0,%4\n\
++	andc	%1,%0,%5\n\
++	or	%1,%1,%6\n\
++	/* 0x200 == Extended encoding, bit 22 */ \
++	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
++	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
++	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
++	or	%1,%3,%1\n\
++	xori	%1,%1,0x200\n"
++"	stwcx.	%1,0,%4\n\
++	bne-	1b"
++	: "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
++	: "r" (p), "r" (clr), "r" (set), "m" (*p)
++	: "cc" );
++#else /* CONFIG_PPC_8xx */
+ 	__asm__ __volatile__("\
+ 1:	lwarx	%0,0,%3\n\
+ 	andc	%1,%0,%4\n\
+@@ -182,6 +201,7 @@ static inline unsigned long pte_update(pte_t *p,
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+ 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+ 	: "cc" );
++#endif /* CONFIG_PPC_8xx */
+ #else /* PTE_ATOMIC_UPDATES */
+ 	unsigned long old = pte_val(*p);
+ 	*p = __pte((old & ~clr) | set);
+diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
+index d44826e..daa4616 100644
+--- a/arch/powerpc/include/asm/pte-8xx.h
++++ b/arch/powerpc/include/asm/pte-8xx.h
+@@ -48,19 +48,22 @@
+  */
+ #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
+ #define _PAGE_USER	0x0800	/* msb PP bits */
++/* set when neither _PAGE_USER nor _PAGE_RW are set */
++#define _PAGE_KNLRO	0x0200
+ 
+ #define _PMD_PRESENT	0x0001
+ #define _PMD_BAD	0x0ff0
+ #define _PMD_PAGE_MASK	0x000c
+ #define _PMD_PAGE_8M	0x000c
+ 
+-#define _PTE_NONE_MASK _PAGE_ACCESSED
++#define _PTE_NONE_MASK _PAGE_KNLRO
+ 
+ /* Until my rework is finished, 8xx still needs atomic PTE updates */
+ #define PTE_ATOMIC_UPDATES	1
+ 
+ /* We need to add _PAGE_SHARED to kernel pages */
+-#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
++#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
++#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
+ #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+ 
+ #endif /* __KERNEL__ */
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 48d3de8..bb7c816 100644
+index a7af26e..48d3de8 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -340,7 +340,6 @@ InstructionTLBMiss:
- 	/* We have a pte table, so load the MI_TWC with the attributes
- 	 * for this "segment."
- 	 */
--	ori	r11,r11,1		/* Set valid bit */
- 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	/* Extract level 2 index */
-@@ -417,7 +416,6 @@ DataStoreTLBMiss:
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
+@@ -445,14 +445,8 @@ DataStoreTLBMiss:
+ 	and	r11, r11, r10
+ 	rlwimi	r10, r11, 0, _PAGE_PRESENT
+ #endif
+-	/* Honour kernel RO, User NA */
+-	/* 0x200 == Extended encoding, bit 22 */
+-	rlwimi	r10, r10, 32-2, 0x200 /* Copy USER to bit 22, 0x200 */
+-	/* r11 =  (r10 & _PAGE_RW) >> 1 */
+-	rlwinm	r11, r10, 32-1, 0x200
+-	or	r10, r11, r10
+-	/* invert RW and 0x200 bits */
+-	xori	r10, r10, _PAGE_RW | 0x200
++	/* invert RW */
++	xori	r10, r10, _PAGE_RW
  
--	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
- 	/* Insert the Guarded flag into the TWC from the Linux PTE.
- 	 * It is bit 27 of both the Linux PTE and the TWC (at least
- 	 * I got that right :-).  It will be better when we can put
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 22 and 28 must be clear.
 -- 
-1.7.1
+2.1.0
