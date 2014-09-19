@@ -1,14 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 8882B1A0AB1
+ by lists.ozlabs.org (Postfix) with ESMTP id 8D31C1A0AB3
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:10 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 03/21] powerpc/8xx: exception InstructionAccess does not
- exist on MPC8xx
-Message-Id: <20140919083607.1CD621AB03E@localhost.localdomain>
-Date: Fri, 19 Sep 2014 10:36:06 +0200 (CEST)
+Subject: [PATCH v4 04/21] powerpc/8xx: Remove loading of r10 at end of FixupDAR
+Message-Id: <20140919083607.46A451AB03F@localhost.localdomain>
+Date: Fri, 19 Sep 2014 10:36:07 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,8 +19,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Exception InstructionAccess does not exist on MPC8xx. No need to branch there from somewhere else. 
-Handling can be done directly in InstructionTLBError Exception.
+Since commit 2321f33790a6c5b80322d907a92d5739e7521a13, r10 is not used anymore
+after FixupDAR. There is therefore no need to set it up with the value of DAR.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
@@ -30,58 +29,45 @@ Changes in v2:
 - None
 
 Changes in v3:
-- arch/powerpc/mm/fault.c uses the vector number, so make sure it understand
-the new ones.
+- None
 
 Changes in v4:
-- Removing the change to mm/fault.c, faking the exception id to make mm/fault
-think it comes from InstructionAccess.
+- None
 
- arch/powerpc/kernel/head_8xx.S | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3af6db1..ec1958f 100644
+index fbe5d10..e59e39e 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -234,15 +234,10 @@ DataAccess:
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- /* Instruction access exception.
-- * This is "never generated" by the MPC8xx.  We jump to it for other
-- * translation errors.
-+ * This is "never generated" by the MPC8xx.
-  */
- 	. = 0x400
- InstructionAccess:
--	EXCEPTION_PROLOG
--	mr	r4,r12
--	mr	r5,r9
--	EXC_XFER_LITE(0x400, handle_page_fault)
- 
- /* External interrupt */
- 	EXCEPTION(0x500, HardwareInterrupt, do_IRQ, EXC_XFER_LITE)
-@@ -382,7 +377,7 @@ InstructionTLBMiss:
+@@ -495,7 +495,7 @@ DataTLBError:
+ 	mfspr	r10, SPRN_DAR
+ 	cmpwi	cr0, r10, 0x00f0
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+-DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
++DARFixed:/* Return from dcbx instruction bug workaround */
+ #ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
  #endif
- 	mfspr	r10, SPRN_SPRG_SCRATCH2
- 	EXCEPTION_EPILOG_0
--	b	InstructionAccess
-+	b	InstructionTLBError
+@@ -524,7 +524,7 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
  
- 	. = 0x1200
- DataStoreTLBMiss:
-@@ -477,7 +472,11 @@ DataStoreTLBMiss:
+ /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
+  * by decoding the registers used by the dcbx instruction and adding them.
+- * DAR is set to the calculated address and r10 also holds the EA on exit.
++ * DAR is set to the calculated address.
   */
- 	. = 0x1300
- InstructionTLBError:
--	b	InstructionAccess
-+	EXCEPTION_PROLOG
-+	mr	r4,r12
-+	mr	r5,r9
-+	/* 0x400 is InstructionAccess exception, needed by bad_page_fault() */
-+	EXC_XFER_LITE(0x400, handle_page_fault)
+  /* define if you don't want to use self modifying code */
+ #define NO_SELF_MODIFYING_CODE
+@@ -564,8 +564,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 1964	/* Is icbi? */
+ 	beq+	142f
+-141:	mfspr	r10, SPRN_DAR	/* r10 must hold DAR at exit */
+-	b	DARFixed	/* Nope, go back to normal TLB processing */
++141:	b	DARFixed	/* Nope, go back to normal TLB processing */
  
- /* This is the data TLB error on the MPC8xx.  This could be due to
-  * many reasons, including a dirty update to a pte.  We can catch that
+ 144:	mfspr	r10, SPRN_DSISR
+ 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
 -- 
-2.1.0
+1.7.1
