@@ -1,15 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 985451A07B6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 19:02:06 +1000 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 13/21] powerpc/8xx: Use PAGE size related consts
-Message-Id: <20140919083609.099A51AB03E@localhost.localdomain>
-Date: Fri, 19 Sep 2014 10:36:09 +0200 (CEST)
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9101C1A06ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 19:25:30 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 19 Sep 2014 19:25:28 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D5CD32CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 19:25:26 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8J91OHx26804478
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 19:01:24 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8J9PQdJ001055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 19:25:26 +1000
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/pci: remove duplicate declaration of
+ pci_bus_find_capability
+Date: Fri, 19 Sep 2014 17:25:22 +0800
+Message-Id: <1411118722-6590-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,120 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PAGE size related operations, use PAGE size consts in order to be able to
-use different page size in the futur.
+pci_bus_find_capability() is decleared in pci.h, so it is not necessary to do
+it again.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+This patch removes it.
 
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
-Changes in v2:
-- None
+ arch/powerpc/kernel/pci-common.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Changes in v3:
-- None
-
-Changes in v4:
-- None
-
- arch/powerpc/kernel/head_8xx.S |   30 ++++++++++++++++++------------
- 1 files changed, 18 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 0f571f5..dcaee9f 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -292,9 +292,9 @@ InstructionTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU15
--	addi	r11, r10, 0x1000
-+	addi	r11, r10, PAGE_SIZE
- 	tlbie	r11
--	addi	r11, r10, -0x1000
-+	addi	r11, r10, -PAGE_SIZE
- 	tlbie	r11
- #endif
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index b2814e2..9cfa069 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1561,7 +1561,6 @@ EARLY_PCI_OP(write, byte, u8)
+ EARLY_PCI_OP(write, word, u16)
+ EARLY_PCI_OP(write, dword, u32)
  
-@@ -313,7 +313,8 @@ InstructionTLBMiss:
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
- #endif
--	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-@@ -325,7 +326,8 @@ InstructionTLBMiss:
- 	DO_8xx_CPU6(0x2b80, r3)
- 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	/* Extract level 2 index */
-+	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r10, r10, r11	/* Get the pte */
- 
- #ifdef CONFIG_SWAP
-@@ -385,7 +387,8 @@ DataStoreTLBMiss:
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
--	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-@@ -394,8 +397,8 @@ DataStoreTLBMiss:
- 	 */
- 	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
- 	/* Extract level 2 index */
--	rlwinm	r10, r10, 22, 20, 29
--	rlwimi	r10, r11, 0, 0, 19	/* Add level 2 base */
-+	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
- 
- 	ori	r11, r11, 1	/* Set valid bit in physical L2 page */
-@@ -526,18 +529,20 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
--3:	rlwinm	r10, r10, 12, 20, 29	/* Extract level 1 index */
-+	/* Extract level 1 index */
-+3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwzx	r11, r10, r11	/* Get the level 1 entry */
- 	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	rlwinm	r11, r11, 22, 20, 29	/* Extract level 2 index */
-+	/* Extract level 2 index */
-+	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r11, r10, r11	/* Get the pte */
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)	/* restore r3 from memory */
- #endif
- 	/* concat physical page address(r11) and page offset(r10) */
- 	mfspr	r10, SPRN_SRR0
--	rlwimi	r11, r10, 0, 20, 31
-+	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
- 	lwz	r11,0(r11)
- /* Check if it really is a dcbx instruction. */
- /* dcbt and dcbtst does not generate DTLB Misses/Errors,
-@@ -913,12 +918,13 @@ set_dec_cpu6:
- 	.globl	sdata
- sdata:
- 	.globl	empty_zero_page
-+	.align	PAGE_SHIFT
- empty_zero_page:
--	.space	4096
-+	.space	PAGE_SIZE
- 
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	4096
-+	.space	PGD_TABLE_SIZE
- 
- /* Room for two PTE table poiners, usually the kernel and current user
-  * pointer to their respective root page table (pgdir).
+-extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
+ int early_find_capability(struct pci_controller *hose, int bus, int devfn,
+ 			  int cap)
+ {
 -- 
-1.7.1
+1.7.9.5
