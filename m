@@ -1,13 +1,12 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 4A95E1A015D
+ by lists.ozlabs.org (Postfix) with ESMTP id 6A9EB1A0AAA
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:10 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 00/21] powerpc/8xx: Optimise MMU TLB handling and add
- support of 16k pages
-Message-Id: <20140919083606.863ED1AB030@localhost.localdomain>
+Subject: [PATCH v4 01/21] powerpc/8xx: Declare SPRG2 as a SCRATCH register
+Message-Id: <20140919083606.D1B491AB03B@localhost.localdomain>
 Date: Fri, 19 Sep 2014 10:36:06 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -20,37 +19,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset:
-1) provides several MMU TLB handling optimisation on MPC8xx.
-2) adds support of 16k pages on MPC8xx.
-All changes have been successfully tested on a custom board equipped with MPC885
+Since coming 469d62be9263b92f2c3329540cbb1c076111f4f3, SPRG2 is used as a
+scratch register just like SPRG0 and SPRG1. So Declare it as such and fix
+the comment which is not valid anymore since that commit.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 Changes in v2:
-- Patch number 10 removed, it was implementing a 16 bit alignment of the PGDIR.
-It is not worth potentially wasting up to 64k of memory just for removing one
-instruction (ori).
-- Preserve r11 while calculating the level 2 address, therefore no more need to
-save r11 into CR.
+- None
 
 Changes in v3:
-- Few fixes following review from Joachim Tjernlund
-- Removed the major hack which was saving resisters in memory for CPU6 errata
-- Invalidating non present TLB entries earlier (in head_8xx instead of fault.c)
+- None
 
 Changes in v4:
-- Resubmitting patch 3 and 7 after new comments from Joachim and feedback
-from Scott. Has impact on patch 5, 14, 19 and 21.
-- Fixed patch 20 that didn't apply
+- None
 
- arch/powerpc/Kconfig                     |   2 +-
- arch/powerpc/include/asm/mmu-8xx.h       |   2 +
- arch/powerpc/include/asm/pgtable-ppc32.h |  20 ++
- arch/powerpc/include/asm/pte-8xx.h       |   7 +-
- arch/powerpc/include/asm/reg.h           |   3 +-
- arch/powerpc/kernel/head_8xx.S           | 366 ++++++++++++-------------
- arch/powerpc/mm/fault.c                  |   7 -
- 7 files changed, 201 insertions(+), 206 deletions(-)
+ arch/powerpc/include/asm/reg.h |    3 ++-
+ arch/powerpc/kernel/head_8xx.S |   10 +++++-----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index cb9c174..b6a7d62 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -888,7 +888,7 @@
+  * 32-bit 8xx:
+  *	- SPRG0 scratch for exception vectors
+  *	- SPRG1 scratch for exception vectors
+- *	- SPRG2 apparently unused but initialized
++ *	- SPRG2 scratch for exception vectors
+  *
+  */
+ #ifdef CONFIG_PPC64
+@@ -994,6 +994,7 @@
+ #ifdef CONFIG_8xx
+ #define SPRN_SPRG_SCRATCH0	SPRN_SPRG0
+ #define SPRN_SPRG_SCRATCH1	SPRN_SPRG1
++#define SPRN_SPRG_SCRATCH2	SPRN_SPRG2
+ #endif
+ 
+ 
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 55d12fb..1329c5a 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -301,7 +301,7 @@ InstructionTLBMiss:
+ 	stw	r11, 4(r0)
+ #else
+ 	mtspr	SPRN_DAR, r10
+-	mtspr	SPRN_SPRG2, r11
++	mtspr	SPRN_SPRG_SCRATCH2, r11
+ #endif
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+ #ifdef CONFIG_8xx_CPU15
+@@ -363,7 +363,7 @@ InstructionTLBMiss:
+ 	mfspr	r10, SPRN_DAR
+ 	mtcr	r10
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_SPRG2
++	mfspr	r11, SPRN_SPRG_SCRATCH2
+ #else
+ 	lwz	r11, 0(r0)
+ 	mtcr	r11
+@@ -386,7 +386,7 @@ InstructionTLBMiss:
+ 	mtcr	r10
+ 	li	r11, 0x00f0
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_SPRG2
++	mfspr	r11, SPRN_SPRG_SCRATCH2
+ #else
+ 	lwz	r11, 0(r0)
+ 	mtcr	r11
+@@ -409,7 +409,7 @@ DataStoreTLBMiss:
+ 	stw	r11, 4(r0)
+ #else
+ 	mtspr	SPRN_DAR, r10
+-	mtspr	SPRN_SPRG2, r11
++	mtspr	SPRN_SPRG_SCRATCH2, r11
+ #endif
+ 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
+ 
+@@ -487,7 +487,7 @@ DataStoreTLBMiss:
+ 	mfspr	r10, SPRN_DAR
+ 	mtcr	r10
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_SPRG2
++	mfspr	r11, SPRN_SPRG_SCRATCH2
+ #else
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	lwz	r11, 0(r0)
+-- 
+1.7.1
