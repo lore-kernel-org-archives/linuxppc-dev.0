@@ -1,33 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1521A1A016F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:30 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D7C51A1748
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:23 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Sep 2014 15:48:29 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 803423578048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:26 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8J5o0A520250848
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:01 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8J5mPWX009791
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:25 +1000
+ Fri, 19 Sep 2014 15:49:22 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1B80E2CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8J5oYpx25035000
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:42 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8J5mlEq017923
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:47 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc/pseries: Decrease message level on EEH
- initialization
-Date: Fri, 19 Sep 2014 15:48:23 +1000
-Message-Id: <1411105703-30149-5-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/5] powerpc/eeh: Fix improper condition in eeh_pci_enable()
+Date: Fri, 19 Sep 2014 15:48:19 +1000
+Message-Id: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,73 +35,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Anton suggested, the patch decreases the message level on EEH
-initialization to avoid unnecessary messages if required. Also,
-we have unified hint if any of needful RTAS calls is missed, and
-then we can check /proc/device-tree to figure out the missed RTAS
-calls.
+The function eeh_pci_enable() is called to apply various requests
+to one particular PE: Enabling EEH, Disabling EEH, Enabling IO,
+Enabling DMA, Freezing PE. When enabling IO or DMA on one specific
+PE, we need check that IO or DMA isn't enabled previously. But
+the condition used to do the check isn't completely correct because
+one PE would be in DMA frozen state with workable IO path, or vice
+versa.
 
-Suggested-by: Anton Blanchard <anton@samba.org>
+The patch fixes the improper condition.
+
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh_pseries.c | 35 ++++++++--------------------
- 1 file changed, 10 insertions(+), 25 deletions(-)
+ arch/powerpc/kernel/eeh.c | 58 ++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 42 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 4fc5ff9..a6c7e19 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -88,29 +88,14 @@ static int pseries_eeh_init(void)
- 	 * and its variant since the old firmware probably support address
- 	 * of domain/bus/slot/function for EEH RTAS operations.
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index e436d5e..09bcf95 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -579,25 +579,51 @@ EXPORT_SYMBOL(eeh_check_failure);
+  */
+ int eeh_pci_enable(struct eeh_pe *pe, int function)
+ {
+-	int rc, flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
++	int active_flag, rc;
+ 
+ 	/*
+ 	 * pHyp doesn't allow to enable IO or DMA on unfrozen PE.
+ 	 * Also, it's pointless to enable them on unfrozen PE. So
+-	 * we have the check here.
++	 * we have to check before enabling IO or DMA.
  	 */
--	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: RTAS service <ibm,set-eeh-option> invalid\n",
--			__func__);
--		return -EINVAL;
--	} else if (ibm_set_slot_reset == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: RTAS service <ibm,set-slot-reset> invalid\n",
--			__func__);
--		return -EINVAL;
--	} else if (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
--		   ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: RTAS service <ibm,read-slot-reset-state2> and "
--			"<ibm,read-slot-reset-state> invalid\n",
--			__func__);
--		return -EINVAL;
--	} else if (ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: RTAS service <ibm,slot-error-detail> invalid\n",
--			__func__);
--		return -EINVAL;
--	} else if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE &&
--		   ibm_configure_bridge == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: RTAS service <ibm,configure-pe> and "
--			"<ibm,configure-bridge> invalid\n",
--			__func__);
-+	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE		||
-+	    ibm_set_slot_reset == RTAS_UNKNOWN_SERVICE		||
-+	    (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
-+	     ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE)	||
-+	    ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE	||
-+	    (ibm_configure_pe == RTAS_UNKNOWN_SERVICE		&&
-+	     ibm_configure_bridge == RTAS_UNKNOWN_SERVICE)) {
-+		pr_info("EEH functionality not supported\n");
- 		return -EINVAL;
+-	if (function == EEH_OPT_THAW_MMIO ||
+-	    function == EEH_OPT_THAW_DMA) {
++	switch (function) {
++	case EEH_OPT_THAW_MMIO:
++		active_flag = EEH_STATE_MMIO_ACTIVE;
++		break;
++	case EEH_OPT_THAW_DMA:
++		active_flag = EEH_STATE_DMA_ACTIVE;
++		break;
++	case EEH_OPT_DISABLE:
++	case EEH_OPT_ENABLE:
++	case EEH_OPT_FREEZE_PE:
++		active_flag = 0;
++		break;
++	default:
++		pr_warn("%s: Invalid function %d\n",
++			__func__, function);
++		return -EINVAL;
++	}
++
++	/*
++	 * Check if IO or DMA has been enabled before
++	 * enabling them.
++	 */
++	if (active_flag) {
+ 		rc = eeh_ops->get_state(pe, NULL);
+ 		if (rc < 0)
+ 			return rc;
+ 
+-		/* Needn't to enable or already enabled */
+-		if ((rc == EEH_STATE_NOT_SUPPORT) ||
+-		    ((rc & flags) == flags))
++		/* Needn't enable it at all */
++		if (rc == EEH_STATE_NOT_SUPPORT)
++			return 0;
++
++		/* It's already enabled */
++		if (rc & active_flag)
+ 			return 0;
  	}
  
-@@ -118,11 +103,11 @@ static int pseries_eeh_init(void)
- 	spin_lock_init(&slot_errbuf_lock);
- 	eeh_error_buf_size = rtas_token("rtas-error-log-max");
- 	if (eeh_error_buf_size == RTAS_UNKNOWN_SERVICE) {
--		pr_warn("%s: unknown EEH error log size\n",
-+		pr_info("%s: unknown EEH error log size\n",
- 			__func__);
- 		eeh_error_buf_size = 1024;
- 	} else if (eeh_error_buf_size > RTAS_ERROR_LOG_MAX) {
--		pr_warn("%s: EEH error log size %d exceeds the maximal %d\n",
-+		pr_info("%s: EEH error log size %d exceeds the maximal %d\n",
- 			__func__, eeh_error_buf_size, RTAS_ERROR_LOG_MAX);
- 		eeh_error_buf_size = RTAS_ERROR_LOG_MAX;
- 	}
++
++	/* Issue the request */
+ 	rc = eeh_ops->set_option(pe, function);
+ 	if (rc)
+ 		pr_warn("%s: Unexpected state change %d on "
+@@ -605,17 +631,17 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+ 			__func__, function, pe->phb->global_number,
+ 			pe->addr, rc);
+ 
+-	rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+-	if (rc <= 0)
+-		return rc;
++	/* Check if the request is finished successfully */
++	if (active_flag) {
++		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
++		if (rc <= 0)
++			return rc;
+ 
+-	if ((function == EEH_OPT_THAW_MMIO) &&
+-	    (rc & EEH_STATE_MMIO_ENABLED))
+-		return 0;
++		if (rc & active_flag)
++			return 0;
+ 
+-	if ((function == EEH_OPT_THAW_DMA) &&
+-	    (rc & EEH_STATE_DMA_ENABLED))
+-		return 0;
++		return -EIO;
++	}
+ 
+ 	return rc;
+ }
 -- 
 1.8.3.2
