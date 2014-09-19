@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id DA81A1A0B5B
+ by lists.ozlabs.org (Postfix) with ESMTP id CC7121A0B5A
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:16 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 21/21] powerpc/8xx: Invalidate non present TLB as early as
- possible
-Message-Id: <20140919083610.D8F111AB019@localhost.localdomain>
-Date: Fri, 19 Sep 2014 10:36:10 +0200 (CEST)
+Subject: [PATCH v4 16/21] powerpc/8xx: Better readibility of ERRATA CPU6
+ handling
+Message-Id: <20140919083609.7DFDE1AB03F@localhost.localdomain>
+Date: Fri, 19 Sep 2014 10:36:09 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,89 +20,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-8xx sometimes need to load a invalid/non-present TLBs in
-it DTLB asm handler.
-
-These must be invalidated separaly as linux mm doesn't.
-    
-Commit 5efab4a02c89c252fb4cce097aafde5f8208dbfe was invalidating them in
-arch/powerpc/mm/fault.c. 
-This patch does the invalidation earlier in order to free the TLB as soon as
-possible. This also has the advantage of removing some 8xx specific code from
-fault.c
+This patch hiddes that SPR address needed for CPU6 ERRATA handling in the macro.
+Then we don't have to worry about this address directly in the code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
+Changes in v2:
+- None
+
 Changes in v3:
-- New
+- None
 
 Changes in v4:
-- None (but impacted by changes in patch 3 and 7)
+- None
 
- arch/powerpc/kernel/head_8xx.S | 15 ++++++++++-----
- arch/powerpc/mm/fault.c        |  7 -------
- 2 files changed, 10 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |   29 ++++++++++++++++-------------
+ 1 files changed, 16 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 4964adf..3d4b8ee 100644
+index 4dd6be0..a7af26e 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -475,8 +475,11 @@ InstructionTLBError1:
- 	EXCEPTION_PROLOG_2
- 	mr	r4,r12
- 	mr	r5,r9
-+	andis.	r10,r5,0x4000
-+	beq+	1f
-+	tlbie	r4
- 	/* 0x400 is InstructionAccess exception, needed by bad_page_fault() */
--	EXC_XFER_LITE(0x400, handle_page_fault)
-+1:	EXC_XFER_LITE(0x400, handle_page_fault)
+@@ -33,12 +33,19 @@
  
- /* This is the data TLB error on the MPC8xx.  This could be due to
-  * many reasons, including a dirty update to a pte.  We bail out to
-@@ -492,11 +495,13 @@ DataTLBError:
- DARFixed:/* Return from dcbx instruction bug workaround */
- 	EXCEPTION_PROLOG_1
- 	EXCEPTION_PROLOG_2
--	mfspr	r10,SPRN_DSISR
--	stw	r10,_DSISR(r11)
--	mr	r5,r10
-+	mfspr	r5,SPRN_DSISR
-+	stw	r5,_DSISR(r11)
- 	mfspr	r4,SPRN_DAR
--	li	r10,RPN_PATTERN
-+	andis.	r10,r5,0x4000
-+	beq+	1f
-+	tlbie	r4
-+1:	li	r10,RPN_PATTERN
- 	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
- 	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
- 	EXC_XFER_LITE(0x300, handle_page_fault)
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 51ab9e7..9885aad 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -43,7 +43,6 @@
- #include <asm/tlbflush.h>
- #include <asm/siginfo.h>
- #include <asm/debug.h>
--#include <mm/mmu_decl.h>
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+-#define DO_8xx_CPU6(val, reg)	\
+-	li	reg, val;	\
+-	stw	reg, 12(r0);	\
+-	lwz	reg, 12(r0);
++#define SPRN_MI_TWC_ADDR	0x2b80
++#define SPRN_MI_RPN_ADDR	0x2d80
++#define SPRN_MD_TWC_ADDR	0x3b80
++#define SPRN_MD_RPN_ADDR	0x3d80
++
++#define MTSPR_CPU6(spr, reg, treg)	\
++	li	treg, spr##_ADDR;	\
++	stw	treg, 12(r0);		\
++	lwz	treg, 12(r0);		\
++	mtspr	spr, reg
+ #else
+-#define DO_8xx_CPU6(val, reg)
++#define MTSPR_CPU6(spr, reg, treg)	\
++	mtspr	spr, reg
+ #endif
  
- #include "icswx.h"
+ /*
+@@ -334,8 +341,7 @@ InstructionTLBMiss:
+ 	 * for this "segment."
+ 	 */
+ 	ori	r11,r11,1		/* Set valid bit */
+-	DO_8xx_CPU6(0x2b80, r3)
+-	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
++	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+ 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+ 	/* Extract level 2 index */
+ 	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+@@ -354,8 +360,7 @@ InstructionTLBMiss:
+ 	 */
+ 	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
+-	DO_8xx_CPU6(0x2d80, r3)
+-	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
++	MTSPR_CPU6(SPRN_MI_RPN, r10, r3)	/* Update TLB entry */
  
-@@ -368,12 +367,6 @@ good_area:
- 		goto bad_area;
- #endif /* CONFIG_6xx */
- #if defined(CONFIG_8xx)
--	/* 8xx sometimes need to load a invalid/non-present TLBs.
--	 * These must be invalidated separately as linux mm don't.
--	 */
--	if (error_code & 0x40000000) /* no translation? */
--		_tlbil_va(address, 0, 0, 0);
--
-         /* The MPC8xx seems to always set 0x80000000, which is
-          * "undefined".  Of those that can be set, this is the only
-          * one which seems bad.
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+@@ -424,8 +429,7 @@ DataStoreTLBMiss:
+ 	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
+ 	 */
+ 	rlwimi	r11, r10, 32-5, 30, 30
+-	DO_8xx_CPU6(0x3b80, r3)
+-	mtspr	SPRN_MD_TWC, r11
++	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
+ 
+ 	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
+ 	 * We also need to know if the insn is a load/store, so:
+@@ -458,8 +462,7 @@ DataStoreTLBMiss:
+ 	 */
+ 2:	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+-	DO_8xx_CPU6(0x3d80, r3)
+-	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
++	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
 -- 
-2.1.0
+1.7.1
