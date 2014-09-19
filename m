@@ -1,12 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0319F1A0B61
+ by lists.ozlabs.org (Postfix) with ESMTP id DA81A1A0B5B
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:16 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 19/21] powerpc/8xx: Don't restore regs to save them again.
-Message-Id: <20140919083610.7D8E01AB03E@localhost.localdomain>
+Subject: [PATCH v4 21/21] powerpc/8xx: Invalidate non present TLB as early as
+ possible
+Message-Id: <20140919083610.D8F111AB019@localhost.localdomain>
 Date: Fri, 19 Sep 2014 10:36:10 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -19,50 +20,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is not need to restore r10, r11 and cr registers at this end of ITLBmiss
-handler as they are saved again to the same place in ITLBError handler we are
-jumping to.
+8xx sometimes need to load a invalid/non-present TLBs in
+it DTLB asm handler.
+
+These must be invalidated separaly as linux mm doesn't.
+    
+Commit 5efab4a02c89c252fb4cce097aafde5f8208dbfe was invalidating them in
+arch/powerpc/mm/fault.c. 
+This patch does the invalidation earlier in order to free the TLB as soon as
+possible. This also has the advantage of removing some 8xx specific code from
+fault.c
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-Changes in v2:
-- None
-
 Changes in v3:
-- None
+- New
 
 Changes in v4:
-- None
+- None (but impacted by changes in patch 3 and 7)
 
- arch/powerpc/kernel/head_8xx.S | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 15 ++++++++++-----
+ arch/powerpc/mm/fault.c        |  7 -------
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index f372984..bcf0a43 100644
+index 4964adf..3d4b8ee 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -383,8 +383,7 @@ InstructionTLBMiss:
- 	lwz	r3, 8(r0)
- #endif
- 	mfspr	r10, SPRN_SPRG_SCRATCH2
--	EXCEPTION_EPILOG_0
--	b	InstructionTLBError
-+	b	InstructionTLBError1
- 
- 	. = 0x1200
- DataStoreTLBMiss:
-@@ -473,7 +472,10 @@ DataStoreTLBMiss:
-  */
- 	. = 0x1300
- InstructionTLBError:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG_0
-+InstructionTLBError1:
-+	EXCEPTION_PROLOG_1
-+	EXCEPTION_PROLOG_2
+@@ -475,8 +475,11 @@ InstructionTLBError1:
+ 	EXCEPTION_PROLOG_2
  	mr	r4,r12
  	mr	r5,r9
++	andis.	r10,r5,0x4000
++	beq+	1f
++	tlbie	r4
  	/* 0x400 is InstructionAccess exception, needed by bad_page_fault() */
+-	EXC_XFER_LITE(0x400, handle_page_fault)
++1:	EXC_XFER_LITE(0x400, handle_page_fault)
+ 
+ /* This is the data TLB error on the MPC8xx.  This could be due to
+  * many reasons, including a dirty update to a pte.  We bail out to
+@@ -492,11 +495,13 @@ DataTLBError:
+ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	EXCEPTION_PROLOG_1
+ 	EXCEPTION_PROLOG_2
+-	mfspr	r10,SPRN_DSISR
+-	stw	r10,_DSISR(r11)
+-	mr	r5,r10
++	mfspr	r5,SPRN_DSISR
++	stw	r5,_DSISR(r11)
+ 	mfspr	r4,SPRN_DAR
+-	li	r10,RPN_PATTERN
++	andis.	r10,r5,0x4000
++	beq+	1f
++	tlbie	r4
++1:	li	r10,RPN_PATTERN
+ 	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
+ 	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 51ab9e7..9885aad 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -43,7 +43,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ #include <asm/debug.h>
+-#include <mm/mmu_decl.h>
+ 
+ #include "icswx.h"
+ 
+@@ -368,12 +367,6 @@ good_area:
+ 		goto bad_area;
+ #endif /* CONFIG_6xx */
+ #if defined(CONFIG_8xx)
+-	/* 8xx sometimes need to load a invalid/non-present TLBs.
+-	 * These must be invalidated separately as linux mm don't.
+-	 */
+-	if (error_code & 0x40000000) /* no translation? */
+-		_tlbil_va(address, 0, 0, 0);
+-
+         /* The MPC8xx seems to always set 0x80000000, which is
+          * "undefined".  Of those that can be set, this is the only
+          * one which seems bad.
 -- 
 2.1.0
