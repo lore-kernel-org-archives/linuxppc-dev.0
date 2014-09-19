@@ -1,37 +1,14 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 388AA1A0AD4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 20:18:21 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Sep 2014 15:48:12 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8A5A9E0044
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:43 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8JAHnv342991858
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:47:49 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8JAI5Dk009818
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:06 +0530
-Date: Fri, 19 Sep 2014 20:18:02 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pci: remove duplicate declaration of
- pci_bus_find_capability
-Message-ID: <20140919101802.GA7107@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1411118722-6590-1-git-send-email-weiyang@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1411118722-6590-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 84AA31A0709
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 23:57:59 +1000 (EST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
+Subject: powerpc32: rearrange instructions order in ip_fast_csum()
+Message-Id: <20140919135756.DF2251AB26E@localhost.localdomain>
+Date: Fri, 19 Sep 2014 15:57:56 +0200 (CEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,35 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2014 at 05:25:22PM +0800, Wei Yang wrote:
->pci_bus_find_capability() is decleared in pci.h, so it is not necessary to do
->it again.
->
->This patch removes it.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+On PPC_8xx, lwz has a 2 cycles latency, and branching also takes 2 cycles.
+As the size of the header is minimum 5 words, we can unroll the loop for the
+first words to reduce number of branching, and we can re-order the instructions
+to limit loading latency.
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Thanks,
-Gavin
+---
+ arch/powerpc/lib/checksum_32.S | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
->---
-> arch/powerpc/kernel/pci-common.c |    1 -
-> 1 file changed, 1 deletion(-)
->
->diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->index b2814e2..9cfa069 100644
->--- a/arch/powerpc/kernel/pci-common.c
->+++ b/arch/powerpc/kernel/pci-common.c
->@@ -1561,7 +1561,6 @@ EARLY_PCI_OP(write, byte, u8)
-> EARLY_PCI_OP(write, word, u16)
-> EARLY_PCI_OP(write, dword, u32)
->
->-extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
-> int early_find_capability(struct pci_controller *hose, int bus, int devfn,
-> 			  int cap)
-> {
->-- 
->1.7.9.5
->
+diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+index 6d67e05..5500704 100644
+--- a/arch/powerpc/lib/checksum_32.S
++++ b/arch/powerpc/lib/checksum_32.S
+@@ -26,13 +26,17 @@
+ _GLOBAL(ip_fast_csum)
+ 	lwz	r0,0(r3)
+ 	lwzu	r5,4(r3)
+-	addic.	r4,r4,-2
++	addic.	r4,r4,-4
+ 	addc	r0,r0,r5
+ 	mtctr	r4
+ 	blelr-
+-1:	lwzu	r4,4(r3)
+-	adde	r0,r0,r4
++	lwzu	r5,4(r3)
++	lwzu	r4,4(r3)
++	adde	r0,r0,r5
++1:	adde	r0,r0,r4
++	lwzu	r4,4(r3)
+ 	bdnz	1b
++	adde	r0,r0,r4
+ 	addze	r0,r0		/* add in final carry */
+ 	rlwinm	r3,r0,16,0,31	/* fold two halves together */
+ 	add	r3,r0,r3
+-- 
+2.1.0
