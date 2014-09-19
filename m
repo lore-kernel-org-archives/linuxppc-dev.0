@@ -2,29 +2,29 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26F3C1A1789
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:24 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BAA41A0B89
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:25 +1000 (EST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 19 Sep 2014 15:49:23 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id EB07C2CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:20 +1000 (EST)
+ Fri, 19 Sep 2014 15:49:24 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id AD2003578048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:49:21 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8J5olUS14680078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:55 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8J5oaM923330916
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:50:44 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8J5mmOJ017949
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:48 +1000
+ s8J5mnmV017976
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 15:48:49 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/5] powerpc/eeh: Unfreeze PE on enabling EEH functionality
-Date: Fri, 19 Sep 2014 15:48:20 +1000
-Message-Id: <1411105703-30149-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 4/5] powerpc/eeh: Block PCI config access during reset
+Date: Fri, 19 Sep 2014 15:48:22 +1000
+Message-Id: <1411105703-30149-4-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1411105703-30149-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,133 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When passing through PE to guest, that's possibly in frozen
-state. The driver for the pass-through devices on guest side
-can't be loaded successfully as reported. We already had one
-gate in eeh_dev_open() to clear PE frozen state accordingly,
-but that's not enough because the function is only called at
-QEMU startup for once.
-
-The patch adds another gate in eeh_pe_set_option() so that the
-PE frozen state can be cleared at QEMU restart time.
+Function pcibios_set_pcie_reset_state() can be used to do PCI
+reset. PCI config access during the reset usually causes EEH
+errors unexpectedly. In order to avoid the EEH error, the patch
+blocks PCI config access during reset with the help of flag
+EEH_PE_RESET, which is similar to what we did in EEH PE reset
+path.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h |  1 +
- arch/powerpc/kernel/eeh.c      | 60 ++++++++++++++++++++++--------------------
- 2 files changed, 33 insertions(+), 28 deletions(-)
+ arch/powerpc/kernel/eeh.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 1951d07..9bf4a5e 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -281,6 +281,7 @@ void eeh_add_device_late(struct pci_dev *);
- void eeh_add_device_tree_late(struct pci_bus *);
- void eeh_add_sysfs_files(struct pci_bus *);
- void eeh_remove_device(struct pci_dev *);
-+int eeh_unfreeze_pe(struct eeh_pe *pe, bool sw_state);
- int eeh_dev_open(struct pci_dev *pdev);
- void eeh_dev_release(struct pci_dev *pdev);
- struct eeh_pe *eeh_iommu_group_to_pe(struct iommu_group *group);
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 09bcf95..9678e16 100644
+index 7004673..545860f 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -1164,6 +1164,31 @@ void eeh_remove_device(struct pci_dev *dev)
- 	edev->mode &= ~EEH_DEV_SYSFS;
- }
- 
-+int eeh_unfreeze_pe(struct eeh_pe *pe, bool sw_state)
-+{
-+	int ret;
-+
-+	ret = eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
-+	if (ret) {
-+		pr_warn("%s: Failure %d enabling IO on PHB#%x-PE#%x\n",
-+			__func__, ret, pe->phb->global_number, pe->addr);
-+		return ret;
-+	}
-+
-+	ret = eeh_pci_enable(pe, EEH_OPT_THAW_DMA);
-+	if (ret) {
-+		pr_warn("%s: Failure %d enabling DMA on PHB#%x-PE#%x\n",
-+			__func__, ret, pe->phb->global_number, pe->addr);
-+		return ret;
-+	}
-+
-+	/* Clear software isolated state */
-+	if (sw_state && (pe->state & EEH_PE_ISOLATED))
-+		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
-+
-+	return ret;
-+}
-+
- /**
-  * eeh_dev_open - Increase count of pass through devices for PE
-  * @pdev: PCI device
-@@ -1176,7 +1201,6 @@ void eeh_remove_device(struct pci_dev *dev)
- int eeh_dev_open(struct pci_dev *pdev)
- {
- 	struct eeh_dev *edev;
--	int flag = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	int ret = -ENODEV;
- 
- 	mutex_lock(&eeh_dev_mutex);
-@@ -1196,31 +1220,9 @@ int eeh_dev_open(struct pci_dev *pdev)
- 	 * in frozen PE won't work properly. Clear the frozen state
- 	 * in advance.
- 	 */
--	ret = eeh_ops->get_state(edev->pe, NULL);
--	if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT &&
--	    (ret & flag) != flag) {
--		ret = eeh_ops->set_option(edev->pe, EEH_OPT_THAW_MMIO);
--		if (ret) {
--			pr_warn("%s: Failure %d enabling MMIO "
--				"for PHB#%x-PE#%x\n",
--				__func__, ret, edev->phb->global_number,
--				edev->pe->addr);
--			goto out;
--		}
--
--		ret = eeh_ops->set_option(edev->pe, EEH_OPT_THAW_DMA);
--		if (ret) {
--			pr_warn("%s: Failure %d enabling DMA "
--				"for PHB#%x-PE#%x\n",
--				__func__, ret, edev->phb->global_number,
--				edev->pe->addr);
--			goto out;
--		}
--	}
--
--	/* Clear software isolated state */
--	if (edev->pe->state & EEH_PE_ISOLATED)
--		eeh_pe_state_clear(edev->pe, EEH_PE_ISOLATED);
-+	ret = eeh_unfreeze_pe(edev->pe, true);
-+	if (ret)
-+		goto out;
- 
- 	/* Increase PE's pass through count */
- 	atomic_inc(&edev->pe->pass_dev_cnt);
-@@ -1338,8 +1340,10 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option)
- 	 */
- 	switch (option) {
- 	case EEH_OPT_ENABLE:
--		if (eeh_enabled())
-+		if (eeh_enabled()) {
-+			ret = eeh_unfreeze_pe(pe, true);
- 			break;
-+		}
- 		ret = -EIO;
+@@ -668,14 +668,18 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 	switch (state) {
+ 	case pcie_deassert_reset:
+ 		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
++		eeh_pe_state_clear(pe, EEH_PE_RESET);
  		break;
- 	case EEH_OPT_DISABLE:
-@@ -1351,7 +1355,7 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option)
- 			break;
- 		}
- 
--		ret = eeh_ops->set_option(pe, option);
-+		ret = eeh_pci_enable(pe, option);
+ 	case pcie_hot_reset:
++		eeh_pe_state_mark(pe, EEH_PE_RESET);
+ 		eeh_ops->reset(pe, EEH_RESET_HOT);
+ 		break;
+ 	case pcie_warm_reset:
++		eeh_pe_state_mark(pe, EEH_PE_RESET);
+ 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
  		break;
  	default:
- 		pr_debug("%s: Option %d out of range (%d, %d)\n",
++		eeh_pe_state_clear(pe, EEH_PE_RESET);
+ 		return -EINVAL;
+ 	};
+ 
 -- 
 1.8.3.2
