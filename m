@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 3C6251A013A
+ by lists.ozlabs.org (Postfix) with ESMTP id 4A95E1A015D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2014 18:36:10 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v4 02/21] powerpc/8xx: Use SCRATCH0 and SCRATCH1 also for TLB
- handlers
-Message-Id: <20140919083606.BB0BA1AAFFF@localhost.localdomain>
+Subject: [PATCH v4 00/21] powerpc/8xx: Optimise MMU TLB handling and add
+ support of 16k pages
+Message-Id: <20140919083606.863ED1AB030@localhost.localdomain>
 Date: Fri, 19 Sep 2014 10:36:06 +0200 (CEST)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -20,221 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SCRATCH0 and SCRATCH1 are only used in Exceptions prologs where no other
-exception can happen. There is therefore no need to preserve them accross
-TLB handlers, we can use them there as in other exceptions. One of the
-advantages is that they do not suffer CPU6 errata unlike M_TW register.
+This patchset:
+1) provides several MMU TLB handling optimisation on MPC8xx.
+2) adds support of 16k pages on MPC8xx.
+All changes have been successfully tested on a custom board equipped with MPC885
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 Changes in v2:
-- None
+- Patch number 10 removed, it was implementing a 16 bit alignment of the PGDIR.
+It is not worth potentially wasting up to 64k of memory just for removing one
+instruction (ori).
+- Preserve r11 while calculating the level 2 address, therefore no more need to
+save r11 into CR.
 
 Changes in v3:
-- None
+- Few fixes following review from Joachim Tjernlund
+- Removed the major hack which was saving resisters in memory for CPU6 errata
+- Invalidating non present TLB entries earlier (in head_8xx instead of fault.c)
 
 Changes in v4:
-- None
+- Resubmitting patch 3 and 7 after new comments from Joachim and feedback
+from Scott. Has impact on patch 5, 14, 19 and 21.
+- Fixed patch 20 that didn't apply
 
- arch/powerpc/kernel/head_8xx.S |  104 ++++++++++++----------------------
- 1 files changed, 36 insertions(+), 68 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1329c5a..3af6db1 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -104,12 +104,15 @@ turn_on_mmu:
-  * task's thread_struct.
-  */
- #define EXCEPTION_PROLOG	\
--	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
--	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
--	mfcr	r10;		\
-+	EXCEPTION_PROLOG_0;	\
- 	EXCEPTION_PROLOG_1;	\
- 	EXCEPTION_PROLOG_2
- 
-+#define EXCEPTION_PROLOG_0	\
-+	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
-+	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
-+	mfcr	r10
-+
- #define EXCEPTION_PROLOG_1	\
- 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel */ \
- 	andi.	r11,r11,MSR_PR;	\
-@@ -145,6 +148,14 @@ turn_on_mmu:
- 	SAVE_2GPRS(7, r11)
- 
- /*
-+ * Exception exit code.
-+ */
-+#define EXCEPTION_EPILOG_0	\
-+	mtcr	r10;		\
-+	mfspr	r10,SPRN_SPRG_SCRATCH0;	\
-+	mfspr	r11,SPRN_SPRG_SCRATCH1
-+
-+/*
-  * Note: code which follows this uses cr0.eq (set if from kernel),
-  * r11, r12 (SRR0), and r9 (SRR1).
-  *
-@@ -293,16 +304,8 @@ InstructionTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--#ifdef CONFIG_8xx_CPU6
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
--#else
--	mtspr	SPRN_DAR, r10
--	mtspr	SPRN_SPRG_SCRATCH2, r11
--#endif
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU15
- 	addi	r11, r10, 0x1000
-@@ -359,18 +362,11 @@ InstructionTLBMiss:
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	rfi
- 2:
- 	mfspr	r11, SPRN_SRR1
-@@ -381,19 +377,11 @@ InstructionTLBMiss:
- 	mtspr	SPRN_SRR1, r11
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	li	r11, 0x00f0
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	b	InstructionAccess
- 
- 	. = 0x1200
-@@ -401,16 +389,8 @@ DataStoreTLBMiss:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--#ifdef CONFIG_8xx_CPU6
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
--#else
--	mtspr	SPRN_DAR, r10
--	mtspr	SPRN_SPRG_SCRATCH2, r11
--#endif
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -483,19 +463,12 @@ DataStoreTLBMiss:
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifndef CONFIG_8xx_CPU6
--	mfspr	r10, SPRN_DAR
--	mtcr	r10
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r11, SPRN_SPRG_SCRATCH2
--#else
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	mfspr	r10, SPRN_M_TW
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	rfi
- 
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-@@ -519,23 +492,18 @@ DataTLBError:
- #ifdef CONFIG_8xx_CPU6
- 	stw	r3, 8(r0)
- #endif
--	DO_8xx_CPU6(0x3f80, r3)
--	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
--	mfcr	r10
--	stw	r10, 0(r0)
--	stw	r11, 4(r0)
-+	EXCEPTION_PROLOG_0
-+	mtspr	SPRN_SPRG_SCRATCH2, r10
- 
- 	mfspr	r10, SPRN_DAR
- 	cmpwi	cr0, r10, 0x00f0
- 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
- DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
-+	mfspr	r10,SPRN_SPRG_SCRATCH2
-+	EXCEPTION_EPILOG_0
- 	b	DataAccess
- 
- 	EXCEPTION(0x1500, Trap_15, unknown_exception, EXC_XFER_EE)
-@@ -619,8 +587,8 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	stw	r11,0(r10)	/* store add/and instruction */
- 	dcbf	0,r10		/* flush new instr. to memory. */
- 	icbi	0,r10		/* invalidate instr. cache line */
--	lwz	r11, 4(r0)	/* restore r11 from memory */
--	mfspr	r10, SPRN_M_TW	/* restore r10 from M_TW */
-+	mfspr	r11, SPRN_SPRG_SCRATCH1	/* restore r11 */
-+	mfspr	r10, SPRN_SPRG_SCRATCH0	/* restore r10 */
- 	isync			/* Wait until new instr is loaded from memory */
- modified_instr:
- 	.space	4		/* this is where the add instr. is stored */
-@@ -683,9 +651,9 @@ modified_instr:
- 	b	DARFixed		/* Go back to normal TLB handling */
- 
- 	/* special handling for r10,r11 since these are modified already */
--153:	lwz	r11, 4(r0)	/* load r11 from memory */
-+153:	mfspr	r11, SPRN_SPRG_SCRATCH1	/* load r11 from SPRN_SPRG_SCRATCH1 */
- 	b	155f
--154:	mfspr	r11, SPRN_M_TW	/* load r10 from M_TW */
-+154:	mfspr	r11, SPRN_SPRG_SCRATCH0	/* load r10 from SPRN_SPRG_SCRATCH0 */
- 155:	add	r10, r10, r11	/* add it */
- 	mfctr	r11		/* restore r11 */
- 	b	151b
--- 
-1.7.1
+ arch/powerpc/Kconfig                     |   2 +-
+ arch/powerpc/include/asm/mmu-8xx.h       |   2 +
+ arch/powerpc/include/asm/pgtable-ppc32.h |  20 ++
+ arch/powerpc/include/asm/pte-8xx.h       |   7 +-
+ arch/powerpc/include/asm/reg.h           |   3 +-
+ arch/powerpc/kernel/head_8xx.S           | 366 ++++++++++++-------------
+ arch/powerpc/mm/fault.c                  |   7 -
+ 7 files changed, 201 insertions(+), 206 deletions(-)
