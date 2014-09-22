@@ -1,23 +1,23 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x234.google.com (mail-la0-x234.google.com
+ [IPv6:2a00:1450:4010:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C9531A05A1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2014 19:03:05 +1000 (EST)
-Message-ID: <541FDDD6.9040009@freescale.com>
-Date: Mon, 22 Sep 2014 11:29:10 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C6A9A1A0090
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2014 19:10:40 +1000 (EST)
+Received: by mail-la0-f52.google.com with SMTP id gq15so6351231lab.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2014 02:10:35 -0700 (PDT)
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>, <greg@kroah.com>, <arnd@arndb.de>,
- <mpe@ellerman.id.au>, <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/15] powerpc/msi: Improve IRQ bitmap allocator
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-4-git-send-email-mikey@neuling.org>
-In-Reply-To: <1411028820-29933-4-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Cc: cbe-oss-dev@lists.ozlabs.org, imunsie@au.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, anton@samba.org,
- jk@ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1411376728-15807-1-git-send-email-geert@linux-m68k.org>
+References: <1411376728-15807-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 22 Sep 2014 11:10:35 +0200
+Message-ID: <CAMuHMdVwOYB0HzYY_Uu+kKapC3eHSoV-=t1QHLFzgcGX2UOYoQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.17-rc5
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Mon, Sep 22, 2014 at 11:05 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.17-rc5[1]  to v3.17-rc4[3], the summaries are:
+>   - build errors: +13/-3
 
-Minor comment inline.
+  + /scratch/kisskb/src/arch/powerpc/kernel/iommu.c: error:
+'fail_iommu_bus_notifier' defined but not used
+[-Werror=unused-variable]:  => 149:30
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PAGES_PER_SECTION' undeclared (first use in this function):  =>
+1918:46, 1810:46, 1152:18
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PAGE_SECTION_MASK' undeclared (first use in this function):  =>
+1151:20
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error:
+'PFN_SECTION_SHIFT' undeclared (first use in this function):  =>
+1379:31
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function '__nr_to_section'
+[-Werror=implicit-function-declaration]:  => 1815:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'find_memory_block_hinted'
+[-Werror=implicit-function-declaration]:  => 1822:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'pfn_to_section_nr'
+[-Werror=implicit-function-declaration]:  => 1811:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'present_section_nr'
+[-Werror=implicit-function-declaration]:  => 1812:3
+  + /scratch/kisskb/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'section_nr_to_pfn'
+[-Werror=implicit-function-declaration]:  => 1847:3
 
-On 09/18/2014 11:26 AM, Michael Neuling wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> Currently msi_bitmap_alloc_hwirqs() will round up any IRQ allocation requests
-> to the nearest power of 2.  eg. ask for 5 IRQs and you'll get 8.  This wastes a
-> lot of IRQs which can be a scarce resource.
-> 
-> For cxl we can require multiple IRQs for every contexts that is attached to the
-> accelerator.  For AFU directed accelerators, there may be 1000s of contexts
-> attached, hence we can easily run out of IRQs, especially if we are needlessly
-> wasting them.
-> 
-> This changes the msi_bitmap_alloc_hwirqs() to allocate only the required number
-> of IRQs, hence avoiding this wastage.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/sysdev/msi_bitmap.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-> index 2ff6302..e001559 100644
-> --- a/arch/powerpc/sysdev/msi_bitmap.c
-> +++ b/arch/powerpc/sysdev/msi_bitmap.c
-> @@ -24,28 +24,36 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
->  	 * This is fast, but stricter than we need. We might want to add
->  	 * a fallback routine which does a linear search with no alignment.
->  	 */
+powerpc-randconfig
 
-Is this comment still relevant (especially the part mentioning "fast")?
++ a few new R_PPC64_REL24.
 
----
-Best Regards, Laurentiu
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7872/ (all 119 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7854/ (all 119 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
