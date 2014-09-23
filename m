@@ -1,23 +1,17 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
- [IPv6:2a00:1450:4010:c03::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3375E1A000F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 18:53:59 +1000 (EST)
-Received: by mail-la0-f43.google.com with SMTP id gi9so8291158lab.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 01:53:54 -0700 (PDT)
+Return-Path: <simon.kagstrom@netinsight.net>
+Received: from ernst.netinsight.se (ernst.netinsight.se [194.16.221.21])
+ by lists.ozlabs.org (Postfix) with SMTP id 5B2271A000F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 18:56:32 +1000 (EST)
+Date: Tue, 23 Sep 2014 10:56:16 +0200
+From: Simon =?UTF-8?B?S8OlZ3N0csO2bQ==?= <simon.kagstrom@netinsight.net>
+To: <linuxppc-dev@lists.ozlabs.org>, <grant.likely@linaro.org>,
+ <geert@linux-m68k.org>, <scottwood@freescale.com>
+Subject: Re: [PATCH v2] PowerPC: boot: Parse chosen/cmdline-timeout parameter
+Message-ID: <20140923105616.0dd666ff@marrow.netinsight.se>
+In-Reply-To: <20140909164006.0e3593f0@marrow.netinsight.se>
+References: <20140909164006.0e3593f0@marrow.netinsight.se>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1411461080-4061-1-git-send-email-geert@linux-m68k.org>
-References: <1411461080-4061-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 23 Sep 2014 10:53:54 +0200
-Message-ID: <CAMuHMdUcuKUpwB9K4BJY1U_rwLiG_Q4DgHZ5eqWBsiWjDpykXw@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.17-rc6 (take two)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2014 at 10:31 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.17-rc6[1]  to v3.17-rc5[3], the summaries are:
->   - build errors: +9/-10
+Hi again!
 
-  + /scratch/kisskb/src/drivers/net/ethernet/amd/lance.c: error:
-implicit declaration of function 'isa_bus_to_virt'
-[-Werror=implicit-function-declaration]:  => 1204:6
-  + /scratch/kisskb/src/drivers/net/ethernet/amd/lance.c: error:
-implicit declaration of function 'isa_virt_to_bus'
-[-Werror=implicit-function-declaration]:  => 575:2
-  + /scratch/kisskb/src/drivers/net/ethernet/cirrus/cs89x0.c: error:
-implicit declaration of function 'isa_virt_to_bus'
-[-Werror=implicit-function-declaration]:  => 892:3
-  + /scratch/kisskb/src/drivers/scsi/aha1542.c: error: implicit
-declaration of function 'isa_page_to_bus'
-[-Werror=implicit-function-declaration]:  => 674:4
-  + /scratch/kisskb/src/drivers/scsi/aha1542.c: error: implicit
-declaration of function 'isa_virt_to_bus'
-[-Werror=implicit-function-declaration]:  => 477:3
-  + /scratch/kisskb/src/drivers/scsi/wd7000.c: error: implicit
-declaration of function 'isa_bus_to_virt'
-[-Werror=implicit-function-declaration]:  => 1055:2
-  + /scratch/kisskb/src/drivers/scsi/wd7000.c: error: implicit
-declaration of function 'isa_page_to_bus'
-[-Werror=implicit-function-declaration]:  => 1121:4
-  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
+On Tue, 9 Sep 2014 16:40:06 +0200
+Simon K=C3=A5gstr=C3=B6m <simon.kagstrom@netinsight.net> wrote:
 
-powerpc-randconfig
+> A 5 second timeout during boot might be too long, so make it
+> configurable. Run the loop at least once to let the user stop the boot
+> by holding a key pressed.
+>=20
+> The property is added to the chosen node, e.g.,
+>=20
+> 	chosen {
+> 		bootargs =3D "console=3DttyUL0 root=3D/dev/ram0";
+> 		linux,stdout-path =3D "/plb@0/serial@46000000";
+> 		linux,cmdline-timeout =3D <100>;
+> 	} ;
+>=20
+> Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+> ---
+>=20
+> ChangeLog:
+>=20
+> v2:
+> - Rename the property linux,cmdline-timeout (Grant Likely)
+> - Run the loop at least once to allow (Grant Likely)
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7891/ (all 119 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7872/ (all 119 configs)
+Sorry to bother the list, but it would be nice if this patch could
+trickle down into some tree if it's seen as acceptable. So consider
+this a ping :-)
 
-Gr{oetje,eeting}s,
+>  arch/powerpc/boot/main.c   |   11 ++++++++++-
+>  arch/powerpc/boot/ops.h    |    2 +-
+>  arch/powerpc/boot/serial.c |    6 +++---
+>  3 files changed, 14 insertions(+), 5 deletions(-)
 
-                        Geert
+[...]
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+// Simon
