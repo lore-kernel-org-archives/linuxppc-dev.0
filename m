@@ -1,22 +1,48 @@
-Return-Path: <mmarek@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46D8A1A0027
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 01:44:37 +1000 (EST)
-From: Michal Marek <mmarek@suse.cz>
-To: sfr@canb.auug.org.au,
-	rdunlap@infradead.org,
-	davem@davemloft.net
-Subject: [PATCH 3/5] powerpc: Set CONFIG_NET=y in defconfigs
-Date: Tue, 23 Sep 2014 17:44:02 +0200
-Message-Id: <1411487044-14071-3-git-send-email-mmarek@suse.cz>
-In-Reply-To: <1411487044-14071-1-git-send-email-mmarek@suse.cz>
-References: <54218AEF.5090200@suse.cz>
- <1411487044-14071-1-git-send-email-mmarek@suse.cz>
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB8261A0070
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 02:26:48 +1000 (EST)
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 21FA91400B7
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2014 02:26:47 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 23 Sep 2014 10:26:45 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id AC6991FF001D
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 10:15:27 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8NGQg6550724914
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 18:26:42 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8NGQfNQ013895
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 10:26:42 -0600
+Date: Tue, 23 Sep 2014 09:26:23 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: Re: [PATCH v5 1/1] powerpc/perf: Adjust callchain based on DWARF
+ debug info
+Message-ID: <20140923162623.GA1698@us.ibm.com>
+References: <20140625000052.GA4484@us.ibm.com>
+ <20140625074248.GC1153@krava.brq.redhat.com>
+ <20140625154903.GA29607@us.ibm.com>
+ <20140922213345.GB666@drone.musicnaut.iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140922213345.GB666@drone.musicnaut.iki.fi>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, ulrich.weigand@de.ibm.com,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, linuxppc-dev@ozlabs.org,
+ Maynard Johnson <mpjohn@us.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +52,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 5d6be6a5 ("scsi_netlink : Make SCSI_NETLINK dependent on NET
-instead of selecting NET") removed what happened to be the only instance
-of 'select NET'. Defconfigs that were relying on the select now lack
-networking support.
+Aaro Koskinen [aaro.koskinen@iki.fi] wrote:
+| Hi,
+| 
+| On Wed, Jun 25, 2014 at 08:49:03AM -0700, Sukadev Bhattiprolu wrote:
+| > powerpc/perf: Adjust callchain based on DWARF debug info
+| > 
+| > When saving the callchain on Power, the kernel conservatively saves excess
+| > entries in the callchain. A few of these entries are needed in some cases
+| > but not others. We should use the DWARF debug information to determine
+| > when the entries are  needed.
+| 
+| This patch breaks perf compilation if DWARF support is not present.
+| DWARF support is auto-detected early in the build, so IMHO either user
+| should be informed to install the needed stuff, or the build should
+| succeed with limited functionality.
+| 
+| arch/powerpc/util/skip-callchain-idx.c:13:19: fatal error: dwarf.h: No such file or directory #include <dwarf.h>
+|                    ^
+| compilation terminated.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- arch/powerpc/configs/pmac32_defconfig     | 1 +
- arch/powerpc/configs/ppc64_defconfig      | 1 +
- arch/powerpc/configs/ppc64e_defconfig     | 1 +
- arch/powerpc/configs/pseries_defconfig    | 1 +
- arch/powerpc/configs/pseries_le_defconfig | 1 +
- 5 files changed, 5 insertions(+)
+Yes. Sorry. Anton fixed this recently:
 
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index 553e662..0351b5f 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -31,6 +31,7 @@ CONFIG_HIBERNATION=y
- CONFIG_APM_EMULATION=y
- CONFIG_PCCARD=m
- CONFIG_YENTA=m
-+CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
- CONFIG_XFRM_USER=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index f6c02f8..3651887 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -58,6 +58,7 @@ CONFIG_ELECTRA_CF=y
- CONFIG_HOTPLUG_PCI=y
- CONFIG_HOTPLUG_PCI_RPA=m
- CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-+CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
- CONFIG_XFRM_USER=m
-diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
-index 587f551..c3a3269 100644
---- a/arch/powerpc/configs/ppc64e_defconfig
-+++ b/arch/powerpc/configs/ppc64e_defconfig
-@@ -33,6 +33,7 @@ CONFIG_SPARSEMEM_MANUAL=y
- CONFIG_PCI_MSI=y
- CONFIG_PCCARD=y
- CONFIG_HOTPLUG_PCI=y
-+CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
- CONFIG_XFRM_USER=m
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 50375f1..dd2a9ca 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -53,6 +53,7 @@ CONFIG_SCHED_SMT=y
- CONFIG_HOTPLUG_PCI=y
- CONFIG_HOTPLUG_PCI_RPA=m
- CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-+CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
- CONFIG_XFRM_USER=m
-diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-index 4428ee4..63392f4 100644
---- a/arch/powerpc/configs/pseries_le_defconfig
-+++ b/arch/powerpc/configs/pseries_le_defconfig
-@@ -55,6 +55,7 @@ CONFIG_SCHED_SMT=y
- CONFIG_HOTPLUG_PCI=y
- CONFIG_HOTPLUG_PCI_RPA=m
- CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-+CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
- CONFIG_XFRM_USER=m
--- 
-1.8.4.5
+	https://lkml.org/lkml/2014/9/19/29
+
+Sukadev
