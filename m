@@ -1,24 +1,22 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
- [IPv6:2607:f8b0:4001:c03::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4470C1A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 06:58:26 +1000 (EST)
-Received: by mail-ie0-f179.google.com with SMTP id tp5so5542416ieb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:58:23 -0700 (PDT)
-Date: Tue, 23 Sep 2014 14:58:20 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH v2 3/3] PCI/MSI: Remove arch_msi_check_device()
-Message-ID: <20140923205820.GE6776@google.com>
-References: <cover.1410078503.git.agordeev@redhat.com>
- <50a2f79ce58b6b67b40d7737b21c168131240c31.1410078503.git.agordeev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50a2f79ce58b6b67b40d7737b21c168131240c31.1410078503.git.agordeev@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C54A1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 07:00:47 +1000 (EST)
+Message-ID: <1411506039.24563.26.camel@ul30vt.home>
+Subject: Re: [PATCH v2 04/13] powerpc/powernv: Convert/move set_bypass()
+ callback to take_ownership()
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 23 Sep 2014 15:00:39 -0600
+In-Reply-To: <1411441262-11025-5-git-send-email-aik@ozlabs.ru>
+References: <1411441262-11025-1-git-send-email-aik@ozlabs.ru>
+ <1411441262-11025-5-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,338 +26,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 07, 2014 at 08:57:55PM +0200, Alexander Gordeev wrote:
-> There are no archs that override arch_msi_check_device()
-> hook. Remove it as it is completely redundant.
+On Tue, 2014-09-23 at 13:00 +1000, Alexey Kardashevskiy wrote:
+> At the moment the iommu_table struct has a set_bypass() which enables/
+> disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
+> which calls this callback when external IOMMU users such as VFIO are
+> about to get over a PHB.
 > 
-> If an arch would need to check MSI/MSI-X possibility for a
-> device it should make it within arch_setup_msi_irqs() hook.
+> Since the set_bypass() is not really an iommu_table function but PE's
+> function, and we have an ops struct per IOMMU owner, let's move
+> set_bypass() to the spapr_tce_iommu_ops struct.
 > 
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-pci@vger.kernel.org
-> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+> As arch/powerpc/kernel/iommu.c is more about POWERPC IOMMU tables and
+> has very little to do with PEs, this moves take_ownership() calls to
+> the VFIO SPAPR TCE driver.
+> 
+> This renames set_bypass() to take_ownership() as it is not necessarily
+> just enabling bypassing, it can be something else/more so let's give it
+> a generic name. The bool parameter is inverted.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->  drivers/pci/msi.c   | 49 +++++++++++++------------------------------------
->  include/linux/msi.h |  3 ---
->  2 files changed, 13 insertions(+), 39 deletions(-)
+>  arch/powerpc/include/asm/iommu.h          |  1 -
+>  arch/powerpc/include/asm/tce.h            |  2 ++
+>  arch/powerpc/kernel/iommu.c               | 12 ------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 20 ++++++++++++--------
+>  drivers/vfio/vfio_iommu_spapr_tce.c       | 16 ++++++++++++++++
+>  5 files changed, 30 insertions(+), 21 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> index 84ee339..2b0b01d 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -77,7 +77,6 @@ struct iommu_table {
+>  #ifdef CONFIG_IOMMU_API
+>  	struct iommu_group *it_group;
+>  #endif
+> -	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+>  };
+>  
+>  /* Pure 2^n version of get_order */
+> diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
+> index 9f159eb..e6355f9 100644
+> --- a/arch/powerpc/include/asm/tce.h
+> +++ b/arch/powerpc/include/asm/tce.h
+> @@ -56,6 +56,8 @@ struct spapr_tce_iommu_ops {
+>  	struct iommu_table *(*get_table)(
+>  			struct spapr_tce_iommu_group *data,
+>  			int num);
+> +	void (*take_ownership)(struct spapr_tce_iommu_group *data,
+> +			bool enable);
 
-I like this patch a lot, but it's doing several things at once, so I split
-it into several patches as follows.  I think it is equivalent, but I did
-not add Thomas' tested-by.
+"set" is a better verb when using a bool to specify direction, imho.
 
-I also reversed the sense of pci_msi_supported() so it returns true (1)
-when MSI/MSI-X is supported and false (0) otherwise.
+This is pretty confusing now that we have
 
-The whole thing is on my pci/msi branch at
-https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/msi
+iommu_take_ownership()
+data->ops->take_ownership(true)
 
-Let me know if you see any issues.
+iommu_release_ownership()
+data->ops->take_ownership(false)
 
-Bjorn
+And there's zero comments here about what take_ownership is supposed to
+provide, or get_table for that matter.
 
-
-commit 28a3ec3f672d42a877d8770a33305dfe82c2cc90
-Author: Alexander Gordeev <agordeev@redhat.com>
-Date:   Tue Sep 23 12:39:54 2014 -0600
-
-    PCI/MSI: Remove arch_msi_check_device()
-    
-    No architectures implement arch_msi_check_device() or the struct msi_chip
-    .check_device() method, so remove them.
-    
-    Remove the "type" parameter to pci_msi_check_device() because it was only
-    used to call arch_msi_check_device() and is no longer needed.
-    
-    [bhelgaas: changelog, split to separate patch]
-    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index aff384aea639..a0b623d97ad8 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -56,16 +56,6 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
- 	chip->teardown_irq(chip, irq);
- }
- 
--int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
--{
--	struct msi_chip *chip = dev->bus->msi;
--
--	if (!chip || !chip->check_device)
--		return 0;
--
--	return chip->check_device(chip, dev, nvec, type);
--}
--
- int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
- 	struct msi_desc *entry;
-@@ -788,10 +778,9 @@ out_free:
-  * to determine if MSI/-X are supported for the device. If MSI/-X is
-  * supported return 0, else return an error code.
-  **/
--static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-+static int pci_msi_check_device(struct pci_dev *dev, int nvec)
- {
- 	struct pci_bus *bus;
--	int ret;
- 
- 	/* MSI must be globally enabled and supported by the device */
- 	if (!pci_msi_enable || !dev || dev->no_msi)
-@@ -816,10 +805,6 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
- 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
- 			return -EINVAL;
- 
--	ret = arch_msi_check_device(dev, nvec, type);
--	if (ret)
--		return ret;
--
- 	return 0;
- }
- 
-@@ -925,7 +910,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- 	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
- 		return -EINVAL;
- 
--	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
-+	status = pci_msi_check_device(dev, nvec);
- 	if (status)
- 		return status;
- 
-@@ -1059,7 +1044,7 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 		nvec = maxvec;
- 
- 	do {
--		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
-+		rc = pci_msi_check_device(dev, nvec);
- 		if (rc < 0) {
- 			return rc;
- 		} else if (rc > 0) {
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 6be66f48b026..36c63cfccf5b 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -55,7 +55,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
- void arch_teardown_msi_irq(unsigned int irq);
- int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
- void arch_teardown_msi_irqs(struct pci_dev *dev);
--int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
- void arch_restore_msi_irqs(struct pci_dev *dev);
- 
- void default_teardown_msi_irqs(struct pci_dev *dev);
-@@ -72,8 +71,6 @@ struct msi_chip {
- 	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
- 			 struct msi_desc *desc);
- 	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
--	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
--			    int nvec, int type);
- };
- 
- #endif /* LINUX_MSI_H */
-
-commit 9d686dd5bbf62a249d0e4f54bffd848d573d2380
-Author: Alexander Gordeev <agordeev@redhat.com>
-Date:   Tue Sep 23 14:25:11 2014 -0600
-
-    PCI/MSI: Move D0 check into pci_msi_check_device()
-    
-    Both callers of pci_msi_check_device() check that the device is in D0
-    state, so move the check from the callers into pci_msi_check_device()
-    itself.
-    
-    In pci_enable_msi_range(), note that pci_msi_check_device() never returns a
-    positive value any more, so the loop that called it until it returns zero
-    or negative is no longer necessary.
-    
-    [bhelgaas: changelog, split to separate patch]
-    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index a0b623d97ad8..416a4917a64a 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -783,7 +783,10 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
- 	struct pci_bus *bus;
- 
- 	/* MSI must be globally enabled and supported by the device */
--	if (!pci_msi_enable || !dev || dev->no_msi)
-+	if (!pci_msi_enable)
-+		return -EINVAL;
-+
-+	if (!dev || dev->no_msi || dev->current_state != PCI_D0)
- 		return -EINVAL;
- 
- 	/*
-@@ -907,13 +910,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- 	int status, nr_entries;
- 	int i, j;
- 
--	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
--		return -EINVAL;
--
- 	status = pci_msi_check_device(dev, nvec);
- 	if (status)
- 		return status;
- 
-+	if (!entries)
-+		return -EINVAL;
-+
- 	nr_entries = pci_msix_vec_count(dev);
- 	if (nr_entries < 0)
- 		return nr_entries;
-@@ -1020,8 +1023,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 	int nvec;
- 	int rc;
- 
--	if (dev->current_state != PCI_D0)
--		return -EINVAL;
-+	rc = pci_msi_check_device(dev, minvec);
-+	if (rc)
-+		return rc;
- 
- 	WARN_ON(!!dev->msi_enabled);
- 
-@@ -1044,17 +1048,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 		nvec = maxvec;
- 
- 	do {
--		rc = pci_msi_check_device(dev, nvec);
--		if (rc < 0) {
--			return rc;
--		} else if (rc > 0) {
--			if (rc < minvec)
--				return -ENOSPC;
--			nvec = rc;
--		}
--	} while (rc);
--
--	do {
- 		rc = msi_capability_init(dev, nvec);
- 		if (rc < 0) {
- 			return rc;
-
-commit 99b4b82ffbc665cfa363a89144c8cc29eb46ce3d
-Author: Alexander Gordeev <agordeev@redhat.com>
-Date:   Tue Sep 23 12:45:58 2014 -0600
-
-    PCI/MSI: Rename pci_msi_check_device() to pci_msi_supported()
-    
-    Rename pci_msi_check_device() to pci_msi_supported() for clarity.  Note
-    that pci_msi_supported() returns true if MSI/MSI-X is supported, so code
-    like:
-    
-      if (pci_msi_supported(...))
-    
-    reads naturally.
-    
-    [bhelgaas: changelog, split to separate patch, reverse sense]
-    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 416a4917a64a..d40323f0ed44 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -769,16 +769,15 @@ out_free:
- }
- 
- /**
-- * pci_msi_check_device - check whether MSI may be enabled on a device
-+ * pci_msi_supported - check whether MSI may be enabled on a device
-  * @dev: pointer to the pci_dev data structure of MSI device function
-  * @nvec: how many MSIs have been requested ?
-- * @type: are we checking for MSI or MSI-X ?
-  *
-  * Look at global flags, the device itself, and its parent buses
-  * to determine if MSI/-X are supported for the device. If MSI/-X is
-- * supported return 0, else return an error code.
-+ * supported return 1, else return 0.
-  **/
--static int pci_msi_check_device(struct pci_dev *dev, int nvec)
-+static int pci_msi_supported(struct pci_dev *dev, int nvec)
- {
- 	struct pci_bus *bus;
- 
-@@ -795,7 +794,7 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
- 	 *  b) the list manipulation code assumes nvec >= 1.
- 	 */
- 	if (nvec < 1)
--		return -ERANGE;
-+		return 0;
- 
- 	/*
- 	 * Any bridge which does NOT route MSI transactions from its
-@@ -806,9 +805,9 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
- 	 */
- 	for (bus = dev->bus; bus; bus = bus->parent)
- 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
--			return -EINVAL;
-+			return 0;
- 
--	return 0;
-+	return 1;
- }
- 
- /**
-@@ -910,9 +909,8 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- 	int status, nr_entries;
- 	int i, j;
- 
--	status = pci_msi_check_device(dev, nvec);
--	if (status)
--		return status;
-+	if (!pci_msi_supported(dev, nvec))
-+		return -EINVAL;
- 
- 	if (!entries)
- 		return -EINVAL;
-@@ -1023,9 +1021,8 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 	int nvec;
- 	int rc;
- 
--	rc = pci_msi_check_device(dev, minvec);
--	if (rc)
--		return rc;
-+	if (!pci_msi_supported(dev, minvec))
-+		return -EINVAL;
- 
- 	WARN_ON(!!dev->msi_enabled);
- 
-
-commit 83be7664f8492b8e4b72cd9375433909d40c018b
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Tue Sep 23 14:38:28 2014 -0600
-
-    PCI/MSI: Remove unnecessary temporary variable
-    
-    The only use of "status" is to hold a value which is immediately returned,
-    so just return and remove the variable directly.
-    
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index d40323f0ed44..aae2fc80692b 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -906,7 +906,7 @@ EXPORT_SYMBOL(pci_msix_vec_count);
-  **/
- int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- {
--	int status, nr_entries;
-+	int nr_entries;
- 	int i, j;
- 
- 	if (!pci_msi_supported(dev, nvec))
-@@ -937,8 +937,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- 		dev_info(&dev->dev, "can't enable MSI-X (MSI IRQ already assigned)\n");
- 		return -EINVAL;
- 	}
--	status = msix_capability_init(dev, entries, nvec);
--	return status;
-+	return msix_capability_init(dev, entries, nvec);
- }
- EXPORT_SYMBOL(pci_enable_msix);
- 
+>  };
+>  
+>  struct spapr_tce_iommu_group {
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 1c5dae7..c2c8d9d 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -1139,14 +1139,6 @@ int iommu_take_ownership(struct iommu_table *tbl)
+>  	memset(tbl->it_map, 0xff, sz);
+>  	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
+>  
+> -	/*
+> -	 * Disable iommu bypass, otherwise the user can DMA to all of
+> -	 * our physical memory via the bypass window instead of just
+> -	 * the pages that has been explicitly mapped into the iommu
+> -	 */
+> -	if (tbl->set_bypass)
+> -		tbl->set_bypass(tbl, false);
+> -
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_take_ownership);
+> @@ -1161,10 +1153,6 @@ void iommu_release_ownership(struct iommu_table *tbl)
+>  	/* Restore bit#0 set by iommu_init_table() */
+>  	if (tbl->it_offset == 0)
+>  		set_bit(0, tbl->it_map);
+> -
+> -	/* The kernel owns the device now, we can restore the iommu bypass */
+> -	if (tbl->set_bypass)
+> -		tbl->set_bypass(tbl, true);
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_release_ownership);
+>  
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 2d32a1c..8cb2f31 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1105,10 +1105,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+>  }
+>  
+> -static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+> +static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+>  {
+> -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+> -					      tce32.table);
+>  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>  	int64_t rc;
+>  
+> @@ -1136,7 +1134,7 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+>  		 * host side.
+>  		 */
+>  		if (pe->pdev)
+> -			set_iommu_table_base(&pe->pdev->dev, tbl);
+> +			set_iommu_table_base(&pe->pdev->dev, &pe->tce32.table);
+>  		else
+>  			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+>  	}
+> @@ -1152,15 +1150,21 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+>  	/* TVE #1 is selected by PCI address bit 59 */
+>  	pe->tce_bypass_base = 1ull << 59;
+>  
+> -	/* Install set_bypass callback for VFIO */
+> -	pe->tce32.table.set_bypass = pnv_pci_ioda2_set_bypass;
+> -
+>  	/* Enable bypass by default */
+> -	pnv_pci_ioda2_set_bypass(&pe->tce32.table, true);
+> +	pnv_pci_ioda2_set_bypass(pe, true);
+> +}
+> +
+> +static void pnv_ioda2_take_ownership(struct spapr_tce_iommu_group *data,
+> +				     bool enable)
+> +{
+> +	struct pnv_ioda_pe *pe = data->iommu_owner;
+> +
+> +	pnv_pci_ioda2_set_bypass(pe, !enable);
+>  }
+>  
+>  static struct spapr_tce_iommu_ops pnv_pci_ioda2_ops = {
+>  	.get_table = pnv_ioda1_iommu_get_table,
+> +	.take_ownership = pnv_ioda2_take_ownership,
+>  };
+>  
+>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index a8adfbd..1c1a9c4 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -76,6 +76,13 @@ static struct iommu_table *spapr_tce_find_table(
+>  	return ret;
+>  }
+>  
+> +static void tce_iommu_take_ownership_notify(struct spapr_tce_iommu_group *data,
+> +		bool enable)
+> +{
+> +	if (data && data->ops && data->ops->take_ownership)
+> +		data->ops->take_ownership(data, enable);
+> +}
+> +
+>  static int tce_iommu_enable(struct tce_container *container)
+>  {
+>  	int ret = 0;
+> @@ -413,6 +420,12 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  		ret = iommu_take_ownership(tbl);
+>  		if (!ret)
+>  			container->grp = iommu_group;
+> +		/*
+> +		 * Disable iommu bypass, otherwise the user can DMA to all of
+> +		 * our physical memory via the bypass window instead of just
+> +		 * the pages that has been explicitly mapped into the iommu
+> +		 */
+> +		tce_iommu_take_ownership_notify(data, true);
+>  	}
+>  
+>  	mutex_unlock(&container->lock);
+> @@ -450,6 +463,9 @@ static void tce_iommu_detach_group(void *iommu_data,
+>  		BUG_ON(!tbl);
+>  
+>  		iommu_release_ownership(tbl);
+> +
+> +		/* Kernel owns the device now, we can restore bypass */
+> +		tce_iommu_take_ownership_notify(data, false);
+>  	}
+>  	mutex_unlock(&container->lock);
+>  }
