@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 34D971A07B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 090F31A082B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:18 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 23 Sep 2014 13:01:14 +1000
+ Tue, 23 Sep 2014 13:01:17 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 758762BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:13 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B15952BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:15 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8N32rLT28311756
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:02:53 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8N31CGV020333
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:13 +1000
+ s8N32tq226083530
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:02:55 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8N31E2Z014736
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:01:14 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 09/13] powerpc/pseries/lpar: Enable VFIO
-Date: Tue, 23 Sep 2014 13:00:58 +1000
-Message-Id: <1411441262-11025-10-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v2 12/13] vfio: powerpc/spapr: Use it_page_size
+Date: Tue, 23 Sep 2014 13:01:01 +1000
+Message-Id: <1411441262-11025-13-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1411441262-11025-1-git-send-email-aik@ozlabs.ru>
 References: <1411441262-11025-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,111 +39,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch introduced iommu_table_ops::exchange() callback
-which effectively disabled VFIO on pseries. This implements exchange()
-for pseries/lpar so VFIO can work in nested guests.
+This makes use of the it_page_size from the iommu_table struct
+as page size can differ.
 
-Since exchaange() callback returns an old TCE, it has to call H_GET_TCE
-for every TCE being put to the table so VFIO performance in guests
-running under PR KVM is expected to be slower than in guests running under
-HV KVM or bare metal hosts.
+This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
+as recently introduced IOMMU_PAGE_XXX macros do not include
+IOMMU_PAGE_SHIFT.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 9a7364f..ae15b5a 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -138,13 +138,14 @@ static void tce_freemulti_pSeriesLP(struct iommu_table*, long, long);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index c9fac97..0dccbc4 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -36,7 +36,7 @@ static long try_increment_locked_vm(struct iommu_table *tbl)
+ 	if (!current || !current->mm)
+ 		return -ESRCH; /* process exited */
  
- static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				long npages, unsigned long uaddr,
-+				unsigned long *old_tces,
- 				enum dma_data_direction direction,
- 				struct dma_attrs *attrs)
- {
- 	u64 rc = 0;
- 	u64 proto_tce, tce;
- 	u64 rpn;
--	int ret = 0;
-+	int ret = 0, i = 0;
- 	long tcenum_start = tcenum, npages_start = npages;
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
  
- 	rpn = __pa(uaddr) >> TCE_SHIFT;
-@@ -154,6 +155,9 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	down_write(&current->mm->mmap_sem);
+ 	locked = current->mm->locked_vm + npages;
+@@ -60,7 +60,7 @@ static void decrement_locked_vm(struct iommu_table *tbl)
+ 	if (!current || !current->mm)
+ 		return; /* process exited */
  
- 	while (npages--) {
- 		tce = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
-+		if (old_tces)
-+			plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12,
-+					&old_tces[i++]);
- 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, tce);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
  
- 		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
-@@ -179,8 +183,9 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	down_write(&current->mm->mmap_sem);
+ 	if (npages > current->mm->locked_vm)
+@@ -284,8 +284,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (info.argsz < minsz)
+ 			return -EINVAL;
  
- static DEFINE_PER_CPU(__be64 *, tce_page);
+-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
+-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
++		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
++		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+ 		info.flags = 0;
  
--static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+static int tce_xchg_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				     long npages, unsigned long uaddr,
-+				     unsigned long *old_tces,
- 				     enum dma_data_direction direction,
- 				     struct dma_attrs *attrs)
- {
-@@ -195,6 +200,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 		if (copy_to_user((void __user *)arg, &info, minsz))
+@@ -318,10 +318,6 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
  
- 	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_MULTITCE)) {
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					   old_tces,
- 		                           direction, attrs);
- 	}
+-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
+-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
+-			return -EINVAL;
+-
+ 		/* iova is checked by the IOMMU API */
+ 		tce = param.vaddr;
+ 		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
+@@ -334,21 +330,25 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 			return -ENXIO;
+ 		BUG_ON(!tbl->it_group);
  
-@@ -211,6 +217,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		if (!tcep) {
- 			local_irq_restore(flags);
- 			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					    old_tces,
- 					    direction, attrs);
- 		}
- 		__get_cpu_var(tce_page) = tcep;
-@@ -232,6 +239,10 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		for (l = 0; l < limit; l++) {
- 			tcep[l] = cpu_to_be64(proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT);
- 			rpn++;
-+			if (old_tces)
-+				plpar_tce_get((u64)tbl->it_index,
-+						(u64)(tcenum + l) << 12,
-+						&old_tces[tcenum + l]);
- 		}
- 
- 		rc = plpar_tce_put_indirect((u64)tbl->it_index,
-@@ -262,6 +273,15 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 	return ret;
- }
- 
-+static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+				     long npages, unsigned long uaddr,
-+				     enum dma_data_direction direction,
-+				     struct dma_attrs *attrs)
-+{
-+	return tce_xchg_pSeriesLP(tbl, tcenum, npages, uaddr, NULL,
-+			direction, attrs);
-+}
++		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
++			return -EINVAL;
 +
- static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
- {
- 	u64 rc;
-@@ -637,6 +657,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
+ 		if (ret)
+ 			return ret;
  
- struct iommu_table_ops iommu_table_lpar_multi_ops = {
- 	.set = tce_buildmulti_pSeriesLP,
-+	.exchange = tce_xchg_pSeriesLP,
- 	.clear = tce_freemulti_pSeriesLP,
- 	.get = tce_get_pSeriesLP
- };
+-		for (i = 0; i < (param.size >> IOMMU_PAGE_SHIFT_4K); ++i) {
++		for (i = 0; i < (param.size >> tbl->it_page_shift); ++i) {
+ 			ret = iommu_put_tce_user_mode(tbl,
+-					(param.iova >> IOMMU_PAGE_SHIFT_4K) + i,
++					(param.iova >> tbl->it_page_shift) + i,
+ 					tce);
+ 			if (ret)
+ 				break;
+-			tce += IOMMU_PAGE_SIZE_4K;
++			tce += IOMMU_PAGE_SIZE(tbl);
+ 		}
+ 		if (ret)
+ 			iommu_clear_tces_and_put_pages(tbl,
+-					param.iova >> IOMMU_PAGE_SHIFT_4K, i);
++					param.iova >> tbl->it_page_shift, i);
+ 
+ 		iommu_flush_tce(tbl);
+ 
+@@ -379,23 +379,23 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
+-		if (param.size & ~IOMMU_PAGE_MASK_4K)
+-			return -EINVAL;
+-
+ 		tbl = spapr_tce_find_table(container, data, param.iova);
+ 		if (!tbl)
+ 			return -ENXIO;
+ 
++		if (param.size & ~IOMMU_PAGE_MASK(tbl))
++			return -EINVAL;
++
+ 		BUG_ON(!tbl->it_group);
+ 
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.size >> tbl->it_page_shift);
+ 		if (ret)
+ 			return ret;
+ 
+ 		ret = iommu_clear_tces_and_put_pages(tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				param.size >> tbl->it_page_shift);
+ 		iommu_flush_tce(tbl);
+ 
+ 		return ret;
 -- 
 2.0.0
