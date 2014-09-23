@@ -1,27 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9CC21A041C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 10:22:57 +1000 (EST)
-Message-ID: <1411429840.13320.100.camel@snotra.buserror.net>
-Subject: Re: [PATCH 03/15] powerpc/msi: Improve IRQ bitmap allocator
-From: Scott Wood <scottwood@freescale.com>
-To: Laurentiu Tudor <b10716@freescale.com>
-Date: Mon, 22 Sep 2014 18:50:40 -0500
-In-Reply-To: <541FDD32.8020105@freescale.com>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-4-git-send-email-mikey@neuling.org>
- <1411157769.13320.74.camel@snotra.buserror.net>
- <1411157986.13320.75.camel@snotra.buserror.net>
- <541FDD32.8020105@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 802BC1A0087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 10:54:39 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 23 Sep 2014 10:54:38 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EAD0E357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 10:54:34 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8N0aFWl56688640
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 10:36:24 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8N0s1GF021640
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 10:54:01 +1000
+Date: Tue, 23 Sep 2014 10:53:39 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 0/2] powerpc: pci-ioda: Neatening
+Message-ID: <20140923005339.GA7740@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <cover.1411320262.git.joe@perches.com>
+ <1411368977.16867.11.camel@concordia>
 MIME-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
- arnd@arndb.de, greg@kroah.com, imunsie@au.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Laurentiu Tudor <Laurentiu.Tudor@freescale.com>, anton@samba.org,
- jk@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1411368977.16867.11.camel@concordia>
+Cc: Joe Perches <joe@perches.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-22 at 11:26 +0300, Laurentiu Tudor wrote:
-> On 09/19/2014 11:19 PM, Scott Wood wrote:
-> > On Fri, 2014-09-19 at 15:16 -0500, Scott Wood wrote:
-> >> On Thu, 2014-09-18 at 18:26 +1000, Michael Neuling wrote:
-> >>> From: Ian Munsie <imunsie@au1.ibm.com>
-> >>>
-> >>> Currently msi_bitmap_alloc_hwirqs() will round up any IRQ allocation requests
-> >>> to the nearest power of 2.  eg. ask for 5 IRQs and you'll get 8.  This wastes a
-> >>> lot of IRQs which can be a scarce resource.
-> >>>
-> >>> For cxl we can require multiple IRQs for every contexts that is attached to the
-> >>> accelerator.  For AFU directed accelerators, there may be 1000s of contexts
-> >>> attached, hence we can easily run out of IRQs, especially if we are needlessly
-> >>> wasting them.
-> >>>
-> >>> This changes the msi_bitmap_alloc_hwirqs() to allocate only the required number
-> >>> of IRQs, hence avoiding this wastage.
-> >>>
-> >>> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> >>> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> >>> ---
-> >>>  arch/powerpc/sysdev/msi_bitmap.c | 18 +++++++++++++-----
-> >>>  1 file changed, 13 insertions(+), 5 deletions(-)
-> >>
-> >> This conflicts with (and partially duplicates)
-> >> http://patchwork.ozlabs.org/patch/381892/
-> >> which I have in my tree.  How should we handle it?
-> >>
-> >> Laurentiu, from looking at the overlap between patches I see a problem
-> >> with your existing patch, regarding the out-of-irqs path and
-> >> msi_bitmap_free_hwirqs(), so one way or another that needs to get fixed
-> >> soon.
-> > 
-> > Given the problems with Laurentiu's patch, perhaps it'd be best for me
-> > to just revert that patch in my tree, and respin it after this patchset
-> > has been merged.
-> 
-> Let me know if you want me to rebase my stuff on top of Michael's patch.
+On Mon, Sep 22, 2014 at 04:56:17PM +1000, Michael Ellerman wrote:
+>On Sun, 2014-09-21 at 10:55 -0700, Joe Perches wrote:
+>> printk calls should return void
+>> 
+>> Joe Perches (2):
+>>   powerpc: pci-ioda: Remove unnecessary return value from printk
+>>   powerpc: pci-ioda: Use a single function to emit logging messages
+>
+>Patches look good to me.
+>
 
-Yes, please resend it once Michael's patch gets merged.
+Patches look good to me too.
 
--Scott
+>Ben/Gavin, what do these macros give us over pr/dev_debug() ?
+>
+
+Those macros prints unified mapping information between
+PE number and PCI device/bus.
+
+Thanks,
+Gavin
+
+>cheers
+>
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
