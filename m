@@ -1,20 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
+ [IPv6:2a00:1450:4010:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07E4B1A0171
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 18:20:09 +1000 (EST)
-Date: Tue, 23 Sep 2014 18:20:07 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v2] powerpc/iommu/ddw: Fix endianness
-Message-ID: <20140923182007.5d682c11@kryten>
-In-Reply-To: <1411437529-6126-1-git-send-email-aik@ozlabs.ru>
-References: <1411437529-6126-1-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3375E1A000F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 18:53:59 +1000 (EST)
+Received: by mail-la0-f43.google.com with SMTP id gi9so8291158lab.16
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 01:53:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- linux-kernel@vger.kernel.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1411461080-4061-1-git-send-email-geert@linux-m68k.org>
+References: <1411461080-4061-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 23 Sep 2014 10:53:54 +0200
+Message-ID: <CAMuHMdUcuKUpwB9K4BJY1U_rwLiG_Q4DgHZ5eqWBsiWjDpykXw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.17-rc6 (take two)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,102 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Sep 23, 2014 at 10:31 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.17-rc6[1]  to v3.17-rc5[3], the summaries are:
+>   - build errors: +9/-10
 
-Hi Alexey,
+  + /scratch/kisskb/src/drivers/net/ethernet/amd/lance.c: error:
+implicit declaration of function 'isa_bus_to_virt'
+[-Werror=implicit-function-declaration]:  => 1204:6
+  + /scratch/kisskb/src/drivers/net/ethernet/amd/lance.c: error:
+implicit declaration of function 'isa_virt_to_bus'
+[-Werror=implicit-function-declaration]:  => 575:2
+  + /scratch/kisskb/src/drivers/net/ethernet/cirrus/cs89x0.c: error:
+implicit declaration of function 'isa_virt_to_bus'
+[-Werror=implicit-function-declaration]:  => 892:3
+  + /scratch/kisskb/src/drivers/scsi/aha1542.c: error: implicit
+declaration of function 'isa_page_to_bus'
+[-Werror=implicit-function-declaration]:  => 674:4
+  + /scratch/kisskb/src/drivers/scsi/aha1542.c: error: implicit
+declaration of function 'isa_virt_to_bus'
+[-Werror=implicit-function-declaration]:  => 477:3
+  + /scratch/kisskb/src/drivers/scsi/wd7000.c: error: implicit
+declaration of function 'isa_bus_to_virt'
+[-Werror=implicit-function-declaration]:  => 1055:2
+  + /scratch/kisskb/src/drivers/scsi/wd7000.c: error: implicit
+declaration of function 'isa_page_to_bus'
+[-Werror=implicit-function-declaration]:  => 1121:4
+  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
 
-> ddw_avail is a pointer to the "ibm,ddw-applicable" property which
-> contains 3 cells which are big-endian as it is a device tree.
-> rtas_call() accepts a RTAS token in CPU-endian. This converts RTAS
-> tokens from big-endian to CPU-endian. Since every token is used once
-> till guest is rebooted, there is no much sense in caching RTAS tokens
-> in CPU-endian.
+powerpc-randconfig
 
-I see a few sparse endian warnings with this. This patch (that applies
-on top of yours) uses of_property_read_u32_array to byte swap and avoid
-the need for a number of be32_to_cpu calls.
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7891/ (all 119 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7872/ (all 119 configs)
 
-Can you verify this works and then fold it into yours? Also mark it for
-inclusion in stable v3.13+.
+Gr{oetje,eeting}s,
 
-You can add:
+                        Geert
 
-Reviewed-by: Anton Blanchard <anton@samba.org>
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks!
-Anton
-
-Index: b/arch/powerpc/platforms/pseries/iommu.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -725,16 +725,18 @@ static void remove_ddw(struct device_nod
- {
- 	struct dynamic_dma_window_prop *dwp;
- 	struct property *win64;
--	const u32 *ddw_avail;
-+	u32 ddw_avail[3];
- 	u64 liobn;
--	int len, ret = 0;
-+	int ret = 0;
-+
-+	ret = of_property_read_u32_array(np, "ibm,ddw-applicable",
-+					 &ddw_avail[0], 3);
- 
--	ddw_avail = of_get_property(np, "ibm,ddw-applicable", &len);
- 	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
- 	if (!win64)
- 		return;
- 
--	if (!ddw_avail || len < 3 * sizeof(u32) || win64->length < sizeof(*dwp))
-+	if (ret || win64->length < sizeof(*dwp))
- 		goto delprop;
- 
- 	dwp = win64->value;
-@@ -750,7 +752,7 @@ static void remove_ddw(struct device_nod
- 		pr_debug("%s successfully cleared tces in window.\n",
- 			 np->full_name);
- 
--	ret = rtas_call(be32_to_cpu(ddw_avail[2]), 1, 1, NULL, liobn);
-+	ret = rtas_call(ddw_avail[2], 1, 1, NULL, liobn);
- 	if (ret)
- 		pr_warning("%s: failed to remove direct window: rtas returned "
- 			"%d to ibm,remove-pe-dma-window(%x) %llx\n",
-@@ -841,7 +843,7 @@ static int query_ddw(struct pci_dev *dev
- 		cfg_addr = edev->pe_config_addr;
- 	buid = edev->phb->buid;
- 
--	ret = rtas_call(be32_to_cpu(ddw_avail[0]), 3, 5, (u32 *)query,
-+	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
- 		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
- 	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
- 		" returned %d\n", ddw_avail[0], cfg_addr, BUID_HI(buid),
-@@ -872,7 +874,7 @@ static int create_ddw(struct pci_dev *de
- 
- 	do {
- 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
--		ret = rtas_call(be32_to_cpu(ddw_avail[1]), 5, 4, (u32 *)create,
-+		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create,
- 				cfg_addr, BUID_HI(buid), BUID_LO(buid),
- 				page_shift, window_shift);
- 	} while (rtas_busy_delay(ret));
-@@ -911,7 +913,7 @@ static u64 enable_ddw(struct pci_dev *de
- 	int page_shift;
- 	u64 dma_addr, max_addr;
- 	struct device_node *dn;
--	const u32 *uninitialized_var(ddw_avail);
-+	u32 ddw_avail[3];
- 	struct direct_window *window;
- 	struct property *win64;
- 	struct dynamic_dma_window_prop *ddwprop;
-@@ -943,8 +945,9 @@ static u64 enable_ddw(struct pci_dev *de
- 	 * for the given node in that order.
- 	 * the property is actually in the parent, not the PE
- 	 */
--	ddw_avail = of_get_property(pdn, "ibm,ddw-applicable", &len);
--	if (!ddw_avail || len < 3 * sizeof(u32))
-+	ret = of_property_read_u32_array(pdn, "ibm,ddw-applicable",
-+					 &ddw_avail[0], 3);
-+	if (ret)
- 		goto out_failed;
- 
-        /*
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
