@@ -1,21 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77EBA1A009E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 15:45:23 +1000 (EST)
-Message-ID: <1411451106.13320.106.camel@snotra.buserror.net>
-Subject: Re: Pull request: scottwood/linux.git next
-From: Scott Wood <scottwood@freescale.com>
-To: Bob Cochran <ppc@mindchasers.com>
-Date: Tue, 23 Sep 2014 00:45:06 -0500
-In-Reply-To: <5420EE93.7080006@mindchasers.com>
-References: <20140922222142.GA8525@home.buserror.net>
- <5420EE93.7080006@mindchasers.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D7A891A00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 16:59:32 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5721F14007B
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 16:59:31 +1000 (EST)
+Date: Tue, 23 Sep 2014 08:59:06 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: Re: [PATCH v5 1/1] powerpc/perf: Adjust callchain based on DWARF
+ debug info
+Message-ID: <20140923065906.GA2979@krava.brq.redhat.com>
+References: <20140625000052.GA4484@us.ibm.com>
+ <20140625074248.GC1153@krava.brq.redhat.com>
+ <20140625154903.GA29607@us.ibm.com>
+ <20140922213345.GB666@drone.musicnaut.iki.fi>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140922213345.GB666@drone.musicnaut.iki.fi>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, ulrich.weigand@de.ibm.com,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, linuxppc-dev@ozlabs.org,
+ Maynard Johnson <mpjohn@us.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-22 at 23:52 -0400, Bob Cochran wrote:
-> On 09/22/2014 06:21 PM, Scott Wood wrote:
-> > Highlights include DMA32 zone support (SATA, USB, etc now works on 64-bit
-> > FSL kernels), MSI changes, 8xx optimizations and cleanup, t104x board
-> > support, and PrPMC PCI enumeration.
-> >
-> > The following changes since commit 78eb9094ca08a40b8f9d3e113a2b88e0b7dbad1d:
-> >
-> >    powerpc/t2080rdb: Add T2080RDB board support (2014-07-31 00:11:10 -0500)
-> >
-> > are available in the git repository at:
-> >
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> >
-> > for you to fetch changes up to cb0446c1b625326682ec4f9d1dd10779433646bc:
-> >
-> >    Revert "powerpc/fsl_msi: spread msi ints across different MSIRs" (2014-09-19 15:20:42 -0500)
-> >
-> > ----------------------------------------------------------------
-> > Aaron Sierra (2):
-> >        fsl_ifc: Fix csor_ext position in fsl_ifc_regs
-> >        powerpc: fsl_pci: Add forced PCI Agent enumeration
-> >
-> > LEROY Christophe (7):
-> >        powerpc/8xx: Declare SPRG2 as a SCRATCH register
-> >        powerpc/8xx: Use SCRATCH0 and SCRATCH1 also for TLB handlers
-> >        powerpc/8xx: Remove loading of r10 at end of FixupDAR
-> >        powerpc/8xx: Fix comment about DIRTY update
-> >        powerpc/8xx: No need to save r10 and r3 when not calling FixupDAR
-> >        powerpc/8xx: Optimize verification in FixupDAR
-> >        powerpc/8xx: Duplicate two insns instead of branching
-> >
-> > Nikhil Badola (3):
-> >        powerpc: configs: Add VFAT file-system configs
-> >        powerpc: dts: t4240: Change T4240 USB controller version
-> >        powerpc: dts: t208x: Change T208x USB controller version
-> >
-> > Priyanka Jain (2):
-> >        powerpc/fsl-booke: Add initial T1040/T1042 RDB board support
+On Tue, Sep 23, 2014 at 12:33:45AM +0300, Aaro Koskinen wrote:
+> Hi,
 > 
+> On Wed, Jun 25, 2014 at 08:49:03AM -0700, Sukadev Bhattiprolu wrote:
+> > powerpc/perf: Adjust callchain based on DWARF debug info
+> > 
+> > When saving the callchain on Power, the kernel conservatively saves excess
+> > entries in the callchain. A few of these entries are needed in some cases
+> > but not others. We should use the DWARF debug information to determine
+> > when the entries are  needed.
 > 
-> Hi Scott,
+> This patch breaks perf compilation if DWARF support is not present.
+> DWARF support is auto-detected early in the build, so IMHO either user
+> should be informed to install the needed stuff, or the build should
+> succeed with limited functionality.
 > 
-> I would like to try your next branch with my t1040rdb along with DPAA 
-> support / drivers.  I don't see DPAA support in your repo.  Can you 
-> point me to a DPAA patch set somewhere, or am I on my own to merge what 
-> I need from sdk or yocto?
+> arch/powerpc/util/skip-callchain-idx.c:13:19: fatal error: dwarf.h: No such file or directory #include <dwarf.h>
+>                    ^
+> compilation terminated.
 
-Unfortunately DPAA support has not yet been upstreamed, though it is
-being worked on.  For now if you need DPAA with the latest kernel,
-you'll need to merge it yourself based on the SDK code.  It also
-wouldn't hurt to let any sales/support contact you may have at
-Freescale know that this is important to you.
+looks like powerpc issue.. hows 'make -f tests/make' doing
+on powerpc? It tests above scenario.
 
--Scott
+jirka
