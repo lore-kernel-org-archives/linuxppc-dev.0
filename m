@@ -1,18 +1,18 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from cdptpa-oedge-vip.email.rr.com
- (cdptpa-outbound-snat.email.rr.com [107.14.166.229])
- by lists.ozlabs.org (Postfix) with ESMTP id 24CCF1A0440
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 09:20:23 +1000 (EST)
-Date: Tue, 23 Sep 2014 19:20:21 -0400
+ (cdptpa-outbound-snat.email.rr.com [107.14.166.226])
+ by lists.ozlabs.org (Postfix) with ESMTP id 78F2D1A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 09:46:07 +1000 (EST)
+Date: Tue, 23 Sep 2014 19:46:04 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 2/3] powerpc/ftrace: Remove mod_return_to_handler
-Message-ID: <20140923192021.57f335e0@gandalf.local.home>
-In-Reply-To: <1410937624-25140-2-git-send-email-anton@samba.org>
+Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
+Message-ID: <20140923194604.233bdbad@gandalf.local.home>
+In-Reply-To: <1410937624-25140-3-git-send-email-anton@samba.org>
 References: <1410937624-25140-1-git-send-email-anton@samba.org>
- <1410937624-25140-2-git-send-email-anton@samba.org>
+ <1410937624-25140-3-git-send-email-anton@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="MP_/pKmPtJCdPki8awLJI3NPOZB"
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,47 +23,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Sep 2014 17:07:03 +1000
+--MP_/pKmPtJCdPki8awLJI3NPOZB
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On Wed, 17 Sep 2014 17:07:04 +1000
 Anton Blanchard <anton@samba.org> wrote:
 
-> mod_return_to_handler is the same as return_to_handler, except
-> it handles the change of the TOC (r2). Add this into
-> return_to_handler and remove mod_return_to_handler.
+> Instead of passing in the stack address of the link register
+> to be modified, just pass in the old value and return the
+> new value and rely on ftrace_graph_caller to do the
+> modification.
+> 
+> This removes the exception handling around the stack update -
+> it isn't needed and we weren't consistent about it. Later on
+> we would do an unprotected modification:
+> 
+>        if (!ftrace_graph_entry(&trace)) {
+>                *parent = old;
+> 
 
-Adding this patch actually gave me some more output. Funny that?
+First I'll say this is something I've been wanting to do with x86 for
+some time. That said...
 
-electra login: INFO: rcu_sched self-detected stall on CPU { 1}  (t=5250 jiffies g=3579 c=3578 q=7)
-Task dump for CPU 1:
-trace-cmd       R  running task        0  3553   3550 0x00008014
-Call Trace:
-[c0000000054a6ce0] [c000000000012b34] .show_stack+0x104/0x260 (unreliable)
-[c0000000054a6dc0] [c0000000000c2270] .sched_show_task+0xd0/0x150
-[c0000000054a6e40] [c0000000000eedb0] .rcu_dump_cpu_stacks+0xe0/0x150
-[c0000000054a6ee0] [c0000000000f2a48] .rcu_check_callbacks+0x4f8/0x8d0
-[c0000000054a7020] [c0000000000f8118] .update_process_times+0x48/0xa0
-[c0000000054a70b0] [c00000000010cfe8] .tick_sched_timer+0x88/0xd0
-[c0000000054a7150] [c0000000000f8b1c] .__run_hrtimer+0xcc/0x2c0
-[c0000000054a7200] [c0000000000f9a98] .hrtimer_interrupt+0x158/0x330
-[c0000000054a7310] [c00000000001a6b8] .__timer_interrupt+0xa8/0x280
-[c0000000054a73c0] [c00000000001a920] .timer_interrupt+0x90/0x100
-[c0000000054a7440] [c000000000002260] decrementer_common+0x160/0x180
---- interrupt: 901 at .trace_buffer_lock_reserve+0x2c/0x90
-    LR = .trace_function+0x54/0xe0
-[c0000000054a77c0] [c0000000001449cc] .function_trace_call+0x7c/0x120
-[c0000000054a7840] [c00000000012d750] .ftrace_ops_no_ops+0xf0/0x170
-[c0000000054a78e0] [c000000000009d8c] ftrace_call+0x4/0x8
-[c0000000054a7950] [c00000000072e128] .mutex_unlock+0x18/0x70
-[c0000000054a79d0] [c000000000137534] .tracing_buffers_splice_read+0x424/0x4c0
-[c0000000054a7c80] [c00000000021bfe8] .do_splice_to+0xa8/0xe0
-[c0000000054a7d20] [c00000000021eae4] .SyS_splice+0x694/0x6b0
-[c0000000054a7e30] [c000000000009224] syscall_exit+0x0/0x98
+With this patch, things move much further in my tests. The stress test
+passes again. But then it fails on my stack trace test. Which is
+because this is what I have in the stack traces:
+
+           sleep-3557  [000] d...   100.206808: <stack trace>
+ => 0
+ => 0
+ => 0
+ => 0
+ => 0
+ => 0
+ => 0
+ => 0
 
 
-Note, the stress test is basically this:
+Where without the patches I have something like this:
 
-perf record -o perf-test.dat -a -- trace-cmd record -e all -p function hackbench 2
+          sleep-3641  [001] d...   304.023550: <stack trace>
+ => .ftrace_raw_event_sched_switch
+ => .__schedule
+ => .schedule
+ => .do_nanosleep
+ => .hrtimer_nanosleep
+ => .compat_SyS_nanosleep
+ => syscall_exit
+ => 0
 
-It actually dies as it finishes the hackbench run and starts stopping
-the tracing.
+This could be broken from the earlier patches, I haven't run just this
+test. I probably should on them.
+
+I've attached the test.
 
 -- Steve
+
+--MP_/pKmPtJCdPki8awLJI3NPOZB
+Content-Type: application/octet-stream; name=ftrace-test-event-stacktrace
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=ftrace-test-event-stacktrace
+
+IyEvYmluL2Jhc2gKCmZpbmRfZGVidWdmcygpIHsKICAgIGRlYnVnZnM9YGNhdCAvcHJvYy9tb3Vu
+dHMgfCB3aGlsZSByZWFkIG1vdW50IGRpciB0eXBlIG9wdHMgYSBiOyBkbwoJaWYgWyAkbW91bnQg
+PT0gImRlYnVnZnMiIF07IHRoZW4KCSAgICBlY2hvICRkaXI7CgkgICAgYnJlYWsKCWZpCiAgICBk
+b25lYAogICAgaWYgWyAteiAiJGRlYnVnZnMiIF07IHRoZW4KCWlmICEgbW91bnQgLXQgZGVidWdm
+cyBub2RldiAvc3lzL2tlcm5lbC9kZWJ1ZzsgdGhlbgoJICAgIGVjaG8gIkZBSUxFRCB0byBtb3Vu
+dCBkZWJ1Z2ZzIgoJICAgIGV4aXQgLTEKCWZpCgllY2hvICIvc3lzL2tlcm5lbC9kZWJ1ZyIKICAg
+IGVsc2UKCWVjaG8gJGRlYnVnZnMKICAgIGZpCn0KCmRlYnVnZnM9YGZpbmRfZGVidWdmc2AKVFJB
+Q0VESVI9IiRkZWJ1Z2ZzL3RyYWNpbmciCkVWRU5URElSPSRUUkFDRURJUi9ldmVudHMKRVZFTlQ9
+JEVWRU5URElSL3NjaGVkL3NjaGVkX3N3aXRjaApFVkVOVF9FTkFCTEU9JEVWRU5UL2VuYWJsZQpU
+UklHR0VSX0ZJTEU9JEVWRU5UL3RyaWdnZXIKVFJBQ0VfRklMRT0kVFJBQ0VESVIvdHJhY2UKVFJB
+Q0lOR19PTj0kVFJBQ0VESVIvdHJhY2luZ19vbgoKIyBzZXQgLXgKCmlmIFsgISAtZiAkVFJJR0dF
+Ul9GSUxFIF07IHRoZW4KICAgIGVjaG8gInRyaWdnZXJzIGFyZSBub3Qgc2V0IGZvciB0aGlzIGtl
+cm5lbCIKICAgIGV4aXQgMApmaQoKZnVuY3Rpb24gY250X3RyYWNlKCkgewoJICAgIGdyZXAgLXYg
+J14jJyAkVFJBQ0VfRklMRSB8IHdjIC1sCn0KCmZ1bmN0aW9uIGNsZWFyX3RyaWdnZXJzKCkgewog
+ICAgZ3JlcCAtdiAnXiMnICRUUklHR0VSX0ZJTEUgfCB3aGlsZSByZWFkIHQ7IGRvCgl0cj1gZWNo
+byAkdCB8IHNlZCAtZSBzJy86LiovLydgCglpZiBbICR0ciA9PSAiZW5hYmxlX2V2ZW50IiAtbyAk
+dHIgPT0gImRpc2FibGVfZXZlbnQiIF07IHRoZW4KCSAgICB0cj1gZWNobyAkdCB8IHNlZCAtZSBz
+Jy9cKFteOl0qOlteOl0qOlteOl0qXCk6LiovXDEvJ2AKCWZpCgllY2hvICIhJHRyIiA+ICRUUklH
+R0VSX0ZJTEUKICAgIGRvbmUKfQoKZnVuY3Rpb24gY2hlY2tfZXZlbnRzKCkgewogICAgZXZlbnRz
+PSQxCiAgICBzdGFjaz0kMgogICAgY291bnQ9JDMKCiAgICBpZiBbICRldmVudHMgLWVxIDEgXTsg
+dGhlbgoJaWYgISBncmVwIC1xICdzY2hlZF9zd2l0Y2g6JyAkVFJBQ0VfRklMRSA7IHRoZW4KCSAg
+ICBlY2hvICJFeHBlY3RlZCBldmVudCBidXQgaXQgd2Fzbid0IHRoZXJlIgoJICAgIGV4aXQgLTEK
+CWZpCiAgICBlbHNlCglpZiBncmVwIC1xICdzY2hlZF9zd2l0Y2g6JyAkVFJBQ0VfRklMRSA7IHRo
+ZW4KCSAgICBlY2hvICJFeHBlY3RlZCBubyBldmVudHMgYnV0IGV2ZW50cyB3ZXJlIGZvdW5kIgoJ
+ICAgIGV4aXQgLTEKCWZpCiAgICBmaQoKICAgIGlmIFsgJHN0YWNrIC1lcSAxIF07IHRoZW4KCWlm
+IFsgJGNvdW50IC1lcSAwIF07IHRoZW4KCSAgICAjIHVubGltaXRlZCwgZmluZCB0aGUgc2xlZXAg
+Y2FsbAoJICAgIGlmICEgZ3JlcCAtcSAnXiA9PiAuKnNsZWVwJyAkVFJBQ0VfRklMRTsgdGhlbgoJ
+CWVjaG8gIkNvdWxkIG5vdCBmaW5kIHNsZWVwIGNhbGwiCgkJZXhpdCAtMQoJICAgIGZpCgllbHNl
+CgkgICAgIyBjb3VudCB0aGUgc3RhY2sgdHJhY2VzCgkgICAgY250PWBncmVwICc8c3RhY2sgdHJh
+Y2U+JyAkVFJBQ0VfRklMRSB8IHdjIC1sYDsKCSAgICBpZiBbICRjbnQgLW5lICRjb3VudCBdOyB0
+aGVuCgkJZWNobyAiRXhwZWN0ZWQgJGNvdW50IGhpdHMgYnV0IG9ubHkgc2VlICRjbnQiCgkJZXhp
+dCAtMQoJICAgIGZpCglmaQogICAgZWxzZQoJaWYgZ3JlcCAtcSAnXiA9PicgJFRSQUNFX0ZJTEU7
+IHRoZW4KCSAgICBlY2hvICJGb3VuZCBzdGFjayB0cmFjZSB3aGVuIG5vdCBlbmFibGVkIgoJICAg
+IGV4aXQgLTEKCWZpCiAgICBmaQp9CgpmdW5jdGlvbiBkb19yZXNldCgpIHsKICAgIGNsZWFyX3Ry
+aWdnZXJzCiAgICBlY2hvIG5vcCA+ICRUUkFDRURJUi9jdXJyZW50X3RyYWNlciB8fCBleGl0IC0x
+CiAgICBlY2hvIDAgPiAkVFJBQ0VESVIvZXZlbnRzL2VuYWJsZSB8fCBleGl0IC0xCiAgICBlY2hv
+ID4gJFRSQUNFX0ZJTEUgfHwgZXhpdCAtMQogICAgZWNobyAxID4gJFRSQUNJTkdfT04gfHwgZXhp
+dCAtMQp9Cgojc2V0IC14CgplY2hvICcqKiBDTEVBUiBUUkFDRScKZG9fcmVzZXQKCiMgY2hlY2sg
+c3RhY2t0cmFjZSBhdmFpbGFibGUKaWYgISBncmVwIC1xIHN0YWNrdHJhY2UgJFRSSUdHRVJfRklM
+RTsgdGhlbgogICAgZWNobyAic3RhY2t0cmFjZSB0cmlnZ2VyIG5vdCBhdmFpbGFibGUiCiAgICBl
+eGl0IDAKZmkKCmNudD1gY250X3RyYWNlYAppZiBbICRjbnQgLW5lIDAgXTsgdGhlbgogICAgZWNo
+byAiRm91bmQganVuayBpbiB0cmFjZSBmaWxlLCBleGl0aW5nIgogICAgZXhpdCAtMQpmaQoKZWNo
+byAiRW5hYmxlIG9ubHkgZXZlbnRzIgoKZWNobyAxID4gJEVWRU5UX0VOQUJMRQpzbGVlcCAxCmVj
+aG8gMCA+ICRUUkFDSU5HX09OCgpjaGVja19ldmVudHMgMSAwIDAKZG9fcmVzZXQKCmVjaG8gIkVu
+YWJsZSBvbmx5IHN0YWNrIHRyYWNlIgoKZWNobyAwID4gJFRSQUNJTkdfT04KZWNobyBzdGFja3Ry
+YWNlID4gJFRSSUdHRVJfRklMRQoKZWNobyAxID4gJFRSQUNJTkdfT04Kc2xlZXAgMQplY2hvIDAg
+PiAkVFJBQ0lOR19PTgoKY2hlY2tfZXZlbnRzIDAgMSAwCmRvX3Jlc2V0CgoKZWNobyAiRW5hYmxl
+IGJvdGggc3RhY2sgdHJhY2UgYW5kIGV2ZW50cyIKCmVjaG8gMCA+ICRUUkFDSU5HX09OCmVjaG8g
+c3RhY2t0cmFjZSA+ICRUUklHR0VSX0ZJTEUKZWNobyAxID4gJEVWRU5UX0VOQUJMRQoKZWNobyAx
+ID4gJFRSQUNJTkdfT04Kc2xlZXAgMQplY2hvIDAgPiAkVFJBQ0lOR19PTgoKY2hlY2tfZXZlbnRz
+IDEgMSAwCmRvX3Jlc2V0Cgpmb3IgaSBpbiAxIDIgMzsgZG8KICAgIGlmIFsgJGkgLWd0IDEgXTsg
+dGhlbgoJcz0ncycKICAgIGVsc2UKCXM9JycKICAgIGZpCiAgICBlY2hvICJFbmFibGUgc3RhY2sg
+dHJhY2Ugb25seSAkaSB0aW1lJHMiCgogICAgZWNobyAxID4gJFRSQUNJTkdfT04KICAgIGVjaG8g
+c3RhY2t0cmFjZTokaSA+ICRUUklHR0VSX0ZJTEUKICAgIGVjaG8gMSA+ICRFVkVOVF9FTkFCTEUK
+CiAgICBzbGVlcCAxCiAgICBlY2hvIDAgPiAkVFJBQ0lOR19PTgoKICAgIGNoZWNrX2V2ZW50cyAx
+IDEgJGkKICAgIGRvX3Jlc2V0CmRvbmUKCgplY2hvICcqKiBTVUNDRVNTJwoKZXhpdCAwCg==
+
+--MP_/pKmPtJCdPki8awLJI3NPOZB--
