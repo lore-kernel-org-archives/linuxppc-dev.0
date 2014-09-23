@@ -1,40 +1,20 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ppc@mindchasers.com>
+Received: from resqmta-po-11v.sys.comcast.net (resqmta-po-11v.sys.comcast.net
+ [IPv6:2001:558:fe16:19:96:114:154:170])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0FEB61A031A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:54:02 +1000 (EST)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D55F81400BE
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 13:54:01 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 23 Sep 2014 13:54:00 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 72BFC3578053
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 13:53:57 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8N3ToB145219994
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 13:29:50 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8N3ru78011534
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2014 13:53:56 +1000
-Subject: [PATCH] powerpc/book3s: Fix flush_tlb cpu_spec hook to take a
- generic argument.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 23 Sep 2014 09:23:54 +0530
-Message-ID: <20140923035330.6097.43515.stgit@mars>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EBBE1A012D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 14:01:22 +1000 (EST)
+Message-ID: <5420EE93.7080006@mindchasers.com>
+Date: Mon, 22 Sep 2014 23:52:51 -0400
+From: Bob Cochran <ppc@mindchasers.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Scott Wood <scottwood@freescale.com>, benh@kernel.crashing.org
+Subject: Re: Pull request: scottwood/linux.git next
+References: <20140922222142.GA8525@home.buserror.net>
+In-Reply-To: <20140922222142.GA8525@home.buserror.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,211 +24,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 09/22/2014 06:21 PM, Scott Wood wrote:
+> Highlights include DMA32 zone support (SATA, USB, etc now works on 64-bit
+> FSL kernels), MSI changes, 8xx optimizations and cleanup, t104x board
+> support, and PrPMC PCI enumeration.
+>
+> The following changes since commit 78eb9094ca08a40b8f9d3e113a2b88e0b7dbad1d:
+>
+>    powerpc/t2080rdb: Add T2080RDB board support (2014-07-31 00:11:10 -0500)
+>
+> are available in the git repository at:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+>
+> for you to fetch changes up to cb0446c1b625326682ec4f9d1dd10779433646bc:
+>
+>    Revert "powerpc/fsl_msi: spread msi ints across different MSIRs" (2014-09-19 15:20:42 -0500)
+>
+> ----------------------------------------------------------------
+> Aaron Sierra (2):
+>        fsl_ifc: Fix csor_ext position in fsl_ifc_regs
+>        powerpc: fsl_pci: Add forced PCI Agent enumeration
+>
+> LEROY Christophe (7):
+>        powerpc/8xx: Declare SPRG2 as a SCRATCH register
+>        powerpc/8xx: Use SCRATCH0 and SCRATCH1 also for TLB handlers
+>        powerpc/8xx: Remove loading of r10 at end of FixupDAR
+>        powerpc/8xx: Fix comment about DIRTY update
+>        powerpc/8xx: No need to save r10 and r3 when not calling FixupDAR
+>        powerpc/8xx: Optimize verification in FixupDAR
+>        powerpc/8xx: Duplicate two insns instead of branching
+>
+> Nikhil Badola (3):
+>        powerpc: configs: Add VFAT file-system configs
+>        powerpc: dts: t4240: Change T4240 USB controller version
+>        powerpc: dts: t208x: Change T208x USB controller version
+>
+> Priyanka Jain (2):
+>        powerpc/fsl-booke: Add initial T1040/T1042 RDB board support
 
-The flush_tlb hook in cpu_spec was introduced as a generic function hook
-to invalidate TLBs. But the current implementation of flush_tlb hook
-takes IS (invalidation selector) as an argument which is architecture
-dependent. Hence, It is not right to have a generic routine where caller
-has to pass non-generic argument.
 
-This patch fixes this and makes flush_tlb hook as high level API.
+Hi Scott,
 
-The old code used to call flush_tlb hook with IS=0 (single page) resulting
-partial invalidation of TLBs which is not right. This fix now makes
-sure that whole TLB is invalidated to be able to successfully recover from
-TLB and ERAT errors.
+I would like to try your next branch with my t1040rdb along with DPAA 
+support / drivers.  I don't see DPAA support in your repo.  Can you 
+point me to a DPAA patch set somewhere, or am I on my own to merge what 
+I need from sdk or yocto?
 
-Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/cputable.h   |    2 +
- arch/powerpc/include/asm/mmu-hash64.h |    5 +++
- arch/powerpc/kernel/cpu_setup_power.S |   10 +-----
- arch/powerpc/kernel/cputable.c        |    4 +-
- arch/powerpc/kernel/mce_power.c       |   57 ++++++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_ras.c      |    4 +-
- 6 files changed, 67 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index daa5af9..ae3e74f 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -100,7 +100,7 @@ struct cpu_spec {
- 	/*
- 	 * Processor specific routine to flush tlbs.
- 	 */
--	void		(*flush_tlb)(unsigned long inval_selector);
-+	void		(*flush_tlb)(unsigned int action);
- 
- };
- 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index d765144..068ac8b 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -112,6 +112,11 @@
- #define TLBIEL_INVAL_SET_SHIFT	12
- 
- #define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
-+#define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
-+
-+/* TLB flush actions. Used as argument to cpu_spec.flush_tlb() hook */
-+#define FLUSH_TLB_ALL		0	/* invalidate all TLBs */
-+#define FLUSH_TLB_LPID		1	/* invalidate TLBs for current LPID */
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 4673353..9c9b741 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -137,15 +137,11 @@ __init_HFSCR:
- /*
-  * Clear the TLB using the specified IS form of tlbiel instruction
-  * (invalidate by congruence class). P7 has 128 CCs., P8 has 512.
-- *
-- * r3 = IS field
-  */
- __init_tlb_power7:
--	li	r3,0xc00	/* IS field = 0b11 */
--_GLOBAL(__flush_tlb_power7)
- 	li	r6,128
- 	mtctr	r6
--	mr	r7,r3		/* IS field */
-+	li	r7,0xc00	/* IS field = 0b11 */
- 	ptesync
- 2:	tlbiel	r7
- 	addi	r7,r7,0x1000
-@@ -154,11 +150,9 @@ _GLOBAL(__flush_tlb_power7)
- 1:	blr
- 
- __init_tlb_power8:
--	li	r3,0xc00	/* IS field = 0b11 */
--_GLOBAL(__flush_tlb_power8)
- 	li	r6,512
- 	mtctr	r6
--	mr	r7,r3		/* IS field */
-+	li	r7,0xc00	/* IS field = 0b11 */
- 	ptesync
- 2:	tlbiel	r7
- 	addi	r7,r7,0x1000
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 9b6dcaa..5cfffeb 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -71,8 +71,8 @@ extern void __restore_cpu_power7(void);
- extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power8(void);
- extern void __restore_cpu_a2(void);
--extern void __flush_tlb_power7(unsigned long inval_selector);
--extern void __flush_tlb_power8(unsigned long inval_selector);
-+extern void __flush_tlb_power7(unsigned int action);
-+extern void __flush_tlb_power8(unsigned int action);
- extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
- extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
- #endif /* CONFIG_PPC64 */
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index aa9aff3..ffe22aa 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -28,6 +28,59 @@
- #include <asm/mce.h>
- #include <asm/machdep.h>
- 
-+static void _flush_tlb(uint32_t tlb_set, unsigned long inval_selector)
-+{
-+	unsigned long i, rb;
-+
-+	rb = inval_selector;
-+	for (i = 0; i < tlb_set; i++) {
-+		asm volatile("tlbiel %0" : : "r" (rb));
-+		rb += 1 << TLBIEL_INVAL_SET_SHIFT;
-+	}
-+}
-+
-+/*
-+ * Generic routine to flush TLB on power7. This routine is used as
-+ * flush_tlb hook in cpu_spec for Power7 processor.
-+ *
-+ * action => FLUSH_TLB_ALL:  Invalidate all TLBs.
-+ *	     FLUSH_TLB_LPID: Invalidate TLB for current LPID.
-+ */
-+void __flush_tlb_power7(unsigned int action)
-+{
-+	switch (action) {
-+	case FLUSH_TLB_ALL:
-+		_flush_tlb(POWER7_TLB_SETS, TLBIEL_INVAL_SET);
-+		break;
-+	case FLUSH_TLB_LPID:
-+		_flush_tlb(POWER7_TLB_SETS, TLBIEL_INVAL_SET_LPID);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * Generic routine to flush TLB on power8. This routine is used as
-+ * flush_tlb hook in cpu_spec for power8 processor.
-+ *
-+ * action => FLUSH_TLB_ALL:  Invalidate all TLBs.
-+ *	     FLUSH_TLB_LPID: Invalidate TLB for current LPID.
-+ */
-+void __flush_tlb_power8(unsigned int action)
-+{
-+	switch (action) {
-+	case FLUSH_TLB_ALL:
-+		_flush_tlb(POWER8_TLB_SETS, TLBIEL_INVAL_SET);
-+		break;
-+	case FLUSH_TLB_LPID:
-+		_flush_tlb(POWER8_TLB_SETS, TLBIEL_INVAL_SET_LPID);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
- /* flush SLBs and reload */
- static void flush_and_reload_slb(void)
- {
-@@ -79,7 +132,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
- 	}
- 	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
- 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
--			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-+			cur_cpu_spec->flush_tlb(FLUSH_TLB_ALL);
- 		/* reset error bits */
- 		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
- 	}
-@@ -110,7 +163,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
- 		break;
- 	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
- 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
--			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-+			cur_cpu_spec->flush_tlb(FLUSH_TLB_ALL);
- 			handled = 1;
- 		}
- 		break;
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index d562c8e..8246090 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -84,7 +84,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 		}
- 		if (dsisr & DSISR_MC_TLB_MULTI) {
- 			if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
--				cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
-+				cur_cpu_spec->flush_tlb(FLUSH_TLB_LPID);
- 			dsisr &= ~DSISR_MC_TLB_MULTI;
- 		}
- 		/* Any other errors we don't understand? */
-@@ -102,7 +102,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 		break;
- 	case SRR1_MC_IFETCH_TLBMULTI:
- 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
--			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
-+			cur_cpu_spec->flush_tlb(FLUSH_TLB_LPID);
- 		break;
- 	default:
- 		handled = 0;
+Thanks,
+
+Bob
+
+
+
+
+
+>        powerpc/fsl-booke: Add initial T1042RDB_PI board support
+>
+> Scott Wood (7):
+>        powerpc: Dynamic DMA zone limits
+>        powerpc/64: Honor swiotlb limit in coherent allocations
+>        powerpc/64: Limit ZONE_DMA32 to 4GiB in swiotlb_detect_4g()
+>        powerpc/fsl-pci: Limit ZONE_DMA32 to 2GiB on 64-bit platforms
+>        powerpc/85xx/defconfig: Remove duplicate CONFIG_RTC_DRV_DS1307
+>        powerpc/mm: Use common paging_init() for NUMA
+>        Revert "powerpc/fsl_msi: spread msi ints across different MSIRs"
+>
+> Tudor Laurentiu (6):
+>        powerpc/fsl_msi: support vmpic msi with mpic 4.3
+>        powerpc/fsl_msi: reorganize structs to improve clarity and flexibility
+>        powerpc/fsl_msi: change the irq handler from chained to normal
+>        powerpc/fsl_msi: show more meaningful names in /proc/interrupts
+>        powerpc/fsl_msi: spread msi ints across different MSIRs
+>        powerpc/fsl-booke64: add missing virtualization options in defconfig
+>
+>   Documentation/devicetree/bindings/pci/fsl,pci.txt |  27 ++++
+>   arch/powerpc/Kconfig                              |   4 +
+>   arch/powerpc/boot/dts/fsl/t2081si-post.dtsi       |   4 +-
+>   arch/powerpc/boot/dts/fsl/t4240si-post.dtsi       |   4 +-
+>   arch/powerpc/boot/dts/t1040rdb.dts                |  48 +++++++
+>   arch/powerpc/boot/dts/t1042rdb.dts                |  48 +++++++
+>   arch/powerpc/boot/dts/t1042rdb_pi.dts             |  57 ++++++++
+>   arch/powerpc/boot/dts/t104xrdb.dtsi               | 156 ++++++++++++++++++++++
+>   arch/powerpc/configs/corenet32_smp_defconfig      |   2 +
+>   arch/powerpc/configs/corenet64_smp_defconfig      |  46 ++-----
+>   arch/powerpc/configs/mpc85xx_defconfig            |   4 +-
+>   arch/powerpc/configs/mpc85xx_smp_defconfig        |   4 +-
+>   arch/powerpc/configs/mpc86xx_defconfig            |   3 +
+>   arch/powerpc/include/asm/pgtable.h                |   3 +
+>   arch/powerpc/include/asm/reg.h                    |   3 +-
+>   arch/powerpc/kernel/dma-swiotlb.c                 |   8 +-
+>   arch/powerpc/kernel/dma.c                         |  33 +++++
+>   arch/powerpc/kernel/head_8xx.S                    | 150 ++++++++-------------
+>   arch/powerpc/mm/mem.c                             |  68 +++++++++-
+>   arch/powerpc/mm/numa.c                            |   8 --
+>   arch/powerpc/platforms/85xx/Kconfig               |   2 +-
+>   arch/powerpc/platforms/85xx/corenet_generic.c     |  14 ++
+>   arch/powerpc/platforms/85xx/qemu_e500.c           |  10 ++
+>   arch/powerpc/sysdev/fsl_msi.c                     |  95 ++++++-------
+>   arch/powerpc/sysdev/fsl_msi.h                     |   4 +-
+>   arch/powerpc/sysdev/fsl_pci.c                     |   3 +-
+>   include/linux/fsl_ifc.h                           |   6 +-
+>   27 files changed, 610 insertions(+), 204 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/pci/fsl,pci.txt
+>   create mode 100644 arch/powerpc/boot/dts/t1040rdb.dts
+>   create mode 100644 arch/powerpc/boot/dts/t1042rdb.dts
+>   create mode 100644 arch/powerpc/boot/dts/t1042rdb_pi.dts
+>   create mode 100644 arch/powerpc/boot/dts/t104xrdb.dtsi
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
