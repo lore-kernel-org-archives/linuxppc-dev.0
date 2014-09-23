@@ -1,24 +1,35 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
- [IPv6:2607:f8b0:4001:c05::235])
+Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c05::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C1371A0199
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 07:02:00 +1000 (EST)
-Received: by mail-ig0-f181.google.com with SMTP id h18so5340866igc.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 14:01:57 -0700 (PDT)
-Date: Tue, 23 Sep 2014 15:01:54 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 031951A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 07:09:41 +1000 (EST)
+Received: by mail-ig0-f174.google.com with SMTP id r10so5399381igi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 14:09:39 -0700 (PDT)
+Date: Tue, 23 Sep 2014 15:09:36 -0600
 From: Bjorn Helgaas <bhelgaas@google.com>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH v2 0/3] PCI/MSI: Remove arch_msi_check_device()
-Message-ID: <20140923210154.GB27117@google.com>
-References: <cover.1410078503.git.agordeev@redhat.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v1 00/21] Use MSI chip to configure MSI/MSI-X in all
+ platforms
+Message-ID: <20140923210936.GC27117@google.com>
+References: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1410078503.git.agordeev@redhat.com>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1409911806-10519-1-git-send-email-wangyijing@huawei.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Xinwei Hu <huxinwei@huawei.com>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 07, 2014 at 08:57:52PM +0200, Alexander Gordeev wrote:
-> Hello,
+On Fri, Sep 05, 2014 at 06:09:45PM +0800, Yijing Wang wrote:
+> This series is based Bjorn's pci-next branch + Alexander Gordeev's two patches
+> "Remove arch_msi_check_device()" link: https://lkml.org/lkml/2014/7/12/41
 > 
-> This is a cleanup effort to get rid of arch_msi_check_device() function.
-> 
-> I am sending v2 series, since kbuild for v1 reports compile errors on
-> ppc4xx and Armada 370. Still, I have not checked the fixes on these
-> platforms.
-> 
-> Changes since v1:
->   - patch 1: 'pdev' undeclared compile error fixed on ppc4xx. I updated
->              changelog and removed ACK from this patch in case there are
->              any objections;
-> 
->   - patch 2: 'struct msi_chip' has no 'check_device' error fixed on
->              Armada 370 - armada_370_xp_check_msi_device() hook removed;
-> 
->   - patch 3: msi_check_device() renamed to pci_msi_supported(). This is
->              the very same patch I sent earlier;
-> 
-> Thanks!
-> 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-pci@vger.kernel.org
-> 
-> Alexander Gordeev (3):
->   patch 1 - PCI/MSI/PPC: Remove arch_msi_check_device()
->   patch 2 - PCI/MSI/Armada-370-xp: Remove arch_msi_check_device()
->   patch 3 - PCI/MSI: Remove arch_msi_check_device()
+> Currently, there are a lot of weak arch functions in MSI code.
+> Thierry Reding Introduced MSI chip framework to configure MSI/MSI-X in arm.
+> This series use MSI chip framework to refactor MSI code across all platforms
+> to eliminate weak arch functions. It has been tested fine in x86(with or without
+> irq remap).
 
-Applied (with some changes to 3/3) to pci/msi for v3.18, thanks!  Let me
-know if you see any issues.
+I see you plan some updates, so I'll look for a v2 posting after v3.17 releases.
+It will be great to get rid of some of those weak functions!
 
 Bjorn
