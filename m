@@ -1,21 +1,18 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 782B71A0026
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 07:56:18 +1000 (EST)
-Message-ID: <1411509370.24563.35.camel@ul30vt.home>
-Subject: Re: [PATCH v2 13/13] vfio: powerpc/spapr: Enable Dynamic DMA windows
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Tue, 23 Sep 2014 15:56:10 -0600
-In-Reply-To: <1411441262-11025-14-git-send-email-aik@ozlabs.ru>
-References: <1411441262-11025-1-git-send-email-aik@ozlabs.ru>
- <1411441262-11025-14-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <rostedt@goodmis.org>
+Received: from cdptpa-oedge-vip.email.rr.com
+ (cdptpa-outbound-snat.email.rr.com [107.14.166.230])
+ by lists.ozlabs.org (Postfix) with ESMTP id 77E751A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 09:18:50 +1000 (EST)
+Date: Tue, 23 Sep 2014 19:11:40 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/3] powerpc: Remove -mno-sched-epilog workaround
+Message-ID: <20140923191140.63cfafeb@gandalf.local.home>
+In-Reply-To: <1410937624-25140-1-git-send-email-anton@samba.org>
+References: <1410937624-25140-1-git-send-email-anton@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,287 +22,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-23 at 13:01 +1000, Alexey Kardashevskiy wrote:
-> This defines and implements VFIO IOMMU API which lets the userspace
-> create and remove DMA windows.
+I'm running my ftrace tests on my PAsemi box with your patches and
+things are not going so well.
+
+Just this patch alone causes my first stress test to lock up, and
+things don't go so well after that.
+
+INFO: rcu_sched detected stalls on CPUs/tasks: {} (detected by 1, t=5253 jiffies, g=3603, c=3602, q=15)
+INFO: Stall ended before state dump start
+INFO: rcu_sched detected stalls on CPUs/tasks: {} (detected by 1, t=21008 jiffies, g=3603, c=3602, q=15)
+INFO: Stall ended before state dump start
+
+That's repeated and the system is basically useless.
+
+-- Steve
+
+
+
+On Wed, 17 Sep 2014 17:07:02 +1000
+Anton Blanchard <anton@samba.org> wrote:
+
+> We added -mno-sched-epilog in commit 7563dc645853 (powerpc:
+> Work around gcc's -fno-omit-frame-pointer bug).
 > 
-> This updates VFIO_IOMMU_SPAPR_TCE_GET_INFO to return the number of
-> available windows and page mask.
+> We shouldn't apply -fno-omit-frame-pointer on powerpc any more (it's
+> protected by CONFIG_FRAME_POINTER and CONFIG_SCHED_OMIT_FRAME_POINTER).
 > 
-> This adds VFIO_IOMMU_SPAPR_TCE_CREATE and VFIO_IOMMU_SPAPR_TCE_REMOVE
-> to allow the user space to create and remove window(s).
+> It's also an undocumented gcc option, so lets remove it.
 > 
-> The VFIO IOMMU driver does basic sanity checks and calls corresponding
-> SPAPR TCE functions. At the moment only IODA2 (POWER8 PCI host bridge)
-> implements them.
-> 
-> This advertises VFIO_IOMMU_SPAPR_TCE_FLAG_DDW capability via
-> VFIO_IOMMU_SPAPR_TCE_GET_INFO.
-> 
-> This calls platform DDW reset() callback when IOMMU is being disabled
-> to reset the DMA configuration to its original state.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 135 ++++++++++++++++++++++++++++++++++--
->  include/uapi/linux/vfio.h           |  25 ++++++-
->  2 files changed, 153 insertions(+), 7 deletions(-)
+>  arch/powerpc/Makefile                    |  5 -----
+>  arch/powerpc/kernel/Makefile             | 12 ++++++------
+>  arch/powerpc/platforms/powermac/Makefile |  2 +-
+>  3 files changed, 7 insertions(+), 12 deletions(-)
 > 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 0dccbc4..b518891 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -190,18 +190,25 @@ static void tce_iommu_disable(struct tce_container *container)
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 132d9c6..c6f64e2 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -198,11 +198,6 @@ ifeq ($(CONFIG_6xx),y)
+>  KBUILD_CFLAGS		+= -mcpu=powerpc
+>  endif
 >  
->  	container->enabled = false;
+> -# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
+> -ifeq ($(CONFIG_FUNCTION_TRACER),y)
+> -KBUILD_CFLAGS		+= -mno-sched-epilog
+> -endif
+> -
+>  cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+>  cpu-as-$(CONFIG_ALTIVEC)	+= -Wa,-maltivec
+>  cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 502cf69..e14bda6 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -17,14 +17,14 @@ endif
 >  
-> -	if (!container->grp || !current->mm)
-> +	if (!container->grp)
->  		return;
+>  ifdef CONFIG_FUNCTION_TRACER
+>  # Do not trace early boot code
+> -CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_cputable.o = -pg
+> +CFLAGS_REMOVE_prom_init.o = -pg
+> +CFLAGS_REMOVE_btext.o = -pg
+> +CFLAGS_REMOVE_prom.o = -pg
+>  # do not trace tracer code
+> -CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_ftrace.o = -pg
+>  # timers used by tracing
+> -CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_time.o = -pg
+>  endif
 >  
->  	data = iommu_group_get_iommudata(container->grp);
->  	if (!data || !data->iommu_owner || !data->ops->get_table)
->  		return;
+>  obj-y				:= cputable.o ptrace.o syscalls.o \
+> diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
+> index 52c6ce1..e238872 100644
+> --- a/arch/powerpc/platforms/powermac/Makefile
+> +++ b/arch/powerpc/platforms/powermac/Makefile
+> @@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
 >  
-> -	tbl = data->ops->get_table(data, 0);
-> -	if (!tbl)
-> -		return;
-> +	if (current->mm) {
-> +		tbl = data->ops->get_table(data, 0);
-> +		if (tbl)
-> +			decrement_locked_vm(tbl);
+>  ifdef CONFIG_FUNCTION_TRACER
+>  # Do not trace early boot code
+> -CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_bootx_init.o = -pg
+>  endif
 >  
-> -	decrement_locked_vm(tbl);
-> +		tbl = data->ops->get_table(data, 1);
-> +		if (tbl)
-> +			decrement_locked_vm(tbl);
-> +	}
-> +
-> +	if (data->ops->reset)
-> +		data->ops->reset(data);
->  }
->  
->  static void *tce_iommu_open(unsigned long arg)
-> @@ -243,7 +250,7 @@ static long tce_iommu_ioctl(void *iommu_data,
->  				 unsigned int cmd, unsigned long arg)
->  {
->  	struct tce_container *container = iommu_data;
-> -	unsigned long minsz;
-> +	unsigned long minsz, ddwsz;
->  	long ret;
->  
->  	switch (cmd) {
-> @@ -288,6 +295,28 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
->  		info.flags = 0;
->  
-> +		ddwsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> +				page_size_mask);
-> +
-> +		if (info.argsz == ddwsz) {
-
->=
-
-> +			if (data->ops->query && data->ops->create &&
-> +					data->ops->remove) {
-> +				info.flags |= VFIO_IOMMU_SPAPR_TCE_FLAG_DDW;
-
-I think you want to set this flag regardless of whether the user has
-provided space for it.  A valid use model is to call with the minimum
-size and look at the flags to determine if it needs to be called again
-with a larger size.
-
-> +
-> +				ret = data->ops->query(data,
-> +						&info.current_windows,
-> +						&info.windows_available,
-> +						&info.page_size_mask);
-> +				if (ret)
-> +					return ret;
-> +			} else {
-> +				info.current_windows = 0;
-> +				info.windows_available = 0;
-> +				info.page_size_mask = 0;
-> +			}
-> +			minsz = ddwsz;
-
-It's not really any longer the min size, is it?
-
-> +		}
-> +
->  		if (copy_to_user((void __user *)arg, &info, minsz))
->  			return -EFAULT;
->  
-> @@ -412,12 +441,106 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		tce_iommu_disable(container);
->  		mutex_unlock(&container->lock);
->  		return 0;
-> +
->  	case VFIO_EEH_PE_OP:
->  		if (!container->grp)
->  			return -ENODEV;
->  
->  		return vfio_spapr_iommu_eeh_ioctl(container->grp,
->  						  cmd, arg);
-> +
-> +	case VFIO_IOMMU_SPAPR_TCE_CREATE: {
-> +		struct vfio_iommu_spapr_tce_create create;
-> +		struct spapr_tce_iommu_group *data;
-> +		struct iommu_table *tbl;
-> +
-> +		if (WARN_ON(!container->grp))
-
-redux previous comment on this warning
-
-> +			return -ENXIO;
-> +
-> +		data = iommu_group_get_iommudata(container->grp);
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_create,
-> +				start_addr);
-> +
-> +		if (copy_from_user(&create, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (create.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if (create.flags)
-> +			return -EINVAL;
-> +
-> +		if (!data->ops->create || !data->iommu_owner)
-> +			return -ENOSYS;
-> +
-> +		BUG_ON(!data || !data->ops || !data->ops->remove);
-
-Little late for this test since we'll oops on the previous test.  Why is
-this a BUG_ON?  A user could exploit this on a system with only a
-partial set of callbacks.
-
-> +
-> +		ret = data->ops->create(data, create.page_shift,
-> +				create.window_shift, &tbl);
-> +		if (ret)
-> +			return ret;
-> +
-> +		ret = try_increment_locked_vm(tbl);
-> +		if (ret) {
-> +			data->ops->remove(data, tbl);
-> +			return ret;
-> +		}
-> +
-> +		create.start_addr = tbl->it_offset << tbl->it_page_shift;
-> +
-> +		if (copy_to_user((void __user *)arg, &create, minsz)) {
-> +			data->ops->remove(data, tbl);
-> +			decrement_locked_vm(tbl);
-> +			return -EFAULT;
-> +		}
-> +		mutex_lock(&container->lock);
-> +		++container->windows_num;
-> +		mutex_unlock(&container->lock);
-> +
-> +		return ret;
-> +	}
-> +	case VFIO_IOMMU_SPAPR_TCE_REMOVE: {
-> +		struct vfio_iommu_spapr_tce_remove remove;
-> +		struct spapr_tce_iommu_group *data;
-> +		struct iommu_table *tbl;
-> +
-> +		if (WARN_ON(!container->grp))
-> +			return -ENXIO;
-> +
-> +		data = iommu_group_get_iommudata(container->grp);
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_remove,
-> +				start_addr);
-> +
-> +		if (copy_from_user(&remove, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (remove.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if (remove.flags)
-> +			return -EINVAL;
-> +
-> +		if (!data->ops->remove || !data->iommu_owner)
-
-On this one we don't both to get data/data->ops.  Is there also an
-exploit where the user can call these CREATE/REMOVE interfaces even
-though INFO doesn't expose them if only a partial set of callbacks are
-present?
-
-> +			return -ENOSYS;
-> +
-> +		tbl = spapr_tce_find_table(container, data, remove.start_addr);
-
-What happens if this returns the 0 index rather than the expected 1
-index table?  Why doesn't this call ops->find_table()?
-
-> +		if (!tbl)
-> +			return -EINVAL;
-> +
-> +		ret = data->ops->remove(data, tbl);
-> +		if (ret)
-> +			return ret;
-> +
-> +		decrement_locked_vm(tbl);
-> +
-> +		mutex_lock(&container->lock);
-> +		--container->windows_num;
-> +		mutex_unlock(&container->lock);
-> +
-> +		return 0;
-> +	}
->  	}
->  
->  	return -ENOTTY;
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index 6612974..e71a6ef 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -451,9 +451,13 @@ struct vfio_iommu_type1_dma_unmap {
->   */
->  struct vfio_iommu_spapr_tce_info {
->  	__u32 argsz;
-> -	__u32 flags;			/* reserved for future use */
-> +	__u32 flags;
-> +#define VFIO_IOMMU_SPAPR_TCE_FLAG_DDW	1 /* Support dynamic windows */
->  	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
->  	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
-> +	__u32 current_windows;
-> +	__u32 windows_available;
-> +	__u32 page_size_mask;
->  };
->  
->  #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-> @@ -489,6 +493,25 @@ struct vfio_eeh_pe_op {
->  
->  #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
->  
-> +struct vfio_iommu_spapr_tce_create {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	/* in */
-> +	__u32 page_shift;
-> +	__u32 window_shift;
-> +	/* out */
-> +	__u64 start_addr;
-> +};
-> +#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 18)
-> +
-> +struct vfio_iommu_spapr_tce_remove {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	/* in */
-> +	__u64 start_addr;
-> +};
-> +#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 19)
-> +
-
-Zero comments, no good.
-
->  /* ***************************************************************** */
->  
->  #endif /* _UAPIVFIO_H */
+>  obj-y				+= pic.o setup.o time.o feature.o pci.o \
