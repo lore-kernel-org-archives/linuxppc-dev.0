@@ -1,22 +1,24 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A24C11A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 06:42:09 +1000 (EST)
-Message-ID: <1411504921.24563.20.camel@ul30vt.home>
-Subject: Re: [PATCH v2 03/13] powerpc/spapr: vfio: Implement
- spapr_tce_iommu_ops
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Tue, 23 Sep 2014 14:42:01 -0600
-In-Reply-To: <1411441262-11025-4-git-send-email-aik@ozlabs.ru>
-References: <1411441262-11025-1-git-send-email-aik@ozlabs.ru>
- <1411441262-11025-4-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4470C1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 06:58:26 +1000 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id tp5so5542416ieb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2014 13:58:23 -0700 (PDT)
+Date: Tue, 23 Sep 2014 14:58:20 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Alexander Gordeev <agordeev@redhat.com>
+Subject: Re: [PATCH v2 3/3] PCI/MSI: Remove arch_msi_check_device()
+Message-ID: <20140923205820.GE6776@google.com>
+References: <cover.1410078503.git.agordeev@redhat.com>
+ <50a2f79ce58b6b67b40d7737b21c168131240c31.1410078503.git.agordeev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <50a2f79ce58b6b67b40d7737b21c168131240c31.1410078503.git.agordeev@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,623 +28,338 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-23 at 13:00 +1000, Alexey Kardashevskiy wrote:
-> Modern IBM POWERPC systems support multiple IOMMU tables per PE
-> so we need a more reliable way (compared to container_of()) to get
-> a PE pointer from the iommu_table struct pointer used in IOMMU functions.
+On Sun, Sep 07, 2014 at 08:57:55PM +0200, Alexander Gordeev wrote:
+> There are no archs that override arch_msi_check_device()
+> hook. Remove it as it is completely redundant.
 > 
-> At the moment IOMMU group data points to an iommu_table struct. This
-> introduces a spapr_tce_iommu_group struct which keeps an iommu_owner
-> and a spapr_tce_iommu_ops struct. For IODA, iommu_owner is a pointer to
-> the pnv_ioda_pe struct, for others it is still a pointer to
-> the iommu_table struct. The ops structs correspond to the type which
-> iommu_owner points to.
+> If an arch would need to check MSI/MSI-X possibility for a
+> device it should make it within arch_setup_msi_irqs() hook.
 > 
-> This defines a get_table() callback which returns an iommu_table
-> by its number.
-> 
-> As the IOMMU group data pointer points to variable type instead of
-> iommu_table, VFIO SPAPR TCE driver is updated to use the new type.
-> This changes the tce_container struct to store iommu_group instead of
-> iommu_table.
-> 
-> So, it was:
-> - iommu_table points to iommu_group via iommu_table::it_group;
-> - iommu_group points to iommu_table via iommu_group_get_iommudata();
-> 
-> now it is:
-> - iommu_table points to iommu_group via iommu_table::it_group;
-> - iommu_group points to spapr_tce_iommu_group via
-> iommu_group_get_iommudata();
-> - spapr_tce_iommu_group points to either (depending on .get_table()):
-> 	- iommu_table;
-> 	- pnv_ioda_pe;
-> 
-> This uses pnv_ioda1_iommu_get_table for both IODA1&2 but IODA2 will
-> have own pnv_ioda2_iommu_get_table soon and pnv_ioda1_iommu_get_table
-> will only be used for IODA1.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-pci@vger.kernel.org
+> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 > ---
->  arch/powerpc/include/asm/iommu.h            |   6 ++
->  arch/powerpc/include/asm/tce.h              |  13 +++
->  arch/powerpc/kernel/iommu.c                 |  35 ++++++-
->  arch/powerpc/platforms/powernv/pci-ioda.c   |  31 +++++-
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |   1 +
->  arch/powerpc/platforms/powernv/pci.c        |   2 +-
->  arch/powerpc/platforms/pseries/iommu.c      |  10 +-
->  drivers/vfio/vfio_iommu_spapr_tce.c         | 148 ++++++++++++++++++++++------
->  8 files changed, 208 insertions(+), 38 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 42632c7..84ee339 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -108,13 +108,19 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
->   */
->  extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->  					    int nid);
-> +
-> +struct spapr_tce_iommu_ops;
->  #ifdef CONFIG_IOMMU_API
->  extern void iommu_register_group(struct iommu_table *tbl,
-> +				 void *iommu_owner,
-> +				 struct spapr_tce_iommu_ops *ops,
->  				 int pci_domain_number, unsigned long pe_num);
->  extern int iommu_add_device(struct device *dev);
->  extern void iommu_del_device(struct device *dev);
->  #else
->  static inline void iommu_register_group(struct iommu_table *tbl,
-> +					void *iommu_owner,
-> +					struct spapr_tce_iommu_ops *ops,
->  					int pci_domain_number,
->  					unsigned long pe_num)
->  {
-> diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
-> index 743f36b..9f159eb 100644
-> --- a/arch/powerpc/include/asm/tce.h
-> +++ b/arch/powerpc/include/asm/tce.h
-> @@ -50,5 +50,18 @@
->  #define TCE_PCI_READ		0x1		/* read from PCI allowed */
->  #define TCE_VB_WRITE		0x1		/* write from VB allowed */
->  
-> +struct spapr_tce_iommu_group;
-> +
-> +struct spapr_tce_iommu_ops {
-> +	struct iommu_table *(*get_table)(
-> +			struct spapr_tce_iommu_group *data,
-> +			int num);
-> +};
-> +
-> +struct spapr_tce_iommu_group {
-> +	void *iommu_owner;
-> +	struct spapr_tce_iommu_ops *ops;
-> +};
-> +
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_POWERPC_TCE_H */
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index b378f78..1c5dae7 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -878,24 +878,53 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
->   */
->  static void group_release(void *iommu_data)
->  {
-> -	struct iommu_table *tbl = iommu_data;
-> -	tbl->it_group = NULL;
-> +	kfree(iommu_data);
->  }
->  
-> +static struct iommu_table *spapr_tce_default_get_table(
-> +		struct spapr_tce_iommu_group *data, int num)
-> +{
-> +	struct iommu_table *tbl = data->iommu_owner;
-> +
-> +	switch (num) {
-> +	case 0:
-> +		if (tbl->it_size)
-> +			return tbl;
-> +		/* fallthru */
-> +	default:
-> +		return NULL;
-> +	}
-> +}
-> +
-> +static struct spapr_tce_iommu_ops spapr_tce_default_ops = {
-> +	.get_table = spapr_tce_default_get_table
-> +};
-> +
->  void iommu_register_group(struct iommu_table *tbl,
-> +		void *iommu_owner, struct spapr_tce_iommu_ops *ops,
->  		int pci_domain_number, unsigned long pe_num)
->  {
->  	struct iommu_group *grp;
->  	char *name;
-> +	struct spapr_tce_iommu_group *data;
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return;
-> +
-> +	data->iommu_owner = iommu_owner ? iommu_owner : tbl;
-> +	data->ops = ops ? ops : &spapr_tce_default_ops;
->  
->  	grp = iommu_group_alloc();
->  	if (IS_ERR(grp)) {
->  		pr_warn("powerpc iommu api: cannot create new group, err=%ld\n",
->  				PTR_ERR(grp));
-> +		kfree(data);
->  		return;
->  	}
-> +
->  	tbl->it_group = grp;
-> -	iommu_group_set_iommudata(grp, tbl, group_release);
-> +	iommu_group_set_iommudata(grp, data, group_release);
->  	name = kasprintf(GFP_KERNEL, "domain%d-pe%lx",
->  			pci_domain_number, pe_num);
->  	if (!name)
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 136e765..2d32a1c 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -23,6 +23,7 @@
->  #include <linux/io.h>
->  #include <linux/msi.h>
->  #include <linux/memblock.h>
-> +#include <linux/iommu.h>
->  
->  #include <asm/sections.h>
->  #include <asm/io.h>
-> @@ -988,6 +989,26 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->  	}
->  }
->  
-> +static struct iommu_table *pnv_ioda1_iommu_get_table(
-> +		struct spapr_tce_iommu_group *data,
-> +		int num)
-> +{
-> +	struct pnv_ioda_pe *pe = data->iommu_owner;
-> +
-> +	switch (num) {
-> +	case 0:
-> +		if (pe->tce32.table.it_size)
-> +			return &pe->tce32.table;
-> +		/* fallthru */
-> +	default:
-> +		return NULL;
-> +	}
-> +}
-> +
-> +static struct spapr_tce_iommu_ops pnv_pci_ioda1_ops = {
-> +	.get_table = pnv_ioda1_iommu_get_table,
-> +};
-> +
->  static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  				      struct pnv_ioda_pe *pe, unsigned int base,
->  				      unsigned int segs)
-> @@ -1067,7 +1088,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  				 TCE_PCI_SWINV_PAIR);
->  	}
->  	iommu_init_table(tbl, phb->hose->node);
-> -	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
-> +	iommu_register_group(tbl, pe, &pnv_pci_ioda1_ops,
-> +			phb->hose->global_number, pe->pe_number);
->  
->  	if (pe->pdev)
->  		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-> @@ -1137,6 +1159,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->  	pnv_pci_ioda2_set_bypass(&pe->tce32.table, true);
->  }
->  
-> +static struct spapr_tce_iommu_ops pnv_pci_ioda2_ops = {
-> +	.get_table = pnv_ioda1_iommu_get_table,
-> +};
-> +
->  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  				       struct pnv_ioda_pe *pe)
->  {
-> @@ -1202,7 +1228,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
->  	}
->  	iommu_init_table(tbl, phb->hose->node);
-> -	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
-> +	iommu_register_group(tbl, pe, &pnv_pci_ioda2_ops,
-> +			phb->hose->global_number, pe->pe_number);
->  
->  	if (pe->pdev)
->  		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-> diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> index 94ce348..b79066d 100644
-> --- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> +++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> @@ -89,6 +89,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
->  	if (phb->p5ioc2.iommu_table.it_map == NULL) {
->  		iommu_init_table(&phb->p5ioc2.iommu_table, phb->hose->node);
->  		iommu_register_group(&phb->p5ioc2.iommu_table,
-> +				NULL, NULL,
->  				pci_domain_nr(phb->hose->bus), phb->opal_id);
->  	}
->  
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 97895d4..6ffac79 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -723,7 +723,7 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
->  	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
->  				  be32_to_cpup(sizep), 0, IOMMU_PAGE_SHIFT_4K);
->  	iommu_init_table(tbl, hose->node);
-> -	iommu_register_group(tbl, pci_domain_nr(hose->bus), 0);
-> +	iommu_register_group(tbl, NULL, NULL, pci_domain_nr(hose->bus), 0);
->  
->  	/* Deal with SW invalidated TCEs when needed (BML way) */
->  	swinvp = of_get_property(hose->dn, "linux,tce-sw-invalidate-info",
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 4642d6a..b95f8cf 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -616,7 +616,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
->  
->  	iommu_table_setparms(pci->phb, dn, tbl);
->  	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-> -	iommu_register_group(tbl, pci_domain_nr(bus), 0);
-> +	iommu_register_group(tbl, NULL, NULL, pci_domain_nr(bus), 0);
->  
->  	/* Divide the rest (1.75GB) among the children */
->  	pci->phb->dma_window_size = 0x80000000ul;
-> @@ -661,7 +661,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
->  				   ppci->phb->node);
->  		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
->  		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
-> -		iommu_register_group(tbl, pci_domain_nr(bus), 0);
-> +		iommu_register_group(tbl, NULL, NULL, pci_domain_nr(bus), 0);
->  		pr_debug("  created table: %p\n", ppci->iommu_table);
->  	}
->  }
-> @@ -688,7 +688,8 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
->  				   phb->node);
->  		iommu_table_setparms(phb, dn, tbl);
->  		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
-> -		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
-> +		iommu_register_group(tbl, NULL, NULL,
-> +				pci_domain_nr(phb->bus), 0);
->  		set_iommu_table_base_and_group(&dev->dev,
->  					       PCI_DN(dn)->iommu_table);
->  		return;
-> @@ -1105,7 +1106,8 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
->  				   pci->phb->node);
->  		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
->  		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
-> -		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
-> +		iommu_register_group(tbl, NULL, NULL,
-> +				pci_domain_nr(pci->phb->bus), 0);
->  		pr_debug("  created table: %p\n", pci->iommu_table);
->  	} else {
->  		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 730b4ef..a8adfbd 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -43,17 +43,51 @@ static void tce_iommu_detach_group(void *iommu_data,
->   */
->  struct tce_container {
->  	struct mutex lock;
-> -	struct iommu_table *tbl;
-> +	struct iommu_group *grp;
-> +	long windows_num;
->  	bool enabled;
->  };
->  
-> +static struct iommu_table *spapr_tce_find_table(
-> +		struct tce_container *container,
-> +		struct spapr_tce_iommu_group *data,
-> +		phys_addr_t ioba)
-> +{
-> +	long i;
-> +	struct iommu_table *ret = NULL;
-> +
-> +	mutex_lock(&container->lock);
-> +	for (i = 0; i < container->windows_num; ++i) {
-> +		struct iommu_table *tbl = data->ops->get_table(data, i);
-> +
-> +		if (tbl) {
-> +			unsigned long entry = ioba >> tbl->it_page_shift;
-> +			unsigned long start = tbl->it_offset;
-> +			unsigned long end = start + tbl->it_size;
-> +
-> +			if ((start <= entry) && (entry < end)) {
-> +				ret = tbl;
-> +				break;
-> +			}
-> +		}
-> +	}
-> +	mutex_unlock(&container->lock);
-> +
-> +	return ret;
-> +}
-> +
->  static int tce_iommu_enable(struct tce_container *container)
->  {
->  	int ret = 0;
->  	unsigned long locked, lock_limit, npages;
-> -	struct iommu_table *tbl = container->tbl;
-> +	struct iommu_table *tbl;
-> +	struct spapr_tce_iommu_group *data;
->  
-> -	if (!container->tbl)
-> +	if (!container->grp)
-> +		return -ENXIO;
-> +
-> +	data = iommu_group_get_iommudata(container->grp);
-> +	if (!data || !data->iommu_owner || !data->ops->get_table)
->  		return -ENXIO;
->  
->  	if (!current->mm)
-> @@ -80,6 +114,10 @@ static int tce_iommu_enable(struct tce_container *container)
->  	 * that would effectively kill the guest at random points, much better
->  	 * enforcing the limit based on the max that the guest can map.
->  	 */
-> +	tbl = data->ops->get_table(data, 0);
+>  drivers/pci/msi.c   | 49 +++++++++++++------------------------------------
+>  include/linux/msi.h |  3 ---
+>  2 files changed, 13 insertions(+), 39 deletions(-)
 
-Can we define an enum to avoid sprinkling magic zeros in the code?
+I like this patch a lot, but it's doing several things at once, so I split
+it into several patches as follows.  I think it is equivalent, but I did
+not add Thomas' tested-by.
 
-> +	if (!tbl)
-> +		return -ENXIO;
-> +
->  	down_write(&current->mm->mmap_sem);
->  	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->  	locked = current->mm->locked_vm + npages;
-> @@ -89,7 +127,6 @@ static int tce_iommu_enable(struct tce_container *container)
->  				rlimit(RLIMIT_MEMLOCK));
->  		ret = -ENOMEM;
->  	} else {
-> -
->  		current->mm->locked_vm += npages;
->  		container->enabled = true;
->  	}
-> @@ -100,16 +137,27 @@ static int tce_iommu_enable(struct tce_container *container)
->  
->  static void tce_iommu_disable(struct tce_container *container)
->  {
-> +	struct spapr_tce_iommu_group *data;
-> +	struct iommu_table *tbl;
-> +
->  	if (!container->enabled)
->  		return;
->  
->  	container->enabled = false;
->  
-> -	if (!container->tbl || !current->mm)
-> +	if (!container->grp || !current->mm)
-> +		return;
-> +
-> +	data = iommu_group_get_iommudata(container->grp);
-> +	if (!data || !data->iommu_owner || !data->ops->get_table)
-> +		return;
-> +
-> +	tbl = data->ops->get_table(data, 0);
-> +	if (!tbl)
->  		return;
->  
->  	down_write(&current->mm->mmap_sem);
-> -	current->mm->locked_vm -= (container->tbl->it_size <<
-> +	current->mm->locked_vm -= (tbl->it_size <<
->  			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->  	up_write(&current->mm->mmap_sem);
->  }
-> @@ -129,6 +177,8 @@ static void *tce_iommu_open(unsigned long arg)
->  
->  	mutex_init(&container->lock);
->  
-> +	container->windows_num = 1;
-> +
->  	return container;
->  }
->  
-> @@ -136,11 +186,11 @@ static void tce_iommu_release(void *iommu_data)
->  {
->  	struct tce_container *container = iommu_data;
->  
-> -	WARN_ON(container->tbl && !container->tbl->it_group);
-> +	WARN_ON(container->grp);
->  	tce_iommu_disable(container);
->  
-> -	if (container->tbl && container->tbl->it_group)
-> -		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
-> +	if (container->grp)
-> +		tce_iommu_detach_group(iommu_data, container->grp);
->  
->  	mutex_destroy(&container->lock);
->  
-> @@ -169,8 +219,17 @@ static long tce_iommu_ioctl(void *iommu_data,
->  
->  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
->  		struct vfio_iommu_spapr_tce_info info;
-> -		struct iommu_table *tbl = container->tbl;
-> +		struct iommu_table *tbl;
-> +		struct spapr_tce_iommu_group *data;
->  
-> +		if (WARN_ON(!container->grp))
-> +			return -ENXIO;
-> +
-> +		data = iommu_group_get_iommudata(container->grp);
-> +		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
-> +			return -ENXIO;
-> +
-> +		tbl = data->ops->get_table(data, 0);
->  		if (WARN_ON(!tbl))
->  			return -ENXIO;
->  
-> @@ -194,13 +253,16 @@ static long tce_iommu_ioctl(void *iommu_data,
->  	}
->  	case VFIO_IOMMU_MAP_DMA: {
->  		struct vfio_iommu_type1_dma_map param;
-> -		struct iommu_table *tbl = container->tbl;
-> +		struct iommu_table *tbl;
-> +		struct spapr_tce_iommu_group *data;
->  		unsigned long tce, i;
->  
-> -		if (!tbl)
-> +		if (WARN_ON(!container->grp))
+I also reversed the sense of pci_msi_supported() so it returns true (1)
+when MSI/MSI-X is supported and false (0) otherwise.
 
-If a user can get here by their own mistake, return an error and be
-done, no warning.  If a user can get here via a kernel ordering issue,
-it's a problem in the design.  Which is it?
+The whole thing is on my pci/msi branch at
+https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/msi
 
->  			return -ENXIO;
->  
-> -		BUG_ON(!tbl->it_group);
-> +		data = iommu_group_get_iommudata(container->grp);
-> +		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
-> +			return -ENXIO;
+Let me know if you see any issues.
 
-Same
+Bjorn
 
->  
->  		minsz = offsetofend(struct vfio_iommu_type1_dma_map, size);
->  
-> @@ -225,6 +287,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
->  			tce |= TCE_PCI_WRITE;
->  
-> +		tbl = spapr_tce_find_table(container, data, param.iova);
 
-Why aren't we using ops->find_table() here?
+commit 28a3ec3f672d42a877d8770a33305dfe82c2cc90
+Author: Alexander Gordeev <agordeev@redhat.com>
+Date:   Tue Sep 23 12:39:54 2014 -0600
 
-> +		if (!tbl)
-> +			return -ENXIO;
-> +		BUG_ON(!tbl->it_group);
-> +
->  		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
->  		if (ret)
->  			return ret;
-> @@ -247,9 +314,14 @@ static long tce_iommu_ioctl(void *iommu_data,
->  	}
->  	case VFIO_IOMMU_UNMAP_DMA: {
->  		struct vfio_iommu_type1_dma_unmap param;
-> -		struct iommu_table *tbl = container->tbl;
-> +		struct iommu_table *tbl;
-> +		struct spapr_tce_iommu_group *data;
->  
-> -		if (WARN_ON(!tbl))
-> +		if (WARN_ON(!container->grp))
-> +			return -ENXIO;
-> +
-> +		data = iommu_group_get_iommudata(container->grp);
-> +		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
->  			return -ENXIO;
+    PCI/MSI: Remove arch_msi_check_device()
+    
+    No architectures implement arch_msi_check_device() or the struct msi_chip
+    .check_device() method, so remove them.
+    
+    Remove the "type" parameter to pci_msi_check_device() because it was only
+    used to call arch_msi_check_device() and is no longer needed.
+    
+    [bhelgaas: changelog, split to separate patch]
+    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Same as above on both of these.
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index aff384aea639..a0b623d97ad8 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -56,16 +56,6 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
+ 	chip->teardown_irq(chip, irq);
+ }
+ 
+-int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+-{
+-	struct msi_chip *chip = dev->bus->msi;
+-
+-	if (!chip || !chip->check_device)
+-		return 0;
+-
+-	return chip->check_device(chip, dev, nvec, type);
+-}
+-
+ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+@@ -788,10 +778,9 @@ out_free:
+  * to determine if MSI/-X are supported for the device. If MSI/-X is
+  * supported return 0, else return an error code.
+  **/
+-static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
++static int pci_msi_check_device(struct pci_dev *dev, int nvec)
+ {
+ 	struct pci_bus *bus;
+-	int ret;
+ 
+ 	/* MSI must be globally enabled and supported by the device */
+ 	if (!pci_msi_enable || !dev || dev->no_msi)
+@@ -816,10 +805,6 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
+ 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
+ 			return -EINVAL;
+ 
+-	ret = arch_msi_check_device(dev, nvec, type);
+-	if (ret)
+-		return ret;
+-
+ 	return 0;
+ }
+ 
+@@ -925,7 +910,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ 	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
+ 		return -EINVAL;
+ 
+-	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
++	status = pci_msi_check_device(dev, nvec);
+ 	if (status)
+ 		return status;
+ 
+@@ -1059,7 +1044,7 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+ 		nvec = maxvec;
+ 
+ 	do {
+-		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
++		rc = pci_msi_check_device(dev, nvec);
+ 		if (rc < 0) {
+ 			return rc;
+ 		} else if (rc > 0) {
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 6be66f48b026..36c63cfccf5b 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -55,7 +55,6 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+ void arch_teardown_msi_irq(unsigned int irq);
+ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+ void arch_teardown_msi_irqs(struct pci_dev *dev);
+-int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
+ void arch_restore_msi_irqs(struct pci_dev *dev);
+ 
+ void default_teardown_msi_irqs(struct pci_dev *dev);
+@@ -72,8 +71,6 @@ struct msi_chip {
+ 	int (*setup_irq)(struct msi_chip *chip, struct pci_dev *dev,
+ 			 struct msi_desc *desc);
+ 	void (*teardown_irq)(struct msi_chip *chip, unsigned int irq);
+-	int (*check_device)(struct msi_chip *chip, struct pci_dev *dev,
+-			    int nvec, int type);
+ };
+ 
+ #endif /* LINUX_MSI_H */
 
->  
->  		minsz = offsetofend(struct vfio_iommu_type1_dma_unmap,
-> @@ -268,6 +340,12 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (param.size & ~IOMMU_PAGE_MASK_4K)
->  			return -EINVAL;
->  
-> +		tbl = spapr_tce_find_table(container, data, param.iova);
+commit 9d686dd5bbf62a249d0e4f54bffd848d573d2380
+Author: Alexander Gordeev <agordeev@redhat.com>
+Date:   Tue Sep 23 14:25:11 2014 -0600
 
-ops->find_table()?
+    PCI/MSI: Move D0 check into pci_msi_check_device()
+    
+    Both callers of pci_msi_check_device() check that the device is in D0
+    state, so move the check from the callers into pci_msi_check_device()
+    itself.
+    
+    In pci_enable_msi_range(), note that pci_msi_check_device() never returns a
+    positive value any more, so the loop that called it until it returns zero
+    or negative is no longer necessary.
+    
+    [bhelgaas: changelog, split to separate patch]
+    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-> +		if (!tbl)
-> +			return -ENXIO;
-> +
-> +		BUG_ON(!tbl->it_group);
-> +
->  		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
->  				param.size >> IOMMU_PAGE_SHIFT_4K);
->  		if (ret)
-> @@ -293,10 +371,10 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		mutex_unlock(&container->lock);
->  		return 0;
->  	case VFIO_EEH_PE_OP:
-> -		if (!container->tbl || !container->tbl->it_group)
-> +		if (!container->grp)
->  			return -ENODEV;
->  
-> -		return vfio_spapr_iommu_eeh_ioctl(container->tbl->it_group,
-> +		return vfio_spapr_iommu_eeh_ioctl(container->grp,
->  						  cmd, arg);
->  	}
->  
-> @@ -308,16 +386,16 @@ static int tce_iommu_attach_group(void *iommu_data,
->  {
->  	int ret;
->  	struct tce_container *container = iommu_data;
-> -	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +	struct iommu_table *tbl;
-> +	struct spapr_tce_iommu_group *data;
->  
-> -	BUG_ON(!tbl);
->  	mutex_lock(&container->lock);
->  
->  	/* pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
->  			iommu_group_id(iommu_group), iommu_group); */
-> -	if (container->tbl) {
-> +	if (container->grp) {
->  		pr_warn("tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
-> -				iommu_group_id(container->tbl->it_group),
-> +				iommu_group_id(container->grp),
->  				iommu_group_id(iommu_group));
->  		ret = -EBUSY;
->  	} else if (container->enabled) {
-> @@ -325,9 +403,16 @@ static int tce_iommu_attach_group(void *iommu_data,
->  				iommu_group_id(iommu_group));
->  		ret = -EBUSY;
->  	} else {
-> +		data = iommu_group_get_iommudata(iommu_group);
-> +		if (WARN_ON(!data || !data->iommu_owner || !data->ops))
-> +			return -ENXIO;
-> +
-> +		tbl = data->ops->get_table(data, 0);
-> +		BUG_ON(!tbl);
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index a0b623d97ad8..416a4917a64a 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -783,7 +783,10 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
+ 	struct pci_bus *bus;
+ 
+ 	/* MSI must be globally enabled and supported by the device */
+-	if (!pci_msi_enable || !dev || dev->no_msi)
++	if (!pci_msi_enable)
++		return -EINVAL;
++
++	if (!dev || dev->no_msi || dev->current_state != PCI_D0)
+ 		return -EINVAL;
+ 
+ 	/*
+@@ -907,13 +910,13 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ 	int status, nr_entries;
+ 	int i, j;
+ 
+-	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
+-		return -EINVAL;
+-
+ 	status = pci_msi_check_device(dev, nvec);
+ 	if (status)
+ 		return status;
+ 
++	if (!entries)
++		return -EINVAL;
++
+ 	nr_entries = pci_msix_vec_count(dev);
+ 	if (nr_entries < 0)
+ 		return nr_entries;
+@@ -1020,8 +1023,9 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+ 	int nvec;
+ 	int rc;
+ 
+-	if (dev->current_state != PCI_D0)
+-		return -EINVAL;
++	rc = pci_msi_check_device(dev, minvec);
++	if (rc)
++		return rc;
+ 
+ 	WARN_ON(!!dev->msi_enabled);
+ 
+@@ -1044,17 +1048,6 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+ 		nvec = maxvec;
+ 
+ 	do {
+-		rc = pci_msi_check_device(dev, nvec);
+-		if (rc < 0) {
+-			return rc;
+-		} else if (rc > 0) {
+-			if (rc < minvec)
+-				return -ENOSPC;
+-			nvec = rc;
+-		}
+-	} while (rc);
+-
+-	do {
+ 		rc = msi_capability_init(dev, nvec);
+ 		if (rc < 0) {
+ 			return rc;
 
-Why BUG_ON?  A user can attempt to attach any group to any container, do
-you really want to give them the ability to halt the system?
+commit 99b4b82ffbc665cfa363a89144c8cc29eb46ce3d
+Author: Alexander Gordeev <agordeev@redhat.com>
+Date:   Tue Sep 23 12:45:58 2014 -0600
 
-> +
->  		ret = iommu_take_ownership(tbl);
->  		if (!ret)
-> -			container->tbl = tbl;
-> +			container->grp = iommu_group;
->  	}
->  
->  	mutex_unlock(&container->lock);
-> @@ -339,24 +424,31 @@ static void tce_iommu_detach_group(void *iommu_data,
->  		struct iommu_group *iommu_group)
->  {
->  	struct tce_container *container = iommu_data;
-> -	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +	struct iommu_table *tbl;
-> +	struct spapr_tce_iommu_group *data;
->  
-> -	BUG_ON(!tbl);
->  	mutex_lock(&container->lock);
-> -	if (tbl != container->tbl) {
-> +	if (iommu_group != container->grp) {
->  		pr_warn("tce_vfio: detaching group #%u, expected group is #%u\n",
->  				iommu_group_id(iommu_group),
-> -				iommu_group_id(tbl->it_group));
-> +				iommu_group_id(container->grp));
->  	} else {
->  		if (container->enabled) {
->  			pr_warn("tce_vfio: detaching group #%u from enabled container, forcing disable\n",
-> -					iommu_group_id(tbl->it_group));
-> +					iommu_group_id(container->grp));
->  			tce_iommu_disable(container);
->  		}
->  
->  		/* pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
->  				iommu_group_id(iommu_group), iommu_group); */
-> -		container->tbl = NULL;
-> +		container->grp = NULL;
-> +
-> +		data = iommu_group_get_iommudata(iommu_group);
-> +		BUG_ON(!data || !data->iommu_owner || !data->ops);
-> +
-> +		tbl = data->ops->get_table(data, 0);
-> +		BUG_ON(!tbl);
-> +
->  		iommu_release_ownership(tbl);
->  	}
->  	mutex_unlock(&container->lock);
+    PCI/MSI: Rename pci_msi_check_device() to pci_msi_supported()
+    
+    Rename pci_msi_check_device() to pci_msi_supported() for clarity.  Note
+    that pci_msi_supported() returns true if MSI/MSI-X is supported, so code
+    like:
+    
+      if (pci_msi_supported(...))
+    
+    reads naturally.
+    
+    [bhelgaas: changelog, split to separate patch, reverse sense]
+    Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 416a4917a64a..d40323f0ed44 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -769,16 +769,15 @@ out_free:
+ }
+ 
+ /**
+- * pci_msi_check_device - check whether MSI may be enabled on a device
++ * pci_msi_supported - check whether MSI may be enabled on a device
+  * @dev: pointer to the pci_dev data structure of MSI device function
+  * @nvec: how many MSIs have been requested ?
+- * @type: are we checking for MSI or MSI-X ?
+  *
+  * Look at global flags, the device itself, and its parent buses
+  * to determine if MSI/-X are supported for the device. If MSI/-X is
+- * supported return 0, else return an error code.
++ * supported return 1, else return 0.
+  **/
+-static int pci_msi_check_device(struct pci_dev *dev, int nvec)
++static int pci_msi_supported(struct pci_dev *dev, int nvec)
+ {
+ 	struct pci_bus *bus;
+ 
+@@ -795,7 +794,7 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
+ 	 *  b) the list manipulation code assumes nvec >= 1.
+ 	 */
+ 	if (nvec < 1)
+-		return -ERANGE;
++		return 0;
+ 
+ 	/*
+ 	 * Any bridge which does NOT route MSI transactions from its
+@@ -806,9 +805,9 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec)
+ 	 */
+ 	for (bus = dev->bus; bus; bus = bus->parent)
+ 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
+-			return -EINVAL;
++			return 0;
+ 
+-	return 0;
++	return 1;
+ }
+ 
+ /**
+@@ -910,9 +909,8 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ 	int status, nr_entries;
+ 	int i, j;
+ 
+-	status = pci_msi_check_device(dev, nvec);
+-	if (status)
+-		return status;
++	if (!pci_msi_supported(dev, nvec))
++		return -EINVAL;
+ 
+ 	if (!entries)
+ 		return -EINVAL;
+@@ -1023,9 +1021,8 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+ 	int nvec;
+ 	int rc;
+ 
+-	rc = pci_msi_check_device(dev, minvec);
+-	if (rc)
+-		return rc;
++	if (!pci_msi_supported(dev, minvec))
++		return -EINVAL;
+ 
+ 	WARN_ON(!!dev->msi_enabled);
+ 
+
+commit 83be7664f8492b8e4b72cd9375433909d40c018b
+Author: Bjorn Helgaas <bhelgaas@google.com>
+Date:   Tue Sep 23 14:38:28 2014 -0600
+
+    PCI/MSI: Remove unnecessary temporary variable
+    
+    The only use of "status" is to hold a value which is immediately returned,
+    so just return and remove the variable directly.
+    
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index d40323f0ed44..aae2fc80692b 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -906,7 +906,7 @@ EXPORT_SYMBOL(pci_msix_vec_count);
+  **/
+ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ {
+-	int status, nr_entries;
++	int nr_entries;
+ 	int i, j;
+ 
+ 	if (!pci_msi_supported(dev, nvec))
+@@ -937,8 +937,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ 		dev_info(&dev->dev, "can't enable MSI-X (MSI IRQ already assigned)\n");
+ 		return -EINVAL;
+ 	}
+-	status = msix_capability_init(dev, entries, nvec);
+-	return status;
++	return msix_capability_init(dev, entries, nvec);
+ }
+ EXPORT_SYMBOL(pci_enable_msix);
+ 
