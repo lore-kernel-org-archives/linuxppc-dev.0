@@ -1,23 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from cdptpa-oedge-vip.email.rr.com
- (cdptpa-outbound-snat.email.rr.com [107.14.166.232])
- by lists.ozlabs.org (Postfix) with ESMTP id 43B8E1A0077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 12:44:51 +1000 (EST)
-Date: Tue, 23 Sep 2014 22:44:47 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
-Message-ID: <20140923224447.3d6bdaf5@gandalf.local.home>
-In-Reply-To: <20140924123307.7649bec8@kryten>
-References: <1410937624-25140-1-git-send-email-anton@samba.org>
- <1410937624-25140-3-git-send-email-anton@samba.org>
- <20140923194604.233bdbad@gandalf.local.home>
- <20140923195436.45ae7e2c@gandalf.local.home>
- <20140924122202.62feb950@kryten> <1411525460.4184.29.camel@pasglop>
- <20140924123307.7649bec8@kryten>
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FF701A0610
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 12:45:30 +1000 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v4 1/3] MSI/powerpc: Use __read_msi_msg() instead of
+ read_msi_msg()
+Date: Wed, 24 Sep 2014 11:09:45 +0800
+Message-ID: <1411528185-1977-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Alan Modra <amodra@gmail.com>, paulus@samba.org,
+Content-Type: text/plain
+Cc: Yijing Wang <wangyijing@huawei.com>, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,26 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 24 Sep 2014 12:33:07 +1000
-Anton Blanchard <anton@samba.org> wrote:
+Read_msi_msg() only be called in rtas_setup_msi_irqs(),
+use __read_msi_msg() instead of read_msi_msg for
+simplification.
 
-> Hi Ben,
-> 
-> > > I'll drop that patch and respin.
-> > 
-> > Or maybe do a toolchain check / or enable it in LE ?
-> 
-> We are scratching our heads trying to remember details of the issue
-> right now. In retrospect we should have linked the gcc bugzilla or
-> gcc commit details in the kernel commit message :)
-> 
-> Steve: what gcc version are you building with?
-> 
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-powerpc64-linux-gcc (GCC) 4.6.3
-
-I got it from here:
-
-  https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/4.6.3/
-
--- Steve
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 18ff462..dae71df 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -485,7 +485,7 @@ again:
+ 		irq_set_msi_desc(virq, entry);
+ 
+ 		/* Read config space back so we can restore after reset */
+-		read_msi_msg(virq, &msg);
++		__read_msi_msg(entry, &msg);
+ 		entry->msg = msg;
+ 	}
+ 
+-- 
+1.7.1
