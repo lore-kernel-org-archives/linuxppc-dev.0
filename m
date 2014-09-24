@@ -2,20 +2,20 @@ Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 431111A007F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 16:37:04 +1000 (EST)
-Date: Wed, 24 Sep 2014 16:36:57 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F9F61A00FB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 16:40:12 +1000 (EST)
+Date: Wed, 24 Sep 2014 16:40:05 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 3/3] powerpc/kdump: crash_dump.c needs to include io.h
-Message-ID: <20140924163657.74b23785@canb.auug.org.au>
-In-Reply-To: <1411538232-31516-3-git-send-email-mpe@ellerman.id.au>
-References: <1411538232-31516-1-git-send-email-mpe@ellerman.id.au>
- <1411538232-31516-3-git-send-email-mpe@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/2] powerpc: Add VM_FAULT_HWPOISON handling to powerpc
+ page fault handler
+Message-ID: <20140924164005.2b142a4a@canb.auug.org.au>
+In-Reply-To: <1411518427-14408-1-git-send-email-anton@samba.org>
+References: <1411518427-14408-1-git-send-email-anton@samba.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/7i26GswEpuZzniMbMc.9Rh="; protocol="application/pgp-signature"
-Cc: linuxppc-dev@ozlabs.org
+ boundary="Sig_/_5xAMFCkquqkd3U=QIxMT7r"; protocol="application/pgp-signature"
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/7i26GswEpuZzniMbMc.9Rh=
+--Sig_/_5xAMFCkquqkd3U=QIxMT7r
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Hi Michael,
+Hi Anton,
 
-On Wed, 24 Sep 2014 15:57:12 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
-ote:
+On Wed, 24 Sep 2014 10:27:06 +1000 Anton Blanchard <anton@samba.org> wrote:
 >
-> For __ioremap().
+> -	if (user_mode(regs)) {
+> -		current->thread.trap_nr =3D BUS_ADRERR;
+> -		info.si_signo =3D SIGBUS;
+> -		info.si_errno =3D 0;
+> -		info.si_code =3D BUS_ADRERR;
+> -		info.si_addr =3D (void __user *)address;
+> -		force_sig_info(SIGBUS, &info, current);
+> -		return MM_FAULT_RETURN;
+> +	if (!user_mode(regs))
+> +		return MM_FAULT_ERR(SIGBUS);
+> +
+> +	current->thread.trap_nr =3D BUS_ADRERR;
+> +	info.si_signo =3D SIGBUS;
+> +	info.si_errno =3D 0;
+> +	info.si_code =3D BUS_ADRERR;
+> +	info.si_addr =3D (void __user *)address;
 
-So does that mean that you really want this patch before 2/3 so that you
-don't introduce an unnecessary bisection breakage in ppc64_defconfig?
+If you had done this as 2 patches (one to remove the indent and a
+second to fix the actual problem), it would have been much easier to
+review ...
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Sig_/7i26GswEpuZzniMbMc.9Rh=
+--Sig_/_5xAMFCkquqkd3U=QIxMT7r
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUImaOAAoJEMDTa8Ir7ZwVAzUP+wfVA5M6LlkR7wkNcZMKX36d
-AkW2+jpEHGK9F5K7vhEgTzDkt3XJtX3sRqUaTFhcPsCvMMdkoq6fFvRsAyKmatVl
-nyzcK1Ss/kvlhfxLTohIQAoxFFGJWbVlpWSa3IW1lB/UgThGp3t7he6vObnQ4fvS
-3I1oGb9ekgtswzsKUC2rUwvDYdK6nvlCa+V3p448c6yYLKQXU7JXw4OHDJDbY1Jp
-1ALnMNF6f+IOKRYwJ+IMnnpErYpqzvyf/iJNwbj9z3HeveqVfg4RI+ckrV2DBlVS
-hCXbQukA/cwjCfevcOtNYCulWkSJ9+VGkDAazntrvC5Ugo/E2cB888CEK1Nxm91v
-P7XWEuT1BFi/IT0lxjnIo7cu1Uo/mmSBEqlHfQ+s58rwd8+FivAkPrvIkxCCxYfJ
-s7uDJYy6Hb+H8GjpsOcsgg7ZicVXyYuR5OwlHsyTX91P+m1xq65WdN+/A9OFhSU5
-xoT0oReK5JC/Yi2YBMamqTMsX9ZL1Ij6x4RmB7J0WlwL6QLxN9ZINMyS/Ogd49gU
-+kB2R1mKAzaKcVc2fMwLINsDzhgFFPb5+VG6nxgFgdBCSpkuq1r/Mbi5vEnBXwEy
-p5gwPNs7l2dwRiLp1sKnb42FFRkGef1iq4JC/jYCrVrCjpl9IrwXOGlVF2K9kZOS
-ymG8vspPPc2D6r6ZZKoX
-=IxwU
+iQIcBAEBCAAGBQJUImdKAAoJEMDTa8Ir7ZwVsg8P/1GSnL/e2Ew2cusC428kz9ue
+/Oyx9AP+i4k/ltkJoOW15X1SD/TJuQRV3lj1Q7p8nTe0fm9cRxmqiqpHgn1y78Gl
+RYd6+yU+LMrq8bWP/rfxpI3pkL4K5ZsA/FGeXmnQaC+4cS1xNvPsUn9o1Z2kdL69
+xqbzNqCuQp29UWof0IUHQYO34ocNamReS5ovCT2yxJe0R9NVpr3M+sD2rdUDVOdB
+unyWclKKfDLXYbWoxTTyRZWUVvkDuGiULfEG1QOgJ4Rbuylk0vNnRlP/svDIOb+Q
+Ie2m4TKHM5DogqyQ9EWc8nXaN8bDlhoQUUjHBWX7S8jtjAI7IT39ledB6825XNgk
+6sShS1IuzYfN4k67sJp1CSA6YBwl/hDr5Ik2x0LeaJugK8zUCVH9YGltimgG+x1y
+NhatKTXqCI647GQk4W3wE7nZExhaZpw7WazztuWFwmNGd5iMx570fmmT38EL/ZkC
+Gt4QMdD+CHrYBOBc98EAbJ4ZxJBTDrrPlRfp9VmWYcFej7bUQlyY2VdtJHhRBqfv
+X8/KD9ltzfm6m5ZzJg3cJie/B8EK7dv5eJoEnbXyd9d4BnOPBEhAYxTQzm4FqeTi
+8kwzKZA0nXxhkSszj2UL6QtH+RD1OKYCTPXL/lDtu5PbKvEwsSj7dRjZR6H6u0lb
+6Hk3hn3IZS/u+WcjeXu4
+=hzpK
 -----END PGP SIGNATURE-----
 
---Sig_/7i26GswEpuZzniMbMc.9Rh=--
+--Sig_/_5xAMFCkquqkd3U=QIxMT7r--
