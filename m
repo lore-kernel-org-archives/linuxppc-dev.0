@@ -1,22 +1,17 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B42031A009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 12:22:03 +1000 (EST)
-Date: Wed, 24 Sep 2014 12:22:02 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
-Message-ID: <20140924122202.62feb950@kryten>
-In-Reply-To: <20140923195436.45ae7e2c@gandalf.local.home>
-References: <1410937624-25140-1-git-send-email-anton@samba.org>
- <1410937624-25140-3-git-send-email-anton@samba.org>
- <20140923194604.233bdbad@gandalf.local.home>
- <20140923195436.45ae7e2c@gandalf.local.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA5301A009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 12:23:17 +1000 (EST)
+In-Reply-To: <1409039779-392-3-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [2/4] powerpc/eeh: Introduce eeh_ops::err_inject
+Message-Id: <20140924022317.C98A61400B5@ozlabs.org>
+Date: Wed, 24 Sep 2014 12:23:17 +1000 (EST)
+Cc: mikey@neuling.org, qiudayu@linux.vnet.ibm.com,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Steve,
-
-> > This could be broken from the earlier patches, I haven't run just
-> > this test. I probably should on them.
+On Tue, 2014-26-08 at 07:56:17 UTC, Gavin Shan wrote:
+> From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 > 
-> I went back and tested, and it breaks under the first patch.
+> +
+> +	/* Firmware supports error injection ? */
+> +	ret = opal_check_token(OPAL_PCI_ERR_INJCT);
+> +	if (ret != OPAL_TOKEN_PRESENT) {
+> +		pr_warn("%s: Firmware not support error injection (%lld)\n",
+> +			__func__, ret);
 
-Thanks for testing. It looks like some toolchains have issues
-other than the -fno-no-omit-frame-pointer one, and -mno-sched-epilog
-works around it.
+This doesn't build, we dropped OPAL_TOKEN_PRESENT.
 
-I'll drop that patch and respin.
+I've replaced it with:
 
-Anton
+       if (!opal_check_token(OPAL_PCI_ERR_INJCT)) {
+               pr_warn("%s: Firmware doesn't support error injection (%lld)\n",
+                        __func__, ret);
+
+cheers
