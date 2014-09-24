@@ -1,19 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3DD81A0465
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 10:27:10 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B42031A009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 12:22:03 +1000 (EST)
+Date: Wed, 24 Sep 2014 12:22:02 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc: Fill in si_addr_lsb siginfo field
-Date: Wed, 24 Sep 2014 10:27:07 +1000
-Message-Id: <1411518427-14408-2-git-send-email-anton@samba.org>
-In-Reply-To: <1411518427-14408-1-git-send-email-anton@samba.org>
-References: <1411518427-14408-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
+Message-ID: <20140924122202.62feb950@kryten>
+In-Reply-To: <20140923195436.45ae7e2c@gandalf.local.home>
+References: <1410937624-25140-1-git-send-email-anton@samba.org>
+ <1410937624-25140-3-git-send-email-anton@samba.org>
+ <20140923194604.233bdbad@gandalf.local.home>
+ <20140923195436.45ae7e2c@gandalf.local.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fill in the si_addr_lsb siginfo field so the hwpoison code can
-pass to userspace the length of memory that has been corrupted.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/mm/fault.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Hi Steve,
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index c3728c1..3b16c58 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -33,6 +33,7 @@
- #include <linux/magic.h>
- #include <linux/ratelimit.h>
- #include <linux/context_tracking.h>
-+#include <linux/hugetlb.h>
- 
- #include <asm/firmware.h>
- #include <asm/page.h>
-@@ -118,6 +119,7 @@ static int do_sigbus(struct pt_regs *regs, unsigned long address,
- 		     unsigned int fault)
- {
- 	siginfo_t info;
-+	unsigned int lsb = 0;
- 
- 	up_read(&current->mm->mmap_sem);
- 
-@@ -136,7 +138,13 @@ static int do_sigbus(struct pt_regs *regs, unsigned long address,
- 			current->comm, current->pid, address);
- 		info.si_code = BUS_MCEERR_AR;
- 	}
-+
-+	if (fault & VM_FAULT_HWPOISON_LARGE)
-+		lsb = hstate_index_to_shift(VM_FAULT_GET_HINDEX(fault));
-+	if (fault & VM_FAULT_HWPOISON)
-+		lsb = PAGE_SHIFT;
- #endif
-+	info.si_addr_lsb = lsb;
- 	force_sig_info(SIGBUS, &info, current);
- 	return MM_FAULT_RETURN;
- }
--- 
-1.9.1
+> > This could be broken from the earlier patches, I haven't run just
+> > this test. I probably should on them.
+> 
+> I went back and tested, and it breaks under the first patch.
+
+Thanks for testing. It looks like some toolchains have issues
+other than the -fno-no-omit-frame-pointer one, and -mno-sched-epilog
+works around it.
+
+I'll drop that patch and respin.
+
+Anton
