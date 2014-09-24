@@ -1,37 +1,37 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8ABDB1A17EA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 06:16:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B115E1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 06:57:27 +1000 (EST)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 24 Sep 2014 14:16:14 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4849B1FF001D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 14:04:58 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8OKGC0n45285472
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 22:16:13 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8OKGCjd027408
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 14:16:12 -0600
-Message-ID: <5423268C.6000407@linux.vnet.ibm.com>
-Date: Wed, 24 Sep 2014 15:16:12 -0500
+ Wed, 24 Sep 2014 16:57:24 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1298C38C8041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 16:57:22 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8OKvLrI1507696
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 20:57:22 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8OKvLFx005874
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2014 16:57:21 -0400
+Message-ID: <54233031.60700@linux.vnet.ibm.com>
+Date: Wed, 24 Sep 2014 15:57:21 -0500
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 3/3] pseries: Fix endian issues in cpu hot-removal
-References: <1410898547-12296-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <1410898547-12296-4-git-send-email-tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <1410898547-12296-4-git-send-email-tlfalcon@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [4/5] pseries: Implement memory hotplug add in the kernel
+References: <54174CF3.1010802@linux.vnet.ibm.com>
+ <1410937639.27681.12.camel@concordia>
+In-Reply-To: <1410937639.27681.12.camel@concordia>
 Content-Type: text/plain; charset=utf-8
-Cc: bharata@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,145 +41,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/16/2014 03:15 PM, Thomas Falcon wrote:
-> When removing a cpu, this patch makes sure that values
-> gotten from or passed to firmware are in the correct
-> endian format.
+On 09/17/2014 02:07 AM, Michael Ellerman wrote:
 > 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+> On Mon, 2014-09-15 at 15:32 -0500, Nathan Fontenot wrote:
+>> This patch adds the ability to do memory hotplug adding in the kernel.
+>>
+>> Currently the hotplug add/remove of memory is handled by the drmgr
+>> command. The drmgr command performs the add/remove by performing
+>> some work in user-space and making requests to the kernel to handle 
+>> other pieces. By moving all of the work to the kernel we can do the
+>> add and remove faster, and provide a common place to do memory hotplug
+>> for both the PowerVM and PowerKVM environments.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>> ---
 
-Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>> +	for (i = 0; i < entries; i++, lmb++) {
+>> +		u32 drc_index = be32_to_cpu(lmb->drc_index);
+>> +
+>> +		if (lmbs_to_add == lmbs_added)
+>> +			break;
+>> +
+>> +		if (be32_to_cpu(lmb->flags) & DRCONF_MEM_ASSIGNED)
+>> +			continue;
+>> +
+>> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX
+>> +		    && lmb->drc_index != hp_elog->_drc_u.drc_index)
+>> +			continue;
+>> +
+>> +		rc = dlpar_acquire_drc(drc_index);
+>> +		if (rc)
+>> +			continue;
+>> +
+>> +		rc = dlpar_add_one_lmb(lmb);
+>> +		if (rc) {
+>> +			dlpar_release_drc(drc_index);
+>> +			continue;
+>> +		}
+> 
+> In both the above error cases you just move along. That means we potentially
+> hotplugged some memory but not everything that we were asked to. That seems
+> like a bad idea, we should either do everything or nothing.
+> 
 
-> ---
-> Changes in v3:
-> 
->  drc_index in dlpar_cpu_release is no longer const to
->  fix compilation error found by Bharata Rao
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c       | 20 +++++++++++---------
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 10 ++++++----
->  2 files changed, 17 insertions(+), 13 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index 187e4eb..0fad5b6 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -444,7 +444,8 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  	int rc = 0;
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv;
-> +	u32 thread;
->  
->  	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
->  	if (!intserv)
-> @@ -454,8 +455,9 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
-> +		thread = be32_to_cpu(intserv[i]);
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
->  
->  			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
-> @@ -477,14 +479,14 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  			 * Upgrade it's state to CPU_STATE_OFFLINE.
->  			 */
->  			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
-> -			BUG_ON(plpar_hcall_norets(H_PROD, intserv[i])
-> +			BUG_ON(plpar_hcall_norets(H_PROD, thread)
->  								!= H_SUCCESS);
->  			__cpu_die(cpu);
->  			break;
->  		}
->  		if (cpu == num_possible_cpus())
->  			printk(KERN_WARNING "Could not find cpu to offline "
-> -			       "with physical id 0x%x\n", intserv[i]);
-> +			       "with physical id 0x%x\n", thread);
->  	}
->  	cpu_maps_update_done();
->  
-> @@ -496,15 +498,15 @@ out:
->  static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  {
->  	struct device_node *dn;
-> -	const u32 *drc_index;
-> +	u32 drc_index;
->  	int rc;
->  
->  	dn = of_find_node_by_path(buf);
->  	if (!dn)
->  		return -EINVAL;
->  
-> -	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-> -	if (!drc_index) {
-> +	rc = of_property_read_u32(dn, "ibm,my-drc-index", &drc_index);
-> +	if (rc) {
->  		of_node_put(dn);
->  		return -EINVAL;
->  	}
-> @@ -515,7 +517,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  		return -EINVAL;
->  	}
->  
-> -	rc = dlpar_release_drc(*drc_index);
-> +	rc = dlpar_release_drc(drc_index);
->  	if (rc) {
->  		of_node_put(dn);
->  		return rc;
-> @@ -523,7 +525,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  
->  	rc = dlpar_detach_node(dn);
->  	if (rc) {
-> -		dlpar_acquire_drc(*drc_index);
-> +		dlpar_acquire_drc(drc_index);
->  		return rc;
->  	}
->  
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 447f8c6..5c375f9 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -90,7 +90,7 @@ static void rtas_stop_self(void)
->  {
->  	static struct rtas_args args = {
->  		.nargs = 0,
-> -		.nret = 1,
-> +		.nret = cpu_to_be32(1),
->  		.rets = &args.args[0],
->  	};
->  
-> @@ -312,7 +312,8 @@ static void pseries_remove_processor(struct device_node *np)
->  {
->  	unsigned int cpu;
->  	int len, nthreads, i;
-> -	const u32 *intserv;
-> +	const __be32 *intserv;
-> +	u32 thread;
->  
->  	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
->  	if (!intserv)
-> @@ -322,8 +323,9 @@ static void pseries_remove_processor(struct device_node *np)
->  
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
-> +		thread = be32_to_cpu(intserv[i]);
->  		for_each_present_cpu(cpu) {
-> -			if (get_hard_smp_processor_id(cpu) != intserv[i])
-> +			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
->  			BUG_ON(cpu_online(cpu));
->  			set_cpu_present(cpu, false);
-> @@ -332,7 +334,7 @@ static void pseries_remove_processor(struct device_node *np)
->  		}
->  		if (cpu >= nr_cpu_ids)
->  			printk(KERN_WARNING "Could not find cpu to remove "
-> -			       "with physical id 0x%x\n", intserv[i]);
-> +			       "with physical id 0x%x\n", thread);
->  	}
->  	cpu_maps_update_done();
->  }
-> 
+Michael, how set are you on the all or nothing approach?
+
+Note that I think the all or nothing approach is best but I think it will
+present some problems. We do memory add (and remove) on a LMB basis, so it
+is possible to hit a scenario in which we cannot revert back to the original
+state. For example, a request to add 5 LMBs only succeeds in adding 4 LMBs.
+There is no guarantee that we then remove the 4 MLBs that were added. That
+memory could be in use somewhere that it cannot be moved.
+
+I would suggest we continue with the current approach in that we try to
+satisfy the request but not try to roll-back the changes if the entire
+request cannot be satisfied.
+
+-Nathan   
