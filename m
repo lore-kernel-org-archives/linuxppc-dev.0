@@ -1,16 +1,18 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A96551A022D
+ by lists.ozlabs.org (Postfix) with ESMTPS id A53F71A0194
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:47:47 +1000 (EST)
 From: Zhao Qiang <B45475@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <B07421@freescale.com>
-Subject: [PATCH 2/3] qe_common: add qe common functions to qe_common.c
-Date: Thu, 25 Sep 2014 10:47:16 +0800
-Message-ID: <1411613237-2271-1-git-send-email-B45475@freescale.com>
+Subject: [PATCH 3/3] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+Date: Thu, 25 Sep 2014 10:47:17 +0800
+Message-ID: <1411613237-2271-2-git-send-email-B45475@freescale.com>
+In-Reply-To: <1411613237-2271-1-git-send-email-B45475@freescale.com>
+References: <1411613237-2271-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
@@ -23,291 +25,298 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qe need to call some common functions, move them into
-public directory, add a new file drivers/soc/qe/qe_common.c
-for them.
+qe need to use the rheap, so move it to public directory.
 
 Signed-off-by: Zhao Qiang <B45475@freescale.com>
 ---
- drivers/soc/qe/Makefile    |   2 +-
- drivers/soc/qe/qe_common.c | 185 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fsl/qe.h     |  52 +++++++++++--
- 3 files changed, 230 insertions(+), 9 deletions(-)
- create mode 100644 drivers/soc/qe/qe_common.c
+ arch/powerpc/Kconfig                                    | 3 ---
+ arch/powerpc/include/asm/fsl_85xx_cache_sram.h          | 2 +-
+ arch/powerpc/lib/Makefile                               | 2 --
+ arch/powerpc/platforms/44x/Kconfig                      | 2 +-
+ arch/powerpc/platforms/85xx/Kconfig                     | 2 +-
+ arch/powerpc/platforms/Kconfig                          | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype                  | 2 +-
+ arch/powerpc/sysdev/cpm1.c                              | 2 +-
+ arch/powerpc/sysdev/cpm2.c                              | 2 +-
+ arch/powerpc/sysdev/cpm_common.c                        | 2 +-
+ arch/powerpc/sysdev/ppc4xx_ocm.c                        | 2 +-
+ drivers/dma/bestcomm/Kconfig                            | 2 +-
+ drivers/soc/qe/Kconfig                                  | 2 +-
+ drivers/soc/qe/qe.c                                     | 2 +-
+ drivers/soc/qe/qe_common.c                              | 2 +-
+ drivers/video/Kconfig                                   | 2 +-
+ include/linux/fsl/bestcomm/sram.h                       | 2 +-
+ {arch/powerpc/include/asm => include/linux/fsl}/rheap.h | 0
+ lib/Kconfig                                             | 3 +++
+ lib/Makefile                                            | 2 ++
+ {arch/powerpc/lib => lib}/rheap.c                       | 2 +-
+ 21 files changed, 21 insertions(+), 21 deletions(-)
+ rename {arch/powerpc/include/asm => include/linux/fsl}/rheap.h (100%)
+ rename {arch/powerpc/lib => lib}/rheap.c (99%)
 
-diff --git a/drivers/soc/qe/Makefile b/drivers/soc/qe/Makefile
-index f1855c1..77f6fd9 100644
---- a/drivers/soc/qe/Makefile
-+++ b/drivers/soc/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o qe_common.o
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d20dc2b..18b658e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1046,7 +1046,4 @@ config PPC_CLOCK
+ 	default n
+ 	select HAVE_CLK
  
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-diff --git a/drivers/soc/qe/qe_common.c b/drivers/soc/qe/qe_common.c
-new file mode 100644
-index 0000000..ee02ae8
---- /dev/null
-+++ b/drivers/soc/qe/qe_common.c
-@@ -0,0 +1,185 @@
-+/*
-+ * Common QE code
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright 2007-2008,2010 Freescale Semiconductor, Inc.
-+ *
-+ * Some parts derived from commproc.c/cpm2_common.c, which is:
-+ * Copyright (c) 1997 Dan error_act (dmalek@jlc.net)
-+ * Copyright (c) 1999-2001 Dan Malek <dan@embeddedalley.com>
-+ * Copyright (c) 2000 MontaVista Software, Inc (source@mvista.com)
-+ * 2006 (c) MontaVista Software, Inc.
-+ * Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/of_device.h>
-+#include <linux/spinlock.h>
-+#include <linux/export.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/slab.h>
-+
-+#include <asm/io.h>
-+#include <asm/rheap.h>
-+#include <linux/fsl/qe.h>
-+
-+static spinlock_t qe_muram_lock;
-+static rh_block_t qe_boot_muram_rh_block[16];
-+static rh_info_t qe_muram_info;
-+static u8 __iomem *muram_vbase;
-+static phys_addr_t muram_pbase;
-+
-+/* Max address size we deal with */
-+#define OF_MAX_ADDR_CELLS	4
-+
-+int qe_muram_init(void)
-+{
-+	struct device_node *np;
-+	struct resource r;
-+	u32 zero[OF_MAX_ADDR_CELLS] = {};
-+	resource_size_t max = 0;
-+	int i = 0;
-+	int ret = 0;
-+
-+	if (muram_pbase)
-+		return 0;
-+
-+	spin_lock_init(&qe_muram_lock);
-+	/* initialize the info header */
-+	rh_init(&qe_muram_info, 1,
-+	        sizeof(qe_boot_muram_rh_block) /
-+	        sizeof(qe_boot_muram_rh_block[0]),
-+	        qe_boot_muram_rh_block);
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
-+	if (!np) {
-+		/* try legacy bindings */
-+		np = of_find_node_by_name(NULL, "data-only");
-+		if (!np) {
-+			printk(KERN_ERR "Cannot find CPM muram data node");
-+			ret = -ENODEV;
-+			goto out;
-+		}
-+	}
-+
-+	muram_pbase = of_translate_address(np, zero);
-+	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
-+		printk(KERN_ERR "Cannot translate zero through CPM muram node");
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	while (of_address_to_resource(np, i++, &r) == 0) {
-+		if (r.end > max)
-+			max = r.end;
-+
-+		rh_attach_region(&qe_muram_info, r.start - muram_pbase,
-+				 resource_size(&r));
-+	}
-+
-+	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
-+	if (!muram_vbase) {
-+		printk(KERN_ERR "Cannot map CPM muram");
-+		ret = -ENOMEM;
-+	}
-+
-+out:
-+	of_node_put(np);
-+	return ret;
-+}
-+
-+/**
-+ * qe_muram_alloc - allocate the requested size worth of multi-user ram
-+ * @size: number of bytes to allocate
-+ * @align: requested alignment, in bytes
-+ *
-+ * This function returns an offset into the muram area.
-+ * Use qe_dpram_addr() to get the virtual address of the area.
-+ * Use qe_muram_free() to free the allocation.
-+ */
-+unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
-+{
-+	unsigned long start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	qe_muram_info.alignment = align;
-+	start = rh_alloc(&qe_muram_info, size, "commproc");
-+	memset(qe_muram_addr(start), 0, size);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return start;
-+}
-+EXPORT_SYMBOL(qe_muram_alloc);
-+
-+/**
-+ * qe_muram_free - free a chunk of multi-user ram
-+ * @offset: The beginning of the chunk as returned by qe_muram_alloc().
-+ */
-+int qe_muram_free(unsigned long offset)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	ret = rh_free(&qe_muram_info, offset);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(qe_muram_free);
-+
-+/**
-+ * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
-+ * @offset: the offset into the muram area to reserve
-+ * @size: the number of bytes to reserve
-+ *
-+ * This function returns "start" on success, -ENOMEM on failure.
-+ * Use qe_dpram_addr() to get the virtual address of the area.
-+ * Use qe_muram_free() to free the allocation.
-+ */
-+unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size)
-+{
-+	unsigned long start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	qe_muram_info.alignment = 1;
-+	start = rh_alloc_fixed(&qe_muram_info, offset, size, "commproc");
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return start;
-+}
-+EXPORT_SYMBOL(qe_muram_alloc_fixed);
-+
-+/**
-+ * qe_muram_addr - turn a muram offset into a virtual address
-+ * @offset: muram offset to convert
-+ */
-+void __iomem *qe_muram_addr(unsigned long offset)
-+{
-+	return muram_vbase + offset;
-+}
-+EXPORT_SYMBOL(qe_muram_addr);
-+
-+unsigned long qe_muram_offset(void __iomem *addr)
-+{
-+	return addr - (void __iomem *)muram_vbase;
-+}
-+EXPORT_SYMBOL(qe_muram_offset);
-+
-+/**
-+ * qe_muram_dma - turn a muram virtual address into a DMA address
-+ * @offset: virtual address from qe_muram_addr() to convert
-+ */
-+dma_addr_t qe_muram_dma(void __iomem *addr)
-+{
-+	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
-+}
-+EXPORT_SYMBOL(qe_muram_dma);
-diff --git a/include/linux/fsl/qe.h b/include/linux/fsl/qe.h
-index d56b8e0..fab0398 100644
---- a/include/linux/fsl/qe.h
-+++ b/include/linux/fsl/qe.h
-@@ -19,7 +19,8 @@
+-config PPC_LIB_RHEAP
+-	bool
+-
+ source "arch/powerpc/kvm/Kconfig"
+diff --git a/arch/powerpc/include/asm/fsl_85xx_cache_sram.h b/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+index 2af2bdc..e57888a 100644
+--- a/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
++++ b/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+@@ -26,7 +26,7 @@
+ #ifndef __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+ #define __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
  #include <linux/spinlock.h>
- #include <linux/errno.h>
- #include <linux/err.h>
--#include <asm/cpm.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
+ 
+ /*
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 4504332..c7b4e2f 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -26,8 +26,6 @@ obj-$(CONFIG_SMP)	+= locks.o
+ obj-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+ endif
+ 
+-obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+-
+ obj-y			+= code-patching.o
+ obj-y			+= feature-fixups.o
+ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index d6c7506..0ea1aee 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -254,7 +254,7 @@ config PPC4xx_GPIO
+ config PPC4xx_OCM
+ 	bool "PPC4xx On Chip Memory (OCM) support"
+ 	depends on 4xx
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  Enable OCM support for PowerPC 4xx platforms with on chip memory,
+ 	  OCM provides the fast place for memory access to improve performance.
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index ae9fdb51..ab4777a 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -19,7 +19,7 @@ if PPC32
+ 
+ config FSL_85XX_CACHE_SRAM
+ 	bool "Freescale l2cache sram support"
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  When selected, this option enables cache-sram support
+ 	  for memory allocation on P1/P2 QorIQ platforms.
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index d09ae32f..9c38a8d 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -282,7 +282,7 @@ config CPM2
+ 	bool "Enable support for the CPM2 (Communications Processor Module)"
+ 	depends on (FSL_SOC_BOOKE && PPC32) || 8260
+ 	select CPM
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	select PPC_PCI_CHOICE
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	help
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index c9ef8a5..d68d19e 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -33,7 +33,7 @@ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+ 	select 8xx
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 
+ config 40x
+ 	bool "AMCC 40x"
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index 5e6ff38..c6f5762 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -38,7 +38,7 @@
+ #include <asm/cpm1.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/prom.h>
+ #include <asm/cpm.h>
+ 
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index 8dc1e24..5a63d35 100644
+--- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -41,7 +41,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/cpm2.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/fs_pd.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 4dd5341..98cac81 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -26,7 +26,7 @@
+ 
+ #include <asm/udbg.h>
+ #include <asm/io.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/cpm.h>
+ 
+ #include <mm/mmu_decl.h>
+diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
+index 1b15f93..c6a1561 100644
+--- a/arch/powerpc/sysdev/ppc4xx_ocm.c
++++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
+@@ -26,7 +26,7 @@
+ #include <linux/kernel.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/of.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/ppc4xx_ocm.h>
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
+diff --git a/drivers/dma/bestcomm/Kconfig b/drivers/dma/bestcomm/Kconfig
+index 29e4270..9bb1bf8 100644
+--- a/drivers/dma/bestcomm/Kconfig
++++ b/drivers/dma/bestcomm/Kconfig
+@@ -6,7 +6,7 @@ config PPC_BESTCOMM
+ 	tristate "Bestcomm DMA engine support"
+ 	depends on PPC_MPC52xx
+ 	default n
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  BestComm is the name of the communication coprocessor found
+ 	  on the Freescale MPC5200 family of processor.  Its usage is
+diff --git a/drivers/soc/qe/Kconfig b/drivers/soc/qe/Kconfig
+index 5c2b9d8..49118e1 100644
+--- a/drivers/soc/qe/Kconfig
++++ b/drivers/soc/qe/Kconfig
+@@ -5,7 +5,7 @@
+ config QUICC_ENGINE
+ 	bool "Freescale QUICC Engine (QE) Support"
+ 	depends on FSL_SOC && (PPC32 || PPC64)
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	select CRC32
+ 	---help---
+ 	  The QUICC Engine (QE) is a new generation of communications
+diff --git a/drivers/soc/qe/qe.c b/drivers/soc/qe/qe.c
+index 55a9c6d..a5e4780 100644
+--- a/drivers/soc/qe/qe.c
++++ b/drivers/soc/qe/qe.c
+@@ -36,7 +36,7 @@
  #include <linux/fsl/immap_qe.h>
+ #include <linux/fsl/qe.h>
+ #include <asm/prom.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
  
- #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
-@@ -188,13 +189,48 @@ static inline int qe_alive_during_sleep(void)
- #endif
- }
+ static void qe_snums_init(void);
+ static int qe_sdma_init(void);
+diff --git a/drivers/soc/qe/qe_common.c b/drivers/soc/qe/qe_common.c
+index ee02ae8..c047fde 100644
+--- a/drivers/soc/qe/qe_common.c
++++ b/drivers/soc/qe/qe_common.c
+@@ -26,7 +26,7 @@
+ #include <linux/slab.h>
  
--/* we actually use cpm_muram implementation, define this for convenience */
--#define qe_muram_init cpm_muram_init
--#define qe_muram_alloc cpm_muram_alloc
--#define qe_muram_alloc_fixed cpm_muram_alloc_fixed
--#define qe_muram_free cpm_muram_free
--#define qe_muram_addr cpm_muram_addr
--#define qe_muram_offset cpm_muram_offset
-+int qe_muram_init(void);
-+
-+#if defined(CONFIG_QUICC_ENGINE)
-+unsigned long qe_muram_alloc(unsigned long size, unsigned long align);
-+int qe_muram_free(unsigned long offset);
-+unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size);
-+void __iomem *qe_muram_addr(unsigned long offset);
-+unsigned long qe_muram_offset(void __iomem *addr);
-+dma_addr_t qe_muram_dma(void __iomem *addr);
-+#else
-+static inline unsigned long qe_muram_alloc(unsigned long size,
-+					    unsigned long align)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int qe_muram_free(unsigned long offset)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline unsigned long qe_muram_alloc_fixed(unsigned long offset,
-+						  unsigned long size)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline void __iomem *qe_muram_addr(unsigned long offset)
-+{
-+	return NULL;
-+}
-+
-+static inline unsigned long qe_muram_offset(void __iomem *addr)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline dma_addr_t qe_muram_dma(void __iomem *addr)
-+{
-+	return 0;
-+}
-+#endif /* defined(CONFIG_QUICC_ENGINE) */
+ #include <asm/io.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <linux/fsl/qe.h>
  
- /* Structure that defines QE firmware binary files.
-  *
+ static spinlock_t qe_muram_lock;
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2a46153..4ce7204 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1972,7 +1972,7 @@ config FB_FSL_DIU
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	---help---
+ 	  Framebuffer driver for the Freescale SoC DIU
+ 
+diff --git a/include/linux/fsl/bestcomm/sram.h b/include/linux/fsl/bestcomm/sram.h
+index b6d6689..117eaa1 100644
+--- a/include/linux/fsl/bestcomm/sram.h
++++ b/include/linux/fsl/bestcomm/sram.h
+@@ -12,7 +12,7 @@
+ #ifndef __BESTCOMM_SRAM_H__
+ #define __BESTCOMM_SRAM_H__
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/mmu.h>
+ #include <linux/spinlock.h>
+ 
+diff --git a/arch/powerpc/include/asm/rheap.h b/include/linux/fsl/rheap.h
+similarity index 100%
+rename from arch/powerpc/include/asm/rheap.h
+rename to include/linux/fsl/rheap.h
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 4490089..4ffcc86 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -365,6 +365,9 @@ config CPU_RMAP
+ 	bool
+ 	depends on SMP
+ 
++config LIB_RHEAP
++	bool
++
+ config DQL
+ 	bool
+ 
+diff --git a/lib/Makefile b/lib/Makefile
+index 6e23a0f..8523e9d 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -194,3 +194,5 @@ quiet_cmd_build_OID_registry = GEN     $@
+ clean-files	+= oid_registry_data.c
+ 
+ obj-$(CONFIG_UCS2_STRING) += ucs2_string.o
++
++obj-$(CONFIG_LIB_RHEAP) += rheap.o
+diff --git a/arch/powerpc/lib/rheap.c b/lib/rheap.c
+similarity index 99%
+rename from arch/powerpc/lib/rheap.c
+rename to lib/rheap.c
+index a1060a8..af180fd 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/lib/rheap.c
+@@ -20,7 +20,7 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ 
+ /*
+  * Fixup a list_head, needed when copying lists.  If the pointers fall
 -- 
 2.1.0.27.g96db324
