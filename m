@@ -1,21 +1,40 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-wg0-x22d.google.com (mail-wg0-x22d.google.com
+ [IPv6:2a00:1450:400c:c00::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56E1F1A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 17:02:08 +1000 (EST)
-Date: Thu, 25 Sep 2014 17:01:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Cyril Bur <cyril.bur@au1.ibm.com>
-Subject: Re: [PATCH v2 1/3] drivers/of: add of_changeset_apply_locked
-Message-ID: <20140925170159.1b7e4521@canb.auug.org.au>
-In-Reply-To: <1411627290-20302-2-git-send-email-cyril.bur@au1.ibm.com>
-References: <1411627290-20302-1-git-send-email-cyril.bur@au1.ibm.com>
- <1411627290-20302-2-git-send-email-cyril.bur@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0462F1A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 17:06:07 +1000 (EST)
+Received: by mail-wg0-f45.google.com with SMTP id x13so6787338wgg.28
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 00:06:03 -0700 (PDT)
+Date: Thu, 25 Sep 2014 09:06:01 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v2 02/22] PCI/MSI: Remove useless bus->msi assignment
+Message-ID: <20140925070601.GF12423@ulmo>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <1411614872-4009-3-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/GnfRfmQFOUmrqLZsgF54Ct4"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="kbCYTQG2MZjuOjyn"
+In-Reply-To: <1411614872-4009-3-git-send-email-wangyijing@huawei.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/GnfRfmQFOUmrqLZsgF54Ct4
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi Cyril,
+--kbCYTQG2MZjuOjyn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Nit:
+On Thu, Sep 25, 2014 at 11:14:12AM +0800, Yijing Wang wrote:
+> Currently, PCI drivers will initialize bus->msi in
+> pcibios_add_bus(). pcibios_add_bus() will be called
+> in every pci bus initialization. So the bus->msi
+> assignment in pci_alloc_child_bus() is useless.
 
-On Thu, 25 Sep 2014 16:41:28 +1000 Cyril Bur <cyril.bur@au1.ibm.com> wrote:
->
-> Due to the requirement of of_changesets that of_changeset_apply be called
-> holding the of_mutex and that the of_mutex cannot be accessed nicely outs=
-ide
-> the of code, added a wrapper which grabs the lock and called
-                                                        ^^^^^^
-calls
+I think this should be the other way around. The default should be to
+inherit bus->msi from the parent. That way drivers don't typically have
+to do it, yet they can still opt to override it if they need to.
 
-> of_changeset_apply.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+For Tegra for example I think it would work if we assigned the MSI chip
+to the root bus (in tegra_pcie_scan_bus()) and then have it propagated
+to child busses in pci_alloc_child_bus() so that tegra_pcie_add_bus()
+can be removed altogether.
 
---Sig_/GnfRfmQFOUmrqLZsgF54Ct4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Thierry
+
+--kbCYTQG2MZjuOjyn
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUI73sAAoJEMDTa8Ir7ZwV+PwP+QG8bJxmOChv+me+96gEyE7t
-Fq9Dd5oHAiTRpvQ96P3tLl7gIac1BLCP5JJxqz1FXEShYyQYyPtWRloFmUExl5p9
-0DYGAlHP/ggG0CMhUnK7lD8kEdXeOa/tNKrRzjAQNvWhgkd3DRUT8vvwYyngESNh
-MEFS2FMh0+FwEzDTTPR86a/J7SIF3Ijk9xZApj8LqdNAJwg7Uilklwiddab5Oai/
-4LaGqg5sM5Pr9HRf8pGhBdSkqklM8FD3Tk8pg/xy2yTIcMd62p5iUe/jTQcWy+Ux
-gGz4vrQhAnMmt86tYLbM3auJbzSn5T0cewHbc0+feHQS2pj8cIJjHAwUf4DMjYw3
-z4CffT7wsl31/F+2iDplly4Je+hGIC1TZneDvPViRYk5P7PMMJaNckU+o1XN6S88
-0n+nYIG/4D/qqeWzps68sFl8NlnjB/zVkzhPzGHB2o+k3F3LNgdaullMGNDe4u6b
-Q0NP7yEQuiexcuh59q5Q57J4w4I9JNBUe73TfmEf5V/aRQeOki5b1hAjjAacz22f
-pSBkQWF0DqrxdwC2i4lQa1HBC0ZvIuiv3BQ9upKqczSQNKaqf3knIvBLCx2dDXsa
-qSaAyw2PR0Hg+YXC42zxQ0uvZT2IDxUwiHtRBcXOPcA5FoEOvYyKR4QS1ZfC4/nC
-9cgGzKnv0P/dMGtKzsLj
-=uHMc
+iQIcBAEBAgAGBQJUI77YAAoJEN0jrNd/PrOhZ/IQAMCSt26z+T6Q8TozfHBY40d1
+VjyfIqF++JMHsJp9JBnJk7W/SdKcW+ClXvgZjtR4hqvTRlYUBPk6Sn3JWpi3RslY
+GHt/y1pNGzk05qLADjlA8CAGVjq0Vspw5WO5SLjzu10gfvcddAX7YKRcWz5vW9uv
+TcG+NFcDyGRaNg+ATkJ8Ep4rVN3eIkh9te9CE/pG5zQAV+NEZkaN4v9hRFubWIPy
+HUXyDu+8aTJ3YUyhrXkbGR23i0lLzcWsqhrcjbbbQj0swxngijMgBbzJU2jJ0rxx
+5CjTbs0mgvqKfsX1WQ3Df61rSN/krlMiZeD66YuMTuWdlzZkGJqpHCDkKdx2rITZ
+o2IXg6faK1OARr8JfubrXil2utfpJkvBJR2fWmH0j37ZkEb249skTCAnb2yroyhJ
+Mz3BmS+nAgPJkQUTTVZigeR+90KASb/WQrFPZhvOPK/ioMy0UyGy6uvNYm4rLXK+
+gWN2TjIaniEFM60xJLFPgsVuf9XXKUZ0REybeTiDM65mofLUSkxtMbK/mrcBdHgF
+kdO+JJ93hN6vnnqpqA/QjKNJebZm0PUjSTZvXIlzBs/v+gOh4bWewATJLbcgll/g
+w85vBMPaceGBcjBIBul927T7Uf+2pLOmJHmM+eCzXSdxAyQ8qx75Su9uWOY3sX3Q
+JDxVrWb34Dj7sIqL36a3
+=f2MC
 -----END PGP SIGNATURE-----
 
---Sig_/GnfRfmQFOUmrqLZsgF54Ct4--
+--kbCYTQG2MZjuOjyn--
