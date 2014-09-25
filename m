@@ -2,14 +2,16 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38A881A0990
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:02 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9901D1A09A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:03 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X in all
- platforms
-Date: Thu, 25 Sep 2014 11:14:10 +0800
-Message-ID: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v2 13/22] MIPS/Xlp: Remove the dead function destroy_irq() to
+ fix build error
+Date: Thu, 25 Sep 2014 11:14:23 +0800
+Message-ID: <1411614872-4009-14-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
@@ -38,76 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based Bjorn's pci/msi branch
-git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/msi
+Commit 465665f78a7 ("mips: Kill pointless destroy_irq()") removed
+the destroy_irq(). So remove the leftover one in xlp_setup_msix()
+to fix build error.
 
-Currently, there are a lot of weak arch functions in MSI code.
-Thierry Reding Introduced MSI chip framework to configure MSI/MSI-X in arm.
-This series use MSI chip framework to refactor MSI code across all platforms
-to eliminate weak arch functions. Then all MSI irqs will be managed in a 
-unified framework. Because this series changed a lot of ARCH MSI code,
-so tests in the platforms which MSI code modified are warmly welcomed!
+arch/mips/pci/msi-xlp.c: In function 'xlp_setup_msix':
+arch/mips/pci/msi-xlp.c:447:3: error: implicit declaration of function 'destroy_irq'..
+cc1: some warnings being treated as errors
+make[1]: *** [arch/mips/pci/msi-xlp.o] Error 1
+make: *** [arch/mips/pci/] Error 2
 
-v1->v2:
-Add a patch to make s390 MSI code build happy between patch "x86/xen/MSI: E.."
-and "s390/MSI: Use MSI..". Fix several typo problems found by Lucas.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/mips/pci/msi-xlp.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-RFC->v1: 
-Updated "[patch 4/21] x86/xen/MSI: Eliminate...", export msi_chip instead
-of #ifdef to fix MSI bug in xen running in x86. 
-Rename arch_get_match_msi_chip() to arch_find_msi_chip().
-Drop use struct device as the msi_chip argument, we will do that
-later in another patchset.
-
-Yijing Wang (22):
-  PCI/MSI: Clean up struct msi_chip argument
-  PCI/MSI: Remove useless bus->msi assignment
-  MSI: Remove the redundant irq_set_chip_data()
-  x86/xen/MSI: Eliminate arch_msix_mask_irq() and arch_msi_mask_irq()
-  s390/MSI: Use __msi_mask_irq() instead of default_msi_mask_irq()
-  PCI/MSI: Introduce weak arch_find_msi_chip() to find MSI chip
-  PCI/MSI: Refactor struct msi_chip to make it become more common
-  x86/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  x86/xen/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Irq_remapping/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  x86/MSI: Remove unused MSI weak arch functions
-  MIPS/Octeon/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  MIPS/Xlp: Remove the dead function destroy_irq() to fix build error
-  MIPS/Xlp/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  MIPS/Xlr/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Powerpc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  s390/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  arm/iop13xx/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  IA64/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  Sparc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  tile/MSI: Use MSI chip framework to configure MSI/MSI-X irq
-  PCI/MSI: Clean up unused MSI arch functions
-
- arch/arm/mach-iop13xx/include/mach/pci.h |    2 +
- arch/arm/mach-iop13xx/iq81340mc.c        |    1 +
- arch/arm/mach-iop13xx/iq81340sc.c        |    1 +
- arch/arm/mach-iop13xx/msi.c              |    9 ++-
- arch/arm/mach-iop13xx/pci.c              |    6 ++
- arch/ia64/kernel/msi_ia64.c              |   18 ++++-
- arch/mips/pci/msi-octeon.c               |   35 ++++++----
- arch/mips/pci/msi-xlp.c                  |   18 ++++--
- arch/mips/pci/pci-xlr.c                  |   15 ++++-
- arch/powerpc/kernel/msi.c                |   14 +++-
- arch/s390/pci/pci.c                      |   18 ++++-
- arch/sparc/kernel/pci.c                  |   14 +++-
- arch/tile/kernel/pci_gx.c                |   14 +++-
- arch/x86/include/asm/apic.h              |    4 +
- arch/x86/include/asm/pci.h               |    4 +-
- arch/x86/include/asm/x86_init.h          |    7 --
- arch/x86/kernel/apic/io_apic.c           |   16 ++++-
- arch/x86/kernel/x86_init.c               |   34 ---------
- arch/x86/pci/xen.c                       |   60 +++++++++-------
- drivers/iommu/irq_remapping.c            |    9 ++-
- drivers/irqchip/irq-armada-370-xp.c      |    8 +--
- drivers/pci/host/pci-tegra.c             |    8 ++-
- drivers/pci/host/pcie-designware.c       |    4 +-
- drivers/pci/host/pcie-rcar.c             |    8 ++-
- drivers/pci/msi.c                        |  114 ++++++++++++++----------------
- drivers/pci/probe.c                      |    1 -
- include/linux/msi.h                      |   26 ++-----
- 27 files changed, 266 insertions(+), 202 deletions(-)
+diff --git a/arch/mips/pci/msi-xlp.c b/arch/mips/pci/msi-xlp.c
+index fa374fe..e469dc7 100644
+--- a/arch/mips/pci/msi-xlp.c
++++ b/arch/mips/pci/msi-xlp.c
+@@ -443,10 +443,8 @@ static int xlp_setup_msix(uint64_t lnkbase, int node, int link,
+ 	msg.data = 0xc00 | msixvec;
+ 
+ 	ret = irq_set_msi_desc(xirq, desc);
+-	if (ret < 0) {
+-		destroy_irq(xirq);
++	if (ret < 0) 
+ 		return ret;
+-	}
+ 
+ 	write_msi_msg(xirq, &msg);
+ 	return 0;
+-- 
+1.7.1
