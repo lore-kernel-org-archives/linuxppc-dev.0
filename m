@@ -1,24 +1,38 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EE981A0069
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 18:59:38 +1000 (EST)
-Date: Thu, 25 Sep 2014 10:58:58 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 01/10] tools/perf: support parsing parameterized events
-Message-ID: <20140925085858.GA20915@krava.brq.redhat.com>
-References: <1411586844-21381-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1411586844-21381-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9AEB61A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 20:21:25 +1000 (EST)
+Date: Thu, 25 Sep 2014 12:20:20 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 01/22] PCI/MSI: Clean up struct msi_chip argument
+In-Reply-To: <20140925071536.GG12423@ulmo>
+Message-ID: <alpine.DEB.2.10.1409251208420.4604@nanos>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <1411614872-4009-2-git-send-email-wangyijing@huawei.com>
+ <20140925071536.GG12423@ulmo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1411586844-21381-2-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- peterz@infradead.org, linux-kernel@vger.kernel.org, eranian@google.com,
- dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, Yijing Wang <wangyijing@huawei.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2014 at 12:27:15PM -0700, Sukadev Bhattiprolu wrote:
-> From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> 
-> Enable event specification like:
-> 
-> 	pmu/event_name,param1=0x1,param2=0x4/
-> 
-> Assuming that
-> 
-> 	/sys/bus/event_source/devices/pmu/events/event_name
-> 
-> Contains something like
-> 
-> 	param2=foo,bar=1,param1=baz
+On Thu, 25 Sep 2014, Thierry Reding wrote:
 
-hum, so what happened to the '?' ... AFAIU from out last discussion,
-you wanted to mark terms which are mandatory and user must provide
-values for them.. and I thought the decision was to have following
-alias record:
+> On Thu, Sep 25, 2014 at 11:14:11AM +0800, Yijing Wang wrote:
+> > Msi_chip functions setup_irq/teardown_irq rarely use msi_chip
+> > argument.
+> 
+> That's not true. Out of the four drivers that you modify two use the
+> parameter. And the two that don't probably should be using it too.
+> 
+> 50% is not "rarely". =)
+> 
+> >           We can look up msi_chip pointer by the device pointer
+> > or irq number, so clean up msi_chip argument.
+> 
+> I don't like this particular change. The idea was to keep the API object
+> oriented so that drivers wouldn't have to know where to get the MSI chip
+> from. It also makes it more resilient against code reorganizations since
+> the core code is the only place that needs to know where to get the chip
+> from.
 
-  $ cat /sys/bus/event_source/devices/pmu/events/event_name
-  param2=?,bar=1,param1=?
+Right. We have the same thing in the irq_chip callbacks. All of them
+take "struct irq_data", because it's already available in the core
+code and it gives easy access to all information (chip, chipdata ...)
+which is necessary for the callback implementations.
 
-while perf would scream if any of param1/2 wasnt filled like for:
-  pmu/event_name,param1=0x1/
+Thanks,
 
-
-thanks,
-jirka
+	tglx
