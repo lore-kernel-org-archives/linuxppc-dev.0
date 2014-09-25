@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 688D91A0076
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 11:40:47 +1000 (EST)
-In-Reply-To: <20140903122948.28708.22188.stgit@localhost.localdomain>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: fadump: fix endianess issues in firmware assisted dump handling
-Message-Id: <20140925014047.3CA0B140143@ozlabs.org>
-Date: Thu, 25 Sep 2014 11:40:47 +1000 (EST)
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A96551A022D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:47:47 +1000 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <B07421@freescale.com>
+Subject: [PATCH 2/3] qe_common: add qe common functions to qe_common.c
+Date: Thu, 25 Sep 2014 10:47:16 +0800
+Message-ID: <1411613237-2271-1-git-send-email-B45475@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,93 +23,291 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-09 at 12:29:48 UTC, Hari Bathini wrote:
-> Firmware-assisted dump (fadump) kernel code is not LE compliant. The
-> below patch tries to fix this issue. Tested this patch with upstream
-> kernel. Did some sanity testing for the  LE fadump vmcore generated.
-> Below output shows crash tool successfully opening LE fadump vmcore.
-> 
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+qe need to call some common functions, move them into
+public directory, add a new file drivers/soc/qe/qe_common.c
+for them.
 
-In general I really dislike this kind of endian conversion, ie. where we just
-litter the code with endian conversions at every usage site.
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ drivers/soc/qe/Makefile    |   2 +-
+ drivers/soc/qe/qe_common.c | 185 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fsl/qe.h     |  52 +++++++++++--
+ 3 files changed, 230 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/soc/qe/qe_common.c
 
-But in this case it's probably OK, because we can't really do much better.
-
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 742694c..7d73b2d 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -72,7 +72,7 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
->  		return 1;
->  
->  	fw_dump.fadump_supported = 1;
-> -	fw_dump.ibm_configure_kernel_dump = *token;
-> +	fw_dump.ibm_configure_kernel_dump = be32_to_cpu(*token);
-
-I'm getting a sparse warning here:
-
-  arch/powerpc/kernel/fadump.c:75:45: warning: cast to restricted __be32
-
-I think token should be a __be32 *.
-
->  	pr_debug("--------CPU State Data------------\n");
-> -	pr_debug("Magic Number: %llx\n", reg_header->magic_number);
-> -	pr_debug("NumCpuOffset: %x\n", reg_header->num_cpu_offset);
-> +	pr_debug("Magic Number: %llx\n", be64_to_cpu(reg_header->magic_number));
-> +	pr_debug("NumCpuOffset: %x\n", be32_to_cpu(reg_header->num_cpu_offset));
->  
-> -	vaddr += reg_header->num_cpu_offset;
-> -	num_cpus = *((u32 *)(vaddr));
-> +	vaddr += be32_to_cpu(reg_header->num_cpu_offset);
-> +	num_cpus = be32_to_cpu(*((u32 *)(vaddr)));
-
-And here too:
-
-  arch/powerpc/kernel/fadump.c:619:20: warning: cast to restricted __be32
-
-I guess the cast is OK there because you are calculating the offset, but the
-cast should be to __be32.
-
-
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index 34e6423..587887e 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -43,6 +43,7 @@
->  #include <asm/trace.h>
->  #include <asm/firmware.h>
->  #include <asm/plpar_wrappers.h>
-> +#include <asm/fadump.h>
->  
->  #include "pseries.h"
->  
-> @@ -249,8 +250,12 @@ static void pSeries_lpar_hptab_clear(void)
->  	}
->  
->  #ifdef __LITTLE_ENDIAN__
-> -	/* Reset exceptions to big endian */
-> -	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
-> +	/*
-> +	 * Reset exceptions to big endian
-> +	 * During fadump kernel boot, we dont need to reset exception to big endian
-> +	 * as we have already booted into LE kernel.
-> +	 */
-> +	if (firmware_has_feature(FW_FEATURE_SET_MODE) && !is_fadump_active()) {
->  		long rc;
->  
->  		rc = pseries_big_endian_exceptions();
-
-
-It's really unfortunate that we need to inject this knowledge of fadump into
-the setup code.
-
-It sounds like we have to do it though, Mahesh said on irc that without it the
-system won't boot. Please elaborate on *why* the system won't boot.
-
-And please make the comment much clearer, ie. it's not that we don't need to
-reset exceptions to big endian, it's that we *must not* reset them to big
-endian.
-
-cheers
+diff --git a/drivers/soc/qe/Makefile b/drivers/soc/qe/Makefile
+index f1855c1..77f6fd9 100644
+--- a/drivers/soc/qe/Makefile
++++ b/drivers/soc/qe/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for the linux ppc-specific parts of QE
+ #
+-obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o
++obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o qe_common.o
+ 
+ obj-$(CONFIG_UCC)	+= ucc.o
+ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+diff --git a/drivers/soc/qe/qe_common.c b/drivers/soc/qe/qe_common.c
+new file mode 100644
+index 0000000..ee02ae8
+--- /dev/null
++++ b/drivers/soc/qe/qe_common.c
+@@ -0,0 +1,185 @@
++/*
++ * Common QE code
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright 2007-2008,2010 Freescale Semiconductor, Inc.
++ *
++ * Some parts derived from commproc.c/cpm2_common.c, which is:
++ * Copyright (c) 1997 Dan error_act (dmalek@jlc.net)
++ * Copyright (c) 1999-2001 Dan Malek <dan@embeddedalley.com>
++ * Copyright (c) 2000 MontaVista Software, Inc (source@mvista.com)
++ * 2006 (c) MontaVista Software, Inc.
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/of_device.h>
++#include <linux/spinlock.h>
++#include <linux/export.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/slab.h>
++
++#include <asm/io.h>
++#include <asm/rheap.h>
++#include <linux/fsl/qe.h>
++
++static spinlock_t qe_muram_lock;
++static rh_block_t qe_boot_muram_rh_block[16];
++static rh_info_t qe_muram_info;
++static u8 __iomem *muram_vbase;
++static phys_addr_t muram_pbase;
++
++/* Max address size we deal with */
++#define OF_MAX_ADDR_CELLS	4
++
++int qe_muram_init(void)
++{
++	struct device_node *np;
++	struct resource r;
++	u32 zero[OF_MAX_ADDR_CELLS] = {};
++	resource_size_t max = 0;
++	int i = 0;
++	int ret = 0;
++
++	if (muram_pbase)
++		return 0;
++
++	spin_lock_init(&qe_muram_lock);
++	/* initialize the info header */
++	rh_init(&qe_muram_info, 1,
++	        sizeof(qe_boot_muram_rh_block) /
++	        sizeof(qe_boot_muram_rh_block[0]),
++	        qe_boot_muram_rh_block);
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
++	if (!np) {
++		/* try legacy bindings */
++		np = of_find_node_by_name(NULL, "data-only");
++		if (!np) {
++			printk(KERN_ERR "Cannot find CPM muram data node");
++			ret = -ENODEV;
++			goto out;
++		}
++	}
++
++	muram_pbase = of_translate_address(np, zero);
++	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
++		printk(KERN_ERR "Cannot translate zero through CPM muram node");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	while (of_address_to_resource(np, i++, &r) == 0) {
++		if (r.end > max)
++			max = r.end;
++
++		rh_attach_region(&qe_muram_info, r.start - muram_pbase,
++				 resource_size(&r));
++	}
++
++	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
++	if (!muram_vbase) {
++		printk(KERN_ERR "Cannot map CPM muram");
++		ret = -ENOMEM;
++	}
++
++out:
++	of_node_put(np);
++	return ret;
++}
++
++/**
++ * qe_muram_alloc - allocate the requested size worth of multi-user ram
++ * @size: number of bytes to allocate
++ * @align: requested alignment, in bytes
++ *
++ * This function returns an offset into the muram area.
++ * Use qe_dpram_addr() to get the virtual address of the area.
++ * Use qe_muram_free() to free the allocation.
++ */
++unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
++{
++	unsigned long start;
++	unsigned long flags;
++
++	spin_lock_irqsave(&qe_muram_lock, flags);
++	qe_muram_info.alignment = align;
++	start = rh_alloc(&qe_muram_info, size, "commproc");
++	memset(qe_muram_addr(start), 0, size);
++	spin_unlock_irqrestore(&qe_muram_lock, flags);
++
++	return start;
++}
++EXPORT_SYMBOL(qe_muram_alloc);
++
++/**
++ * qe_muram_free - free a chunk of multi-user ram
++ * @offset: The beginning of the chunk as returned by qe_muram_alloc().
++ */
++int qe_muram_free(unsigned long offset)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&qe_muram_lock, flags);
++	ret = rh_free(&qe_muram_info, offset);
++	spin_unlock_irqrestore(&qe_muram_lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL(qe_muram_free);
++
++/**
++ * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
++ * @offset: the offset into the muram area to reserve
++ * @size: the number of bytes to reserve
++ *
++ * This function returns "start" on success, -ENOMEM on failure.
++ * Use qe_dpram_addr() to get the virtual address of the area.
++ * Use qe_muram_free() to free the allocation.
++ */
++unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size)
++{
++	unsigned long start;
++	unsigned long flags;
++
++	spin_lock_irqsave(&qe_muram_lock, flags);
++	qe_muram_info.alignment = 1;
++	start = rh_alloc_fixed(&qe_muram_info, offset, size, "commproc");
++	spin_unlock_irqrestore(&qe_muram_lock, flags);
++
++	return start;
++}
++EXPORT_SYMBOL(qe_muram_alloc_fixed);
++
++/**
++ * qe_muram_addr - turn a muram offset into a virtual address
++ * @offset: muram offset to convert
++ */
++void __iomem *qe_muram_addr(unsigned long offset)
++{
++	return muram_vbase + offset;
++}
++EXPORT_SYMBOL(qe_muram_addr);
++
++unsigned long qe_muram_offset(void __iomem *addr)
++{
++	return addr - (void __iomem *)muram_vbase;
++}
++EXPORT_SYMBOL(qe_muram_offset);
++
++/**
++ * qe_muram_dma - turn a muram virtual address into a DMA address
++ * @offset: virtual address from qe_muram_addr() to convert
++ */
++dma_addr_t qe_muram_dma(void __iomem *addr)
++{
++	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
++}
++EXPORT_SYMBOL(qe_muram_dma);
+diff --git a/include/linux/fsl/qe.h b/include/linux/fsl/qe.h
+index d56b8e0..fab0398 100644
+--- a/include/linux/fsl/qe.h
++++ b/include/linux/fsl/qe.h
+@@ -19,7 +19,8 @@
+ #include <linux/spinlock.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+-#include <asm/cpm.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/fsl/immap_qe.h>
+ 
+ #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
+@@ -188,13 +189,48 @@ static inline int qe_alive_during_sleep(void)
+ #endif
+ }
+ 
+-/* we actually use cpm_muram implementation, define this for convenience */
+-#define qe_muram_init cpm_muram_init
+-#define qe_muram_alloc cpm_muram_alloc
+-#define qe_muram_alloc_fixed cpm_muram_alloc_fixed
+-#define qe_muram_free cpm_muram_free
+-#define qe_muram_addr cpm_muram_addr
+-#define qe_muram_offset cpm_muram_offset
++int qe_muram_init(void);
++
++#if defined(CONFIG_QUICC_ENGINE)
++unsigned long qe_muram_alloc(unsigned long size, unsigned long align);
++int qe_muram_free(unsigned long offset);
++unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size);
++void __iomem *qe_muram_addr(unsigned long offset);
++unsigned long qe_muram_offset(void __iomem *addr);
++dma_addr_t qe_muram_dma(void __iomem *addr);
++#else
++static inline unsigned long qe_muram_alloc(unsigned long size,
++					    unsigned long align)
++{
++	return -ENOSYS;
++}
++
++static inline int qe_muram_free(unsigned long offset)
++{
++	return -ENOSYS;
++}
++
++static inline unsigned long qe_muram_alloc_fixed(unsigned long offset,
++						  unsigned long size)
++{
++	return -ENOSYS;
++}
++
++static inline void __iomem *qe_muram_addr(unsigned long offset)
++{
++	return NULL;
++}
++
++static inline unsigned long qe_muram_offset(void __iomem *addr)
++{
++	return -ENOSYS;
++}
++
++static inline dma_addr_t qe_muram_dma(void __iomem *addr)
++{
++	return 0;
++}
++#endif /* defined(CONFIG_QUICC_ENGINE) */
+ 
+ /* Structure that defines QE firmware binary files.
+  *
+-- 
+2.1.0.27.g96db324
