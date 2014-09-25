@@ -1,30 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 587ED1A06F8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:13:16 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B130B1A15FD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:13:17 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 25 Sep 2014 14:13:12 +1000
+ Thu, 25 Sep 2014 14:13:14 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CCC0A2CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:13:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 973882CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:13:10 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8P3sucu37814458
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 13:54:56 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8P4D8wV009253
+ s8P3suv737814460
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 13:54:57 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8P4D9eH002601
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:13:09 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] powerpc/eeh: Dump PCI config space for all child devices
-Date: Thu, 25 Sep 2014 14:13:06 +1000
-Message-Id: <1411618387-7920-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/powernv: Fetch frozen PE on top level
+Date: Thu, 25 Sep 2014 14:13:07 +1000
+Message-Id: <1411618387-7920-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1411618387-7920-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1411618387-7920-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,93 +37,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PEs can be organized as nested. Current implementation doesn't
-dump PCI config space for subordinate devices of child PEs. However,
-the frozen PE could be caused by those subordinate devices of its
-child PEs.
-
-The patch dumps PCI config space for all subordinate devices of the
-problematic PE.
+It should have been part of commit 1ad7a72c5 ("powerpc/eeh: Report
+frozen parent PE prior to child PE"). There are 2 ways to report
+EEH errors: proactively polling triggered by PCI config or IO
+accesses, or interrupt driven event. We missed to report and handle
+parent frozen PE prior to child frozen PE for the later case on
+PowerNV platform.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c | 35 ++++++++++++++++++++---------------
- 1 file changed, 20 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 48 ++++++++++++++++++++++---------
+ 1 file changed, 34 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 6c88d781..03d75cb 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -117,7 +117,7 @@ static DEFINE_MUTEX(eeh_dev_mutex);
-  * not dynamically alloced, so that it ends up in RMO where RTAS
-  * can access it.
-  */
--#define EEH_PCI_REGS_LOG_LEN 4096
-+#define EEH_PCI_REGS_LOG_LEN 8192
- static unsigned char pci_regs_buf[EEH_PCI_REGS_LOG_LEN];
- 
- /*
-@@ -148,16 +148,12 @@ static int __init eeh_setup(char *str)
- }
- __setup("eeh=", eeh_setup);
- 
--/**
-- * eeh_gather_pci_data - Copy assorted PCI config space registers to buff
-- * @edev: device to report data for
-- * @buf: point to buffer in which to log
-- * @len: amount of room in buffer
-- *
-- * This routine captures assorted PCI configuration space data,
-- * and puts them into a buffer for RTAS error logging.
-+/*
-+ * This routine captures assorted PCI configuration space data
-+ * for the indicated PCI device, and puts them into a buffer
-+ * for RTAS error logging.
-  */
--static size_t eeh_gather_pci_data(struct eeh_dev *edev, char *buf, size_t len)
-+static size_t eeh_dump_dev_log(struct eeh_dev *edev, char *buf, size_t len)
- {
- 	struct device_node *dn = eeh_dev_to_of_node(edev);
- 	u32 cfg;
-@@ -255,6 +251,19 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char *buf, size_t len)
- 	return n;
- }
- 
-+static void *eeh_dump_pe_log(void *data, void *flag)
-+{
-+	struct eeh_pe *pe = data;
-+	struct eeh_dev *edev, *tmp;
-+	size_t *plen = flag;
-+
-+	eeh_pe_for_each_dev(pe, edev, tmp)
-+		*plen += eeh_dump_dev_log(edev, pci_regs_buf + *plen,
-+					  EEH_PCI_REGS_LOG_LEN - *plen);
-+
-+	return NULL;
-+}
-+
- /**
-  * eeh_slot_error_detail - Generate combined log including driver log and error log
-  * @pe: EEH PE
-@@ -268,7 +277,6 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char *buf, size_t len)
- void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
- {
- 	size_t loglen = 0;
--	struct eeh_dev *edev, *tmp;
- 
- 	/*
- 	 * When the PHB is fenced or dead, it's pointless to collect
-@@ -286,10 +294,7 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
- 		eeh_pe_restore_bars(pe);
- 
- 		pci_regs_buf[0] = 0;
--		eeh_pe_for_each_dev(pe, edev, tmp) {
--			loglen += eeh_gather_pci_data(edev, pci_regs_buf + loglen,
--						      EEH_PCI_REGS_LOG_LEN - loglen);
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index f248586..57de63c 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -880,14 +880,12 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
+ 	 * the master PE because slave PE is invisible
+ 	 * to EEH core.
+ 	 */
+-	if (phb->get_pe_state) {
+-		pnv_pe = &phb->ioda.pe_array[pe_no];
+-		if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
+-			pnv_pe = pnv_pe->master;
+-			WARN_ON(!pnv_pe ||
+-				!(pnv_pe->flags & PNV_IODA_PE_MASTER));
+-			pe_no = pnv_pe->pe_number;
 -		}
-+		eeh_pe_traverse(pe, eeh_dump_pe_log, &loglen);
++	pnv_pe = &phb->ioda.pe_array[pe_no];
++	if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
++		pnv_pe = pnv_pe->master;
++		WARN_ON(!pnv_pe ||
++			!(pnv_pe->flags & PNV_IODA_PE_MASTER));
++		pe_no = pnv_pe->pe_number;
  	}
  
- 	eeh_ops->get_log(pe, severity, pci_regs_buf, loglen);
+ 	/* Find the PE according to PE# */
+@@ -898,15 +896,37 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
+ 	if (!dev_pe)
+ 		return -EEXIST;
+ 
+-	/*
+-	 * At this point, we're sure the compound PE should
+-	 * be put into frozen state.
+-	 */
++	/* Freeze the (compound) PE */
+ 	*pe = dev_pe;
+-	if (phb->freeze_pe &&
+-	    !(dev_pe->state & EEH_PE_ISOLATED))
++	if (!(dev_pe->state & EEH_PE_ISOLATED))
+ 		phb->freeze_pe(phb, pe_no);
+ 
++	/*
++	 * At this point, we're sure the (compound) PE should
++	 * have been frozen. However, we still need poke until
++	 * hitting the frozen PE on top level.
++	 */
++	dev_pe = dev_pe->parent;
++	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
++		int ret;
++		int active_flags = (EEH_STATE_MMIO_ACTIVE |
++				    EEH_STATE_DMA_ACTIVE);
++
++		ret = eeh_ops->get_state(dev_pe, NULL);
++		if (ret <= 0 || (ret & active_flags) == active_flags) {
++			dev_pe = dev_pe->parent;
++			continue;
++		}
++
++		/* Frozen parent PE */
++		*pe = dev_pe;
++		if (!(dev_pe->state & EEH_PE_ISOLATED))
++			phb->freeze_pe(phb, dev_pe->addr);
++
++		/* Next one */
++		dev_pe = dev_pe->parent;
++	}
++
+ 	return 0;
+ }
+ 
 -- 
 1.8.3.2
