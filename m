@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 926AE1A0074
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E9741A090C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:50:58 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 07/22] PCI/MSI: Refactor struct msi_chip to make it become
- more common
-Date: Thu, 25 Sep 2014 11:14:17 +0800
-Message-ID: <1411614872-4009-8-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v2 06/22] PCI/MSI: Introduce weak arch_find_msi_chip() to find
+ MSI chip
+Date: Thu, 25 Sep 2014 11:14:16 +0800
+Message-ID: <1411614872-4009-7-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -40,74 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now there are a lot of __weak arch functions in MSI code.
-These functions make MSI driver complex. Thierry Reding Introduced
-a new MSI chip framework to configure MSI/MSI-X irq in ARM. Use
-the new MSI chip framework to refactor all other platform MSI
-arch code to eliminate weak arch MSI functions. This patch add
-.restore_irq() and .setup_irqs() to make it become more common.
+Introduce weak arch_find_msi_chip() to find the match msi_chip.
+Currently, MSI chip associates pci bus to msi_chip. Because in
+ARM platform, there may be more than one MSI controller in system.
+Associate pci bus to msi_chip help pci device to find the match
+msi_chip and setup MSI/MSI-X irq correctly. But in other platform,
+like in x86. we only need one MSI chip, because all device use
+the same MSI address/data and irq etc. So it's no need to associate
+pci bus to MSI chip, just use a arch function, arch_find_msi_chip()
+to return the MSI chip for simplicity. The default weak
+arch_find_msi_chip() used in ARM platform, find the MSI chip
+by pci bus.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
 ---
- drivers/pci/msi.c   |   15 +++++++++++++++
- include/linux/msi.h |    3 +++
- 2 files changed, 18 insertions(+), 0 deletions(-)
+ drivers/pci/msi.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 3acbe65..d10edee 100644
+index 5f8f3af..3acbe65 100644
 --- a/drivers/pci/msi.c
 +++ b/drivers/pci/msi.c
-@@ -64,6 +64,11 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
-+	struct msi_chip *chip;
+@@ -29,9 +29,14 @@ static int pci_msi_enable = 1;
+ 
+ /* Arch hooks */
+ 
++struct msi_chip * __weak arch_find_msi_chip(struct pci_dev *dev)
++{
++	return dev->bus->msi;
++}
 +
-+	chip = arch_find_msi_chip(dev);
-+	if (chip && chip->setup_irqs)
-+		return chip->setup_irqs(dev, nvec, type);
- 
- 	/*
- 	 * If an architecture wants to support multiple MSI, it needs to
-@@ -106,6 +111,11 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
- 
- void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
+ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
  {
+-	struct msi_chip *chip = dev->bus->msi;
 +	struct msi_chip *chip = arch_find_msi_chip(dev);
-+
-+	if (chip && chip->teardown_irqs)
-+		return chip->teardown_irqs(dev);
-+
- 	return default_teardown_msi_irqs(dev);
- }
+ 	int err;
  
-@@ -129,6 +139,11 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
- 
- void __weak arch_restore_msi_irqs(struct pci_dev *dev)
- {
-+	struct msi_chip *chip = arch_find_msi_chip(dev);
-+
-+	if (chip && chip->restore_irqs)
-+		return chip->restore_irqs(dev);
-+
- 	return default_restore_msi_irqs(dev);
- }
- 
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 6fdc5c6..4cf1f31 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -69,7 +69,10 @@ struct msi_chip {
- 	struct list_head list;
- 
- 	int (*setup_irq)(struct pci_dev *dev, struct msi_desc *desc);
-+	int (*setup_irqs)(struct pci_dev *dev, int nvec, int type);
- 	void (*teardown_irq)(unsigned int irq);
-+	void (*teardown_irqs)(struct pci_dev *dev);
-+	void (*restore_irqs)(struct pci_dev *dev);
- };
- 
- #endif /* LINUX_MSI_H */
+ 	if (!chip || !chip->setup_irq)
 -- 
 1.7.1
