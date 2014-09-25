@@ -1,15 +1,14 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEFEB1A090E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:50:58 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 85C141A095C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:02 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 05/22] s390/MSI: Use __msi_mask_irq() instead of
- default_msi_mask_irq()
-Date: Thu, 25 Sep 2014 11:14:15 +0800
-Message-ID: <1411614872-4009-6-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v2 02/22] PCI/MSI: Remove useless bus->msi assignment
+Date: Thu, 25 Sep 2014 11:14:12 +0800
+Message-ID: <1411614872-4009-3-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -40,45 +39,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now only s390/MSI use default_msi_mask_irq() and
-default_msix_mask_irq(), replace them with the common
-msi mask irq functions __msi_mask_irq() and __msix_mask_irq().
-Remove default_msi_mask_irq() and default_msix_mask_irq().
+Currently, PCI drivers will initialize bus->msi in
+pcibios_add_bus(). pcibios_add_bus() will be called
+in every pci bus initialization. So the bus->msi
+assignment in pci_alloc_child_bus() is useless.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Thierry Reding <thierry.reding@gmail.com>
+CC: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/s390/pci/pci.c |    4 ++--
- include/linux/msi.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/pci/probe.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-index 2fa7b14..552b990 100644
---- a/arch/s390/pci/pci.c
-+++ b/arch/s390/pci/pci.c
-@@ -448,9 +448,9 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
- 	/* Release MSI interrupts */
- 	list_for_each_entry(msi, &pdev->msi_list, list) {
- 		if (msi->msi_attrib.is_msix)
--			default_msix_mask_irq(msi, 1);
-+			__msix_mask_irq(msi, 1);
- 		else
--			default_msi_mask_irq(msi, 1, 1);
-+			__msi_mask_irq(msi, 1, 1);
- 		irq_set_msi_desc(msi->irq, NULL);
- 		irq_free_desc(msi->irq);
- 		msi->msg.address_lo = 0;
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index cc46a62..6fdc5c6 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -61,8 +61,6 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index e3cf8a2..8296576 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -677,7 +677,6 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
  
- void default_teardown_msi_irqs(struct pci_dev *dev);
- void default_restore_msi_irqs(struct pci_dev *dev);
--#define default_msi_mask_irq	__msi_mask_irq
--#define default_msix_mask_irq	__msix_mask_irq
+ 	child->parent = parent;
+ 	child->ops = parent->ops;
+-	child->msi = parent->msi;
+ 	child->sysdata = parent->sysdata;
+ 	child->bus_flags = parent->bus_flags;
  
- struct msi_chip {
- 	struct module *owner;
 -- 
 1.7.1
