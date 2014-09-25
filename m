@@ -1,38 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F8CF1A02C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 20:39:04 +1000 (EST)
-Date: Thu, 25 Sep 2014 12:38:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v2 06/22] PCI/MSI: Introduce weak arch_find_msi_chip()
- to find MSI chip
-In-Reply-To: <1411614872-4009-7-git-send-email-wangyijing@huawei.com>
-Message-ID: <alpine.DEB.2.10.1409251220570.4604@nanos>
-References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <1411614872-4009-7-git-send-email-wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2DBE1A004A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 23:13:12 +1000 (EST)
+Message-ID: <542410D3.2060507@freescale.com>
+Date: Thu, 25 Sep 2014 15:55:47 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+To: Jingchang Lu <jingchang.lu@freescale.com>, <mturquette@linaro.org>
+Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+In-Reply-To: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 25 Sep 2014, Yijing Wang wrote:
+Hi Jingchang,
 
-> Introduce weak arch_find_msi_chip() to find the match msi_chip.
-> Currently, MSI chip associates pci bus to msi_chip. Because in
-> ARM platform, there may be more than one MSI controller in system.
-> Associate pci bus to msi_chip help pci device to find the match
-> msi_chip and setup MSI/MSI-X irq correctly. But in other platform,
-> like in x86. we only need one MSI chip, because all device use
-> the same MSI address/data and irq etc. So it's no need to associate
-> pci bus to MSI chip, just use a arch function, arch_find_msi_chip()
-> to return the MSI chip for simplicity. The default weak
-> arch_find_msi_chip() used in ARM platform, find the MSI chip
-> by pci bus.
+On 09/23/2014 09:46 AM, Jingchang Lu wrote:
+> The IP is shared by PPC and ARM, this renames it to qoriq for better
+> represention, and this also adds the CLK_OF_DECLARE support for being
+> initialized by of_clk_init() on ARM.
+> 
 
-This is really backwards. On one hand you try to get rid of the weak
-arch functions zoo and then you invent new ones for no good
-reason. Why can't x86 store the chip in the pci bus?
+I think you need to also update drivers/cpufreq/Kconfig.powerpc
+to use the renamed config option.
 
-Looking deeper, I'm questioning the whole notion of different
-msi_chips. Are this really different MSI controllers with a different
-feature set or are this defacto multiple instances of the same
-controller which just need a different data set?
-
-Thanks,
-
-	tglx
+---
+Best Regards, Laurentiu
