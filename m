@@ -1,37 +1,28 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
+ [209.85.220.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF82C1A009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 08:47:55 +1000 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 25 Sep 2014 16:47:52 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 525C41FF003B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:36:35 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8PMlo8O46661710
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 00:47:50 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s8PMqMkD002833
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:52:22 -0600
-Message-ID: <54249B94.2070908@linux.vnet.ibm.com>
-Date: Thu, 25 Sep 2014 15:47:48 -0700
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1787A1A015B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 08:54:31 +1000 (EST)
+Received: by mail-pa0-f53.google.com with SMTP id hz1so11649268pad.26
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 15:54:29 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Cyril Bur <cyril.bur@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 2/3] powerpc/pseries: create rtas buffer accessor
-References: <1411627290-20302-1-git-send-email-cyril.bur@au1.ibm.com>
- <1411627290-20302-3-git-send-email-cyril.bur@au1.ibm.com>
-In-Reply-To: <1411627290-20302-3-git-send-email-cyril.bur@au1.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Scott Wood <scottwood@freescale.com>,
+ "Lu Jingchang-B35083" <jingchang.lu@freescale.com>
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <1411675680.13320.201.camel@snotra.buserror.net>
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+ <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1411675680.13320.201.camel@snotra.buserror.net>
+Message-ID: <20140925225406.19023.25065@quantum>
+Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+Date: Thu, 25 Sep 2014 15:54:06 -0700
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,220 +32,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/24/2014 11:41 PM, Cyril Bur wrote:
-> Added simple accessor functions for rtas in memory buffers which performs
-> accesses of appropriate type and performs endian conversions.
-> 
-> Signed-off-by: Cyril Bur <cyril.bur@au1.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/Makefile      |   4 +-
->  arch/powerpc/platforms/pseries/pseries.h     |  41 +++++++++
->  arch/powerpc/platforms/pseries/rtas_buffer.c | 126 +++++++++++++++++++++++++++
->  3 files changed, 170 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/platforms/pseries/rtas_buffer.c
+Quoting Scott Wood (2014-09-25 13:08:00)
+> Well, like I said, I'd rather see the CLK_OF_DECLARE stuff be made to
+> work on PPC rather than have the driver carry around two binding
+> methods.
 
-Maybe Michael has an opinion here, but seems to me since this is all
-RTAS related it would make sense for this code to belong in
-kernel/rtas.c and include/asm/rtas.h.
+I guess that is an existing problem, and not related directly to this
+patch? This patch is essentially just renames (though the V1.0/V2.0
+stuff seems weird).
 
--Tyrel
+Regards,
+Mike
 
-> 
-> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> index 0348079..7eb7c46 100644
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -3,7 +3,9 @@ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
->  
->  obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
->  			   setup.o iommu.o event_sources.o ras.o \
-> -			   firmware.o power.o dlpar.o mobility.o rng.o
-> +			   firmware.o power.o dlpar.o mobility.o \
-> +			   rng.o rtas_buffer.o
-> +
->  obj-$(CONFIG_SMP)	+= smp.o
->  obj-$(CONFIG_SCANLOG)	+= scanlog.o
->  obj-$(CONFIG_EEH)	+= eeh_pseries.o
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> index 361add6..f24e352 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -66,4 +66,45 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
->  
->  unsigned long pseries_memory_block_size(void);
->  
-> +/* Manipulation of the in memory data returned from an RTAS call */
-> +
-> +/* Data pointed to by ptr is in big endian */
-> +struct rtas_buffer {
-> +	void *ptr;
-> +	int len;
-> +	int pos;
-> +};
-> +
-> +/* Buffer is already zeroed */
-> +int make_rtas_buf(struct rtas_buffer *b, size_t size);
-> +void free_rtas_buf(struct rtas_buffer *b);
-> +
-> +/* Return pointer to the buffer being used */
-> +void *get_rtas_buf(struct rtas_buffer *b);
-> +
-> +/* Checks if the buffer exists and the read position is less than the length*/
-> +bool check_rtas_buf(struct rtas_buffer *b);
-> +size_t get_rtas_buf_size(struct rtas_buffer *b);
-> +
-> +/* Advance the internal position of the buffer by size bytes */
-> +bool advance_rtas_buf(struct rtas_buffer *b, size_t size);
-> +
-> +/* Put a value val into the buffer at position pos. Function expect val in cpu
-> + * endian. Returns true if the write to the buffer was successful.
-> + */
-> +bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos);
-> +
-> +/* Grab the byte at the current position of the buffer without incrementing
-> + * the internal position of the buffer */
-> +bool peek_rtas_buf(struct rtas_buffer *b, u8 *c);
-> +
-> +/* Accessor functions return true if access succeeded and value is written to
-> + * val in cpu endian. Automatically advances its reference into the buffer by
-> + * the requested amount.
-> + */
-> +bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val);
-> +bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val);
-> +bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len);
-> +bool get_rtas_buf_str(struct rtas_buffer *b, char **s);
-> +
->  #endif /* _PSERIES_PSERIES_H */
-> diff --git a/arch/powerpc/platforms/pseries/rtas_buffer.c b/arch/powerpc/platforms/pseries/rtas_buffer.c
-> new file mode 100644
-> index 0000000..f06b73c
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/pseries/rtas_buffer.c
-> @@ -0,0 +1,126 @@
-> +#include <linux/kernel.h>
-> +#include <linux/slab.h>
-> +
-> +#include "pseries.h"
-> +
-> +
-> +int make_rtas_buf(struct rtas_buffer *b, size_t sz)
-> +{
-> +	b->ptr = kzalloc(sz, GFP_KERNEL);
-> +	b->len = sz;
-> +	b->pos = 0;
-> +	return (!b->ptr) ? -ENOMEM : 0;
-> +}
-> +
-> +void free_rtas_buf(struct rtas_buffer *b)
-> +{
-> +	kfree(b->ptr);
-> +}
-> +
-> +void *get_rtas_buf(struct rtas_buffer *b)
-> +{
-> +	return (b) ? b->ptr : NULL;
-> +}
-> +
-> +size_t get_rtas_buf_size(struct rtas_buffer *b)
-> +{
-> +	return (b) ? b->len : 0;
-> +}
-> +
-> +bool check_rtas_buf(struct rtas_buffer *b)
-> +{
-> +	return (b && b->ptr && b->pos < b->len);
-> +}
-> +
-> +static inline void *buf_pos(struct rtas_buffer *b)
-> +{
-> +	return (b && b->ptr) ? b->ptr + b->pos : NULL;
-> +}
-> +
-> +bool peek_rtas_buf(struct rtas_buffer *b, u8 *c)
-> +{
-> +	if (!b || !c || b->pos >= b->len)
-> +		return false;
-> +
-> +	*c = *(u8 *)buf_pos(b);
-> +
-> +	return true;
-> +}
-> +
-> +bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos)
-> +{
-> +	if (!b || b->pos >= b->len)
-> +		return false;
-> +
-> +	*((__be32 *)buf_pos(b)) = cpu_to_be32(val);
-> +
-> +	return true;
-> +}
-> +
-> +bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val)
-> +{
-> +	if (!b || !val || b->len - b->pos < sizeof(u32))
-> +		return false;
-> +
-> +	*val = be32_to_cpu(*((__be32 *)buf_pos(b)));
-> +	b->pos += sizeof(u32);
-> +	return true;
-> +}
-> +
-> +bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val)
-> +{
-> +	if (!b || !val || b->len - b->pos < sizeof(u64))
-> +		return false;
-> +
-> +	*val = be64_to_cpu(*((__be64 *)buf_pos(b)));
-> +	b->pos += sizeof(u64);
-> +	return true;
-> +}
-> +
-> +bool get_rtas_buf_str(struct rtas_buffer *b, char **s)
-> +{
-> +	int i;
-> +	if (!b || !s)
-> +		return false;
-> +
-> +	/* Get length of string */
-> +	i = b->pos;
-> +	while (i < b->len) {
-> +		if (*(char *)(b->ptr + i) == '\0') {
-> +			*s = (char *)buf_pos(b);
-> +			if (!*s)
-> +				return false;
-> +
-> +			b->pos = i + 1;
-> +			return true;
-> +		}
-> +		i++;
-> +	}
-> +
-> +	return false;
-> +}
-> +
-> +bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len)
-> +{
-> +	if (!b || !p || b->len - b->pos < len)
-> +		return false;
-> +
-> +	*p = buf_pos(b);
-> +	if (!*p)
-> +		return false;
-> +
-> +	b->pos += len;
-> +
-> +	return true;
-> +}
-> +
-> +bool advance_rtas_buf(struct rtas_buffer *b, size_t len)
-> +{
-> +	if (!b || b->len - b->pos < len)
-> +		return false;
-> +
-> +	b->pos += len;
-> +
-> +	return true;
-> +}
-> +
-> 
+> =
+
+> -Scott
+> =
+
+> On Thu, 2014-09-25 at 04:47 -0500, Lu Jingchang-B35083 wrote:
+> > Hi, Scott and Mike,
+> >   =
+
+> >   Could you please help review this patch and give an ACK if ok. Thanks.
+> > =
+
+> > Best Regards,
+> > Jingchang
+> > =
+
+> > >-----Original Message-----
+> > >From: Jingchang Lu [mailto:jingchang.lu@freescale.com]
+> > >Sent: Tuesday, September 23, 2014 2:47 PM
+> > >To: mturquette@linaro.org
+> > >Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; linux-
+> > >kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Lu
+> > >Jingchang-B35083
+> > >Subject: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+> > >CLK_OF_DECLARE support
+> > >
+> > >The IP is shared by PPC and ARM, this renames it to qoriq for better
+> > >represention, and this also adds the CLK_OF_DECLARE support for being
+> > >initialized by of_clk_init() on ARM.
+> > >
+> > >Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
+> > >---
+> > >changes in v4:
+> > > remove "corenet" literals omitted in v3 remove.
+> > >
+> > >changes in v3:
+> > > generate the patch with -M -C option
+> > >
+> > >changes in v2:
+> > > rename the driver name to ppc-qoriq.c for shared on PPC and ARM.
+> > >
+> > > drivers/clk/Kconfig                            |  9 +++++----
+> > > drivers/clk/Makefile                           |  2 +-
+> > > drivers/clk/{clk-ppc-corenet.c =3D> clk-qoriq.c} | 27 +++++++++++++++=
+------
+> > >-----
+> > > 3 files changed, 22 insertions(+), 16 deletions(-)  rename
+> > >drivers/clk/{clk-ppc-corenet.c =3D> clk-qoriq.c} (89%)
+> > >
+> > >diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig index
+> > >85131ae..f5f76cb 100644
+> > >--- a/drivers/clk/Kconfig
+> > >+++ b/drivers/clk/Kconfig
+> > >@@ -92,12 +92,13 @@ config COMMON_CLK_AXI_CLKGEN
+> > >       Support for the Analog Devices axi-clkgen pcore clock generator
+> > >for Xilinx
+> > >       FPGAs. It is commonly used in Analog Devices' reference designs.
+> > >
+> > >-config CLK_PPC_CORENET
+> > >-    bool "Clock driver for PowerPC corenet platforms"
+> > >-    depends on PPC_E500MC && OF
+> > >+config CLK_QORIQ
+> > >+    bool "Clock driver for PowerPC corenet and compatible ARM-based
+> > >platforms"
+> > >+    depends on (PPC_E500MC || ARM) && OF
+> > >     ---help---
+> > >       This adds the clock driver support for Freescale PowerPC corenet
+> > >-      platforms using common clock framework.
+> > >+      platforms and compatible Freescale ARM based platforms using
+> > >common
+> > >+      clock framework.
+> > >
+> > > config COMMON_CLK_XGENE
+> > >     bool "Clock driver for APM XGene SoC"
+> > >diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile index
+> > >27c542b..20f42e9 100644
+> > >--- a/drivers/clk/Makefile
+> > >+++ b/drivers/clk/Makefile
+> > >@@ -29,7 +29,7 @@ obj-$(CONFIG_ARCH_MOXART)          +=3D clk-moxart.o
+> > > obj-$(CONFIG_ARCH_NOMADIK)          +=3D clk-nomadik.o
+> > > obj-$(CONFIG_ARCH_NSPIRE)           +=3D clk-nspire.o
+> > > obj-$(CONFIG_COMMON_CLK_PALMAS)             +=3D clk-palmas.o
+> > >-obj-$(CONFIG_CLK_PPC_CORENET)               +=3D clk-ppc-corenet.o
+> > >+obj-$(CONFIG_CLK_QORIQ)                     +=3D clk-qoriq.o
+> > > obj-$(CONFIG_COMMON_CLK_S2MPS11)    +=3D clk-s2mps11.o
+> > > obj-$(CONFIG_COMMON_CLK_SI5351)             +=3D clk-si5351.o
+> > > obj-$(CONFIG_COMMON_CLK_SI570)              +=3D clk-si570.o
+> > >diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-qoriq.c
+> > >similarity index 89% rename from drivers/clk/clk-ppc-corenet.c rename =
+to
+> > >drivers/clk/clk-qoriq.c index 8e58edf..cba8abe 100644
+> > >--- a/drivers/clk/clk-ppc-corenet.c
+> > >+++ b/drivers/clk/clk-qoriq.c
+> > >@@ -155,7 +155,7 @@ static void __init core_pll_init(struct device_node
+> > >*np)
+> > >
+> > >     base =3D of_iomap(np, 0);
+> > >     if (!base) {
+> > >-            pr_err("clk-ppc: iomap error\n");
+> > >+            pr_err("clk-qoriq: iomap error\n");
+> > >             return;
+> > >     }
+> > >
+> > >@@ -252,7 +252,7 @@ static void __init sysclk_init(struct device_node
+> > >*node)
+> > >     u32 rate;
+> > >
+> > >     if (!np) {
+> > >-            pr_err("ppc-clk: could not get parent node\n");
+> > >+            pr_err("qoriq-clk: could not get parent node\n");
+> > >             return;
+> > >     }
+> > >
+> > >@@ -278,30 +278,35 @@ static const struct of_device_id clk_match[]
+> > >__initconst =3D {
+> > >     {}
+> > > };
+> > >
+> > >-static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
+> > >+static int __init qoriq_clk_probe(struct platform_device *pdev)
+> > > {
+> > >     of_clk_init(clk_match);
+> > >
+> > >     return 0;
+> > > }
+> > >
+> > >-static const struct of_device_id ppc_clk_ids[] __initconst =3D {
+> > >+static const struct of_device_id qoriq_clk_ids[] __initconst =3D {
+> > >     { .compatible =3D "fsl,qoriq-clockgen-1.0", },
+> > >     { .compatible =3D "fsl,qoriq-clockgen-2.0", },
+> > >     {}
+> > > };
+> > >
+> > >-static struct platform_driver ppc_corenet_clk_driver __initdata =3D {
+> > >+static struct platform_driver qoriq_clk_driver __initdata =3D {
+> > >     .driver =3D {
+> > >-            .name =3D "ppc_corenet_clock",
+> > >+            .name =3D "qoriq_clock",
+> > >             .owner =3D THIS_MODULE,
+> > >-            .of_match_table =3D ppc_clk_ids,
+> > >+            .of_match_table =3D qoriq_clk_ids,
+> > >     },
+> > >-    .probe =3D ppc_corenet_clk_probe,
+> > >+    .probe =3D qoriq_clk_probe,
+> > > };
+> > >
+> > >-static int __init ppc_corenet_clk_init(void)
+> > >+static int __init qoriq_clk_init(void)
+> > > {
+> > >-    return platform_driver_register(&ppc_corenet_clk_driver);
+> > >+    return platform_driver_register(&qoriq_clk_driver);
+> > > }
+> > >-subsys_initcall(ppc_corenet_clk_init);
+> > >+subsys_initcall(qoriq_clk_init);
+> > >+
+> > >+CLK_OF_DECLARE(qoriq_core_pll_v1, "fsl,qoriq-core-pll-1.0",
+> > >+core_pll_init); CLK_OF_DECLARE(qoriq_core_pll_v2,
+> > >+"fsl,qoriq-core-pll-2.0", core_pll_init);
+> > >+CLK_OF_DECLARE(qoriq_core_mux_v1, "fsl,qoriq-core-mux-1.0",
+> > >+core_mux_init); CLK_OF_DECLARE(qoriq_core_mux_v2,
+> > >+"fsl,qoriq-core-mux-2.0", core_mux_init);
+> > >--
+> > >1.8.0
+> > =
+
+> =
+
+>=20
