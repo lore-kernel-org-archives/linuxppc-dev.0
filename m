@@ -1,15 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 92D781A093A
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21D621A099A
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:06 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 12/22] MIPS/Octeon/MSI: Use MSI chip framework to configure
+Subject: [PATCH v2 18/22] arm/iop13xx/MSI: Use MSI chip framework to configure
  MSI/MSI-X irq
-Date: Thu, 25 Sep 2014 11:14:22 +0800
-Message-ID: <1411614872-4009-13-git-send-email-wangyijing@huawei.com>
+Date: Thu, 25 Sep 2014 11:14:28 +0800
+Message-ID: <1411614872-4009-19-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -45,127 +45,93 @@ MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/mips/pci/msi-octeon.c |   35 ++++++++++++++++++++++-------------
- 1 files changed, 22 insertions(+), 13 deletions(-)
+ arch/arm/mach-iop13xx/include/mach/pci.h |    2 ++
+ arch/arm/mach-iop13xx/iq81340mc.c        |    1 +
+ arch/arm/mach-iop13xx/iq81340sc.c        |    1 +
+ arch/arm/mach-iop13xx/msi.c              |    9 +++++++--
+ arch/arm/mach-iop13xx/pci.c              |    6 ++++++
+ 5 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/pci/msi-octeon.c b/arch/mips/pci/msi-octeon.c
-index 63bbe07..14f2d16 100644
---- a/arch/mips/pci/msi-octeon.c
-+++ b/arch/mips/pci/msi-octeon.c
-@@ -57,7 +57,7 @@ static int msi_irq_size;
-  *
-  * Returns 0 on success.
-  */
--int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-+static int octeon_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+diff --git a/arch/arm/mach-iop13xx/include/mach/pci.h b/arch/arm/mach-iop13xx/include/mach/pci.h
+index 59f42b5..7a073cb 100644
+--- a/arch/arm/mach-iop13xx/include/mach/pci.h
++++ b/arch/arm/mach-iop13xx/include/mach/pci.h
+@@ -10,6 +10,8 @@ struct pci_bus *iop13xx_scan_bus(int nr, struct pci_sys_data *);
+ void iop13xx_atu_select(struct hw_pci *plat_pci);
+ void iop13xx_pci_init(void);
+ void iop13xx_map_pci_memory(void);
++void iop13xx_add_bus(struct pci_bus *bus);
++extern struct msi_chip iop13xx_msi_chip;
+ 
+ #define IOP_PCI_STATUS_ERROR (PCI_STATUS_PARITY |	     \
+ 			       PCI_STATUS_SIG_TARGET_ABORT | \
+diff --git a/arch/arm/mach-iop13xx/iq81340mc.c b/arch/arm/mach-iop13xx/iq81340mc.c
+index 9cd07d3..19d47cb 100644
+--- a/arch/arm/mach-iop13xx/iq81340mc.c
++++ b/arch/arm/mach-iop13xx/iq81340mc.c
+@@ -59,6 +59,7 @@ static struct hw_pci iq81340mc_pci __initdata = {
+ 	.map_irq	= iq81340mc_pcix_map_irq,
+ 	.scan		= iop13xx_scan_bus,
+ 	.preinit	= iop13xx_pci_init,
++	.add_bus	= iop13xx_add_bus;
+ };
+ 
+ static int __init iq81340mc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/iq81340sc.c b/arch/arm/mach-iop13xx/iq81340sc.c
+index b3ec11c..4d56993 100644
+--- a/arch/arm/mach-iop13xx/iq81340sc.c
++++ b/arch/arm/mach-iop13xx/iq81340sc.c
+@@ -61,6 +61,7 @@ static struct hw_pci iq81340sc_pci __initdata = {
+ 	.scan		= iop13xx_scan_bus,
+ 	.map_irq	= iq81340sc_atux_map_irq,
+ 	.preinit	= iop13xx_pci_init
++	.add_bus	= iop13xx_add_bus;
+ };
+ 
+ static int __init iq81340sc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/msi.c b/arch/arm/mach-iop13xx/msi.c
+index e7730cf..1a8cb2f 100644
+--- a/arch/arm/mach-iop13xx/msi.c
++++ b/arch/arm/mach-iop13xx/msi.c
+@@ -132,7 +132,7 @@ static struct irq_chip iop13xx_msi_chip = {
+ 	.irq_unmask = unmask_msi_irq,
+ };
+ 
+-int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
++static int iop13xx_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
  {
+ 	int id, irq = irq_alloc_desc_from(IRQ_IOP13XX_MSI_0, -1);
  	struct msi_msg msg;
- 	u16 control;
-@@ -132,12 +132,12 @@ msi_irq_allocated:
- 	/* Make sure the search for available interrupts didn't fail */
- 	if (irq >= 64) {
- 		if (request_private_bits) {
--			pr_err("arch_setup_msi_irq: Unable to find %d free interrupts, trying just one",
-+			pr_err("octeon_setup_msi_irq: Unable to find %d free interrupts, trying just one",
- 			       1 << request_private_bits);
- 			request_private_bits = 0;
- 			goto try_only_one;
- 		} else
--			panic("arch_setup_msi_irq: Unable to find a free MSI interrupt");
-+			panic("octeon_setup_msi_irq: Unable to find a free MSI interrupt");
- 	}
- 
- 	/* MSI interrupts start at logical IRQ OCTEON_IRQ_MSI_BIT0 */
-@@ -168,7 +168,7 @@ msi_irq_allocated:
- 		msg.address_hi = (0 + CVMX_SLI_PCIE_MSI_RCV) >> 32;
- 		break;
- 	default:
--		panic("arch_setup_msi_irq: Invalid octeon_dma_bar_type");
-+		panic("octeon_setup_msi_irq: Invalid octeon_dma_bar_type");
- 	}
- 	msg.data = irq - OCTEON_IRQ_MSI_BIT0;
- 
-@@ -182,7 +182,7 @@ msi_irq_allocated:
+@@ -159,7 +159,12 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
  	return 0;
  }
  
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int octeon_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
-@@ -201,7 +201,7 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 		return 1;
- 
- 	list_for_each_entry(entry, &dev->msi_list, list) {
--		ret = arch_setup_msi_irq(dev, entry);
-+		ret = octeon_setup_msi_irq(dev, entry);
- 		if (ret < 0)
- 			return ret;
- 		if (ret > 0)
-@@ -210,14 +210,13 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 
- 	return 0;
- }
--
- /**
-  * Called when a device no longer needs its MSI interrupts. All
-  * MSI interrupts for the device are freed.
-  *
-  * @irq:    The devices first irq number. There may be multple in sequence.
-  */
 -void arch_teardown_msi_irq(unsigned int irq)
-+static void octeon_teardown_msi_irq(unsigned int irq)
++static void iop13xx_teardown_msi_irq(unsigned int irq)
  {
- 	int number_irqs;
- 	u64 bitmask;
-@@ -226,8 +225,8 @@ void arch_teardown_msi_irq(unsigned int irq)
- 
- 	if ((irq < OCTEON_IRQ_MSI_BIT0)
- 		|| (irq > msi_irq_size + OCTEON_IRQ_MSI_BIT0))
--		panic("arch_teardown_msi_irq: Attempted to teardown illegal "
--		      "MSI interrupt (%d)", irq);
-+		panic("octeon_teardown_msi_irq: Attempted to teardown illegal "
-+			"MSI interrupt (%d)", irq);
- 
- 	irq -= OCTEON_IRQ_MSI_BIT0;
- 	index = irq / 64;
-@@ -240,7 +239,7 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	 */
- 	number_irqs = 0;
- 	while ((irq0 + number_irqs < 64) &&
--	       (msi_multiple_irq_bitmask[index]
-+		(msi_multiple_irq_bitmask[index]
- 		& (1ull << (irq0 + number_irqs))))
- 		number_irqs++;
- 	number_irqs++;
-@@ -249,8 +248,8 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	/* Shift the mask to the correct bit location */
- 	bitmask <<= irq0;
- 	if ((msi_free_irq_bitmask[index] & bitmask) != bitmask)
--		panic("arch_teardown_msi_irq: Attempted to teardown MSI "
--		      "interrupt (%d) not in use", irq);
-+		panic("octeon_teardown_msi_irq: Attempted to teardown MSI "
-+			"interrupt (%d) not in use", irq);
- 
- 	/* Checks are done, update the in use bitmask */
- 	spin_lock(&msi_free_irq_bitmask_lock);
-@@ -259,6 +258,16 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	spin_unlock(&msi_free_irq_bitmask_lock);
+ 	irq_free_desc(irq);
+ }
++
++struct msi_chip iop13xx_chip = {
++	.setup_irq = iop13xx_setup_msi_irq,
++	.teardown_irq = iop13xx_teardown_msi_irq,
++};
+diff --git a/arch/arm/mach-iop13xx/pci.c b/arch/arm/mach-iop13xx/pci.c
+index 9082b84..f498800 100644
+--- a/arch/arm/mach-iop13xx/pci.c
++++ b/arch/arm/mach-iop13xx/pci.c
+@@ -962,6 +962,12 @@ void __init iop13xx_atu_select(struct hw_pci *plat_pci)
+ 	}
  }
  
-+static struct msi_chip octeon_msi_chip = {
-+	.setup_irqs = octeon_setup_msi_irqs,
-+	.teardown_irq = octeon_teardown_msi_irq,
-+};
-+
-+struct msi_chip *arch_find_msi_chip(struct pci_dev *dev)
++void iop13xx_add_bus(struct pci_bus *bus)
 +{
-+	return &octeon_msi_chip;
++	if (IS_ENABLED(CONFIG_PCI_MSI)) 
++		bus->msi = &iop13xx_msi_chip;
 +}
 +
- static DEFINE_RAW_SPINLOCK(octeon_irq_msi_lock);
- 
- static u64 msi_rcv_reg[4];
+ void __init iop13xx_pci_init(void)
+ {
+ 	/* clear pre-existing south bridge errors */
 -- 
 1.7.1
