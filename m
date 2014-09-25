@@ -1,36 +1,32 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D961E1A0121
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:04:42 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CB4C1A004A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:39:49 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 25 Sep 2014 16:04:36 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4A72F2BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:04:34 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8P65t0x32899118
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:06:04 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8P641gj018082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:04:01 +1000
-Date: Thu, 25 Sep 2014 16:03:36 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] powerpc/powernv: Fix dma_ops for bypass window
-Message-ID: <20140925060336.GA16735@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1411618460-8153-1-git-send-email-gwshan@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1411618460-8153-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 25 Sep 2014 16:39:45 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0E689357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:39:42 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8P6fMdu32506060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:25 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8P6dc1j002821
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:39:39 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: [PATCH v3] powerpc/iommu/ddw: Fix endianness
+Date: Thu, 25 Sep 2014 16:39:18 +1000
+Message-Id: <1411627167-22927-1-git-send-email-aik@ozlabs.ru>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,174 +36,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 25, 2014 at 02:14:20PM +1000, Gavin Shan wrote:
+rtas_call() accepts and returns values in CPU endianness.
+The ddw_query_response and ddw_create_response structs members are
+defined and treated as BE but as they are passed to rtas_call() as
+(u32 *) and they get byteswapped automatically, the data is CPU-endian.
+This fixes ddw_query_response and ddw_create_response definitions and use.
 
-Please ignore this. I was told by Ben some drivers don't call
-set_dev_mask(). So I have to fix it in another way.
+of_read_number() is designed to work with device tree cells - it assumes
+the input is big-endian and returns data in CPU-endian. However due
+to the ddw_create_response struct fix, create.addr_hi/lo are already
+CPU-endian so do not byteswap them.
 
-Thanks,
-Gavin
+ddw_avail is a pointer to the "ibm,ddw-applicable" property which contains
+3 cells which are big-endian as it is a device tree. rtas_call() accepts
+a RTAS token in CPU-endian. This makes use of of_property_read_u32_array
+to byte swap and avoid the need for a number of be32_to_cpu calls.
 
->When using bypass window on IODA2, the incorrect DMA operations
->"dma_iommu_ops" is used by devices. The device driver calls
->dma_get_required_mask() to determine using 32-bits or bypass DMA
->window. Unfortunately, the returned DMA mask always forces the
->driver to use 32-bits DMA window. The problem was reported on
->the device as follows:
->
->0004:03:00.0 0107: 1000:0087 (rev 05)
->0004:03:00.0 Serial Attached SCSI controller: LSI Logic / Symbios \
->             Logic SAS2308 PCI-Express Fusion-MPT SAS-2 (rev 05)
->
->The patch fixes above issue by keeping things consistent: when
->enabling bypass window, we switch to "dma_direct_ops". Instead,
->switch to "pci_dma_ops" when disabling bypass window.
->
->Reported-by: Murali N. Iyer <mniyer@us.ibm.com>
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c | 76 +++++++++++++++++++------------
-> 1 file changed, 46 insertions(+), 30 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 36b1a7a..60e44d9 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -883,13 +883,29 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-> 		set_dma_offset(&pdev->dev, pe->tce_bypass_base);
-> 	} else {
-> 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
->-		set_dma_ops(&pdev->dev, &dma_iommu_ops);
->+		set_dma_ops(&pdev->dev, get_pci_dma_ops());
-> 		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
-> 	}
-> 	*pdev->dev.dma_mask = dma_mask;
-> 	return 0;
-> }
->
->+static void pnv_ioda_setup_dev_dma(struct pnv_ioda_pe *pe,
->+				   struct pci_dev *pdev,
->+				   bool add_to_iommu_group)
->+{
->+	if (pe->tce_bypass_enabled) {
->+		set_dma_ops(&pdev->dev, &dma_direct_ops);
->+		set_dma_offset(&pdev->dev, pe->tce_bypass_base);
->+	} else {
->+		set_dma_ops(&pdev->dev, get_pci_dma_ops());
->+		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
->+	}
->+
->+	if (add_to_iommu_group)
->+		iommu_add_device(&pdev->dev);
->+}
->+
-> static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-> 				   struct pci_bus *bus,
-> 				   bool add_to_iommu_group)
->@@ -897,11 +913,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-> 	struct pci_dev *dev;
->
-> 	list_for_each_entry(dev, &bus->devices, bus_list) {
->-		if (add_to_iommu_group)
->-			set_iommu_table_base_and_group(&dev->dev,
->-						       &pe->tce32_table);
->-		else
->-			set_iommu_table_base(&dev->dev, &pe->tce32_table);
->+		pnv_ioda_setup_dev_dma(pe, dev, add_to_iommu_group);
->
-> 		if (dev->subordinate)
-> 			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
->@@ -909,6 +921,15 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-> 	}
-> }
->
->+static void pnv_ioda_setup_pe_dma(struct pnv_ioda_pe *pe,
->+				  bool add_to_iommu_group)
->+{
->+	if (pe->pdev)
->+		pnv_ioda_setup_dev_dma(pe, pe->pdev, add_to_iommu_group);
->+	else
->+		pnv_ioda_setup_bus_dma(pe, pe->pbus, add_to_iommu_group);
->+}
->+
-> static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
-> 					 struct iommu_table *tbl,
-> 					 __be64 *startp, __be64 *endp, bool rm)
->@@ -1080,11 +1101,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> 	iommu_init_table(tbl, phb->hose->node);
-> 	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
->
->-	if (pe->pdev)
->-		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
->-	else
->-		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
->-
->+	pnv_ioda_setup_pe_dma(pe, true);
-> 	return;
->  fail:
-> 	/* XXX Failure: Try to fallback to 64-bit only ? */
->@@ -1101,7 +1118,13 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
-> 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
-> 	int64_t rc;
->
->+	/* Check if we really need do something */
->+	if (pe->tce_bypass_enabled == enable)
->+		return;
->+
-> 	pe_info(pe, "%sabling 64-bit DMA bypass\n", enable ? "En" : "Dis");
->+	pe->tce_bypass_enabled = enable;
->+
-> 	if (enable) {
-> 		phys_addr_t top = memblock_end_of_DRAM();
->
->@@ -1117,22 +1140,15 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
-> 						     window_id,
-> 						     pe->tce_bypass_base,
-> 						     0);
->-
->-		/*
->-		 * EEH needs the mapping between IOMMU table and group
->-		 * of those VFIO/KVM pass-through devices. We can postpone
->-		 * resetting DMA ops until the DMA mask is configured in
->-		 * host side.
->-		 */
->-		if (pe->pdev)
->-			set_iommu_table_base(&pe->pdev->dev, tbl);
->-		else
->-			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
-> 	}
->-	if (rc)
->+	if (rc != OPAL_SUCCESS) {
-> 		pe_err(pe, "OPAL error %lld configuring bypass window\n", rc);
->-	else
->-		pe->tce_bypass_enabled = enable;
->+		return;
->+	}
->+
->+	/* Update base and operations */
->+	pe->tce_bypass_enabled = enable;
->+	pnv_ioda_setup_pe_dma(pe, false);
-> }
->
-> static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->@@ -1213,12 +1229,12 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> 	iommu_init_table(tbl, phb->hose->node);
-> 	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
->
->-	if (pe->pdev)
->-		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
->-	else
->-		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
->+	/* If the bypass window fails to be created, we still
->+	 * can use 32-bits window.
->+	 */
->+	pnv_ioda_setup_pe_dma(pe, true);
->
->-	/* Also create a bypass window */
->+	/* Create bypass window */
-> 	pnv_pci_ioda2_setup_bypass_pe(phb, pe);
-> 	return;
-> fail:
->-- 
->1.8.3.2
->
+Cc: stable@vger.kernel.org # v3.13
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reviewed-by: Anton Blanchard <anton@samba.org>
+[aik: folded Anton's patch with of_property_read_u32_array]
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+Changes:
+v3:
+* of_property_read_u32_array() is used for ddw_avail[]
+
+v2:
+* updated commit log
+* fixed definition of ddw_query_response and ddw_create_response
+---
+ arch/powerpc/platforms/pseries/iommu.c | 51 +++++++++++++++++++---------------
+ 1 file changed, 28 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 4642d6a..de1ec54 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -329,16 +329,16 @@ struct direct_window {
+ 
+ /* Dynamic DMA Window support */
+ struct ddw_query_response {
+-	__be32 windows_available;
+-	__be32 largest_available_block;
+-	__be32 page_size;
+-	__be32 migration_capable;
++	u32 windows_available;
++	u32 largest_available_block;
++	u32 page_size;
++	u32 migration_capable;
+ };
+ 
+ struct ddw_create_response {
+-	__be32 liobn;
+-	__be32 addr_hi;
+-	__be32 addr_lo;
++	u32 liobn;
++	u32 addr_hi;
++	u32 addr_lo;
+ };
+ 
+ static LIST_HEAD(direct_window_list);
+@@ -725,16 +725,18 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+ {
+ 	struct dynamic_dma_window_prop *dwp;
+ 	struct property *win64;
+-	const u32 *ddw_avail;
++	u32 ddw_avail[3];
+ 	u64 liobn;
+-	int len, ret = 0;
++	int ret = 0;
++
++	ret = of_property_read_u32_array(np, "ibm,ddw-applicable",
++					 &ddw_avail[0], 3);
+ 
+-	ddw_avail = of_get_property(np, "ibm,ddw-applicable", &len);
+ 	win64 = of_find_property(np, DIRECT64_PROPNAME, NULL);
+ 	if (!win64)
+ 		return;
+ 
+-	if (!ddw_avail || len < 3 * sizeof(u32) || win64->length < sizeof(*dwp))
++	if (ret || win64->length < sizeof(*dwp))
+ 		goto delprop;
+ 
+ 	dwp = win64->value;
+@@ -872,8 +874,9 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ 
+ 	do {
+ 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
+-		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create, cfg_addr,
+-				BUID_HI(buid), BUID_LO(buid), page_shift, window_shift);
++		ret = rtas_call(ddw_avail[1], 5, 4, (u32 *)create,
++				cfg_addr, BUID_HI(buid), BUID_LO(buid),
++				page_shift, window_shift);
+ 	} while (rtas_busy_delay(ret));
+ 	dev_info(&dev->dev,
+ 		"ibm,create-pe-dma-window(%x) %x %x %x %x %x returned %d "
+@@ -910,7 +913,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	int page_shift;
+ 	u64 dma_addr, max_addr;
+ 	struct device_node *dn;
+-	const u32 *uninitialized_var(ddw_avail);
++	u32 ddw_avail[3];
+ 	struct direct_window *window;
+ 	struct property *win64;
+ 	struct dynamic_dma_window_prop *ddwprop;
+@@ -942,8 +945,9 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	 * for the given node in that order.
+ 	 * the property is actually in the parent, not the PE
+ 	 */
+-	ddw_avail = of_get_property(pdn, "ibm,ddw-applicable", &len);
+-	if (!ddw_avail || len < 3 * sizeof(u32))
++	ret = of_property_read_u32_array(pdn, "ibm,ddw-applicable",
++					 &ddw_avail[0], 3);
++	if (ret)
+ 		goto out_failed;
+ 
+        /*
+@@ -966,11 +970,11 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		dev_dbg(&dev->dev, "no free dynamic windows");
+ 		goto out_failed;
+ 	}
+-	if (be32_to_cpu(query.page_size) & 4) {
++	if (query.page_size & 4) {
+ 		page_shift = 24; /* 16MB */
+-	} else if (be32_to_cpu(query.page_size) & 2) {
++	} else if (query.page_size & 2) {
+ 		page_shift = 16; /* 64kB */
+-	} else if (be32_to_cpu(query.page_size) & 1) {
++	} else if (query.page_size & 1) {
+ 		page_shift = 12; /* 4kB */
+ 	} else {
+ 		dev_dbg(&dev->dev, "no supported direct page size in mask %x",
+@@ -980,7 +984,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	/* verify the window * number of ptes will map the partition */
+ 	/* check largest block * page size > max memory hotplug addr */
+ 	max_addr = memory_hotplug_max();
+-	if (be32_to_cpu(query.largest_available_block) < (max_addr >> page_shift)) {
++	if (query.largest_available_block < (max_addr >> page_shift)) {
+ 		dev_dbg(&dev->dev, "can't map partiton max 0x%llx with %u "
+ 			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
+ 			  1ULL << page_shift);
+@@ -1006,8 +1010,9 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	if (ret != 0)
+ 		goto out_free_prop;
+ 
+-	ddwprop->liobn = create.liobn;
+-	ddwprop->dma_base = cpu_to_be64(of_read_number(&create.addr_hi, 2));
++	ddwprop->liobn = cpu_to_be32(create.liobn);
++	ddwprop->dma_base = cpu_to_be64(((u64)create.addr_hi << 32) |
++			create.addr_lo);
+ 	ddwprop->tce_shift = cpu_to_be32(page_shift);
+ 	ddwprop->window_shift = cpu_to_be32(len);
+ 
+@@ -1039,7 +1044,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	list_add(&window->list, &direct_window_list);
+ 	spin_unlock(&direct_window_list_lock);
+ 
+-	dma_addr = of_read_number(&create.addr_hi, 2);
++	dma_addr = be64_to_cpu(ddwprop->dma_base);
+ 	goto out_unlock;
+ 
+ out_free_window:
+-- 
+2.0.0
