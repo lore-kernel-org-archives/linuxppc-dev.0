@@ -1,24 +1,23 @@
 Return-Path: <thierry.reding@gmail.com>
-Received: from mail-wi0-x231.google.com (mail-wi0-x231.google.com
- [IPv6:2a00:1450:400c:c05::231])
+Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
+ [IPv6:2a00:1450:400c:c00::22f])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB94C1A0929
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 17:38:06 +1000 (EST)
-Received: by mail-wi0-f177.google.com with SMTP id q5so8782269wiv.16
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 00:38:03 -0700 (PDT)
-Date: Thu, 25 Sep 2014 09:38:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CA4D1A0199
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 17:42:41 +1000 (EST)
+Received: by mail-wg0-f47.google.com with SMTP id y10so7636522wgg.18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 00:42:37 -0700 (PDT)
+Date: Thu, 25 Sep 2014 09:42:36 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v2 17/22] s390/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-Message-ID: <20140925073800.GM12423@ulmo>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+Message-ID: <20140925074235.GN12423@ulmo>
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <1411614872-4009-18-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="W4pDZ/VvazBYHhxQ"
-In-Reply-To: <1411614872-4009-18-git-send-email-wangyijing@huawei.com>
+ protocol="application/pgp-signature"; boundary="O27Gs9jTTFWz3gAR"
+In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
@@ -46,43 +45,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---W4pDZ/VvazBYHhxQ
+--O27Gs9jTTFWz3gAR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 25, 2014 at 11:14:27AM +0800, Yijing Wang wrote:
-[...]
-> diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-[...]
-> @@ -358,7 +358,7 @@ static void zpci_irq_handler(struct airq_struct *airq)
->  	}
->  }
-> =20
-> -int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-> +int zpci_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+On Thu, Sep 25, 2014 at 11:14:10AM +0800, Yijing Wang wrote:
+> This series is based Bjorn's pci/msi branch
+> git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/msi
+>=20
+> Currently, there are a lot of weak arch functions in MSI code.
+> Thierry Reding Introduced MSI chip framework to configure MSI/MSI-X in ar=
+m.
+> This series use MSI chip framework to refactor MSI code across all platfo=
+rms
+> to eliminate weak arch functions. Then all MSI irqs will be managed in a=
+=20
+> unified framework. Because this series changed a lot of ARCH MSI code,
+> so tests in the platforms which MSI code modified are warmly welcomed!
 
-static?
+Apart from the comments to the individual patches I very much like where
+this is going. Thanks for taking care of this.
 
---W4pDZ/VvazBYHhxQ
+Thierry
+
+--O27Gs9jTTFWz3gAR
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUI8ZYAAoJEN0jrNd/PrOhT54QAIN9jc2i8zDFXQP0O2xLX151
-K/0a6f2Ke1ts4th35u5jkXxtnjEubc8RMuU2k+Dft0pOk1wQqfi7CmdJtG+MrGqI
-IZ78syU0TLzw2I2IhhCW/qIrc0eK9gcVpY5FnYxNGNsErYVOHB5w2lqj65UXkrK1
-KuKTi4wk7SBfs7D0I7UVe9CjiGte3h4Wkm0FExDPekBjlb+NheufDExalF1vv5VW
-Y/Ers3FW9kjTCLWHf+wS7Sg7a/uq8PfTG3hkn7ja7ykCouBoheB+pb1OmV5boizz
-/H9TvN+P3WCd3TCe0pz5qI8icntR/5V09HiM3OM1sGqwWopvZgKiw8RSXwJMKdb3
-4NsDxyu6glUOMpuFyDxzQ+iC94LeTq1L4C4oTfrdMdCQetJQm1DxWQYo4iPy1Luz
-cyWf37Gr7RoNuPlx++ONPfub8xDPP6LpDm7Jf1ztIuHNRnN0D/EYNP/3W6s2en4w
-0n4URoSBn7blmJQPOKQ+oNkw295vAc0bSU+NlqjdnpMhJq/Aq+olHB4Of97IKXtk
-7lLqyJAX6ISNs302AVES9Wch7UW6MWrlpxiQk3HkGZBvFExbGCTD806d0wr9+V9Y
-XcvfTABfe5ycOd28a4HwZx0BpglxbMRwarqwdwhpA9H0500K4lmTPrzZLVY+B0AB
-UxhsWg3u+nU6NtiAWuwY
-=lpw6
+iQIcBAEBAgAGBQJUI8drAAoJEN0jrNd/PrOhRSAQALsX6+rt+ih0Gd1v6P/pa7qN
+OXrKB5iUQqBdwt1YLNoZ55Ojb03D1gWrXOV4DE2Ot+oWcChhDHqOflN7mOfNHLwj
+94ZiLJMuHN97GQPNxto1U+ExV52tdbA8FIUIxXgeIV+PeDB55N/NQjJPXOLsLj/3
+8yDXEOE3ZTdLDCNCFPBO4NFSRSvzTMkl4He0IOcMTDqom0YZfHzLb+pJR0DPNq0n
+gpUb03/YTMlSgjIM9Ltq2wb5AdttZeJ4+MG7k/gyLJjFJr178R1szKz23l7cYZfq
+7TowM+iBQV/g3v5l/TabQOeBQDYqIl/2iSJAxc17ECtoxrW1SqSckRJfTqcPmcPi
+r0vplvHDqRXBrv+NH92zhjSts8N5nPZMjiDdSknrOJwJUFFQku8U/2A/XMX3SRxn
+H+BbOXdut+fvidu7HPtrEqlfUIK9Lvh0l8XfnBoeZdLOnZoQV4wI9NBSH4D4HLpA
+o/H5Cq5xh6o2xQFABJHoFOIdMEz5NoWZ8BPiqQJ5nWn9ErGrBmbKcll6S2rIRqZP
+/UhLXKnd3ju7cQF1kH6gu2zL8l2mWIEISUZWJ1dPsc51Y4164W6olvTZ95BGmLQc
+QunHexGBsu0mVlTLtcfVey5K9+m8zcJQel6KThgh2MSBNt54p6IEuLT4fS3e4mXE
+VE4kNZ+YiwcZhdZXalp+
+=IFC0
 -----END PGP SIGNATURE-----
 
---W4pDZ/VvazBYHhxQ--
+--O27Gs9jTTFWz3gAR--
