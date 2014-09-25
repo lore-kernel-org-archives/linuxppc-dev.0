@@ -1,38 +1,25 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AEB61A006B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 20:21:25 +1000 (EST)
-Date: Thu, 25 Sep 2014 12:20:20 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v2 01/22] PCI/MSI: Clean up struct msi_chip argument
-In-Reply-To: <20140925071536.GG12423@ulmo>
-Message-ID: <alpine.DEB.2.10.1409251208420.4604@nanos>
-References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <1411614872-4009-2-git-send-email-wangyijing@huawei.com>
- <20140925071536.GG12423@ulmo>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A31D51A00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 20:22:51 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: "mturquette@linaro.org" <mturquette@linaro.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+Date: Thu, 25 Sep 2014 09:47:59 +0000
+Message-ID: <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+In-Reply-To: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- sparclinux@vger.kernel.org, Yijing Wang <wangyijing@huawei.com>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,31 +29,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 25 Sep 2014, Thierry Reding wrote:
-
-> On Thu, Sep 25, 2014 at 11:14:11AM +0800, Yijing Wang wrote:
-> > Msi_chip functions setup_irq/teardown_irq rarely use msi_chip
-> > argument.
-> 
-> That's not true. Out of the four drivers that you modify two use the
-> parameter. And the two that don't probably should be using it too.
-> 
-> 50% is not "rarely". =)
-> 
-> >           We can look up msi_chip pointer by the device pointer
-> > or irq number, so clean up msi_chip argument.
-> 
-> I don't like this particular change. The idea was to keep the API object
-> oriented so that drivers wouldn't have to know where to get the MSI chip
-> from. It also makes it more resilient against code reorganizations since
-> the core code is the only place that needs to know where to get the chip
-> from.
-
-Right. We have the same thing in the irq_chip callbacks. All of them
-take "struct irq_data", because it's already available in the core
-code and it gives easy access to all information (chip, chipdata ...)
-which is necessary for the callback implementations.
-
-Thanks,
-
-	tglx
+SGksIFNjb3R0IGFuZCBNaWtlLA0KICANCiAgQ291bGQgeW91IHBsZWFzZSBoZWxwIHJldmlldyB0
+aGlzIHBhdGNoIGFuZCBnaXZlIGFuIEFDSyBpZiBvay4gVGhhbmtzLg0KDQpCZXN0IFJlZ2FyZHMs
+DQpKaW5nY2hhbmcNCg0KPi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogSmluZ2No
+YW5nIEx1IFttYWlsdG86amluZ2NoYW5nLmx1QGZyZWVzY2FsZS5jb21dDQo+U2VudDogVHVlc2Rh
+eSwgU2VwdGVtYmVyIDIzLCAyMDE0IDI6NDcgUE0NCj5UbzogbXR1cnF1ZXR0ZUBsaW5hcm8ub3Jn
+DQo+Q2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsg
+bGludXgtDQo+a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnOyBMdQ0KPkppbmdjaGFuZy1CMzUwODMNCj5TdWJqZWN0OiBbUEFUQ0h2NF0g
+Y2xrOiBwcGMtY29yZW5ldDogcmVuYW1lIHRvIHBwYy1xb3JpcSBhbmQgYWRkDQo+Q0xLX09GX0RF
+Q0xBUkUgc3VwcG9ydA0KPg0KPlRoZSBJUCBpcyBzaGFyZWQgYnkgUFBDIGFuZCBBUk0sIHRoaXMg
+cmVuYW1lcyBpdCB0byBxb3JpcSBmb3IgYmV0dGVyDQo+cmVwcmVzZW50aW9uLCBhbmQgdGhpcyBh
+bHNvIGFkZHMgdGhlIENMS19PRl9ERUNMQVJFIHN1cHBvcnQgZm9yIGJlaW5nDQo+aW5pdGlhbGl6
+ZWQgYnkgb2ZfY2xrX2luaXQoKSBvbiBBUk0uDQo+DQo+U2lnbmVkLW9mZi1ieTogSmluZ2NoYW5n
+IEx1IDxqaW5nY2hhbmcubHVAZnJlZXNjYWxlLmNvbT4NCj4tLS0NCj5jaGFuZ2VzIGluIHY0Og0K
+PiByZW1vdmUgImNvcmVuZXQiIGxpdGVyYWxzIG9taXR0ZWQgaW4gdjMgcmVtb3ZlLg0KPg0KPmNo
+YW5nZXMgaW4gdjM6DQo+IGdlbmVyYXRlIHRoZSBwYXRjaCB3aXRoIC1NIC1DIG9wdGlvbg0KPg0K
+PmNoYW5nZXMgaW4gdjI6DQo+IHJlbmFtZSB0aGUgZHJpdmVyIG5hbWUgdG8gcHBjLXFvcmlxLmMg
+Zm9yIHNoYXJlZCBvbiBQUEMgYW5kIEFSTS4NCj4NCj4gZHJpdmVycy9jbGsvS2NvbmZpZyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICB8ICA5ICsrKysrLS0tLQ0KPiBkcml2ZXJzL2Nsay9NYWtl
+ZmlsZSAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gZHJpdmVycy9jbGsve2Ns
+ay1wcGMtY29yZW5ldC5jID0+IGNsay1xb3JpcS5jfSB8IDI3ICsrKysrKysrKysrKysrKy0tLS0t
+LQ0KPi0tLS0tDQo+IDMgZmlsZXMgY2hhbmdlZCwgMjIgaW5zZXJ0aW9ucygrKSwgMTYgZGVsZXRp
+b25zKC0pICByZW5hbWUNCj5kcml2ZXJzL2Nsay97Y2xrLXBwYy1jb3JlbmV0LmMgPT4gY2xrLXFv
+cmlxLmN9ICg4OSUpDQo+DQo+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2xrL0tjb25maWcgYi9kcml2
+ZXJzL2Nsay9LY29uZmlnIGluZGV4DQo+ODUxMzFhZS4uZjVmNzZjYiAxMDA2NDQNCj4tLS0gYS9k
+cml2ZXJzL2Nsay9LY29uZmlnDQo+KysrIGIvZHJpdmVycy9jbGsvS2NvbmZpZw0KPkBAIC05Miwx
+MiArOTIsMTMgQEAgY29uZmlnIENPTU1PTl9DTEtfQVhJX0NMS0dFTg0KPiAJICBTdXBwb3J0IGZv
+ciB0aGUgQW5hbG9nIERldmljZXMgYXhpLWNsa2dlbiBwY29yZSBjbG9jayBnZW5lcmF0b3INCj5m
+b3IgWGlsaW54DQo+IAkgIEZQR0FzLiBJdCBpcyBjb21tb25seSB1c2VkIGluIEFuYWxvZyBEZXZp
+Y2VzJyByZWZlcmVuY2UgZGVzaWducy4NCj4NCj4tY29uZmlnIENMS19QUENfQ09SRU5FVA0KPi0J
+Ym9vbCAiQ2xvY2sgZHJpdmVyIGZvciBQb3dlclBDIGNvcmVuZXQgcGxhdGZvcm1zIg0KPi0JZGVw
+ZW5kcyBvbiBQUENfRTUwME1DICYmIE9GDQo+K2NvbmZpZyBDTEtfUU9SSVENCj4rCWJvb2wgIkNs
+b2NrIGRyaXZlciBmb3IgUG93ZXJQQyBjb3JlbmV0IGFuZCBjb21wYXRpYmxlIEFSTS1iYXNlZA0K
+PnBsYXRmb3JtcyINCj4rCWRlcGVuZHMgb24gKFBQQ19FNTAwTUMgfHwgQVJNKSAmJiBPRg0KPiAJ
+LS0taGVscC0tLQ0KPiAJICBUaGlzIGFkZHMgdGhlIGNsb2NrIGRyaXZlciBzdXBwb3J0IGZvciBG
+cmVlc2NhbGUgUG93ZXJQQyBjb3JlbmV0DQo+LQkgIHBsYXRmb3JtcyB1c2luZyBjb21tb24gY2xv
+Y2sgZnJhbWV3b3JrLg0KPisJICBwbGF0Zm9ybXMgYW5kIGNvbXBhdGlibGUgRnJlZXNjYWxlIEFS
+TSBiYXNlZCBwbGF0Zm9ybXMgdXNpbmcNCj5jb21tb24NCj4rCSAgY2xvY2sgZnJhbWV3b3JrLg0K
+Pg0KPiBjb25maWcgQ09NTU9OX0NMS19YR0VORQ0KPiAJYm9vbCAiQ2xvY2sgZHJpdmVyIGZvciBB
+UE0gWEdlbmUgU29DIg0KPmRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9NYWtlZmlsZSBiL2RyaXZl
+cnMvY2xrL01ha2VmaWxlIGluZGV4DQo+MjdjNTQyYi4uMjBmNDJlOSAxMDA2NDQNCj4tLS0gYS9k
+cml2ZXJzL2Nsay9NYWtlZmlsZQ0KPisrKyBiL2RyaXZlcnMvY2xrL01ha2VmaWxlDQo+QEAgLTI5
+LDcgKzI5LDcgQEAgb2JqLSQoQ09ORklHX0FSQ0hfTU9YQVJUKQkJKz0gY2xrLW1veGFydC5vDQo+
+IG9iai0kKENPTkZJR19BUkNIX05PTUFESUspCQkrPSBjbGstbm9tYWRpay5vDQo+IG9iai0kKENP
+TkZJR19BUkNIX05TUElSRSkJCSs9IGNsay1uc3BpcmUubw0KPiBvYmotJChDT05GSUdfQ09NTU9O
+X0NMS19QQUxNQVMpCQkrPSBjbGstcGFsbWFzLm8NCj4tb2JqLSQoQ09ORklHX0NMS19QUENfQ09S
+RU5FVCkJCSs9IGNsay1wcGMtY29yZW5ldC5vDQo+K29iai0kKENPTkZJR19DTEtfUU9SSVEpCQkJ
+Kz0gY2xrLXFvcmlxLm8NCj4gb2JqLSQoQ09ORklHX0NPTU1PTl9DTEtfUzJNUFMxMSkJKz0gY2xr
+LXMybXBzMTEubw0KPiBvYmotJChDT05GSUdfQ09NTU9OX0NMS19TSTUzNTEpCQkrPSBjbGstc2k1
+MzUxLm8NCj4gb2JqLSQoQ09ORklHX0NPTU1PTl9DTEtfU0k1NzApCQkrPSBjbGstc2k1NzAubw0K
+PmRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9jbGstcHBjLWNvcmVuZXQuYyBiL2RyaXZlcnMvY2xr
+L2Nsay1xb3JpcS5jDQo+c2ltaWxhcml0eSBpbmRleCA4OSUgcmVuYW1lIGZyb20gZHJpdmVycy9j
+bGsvY2xrLXBwYy1jb3JlbmV0LmMgcmVuYW1lIHRvDQo+ZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMg
+aW5kZXggOGU1OGVkZi4uY2JhOGFiZSAxMDA2NDQNCj4tLS0gYS9kcml2ZXJzL2Nsay9jbGstcHBj
+LWNvcmVuZXQuYw0KPisrKyBiL2RyaXZlcnMvY2xrL2Nsay1xb3JpcS5jDQo+QEAgLTE1NSw3ICsx
+NTUsNyBAQCBzdGF0aWMgdm9pZCBfX2luaXQgY29yZV9wbGxfaW5pdChzdHJ1Y3QgZGV2aWNlX25v
+ZGUNCj4qbnApDQo+DQo+IAliYXNlID0gb2ZfaW9tYXAobnAsIDApOw0KPiAJaWYgKCFiYXNlKSB7
+DQo+LQkJcHJfZXJyKCJjbGstcHBjOiBpb21hcCBlcnJvclxuIik7DQo+KwkJcHJfZXJyKCJjbGst
+cW9yaXE6IGlvbWFwIGVycm9yXG4iKTsNCj4gCQlyZXR1cm47DQo+IAl9DQo+DQo+QEAgLTI1Miw3
+ICsyNTIsNyBAQCBzdGF0aWMgdm9pZCBfX2luaXQgc3lzY2xrX2luaXQoc3RydWN0IGRldmljZV9u
+b2RlDQo+Km5vZGUpDQo+IAl1MzIgcmF0ZTsNCj4NCj4gCWlmICghbnApIHsNCj4tCQlwcl9lcnIo
+InBwYy1jbGs6IGNvdWxkIG5vdCBnZXQgcGFyZW50IG5vZGVcbiIpOw0KPisJCXByX2VycigicW9y
+aXEtY2xrOiBjb3VsZCBub3QgZ2V0IHBhcmVudCBub2RlXG4iKTsNCj4gCQlyZXR1cm47DQo+IAl9
+DQo+DQo+QEAgLTI3OCwzMCArMjc4LDM1IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNl
+X2lkIGNsa19tYXRjaFtdDQo+X19pbml0Y29uc3QgPSB7DQo+IAl7fQ0KPiB9Ow0KPg0KPi1zdGF0
+aWMgaW50IF9faW5pdCBwcGNfY29yZW5ldF9jbGtfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
+ZSAqcGRldikNCj4rc3RhdGljIGludCBfX2luaXQgcW9yaXFfY2xrX3Byb2JlKHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYpDQo+IHsNCj4gCW9mX2Nsa19pbml0KGNsa19tYXRjaCk7DQo+DQo+
+IAlyZXR1cm4gMDsNCj4gfQ0KPg0KPi1zdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBw
+cGNfY2xrX2lkc1tdIF9faW5pdGNvbnN0ID0gew0KPitzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2Rl
+dmljZV9pZCBxb3JpcV9jbGtfaWRzW10gX19pbml0Y29uc3QgPSB7DQo+IAl7IC5jb21wYXRpYmxl
+ID0gImZzbCxxb3JpcS1jbG9ja2dlbi0xLjAiLCB9LA0KPiAJeyAuY29tcGF0aWJsZSA9ICJmc2ws
+cW9yaXEtY2xvY2tnZW4tMi4wIiwgfSwNCj4gCXt9DQo+IH07DQo+DQo+LXN0YXRpYyBzdHJ1Y3Qg
+cGxhdGZvcm1fZHJpdmVyIHBwY19jb3JlbmV0X2Nsa19kcml2ZXIgX19pbml0ZGF0YSA9IHsNCj4r
+c3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgcW9yaXFfY2xrX2RyaXZlciBfX2luaXRkYXRh
+ID0gew0KPiAJLmRyaXZlciA9IHsNCj4tCQkubmFtZSA9ICJwcGNfY29yZW5ldF9jbG9jayIsDQo+
+KwkJLm5hbWUgPSAicW9yaXFfY2xvY2siLA0KPiAJCS5vd25lciA9IFRISVNfTU9EVUxFLA0KPi0J
+CS5vZl9tYXRjaF90YWJsZSA9IHBwY19jbGtfaWRzLA0KPisJCS5vZl9tYXRjaF90YWJsZSA9IHFv
+cmlxX2Nsa19pZHMsDQo+IAl9LA0KPi0JLnByb2JlID0gcHBjX2NvcmVuZXRfY2xrX3Byb2JlLA0K
+PisJLnByb2JlID0gcW9yaXFfY2xrX3Byb2JlLA0KPiB9Ow0KPg0KPi1zdGF0aWMgaW50IF9faW5p
+dCBwcGNfY29yZW5ldF9jbGtfaW5pdCh2b2lkKQ0KPitzdGF0aWMgaW50IF9faW5pdCBxb3JpcV9j
+bGtfaW5pdCh2b2lkKQ0KPiB7DQo+LQlyZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZw
+cGNfY29yZW5ldF9jbGtfZHJpdmVyKTsNCj4rCXJldHVybiBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0
+ZXIoJnFvcmlxX2Nsa19kcml2ZXIpOw0KPiB9DQo+LXN1YnN5c19pbml0Y2FsbChwcGNfY29yZW5l
+dF9jbGtfaW5pdCk7DQo+K3N1YnN5c19pbml0Y2FsbChxb3JpcV9jbGtfaW5pdCk7DQo+Kw0KPitD
+TEtfT0ZfREVDTEFSRShxb3JpcV9jb3JlX3BsbF92MSwgImZzbCxxb3JpcS1jb3JlLXBsbC0xLjAi
+LA0KPitjb3JlX3BsbF9pbml0KTsgQ0xLX09GX0RFQ0xBUkUocW9yaXFfY29yZV9wbGxfdjIsDQo+
+KyJmc2wscW9yaXEtY29yZS1wbGwtMi4wIiwgY29yZV9wbGxfaW5pdCk7DQo+K0NMS19PRl9ERUNM
+QVJFKHFvcmlxX2NvcmVfbXV4X3YxLCAiZnNsLHFvcmlxLWNvcmUtbXV4LTEuMCIsDQo+K2NvcmVf
+bXV4X2luaXQpOyBDTEtfT0ZfREVDTEFSRShxb3JpcV9jb3JlX211eF92MiwNCj4rImZzbCxxb3Jp
+cS1jb3JlLW11eC0yLjAiLCBjb3JlX211eF9pbml0KTsNCj4tLQ0KPjEuOC4wDQoNCg==
