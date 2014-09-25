@@ -1,39 +1,39 @@
 Return-Path: <cyril.bur@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF8D61A098D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:45 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE8001A17A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:42:37 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyril.bur@au1.ibm.com>;
- Thu, 25 Sep 2014 16:41:45 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C6DF2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:42 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8P6h6t034275534
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:43:06 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8P6faGv020832
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:36 +1000
+ Thu, 25 Sep 2014 16:42:35 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3B0772BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:42:33 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8P6i43r33882254
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:44:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8P6g00R023854
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:42:00 +1000
 Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s8P6faQb020818
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:36 +1000
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s8P6g0jY023220
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:42:00 +1000
 Received: from cyril.ozlabs.ibm.com (haven.au.ibm.com [9.190.164.82])
  (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9C327A03CF
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 905E9A0330
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 16:41:30 +1000 (EST)
 From: Cyril Bur <cyril.bur@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/3] powerpc/pseries: fix bugs in mobility RTAS calls
-Date: Thu, 25 Sep 2014 16:41:30 +1000
-Message-Id: <1411627290-20302-4-git-send-email-cyril.bur@au1.ibm.com>
+Subject: [PATCH v2 2/3] powerpc/pseries: create rtas buffer accessor
+Date: Thu, 25 Sep 2014 16:41:29 +1000
+Message-Id: <1411627290-20302-3-git-send-email-cyril.bur@au1.ibm.com>
 In-Reply-To: <1411627290-20302-1-git-send-email-cyril.bur@au1.ibm.com>
 References: <1411627290-20302-1-git-send-email-cyril.bur@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,527 +45,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These calls use a shared memory buffer to communicate device tree updates and
-PAPR specifies that RTAS buffers are to be written in big endian.  Used the
-rtas buffer accessor to help solve both endian problems and standard buffer
-access problems.
-
-It seems more sane to stop trying to parse a buffer on errors. Attempting to
-continue opens up the possibility of overflows and/or garbage reads. Used
-of_changesets throughout to avoid leaving the device tree in an inconsitent
-state on error.
-
-Don't warn about failed allcations when the amount was taken from the buffer,
-assume the value was incorrect, don't needlessly concern the user.
+Added simple accessor functions for rtas in memory buffers which performs
+accesses of appropriate type and performs endian conversions.
 
 Signed-off-by: Cyril Bur <cyril.bur@au1.ibm.com>
 ---
- arch/powerpc/platforms/pseries/mobility.c | 406 ++++++++++++++++++------------
- 1 file changed, 243 insertions(+), 163 deletions(-)
+ arch/powerpc/platforms/pseries/Makefile      |   4 +-
+ arch/powerpc/platforms/pseries/pseries.h     |  41 +++++++++
+ arch/powerpc/platforms/pseries/rtas_buffer.c | 126 +++++++++++++++++++++++++++
+ 3 files changed, 170 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/pseries/rtas_buffer.c
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index e7cb6d4..37d16da 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -20,16 +20,11 @@
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index 0348079..7eb7c46 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -3,7 +3,9 @@ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
  
- #include <asm/machdep.h>
- #include <asm/rtas.h>
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   setup.o iommu.o event_sources.o ras.o \
+-			   firmware.o power.o dlpar.o mobility.o rng.o
++			   firmware.o power.o dlpar.o mobility.o \
++			   rng.o rtas_buffer.o
 +
- #include "pseries.h"
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+ obj-$(CONFIG_EEH)	+= eeh_pseries.o
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 361add6..f24e352 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -66,4 +66,45 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
  
--static struct kobject *mobility_kobj;
+ unsigned long pseries_memory_block_size(void);
  
--struct update_props_workarea {
--	u32 phandle;
--	u32 state;
--	u64 reserved;
--	u32 nprops;
--} __packed;
-+static struct kobject *mobility_kobj;
- 
- #define NODE_ACTION_MASK	0xff000000
- #define NODE_COUNT_MASK		0x00ffffff
-@@ -40,7 +35,7 @@ struct update_props_workarea {
- 
- #define MIGRATION_SCOPE	(1)
- 
--static int mobility_rtas_call(int token, char *buf, s32 scope)
-+static int mobility_rtas_call(int token, void *buf, s32 scope)
- {
- 	int rc;
- 
-@@ -54,171 +49,193 @@ static int mobility_rtas_call(int token, char *buf, s32 scope)
- 	return rc;
- }
- 
--static int delete_dt_node(u32 phandle)
-+static int create_property(struct rtas_buffer *rtas_buf, struct property **prop,
-+                           const char *name, int length)
- {
--	struct device_node *dn;
--
--	dn = of_find_node_by_phandle(phandle);
--	if (!dn)
--		return -ENOENT;
-+	void *prop_value;
-+	void *new_value;
- 
--	dlpar_detach_node(dn);
--	of_node_put(dn);
--	return 0;
--}
-+	struct property *working_prop = *prop;
- 
--static int update_dt_property(struct device_node *dn, struct property **prop,
--			      const char *name, u32 vd, char *value)
--{
--	struct property *new_prop = *prop;
--	int more = 0;
-+	if (!get_rtas_buf_mem(rtas_buf, &prop_value, length))
-+		return -EOVERFLOW;
- 
--	/* A negative 'vd' value indicates that only part of the new property
--	 * value is contained in the buffer and we need to call
--	 * ibm,update-properties again to get the rest of the value.
--	 *
--	 * A negative value is also the two's compliment of the actual value.
--	 */
--	if (vd & 0x80000000) {
--		vd = ~vd + 1;
--		more = 1;
--	}
--
--	if (new_prop) {
--		/* partial property fixup */
--		char *new_data = kzalloc(new_prop->length + vd, GFP_KERNEL);
--		if (!new_data)
--			return -ENOMEM;
--
--		memcpy(new_data, new_prop->value, new_prop->length);
--		memcpy(new_data + new_prop->length, value, vd);
--
--		kfree(new_prop->value);
--		new_prop->value = new_data;
--		new_prop->length += vd;
--	} else {
--		new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
--		if (!new_prop)
--			return -ENOMEM;
--
--		new_prop->name = kstrdup(name, GFP_KERNEL);
--		if (!new_prop->name) {
--			kfree(new_prop);
-+	if (!working_prop) {
-+		working_prop = kzalloc(sizeof(*working_prop), GFP_KERNEL);
-+		if (!working_prop) {
- 			return -ENOMEM;
- 		}
- 
--		new_prop->length = vd;
--		new_prop->value = kzalloc(new_prop->length, GFP_KERNEL);
--		if (!new_prop->value) {
--			kfree(new_prop->name);
--			kfree(new_prop);
-+		working_prop->name = kstrdup(name, GFP_KERNEL | __GFP_NOWARN);
-+		if (!working_prop->name) {
-+			kfree(working_prop);
- 			return -ENOMEM;
- 		}
--
--		memcpy(new_prop->value, value, vd);
--		*prop = new_prop;
-+		*prop = working_prop;
- 	}
- 
--	if (!more) {
--		of_update_property(dn, new_prop);
-+	new_value = krealloc(working_prop->value, working_prop->length + length, GFP_KERNEL | __GFP_NOWARN);
-+	if (!new_value) {
-+		kfree(working_prop->value);
-+		kfree(working_prop->name);
-+		kfree(working_prop);
- 		*prop = NULL;
-+		return -ENOMEM;
- 	}
- 
-+	working_prop->value = new_value;
-+	memcpy(working_prop->value + working_prop->length, prop_value, length);
-+	working_prop->length += length;
++/* Manipulation of the in memory data returned from an RTAS call */
 +
- 	return 0;
- }
- 
--static int update_dt_node(u32 phandle, s32 scope)
-+static int parse_ibm_update_properties(struct rtas_buffer *rtas_buf, struct of_changeset *cs,
-+                                       struct device_node *dn, struct property **r_prop)
- {
--	struct update_props_workarea *upwa;
--	struct device_node *dn;
++/* Data pointed to by ptr is in big endian */
++struct rtas_buffer {
++	void *ptr;
++	int len;
++	int pos;
++};
++
++/* Buffer is already zeroed */
++int make_rtas_buf(struct rtas_buffer *b, size_t size);
++void free_rtas_buf(struct rtas_buffer *b);
++
++/* Return pointer to the buffer being used */
++void *get_rtas_buf(struct rtas_buffer *b);
++
++/* Checks if the buffer exists and the read position is less than the length*/
++bool check_rtas_buf(struct rtas_buffer *b);
++size_t get_rtas_buf_size(struct rtas_buffer *b);
++
++/* Advance the internal position of the buffer by size bytes */
++bool advance_rtas_buf(struct rtas_buffer *b, size_t size);
++
++/* Put a value val into the buffer at position pos. Function expect val in cpu
++ * endian. Returns true if the write to the buffer was successful.
++ */
++bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos);
++
++/* Grab the byte at the current position of the buffer without incrementing
++ * the internal position of the buffer */
++bool peek_rtas_buf(struct rtas_buffer *b, u8 *c);
++
++/* Accessor functions return true if access succeeded and value is written to
++ * val in cpu endian. Automatically advances its reference into the buffer by
++ * the requested amount.
++ */
++bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val);
++bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val);
++bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len);
++bool get_rtas_buf_str(struct rtas_buffer *b, char **s);
++
+ #endif /* _PSERIES_PSERIES_H */
+diff --git a/arch/powerpc/platforms/pseries/rtas_buffer.c b/arch/powerpc/platforms/pseries/rtas_buffer.c
+new file mode 100644
+index 0000000..f06b73c
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/rtas_buffer.c
+@@ -0,0 +1,126 @@
++#include <linux/kernel.h>
++#include <linux/slab.h>
++
++#include "pseries.h"
++
++
++int make_rtas_buf(struct rtas_buffer *b, size_t sz)
++{
++	b->ptr = kzalloc(sz, GFP_KERNEL);
++	b->len = sz;
++	b->pos = 0;
++	return (!b->ptr) ? -ENOMEM : 0;
++}
++
++void free_rtas_buf(struct rtas_buffer *b)
++{
++	kfree(b->ptr);
++}
++
++void *get_rtas_buf(struct rtas_buffer *b)
++{
++	return (b) ? b->ptr : NULL;
++}
++
++size_t get_rtas_buf_size(struct rtas_buffer *b)
++{
++	return (b) ? b->len : 0;
++}
++
++bool check_rtas_buf(struct rtas_buffer *b)
++{
++	return (b && b->ptr && b->pos < b->len);
++}
++
++static inline void *buf_pos(struct rtas_buffer *b)
++{
++	return (b && b->ptr) ? b->ptr + b->pos : NULL;
++}
++
++bool peek_rtas_buf(struct rtas_buffer *b, u8 *c)
++{
++	if (!b || !c || b->pos >= b->len)
++		return false;
++
++	*c = *(u8 *)buf_pos(b);
++
++	return true;
++}
++
++bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos)
++{
++	if (!b || b->pos >= b->len)
++		return false;
++
++	*((__be32 *)buf_pos(b)) = cpu_to_be32(val);
++
++	return true;
++}
++
++bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val)
++{
++	if (!b || !val || b->len - b->pos < sizeof(u32))
++		return false;
++
++	*val = be32_to_cpu(*((__be32 *)buf_pos(b)));
++	b->pos += sizeof(u32);
++	return true;
++}
++
++bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val)
++{
++	if (!b || !val || b->len - b->pos < sizeof(u64))
++		return false;
++
++	*val = be64_to_cpu(*((__be64 *)buf_pos(b)));
++	b->pos += sizeof(u64);
++	return true;
++}
++
++bool get_rtas_buf_str(struct rtas_buffer *b, char **s)
++{
 +	int i;
-+	int rc = 0;
++	if (!b || !s)
++		return false;
 +
- 	struct property *prop = NULL;
--	int i, rc, rtas_rc;
--	char *prop_data;
--	char *rtas_buf;
--	int update_properties_token;
++	/* Get length of string */
++	i = b->pos;
++	while (i < b->len) {
++		if (*(char *)(b->ptr + i) == '\0') {
++			*s = (char *)buf_pos(b);
++			if (!*s)
++				return false;
 +
-+	char peek;
-+	u32 nprops;
- 	u32 vd;
- 
--	update_properties_token = rtas_token("ibm,update-properties");
--	if (update_properties_token == RTAS_UNKNOWN_SERVICE)
-+	if (!rtas_buf || !cs || !dn || !r_prop)
- 		return -EINVAL;
- 
--	rtas_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
--	if (!rtas_buf)
--		return -ENOMEM;
-+	/* Advance the buffer by 16 bytes which contain the phandle (4 bytes),
-+	 * 4 bytes of state variable and 8 bytes of reserved (zero) bytes.
-+	 * As the state variable must be sent on subsequent RTAS calls ensure
-+	 * don't touch it so the caller can reuse this buffer.
-+	 */
-+	if (!advance_rtas_buf(rtas_buf, 16) || !get_rtas_buf_32(rtas_buf, &nprops))
-+		return -EOVERFLOW;
- 
--	dn = of_find_node_by_phandle(phandle);
--	if (!dn) {
--		kfree(rtas_buf);
--		return -ENOENT;
-+	/* On the first call to ibm,update-properties for a node the
-+	 * the first property value descriptor contains an empty
-+	 * property name, the property value length encoded as u32,
-+	 * and the property value is the node path being updated.
-+	 *
-+	 * Discard this information as the node was looked up by its phandle and
-+	 * passed in.
-+	 */
-+	if (!peek_rtas_buf(rtas_buf, &peek))
-+		return -EOVERFLOW;
-+	if (peek == '\0') {
-+		if (!advance_rtas_buf(rtas_buf, sizeof(u32)) ||
-+		    !get_rtas_buf_32(rtas_buf, &vd) ||
-+		    !advance_rtas_buf(rtas_buf, vd))
-+			return -EOVERFLOW;
-+		nprops--;
- 	}
- 
--	upwa = (struct update_props_workarea *)&rtas_buf[0];
--	upwa->phandle = phandle;
-+	for (i = 0; i < nprops; i++) {
-+		char *prop_name = NULL;
-+		int prop_len;
- 
--	do {
--		rtas_rc = mobility_rtas_call(update_properties_token, rtas_buf,
--					scope);
--		if (rtas_rc < 0)
-+		if (!get_rtas_buf_str(rtas_buf, &prop_name) ||
-+		    !get_rtas_buf_32(rtas_buf, &vd))
-+				return -EOVERFLOW;
-+
-+		switch (vd) {
-+		case 0x00000000:
-+			/* name only property, nothing to do */
- 			break;
- 
--		prop_data = rtas_buf + sizeof(*upwa);
--
--		/* On the first call to ibm,update-properties for a node the
--		 * the first property value descriptor contains an empty
--		 * property name, the property value length encoded as u32,
--		 * and the property value is the node path being updated.
--		 */
--		if (*prop_data == 0) {
--			prop_data++;
--			vd = *(u32 *)prop_data;
--			prop_data += vd + sizeof(vd);
--			upwa->nprops--;
-+		case 0x80000000:
-+			prop = of_find_property(dn, prop_name, NULL);
-+			of_changeset_remove_property(cs, dn, prop);
-+			prop = NULL;
-+			break;
-+
-+		default:
-+			/* A negative 'vd' value indicates that only part of the new property
-+			 * value is contained in the buffer and we need to call
-+			 * ibm,update-properties again to get the rest of the value.
-+			 *
-+			 * A negative value is also the two's compliment of the actual value.
-+			 */
-+			prop_len = vd & 0x80000000 ? ~vd + 1 : vd;
-+
-+			rc = create_property(rtas_buf, &prop, prop_name, prop_len);
-+			if (rc) {
-+				printk(KERN_ERR "Could not update %s property\n", prop_name);
-+				/* Could try to continue but failure in that function likely means
-+				 * we have bigger problems.
-+				 */
-+				return rc;
-+			}
-+
-+			if (prop && !(vd & 0x80000000)) {
-+				of_changeset_update_property(cs, dn, prop);
-+				prop = NULL;
-+			}
- 		}
-+	}
- 
--		for (i = 0; i < upwa->nprops; i++) {
--			char *prop_name;
-+	if (prop)
-+		*r_prop = prop;
-+	return rc;
-+}
- 
--			prop_name = prop_data;
--			prop_data += strlen(prop_name) + 1;
--			vd = *(u32 *)prop_data;
--			prop_data += sizeof(vd);
-+static int pseries_devicetree_update_props(struct of_changeset *cs, struct device_node *dn,
-+                                           s32 scope)
-+{
-+	int rc;
-+	int error;
-+	int update_properties_token;
- 
--			switch (vd) {
--			case 0x00000000:
--				/* name only property, nothing to do */
--				break;
-+	void *buf;
-+	struct rtas_buffer rtas_buf;
- 
--			case 0x80000000:
--				prop = of_find_property(dn, prop_name, NULL);
--				of_remove_property(dn, prop);
--				prop = NULL;
--				break;
-+	struct property *prop = NULL;
- 
--			default:
--				rc = update_dt_property(dn, &prop, prop_name,
--							vd, prop_data);
--				if (rc) {
--					printk(KERN_ERR "Could not update %s"
--					       " property\n", prop_name);
--				}
-+	if (!cs || !dn)
-+		return -EINVAL;
- 
--				prop_data += vd;
--			}
-+	update_properties_token = rtas_token("ibm,update-properties");
-+	if (update_properties_token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	rc = make_rtas_buf(&rtas_buf, RTAS_DATA_BUF_SIZE);
-+	if (rc)
-+		return -ENOMEM;
-+
-+	put_rtas_buf_32(&rtas_buf, dn->phandle, 0);
-+
-+	buf = get_rtas_buf(&rtas_buf);
-+	if (!buf) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	do {
-+
-+		rc = mobility_rtas_call(update_properties_token, buf, scope);
-+		if (rc < 0)
-+			goto out;
-+
-+		error = parse_ibm_update_properties(&rtas_buf, cs, dn, &prop);
-+		if (error) {
-+			rc = error;
-+			goto out;
- 		}
--	} while (rtas_rc == 1);
- 
--	of_node_put(dn);
--	kfree(rtas_buf);
--	return 0;
-+	} while (rc == 1);
-+
-+out:
-+	free_rtas_buf(&rtas_buf);
-+	return rc;
- }
- 
--static int add_dt_node(u32 parent_phandle, u32 drc_index)
-+static int pseries_devicetree_update_node(struct of_changeset *cs, struct device_node *parent_dn,
-+                                          u32 drc_index)
- {
- 	struct device_node *dn;
--	struct device_node *parent_dn;
- 	int rc;
- 
--	parent_dn = of_find_node_by_phandle(parent_phandle);
- 	if (!parent_dn)
- 		return -ENOENT;
- 
-@@ -230,59 +247,122 @@ static int add_dt_node(u32 parent_phandle, u32 drc_index)
- 	if (rc)
- 		dlpar_free_cc_nodes(dn);
- 
--	of_node_put(parent_dn);
- 	return rc;
- }
- 
-+static int parse_ibm_update_nodes(struct rtas_buffer *rtas_buf, struct of_changeset *cs, s32 scope)
-+{
-+	u32 node;
-+	int rc = 0;
-+
-+	if (!rtas_buf || !cs)
-+		return -EINVAL;
-+
-+	/* Advance the buffer by 16 bytes which encompases 4 bytes of state
-+	 * variable and 12 reserved (zeroed) bytes.
-+	 * As the state variable must be sent on subsequent RTAS calls ensure
-+	 * don't touch it so the caller can reuse this buffer.
-+	 */
-+	if (!advance_rtas_buf(rtas_buf, 16) ||
-+	    !get_rtas_buf_32(rtas_buf, &node))
-+		goto out;
-+
-+	while (node & NODE_ACTION_MASK) {
-+		int i;
-+		u32 action = node & NODE_ACTION_MASK;
-+		int node_count = node & NODE_COUNT_MASK;
-+		struct device_node *dn;
-+
-+		for (i = 0; i < node_count; i++) {
-+			u32 phandle;
-+			u32 drc_index;
-+
-+			if (!get_rtas_buf_32(rtas_buf, &phandle))
-+				goto out;
-+
-+			dn = of_find_node_by_phandle(phandle);
-+			if (!dn)
-+				return -ENOENT;
-+
-+			switch (action) {
-+			case DELETE_DT_NODE:
-+				of_changeset_detach_node(cs, dn);
-+				break;
-+			case UPDATE_DT_NODE:
-+				rc = pseries_devicetree_update_props(cs, dn, scope);
-+				break;
-+			case ADD_DT_NODE:
-+				if (!get_rtas_buf_32(rtas_buf, &drc_index)) {
-+					of_node_put(dn);
-+					goto out;
-+				}
-+				rc = pseries_devicetree_update_node(cs, dn, drc_index);
-+				break;
-+			default:
-+				of_node_put(dn);
-+				/* Bogus action */
-+				return -EINVAL; /* Break */
-+			}
-+			of_node_put(dn);
++			b->pos = i + 1;
++			return true;
 +		}
-+		if (!get_rtas_buf_32(rtas_buf, &node))
-+			goto out;
++		i++;
 +	}
 +
-+	return rc;
-+out:
-+	printk(KERN_ERR "RTAS buffer length exceeded\n");
-+	return -EOVERFLOW;
++	return false;
 +}
 +
- int pseries_devicetree_update(s32 scope)
- {
--	char *rtas_buf;
--	u32 *data;
-+	struct rtas_buffer rtas_buf;
-+	struct of_changeset cs;
-+	void *buf;
- 	int update_nodes_token;
- 	int rc;
-+	int error;
- 
- 	update_nodes_token = rtas_token("ibm,update-nodes");
- 	if (update_nodes_token == RTAS_UNKNOWN_SERVICE)
- 		return -EINVAL;
- 
--	rtas_buf = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
--	if (!rtas_buf)
--		return -ENOMEM;
-+	of_changeset_init(&cs);
++bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len)
++{
++	if (!b || !p || b->len - b->pos < len)
++		return false;
 +
-+	rc = make_rtas_buf(&rtas_buf, RTAS_DATA_BUF_SIZE);
-+	if (rc) {
-+		of_changeset_destroy(&cs);
-+		return rc;
-+	}
++	*p = buf_pos(b);
++	if (!*p)
++		return false;
 +
-+	buf = get_rtas_buf(&rtas_buf);
-+	if (!buf) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
- 
- 	do {
--		rc = mobility_rtas_call(update_nodes_token, rtas_buf, scope);
-+		rc = mobility_rtas_call(update_nodes_token, buf, scope);
- 		if (rc && rc != 1)
- 			break;
- 
--		data = (u32 *)rtas_buf + 4;
--		while (*data & NODE_ACTION_MASK) {
--			int i;
--			u32 action = *data & NODE_ACTION_MASK;
--			int node_count = *data & NODE_COUNT_MASK;
--
--			data++;
--
--			for (i = 0; i < node_count; i++) {
--				u32 phandle = *data++;
--				u32 drc_index;
--
--				switch (action) {
--				case DELETE_DT_NODE:
--					delete_dt_node(phandle);
--					break;
--				case UPDATE_DT_NODE:
--					update_dt_node(phandle, scope);
--					break;
--				case ADD_DT_NODE:
--					drc_index = *data++;
--					add_dt_node(phandle, drc_index);
--					break;
--				}
--			}
--		}
-+		error = parse_ibm_update_nodes(&rtas_buf, &cs, scope);
-+		if (error)
-+			break;
++	b->pos += len;
 +
- 	} while (rc == 1);
- 
--	kfree(rtas_buf);
-+	if (error)
-+		rc = error;
++	return true;
++}
 +
-+	if (rc == 0)
-+		rc = of_changeset_apply_locked(&cs);
++bool advance_rtas_buf(struct rtas_buffer *b, size_t len)
++{
++	if (!b || b->len - b->pos < len)
++		return false;
 +
-+out:
-+	of_changeset_destroy(&cs);
-+	free_rtas_buf(&rtas_buf);
++	b->pos += len;
 +
- 	return rc;
- }
- 
++	return true;
++}
++
 -- 
 1.9.1
