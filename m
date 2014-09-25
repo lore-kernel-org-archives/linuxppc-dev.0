@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5326D1A099D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:06 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 136031A0917
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 12:51:08 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 15/22] MIPS/Xlr/MSI: Use MSI chip framework to configure
+Subject: [PATCH v2 17/22] s390/MSI: Use MSI chip framework to configure
  MSI/MSI-X irq
-Date: Thu, 25 Sep 2014 11:14:25 +0800
-Message-ID: <1411614872-4009-16-git-send-email-wangyijing@huawei.com>
+Date: Thu, 25 Sep 2014 11:14:27 +0800
+Message-ID: <1411614872-4009-18-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -44,45 +44,49 @@ Use MSI chip framework instead of arch MSI functions to configure
 MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Acked-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
 ---
- arch/mips/pci/pci-xlr.c |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+ arch/s390/pci/pci.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/pci/pci-xlr.c b/arch/mips/pci/pci-xlr.c
-index 0dde803..7bd91cc 100644
---- a/arch/mips/pci/pci-xlr.c
-+++ b/arch/mips/pci/pci-xlr.c
-@@ -214,11 +214,11 @@ static int get_irq_vector(const struct pci_dev *dev)
+diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
+index 552b990..da5316e 100644
+--- a/arch/s390/pci/pci.c
++++ b/arch/s390/pci/pci.c
+@@ -358,7 +358,7 @@ static void zpci_irq_handler(struct airq_struct *airq)
+ 	}
  }
  
- #ifdef CONFIG_PCI_MSI
--void arch_teardown_msi_irq(unsigned int irq)
-+void xlr_teardown_msi_irq(unsigned int irq)
+-int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
++int zpci_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
  {
+ 	struct zpci_dev *zdev = get_zdev(pdev);
+ 	unsigned int hwirq, msi_vecs;
+@@ -434,7 +434,7 @@ out:
+ 	return rc;
  }
  
--int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-+int xlr_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+-void arch_teardown_msi_irqs(struct pci_dev *pdev)
++static void zpci_teardown_msi_irqs(struct pci_dev *pdev)
  {
- 	struct msi_msg msg;
- 	struct pci_dev *lnk;
-@@ -263,6 +263,17 @@ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 	write_msi_msg(irq, &msg);
- 	return 0;
+ 	struct zpci_dev *zdev = get_zdev(pdev);
+ 	struct msi_desc *msi;
+@@ -464,6 +464,16 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
+ 	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
  }
-+
-+static struct msi_chip xlr_msi_chip = {
-+	.setup_irq = xlr_setup_msi_irq,
-+	.teardown_irq = xlr_teardown_msi_irq,
+ 
++static struct msi_chip zpci_msi_chip = {
++	.setup_irqs = zpci_setup_msi_irqs,
++	.teardown_irqs = zpci_teardown_msi_irqs,
 +};
 +
 +struct msi_chip *arch_find_msi_chip(struct pci_dev *dev)
 +{
-+	return &xlr_msi_chip;
++	return &zpci_msi_chip;
 +}
 +
- #endif
- 
- /* Extra ACK needed for XLR on chip PCI controller */
+ static void zpci_map_resources(struct zpci_dev *zdev)
+ {
+ 	struct pci_dev *pdev = zdev->pdev;
 -- 
 1.7.1
