@@ -1,22 +1,41 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <konrad.wilk@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2DBE1A004A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 23:13:12 +1000 (EST)
-Message-ID: <542410D3.2060507@freescale.com>
-Date: Thu, 25 Sep 2014 15:55:47 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 844AC1A0070
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 00:25:51 +1000 (EST)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ s8PEPniu018459
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2014 14:25:49 GMT
+Date: Thu, 25 Sep 2014 10:23:40 -0400
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+Message-ID: <20140925142340.GE20089@laptop.dumpdata.com>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Jingchang Lu <jingchang.lu@freescale.com>, <mturquette@linaro.org>
-Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
- CLK_OF_DECLARE support
-References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
-In-Reply-To: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Chris Metcalf <cmetcalf@tilera.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +45,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jingchang,
+On Thu, Sep 25, 2014 at 11:14:10AM +0800, Yijing Wang wrote:
+> This series is based Bjorn's pci/msi branch
+> git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/msi
 
-On 09/23/2014 09:46 AM, Jingchang Lu wrote:
-> The IP is shared by PPC and ARM, this renames it to qoriq for better
-> represention, and this also adds the CLK_OF_DECLARE support for being
-> initialized by of_clk_init() on ARM.
+Is there a git tree for these patches?
 > 
-
-I think you need to also update drivers/cpufreq/Kconfig.powerpc
-to use the renamed config option.
-
----
-Best Regards, Laurentiu
+> Currently, there are a lot of weak arch functions in MSI code.
+> Thierry Reding Introduced MSI chip framework to configure MSI/MSI-X in arm.
+> This series use MSI chip framework to refactor MSI code across all platforms
+> to eliminate weak arch functions. Then all MSI irqs will be managed in a 
+> unified framework. Because this series changed a lot of ARCH MSI code,
+> so tests in the platforms which MSI code modified are warmly welcomed!
+> 
+> v1->v2:
+> Add a patch to make s390 MSI code build happy between patch "x86/xen/MSI: E.."
+> and "s390/MSI: Use MSI..". Fix several typo problems found by Lucas.
+> 
+> RFC->v1: 
+> Updated "[patch 4/21] x86/xen/MSI: Eliminate...", export msi_chip instead
+> of #ifdef to fix MSI bug in xen running in x86. 
+> Rename arch_get_match_msi_chip() to arch_find_msi_chip().
+> Drop use struct device as the msi_chip argument, we will do that
+> later in another patchset.
+> 
+> Yijing Wang (22):
+>   PCI/MSI: Clean up struct msi_chip argument
+>   PCI/MSI: Remove useless bus->msi assignment
+>   MSI: Remove the redundant irq_set_chip_data()
+>   x86/xen/MSI: Eliminate arch_msix_mask_irq() and arch_msi_mask_irq()
+>   s390/MSI: Use __msi_mask_irq() instead of default_msi_mask_irq()
+>   PCI/MSI: Introduce weak arch_find_msi_chip() to find MSI chip
+>   PCI/MSI: Refactor struct msi_chip to make it become more common
+>   x86/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   x86/xen/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   Irq_remapping/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   x86/MSI: Remove unused MSI weak arch functions
+>   MIPS/Octeon/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   MIPS/Xlp: Remove the dead function destroy_irq() to fix build error
+>   MIPS/Xlp/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   MIPS/Xlr/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   Powerpc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   s390/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   arm/iop13xx/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   IA64/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   Sparc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   tile/MSI: Use MSI chip framework to configure MSI/MSI-X irq
+>   PCI/MSI: Clean up unused MSI arch functions
+> 
+>  arch/arm/mach-iop13xx/include/mach/pci.h |    2 +
+>  arch/arm/mach-iop13xx/iq81340mc.c        |    1 +
+>  arch/arm/mach-iop13xx/iq81340sc.c        |    1 +
+>  arch/arm/mach-iop13xx/msi.c              |    9 ++-
+>  arch/arm/mach-iop13xx/pci.c              |    6 ++
+>  arch/ia64/kernel/msi_ia64.c              |   18 ++++-
+>  arch/mips/pci/msi-octeon.c               |   35 ++++++----
+>  arch/mips/pci/msi-xlp.c                  |   18 ++++--
+>  arch/mips/pci/pci-xlr.c                  |   15 ++++-
+>  arch/powerpc/kernel/msi.c                |   14 +++-
+>  arch/s390/pci/pci.c                      |   18 ++++-
+>  arch/sparc/kernel/pci.c                  |   14 +++-
+>  arch/tile/kernel/pci_gx.c                |   14 +++-
+>  arch/x86/include/asm/apic.h              |    4 +
+>  arch/x86/include/asm/pci.h               |    4 +-
+>  arch/x86/include/asm/x86_init.h          |    7 --
+>  arch/x86/kernel/apic/io_apic.c           |   16 ++++-
+>  arch/x86/kernel/x86_init.c               |   34 ---------
+>  arch/x86/pci/xen.c                       |   60 +++++++++-------
+>  drivers/iommu/irq_remapping.c            |    9 ++-
+>  drivers/irqchip/irq-armada-370-xp.c      |    8 +--
+>  drivers/pci/host/pci-tegra.c             |    8 ++-
+>  drivers/pci/host/pcie-designware.c       |    4 +-
+>  drivers/pci/host/pcie-rcar.c             |    8 ++-
+>  drivers/pci/msi.c                        |  114 ++++++++++++++----------------
+>  drivers/pci/probe.c                      |    1 -
+>  include/linux/msi.h                      |   26 ++-----
+>  27 files changed, 266 insertions(+), 202 deletions(-)
+> 
