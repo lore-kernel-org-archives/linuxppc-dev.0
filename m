@@ -1,20 +1,20 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE5491A160A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 12:16:48 +1000 (EST)
-Message-ID: <5424CC54.1040507@huawei.com>
-Date: Fri, 26 Sep 2014 10:15:48 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 528661A009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 12:19:43 +1000 (EST)
+Message-ID: <5424CBD6.1010807@huawei.com>
+Date: Fri, 26 Sep 2014 10:13:42 +0800
 From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, Thierry Reding
- <thierry.reding@gmail.com>
-Subject: Re: [PATCH v2 01/22] PCI/MSI: Clean up struct msi_chip argument
+To: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 15/22] MIPS/Xlr/MSI: Use MSI chip framework to configure
+ MSI/MSI-X irq
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <1411614872-4009-2-git-send-email-wangyijing@huawei.com>
- <20140925071536.GG12423@ulmo> <alpine.DEB.2.10.1409251208420.4604@nanos>
-In-Reply-To: <alpine.DEB.2.10.1409251208420.4604@nanos>
+ <1411614872-4009-16-git-send-email-wangyijing@huawei.com>
+ <20140925073700.GL12423@ulmo>
+In-Reply-To: <20140925073700.GL12423@ulmo>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
@@ -22,9 +22,9 @@ Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
  Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
  Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>, Konrad
+ Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
  linux-arm-kernel@lists.infradead.org,
  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
  Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
@@ -42,48 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/25 18:20, Thomas Gleixner wrote:
-> On Thu, 25 Sep 2014, Thierry Reding wrote:
+On 2014/9/25 15:37, Thierry Reding wrote:
+> On Thu, Sep 25, 2014 at 11:14:25AM +0800, Yijing Wang wrote:
+> [...]
+>> diff --git a/arch/mips/pci/pci-xlr.c b/arch/mips/pci/pci-xlr.c
+> [...]
+>> @@ -214,11 +214,11 @@ static int get_irq_vector(const struct pci_dev *dev)
+>>  }
+>>  
+>>  #ifdef CONFIG_PCI_MSI
+>> -void arch_teardown_msi_irq(unsigned int irq)
+>> +void xlr_teardown_msi_irq(unsigned int irq)
+>>  {
+>>  }
+>>  
+>> -int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+>> +int xlr_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
 > 
->> On Thu, Sep 25, 2014 at 11:14:11AM +0800, Yijing Wang wrote:
->>> Msi_chip functions setup_irq/teardown_irq rarely use msi_chip
->>> argument.
->>
->> That's not true. Out of the four drivers that you modify two use the
->> parameter. And the two that don't probably should be using it too.
->>
->> 50% is not "rarely". =)
->>
->>>           We can look up msi_chip pointer by the device pointer
->>> or irq number, so clean up msi_chip argument.
->>
->> I don't like this particular change. The idea was to keep the API object
->> oriented so that drivers wouldn't have to know where to get the MSI chip
->> from. It also makes it more resilient against code reorganizations since
->> the core code is the only place that needs to know where to get the chip
->> from.
-> 
-> Right. We have the same thing in the irq_chip callbacks. All of them
-> take "struct irq_data", because it's already available in the core
-> code and it gives easy access to all information (chip, chipdata ...)
-> which is necessary for the callback implementations.
-
-OK, I will drop this change, tglx, thanks for your review and comments!
-
-Thanks!
-Yijing.
-
+> Can both of these now be static?
+Yes, Will update.
 
 > 
-> Thanks,
-> 
-> 	tglx
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> .
+> Thierry
 > 
 
 
