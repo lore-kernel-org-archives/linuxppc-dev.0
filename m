@@ -1,37 +1,38 @@
-Return-Path: <cyril.bur@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9811E1A006B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:32:40 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyril.bur@au1.ibm.com>;
- Fri, 26 Sep 2014 11:32:38 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 81D482CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:32:36 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8Q1EM0W262410
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:14:22 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8Q1WZF8022083
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:32:36 +1000
-Message-ID: <1411695162.2783.53.camel@cyril>
-Subject: Re: [PATCH v2 2/3] powerpc/pseries: create rtas buffer accessor
-From: Cyril Bur <cyril.bur@au1.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 26 Sep 2014 11:32:42 +1000
-In-Reply-To: <54249B94.2070908@linux.vnet.ibm.com>
-References: <1411627290-20302-1-git-send-email-cyril.bur@au1.ibm.com>
- <1411627290-20302-3-git-send-email-cyril.bur@au1.ibm.com>
- <54249B94.2070908@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06B321A009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:55:58 +1000 (EST)
+Message-ID: <5424C77B.2060807@huawei.com>
+Date: Fri, 26 Sep 2014 09:55:07 +0800
+From: Yijing Wang <wangyijing@huawei.com>
+MIME-Version: 1.0
+To: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 02/22] PCI/MSI: Remove useless bus->msi assignment
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <1411614872-4009-3-git-send-email-wangyijing@huawei.com>
+ <20140925070601.GF12423@ulmo>
+In-Reply-To: <20140925070601.GF12423@ulmo>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>,
+ Bharat.Bhushan@freescale.com, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Konrad
+ Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
+ Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,231 +42,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-09-25 at 15:47 -0700, Tyrel Datwyler wrote:
-> On 09/24/2014 11:41 PM, Cyril Bur wrote:
-> > Added simple accessor functions for rtas in memory buffers which performs
-> > accesses of appropriate type and performs endian conversions.
-> > 
-> > Signed-off-by: Cyril Bur <cyril.bur@au1.ibm.com>
-> > ---
-> >  arch/powerpc/platforms/pseries/Makefile      |   4 +-
-> >  arch/powerpc/platforms/pseries/pseries.h     |  41 +++++++++
-> >  arch/powerpc/platforms/pseries/rtas_buffer.c | 126 +++++++++++++++++++++++++++
-> >  3 files changed, 170 insertions(+), 1 deletion(-)
-> >  create mode 100644 arch/powerpc/platforms/pseries/rtas_buffer.c
+On 2014/9/25 15:06, Thierry Reding wrote:
+> On Thu, Sep 25, 2014 at 11:14:12AM +0800, Yijing Wang wrote:
+>> Currently, PCI drivers will initialize bus->msi in
+>> pcibios_add_bus(). pcibios_add_bus() will be called
+>> in every pci bus initialization. So the bus->msi
+>> assignment in pci_alloc_child_bus() is useless.
 > 
-> Maybe Michael has an opinion here, but seems to me since this is all
-> RTAS related it would make sense for this code to belong in
-> kernel/rtas.c and include/asm/rtas.h.
+> I think this should be the other way around. The default should be to
+> inherit bus->msi from the parent. That way drivers don't typically have
+> to do it, yet they can still opt to override it if they need to.
 > 
-Could quite possibly go there, I wanted to get the code looked at first
-but I'll take a look if it could be used more generally and if so move.
+> For Tegra for example I think it would work if we assigned the MSI chip
+> to the root bus (in tegra_pcie_scan_bus()) and then have it propagated
+> to child busses in pci_alloc_child_bus() so that tegra_pcie_add_bus()
+> can be removed altogether.
 
-Thanks
+Hi Thierry, thanks very much for your review and comments!
 
-> -Tyrel
+Because pcibios_add_bus() and "child->msi = parent->msi;" in pci_alloc_child_bus()
+do the same thing. So I think we should use one and remove another. I like
+the latter.
+
+In addition, I consider several solutions to associate msi chip and PCI device.
+
+1. Add a msi_chip member in PCI arch sysdata to store the msi_chip pointer. Because
+all PCI devices under a PCI hostbridge always share the same msi chip, so every PCI device
+can find the msi chip by pci_bus->sysdata, but in this solution, we also need to add
+ARCH specific functions to extract msi chip from PCI arch sysdata, like pci_domain_nr().
+Then we can remove .add_bus() like tegra_pcie_add_bus() and the msi assignment in  pci_alloc_child_bus().
+
+2. Remove .add_bus() functions, associate PCI root bus and msi chip after PCI root bus created,
+as you mentioned above. In this solution we need to associate PCI root bus and msi chip in all PCI
+hostbridge drivers, like in tegra_pcie_scan_bus().
+
+
+3. Introduce a global msi chip list, currently, only in arm, there maybe more than one type MSI chip,
+but in arm, we can find msi chip by PCI hostbridge platform device's of_node, Eg. use "msi-parent" property
+to find it. Or msi chip is integrated into PCI hostbridge, we can find msi chip by compare msi_chip->dev and
+PCI hostbridge's platform device's struct device *dev pointer. And because PCI hostbridge platform device pass
+to pci_create_root_bus() as the parent device, so every PCI devices can first find the platform device, then
+to find the msi chip, this solution looks a bit ugly, but we only associate pci hostbridge and msi chip, PCI child
+buses and devices do not have to know the msi chip details.
+
+4. Last, in this series, introduced weak arch function arch_find_msi_chip(), it's the simplest one, because all platforms
+except arm, only one msi chip will exist in system.
+
+What do you think about this ?
+
+Thanks!
+Yijing.
+
 > 
-> > 
-> > diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> > index 0348079..7eb7c46 100644
-> > --- a/arch/powerpc/platforms/pseries/Makefile
-> > +++ b/arch/powerpc/platforms/pseries/Makefile
-> > @@ -3,7 +3,9 @@ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
-> >  
-> >  obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
-> >  			   setup.o iommu.o event_sources.o ras.o \
-> > -			   firmware.o power.o dlpar.o mobility.o rng.o
-> > +			   firmware.o power.o dlpar.o mobility.o \
-> > +			   rng.o rtas_buffer.o
-> > +
-> >  obj-$(CONFIG_SMP)	+= smp.o
-> >  obj-$(CONFIG_SCANLOG)	+= scanlog.o
-> >  obj-$(CONFIG_EEH)	+= eeh_pseries.o
-> > diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> > index 361add6..f24e352 100644
-> > --- a/arch/powerpc/platforms/pseries/pseries.h
-> > +++ b/arch/powerpc/platforms/pseries/pseries.h
-> > @@ -66,4 +66,45 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
-> >  
-> >  unsigned long pseries_memory_block_size(void);
-> >  
-> > +/* Manipulation of the in memory data returned from an RTAS call */
-> > +
-> > +/* Data pointed to by ptr is in big endian */
-> > +struct rtas_buffer {
-> > +	void *ptr;
-> > +	int len;
-> > +	int pos;
-> > +};
-> > +
-> > +/* Buffer is already zeroed */
-> > +int make_rtas_buf(struct rtas_buffer *b, size_t size);
-> > +void free_rtas_buf(struct rtas_buffer *b);
-> > +
-> > +/* Return pointer to the buffer being used */
-> > +void *get_rtas_buf(struct rtas_buffer *b);
-> > +
-> > +/* Checks if the buffer exists and the read position is less than the length*/
-> > +bool check_rtas_buf(struct rtas_buffer *b);
-> > +size_t get_rtas_buf_size(struct rtas_buffer *b);
-> > +
-> > +/* Advance the internal position of the buffer by size bytes */
-> > +bool advance_rtas_buf(struct rtas_buffer *b, size_t size);
-> > +
-> > +/* Put a value val into the buffer at position pos. Function expect val in cpu
-> > + * endian. Returns true if the write to the buffer was successful.
-> > + */
-> > +bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos);
-> > +
-> > +/* Grab the byte at the current position of the buffer without incrementing
-> > + * the internal position of the buffer */
-> > +bool peek_rtas_buf(struct rtas_buffer *b, u8 *c);
-> > +
-> > +/* Accessor functions return true if access succeeded and value is written to
-> > + * val in cpu endian. Automatically advances its reference into the buffer by
-> > + * the requested amount.
-> > + */
-> > +bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val);
-> > +bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val);
-> > +bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len);
-> > +bool get_rtas_buf_str(struct rtas_buffer *b, char **s);
-> > +
-> >  #endif /* _PSERIES_PSERIES_H */
-> > diff --git a/arch/powerpc/platforms/pseries/rtas_buffer.c b/arch/powerpc/platforms/pseries/rtas_buffer.c
-> > new file mode 100644
-> > index 0000000..f06b73c
-> > --- /dev/null
-> > +++ b/arch/powerpc/platforms/pseries/rtas_buffer.c
-> > @@ -0,0 +1,126 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#include "pseries.h"
-> > +
-> > +
-> > +int make_rtas_buf(struct rtas_buffer *b, size_t sz)
-> > +{
-> > +	b->ptr = kzalloc(sz, GFP_KERNEL);
-> > +	b->len = sz;
-> > +	b->pos = 0;
-> > +	return (!b->ptr) ? -ENOMEM : 0;
-> > +}
-> > +
-> > +void free_rtas_buf(struct rtas_buffer *b)
-> > +{
-> > +	kfree(b->ptr);
-> > +}
-> > +
-> > +void *get_rtas_buf(struct rtas_buffer *b)
-> > +{
-> > +	return (b) ? b->ptr : NULL;
-> > +}
-> > +
-> > +size_t get_rtas_buf_size(struct rtas_buffer *b)
-> > +{
-> > +	return (b) ? b->len : 0;
-> > +}
-> > +
-> > +bool check_rtas_buf(struct rtas_buffer *b)
-> > +{
-> > +	return (b && b->ptr && b->pos < b->len);
-> > +}
-> > +
-> > +static inline void *buf_pos(struct rtas_buffer *b)
-> > +{
-> > +	return (b && b->ptr) ? b->ptr + b->pos : NULL;
-> > +}
-> > +
-> > +bool peek_rtas_buf(struct rtas_buffer *b, u8 *c)
-> > +{
-> > +	if (!b || !c || b->pos >= b->len)
-> > +		return false;
-> > +
-> > +	*c = *(u8 *)buf_pos(b);
-> > +
-> > +	return true;
-> > +}
-> > +
-> > +bool put_rtas_buf_32(struct rtas_buffer *b, u32 val, int pos)
-> > +{
-> > +	if (!b || b->pos >= b->len)
-> > +		return false;
-> > +
-> > +	*((__be32 *)buf_pos(b)) = cpu_to_be32(val);
-> > +
-> > +	return true;
-> > +}
-> > +
-> > +bool get_rtas_buf_32(struct rtas_buffer *b, u32 *val)
-> > +{
-> > +	if (!b || !val || b->len - b->pos < sizeof(u32))
-> > +		return false;
-> > +
-> > +	*val = be32_to_cpu(*((__be32 *)buf_pos(b)));
-> > +	b->pos += sizeof(u32);
-> > +	return true;
-> > +}
-> > +
-> > +bool get_rtas_buf_64(struct rtas_buffer *b, u64 *val)
-> > +{
-> > +	if (!b || !val || b->len - b->pos < sizeof(u64))
-> > +		return false;
-> > +
-> > +	*val = be64_to_cpu(*((__be64 *)buf_pos(b)));
-> > +	b->pos += sizeof(u64);
-> > +	return true;
-> > +}
-> > +
-> > +bool get_rtas_buf_str(struct rtas_buffer *b, char **s)
-> > +{
-> > +	int i;
-> > +	if (!b || !s)
-> > +		return false;
-> > +
-> > +	/* Get length of string */
-> > +	i = b->pos;
-> > +	while (i < b->len) {
-> > +		if (*(char *)(b->ptr + i) == '\0') {
-> > +			*s = (char *)buf_pos(b);
-> > +			if (!*s)
-> > +				return false;
-> > +
-> > +			b->pos = i + 1;
-> > +			return true;
-> > +		}
-> > +		i++;
-> > +	}
-> > +
-> > +	return false;
-> > +}
-> > +
-> > +bool get_rtas_buf_mem(struct rtas_buffer *b, void **p, size_t len)
-> > +{
-> > +	if (!b || !p || b->len - b->pos < len)
-> > +		return false;
-> > +
-> > +	*p = buf_pos(b);
-> > +	if (!*p)
-> > +		return false;
-> > +
-> > +	b->pos += len;
-> > +
-> > +	return true;
-> > +}
-> > +
-> > +bool advance_rtas_buf(struct rtas_buffer *b, size_t len)
-> > +{
-> > +	if (!b || b->len - b->pos < len)
-> > +		return false;
-> > +
-> > +	b->pos += len;
-> > +
-> > +	return true;
-> > +}
-> > +
-> > 
+> Thierry
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Thanks!
+Yijing
