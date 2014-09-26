@@ -1,38 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
+ [IPv6:2a00:1450:400c:c00::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B37101A006C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:48:29 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 26 Sep 2014 16:48:28 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id AC25D357804C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:48:23 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8Q6OCGc4850102
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:24:13 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8Q6mMq8023879
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:48:22 +1000
-Date: Fri, 26 Sep 2014 16:48:21 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/4] powerpc/powernv: Sync header with firmware
-Message-ID: <20140926064821.GA18721@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1409039779-392-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <20140925042747.8E2AE14016A@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38B0E1A0003
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 18:09:27 +1000 (EST)
+Received: by mail-wg0-f48.google.com with SMTP id x13so5970547wgg.31
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 01:09:24 -0700 (PDT)
+Date: Fri, 26 Sep 2014 10:09:22 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v2 03/22] MSI: Remove the redundant irq_set_chip_data()
+Message-ID: <20140926080921.GE31106@ulmo>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <1411614872-4009-4-git-send-email-wangyijing@huawei.com>
+ <20140925071919.GH12423@ulmo> <5424C9BD.3040506@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140925042747.8E2AE14016A@ozlabs.org>
-Cc: qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="2qXFWqzzG3v1+95a"
+In-Reply-To: <5424C9BD.3040506@huawei.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,95 +45,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 25, 2014 at 02:27:47PM +1000, Michael Ellerman wrote:
->On Tue, 2014-26-08 at 07:56:16 UTC, Gavin Shan wrote:
->> From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
->> 
->> The patch synchronizes firmware header file (opal.h) for PCI error
->> injection.
->> 
->> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
->> index 4593a93..9113653 100644
->> --- a/arch/powerpc/include/asm/opal.h
->> +++ b/arch/powerpc/include/asm/opal.h
->> @@ -200,6 +201,33 @@ enum OpalPciErrorSeverity {
->>  	OPAL_EEH_SEV_INF	= 5
->>  };
->>  
->> +enum OpalErrinjctType {
->> +	OpalErrinjctTypeIoaBusError	= 0,
->> +	OpalErrinjctTypeIoaBusError64	= 1,
->> +
->> +	/* IoaBusError & IoaBusError64 */
->> +	OpalEjtIoaLoadMemAddr		= 0,
->> +	OpalEjtIoaLoadMemData		= 1,
->> +	OpalEjtIoaLoadIoAddr		= 2,
->> +	OpalEjtIoaLoadIoData		= 3,
->> +	OpalEjtIoaLoadConfigAddr	= 4,
->> +	OpalEjtIoaLoadConfigData	= 5,
->> +	OpalEjtIoaStoreMemAddr		= 6,
->> +	OpalEjtIoaStoreMemData		= 7,
->> +	OpalEjtIoaStoreIoAddr		= 8,
->> +	OpalEjtIoaStoreIoData		= 9,
->> +	OpalEjtIoaStoreConfigAddr	= 10,
->> +	OpalEjtIoaStoreConfigData	= 11,
->> +	OpalEjtIoaDmaReadMemAddr	= 12,
->> +	OpalEjtIoaDmaReadMemData	= 13,
->> +	OpalEjtIoaDmaReadMemMaster	= 14,
->> +	OpalEjtIoaDmaReadMemTarget	= 15,
->> +	OpalEjtIoaDmaWriteMemAddr	= 16,
->> +	OpalEjtIoaDmaWriteMemData	= 17,
->> +	OpalEjtIoaDmaWriteMemMaster	= 18,
->> +	OpalEjtIoaDmaWriteMemTarget	= 19,
->> +};
->
->I realise these come from the skiboot source, but they're just too ugly.
->
->Please use kernel style naming, like most of the rest of the file, eg:
->
->	OPAL_ERR_INJECT_IOA_BUS_ERR
->
 
-After thinking it for more, I decided to take this way because the specfic
-function types will potentially be used when we're going to support error
-injection from userland (QEMU). 
+--2qXFWqzzG3v1+95a
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The new revision has folded all your comments (for other patches as well).
-Michael, I'm not sure it's good way to send all my patches for 3.18, or I
-just need send revised ones?
+On Fri, Sep 26, 2014 at 10:04:45AM +0800, Yijing Wang wrote:
+> On 2014/9/25 15:19, Thierry Reding wrote:
+> > On Thu, Sep 25, 2014 at 11:14:13AM +0800, Yijing Wang wrote:
+> >> Currently, pcie-designware, pcie-rcar, pci-tegra drivers
+> >> use irq chip_data to save the msi_chip pointer. They
+> >> already call irq_set_chip_data() in their own MSI irq map
+> >> functions. So irq_set_chip_data() in arch_setup_msi_irq()
+> >> is useless.
+> >=20
+> > Again, I think this should be the other way around. If drivers do
+> > something that's already handled by the core, then the duplicate code
+> > should be dropped from the drivers.
+>=20
+> Hi Thierry, this is different thing, because chip_data is specific to IRQ
+> controller, and in other platform, like in x86, chip_data is used to save=
+ irq_cfg.
+> So we can not call irq_set_chip_data() in core code.
+>=20
+> x86 irq piece code
+>=20
+> int arch_setup_hwirq(unsigned int irq, int node)
+> {
+> 	struct irq_cfg *cfg;
+> 	unsigned long flags;
+> 	int ret;
+>=20
+> 	cfg =3D alloc_irq_cfg(irq, node);
+> 	if (!cfg)
+> 		return -ENOMEM;
+>=20
+> 	raw_spin_lock_irqsave(&vector_lock, flags);
+> 	ret =3D __assign_irq_vector(irq, cfg, apic->target_cpus());
+> 	raw_spin_unlock_irqrestore(&vector_lock, flags);
+>=20
+> 	if (!ret)
+> 		irq_set_chip_data(irq, cfg);  ------------->Save irq_cfg
+> 	else
+> 		free_irq_cfg(irq, cfg);
+> 	return ret;
+> }
 
-Thanks,
-Gavin
+Okay, makes sense to keep irq_set_chip_data() for driver-specific data
+then.
 
->Also this enum seems to contain two separate types, the first two values are
->the "type", and the rest are "functions".
->
->The only usage I see is:
->
->	/* Sanity check on error type */
->	if (type < OpalErrinjctTypeIoaBusError   ||
->	    type > OpalErrinjctTypeIoaBusError64 ||
->	    function < OpalEjtIoaLoadMemAddr     ||
->	    function > OpalEjtIoaDmaWriteMemTarget) {
->		pr_warn("%s: Invalid error type %d-%d\n",
->			__func__, type, function);
->		return -ERANGE;
->	}
->
->So we could also just do:
->
-># define OPAL_ERR_INJECT_TYPE_MIN	0
-># define OPAL_ERR_INJECT_TYPE_MAX	1
->
-># define OPAL_ERR_INJECT_FUNC_MIN	0
-># define OPAL_ERR_INJECT_FUNC_MAX	19
->
->	if (type < OPAL_ERR_INJECT_TYPE_MIN ||
->	    type > OPAL_ERR_INJECT_TYPE_MAX ||
->	    function < OPAL_ERR_INJECT_FUNC_MIN ||
->	    function > OPAL_ERR_INJECT_FUNC_MIN)
->	{
->		pr_warn("%s: Invalid error type %d-%d\n", __func__, type, function);
->		return -ERANGE;
->	}
->
+Thierry
+
+--2qXFWqzzG3v1+95a
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJUJR8xAAoJEN0jrNd/PrOhmZMP/0tFUjT9MXPrTuCEiBWtia+2
+ElYucD565UV4FjK6aINM4dHtmn0wUW+dDXB2YDSkAp10Ku534Tfi0zNfQd/xSe6M
+SLBNIW/EK67YANcL5AvN2W1wSUn/t24SBwWJIvsoZfNJbsAcETvYySMnmLZJ2L05
+k1v9mR+KAR52QhCs9nwga/dePFV/DBQ2bFrblq6Rxu/+hxki9EqgM9JtkRXS0F7d
+DU1BqMERPy9AtP+oX5Wih6+8P15JALo4n/SETOfeeToDkhN2Zbh8Y3AoAmVAL1l1
+ym3t6fPW7CFvJIX+Qpt02+wVvFu1amMpY8mXfzQmi18VccvTqQ9ylkaaVQ+ZsK/a
+M/8qEyiKUc4T8obwUr8qb484vw7QxAlFynvU5A6AX1zlHU+yUVEklTBlVY9Av5jj
+EW6MzXAPrhro6KKqu3m8h+P0O72K+oSZOT5bPri9/MfRfW3JCzMsCNIjeGXZ50fr
+Komek7HKSPDIaIoavV7Fym7j9zddKbLvAj8DfkztLT7jmQ7i8EVb6eHwy8uMDXI7
+cds9cH4RKRvE3ArNaHaOyEomxAD1fyAsQ3SPM2vuf92pJtiwoXpGc5qgrRusMjHw
+ZfggWh7lVNYq9TP1fXQalqNmFvATMz3s1HW7lCsIf8AeuNvDkAm3pQRojX1vKPvc
+uRsheVegzi0JliNoFkzC
+=m1fq
+-----END PGP SIGNATURE-----
+
+--2qXFWqzzG3v1+95a--
