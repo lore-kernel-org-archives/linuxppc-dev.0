@@ -1,19 +1,19 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EEF01A0874
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 11:59:36 +1000 (EST)
-Message-ID: <5424C85E.4090006@huawei.com>
-Date: Fri, 26 Sep 2014 09:58:54 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D0F51A009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 12:06:24 +1000 (EST)
+Message-ID: <5424C9BD.3040506@huawei.com>
+Date: Fri, 26 Sep 2014 10:04:45 +0800
 From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
 To: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v2 01/22] PCI/MSI: Clean up struct msi_chip argument
+Subject: Re: [PATCH v2 03/22] MSI: Remove the redundant irq_set_chip_data()
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <1411614872-4009-2-git-send-email-wangyijing@huawei.com>
- <20140925071536.GG12423@ulmo>
-In-Reply-To: <20140925071536.GG12423@ulmo>
+ <1411614872-4009-4-git-send-email-wangyijing@huawei.com>
+ <20140925071919.GH12423@ulmo>
+In-Reply-To: <20140925071919.GH12423@ulmo>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
@@ -41,26 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/25 15:15, Thierry Reding wrote:
-> On Thu, Sep 25, 2014 at 11:14:11AM +0800, Yijing Wang wrote:
->> Msi_chip functions setup_irq/teardown_irq rarely use msi_chip
->> argument.
+On 2014/9/25 15:19, Thierry Reding wrote:
+> On Thu, Sep 25, 2014 at 11:14:13AM +0800, Yijing Wang wrote:
+>> Currently, pcie-designware, pcie-rcar, pci-tegra drivers
+>> use irq chip_data to save the msi_chip pointer. They
+>> already call irq_set_chip_data() in their own MSI irq map
+>> functions. So irq_set_chip_data() in arch_setup_msi_irq()
+>> is useless.
 > 
-> That's not true. Out of the four drivers that you modify two use the
-> parameter. And the two that don't probably should be using it too.
-> 
-> 50% is not "rarely". =)
-> 
->>           We can look up msi_chip pointer by the device pointer
->> or irq number, so clean up msi_chip argument.
-> 
-> I don't like this particular change. The idea was to keep the API object
-> oriented so that drivers wouldn't have to know where to get the MSI chip
-> from. It also makes it more resilient against code reorganizations since
-> the core code is the only place that needs to know where to get the chip
-> from.
+> Again, I think this should be the other way around. If drivers do
+> something that's already handled by the core, then the duplicate code
+> should be dropped from the drivers.
 
-Hm, ok, Thomas also don't like this change, I will drop this one, thanks.
+Hi Thierry, this is different thing, because chip_data is specific to IRQ
+controller, and in other platform, like in x86, chip_data is used to save irq_cfg.
+So we can not call irq_set_chip_data() in core code.
+
+x86 irq piece code
+
+int arch_setup_hwirq(unsigned int irq, int node)
+{
+	struct irq_cfg *cfg;
+	unsigned long flags;
+	int ret;
+
+	cfg = alloc_irq_cfg(irq, node);
+	if (!cfg)
+		return -ENOMEM;
+
+	raw_spin_lock_irqsave(&vector_lock, flags);
+	ret = __assign_irq_vector(irq, cfg, apic->target_cpus());
+	raw_spin_unlock_irqrestore(&vector_lock, flags);
+
+	if (!ret)
+		irq_set_chip_data(irq, cfg);  ------------->Save irq_cfg
+	else
+		free_irq_cfg(irq, cfg);
+	return ret;
+}
 
 Thanks!
 Yijing.
