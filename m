@@ -1,22 +1,38 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A5051A0315
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 14:35:43 +1000 (EST)
-Date: Fri, 26 Sep 2014 14:35:42 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 09/15] powerpc/opal: Add PHB to cxl mode call
-Message-ID: <20140926143542.445a7f9b@kryten>
-In-Reply-To: <1411028820-29933-10-git-send-email-mikey@neuling.org>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-10-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F9CB1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:21:54 +1000 (EST)
+Message-ID: <542505B3.7040208@huawei.com>
+Date: Fri, 26 Sep 2014 14:20:35 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
- linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
- jk@ozlabs.org
+To: Liviu Dudau <liviu@dudau.co.uk>, Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
+ <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
+In-Reply-To: <20140925171612.GC31157@bart.dudau.co.uk>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>, Konrad
+ Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
+ Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,11 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
+>> The PCI core can already deal with that. An MSI chip can be set per bus
+>> and the weak pcibios_add_bus() can be used to set that. Often it might
+>> not even be necessary to do it via pcibios_add_bus() if you create the
+>> root bus directly, since you can attach the MSI chip at that time.
 > 
-> This adds the OPAL call to change a PHB into cxl mode.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> But I'm thinking that we need to move away from pcibios_add_bus() interface to do
+> something that should be generic. You don't need to be called for every bus when all
+> you want is just the root bus in order to add the MSI chip. Also, from looking at
+> the current patchset, a lot of architectures would set the MSI chip to a global
+> variable, which means you don't have an option to choose the MSI chip based on the
+> bus.
 
-Reviewed-by: Anton Blanchard <anton@samba.org>
+I also agree to remove the pcibios_add_bus() in arm which call .add_bus() to associate msi_chip
+and PCI bus.
+
+In my opinions, all PCI devices under the same PCI hostbridge must share same msi chip, right ?
+So if we can associate msi chip and PCI hostbridge, every PCI device can find correct msi chip.
+PCI hostbridge private attributes can be saved in PCI sysdata, and this data will be propagate to
+PCI root bus and its child buses.
+
+> 
+>>
+>>> What I would like to see is a way of creating the pci_host_bridge structure outside
+>>> the pci_create_root_bus(). That would then allow us to pass this sort of platform
+>>> details like associated msi_chip into the host bridge and the child busses will
+>>> have an easy way of finding the information needed by finding the root bus and then
+>>> the host bridge structure. Then the generic pci_scan_root_bus() can be used by (mostly)
+>>> everyone and the drivers can remove their kludges that try to work around the
+>>> current limitations.
+>>
+>> I think both issues are orthogonal. Last time I checked a lot of work
+>> was still necessary to unify host bridges enough so that it could be
+>> shared across architectures. But perhaps some of that work has
+>> happened in the meantime.
+> 
+> Breaking out the host bridge creation from root bus creation is not difficult, just not
+> agree upon. That would be the first step in making the generic host brige structure
+> useful for sharing, specially if used as a sort of "parent" structure that you can
+> wrap with your actual host bridge structure.
+
+Breaking out the host bridge creation is a good idea, but there need a lot of changes, we can
+do it in another series. And if we save msi chip in pci sysdata now, it will be easy to
+move it to generic pci host bridge. We can also move the pci domain number and other common info to it.
+
+Thanks!
+Yijing.
+
+> 
+>>
+>> But like I said, when you create the root bus, you can easily attach the
+>> MSI chip to it.
+> 
+> Not if you want to use the generic pci_scan_root_bus() function. One needs to copy the code
+> and add their own needed modifications. Which makes it hard to fix bugs and prevents code
+> reuse.
+> 
+> Best regards,
+> Liviu
+> 
+>>
+>> Thierry
+> 
+> 
+> 
+
+
+-- 
+Thanks!
+Yijing
