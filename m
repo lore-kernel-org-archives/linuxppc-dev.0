@@ -1,30 +1,24 @@
-Return-Path: <mturquette@linaro.org>
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E98931A09A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Sep 2014 09:29:29 +1000 (EST)
-Received: by mail-pa0-f54.google.com with SMTP id ey11so2336964pad.41
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Sep 2014 16:29:27 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, 
-From: Mike Turquette <mturquette@linaro.org>
-In-Reply-To: <1411685780.13320.209.camel@snotra.buserror.net>
-References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
- <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
- <1411675680.13320.201.camel@snotra.buserror.net>
- <20140925225406.19023.25065@quantum>
- <1411685780.13320.209.camel@snotra.buserror.net>
-Message-ID: <20140926232900.19023.35854@quantum>
-Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
- CLK_OF_DECLARE support
-Date: Fri, 26 Sep 2014 16:29:00 -0700
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Lu Jingchang-B35083 <jingchang.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 417E31A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Sep 2014 10:22:51 +1000 (EST)
+Date: Fri, 26 Sep 2014 19:22:28 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
+Message-ID: <20140927002228.GC18404@gate.crashing.org>
+References: <1410937624-25140-1-git-send-email-anton@samba.org>
+ <1410937624-25140-3-git-send-email-anton@samba.org>
+ <20140923194604.233bdbad@gandalf.local.home>
+ <20140923195436.45ae7e2c@gandalf.local.home> <20140924122202.62feb950@kryten>
+ <1411525460.4184.29.camel@pasglop> <20140924123307.7649bec8@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140924123307.7649bec8@kryten>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Steven Rostedt <rostedt@goodmis.org>, Alan Modra <amodra@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Scott Wood (2014-09-25 15:56:20)
-> On Thu, 2014-09-25 at 15:54 -0700, Mike Turquette wrote:
-> > Quoting Scott Wood (2014-09-25 13:08:00)
-> > > Well, like I said, I'd rather see the CLK_OF_DECLARE stuff be made to
-> > > work on PPC rather than have the driver carry around two binding
-> > > methods.
-> > =
+On Wed, Sep 24, 2014 at 12:33:07PM +1000, Anton Blanchard wrote:
+> We are scratching our heads trying to remember details of the issue
+> right now. In retrospect we should have linked the gcc bugzilla or
+> gcc commit details in the kernel commit message :)
 
-> > I guess that is an existing problem, and not related directly to this
-> > patch? This patch is essentially just renames (though the V1.0/V2.0
-> > stuff seems weird).
-> =
+There have been many GCC bugs in this area.
 
-> This patch is adding CLK_OF_DECLARE.
+30282 (for 32-bit)
+44199 (for 64-bit)
+52828 (for everything, and this one should finally handle things for good)
+Also a bunch of duplicates, and I'm sure I've missed some more.
 
-I'm fine taking this patch but your comments are still unresolved. What
-do you think needs to be done to fix the problems that you see?
+The original issue as far as I remember: when using a frame pointer, GCC
+would sometimes schedule the epilogue to do the stack adjust before
+restoring all regs from the stack.  Then an interrupt comes in, those
+saved regs are clobbered, kaboom.  We cannot disable the frame pointer
+because -pg forces it (although PowerPC does not need it).  The
+-mno-sched-epilog flag is a workaround: the epilogue (and prologue) will
+not be reordered by instruction scheduling.  Slow code is better than
+blowing up fast ;-)
 
-Regards,
-Mike
 
-> =
-
-> -Scott
-> =
-
->=20
+Segher
