@@ -1,35 +1,36 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (unknown [119.145.14.66])
+Received: from szxga01-in.huawei.com (unknown [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 607691A007F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 12:17:26 +1000 (EST)
-Message-ID: <54276F6C.5010705@huawei.com>
-Date: Sun, 28 Sep 2014 10:16:12 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F4C31A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 12:33:45 +1000 (EST)
+Message-ID: <54277327.6070500@huawei.com>
+Date: Sun, 28 Sep 2014 10:32:07 +0800
 From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Liviu Dudau <liviu@dudau.co.uk>
+To: Thierry Reding <thierry.reding@gmail.com>
 Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
  in all platforms
 References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
  <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
- <20140925164937.GB30382@ulmo> <5424E09F.50701@huawei.com>
- <20140926085030.GE31157@bart.dudau.co.uk>
-In-Reply-To: <20140926085030.GE31157@bart.dudau.co.uk>
-Content-Type: text/plain; charset="UTF-8"
+ <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
+ <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>
+ <20140926090537.GH31106@ulmo>
+In-Reply-To: <20140926090537.GH31106@ulmo>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, Bharat.Bhushan@freescale.com,
  xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
  Arnd Bergmann <arnd@arndb.de>, Konrad
  Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
  Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
  linux-arm-kernel@lists.infradead.org,
  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>, Sergei
  Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
  David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
@@ -44,54 +45,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>> What I would like to see is a way of creating the pci_host_bridge structure outside
->>>> the pci_create_root_bus(). That would then allow us to pass this sort of platform
->>>> details like associated msi_chip into the host bridge and the child busses will
->>>> have an easy way of finding the information needed by finding the root bus and then
->>>> the host bridge structure. Then the generic pci_scan_root_bus() can be used by (mostly)
->>>> everyone and the drivers can remove their kludges that try to work around the
->>>> current limitations.
->>
->> So I think maybe save msi chip in PCI arch sysdata is a good candidate.
+On 2014/9/26 17:05, Thierry Reding wrote:
+> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
+> [...]
+>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
+>> directly (patch attached).
 > 
-> Except that arch sysdata at the moment is an opaque pointer. I am all in favour in
-> changing the type of sysdata from void* into pci_host_bridge* and arches can wrap their old
-> sysdata around the pci_host_bridge*.
+> Really attached this time.
+> 
+> Thierry
+> 
 
-I inspected every arch and found there are almost no common stuff, and generic data struct should
-be created in generic PCI code. Another, I don't like associate msi chip and every PCI device, further more,
-almost all platforms except arm have only one MSI controller, and currently, PCI enumerating code doesn't need
-to know the MSI chip details, like for legacy IRQ, PCI device doesn't need to know which IRQ controller they
-should deliver IRQ to. I would think more about it, and hope other PCI guys can give some comments, especially from Bjorn.
+It looks good to me, so I will update the arm pci hostbridge driver to assign
+pci root bus the msi chip instead of current pcibios_add_bus(). But for other
+platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
+temporarily for more comments, especially from Bjorn.
 
 Thanks!
 Yijing.
-
-> 
-> Best regards,
-> Liviu
-> 
->>
->>>
->>> I think both issues are orthogonal. Last time I checked a lot of work
->>> was still necessary to unify host bridges enough so that it could be
->>> shared across architectures. But perhaps some of that work has
->>> happened in the meantime.
->>>
->>> But like I said, when you create the root bus, you can easily attach the
->>> MSI chip to it.
->>>
->>> Thierry
->>>
->>
->>
->> -- 
->> Thanks!
->> Yijing
->>
->>
-> 
-
 
 -- 
 Thanks!
