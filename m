@@ -1,41 +1,26 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0116.outbound.protection.outlook.com [65.55.169.116])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F39DF1A01DB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 16:12:52 +1000 (EST)
-Message-ID: <5427A6A0.5040703@huawei.com>
-Date: Sun, 28 Sep 2014 14:11:44 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 595C01A0074
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 20:01:20 +1000 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: "Laurentiu.Tudor@freescale.com" <Laurentiu.Tudor@freescale.com>,
+ "mturquette@linaro.org" <mturquette@linaro.org>
+Subject: RE: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+Date: Sun, 28 Sep 2014 10:01:10 +0000
+Message-ID: <1760763ea8a0468e817d082f95e4016b@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+ <542410D3.2060507@freescale.com>
+In-Reply-To: <542410D3.2060507@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
- in all platforms
-References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
- <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
- <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>
- <20140926090537.GH31106@ulmo> <54277327.6070500@huawei.com>
-In-Reply-To: <54277327.6070500@huawei.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, Bharat.Bhushan@freescale.com,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>, Sergei
- Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,32 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/28 10:32, Yijing Wang wrote:
-> On 2014/9/26 17:05, Thierry Reding wrote:
->> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
->> [...]
->>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
->>> directly (patch attached).
->>
->> Really attached this time.
->>
->> Thierry
->>
-> 
-> It looks good to me, so I will update the arm pci hostbridge driver to assign
-> pci root bus the msi chip instead of current pcibios_add_bus(). But for other
-> platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
-> temporarily for more comments, especially from Bjorn.
-
-Oh, sorry, I found designware and rcar use pci_scan_root_bus(), so we can not simply
-assign msi chip to root bus in all host drivers's scan functions.
-
-> 
-> Thanks!
-> Yijing.
-> 
-
-
--- 
-Thanks!
-Yijing
+Pi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogVHVkb3IgTGF1cmVudGl1LUIxMDcx
+Ng0KPlNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMjUsIDIwMTQgODo1NiBQTQ0KPlRvOiBMdSBK
+aW5nY2hhbmctQjM1MDgzOyBtdHVycXVldHRlQGxpbmFyby5vcmcNCj5DYzogV29vZCBTY290dC1C
+MDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj5rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj5TdWJq
+ZWN0OiBSZTogW1BBVENIdjRdIGNsazogcHBjLWNvcmVuZXQ6IHJlbmFtZSB0byBwcGMtcW9yaXEg
+YW5kIGFkZA0KPkNMS19PRl9ERUNMQVJFIHN1cHBvcnQNCj4NCj5IaSBKaW5nY2hhbmcsDQo+DQo+
+T24gMDkvMjMvMjAxNCAwOTo0NiBBTSwgSmluZ2NoYW5nIEx1IHdyb3RlOg0KPj4gVGhlIElQIGlz
+IHNoYXJlZCBieSBQUEMgYW5kIEFSTSwgdGhpcyByZW5hbWVzIGl0IHRvIHFvcmlxIGZvciBiZXR0
+ZXINCj4+IHJlcHJlc2VudGlvbiwgYW5kIHRoaXMgYWxzbyBhZGRzIHRoZSBDTEtfT0ZfREVDTEFS
+RSBzdXBwb3J0IGZvciBiZWluZw0KPj4gaW5pdGlhbGl6ZWQgYnkgb2ZfY2xrX2luaXQoKSBvbiBB
+Uk0uDQo+Pg0KPg0KPkkgdGhpbmsgeW91IG5lZWQgdG8gYWxzbyB1cGRhdGUgZHJpdmVycy9jcHVm
+cmVxL0tjb25maWcucG93ZXJwYyB0byB1c2UgdGhlDQo+cmVuYW1lZCBjb25maWcgb3B0aW9uLg0K
+Pg0KDQpUaGFua3MsIEkgd2lsbCB1cGRhdGUgdGhhdCBzZWxlY3RlZCBjb25maWcgb3B0aW9uIG9m
+IENMS19QUENfQ09SRU5FVC4NCg0KQmVzdCBSZWdhcmRzLA0KSmluZ2NoYW5nDQo+LS0tDQo+QmVz
+dCBSZWdhcmRzLCBMYXVyZW50aXUNCg0KDQo=
