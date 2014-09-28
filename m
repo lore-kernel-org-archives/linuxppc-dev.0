@@ -1,30 +1,41 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0138.outbound.protection.outlook.com [157.56.111.138])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EFF51A016E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 13:52:57 +1000 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Mike Turquette <mturquette@linaro.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
- CLK_OF_DECLARE support
-Date: Sun, 28 Sep 2014 02:18:38 +0000
-Message-ID: <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
- <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
- <1411675680.13320.201.camel@snotra.buserror.net>
- <20140925225406.19023.25065@quantum>
- <1411685780.13320.209.camel@snotra.buserror.net>
- <20140926232900.19023.35854@quantum>
-In-Reply-To: <20140926232900.19023.35854@quantum>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F39DF1A01DB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Sep 2014 16:12:52 +1000 (EST)
+Message-ID: <5427A6A0.5040703@huawei.com>
+Date: Sun, 28 Sep 2014 14:11:44 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Jingchang Lu <jingchang.lu@freescale.com>
+To: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
+ <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
+ <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>
+ <20140926090537.GH31106@ulmo> <54277327.6070500@huawei.com>
+In-Reply-To: <54277327.6070500@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, Bharat.Bhushan@freescale.com,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Konrad
+ Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>, Sergei
+ Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,37 +45,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYNCj4gW21h
-aWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcytiMjk5ODM9ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxh
-YnMub3JnXSBPbg0KPiBCZWhhbGYgT2YgTWlrZSBUdXJxdWV0dGUNCj4gU2VudDogU2F0dXJkYXks
-IFNlcHRlbWJlciAyNywgMjAxNCA3OjI5IEFNDQo+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBD
-YzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
-bC5vcmc7DQo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgTHUgSmluZ2No
-YW5nLUIzNTA4Mw0KPiBTdWJqZWN0OiBSZTogW1BBVENIdjRdIGNsazogcHBjLWNvcmVuZXQ6IHJl
-bmFtZSB0byBwcGMtcW9yaXEgYW5kIGFkZA0KPiBDTEtfT0ZfREVDTEFSRSBzdXBwb3J0DQo+IA0K
-PiBRdW90aW5nIFNjb3R0IFdvb2QgKDIwMTQtMDktMjUgMTU6NTY6MjApDQo+ID4gT24gVGh1LCAy
-MDE0LTA5LTI1IGF0IDE1OjU0IC0wNzAwLCBNaWtlIFR1cnF1ZXR0ZSB3cm90ZToNCj4gPiA+IFF1
-b3RpbmcgU2NvdHQgV29vZCAoMjAxNC0wOS0yNSAxMzowODowMCkNCj4gPiA+ID4gV2VsbCwgbGlr
-ZSBJIHNhaWQsIEknZCByYXRoZXIgc2VlIHRoZSBDTEtfT0ZfREVDTEFSRSBzdHVmZiBiZSBtYWRl
-DQo+ID4gPiA+IHRvIHdvcmsgb24gUFBDIHJhdGhlciB0aGFuIGhhdmUgdGhlIGRyaXZlciBjYXJy
-eSBhcm91bmQgdHdvDQo+ID4gPiA+IGJpbmRpbmcgbWV0aG9kcy4NCj4gPiA+DQo+ID4gPiBJIGd1
-ZXNzIHRoYXQgaXMgYW4gZXhpc3RpbmcgcHJvYmxlbSwgYW5kIG5vdCByZWxhdGVkIGRpcmVjdGx5
-IHRvDQo+ID4gPiB0aGlzIHBhdGNoPyBUaGlzIHBhdGNoIGlzIGVzc2VudGlhbGx5IGp1c3QgcmVu
-YW1lcyAodGhvdWdoIHRoZQ0KPiA+ID4gVjEuMC9WMi4wIHN0dWZmIHNlZW1zIHdlaXJkKS4NCj4g
-Pg0KPiA+IFRoaXMgcGF0Y2ggaXMgYWRkaW5nIENMS19PRl9ERUNMQVJFLg0KPiANCj4gSSdtIGZp
-bmUgdGFraW5nIHRoaXMgcGF0Y2ggYnV0IHlvdXIgY29tbWVudHMgYXJlIHN0aWxsIHVucmVzb2x2
-ZWQuIFdoYXQgZG8geW91DQo+IHRoaW5rIG5lZWRzIHRvIGJlIGRvbmUgdG8gZml4IHRoZSBwcm9i
-bGVtcyB0aGF0IHlvdSBzZWU/DQo+IA0KQ0xLX09GX0RFQ0xBUkUgaXMgdG90YWxseSB3b3JrZWQg
-b24gUFBDLiBJIHdpbGwgZG8gaXQgaW4gYSBzZXBhcmF0ZSBwYXRjaC4NClJlZ2FyZGluZyBWMS4w
-IGFuZCBWMi4wLCBpdCBpcyBub3Qgd2lyZWQganVzdCBzYW1lIGZvciBub3cuIEJ1dCB3ZSBhcmUg
-bm90IHN1cmUgaWYgaXQgaXMgc2FtZSBmb3IgdjMuMCBpbiB0aGUgZnV0dXJlLg0KDQpCZXNpZGVz
-IHVwZGF0aW5nIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMsIHRoZXJlIGlzIG9uZSBt
-b3JlIHRoaW5nIEkgYW0gbm90IGNvbWZvcnRhYmxlIHdpdGg6DQpUaGlzIHBhdGNoIHVzZXMgIiBm
-aXhlZC1jbG9jayIgYXMgc3lzY2xrJ3MgY29tcGF0aWJsZSBzdHJpbmcsIHdoaWxlIG9uIFBQQyB3
-ZSB0cmVhdGVkIGl0IGFzICIgZnNsLHFvcmlxLXN5c2Nsay1bMS0yXS4wIi4NClRoYXQncyBpbmNv
-bnNpc3RlbnQgb24gYm90aCBBUk0gYW5kIFBQQyBwbGF0Zm9ybXMsIG5laXRoZXIgZGlkIG9uIGJp
-bmRpbmdzLg0KDQpUaGFua3MsDQpZdWFudGlhbg0KDQo+IFJlZ2FyZHMsDQo+IE1pa2UNCj4gDQo+
-ID4NCj4gPiAtU2NvdHQNCj4gPg0KPiA+DQo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QNCj4gTGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3Rp
-bmZvL2xpbnV4cHBjLWRldg0K
+On 2014/9/28 10:32, Yijing Wang wrote:
+> On 2014/9/26 17:05, Thierry Reding wrote:
+>> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
+>> [...]
+>>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
+>>> directly (patch attached).
+>>
+>> Really attached this time.
+>>
+>> Thierry
+>>
+> 
+> It looks good to me, so I will update the arm pci hostbridge driver to assign
+> pci root bus the msi chip instead of current pcibios_add_bus(). But for other
+> platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
+> temporarily for more comments, especially from Bjorn.
+
+Oh, sorry, I found designware and rcar use pci_scan_root_bus(), so we can not simply
+assign msi chip to root bus in all host drivers's scan functions.
+
+> 
+> Thanks!
+> Yijing.
+> 
+
+
+-- 
+Thanks!
+Yijing
