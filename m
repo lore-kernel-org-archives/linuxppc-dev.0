@@ -1,24 +1,31 @@
-Return-Path: <jojyv@juniper.net>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0102.outbound.protection.outlook.com [207.46.100.102])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33FE61A01A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 09:36:47 +1000 (EST)
-From: Jojy Varghese <jojyv@juniper.net>
-To: Guenter Roeck <linux@roeck-us.net>, Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
- exception on E500MC / E5500
-Date: Mon, 29 Sep 2014 23:03:37 +0000
-Message-ID: <D04F3201.10DEB%jojyv@juniper.net>
-In-Reply-To: <20140929190643.GA20189@roeck-us.net>
-Content-Type: text/plain; charset="euc-kr"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D326C1A06FE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 09:58:22 +1000 (EST)
+Message-ID: <1412035075.13320.302.camel@snotra.buserror.net>
+Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+From: Scott Wood <scottwood@freescale.com>
+To: Tang Yuantian-B29983 <Yuantian.Tang@freescale.com>
+Date: Mon, 29 Sep 2014 18:57:55 -0500
+In-Reply-To: <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+ <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1411675680.13320.201.camel@snotra.buserror.net>
+ <20140925225406.19023.25065@quantum>
+ <1411685780.13320.209.camel@snotra.buserror.net>
+ <20140926232900.19023.35854@quantum>
+ <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
- Guenter Roeck <groeck@juniper.net>,
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mike Turquette <mturquette@linaro.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Lu Jingchang-B35083 <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCk9uIDkvMjkvMTQgMTI6MDYgUE0sICJHdWVudGVyIFJvZWNrIiA8bGludXhAcm9lY2stdXMu
-bmV0PiB3cm90ZToNCg0KPk9uIE1vbiwgU2VwIDI5LCAyMDE0IGF0IDAxOjM2OjA2UE0gLTA1MDAs
-IFNjb3R0IFdvb2Qgd3JvdGU6DQo+PiBPbiBNb24sIDIwMTQtMDktMjkgYXQgMDk6NDggLTA3MDAs
-IEd1ZW50ZXIgUm9lY2sgd3JvdGU6DQo+PiA+IEZyb206IEpvankgRyBWYXJnaGVzZSA8am9qeXZA
-anVuaXBlci5uZXQ+DQo+PiA+IA0KPj4gPiBGb3IgRTUwME1DIGFuZCBFNTUwMCwgYSBtYWNoaW5l
-IGNoZWNrIGV4Y2VwdGlvbiBpbiBwY2koZSkgbWVtb3J5IHNwYWNlDQo+PiA+IGNyYXNoZXMgdGhl
-IGtlcm5lbC4NCj4+ID4gDQo+PiA+IFRlc3Rpbmcgc2hvd3MgdGhhdCB0aGUgTUNBUihVKSByZWdp
-c3RlciBpcyB6ZXJvIG9uIGEgTUMgZXhjZXB0aW9uIGZvcg0KPj50aGUNCj4+ID4gRTU1MDAgY29y
-ZS4gQXQgdGhlIHNhbWUgdGltZSwgREVBUiByZWdpc3RlciBoYXMgYmVlbiBmb3VuZCB0byBoYXZl
-IHRoZQ0KPj4gPiBhZGRyZXNzIG9mIHRoZSBmYXVsdHkgbG9hZCBhZGRyZXNzIGR1cmluZyBhbiBN
-QyBleGNlcHRpb24gZm9yIHRoaXMNCj4+Y29yZS4NCj4+ID4gDQo+PiA+IFRoaXMgZml4IGNoYW5n
-ZXMgdGhlIGN1cnJlbnQgYmVoYXZpb3IgdG8gZml4dXAgdGhlIHJlc3VsdCByZWdpc3Rlcg0KPj4g
-PiBhbmQgaW5zdHJ1Y3Rpb24gcG9pbnRlcnMgaW4gdGhlIGNhc2Ugb2YgYSBsb2FkIG9wZXJhdGlv
-biBvbiBhIGZhdWx0eQ0KPj4gPiBQQ0kgYWRkcmVzcy4NCj4+ID4gDQo+PiA+IFRoZSBjaGFuZ2Vz
-IGFyZToNCj4+ID4gLSBBZGRlZCB0aGUgaG9vayB0byBwY2kgbWFjaGluZSBjaGVjayBoYW5kaW5n
-IHRvIHRoZSBlNTAwbWMgbWFjaGluZQ0KPj5jaGVjaw0KPj4gPiAgIGV4Y2VwdGlvbiBoYW5kbGVy
-Lg0KPj4gPiAtIEZvciB0aGUgRTU1MDAgY29yZSwgbG9hZCBmYXVsdGluZyBhZGRyZXNzIGZyb20g
-U1BSTl9ERUFSIHJlZ2lzdGVyLg0KPj4gPiAgIEFzIG1lbnRpb25lZCBhYm92ZSwgdGhpcyBpcyBu
-ZWNlc3NhcnkgYmVjYXVzZSB0aGUgRTU1MDAgY29yZSBkb2VzDQo+Pm5vdA0KPj4gPiAgIHJlcG9y
-dCB0aGUgZmF1bHQgYWRkcmVzcyBpbiB0aGUgTUNBUiByZWdpc3Rlci4NCj4+ID4gDQo+PiA+IENj
-OiBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4NCj4+ID4gU2lnbmVkLW9mZi1i
-eTogSm9qeSBHIFZhcmdoZXNlIDxqb2p5dkBqdW5pcGVyLm5ldD4NCj4+ID4gW0d1ZW50ZXIgUm9l
-Y2s6IHVwZGF0ZWQgZGVzY3JpcHRpb25dDQo+PiA+IFNpZ25lZC1vZmYtYnk6IEd1ZW50ZXIgUm9l
-Y2sgPGdyb2Vja0BqdW5pcGVyLm5ldD4NCj4+ID4gU2lnbmVkLW9mZi1ieTogR3VlbnRlciBSb2Vj
-ayA8bGludXhAcm9lY2stdXMubmV0Pg0KPj4gPiAtLS0NCj4+ID4gIGFyY2gvcG93ZXJwYy9rZXJu
-ZWwvdHJhcHMuYyAgIHwgMyArKy0NCj4+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5j
-IHwgNSArKysrKw0KPj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDEgZGVs
-ZXRpb24oLSkNCj4+ID4gDQo+PiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL3Ry
-YXBzLmMgYi9hcmNoL3Bvd2VycGMva2VybmVsL3RyYXBzLmMNCj4+ID4gaW5kZXggMGRjNDNmOS4u
-ZWNiNzA5YiAxMDA2NDQNCj4+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC90cmFwcy5jDQo+
-PiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvdHJhcHMuYw0KPj4gPiBAQCAtNDk0LDcgKzQ5
-NCw4IEBAIGludCBtYWNoaW5lX2NoZWNrX2U1MDBtYyhzdHJ1Y3QgcHRfcmVncyAqcmVncykNCj4+
-ID4gIAlpbnQgcmVjb3ZlcmFibGUgPSAxOw0KPj4gPiAgDQo+PiA+ICAJaWYgKHJlYXNvbiAmIE1D
-U1JfTEQpIHsNCj4+ID4gLQkJcmVjb3ZlcmFibGUgPSBmc2xfcmlvX21jaGVja19leGNlcHRpb24o
-cmVncyk7DQo+PiA+ICsJCXJlY292ZXJhYmxlID0gZnNsX3Jpb19tY2hlY2tfZXhjZXB0aW9uKHJl
-Z3MpIHx8DQo+PiA+ICsJCQlmc2xfcGNpX21jaGVja19leGNlcHRpb24ocmVncyk7DQo+PiA+ICAJ
-CWlmIChyZWNvdmVyYWJsZSA9PSAxKQ0KPj4gPiAgCQkJZ290byBzaWxlbnRfb3V0Ow0KPj4gPiAg
-CX0NCj4+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jDQo+PmIv
-YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4gaW5kZXggYzUwNzc2Ny4uYmRiOTU2
-YiAxMDA2NDQNCj4+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4g
-KysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4gQEAgLTEwMjEsNiArMTAy
-MSwxMSBAQCBpbnQgZnNsX3BjaV9tY2hlY2tfZXhjZXB0aW9uKHN0cnVjdCBwdF9yZWdzDQo+Pipy
-ZWdzKQ0KPj4gPiAgI2VuZGlmDQo+PiA+ICAJYWRkciArPSBtZnNwcihTUFJOX01DQVIpOw0KPj4g
-PiAgDQo+PiA+ICsjaWZkZWYgQ09ORklHX0U1NTAwX0NQVQ0KPj4gPiArCWlmIChtZnNwcihTUFJO
-X0VQQ1IpICYgU1BSTl9FUENSX0lDTSkNCj4+ID4gKwkJYWRkciA9IFBGTl9QSFlTKHZtYWxsb2Nf
-dG9fcGZuKCh2b2lkICopbWZzcHIoU1BSTl9ERUFSKSkpOw0KPj4gPiArI2VuZGlmDQo+PiANCj4+
-IEtjb25maWcgdGVsbHMgeW91IHdoYXQgaGFyZHdhcmUgaXMgc3VwcG9ydGVkLCBub3Qgd2hhdCBo
-YXJkd2FyZSB5b3UncmUNCj4+IGFjdHVhbGx5IHJ1bm5pbmcgb24uDQo+PiANCj5IaSBTY290dCwN
-Cj4NCj5Hb29kIHBvaW50LiBKb2p5LCBndWVzcyB3ZSdsbCBoYXZlIHRvIGNoZWNrIGlmIHRoZSBD
-UFUgaXMgYWN0dWFsbHkgYW4NCj5FNTUwMC4NCj5DYW4geW91IGxvb2sgaW50byB0aGF0ID8NCg0K
-DQoiL3Byb2MvY3B1aW5mbyIgc2hvd3MgdGhlIGNwdSBhcyAiZTU1MDAiLiBTY290dCwgYXJlIHlv
-dSBzdWdnZXN0aW5nIHRoYXQNCndlIHVzZSBhIHJ1bnRpbWUgbWV0aG9kIG9mIGRldGVybWluaW5n
-IHRoZSBjcHUgdHlwZSAoY3B1X3NwZWMncyBjcHVfbmFtZQ0KZm9yDQpleGFtcGxlKS4gIA0KDQoN
-Cj4NCj4+IEppYSBIb25ndGFvLCBkbyB5b3Uga25vdyBhbnl0aGluZyBhYm91dCB0aGlzIGlzc3Vl
-PyAgSXMgdGhlcmUgYW4NCj4+IGVycmF0dW0/ICBXaGF0IGNoaXBzIGFyZSBhZmZlY3RlZCBieSB0
-aGUgdGhlIGVycmF0dW0gY292ZXJlZCBieQ0KPj4gPGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9y
-Zy9wYXRjaC8yNDAyMzkvPj8NCj4+IA0KPldlIGFscmVhZHkgaGF2ZSBhbmQgdXNlIHRoZSBhYm92
-ZSBwYXRjaChlcykgaW4gb3VyIGtlcm5lbC4gSXQgd29ya3MgZmluZQ0KPmZvciBFNTAwIChQMjAy
-MCksIGJ1dCBkb2VzIG5vdCBhZGRyZXNzIEU1NTAwIChQNTAyMC9QNTA0MCkuDQo+DQo+PiBDYW4g
-d2UgcmVseSBvbiBERUFSIG9yIGlzIHRoaXMganVzdCBhIHNpZGUgZWZmZWN0IG9mIGxpa2VseSBo
-YXZpbmcgdGFrZW4NCj4+IGEgVExCIG1pc3MgZm9yIHRoZSBhZGRyZXNzIHJlY2VudGx5PyAgUGVy
-aGFwcyB3ZSBzaG91bGQgdXNlIHRoZQ0KPj4gaW5zdHJ1Y3Rpb24gZW11bGF0aW9uIHRvIGRldGVy
-bWluZSB0aGUgZWZmZWN0aXZlIGFkZHJlc3MgaW5zdGVhZC4NCj4+IA0KPj4gR3VlbnRlciwgaXMg
-dGhpcyBwYXRjaCBpbnRlbmRlZCB0byBkZWFsIHdpdGggYW4gZXJyYXR1bSBvciBhcmUgeW91DQo+
-PiBjb3ZlcmluZyB1cCBsZWdpdGltYXRlIGVycm9ycz8NCj4+IA0KPlRob3NlIGFyZSBlcnJvcnMg
-cmVsYXRlZCB0byBQQ0llIGhvdHBsdWcsIGFuZCBhcmUgc2VlbiB3aXRoIHVuZXhwZWN0ZWQNCj5Q
-Q0llDQo+ZGV2aWNlIHJlbW92YWxzICh0cmlnZ2VyZWQsIGZvciBleGFtcGxlLCBieSByZW1vdmlu
-ZyBwb3dlciBmcm9tIGEgUENJZQ0KPmFkYXB0ZXIpLg0KPlRoZSBiZWhhdmlvciB3ZSBzZWUgb24g
-RTU1MDAgaXMgcXVpdGUgc2ltaWxhciB0byB0aGUgc2FtZSBiZWhhdmlvciBvbg0KPkU1MDA6DQo+
-SWYgdW5oYW5kbGVkLCB0aGUgQ1BVIGtlZXBzIGV4ZWN1dGluZyB0aGUgc2FtZSBpbnN0cnVjdGlv
-biBvdmVyIGFuZCBvdmVyDQo+YWdhaW4NCj5pZiB0aGVyZSBpcyBhbiBlcnJvciBvbiBhIFBDSWUg
-YWNjZXNzIGFuZCB0aHVzIHN0YWxscy4gSSBkb24ndCBrbm93IGlmDQo+dGhpcw0KPmlzIGNvbnNp
-ZGVyZWQgYW4gZXJyYXR1bSBvciBleHBlY3RlZCBiZWhhdmlvciwgYnV0IGl0IGlzIG9uZSB3ZSBo
-YXZlIHRvDQo+YWRkcmVzcw0KPnNpbmNlIHdlIGhhdmUgdG8gYmUgYWJsZSB0byBoYW5kbGUgdGhh
-dCBjb25kaXRpb24uIFVsdGltYXRlbHksIHdlJ2xsIHdhbnQNCj50bw0KPmltcGxlbWVudCBQQ0ll
-IGVycm9yIGhhbmRsZXJzIGZvciB0aGUgYWZmZWN0ZWQgZHJpdmVycywgYnV0IHRoYXQgd2lsbCBi
-ZQ0KPmEgbmV4dA0KPnN0ZXAuDQoNCkFjY29yZGluZyB0byB0aGUgc3BlYywgd2UgTUNBUiBpcyBz
-dXBwb3NlZCB0byBob2xkIHRoZSBmYXVsdHkgZGF0YSBhZGRyZXNzDQpidXQgZm9yIDU1MDAgY29y
-ZSwgd2UgZm91bmQgdGhhdCBNQ0FSIGlzIHplcm8uIFlvdSBhcmUgcmlnaHQgdGhhdCBERUFSDQpl
-bnRyeSBjb3VsZA0KYmUgYSByZXN1bHRPZiBhIFRMQiBtaXNzIGJ1dCB0aGF0qfZzIHRoZSByZWdp
-c3RlciB3ZSBjb3VsZCByZWx5IG9uLg0KDQpXaGF0IGRvIHlvdSBtZWFuIGJ5ICJpbnN0cnVjdGlv
-biBlbXVsYXRpb24iPyBBcmUgeW91IHN1Z2dlc3RpbmcgdGhhdCB3ZQ0KZXhhbWluZSB0aGUgUkQs
-IFJTIA0KcmVnaXN0ZXJzIGZvciB0aGUgaW5zdHJ1Y3Rpb24/DQoNCg0KDQo+DQo+UGxlYXNlIGxl
-dCBtZSBrbm93IGlmIHlvdSBoYXZlIGEgYmV0dGVyIHNvbHV0aW9uIHRvIGFkZHJlc3MgdGhpcyBw
-cm9ibGVtLg0KPg0KPlRoYW5rcywNCj5HdWVudGVyDQoNCg0KVGhhbmtzDQpKb2p5DQoNCg==
+On Sat, 2014-09-27 at 21:18 -0500, Tang Yuantian-B29983 wrote:
+> > -----Original Message-----
+> > From: Linuxppc-dev
+> > [mailto:linuxppc-dev-bounces+b29983=freescale.com@lists.ozlabs.org] On
+> > Behalf Of Mike Turquette
+> > Sent: Saturday, September 27, 2014 7:29 AM
+> > To: Wood Scott-B07421
+> > Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
+> > linux-arm-kernel@lists.infradead.org; Lu Jingchang-B35083
+> > Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+> > CLK_OF_DECLARE support
+> > 
+> > Quoting Scott Wood (2014-09-25 15:56:20)
+> > > On Thu, 2014-09-25 at 15:54 -0700, Mike Turquette wrote:
+> > > > Quoting Scott Wood (2014-09-25 13:08:00)
+> > > > > Well, like I said, I'd rather see the CLK_OF_DECLARE stuff be made
+> > > > > to work on PPC rather than have the driver carry around two
+> > > > > binding methods.
+> > > >
+> > > > I guess that is an existing problem, and not related directly to
+> > > > this patch? This patch is essentially just renames (though the
+> > > > V1.0/V2.0 stuff seems weird).
+> > >
+> > > This patch is adding CLK_OF_DECLARE.
+> > 
+> > I'm fine taking this patch but your comments are still unresolved. What do you
+> > think needs to be done to fix the problems that you see?
+> > 
+> CLK_OF_DECLARE is totally worked on PPC. I will do it in a separate patch.
+> Regarding V1.0 and V2.0, it is not wired just same for now. But we are not sure if it is same for v3.0 in the future.
+> 
+> Besides updating drivers/cpufreq/Kconfig.powerpc, there is one more thing I am not comfortable with:
+> This patch uses " fixed-clock" as sysclk's compatible string, while on PPC we treated it as " fsl,qoriq-sysclk-[1-2].0".
+> That's inconsistent on both ARM and PPC platforms, neither did on bindings.
+
+fsl,qoriq-sysclk-XXX is the way it is because of compatibility with the
+fixups in existing U-Boots.  It shouldn't be used as a model.
+
+That said, I don't think you really mean "this patch", as it doesn't
+contain the device tree updates, and "fixed-clock" does not appear.
+
+-Scott
