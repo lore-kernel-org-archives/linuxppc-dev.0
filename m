@@ -1,42 +1,40 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (unknown [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B8AC11A178A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 20:14:19 +1000 (EST)
-Message-ID: <542930BD.2090907@huawei.com>
-Date: Mon, 29 Sep 2014 18:13:17 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F7461A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 20:23:26 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Mon, 29 Sep 2014 20:23:25 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 444C4357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 20:23:20 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8T9x6Ce6357494
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 19:59:06 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8TANIPM028160
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 20:23:19 +1000
+Message-ID: <5429330A.7000103@linux.vnet.ibm.com>
+Date: Mon, 29 Sep 2014 15:53:06 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
- in all platforms
-References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>	
- <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>	
- <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>	
- <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>	
- <20140926090537.GH31106@ulmo> <54277327.6070500@huawei.com>	
- <5427A6A0.5040703@huawei.com> <1411979850.2625.7.camel@pengutronix.de>
-In-Reply-To: <1411979850.2625.7.camel@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- Bharat.Bhushan@freescale.com, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <541A4D4F.1090307@linux.vnet.ibm.com>
+In-Reply-To: <541A4D4F.1090307@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@MIT.EDU>,
+ linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,39 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/9/29 16:37, Lucas Stach wrote:
-> Am Sonntag, den 28.09.2014, 14:11 +0800 schrieb Yijing Wang:
->> On 2014/9/28 10:32, Yijing Wang wrote:
->>> On 2014/9/26 17:05, Thierry Reding wrote:
->>>> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
->>>> [...]
->>>>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
->>>>> directly (patch attached).
->>>>
->>>> Really attached this time.
->>>>
->>>> Thierry
->>>>
->>>
->>> It looks good to me, so I will update the arm pci hostbridge driver to assign
->>> pci root bus the msi chip instead of current pcibios_add_bus(). But for other
->>> platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
->>> temporarily for more comments, especially from Bjorn.
+Hi,
+Any updates on this patch series?
+
+On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
+> Hi,
+> 
+> In this patch series we use winkle for offlined cores. I successfully
+> tested the working of this with subcore functionality.
+> 
+> Test scenario was as follows:
+> 1. Set SMT mode to 1, Set subores-per-core to 1
+> 2. Offline a core, in this case cpu 32 (sending it to winkle)
+> 3. Set subcores-per-core to 4
+> 4. Online the core
+> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
+> on cpu 36
+> 
+> This works without any glitch.
+> 
+> Thanks,
+> Shreyas
+> 
+> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
+>> Fast sleep is an idle state, where the core and the L1 and L2
+>> caches are brought down to a threshold voltage. This also means that
+>> the communication between L2 and L3 caches have to be fenced. However
+>> the current P8 chips have a bug wherein this fencing between L2 and
+>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+>> the other cpus if they request for data during this time. Thus they
+>> would fetch the same data from the memory which could lead to data
+>> corruption if L3 cache is not flushed.
+>> Patch 4 adds support to work around this.
 >>
->> Oh, sorry, I found designware and rcar use pci_scan_root_bus(), so we can not simply
->> assign msi chip to root bus in all host drivers's scan functions.
-> 
-> Designware will switch away from pci_scan_root_bus() in the 3.18 cycle
-> and I would think it would be no problem to to the same with rcar.
-
-Good.
-
-> 
-> Regards,
-> Lucas
-> 
-
-
--- 
-Thanks!
-Yijing
+>> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
+>> off. While it offers higher power savings, it is at the cost of losing
+>> hypervisor register state and higher latency.
+>> Patch 5-9 adds support for winkle and uses it for offline cpus.
+>>
+>> Patch 1 - Moves parameters required discover idle states to a location 
+>> common to both cpuidle driver and powernv core code
+>> Patch 2 - Populates idle state details from device tree
+>> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+>>
+>>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> Cc: devicetree@vger.kernel.org
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>>
+>> Preeti U Murthy (2):
+>>   cpuidle/powernv: Populate cpuidle state details by querying the
+>>     device-tree
+>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+>>
+>> Shreyas B. Prabhu (6):
+>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>>     fast-sleep
+>>   powerpc/powernv: Add OPAL call to save and restore
+>>   powerpc: Adding macro for accessing Thread Switch Control Register
+>>   powerpc/powernv: Add winkle infrastructure
+>>   powerpc/powernv: Discover and enable winkle
+>>   powerpc/powernv: Enter deepest supported idle state in offline
+>>
+>> Srivatsa S. Bhat (1):
+>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>>
+>>  arch/powerpc/include/asm/machdep.h             |   4 +
+>>  arch/powerpc/include/asm/opal.h                |  10 ++
+>>  arch/powerpc/include/asm/paca.h                |   3 +
+>>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+>>  arch/powerpc/include/asm/processor.h           |   6 +-
+>>  arch/powerpc/include/asm/reg.h                 |   1 +
+>>  arch/powerpc/kernel/asm-offsets.c              |   1 +
+>>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+>>  arch/powerpc/kernel/idle.c                     |  30 ++++
+>>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+>>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
+>>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+>>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
+>>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+>>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+>>  16 files changed, 439 insertions(+), 33 deletions(-)
+>>
