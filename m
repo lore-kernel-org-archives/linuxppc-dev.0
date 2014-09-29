@@ -1,33 +1,44 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A3FF51A0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 19:11:12 +1000 (EST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4415114012C
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2014 19:11:09 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Sep 2014 14:41:04 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH 10/15] powerpc/mm: Add hooks for cxl
-In-Reply-To: <1411028820-29933-11-git-send-email-mikey@neuling.org>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-11-git-send-email-mikey@neuling.org>
-Date: Mon, 29 Sep 2014 14:40:33 +0530
-Message-ID: <87tx3qpzau.fsf@linux.vnet.ibm.com>
+Return-Path: <liviu@dudau.co.uk>
+Received: from smtp.dudau.co.uk (dliviu.plus.com [80.229.23.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 32CCE1A0315
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 19:28:58 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by smtp.dudau.co.uk (Postfix) with SMTP id C45E71002ED
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 10:28:55 +0100 (BST)
+Date: Mon, 29 Sep 2014 10:26:00 +0100
+From: Liviu Dudau <liviu@dudau.co.uk>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+Message-ID: <20140929092600.GA15854@bart.dudau.co.uk>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <20140925074235.GN12423@ulmo>
+ <20140925144855.GB31157@bart.dudau.co.uk>
+ <20140925164937.GB30382@ulmo> <5424E09F.50701@huawei.com>
+ <20140926085030.GE31157@bart.dudau.co.uk>
+ <54276F6C.5010705@huawei.com>
+ <20140928112144.GA4671@bart.dudau.co.uk>
+ <5428B971.50101@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- imunsie@au1.ibm.com, anton@samba.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <5428B971.50101@huawei.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,121 +48,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Mon, Sep 29, 2014 at 09:44:17AM +0800, Yijing Wang wrote:
+> On 2014/9/28 19:21, Liviu Dudau wrote:
+> > On Sun, Sep 28, 2014 at 10:16:12AM +0800, Yijing Wang wrote:
+> >>>>>> What I would like to see is a way of creating the pci_host_bridge structure outside
+> >>>>>> the pci_create_root_bus(). That would then allow us to pass this sort of platform
+> >>>>>> details like associated msi_chip into the host bridge and the child busses will
+> >>>>>> have an easy way of finding the information needed by finding the root bus and then
+> >>>>>> the host bridge structure. Then the generic pci_scan_root_bus() can be used by (mostly)
+> >>>>>> everyone and the drivers can remove their kludges that try to work around the
+> >>>>>> current limitations.
+> >>>>
+> >>>> So I think maybe save msi chip in PCI arch sysdata is a good candidate.
+> >>>
+> >>> Except that arch sysdata at the moment is an opaque pointer. I am all in favour in
+> >>> changing the type of sysdata from void* into pci_host_bridge* and arches can wrap their old
+> >>> sysdata around the pci_host_bridge*.
+> >>
+> >> I inspected every arch and found there are almost no common stuff,
+> > 
+> > I will disagree here. Most (all?) of the structures that are passed as sysdata argument to
+> 
+> Most.
+> 
+> > pci_create_root_bus() or pci_scan_root_bus() have a set of resources for storing the MEM and
+> > IO ranges, which struct pci_host_bridge already has. So that can be factored out of the
+> > arch code. Same for pci_domain_nr. Then there are some variables that are used for communication
+> > with the platform code due to convoluted way(s) in which PCI code gets instantiated.
+> 
+> Yes, currently some archs store MEM and IO resource in pci sysdata, and others not, move the MEM and IO
+> resource to pci_host_bride could make code become simple, we can clean up the resource list argument in
+> pci scan functions.
+> 
+> > 
+> > What I am arguing here is not that the arch equivalent of pci_host_bridge structure is already
+> > common, but that by moving the members that are common out of arch sysdata into pci_host_bridge
+> > we will have more commonality and it will be easier to re-factor the code.
+> 
+> Now, I got it, thanks!
+> 
+> > 
+> >> and generic data struct should
+> >> be created in generic PCI code.
+> > 
+> > Not necessarily. What I have in mind is something like this:
+> 
+> This is a good idea, what I'm worried is this series is already large, so I think we need to post
+> another series to do it.
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> This add a hook into tlbie() so that we use global invalidations when there are
-> cxl contexts active.
->
-> Normally cxl snoops broadcast tlbie.  cxl can have TLB entries invalidated via
-> MMIO, but we aren't doing that yet.  So for now we are just disabling local
-> tlbies when cxl contexts are active.  In future we can make tlbie() local mode
-> smarter so that it invalidates cxl contexts explicitly when it needs to.
->
-> This also adds a hooks for when SLBs are invalidated to ensure any
-> corresponding SLBs in cxl are also invalidated at the same time.
+I wasn't asking to do it here, I was just offering a suggestion (and sharing some experience) when
+it comes to handling msi chip in an arch independent way.
 
-We are not really invalidating cx1 SLB's when we are doing
-slb_flush_and_rebolt(). May be add some code documentation around to
-explain when we are invalidating cx1 slb here. ?
+> 
+> 
+> > 
+> >  - drivers/pci/ exports pci_init_host_bridge() that does the initialisation of bridge->windows
+> >    and anything else that is needed (like find_pci_host_bridge() function).
+> >  - arch code does:
+> > 
+> > 	struct pci_controller {
+> > 		struct pci_host_bridge bridge;
+> > 		.....
+> > 	};
+> > 
+> > 	#define to_pci_controller(bridge)	container_of(bridge, struct pci_controller, bridge)
+> > 
+> > 	static inline struct pci_controller *get_host_controller(const struct pci_bus *bus)
+> > 	{
+> > 		struct pci_host_bridge *bridge = find_pci_host_bridge(bus);
+> > 		if (bridge)
+> > 			return to_pci_controller(bridge);
+> > 
+> > 		return NULL;
+> > 	}
+> > 
+> > 	int arch_pci_init(....)
+> > 	{
+> > 		struct pci_controller *hose;
+> > 		....
+> > 		hose = kzalloc(sizeof(*hose), GFP_KERNEL);
+> > 		pci_init_host_bridge(&hose->bridge);
+> > 		....
+> > 		pci_scan_root_bus(...., &hose->bridge, &resources);
+> > 		....
+> > 		return 0;
+> > 	}
+> > 
+> > Then finding the right structure will be easy.
+> > 
+> >> Another, I don't like associate msi chip and every PCI device, further more,
+> >> almost all platforms except arm have only one MSI controller, and currently, PCI enumerating code doesn't need
+> >> to know the MSI chip details, like for legacy IRQ, PCI device doesn't need to know which IRQ controller they
+> >> should deliver IRQ to. I would think more about it, and hope other PCI guys can give some comments, especially from Bjorn.
+> >>
+> > 
+> > I wasn't suggesing to associate an msi chip with every PCI device, but with the pci_host_bridge.
+> > I don't expect a host bridge to have more than one msi chip, so that should be OK. Also, I'm
+> > thinking that getting the associated msi chip should be some sort of pci_host_bridge ops function,
+> > and for arches that don't care about MSI it doesn't get implemented.
+> 
+> Currently, a property "msi-parent" was introduced in arm, and all msi chip integrated in irq chip controller will
+> be added to of_pci_msi_chip_list. PCI host driver find the match msi chip by its of_node.
 
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/mm/hash_native_64.c | 6 +++++-
->  arch/powerpc/mm/hash_utils_64.c  | 3 +++
->  arch/powerpc/mm/slice.c          | 3 +++
->  3 files changed, 11 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index afc0a82..ae4962a 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -29,6 +29,8 @@
->  #include <asm/kexec.h>
->  #include <asm/ppc-opcode.h>
->  
-> +#include <misc/cxl.h>
-> +
->  #ifdef DEBUG_LOW
->  #define DBG_LOW(fmt...) udbg_printf(fmt)
->  #else
-> @@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
->  static inline void tlbie(unsigned long vpn, int psize, int apsize,
->  			 int ssize, int local)
->  {
-> -	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
-> +	unsigned int use_local;
->  	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
->  
-> +	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
-> +
->  	if (use_local)
->  		use_local = mmu_psize_defs[psize].tlbiel;
->  	if (lock_tlbie && !use_local)
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 66071af..be40ff7 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -34,6 +34,7 @@
->  #include <linux/signal.h>
->  #include <linux/memblock.h>
->  #include <linux/context_tracking.h>
-> +#include <misc/cxl.h>
->  
->  #include <asm/processor.h>
->  #include <asm/pgtable.h>
-> @@ -906,6 +907,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
->  #ifdef CONFIG_SPU_BASE
->  	spu_flush_all_slbs(mm);
->  #endif
-> +	cxl_slbia(mm);
->  	if (get_paca_psize(addr) != MMU_PAGE_4K) {
->  		get_paca()->context = mm->context;
->  		slb_flush_and_rebolt();
-> @@ -1145,6 +1147,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, u
->  #ifdef CONFIG_SPU_BASE
->  			spu_flush_all_slbs(mm);
->  #endif
-> +			cxl_slbia(mm);
->  		}
->  	}
->  
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index b0c75cc..4d3a34b 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -30,6 +30,7 @@
->  #include <linux/err.h>
->  #include <linux/spinlock.h>
->  #include <linux/export.h>
-> +#include <misc/cxl.h>
->  #include <asm/mman.h>
->  #include <asm/mmu.h>
->  #include <asm/spu.h>
-> @@ -235,6 +236,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
->  #ifdef CONFIG_SPU_BASE
->  	spu_flush_all_slbs(mm);
->  #endif
-> +	cxl_slbia(mm);
->  }
->  
->  /*
-> @@ -674,6 +676,7 @@ void slice_set_psize(struct mm_struct *mm, unsigned long address,
->  #ifdef CONFIG_SPU_BASE
->  	spu_flush_all_slbs(mm);
->  #endif
-> +	cxl_slbia(mm);
->  }
->  
->  void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+OK. But as you might have seen that still implies open coding a separate version of pci_scan_root_bus().
+
+Best regards,
+Liviu
+
+> 
+> Thanks!
+> Yijing.
+> 
+> > 
+> > Best regards,
+> > Liviu
+> > 
+> >  
+> >> Thanks!
+> >> Yijing.
+> >>
+> >>>
+> >>> Best regards,
+> >>> Liviu
+> >>>
+> >>>>
+> >>>>>
+> >>>>> I think both issues are orthogonal. Last time I checked a lot of work
+> >>>>> was still necessary to unify host bridges enough so that it could be
+> >>>>> shared across architectures. But perhaps some of that work has
+> >>>>> happened in the meantime.
+> >>>>>
+> >>>>> But like I said, when you create the root bus, you can easily attach the
+> >>>>> MSI chip to it.
+> >>>>>
+> >>>>> Thierry
+> >>>>>
+> >>>>
+> >>>>
+> >>>> -- 
+> >>>> Thanks!
+> >>>> Yijing
+> >>>>
+> >>>>
+> >>>
+> >>
+> >>
+> >> -- 
+> >> Thanks!
+> >> Yijing
+> >>
+> >>
+> > 
+> 
+> 
 > -- 
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Thanks!
+> Yijing
+> 
+> 
+
+-- 
+-------------------
+   .oooO
+   (   )
+    \ (  Oooo.
+     \_) (   )
+          ) /
+         (_/
+
+ One small step
+   for me ...
