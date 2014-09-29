@@ -1,22 +1,24 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id A03A21A021D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 09:35:35 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-Date: Tue, 30 Sep 2014 01:28:50 +0200
-Message-ID: <128377046.aOTypBOIY8@vostro.rjw.lan>
-In-Reply-To: <5429330A.7000103@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <541A4D4F.1090307@linux.vnet.ibm.com> <5429330A.7000103@linux.vnet.ibm.com>
+Return-Path: <jojyv@juniper.net>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 33FE61A01A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 09:36:47 +1000 (EST)
+From: Jojy Varghese <jojyv@juniper.net>
+To: Guenter Roeck <linux@roeck-us.net>, Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
+ exception on E500MC / E5500
+Date: Mon, 29 Sep 2014 23:03:37 +0000
+Message-ID: <D04F3201.10DEB%jojyv@juniper.net>
+In-Reply-To: <20140929190643.GA20189@roeck-us.net>
+Content-Type: text/plain; charset="euc-kr"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
+ Guenter Roeck <groeck@juniper.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Paul Mackerras <paulus@samba.org>,
- "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,105 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, September 29, 2014 03:53:06 PM Shreyas B Prabhu wrote:
-> Hi,
-> Any updates on this patch series?
-
-I have a couple of patches from there in my tree it seems.  Please have a look
-at linux-pm.git/linux-next and please let me know if that's the case.
-
-
-> On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
-> > Hi,
-> > 
-> > In this patch series we use winkle for offlined cores. I successfully
-> > tested the working of this with subcore functionality.
-> > 
-> > Test scenario was as follows:
-> > 1. Set SMT mode to 1, Set subores-per-core to 1
-> > 2. Offline a core, in this case cpu 32 (sending it to winkle)
-> > 3. Set subcores-per-core to 4
-> > 4. Online the core
-> > 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
-> > on cpu 36
-> > 
-> > This works without any glitch.
-> > 
-> > Thanks,
-> > Shreyas
-> > 
-> > On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
-> >> Fast sleep is an idle state, where the core and the L1 and L2
-> >> caches are brought down to a threshold voltage. This also means that
-> >> the communication between L2 and L3 caches have to be fenced. However
-> >> the current P8 chips have a bug wherein this fencing between L2 and
-> >> L3 caches get delayed by a cpu cycle. This can delay L3 response to
-> >> the other cpus if they request for data during this time. Thus they
-> >> would fetch the same data from the memory which could lead to data
-> >> corruption if L3 cache is not flushed.
-> >> Patch 4 adds support to work around this.
-> >>
-> >> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
-> >> off. While it offers higher power savings, it is at the cost of losing
-> >> hypervisor register state and higher latency.
-> >> Patch 5-9 adds support for winkle and uses it for offline cpus.
-> >>
-> >> Patch 1 - Moves parameters required discover idle states to a location 
-> >> common to both cpuidle driver and powernv core code
-> >> Patch 2 - Populates idle state details from device tree
-> >> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
-> >>
-> >>
-> >> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >> Cc: Paul Mackerras <paulus@samba.org>
-> >> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> >> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-> >> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> >> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> >> Cc: Rob Herring <robh+dt@kernel.org>
-> >> Cc: Grant Likely <grant.likely@linaro.org>
-> >> Cc: devicetree@vger.kernel.org
-> >> Cc: linux-pm@vger.kernel.org
-> >> Cc: linuxppc-dev@lists.ozlabs.org
-> >>
-> >> Preeti U Murthy (2):
-> >>   cpuidle/powernv: Populate cpuidle state details by querying the
-> >>     device-tree
-> >>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
-> >>
-> >> Shreyas B. Prabhu (6):
-> >>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
-> >>     fast-sleep
-> >>   powerpc/powernv: Add OPAL call to save and restore
-> >>   powerpc: Adding macro for accessing Thread Switch Control Register
-> >>   powerpc/powernv: Add winkle infrastructure
-> >>   powerpc/powernv: Discover and enable winkle
-> >>   powerpc/powernv: Enter deepest supported idle state in offline
-> >>
-> >> Srivatsa S. Bhat (1):
-> >>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
-> >>
-> >>  arch/powerpc/include/asm/machdep.h             |   4 +
-> >>  arch/powerpc/include/asm/opal.h                |  10 ++
-> >>  arch/powerpc/include/asm/paca.h                |   3 +
-> >>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
-> >>  arch/powerpc/include/asm/processor.h           |   6 +-
-> >>  arch/powerpc/include/asm/reg.h                 |   1 +
-> >>  arch/powerpc/kernel/asm-offsets.c              |   1 +
-> >>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
-> >>  arch/powerpc/kernel/idle.c                     |  30 ++++
-> >>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
-> >>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
-> >>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
-> >>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
-> >>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
-> >>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
-> >>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
-> >>  16 files changed, 439 insertions(+), 33 deletions(-)
-> >>
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+DQoNCk9uIDkvMjkvMTQgMTI6MDYgUE0sICJHdWVudGVyIFJvZWNrIiA8bGludXhAcm9lY2stdXMu
+bmV0PiB3cm90ZToNCg0KPk9uIE1vbiwgU2VwIDI5LCAyMDE0IGF0IDAxOjM2OjA2UE0gLTA1MDAs
+IFNjb3R0IFdvb2Qgd3JvdGU6DQo+PiBPbiBNb24sIDIwMTQtMDktMjkgYXQgMDk6NDggLTA3MDAs
+IEd1ZW50ZXIgUm9lY2sgd3JvdGU6DQo+PiA+IEZyb206IEpvankgRyBWYXJnaGVzZSA8am9qeXZA
+anVuaXBlci5uZXQ+DQo+PiA+IA0KPj4gPiBGb3IgRTUwME1DIGFuZCBFNTUwMCwgYSBtYWNoaW5l
+IGNoZWNrIGV4Y2VwdGlvbiBpbiBwY2koZSkgbWVtb3J5IHNwYWNlDQo+PiA+IGNyYXNoZXMgdGhl
+IGtlcm5lbC4NCj4+ID4gDQo+PiA+IFRlc3Rpbmcgc2hvd3MgdGhhdCB0aGUgTUNBUihVKSByZWdp
+c3RlciBpcyB6ZXJvIG9uIGEgTUMgZXhjZXB0aW9uIGZvcg0KPj50aGUNCj4+ID4gRTU1MDAgY29y
+ZS4gQXQgdGhlIHNhbWUgdGltZSwgREVBUiByZWdpc3RlciBoYXMgYmVlbiBmb3VuZCB0byBoYXZl
+IHRoZQ0KPj4gPiBhZGRyZXNzIG9mIHRoZSBmYXVsdHkgbG9hZCBhZGRyZXNzIGR1cmluZyBhbiBN
+QyBleGNlcHRpb24gZm9yIHRoaXMNCj4+Y29yZS4NCj4+ID4gDQo+PiA+IFRoaXMgZml4IGNoYW5n
+ZXMgdGhlIGN1cnJlbnQgYmVoYXZpb3IgdG8gZml4dXAgdGhlIHJlc3VsdCByZWdpc3Rlcg0KPj4g
+PiBhbmQgaW5zdHJ1Y3Rpb24gcG9pbnRlcnMgaW4gdGhlIGNhc2Ugb2YgYSBsb2FkIG9wZXJhdGlv
+biBvbiBhIGZhdWx0eQ0KPj4gPiBQQ0kgYWRkcmVzcy4NCj4+ID4gDQo+PiA+IFRoZSBjaGFuZ2Vz
+IGFyZToNCj4+ID4gLSBBZGRlZCB0aGUgaG9vayB0byBwY2kgbWFjaGluZSBjaGVjayBoYW5kaW5n
+IHRvIHRoZSBlNTAwbWMgbWFjaGluZQ0KPj5jaGVjaw0KPj4gPiAgIGV4Y2VwdGlvbiBoYW5kbGVy
+Lg0KPj4gPiAtIEZvciB0aGUgRTU1MDAgY29yZSwgbG9hZCBmYXVsdGluZyBhZGRyZXNzIGZyb20g
+U1BSTl9ERUFSIHJlZ2lzdGVyLg0KPj4gPiAgIEFzIG1lbnRpb25lZCBhYm92ZSwgdGhpcyBpcyBu
+ZWNlc3NhcnkgYmVjYXVzZSB0aGUgRTU1MDAgY29yZSBkb2VzDQo+Pm5vdA0KPj4gPiAgIHJlcG9y
+dCB0aGUgZmF1bHQgYWRkcmVzcyBpbiB0aGUgTUNBUiByZWdpc3Rlci4NCj4+ID4gDQo+PiA+IENj
+OiBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4NCj4+ID4gU2lnbmVkLW9mZi1i
+eTogSm9qeSBHIFZhcmdoZXNlIDxqb2p5dkBqdW5pcGVyLm5ldD4NCj4+ID4gW0d1ZW50ZXIgUm9l
+Y2s6IHVwZGF0ZWQgZGVzY3JpcHRpb25dDQo+PiA+IFNpZ25lZC1vZmYtYnk6IEd1ZW50ZXIgUm9l
+Y2sgPGdyb2Vja0BqdW5pcGVyLm5ldD4NCj4+ID4gU2lnbmVkLW9mZi1ieTogR3VlbnRlciBSb2Vj
+ayA8bGludXhAcm9lY2stdXMubmV0Pg0KPj4gPiAtLS0NCj4+ID4gIGFyY2gvcG93ZXJwYy9rZXJu
+ZWwvdHJhcHMuYyAgIHwgMyArKy0NCj4+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5j
+IHwgNSArKysrKw0KPj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDEgZGVs
+ZXRpb24oLSkNCj4+ID4gDQo+PiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL3Ry
+YXBzLmMgYi9hcmNoL3Bvd2VycGMva2VybmVsL3RyYXBzLmMNCj4+ID4gaW5kZXggMGRjNDNmOS4u
+ZWNiNzA5YiAxMDA2NDQNCj4+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC90cmFwcy5jDQo+
+PiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvdHJhcHMuYw0KPj4gPiBAQCAtNDk0LDcgKzQ5
+NCw4IEBAIGludCBtYWNoaW5lX2NoZWNrX2U1MDBtYyhzdHJ1Y3QgcHRfcmVncyAqcmVncykNCj4+
+ID4gIAlpbnQgcmVjb3ZlcmFibGUgPSAxOw0KPj4gPiAgDQo+PiA+ICAJaWYgKHJlYXNvbiAmIE1D
+U1JfTEQpIHsNCj4+ID4gLQkJcmVjb3ZlcmFibGUgPSBmc2xfcmlvX21jaGVja19leGNlcHRpb24o
+cmVncyk7DQo+PiA+ICsJCXJlY292ZXJhYmxlID0gZnNsX3Jpb19tY2hlY2tfZXhjZXB0aW9uKHJl
+Z3MpIHx8DQo+PiA+ICsJCQlmc2xfcGNpX21jaGVja19leGNlcHRpb24ocmVncyk7DQo+PiA+ICAJ
+CWlmIChyZWNvdmVyYWJsZSA9PSAxKQ0KPj4gPiAgCQkJZ290byBzaWxlbnRfb3V0Ow0KPj4gPiAg
+CX0NCj4+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jDQo+PmIv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4gaW5kZXggYzUwNzc2Ny4uYmRiOTU2
+YiAxMDA2NDQNCj4+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4g
+KysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4+ID4gQEAgLTEwMjEsNiArMTAy
+MSwxMSBAQCBpbnQgZnNsX3BjaV9tY2hlY2tfZXhjZXB0aW9uKHN0cnVjdCBwdF9yZWdzDQo+Pipy
+ZWdzKQ0KPj4gPiAgI2VuZGlmDQo+PiA+ICAJYWRkciArPSBtZnNwcihTUFJOX01DQVIpOw0KPj4g
+PiAgDQo+PiA+ICsjaWZkZWYgQ09ORklHX0U1NTAwX0NQVQ0KPj4gPiArCWlmIChtZnNwcihTUFJO
+X0VQQ1IpICYgU1BSTl9FUENSX0lDTSkNCj4+ID4gKwkJYWRkciA9IFBGTl9QSFlTKHZtYWxsb2Nf
+dG9fcGZuKCh2b2lkICopbWZzcHIoU1BSTl9ERUFSKSkpOw0KPj4gPiArI2VuZGlmDQo+PiANCj4+
+IEtjb25maWcgdGVsbHMgeW91IHdoYXQgaGFyZHdhcmUgaXMgc3VwcG9ydGVkLCBub3Qgd2hhdCBo
+YXJkd2FyZSB5b3UncmUNCj4+IGFjdHVhbGx5IHJ1bm5pbmcgb24uDQo+PiANCj5IaSBTY290dCwN
+Cj4NCj5Hb29kIHBvaW50LiBKb2p5LCBndWVzcyB3ZSdsbCBoYXZlIHRvIGNoZWNrIGlmIHRoZSBD
+UFUgaXMgYWN0dWFsbHkgYW4NCj5FNTUwMC4NCj5DYW4geW91IGxvb2sgaW50byB0aGF0ID8NCg0K
+DQoiL3Byb2MvY3B1aW5mbyIgc2hvd3MgdGhlIGNwdSBhcyAiZTU1MDAiLiBTY290dCwgYXJlIHlv
+dSBzdWdnZXN0aW5nIHRoYXQNCndlIHVzZSBhIHJ1bnRpbWUgbWV0aG9kIG9mIGRldGVybWluaW5n
+IHRoZSBjcHUgdHlwZSAoY3B1X3NwZWMncyBjcHVfbmFtZQ0KZm9yDQpleGFtcGxlKS4gIA0KDQoN
+Cj4NCj4+IEppYSBIb25ndGFvLCBkbyB5b3Uga25vdyBhbnl0aGluZyBhYm91dCB0aGlzIGlzc3Vl
+PyAgSXMgdGhlcmUgYW4NCj4+IGVycmF0dW0/ICBXaGF0IGNoaXBzIGFyZSBhZmZlY3RlZCBieSB0
+aGUgdGhlIGVycmF0dW0gY292ZXJlZCBieQ0KPj4gPGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9y
+Zy9wYXRjaC8yNDAyMzkvPj8NCj4+IA0KPldlIGFscmVhZHkgaGF2ZSBhbmQgdXNlIHRoZSBhYm92
+ZSBwYXRjaChlcykgaW4gb3VyIGtlcm5lbC4gSXQgd29ya3MgZmluZQ0KPmZvciBFNTAwIChQMjAy
+MCksIGJ1dCBkb2VzIG5vdCBhZGRyZXNzIEU1NTAwIChQNTAyMC9QNTA0MCkuDQo+DQo+PiBDYW4g
+d2UgcmVseSBvbiBERUFSIG9yIGlzIHRoaXMganVzdCBhIHNpZGUgZWZmZWN0IG9mIGxpa2VseSBo
+YXZpbmcgdGFrZW4NCj4+IGEgVExCIG1pc3MgZm9yIHRoZSBhZGRyZXNzIHJlY2VudGx5PyAgUGVy
+aGFwcyB3ZSBzaG91bGQgdXNlIHRoZQ0KPj4gaW5zdHJ1Y3Rpb24gZW11bGF0aW9uIHRvIGRldGVy
+bWluZSB0aGUgZWZmZWN0aXZlIGFkZHJlc3MgaW5zdGVhZC4NCj4+IA0KPj4gR3VlbnRlciwgaXMg
+dGhpcyBwYXRjaCBpbnRlbmRlZCB0byBkZWFsIHdpdGggYW4gZXJyYXR1bSBvciBhcmUgeW91DQo+
+PiBjb3ZlcmluZyB1cCBsZWdpdGltYXRlIGVycm9ycz8NCj4+IA0KPlRob3NlIGFyZSBlcnJvcnMg
+cmVsYXRlZCB0byBQQ0llIGhvdHBsdWcsIGFuZCBhcmUgc2VlbiB3aXRoIHVuZXhwZWN0ZWQNCj5Q
+Q0llDQo+ZGV2aWNlIHJlbW92YWxzICh0cmlnZ2VyZWQsIGZvciBleGFtcGxlLCBieSByZW1vdmlu
+ZyBwb3dlciBmcm9tIGEgUENJZQ0KPmFkYXB0ZXIpLg0KPlRoZSBiZWhhdmlvciB3ZSBzZWUgb24g
+RTU1MDAgaXMgcXVpdGUgc2ltaWxhciB0byB0aGUgc2FtZSBiZWhhdmlvciBvbg0KPkU1MDA6DQo+
+SWYgdW5oYW5kbGVkLCB0aGUgQ1BVIGtlZXBzIGV4ZWN1dGluZyB0aGUgc2FtZSBpbnN0cnVjdGlv
+biBvdmVyIGFuZCBvdmVyDQo+YWdhaW4NCj5pZiB0aGVyZSBpcyBhbiBlcnJvciBvbiBhIFBDSWUg
+YWNjZXNzIGFuZCB0aHVzIHN0YWxscy4gSSBkb24ndCBrbm93IGlmDQo+dGhpcw0KPmlzIGNvbnNp
+ZGVyZWQgYW4gZXJyYXR1bSBvciBleHBlY3RlZCBiZWhhdmlvciwgYnV0IGl0IGlzIG9uZSB3ZSBo
+YXZlIHRvDQo+YWRkcmVzcw0KPnNpbmNlIHdlIGhhdmUgdG8gYmUgYWJsZSB0byBoYW5kbGUgdGhh
+dCBjb25kaXRpb24uIFVsdGltYXRlbHksIHdlJ2xsIHdhbnQNCj50bw0KPmltcGxlbWVudCBQQ0ll
+IGVycm9yIGhhbmRsZXJzIGZvciB0aGUgYWZmZWN0ZWQgZHJpdmVycywgYnV0IHRoYXQgd2lsbCBi
+ZQ0KPmEgbmV4dA0KPnN0ZXAuDQoNCkFjY29yZGluZyB0byB0aGUgc3BlYywgd2UgTUNBUiBpcyBz
+dXBwb3NlZCB0byBob2xkIHRoZSBmYXVsdHkgZGF0YSBhZGRyZXNzDQpidXQgZm9yIDU1MDAgY29y
+ZSwgd2UgZm91bmQgdGhhdCBNQ0FSIGlzIHplcm8uIFlvdSBhcmUgcmlnaHQgdGhhdCBERUFSDQpl
+bnRyeSBjb3VsZA0KYmUgYSByZXN1bHRPZiBhIFRMQiBtaXNzIGJ1dCB0aGF0qfZzIHRoZSByZWdp
+c3RlciB3ZSBjb3VsZCByZWx5IG9uLg0KDQpXaGF0IGRvIHlvdSBtZWFuIGJ5ICJpbnN0cnVjdGlv
+biBlbXVsYXRpb24iPyBBcmUgeW91IHN1Z2dlc3RpbmcgdGhhdCB3ZQ0KZXhhbWluZSB0aGUgUkQs
+IFJTIA0KcmVnaXN0ZXJzIGZvciB0aGUgaW5zdHJ1Y3Rpb24/DQoNCg0KDQo+DQo+UGxlYXNlIGxl
+dCBtZSBrbm93IGlmIHlvdSBoYXZlIGEgYmV0dGVyIHNvbHV0aW9uIHRvIGFkZHJlc3MgdGhpcyBw
+cm9ibGVtLg0KPg0KPlRoYW5rcywNCj5HdWVudGVyDQoNCg0KVGhhbmtzDQpKb2p5DQoNCg==
