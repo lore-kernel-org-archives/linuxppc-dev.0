@@ -1,43 +1,33 @@
-Return-Path: <l.stach@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 639041A0069
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 18:38:37 +1000 (EST)
-Message-ID: <1411979850.2625.7.camel@pengutronix.de>
-Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
- in all platforms
-From: Lucas Stach <l.stach@pengutronix.de>
-To: Yijing Wang <wangyijing@huawei.com>
-Date: Mon, 29 Sep 2014 10:37:30 +0200
-In-Reply-To: <5427A6A0.5040703@huawei.com>
-References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
- <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
- <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
- <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>
- <20140926090537.GH31106@ulmo> <54277327.6070500@huawei.com>
- <5427A6A0.5040703@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- Bharat.Bhushan@freescale.com, xen-devel@lists.xenproject.org,
- arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94D821A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 18:51:00 +1000 (EST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 744C01401DD
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2014 18:51:00 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 29 Sep 2014 18:50:58 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: Re: [PATCH 08/15] powerpc/mm: Add new hash_page_mm()
+In-Reply-To: <1411028820-29933-9-git-send-email-mikey@neuling.org>
+References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
+ <1411028820-29933-9-git-send-email-mikey@neuling.org>
+Date: Mon, 29 Sep 2014 14:20:45 +0530
+Message-ID: <87wq8mq07u.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ imunsie@au1.ibm.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,33 +37,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Sonntag, den 28.09.2014, 14:11 +0800 schrieb Yijing Wang:
-> On 2014/9/28 10:32, Yijing Wang wrote:
-> > On 2014/9/26 17:05, Thierry Reding wrote:
-> >> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
-> >> [...]
-> >>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
-> >>> directly (patch attached).
-> >>
-> >> Really attached this time.
-> >>
-> >> Thierry
-> >>
-> > 
-> > It looks good to me, so I will update the arm pci hostbridge driver to assign
-> > pci root bus the msi chip instead of current pcibios_add_bus(). But for other
-> > platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
-> > temporarily for more comments, especially from Bjorn.
-> 
-> Oh, sorry, I found designware and rcar use pci_scan_root_bus(), so we can not simply
-> assign msi chip to root bus in all host drivers's scan functions.
+Michael Neuling <mikey@neuling.org> writes:
 
-Designware will switch away from pci_scan_root_bus() in the 3.18 cycle
-and I would think it would be no problem to to the same with rcar.
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> This adds a new function hash_page_mm() based on the existing hash_page().
+> This version allows any struct mm to be passed in, rather than assuming
+> current.  This is useful for servicing co-processor faults which are not in the
+> context of the current running process.
+>
+> We need to be careful here as the current hash_page() assumes current in a few
+> places.
 
-Regards,
-Lucas
+Can you also explain calling semantics. ie, why would we want to call
+this with anything other than current ? Should we flush slb now or
+should it be skipped ? so what would happen if the new hash page can
+result in segment demotion ?  You don't put that under if (mm ==
+current->mm). is that ok ?
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+	if ((pte_val(*ptep) & _PAGE_4K_PFN) && psize == MMU_PAGE_64K) {
+		demote_segment_4k(mm, ea);
+		psize = MMU_PAGE_4K;
+	}
+
+We also update paca context there
+
+	if (get_paca_psize(addr) != MMU_PAGE_4K) {
+		get_paca()->context = mm->context;
+		slb_flush_and_rebolt();
+	}
+
+
+You also added code to handle KERNEL_REGION_ID in
+[PATCH 02/15] powerpc/cell: Move data segment faulting code out of cell
+platform. do we need to handle that here ?
+
+
+>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/include/asm/mmu-hash64.h |  1 +
+>  arch/powerpc/mm/hash_utils_64.c       | 20 +++++++++++++-------
+>  2 files changed, 14 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index fd19a53..a3b85e9 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -319,6 +319,7 @@ extern int __hash_page_64K(unsigned long ea, unsigned long access,
+>  			   unsigned int local, int ssize);
+>  struct mm_struct;
+>  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
+> +extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap);
+>  extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap);
+>  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+>  		     pte_t *ptep, unsigned long trap, int local, int ssize,
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 0f73367..66071af 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -991,26 +991,24 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+>   * -1 - critical hash insertion error
+>   * -2 - access not permitted by subpage protection mechanism
+>   */
+> -int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap)
+>  {
+>  	enum ctx_state prev_state = exception_enter();
+>  	pgd_t *pgdir;
+>  	unsigned long vsid;
+> -	struct mm_struct *mm;
+>  	pte_t *ptep;
+>  	unsigned hugeshift;
+>  	const struct cpumask *tmp;
+>  	int rc, user_region = 0, local = 0;
+>  	int psize, ssize;
+>  
+> -	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
+> -		ea, access, trap);
+> +	DBG_LOW("%s(ea=%016lx, access=%lx, trap=%lx\n",
+> +		__func__, ea, access, trap);
+>  
+>  	/* Get region & vsid */
+>   	switch (REGION_ID(ea)) {
+>  	case USER_REGION_ID:
+>  		user_region = 1;
+> -		mm = current->mm;
+>  		if (! mm) {
+>  			DBG_LOW(" user region with no mm !\n");
+>  			rc = 1;
+> @@ -1106,7 +1104,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  			WARN_ON(1);
+>  		}
+>  #endif
+> -		check_paca_psize(ea, mm, psize, user_region);
+> +		if (current->mm == mm)
+> +			check_paca_psize(ea, mm, psize, user_region);
+>  
+>  		goto bail;
+>  	}
+> @@ -1149,7 +1148,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  		}
+>  	}
+>  
+> -	check_paca_psize(ea, mm, psize, user_region);
+> +	if (current->mm == mm)
+> +		check_paca_psize(ea, mm, psize, user_region);
+>  #endif /* CONFIG_PPC_64K_PAGES */
+>  
+>  #ifdef CONFIG_PPC_HAS_HASH_64K
+> @@ -1184,6 +1184,12 @@ bail:
+>  	exception_exit(prev_state);
+>  	return rc;
+>  }
+> +EXPORT_SYMBOL_GPL(hash_page_mm);
+> +
+> +int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +{
+> +	return hash_page_mm(current->mm, ea, access, trap);
+> +}
+>  EXPORT_SYMBOL_GPL(hash_page);
+>  
+>  void hash_preload(struct mm_struct *mm, unsigned long ea,
+> -- 
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
