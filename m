@@ -1,34 +1,43 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <l.stach@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97EBC1A0090
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 18:30:57 +1000 (EST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 727A114011D
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2014 18:30:57 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 29 Sep 2014 18:30:56 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH 02/15] powerpc/cell: Move data segment faulting code out
- of cell platform
-In-Reply-To: <1411028820-29933-3-git-send-email-mikey@neuling.org>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-3-git-send-email-mikey@neuling.org>
-Date: Mon, 29 Sep 2014 14:00:43 +0530
-Message-ID: <8738barfpo.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- imunsie@au1.ibm.com, anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 639041A0069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2014 18:38:37 +1000 (EST)
+Message-ID: <1411979850.2625.7.camel@pengutronix.de>
+Subject: Re: [PATCH v2 00/22] Use MSI chip framework to configure MSI/MSI-X
+ in all platforms
+From: Lucas Stach <l.stach@pengutronix.de>
+To: Yijing Wang <wangyijing@huawei.com>
+Date: Mon, 29 Sep 2014 10:37:30 +0200
+In-Reply-To: <5427A6A0.5040703@huawei.com>
+References: <1411614872-4009-1-git-send-email-wangyijing@huawei.com>
+ <20140925074235.GN12423@ulmo> <20140925144855.GB31157@bart.dudau.co.uk>
+ <20140925164937.GB30382@ulmo> <20140925171612.GC31157@bart.dudau.co.uk>
+ <542505B3.7040208@huawei.com> <20140926085430.GG31106@ulmo>
+ <20140926090537.GH31106@ulmo> <54277327.6070500@huawei.com>
+ <5427A6A0.5040703@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ Bharat.Bhushan@freescale.com, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,178 +47,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+Am Sonntag, den 28.09.2014, 14:11 +0800 schrieb Yijing Wang:
+> On 2014/9/28 10:32, Yijing Wang wrote:
+> > On 2014/9/26 17:05, Thierry Reding wrote:
+> >> On Fri, Sep 26, 2014 at 10:54:32AM +0200, Thierry Reding wrote:
+> >> [...]
+> >>> At least for Tegra it's trivial to just hook it up in tegra_pcie_scan_bus()
+> >>> directly (patch attached).
+> >>
+> >> Really attached this time.
+> >>
+> >> Thierry
+> >>
+> > 
+> > It looks good to me, so I will update the arm pci hostbridge driver to assign
+> > pci root bus the msi chip instead of current pcibios_add_bus(). But for other
+> > platforms which only have a one msi chip, I will kept the arch_find_msi_chip()
+> > temporarily for more comments, especially from Bjorn.
+> 
+> Oh, sorry, I found designware and rcar use pci_scan_root_bus(), so we can not simply
+> assign msi chip to root bus in all host drivers's scan functions.
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> __spu_trap_data_seg() currently contains code to determine the VSID and ESID
-> required for a particular EA and mm struct.
->
-> This code is generically useful for other co-processors.  This moves the code
-> of the cell platform so it can be used by other powerpc code.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h  |  2 ++
->  arch/powerpc/mm/copro_fault.c          | 48 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/slb.c                  |  3 ---
->  arch/powerpc/platforms/cell/spu_base.c | 41 +++--------------------------
->  4 files changed, 54 insertions(+), 40 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-> index d765144..fd19a53 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -180,6 +180,8 @@ static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
->   * we work in all cases including 4k page size.
->   */
->  #define VPN_SHIFT	12
-> +#define slb_vsid_shift(ssize)	\
-> +	((ssize) == MMU_SEGSIZE_256M ? SLB_VSID_SHIFT : SLB_VSID_SHIFT_1T)
+Designware will switch away from pci_scan_root_bus() in the 3.18 cycle
+and I would think it would be no problem to to the same with rcar.
 
-can it be static inline similar to segment_shift() ?
+Regards,
+Lucas
 
->  
->  /*
->   * HPTE Large Page (LP) details
-> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-> index ba7df14..4105a63 100644
-> --- a/arch/powerpc/mm/copro_fault.c
-> +++ b/arch/powerpc/mm/copro_fault.c
-> @@ -90,3 +90,51 @@ out_unlock:
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
-> +
-> +int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *vsid)
-> +{
-> +	int psize, ssize;
-> +
-> +	*esid = (ea & ESID_MASK) | SLB_ESID_V;
-> +
-> +	switch (REGION_ID(ea)) {
-> +	case USER_REGION_ID:
-> +		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
-> +#ifdef CONFIG_PPC_MM_SLICES
-> +		psize = get_slice_psize(mm, ea);
-> +#else
-> +		psize = mm->context.user_psize;
-> +#endif
-
-We don't need that.
-
-#ifdef CONFIG_PPC_STD_MMU_64
-#define get_slice_psize(mm, addr)	((mm)->context.user_psize)
-
-
-
-> +		ssize = user_segment_size(ea);
-> +		*vsid = (get_vsid(mm->context.id, ea, ssize)
-> +			<< slb_vsid_shift(ssize)) | SLB_VSID_USER
-> +			| (ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> +		break;
-> +	case VMALLOC_REGION_ID:
-> +		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
-> +		if (ea < VMALLOC_END)
-> +			psize = mmu_vmalloc_psize;
-> +		else
-> +			psize = mmu_io_psize;
-> +		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-> +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-> +			| (mmu_kernel_ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> +		break;
-> +	case KERNEL_REGION_ID:
-> +		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
-> +		psize = mmu_linear_psize;
-> +		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-> +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-> +			| (mmu_kernel_ssize == MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> +		break;
-> +	default:
-> +		/* Future: support kernel segments so that drivers can use the
-> +		 * CoProcessors */
-> +		pr_debug("invalid region access at %016llx\n", ea);
-> +		return 1;
-> +	}
-> +	*vsid |= mmu_psize_defs[psize].sllp;
-> +
-> +	return 0;
-> +}
-
-large part of this is same as what we do in hash_page. And we are not
-really updating vsid here, it is vsid slb encoding. So why not abstract
-the vsid part and use that in hash_page also ? That would have also taken
-care of the above #ifdef.
-
-> +EXPORT_SYMBOL_GPL(copro_data_segment);
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 0399a67..6e450ca 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -46,9 +46,6 @@ static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
->  	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
->  }
->  
-> -#define slb_vsid_shift(ssize)	\
-> -	((ssize) == MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
-> -
->  static inline unsigned long mk_vsid_data(unsigned long ea, int ssize,
->  					 unsigned long flags)
->  {
-> diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-> index 2930d1e..fe004b1 100644
-> --- a/arch/powerpc/platforms/cell/spu_base.c
-> +++ b/arch/powerpc/platforms/cell/spu_base.c
-> @@ -167,45 +167,12 @@ static inline void spu_load_slb(struct spu *spu, int slbe, struct spu_slb *slb)
->  
->  static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
->  {
-> -	struct mm_struct *mm = spu->mm;
->  	struct spu_slb slb;
-> -	int psize;
-> -
-> -	pr_debug("%s\n", __func__);
-> -
-> -	slb.esid = (ea & ESID_MASK) | SLB_ESID_V;
-> +	int ret;
->  
-> -	switch(REGION_ID(ea)) {
-> -	case USER_REGION_ID:
-> -#ifdef CONFIG_PPC_MM_SLICES
-> -		psize = get_slice_psize(mm, ea);
-> -#else
-> -		psize = mm->context.user_psize;
-> -#endif
-> -		slb.vsid = (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
-> -				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
-> -		break;
-> -	case VMALLOC_REGION_ID:
-> -		if (ea < VMALLOC_END)
-> -			psize = mmu_vmalloc_psize;
-> -		else
-> -			psize = mmu_io_psize;
-> -		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
-> -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> -		break;
-> -	case KERNEL_REGION_ID:
-> -		psize = mmu_linear_psize;
-> -		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
-> -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> -		break;
-> -	default:
-> -		/* Future: support kernel segments so that drivers
-> -		 * can use SPUs.
-> -		 */
-> -		pr_debug("invalid region access at %016lx\n", ea);
-> -		return 1;
-> -	}
-> -	slb.vsid |= mmu_psize_defs[psize].sllp;
-> +	ret = copro_data_segment(spu->mm, ea, &slb.esid, &slb.vsid);
-> +	if (ret)
-> +		return ret;
->  
->  	spu_load_slb(spu, spu->slb_replace, &slb);
->  
-
--aneesh
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
