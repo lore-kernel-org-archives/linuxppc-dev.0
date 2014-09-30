@@ -1,24 +1,39 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAABF1A05D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 14:40:26 +1000 (EST)
-Message-ID: <1412052025.1733.69.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH 02/15] powerpc/cell: Move data segment faulting code out
- of cell platform
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 30 Sep 2014 14:40:25 +1000
-In-Reply-To: <8738barfpo.fsf@linux.vnet.ibm.com>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-3-git-send-email-mikey@neuling.org>
- <8738barfpo.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, anton@samba.org,
- imunsie@au1.ibm.com, jk@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EE7F1A011B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 15:26:57 +1000 (EST)
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AE4B11400E0
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2014 15:26:56 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Tue, 30 Sep 2014 10:56:53 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3AFCFE0045
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2014 10:59:35 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8U5T8NU5308672
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2014 10:59:08 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8U5Qn2D028775
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2014 10:56:50 +0530
+Message-ID: <542A3E51.5030701@linux.vnet.ibm.com>
+Date: Tue, 30 Sep 2014 10:53:29 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc, powernv: Add OPAL platform event driver
+References: <1411986209-16800-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1411986209-16800-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,206 +43,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-09-29 at 14:00 +0530, Aneesh Kumar K.V wrote:
-> Michael Neuling <mikey@neuling.org> writes:
->=20
-> > From: Ian Munsie <imunsie@au1.ibm.com>
-> >
-> > __spu_trap_data_seg() currently contains code to determine the VSID and=
- ESID
-> > required for a particular EA and mm struct.
-> >
-> > This code is generically useful for other co-processors.  This moves th=
-e code
-> > of the cell platform so it can be used by other powerpc code.
-> >
-> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> >  arch/powerpc/include/asm/mmu-hash64.h  |  2 ++
-> >  arch/powerpc/mm/copro_fault.c          | 48 ++++++++++++++++++++++++++=
-++++++++
-> >  arch/powerpc/mm/slb.c                  |  3 ---
-> >  arch/powerpc/platforms/cell/spu_base.c | 41 +++-----------------------=
----
-> >  4 files changed, 54 insertions(+), 40 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/inclu=
-de/asm/mmu-hash64.h
-> > index d765144..fd19a53 100644
-> > --- a/arch/powerpc/include/asm/mmu-hash64.h
-> > +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> > @@ -180,6 +180,8 @@ static inline unsigned int mmu_psize_to_shift(unsig=
-ned int mmu_psize)
-> >   * we work in all cases including 4k page size.
-> >   */
-> >  #define VPN_SHIFT	12
-> > +#define slb_vsid_shift(ssize)	\
-> > +	((ssize) =3D=3D MMU_SEGSIZE_256M ? SLB_VSID_SHIFT : SLB_VSID_SHIFT_1T=
-)
->=20
-> can it be static inline similar to segment_shift() ?
 
-Yep.
+On 09/29/2014 03:53 PM, Anshuman Khandual wrote:
+> This patch creates a new OPAL platform event character driver
+> which will give userspace clients the access to these events
+> and process them effectively. Following platforms events are
+> currently supported with this platform driver.
+>
+> 	(1) Environmental and Power Warning (EPOW)
+> 	(2) Delayed Power Off (DPO)
+>
+> The user interface for this driver is /dev/opal_event character
+> device file where the user space clients can poll and read for
+> new opal platform events. The expected sequence of events driven
+> from user space should be like the following.
+>
+> 	(1) Open the character device file
+> 	(2) Poll on the file for POLLIN event
+> 	(3) When unblocked, must attempt to read PLAT_EVENT_MAX_SIZE size
+> 	(4) Kernel driver will pass at most one opal_plat_event structure
+> 	(5) Poll again for more new events
+>
+> The driver registers for OPAL messages notifications corresponding to
+> individual OPAL events. When any of those event messages arrive in the
+> kernel, the callbacks are called to process them which in turn unblocks
+> the polling thread on the character device file. The driver also registers
+> a timer function which will be called after a threshold amount of time to
+> shutdown the system. The user space client receives the timeout value for
+> all individual OPAL platform events and hence must prepare the system and
+> eventually shutdown. In case the user client does not shutdown the system,
+> the timer function will be called after the threshold and shutdown the
+> system explicitly.
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
->=20
-> > =20
-> >  /*
-> >   * HPTE Large Page (LP) details
-> > diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_faul=
-t.c
-> > index ba7df14..4105a63 100644
-> > --- a/arch/powerpc/mm/copro_fault.c
-> > +++ b/arch/powerpc/mm/copro_fault.c
-> > @@ -90,3 +90,51 @@ out_unlock:
-> >  	return ret;
-> >  }
-> >  EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
-> > +
-> > +int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *v=
-sid)
-> > +{
-> > +	int psize, ssize;
-> > +
-> > +	*esid =3D (ea & ESID_MASK) | SLB_ESID_V;
-> > +
-> > +	switch (REGION_ID(ea)) {
-> > +	case USER_REGION_ID:
-> > +		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
-> > +#ifdef CONFIG_PPC_MM_SLICES
-> > +		psize =3D get_slice_psize(mm, ea);
-> > +#else
-> > +		psize =3D mm->context.user_psize;
-> > +#endif
->=20
-> We don't need that.
->=20
-> #ifdef CONFIG_PPC_STD_MMU_64
-> #define get_slice_psize(mm, addr)	((mm)->context.user_psize)
+Reviewed-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 
-OK
+- Neelesh
 
->=20
->=20
-> > +		ssize =3D user_segment_size(ea);
-> > +		*vsid =3D (get_vsid(mm->context.id, ea, ssize)
-> > +			<< slb_vsid_shift(ssize)) | SLB_VSID_USER
-> > +			| (ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> > +		break;
-> > +	case VMALLOC_REGION_ID:
-> > +		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
-> > +		if (ea < VMALLOC_END)
-> > +			psize =3D mmu_vmalloc_psize;
-> > +		else
-> > +			psize =3D mmu_io_psize;
-> > +		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
-> > +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-> > +			| (mmu_kernel_ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> > +		break;
-> > +	case KERNEL_REGION_ID:
-> > +		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
-> > +		psize =3D mmu_linear_psize;
-> > +		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
-> > +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
-> > +			| (mmu_kernel_ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
-> > +		break;
-> > +	default:
-> > +		/* Future: support kernel segments so that drivers can use the
-> > +		 * CoProcessors */
-> > +		pr_debug("invalid region access at %016llx\n", ea);
-> > +		return 1;
-> > +	}
-> > +	*vsid |=3D mmu_psize_defs[psize].sllp;
-> > +
-> > +	return 0;
-> > +}
->=20
-> large part of this is same as what we do in hash_page. And we are not
-> really updating vsid here, it is vsid slb encoding. So why not abstract
-> the vsid part and use that in hash_page also ? That would have also taken
-> care of the above #ifdef.
-
-Ok, I've merge these two variants.
-
-Going to repost this whole series again soon.  I'll be in there.
-
-Thanks for the comments.
-
-Mikey
-
->=20
-> > +EXPORT_SYMBOL_GPL(copro_data_segment);
-> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> > index 0399a67..6e450ca 100644
-> > --- a/arch/powerpc/mm/slb.c
-> > +++ b/arch/powerpc/mm/slb.c
-> > @@ -46,9 +46,6 @@ static inline unsigned long mk_esid_data(unsigned lon=
-g ea, int ssize,
-> >  	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
-> >  }
-> > =20
-> > -#define slb_vsid_shift(ssize)	\
-> > -	((ssize) =3D=3D MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
-> > -
-> >  static inline unsigned long mk_vsid_data(unsigned long ea, int ssize,
-> >  					 unsigned long flags)
-> >  {
-> > diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/plat=
-forms/cell/spu_base.c
-> > index 2930d1e..fe004b1 100644
-> > --- a/arch/powerpc/platforms/cell/spu_base.c
-> > +++ b/arch/powerpc/platforms/cell/spu_base.c
-> > @@ -167,45 +167,12 @@ static inline void spu_load_slb(struct spu *spu, =
-int slbe, struct spu_slb *slb)
-> > =20
-> >  static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
-> >  {
-> > -	struct mm_struct *mm =3D spu->mm;
-> >  	struct spu_slb slb;
-> > -	int psize;
-> > -
-> > -	pr_debug("%s\n", __func__);
-> > -
-> > -	slb.esid =3D (ea & ESID_MASK) | SLB_ESID_V;
-> > +	int ret;
-> > =20
-> > -	switch(REGION_ID(ea)) {
-> > -	case USER_REGION_ID:
-> > -#ifdef CONFIG_PPC_MM_SLICES
-> > -		psize =3D get_slice_psize(mm, ea);
-> > -#else
-> > -		psize =3D mm->context.user_psize;
-> > -#endif
-> > -		slb.vsid =3D (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
-> > -				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
-> > -		break;
-> > -	case VMALLOC_REGION_ID:
-> > -		if (ea < VMALLOC_END)
-> > -			psize =3D mmu_vmalloc_psize;
-> > -		else
-> > -			psize =3D mmu_io_psize;
-> > -		slb.vsid =3D (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
-> > -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> > -		break;
-> > -	case KERNEL_REGION_ID:
-> > -		psize =3D mmu_linear_psize;
-> > -		slb.vsid =3D (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
-> > -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> > -		break;
-> > -	default:
-> > -		/* Future: support kernel segments so that drivers
-> > -		 * can use SPUs.
-> > -		 */
-> > -		pr_debug("invalid region access at %016lx\n", ea);
-> > -		return 1;
-> > -	}
-> > -	slb.vsid |=3D mmu_psize_defs[psize].sllp;
-> > +	ret =3D copro_data_segment(spu->mm, ea, &slb.esid, &slb.vsid);
-> > +	if (ret)
-> > +		return ret;
-> > =20
-> >  	spu_load_slb(spu, spu->slb_replace, &slb);
-> > =20
->=20
-> -aneesh
->=20
+> ---
+>   arch/powerpc/include/asm/opal.h                    |  45 +-
+>   .../include/uapi/asm/opal_platform_events.h        |  90 +++
+>   arch/powerpc/platforms/powernv/Makefile            |   2 +-
+>   .../platforms/powernv/opal-platform-events.c       | 737 +++++++++++++++++++++
+>   arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+>   arch/powerpc/platforms/powernv/opal.c              |   8 +-
+>   6 files changed, 880 insertions(+), 3 deletions(-)
+>   create mode 100644 arch/powerpc/include/uapi/asm/opal_platform_events.h
+>   create mode 100644 arch/powerpc/platforms/powernv/opal-platform-events.c
+>
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 86055e5..c134137 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -151,6 +151,7 @@ struct opal_sg_list {
+>   #define OPAL_HANDLE_HMI				98
+>   #define OPAL_REGISTER_DUMP_REGION		101
+>   #define OPAL_UNREGISTER_DUMP_REGION		102
+> +#define OPAL_GET_DPO_STATUS			105
+>   
+>   #ifndef __ASSEMBLY__
+>   
+> @@ -249,6 +250,7 @@ enum OpalMessageType {
+>   	OPAL_MSG_EPOW,
+>   	OPAL_MSG_SHUTDOWN,
+>   	OPAL_MSG_HMI_EVT,
+> +	OPAL_MSG_DPO,
+>   	OPAL_MSG_TYPE_MAX,
+>   };
+>   
+> @@ -417,6 +419,46 @@ struct opal_msg {
+>   	__be64 params[8];
+>   };
+>   
+> +/*
+> + * EPOW status sharing (OPAL and the host)
+> + *
+> + * The host will pass on OPAL, a buffer of length OPAL_SYSEPOW_MAX
+> + * with individual elements being 16 bits wide to fetch the system
+> + * wide EPOW status. Each element in the buffer will contain the
+> + * EPOW status in it's bit representation for a particular EPOW sub
+> + * class as defiend here. So multiple detailed EPOW status bits
+> + * specific for any sub class can be represented in a single buffer
+> + * element as it's bit representation.
+> + */
+> +
+> +/* System EPOW type */
+> +enum OpalSysEpow {
+> +	OPAL_SYSEPOW_POWER	= 0,	/* Power EPOW */
+> +	OPAL_SYSEPOW_TEMP	= 1,	/* Temperature EPOW */
+> +	OPAL_SYSEPOW_COOLING	= 2,	/* Cooling EPOW */
+> +	OPAL_SYSEPOW_MAX	= 3,	/* Max EPOW categories */
+> +};
+> +
+> +/* Power EPOW */
+> +enum OpalSysPower {
+> +	OPAL_SYSPOWER_UPS	= 0x0001, /* System on UPS power */
+> +	OPAL_SYSPOWER_CHNG	= 0x0002, /* System power config change */
+> +	OPAL_SYSPOWER_FAIL	= 0x0004, /* System impending power failure */
+> +	OPAL_SYSPOWER_INCL	= 0x0008, /* System incomplete power */
+> +};
+> +
