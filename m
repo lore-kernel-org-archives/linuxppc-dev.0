@@ -1,24 +1,29 @@
-Return-Path: <jojyv@juniper.net>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0135.outbound.protection.outlook.com [65.55.169.135])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dev@codyps.com>
+Received: from mail-la0-x22e.google.com (mail-la0-x22e.google.com
+ [IPv6:2a00:1450:4010:c03::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E9FAE1A03E9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 06:35:17 +1000 (EST)
-From: Jojy Varghese <jojyv@juniper.net>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
- exception on E500MC / E5500
-Date: Tue, 30 Sep 2014 20:20:03 +0000
-Message-ID: <D0505E5A.10E46%jojyv@juniper.net>
-In-Reply-To: <1412108227.13320.309.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2062D1A03D9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 07:03:17 +1000 (EST)
+Received: by mail-la0-f46.google.com with SMTP id gi9so10585629lab.19
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 14:03:11 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Guenter Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <1411586844-21381-11-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1411586844-21381-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1411586844-21381-11-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Tue, 30 Sep 2014 17:03:10 -0400
+Message-ID: <CAPoQQ-2YM-2n0ATrzCZqaF2e2a4rh9tus=JayRoVed2DyX=-EQ@mail.gmail.com>
+Subject: Re: [PATCH v4 10/10] powerpc/perf/hv-24x7: Document sysfs event
+ description entries
+From: Cody P Schafer <dev@codyps.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Andi Kleen <ak@linux.intel.com>, Michael Ellerman <michaele@au1.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+ Stephane Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +33,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> +What:          /sys/bus/event_source/devices/hv_24x7/event_descs/<event-name>
+> +Date:          February 2014
+> +Contact:       Cody P Schafer <cody@linux.vnet.ibm.com>
 
-
-On 9/30/14 1:17 PM, "Scott Wood" <scottwood@freescale.com> wrote:
-
->On Tue, 2014-09-30 at 20:15 +0000, Jojy Varghese wrote:
->>=20
->> On 9/30/14 8:50 AM, "Guenter Roeck" <linux@roeck-us.net> wrote:
->>=20
->> >On Mon, Sep 29, 2014 at 06:31:06PM -0500, Scott Wood wrote:
->> >> Which specific chip and revision did you see this on?  What is the
->>value
->> >> in MCSR?
->> >>=20
->> >Jojy can answer that, at least for P5020. We have seen it on P5040 as
->> >well,
->> >though, so it is not just limited to one chip/revision.
->>=20
->> The specifics are:
->> PVR: 0x80240012
->> Instruction that causes the MC exception: lwbrx
->> 	The faulty load address is also present in RB. So we could change the
->> logic to use that
->> instead of DEAR. What I don=B9t know is of there are other cases also
->>which
->> escapes the current logic.
->
->Could you find out what MCSR was when that happened?  I'm most
->interested in whether MAV was set, but the other bits would be
->interesting as well.
-
-MCSR=3Da000 ( Load Error Report)
->
->-Scott
->
->
-Thanks
-Jojy
+May want to change this contact email to an address that still works
+(perhaps the ppc devel list?)
