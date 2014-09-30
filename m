@@ -1,24 +1,41 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48E631A06C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 16:13:03 +1000 (EST)
-Message-ID: <1412057581.19209.2.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH 08/15] powerpc/mm: Add new hash_page_mm()
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 30 Sep 2014 16:13:01 +1000
-In-Reply-To: <1412054407.1733.77.camel@ale.ozlabs.ibm.com>
-References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
- <1411028820-29933-9-git-send-email-mikey@neuling.org>
- <87wq8mq07u.fsf@linux.vnet.ibm.com>
- <1412054407.1733.77.camel@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, anton@samba.org,
- imunsie@au1.ibm.com, jk@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1F551A0074
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 18:12:21 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 30 Sep 2014 18:12:19 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 052D2357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 18:12:15 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8U8E5HY28967156
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 18:14:05 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8U8CD1P023539
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 18:12:14 +1000
+Message-ID: <542A65D5.4090003@linux.vnet.ibm.com>
+Date: Tue, 30 Sep 2014 13:42:05 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <541A4D4F.1090307@linux.vnet.ibm.com> <5429330A.7000103@linux.vnet.ibm.com>
+ <128377046.aOTypBOIY8@vostro.rjw.lan>
+In-Reply-To: <128377046.aOTypBOIY8@vostro.rjw.lan>
+Content-Type: text/plain; charset=windows-1252
+Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +45,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > You also added code to handle KERNEL_REGION_ID in
-> > [PATCH 02/15] powerpc/cell: Move data segment faulting code out of cell
-> > platform. do we need to handle that here ?
-> >=20
+Hi Rafael,
 
-(Sorry missed this on my other reply...)
+On Tuesday 30 September 2014 04:58 AM, Rafael J. Wysocki wrote:
+> On Monday, September 29, 2014 03:53:06 PM Shreyas B Prabhu wrote:
+>> Hi,
+>> Any updates on this patch series?
+> 
+> I have a couple of patches from there in my tree it seems.  Please have a look
+> at linux-pm.git/linux-next and please let me know if that's the case.
+> 
 
-I've refactored that code now so it should be handled in the vsid
-calculation.  It's not my strong area so you might wanna check on
-repost.
+I checked linux-pm.git/linux-net (Last commit 067c17382165). None of the patches
+in this series are present in the tree. 
 
-Thanks again.
 
-Mikey
+> 
+>> On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
+>>> Hi,
+>>>
+>>> In this patch series we use winkle for offlined cores. I successfully
+>>> tested the working of this with subcore functionality.
+>>>
+>>> Test scenario was as follows:
+>>> 1. Set SMT mode to 1, Set subores-per-core to 1
+>>> 2. Offline a core, in this case cpu 32 (sending it to winkle)
+>>> 3. Set subcores-per-core to 4
+>>> 4. Online the core
+>>> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
+>>> on cpu 36
+>>>
+>>> This works without any glitch.
+>>>
+>>> Thanks,
+>>> Shreyas
+>>>
+>>> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
+>>>> Fast sleep is an idle state, where the core and the L1 and L2
+>>>> caches are brought down to a threshold voltage. This also means that
+>>>> the communication between L2 and L3 caches have to be fenced. However
+>>>> the current P8 chips have a bug wherein this fencing between L2 and
+>>>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+>>>> the other cpus if they request for data during this time. Thus they
+>>>> would fetch the same data from the memory which could lead to data
+>>>> corruption if L3 cache is not flushed.
+>>>> Patch 4 adds support to work around this.
+>>>>
+>>>> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
+>>>> off. While it offers higher power savings, it is at the cost of losing
+>>>> hypervisor register state and higher latency.
+>>>> Patch 5-9 adds support for winkle and uses it for offline cpus.
+>>>>
+>>>> Patch 1 - Moves parameters required discover idle states to a location 
+>>>> common to both cpuidle driver and powernv core code
+>>>> Patch 2 - Populates idle state details from device tree
+>>>> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+>>>>
+>>>>
+>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>>> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+>>>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+>>>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+>>>> Cc: Rob Herring <robh+dt@kernel.org>
+>>>> Cc: Grant Likely <grant.likely@linaro.org>
+>>>> Cc: devicetree@vger.kernel.org
+>>>> Cc: linux-pm@vger.kernel.org
+>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>
+>>>> Preeti U Murthy (2):
+>>>>   cpuidle/powernv: Populate cpuidle state details by querying the
+>>>>     device-tree
+>>>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+>>>>
+>>>> Shreyas B. Prabhu (6):
+>>>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>>>>     fast-sleep
+>>>>   powerpc/powernv: Add OPAL call to save and restore
+>>>>   powerpc: Adding macro for accessing Thread Switch Control Register
+>>>>   powerpc/powernv: Add winkle infrastructure
+>>>>   powerpc/powernv: Discover and enable winkle
+>>>>   powerpc/powernv: Enter deepest supported idle state in offline
+>>>>
+>>>> Srivatsa S. Bhat (1):
+>>>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>>>>
+>>>>  arch/powerpc/include/asm/machdep.h             |   4 +
+>>>>  arch/powerpc/include/asm/opal.h                |  10 ++
+>>>>  arch/powerpc/include/asm/paca.h                |   3 +
+>>>>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+>>>>  arch/powerpc/include/asm/processor.h           |   6 +-
+>>>>  arch/powerpc/include/asm/reg.h                 |   1 +
+>>>>  arch/powerpc/kernel/asm-offsets.c              |   1 +
+>>>>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+>>>>  arch/powerpc/kernel/idle.c                     |  30 ++++
+>>>>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+>>>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+>>>>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
+>>>>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+>>>>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
+>>>>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+>>>>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+>>>>  16 files changed, 439 insertions(+), 33 deletions(-)
+>>>>
+>>
+> 
