@@ -1,29 +1,22 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 12F721A0424
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:50:40 +1000 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id et14so4956478pad.17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 08:50:38 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Tue, 30 Sep 2014 08:50:29 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
- exception on E500MC / E5500
-Message-ID: <20140930155029.GA4724@roeck-us.net>
-References: <D04F3201.10DEB%jojyv@juniper.net>
- <1412033466.13320.293.camel@snotra.buserror.net>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id CEC091A0196
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 05:53:51 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
+Date: Tue, 30 Sep 2014 22:13:45 +0200
+Message-ID: <2668893.Uahb5Sli9g@vostro.rjw.lan>
+In-Reply-To: <542A65D5.4090003@linux.vnet.ibm.com>
+References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <128377046.aOTypBOIY8@vostro.rjw.lan> <542A65D5.4090003@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1412033466.13320.293.camel@snotra.buserror.net>
-Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Guenter Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jojy Varghese <jojyv@juniper.net>
+Content-Type: text/plain; charset="utf-8"
+Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,175 +26,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 29, 2014 at 06:31:06PM -0500, Scott Wood wrote:
-> On Mon, 2014-09-29 at 23:03 +0000, Jojy Varghese wrote:
+On Tuesday, September 30, 2014 01:42:05 PM Shreyas B Prabhu wrote:
+> Hi Rafael,
+> 
+> On Tuesday 30 September 2014 04:58 AM, Rafael J. Wysocki wrote:
+> > On Monday, September 29, 2014 03:53:06 PM Shreyas B Prabhu wrote:
+> >> Hi,
+> >> Any updates on this patch series?
 > > 
-> > On 9/29/14 12:06 PM, "Guenter Roeck" <linux@roeck-us.net> wrote:
+> > I have a couple of patches from there in my tree it seems.  Please have a look
+> > at linux-pm.git/linux-next and please let me know if that's the case.
 > > 
-> > >On Mon, Sep 29, 2014 at 01:36:06PM -0500, Scott Wood wrote:
-> > >> On Mon, 2014-09-29 at 09:48 -0700, Guenter Roeck wrote:
-> > >> > From: Jojy G Varghese <jojyv@juniper.net>
-> > >> > 
-> > >> > For E500MC and E5500, a machine check exception in pci(e) memory space
-> > >> > crashes the kernel.
-> > >> > 
-> > >> > Testing shows that the MCAR(U) register is zero on a MC exception for
-> > >>the
-> > >> > E5500 core. At the same time, DEAR register has been found to have the
-> > >> > address of the faulty load address during an MC exception for this
-> > >>core.
-> > >> > 
-> > >> > This fix changes the current behavior to fixup the result register
-> > >> > and instruction pointers in the case of a load operation on a faulty
-> > >> > PCI address.
-> > >> > 
-> > >> > The changes are:
-> > >> > - Added the hook to pci machine check handing to the e500mc machine
-> > >>check
-> > >> >   exception handler.
-> > >> > - For the E5500 core, load faulting address from SPRN_DEAR register.
-> > >> >   As mentioned above, this is necessary because the E5500 core does
-> > >>not
-> > >> >   report the fault address in the MCAR register.
-> > >> > 
-> > >> > Cc: Scott Wood <scottwood@freescale.com>
-> > >> > Signed-off-by: Jojy G Varghese <jojyv@juniper.net>
-> > >> > [Guenter Roeck: updated description]
-> > >> > Signed-off-by: Guenter Roeck <groeck@juniper.net>
-> > >> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > >> > ---
-> > >> >  arch/powerpc/kernel/traps.c   | 3 ++-
-> > >> >  arch/powerpc/sysdev/fsl_pci.c | 5 +++++
-> > >> >  2 files changed, 7 insertions(+), 1 deletion(-)
-> > >> > 
-> > >> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > >> > index 0dc43f9..ecb709b 100644
-> > >> > --- a/arch/powerpc/kernel/traps.c
-> > >> > +++ b/arch/powerpc/kernel/traps.c
-> > >> > @@ -494,7 +494,8 @@ int machine_check_e500mc(struct pt_regs *regs)
-> > >> >  	int recoverable = 1;
-> > >> >  
-> > >> >  	if (reason & MCSR_LD) {
-> > >> > -		recoverable = fsl_rio_mcheck_exception(regs);
-> > >> > +		recoverable = fsl_rio_mcheck_exception(regs) ||
-> > >> > +			fsl_pci_mcheck_exception(regs);
-> > >> >  		if (recoverable == 1)
-> > >> >  			goto silent_out;
-> > >> >  	}
-> > >> > diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> > >>b/arch/powerpc/sysdev/fsl_pci.c
-> > >> > index c507767..bdb956b 100644
-> > >> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > >> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > >> > @@ -1021,6 +1021,11 @@ int fsl_pci_mcheck_exception(struct pt_regs
-> > >>*regs)
-> > >> >  #endif
-> > >> >  	addr += mfspr(SPRN_MCAR);
-> > >> >  
-> > >> > +#ifdef CONFIG_E5500_CPU
-> > >> > +	if (mfspr(SPRN_EPCR) & SPRN_EPCR_ICM)
-> > >> > +		addr = PFN_PHYS(vmalloc_to_pfn((void *)mfspr(SPRN_DEAR)));
-> > >> > +#endif
-> > >> 
-> > >> Kconfig tells you what hardware is supported, not what hardware you're
-> > >> actually running on.
 > 
-> Plus, CONFIG_E5500_CPU may not even be set when running on an e5500, as
-> it is used for selecting GCC optimization settings.  You could have
-> CONFIG_GENERIC_CPU instead.
-> 
-> And the subject says "E500MC / E5500", not just "E5500". :-)
-> 
-> > >Hi Scott,
-> > >
-> > >Good point. Jojy, guess we'll have to check if the CPU is actually an
-> > >E5500.
-> > >Can you look into that ?
+> I checked linux-pm.git/linux-net (Last commit 067c17382165). None of the patches
+> in this series are present in the tree. 
+
+OK, thanks for checking.
+
+Would you mind resending it with any ACKs or Reviewed-by tags received so far?
+
+
+> >> On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
+> >>> Hi,
+> >>>
+> >>> In this patch series we use winkle for offlined cores. I successfully
+> >>> tested the working of this with subcore functionality.
+> >>>
+> >>> Test scenario was as follows:
+> >>> 1. Set SMT mode to 1, Set subores-per-core to 1
+> >>> 2. Offline a core, in this case cpu 32 (sending it to winkle)
+> >>> 3. Set subcores-per-core to 4
+> >>> 4. Online the core
+> >>> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
+> >>> on cpu 36
+> >>>
+> >>> This works without any glitch.
+> >>>
+> >>> Thanks,
+> >>> Shreyas
+> >>>
+> >>> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
+> >>>> Fast sleep is an idle state, where the core and the L1 and L2
+> >>>> caches are brought down to a threshold voltage. This also means that
+> >>>> the communication between L2 and L3 caches have to be fenced. However
+> >>>> the current P8 chips have a bug wherein this fencing between L2 and
+> >>>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+> >>>> the other cpus if they request for data during this time. Thus they
+> >>>> would fetch the same data from the memory which could lead to data
+> >>>> corruption if L3 cache is not flushed.
+> >>>> Patch 4 adds support to work around this.
+> >>>>
+> >>>> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
+> >>>> off. While it offers higher power savings, it is at the cost of losing
+> >>>> hypervisor register state and higher latency.
+> >>>> Patch 5-9 adds support for winkle and uses it for offline cpus.
+> >>>>
+> >>>> Patch 1 - Moves parameters required discover idle states to a location 
+> >>>> common to both cpuidle driver and powernv core code
+> >>>> Patch 2 - Populates idle state details from device tree
+> >>>> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
+> >>>>
+> >>>>
+> >>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >>>> Cc: Paul Mackerras <paulus@samba.org>
+> >>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >>>> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
+> >>>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> >>>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> >>>> Cc: Rob Herring <robh+dt@kernel.org>
+> >>>> Cc: Grant Likely <grant.likely@linaro.org>
+> >>>> Cc: devicetree@vger.kernel.org
+> >>>> Cc: linux-pm@vger.kernel.org
+> >>>> Cc: linuxppc-dev@lists.ozlabs.org
+> >>>>
+> >>>> Preeti U Murthy (2):
+> >>>>   cpuidle/powernv: Populate cpuidle state details by querying the
+> >>>>     device-tree
+> >>>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+> >>>>
+> >>>> Shreyas B. Prabhu (6):
+> >>>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+> >>>>     fast-sleep
+> >>>>   powerpc/powernv: Add OPAL call to save and restore
+> >>>>   powerpc: Adding macro for accessing Thread Switch Control Register
+> >>>>   powerpc/powernv: Add winkle infrastructure
+> >>>>   powerpc/powernv: Discover and enable winkle
+> >>>>   powerpc/powernv: Enter deepest supported idle state in offline
+> >>>>
+> >>>> Srivatsa S. Bhat (1):
+> >>>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+> >>>>
+> >>>>  arch/powerpc/include/asm/machdep.h             |   4 +
+> >>>>  arch/powerpc/include/asm/opal.h                |  10 ++
+> >>>>  arch/powerpc/include/asm/paca.h                |   3 +
+> >>>>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+> >>>>  arch/powerpc/include/asm/processor.h           |   6 +-
+> >>>>  arch/powerpc/include/asm/reg.h                 |   1 +
+> >>>>  arch/powerpc/kernel/asm-offsets.c              |   1 +
+> >>>>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
+> >>>>  arch/powerpc/kernel/idle.c                     |  30 ++++
+> >>>>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
+> >>>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
+> >>>>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
+> >>>>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
+> >>>>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
+> >>>>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
+> >>>>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
+> >>>>  16 files changed, 439 insertions(+), 33 deletions(-)
+> >>>>
+> >>
 > > 
-> > 
-> > "/proc/cpuinfo" shows the cpu as "e5500". Scott, are you suggesting that
-> > we use a runtime method of determining the cpu type (cpu_spec's cpu_name
-> > for
-> > example).  
 > 
-> Yes, if there's a bug to be worked around, and we don't want to apply
-> the workaround unconditionally, you should use PVR to determine whether
-> you're running on an affected core.
-> 
-> > >> Can we rely on DEAR or is this just a side effect of likely having taken
-> > >> a TLB miss for the address recently?  Perhaps we should use the
-> > >> instruction emulation to determine the effective address instead.
-> > >> 
-> > >> Guenter, is this patch intended to deal with an erratum or are you
-> > >> covering up legitimate errors?
-> > >> 
-> >
-> > >Those are errors related to PCIe hotplug, and are seen with unexpected
-> > >PCIe
-> > >device removals (triggered, for example, by removing power from a PCIe
-> > >adapter).
-> > >The behavior we see on E5500 is quite similar to the same behavior on
-> > >E500:
-> > >If unhandled, the CPU keeps executing the same instruction over and over
-> > >again
-> > >if there is an error on a PCIe access and thus stalls. I don't know if
-> > >this
-> > >is considered an erratum or expected behavior, but it is one we have to
-> > >address
-> > >since we have to be able to handle that condition. 
-> 
-> The reason I ask is that the handling for e500 was described as an
-> erratum workaround.  If it is an erratum it would be nice to know the
-> erratum number and the full list of affected chips.
-> 
-My understanding, which may be wrong, was that this is expected behavior,
-at least for E5500. I actually thought I had seen it somewhere in the
-specification (response to PCIe errors), but I don't recall where exactly.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-At least for my part I am not aware of an erratum.
-
-> > >Ultimately, we'll want
-> > >to
-> > >implement PCIe error handlers for the affected drivers, but that will be
-> > >a next
-> > >step.
-> 
-> For now can we at least print a ratelimited error message?  I don't like
-> the idea of silently ignoring these errors.  I suppose it's a separate
-> issue from extending the workaround to cover e500mc, though.
-> 
-I don't really like the idea of printing an error message pretty much each time
-when an unexpected hotplug event occurs.
-
-> > According to the spec, we MCAR is supposed to hold the faulty data address
-> > but for 5500 core, we found that MCAR is zero.
-> 
-> Which specific chip and revision did you see this on?  What is the value
-> in MCSR?
-> 
-Jojy can answer that, at least for P5020. We have seen it on P5040 as well,
-though, so it is not just limited to one chip/revision.
-
-Guenter
-
-> > You are right that DEAR entry could
-> > be a resultOf a TLB miss but that¹s the register we could rely on.
-> 
-> If it's the result of a previous TLB miss then we can't rely on it.  The
-> translation might have been loaded into the TLB before the hotplug
-> event, or there might have been an interrupt between loading the
-> translation into the TLB and using the translation.
-> 
-> > What do you mean by "instruction emulation"? 
-> 
-> mcheck_handle_load()
-> 
-> > Are you suggesting that we
-> > examine the RD, RS 
-> > registers for the instruction?
-> 
-> Yes, if we don't have a simpler reliable source of the address.
-> 
-> -Scott
-> 
-> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
