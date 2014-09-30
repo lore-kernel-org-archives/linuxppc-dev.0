@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6055F1A0975
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:47 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 229AC1A0A23
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:51 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v2 13/17] cxl: Add base builtin support
-Date: Tue, 30 Sep 2014 20:35:02 +1000
-Message-Id: <1412073306-13812-14-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 16/17] cxl: Add driver to Kbuild and Makefiles
+Date: Tue, 30 Sep 2014 20:35:05 +1000
+Message-Id: <1412073306-13812-17-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412073306-13812-1-git-send-email-mikey@neuling.org>
 References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,180 +26,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This adds the base cxl support that needs to be build into the kernel to use
-cxl as a module.  This is needed so that the cxl call backs from the core
-powerpc mm code always exist irrespective of if the cxl module is loaded or
-not.  This is similar to how cell works with CONFIG_SPU_BASE.
-
-This adds a cxl_slbia() call (similar to spu_flush_all_slbs()) which checks for
-the cxl module being loaded.  If the modules is not loaded we return, otherwise
-we call into the cxl SLB invalidation code.
-
-This also adds the cxl_ctx_in_use() function for use in the mm code to see if
-any cxl contexts are currently in use.  This is used by the tlbie() to
-determine if it can do local TLB invalidations or not.  This also adds get/put
-calls for the cxl driver module to refcount the active cxl contexts.
-
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/Kconfig      |   1 +
- drivers/misc/Makefile     |   1 +
- drivers/misc/cxl/Kconfig  |   8 ++++
- drivers/misc/cxl/Makefile |   1 +
- drivers/misc/cxl/base.c   | 102 ++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 113 insertions(+)
- create mode 100644 drivers/misc/cxl/Kconfig
- create mode 100644 drivers/misc/cxl/Makefile
- create mode 100644 drivers/misc/cxl/base.c
+ drivers/misc/cxl/Kconfig  | 18 ++++++++++++++++++
+ drivers/misc/cxl/Makefile |  3 +++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b841180..bbeb451 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -527,4 +527,5 @@ source "drivers/misc/vmw_vmci/Kconfig"
- source "drivers/misc/mic/Kconfig"
- source "drivers/misc/genwqe/Kconfig"
- source "drivers/misc/echo/Kconfig"
-+source "drivers/misc/cxl/Kconfig"
- endmenu
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 5497d02..7d5c4cd 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -55,3 +55,4 @@ obj-y				+= mic/
- obj-$(CONFIG_GENWQE)		+= genwqe/
- obj-$(CONFIG_ECHO)		+= echo/
- obj-$(CONFIG_VEXPRESS_SYSCFG)	+= vexpress-syscfg.o
-+obj-$(CONFIG_CXL_BASE)		+= cxl/
 diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
-new file mode 100644
-index 0000000..5cdd319
---- /dev/null
+index 5cdd319..967b5c8 100644
+--- a/drivers/misc/cxl/Kconfig
 +++ b/drivers/misc/cxl/Kconfig
-@@ -0,0 +1,8 @@
-+#
-+# IBM Coherent Accelerator (CXL) compatible devices
-+#
+@@ -6,3 +6,21 @@ config CXL_BASE
+ 	bool
+ 	default n
+ 	select PPC_COPRO_BASE
 +
-+config CXL_BASE
-+	bool
-+	default n
-+	select PPC_COPRO_BASE
++config CXL
++	tristate "Support for IBM Coherent Accelerators (CXL)"
++	depends on PPC_POWERNV && PCI_MSI
++	select CXL_BASE
++	default m
++	help
++	  Select this option to enable userspace driver support for IBM
++	  Coherent Accelerators (CXL).  CXL is otherwise known as Coherent
++	  Accelerator Processor Interface (CAPI).
++
++config CXL_PCI
++	tristate "Support for CXL devices via PCI"
++	depends on CXL && PPC_POWERNV
++	default y
++	help
++	  Select this option to support CXL devices detected via PCI, e.g.
++	  when running under powernv/OPAL.
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-new file mode 100644
-index 0000000..e30ad0a
---- /dev/null
+index e30ad0a..96f292b 100644
+--- a/drivers/misc/cxl/Makefile
 +++ b/drivers/misc/cxl/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_CXL_BASE)		+= base.o
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-new file mode 100644
-index 0000000..f4cbcfb
---- /dev/null
-+++ b/drivers/misc/cxl/base.c
-@@ -0,0 +1,102 @@
-+/*
-+ * Copyright 2014 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/rcupdate.h>
-+#include <asm/errno.h>
-+#include <misc/cxl.h>
-+#include "cxl.h"
-+
-+/* protected by rcu */
-+static struct cxl_calls *cxl_calls;
-+
-+static atomic_t use_count = ATOMIC_INIT(0);
-+
-+#ifdef CONFIG_CXL_MODULE
-+
-+static inline struct cxl_calls *cxl_calls_get(void)
-+{
-+	struct cxl_calls *calls = NULL;
-+
-+	rcu_read_lock();
-+	calls = rcu_dereference(cxl_calls);
-+	if (calls && !try_module_get(calls->owner))
-+		calls = NULL;
-+	rcu_read_unlock();
-+
-+	return calls;
-+}
-+
-+static inline void cxl_calls_put(struct cxl_calls *calls)
-+{
-+	BUG_ON(calls != cxl_calls);
-+
-+	/* we don't need to rcu this, as we hold a reference to the module */
-+	module_put(cxl_calls->owner);
-+}
-+
-+#else /* !defined CONFIG_CXL_MODULE */
-+
-+static inline struct cxl_calls *cxl_calls_get(void)
-+{
-+	return cxl_calls;
-+}
-+
-+static inline void cxl_calls_put(struct cxl_calls *calls) { }
-+
-+#endif /* CONFIG_CXL_MODULE */
-+
-+void cxl_slbia(struct mm_struct *mm)
-+{
-+	struct cxl_calls *calls;
-+
-+	calls = cxl_calls_get();
-+	if (!calls)
-+		return;
-+
-+	calls->cxl_slbia(mm);
-+	cxl_calls_put(calls);
-+}
-+EXPORT_SYMBOL(cxl_slbia);
-+
-+void cxl_ctx_get(void)
-+{
-+	atomic_inc(&use_count);
-+}
-+EXPORT_SYMBOL(cxl_ctx_get);
-+
-+void cxl_ctx_put(void)
-+{
-+	atomic_dec(&use_count);
-+}
-+EXPORT_SYMBOL(cxl_ctx_put);
-+
-+bool cxl_ctx_in_use(void)
-+{
-+	return (atomic_read(&use_count) != 0);
-+}
-+EXPORT_SYMBOL(cxl_ctx_in_use);
-+
-+int register_cxl_calls(struct cxl_calls *calls)
-+{
-+	if (cxl_calls)
-+		return -EBUSY;
-+
-+	rcu_assign_pointer(cxl_calls, calls);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(register_cxl_calls);
-+
-+void unregister_cxl_calls(struct cxl_calls *calls)
-+{
-+	BUG_ON(cxl_calls->owner != calls->owner);
-+	RCU_INIT_POINTER(cxl_calls, NULL);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(unregister_cxl_calls);
+@@ -1 +1,4 @@
++cxl-y				+= main.o file.o irq.o fault.o native.o context.o sysfs.o debugfs.o
++obj-$(CONFIG_CXL)		+= cxl.o
++obj-$(CONFIG_CXL_PCI)		+= cxl-pci.o
+ obj-$(CONFIG_CXL_BASE)		+= base.o
 -- 
 1.9.1
