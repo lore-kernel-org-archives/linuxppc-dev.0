@@ -1,22 +1,25 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id CEC091A0196
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 05:53:51 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/9] powerpc/powernv: Support for fastsleep and winkle
-Date: Tue, 30 Sep 2014 22:13:45 +0200
-Message-ID: <2668893.Uahb5Sli9g@vostro.rjw.lan>
-In-Reply-To: <542A65D5.4090003@linux.vnet.ibm.com>
-References: <1408989673-14137-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <128377046.aOTypBOIY8@vostro.rjw.lan> <542A65D5.4090003@linux.vnet.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C23D1A03CD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 06:17:23 +1000 (EST)
+Message-ID: <1412108227.13320.309.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
+ exception on E500MC / E5500
+From: Scott Wood <scottwood@freescale.com>
+To: Jojy Varghese <jojyv@juniper.net>
+Date: Tue, 30 Sep 2014 15:17:07 -0500
+In-Reply-To: <D0505C72.10E3B%jojyv@juniper.net>
+References: <D0505C72.10E3B%jojyv@juniper.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: devicetree@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guenter Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,124 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, September 30, 2014 01:42:05 PM Shreyas B Prabhu wrote:
-> Hi Rafael,
+On Tue, 2014-09-30 at 20:15 +0000, Jojy Varghese wrote:
 > 
-> On Tuesday 30 September 2014 04:58 AM, Rafael J. Wysocki wrote:
-> > On Monday, September 29, 2014 03:53:06 PM Shreyas B Prabhu wrote:
-> >> Hi,
-> >> Any updates on this patch series?
-> > 
-> > I have a couple of patches from there in my tree it seems.  Please have a look
-> > at linux-pm.git/linux-next and please let me know if that's the case.
-> > 
+> On 9/30/14 8:50 AM, "Guenter Roeck" <linux@roeck-us.net> wrote:
 > 
-> I checked linux-pm.git/linux-net (Last commit 067c17382165). None of the patches
-> in this series are present in the tree. 
-
-OK, thanks for checking.
-
-Would you mind resending it with any ACKs or Reviewed-by tags received so far?
-
-
-> >> On Thursday 18 September 2014 08:41 AM, Shreyas B Prabhu wrote:
-> >>> Hi,
-> >>>
-> >>> In this patch series we use winkle for offlined cores. I successfully
-> >>> tested the working of this with subcore functionality.
-> >>>
-> >>> Test scenario was as follows:
-> >>> 1. Set SMT mode to 1, Set subores-per-core to 1
-> >>> 2. Offline a core, in this case cpu 32 (sending it to winkle)
-> >>> 3. Set subcores-per-core to 4
-> >>> 4. Online the core
-> >>> 5. Start a guest (Topology 1 core 2 threads) on a subcore, in this case
-> >>> on cpu 36
-> >>>
-> >>> This works without any glitch.
-> >>>
-> >>> Thanks,
-> >>> Shreyas
-> >>>
-> >>> On Monday 25 August 2014 11:31 PM, Shreyas B. Prabhu wrote:
-> >>>> Fast sleep is an idle state, where the core and the L1 and L2
-> >>>> caches are brought down to a threshold voltage. This also means that
-> >>>> the communication between L2 and L3 caches have to be fenced. However
-> >>>> the current P8 chips have a bug wherein this fencing between L2 and
-> >>>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
-> >>>> the other cpus if they request for data during this time. Thus they
-> >>>> would fetch the same data from the memory which could lead to data
-> >>>> corruption if L3 cache is not flushed.
-> >>>> Patch 4 adds support to work around this.
-> >>>>
-> >>>> 'Deep Winkle' is a deeper idle state where core and private L2 are powered
-> >>>> off. While it offers higher power savings, it is at the cost of losing
-> >>>> hypervisor register state and higher latency.
-> >>>> Patch 5-9 adds support for winkle and uses it for offline cpus.
-> >>>>
-> >>>> Patch 1 - Moves parameters required discover idle states to a location 
-> >>>> common to both cpuidle driver and powernv core code
-> >>>> Patch 2 - Populates idle state details from device tree
-> >>>> Patch 3 - Enables cpus to run guest after waking up from fastsleep/winkle
-> >>>>
-> >>>>
-> >>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>>> Cc: Paul Mackerras <paulus@samba.org>
-> >>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> >>>> Cc: Srivatsa S. Bhat <srivatsa@MIT.EDU>
-> >>>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> >>>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> >>>> Cc: Rob Herring <robh+dt@kernel.org>
-> >>>> Cc: Grant Likely <grant.likely@linaro.org>
-> >>>> Cc: devicetree@vger.kernel.org
-> >>>> Cc: linux-pm@vger.kernel.org
-> >>>> Cc: linuxppc-dev@lists.ozlabs.org
-> >>>>
-> >>>> Preeti U Murthy (2):
-> >>>>   cpuidle/powernv: Populate cpuidle state details by querying the
-> >>>>     device-tree
-> >>>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
-> >>>>
-> >>>> Shreyas B. Prabhu (6):
-> >>>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
-> >>>>     fast-sleep
-> >>>>   powerpc/powernv: Add OPAL call to save and restore
-> >>>>   powerpc: Adding macro for accessing Thread Switch Control Register
-> >>>>   powerpc/powernv: Add winkle infrastructure
-> >>>>   powerpc/powernv: Discover and enable winkle
-> >>>>   powerpc/powernv: Enter deepest supported idle state in offline
-> >>>>
-> >>>> Srivatsa S. Bhat (1):
-> >>>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
-> >>>>
-> >>>>  arch/powerpc/include/asm/machdep.h             |   4 +
-> >>>>  arch/powerpc/include/asm/opal.h                |  10 ++
-> >>>>  arch/powerpc/include/asm/paca.h                |   3 +
-> >>>>  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
-> >>>>  arch/powerpc/include/asm/processor.h           |   6 +-
-> >>>>  arch/powerpc/include/asm/reg.h                 |   1 +
-> >>>>  arch/powerpc/kernel/asm-offsets.c              |   1 +
-> >>>>  arch/powerpc/kernel/exceptions-64s.S           |  37 ++---
-> >>>>  arch/powerpc/kernel/idle.c                     |  30 ++++
-> >>>>  arch/powerpc/kernel/idle_power7.S              |  83 +++++++++-
-> >>>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
-> >>>>  arch/powerpc/platforms/powernv/powernv.h       |   8 +
-> >>>>  arch/powerpc/platforms/powernv/setup.c         | 217 +++++++++++++++++++++++++
-> >>>>  arch/powerpc/platforms/powernv/smp.c           |  13 +-
-> >>>>  arch/powerpc/platforms/powernv/subcore.c       |  15 ++
-> >>>>  drivers/cpuidle/cpuidle-powernv.c              |  40 ++++-
-> >>>>  16 files changed, 439 insertions(+), 33 deletions(-)
-> >>>>
-> >>
-> > 
+> >On Mon, Sep 29, 2014 at 06:31:06PM -0500, Scott Wood wrote:
+> >> Which specific chip and revision did you see this on?  What is the value
+> >> in MCSR?
+> >> 
+> >Jojy can answer that, at least for P5020. We have seen it on P5040 as
+> >well,
+> >though, so it is not just limited to one chip/revision.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> The specifics are:
+> PVR: 0x80240012
+> Instruction that causes the MC exception: lwbrx
+> 	The faulty load address is also present in RB. So we could change the
+> logic to use that 
+> instead of DEAR. What I don’t know is of there are other cases also which
+> escapes the current logic.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Could you find out what MCSR was when that happened?  I'm most
+interested in whether MAV was set, but the other bits would be
+interesting as well.
+
+-Scott
