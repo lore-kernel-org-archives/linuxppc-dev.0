@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 53E8A1A097F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:40 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 343601A097F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:41 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v2 06/17] powerpc/powernv: Split out set MSI IRQ chip code
-Date: Tue, 30 Sep 2014 20:34:55 +1000
-Message-Id: <1412073306-13812-7-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 07/17] cxl: Add new header for call backs and structs
+Date: Tue, 30 Sep 2014 20:34:56 +1000
+Message-Id: <1412073306-13812-8-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412073306-13812-1-git-send-email-mikey@neuling.org>
 References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,83 +26,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-Some of the MSI IRQ code in pnv_pci_ioda_msi_setup() is generically useful so
-split it out.
+This new header add defines for callbacks and structs needed by the rest of the
+kernel to hook into the cxl infrastructure.
 
-This will be used by some of the cxl PCIe code later.
+Empty functions are provided when CONFIG CXL_BASE is not enabled.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 43 ++++++++++++++++++-------------
- 1 file changed, 25 insertions(+), 18 deletions(-)
+ include/misc/cxl.h | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+ create mode 100644 include/misc/cxl.h
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index df241b1..329164f 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1306,14 +1306,36 @@ static void pnv_ioda2_msi_eoi(struct irq_data *d)
- 	icp_native_eoi(d);
- }
- 
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+new file mode 100644
+index 0000000..bde46a3
+--- /dev/null
++++ b/include/misc/cxl.h
+@@ -0,0 +1,34 @@
++/*
++ * Copyright 2014 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
-+static void set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
-+{
-+	struct irq_data *idata;
-+	struct irq_chip *ichip;
++#ifndef _MISC_ASM_CXL_H
++#define _MISC_ASM_CXL_H
 +
-+	if (phb->type != PNV_PHB_IODA2)
-+		return;
++#define CXL_IRQ_RANGES 4
 +
-+	/*
-+	 * Change the IRQ chip for the MSI interrupts on PHB3.
-+	 * The corresponding IRQ chip should be populated for
-+	 * the first time.
-+	 */
-+	if (!phb->ioda.irq_chip_init) {
-+		idata = irq_get_irq_data(virq);
-+		ichip = irq_data_get_irq_chip(idata);
-+		phb->ioda.irq_chip_init = 1;
-+		phb->ioda.irq_chip = *ichip;
-+		phb->ioda.irq_chip.irq_eoi = pnv_ioda2_msi_eoi;
-+	}
-+	irq_set_chip(virq, &phb->ioda.irq_chip);
-+}
++struct cxl_irq_ranges {
++	irq_hw_number_t offset[CXL_IRQ_RANGES];
++	irq_hw_number_t range[CXL_IRQ_RANGES];
++};
 +
- static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
- 				  unsigned int hwirq, unsigned int virq,
- 				  unsigned int is_64, struct msi_msg *msg)
- {
- 	struct pnv_ioda_pe *pe = pnv_ioda_get_pe(dev);
- 	struct pci_dn *pdn = pci_get_pdn(dev);
--	struct irq_data *idata;
--	struct irq_chip *ichip;
- 	unsigned int xive_num = hwirq - phb->msi_base;
- 	__be32 data;
- 	int rc;
-@@ -1365,22 +1387,7 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
- 	}
- 	msg->data = be32_to_cpu(data);
- 
--	/*
--	 * Change the IRQ chip for the MSI interrupts on PHB3.
--	 * The corresponding IRQ chip should be populated for
--	 * the first time.
--	 */
--	if (phb->type == PNV_PHB_IODA2) {
--		if (!phb->ioda.irq_chip_init) {
--			idata = irq_get_irq_data(virq);
--			ichip = irq_data_get_irq_chip(idata);
--			phb->ioda.irq_chip_init = 1;
--			phb->ioda.irq_chip = *ichip;
--			phb->ioda.irq_chip.irq_eoi = pnv_ioda2_msi_eoi;
--		}
--
--		irq_set_chip(virq, &phb->ioda.irq_chip);
--	}
-+	set_msi_irq_chip(phb, virq);
- 
- 	pr_devel("%s: %s-bit MSI on hwirq %x (xive #%d),"
- 		 " address=%x_%08x data=%x PE# %d\n",
++#ifdef CONFIG_CXL_BASE
++
++void cxl_slbia(struct mm_struct *mm);
++void cxl_ctx_get(void);
++void cxl_ctx_put(void);
++bool cxl_ctx_in_use(void);
++
++#else /* CONFIG_CXL_BASE */
++
++#define cxl_slbia(...) do { } while (0)
++#define cxl_ctx_in_use(...) false
++
++#endif /* CONFIG_CXL_BASE */
++
++#endif
 -- 
 1.9.1
