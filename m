@@ -1,34 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C3061A1840
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:40:13 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 30 Sep 2014 12:40:12 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CCE0A2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:40:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8U2fb1233489136
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:41:45 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8U2dbWq016099
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:37 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/21] powerpc/eeh: Introduce eeh_ops::err_inject
-Date: Tue, 30 Sep 2014 12:38:56 +1000
-Message-Id: <1412044750-24460-7-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CAABF1A05D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 14:40:26 +1000 (EST)
+Message-ID: <1412052025.1733.69.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH 02/15] powerpc/cell: Move data segment faulting code out
+ of cell platform
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 30 Sep 2014 14:40:25 +1000
+In-Reply-To: <8738barfpo.fsf@linux.vnet.ibm.com>
+References: <1411028820-29933-1-git-send-email-mikey@neuling.org>
+ <1411028820-29933-3-git-send-email-mikey@neuling.org>
+ <8738barfpo.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, anton@samba.org,
+ imunsie@au1.ibm.com, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,163 +28,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces eeh_ops::err_inject(), which allows to inject
-specified errors to indicated PE for testing purpose. The functionality
-isn't support on pSeries platform. On PowerNV, the functionality
-relies on OPAL API opal_pci_err_inject().
-
-Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Mon, 2014-09-29 at 14:00 +0530, Aneesh Kumar K.V wrote:
+> Michael Neuling <mikey@neuling.org> writes:
+>=20
+> > From: Ian Munsie <imunsie@au1.ibm.com>
+> >
+> > __spu_trap_data_seg() currently contains code to determine the VSID and=
+ ESID
+> > required for a particular EA and mm struct.
+> >
+> > This code is generically useful for other co-processors.  This moves th=
+e code
+> > of the cell platform so it can be used by other powerpc code.
+> >
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> >  arch/powerpc/include/asm/mmu-hash64.h  |  2 ++
+> >  arch/powerpc/mm/copro_fault.c          | 48 ++++++++++++++++++++++++++=
+++++++++
+> >  arch/powerpc/mm/slb.c                  |  3 ---
+> >  arch/powerpc/platforms/cell/spu_base.c | 41 +++-----------------------=
 ---
- arch/powerpc/include/asm/eeh.h               |  2 ++
- arch/powerpc/platforms/powernv/eeh-ioda.c    | 44 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/eeh-powernv.c | 26 ++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h         |  2 ++
- arch/powerpc/platforms/pseries/eeh_pseries.c |  1 +
- 5 files changed, 75 insertions(+)
+> >  4 files changed, 54 insertions(+), 40 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/inclu=
+de/asm/mmu-hash64.h
+> > index d765144..fd19a53 100644
+> > --- a/arch/powerpc/include/asm/mmu-hash64.h
+> > +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> > @@ -180,6 +180,8 @@ static inline unsigned int mmu_psize_to_shift(unsig=
+ned int mmu_psize)
+> >   * we work in all cases including 4k page size.
+> >   */
+> >  #define VPN_SHIFT	12
+> > +#define slb_vsid_shift(ssize)	\
+> > +	((ssize) =3D=3D MMU_SEGSIZE_256M ? SLB_VSID_SHIFT : SLB_VSID_SHIFT_1T=
+)
+>=20
+> can it be static inline similar to segment_shift() ?
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index f98b1b5..ae8c441 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -199,6 +199,8 @@ struct eeh_ops {
- 	int (*wait_state)(struct eeh_pe *pe, int max_wait);
- 	int (*get_log)(struct eeh_pe *pe, int severity, char *drv_log, unsigned long len);
- 	int (*configure_bridge)(struct eeh_pe *pe);
-+	int (*err_inject)(struct eeh_pe *pe, int type, int func,
-+			  unsigned long addr, unsigned long mask);
- 	int (*read_config)(struct device_node *dn, int where, int size, u32 *val);
- 	int (*write_config)(struct device_node *dn, int where, int size, u32 val);
- 	int (*next_error)(struct eeh_pe **pe);
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index f3027b9..ddb38cc 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -673,6 +673,49 @@ static int ioda_eeh_configure_bridge(struct eeh_pe *pe)
- 	return 0;
- }
- 
-+static int ioda_eeh_err_inject(struct eeh_pe *pe, int type, int func,
-+			       unsigned long addr, unsigned long mask)
-+{
-+	struct pci_controller *hose = pe->phb;
-+	struct pnv_phb *phb = hose->private_data;
-+	s64 ret;
-+
-+	/* Sanity check on error type */
-+	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
-+	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
-+		pr_warn("%s: Invalid error type %d\n",
-+			__func__, type);
-+		return -ERANGE;
-+	}
-+
-+	if (func < OPAL_ERR_INJECT_FUNC_IOA_LD_MEM_ADDR ||
-+	    func > OPAL_ERR_INJECT_FUNC_IOA_DMA_WR_TARGET) {
-+		pr_warn("%s: Invalid error function %d\n",
-+			__func__, func);
-+		return -ERANGE;
-+	}
-+
-+	/* Firmware supports error injection ? */
-+	if (!opal_check_token(OPAL_PCI_ERR_INJECT)) {
-+		pr_warn("%s: Firmware doesn't support error injection\n",
-+			__func__);
-+		return -ENXIO;
-+	}
-+
-+	/* Do error injection */
-+	ret = opal_pci_err_inject(phb->opal_id, pe->addr,
-+				  type, func, addr, mask);
-+	if (ret != OPAL_SUCCESS) {
-+		pr_warn("%s: Failure %lld injecting error "
-+			"%d-%d to PHB#%x-PE#%x\n",
-+			__func__, ret, type, func,
-+			hose->global_number, pe->addr);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
- static void ioda_eeh_hub_diag_common(struct OpalIoP7IOCErrorData *data)
- {
- 	/* GEM */
-@@ -994,5 +1037,6 @@ struct pnv_eeh_ops ioda_eeh_ops = {
- 	.reset			= ioda_eeh_reset,
- 	.get_log		= ioda_eeh_get_log,
- 	.configure_bridge	= ioda_eeh_configure_bridge,
-+	.err_inject		= ioda_eeh_err_inject,
- 	.next_error		= ioda_eeh_next_error
- };
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index fd7a16f..3e89cbf 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -359,6 +359,31 @@ static int powernv_eeh_configure_bridge(struct eeh_pe *pe)
- }
- 
- /**
-+ * powernv_pe_err_inject - Inject specified error to the indicated PE
-+ * @pe: the indicated PE
-+ * @type: error type
-+ * @func: specific error type
-+ * @addr: address
-+ * @mask: address mask
-+ *
-+ * The routine is called to inject specified error, which is
-+ * determined by @type and @func, to the indicated PE for
-+ * testing purpose.
-+ */
-+static int powernv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
-+				  unsigned long addr, unsigned long mask)
-+{
-+	struct pci_controller *hose = pe->phb;
-+	struct pnv_phb *phb = hose->private_data;
-+	int ret = -EEXIST;
-+
-+	if (phb->eeh_ops && phb->eeh_ops->err_inject)
-+		ret = phb->eeh_ops->err_inject(pe, type, func, addr, mask);
-+
-+	return ret;
-+}
-+
-+/**
-  * powernv_eeh_next_error - Retrieve next EEH error to handle
-  * @pe: Affected PE
-  *
-@@ -414,6 +439,7 @@ static struct eeh_ops powernv_eeh_ops = {
- 	.wait_state             = powernv_eeh_wait_state,
- 	.get_log                = powernv_eeh_get_log,
- 	.configure_bridge       = powernv_eeh_configure_bridge,
-+	.err_inject		= powernv_eeh_err_inject,
- 	.read_config            = pnv_pci_cfg_read,
- 	.write_config           = pnv_pci_cfg_write,
- 	.next_error		= powernv_eeh_next_error,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 48494d4..27594cf 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -85,6 +85,8 @@ struct pnv_eeh_ops {
- 	int (*get_log)(struct eeh_pe *pe, int severity,
- 		       char *drv_log, unsigned long len);
- 	int (*configure_bridge)(struct eeh_pe *pe);
-+	int (*err_inject)(struct eeh_pe *pe, int type, int func,
-+			  unsigned long addr, unsigned long mask);
- 	int (*next_error)(struct eeh_pe **pe);
- };
- #endif /* CONFIG_EEH */
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index b645dc6..4fc5ff9 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -731,6 +731,7 @@ static struct eeh_ops pseries_eeh_ops = {
- 	.wait_state		= pseries_eeh_wait_state,
- 	.get_log		= pseries_eeh_get_log,
- 	.configure_bridge       = pseries_eeh_configure_bridge,
-+	.err_inject		= NULL,
- 	.read_config		= pseries_eeh_read_config,
- 	.write_config		= pseries_eeh_write_config,
- 	.next_error		= NULL,
--- 
-1.8.3.2
+Yep.
+
+>=20
+> > =20
+> >  /*
+> >   * HPTE Large Page (LP) details
+> > diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_faul=
+t.c
+> > index ba7df14..4105a63 100644
+> > --- a/arch/powerpc/mm/copro_fault.c
+> > +++ b/arch/powerpc/mm/copro_fault.c
+> > @@ -90,3 +90,51 @@ out_unlock:
+> >  	return ret;
+> >  }
+> >  EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
+> > +
+> > +int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *v=
+sid)
+> > +{
+> > +	int psize, ssize;
+> > +
+> > +	*esid =3D (ea & ESID_MASK) | SLB_ESID_V;
+> > +
+> > +	switch (REGION_ID(ea)) {
+> > +	case USER_REGION_ID:
+> > +		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
+> > +#ifdef CONFIG_PPC_MM_SLICES
+> > +		psize =3D get_slice_psize(mm, ea);
+> > +#else
+> > +		psize =3D mm->context.user_psize;
+> > +#endif
+>=20
+> We don't need that.
+>=20
+> #ifdef CONFIG_PPC_STD_MMU_64
+> #define get_slice_psize(mm, addr)	((mm)->context.user_psize)
+
+OK
+
+>=20
+>=20
+> > +		ssize =3D user_segment_size(ea);
+> > +		*vsid =3D (get_vsid(mm->context.id, ea, ssize)
+> > +			<< slb_vsid_shift(ssize)) | SLB_VSID_USER
+> > +			| (ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
+> > +		break;
+> > +	case VMALLOC_REGION_ID:
+> > +		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
+> > +		if (ea < VMALLOC_END)
+> > +			psize =3D mmu_vmalloc_psize;
+> > +		else
+> > +			psize =3D mmu_io_psize;
+> > +		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
+> > +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
+> > +			| (mmu_kernel_ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
+> > +		break;
+> > +	case KERNEL_REGION_ID:
+> > +		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
+> > +		psize =3D mmu_linear_psize;
+> > +		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
+> > +			<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL
+> > +			| (mmu_kernel_ssize =3D=3D MMU_SEGSIZE_1T ? SLB_VSID_B_1T : 0);
+> > +		break;
+> > +	default:
+> > +		/* Future: support kernel segments so that drivers can use the
+> > +		 * CoProcessors */
+> > +		pr_debug("invalid region access at %016llx\n", ea);
+> > +		return 1;
+> > +	}
+> > +	*vsid |=3D mmu_psize_defs[psize].sllp;
+> > +
+> > +	return 0;
+> > +}
+>=20
+> large part of this is same as what we do in hash_page. And we are not
+> really updating vsid here, it is vsid slb encoding. So why not abstract
+> the vsid part and use that in hash_page also ? That would have also taken
+> care of the above #ifdef.
+
+Ok, I've merge these two variants.
+
+Going to repost this whole series again soon.  I'll be in there.
+
+Thanks for the comments.
+
+Mikey
+
+>=20
+> > +EXPORT_SYMBOL_GPL(copro_data_segment);
+> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> > index 0399a67..6e450ca 100644
+> > --- a/arch/powerpc/mm/slb.c
+> > +++ b/arch/powerpc/mm/slb.c
+> > @@ -46,9 +46,6 @@ static inline unsigned long mk_esid_data(unsigned lon=
+g ea, int ssize,
+> >  	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
+> >  }
+> > =20
+> > -#define slb_vsid_shift(ssize)	\
+> > -	((ssize) =3D=3D MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
+> > -
+> >  static inline unsigned long mk_vsid_data(unsigned long ea, int ssize,
+> >  					 unsigned long flags)
+> >  {
+> > diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/plat=
+forms/cell/spu_base.c
+> > index 2930d1e..fe004b1 100644
+> > --- a/arch/powerpc/platforms/cell/spu_base.c
+> > +++ b/arch/powerpc/platforms/cell/spu_base.c
+> > @@ -167,45 +167,12 @@ static inline void spu_load_slb(struct spu *spu, =
+int slbe, struct spu_slb *slb)
+> > =20
+> >  static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
+> >  {
+> > -	struct mm_struct *mm =3D spu->mm;
+> >  	struct spu_slb slb;
+> > -	int psize;
+> > -
+> > -	pr_debug("%s\n", __func__);
+> > -
+> > -	slb.esid =3D (ea & ESID_MASK) | SLB_ESID_V;
+> > +	int ret;
+> > =20
+> > -	switch(REGION_ID(ea)) {
+> > -	case USER_REGION_ID:
+> > -#ifdef CONFIG_PPC_MM_SLICES
+> > -		psize =3D get_slice_psize(mm, ea);
+> > -#else
+> > -		psize =3D mm->context.user_psize;
+> > -#endif
+> > -		slb.vsid =3D (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
+> > -				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
+> > -		break;
+> > -	case VMALLOC_REGION_ID:
+> > -		if (ea < VMALLOC_END)
+> > -			psize =3D mmu_vmalloc_psize;
+> > -		else
+> > -			psize =3D mmu_io_psize;
+> > -		slb.vsid =3D (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
+> > -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+> > -		break;
+> > -	case KERNEL_REGION_ID:
+> > -		psize =3D mmu_linear_psize;
+> > -		slb.vsid =3D (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
+> > -				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+> > -		break;
+> > -	default:
+> > -		/* Future: support kernel segments so that drivers
+> > -		 * can use SPUs.
+> > -		 */
+> > -		pr_debug("invalid region access at %016lx\n", ea);
+> > -		return 1;
+> > -	}
+> > -	slb.vsid |=3D mmu_psize_defs[psize].sllp;
+> > +	ret =3D copro_data_segment(spu->mm, ea, &slb.esid, &slb.vsid);
+> > +	if (ret)
+> > +		return ret;
+> > =20
+> >  	spu_load_slb(spu, spu->slb_replace, &slb);
+> > =20
+>=20
+> -aneesh
+>=20
