@@ -1,14 +1,17 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E50051A0508
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:33 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C9701A0961
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:35:35 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v2 0/17] POWER8 Coherent Accelerator device driver
-Date: Tue, 30 Sep 2014 20:34:49 +1000
-Message-Id: <1412073306-13812-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 01/17] powerpc/cell: Move spu_handle_mm_fault() out of cell
+ platform
+Date: Tue, 30 Sep 2014 20:34:50 +1000
+Message-Id: <1412073306-13812-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1412073306-13812-1-git-send-email-mikey@neuling.org>
+References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
  linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
@@ -22,109 +25,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2:
- - Updates based on comments from, Anton, Gavin, Aneesh, jk and offline reviews
- - Simplified copro_data_segment() and merged code with hash_page_mm()
-    (New patch 10/17)
- - PCIe code simplifications based on Gavin's review
- - Removed redundant comment in msi_bitmap_alloc_hwirqs()
- - Fix for locking in idr_remove in core driver
- - Ensure PSL is enabled when PHB is flipped to CXL mode
- - Added CONFIG_PPC_COPRO_BASE to compile copro_fault.c
- - Merged SPU and cxl slb flushing calls into copro_flush_all_slbs()
-    (New patch 03/17)
- - Moved slb_vsid_shift() to static inline from #define
- - Don't write paca->context when demoting segments and mm != current
- - Fix minor typos in documentation
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-v1:
- - Initial post
+Currently spu_handle_mm_fault() is in the cell platform.
 
-This add support for the Coherent Accelerator (cxl) attached to POWER8
-processors.  This coherent accelerator interface is designed to allow the
-coherent connection of FPGA based accelerators (and other devices) to a POWER
-systems.
+This code is generically useful for other non-cell co-processors on powerpc.
 
-IBM refers to this as the Coherent Accelerator Processor Interface or CAPI.  In
-this driver it's referred to by the name cxl to avoid confusion with the ISDN
-CAPI subsystem.
+This patch moves this function out of the cell platform into arch/powerpc/mm so
+that others may use it.
 
-An overview of the patches:
-  Patches  1-3:  Split some of the old Cell co-processor code out so it can be
-		   reused.
-  Patches  4-11: Add infrastructure to arch/powerpc needed by cxl.
-  Patches  12:   Add call backs needed for invalidating cxl mm contexts.
-  Patch    13:   Add cxl specific support that needs to be built in to the
-		   kernel (can't be a module).
-  Patches 14-16: Add the majority of the device driver and API header.
-  Patch    17:   Documentation.
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/Kconfig                                   |  4 ++++
+ arch/powerpc/include/asm/copro.h                       | 18 ++++++++++++++++++
+ arch/powerpc/include/asm/spu.h                         |  5 ++---
+ arch/powerpc/mm/Makefile                               |  1 +
+ .../{platforms/cell/spu_fault.c => mm/copro_fault.c}   | 14 ++++++--------
+ arch/powerpc/platforms/cell/Kconfig                    |  1 +
+ arch/powerpc/platforms/cell/Makefile                   |  2 +-
+ arch/powerpc/platforms/cell/spufs/fault.c              |  4 ++--
+ 8 files changed, 35 insertions(+), 14 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/copro.h
+ rename arch/powerpc/{platforms/cell/spu_fault.c => mm/copro_fault.c} (89%)
 
-The documentation in this last patch gives an overview of the hardware
-architecture as well as the userspace API.
-
-The cxl driver has a user-space interface described in include/uapi/misc/cxl.h
-and Documentation/powerpc/cxl.txt.  There are two ioctls which can be used to
-talk to the driver once the new /dev/cxl/afu0.0 device is opened.  This device
-can also be read and mmaped.
-
-There's also sysfs entries used to communicate information about the cxl
-configuration to userspace.  These are documented in
-Documentation/ABI/testing/sysfs-class-cxl.
-
-Many contributed to this device driver but Ian Munsie is the principal author.
-
-Driver can also be found here (based on 3.17-rc5):
-   git://github.com/mikey/linux.git cxl
-   https://github.com/mikey/linux/commits/cxl
-(Series rebases on recent linux-next with one trivial include file conflict)
-
-Please consider for inclusion.  Feedback welcome!
-
-Regards,
-Mikey
-
- Documentation/ABI/testing/sysfs-class-cxl      | 125 ++++
- Documentation/ioctl/ioctl-number.txt           |   1 +
- Documentation/powerpc/00-INDEX                 |   2 +
- Documentation/powerpc/cxl.txt                  | 310 ++++++++
- MAINTAINERS                                    |   7 +
- arch/powerpc/Kconfig                           |   4 +
- arch/powerpc/include/asm/copro.h               |  24 +
- arch/powerpc/include/asm/mmu-hash64.h          |  10 +-
- arch/powerpc/include/asm/opal.h                |   2 +
- arch/powerpc/include/asm/pnv-pci.h             |  27 +
- arch/powerpc/include/asm/spu.h                 |   5 +-
- arch/powerpc/mm/Makefile                       |   1 +
- arch/powerpc/mm/copro_fault.c                  | 124 ++++
- arch/powerpc/mm/hash_native_64.c               |   6 +-
- arch/powerpc/mm/hash_utils_64.c                |  95 ++-
- arch/powerpc/mm/slb.c                          |   3 -
- arch/powerpc/mm/slice.c                        |  10 +-
- arch/powerpc/platforms/cell/Kconfig            |   1 +
- arch/powerpc/platforms/cell/Makefile           |   2 +-
- arch/powerpc/platforms/cell/spu_base.c         |  41 +-
- arch/powerpc/platforms/cell/spu_fault.c        |  94 ---
- arch/powerpc/platforms/cell/spufs/fault.c      |   4 +-
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- arch/powerpc/platforms/powernv/pci-ioda.c      | 204 +++++-
- arch/powerpc/sysdev/msi_bitmap.c               |  23 +-
- drivers/misc/Kconfig                           |   1 +
- drivers/misc/Makefile                          |   1 +
- drivers/misc/cxl/Kconfig                       |  26 +
- drivers/misc/cxl/Makefile                      |   4 +
- drivers/misc/cxl/base.c                        | 102 +++
- drivers/misc/cxl/context.c                     | 171 +++++
- drivers/misc/cxl/cxl-pci.c                     | 964 +++++++++++++++++++++++++
- drivers/misc/cxl/cxl.h                         | 605 ++++++++++++++++
- drivers/misc/cxl/debugfs.c                     | 116 +++
- drivers/misc/cxl/fault.c                       | 298 ++++++++
- drivers/misc/cxl/file.c                        | 503 +++++++++++++
- drivers/misc/cxl/irq.c                         | 405 +++++++++++
- drivers/misc/cxl/main.c                        | 238 ++++++
- drivers/misc/cxl/native.c                      | 649 +++++++++++++++++
- drivers/misc/cxl/sysfs.c                       | 348 +++++++++
- include/misc/cxl.h                             |  34 +
- include/uapi/Kbuild                            |   1 +
- include/uapi/misc/Kbuild                       |   2 +
- include/uapi/misc/cxl.h                        |  88 +++
- 44 files changed, 5469 insertions(+), 213 deletions(-)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4bc7b62..8f094e9 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -603,6 +603,10 @@ config PPC_SUBPAGE_PROT
+ 	  to set access permissions (read/write, readonly, or no access)
+ 	  on the 4k subpages of each 64k page.
+ 
++config PPC_COPRO_BASE
++	bool
++	default n
++
+ config SCHED_SMT
+ 	bool "SMT (Hyperthreading) scheduler support"
+ 	depends on PPC64 && SMP
+diff --git a/arch/powerpc/include/asm/copro.h b/arch/powerpc/include/asm/copro.h
+new file mode 100644
+index 0000000..2858108
+--- /dev/null
++++ b/arch/powerpc/include/asm/copro.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright 2014 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _ASM_POWERPC_COPRO_H
++#define _ASM_POWERPC_COPRO_H
++
++int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
++			  unsigned long dsisr, unsigned *flt);
++
++int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *vsid);
++
++#endif /* _ASM_POWERPC_COPRO_H */
+diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
+index 37b7ca3..a6e6e2b 100644
+--- a/arch/powerpc/include/asm/spu.h
++++ b/arch/powerpc/include/asm/spu.h
+@@ -27,6 +27,8 @@
+ #include <linux/workqueue.h>
+ #include <linux/device.h>
+ #include <linux/mutex.h>
++#include <asm/reg.h>
++#include <asm/copro.h>
+ 
+ #define LS_SIZE (256 * 1024)
+ #define LS_ADDR_MASK (LS_SIZE - 1)
+@@ -277,9 +279,6 @@ void spu_remove_dev_attr(struct device_attribute *attr);
+ int spu_add_dev_attr_group(struct attribute_group *attrs);
+ void spu_remove_dev_attr_group(struct attribute_group *attrs);
+ 
+-int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+-		unsigned long dsisr, unsigned *flt);
+-
+ /*
+  * Notifier blocks:
+  *
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index d0130ff..325e861 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -34,3 +34,4 @@ obj-$(CONFIG_TRANSPARENT_HUGEPAGE) += hugepage-hash64.o
+ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+ obj-$(CONFIG_HIGHMEM)		+= highmem.o
++obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+diff --git a/arch/powerpc/platforms/cell/spu_fault.c b/arch/powerpc/mm/copro_fault.c
+similarity index 89%
+rename from arch/powerpc/platforms/cell/spu_fault.c
+rename to arch/powerpc/mm/copro_fault.c
+index 641e727..ba7df14 100644
+--- a/arch/powerpc/platforms/cell/spu_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -1,5 +1,5 @@
+ /*
+- * SPU mm fault handler
++ * CoProcessor (SPU/AFU) mm fault handler
+  *
+  * (C) Copyright IBM Deutschland Entwicklung GmbH 2007
+  *
+@@ -23,16 +23,14 @@
+ #include <linux/sched.h>
+ #include <linux/mm.h>
+ #include <linux/export.h>
+-
+-#include <asm/spu.h>
+-#include <asm/spu_csa.h>
++#include <asm/reg.h>
+ 
+ /*
+  * This ought to be kept in sync with the powerpc specific do_page_fault
+  * function. Currently, there are a few corner cases that we haven't had
+  * to handle fortunately.
+  */
+-int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
++int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+ 		unsigned long dsisr, unsigned *flt)
+ {
+ 	struct vm_area_struct *vma;
+@@ -58,12 +56,12 @@ int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+ 			goto out_unlock;
+ 	}
+ 
+-	is_write = dsisr & MFC_DSISR_ACCESS_PUT;
++	is_write = dsisr & DSISR_ISSTORE;
+ 	if (is_write) {
+ 		if (!(vma->vm_flags & VM_WRITE))
+ 			goto out_unlock;
+ 	} else {
+-		if (dsisr & MFC_DSISR_ACCESS_DENIED)
++		if (dsisr & DSISR_PROTFAULT)
+ 			goto out_unlock;
+ 		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
+ 			goto out_unlock;
+@@ -91,4 +89,4 @@ out_unlock:
+ 	up_read(&mm->mmap_sem);
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(spu_handle_mm_fault);
++EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 9978f59..870b6db 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -86,6 +86,7 @@ config SPU_FS_64K_LS
+ config SPU_BASE
+ 	bool
+ 	default n
++	select PPC_COPRO_BASE
+ 
+ config CBE_RAS
+ 	bool "RAS features for bare metal Cell BE"
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index fe053e7..2d16884 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -20,7 +20,7 @@ spu-manage-$(CONFIG_PPC_CELL_COMMON)	+= spu_manage.o
+ 
+ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
+ 					   spu_notify.o \
+-					   spu_syscalls.o spu_fault.o \
++					   spu_syscalls.o \
+ 					   $(spu-priv1-y) \
+ 					   $(spu-manage-y) \
+ 					   spufs/
+diff --git a/arch/powerpc/platforms/cell/spufs/fault.c b/arch/powerpc/platforms/cell/spufs/fault.c
+index 8cb6260..e45894a 100644
+--- a/arch/powerpc/platforms/cell/spufs/fault.c
++++ b/arch/powerpc/platforms/cell/spufs/fault.c
+@@ -138,7 +138,7 @@ int spufs_handle_class1(struct spu_context *ctx)
+ 	if (ctx->state == SPU_STATE_RUNNABLE)
+ 		ctx->spu->stats.hash_flt++;
+ 
+-	/* we must not hold the lock when entering spu_handle_mm_fault */
++	/* we must not hold the lock when entering copro_handle_mm_fault */
+ 	spu_release(ctx);
+ 
+ 	access = (_PAGE_PRESENT | _PAGE_USER);
+@@ -149,7 +149,7 @@ int spufs_handle_class1(struct spu_context *ctx)
+ 
+ 	/* hashing failed, so try the actual fault handler */
+ 	if (ret)
+-		ret = spu_handle_mm_fault(current->mm, ea, dsisr, &flt);
++		ret = copro_handle_mm_fault(current->mm, ea, dsisr, &flt);
+ 
+ 	/*
+ 	 * This is nasty: we need the state_mutex for all the bookkeeping even
+-- 
+1.9.1
