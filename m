@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DBD11A0983
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A58E1A077F
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:19 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 30 Sep 2014 12:39:19 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C1CC32CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:16 +1000 (EST)
+ Tue, 30 Sep 2014 12:39:18 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 991712CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:15 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s8U2f6eE33816684
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:41:06 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8U2f2DL34930818
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:41:02 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s8U2dF9d007911
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:16 +1000
+ s8U2dFY7007860
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:15 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 20/21] powerpc/powernv: Fetch frozen PE on top level
-Date: Tue, 30 Sep 2014 12:39:09 +1000
-Message-Id: <1412044750-24460-20-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 16/21] powerpc/powernv: Sync OpalPciResetScope with firmware
+Date: Tue, 30 Sep 2014 12:39:05 +1000
+Message-Id: <1412044750-24460-16-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,86 +37,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It should have been part of commit 1ad7a72c5 ("powerpc/eeh: Report
-frozen parent PE prior to child PE"). There are 2 ways to report
-EEH errors: proactively polling because of 0xFF's returned from
-PCI config or IO read, or interrupt driven event. We missed to
-report and handle parent frozen PE prior to child frozen PE for
-the later case on PowerNV platform.
+The names of PCI reset scopes aren't sychronized with firmware.
+The patch fixes it.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 48 ++++++++++++++++++++++---------
- 1 file changed, 34 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/opal.h           |  9 ++++++---
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 12 ++++++------
+ arch/powerpc/platforms/powernv/pci-ioda.c |  4 ++--
+ 3 files changed, 14 insertions(+), 11 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index f157941..a084cf5 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -387,9 +387,12 @@ enum OpalM64EnableAction {
+ };
+ 
+ enum OpalPciResetScope {
+-	OPAL_PHB_COMPLETE = 1, OPAL_PCI_LINK = 2, OPAL_PHB_ERROR = 3,
+-	OPAL_PCI_HOT_RESET = 4, OPAL_PCI_FUNDAMENTAL_RESET = 5,
+-	OPAL_PCI_IODA_TABLE_RESET = 6,
++	OPAL_RESET_PHB_COMPLETE		= 1,
++	OPAL_RESET_PCI_LINK		= 2,
++	OPAL_RESET_PHB_ERROR		= 3,
++	OPAL_RESET_PCI_HOT		= 4,
++	OPAL_RESET_PCI_FUNDAMENTAL	= 5,
++	OPAL_RESET_PCI_IODA_TABLE	= 6
+ };
+ 
+ enum OpalPciReinitScope {
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 4d9400f..61ccb1e 100644
+index e516b7f..4d9400f 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
 +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -886,14 +886,12 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
- 	 * the master PE because slave PE is invisible
- 	 * to EEH core.
+@@ -514,11 +514,11 @@ int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
+ 	if (option == EEH_RESET_FUNDAMENTAL ||
+ 	    option == EEH_RESET_HOT)
+ 		rc = opal_pci_reset(phb->opal_id,
+-				OPAL_PHB_COMPLETE,
++				OPAL_RESET_PHB_COMPLETE,
+ 				OPAL_ASSERT_RESET);
+ 	else if (option == EEH_RESET_DEACTIVATE)
+ 		rc = opal_pci_reset(phb->opal_id,
+-				OPAL_PHB_COMPLETE,
++				OPAL_RESET_PHB_COMPLETE,
+ 				OPAL_DEASSERT_RESET);
+ 	if (rc < 0)
+ 		goto out;
+@@ -558,15 +558,15 @@ static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
  	 */
--	if (phb->get_pe_state) {
--		pnv_pe = &phb->ioda.pe_array[pe_no];
--		if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
--			pnv_pe = pnv_pe->master;
--			WARN_ON(!pnv_pe ||
--				!(pnv_pe->flags & PNV_IODA_PE_MASTER));
--			pe_no = pnv_pe->pe_number;
--		}
-+	pnv_pe = &phb->ioda.pe_array[pe_no];
-+	if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
-+		pnv_pe = pnv_pe->master;
-+		WARN_ON(!pnv_pe ||
-+			!(pnv_pe->flags & PNV_IODA_PE_MASTER));
-+		pe_no = pnv_pe->pe_number;
- 	}
+ 	if (option == EEH_RESET_FUNDAMENTAL)
+ 		rc = opal_pci_reset(phb->opal_id,
+-				OPAL_PCI_FUNDAMENTAL_RESET,
++				OPAL_RESET_PCI_FUNDAMENTAL,
+ 				OPAL_ASSERT_RESET);
+ 	else if (option == EEH_RESET_HOT)
+ 		rc = opal_pci_reset(phb->opal_id,
+-				OPAL_PCI_HOT_RESET,
++				OPAL_RESET_PCI_HOT,
+ 				OPAL_ASSERT_RESET);
+ 	else if (option == EEH_RESET_DEACTIVATE)
+ 		rc = opal_pci_reset(phb->opal_id,
+-				OPAL_PCI_HOT_RESET,
++				OPAL_RESET_PCI_HOT,
+ 				OPAL_DEASSERT_RESET);
+ 	if (rc < 0)
+ 		goto out;
+@@ -697,7 +697,7 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ 		    (option == EEH_RESET_HOT ||
+ 		    option == EEH_RESET_FUNDAMENTAL)) {
+ 			rc = opal_pci_reset(phb->opal_id,
+-					    OPAL_PHB_ERROR,
++					    OPAL_RESET_PHB_ERROR,
+ 					    OPAL_ASSERT_RESET);
+ 			if (rc != OPAL_SUCCESS) {
+ 				pr_warn("%s: Failure %lld clearing "
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index df241b1..36b1a7a 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1627,7 +1627,7 @@ static u32 pnv_ioda_bdfn_to_pe(struct pnv_phb *phb, struct pci_bus *bus,
  
- 	/* Find the PE according to PE# */
-@@ -904,15 +902,37 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
- 	if (!dev_pe)
- 		return -EEXIST;
- 
--	/*
--	 * At this point, we're sure the compound PE should
--	 * be put into frozen state.
--	 */
-+	/* Freeze the (compound) PE */
- 	*pe = dev_pe;
--	if (phb->freeze_pe &&
--	    !(dev_pe->state & EEH_PE_ISOLATED))
-+	if (!(dev_pe->state & EEH_PE_ISOLATED))
- 		phb->freeze_pe(phb, pe_no);
- 
-+	/*
-+	 * At this point, we're sure the (compound) PE should
-+	 * have been frozen. However, we still need poke until
-+	 * hitting the frozen PE on top level.
-+	 */
-+	dev_pe = dev_pe->parent;
-+	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
-+		int ret;
-+		int active_flags = (EEH_STATE_MMIO_ACTIVE |
-+				    EEH_STATE_DMA_ACTIVE);
-+
-+		ret = eeh_ops->get_state(dev_pe, NULL);
-+		if (ret <= 0 || (ret & active_flags) == active_flags) {
-+			dev_pe = dev_pe->parent;
-+			continue;
-+		}
-+
-+		/* Frozen parent PE */
-+		*pe = dev_pe;
-+		if (!(dev_pe->state & EEH_PE_ISOLATED))
-+			phb->freeze_pe(phb, dev_pe->addr);
-+
-+		/* Next one */
-+		dev_pe = dev_pe->parent;
-+	}
-+
- 	return 0;
+ static void pnv_pci_ioda_shutdown(struct pnv_phb *phb)
+ {
+-	opal_pci_reset(phb->opal_id, OPAL_PCI_IODA_TABLE_RESET,
++	opal_pci_reset(phb->opal_id, OPAL_RESET_PCI_IODA_TABLE,
+ 		       OPAL_ASSERT_RESET);
  }
+ 
+@@ -1803,7 +1803,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+ 
+ 	/* Reset IODA tables to a clean state */
+-	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
++	rc = opal_pci_reset(phb_id, OPAL_RESET_PCI_IODA_TABLE, OPAL_ASSERT_RESET);
+ 	if (rc)
+ 		pr_warning("  OPAL Error %ld performing IODA table reset !\n", rc);
  
 -- 
 1.8.3.2
