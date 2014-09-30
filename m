@@ -1,31 +1,33 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0102.outbound.protection.outlook.com [207.46.100.102])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D326C1A06FE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 09:58:22 +1000 (EST)
-Message-ID: <1412035075.13320.302.camel@snotra.buserror.net>
-Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
- CLK_OF_DECLARE support
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <Yuantian.Tang@freescale.com>
-Date: Mon, 29 Sep 2014 18:57:55 -0500
-In-Reply-To: <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
- <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
- <1411675680.13320.201.camel@snotra.buserror.net>
- <20140925225406.19023.25065@quantum>
- <1411685780.13320.209.camel@snotra.buserror.net>
- <20140926232900.19023.35854@quantum>
- <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mike Turquette <mturquette@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Lu Jingchang-B35083 <jingchang.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D88C81A0776
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:17 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 30 Sep 2014 12:39:17 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 86F27357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:14 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s8U2Exnq56623166
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:14:59 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s8U2dDGQ007797
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 12:39:13 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 09/21] powerpc/powernv: Clear PAPR error injection registers
+Date: Tue, 30 Sep 2014 12:38:58 +1000
+Message-Id: <1412044750-24460-9-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1412044750-24460-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,45 +37,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-09-27 at 21:18 -0500, Tang Yuantian-B29983 wrote:
-> > -----Original Message-----
-> > From: Linuxppc-dev
-> > [mailto:linuxppc-dev-bounces+b29983=freescale.com@lists.ozlabs.org] On
-> > Behalf Of Mike Turquette
-> > Sent: Saturday, September 27, 2014 7:29 AM
-> > To: Wood Scott-B07421
-> > Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> > linux-arm-kernel@lists.infradead.org; Lu Jingchang-B35083
-> > Subject: Re: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
-> > CLK_OF_DECLARE support
-> > 
-> > Quoting Scott Wood (2014-09-25 15:56:20)
-> > > On Thu, 2014-09-25 at 15:54 -0700, Mike Turquette wrote:
-> > > > Quoting Scott Wood (2014-09-25 13:08:00)
-> > > > > Well, like I said, I'd rather see the CLK_OF_DECLARE stuff be made
-> > > > > to work on PPC rather than have the driver carry around two
-> > > > > binding methods.
-> > > >
-> > > > I guess that is an existing problem, and not related directly to
-> > > > this patch? This patch is essentially just renames (though the
-> > > > V1.0/V2.0 stuff seems weird).
-> > >
-> > > This patch is adding CLK_OF_DECLARE.
-> > 
-> > I'm fine taking this patch but your comments are still unresolved. What do you
-> > think needs to be done to fix the problems that you see?
-> > 
-> CLK_OF_DECLARE is totally worked on PPC. I will do it in a separate patch.
-> Regarding V1.0 and V2.0, it is not wired just same for now. But we are not sure if it is same for v3.0 in the future.
-> 
-> Besides updating drivers/cpufreq/Kconfig.powerpc, there is one more thing I am not comfortable with:
-> This patch uses " fixed-clock" as sysclk's compatible string, while on PPC we treated it as " fsl,qoriq-sysclk-[1-2].0".
-> That's inconsistent on both ARM and PPC platforms, neither did on bindings.
+The frozen state on one specific PE is probably caused by error
+injection, which is done with help of PAPR error injection registers.
+According to the hardware spec, those registers should be cleared
+automatically after one-shot frozen PE. However, that's not always
+true, at least on P7IOC of Firebird-L. So we have to clear them
+before doing PE reset to avoid recursive EEH errors at recovery
+stage.
 
-fsl,qoriq-sysclk-XXX is the way it is because of compatibility with the
-fixups in existing U-Boots.  It shouldn't be used as a model.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-That said, I don't think you really mean "this patch", as it doesn't
-contain the device tree updates, and "fixed-clock" does not appear.
-
--Scott
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 3389cf0..e516b7f 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -682,6 +682,31 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ 	if (pe->type & EEH_PE_PHB) {
+ 		ret = ioda_eeh_phb_reset(hose, option);
+ 	} else {
++		struct pnv_phb *phb;
++		s64 rc;
++
++		/*
++		 * The frozen PE might be caused by PAPR error injection
++		 * registers, which are expected to be cleared after hitting
++		 * frozen PE as stated in the hardware spec. Unfortunately,
++		 * that's not true on P7IOC. So we have to clear it manually
++		 * to avoid recursive EEH errors during recovery.
++		 */
++		phb = hose->private_data;
++		if (phb->model == PNV_PHB_MODEL_P7IOC &&
++		    (option == EEH_RESET_HOT ||
++		    option == EEH_RESET_FUNDAMENTAL)) {
++			rc = opal_pci_reset(phb->opal_id,
++					    OPAL_PHB_ERROR,
++					    OPAL_ASSERT_RESET);
++			if (rc != OPAL_SUCCESS) {
++				pr_warn("%s: Failure %lld clearing "
++					"error injection registers\n",
++					__func__, rc);
++				return -EIO;
++			}
++		}
++
+ 		bus = eeh_pe_bus_get(pe);
+ 		if (pci_is_root_bus(bus) ||
+ 		    pci_is_root_bus(bus->parent))
+-- 
+1.8.3.2
