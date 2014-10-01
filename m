@@ -1,30 +1,19 @@
-Return-Path: <alexdeucher@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB50D1A0771
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 04:11:51 +1000 (EST)
-Received: from mail-qg0-x233.google.com (mail-qg0-x233.google.com
- [IPv6:2607:f8b0:400d:c04::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 29827140161
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 04:11:50 +1000 (EST)
-Received: by mail-qg0-f51.google.com with SMTP id z107so697511qgd.38
- for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2014 11:11:48 -0700 (PDT)
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id D844C1A06EC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 06:26:58 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/3] powernv/cpuidle: Fastsleep workaround and fixes
+Date: Wed, 01 Oct 2014 22:46:53 +0200
+Message-ID: <2978842.I7Hdqv7lNe@vostro.rjw.lan>
+In-Reply-To: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1412129383.4285.193.camel@pasglop>
-References: <1412129383.4285.193.camel@pasglop>
-Date: Wed, 1 Oct 2014 14:11:48 -0400
-Message-ID: <CADnq5_Og-hgGhq7+RkeyTn=KVPoubTKWhoTjEhV93sdacdgfbw@mail.gmail.com>
-Subject: Re: [PATCH 3/4] sound/hda/radeon: Generalize 64-bit MSI quirks
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,89 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 30, 2014 at 10:09 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> A number of radeon cards have a HW limitation causing them to be
-> unable to generate the full 64-bit of address bits for MSIs. This
-> breaks MSIs on some platforms such as POWER machines.
->
-> We used to have a powerpc specific quirk to address that on a
-> single card, but this doesn't scale very well, this is better
-> put under control of the drivers who know precisely what a given
-> HW revision can do.
->
-> This moves the setting of the quirk flag to the HDA driver when
-> detecting the radeon audio interface.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: <stable@vger.kernel.org>
+On Wednesday, October 01, 2014 01:15:57 PM Shreyas B. Prabhu wrote:
+> Fast sleep is an idle state, where the core and the L1 and L2
+> caches are brought down to a threshold voltage. This also means that
+> the communication between L2 and L3 caches have to be fenced. However
+> the current P8 chips have a bug wherein this fencing between L2 and
+> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+> the other cpus if they request for data during this time. Thus they
+> would fetch the same data from the memory which could lead to data
+> corruption if L3 cache is not flushed. 
+> 
+> This series overcomes above problem in kernel.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Srivatsa S. Bhat <srivatsa@mit.edu>
+> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
+> v2:
+> Rebased on 3.17-rc7
+> Split from 'powerpc/powernv: Support for fastsleep and winkle'
+> 
+> v1:
+> https://lkml.org/lkml/2014/8/25/446
+> 
+> Preeti U Murthy (1):
+>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+> 
+> Shreyas B. Prabhu (1):
+>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>     fast-sleep
+> 
+> Srivatsa S. Bhat (1):
+>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+> 
+>  arch/powerpc/include/asm/machdep.h             |   3 +
+>  arch/powerpc/include/asm/opal.h                |   7 ++
+>  arch/powerpc/include/asm/processor.h           |   4 +-
+>  arch/powerpc/kernel/exceptions-64s.S           |  35 ++++----
+>  arch/powerpc/kernel/idle.c                     |  19 ++++
+>  arch/powerpc/kernel/idle_power7.S              |   2 +-
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  arch/powerpc/platforms/powernv/powernv.h       |   7 ++
+>  arch/powerpc/platforms/powernv/setup.c         | 118 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/smp.c           |  11 ++-
+>  drivers/cpuidle/cpuidle-powernv.c              |  13 ++-
+>  11 files changed, 194 insertions(+), 26 deletions(-)
 
-This only applies to pre Sea-Islands asics, same as the GPU side.
+[2/3] seems to be missig from the series.
 
-Alex
+Also, since that mostly modifies arch/powerpc, I think it should go through
+that tree.  I'm fine with the cpuidle-powernv changes in [1/3] and [3/3].
 
-> ---
->  arch/powerpc/kernel/pci_64.c |  6 ------
->  sound/pci/hda/hda_intel.c    | 10 ++++++++--
->  sound/pci/hda/hda_priv.h     |  1 +
->  3 files changed, 9 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 66e1cd0..b15194e 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -266,9 +266,3 @@ int pcibus_to_node(struct pci_bus *bus)
->  }
->  EXPORT_SYMBOL(pcibus_to_node);
->  #endif
-> -
-> -static void quirk_radeon_32bit_msi(struct pci_dev *dev)
-> -{
-> -       dev->force_32bit_msi = true;
-> -}
-> -DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
-> diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-> index aa302fb..3e6d22d 100644
-> --- a/sound/pci/hda/hda_intel.c
-> +++ b/sound/pci/hda/hda_intel.c
-> @@ -296,7 +296,8 @@ enum {
->
->  /* quirks for ATI/AMD HDMI */
->  #define AZX_DCAPS_PRESET_ATI_HDMI \
-> -       (AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB)
-> +       (AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB|\
-> +        AZX_DCAPS_NO_MSI64)
->
->  /* quirks for Nvidia */
->  #define AZX_DCAPS_PRESET_NVIDIA \
-> @@ -1505,9 +1506,14 @@ static int azx_first_init(struct azx *chip)
->                 return -ENXIO;
->         }
->
-> -       if (chip->msi)
-> +       if (chip->msi) {
-> +               if (chip->driver_caps & AZX_DCAPS_NO_MSI64) {
-> +                       dev_dbg(card->dev, "Disabling 64bit MSI\n");
-> +                       pci->force_32bit_msi = true;
-> +               }
->                 if (pci_enable_msi(pci) < 0)
->                         chip->msi = 0;
-> +       }
->
->         if (azx_acquire_irq(chip, 0) < 0)
->                 return -EBUSY;
-> diff --git a/sound/pci/hda/hda_priv.h b/sound/pci/hda/hda_priv.h
-> index 949cd43..5016014 100644
-> --- a/sound/pci/hda/hda_priv.h
-> +++ b/sound/pci/hda/hda_priv.h
-> @@ -171,6 +171,7 @@ enum { SDI0, SDI1, SDI2, SDI3, SDO0, SDO1, SDO2, SDO3 };
->  #define AZX_DCAPS_PM_RUNTIME   (1 << 26)       /* runtime PM support */
->  #define AZX_DCAPS_I915_POWERWELL (1 << 27)     /* HSW i915 powerwell support */
->  #define AZX_DCAPS_CORBRP_SELF_CLEAR (1 << 28)  /* CORBRP clears itself after reset */
-> +#define AZX_DCAPS_NO_MSI64      (1 << 29)      /* Stick to 32-bit MSIs */
->
->  /* HD Audio class code */
->  #define PCI_CLASS_MULTIMEDIA_HD_AUDIO  0x0403
->
->
->
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
