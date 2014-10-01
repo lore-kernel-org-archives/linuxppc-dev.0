@@ -1,20 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0148.outbound.protection.outlook.com [157.56.111.148])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8A871A03A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 10:32:13 +1000 (EST)
-In-Reply-To: <1411586681-21262-3-git-send-email-sukadev@linux.vnet.ibm.com>
-To: sukadev@linux.vnet.ibm.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- ak@linux.intel.com, Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org,
- eranian@google.com, Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2,2/4] Simplify catalog_read()
-Message-Id: <20141001003213.A8F78140273@ozlabs.org>
-Date: Wed,  1 Oct 2014 10:32:13 +1000 (EST)
-Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
- Michael Ellerman <michaele@au1.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B9691A085C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 10:43:46 +1000 (EST)
+Message-ID: <1412124210.13320.330.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/fsl: Add support for pci(e) machine check
+ exception on E500MC / E5500
+From: Scott Wood <scottwood@freescale.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 30 Sep 2014 19:43:30 -0500
+In-Reply-To: <20140930155029.GA4724@roeck-us.net>
+References: <D04F3201.10DEB%jojyv@juniper.net>
+ <1412033466.13320.293.camel@snotra.buserror.net>
+ <20140930155029.GA4724@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "hongtao.jia@freescale.com" <hongtao.jia@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guenter Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jojy Varghese <jojyv@juniper.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-24-09 at 19:24:39 UTC, sukadev@linux.vnet.ibm.com wrote:
-> catalog_read() implements the read interface for the sysfs file
+On Tue, 2014-09-30 at 08:50 -0700, Guenter Roeck wrote:
+> On Mon, Sep 29, 2014 at 06:31:06PM -0500, Scott Wood wrote:
+> > On Mon, 2014-09-29 at 23:03 +0000, Jojy Varghese wrote:
+> > > 
+> > > On 9/29/14 12:06 PM, "Guenter Roeck" <linux@roeck-us.net> wrote:
+> > > 
+> > > >Those are errors related to PCIe hotplug, and are seen with unexpected
+> > > >PCIe
+> > > >device removals (triggered, for example, by removing power from a PCIe
+> > > >adapter).
+> > > >The behavior we see on E5500 is quite similar to the same behavior on
+> > > >E500:
+> > > >If unhandled, the CPU keeps executing the same instruction over and over
+> > > >again
+> > > >if there is an error on a PCIe access and thus stalls. I don't know if
+> > > >this
+> > > >is considered an erratum or expected behavior, but it is one we have to
+> > > >address
+> > > >since we have to be able to handle that condition. 
+> > 
+> > The reason I ask is that the handling for e500 was described as an
+> > erratum workaround.  If it is an erratum it would be nice to know the
+> > erratum number and the full list of affected chips.
+> > 
+> My understanding, which may be wrong, was that this is expected behavior,
+> at least for E5500. I actually thought I had seen it somewhere in the
+> specification (response to PCIe errors), but I don't recall where exactly.
 > 
-> 	/sys/bus/event_source/devices/hv_24x7/interface/catalog
-> 
-> It essentially takes a buffer, an offset and count as parameters
-> to the read() call.  It makes a hypervisor call to read a specific
-> page from the catalog and copy the required bytes into the given
-> buffer. Each call to catalog_read() returns at most one 4K page.
-> 
-> Given these requirements, we should be able to simplify the
-> catalog_read().
-> 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 2f2215c..9427ef7 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -185,6 +105,8 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
->  	ssize_t ret = 0;
->  	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
->  	loff_t page_offset = 0;
-> +	loff_t offset_in_page;
-> +	size_t copy_len;
->  	uint64_t catalog_version_num = 0;
->  	void *page = kmem_cache_alloc(hv_page_cache, GFP_USER);
->  	struct hv_24x7_catalog_page_0 *page_0 = page;
-> @@ -203,6 +125,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
->  
->  	page_offset = offset / 4096;
->  	page_count  = count  / 4096;
+> At least for my part I am not aware of an erratum.
 
-I don't see where page_count is used.
+Jia Hongtao, can you comment here?
 
-> +	offset_in_page = count % 4096;
+> > > >Ultimately, we'll want
+> > > >to
+> > > >implement PCIe error handlers for the affected drivers, but that will be
+> > > >a next
+> > > >step.
+> > 
+> > For now can we at least print a ratelimited error message?  I don't like
+> > the idea of silently ignoring these errors.  I suppose it's a separate
+> > issue from extending the workaround to cover e500mc, though.
+> > 
+> I don't really like the idea of printing an error message pretty much each time
+> when an unexpected hotplug event occurs.
 
-Shouldn't offset_in_page be based on offset ?
+Unexpected events seem like the sort of thing you'd want to log, but my
+concern is that this might not be the only cause of PCI errors.
 
-cheers
+-Scott
