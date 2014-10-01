@@ -2,18 +2,18 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF2AD1A1777
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 19:46:03 +1000 (EST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id A89A41A179D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 19:53:46 +1000 (EST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5CF0E140140
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 19:46:01 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 92F2C140140
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 19:53:37 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Oct 2014 15:15:57 +0530
+ Wed, 1 Oct 2014 19:53:25 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
  mpe@ellerman.id.au, benh@kernel.crashing.org
@@ -22,8 +22,8 @@ Subject: Re: [PATCH v2 02/17] powerpc/cell: Move data segment faulting code
 In-Reply-To: <1412073306-13812-3-git-send-email-mikey@neuling.org>
 References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
  <1412073306-13812-3-git-send-email-mikey@neuling.org>
-Date: Wed, 01 Oct 2014 15:15:40 +0530
-Message-ID: <8738b8nmwr.fsf@linux.vnet.ibm.com>
+Date: Wed, 01 Oct 2014 15:23:16 +0530
+Message-ID: <87zjdgm7zn.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -99,7 +99,24 @@ Michael Neuling <mikey@neuling.org> writes:
 > +#else
 > +		psize = mm->context.user_psize;
 > +#endif
+> +		ssize = user_segment_size(ea);
+> +		*vsid = (get_vsid(mm->context.id, ea, ssize)
+> +			 << slb_vsid_shift(ssize)) | SLB_VSID_USER;
+> +		break;
+> +	case VMALLOC_REGION_ID:
+> +		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
+> +		if (ea < VMALLOC_END)
+> +			psize = mmu_vmalloc_psize;
+> +		else
+> +			psize = mmu_io_psize;
+> +		ssize = mmu_kernel_ssize;
+> +		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
+> +			 << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
 
-We don't really need that as explained in last review.
+why not
+		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
+			 << slb_vsid_shift(ssize)) | SLB_VSID_KERNEL;
+
+for vmalloc and kernel region ? We could end up using 1T segments for kernel mapping too.
 
 -aneesh
