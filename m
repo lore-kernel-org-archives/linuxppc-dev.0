@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5029A1A184B
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5022A1A1848
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:22 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 14/20] powerpc/6xx/wii: Use pm_power_off rather than
+Subject: [PATCH 12/20] powerpc/6xx/gamecube: Use pm_power_off rather than
  ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:28:00 +0200
-Message-Id: <1412170086-57971-15-git-send-email-agraf@suse.de>
+Date: Wed,  1 Oct 2014 15:27:58 +0200
+Message-Id: <1412170086-57971-13-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -29,29 +29,29 @@ the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/platforms/embedded6xx/wii.c | 3 ++-
+ arch/powerpc/platforms/embedded6xx/gamecube.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index 6d8dadf..24d656d 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -158,6 +158,8 @@ static void __init wii_setup_arch(void)
- 		clrbits32(hw_gpio + HW_GPIO_OUT(0),
- 			  HW_GPIO_SLOT_LED | HW_GPIO_SENSOR_BAR);
- 	}
+diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
+index a138e14..3ee7a8b 100644
+--- a/arch/powerpc/platforms/embedded6xx/gamecube.c
++++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
+@@ -67,6 +67,8 @@ static int __init gamecube_probe(void)
+ 	if (!of_flat_dt_is_compatible(dt_root, "nintendo,gamecube"))
+ 		return 0;
+ 
++	pm_power_off = gamecube_power_off;
 +
-+	pm_power_off = wii_power_off;
+ 	return 1;
  }
  
- static void wii_restart(char *cmd)
-@@ -226,7 +228,6 @@ define_machine(wii) {
- 	.init_early		= wii_init_early,
- 	.setup_arch		= wii_setup_arch,
- 	.restart		= wii_restart,
--	.power_off		= wii_power_off,
- 	.halt			= wii_halt,
- 	.init_IRQ		= wii_pic_probe,
+@@ -80,7 +82,6 @@ define_machine(gamecube) {
+ 	.probe			= gamecube_probe,
+ 	.init_early		= gamecube_init_early,
+ 	.restart		= gamecube_restart,
+-	.power_off		= gamecube_power_off,
+ 	.halt			= gamecube_halt,
+ 	.init_IRQ		= flipper_pic_probe,
  	.get_irq		= flipper_pic_get_irq,
 -- 
 1.8.1.4
