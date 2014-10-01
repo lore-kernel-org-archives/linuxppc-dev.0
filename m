@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5022A1A1848
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A42C1A185A
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:22 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 12/20] powerpc/6xx/gamecube: Use pm_power_off rather than
- ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:27:58 +0200
-Message-Id: <1412170086-57971-13-git-send-email-agraf@suse.de>
+Subject: [PATCH 20/20] powerpc: Remove ppc_md.power_off
+Date: Wed,  1 Oct 2014 15:28:06 +0200
+Message-Id: <1412170086-57971-21-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -24,34 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic power off callback is pm_power_off. Use that one rather than
-the powerpc specific ppc_md.power_off.
+Now that we have all implementations of ppc_md.power_off converted to
+pm_power_off we can remove the ppc_md variant.
+
+While at it, also set the default for pm_power_off to NULL so that non
+machine drivers can implement overrides.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/platforms/embedded6xx/gamecube.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/machdep.h | 1 -
+ arch/powerpc/kernel/setup-common.c | 6 ++----
+ arch/powerpc/xmon/xmon.c           | 2 --
+ 3 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
-index a138e14..3ee7a8b 100644
---- a/arch/powerpc/platforms/embedded6xx/gamecube.c
-+++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
-@@ -67,6 +67,8 @@ static int __init gamecube_probe(void)
- 	if (!of_flat_dt_is_compatible(dt_root, "nintendo,gamecube"))
- 		return 0;
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index b125cea..10dc008 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -144,7 +144,6 @@ struct machdep_calls {
+ #endif
  
-+	pm_power_off = gamecube_power_off;
-+
- 	return 1;
+ 	void		(*restart)(char *cmd);
+-	void		(*power_off)(void);
+ 	void		(*halt)(void);
+ 	void		(*panic)(char *str);
+ 	void		(*cpu_die)(void);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 5dfcb28..58a260f 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -138,9 +138,7 @@ void machine_restart(char *cmd)
+ void machine_power_off(void)
+ {
+ 	machine_shutdown();
+-	if (ppc_md.power_off)
+-		ppc_md.power_off();
+-	if (pm_power_off != machine_power_off)
++	if (pm_power_off)
+ 		pm_power_off();
+ #ifdef CONFIG_SMP
+ 	smp_send_stop();
+@@ -152,7 +150,7 @@ void machine_power_off(void)
+ /* Used by the G5 thermal driver */
+ EXPORT_SYMBOL_GPL(machine_power_off);
+ 
+-void (*pm_power_off)(void) = machine_power_off;
++void (*pm_power_off)(void);
+ EXPORT_SYMBOL_GPL(pm_power_off);
+ 
+ void machine_halt(void)
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 531f649..506d256 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -981,8 +981,6 @@ static void bootcmds(void)
+ 	else if (cmd == 'h')
+ 		ppc_md.halt();
+ 	else if (cmd == 'p')
+-		if (ppc_md.power_off)
+-			ppc_md.power_off();
+ 		if (pm_power_off)
+ 			pm_power_off();
  }
- 
-@@ -80,7 +82,6 @@ define_machine(gamecube) {
- 	.probe			= gamecube_probe,
- 	.init_early		= gamecube_init_early,
- 	.restart		= gamecube_restart,
--	.power_off		= gamecube_power_off,
- 	.halt			= gamecube_halt,
- 	.init_IRQ		= flipper_pic_probe,
- 	.get_irq		= flipper_pic_get_irq,
 -- 
 1.8.1.4
