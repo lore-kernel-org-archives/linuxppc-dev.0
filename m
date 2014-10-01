@@ -1,37 +1,35 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 640E31A05E7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:46:01 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 12A141A1882
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:46:28 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 1 Oct 2014 01:45:58 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4D88C1FF0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:34:41 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s917hqSp1311154
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 09:43:52 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s917jtkv014622
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 01:45:55 -0600
+ Wed, 1 Oct 2014 03:46:25 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 649B16E8046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 03:35:07 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s917kMvq6947320
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 07:46:22 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s917kLJI027662
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 03:46:22 -0400
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] cpuidle/powernv: Populate cpuidle state details by
- querying the device-tree
-Date: Wed,  1 Oct 2014 13:15:02 +0530
-Message-Id: <1412149502-2729-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+Subject: [PATCH v2 0/3] powernv/cpuidle: Fastsleep workaround and fixes
+Date: Wed,  1 Oct 2014 13:15:57 +0530
+Message-Id: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org,
  "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,89 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Fast sleep is an idle state, where the core and the L1 and L2
+caches are brought down to a threshold voltage. This also means that
+the communication between L2 and L3 caches have to be fenced. However
+the current P8 chips have a bug wherein this fencing between L2 and
+L3 caches get delayed by a cpu cycle. This can delay L3 response to
+the other cpus if they request for data during this time. Thus they
+would fetch the same data from the memory which could lead to data
+corruption if L3 cache is not flushed. 
 
-We hard code the metrics relevant for cpuidle states in the kernel today.
-Instead pick them up from the device tree so that they remain relevant
-and updated for the system that the kernel is running on.
+This series overcomes above problem in kernel.
 
-Cc: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: devicetree@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Srivatsa S. Bhat <srivatsa@mit.edu>
+Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+
 v2:
 Rebased on 3.17-rc7
-Separated from 'powerpc/powernv: Support for fastsleep and winkle'
+Split from 'powerpc/powernv: Support for fastsleep and winkle'
 
 v1:
-Initial post
-https://lkml.org/lkml/2014/8/25/456
+https://lkml.org/lkml/2014/8/25/446
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index a64be57..2426a4b 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -163,7 +163,8 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	u32 len_flags, flags;
-+	const __be32 *idle_state_latency;
-+	u32 len_flags, flags, latency_ns;
- 	int i;
- 
- 	/* Currently we have snooze statically defined */
-@@ -180,18 +181,32 @@ static int powernv_add_idle_states(void)
- 		return nr_idle_states;
- 	}
- 
-+	idle_state_latency = of_get_property(power_mgt,
-+			"ibm,cpu-idle-state-latencies-ns", NULL);
-+	if (!idle_state_latency) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-+		return nr_idle_states;
-+	}
-+
- 	dt_idle_states = len_flags / sizeof(u32);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
- 		flags = be32_to_cpu(idle_state_flags[i]);
-+
-+		/* Cpuidle accepts exit_latency in us and we estimate best case
-+		 * target residency to be 10x exit_latency
-+		 */
-+		latency_ns = be32_to_cpu(idle_state_latency[i]);
- 		if (flags & IDLE_USE_INST_NAP) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
--			powernv_states[nr_idle_states].exit_latency = 10;
--			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &nap_loop;
- 			nr_idle_states++;
- 		}
-@@ -202,8 +217,10 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags =
- 				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency = 300;
--			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].exit_latency =
-+					((unsigned int)latency_ns) / 1000;
-+			powernv_states[nr_idle_states].target_residency =
-+					((unsigned int)latency_ns / 100);
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
- 			nr_idle_states++;
- 		}
+Preeti U Murthy (1):
+  powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+
+Shreyas B. Prabhu (1):
+  powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+    fast-sleep
+
+Srivatsa S. Bhat (1):
+  powerpc/powernv: Enable Offline CPUs to enter deep idle states
+
+ arch/powerpc/include/asm/machdep.h             |   3 +
+ arch/powerpc/include/asm/opal.h                |   7 ++
+ arch/powerpc/include/asm/processor.h           |   4 +-
+ arch/powerpc/kernel/exceptions-64s.S           |  35 ++++----
+ arch/powerpc/kernel/idle.c                     |  19 ++++
+ arch/powerpc/kernel/idle_power7.S              |   2 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/powernv.h       |   7 ++
+ arch/powerpc/platforms/powernv/setup.c         | 118 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/smp.c           |  11 ++-
+ drivers/cpuidle/cpuidle-powernv.c              |  13 ++-
+ 11 files changed, 194 insertions(+), 26 deletions(-)
+
+-- 
+1.9.3
