@@ -1,34 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D4431A0437
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 19:55:59 +1000 (EST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 97916140161
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 19:55:49 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Oct 2014 19:55:36 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH v2 10/17] powerpc/mm: Merge vsid calculation in
- hash_page() and copro_data_segment()
-In-Reply-To: <1412073306-13812-11-git-send-email-mikey@neuling.org>
-References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
- <1412073306-13812-11-git-send-email-mikey@neuling.org>
-Date: Wed, 01 Oct 2014 15:25:27 +0530
-Message-ID: <87wq8km7w0.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- imunsie@au1.ibm.com, anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03EAD1A1789
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 20:51:43 +1000 (EST)
+Message-ID: <1412160702.19209.59.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 03/17] powerpc/cell: Make spu_flush_all_slbs() generic
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 01 Oct 2014 20:51:42 +1000
+In-Reply-To: <20141001071330.E4262140174@ozlabs.org>
+References: <20141001071330.E4262140174@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
+ linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+ anton@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,197 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Wed, 2014-10-01 at 17:13 +1000, Michael Ellerman wrote:
+> On Tue, 2014-30-09 at 10:34:52 UTC, Michael Neuling wrote:
+> > diff --git a/arch/powerpc/include/asm/copro.h b/arch/powerpc/include/as=
+m/copro.h
+> > index 2858108..f3d338f 100644
+> > --- a/arch/powerpc/include/asm/copro.h
+> > +++ b/arch/powerpc/include/asm/copro.h
+> > @@ -15,4 +15,10 @@ int copro_handle_mm_fault(struct mm_struct *mm, unsi=
+gned long ea,
+> > =20
+> >  int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *v=
+sid);
+> > =20
+> > +
+> > +#ifdef CONFIG_PPC_COPRO_BASE
+> > +void copro_flush_all_slbs(struct mm_struct *mm);
+> > +#else
+> > +#define copro_flush_all_slbs(mm) do {} while(0)
+>=20
+> This can be a static inline, so it should be. That way you get type check=
+ing on
+> the argument for CONFIG_PPC_COPRO_BASE=3Dn.
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> The vsid calculation between hash_page() and copro_data_segment() are very
-> similar.  This merges these two different versions.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h |  2 ++
->  arch/powerpc/mm/copro_fault.c         | 45 ++++++--------------------
->  arch/powerpc/mm/hash_utils_64.c       | 61 ++++++++++++++++++++++-------------
->  3 files changed, 50 insertions(+), 58 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-> index f84e5a5..bf43fb0 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -322,6 +322,8 @@ extern int __hash_page_64K(unsigned long ea, unsigned long access,
->  			   unsigned int local, int ssize);
->  struct mm_struct;
->  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
-> +int calculate_vsid(struct mm_struct *mm, u64 ea,
-> +		   u64 *vsid, int *psize, int *ssize);
->  extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap);
->  extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap);
->  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
-> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-> index 939abdf..ba8bf8e 100644
-> --- a/arch/powerpc/mm/copro_fault.c
-> +++ b/arch/powerpc/mm/copro_fault.c
-> @@ -94,45 +94,18 @@ EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
->  
->  int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *vsid)
->  {
-> -	int psize, ssize;
-> +	int psize, ssize, rc;
->  
->  	*esid = (ea & ESID_MASK) | SLB_ESID_V;
->  
-> -	switch (REGION_ID(ea)) {
-> -	case USER_REGION_ID:
-> -		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
-> -#ifdef CONFIG_PPC_MM_SLICES
-> -		psize = get_slice_psize(mm, ea);
-> -#else
-> -		psize = mm->context.user_psize;
-> -#endif
-> -		ssize = user_segment_size(ea);
-> -		*vsid = (get_vsid(mm->context.id, ea, ssize)
-> -			 << slb_vsid_shift(ssize)) | SLB_VSID_USER;
-> -		break;
-> -	case VMALLOC_REGION_ID:
-> -		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
-> -		if (ea < VMALLOC_END)
-> -			psize = mmu_vmalloc_psize;
-> -		else
-> -			psize = mmu_io_psize;
-> -		ssize = mmu_kernel_ssize;
-> -		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-> -			 << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> -		break;
-> -	case KERNEL_REGION_ID:
-> -		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
-> -		psize = mmu_linear_psize;
-> -		ssize = mmu_kernel_ssize;
-> -		*vsid = (get_kernel_vsid(ea, mmu_kernel_ssize)
-> -			 << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> -		break;
-> -	default:
-> -		/* Future: support kernel segments so that drivers can use the
-> -		 * CoProcessors */
-> -		pr_debug("invalid region access at %016llx\n", ea);
-> -		return 1;
-> -	}
-> +	rc = calculate_vsid(mm, ea, vsid, &psize, &ssize);
-> +	if (rc)
-> +		return rc;
-> +	if (REGION_ID(ea) == USER_REGION_ID)
-> +		*vsid = (*vsid << slb_vsid_shift(ssize)) | SLB_VSID_USER;
-> +	else
-> +		*vsid = (*vsid << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
-> +
->  	*vsid |= mmu_psize_defs[psize].sllp |
->  		((ssize == MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
->  
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 0a5c8c0..3fa81ca 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -983,6 +983,38 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
->  	}
->  }
->  
-> +int calculate_vsid(struct mm_struct *mm, u64 ea,
-> +		   u64 *vsid, int *psize, int *ssize)
-> +{
-> +	switch (REGION_ID(ea)) {
-> +	case USER_REGION_ID:
-> +		pr_devel("%s: 0x%llx -- USER_REGION_ID\n", __func__, ea);
-> +		*psize = get_slice_psize(mm, ea);
-> +		*ssize = user_segment_size(ea);
-> +		*vsid = get_vsid(mm->context.id, ea, *ssize);
-> +		return 0;
-> +	case VMALLOC_REGION_ID:
-> +		pr_devel("%s: 0x%llx -- VMALLOC_REGION_ID\n", __func__, ea);
-> +		if (ea < VMALLOC_END)
-> +			*psize = mmu_vmalloc_psize;
-> +		else
-> +			*psize = mmu_io_psize;
-> +		*ssize = mmu_kernel_ssize;
-> +		*vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-> +		return 0;
-> +	case KERNEL_REGION_ID:
-> +		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
-> +		*psize = mmu_linear_psize;
-> +		*ssize = mmu_kernel_ssize;
-> +		*vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-> +		return 0;
-> +	default:
-> +		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
-> +		return 1;
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(calculate_vsid);
-> +
->  /* Result code is:
->   *  0 - handled
->   *  1 - normal page fault
-> @@ -993,7 +1025,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, u
->  {
->  	enum ctx_state prev_state = exception_enter();
->  	pgd_t *pgdir;
-> -	unsigned long vsid;
-> +	u64 vsid;
->  	pte_t *ptep;
->  	unsigned hugeshift;
->  	const struct cpumask *tmp;
-> @@ -1003,35 +1035,20 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, u
->  	DBG_LOW("%s(ea=%016lx, access=%lx, trap=%lx\n",
->  		__func__, ea, access, trap);
->  
-> -	/* Get region & vsid */
-> - 	switch (REGION_ID(ea)) {
-> -	case USER_REGION_ID:
-> +	/* Get region */
-> +	if (REGION_ID(ea) == USER_REGION_ID) {
->  		user_region = 1;
->  		if (! mm) {
->  			DBG_LOW(" user region with no mm !\n");
->  			rc = 1;
->  			goto bail;
->  		}
-> -		psize = get_slice_psize(mm, ea);
-> -		ssize = user_segment_size(ea);
-> -		vsid = get_vsid(mm->context.id, ea, ssize);
-> -		break;
-> -	case VMALLOC_REGION_ID:
-> +	} else
->  		mm = &init_mm;
-> -		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-> -		if (ea < VMALLOC_END)
-> -			psize = mmu_vmalloc_psize;
-> -		else
-> -			psize = mmu_io_psize;
-> -		ssize = mmu_kernel_ssize;
-> -		break;
-> -	default:
-> -		/* Not a valid range
-> -		 * Send the problem up to do_page_fault 
-> -		 */
-> -		rc = 1;
+OK, I'll update.
 
-
-That part is different now. We now handle kernel_region_id in case of
-hash_page. Earlier we used consider it a problem. 
-
-> +	rc = calculate_vsid(mm, ea, &vsid, &psize, &ssize);
-> +	if (rc)
->  		goto bail;
-> -	}
-> +
->  	DBG_LOW(" mm=%p, mm->pgdir=%p, vsid=%016lx\n", mm, mm->pgd, vsid);
->  
->  	/* Bad address. */
-> -- 
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Mikey
