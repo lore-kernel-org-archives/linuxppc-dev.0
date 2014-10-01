@@ -1,19 +1,35 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5AF01A1A13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:11:40 +1000 (EST)
-Date: Wed, 1 Oct 2014 17:11:39 +1000
-From: Anton Blanchard <anton@samba.org>
-To: zhong@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Rename __get_SP() to current_stack_pointer()
-Message-ID: <20141001171139.0378b0bc@kryten>
-In-Reply-To: <20141001151000.0d754938@kryten>
-References: <20141001151000.0d754938@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65F9D1A1833
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:12:31 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 1 Oct 2014 17:12:06 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6BFEC2BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:12:05 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s916lmC154657168
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 16:47:48 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s917C43m003870
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 17:12:04 +1000
+Date: Wed, 1 Oct 2014 17:12:04 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/6] powerpc/eeh: Refactor config accessors
+Message-ID: <20141001071204.GA28956@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1412147274-28770-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1412147274-28770-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,95 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael points out that __get_SP() is a pretty horrible
-function name. Let's give it a better name.
+On Wed, Oct 01, 2014 at 05:07:48PM +1000, Gavin Shan wrote:
+>When EEH errors are detected on some particular PCI adapters, one of
+>which is shown as follows, the PCI config space of thoese PCI adapters
+>(PE) should be blocked. Otherwise, we will run into fenced PHB when
+>collecting EEH logs (part of recovery). The patchset fixes this issue.
+>Also, EEH_PE_RESET is replaced with EEH_PE_CFG_BLOCKED to indicate its
+>usage. It's bad idea to allow PCI config access even EEH_PE_CFG_BLOCKED
+>flag is set for the corresponding PE because it potentially triggers
+>recursive EEH error. The patchset also blocks config request from EEH
+>backend if necessary.
+>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/perf_event.h | 2 +-
- arch/powerpc/include/asm/reg.h        | 2 +-
- arch/powerpc/kernel/irq.c             | 2 +-
- arch/powerpc/kernel/misc.S            | 2 +-
- arch/powerpc/kernel/process.c         | 2 +-
- arch/powerpc/kernel/stacktrace.c      | 2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+Missed to attach the logs from "lspci" to point the adapters we have
+problems with:
 
-diff --git a/arch/powerpc/include/asm/perf_event.h b/arch/powerpc/include/asm/perf_event.h
-index 0bb2372..fc53598 100644
---- a/arch/powerpc/include/asm/perf_event.h
-+++ b/arch/powerpc/include/asm/perf_event.h
-@@ -34,7 +34,7 @@
- 	do {							\
- 		(regs)->result = 0;				\
- 		(regs)->nip = __ip;				\
--		(regs)->gpr[1] = *(unsigned long *)__get_SP();	\
-+		(regs)->gpr[1] = *(unsigned long *)current_stack_pointer(); \
- 		asm volatile("mfmsr %0" : "=r" ((regs)->msr));	\
- 	} while (0)
- #endif
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 0f973c0..d8974b5 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1264,7 +1264,7 @@ static inline unsigned long mfvtb (void)
- 
- #define proc_trap()	asm volatile("trap")
- 
--extern unsigned long __get_SP(void);
-+extern unsigned long current_stack_pointer(void);
- 
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 8eb857f..c143835 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -466,7 +466,7 @@ static inline void check_stack_overflow(void)
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	long sp;
- 
--	sp = __get_SP() & (THREAD_SIZE-1);
-+	sp = current_stack_pointer() & (THREAD_SIZE-1);
- 
- 	/* check for stack overflow: is there less than 2KB free? */
- 	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 120deb7..0d43219 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -115,6 +115,6 @@ _GLOBAL(longjmp)
- 	mr	r3,r4
- 	blr
- 
--_GLOBAL(__get_SP)
-+_GLOBAL(current_stack_pointer)
- 	PPC_LL	r3,0(r1)
- 	blr
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3cc6439..923cd2d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1545,7 +1545,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		tsk = current;
- 	if (sp == 0) {
- 		if (tsk == current)
--			sp = __get_SP();
-+			sp = current_stack_pointer();
- 		else
- 			sp = tsk->thread.ksp;
- 	}
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 7f65bae..ea43a34 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -50,7 +50,7 @@ void save_stack_trace(struct stack_trace *trace)
- {
- 	unsigned long sp;
- 
--	sp = __get_SP();
-+	sp = current_stack_pointer();
- 
- 	save_context_stack(trace, sp, current, 1);
- }
--- 
-1.9.1
+# lspci -s 0003:09:00.0
+0003:09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 \
+	     Gigabit Ethernet PCIe (rev 01)
+# lspci -n -s 0003:09:00.0
+0003:09:00.0 0200: 14e4:1657 (rev 01)
+
+Thanks,
+Gavin
+
+>Gavin Shan (6):
+>  powerpc/eeh: Fix condition for isolated state
+>  powerpc/eeh: Rename flag EEH_PE_RESET to EEH_PE_CFG_BLOCKED
+>  powerpc/powernv: Drop config requests in EEH accessors
+>  powerpc/pseries: Drop config requests in EEH accessors
+>  powerpc/eeh: Block PCI config access upon frozen PE
+>  powerpc/eeh: Don't collect logs on PE with blocked config space
+>
+> arch/powerpc/include/asm/eeh.h               |  3 +-
+> arch/powerpc/kernel/eeh.c                    | 19 +++++++---
+> arch/powerpc/kernel/eeh_driver.c             | 12 +++---
+> arch/powerpc/kernel/eeh_pe.c                 | 10 ++++-
+> arch/powerpc/kernel/rtas_pci.c               | 30 ++++++---------
+> arch/powerpc/platforms/powernv/eeh-ioda.c    |  2 +-
+> arch/powerpc/platforms/powernv/eeh-powernv.c | 56 +++++++++++++++++++++++++++-
+> arch/powerpc/platforms/powernv/pci.c         |  2 +-
+> 8 files changed, 97 insertions(+), 37 deletions(-)
+>
+>-- 
+>1.8.3.2
+>
