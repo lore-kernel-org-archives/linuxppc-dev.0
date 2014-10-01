@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A4CE1A1806
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1832E1A1802
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/20] powerpc/corenet: Use pm_power_off rather than
+Subject: [PATCH 09/20] powerpc/cell/qpace: Use pm_power_off rather than
  ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:27:52 +0200
-Message-Id: <1412170086-57971-7-git-send-email-agraf@suse.de>
+Date: Wed,  1 Oct 2014 15:27:55 +0200
+Message-Id: <1412170086-57971-10-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -29,35 +29,29 @@ the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/platforms/85xx/corenet_generic.c | 2 +-
- arch/powerpc/sysdev/fsl_soc.c                 | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/qpace_setup.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index d22dd85..89fd568 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -156,7 +156,7 @@ static int __init corenet_generic_probe(void)
+diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
+index 6e3409d..8488094 100644
+--- a/arch/powerpc/platforms/cell/qpace_setup.c
++++ b/arch/powerpc/platforms/cell/qpace_setup.c
+@@ -117,6 +117,8 @@ static void __init qpace_setup_arch(void)
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
+ #endif
++
++	pm_power_off = rtas_power_off;
+ }
  
- 			ppc_md.get_irq = ehv_pic_get_irq;
- 			ppc_md.restart = fsl_hv_restart;
--			ppc_md.power_off = fsl_hv_halt;
-+			pm_power_off = fsl_hv_halt;
- 			ppc_md.halt = fsl_hv_halt;
- #ifdef CONFIG_SMP
- 			/*
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index ffd1169..1e04568 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -238,7 +238,7 @@ void fsl_hv_restart(char *cmd)
- /*
-  * Halt the current partition
-  *
-- * This function should be assigned to the ppc_md.power_off and ppc_md.halt
-+ * This function should be assigned to the pm_power_off and ppc_md.halt
-  * function pointers, to shut down the partition when we're running under
-  * the Freescale hypervisor.
-  */
+ static int __init qpace_probe(void)
+@@ -137,7 +139,6 @@ define_machine(qpace) {
+ 	.setup_arch		= qpace_setup_arch,
+ 	.show_cpuinfo		= qpace_show_cpuinfo,
+ 	.restart		= rtas_restart,
+-	.power_off		= rtas_power_off,
+ 	.halt			= rtas_halt,
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.get_rtc_time		= rtas_get_rtc_time,
 -- 
 1.8.1.4
