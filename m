@@ -1,29 +1,29 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-la0-x230.google.com (mail-la0-x230.google.com
- [IPv6:2a00:1450:4010:c03::230])
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D552D1A0A4E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 00:57:15 +1000 (EST)
-Received: by mail-la0-f48.google.com with SMTP id gi9so525736lab.35
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Oct 2014 07:57:10 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <542C13FB.80608@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 035F61A0509
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 01:54:42 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id fp1so453221pdb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Oct 2014 08:54:39 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Wed, 1 Oct 2014 08:54:34 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+Message-ID: <20141001155434.GA11039@roeck-us.net>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
  <CAMuHMdWEN+q+s6ENoqqD8d0hy=hcZSiWzW3poJFBs8uEBGVuGg@mail.gmail.com>
  <542C13FB.80608@suse.de>
-Date: Wed, 1 Oct 2014 16:57:10 +0200
-Message-ID: <CAMuHMdVGK2J1QJPWBygNv5yL=thEyPd8TKdfUFsGjiAFHQGXOg@mail.gmail.com>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alexander Graf <agraf@suse.de>
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <542C13FB.80608@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Guenter Roeck <linux@roeck-us.net>
+ Alistair Popple <alistair@popple.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +33,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 1, 2014 at 4:47 PM, Alexander Graf <agraf@suse.de> wrote:
->> This is touching the same area as last night's
->> "[RFC PATCH 00/16] kernel: Add support for poweroff handler call chain"
->> https://lkml.org/lkml/2014/9/30/575
->
+On Wed, Oct 01, 2014 at 04:47:23PM +0200, Alexander Graf wrote:
+> 
+> 
+> On 01.10.14 16:33, Geert Uytterhoeven wrote:
+> > Hi Alex,
+> > 
+> > On Wed, Oct 1, 2014 at 3:27 PM, Alexander Graf <agraf@suse.de> wrote:
+> >> The generic Linux framework to power off the machine is a function pointer
+> >> called pm_power_off. The trick about this pointer is that device drivers can
+> >> potentially implement it rather than board files.
+> >>
+> >> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+> >> off logic which then calls ppc_md.power_off to invoke machine specific power
+> >> off.
+> >>
+> >> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
+> >> this card house falls apart. That driver only registers itself if pm_power_off
+> >> is NULL to ensure it doesn't override board specific logic. However, since we
+> >> always set pm_power_off to the generic power off logic (which will just not
+> >> power off the machine if no ppc_md.power_off call is implemented), we can't
+> >> implement power off via the generic GPIO power off driver.
+> >>
+> >> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> >> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> >> driver can implement power off logic via that function pointer.
+> >>
+> >> With this patch set applied and a few patches on top of QEMU that implement a
+> >> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
+> >> machine after halt.
+> > 
+> > This is touching the same area as last night's
+> > "[RFC PATCH 00/16] kernel: Add support for poweroff handler call chain"
+> > https://lkml.org/lkml/2014/9/30/575
+> 
 > I agree, and I think your patch set is walking into a reasonable
 > direction. However, I really think it should convert all users of
 > pm_power_off - at which point you'll probably get to the same conclusion
 > that ppc_md.power_off is a bad idea :).
->
+> 
+Yes, that would be the ultimate goal.
+
 > So in a way, this patch set is semantically a prerequisite to the full
 > conversion you'd probably like to do :).
->
+> 
 > Also, in your cover letter you describe that some methods power off the
 > CPU power while others power off the system power. How do you
 > distinguish between them with a call chain? You probably won't get
 > around to trigger the system power off callback after the CPU power off
 > callback ran ;).
+> 
+Those are examples. Don't get hung up on it. I may actually replace the
+CPU example with something better in the next version; it is not really
+a good example and may get people stuck on "why on earth would anyone want
+or need a means to turn off the CPU power" instead of focusing on the problem
+the patch set tries to solve.
 
-I'll let G=C3=BCnther answer that...
+The basic problem is that there can be different poweroff handlers,
+some of which may not be available on some systems, and some may not
+be as desirable as others for various reasons. The code registering
+those poweroff handlers does not specify the poweroff method, but its 
+priority. It would be up to the programmer (hopefully together with
+the board designer) to determine which method should have higher priority.
+Taking the above example, the callback to turn off CPU power would presumably
+be one of last resort, and have a very low priority.
 
-Gr{oetje,eeting}s,
+A better example may actually be patch 15/16 of the series. The affected
+driver (drivers/power/reset/restart-poweroff.c) does not really power off
+the system, but restarts it instead. Obviously that would only be a poweroff
+handler of last resort, which should only be executed if no other means
+to power off the system is available.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Thanks,
+Guenter
