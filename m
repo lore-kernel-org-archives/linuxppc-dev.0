@@ -2,14 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1832E1A1802
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17B131A1800
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/20] powerpc/cell/qpace: Use pm_power_off rather than
- ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:27:55 +0200
-Message-Id: <1412170086-57971-10-git-send-email-agraf@suse.de>
+Subject: [PATCH 01/20] powerpc: Support override of pm_power_off
+Date: Wed,  1 Oct 2014 15:27:47 +0200
+Message-Id: <1412170086-57971-2-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -24,34 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic power off callback is pm_power_off. Use that one rather than
-the powerpc specific ppc_md.power_off.
+The pm_power_off callback is what drivers are supposed to modify when they
+implement power off support for the system.
+
+Support a modified callback on powerpc. That way power off support code can
+now either override ppc_md.power_off or pm_power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/platforms/cell/qpace_setup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/setup-common.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
-index 6e3409d..8488094 100644
---- a/arch/powerpc/platforms/cell/qpace_setup.c
-+++ b/arch/powerpc/platforms/cell/qpace_setup.c
-@@ -117,6 +117,8 @@ static void __init qpace_setup_arch(void)
- #ifdef CONFIG_DUMMY_CONSOLE
- 	conswitchp = &dummy_con;
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 1b0e260..5dfcb28 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -140,6 +140,8 @@ void machine_power_off(void)
+ 	machine_shutdown();
+ 	if (ppc_md.power_off)
+ 		ppc_md.power_off();
++	if (pm_power_off != machine_power_off)
++		pm_power_off();
+ #ifdef CONFIG_SMP
+ 	smp_send_stop();
  #endif
-+
-+	pm_power_off = rtas_power_off;
- }
- 
- static int __init qpace_probe(void)
-@@ -137,7 +139,6 @@ define_machine(qpace) {
- 	.setup_arch		= qpace_setup_arch,
- 	.show_cpuinfo		= qpace_show_cpuinfo,
- 	.restart		= rtas_restart,
--	.power_off		= rtas_power_off,
- 	.halt			= rtas_halt,
- 	.get_boot_time		= rtas_get_boot_time,
- 	.get_rtc_time		= rtas_get_rtc_time,
 -- 
 1.8.1.4
