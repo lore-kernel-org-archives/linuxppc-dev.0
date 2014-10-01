@@ -2,13 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A42C1A185A
+ by lists.ozlabs.org (Postfix) with ESMTPS id 579021A183E
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:22 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 20/20] powerpc: Remove ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:28:06 +0200
-Message-Id: <1412170086-57971-21-git-send-email-agraf@suse.de>
+Subject: [PATCH 10/20] powerpc/cell: Use pm_power_off rather than
+ ppc_md.power_off
+Date: Wed,  1 Oct 2014 15:27:56 +0200
+Message-Id: <1412170086-57971-11-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -23,67 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have all implementations of ppc_md.power_off converted to
-pm_power_off we can remove the ppc_md variant.
-
-While at it, also set the default for pm_power_off to NULL so that non
-machine drivers can implement overrides.
+The generic power off callback is pm_power_off. Use that one rather than
+the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/machdep.h | 1 -
- arch/powerpc/kernel/setup-common.c | 6 ++----
- arch/powerpc/xmon/xmon.c           | 2 --
- 3 files changed, 2 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/cell/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index b125cea..10dc008 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -144,7 +144,6 @@ struct machdep_calls {
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index 6ae25fb..b6a27d7 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -248,6 +248,7 @@ static void __init cell_setup_arch(void)
  #endif
  
- 	void		(*restart)(char *cmd);
--	void		(*power_off)(void);
- 	void		(*halt)(void);
- 	void		(*panic)(char *str);
- 	void		(*cpu_die)(void);
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 5dfcb28..58a260f 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -138,9 +138,7 @@ void machine_restart(char *cmd)
- void machine_power_off(void)
- {
- 	machine_shutdown();
--	if (ppc_md.power_off)
--		ppc_md.power_off();
--	if (pm_power_off != machine_power_off)
-+	if (pm_power_off)
- 		pm_power_off();
- #ifdef CONFIG_SMP
- 	smp_send_stop();
-@@ -152,7 +150,7 @@ void machine_power_off(void)
- /* Used by the G5 thermal driver */
- EXPORT_SYMBOL_GPL(machine_power_off);
- 
--void (*pm_power_off)(void) = machine_power_off;
-+void (*pm_power_off)(void);
- EXPORT_SYMBOL_GPL(pm_power_off);
- 
- void machine_halt(void)
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 531f649..506d256 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -981,8 +981,6 @@ static void bootcmds(void)
- 	else if (cmd == 'h')
- 		ppc_md.halt();
- 	else if (cmd == 'p')
--		if (ppc_md.power_off)
--			ppc_md.power_off();
- 		if (pm_power_off)
- 			pm_power_off();
+ 	mmio_nvram_init();
++	pm_power_off = rtas_power_off;
  }
+ 
+ static int __init cell_probe(void)
+@@ -269,7 +270,6 @@ define_machine(cell) {
+ 	.setup_arch		= cell_setup_arch,
+ 	.show_cpuinfo		= cell_show_cpuinfo,
+ 	.restart		= rtas_restart,
+-	.power_off		= rtas_power_off,
+ 	.halt			= rtas_halt,
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.get_rtc_time		= rtas_get_rtc_time,
 -- 
 1.8.1.4
