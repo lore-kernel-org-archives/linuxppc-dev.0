@@ -2,13 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17B131A1800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2080F1A180D
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/20] powerpc: Support override of pm_power_off
-Date: Wed,  1 Oct 2014 15:27:47 +0200
-Message-Id: <1412170086-57971-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 11/20] powerpc/chrp: Use pm_power_off rather than
+ ppc_md.power_off
+Date: Wed,  1 Oct 2014 15:27:57 +0200
+Message-Id: <1412170086-57971-12-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -23,29 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pm_power_off callback is what drivers are supposed to modify when they
-implement power off support for the system.
-
-Support a modified callback on powerpc. That way power off support code can
-now either override ppc_md.power_off or pm_power_off.
+The generic power off callback is pm_power_off. Use that one rather than
+the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/setup-common.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/chrp/setup.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 1b0e260..5dfcb28 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -140,6 +140,8 @@ void machine_power_off(void)
- 	machine_shutdown();
- 	if (ppc_md.power_off)
- 		ppc_md.power_off();
-+	if (pm_power_off != machine_power_off)
-+		pm_power_off();
- #ifdef CONFIG_SMP
- 	smp_send_stop();
- #endif
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 7044fd3..f9ad816 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -356,6 +356,8 @@ void __init chrp_setup_arch(void)
+ 
+ 	pci_create_OF_bus_map();
+ 
++	pm_power_off = rtas_power_off,
++
+ 	/*
+ 	 * Print the banner, then scroll down so boot progress
+ 	 * can be printed.  -- Cort
+@@ -597,7 +599,6 @@ define_machine(chrp) {
+ 	.show_cpuinfo		= chrp_show_cpuinfo,
+ 	.init_IRQ		= chrp_init_IRQ,
+ 	.restart		= rtas_restart,
+-	.power_off		= rtas_power_off,
+ 	.halt			= rtas_halt,
+ 	.time_init		= chrp_time_init,
+ 	.set_rtc_time		= chrp_set_rtc_time,
 -- 
 1.8.1.4
