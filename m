@@ -1,27 +1,33 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCD131A06BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 19:07:07 +1000 (EST)
-Date: Wed, 1 Oct 2014 11:06:27 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 01/10] tools/perf: support parsing parameterized events
-Message-ID: <20141001090627.GB5168@krava.brq.redhat.com>
-References: <1411586844-21381-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1411586844-21381-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <20140925085858.GA20915@krava.brq.redhat.com>
- <20140926022520.GA8997@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24C001A161D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 19:44:16 +1000 (EST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 01483140161
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 19:44:15 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 1 Oct 2014 19:44:14 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: Re: [PATCH v2 09/17] powerpc/mm: Add new hash_page_mm()
+In-Reply-To: <1412073306-13812-10-git-send-email-mikey@neuling.org>
+References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
+ <1412073306-13812-10-git-send-email-mikey@neuling.org>
+Date: Wed, 01 Oct 2014 15:13:05 +0530
+Message-ID: <8761g4nn12.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140926022520.GA8997@us.ibm.com>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- peterz@infradead.org, linux-kernel@vger.kernel.org, eranian@google.com,
- dev@codyps.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ imunsie@au1.ibm.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +37,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 25, 2014 at 07:25:20PM -0700, Sukadev Bhattiprolu wrote:
-> Jiri Olsa [jolsa@redhat.com] wrote:
-> | On Wed, Sep 24, 2014 at 12:27:15PM -0700, Sukadev Bhattiprolu wrote:
-> | > From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> | > 
-> | > Enable event specification like:
-> | > 
-> | > 	pmu/event_name,param1=0x1,param2=0x4/
-> | > 
-> | > Assuming that
-> | > 
-> | > 	/sys/bus/event_source/devices/pmu/events/event_name
-> | > 
-> | > Contains something like
-> | > 
-> | > 	param2=foo,bar=1,param1=baz
-> | 
-> | hum, so what happened to the '?' ... AFAIU from out last discussion,
-> | you wanted to mark terms which are mandatory and user must provide
-> | values for them.. and I thought the decision was to have following
-> | alias record:
-> | 
-> |   $ cat /sys/bus/event_source/devices/pmu/events/event_name
-> |   param2=?,bar=1,param1=?
-> | 
-> | while perf would scream if any of param1/2 wasnt filled like for:
-> |   pmu/event_name,param1=0x1/
-> 
-> Sorry, I meant to make perf list consistent with sysfs.
-> 
-> Consider these two sysfs entries:
-> 
-> 	$ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE 
-> 	domain=0x2,offset=0xe0,starting_index=core,lpar=0x0
-> 
-> 	$ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE 
-> 	domain=0x3,offset=0xe0,starting_index=vcpu,lpar=sibling_guest_id
-> 
-> In the first one, starting_index refers to a 'core' while in the second
-> it refers to a vcpu. This serves as a "hint" for the parameter's meaning.
-> 
-> By replacing both with 'starting_index=?' we lose that hint.
-> 
-> Should we fix both sysfs and 'perf list' to say
-> 
-> 	starting_index=?core 
+Michael Neuling <mikey@neuling.org> writes:
 
-Peter, Ingo,
-any opinions on this? Overall explanation is in here:
-http://marc.info/?l=linux-kernel&m=141158688307356&w=2
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> This adds a new function hash_page_mm() based on the existing hash_page().
+> This version allows any struct mm to be passed in, rather than assuming
+> current.  This is useful for servicing co-processor faults which are not in the
+> context of the current running process.
+>
+> We need to be careful here as the current hash_page() assumes current in a few
+> places.
 
-thanks,
-jirka
+It would be nice to document the rules here. So when we try to add a hash
+page entry, and if that result in demotion of the segment are we suppose to
+flush slbs ? Also why would one want to hash anything other
+than current->mm ? How will this get called ? 
+
+May be they are explained in later patches. But can we also explain it
+here. 
+
+>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/include/asm/mmu-hash64.h |  1 +
+>  arch/powerpc/mm/hash_utils_64.c       | 22 ++++++++++++++--------
+>  2 files changed, 15 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index 6d0b7a2..f84e5a5 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -322,6 +322,7 @@ extern int __hash_page_64K(unsigned long ea, unsigned long access,
+>  			   unsigned int local, int ssize);
+>  struct mm_struct;
+>  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
+> +extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap);
+>  extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap);
+>  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+>  		     pte_t *ptep, unsigned long trap, int local, int ssize,
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index bbdb054..0a5c8c0 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -904,7 +904,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+>  		return;
+>  	slice_set_range_psize(mm, addr, 1, MMU_PAGE_4K);
+>  	copro_flush_all_slbs(mm);
+> -	if (get_paca_psize(addr) != MMU_PAGE_4K) {
+> +	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
+>  		get_paca()->context = mm->context;
+>  		slb_flush_and_rebolt();
+>  	}
+> @@ -989,26 +989,24 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+>   * -1 - critical hash insertion error
+>   * -2 - access not permitted by subpage protection mechanism
+>   */
+> -int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap)
+>  {
+>  	enum ctx_state prev_state = exception_enter();
+>  	pgd_t *pgdir;
+>  	unsigned long vsid;
+> -	struct mm_struct *mm;
+>  	pte_t *ptep;
+>  	unsigned hugeshift;
+>  	const struct cpumask *tmp;
+>  	int rc, user_region = 0, local = 0;
+>  	int psize, ssize;
+>  
+> -	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
+> -		ea, access, trap);
+> +	DBG_LOW("%s(ea=%016lx, access=%lx, trap=%lx\n",
+> +		__func__, ea, access, trap);
+>  
+>  	/* Get region & vsid */
+>   	switch (REGION_ID(ea)) {
+>  	case USER_REGION_ID:
+>  		user_region = 1;
+> -		mm = current->mm;
+>  		if (! mm) {
+>  			DBG_LOW(" user region with no mm !\n");
+>  			rc = 1;
+> @@ -1104,7 +1102,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  			WARN_ON(1);
+>  		}
+>  #endif
+> -		check_paca_psize(ea, mm, psize, user_region);
+> +		if (current->mm == mm)
+> +			check_paca_psize(ea, mm, psize, user_region);
+>  
+>  		goto bail;
+>  	}
+> @@ -1145,7 +1144,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  		}
+>  	}
+>  
+> -	check_paca_psize(ea, mm, psize, user_region);
+> +	if (current->mm == mm)
+> +		check_paca_psize(ea, mm, psize, user_region);
+>  #endif /* CONFIG_PPC_64K_PAGES */
+>  
+>  #ifdef CONFIG_PPC_HAS_HASH_64K
+> @@ -1180,6 +1180,12 @@ bail:
+>  	exception_exit(prev_state);
+>  	return rc;
+>  }
+> +EXPORT_SYMBOL_GPL(hash_page_mm);
+> +
+> +int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +{
+> +	return hash_page_mm(current->mm, ea, access, trap);
+> +}
+>  EXPORT_SYMBOL_GPL(hash_page);
+>  
+>  void hash_preload(struct mm_struct *mm, unsigned long ea,
+> -- 
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
