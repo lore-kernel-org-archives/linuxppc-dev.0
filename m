@@ -1,41 +1,20 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF2EC1A042C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 10:59:35 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 30 Sep 2014 20:59:33 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 781AC38C8046
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:59:29 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s910xTK9131492
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 00:59:29 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s910xRsp013193
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Sep 2014 20:59:29 -0400
-Date: Tue, 30 Sep 2014 17:59:05 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2,2/4] Simplify catalog_read()
-Message-ID: <20141001005905.GB4441@us.ibm.com>
-References: <1411586681-21262-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141001003213.A8F78140273@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141001003213.A8F78140273@ozlabs.org>
-Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
- peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, eranian@google.com,
- Paul Mackerras <paulus@samba.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- dev@codyps.com, Jiri Olsa <jolsa@redhat.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id D445F1A0316
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 11:23:39 +1000 (EST)
+In-Reply-To: <1411586681-21262-2-git-send-email-sukadev@linux.vnet.ibm.com>
+To: sukadev@linux.vnet.ibm.com, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ ak@linux.intel.com, Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org,
+ eranian@google.com, Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v2,
+ 1/4] powerpc/perf/hv-24x7: use kmem_cache instead of aligned stack
+ allocations
+Message-Id: <20141001012339.AD06A14021A@ozlabs.org>
+Date: Wed,  1 Oct 2014 11:23:39 +1000 (EST)
+Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,23 +25,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [mpe@ellerman.id.au] wrote:
-| > @@ -203,6 +125,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
-| >  
-| >  	page_offset = offset / 4096;
-| >  	page_count  = count  / 4096;
-| 
-| I don't see where page_count is used.
+On Wed, 2014-24-09 at 19:24:38 UTC, sukadev@linux.vnet.ibm.com wrote:
+> From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> 
+> Ian pointed out the use of __aligned(4096) caused rather large stack
+> consumption in single_24x7_request(), so use the kmem_cache
+> hv_page_cache (which we've already got set up for other allocations)
+> insead of allocating locally.
+> 
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index 70d4f74..2f2215c 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -294,7 +294,7 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+>  					 u16 lpar, u64 *res,
+>  					 bool success_expected)
+>  {
+> -	unsigned long ret;
+> +	unsigned long ret = -ENOMEM;
+>  
+>  	/*
+>  	 * request_buffer and result_buffer are not required to be 4k aligned,
+> @@ -304,7 +304,27 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+>  	struct reqb {
+>  		struct hv_24x7_request_buffer buf;
+>  		struct hv_24x7_request req;
+> -	} __packed __aligned(4096) request_buffer = {
+> +	} __packed * request_buffer;
 
-Yes, I will remove it.
+No space after the * please.
 
-| 
-| > +	offset_in_page = count % 4096;
-| 
-| Shouldn't offset_in_page be based on offset ?
+> +	struct resb {
 
-Yes. I will fix that.
+You never use the struct name so this can be anonymous, eg:
 
-Thanks,
+	struct {
+		struct hv_24x7_data_result_buffer buf;
+		...
 
-Sukadev
+> +		struct hv_24x7_data_result_buffer buf;
+> +		struct hv_24x7_result res;
+> +		struct hv_24x7_result_element elem;
+> +		__be64 result;
+> +	} __packed * result_buffer;
+
+No space again.
+
+> +	BUILD_BUG_ON(sizeof(*request_buffer) > 4096);
+> +	BUILD_BUG_ON(sizeof(*result_buffer) > 4096);
+> +
+> +	request_buffer = kmem_cache_alloc(hv_page_cache, GFP_USER);
+
+Why aren't we using kzalloc here?
+
+It looks like we're initialising everything below except the reserved fields,
+but are they allowed to be non-zero? It's probably safer to just kzalloc it.
+
+> +	if (!request_buffer)
+> +		goto out_reqb;
+
+If prefer labels to be named for what they do, so this would be just "out".
+
+> +
+> +	result_buffer = kmem_cache_zalloc(hv_page_cache, GFP_USER);
+> +	if (!result_buffer)
+> +		goto out_resb;
+
+And this would be "out_free_request_buffer".
+
+> +
+> +	*request_buffer = (struct reqb) {
+>  		.buf = {
+>  			.interface_version = HV_24X7_IF_VERSION_CURRENT,
+>  			.num_requests = 1,
+> @@ -320,28 +340,30 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+>  		}
+>  	};
+>  
+> -	struct resb {
+> -		struct hv_24x7_data_result_buffer buf;
+> -		struct hv_24x7_result res;
+> -		struct hv_24x7_result_element elem;
+> -		__be64 result;
+> -	} __packed __aligned(4096) result_buffer = {};
+> -
+>  	ret = plpar_hcall_norets(H_GET_24X7_DATA,
+> -			virt_to_phys(&request_buffer), sizeof(request_buffer),
+> -			virt_to_phys(&result_buffer),  sizeof(result_buffer));
+> +			virt_to_phys(request_buffer), sizeof(*request_buffer),
+> +			virt_to_phys(result_buffer),  sizeof(*result_buffer));
+>  
+>  	if (ret) {
+>  		if (success_expected)
+>  			pr_err_ratelimited("hcall failed: %d %#x %#x %d => 0x%lx (%ld) detail=0x%x failing ix=%x\n",
+>  					domain, offset, ix, lpar,
+>  					ret, ret,
+> -					result_buffer.buf.detailed_rc,
+> -					result_buffer.buf.failing_request_ix);
+> -		return ret;
+> +					result_buffer->buf.detailed_rc,
+> +					result_buffer->buf.failing_request_ix);
+> +		goto out_hcall;
+>  	}
+>  
+> -	*res = be64_to_cpu(result_buffer.result);
+> +	*res = be64_to_cpu(result_buffer->result);
+> +	kfree(result_buffer);
+> +	kfree(request_buffer);
+> +	return ret;
+> +
+> +out_hcall:
+> +	kfree(result_buffer);
+> +out_resb:
+> +	kfree(request_buffer);
+> +out_reqb:
+>  	return ret;
+>  }
+
+Wouldn't this be better as:
+
+	*res = be64_to_cpu(result_buffer->result);
+
+out_free_result_buffer:
+	kfree(result_buffer);
+out_free_request_buffer:
+	kfree(request_buffer);
+out:
+	return ret;
+}
+
+
+cheers
