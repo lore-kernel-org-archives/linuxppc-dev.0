@@ -1,27 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D1211A0165
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:42:05 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B9D2F14012B
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 17:42:04 +1000 (EST)
-Message-ID: <1412149289.4285.204.camel@pasglop>
-Subject: Re: [PATCH 4/4] sounds/hda/radeon: Disable 64-bit DMA on radeon
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Takashi Iwai <tiwai@suse.de>
-Date: Wed, 01 Oct 2014 17:41:29 +1000
-In-Reply-To: <s5htx3o44tv.wl-tiwai@suse.de>
-References: <1412129393.4285.195.camel@pasglop> <s5htx3o44tv.wl-tiwai@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- linux-pci@vger.kernel.org, Brian King <brking@linux.vnet.ibm.com>,
- Anton Blanchard <anton@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Yijing Wang <wangyijing@huawei.com>, Alex Deucher <alexdeucher@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 640E31A05E7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:46:01 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Wed, 1 Oct 2014 01:45:58 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4D88C1FF0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:34:41 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s917hqSp1311154
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 09:43:52 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s917jtkv014622
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 01:45:55 -0600
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] cpuidle/powernv: Populate cpuidle state details by
+ querying the device-tree
+Date: Wed,  1 Oct 2014 13:15:02 +0530
+Message-Id: <1412149502-2729-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +41,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-10-01 at 09:38 +0200, Takashi Iwai wrote:
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-> > diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-> > index 3e6d22d..2b679d5 100644
-> > --- a/sound/pci/hda/hda_intel.c
-> > +++ b/sound/pci/hda/hda_intel.c
-> > @@ -297,7 +297,7 @@ enum {
-> >  /* quirks for ATI/AMD HDMI */
-> >  #define AZX_DCAPS_PRESET_ATI_HDMI \
-> >  	(AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB|\
-> > -	 AZX_DCAPS_NO_MSI64)
-> > +	 AZX_DCAPS_NO_MSI64 | AZX_DCAPS_NO_64BIT)
-> 
-> The only concern is that this will disable 64bit DMA also on x86 where
-> it has been working fine.  Can we add an ifdef CONFIG_PPC for this?
+We hard code the metrics relevant for cpuidle states in the kernel today.
+Instead pick them up from the device tree so that they remain relevant
+and updated for the system that the kernel is running on.
 
-I don't like that approach because technically the chip doesn't do
-64-bit DMA ... it does something like 40 or 48 (might actually depend on
-the chip version) and for all I know it will break on future x86 with
-more memory or other platforms with similar address encodings as
-powerpc...
+Cc: linux-pm@vger.kernel.org
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+v2:
+Rebased on 3.17-rc7
+Separated from 'powerpc/powernv: Support for fastsleep and winkle'
 
-The right thing might be to get the exact number of bits and do the
-appropriate dma_set_mask() like the graphics driver does, but that's a
-bit tricky unless we add a DMA mask field in that big array of chips in
-there...
+v1:
+Initial post
+https://lkml.org/lkml/2014/8/25/456
 
-Cheers,
-Ben.
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index a64be57..2426a4b 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -163,7 +163,8 @@ static int powernv_add_idle_states(void)
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+ 	const __be32 *idle_state_flags;
+-	u32 len_flags, flags;
++	const __be32 *idle_state_latency;
++	u32 len_flags, flags, latency_ns;
+ 	int i;
+ 
+ 	/* Currently we have snooze statically defined */
+@@ -180,18 +181,32 @@ static int powernv_add_idle_states(void)
+ 		return nr_idle_states;
+ 	}
+ 
++	idle_state_latency = of_get_property(power_mgt,
++			"ibm,cpu-idle-state-latencies-ns", NULL);
++	if (!idle_state_latency) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
++		return nr_idle_states;
++	}
++
+ 	dt_idle_states = len_flags / sizeof(u32);
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 
+ 		flags = be32_to_cpu(idle_state_flags[i]);
++
++		/* Cpuidle accepts exit_latency in us and we estimate best case
++		 * target residency to be 10x exit_latency
++		 */
++		latency_ns = be32_to_cpu(idle_state_latency[i]);
+ 		if (flags & IDLE_USE_INST_NAP) {
+ 			/* Add NAP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
+-			powernv_states[nr_idle_states].exit_latency = 10;
+-			powernv_states[nr_idle_states].target_residency = 100;
++			powernv_states[nr_idle_states].exit_latency =
++					((unsigned int)latency_ns) / 1000;
++			powernv_states[nr_idle_states].target_residency =
++					((unsigned int)latency_ns / 100);
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+ 			nr_idle_states++;
+ 		}
+@@ -202,8 +217,10 @@ static int powernv_add_idle_states(void)
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+ 			powernv_states[nr_idle_states].flags =
+ 				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].exit_latency = 300;
+-			powernv_states[nr_idle_states].target_residency = 1000000;
++			powernv_states[nr_idle_states].exit_latency =
++					((unsigned int)latency_ns) / 1000;
++			powernv_states[nr_idle_states].target_residency =
++					((unsigned int)latency_ns / 100);
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+ 			nr_idle_states++;
+ 		}
