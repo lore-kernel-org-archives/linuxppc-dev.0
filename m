@@ -1,29 +1,28 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 035F61A0509
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 01:54:42 +1000 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id fp1so453221pdb.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Oct 2014 08:54:39 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Wed, 1 Oct 2014 08:54:34 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-Message-ID: <20141001155434.GA11039@roeck-us.net>
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <CAMuHMdWEN+q+s6ENoqqD8d0hy=hcZSiWzW3poJFBs8uEBGVuGg@mail.gmail.com>
- <542C13FB.80608@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA0A41A06E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 02:00:20 +1000 (EST)
+Date: Wed, 1 Oct 2014 17:59:57 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jiri Olsa <jolsa@redhat.com>
+Subject: Re: [PATCH v4 01/10] tools/perf: support parsing parameterized events
+Message-ID: <20141001155957.GD2843@worktop.programming.kicks-ass.net>
+References: <1411586844-21381-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1411586844-21381-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20140925085858.GA20915@krava.brq.redhat.com>
+ <20140926022520.GA8997@us.ibm.com>
+ <20141001090627.GB5168@krava.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <542C13FB.80608@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20141001090627.GB5168@krava.brq.redhat.com>
+Cc: ak@linux.intel.com, Michael Ellerman <michaele@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, eranian@google.com,
+ Paul Mackerras <paulus@samba.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ dev@codyps.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 01, 2014 at 04:47:23PM +0200, Alexander Graf wrote:
-> 
-> 
-> On 01.10.14 16:33, Geert Uytterhoeven wrote:
-> > Hi Alex,
+On Wed, Oct 01, 2014 at 11:06:27AM +0200, Jiri Olsa wrote:
+> On Thu, Sep 25, 2014 at 07:25:20PM -0700, Sukadev Bhattiprolu wrote:
+> > Jiri Olsa [jolsa@redhat.com] wrote:
+> > | On Wed, Sep 24, 2014 at 12:27:15PM -0700, Sukadev Bhattiprolu wrote:
+> > | > From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> > | > 
+> > | > Enable event specification like:
+> > | > 
+> > | > 	pmu/event_name,param1=0x1,param2=0x4/
+> > | > 
+> > | > Assuming that
+> > | > 
+> > | > 	/sys/bus/event_source/devices/pmu/events/event_name
+> > | > 
+> > | > Contains something like
+> > | > 
+> > | > 	param2=foo,bar=1,param1=baz
+> > | 
+> > | hum, so what happened to the '?' ... AFAIU from out last discussion,
+> > | you wanted to mark terms which are mandatory and user must provide
+> > | values for them.. and I thought the decision was to have following
+> > | alias record:
+> > | 
+> > |   $ cat /sys/bus/event_source/devices/pmu/events/event_name
+> > |   param2=?,bar=1,param1=?
+> > | 
+> > | while perf would scream if any of param1/2 wasnt filled like for:
+> > |   pmu/event_name,param1=0x1/
 > > 
-> > On Wed, Oct 1, 2014 at 3:27 PM, Alexander Graf <agraf@suse.de> wrote:
-> >> The generic Linux framework to power off the machine is a function pointer
-> >> called pm_power_off. The trick about this pointer is that device drivers can
-> >> potentially implement it rather than board files.
-> >>
-> >> Today on PowerPC we set pm_power_off to invoke our generic full machine power
-> >> off logic which then calls ppc_md.power_off to invoke machine specific power
-> >> off.
-> >>
-> >> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
-> >> this card house falls apart. That driver only registers itself if pm_power_off
-> >> is NULL to ensure it doesn't override board specific logic. However, since we
-> >> always set pm_power_off to the generic power off logic (which will just not
-> >> power off the machine if no ppc_md.power_off call is implemented), we can't
-> >> implement power off via the generic GPIO power off driver.
-> >>
-> >> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
-> >> pm_power_off as was intended. Then individual drivers such as the GPIO power off
-> >> driver can implement power off logic via that function pointer.
-> >>
-> >> With this patch set applied and a few patches on top of QEMU that implement a
-> >> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
-> >> machine after halt.
+> > Sorry, I meant to make perf list consistent with sysfs.
 > > 
-> > This is touching the same area as last night's
-> > "[RFC PATCH 00/16] kernel: Add support for poweroff handler call chain"
-> > https://lkml.org/lkml/2014/9/30/575
+> > Consider these two sysfs entries:
+> > 
+> > 	$ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE 
+> > 	domain=0x2,offset=0xe0,starting_index=core,lpar=0x0
+> > 
+> > 	$ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE 
+> > 	domain=0x3,offset=0xe0,starting_index=vcpu,lpar=sibling_guest_id
+> > 
+> > In the first one, starting_index refers to a 'core' while in the second
+> > it refers to a vcpu. This serves as a "hint" for the parameter's meaning.
+> > 
+> > By replacing both with 'starting_index=?' we lose that hint.
+> > 
+> > Should we fix both sysfs and 'perf list' to say
+> > 
+> > 	starting_index=?core 
 > 
-> I agree, and I think your patch set is walking into a reasonable
-> direction. However, I really think it should convert all users of
-> pm_power_off - at which point you'll probably get to the same conclusion
-> that ppc_md.power_off is a bad idea :).
-> 
-Yes, that would be the ultimate goal.
+> Peter, Ingo,
+> any opinions on this? Overall explanation is in here:
+> http://marc.info/?l=linux-kernel&m=141158688307356&w=2
 
-> So in a way, this patch set is semantically a prerequisite to the full
-> conversion you'd probably like to do :).
-> 
-> Also, in your cover letter you describe that some methods power off the
-> CPU power while others power off the system power. How do you
-> distinguish between them with a call chain? You probably won't get
-> around to trigger the system power off callback after the CPU power off
-> callback ran ;).
-> 
-Those are examples. Don't get hung up on it. I may actually replace the
-CPU example with something better in the next version; it is not really
-a good example and may get people stuck on "why on earth would anyone want
-or need a means to turn off the CPU power" instead of focusing on the problem
-the patch set tries to solve.
+Consistency is good, and you indeed need to indicate it is a parameter.
+I'm not entirely sure about ?core, but I suppose its easy to parse and
+clear enough to read.
 
-The basic problem is that there can be different poweroff handlers,
-some of which may not be available on some systems, and some may not
-be as desirable as others for various reasons. The code registering
-those poweroff handlers does not specify the poweroff method, but its 
-priority. It would be up to the programmer (hopefully together with
-the board designer) to determine which method should have higher priority.
-Taking the above example, the callback to turn off CPU power would presumably
-be one of last resort, and have a very low priority.
-
-A better example may actually be patch 15/16 of the series. The affected
-driver (drivers/power/reset/restart-poweroff.c) does not really power off
-the system, but restarts it instead. Obviously that would only be a poweroff
-handler of last resort, which should only be executed if no other means
-to power off the system is available.
-
-Thanks,
-Guenter
+So the typical optional argument syntax would be like $arg or <type>
+like. But overall I have no objection as long as you keep the lot
+consistent and parsable.
