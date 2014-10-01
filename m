@@ -1,18 +1,36 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 643431A0428
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 15:10:00 +1000 (EST)
-Date: Wed, 1 Oct 2014 15:10:00 +1000
-From: Anton Blanchard <anton@samba.org>
-To: zhong@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Reimplement __get_SP() as a function not a define
-Message-ID: <20141001151000.0d754938@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 918BB1A06CB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 16:03:51 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 1 Oct 2014 02:03:48 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C445CC9004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:52:30 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9163kdh52428898
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 06:03:46 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9163iA4006703
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 02:03:46 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
+ Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v3 0/5] powerpc/perf: Miscellaneous fixes
+Date: Tue, 30 Sep 2014 23:03:16 -0700
+Message-Id: <1412143402-26061-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ dev@codyps.com, linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,104 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Li Zhong points out an issue with our current __get_SP()
-implementation. If ftrace function tracing is enabled (ie -pg
-profiling using _mcount) we spill a stack frame on 64bit all the
-time.
+Miscellaenous fixes for perf and 24x7 counters in powerpc.
 
-If a function calls __get_SP() and later calls a function that is
-tail call optimised, we will pop the stack frame and the value
-returned by __get_SP() is no longer valid. An example from Li can
-be found in save_stack_trace -> save_context_stack:
+Patches 1,3,4 were submitted earlier as a part of the parametrized
+events for 24x7 counters. But they are not directly related to the
+parametrized events.
 
-c0000000000432c0 <.save_stack_trace>:
-c0000000000432c0:       mflr    r0
-c0000000000432c4:       std     r0,16(r1)
-c0000000000432c8:       stdu    r1,-128(r1) <-- stack frame for _mcount
-c0000000000432cc:       std     r3,112(r1)
-c0000000000432d0:       bl      <._mcount>
-c0000000000432d4:       nop
+Patch 2 simplifies and fixes a bug in catalog_read() which causes the
+catalog file to not read first page.
 
-c0000000000432d8:       mr      r4,r1 <-- __get_SP()
+Changelog[v3]
+	[Michael Ellerman] Cleanup patches 1 and 2 and fix a bug
+	Add patch 5/5 to update contact info for 24x7 and GPCI counters
 
-c0000000000432dc:       ld      r5,632(r13)
-c0000000000432e0:       ld      r3,112(r1)
-c0000000000432e4:       li      r6,1
+Changelog[v2]
+	Rebase to perf/core tree.
 
-c0000000000432e8:       addi    r1,r1,128 <-- pop stack frame
+Cody P Schafer (3):
+  powerpc/perf/hv-24x7: use kmem_cache instead of aligned stack
+    allocations
+  perf Documentation: sysfs events/ interfaces
+  perf Documentation: remove duplicated docs for powerpc cpu specific
+    events
 
-c0000000000432ec:       ld      r0,16(r1)
-c0000000000432f0:       mtlr    r0
-c0000000000432f4:       b       <.save_context_stack> <-- tail call optimized
+Sukadev Bhattiprolu (2):
+  Simplify catalog_read()
+  powerpc: Update contact info in Documentation files
 
-save_context_stack ends up with a stack pointer below the current
-one, and it is likely to be scribbled over.
+ .../testing/sysfs-bus-event_source-devices-events  | 611 ++-------------------
+ .../testing/sysfs-bus-event_source-devices-hv_24x7 |   6 +-
+ .../testing/sysfs-bus-event_source-devices-hv_gpci |  12 +-
+ arch/powerpc/perf/hv-24x7.c                        | 156 ++----
+ 4 files changed, 109 insertions(+), 676 deletions(-)
 
-Fix this by making __get_SP() a function which returns the
-callers stack frame. Also replace inline assembly which grabs
-the stack pointer in save_stack_trace and show_stack with
-__get_SP().
-
-Reported-by: Li Zhong <zhong@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/reg.h   | 3 +--
- arch/powerpc/kernel/misc.S       | 4 ++++
- arch/powerpc/kernel/process.c    | 2 +-
- arch/powerpc/kernel/stacktrace.c | 2 +-
- 4 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 0c05059..0f973c0 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1264,8 +1264,7 @@ static inline unsigned long mfvtb (void)
- 
- #define proc_trap()	asm volatile("trap")
- 
--#define __get_SP()	({unsigned long sp; \
--			asm volatile("mr %0,1": "=r" (sp)); sp;})
-+extern unsigned long __get_SP(void);
- 
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 7ce26d4..120deb7 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -114,3 +114,7 @@ _GLOBAL(longjmp)
- 	mtlr	r0
- 	mr	r3,r4
- 	blr
-+
-+_GLOBAL(__get_SP)
-+	PPC_LL	r3,0(r1)
-+	blr
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index aa1df89..3cc6439 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1545,7 +1545,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		tsk = current;
- 	if (sp == 0) {
- 		if (tsk == current)
--			asm("mr %0,1" : "=r" (sp));
-+			sp = __get_SP();
- 		else
- 			sp = tsk->thread.ksp;
- 	}
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 3d30ef1..7f65bae 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -50,7 +50,7 @@ void save_stack_trace(struct stack_trace *trace)
- {
- 	unsigned long sp;
- 
--	asm("mr %0,1" : "=r" (sp));
-+	sp = __get_SP();
- 
- 	save_context_stack(trace, sp, current, 1);
- }
 -- 
-1.9.1
+1.8.3.1
