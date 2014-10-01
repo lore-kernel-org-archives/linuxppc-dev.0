@@ -1,38 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ADE11A178A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 16:03:58 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 1 Oct 2014 02:03:56 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E706C6E8047
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:52:39 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9163sho9765370
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 06:03:54 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9163r0K007669
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 02:03:54 -0400
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
- Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 5/5] powerpc: Update contact info in Documentation files
-Date: Tue, 30 Sep 2014 23:03:21 -0700
-Message-Id: <1412143402-26061-6-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1412143402-26061-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1412143402-26061-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- dev@codyps.com, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E9FAC1A08D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 16:47:57 +1000 (EST)
+In-Reply-To: <1412073306-13812-3-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ mpe@ellerman.id.au, benh@kernel.crashing.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 02/17] powerpc/cell: Move data segment faulting code
+ out of cell platform
+Message-Id: <20141001064757.BFF88140174@ozlabs.org>
+Date: Wed,  1 Oct 2014 16:47:57 +1000 (EST)
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,96 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cody's email address has changed. Update the contact information for
-the 24x7 and GPCI counters to the PowerPC developers mailing list.
+On Tue, 2014-30-09 at 10:34:51 UTC, Michael Neuling wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> __spu_trap_data_seg() currently contains code to determine the VSID and ESID
+> required for a particular EA and mm struct.
+> 
+> This code is generically useful for other co-processors.  This moves the code
+> of the cell platform so it can be used by other powerpc code.  It also adds 1TB
+> segment handling which Cell didn't have.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- .../ABI/testing/sysfs-bus-event_source-devices-hv_24x7       |  6 +++---
- .../ABI/testing/sysfs-bus-event_source-devices-hv_gpci       | 12 ++++++------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+I'm not loving this.
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-index e78ee79..32f3f5f 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-@@ -1,6 +1,6 @@
- What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		Provides access to the binary "24x7 catalog" provided by the
- 		hypervisor on POWER7 and 8 systems. This catalog lists events
-@@ -10,14 +10,14 @@ Description:
- 
- What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_length
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		A number equal to the length in bytes of the catalog. This is
- 		also extractable from the provided binary "catalog" sysfs entry.
- 
- What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_version
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		Exposes the "version" field of the 24x7 catalog. This is also
- 		extractable from the provided binary "catalog" sysfs entry.
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-index 3fa58c2..3ca4e55 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-@@ -1,6 +1,6 @@
- What:		/sys/bus/event_source/devices/hv_gpci/interface/collect_privileged
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		'0' if the hypervisor is configured to forbid access to event
- 		counters being accumulated by other guests and to physical
-@@ -9,35 +9,35 @@ Description:
- 
- What:		/sys/bus/event_source/devices/hv_gpci/interface/ga
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		0 or 1. Indicates whether we have access to "GA" events (listed
- 		in arch/powerpc/perf/hv-gpci.h).
- 
- What:		/sys/bus/event_source/devices/hv_gpci/interface/expanded
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		0 or 1. Indicates whether we have access to "EXPANDED" events (listed
- 		in arch/powerpc/perf/hv-gpci.h).
- 
- What:		/sys/bus/event_source/devices/hv_gpci/interface/lab
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		0 or 1. Indicates whether we have access to "LAB" events (listed
- 		in arch/powerpc/perf/hv-gpci.h).
- 
- What:		/sys/bus/event_source/devices/hv_gpci/interface/version
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		A number indicating the version of the gpci interface that the
- 		hypervisor reports supporting.
- 
- What:		/sys/bus/event_source/devices/hv_gpci/interface/kernel_version
- Date:		February 2014
--Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		A number indicating the latest version of the gpci interface
- 		that the kernel is aware of.
--- 
-1.8.3.1
+For starters the name "copro_data_segment()" doesn't contain any verbs, and it
+doesn't tell me what it does.
+
+If we give it a name that says what it does, we get copro_get_ea_esid_and_vsid().
+Or something equally ugly.
+
+And then in patch 10 you move the bulk of the logic into calculate_vsid().
+
+So instead can we:
+ - add a small helper that does the esid calculation, eg. calculate_esid() ?
+ - factor out the vsid logic into a helper, calculate_vsid() ?
+ - rework the spu code to use those, dropping __spu_trap_data_seg()
+ - use the helpers in the cxl code
+
+
+cheers
