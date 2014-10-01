@@ -1,36 +1,28 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E44A21A1903
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:48:31 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 694D61A1A92
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 17:47:49 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 1 Oct 2014 01:47:47 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 415C41FF001D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 01:36:31 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s917jg8E9306478
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 09:45:42 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s917qKRL008758
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Oct 2014 01:52:20 -0600
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/5] powerpc/powernv: Enter deepest supported idle state in
- offline
-Date: Wed,  1 Oct 2014 13:16:57 +0530
-Message-Id: <1412149617-3178-6-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1412149617-3178-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1412149617-3178-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 0EC8114012B
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2014 17:48:30 +1000 (EST)
+Message-ID: <1412149682.4285.209.camel@pasglop>
+Subject: Re: [PATCH 4/4] sounds/hda/radeon: Disable 64-bit DMA on radeon
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 01 Oct 2014 17:48:02 +1000
+In-Reply-To: <1412149289.4285.204.camel@pasglop>
+References: <1412129393.4285.195.camel@pasglop>
+ <s5htx3o44tv.wl-tiwai@suse.de> <1412149289.4285.204.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ linux-pci@vger.kernel.org, Brian King <brking@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Yijing Wang <wangyijing@huawei.com>, Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enter winkle during offline if supported, else revert to sleep or nap.
+On Wed, 2014-10-01 at 17:41 +1000, Benjamin Herrenschmidt wrote:
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/smp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+> I don't like that approach because technically the chip doesn't do
+> 64-bit DMA ... it does something like 40 or 48 (might actually depend on
+> the chip version) and for all I know it will break on future x86 with
+> more memory or other platforms with similar address encodings as
+> powerpc...
+> 
+> The right thing might be to get the exact number of bits and do the
+> appropriate dma_set_mask() like the graphics driver does, but that's a
+> bit tricky unless we add a DMA mask field in that big array of chips in
+> there...
 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 3ad31d2..e3fc2c9 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -169,8 +169,10 @@ static void pnv_smp_cpu_kill_self(void)
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
- 
--		/* If sleep is supported, go to sleep, instead of nap */
--		if (idle_states & IDLE_USE_SLEEP)
-+		/* Go to deepest supported idle state */
-+		if (idle_states & IDLE_USE_WINKLE)
-+			power7_winkle();
-+		else if (idle_states & IDLE_USE_SLEEP)
- 			power7_sleep();
- 		else
- 			power7_nap(1);
--- 
-1.9.3
+Note that I made the assumption that in the grand scheme of things, HDMI
+audio isn't a very big throughput device and thus the extra iommu
+mappings (or swiotlb) shouldn't hurt that much. But I may be wrong...
+
+So by all means, let me know what you want done here, but I don't think
+CONFIG_PPC is the right thing to do here, especially since this is not
+even something that affects all PPCs, but specifically the POWER server
+PCI bridges for which we configure a 64-bit window high up in the
+address space.
+
+FYI: Basically we setup PCI DMA addresses 0...2G as a 32-bit IOMMU
+remapped window and we also configure a "direct map" window higher up
+that bypasses the IOMMU and provides a direct linear mapping of RAM for
+64-bit capable devices. The problem is that the HW on those server chips
+requires that second window to have address bit 59 set. Then based on
+the DMA mask, the arch code provide the device with DMA ops that will
+either go through the iommu remap window or through the bypass window
+based on the DMA mask set by the driver.
+
+Cheers,
+Ben.
