@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2080F1A180D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 324121A1815
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Oct 2014 23:28:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/20] powerpc/chrp: Use pm_power_off rather than
+Subject: [PATCH 15/20] powerpc/maple: Use pm_power_off rather than
  ppc_md.power_off
-Date: Wed,  1 Oct 2014 15:27:57 +0200
-Message-Id: <1412170086-57971-12-git-send-email-agraf@suse.de>
+Date: Wed,  1 Oct 2014 15:28:01 +0200
+Message-Id: <1412170086-57971-16-git-send-email-agraf@suse.de>
 In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
@@ -29,29 +29,37 @@ the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/platforms/chrp/setup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/maple/setup.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 7044fd3..f9ad816 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -356,6 +356,8 @@ void __init chrp_setup_arch(void)
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index cb1b0b3..34a08db 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -169,7 +169,7 @@ static void __init maple_use_rtas_reboot_and_halt_if_present(void)
+ 	if (rtas_service_present("system-reboot") &&
+ 	    rtas_service_present("power-off")) {
+ 		ppc_md.restart = rtas_restart;
+-		ppc_md.power_off = rtas_power_off;
++		pm_power_off = rtas_power_off;
+ 		ppc_md.halt = rtas_halt;
+ 	}
+ }
+@@ -189,6 +189,7 @@ void __init maple_setup_arch(void)
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
+ #endif
++	pm_power_off = maple_power_off;
+ 	maple_use_rtas_reboot_and_halt_if_present();
  
- 	pci_create_OF_bus_map();
- 
-+	pm_power_off = rtas_power_off,
-+
- 	/*
- 	 * Print the banner, then scroll down so boot progress
- 	 * can be printed.  -- Cort
-@@ -597,7 +599,6 @@ define_machine(chrp) {
- 	.show_cpuinfo		= chrp_show_cpuinfo,
- 	.init_IRQ		= chrp_init_IRQ,
- 	.restart		= rtas_restart,
--	.power_off		= rtas_power_off,
- 	.halt			= rtas_halt,
- 	.time_init		= chrp_time_init,
- 	.set_rtc_time		= chrp_set_rtc_time,
+ 	printk(KERN_DEBUG "Using native/NAP idle loop\n");
+@@ -325,7 +326,6 @@ define_machine(maple) {
+ 	.pci_irq_fixup		= maple_pci_irq_fixup,
+ 	.pci_get_legacy_ide_irq	= maple_pci_get_legacy_ide_irq,
+ 	.restart		= maple_restart,
+-	.power_off		= maple_power_off,
+ 	.halt			= maple_halt,
+        	.get_boot_time		= maple_get_boot_time,
+        	.set_rtc_time		= maple_set_rtc_time,
 -- 
 1.8.1.4
