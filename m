@@ -1,29 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E58A81A1ABE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 07:08:01 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 330B5140139
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2014 07:08:00 +1000 (EST)
-Message-ID: <1412283745.28143.23.camel@pasglop>
-Subject: Re: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to
- driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 03 Oct 2014 07:02:25 +1000
-In-Reply-To: <20141002153402.GC18056@google.com>
-References: <1412210062.10667.1.camel@pasglop>
- <20141002153402.GC18056@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- linux-pci@vger.kernel.org, Anton Blanchard <anton@au1.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, Alex Deucher <alexdeucher@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F325A1A0A72
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 07:13:23 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 2 Oct 2014 15:13:21 -0600
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CD80C38C8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 17:13:18 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s92LDImx7536958
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 21:13:18 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s92LDIpC028430
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 17:13:18 -0400
+Date: Thu, 2 Oct 2014 14:13:05 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
+ verify_cpu_node_mapping()
+Message-ID: <20141002211305.GB12862@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,68 +42,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-10-02 at 09:34 -0600, Bjorn Helgaas wrote:
-> On Thu, Oct 02, 2014 at 10:34:22AM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > A number of radeon cards have a HW limitation causing them to be
-> > unable to generate the full 64-bit of address bits for MSIs. This
-> > breaks MSIs on some platforms such as POWER machines.
-> > 
-> > We used to have a powerpc specific quirk to address that on a
-> > single card, but this doesn't scale very well, this is better
-> > put under control of the drivers who know precisely what a given
-> > HW revision can do.
-> > 
-> > This moves the setting of the quirk flag to the radeon driver
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > 
-> > v2: This is just adjusted to the new flag name
-> 
-> I'm sorta confused because I got two "v2 2/4" emails a minute or so apart.
-> I assume they're the same.
+Ben & Michael,
 
-Yes, evo blew up while sending the series the first time around :(
-> > 
-> >  arch/powerpc/kernel/pci_64.c            |  1 -
-> >  drivers/gpu/drm/radeon/radeon_irq_kms.c | 10 ++++++++++
-> >  2 files changed, 10 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> > index d41a831..5330f6d 100644
-> > --- a/arch/powerpc/kernel/pci_64.c
-> > +++ b/arch/powerpc/kernel/pci_64.c
-> > @@ -271,5 +271,4 @@ static void quirk_radeon_32bit_msi(struct pci_dev *dev)
-> >  {
-> >  	dev->no_64bit_msi = true;
-> >  }
-> > -DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_msi);
-> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
+What's the status of these patches?
+
+Thanks,
+Nish
+
+On 27.08.2014 [17:33:59 +0800], Li Zhong wrote:
+> With commit 2fabf084b6ad ("powerpc: reorder per-cpu NUMA information's
+> initialization"), during boottime, cpu_numa_callback() is called
+> earlier(before their online) for each cpu, and verify_cpu_node_mapping()
+> uses cpu_to_node() to check whether siblings are in the same node.
 > 
-> Why do we keep the 0xaa68 quirk?  Shouldn't that be made generic, too?
+> It skips the checking for siblings that are not online yet. So the only
+> check done here is for the bootcpu, which is online at that time. But
+> the per-cpu numa_node cpu_to_node() uses hasn't been set up yet (which
+> will be set up in smp_prepare_cpus()).
 > 
-> > diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> > index 16807af..e760671 100644
-> > --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> > +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> > @@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
-> >  	if (rdev->flags & RADEON_IS_AGP)
-> >  		return false;
-> >  
-> > +	/*
-> > +	 * Older chips have a HW limitation, they can only generate 40 bits
-> > +	 * of address for "64-bit" MSIs which breaks on some platforms, notably
-> > +	 * IBM POWER servers, so we limit them
-> > +	 */
-> > +	if (rdev->family < CHIP_BONAIRE) {
-> > +		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> > +		rdev->pdev->no_64bit_msi = true;
-> > +	}
-> > +
-> >  	/* force MSI on */
-> >  	if (radeon_msi == 1)
-> >  		return true;
-> > 
-> > 
-> > 
+> So I saw something like following reported:
+> [    0.000000] CPU thread siblings 1/2/3 and 0 don't belong to the same
+> node!
+> 
+> As we don't actually do the checking during this early stage, so maybe
+> we could directly call numa_setup_cpu() in do_init_bootmem().
+> 
+> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index d7737a5..9918c02 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1128,8 +1128,7 @@ void __init do_init_bootmem(void)
+>  	 * early in boot, cf. smp_prepare_cpus().
+>  	 */
+>  	for_each_possible_cpu(cpu) {
+> -		cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
+> -				  (void *)(unsigned long)cpu);
+> +		numa_setup_cpu((unsigned long)cpu);
+>  	}
+>  }
+> 
+> -- 
+> 1.9.1
+> 
