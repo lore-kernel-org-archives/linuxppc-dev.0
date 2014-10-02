@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACC431A198E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 10:34:09 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DF015140140
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 10:34:08 +1000 (EST)
-Message-ID: <1412210019.4285.251.camel@pasglop>
-Subject: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Deucher <alexdeucher@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 02 Oct 2014 10:33:39 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB8CA1A184B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 10:42:51 +1000 (EST)
+Message-ID: <1412210571.19209.80.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 02/17] powerpc/cell: Move data segment faulting code
+ out of cell platform
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 02 Oct 2014 10:42:51 +1000
+In-Reply-To: <20141001064757.BFF88140174@ozlabs.org>
+References: <20141001064757.BFF88140174@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- linux-pci@vger.kernel.org, Anton Blanchard <anton@au1.ibm.com>,
- Yijing Wang <wangyijing@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- Brian King <brking@linux.vnet.ibm.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
+ linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+ anton@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A number of radeon cards have a HW limitation causing them to be
-unable to generate the full 64-bit of address bits for MSIs. This
-breaks MSIs on some platforms such as POWER machines.
+On Wed, 2014-10-01 at 16:47 +1000, Michael Ellerman wrote:
+> On Tue, 2014-30-09 at 10:34:51 UTC, Michael Neuling wrote:
+> > From: Ian Munsie <imunsie@au1.ibm.com>
+> >=20
+> > __spu_trap_data_seg() currently contains code to determine the VSID and=
+ ESID
+> > required for a particular EA and mm struct.
+> >=20
+> > This code is generically useful for other co-processors.  This moves th=
+e code
+> > of the cell platform so it can be used by other powerpc code.  It also =
+adds 1TB
+> > segment handling which Cell didn't have.
+>=20
+> I'm not loving this.
+>=20
+> For starters the name "copro_data_segment()" doesn't contain any verbs, a=
+nd it
+> doesn't tell me what it does.
 
-We used to have a powerpc specific quirk to address that on a
-single card, but this doesn't scale very well, this is better
-put under control of the drivers who know precisely what a given
-HW revision can do.
+Ok.
 
-This moves the setting of the quirk flag to the radeon driver
+> If we give it a name that says what it does, we get copro_get_ea_esid_and=
+_vsid().
+> Or something equally ugly.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org>
----
+Ok
 
-v2: This is just adjusted to the new flag name
+> And then in patch 10 you move the bulk of the logic into calculate_vsid()=
+.
 
- arch/powerpc/kernel/pci_64.c            |  1 -
- drivers/gpu/drm/radeon/radeon_irq_kms.c | 10 ++++++++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
+That was intentional on my part.  I want this patch to be clear that
+we're moving this code out of cell.  Then I wanted the optimisations to
+be in a separate patch.  It does mean we touch the code twice in this
+series, but I was hoping it would make it easier to review.  Alas. :-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index d41a831..5330f6d 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -271,5 +271,4 @@ static void quirk_radeon_32bit_msi(struct pci_dev *dev)
- {
- 	dev->no_64bit_msi = true;
- }
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
-diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-index 16807af..e760671 100644
---- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-+++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-@@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
- 	if (rdev->flags & RADEON_IS_AGP)
- 		return false;
- 
-+	/*
-+	 * Older chips have a HW limitation, they can only generate 40 bits
-+	 * of address for "64-bit" MSIs which breaks on some platforms, notably
-+	 * IBM POWER servers, so we limit them
-+	 */
-+	if (rdev->family < CHIP_BONAIRE) {
-+		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-+		rdev->pdev->no_64bit_msi = true;
-+	}
-+
- 	/* force MSI on */
- 	if (radeon_msi == 1)
- 		return true;
+> So instead can we:
+>  - add a small helper that does the esid calculation, eg. calculate_esid(=
+) ?
+>  - factor out the vsid logic into a helper, calculate_vsid() ?
+>  - rework the spu code to use those, dropping __spu_trap_data_seg()
+>  - use the helpers in the cxl code
+
+OK, I think I can do that.  I might change the name to something better
+in this patch, but I'll leave these cleanups to the later patch 10.
+
+Mikey
