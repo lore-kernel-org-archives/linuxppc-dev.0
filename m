@@ -1,28 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F4301A0986
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:48:53 +1000 (EST)
-Date: Thu, 2 Oct 2014 11:48:47 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B99A1A06C7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:52:09 +1000 (EST)
+Date: Thu, 2 Oct 2014 11:52:02 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/4] pci/msi: Move "no_64bit_msi" flag from powerpc
- to generic pci_dev
-Message-ID: <20141002114847.2967dbea@canb.auug.org.au>
-In-Reply-To: <1412210012.4285.250.camel@pasglop>
-References: <1412048401.4285.128.camel@pasglop>
- <CAErSpo4B6kuZJcKwreNvW1qC5sZ=1Ko71vbzNz7T8-_pjf7mww@mail.gmail.com>
- <CADnq5_PT+dX=KA4epGNRaoraco2z1pe5K7UgqLmTUhWMnvtWkw@mail.gmail.com>
- <1412108504.4285.155.camel@pasglop>
- <CADnq5_O_iLAZUKLL4nph8VwuP2NOkWXhBZC2XTSkFm5P42WZ+g@mail.gmail.com>
- <1412110946.4285.158.camel@pasglop>
- <CADnq5_OXBax1+TKPsR2RDYTWijQKDVw34ECfWzcwN2SibCGYTg@mail.gmail.com>
- <1412112324.4285.160.camel@pasglop>
- <1412210012.4285.250.camel@pasglop>
+Subject: Re: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to
+ driver
+Message-ID: <20141002115202.796eacb1@canb.auug.org.au>
+In-Reply-To: <1412210062.10667.1.camel@pasglop>
+References: <1412210062.10667.1.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/tSa/.JO.llxM4bktpSnyOZd"; protocol="application/pgp-signature"
+ boundary="Sig_/e0QPA=r0nX9HPR2hvDnOa3C"; protocol="application/pgp-signature"
 Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
  linux-pci@vger.kernel.org, Brian King <brking@linux.vnet.ibm.com>,
  Anton Blanchard <anton@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
@@ -37,69 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/tSa/.JO.llxM4bktpSnyOZd
+--Sig_/e0QPA=r0nX9HPR2hvDnOa3C
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi Ben,
 
-On Thu, 02 Oct 2014 10:33:32 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+On Thu, 02 Oct 2014 10:34:22 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
 hing.org> wrote:
 >
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -269,10 +269,7 @@ EXPORT_SYMBOL(pcibus_to_node);
+> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> @@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
+>  	if (rdev->flags & RADEON_IS_AGP)
+>  		return false;
 > =20
->  static void quirk_radeon_32bit_msi(struct pci_dev *dev)
->  {
-> -	struct pci_dn *pdn =3D pci_get_pdn(dev);
-> -
-> -	if (pdn)
-> -		pdn->force_32bit_msi =3D true;
-> +	dev->no_64bit_msi =3D true;
->  }
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_ms=
-i);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_ms=
-i);
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -331,6 +331,7 @@ struct pci_dev {
->  	unsigned int	is_added:1;
->  	unsigned int	is_busmaster:1; /* device is busmaster */
->  	unsigned int	no_msi:1;	/* device may not use msi */
-> +	unsigned int    no_64bit_msi:1;	/* Device has broken 64-bit MSIs */
->  	unsigned int	block_cfg_access:1;	/* config space access is blocked */
->  	unsigned int	broken_parity_status:1;	/* Device generates false positive=
- parity */
->  	unsigned int	irq_reroute_variant:2;	/* device needs IRQ rerouting varia=
-nt */
+> +	/*
+> +	 * Older chips have a HW limitation, they can only generate 40 bits
+> +	 * of address for "64-bit" MSIs which breaks on some platforms, notably
+> +	 * IBM POWER servers, so we limit them
+> +	 */
+> +	if (rdev->family < CHIP_BONAIRE) {
+> +		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
+> +		rdev->pdev->no_64bit_msi =3D true;
 
-You really should not be assigning "true" to a single bit field ...
+Again, no_64bit_msi is not a bool ...
+
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Sig_/tSa/.JO.llxM4bktpSnyOZd
+--Sig_/e0QPA=r0nX9HPR2hvDnOa3C
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJULK8DAAoJEMDTa8Ir7ZwVPT0P/iowtMbEPYPvJvhLDskGeILd
-SDKakktLmhqITuoBbaJvWhv6/pcGvawXCTxxq3NxxIdwNmYGKWXC/oBtAATC9hIR
-EzmBw+gRYYb7rRhPOemRBGg0y7mFuyeD7oeo/H/CQYzviDSdtZNn9O01XqPx/bxz
-5Zc5WvJMbfRddSgRoOuWkFLLPoPzLE7/kf3JONiYNoHUuhOx1OQEuVGve4eupt46
-pdQHqLl/vIOM26uFmCAIhY80dinPXozrl7CMTcRfg2EZ3ggheoQvJXlQVj2YRnPH
-ALBQ35UBImi/H8nol7JmPo3b3l2EzJ3v7/HTGrON43F67zDYFYXjEYaxbLNBZJhW
-yW7VeL55GuTxPF6AZnZkRhq0XBwC9FaPwvHoTfjTjSVE4mYydwYn1W5jrG1PJXsU
-HHUQB+T7irdQeWvOJ6YxA40wKUNXl7sjIO3k8bXb0omytIN67ft9JRBJMWh/jHaE
-XDWLscAvzQ/y0ULzz/W43FfbkDcIOUofOqtgVkk0UMJIo3ZVm91J5kQs93d2gqiP
-/0pJsUOfNKqFbyFsZGj/kSmucRy8jQ7Ulivehp3DkLIPJin63W9RcjrBAQY0pl/I
-Ah0j6TkDML8sF7psiKYEEInyaZH8oRzmaaaUC4i6ULdbb0JtRlZ30Z3G56Ckn5bD
-1YWgABKX/7JnpXiEqNKp
-=Q0Fr
+iQIcBAEBCAAGBQJULK/HAAoJEMDTa8Ir7ZwVtisP/i5qg6vg8Vy8ZrjYIdVruU4U
+aHA7RbZ2CKtGRMFv3NC1PIi2LzQMu6PbQBa9NzsOXuH5Scehs3Ka/hS3+Gdz1WwI
+gCvX7Mpw0pqWUFSvrY6v2/RlniC/lesvTCBmI5TqqgVA2/Xm3WhS8q7WIsYVHF+t
+ZoVI16gZAF753NZa5OCTbwF2a4A99jN1HvqscOFw1kso+577OiXdX0+xMILOPfd+
+JoHEmJiUb1B+uNQPYClNJmziAlM1mPEw9mgCxReAz/sQlV5HD/+rGOJ7NJvdiaBK
+yXVqO0+yasKnS/YfKHnWO3Ocu2Tt28SVOQlDhdRM9bp6sh+RU5C7c8/grae4/4oZ
+Cf+fstnCo4MPUfNb2IM8TwlU9FJ3SzcBe6XzNsgQPZCaxZnkXcg+3ZaGM2uIV9Kh
+yOODLaXnILnnvuBWH6eU/PH7d2xpfdwuSEbvUAgSJiVEpGsRK0HdbvVf2gt5rjbW
+O3iyvqb8+VMrp3dCpDcIh4orWLUgJRmfcoVeTGj3DZFAfgJV5shrBZcVcUdQ9Nzs
+xagq5q4HA4Z5fzbxU7A9RdKU9Oz3GWYRsJ66BfHTmkOA4Ov+srmQnhJhVL6q/vNN
+yRH4shSYX3OBMOVnUpxbACc4Owf65nq7RKzqfnTTZNZcsYRt+PSRw3S9pLkJgTlu
+EpHtcnqejKI4FoL2egQK
+=67Oq
 -----END PGP SIGNATURE-----
 
---Sig_/tSa/.JO.llxM4bktpSnyOZd--
+--Sig_/e0QPA=r0nX9HPR2hvDnOa3C--
