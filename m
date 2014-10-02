@@ -1,21 +1,22 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 130A41A167D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 13:17:00 +1000 (EST)
-In-Reply-To: <1412073306-13812-9-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- benh@kernel.crashing.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 08/17] powerpc/powerpc: Add new PCIe functions for
- allocating cxl interrupts
-Message-Id: <20141002031659.DB564140188@ozlabs.org>
-Date: Thu,  2 Oct 2014 13:16:59 +1000 (EST)
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 013F01A18E5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 13:37:52 +1000 (EST)
+Message-ID: <1412221071.19209.103.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 07/17] cxl: Add new header for call backs and structs
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 02 Oct 2014 13:37:51 +1000
+In-Reply-To: <20141001120010.4813614016A@ozlabs.org>
+References: <20141001120010.4813614016A@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
+ linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+ anton@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,214 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-30-09 at 10:34:57 UTC, Michael Neuling wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> This adds a number of functions for allocating IRQs under powernv PCIe for cxl.
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 329164f..b0b96f0 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -503,6 +505,138 @@ static struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
->  		return NULL;
->  	return &phb->ioda.pe_array[pdn->pe_number];
->  }
-> +
-> +struct device_node *pnv_pci_to_phb_node(struct pci_dev *dev)
-> +{
-> +        struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +
-> +        return hose->dn;
-> +}
-> +EXPORT_SYMBOL(pnv_pci_to_phb_node);
-> +
-> +#ifdef CONFIG_CXL_BASE
-> +int pnv_phb_to_cxl(struct pci_dev *dev)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	struct pnv_ioda_pe *pe;
-> +	int rc;
-> +
-> +	if (!(pe = pnv_ioda_get_pe(dev))) {
-> +		rc = -ENODEV;
-> +		goto out;
-> +	}
+On Wed, 2014-10-01 at 22:00 +1000, Michael Ellerman wrote:
+> On Tue, 2014-30-09 at 10:34:56 UTC, Michael Neuling wrote:
+> > From: Ian Munsie <imunsie@au1.ibm.com>
+> >=20
+> > This new header add defines for callbacks and structs needed by the res=
+t of the
+>                   adds
+> > kernel to hook into the cxl infrastructure.
+> >=20
+> > Empty functions are provided when CONFIG CXL_BASE is not enabled.
+> >=20
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> >  include/misc/cxl.h | 34 ++++++++++++++++++++++++++++++++++
+>=20
+> include/misc is kind of weird. I guess it's a misc device.
+>=20
+> Any reason not to have it in arch/powerpc/include ?
 
-That'd be a lot simpler as:
+We can do either way.  We did consider it a driver so putting it in
+arch/powerpc didn't seem quite right.
 
-	pe = pnv_ioda_get_pe(dev);
-	if (!pe)
-		return -ENODEV;
+I might leave it here unless you really object.
 
-> +	pe_info(pe, "switch PHB to CXL\n");
-> +	pe_info(pe, "PHB-ID  : 0x%016llx\n", phb->opal_id);
-> +	pe_info(pe, "     pe : %i\n", pe->pe_number);
+>=20
+> > diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+> > new file mode 100644
+> > index 0000000..bde46a3
+> > --- /dev/null
+> > +++ b/include/misc/cxl.h
+> > @@ -0,0 +1,34 @@
+> > +/*
+> > + * Copyright 2014 IBM Corp.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; either version
+> > + * 2 of the License, or (at your option) any later version.
+> > + */
+> > +
+> > +#ifndef _MISC_ASM_CXL_H
+>=20
+> No ASM.
 
-Spacing is a bit weird but maybe it matches something else?
+Oops, yes.
 
-> +
-> +	if ((rc = opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number)))
-> +		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
+>=20
+> > +#define _MISC_ASM_CXL_H
+> > +
+> > +#define CXL_IRQ_RANGES 4
+> > +
+> > +struct cxl_irq_ranges {
+> > +	irq_hw_number_t offset[CXL_IRQ_RANGES];
+> > +	irq_hw_number_t range[CXL_IRQ_RANGES];
+> > +};
+> > +
+> > +#ifdef CONFIG_CXL_BASE
+> > +
+> > +void cxl_slbia(struct mm_struct *mm);
+> > +void cxl_ctx_get(void);
+> > +void cxl_ctx_put(void);
+> > +bool cxl_ctx_in_use(void);
+> > +
+> > +#else /* CONFIG_CXL_BASE */
+> > +
+> > +#define cxl_slbia(...) do { } while (0)
+> > +#define cxl_ctx_in_use(...) false
+>=20
+> Any reason these shouldn't be static inlines?
 
-Again why not:
+No, I'll change.
 
-	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number);
-	if (rc)
-		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
-
-> +out:
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL(pnv_phb_to_cxl);
-> +
-
-> +int pnv_cxl_alloc_hwirq_ranges(struct cxl_irq_ranges *irqs,
-> +			       struct pci_dev *dev, int num)
-
-This could use some documentation.
-
-It seems to be that it allocates num irqs in some number of ranges, up to
-CXL_IRQ_RANGES?
-
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	int range = 0;
-
-You reinitialise to 1 below?
-
-> +	int hwirq;
-> +	int try;
-
-So these can be:
-
-	int hwirq, try, range;
-
-> +	memset(irqs, 0, sizeof(struct cxl_irq_ranges));
-> +
-> +	for (range = 1; range < CXL_IRQ_RANGES && num; range++) {
-
-I think this would be clearer if range was just called "i" as usual.
-
-Why does it start at 1 ?
-
-> +		try = num;
-> +		while (try) {
-> +			hwirq = msi_bitmap_alloc_hwirqs(&phb->msi_bmp, try);
-> +			if (hwirq >= 0)
-> +				break;
-> +			try /= 2;
-> +		}
-> +		if (!try)
-> +			goto fail;
-> +
-> +		irqs->offset[range] = phb->msi_base + hwirq;
-> +		irqs->range[range] = try;
-
-irqs->range is irq_hw_number_t but looks like it should just be uint.
-
-> +		pr_devel("cxl alloc irq range 0x%x: offset: 0x%lx  limit: %li\n",
-> +			 range, irqs->offset[range], irqs->range[range]);
-> +		num -= try;
-> +	}
-> +	if (num)
-> +		goto fail;
-> +
-> +	return 0;
-> +fail:
-> +	for (range--; range >= 0; range--) {
-> +		hwirq = irqs->offset[range] - phb->msi_base;
-> +		msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
-> +				       irqs->range[range]);
-> +		irqs->range[range] = 0;
-> +	}
-
-Because you zero ranges at the top I think you can replace all of the fail
-logic with a call to pnv_cxl_release_hwirq_ranges().
-
-
-> +	return -ENOSPC;
-> +}
-> +EXPORT_SYMBOL(pnv_cxl_alloc_hwirq_ranges);
-> +
-> +void pnv_cxl_release_hwirq_ranges(struct cxl_irq_ranges *irqs,
-> +				  struct pci_dev *dev)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	int range = 0;
-
-Unnecessary init again.
-
-> +	int hwirq;
-> +
-> +	for (range = 0; range < 4; range++) {
-
-Shouldn't 4 be CXL_IRQ_RANGES ?
-
-> +		hwirq = irqs->offset[range] - phb->msi_base;
-
-That should be inside the if.
-
-Or better do:
-		if (!irqs->range[range])
-			continue;
-		...
-
-> +		if (irqs->range[range]) {
-> +			pr_devel("cxl release irq range 0x%x: offset: 0x%lx  limit: %ld\n",
-> +				 range, irqs->offset[range],
-> +				 irqs->range[range]);
-> +			msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
-> +					       irqs->range[range]);
-> +		}
-> +	}
-> +}
-> +EXPORT_SYMBOL(pnv_cxl_release_hwirq_ranges);
-> +
-> +int pnv_cxl_get_irq_count(struct pci_dev *dev)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +        struct pnv_phb *phb = hose->private_data;
-
-Indentation is fubar.
-
-> +	return phb->msi_bmp.irq_count;
-> +}
-> +EXPORT_SYMBOL(pnv_cxl_get_irq_count);
-> +
-> +#endif /* CONFIG_CXL_BASE */
->  #endif /* CONFIG_PCI_MSI */
->  
->  static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
-> @@ -1330,6 +1464,33 @@ static void set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
->  	irq_set_chip(virq, &phb->ioda.irq_chip);
->  }
->  
-> +#ifdef CONFIG_CXL_BASE
-
-Why is this here and not in the previous #ifdef CONFIG_CXL_BASE block ?
-
-> +int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
-> +			   unsigned int virq)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	unsigned int xive_num = hwirq - phb->msi_base;
-> +	struct pnv_ioda_pe *pe;
-> +	int rc;
-> +
-> +	if (!(pe = pnv_ioda_get_pe(dev)))
-> +		return -ENODEV;
-> +
-> +	/* Assign XIVE to PE */
-> +	rc = opal_pci_set_xive_pe(phb->opal_id, pe->pe_number, xive_num);
-> +	if (rc) {
-> +		pr_warn("%s: OPAL error %d setting msi_base 0x%x hwirq 0x%x XIVE 0x%x PE\n",
-> +			pci_name(dev), rc, phb->msi_base, hwirq, xive_num);
-
-dev_warn() ?
-
-cheers
+Mikey
