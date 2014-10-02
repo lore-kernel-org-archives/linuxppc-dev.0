@@ -1,17 +1,20 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E4D6A1A181E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 15:44:20 +1000 (EST)
-Date: Thu, 2 Oct 2014 15:44:21 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v2] powerpc: Speed up clear_page by unrolling it
-Message-ID: <20141002154421.62073027@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21D561A189D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 16:02:38 +1000 (EST)
+In-Reply-To: <1412073306-13812-16-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ benh@kernel.crashing.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 15/17] cxl: Userspace header file.
+Message-Id: <20141002060237.E9963140180@ozlabs.org>
+Date: Thu,  2 Oct 2014 16:02:37 +1000 (EST)
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,83 +24,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unroll clear_page 8 times. A simple microbenchmark which
-allocates and frees a zeroed page:
+On Tue, 2014-30-09 at 10:35:04 UTC, Michael Neuling wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> This defines structs and magic numbers required for userspace to interact with
+> the kernel cxl driver via /dev/cxl/afu0.0.
+> 
+> diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+> new file mode 100644
+> index 0000000..6a394b5
+> --- /dev/null
+> +++ b/include/uapi/misc/cxl.h
+> @@ -0,0 +1,88 @@
+> +/*
+> + * Copyright 2014 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#ifndef _UAPI_ASM_CXL_H
+> +#define _UAPI_ASM_CXL_H
+> +
+> +#include <linux/types.h>
+> +#include <linux/ioctl.h>
+> +
+> +/* ioctls */
+> +struct cxl_ioctl_start_work {
+> +	__u64 wed;
+> +	__u64 amr;
+> +	__u64 reserved1;
+> +	__u32 reserved2;
+> +	__s16 num_interrupts; /* -1 = use value from afu descriptor */
+> +	__u16 process_element; /* returned from kernel */
+> +	__u64 reserved3;
+> +	__u64 reserved4;
+> +	__u64 reserved5;
+> +	__u64 reserved6;
 
-for (i = 0; i < iterations; i++) {
-	unsigned long p = __get_free_page(GFP_KERNEL | __GFP_ZERO);
-	free_page(p);
-}
+Why so many reserved fields?
 
-improves 20% on POWER8.
+What mechanism is there that will allow you to ever unreserve them?
 
-This assumes cacheline sizes won't grow beyond 512 bytes or
-page sizes wont drop below 1kB, which is unlikely, but we could
-add a runtime check during early init if it makes people nervous.
+ie. how does a new userspace detect that the kernel it's running on supports
+new fields?
 
-Michael found that some versions of gcc produce quite bad code
-(all multiplies), so we give gcc a hand by using shifts and adds.
+Or conversely how does a new kernel detect that userspace has passed it a
+meaningful value in one of the previously reserved fields?
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/page_64.h | 42 ++++++++++++++++++++++++++++----------
- 1 file changed, 31 insertions(+), 11 deletions(-)
+> +#define CXL_MAGIC 0xCA
+> +#define CXL_IOCTL_START_WORK      _IOWR(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index d0d6afb..d908a46 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -42,20 +42,40 @@
- 
- typedef unsigned long pte_basic_t;
- 
--static __inline__ void clear_page(void *addr)
-+static inline void clear_page(void *addr)
- {
--	unsigned long lines, line_size;
--
--	line_size = ppc64_caches.dline_size;
--	lines = ppc64_caches.dlines_per_page;
--
--	__asm__ __volatile__(
-+	unsigned long iterations;
-+	unsigned long onex, twox, fourx, eightx;
-+
-+	iterations = ppc64_caches.dlines_per_page / 8;
-+
-+	/*
-+	 * Some verisions of gcc use multiply instructions to
-+	 * calculate the offsets so lets give it a hand to
-+	 * do better.
-+	 */
-+	onex = ppc64_caches.dline_size;
-+	twox = onex << 1;
-+	fourx = onex << 2;
-+	eightx = onex << 3;
-+
-+	asm volatile(
- 	"mtctr	%1	# clear_page\n\
--1:      dcbz	0,%0\n\
--	add	%0,%0,%3\n\
-+	.balign	16\n\
-+1:	dcbz	0,%0\n\
-+	dcbz	%3,%0\n\
-+	dcbz	%4,%0\n\
-+	dcbz	%5,%0\n\
-+	dcbz	%6,%0\n\
-+	dcbz	%7,%0\n\
-+	dcbz	%8,%0\n\
-+	dcbz	%9,%0\n\
-+	add	%0,%0,%10\n\
- 	bdnz+	1b"
--        : "=r" (addr)
--        : "r" (lines), "0" (addr), "r" (line_size)
-+	: "=&r" (addr)
-+	: "r" (iterations), "0" (addr), "b" (onex), "b" (twox),
-+		"b" (twox+onex), "b" (fourx), "b" (fourx+onex),
-+		"b" (twox+fourx), "b" (eightx-onex), "r" (eightx)
- 	: "ctr", "memory");
- }
- 
--- 
-1.9.1
+What happened to 0x1 ?
+
+> +#define CXL_IOCTL_CHECK_ERROR     _IO(CXL_MAGIC,   0x02)
+> +
+> +/* events from read() */
+> +
+> +enum cxl_event_type {
+> +	CXL_EVENT_READ_FAIL     = -1,
+
+I don't see this used?
+
+> +	CXL_EVENT_RESERVED      = 0,
+> +	CXL_EVENT_AFU_INTERRUPT = 1,
+> +	CXL_EVENT_DATA_STORAGE  = 2,
+> +	CXL_EVENT_AFU_ERROR     = 3,
+> +};
+> +
+> +struct cxl_event_header {
+> +	__u32 type;
+> +	__u16 size;
+> +	__u16 process_element;
+> +	__u64 reserved1;
+> +	__u64 reserved2;
+> +	__u64 reserved3;
+> +};
+
+Again lots of reserved fields?
+
+> +struct cxl_event_afu_interrupt {
+> +	struct cxl_event_header header;
+> +	__u16 irq; /* Raised AFU interrupt number */
+> +	__u16 reserved1;
+> +	__u32 reserved2;
+> +	__u64 reserved3;
+> +	__u64 reserved4;
+> +	__u64 reserved5;
+> +};
+> +
+> +struct cxl_event_data_storage {
+> +	struct cxl_event_header header;
+> +	__u64 addr;
+> +	__u64 reserved1;
+> +	__u64 reserved2;
+> +	__u64 reserved3;
+> +};
+> +
+> +struct cxl_event_afu_error {
+> +	struct cxl_event_header header;
+> +	__u64 err;
+> +	__u64 reserved1;
+> +	__u64 reserved2;
+> +	__u64 reserved3;
+> +};
+> +
+> +struct cxl_event {
+> +	union {
+> +		struct cxl_event_header header;
+> +		struct cxl_event_afu_interrupt irq;
+> +		struct cxl_event_data_storage fault;
+> +		struct cxl_event_afu_error afu_err;
+> +	};
+> +};
+
+Rather than having the header included in every event, would it be clearer if
+the cxl_event was:
+
+struct cxl_event {
+	struct cxl_event_header header;
+	union {
+		struct cxl_event_afu_interrupt irq;
+		struct cxl_event_data_storage fault;
+		struct cxl_event_afu_error afu_err;
+	};
+};
+
+cheers
