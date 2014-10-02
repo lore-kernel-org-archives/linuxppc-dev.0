@@ -2,28 +2,25 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 041E91A070E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 13:02:09 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C33911A070E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 13:03:00 +1000 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XZWG7-00324q-VA
- for linuxppc-dev@lists.ozlabs.org; Thu, 02 Oct 2014 02:36:48 +0000
-Message-ID: <542CBA10.3080408@roeck-us.net>
-Date: Wed, 01 Oct 2014 19:36:00 -0700
+ (envelope-from <linux@roeck-us.net>) id 1XZWfT-003O5y-2H
+ for linuxppc-dev@lists.ozlabs.org; Thu, 02 Oct 2014 03:02:59 +0000
+Message-ID: <542CBDB7.9010808@roeck-us.net>
+Date: Wed, 01 Oct 2014 19:51:35 -0700
 From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
+To: Alexander Graf <agraf@suse.de>, Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <CAMuHMdWEN+q+s6ENoqqD8d0hy=hcZSiWzW3poJFBs8uEBGVuGg@mail.gmail.com>
- <542C13FB.80608@suse.de> <20141001155434.GA11039@roeck-us.net>
- <542C714C.4020009@suse.de>
-In-Reply-To: <542C714C.4020009@suse.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>	
+ <1412203153.13320.352.camel@snotra.buserror.net> <542C8C69.2010509@suse.de>
+ <1412206127.13320.362.camel@snotra.buserror.net> <542C91D5.3030305@suse.de>
+In-Reply-To: <542C91D5.3030305@suse.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Alistair Popple <alistair@popple.id.au>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/2014 02:25 PM, Alexander Graf wrote:
+On 10/01/2014 04:44 PM, Alexander Graf wrote:
 >
 >
-> On 01.10.14 17:54, Guenter Roeck wrote:
->> On Wed, Oct 01, 2014 at 04:47:23PM +0200, Alexander Graf wrote:
+> On 02.10.14 01:28, Scott Wood wrote:
+>> On Thu, 2014-10-02 at 01:21 +0200, Alexander Graf wrote:
 >>>
->>>
->>> On 01.10.14 16:33, Geert Uytterhoeven wrote:
->>>> Hi Alex,
->>>>
->>>> On Wed, Oct 1, 2014 at 3:27 PM, Alexander Graf <agraf@suse.de> wrote:
+>>> On 02.10.14 00:39, Scott Wood wrote:
+>>>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
 >>>>> The generic Linux framework to power off the machine is a function pointer
 >>>>> called pm_power_off. The trick about this pointer is that device drivers can
 >>>>> potentially implement it rather than board files.
@@ -67,65 +61,49 @@ On 10/01/2014 02:25 PM, Alexander Graf wrote:
 >>>>> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
 >>>>> machine after halt.
 >>>>
->>>> This is touching the same area as last night's
->>>> "[RFC PATCH 00/16] kernel: Add support for poweroff handler call chain"
->>>> https://lkml.org/lkml/2014/9/30/575
+>>>> Are there any plans to handle restart similarly?
 >>>
->>> I agree, and I think your patch set is walking into a reasonable
->>> direction. However, I really think it should convert all users of
->>> pm_power_off - at which point you'll probably get to the same conclusion
->>> that ppc_md.power_off is a bad idea :).
->>>
->> Yes, that would be the ultimate goal.
->>
->>> So in a way, this patch set is semantically a prerequisite to the full
->>> conversion you'd probably like to do :).
->>>
->>> Also, in your cover letter you describe that some methods power off the
->>> CPU power while others power off the system power. How do you
->>> distinguish between them with a call chain? You probably won't get
->>> around to trigger the system power off callback after the CPU power off
->>> callback ran ;).
->>>
->> Those are examples. Don't get hung up on it. I may actually replace the
->> CPU example with something better in the next version; it is not really
->> a good example and may get people stuck on "why on earth would anyone want
->> or need a means to turn off the CPU power" instead of focusing on the problem
->> the patch set tries to solve.
->>
->> The basic problem is that there can be different poweroff handlers,
->> some of which may not be available on some systems, and some may not
->> be as desirable as others for various reasons. The code registering
->> those poweroff handlers does not specify the poweroff method, but its
->> priority. It would be up to the programmer (hopefully together with
->> the board designer) to determine which method should have higher priority.
->> Taking the above example, the callback to turn off CPU power would presumably
->> be one of last resort, and have a very low priority.
->>
->> A better example may actually be patch 15/16 of the series. The affected
->> driver (drivers/power/reset/restart-poweroff.c) does not really power off
->> the system, but restarts it instead. Obviously that would only be a poweroff
->> handler of last resort, which should only be executed if no other means
->> to power off the system is available.
->
-> Sounds like a good plan :). You probably want to have some global list
-> of priority numbers like "try this first" or "this is a non-optimal, but
-> working method" and "only ever do this as last resort".
->
-Yes, this is already in the patch set, similar to the restart handler.
+Guess I am missing some context here. Support for a restart handler call chain
+will be added in 3.18. Currently its primary goal is to replace arm_pm_restart,
+but it would be a one-liner to add support for it to powerpc (see below).
 
-> Maybe you could as a first step convert every user of pm_power_off to
-> this new framework with a global notifier_block, similar to how
-> pm_power_off is a global today? Then we can at least get rid of
-> pm_power_off altogether and move to only notifiers, whereas new
-> notifiers can come before or after the old machine set implementations.
+>>> I don't see an immediate need for it, as we do have access to reset via
+>>> the guts device.
+>>
+>> The guts device is problematic from a hardware description perspective,
+>> as we advertise a bunch of things to the guest that we don't implement.
+>> E.g. the only reason we don't currently have a problem with Linux trying
+>> to use guts to sync the timebase across cores is that by chance we
+>> happen to expose a guts that corresponds to a single-cpu SoC.
 >
-> As a nice bonus this automatically converts every user of pm_power_off()
-> to instead call the notifier chain.
+> True, and it is slightly ugly to expose a specific SoC's guts in our
+> generic pv machine type.
 >
-Interesting idea, but I am not really sure if it would make much of
-a difference. I would still have to implement that handler for each
-platform. I might as well convert all users directly; at least this would
-ensure that all users are converted.
+>>
+>>> I also don't see any generic driver in Linux that would implement reset
+>>> via a gpio controller device, so apparently it's not incredibly common
+>>> to implement reset via gpio.
+>>
+Again, I may be missing something. How about drivers/power/reset/gpio-restart.c ?
+It would be really simple make it work with powerpc; all you would have to do
+is to add a call to do_kernel_restart() to the powerpc machine_restart() function.
 
+>> There wasn't a generic gpio-power-off driver either until a couple years
+>> ago...  Regardless of whether it's done via gpio, using ppc_md for it is
+>> bad for the same reasons as for power-off.
+>
+> I agree. Today, only ARM has a comparable mechanism for drivers to hook
+> a reset handler into the machine specific reset path.
+>
+Not anymore ...
+
+> I'd say let's wait for Guenter to finish the power off rework and then
+> tackle a generic reset call chain based approach next.
+>
+Please have a look into the restart handler; the code is in linux-next.
+That should probably solve your restart related problems.
+A branch on top of v3.17-rc2 is at
+https://git.kernel.org/cgit/linux/kernel/git/groeck/linux-staging.git/log/?h=restart-handler
+
+Thanks,
 Guenter
