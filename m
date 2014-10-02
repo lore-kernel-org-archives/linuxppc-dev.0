@@ -1,20 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B99A1A06C7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:52:09 +1000 (EST)
-Date: Thu, 2 Oct 2014 11:52:02 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C5571A0D7C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:53:45 +1000 (EST)
+Date: Thu, 2 Oct 2014 11:53:38 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to
+Subject: Re: [PATCH v2 3/4] sound/radeon: Move 64-bit MSI quirk from arch to
  driver
-Message-ID: <20141002115202.796eacb1@canb.auug.org.au>
-In-Reply-To: <1412210062.10667.1.camel@pasglop>
-References: <1412210062.10667.1.camel@pasglop>
+Message-ID: <20141002115338.3a0ae11f@canb.auug.org.au>
+In-Reply-To: <1412210082.10667.2.camel@pasglop>
+References: <1412210082.10667.2.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/e0QPA=r0nX9HPR2hvDnOa3C"; protocol="application/pgp-signature"
+ boundary="Sig_/c=QZ8QV/xwUIs48KR6IIKHx"; protocol="application/pgp-signature"
 Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
  linux-pci@vger.kernel.org, Brian King <brking@linux.vnet.ibm.com>,
  Anton Blanchard <anton@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
@@ -29,56 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/e0QPA=r0nX9HPR2hvDnOa3C
+--Sig_/c=QZ8QV/xwUIs48KR6IIKHx
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi Ben,
 
-On Thu, 02 Oct 2014 10:34:22 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+On Thu, 02 Oct 2014 10:34:42 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
 hing.org> wrote:
 >
-> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> @@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
->  	if (rdev->flags & RADEON_IS_AGP)
->  		return false;
+> diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+> index aa302fb..f91ba7f 100644
+> --- a/sound/pci/hda/hda_intel.c
+> +++ b/sound/pci/hda/hda_intel.c
+> @@ -296,7 +296,8 @@ enum {
 > =20
-> +	/*
-> +	 * Older chips have a HW limitation, they can only generate 40 bits
-> +	 * of address for "64-bit" MSIs which breaks on some platforms, notably
-> +	 * IBM POWER servers, so we limit them
-> +	 */
-> +	if (rdev->family < CHIP_BONAIRE) {
-> +		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> +		rdev->pdev->no_64bit_msi =3D true;
+>  /* quirks for ATI/AMD HDMI */
+>  #define AZX_DCAPS_PRESET_ATI_HDMI \
+> -	(AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB)
+> +	(AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB|\
+> +	 AZX_DCAPS_NO_MSI64)
+> =20
+>  /* quirks for Nvidia */
+>  #define AZX_DCAPS_PRESET_NVIDIA \
+> @@ -1505,9 +1506,14 @@ static int azx_first_init(struct azx *chip)
+>  		return -ENXIO;
+>  	}
+> =20
+> -	if (chip->msi)
+> +	if (chip->msi) {
+> +		if (chip->driver_caps & AZX_DCAPS_NO_MSI64) {
+> +			dev_dbg(card->dev, "Disabling 64bit MSI\n");
+> +			pci->no_64bit_msi =3D true;
 
-Again, no_64bit_msi is not a bool ...
+You get the idea :-)
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Sig_/e0QPA=r0nX9HPR2hvDnOa3C
+--Sig_/c=QZ8QV/xwUIs48KR6IIKHx
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJULK/HAAoJEMDTa8Ir7ZwVtisP/i5qg6vg8Vy8ZrjYIdVruU4U
-aHA7RbZ2CKtGRMFv3NC1PIi2LzQMu6PbQBa9NzsOXuH5Scehs3Ka/hS3+Gdz1WwI
-gCvX7Mpw0pqWUFSvrY6v2/RlniC/lesvTCBmI5TqqgVA2/Xm3WhS8q7WIsYVHF+t
-ZoVI16gZAF753NZa5OCTbwF2a4A99jN1HvqscOFw1kso+577OiXdX0+xMILOPfd+
-JoHEmJiUb1B+uNQPYClNJmziAlM1mPEw9mgCxReAz/sQlV5HD/+rGOJ7NJvdiaBK
-yXVqO0+yasKnS/YfKHnWO3Ocu2Tt28SVOQlDhdRM9bp6sh+RU5C7c8/grae4/4oZ
-Cf+fstnCo4MPUfNb2IM8TwlU9FJ3SzcBe6XzNsgQPZCaxZnkXcg+3ZaGM2uIV9Kh
-yOODLaXnILnnvuBWH6eU/PH7d2xpfdwuSEbvUAgSJiVEpGsRK0HdbvVf2gt5rjbW
-O3iyvqb8+VMrp3dCpDcIh4orWLUgJRmfcoVeTGj3DZFAfgJV5shrBZcVcUdQ9Nzs
-xagq5q4HA4Z5fzbxU7A9RdKU9Oz3GWYRsJ66BfHTmkOA4Ov+srmQnhJhVL6q/vNN
-yRH4shSYX3OBMOVnUpxbACc4Owf65nq7RKzqfnTTZNZcsYRt+PSRw3S9pLkJgTlu
-EpHtcnqejKI4FoL2egQK
-=67Oq
+iQIcBAEBCAAGBQJULLAnAAoJEMDTa8Ir7ZwVzG0P/isbB7zvLZqybONzSR850tGb
+8TsJpbXTzxrXiGJJIYwGubHJYUiOm+9lLcjMxTxILplkMd1vJ1rqB4YSVHSGe97A
+f1m2B3E3ufQiqkM5fHSAOwxpZAE8kVD/7LdqPzH3Ac/VQCibEVeci5mDNJ5sUvAp
+9SczWcTRFhcd9nwvs6/kX3WDEUVfb4vhl+pjsf7sg3AJU9C6xG6rHDTbkwpbGWMc
+pTp6mJ/NiinnK0GFfaFiWZ1ZYBlWUVs4cKEntgr2ReztWwFRkwkydeW8mZVs55W9
+RftHVoQMAms4G0wjvDAmks3PU1wjkRRvaa3SDW6jDZvd3uHOeLE2unMnBdw44Nde
+IO5+RNLYWnyH+9sYg0DFwQJbA4w3USrboJFe3zgHhNiC3I99/aRUgEaUfAmgphBz
+EGq4r7u1KxXS0pDYF8C52BBIbPnrE9/tQYFskEQlodKR14tcZupFGlHfXPE3eiUp
++KvKjTJnYfzfHr7EkdXqhYbbenQqNM0o9qKCcfZy7537EK0Cgo9WKrYroAXj1zwk
+Z8yJgVsc3P3OYLTShI6i8Wasw/dqwJWP0q+MLhj8lhDQ7U48c96knUirEdqm8ZHE
+5GBgq3/AMcNBLd5P/XW9ItST1cJ7whyhzypYbECbvwC3RVGgNHksodjg54jEGuEh
+JekybX5Su1IrvqT1iDms
+=1SgU
 -----END PGP SIGNATURE-----
 
---Sig_/e0QPA=r0nX9HPR2hvDnOa3C--
+--Sig_/c=QZ8QV/xwUIs48KR6IIKHx--
