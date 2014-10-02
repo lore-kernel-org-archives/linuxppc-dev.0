@@ -1,31 +1,29 @@
-Return-Path: <alexdeucher@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B32D1A0966
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 12:18:10 +1000 (EST)
-Received: from mail-qg0-x230.google.com (mail-qg0-x230.google.com
- [IPv6:2607:f8b0:400d:c04::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 787B114017E
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 12:18:09 +1000 (EST)
-Received: by mail-qg0-f48.google.com with SMTP id i50so1316000qgf.35
- for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2014 19:18:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 041E91A070E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 13:02:09 +1000 (EST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1XZWG7-00324q-VA
+ for linuxppc-dev@lists.ozlabs.org; Thu, 02 Oct 2014 02:36:48 +0000
+Message-ID: <542CBA10.3080408@roeck-us.net>
+Date: Wed, 01 Oct 2014 19:36:00 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-In-Reply-To: <1412210019.4285.251.camel@pasglop>
-References: <1412210019.4285.251.camel@pasglop>
-Date: Wed, 1 Oct 2014 22:18:07 -0400
-Message-ID: <CADnq5_Ph77w09kOuazB9bmYz0KpWRONfPOqf-ie_uUHS6PNbkA@mail.gmail.com>
-Subject: Re: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to
- driver
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+ <CAMuHMdWEN+q+s6ENoqqD8d0hy=hcZSiWzW3poJFBs8uEBGVuGg@mail.gmail.com>
+ <542C13FB.80608@suse.de> <20141001155434.GA11039@roeck-us.net>
+ <542C714C.4020009@suse.de>
+In-Reply-To: <542C714C.4020009@suse.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,62 +33,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 1, 2014 at 8:33 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> A number of radeon cards have a HW limitation causing them to be
-> unable to generate the full 64-bit of address bits for MSIs. This
-> breaks MSIs on some platforms such as POWER machines.
+On 10/01/2014 02:25 PM, Alexander Graf wrote:
 >
-> We used to have a powerpc specific quirk to address that on a
-> single card, but this doesn't scale very well, this is better
-> put under control of the drivers who know precisely what a given
-> HW revision can do.
 >
-> This moves the setting of the quirk flag to the radeon driver
+> On 01.10.14 17:54, Guenter Roeck wrote:
+>> On Wed, Oct 01, 2014 at 04:47:23PM +0200, Alexander Graf wrote:
+>>>
+>>>
+>>> On 01.10.14 16:33, Geert Uytterhoeven wrote:
+>>>> Hi Alex,
+>>>>
+>>>> On Wed, Oct 1, 2014 at 3:27 PM, Alexander Graf <agraf@suse.de> wrote:
+>>>>> The generic Linux framework to power off the machine is a function pointer
+>>>>> called pm_power_off. The trick about this pointer is that device drivers can
+>>>>> potentially implement it rather than board files.
+>>>>>
+>>>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+>>>>> off logic which then calls ppc_md.power_off to invoke machine specific power
+>>>>> off.
+>>>>>
+>>>>> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
+>>>>> this card house falls apart. That driver only registers itself if pm_power_off
+>>>>> is NULL to ensure it doesn't override board specific logic. However, since we
+>>>>> always set pm_power_off to the generic power off logic (which will just not
+>>>>> power off the machine if no ppc_md.power_off call is implemented), we can't
+>>>>> implement power off via the generic GPIO power off driver.
+>>>>>
+>>>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+>>>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+>>>>> driver can implement power off logic via that function pointer.
+>>>>>
+>>>>> With this patch set applied and a few patches on top of QEMU that implement a
+>>>>> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
+>>>>> machine after halt.
+>>>>
+>>>> This is touching the same area as last night's
+>>>> "[RFC PATCH 00/16] kernel: Add support for poweroff handler call chain"
+>>>> https://lkml.org/lkml/2014/9/30/575
+>>>
+>>> I agree, and I think your patch set is walking into a reasonable
+>>> direction. However, I really think it should convert all users of
+>>> pm_power_off - at which point you'll probably get to the same conclusion
+>>> that ppc_md.power_off is a bad idea :).
+>>>
+>> Yes, that would be the ultimate goal.
+>>
+>>> So in a way, this patch set is semantically a prerequisite to the full
+>>> conversion you'd probably like to do :).
+>>>
+>>> Also, in your cover letter you describe that some methods power off the
+>>> CPU power while others power off the system power. How do you
+>>> distinguish between them with a call chain? You probably won't get
+>>> around to trigger the system power off callback after the CPU power off
+>>> callback ran ;).
+>>>
+>> Those are examples. Don't get hung up on it. I may actually replace the
+>> CPU example with something better in the next version; it is not really
+>> a good example and may get people stuck on "why on earth would anyone want
+>> or need a means to turn off the CPU power" instead of focusing on the problem
+>> the patch set tries to solve.
+>>
+>> The basic problem is that there can be different poweroff handlers,
+>> some of which may not be available on some systems, and some may not
+>> be as desirable as others for various reasons. The code registering
+>> those poweroff handlers does not specify the poweroff method, but its
+>> priority. It would be up to the programmer (hopefully together with
+>> the board designer) to determine which method should have higher priority.
+>> Taking the above example, the callback to turn off CPU power would presumably
+>> be one of last resort, and have a very low priority.
+>>
+>> A better example may actually be patch 15/16 of the series. The affected
+>> driver (drivers/power/reset/restart-poweroff.c) does not really power off
+>> the system, but restarts it instead. Obviously that would only be a poweroff
+>> handler of last resort, which should only be executed if no other means
+>> to power off the system is available.
 >
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: <stable@vger.kernel.org>
+> Sounds like a good plan :). You probably want to have some global list
+> of priority numbers like "try this first" or "this is a non-optimal, but
+> working method" and "only ever do this as last resort".
+>
+Yes, this is already in the patch set, similar to the restart handler.
 
-Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+> Maybe you could as a first step convert every user of pm_power_off to
+> this new framework with a global notifier_block, similar to how
+> pm_power_off is a global today? Then we can at least get rid of
+> pm_power_off altogether and move to only notifiers, whereas new
+> notifiers can come before or after the old machine set implementations.
+>
+> As a nice bonus this automatically converts every user of pm_power_off()
+> to instead call the notifier chain.
+>
+Interesting idea, but I am not really sure if it would make much of
+a difference. I would still have to implement that handler for each
+platform. I might as well convert all users directly; at least this would
+ensure that all users are converted.
 
-> ---
->
-> v2: This is just adjusted to the new flag name
->
->  arch/powerpc/kernel/pci_64.c            |  1 -
->  drivers/gpu/drm/radeon/radeon_irq_kms.c | 10 ++++++++++
->  2 files changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index d41a831..5330f6d 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -271,5 +271,4 @@ static void quirk_radeon_32bit_msi(struct pci_dev *dev)
->  {
->         dev->no_64bit_msi = true;
->  }
-> -DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_msi);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
-> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> index 16807af..e760671 100644
-> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> @@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
->         if (rdev->flags & RADEON_IS_AGP)
->                 return false;
->
-> +       /*
-> +        * Older chips have a HW limitation, they can only generate 40 bits
-> +        * of address for "64-bit" MSIs which breaks on some platforms, notably
-> +        * IBM POWER servers, so we limit them
-> +        */
-> +       if (rdev->family < CHIP_BONAIRE) {
-> +               dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> +               rdev->pdev->no_64bit_msi = true;
-> +       }
-> +
->         /* force MSI on */
->         if (radeon_msi == 1)
->                 return true;
->
->
+Guenter
