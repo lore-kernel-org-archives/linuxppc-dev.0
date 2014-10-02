@@ -1,20 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21D561A189D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 16:02:38 +1000 (EST)
-In-Reply-To: <1412073306-13812-16-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- benh@kernel.crashing.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 15/17] cxl: Userspace header file.
-Message-Id: <20141002060237.E9963140180@ozlabs.org>
-Date: Thu,  2 Oct 2014 16:02:37 +1000 (EST)
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3742A1A1625
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 16:09:57 +1000 (EST)
+Message-ID: <1412230196.6143.16.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 08/17] powerpc/powerpc: Add new PCIe functions for
+ allocating cxl interrupts
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 02 Oct 2014 16:09:56 +1000
+In-Reply-To: <20141002031659.DB564140188@ozlabs.org>
+References: <20141002031659.DB564140188@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
+ linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+ anton@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,132 +27,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-30-09 at 10:35:04 UTC, Michael Neuling wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> This defines structs and magic numbers required for userspace to interact with
-> the kernel cxl driver via /dev/cxl/afu0.0.
-> 
-> diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-> new file mode 100644
-> index 0000000..6a394b5
-> --- /dev/null
-> +++ b/include/uapi/misc/cxl.h
-> @@ -0,0 +1,88 @@
-> +/*
-> + * Copyright 2014 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#ifndef _UAPI_ASM_CXL_H
-> +#define _UAPI_ASM_CXL_H
-> +
-> +#include <linux/types.h>
-> +#include <linux/ioctl.h>
-> +
-> +/* ioctls */
-> +struct cxl_ioctl_start_work {
-> +	__u64 wed;
-> +	__u64 amr;
-> +	__u64 reserved1;
-> +	__u32 reserved2;
-> +	__s16 num_interrupts; /* -1 = use value from afu descriptor */
-> +	__u16 process_element; /* returned from kernel */
-> +	__u64 reserved3;
-> +	__u64 reserved4;
-> +	__u64 reserved5;
-> +	__u64 reserved6;
+On Thu, 2014-10-02 at 13:16 +1000, Michael Ellerman wrote:
+> On Tue, 2014-30-09 at 10:34:57 UTC, Michael Neuling wrote:
+> > From: Ian Munsie <imunsie@au1.ibm.com>
+> >=20
+> > This adds a number of functions for allocating IRQs under powernv PCIe =
+for cxl.
+> >=20
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
+latforms/powernv/pci-ioda.c
+> > index 329164f..b0b96f0 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -503,6 +505,138 @@ static struct pnv_ioda_pe *pnv_ioda_get_pe(struct=
+ pci_dev *dev)
+> >  		return NULL;
+> >  	return &phb->ioda.pe_array[pdn->pe_number];
+> >  }
+> > +
+> > +struct device_node *pnv_pci_to_phb_node(struct pci_dev *dev)
+> > +{
+> > +        struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +
+> > +        return hose->dn;
+> > +}
+> > +EXPORT_SYMBOL(pnv_pci_to_phb_node);
+> > +
+> > +#ifdef CONFIG_CXL_BASE
+> > +int pnv_phb_to_cxl(struct pci_dev *dev)
+> > +{
+> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +	struct pnv_phb *phb =3D hose->private_data;
+> > +	struct pnv_ioda_pe *pe;
+> > +	int rc;
+> > +
+> > +	if (!(pe =3D pnv_ioda_get_pe(dev))) {
+> > +		rc =3D -ENODEV;
+> > +		goto out;
+> > +	}
+>=20
+> That'd be a lot simpler as:
+>=20
+> 	pe =3D pnv_ioda_get_pe(dev);
+> 	if (!pe)
+> 		return -ENODEV;
 
-Why so many reserved fields?
+OK
 
-What mechanism is there that will allow you to ever unreserve them?
+> > +	pe_info(pe, "switch PHB to CXL\n");
+> > +	pe_info(pe, "PHB-ID  : 0x%016llx\n", phb->opal_id);
+> > +	pe_info(pe, "     pe : %i\n", pe->pe_number);
+>=20
+> Spacing is a bit weird but maybe it matches something else?
 
-ie. how does a new userspace detect that the kernel it's running on supports
-new fields?
+Actually, we switched this to pe_info() based on one of Gavin's reviews,
+so the pe_number and opal_id being printed here are not needed anymore.
+I'm simplifying this into one line.
 
-Or conversely how does a new kernel detect that userspace has passed it a
-meaningful value in one of the previously reserved fields?
+	pe_info(pe, "Switching PHB to CXL\n");
 
-> +#define CXL_MAGIC 0xCA
-> +#define CXL_IOCTL_START_WORK      _IOWR(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
 
-What happened to 0x1 ?
+>=20
+> > +
+> > +	if ((rc =3D opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number)=
+))
+> > +		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
+>=20
+> Again why not:
+>=20
+> 	rc =3D opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number);
+> 	if (rc)
+> 		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
 
-> +#define CXL_IOCTL_CHECK_ERROR     _IO(CXL_MAGIC,   0x02)
-> +
-> +/* events from read() */
-> +
-> +enum cxl_event_type {
-> +	CXL_EVENT_READ_FAIL     = -1,
+Ok.
 
-I don't see this used?
+> > +out:
+> > +	return rc;
+> > +}
+> > +EXPORT_SYMBOL(pnv_phb_to_cxl);
+> > +
+>=20
+> > +int pnv_cxl_alloc_hwirq_ranges(struct cxl_irq_ranges *irqs,
+> > +			       struct pci_dev *dev, int num)
+>=20
+> This could use some documentation.
+>=20
+> It seems to be that it allocates num irqs in some number of ranges, up to
+> CXL_IRQ_RANGES?
 
-> +	CXL_EVENT_RESERVED      = 0,
-> +	CXL_EVENT_AFU_INTERRUPT = 1,
-> +	CXL_EVENT_DATA_STORAGE  = 2,
-> +	CXL_EVENT_AFU_ERROR     = 3,
-> +};
-> +
-> +struct cxl_event_header {
-> +	__u32 type;
-> +	__u16 size;
-> +	__u16 process_element;
-> +	__u64 reserved1;
-> +	__u64 reserved2;
-> +	__u64 reserved3;
-> +};
+OK
 
-Again lots of reserved fields?
+>=20
+> > +{
+> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +	struct pnv_phb *phb =3D hose->private_data;
+> > +	int range =3D 0;
+>=20
+> You reinitialise to 1 below?
 
-> +struct cxl_event_afu_interrupt {
-> +	struct cxl_event_header header;
-> +	__u16 irq; /* Raised AFU interrupt number */
-> +	__u16 reserved1;
-> +	__u32 reserved2;
-> +	__u64 reserved3;
-> +	__u64 reserved4;
-> +	__u64 reserved5;
-> +};
-> +
-> +struct cxl_event_data_storage {
-> +	struct cxl_event_header header;
-> +	__u64 addr;
-> +	__u64 reserved1;
-> +	__u64 reserved2;
-> +	__u64 reserved3;
-> +};
-> +
-> +struct cxl_event_afu_error {
-> +	struct cxl_event_header header;
-> +	__u64 err;
-> +	__u64 reserved1;
-> +	__u64 reserved2;
-> +	__u64 reserved3;
-> +};
-> +
-> +struct cxl_event {
-> +	union {
-> +		struct cxl_event_header header;
-> +		struct cxl_event_afu_interrupt irq;
-> +		struct cxl_event_data_storage fault;
-> +		struct cxl_event_afu_error afu_err;
-> +	};
-> +};
+Oops
 
-Rather than having the header included in every event, would it be clearer if
-the cxl_event was:
+>=20
+> > +	int hwirq;
+> > +	int try;
+>=20
+> So these can be:
+>=20
+> 	int hwirq, try, range;
+>=20
+> > +	memset(irqs, 0, sizeof(struct cxl_irq_ranges));
+> > +
+> > +	for (range =3D 1; range < CXL_IRQ_RANGES && num; range++) {
+>=20
+> I think this would be clearer if range was just called "i" as usual.
 
-struct cxl_event {
-	struct cxl_event_header header;
-	union {
-		struct cxl_event_afu_interrupt irq;
-		struct cxl_event_data_storage fault;
-		struct cxl_event_afu_error afu_err;
-	};
-};
+OK
 
-cheers
+> Why does it start at 1 ?
+
+0 is used by the data storage interrupt. I'll add a comment to clarify.
+
+>=20
+> > +		try =3D num;
+> > +		while (try) {
+> > +			hwirq =3D msi_bitmap_alloc_hwirqs(&phb->msi_bmp, try);
+> > +			if (hwirq >=3D 0)
+> > +				break;
+> > +			try /=3D 2;
+> > +		}
+> > +		if (!try)
+> > +			goto fail;
+> > +
+> > +		irqs->offset[range] =3D phb->msi_base + hwirq;
+> > +		irqs->range[range] =3D try;
+>=20
+> irqs->range is irq_hw_number_t but looks like it should just be uint.
+>=20
+> > +		pr_devel("cxl alloc irq range 0x%x: offset: 0x%lx  limit: %li\n",
+> > +			 range, irqs->offset[range], irqs->range[range]);
+> > +		num -=3D try;
+> > +	}
+> > +	if (num)
+> > +		goto fail;
+> > +
+> > +	return 0;
+> > +fail:
+> > +	for (range--; range >=3D 0; range--) {
+> > +		hwirq =3D irqs->offset[range] - phb->msi_base;
+> > +		msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
+> > +				       irqs->range[range]);
+> > +		irqs->range[range] =3D 0;
+> > +	}
+>=20
+> Because you zero ranges at the top I think you can replace all of the fai=
+l
+> logic with a call to pnv_cxl_release_hwirq_ranges().
+
+Nice.  Will change.
+
+>=20
+>=20
+> > +	return -ENOSPC;
+> > +}
+> > +EXPORT_SYMBOL(pnv_cxl_alloc_hwirq_ranges);
+> > +
+> > +void pnv_cxl_release_hwirq_ranges(struct cxl_irq_ranges *irqs,
+> > +				  struct pci_dev *dev)
+> > +{
+> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +	struct pnv_phb *phb =3D hose->private_data;
+> > +	int range =3D 0;
+>=20
+> Unnecessary init again.
+
+Yep. I'll change to 'i' too.
+
+> > +	int hwirq;
+> > +
+> > +	for (range =3D 0; range < 4; range++) {
+>=20
+> Shouldn't 4 be CXL_IRQ_RANGES ?
+
+Yep.
+
+>=20
+> > +		hwirq =3D irqs->offset[range] - phb->msi_base;
+>=20
+> That should be inside the if.
+
+Yep.
+
+>=20
+> Or better do:
+> 		if (!irqs->range[range])
+> 			continue;
+> 		...
+
+Nice.
+
+>=20
+> > +		if (irqs->range[range]) {
+> > +			pr_devel("cxl release irq range 0x%x: offset: 0x%lx  limit: %ld\n",
+> > +				 range, irqs->offset[range],
+> > +				 irqs->range[range]);
+> > +			msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
+> > +					       irqs->range[range]);
+> > +		}
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(pnv_cxl_release_hwirq_ranges);
+> > +
+> > +int pnv_cxl_get_irq_count(struct pci_dev *dev)
+> > +{
+> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +        struct pnv_phb *phb =3D hose->private_data;
+>=20
+> Indentation is fubar.
+
+OK
+
+>=20
+> > +	return phb->msi_bmp.irq_count;
+> > +}
+> > +EXPORT_SYMBOL(pnv_cxl_get_irq_count);
+> > +
+> > +#endif /* CONFIG_CXL_BASE */
+> >  #endif /* CONFIG_PCI_MSI */
+> > =20
+> >  static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_=
+pe *pe)
+> > @@ -1330,6 +1464,33 @@ static void set_msi_irq_chip(struct pnv_phb *phb=
+, unsigned int virq)
+> >  	irq_set_chip(virq, &phb->ioda.irq_chip);
+> >  }
+> > =20
+> > +#ifdef CONFIG_CXL_BASE
+>=20
+> Why is this here and not in the previous #ifdef CONFIG_CXL_BASE block ?
+
+I can actually move the rest of the cxl code down here too.  So I'll do
+that.
+
+>=20
+> > +int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+> > +			   unsigned int virq)
+> > +{
+> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
+> > +	struct pnv_phb *phb =3D hose->private_data;
+> > +	unsigned int xive_num =3D hwirq - phb->msi_base;
+> > +	struct pnv_ioda_pe *pe;
+> > +	int rc;
+> > +
+> > +	if (!(pe =3D pnv_ioda_get_pe(dev)))
+> > +		return -ENODEV;
+> > +
+> > +	/* Assign XIVE to PE */
+> > +	rc =3D opal_pci_set_xive_pe(phb->opal_id, pe->pe_number, xive_num);
+> > +	if (rc) {
+> > +		pr_warn("%s: OPAL error %d setting msi_base 0x%x hwirq 0x%x XIVE 0x%=
+x PE\n",
+> > +			pci_name(dev), rc, phb->msi_base, hwirq, xive_num);
+>=20
+> dev_warn() ?
+
+I'm going to move it to the pe_warn() we have here.
+
+Cheers,
+Mikey
