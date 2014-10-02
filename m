@@ -1,22 +1,17 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A66931A0A5E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 15:22:18 +1000 (EST)
-Message-ID: <1412227337.6143.0.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH v2 06/17] powerpc/powernv: Split out set MSI IRQ chip code
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 02 Oct 2014 15:22:17 +1000
-In-Reply-To: <20141002015729.D379414016B@ozlabs.org>
-References: <20141002015729.D379414016B@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
- linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
- anton@samba.org, jk@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E4D6A1A181E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 15:44:20 +1000 (EST)
+Date: Thu, 2 Oct 2014 15:44:21 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc: Speed up clear_page by unrolling it
+Message-ID: <20141002154421.62073027@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +21,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-10-02 at 11:57 +1000, Michael Ellerman wrote:
-> On Tue, 2014-30-09 at 10:34:55 UTC, Michael Neuling wrote:
-> > From: Ian Munsie <imunsie@au1.ibm.com>
-> >=20
-> > Some of the MSI IRQ code in pnv_pci_ioda_msi_setup() is generically use=
-ful so
-> > split it out.
-> >=20
-> > This will be used by some of the cxl PCIe code later.
-> >=20
-> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
-latforms/powernv/pci-ioda.c
-> > index df241b1..329164f 100644
-> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > @@ -1306,14 +1306,36 @@ static void pnv_ioda2_msi_eoi(struct irq_data *=
-d)
-> >  	icp_native_eoi(d);
-> >  }
-> > =20
-> > +
-> > +static void set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
-> > +{
-> > +	struct irq_data *idata;
-> > +	struct irq_chip *ichip;
-> > +
-> > +	if (phb->type !=3D PNV_PHB_IODA2)
-> > +		return;
-> > +
-> > +	/*
-> > +	 * Change the IRQ chip for the MSI interrupts on PHB3.
-> > +	 * The corresponding IRQ chip should be populated for
-> > +	 * the first time.
->=20
-> Seeing as you're moving this comment can you clarify the wording.
+Unroll clear_page 8 times. A simple microbenchmark which
+allocates and frees a zeroed page:
 
-Ok.
+for (i = 0; i < iterations; i++) {
+	unsigned long p = __get_free_page(GFP_KERNEL | __GFP_ZERO);
+	free_page(p);
+}
 
-Mikey
+improves 20% on POWER8.
+
+This assumes cacheline sizes won't grow beyond 512 bytes or
+page sizes wont drop below 1kB, which is unlikely, but we could
+add a runtime check during early init if it makes people nervous.
+
+Michael found that some versions of gcc produce quite bad code
+(all multiplies), so we give gcc a hand by using shifts and adds.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/page_64.h | 42 ++++++++++++++++++++++++++++----------
+ 1 file changed, 31 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index d0d6afb..d908a46 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -42,20 +42,40 @@
+ 
+ typedef unsigned long pte_basic_t;
+ 
+-static __inline__ void clear_page(void *addr)
++static inline void clear_page(void *addr)
+ {
+-	unsigned long lines, line_size;
+-
+-	line_size = ppc64_caches.dline_size;
+-	lines = ppc64_caches.dlines_per_page;
+-
+-	__asm__ __volatile__(
++	unsigned long iterations;
++	unsigned long onex, twox, fourx, eightx;
++
++	iterations = ppc64_caches.dlines_per_page / 8;
++
++	/*
++	 * Some verisions of gcc use multiply instructions to
++	 * calculate the offsets so lets give it a hand to
++	 * do better.
++	 */
++	onex = ppc64_caches.dline_size;
++	twox = onex << 1;
++	fourx = onex << 2;
++	eightx = onex << 3;
++
++	asm volatile(
+ 	"mtctr	%1	# clear_page\n\
+-1:      dcbz	0,%0\n\
+-	add	%0,%0,%3\n\
++	.balign	16\n\
++1:	dcbz	0,%0\n\
++	dcbz	%3,%0\n\
++	dcbz	%4,%0\n\
++	dcbz	%5,%0\n\
++	dcbz	%6,%0\n\
++	dcbz	%7,%0\n\
++	dcbz	%8,%0\n\
++	dcbz	%9,%0\n\
++	add	%0,%0,%10\n\
+ 	bdnz+	1b"
+-        : "=r" (addr)
+-        : "r" (lines), "0" (addr), "r" (line_size)
++	: "=&r" (addr)
++	: "r" (iterations), "0" (addr), "b" (onex), "b" (twox),
++		"b" (twox+onex), "b" (fourx), "b" (fourx+onex),
++		"b" (twox+fourx), "b" (eightx-onex), "r" (eightx)
+ 	: "ctr", "memory");
+ }
+ 
+-- 
+1.9.1
