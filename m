@@ -1,23 +1,24 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3742A1A1625
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 16:09:57 +1000 (EST)
-Message-ID: <1412230196.6143.16.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH v2 08/17] powerpc/powerpc: Add new PCIe functions for
- allocating cxl interrupts
+ by lists.ozlabs.org (Postfix) with ESMTPS id D31A21A09AE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 16:44:58 +1000 (EST)
+Message-ID: <1412232297.6143.18.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 10/17] powerpc/mm: Merge vsid calculation in
+ hash_page() and copro_data_segment()
 From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 02 Oct 2014 16:09:56 +1000
-In-Reply-To: <20141002031659.DB564140188@ozlabs.org>
-References: <20141002031659.DB564140188@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 02 Oct 2014 16:44:57 +1000
+In-Reply-To: <87wq8km7w0.fsf@linux.vnet.ibm.com>
+References: <1412073306-13812-1-git-send-email-mikey@neuling.org>
+ <1412073306-13812-11-git-send-email-mikey@neuling.org>
+ <87wq8km7w0.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg@kroah.com,
- linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
- anton@samba.org, jk@ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org, arnd@arndb.de, greg@kroah.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, anton@samba.org,
+ imunsie@au1.ibm.com, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,270 +28,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-10-02 at 13:16 +1000, Michael Ellerman wrote:
-> On Tue, 2014-30-09 at 10:34:57 UTC, Michael Neuling wrote:
+On Wed, 2014-10-01 at 15:25 +0530, Aneesh Kumar K.V wrote:
+> Michael Neuling <mikey@neuling.org> writes:
+>=20
 > > From: Ian Munsie <imunsie@au1.ibm.com>
-> >=20
-> > This adds a number of functions for allocating IRQs under powernv PCIe =
-for cxl.
-> >=20
-> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
-latforms/powernv/pci-ioda.c
-> > index 329164f..b0b96f0 100644
-> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > @@ -503,6 +505,138 @@ static struct pnv_ioda_pe *pnv_ioda_get_pe(struct=
- pci_dev *dev)
-> >  		return NULL;
-> >  	return &phb->ioda.pe_array[pdn->pe_number];
-> >  }
-> > +
-> > +struct device_node *pnv_pci_to_phb_node(struct pci_dev *dev)
-> > +{
-> > +        struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +
-> > +        return hose->dn;
-> > +}
-> > +EXPORT_SYMBOL(pnv_pci_to_phb_node);
-> > +
-> > +#ifdef CONFIG_CXL_BASE
-> > +int pnv_phb_to_cxl(struct pci_dev *dev)
-> > +{
-> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +	struct pnv_phb *phb =3D hose->private_data;
-> > +	struct pnv_ioda_pe *pe;
-> > +	int rc;
-> > +
-> > +	if (!(pe =3D pnv_ioda_get_pe(dev))) {
-> > +		rc =3D -ENODEV;
-> > +		goto out;
-> > +	}
->=20
-> That'd be a lot simpler as:
->=20
-> 	pe =3D pnv_ioda_get_pe(dev);
-> 	if (!pe)
-> 		return -ENODEV;
-
-OK
-
-> > +	pe_info(pe, "switch PHB to CXL\n");
-> > +	pe_info(pe, "PHB-ID  : 0x%016llx\n", phb->opal_id);
-> > +	pe_info(pe, "     pe : %i\n", pe->pe_number);
->=20
-> Spacing is a bit weird but maybe it matches something else?
-
-Actually, we switched this to pe_info() based on one of Gavin's reviews,
-so the pe_number and opal_id being printed here are not needed anymore.
-I'm simplifying this into one line.
-
-	pe_info(pe, "Switching PHB to CXL\n");
-
-
->=20
-> > +
-> > +	if ((rc =3D opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number)=
-))
-> > +		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
->=20
-> Again why not:
->=20
-> 	rc =3D opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number);
-> 	if (rc)
-> 		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
-
-Ok.
-
-> > +out:
-> > +	return rc;
-> > +}
-> > +EXPORT_SYMBOL(pnv_phb_to_cxl);
-> > +
->=20
-> > +int pnv_cxl_alloc_hwirq_ranges(struct cxl_irq_ranges *irqs,
-> > +			       struct pci_dev *dev, int num)
->=20
-> This could use some documentation.
->=20
-> It seems to be that it allocates num irqs in some number of ranges, up to
-> CXL_IRQ_RANGES?
-
-OK
-
->=20
-> > +{
-> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +	struct pnv_phb *phb =3D hose->private_data;
-> > +	int range =3D 0;
->=20
-> You reinitialise to 1 below?
-
-Oops
-
->=20
-> > +	int hwirq;
-> > +	int try;
->=20
-> So these can be:
->=20
-> 	int hwirq, try, range;
->=20
-> > +	memset(irqs, 0, sizeof(struct cxl_irq_ranges));
-> > +
-> > +	for (range =3D 1; range < CXL_IRQ_RANGES && num; range++) {
->=20
-> I think this would be clearer if range was just called "i" as usual.
-
-OK
-
-> Why does it start at 1 ?
-
-0 is used by the data storage interrupt. I'll add a comment to clarify.
-
->=20
-> > +		try =3D num;
-> > +		while (try) {
-> > +			hwirq =3D msi_bitmap_alloc_hwirqs(&phb->msi_bmp, try);
-> > +			if (hwirq >=3D 0)
-> > +				break;
-> > +			try /=3D 2;
-> > +		}
-> > +		if (!try)
-> > +			goto fail;
-> > +
-> > +		irqs->offset[range] =3D phb->msi_base + hwirq;
-> > +		irqs->range[range] =3D try;
->=20
-> irqs->range is irq_hw_number_t but looks like it should just be uint.
->=20
-> > +		pr_devel("cxl alloc irq range 0x%x: offset: 0x%lx  limit: %li\n",
-> > +			 range, irqs->offset[range], irqs->range[range]);
-> > +		num -=3D try;
-> > +	}
-> > +	if (num)
-> > +		goto fail;
-> > +
-> > +	return 0;
-> > +fail:
-> > +	for (range--; range >=3D 0; range--) {
-> > +		hwirq =3D irqs->offset[range] - phb->msi_base;
-> > +		msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
-> > +				       irqs->range[range]);
-> > +		irqs->range[range] =3D 0;
-> > +	}
->=20
-> Because you zero ranges at the top I think you can replace all of the fai=
-l
-> logic with a call to pnv_cxl_release_hwirq_ranges().
-
-Nice.  Will change.
-
->=20
->=20
-> > +	return -ENOSPC;
-> > +}
-> > +EXPORT_SYMBOL(pnv_cxl_alloc_hwirq_ranges);
-> > +
-> > +void pnv_cxl_release_hwirq_ranges(struct cxl_irq_ranges *irqs,
-> > +				  struct pci_dev *dev)
-> > +{
-> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +	struct pnv_phb *phb =3D hose->private_data;
-> > +	int range =3D 0;
->=20
-> Unnecessary init again.
-
-Yep. I'll change to 'i' too.
-
-> > +	int hwirq;
-> > +
-> > +	for (range =3D 0; range < 4; range++) {
->=20
-> Shouldn't 4 be CXL_IRQ_RANGES ?
-
-Yep.
-
->=20
-> > +		hwirq =3D irqs->offset[range] - phb->msi_base;
->=20
-> That should be inside the if.
-
-Yep.
-
->=20
-> Or better do:
-> 		if (!irqs->range[range])
-> 			continue;
-> 		...
-
-Nice.
-
->=20
-> > +		if (irqs->range[range]) {
-> > +			pr_devel("cxl release irq range 0x%x: offset: 0x%lx  limit: %ld\n",
-> > +				 range, irqs->offset[range],
-> > +				 irqs->range[range]);
-> > +			msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq,
-> > +					       irqs->range[range]);
-> > +		}
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL(pnv_cxl_release_hwirq_ranges);
-> > +
-> > +int pnv_cxl_get_irq_count(struct pci_dev *dev)
-> > +{
-> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +        struct pnv_phb *phb =3D hose->private_data;
->=20
-> Indentation is fubar.
-
-OK
-
->=20
-> > +	return phb->msi_bmp.irq_count;
-> > +}
-> > +EXPORT_SYMBOL(pnv_cxl_get_irq_count);
-> > +
-> > +#endif /* CONFIG_CXL_BASE */
-> >  #endif /* CONFIG_PCI_MSI */
+> >
+> > The vsid calculation between hash_page() and copro_data_segment() are v=
+ery
+> > similar.  This merges these two different versions.
+> >
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> >  arch/powerpc/include/asm/mmu-hash64.h |  2 ++
+> >  arch/powerpc/mm/copro_fault.c         | 45 ++++++--------------------
+> >  arch/powerpc/mm/hash_utils_64.c       | 61 ++++++++++++++++++++++-----=
+--------
+> >  3 files changed, 50 insertions(+), 58 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/inclu=
+de/asm/mmu-hash64.h
+> > index f84e5a5..bf43fb0 100644
+> > --- a/arch/powerpc/include/asm/mmu-hash64.h
+> > +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> > @@ -322,6 +322,8 @@ extern int __hash_page_64K(unsigned long ea, unsign=
+ed long access,
+> >  			   unsigned int local, int ssize);
+> >  struct mm_struct;
+> >  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int =
+trap);
+> > +int calculate_vsid(struct mm_struct *mm, u64 ea,
+> > +		   u64 *vsid, int *psize, int *ssize);
+> >  extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsign=
+ed long access, unsigned long trap);
+> >  extern int hash_page(unsigned long ea, unsigned long access, unsigned =
+long trap);
+> >  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned =
+long vsid,
+> > diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_faul=
+t.c
+> > index 939abdf..ba8bf8e 100644
+> > --- a/arch/powerpc/mm/copro_fault.c
+> > +++ b/arch/powerpc/mm/copro_fault.c
+> > @@ -94,45 +94,18 @@ EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
 > > =20
-> >  static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_=
-pe *pe)
-> > @@ -1330,6 +1464,33 @@ static void set_msi_irq_chip(struct pnv_phb *phb=
-, unsigned int virq)
-> >  	irq_set_chip(virq, &phb->ioda.irq_chip);
+> >  int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *v=
+sid)
+> >  {
+> > -	int psize, ssize;
+> > +	int psize, ssize, rc;
+> > =20
+> >  	*esid =3D (ea & ESID_MASK) | SLB_ESID_V;
+> > =20
+> > -	switch (REGION_ID(ea)) {
+> > -	case USER_REGION_ID:
+> > -		pr_devel("copro_data_segment: 0x%llx -- USER_REGION_ID\n", ea);
+> > -#ifdef CONFIG_PPC_MM_SLICES
+> > -		psize =3D get_slice_psize(mm, ea);
+> > -#else
+> > -		psize =3D mm->context.user_psize;
+> > -#endif
+> > -		ssize =3D user_segment_size(ea);
+> > -		*vsid =3D (get_vsid(mm->context.id, ea, ssize)
+> > -			 << slb_vsid_shift(ssize)) | SLB_VSID_USER;
+> > -		break;
+> > -	case VMALLOC_REGION_ID:
+> > -		pr_devel("copro_data_segment: 0x%llx -- VMALLOC_REGION_ID\n", ea);
+> > -		if (ea < VMALLOC_END)
+> > -			psize =3D mmu_vmalloc_psize;
+> > -		else
+> > -			psize =3D mmu_io_psize;
+> > -		ssize =3D mmu_kernel_ssize;
+> > -		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
+> > -			 << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+> > -		break;
+> > -	case KERNEL_REGION_ID:
+> > -		pr_devel("copro_data_segment: 0x%llx -- KERNEL_REGION_ID\n", ea);
+> > -		psize =3D mmu_linear_psize;
+> > -		ssize =3D mmu_kernel_ssize;
+> > -		*vsid =3D (get_kernel_vsid(ea, mmu_kernel_ssize)
+> > -			 << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+> > -		break;
+> > -	default:
+> > -		/* Future: support kernel segments so that drivers can use the
+> > -		 * CoProcessors */
+> > -		pr_debug("invalid region access at %016llx\n", ea);
+> > -		return 1;
+> > -	}
+> > +	rc =3D calculate_vsid(mm, ea, vsid, &psize, &ssize);
+> > +	if (rc)
+> > +		return rc;
+> > +	if (REGION_ID(ea) =3D=3D USER_REGION_ID)
+> > +		*vsid =3D (*vsid << slb_vsid_shift(ssize)) | SLB_VSID_USER;
+> > +	else
+> > +		*vsid =3D (*vsid << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+> > +
+> >  	*vsid |=3D mmu_psize_defs[psize].sllp |
+> >  		((ssize =3D=3D MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
+> > =20
+> > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_uti=
+ls_64.c
+> > index 0a5c8c0..3fa81ca 100644
+> > --- a/arch/powerpc/mm/hash_utils_64.c
+> > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > @@ -983,6 +983,38 @@ static void check_paca_psize(unsigned long ea, str=
+uct mm_struct *mm,
+> >  	}
 > >  }
 > > =20
-> > +#ifdef CONFIG_CXL_BASE
->=20
-> Why is this here and not in the previous #ifdef CONFIG_CXL_BASE block ?
-
-I can actually move the rest of the cxl code down here too.  So I'll do
-that.
-
->=20
-> > +int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
-> > +			   unsigned int virq)
+> > +int calculate_vsid(struct mm_struct *mm, u64 ea,
+> > +		   u64 *vsid, int *psize, int *ssize)
 > > +{
-> > +	struct pci_controller *hose =3D pci_bus_to_host(dev->bus);
-> > +	struct pnv_phb *phb =3D hose->private_data;
-> > +	unsigned int xive_num =3D hwirq - phb->msi_base;
-> > +	struct pnv_ioda_pe *pe;
-> > +	int rc;
+> > +	switch (REGION_ID(ea)) {
+> > +	case USER_REGION_ID:
+> > +		pr_devel("%s: 0x%llx -- USER_REGION_ID\n", __func__, ea);
+> > +		*psize =3D get_slice_psize(mm, ea);
+> > +		*ssize =3D user_segment_size(ea);
+> > +		*vsid =3D get_vsid(mm->context.id, ea, *ssize);
+> > +		return 0;
+> > +	case VMALLOC_REGION_ID:
+> > +		pr_devel("%s: 0x%llx -- VMALLOC_REGION_ID\n", __func__, ea);
+> > +		if (ea < VMALLOC_END)
+> > +			*psize =3D mmu_vmalloc_psize;
+> > +		else
+> > +			*psize =3D mmu_io_psize;
+> > +		*ssize =3D mmu_kernel_ssize;
+> > +		*vsid =3D get_kernel_vsid(ea, mmu_kernel_ssize);
+> > +		return 0;
+> > +	case KERNEL_REGION_ID:
+> > +		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
+> > +		*psize =3D mmu_linear_psize;
+> > +		*ssize =3D mmu_kernel_ssize;
+> > +		*vsid =3D get_kernel_vsid(ea, mmu_kernel_ssize);
+> > +		return 0;
+> > +	default:
+> > +		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
+> > +		return 1;
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL_GPL(calculate_vsid);
 > > +
-> > +	if (!(pe =3D pnv_ioda_get_pe(dev)))
-> > +		return -ENODEV;
-> > +
-> > +	/* Assign XIVE to PE */
-> > +	rc =3D opal_pci_set_xive_pe(phb->opal_id, pe->pe_number, xive_num);
-> > +	if (rc) {
-> > +		pr_warn("%s: OPAL error %d setting msi_base 0x%x hwirq 0x%x XIVE 0x%=
-x PE\n",
-> > +			pci_name(dev), rc, phb->msi_base, hwirq, xive_num);
+> >  /* Result code is:
+> >   *  0 - handled
+> >   *  1 - normal page fault
+> > @@ -993,7 +1025,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned lo=
+ng ea, unsigned long access, u
+> >  {
+> >  	enum ctx_state prev_state =3D exception_enter();
+> >  	pgd_t *pgdir;
+> > -	unsigned long vsid;
+> > +	u64 vsid;
+> >  	pte_t *ptep;
+> >  	unsigned hugeshift;
+> >  	const struct cpumask *tmp;
+> > @@ -1003,35 +1035,20 @@ int hash_page_mm(struct mm_struct *mm, unsigned=
+ long ea, unsigned long access, u
+> >  	DBG_LOW("%s(ea=3D%016lx, access=3D%lx, trap=3D%lx\n",
+> >  		__func__, ea, access, trap);
+> > =20
+> > -	/* Get region & vsid */
+> > - 	switch (REGION_ID(ea)) {
+> > -	case USER_REGION_ID:
+> > +	/* Get region */
+> > +	if (REGION_ID(ea) =3D=3D USER_REGION_ID) {
+> >  		user_region =3D 1;
+> >  		if (! mm) {
+> >  			DBG_LOW(" user region with no mm !\n");
+> >  			rc =3D 1;
+> >  			goto bail;
+> >  		}
+> > -		psize =3D get_slice_psize(mm, ea);
+> > -		ssize =3D user_segment_size(ea);
+> > -		vsid =3D get_vsid(mm->context.id, ea, ssize);
+> > -		break;
+> > -	case VMALLOC_REGION_ID:
+> > +	} else
+> >  		mm =3D &init_mm;
+> > -		vsid =3D get_kernel_vsid(ea, mmu_kernel_ssize);
+> > -		if (ea < VMALLOC_END)
+> > -			psize =3D mmu_vmalloc_psize;
+> > -		else
+> > -			psize =3D mmu_io_psize;
+> > -		ssize =3D mmu_kernel_ssize;
+> > -		break;
+> > -	default:
+> > -		/* Not a valid range
+> > -		 * Send the problem up to do_page_fault=20
+> > -		 */
+> > -		rc =3D 1;
 >=20
-> dev_warn() ?
+>=20
+> That part is different now. We now handle kernel_region_id in case of
+> hash_page. Earlier we used consider it a problem.=20
 
-I'm going to move it to the pe_warn() we have here.
+Yeah, that's going to be the kernel linear mapping.  We should probably
+continue to barf as we shouldn't fault on that.  Thanks.
 
-Cheers,
+I'll fix.
+
 Mikey
+
+>=20
+> > +	rc =3D calculate_vsid(mm, ea, &vsid, &psize, &ssize);
+> > +	if (rc)
+> >  		goto bail;
+> > -	}
+> > +
+> >  	DBG_LOW(" mm=3D%p, mm->pgdir=3D%p, vsid=3D%016lx\n", mm, mm->pgd, vsi=
+d);
+> > =20
+> >  	/* Bad address. */
+> > --=20
+> > 1.9.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+>=20
