@@ -1,40 +1,41 @@
-Return-Path: <bhelgaas@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DD8E1A05AD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 07:46:33 +1000 (EST)
-Received: from mail-qa0-x229.google.com (mail-qa0-x229.google.com
- [IPv6:2607:f8b0:400d:c00::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A5EDD14018C
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2014 07:46:32 +1000 (EST)
-Received: by mail-qa0-f41.google.com with SMTP id n8so4889qaq.28
- for <linuxppc-dev@ozlabs.org>; Thu, 02 Oct 2014 14:46:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1412283716.28143.22.camel@pasglop>
-References: <1412048401.4285.128.camel@pasglop>
- <CAErSpo4B6kuZJcKwreNvW1qC5sZ=1Ko71vbzNz7T8-_pjf7mww@mail.gmail.com>
- <CADnq5_PT+dX=KA4epGNRaoraco2z1pe5K7UgqLmTUhWMnvtWkw@mail.gmail.com>
- <1412108504.4285.155.camel@pasglop>
- <CADnq5_O_iLAZUKLL4nph8VwuP2NOkWXhBZC2XTSkFm5P42WZ+g@mail.gmail.com>
- <1412110946.4285.158.camel@pasglop>
- <CADnq5_OXBax1+TKPsR2RDYTWijQKDVw34ECfWzcwN2SibCGYTg@mail.gmail.com>
- <1412112324.4285.160.camel@pasglop> <1412210052.10667.0.camel@pasglop>
- <20141002153101.GB18056@google.com> <1412283716.28143.22.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 2 Oct 2014 15:46:09 -0600
-Message-ID: <CAErSpo4d8K9eq4vjTM0_E=U_szEDjs-jn3Hf=4xyuP2nWxYBKA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/4] pci/msi: Move "no_64bit_msi" flag from powerpc to
- generic pci_dev
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71FED1A09A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 07:53:24 +1000 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 2 Oct 2014 15:53:22 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 8478A19D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 15:42:03 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s92LrJ3c48496680
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 23:53:19 +0200
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s92LrIXp012726
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 15:53:18 -0600
+Date: Thu, 2 Oct 2014 14:53:05 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Anton Blanchard <anton@au1.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
- Yijing Wang <wangyijing@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
+ verify_cpu_node_mapping()
+Message-ID: <20141002215305.GA20262@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <20141002211305.GB12862@linux.vnet.ibm.com>
+ <1412285299.28143.33.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1412285299.28143.33.camel@pasglop>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Li Zhong <zhong@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,145 +45,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 2, 2014 at 3:01 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Thu, 2014-10-02 at 09:31 -0600, Bjorn Helgaas wrote:
->
->> > So this moves the flag to struct pci_dev instead and adjusts the
->> > corresponding arch/powerpc code to look for it there. At this point,
->> > there is no attempt at making other architectures honor it just yet,
->> > though it appears that x86 doesn't care and always generates 32-bit
->> > MSI addresses.
->>
->> I thought you were going to add something in drivers/pci to make this more
->> generic?
->
-> I don't see how. The only thing I can add is the check which I still
-> plan to do. But the decision on the address is in the arch.
+On 03.10.2014 [07:28:19 +1000], Benjamin Herrenschmidt wrote:
+> On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
+> > Ben & Michael,
+> > 
+> > What's the status of these patches?
+> 
+> Waiting for somebody to review them ? :-)
 
-Yep, the check is what I meant.  That should at least allow the driver
-to fail gracefully instead of crashing the machine.
+Heh, I acked them about a month ago, I can give a stronger Reviewed-by,
+if you prefer?
 
->> Is it feasible to structure this series as follows?
->>
->>   - add generic stuff (struct pci_dev bit, msi.c checks)
->>   - add quirks to drivers to set the pci_dev bit
->>   - change powerpc to check pci_dev bit instead of pdn bit
->>   - remove powerpc-specific quirks since nobody looks as the pdn bit
->>
->> I think it would be easier to follow if the powerpc-specific parts weren't
->> intertwined with the rest.
->
-> Well, in that case the first patch just adds one bit to pci_dev and
-> maybe one check for address to msi.c. Unfortunately there isn't more
-> I can do generically. But ok, I'll do it that way.
->
->> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> > CC: <stable@vger.kernel.org>
->> > ---
->> >
->> > v2: Rename flag to "no_64bit_msi" as suggested by Bjorn
->> >
->> >  arch/powerpc/include/asm/pci-bridge.h     | 2 --
->> >  arch/powerpc/kernel/pci_64.c              | 5 +----
->> >  arch/powerpc/platforms/powernv/pci-ioda.c | 3 +--
->> >  arch/powerpc/platforms/powernv/pci.c      | 3 +--
->> >  arch/powerpc/platforms/pseries/msi.c      | 2 +-
->> >  include/linux/pci.h                       | 1 +
->> >  6 files changed, 5 insertions(+), 11 deletions(-)
->> >
->> > diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->> > index 4ca90a3..725247b 100644
->> > --- a/arch/powerpc/include/asm/pci-bridge.h
->> > +++ b/arch/powerpc/include/asm/pci-bridge.h
->> > @@ -159,8 +159,6 @@ struct pci_dn {
->> >
->> >     int     pci_ext_config_space;   /* for pci devices */
->> >
->> > -   bool    force_32bit_msi;
->> > -
->> >     struct  pci_dev *pcidev;        /* back-pointer to the pci device */
->> >  #ifdef CONFIG_EEH
->> >     struct eeh_dev *edev;           /* eeh device */
->> > diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
->> > index 155013d..d41a831 100644
->> > --- a/arch/powerpc/kernel/pci_64.c
->> > +++ b/arch/powerpc/kernel/pci_64.c
->> > @@ -269,10 +269,7 @@ EXPORT_SYMBOL(pcibus_to_node);
->> >
->> >  static void quirk_radeon_32bit_msi(struct pci_dev *dev)
->> >  {
->> > -   struct pci_dn *pdn = pci_get_pdn(dev);
->> > -
->> > -   if (pdn)
->> > -           pdn->force_32bit_msi = true;
->> > +   dev->no_64bit_msi = true;
->> >  }
->> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_msi);
->> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
->> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> > index df241b1..a188bb8 100644
->> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> > @@ -1311,7 +1311,6 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
->> >                               unsigned int is_64, struct msi_msg *msg)
->> >  {
->> >     struct pnv_ioda_pe *pe = pnv_ioda_get_pe(dev);
->> > -   struct pci_dn *pdn = pci_get_pdn(dev);
->> >     struct irq_data *idata;
->> >     struct irq_chip *ichip;
->> >     unsigned int xive_num = hwirq - phb->msi_base;
->> > @@ -1327,7 +1326,7 @@ static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
->> >             return -ENXIO;
->> >
->> >     /* Force 32-bit MSI on some broken devices */
->> > -   if (pdn && pdn->force_32bit_msi)
->> > +   if (dev->no_64bit_msi)
->> >             is_64 = 0;
->> >
->> >     /* Assign XIVE to PE */
->> > diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> > index b854b57..89c6608 100644
->> > --- a/arch/powerpc/platforms/powernv/pci.c
->> > +++ b/arch/powerpc/platforms/powernv/pci.c
->> > @@ -50,9 +50,8 @@ static int pnv_msi_check_device(struct pci_dev* pdev, int nvec, int type)
->> >  {
->> >     struct pci_controller *hose = pci_bus_to_host(pdev->bus);
->> >     struct pnv_phb *phb = hose->private_data;
->> > -   struct pci_dn *pdn = pci_get_pdn(pdev);
->> >
->> > -   if (pdn && pdn->force_32bit_msi && !phb->msi32_support)
->> > +   if (pdev->no_64bit_msi && !phb->msi32_support)
->> >             return -ENODEV;
->> >
->> >     return (phb && phb->msi_bmp.bitmap) ? 0 : -ENODEV;
->> > diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
->> > index 18ff462..6fd96d8 100644
->> > --- a/arch/powerpc/platforms/pseries/msi.c
->> > +++ b/arch/powerpc/platforms/pseries/msi.c
->> > @@ -429,7 +429,7 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
->> >      */
->> >  again:
->> >     if (type == PCI_CAP_ID_MSI) {
->> > -           if (pdn->force_32bit_msi) {
->> > +           if (pdev->no_64bit_msi) {
->> >                     rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
->> >                     if (rc < 0) {
->> >                             /*
->> > diff --git a/include/linux/pci.h b/include/linux/pci.h
->> > index 96453f9..fc938003 100644
->> > --- a/include/linux/pci.h
->> > +++ b/include/linux/pci.h
->> > @@ -331,6 +331,7 @@ struct pci_dev {
->> >     unsigned int    is_added:1;
->> >     unsigned int    is_busmaster:1; /* device is busmaster */
->> >     unsigned int    no_msi:1;       /* device may not use msi */
->> > +   unsigned int    no_64bit_msi:1; /* Device has broken 64-bit MSIs */
->> >     unsigned int    block_cfg_access:1;     /* config space access is blocked */
->> >     unsigned int    broken_parity_status:1; /* Device generates false positive parity */
->> >     unsigned int    irq_reroute_variant:2;  /* device needs IRQ rerouting variant */
->> >
->> >
->> >
->
->
+-Nish
