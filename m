@@ -1,19 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F14821A042E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:10:18 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E68841A19F5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 11:10:48 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42A5714012F
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 11:10:17 +1000 (EST)
-Message-ID: <1412210082.10667.2.camel@pasglop>
-Subject: [PATCH v2 3/4] sound/radeon: Move 64-bit MSI quirk from arch to driver
+ by ozlabs.org (Postfix) with ESMTPS id C304F14012F
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 11:10:47 +1000 (EST)
+Message-ID: <1412210092.10667.3.camel@pasglop>
+Subject: [PATCH 4/4] ALSA: hda - Limit 40bit DMA for AMD HDMI controllers
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alex Deucher <alexdeucher@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 02 Oct 2014 10:34:42 +1000
+Date: Thu, 02 Oct 2014 10:34:52 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
@@ -30,82 +30,62 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-A number of radeon cards have a HW limitation causing them to be
-unable to generate the full 64-bit of address bits for MSIs. This
-breaks MSIs on some platforms such as POWER machines.
+AMD/ATI HDMI controller chip models, we already have a filter to lower
+to 32bit DMA, but the rest are supposed to be working with 64bit
+although the hardware doesn't really work with 63bit but only with 40
+or 48bit DMA.  In this patch, we take 40bit DMA for safety for the
+AMD/ATI controllers as the graphics drivers does.
 
-We used to have a powerpc specific quirk to address that on a
-single card, but this doesn't scale very well, this is better
-put under control of the drivers who know precisely what a given
-HW revision can do.
-
-This moves the setting of the quirk flag to the audio driver.
-
-While recent ASICs have that problem fixed, they don't seem to
-be listed in the PCI IDs of the current driver, so let's quirk all
-the ATI HDMI for now. The consequences are nil on x86 anyway.
-
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: <stable@vger.kernel.org>
 ---
- arch/powerpc/kernel/pci_64.c |  6 ------
- sound/pci/hda/hda_intel.c    | 10 ++++++++--
- sound/pci/hda/hda_priv.h     |  1 +
- 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 5330f6d..b15194e 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -266,9 +266,3 @@ int pcibus_to_node(struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pcibus_to_node);
- #endif
--
--static void quirk_radeon_32bit_msi(struct pci_dev *dev)
--{
--	dev->no_64bit_msi = true;
--}
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
+Tested, works fine. This patch is actually independent of the rest
+of the series
+
+ sound/pci/hda/hda_intel.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
 diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index aa302fb..f91ba7f 100644
+index f91ba7f..48d0f30 100644
 --- a/sound/pci/hda/hda_intel.c
 +++ b/sound/pci/hda/hda_intel.c
-@@ -296,7 +296,8 @@ enum {
+@@ -1483,6 +1483,7 @@ static int azx_first_init(struct azx *chip)
+ 	struct snd_card *card = chip->card;
+ 	int err;
+ 	unsigned short gcap;
++	unsigned int dma_bits = 64;
  
- /* quirks for ATI/AMD HDMI */
- #define AZX_DCAPS_PRESET_ATI_HDMI \
--	(AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB)
-+	(AZX_DCAPS_NO_TCSEL | AZX_DCAPS_SYNC_WRITE | AZX_DCAPS_POSFIX_LPIB|\
-+	 AZX_DCAPS_NO_MSI64)
+ #if BITS_PER_LONG != 64
+ 	/* Fix up base address on ULI M5461 */
+@@ -1524,9 +1525,14 @@ static int azx_first_init(struct azx *chip)
+ 	gcap = azx_readw(chip, GCAP);
+ 	dev_dbg(card->dev, "chipset global capabilities = 0x%x\n", gcap);
  
- /* quirks for Nvidia */
- #define AZX_DCAPS_PRESET_NVIDIA \
-@@ -1505,9 +1506,14 @@ static int azx_first_init(struct azx *chip)
- 		return -ENXIO;
++	/* AMD devices support 40 or 48bit DMA, take the safe one */
++	if (chip->pci->vendor == PCI_VENDOR_ID_AMD)
++		dma_bits = 40;
++
+ 	/* disable SB600 64bit support for safety */
+ 	if (chip->pci->vendor == PCI_VENDOR_ID_ATI) {
+ 		struct pci_dev *p_smbus;
++		dma_bits = 40;
+ 		p_smbus = pci_get_device(PCI_VENDOR_ID_ATI,
+ 					 PCI_DEVICE_ID_ATI_SBX00_SMBUS,
+ 					 NULL);
+@@ -1556,9 +1562,11 @@ static int azx_first_init(struct azx *chip)
  	}
  
--	if (chip->msi)
-+	if (chip->msi) {
-+		if (chip->driver_caps & AZX_DCAPS_NO_MSI64) {
-+			dev_dbg(card->dev, "Disabling 64bit MSI\n");
-+			pci->no_64bit_msi = true;
-+		}
- 		if (pci_enable_msi(pci) < 0)
- 			chip->msi = 0;
-+	}
- 
- 	if (azx_acquire_irq(chip, 0) < 0)
- 		return -EBUSY;
-diff --git a/sound/pci/hda/hda_priv.h b/sound/pci/hda/hda_priv.h
-index 949cd43..5016014 100644
---- a/sound/pci/hda/hda_priv.h
-+++ b/sound/pci/hda/hda_priv.h
-@@ -171,6 +171,7 @@ enum { SDI0, SDI1, SDI2, SDI3, SDO0, SDO1, SDO2, SDO3 };
- #define AZX_DCAPS_PM_RUNTIME	(1 << 26)	/* runtime PM support */
- #define AZX_DCAPS_I915_POWERWELL (1 << 27)	/* HSW i915 powerwell support */
- #define AZX_DCAPS_CORBRP_SELF_CLEAR (1 << 28)	/* CORBRP clears itself after reset */
-+#define AZX_DCAPS_NO_MSI64      (1 << 29)	/* Stick to 32-bit MSIs */
- 
- /* HD Audio class code */
- #define PCI_CLASS_MULTIMEDIA_HD_AUDIO	0x0403
+ 	/* allow 64bit DMA address if supported by H/W */
+-	if ((gcap & AZX_GCAP_64OK) && !pci_set_dma_mask(pci, DMA_BIT_MASK(64)))
+-		pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(64));
+-	else {
++	if (!(gcap & AZX_GCAP_64OK))
++		dma_bits = 32;
++	if (!pci_set_dma_mask(pci, DMA_BIT_MASK(dma_bits))) {
++		pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(dma_bits));
++	} else {
+ 		pci_set_dma_mask(pci, DMA_BIT_MASK(32));
+ 		pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(32));
+ 	}
