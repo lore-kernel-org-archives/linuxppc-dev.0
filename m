@@ -2,22 +2,23 @@ Return-Path: <alexdeucher@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C6031A0A6C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 12:17:00 +1000 (EST)
-Received: from mail-qa0-x229.google.com (mail-qa0-x229.google.com
- [IPv6:2607:f8b0:400d:c00::229])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B32D1A0966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 12:18:10 +1000 (EST)
+Received: from mail-qg0-x230.google.com (mail-qg0-x230.google.com
+ [IPv6:2607:f8b0:400d:c04::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8140514012A
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 12:16:59 +1000 (EST)
-Received: by mail-qa0-f41.google.com with SMTP id n8so1266728qaq.0
- for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2014 19:16:57 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 787B114017E
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 12:18:09 +1000 (EST)
+Received: by mail-qg0-f48.google.com with SMTP id i50so1316000qgf.35
+ for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2014 19:18:07 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1412210092.10667.3.camel@pasglop>
-References: <1412210092.10667.3.camel@pasglop>
-Date: Wed, 1 Oct 2014 22:16:57 -0400
-Message-ID: <CADnq5_Pizkne_pHJiT1eUgsrK0SY0F_KvWazvNkg02qS49Shig@mail.gmail.com>
-Subject: Re: [PATCH 4/4] ALSA: hda - Limit 40bit DMA for AMD HDMI controllers
+In-Reply-To: <1412210019.4285.251.camel@pasglop>
+References: <1412210019.4285.251.camel@pasglop>
+Date: Wed, 1 Oct 2014 22:18:07 -0400
+Message-ID: <CADnq5_Ph77w09kOuazB9bmYz0KpWRONfPOqf-ie_uUHS6PNbkA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] gpu/radeon: Move 64-bit MSI quirk from arch to
+ driver
 From: Alex Deucher <alexdeucher@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8
@@ -34,16 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 1, 2014 at 8:34 PM, Benjamin Herrenschmidt
+On Wed, Oct 1, 2014 at 8:33 PM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
+> A number of radeon cards have a HW limitation causing them to be
+> unable to generate the full 64-bit of address bits for MSIs. This
+> breaks MSIs on some platforms such as POWER machines.
 >
-> AMD/ATI HDMI controller chip models, we already have a filter to lower
-> to 32bit DMA, but the rest are supposed to be working with 64bit
-> although the hardware doesn't really work with 63bit but only with 40
-> or 48bit DMA.  In this patch, we take 40bit DMA for safety for the
-> AMD/ATI controllers as the graphics drivers does.
+> We used to have a powerpc specific quirk to address that on a
+> single card, but this doesn't scale very well, this is better
+> put under control of the drivers who know precisely what a given
+> HW revision can do.
 >
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> This moves the setting of the quirk flag to the radeon driver
+>
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > CC: <stable@vger.kernel.org>
 
@@ -51,55 +55,42 @@ Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
 
 > ---
 >
-> Tested, works fine. This patch is actually independent of the rest
-> of the series
+> v2: This is just adjusted to the new flag name
 >
->  sound/pci/hda/hda_intel.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
+>  arch/powerpc/kernel/pci_64.c            |  1 -
+>  drivers/gpu/drm/radeon/radeon_irq_kms.c | 10 ++++++++++
+>  2 files changed, 10 insertions(+), 1 deletion(-)
 >
-> diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-> index f91ba7f..48d0f30 100644
-> --- a/sound/pci/hda/hda_intel.c
-> +++ b/sound/pci/hda/hda_intel.c
-> @@ -1483,6 +1483,7 @@ static int azx_first_init(struct azx *chip)
->         struct snd_card *card = chip->card;
->         int err;
->         unsigned short gcap;
-> +       unsigned int dma_bits = 64;
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index d41a831..5330f6d 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -271,5 +271,4 @@ static void quirk_radeon_32bit_msi(struct pci_dev *dev)
+>  {
+>         dev->no_64bit_msi = true;
+>  }
+> -DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x68f2, quirk_radeon_32bit_msi);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0xaa68, quirk_radeon_32bit_msi);
+> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> index 16807af..e760671 100644
+> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> @@ -202,6 +202,16 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
+>         if (rdev->flags & RADEON_IS_AGP)
+>                 return false;
 >
->  #if BITS_PER_LONG != 64
->         /* Fix up base address on ULI M5461 */
-> @@ -1524,9 +1525,14 @@ static int azx_first_init(struct azx *chip)
->         gcap = azx_readw(chip, GCAP);
->         dev_dbg(card->dev, "chipset global capabilities = 0x%x\n", gcap);
->
-> +       /* AMD devices support 40 or 48bit DMA, take the safe one */
-> +       if (chip->pci->vendor == PCI_VENDOR_ID_AMD)
-> +               dma_bits = 40;
+> +       /*
+> +        * Older chips have a HW limitation, they can only generate 40 bits
+> +        * of address for "64-bit" MSIs which breaks on some platforms, notably
+> +        * IBM POWER servers, so we limit them
+> +        */
+> +       if (rdev->family < CHIP_BONAIRE) {
+> +               dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
+> +               rdev->pdev->no_64bit_msi = true;
+> +       }
 > +
->         /* disable SB600 64bit support for safety */
->         if (chip->pci->vendor == PCI_VENDOR_ID_ATI) {
->                 struct pci_dev *p_smbus;
-> +               dma_bits = 40;
->                 p_smbus = pci_get_device(PCI_VENDOR_ID_ATI,
->                                          PCI_DEVICE_ID_ATI_SBX00_SMBUS,
->                                          NULL);
-> @@ -1556,9 +1562,11 @@ static int azx_first_init(struct azx *chip)
->         }
->
->         /* allow 64bit DMA address if supported by H/W */
-> -       if ((gcap & AZX_GCAP_64OK) && !pci_set_dma_mask(pci, DMA_BIT_MASK(64)))
-> -               pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(64));
-> -       else {
-> +       if (!(gcap & AZX_GCAP_64OK))
-> +               dma_bits = 32;
-> +       if (!pci_set_dma_mask(pci, DMA_BIT_MASK(dma_bits))) {
-> +               pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(dma_bits));
-> +       } else {
->                 pci_set_dma_mask(pci, DMA_BIT_MASK(32));
->                 pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(32));
->         }
->
->
+>         /* force MSI on */
+>         if (radeon_msi == 1)
+>                 return true;
 >
 >
