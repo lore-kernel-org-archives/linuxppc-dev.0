@@ -1,23 +1,31 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DDE91A0AD5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 09:44:25 +1000 (EST)
-Message-ID: <542C91D5.3030305@suse.de>
-Date: Thu, 02 Oct 2014 01:44:21 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>	
- <1412203153.13320.352.camel@snotra.buserror.net> <542C8C69.2010509@suse.de>
- <1412206127.13320.362.camel@snotra.buserror.net>
-In-Reply-To: <1412206127.13320.362.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=utf-8
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A8BB1A0728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 10:16:22 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8786C140161
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2014 10:16:21 +1000 (EST)
+Message-ID: <1412208952.4285.239.camel@pasglop>
+Subject: Re: [PATCH 4/4] sounds/hda/radeon: Disable 64-bit DMA on radeon
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Deucher <alexdeucher@gmail.com>
+Date: Thu, 02 Oct 2014 10:15:52 +1000
+In-Reply-To: <1412201282.4285.232.camel@pasglop>
+References: <1412129393.4285.195.camel@pasglop>
+ <s5htx3o44tv.wl-tiwai@suse.de> <1412149289.4285.204.camel@pasglop>
+ <s5hr3ys43ev.wl-tiwai@suse.de> <s5hoatw42f6.wl-tiwai@suse.de>
+ <CADnq5_P1qTkedSuFfgJ=dd5cWji1-OUbmKoUyq+kLQgPGYYaQw@mail.gmail.com>
+ <1412201282.4285.232.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Takashi Iwai <tiwai@suse.de>,
+ Linux PCI <linux-pci@vger.kernel.org>, Brian King <brking@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@au1.ibm.com>, Dave Airlie <airlied@linux.ie>,
+ Yijing Wang <wangyijing@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 02.10.14 01:28, Scott Wood wrote:
-> On Thu, 2014-10-02 at 01:21 +0200, Alexander Graf wrote:
->>
->> On 02.10.14 00:39, Scott Wood wrote:
->>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
->>>> The generic Linux framework to power off the machine is a function pointer
->>>> called pm_power_off. The trick about this pointer is that device drivers can
->>>> potentially implement it rather than board files.
->>>>
->>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
->>>> off logic which then calls ppc_md.power_off to invoke machine specific power
->>>> off.
->>>>
->>>> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
->>>> this card house falls apart. That driver only registers itself if pm_power_off
->>>> is NULL to ensure it doesn't override board specific logic. However, since we
->>>> always set pm_power_off to the generic power off logic (which will just not
->>>> power off the machine if no ppc_md.power_off call is implemented), we can't
->>>> implement power off via the generic GPIO power off driver.
->>>>
->>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
->>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
->>>> driver can implement power off logic via that function pointer.
->>>>
->>>> With this patch set applied and a few patches on top of QEMU that implement a
->>>> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
->>>> machine after halt.
->>>
->>> Are there any plans to handle restart similarly?
->>
->> I don't see an immediate need for it, as we do have access to reset via
->> the guts device.
+On Thu, 2014-10-02 at 08:08 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-10-01 at 13:58 -0400, Alex Deucher wrote:
+> > Patch looks good.  Audio DMAs are limited to 40 bits, same as the GPU
+> > side.  I'm still waiting to hear back on the MSIs for audio, but they
+> > probably follow the GPU side, so I expect they should be fixed on Sea
+> > Islands as well.
 > 
-> The guts device is problematic from a hardware description perspective,
-> as we advertise a bunch of things to the guest that we don't implement.
-> E.g. the only reason we don't currently have a problem with Linux trying
-> to use guts to sync the timebase across cores is that by chance we
-> happen to expose a guts that corresponds to a single-cpu SoC.
+> In the audio driver we don't have the "family names", just a list of
+> PCI IDs, do you happen to know which ones are unaffected ?
 
-True, and it is slightly ugly to expose a specific SoC's guts in our
-generic pv machine type.
+So I tried to be more discriminate but in the end, I had to give up, the
+most recent ID we have in the driver seems to be Cap Verde/Pitcairn,
+which isn't fixed. So either we are missing IDs or the new cards use the
+same ID.
 
-> 
->> I also don't see any generic driver in Linux that would implement reset
->> via a gpio controller device, so apparently it's not incredibly common
->> to implement reset via gpio.
-> 
-> There wasn't a generic gpio-power-off driver either until a couple years
-> ago...  Regardless of whether it's done via gpio, using ppc_md for it is
-> bad for the same reasons as for power-off.
+I think the consequences of being over-zealous here are nil on what
+matters, ie, x86. AFAIK, x86 always uses 32-bit addresses for MSIs
+anyway, so it's unaffected and ARM ... well, I doubt it will be. In
+general, I don't think we have a big issue here by just flagging them
+all.
 
-I agree. Today, only ARM has a comparable mechanism for drivers to hook
-a reset handler into the machine specific reset path.
+I'll send an updated series with just the flag name changed as suggested
+by Alex and the DMA bits updated as suggested by Takashi.
 
-I'd say let's wait for Guenter to finish the power off rework and then
-tackle a generic reset call chain based approach next.
-
-
-Alex
+Cheers,
+Ben.
