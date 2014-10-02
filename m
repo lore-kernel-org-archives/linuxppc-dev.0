@@ -2,38 +2,37 @@ Return-Path: <shreyas@linux.vnet.ibm.com>
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4201F1A0961
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 02:39:45 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C2FF1A0997
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 02:40:54 +1000 (EST)
 Received: from /spool/local
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 3 Oct 2014 02:39:44 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 10C962CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 02:39:41 +1000 (EST)
+ Fri, 3 Oct 2014 02:40:53 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0B06B2CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 02:40:51 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s92GLIvW66060470
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 02:21:18 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s92Ggfjv32964782
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 02:42:41 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s92Gdejv025540
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 02:39:40 +1000
-Message-ID: <542D7FC9.4080205@linux.vnet.ibm.com>
-Date: Thu, 02 Oct 2014 22:09:37 +0530
+ s92Geosj026474
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 02:40:50 +1000
+Message-ID: <542D800F.60200@linux.vnet.ibm.com>
+Date: Thu, 02 Oct 2014 22:10:47 +0530
 From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] powerpc/kvm/book3s_hv: Enable CPUs to run guest
- after waking up from fast-sleep
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/3] powernv/cpuidle: Fastsleep workaround and fixes
 References: <1412149560-2953-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1412149560-2953-3-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1412149560-2953-3-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Paul Mackerras <paulus@samba.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ <2978842.I7Hdqv7lNe@vostro.rjw.lan>
+In-Reply-To: <2978842.I7Hdqv7lNe@vostro.rjw.lan>
+Content-Type: text/plain; charset=utf-8
+Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,85 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CCing Rafael J. Wysocki and linux-pm@vger.kernel.org
 
-On Wednesday 01 October 2014 01:15 PM, Shreyas B. Prabhu wrote:
-> When guests have to be launched, the secondary threads which are offline
-> are woken up to run the guests. Today these threads wake up from nap
-> and check if they have to run guests. Now that the offline secondary
-> threads can go to fastsleep or going ahead a deeper idle state such as winkle,
-> add this check in the wakeup from any of the deep idle states path as well.
+
+On Thursday 02 October 2014 02:16 AM, Rafael J. Wysocki wrote:
+> On Wednesday, October 01, 2014 01:15:57 PM Shreyas B. Prabhu wrote:
+>> Fast sleep is an idle state, where the core and the L1 and L2
+>> caches are brought down to a threshold voltage. This also means that
+>> the communication between L2 and L3 caches have to be fenced. However
+>> the current P8 chips have a bug wherein this fencing between L2 and
+>> L3 caches get delayed by a cpu cycle. This can delay L3 response to
+>> the other cpus if they request for data during this time. Thus they
+>> would fetch the same data from the memory which could lead to data
+>> corruption if L3 cache is not flushed. 
+>>
+>> This series overcomes above problem in kernel.
+>>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: Srivatsa S. Bhat <srivatsa@mit.edu>
+>> Cc: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+>> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+>>
+>> v2:
+>> Rebased on 3.17-rc7
+>> Split from 'powerpc/powernv: Support for fastsleep and winkle'
+>>
+>> v1:
+>> https://lkml.org/lkml/2014/8/25/446
+>>
+>> Preeti U Murthy (1):
+>>   powerpc/powernv/cpuidle: Add workaround to enable fastsleep
+>>
+>> Shreyas B. Prabhu (1):
+>>   powerpc/kvm/book3s_hv: Enable CPUs to run guest after waking up from
+>>     fast-sleep
+>>
+>> Srivatsa S. Bhat (1):
+>>   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>>
+>>  arch/powerpc/include/asm/machdep.h             |   3 +
+>>  arch/powerpc/include/asm/opal.h                |   7 ++
+>>  arch/powerpc/include/asm/processor.h           |   4 +-
+>>  arch/powerpc/kernel/exceptions-64s.S           |  35 ++++----
+>>  arch/powerpc/kernel/idle.c                     |  19 ++++
+>>  arch/powerpc/kernel/idle_power7.S              |   2 +-
+>>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>>  arch/powerpc/platforms/powernv/powernv.h       |   7 ++
+>>  arch/powerpc/platforms/powernv/setup.c         | 118 +++++++++++++++++++++++++
+>>  arch/powerpc/platforms/powernv/smp.c           |  11 ++-
+>>  drivers/cpuidle/cpuidle-powernv.c              |  13 ++-
+>>  11 files changed, 194 insertions(+), 26 deletions(-)
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Suggested-by: "Srivatsa S. Bhat" <srivatsa@mit.edu>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> [ Changelog added by <preeti@linux.vnet.ibm.com> ]
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/exceptions-64s.S | 35 ++++++++++++++++-------------------
->  1 file changed, 16 insertions(+), 19 deletions(-)
+> [2/3] seems to be missig from the series.
 > 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 050f79a..c64f3cc0 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -100,25 +100,8 @@ system_reset_pSeries:
->  	SET_SCRATCH0(r13)
->  #ifdef CONFIG_PPC_P7_NAP
->  BEGIN_FTR_SECTION
-> -	/* Running native on arch 2.06 or later, check if we are
-> -	 * waking up from nap. We only handle no state loss and
-> -	 * supervisor state loss. We do -not- handle hypervisor
-> -	 * state loss at this time.
-> -	 */
-> -	mfspr	r13,SPRN_SRR1
-> -	rlwinm.	r13,r13,47-31,30,31
-> -	beq	9f
+> Also, since that mostly modifies arch/powerpc, I think it should go through
+> that tree.  I'm fine with the cpuidle-powernv changes in [1/3] and [3/3].
 > 
-> -	/* waking up from powersave (nap) state */
-> -	cmpwi	cr1,r13,2
-> -	/* Total loss of HV state is fatal, we could try to use the
-> -	 * PIR to locate a PACA, then use an emergency stack etc...
-> -	 * OPAL v3 based powernv platforms have new idle states
-> -	 * which fall in this catagory.
-> -	 */
-> -	bgt	cr1,8f
->  	GET_PACA(r13)
-> -
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  	li	r0,KVM_HWTHREAD_IN_KERNEL
->  	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-> @@ -131,13 +114,27 @@ BEGIN_FTR_SECTION
->  1:
->  #endif
-> 
-> +	/* Running native on arch 2.06 or later, check if we are
-> +	 * waking up from nap. We only handle no state loss and
-> +	 * supervisor state loss. We do -not- handle hypervisor
-> +	 * state loss at this time.
-> +	 */
-> +	mfspr	r13,SPRN_SRR1
-> +	rlwinm.	r13,r13,47-31,30,31
-> +	beq	9f
-> +
-> +	/* waking up from powersave (nap) state */
-> +	cmpwi	cr1,r13,2
-> +	GET_PACA(r13)
-> +
-> +	bgt	cr1,8f
-> +
->  	beq	cr1,2f
->  	b	power7_wakeup_noloss
->  2:	b	power7_wakeup_loss
-> 
->  	/* Fast Sleep wakeup on PowerNV */
-> -8:	GET_PACA(r13)
-> -	b 	power7_wakeup_tb_loss
-> +8:	b 	power7_wakeup_tb_loss
-> 
->  9:
->  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-> 
+Hi Rafael, 
+
+Thanks for looking into this. The second patch is an independent fix in the 
+powerpc exception handler. To be safe I am ccing you and linux-pm list on that
+patch now. 
+
+
+Thanks, 
+Shreyas
