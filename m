@@ -1,35 +1,22 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <romeo.cane.ext@coriant.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0088.outbound.protection.outlook.com [157.55.234.88])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DAE61A0465
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 19:13:31 +1000 (EST)
-Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Fri, 3 Oct 2014 10:13:27 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id D80201B08049
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 10:14:37 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s939DO4G59179070
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 09:13:24 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s939DOTO029463
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 05:13:24 -0400
-Subject: [PATCH v2] powerpc/vphn: fix endian issue in NUMA device node code
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 03 Oct 2014 11:13:17 +0200
-Message-ID: <20141003091250.28354.13766.stgit@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 821E41A0A5E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 20:01:21 +1000 (EST)
+Date: Fri, 3 Oct 2014 11:00:46 +0100
+From: Romeo Cane <romeo.cane.ext@coriant.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix sys_call_table declaration
+Message-ID: <20141003100046.GB2144@rcane-VirtualBox>
+References: <20141002144131.GA3855@rcane-VirtualBox>
+ <1412285674.28143.35.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1412285674.28143.35.camel@pasglop>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,135 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The associativity domain numbers are obtained from the hypervisor through
-registers and written into memory by the guest: the packed array passed to
-vphn_unpack_associativity() is then native-endian, unlike what was assumed
-in the following commit:
+On Fri, Oct 03, 2014 at 07:34:34AM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-10-02 at 15:41 +0100, Romeo Cane wrote:
+> > Declaring sys_call_table as a pointer causes the compiler to generate the wrong lookup code in arch_syscall_addr
+> 
+> Care to elaborate ?
+> 
+> Ben.
+> 
+> > Signed-off-by: Romeo Cane <romeo.cane.ext@coriant.com>
+> > ---
+> >  arch/powerpc/include/asm/syscall.h | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+> > index b54b2ad..528ba9d 100644
+> > --- a/arch/powerpc/include/asm/syscall.h
+> > +++ b/arch/powerpc/include/asm/syscall.h
+> > @@ -17,7 +17,7 @@
+> >  
+> >  /* ftrace syscalls requires exporting the sys_call_table */
+> >  #ifdef CONFIG_FTRACE_SYSCALLS
+> > -extern const unsigned long *sys_call_table;
+> > +extern const unsigned long sys_call_table[];
+> >  #endif /* CONFIG_FTRACE_SYSCALLS */
+> >  
+> >  static inline long syscall_get_nr(struct task_struct *task,
+> 
+>
 
-commit b08a2a12e44eaec5024b2b969f4fcb98169d1ca3
-Author: Alistair Popple <alistair@popple.id.au>
-Date:   Wed Aug 7 02:01:44 2013 +1000
+Hi Ben,
 
-    powerpc: Make NUMA device node code endian safe
+this is the arch_syscall_addr function from kernel/trace/trace_syscalls.c:
 
-If a CPU home node changes, the topology gets filled with
-bogus values. This leads to severe performance breakdowns.
+unsigned long __init __weak arch_syscall_addr(int nr)
+{
+    return (unsigned long)sys_call_table[nr];
+}
 
-This patch does two things:
-- extract values from the packed array with shifts, in order to be endian
-  neutral
-- convert the resulting values to be32 as expected
+on my platform (E500MC) the generated assembly code is as follows:
 
-Suggested-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
+without the patch:
+  <arch_syscall_addr>:
+     lis     r9,-16384
+     rlwinm  r3,r3,2,0,29
+     lwz     r11,30640(r9)
+     lwzx    r3,r11,r3
+     blr
 
-Changes in v2:
-- removed the left out __be16 *field declaration
-- removed the left out be16_to_cpup() call
-- updated the comment of the magic formula
+with the patch:
+  <arch_syscall_addr>:
+     lis     r9,-16384
+     rlwinm  r3,r3,2,0,29
+     addi    r9,r9,30640
+     lwzx    r3,r9,r3
+     blr
 
-Thanks again Nish... the two left outs probably explain why PowerVM wasn't
-happy that patch. :P
 
---
-Greg
+the goal of the function is to retrieve the n-th element of the table (i.e. the address of a syscall)
+Without the patch, the returned value is in fact the memory content pointed by the address of the first syscall plus an offset, that is not what we want.
+The consequence is that ftrace of syscalls doesn't work.
 
- arch/powerpc/mm/numa.c |   64 +++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 52 insertions(+), 12 deletions(-)
+That table has always been declared as a pointer since the support for syscalls tracing has been introduced for powerpc years ago, so I'm wondering why nobody else had this problem before.
+Other architectures are not affected since in their includes the table is already declared as an array.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index b835bf0..4547f91 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1369,38 +1369,78 @@ static int update_cpu_associativity_changes_mask(void)
- #define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32) + 1)
+
+Romeo
  
- /*
-+ * The associativity values are either 16-bit (VPHN_FIELD_MSB) or 32-bit (data
-+ * or VPHN_FIELD_UNUSED). We hence need to parse the packed array into 16-bit
-+ * chunks. Let's do that with bit shifts to be endian neutral.
-+ *
-+ *    --- 16-bit chunks -->
-+ *  _________________________
-+ *  |  0  |  1  |  2  |  3  |   packed[0]
-+ *  -------------------------
-+ *  _________________________
-+ *  |  4  |  5  |  6  |  7  |   packed[1]
-+ *  -------------------------
-+ *            ...
-+ *  _________________________
-+ *  | 20  | 21  | 22  | 23  |   packed[5]
-+ *  -------------------------
-+ *       48    32    16     0
-+ *    <------ bits -------- 
-+ *
-+ * We need 48-bit shift for chunks 0,4,8,16,20
-+ *         32-bit shift for chunks 1,5,9,17,21
-+ *         16-bit shift for chunks 2,6,10,18,22
-+ *             no shift for chunks 3,7,11,19,23
-+ *
-+ * The 2 lo bits of the chunk index multiplied by 16 give the shift.
-+ * The remaining hi bits divided by 4 give the index in packed[].
-+ *
-+ * For example:
-+ * chunk  0 = packed[0/4]  >> (~0b00000 & 0b11) * 16 = bits 48..63 in packed[0]
-+ * chunk  5 = packed[5/4]  >> (~0b00101 & 0b11) * 16 = bits 32..47 in packed[1]
-+ * chunk 22 = packed[22/4] >> (~0b10110 & 0b11) * 16 = bits 16..31 in packed[5]
-+ */
-+static inline u16 read_vphn_chunk(const long *packed, unsigned int i)
-+{
-+	return packed[i >> 2] >> ((~i & 3) << 4);
-+}
-+
-+/*
-  * Convert the associativity domain numbers returned from the hypervisor
-  * to the sequence they would appear in the ibm,associativity property.
-  */
- static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
- {
--	int i, nr_assoc_doms = 0;
--	const __be16 *field = (const __be16 *) packed;
-+	unsigned int i, j, nr_assoc_doms = 0;
- 
- #define VPHN_FIELD_UNUSED	(0xffff)
- #define VPHN_FIELD_MSB		(0x8000)
- #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
- 
--	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
--		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
-+	for (i = 1, j = 0; i < VPHN_ASSOC_BUFSIZE; i++) {
-+		u16 field = read_vphn_chunk(packed, j);
-+
-+		if (field == VPHN_FIELD_UNUSED) {
- 			/* All significant fields processed, and remaining
- 			 * fields contain the reserved value of all 1's.
- 			 * Just store them.
- 			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
--		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-+			unpacked[i] = (VPHN_FIELD_UNUSED << 16 |
-+				       VPHN_FIELD_UNUSED);
-+			j += 2;
-+		} else if (field & VPHN_FIELD_MSB) {
- 			/* Data is in the lower 15 bits of this field */
--			unpacked[i] = cpu_to_be32(
--				be16_to_cpup(field) & VPHN_FIELD_MASK);
--			field++;
-+			unpacked[i] = cpu_to_be32(field & VPHN_FIELD_MASK);
-+			j++;
- 			nr_assoc_doms++;
- 		} else {
- 			/* Data is in the lower 15 bits of this field
- 			 * concatenated with the next 16 bit field
- 			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
-+			unpacked[i] =
-+				cpu_to_be32((u32) field << 16 |
-+					    read_vphn_chunk(packed, j + 1));
-+			j += 2;
- 			nr_assoc_doms++;
- 		}
- 	}
