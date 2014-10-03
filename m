@@ -1,17 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 854AF1A1835
+ by lists.ozlabs.org (Postfix) with ESMTP id 811361A0A9C
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 22:56:14 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mark Brown <broonie@kernel.org>,
- Marcelo Tosatti <marcelo@kvack.org>, Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 0/2] fsl: fsl-spi: Fix CMP1 pram allocation and allow dynamic
- allocation
-Message-Id: <20141003125608.A3E7E1AB274@localhost.localdomain>
+To: Mark Brown <broonie@kernel.org>
+Subject: [PATCH 1/2] spi: fsl-spi: Fix parameter ram offset setup for CPM1
+Message-Id: <20141003125609.0CD2B1AB275@localhost.localdomain>
 Date: Fri,  3 Oct 2014 14:56:08 +0200 (CEST)
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
+Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+ linux-spi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset:
-1) Fix parameter ram offset setup for CPM1
-2) Allow dynamic allocation of CPM1 parameter RAM
-
-Tested on MPC885.
+On CPM1, the SPI parameter RAM has a default location. In fsl_spi_cpm_get_pram()
+there was a confusion between the SPI_BASE register and the base of the SPI
+parameter RAM. Fortunatly, it was working properly with MPC866 and MPC885
+because they do set SPI_BASE, but on MPC860 and other old MPC8xx that doesn't
+set SPI_BASE, pram_ofs was not properly set. This patch fixes this confusion.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- linux/arch/powerpc/platforms/8xx/Kconfig | 11 +++++++++++
- linux/drivers/spi/spi-fsl-cpm.c          | 14 +++++++++-----
- 2 files changed, 20 insertions(+), 5 deletions(-)
+ drivers/spi/spi-fsl-cpm.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+index 54b0637..0f3a912 100644
+--- a/drivers/spi/spi-fsl-cpm.c
++++ b/drivers/spi/spi-fsl-cpm.c
+@@ -262,15 +262,14 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+ 		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+ 		out_be16(spi_base, pram_ofs);
+ 	} else {
+-		struct spi_pram __iomem *pram = spi_base;
+-		u16 rpbase = in_be16(&pram->rpbase);
++		u16 rpbase = in_be16(spi_base);
+ 
+-		/* Microcode relocation patch applied? */
++		/* Microcode relocation patch applied | rpbase set by default */
+ 		if (rpbase) {
+ 			pram_ofs = rpbase;
+ 		} else {
+-			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+-			out_be16(spi_base, pram_ofs);
++			pram_ofs = offsetof(cpm8xx_t, cp_dparam[PROFF_SPI]) -
++				   offsetof(cpm8xx_t, cp_dpmem[0]);
+ 		}
+ 	}
+ 
+-- 
+2.1.0
