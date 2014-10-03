@@ -1,24 +1,22 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (mail-by2on0118.outbound.protection.outlook.com [207.46.100.118])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 713A91A0603
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Oct 2014 06:24:32 +1000 (EST)
-Message-ID: <1412367858.13320.432.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] spi: fsl-spi: Allow dynamic allocation of CPM1
- parameter RAM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 125851A0700
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Oct 2014 06:30:15 +1000 (EST)
+Message-ID: <1412368198.13320.434.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] spi: fsl-spi: Fix parameter ram offset setup for
+ CPM1
 From: Scott Wood <scottwood@freescale.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Date: Fri, 3 Oct 2014 15:24:18 -0500
-In-Reply-To: <542F03CF.8010900@c-s.fr>
-References: <20141003125609.5BEA11AB276@localhost.localdomain>
- <20141003144420.GC24441@sirena.org.uk> <542F03CF.8010900@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 3 Oct 2014 15:29:58 -0500
+In-Reply-To: <20141003164916.DBD631AAFA2@localhost.localdomain>
+References: <20141003164916.DBD631AAFA2@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
- linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-10-03 at 22:15 +0200, christophe leroy wrote:
-> Le 03/10/2014 16:44, Mark Brown a écrit :
-> > On Fri, Oct 03, 2014 at 02:56:09PM +0200, Christophe Leroy wrote:
-> >
-> >> +config CPM1_RELOCSPI
-> >> +	bool "Dynamic SPI relocation"
-> >> +	default n
-> >> +	help
-> >> +	  On recent MPC8xx (at least MPC866 and MPC885) SPI can be relocated
-> >> +	  without micropatch. This activates relocation to a dynamically
-> >> +	  allocated area in the CPM Dual port RAM.
-> >> +	  When combined with SPI relocation patch (for older MPC8xx) it avoids
-> >> +	  the "loss" of additional Dual port RAM space just above the patch,
-> >> +	  which might be needed for example when using the CPM QMC.
-> > Something like this shouldn't be a compile time option.  Either it
-> > should be unconditional or it should be triggered in some system
-> > specific manner (from DT, from knowing about other users or similar).
-> Can't be unconditional as older versions of mpc8xx (eg MPC860) don't 
-> support relocation without a micropatch.
-> I have therefore submitted a v2 based on a DTS compatible property.
+On Fri, 2014-10-03 at 18:49 +0200, Christophe Leroy wrote:
+> On CPM1, the SPI parameter RAM has a default location. In fsl_spi_cpm_get_pram()
+> there was a confusion between the SPI_BASE register and the base of the SPI
+> parameter RAM. Fortunatly, it was working properly with MPC866 and MPC885
+> because they do set SPI_BASE, but on MPC860 and other old MPC8xx that doesn't
+> set SPI_BASE, pram_ofs was not properly set. This patch fixes this confusion.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> ---
+> Changes from v1 to v2: none
+> 
+>  drivers/spi/spi-fsl-cpm.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+> index 54b0637..0f3a912 100644
+> --- a/drivers/spi/spi-fsl-cpm.c
+> +++ b/drivers/spi/spi-fsl-cpm.c
+> @@ -262,15 +262,14 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+>  		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+>  		out_be16(spi_base, pram_ofs);
+>  	} else {
+> -		struct spi_pram __iomem *pram = spi_base;
+> -		u16 rpbase = in_be16(&pram->rpbase);
+> +		u16 rpbase = in_be16(spi_base);
+>  
+> -		/* Microcode relocation patch applied? */
+> +		/* Microcode relocation patch applied | rpbase set by default */
+>  		if (rpbase) {
+>  			pram_ofs = rpbase;
+>  		} else {
+> -			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+> -			out_be16(spi_base, pram_ofs);
+> +			pram_ofs = offsetof(cpm8xx_t, cp_dparam[PROFF_SPI]) -
+> +				   offsetof(cpm8xx_t, cp_dpmem[0]);
+>  		}
+>  	}
 
-So the device tree change is about whether relocation is supported, not
-whether it is required?  Is this specific to SPI or does the relocation
-mechanism work for other things?
-
-How about checking for the existing specific-SoC compatibles?
+Why is PROFF_SPI not coming from the device tree?  Why don't I see any
+cpm spi in any device tree nor any binding for it?
 
 -Scott
