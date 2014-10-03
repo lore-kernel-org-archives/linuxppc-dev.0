@@ -1,12 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 874A01A1A1C
+ by lists.ozlabs.org (Postfix) with ESMTP id 813B21A198A
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Oct 2014 02:49:27 +1000 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2 1/2] spi: fsl-spi: Fix parameter ram offset setup for CPM1
-Message-Id: <20141003164916.DBD631AAFA2@localhost.localdomain>
-Date: Fri,  3 Oct 2014 18:49:16 +0200 (CEST)
+Subject: [PATCH v2 2/2] spi: fsl-spi: Allow dynamic allocation of CPM1
+ parameter RAM
+Message-Id: <20141003164917.397871AB276@localhost.localdomain>
+Date: Fri,  3 Oct 2014 18:49:17 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,43 +19,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On CPM1, the SPI parameter RAM has a default location. In fsl_spi_cpm_get_pram()
-there was a confusion between the SPI_BASE register and the base of the SPI
-parameter RAM. Fortunatly, it was working properly with MPC866 and MPC885
-because they do set SPI_BASE, but on MPC860 and other old MPC8xx that doesn't
-set SPI_BASE, pram_ofs was not properly set. This patch fixes this confusion.
+On CPM1, the SPI parameter RAM has a default location. In order to use SPI while
+using SCC2 with features like QMC or Ethernet, it is necessary to relocate SPI
+parameter RAM in a free location in the CPM dual port RAM. With this patch,
+when "fsl,cpm1-spi-reloc" instead of "fsl,cpm1-spi" compatible is set in the
+device tree, the parameter RAM for SPI is dynamically allocated
+with cpm_muram_alloc().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-Changes from v1 to v2: none
+Changes from v1 to v2: using OF compatible instead of compile time option
 
- drivers/spi/spi-fsl-cpm.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/spi/spi-fsl-cpm.c   | 3 +++
+ drivers/spi/spi-fsl-lib.c   | 2 ++
+ include/linux/fsl_devices.h | 1 +
+ 3 files changed, 6 insertions(+)
 
 diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
-index 54b0637..0f3a912 100644
+index 0f3a912..048ca5f 100644
 --- a/drivers/spi/spi-fsl-cpm.c
 +++ b/drivers/spi/spi-fsl-cpm.c
-@@ -262,15 +262,14 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+@@ -261,6 +261,9 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+ 	if (mspi->flags & SPI_CPM2) {
  		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
  		out_be16(spi_base, pram_ofs);
++	} else if (mspi->flags & SPI_CPM1_RELOC) {
++		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 32);
++		out_be16(spi_base, pram_ofs);
  	} else {
--		struct spi_pram __iomem *pram = spi_base;
--		u16 rpbase = in_be16(&pram->rpbase);
-+		u16 rpbase = in_be16(spi_base);
+ 		u16 rpbase = in_be16(spi_base);
  
--		/* Microcode relocation patch applied? */
-+		/* Microcode relocation patch applied | rpbase set by default */
- 		if (rpbase) {
- 			pram_ofs = rpbase;
- 		} else {
--			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
--			out_be16(spi_base, pram_ofs);
-+			pram_ofs = offsetof(cpm8xx_t, cp_dparam[PROFF_SPI]) -
-+				   offsetof(cpm8xx_t, cp_dpmem[0]);
- 		}
- 	}
+diff --git a/drivers/spi/spi-fsl-lib.c b/drivers/spi/spi-fsl-lib.c
+index c3f7802..e9db4c5 100644
+--- a/drivers/spi/spi-fsl-lib.c
++++ b/drivers/spi/spi-fsl-lib.c
+@@ -227,6 +227,8 @@ int of_mpc8xxx_spi_probe(struct platform_device *ofdev)
+ 		pdata->flags = SPI_CPM_MODE | SPI_CPM2;
+ 	else if (of_device_is_compatible(np, "fsl,cpm1-spi"))
+ 		pdata->flags = SPI_CPM_MODE | SPI_CPM1;
++	else if (of_device_is_compatible(np, "fsl,cpm1-spi-reloc"))
++		pdata->flags = SPI_CPM_MODE | SPI_CPM1 | SPI_CPM1_RELOC;
  
+ 	return 0;
+ }
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index a82296a..417ad52 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -123,6 +123,7 @@ struct fsl_spi_platform_data {
+ #define SPI_CPM1		(1 << 2) /* SPI unit is in CPM1 block */
+ #define SPI_CPM2		(1 << 3) /* SPI unit is in CPM2 block */
+ #define SPI_QE			(1 << 4) /* SPI unit is in QE block */
++#define SPI_CPM1_RELOC		(1 << 5) /* SPI pram has to be relocated */
+ 	/* board specific information */
+ 	u16	max_chipselect;
+ 	void	(*cs_control)(struct spi_device *spi, bool on);
 -- 
 2.1.0
