@@ -1,37 +1,23 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 184B11A0929
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 09:43:58 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 2 Oct 2014 17:43:56 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 86CEC19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 17:32:38 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s92LdfoU8716662
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 23:39:41 +0200
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s92NhrOY018898
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 17:43:54 -0600
-Date: Thu, 2 Oct 2014 16:43:41 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Subject: Re: [PATCH] [RFC] powerpc/vphn: fix endian issue in NUMA device node
- code
-Message-ID: <20141002234340.GB20262@linux.vnet.ibm.com>
-References: <20141002210621.5615.97402.stgit@bahia.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141002210621.5615.97402.stgit@bahia.local>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 390991A0B7F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 10:50:23 +1000 (EST)
+Message-ID: <1412297420.2783.3.camel@concordia>
+Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
+ verify_cpu_node_mapping()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Fri, 03 Oct 2014 10:50:20 +1000
+In-Reply-To: <20141002211305.GB12862@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <20141002211305.GB12862@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Li Zhong <zhong@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,164 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02.10.2014 [23:59:15 +0200], Greg Kurz wrote:
-> The associativity domain numbers are obtained from the hypervisor through
-> registers and written into memory by the guest: the packed array passed to
-> vphn_unpack_associativity() is then native-endian, unlike what was assumed
-> in the following commit:
+On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
+> Ben & Michael,
 > 
-> commit b08a2a12e44eaec5024b2b969f4fcb98169d1ca3
-> Author: Alistair Popple <alistair@popple.id.au>
-> Date:   Wed Aug 7 02:01:44 2013 +1000
-> 
->     powerpc: Make NUMA device node code endian safe
-> 
-> If a CPU home node changes, the topology gets filled with
-> bogus values. This leads to severe performance breakdowns.
-> 
-> This patch does two things:
-> - extract values from the packed array with shifts, in order to be endian
->   neutral
-> - convert the resulting values to be32 as expected
-> 
-> Suggested-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
-> ---
-> 
-> I could test this code in a userland program and obtain the same
-> result in little and big endian. If the 64-bit packed values
-> are:
-> 
-> 0x8001ffffffff0000
-> 0x112200003344ffff
-> 0xffff000055660000
-> 0x7788000099aaffff
-> 0xffff8002ffffffff
-> 0xffffffffffffffff
-> 
-> then the unpacked array is:
-> 
-> 0x00000007
-> 0x00000001
-> 0xffffffff
-> 0x00001122
-> 0x00003344
-> 0xffffffff
-> 0x00005566
-> 0x00007788
-> 0x000099aa
-> 0xffffffff
-> 0x00000002
-> 0xffffffff
-> 0xffffffff
-> 
-> I could not test in a PowerVM guest though, hence the RFC.
-> 
-> --
-> Greg
-> 
->  arch/powerpc/mm/numa.c |   50 ++++++++++++++++++++++++++++++++++++++----------
->  1 file changed, 40 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index b835bf0..06af179 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1369,38 +1369,68 @@ static int update_cpu_associativity_changes_mask(void)
->  #define VPHN_ASSOC_BUFSIZE (6*sizeof(u64)/sizeof(u32) + 1)
->  
->  /*
-> + * The associativity values are either 16-bit (VPHN_FIELD_MSB) or 32-bit (data
-> + * or VPHN_FIELD_UNUSED). We hence need to parse the packed array into 16-bit
-> + * chunks. Let's do that with bit shifts to be endian neutral.
-> + *
-> + *    --- 16-bit chunks -->
-> + *  _________________________
-> + *  |  0  |  1  |  2  |  3  |   packed[0]
-> + *  -------------------------
-> + *  _________________________
-> + *  |  4  |  5  |  6  |  7  |   packed[1]
-> + *  -------------------------
-> + *            ...
-> + *  _________________________
-> + *  | 20  | 21  | 22  | 23  |   packed[5]
-> + *  -------------------------
-> + *
-> + *   >>48  >>32  >>16  >>0      <-- needed bit shift
-> + *
-> + * We only care for the 2 lower bits of the chunk index to compute the shift.
-> + */
-> +static inline u16 read_vphn_chunk(const long *packed, unsigned int i)
-> +{
-> +	return packed[i >> 2] >> ((~i & 3) << 4);
+> What's the status of these patches?
 
-This is some excellent magic and the comment *should* be sufficient, but
-maybe an example would be good? i is the index we want to read from in
-the packed array?
+Been in my next for a week :)
 
-> +}
-> +
-> +/*
->   * Convert the associativity domain numbers returned from the hypervisor
->   * to the sequence they would appear in the ibm,associativity property.
->   */
->  static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
->  {
-> -	int i, nr_assoc_doms = 0;
-> +	unsigned int i, j, nr_assoc_doms = 0;
->  	const __be16 *field = (const __be16 *) packed;
->  
->  #define VPHN_FIELD_UNUSED	(0xffff)
->  #define VPHN_FIELD_MSB		(0x8000)
->  #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
->  
-> -	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
-> -		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
-> +	for (i = 1, j = 0; i < VPHN_ASSOC_BUFSIZE; i++) {
-> +		u16 field = read_vphn_chunk(packed, j);
+https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
 
-Maybe I'm super dense here, but isn't there are already a variable named
-field in this context? With a different annotation?
-
-> +
-> +		if (field == VPHN_FIELD_UNUSED) {
->  			/* All significant fields processed, and remaining
->  			 * fields contain the reserved value of all 1's.
->  			 * Just store them.
->  			 */
-> -			unpacked[i] = *((__be32 *)field);
-> -			field += 2;
-> +			unpacked[i] = (VPHN_FIELD_UNUSED << 16 |
-> +				       VPHN_FIELD_UNUSED);
-> +			j += 2;
->  		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-
-Why do we need to do be16_to_cpup(field) here if field is now a u16? Or
-more explicitly, if we don't performe be16_to_cpup(field) anywhere else
-in this function now, why do we need to here?
-
->  			/* Data is in the lower 15 bits of this field */
-> -			unpacked[i] = cpu_to_be32(
-> -				be16_to_cpup(field) & VPHN_FIELD_MASK);
-> -			field++;
-> +			unpacked[i] = cpu_to_be32(field & VPHN_FIELD_MASK);
-> +			j++;
->  			nr_assoc_doms++;
->  		} else {
->  			/* Data is in the lower 15 bits of this field
->  			 * concatenated with the next 16 bit field
->  			 */
-> -			unpacked[i] = *((__be32 *)field);
-> -			field += 2;
-> +			unpacked[i] =
-> +				cpu_to_be32((u32) field << 16 |
-> +					    read_vphn_chunk(packed, j + 1));
-> +			j += 2;
->  			nr_assoc_doms++;
->  		}
->  	}
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+cheers
