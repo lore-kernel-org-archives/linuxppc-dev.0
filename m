@@ -1,23 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 390991A0B7F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 10:50:23 +1000 (EST)
-Message-ID: <1412297420.2783.3.camel@concordia>
-Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
- verify_cpu_node_mapping()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Fri, 03 Oct 2014 10:50:20 +1000
-In-Reply-To: <20141002211305.GB12862@linux.vnet.ibm.com>
-References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
- <20141002211305.GB12862@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Li Zhong <zhong@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 81B771A19B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 10:54:04 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 2 Oct 2014 18:54:02 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7A82D19D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 18:42:45 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s930s11k49741902
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 02:54:01 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s930wZaf029864
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 18:58:36 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
+ Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org
+Subject: [PATCH 1/3] tools/perf: Fix error message
+Date: Thu,  2 Oct 2014 17:53:34 -0700
+Message-Id: <1412297616-14179-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
-> Ben & Michael,
-> 
-> What's the status of these patches?
+Sometimes, eg: with a stripped vmlinux, we can open the file but
+cannot load any symbols from it. Update error message accordingly
+so the users can better understand the error.
 
-Been in my next for a week :)
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ tools/perf/util/map.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
-
-cheers
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+index b709059..c478092 100644
+--- a/tools/perf/util/map.c
++++ b/tools/perf/util/map.c
+@@ -267,7 +267,7 @@ int map__load(struct map *map, symbol_filter_t filter)
+ 			pr_warning("%s with build id %s not found",
+ 				   name, sbuild_id);
+ 		} else
+-			pr_warning("Failed to open %s", name);
++			pr_warning("Failed to load symbols for DSO %s", name);
+ 
+ 		pr_warning(", continuing without symbols\n");
+ 		return -1;
+-- 
+1.8.3.1
