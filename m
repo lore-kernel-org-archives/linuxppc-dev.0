@@ -1,29 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8940C1A1865
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 15:24:08 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CB9CE14016A
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2014 15:24:07 +1000 (EST)
-Message-ID: <1412313820.30859.2.camel@pasglop>
-Subject: Re: [PATCH v2 3/4] sound/radeon: Move 64-bit MSI quirk from arch to
- driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Deucher <alexdeucher@gmail.com>
-Date: Fri, 03 Oct 2014 15:23:40 +1000
-In-Reply-To: <CADnq5_PhuFbRPgzAa_hEA1czTQjY9xdLFOWhL393DN4CYDnFng@mail.gmail.com>
-References: <1412210082.10667.2.camel@pasglop>
- <CADnq5_PhuFbRPgzAa_hEA1czTQjY9xdLFOWhL393DN4CYDnFng@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C17C21A0AC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 15:30:39 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 2 Oct 2014 23:30:36 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 002CC3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Oct 2014 23:30:33 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s935UXHl50069524
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Oct 2014 07:30:33 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s935UXld011324
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Oct 2014 23:30:33 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/4] powerpc/powernv: Sync header with firmware
+In-Reply-To: <20140925042747.8E2AE14016A@ozlabs.org>
+References: <20140925042747.8E2AE14016A@ozlabs.org>
+Date: Fri, 03 Oct 2014 15:30:31 +1000
+Message-ID: <m3a95dhg94.fsf@oc8180480414.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: qiudayu@linux.vnet.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,13 +41,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-10-01 at 22:13 -0400, Alex Deucher wrote:
+Michael Ellerman <mpe@ellerman.id.au> writes:
+>> +	OpalEjtIoaDmaWriteMemTarget	= 19,
+>> +};
+>
+> I realise these come from the skiboot source, but they're just too ugly.
+>
+> Please use kernel style naming, like most of the rest of the file, eg:
+>
+> 	OPAL_ERR_INJECT_IOA_BUS_ERR
 
-> The attached updated patch only flags the affected asics.
-
-I need formal (email :-) permission to add your s-o-b (and From: while
-at it since you wrote most of it) for this patch. I'll then include
-it in my new series.
-
-Cheers,
-Ben.
+You know what, I think I'd feel better if we changed skiboot source to
+be like this too. Many of the other enums in skiboot are kernel style
+and not camel. So, I'm going to go do that, then kernel and firmware can
+match.
