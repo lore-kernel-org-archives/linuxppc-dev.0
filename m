@@ -1,20 +1,21 @@
-Return-Path: <anton@samba.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BA2F1A0AB1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 14:21:15 +1000 (EST)
-Date: Fri, 3 Oct 2014 14:21:15 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v3] powerpc/iommu/ddw: Fix endianness
-Message-ID: <20141003142115.34b9be97@kryten>
-In-Reply-To: <1411627167-22927-1-git-send-email-aik@ozlabs.ru>
-References: <1411627167-22927-1-git-send-email-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D7491A0793
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 14:42:31 +1000 (EST)
+Message-ID: <1412311350.2783.4.camel@concordia>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexander Graf <agraf@suse.de>
+Date: Fri, 03 Oct 2014 14:42:30 +1000
+In-Reply-To: <1412170086-57971-1-git-send-email-agraf@suse.de>
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alexey,
-
-> rtas_call() accepts and returns values in CPU endianness.
-> The ddw_query_response and ddw_create_response structs members are
-> defined and treated as BE but as they are passed to rtas_call() as
-> (u32 *) and they get byteswapped automatically, the data is
-> CPU-endian. This fixes ddw_query_response and ddw_create_response
-> definitions and use.
+On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
+> The generic Linux framework to power off the machine is a function pointer
+> called pm_power_off. The trick about this pointer is that device drivers can
+> potentially implement it rather than board files.
 > 
-> of_read_number() is designed to work with device tree cells - it
-> assumes the input is big-endian and returns data in CPU-endian.
-> However due to the ddw_create_response struct fix, create.addr_hi/lo
-> are already CPU-endian so do not byteswap them.
+> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+> off logic which then calls ppc_md.power_off to invoke machine specific power
+> off.
 > 
-> ddw_avail is a pointer to the "ibm,ddw-applicable" property which
-> contains 3 cells which are big-endian as it is a device tree.
-> rtas_call() accepts a RTAS token in CPU-endian. This makes use of
-> of_property_read_u32_array to byte swap and avoid the need for a
-> number of be32_to_cpu calls.
-> 
-> Cc: stable@vger.kernel.org # v3.13
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Reviewed-by: Anton Blanchard <anton@samba.org>
-> [aik: folded Anton's patch with of_property_read_u32_array]
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> driver can implement power off logic via that function pointer.
 
-Thanks for updating, looks good. Could we make it clear the bug is
-present in 3.13-3.17 with:
+This looks OK to me with one caveat.
 
-Cc: stable@vger.kernel.org # v3.13+
+In several of the patches you're replacing a static initialisation with a
+runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
+That's reasonably late, so I'd prefer you did it in xxx_probe().
 
-Acked-by: Anton Blanchard <anton@samba.org>
+If you resend with that changed I'll put it in next.
 
-Anton
+cheers
