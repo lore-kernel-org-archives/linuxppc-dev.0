@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1981D1A070B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 17:12:36 +1000 (EST)
-Message-ID: <1412320345.30859.9.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Fix endian bug in LPC bus debugfs accessors
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 03 Oct 2014 17:12:25 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Anton Blanchard <anton@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 744091A0A5F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 17:36:22 +1000 (EST)
+In-Reply-To: <20140923035330.6097.43515.stgit@mars>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/book3s: Fix flush_tlb cpu_spec hook to take a generic
+ argument.
+Message-Id: <20141003073622.3F0B8140180@ozlabs.org>
+Date: Fri,  3 Oct 2014 17:36:22 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When reading from the LPC, the OPAL FW calls return the value via pointer
-to a uint32_t which is always returned big endian. Our internal inb/outb
-implementation byteswaps that fine but our debugfs code is still broken.
+On Tue, 2014-23-09 at 03:53:54 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> The flush_tlb hook in cpu_spec was introduced as a generic function hook
+> to invalidate TLBs. But the current implementation of flush_tlb hook
+> takes IS (invalidation selector) as an argument which is architecture
+> dependent. Hence, It is not right to have a generic routine where caller
+> has to pass non-generic argument.
+> 
+> This patch fixes this and makes flush_tlb hook as high level API.
+> 
+> The old code used to call flush_tlb hook with IS=0 (single page) resulting
+> partial invalidation of TLBs which is not right. This fix now makes
+> sure that whole TLB is invalidated to be able to successfully recover from
+> TLB and ERAT errors.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org>
----
+Hi Mahesh,
 
-diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-index ad4b31d..dd2c285 100644
---- a/arch/powerpc/platforms/powernv/opal-lpc.c
-+++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-@@ -191,6 +191,7 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
- {
- 	struct lpc_debugfs_entry *lpc = filp->private_data;
- 	u32 data, pos, len, todo;
-+	__be32 bedata;
- 	int rc;
- 
- 	if (!access_ok(VERIFY_WRITE, ubuf, count))
-@@ -213,9 +214,10 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
- 				len = 2;
- 		}
- 		rc = opal_lpc_read(opal_lpc_chip_id, lpc->lpc_type, pos,
--				   &data, len);
-+				   &bedata, len);
- 		if (rc)
- 			return -ENXIO;
-+		data = be32_to_cpu(bedata);
- 		switch(len) {
- 		case 4:
- 			rc = __put_user((u32)data, (u32 __user *)ubuf);
+It seems that the only detail we are abstracting here is that power7 has 128
+TLB sets and power8 has 512. Is that right?
+
+It seems like a lot of code to deal with that one detail.
+
+I guess the other thing it does is cur_cpu_spec->flush_tlb() is only
+implemented on power7 and power8, ie. not power6. But it seems that the two
+callers can only ever run on power7/power8 anway.
+
+So couldn't we just do:
+ - add the number of tlb_sets to cpu_spec
+ - use that in flush_tlb()
+
+cheers
