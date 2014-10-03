@@ -1,21 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D8301A194D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 18:04:06 +1000 (EST)
-Message-ID: <1412323443.2783.5.camel@concordia>
-Subject: Re: [PATCH 3/3] powerpc/kdump: crash_dump.c needs to include io.h
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 03 Oct 2014 18:04:03 +1000
-In-Reply-To: <20140924163657.74b23785@canb.auug.org.au>
-References: <1411538232-31516-1-git-send-email-mpe@ellerman.id.au>
- <1411538232-31516-3-git-send-email-mpe@ellerman.id.au>
- <20140924163657.74b23785@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D41C51A1B42
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Oct 2014 18:04:23 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 187DE1400AB
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2014 18:04:22 +1000 (EST)
+Message-ID: <1412323453.30859.31.camel@pasglop>
+Subject: Re: powerpc/book3s: Fix flush_tlb cpu_spec hook to take a generic
+ argument.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 03 Oct 2014 18:04:13 +1000
+In-Reply-To: <20141003073622.3F0B8140180@ozlabs.org>
+References: <20141003073622.3F0B8140180@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-09-24 at 16:36 +1000, Stephen Rothwell wrote:
-> Hi Michael,
-> 
-> On Wed, 24 Sep 2014 15:57:12 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >
-> > For __ioremap().
-> 
-> So does that mean that you really want this patch before 2/3 so that you
-> don't introduce an unnecessary bisection breakage in ppc64_defconfig?
+On Fri, 2014-10-03 at 17:36 +1000, Michael Ellerman wrote:
+> It seems that the only detail we are abstracting here is that power7 has 128
+> TLB sets and power8 has 512. Is that right?
 
-Yeah I guess it does.
+Today ...
 
-cheers
+> It seems like a lot of code to deal with that one detail.
+> 
+> I guess the other thing it does is cur_cpu_spec->flush_tlb() is only
+> implemented on power7 and power8, ie. not power6. But it seems that the two
+> callers can only ever run on power7/power8 anway.
+> 
+> So couldn't we just do:
+>  - add the number of tlb_sets to cpu_spec
+>  - use that in flush_tlb()
+
+Provided the form of tlbiel we use remains ... things are different from
+embedded for example. I've asked Mahesh to add this hook with the idea
+somewhat to migrate existing/older code to use it as well, and on older
+chips or embedded the TLB flush is quite different.
+
+Cheers,
+Ben.
