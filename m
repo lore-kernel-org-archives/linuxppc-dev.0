@@ -1,23 +1,38 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6847C1A07D8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Oct 2014 11:40:39 +1100 (EST)
-Date: Sat, 4 Oct 2014 19:39:25 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 03/20] powerpc/47x: Use pm_power_off rather than
- ppc_md.power_off
-Message-ID: <20141005003925.GA26256@gate.crashing.org>
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <1412170086-57971-4-git-send-email-agraf@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1412170086-57971-4-git-send-email-agraf@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A9B41A01F4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 16:26:30 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Mon, 6 Oct 2014 10:56:26 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3B2FE3940048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 10:56:23 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s965QqTv63897764
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 10:56:52 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s965QLvb017118
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 10:56:21 +0530
+Message-ID: <543227B6.7010707@linux.vnet.ibm.com>
+Date: Mon, 06 Oct 2014 10:55:10 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: devicetree@vger.kernel.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com,
+ a.zummo@towertech.it
+Subject: Re: [PATCH v2] rtc/tpo: Driver to support rtc and wakeup on PowerNV
+ platform
+References: <20140930101448.9310.32342.stgit@localhost.localdomain>
+In-Reply-To: <20140930101448.9310.32342.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: benh@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +42,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 01, 2014 at 03:27:49PM +0200, Alexander Graf wrote:
-> diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
-> index 33986c1..7027015 100644
-> --- a/arch/powerpc/platforms/44x/ppc476.c
-> +++ b/arch/powerpc/platforms/44x/ppc476.c
-> @@ -94,7 +94,7 @@ static int avr_probe(struct i2c_client *client,
->  {
->  	avr_i2c_client = client;
->  	ppc_md.restart = avr_reset_system;
-> -	ppc_md.power_off = avr_power_off_system;
-> +	pm_power_off = avr_power_off_system
->  	return 0;
->  }
 
-That doesn't compile afaics?
+On 09/30/2014 03:46 PM, Neelesh Gupta wrote:
+> The patch implements the OPAL rtc driver that binds with the rtc
+> driver subsystem. The driver uses the platform device infrastructure
+> to probe the rtc device and register it to rtc class framework. The
+> 'wakeup' is supported depending upon the property 'has-tpo' present
+> in the OF node. It provides a way to load the generic rtc driver in
+> in the absence of an OPAL driver.
+>
+> The patch also moves the existing OPAL rtc get/set time interfaces to the
+> new driver and exposes the necessary OPAL calls using EXPORT_SYMBOL_GPL.
+>
+> Test results:
+> -------------
+> Host:
+> [root@tul163p1 ~]# ls -l /sys/class/rtc/
+> total 0
+> lrwxrwxrwx 1 root root 0 Sep 30 04:58 rtc0 -> ../../devices/opal-rtc/rtc/rtc0
+> [root@tul163p1 ~]# cat /sys/devices/opal-rtc/rtc/rtc0/time
+> 10:01:51
+> [root@tul163p1 ~]# cat /sys/devices/opal-rtc/rtc/rtc0/time
+> 10:02:07
+> [root@tul163p1 ~]# echo `date '+%s' -d '+ 3 minutes'` > /sys/class/rtc/rtc0/wakealarm
+> [root@tul163p1 ~]# cat /sys/class/rtc/rtc0/wakealarm
+> 1412071532
+> [root@tul163p1 ~]#
+>
+> FSP:
+> $ smgr mfgState
+> standby
+> $ smgr mfgState
+> ipling
+> $
+>
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> ---
+>
+> Changes in v2
+> =============
+> - Added Documentation/devicetree/bindings/rtc/rtc-opal.txt
+> - Explicitly turn off RTC_UIE mode by setting 'rtc->uie_unsupported'
+>
+> Dependency
+> ==========
+> This patch depends upon the below patch posted on 'linuxppc-dev@lists.ozlabs.org'
+> [PATCH 1/4] powerpc/powernv: Add OPAL check token call
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+>
+>   Documentation/devicetree/bindings/rtc/rtc-opal.txt |   16 +
+>   arch/powerpc/include/asm/opal.h                    |    7 -
+>   arch/powerpc/kernel/time.c                         |    1
+>   arch/powerpc/platforms/powernv/opal-async.c        |    3
+>   arch/powerpc/platforms/powernv/opal-rtc.c          |   63 +----
+>   arch/powerpc/platforms/powernv/opal-wrappers.S     |    2
+>   arch/powerpc/platforms/powernv/opal.c              |    6
+>   arch/powerpc/platforms/powernv/setup.c             |    2
+>   drivers/rtc/Kconfig                                |   11 +
+>   drivers/rtc/Makefile                               |    1
+>   drivers/rtc/rtc-opal.c                             |  261 ++++++++++++++++++++
+>   11 files changed, 325 insertions(+), 48 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/rtc/rtc-opal.txt
+>   create mode 100644 drivers/rtc/rtc-opal.c
 
+Hi Alessandro,
 
-Segher
+The patch depends upon few things in powerpc tree so could you please 
+Ack the
+patch so that we can take it through the powerpc tree?
+
+Thanks,
+- Neelesh
