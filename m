@@ -1,27 +1,36 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 503931A0611
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 06:28:54 +1100 (EST)
-Message-ID: <1412623718.32313.60.camel@smoke>
-Subject: Re: [PATCH 1/5] kexec: Fix make headers_check
-From: Geoff Levand <geoff@infradead.org>
-To: Paul Bolle <pebolle@tiscali.nl>
-Date: Mon, 06 Oct 2014 12:28:38 -0700
-In-Reply-To: <1412619708.14236.2.camel@x220>
-References: <cover.1408731991.git.geoff@infradead.org>
- <115373b6ac68ee7a305975896e1c4971e8e51d4c.1408731991.git.geoff@infradead.org>
- <20140825172234.GD14379@redhat.com> <1409402838.21896.99.camel@x220>
- <1412604734.4054.72.camel@x220> <1412616877.32313.55.camel@smoke>
- <1412619708.14236.2.camel@x220>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: maximilian attems <max@stro.at>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0FD411A038F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 09:37:03 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 6 Oct 2014 16:37:01 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BC5D96E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 18:25:42 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s96Mawq67602436
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 22:36:58 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s96MavSf027772
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 18:36:57 -0400
+Date: Mon, 6 Oct 2014 15:36:40 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/vphn: fix endian issue in NUMA device node code
+Message-ID: <20141006223639.GC9339@linux.vnet.ibm.com>
+References: <20141003091250.28354.13766.stgit@bahia.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141003091250.28354.13766.stgit@bahia.local>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-10-06 at 20:21 +0200, Paul Bolle wrote:
-> On Mon, 2014-10-06 at 10:34 -0700, Geoff Levand wrote:
-> > On Mon, 2014-10-06 at 16:12 +0200, Paul Bolle wrote:
-> > > It seems not much happened after I added my Acked-by. I assume you still
-> > > want to get this merged. Is that correct?
-> > 
-> > Yes, I think we concluded there are no real users of this kexec_load()
-> > ptototype, and so it can be removed.
+On 03.10.2014 [11:13:17 +0200], Greg Kurz wrote:
+> The associativity domain numbers are obtained from the hypervisor through
+> registers and written into memory by the guest: the packed array passed to
+> vphn_unpack_associativity() is then native-endian, unlike what was assumed
+> in the following commit:
 > 
-> What would be the quickest way to get this finally resolved? Who's in
-> charge of this stuff? Would resending your patch, with my Ack added,
-> speed up things? The vain side of my personality does think it would
-> help.
+> commit b08a2a12e44eaec5024b2b969f4fcb98169d1ca3
+> Author: Alistair Popple <alistair@popple.id.au>
+> Date:   Wed Aug 7 02:01:44 2013 +1000
+> 
+>     powerpc: Make NUMA device node code endian safe
+> 
+> If a CPU home node changes, the topology gets filled with
+> bogus values. This leads to severe performance breakdowns.
+> 
+> This patch does two things:
+> - extract values from the packed array with shifts, in order to be endian
+>   neutral
+> - convert the resulting values to be32 as expected
+> 
+> Suggested-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
 
-I'll prepare a V2 set of the this series with the various acks and ask
-Andrew to merge it.
+Reviewed-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
--Geoff
+> ---
+> 
+> Changes in v2:
+> - removed the left out __be16 *field declaration
+> - removed the left out be16_to_cpup() call
+> - updated the comment of the magic formula
+> 
+> Thanks again Nish... the two left outs probably explain why PowerVM wasn't
+> happy that patch. :P
+
+Yep, I've tested this v2 patch successfully now!
+
+-Nish
