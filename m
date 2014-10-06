@@ -1,41 +1,22 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E31A1A0053
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 20:34:32 +1100 (EST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CDB2D1400EA
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Oct 2014 20:34:30 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 6 Oct 2014 15:04:23 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 065D23940048
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Oct 2014 15:04:22 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s969Yn5R37552290
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Oct 2014 15:04:50 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s969YKAd024269
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Oct 2014 15:04:20 +0530
-Subject: [PATCH] powerpc/powernv: Fallback to old HMI handling behavior for
- old firmware
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 06 Oct 2014 15:04:19 +0530
-Message-ID: <20141006093358.1828.36741.stgit@mars>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0BCE1A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 21:00:57 +1100 (EST)
+Message-ID: <54326850.1030801@suse.de>
+Date: Mon, 06 Oct 2014 12:00:48 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Paul Mackerras <paulus@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+ <1412311350.2783.4.camel@concordia>
+In-Reply-To: <1412311350.2783.4.camel@concordia>
+Content-Type: text/plain; charset=utf-8
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,56 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Recently we moved HMI handling into Linux kernel instead of taking
-HMI directly in OPAL. This new change is dependent on new OPAL call
-for HMI recovery which was introduced in newer firmware. While this new
-change works fine with latest OPAL firmware, we broke the HMI handling
-if we run newer kernel on old OPAL firmware that results in system hang.
 
-This patch fixes this issue by falling back to old HMI behavior on older
-OPAL firmware.
+On 03.10.14 06:42, Michael Ellerman wrote:
+> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
+>> The generic Linux framework to power off the machine is a function pointer
+>> called pm_power_off. The trick about this pointer is that device drivers can
+>> potentially implement it rather than board files.
+>>
+>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+>> off logic which then calls ppc_md.power_off to invoke machine specific power
+>> off.
+>>
+>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+>> driver can implement power off logic via that function pointer.
+> 
+> This looks OK to me with one caveat.
+> 
+> In several of the patches you're replacing a static initialisation with a
+> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
+> That's reasonably late, so I'd prefer you did it in xxx_probe().
 
-This patch introduces a check for opal token OPAL_HANDLE_HMI to see
-if we are running on newer firmware or old firmware. On newer firmware
-this check would return OPAL_TOKEN_PRESENT, otherwise we are running on
-old firmware and fallback to old HMI behavior.
+Heh, I had it in xxx_probe() originally and then realized that
 
-This patch depends on opal check token patch posted at ppc-devel
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-August/120224.html
+  a) the power off function is basically a driver. Driver initialization
+happens in xxx_setup_arch() and
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+  b) the maple target already does overwrite its power_off callback in
+xxx_setup_arch and
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index b44eec3..2768cd3 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -194,6 +194,24 @@ static int __init opal_register_exception_handlers(void)
- 	 * fwnmi area at 0x7000 to provide the glue space to OPAL
- 	 */
- 	glue = 0x7000;
-+
-+	/* Check if we are running on newer firmware that exports
-+	 * OPAL_HANDLE_HMI token. If yes, then don't ask opal to patch
-+	 * HMI interrupt and we catch it directly in Linux kernel.
-+	 *
-+	 * For older firmware we will fallback to old behavior and
-+	 * let OPAL patch the HMI vector and handle it inside OPAL
-+	 * firmware.
-+	 */
-+	if (opal_check_token(OPAL_HANDLE_HMI) != OPAL_TOKEN_PRESENT) {
-+		/* We are on old firmware. fallback to old behavior. */
-+		pr_info("%s: Falling back to old HMI handling behavior.\n",
-+			__func__);
-+		opal_register_exception_handler(
-+				OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
-+				0, glue);
-+		glue += 128;
-+	}
- 	opal_register_exception_handler(OPAL_SOFTPATCH_HANDLER, 0, glue);
- #endif
- 
+  c) on all targets xxx_probe() is very slim and doesn't do much
+
+but I'll happily change it back to put the bits in xxx_probe() instead.
+
+
+Alex
