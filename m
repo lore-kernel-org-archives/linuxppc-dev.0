@@ -2,18 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0BCE1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 21:00:57 +1100 (EST)
-Message-ID: <54326850.1030801@suse.de>
-Date: Mon, 06 Oct 2014 12:00:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37F1E1A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 21:02:06 +1100 (EST)
+Message-ID: <54326899.3010005@suse.de>
+Date: Mon, 06 Oct 2014 12:02:01 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/20] powerpc/47x: Use pm_power_off rather than
+ ppc_md.power_off
 References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <1412311350.2783.4.camel@concordia>
-In-Reply-To: <1412311350.2783.4.camel@concordia>
-Content-Type: text/plain; charset=utf-8
+ <1412170086-57971-4-git-send-email-agraf@suse.de>
+ <20141005003925.GA26256@gate.crashing.org>
+In-Reply-To: <20141005003925.GA26256@gate.crashing.org>
+Content-Type: text/plain; charset=windows-1252
 Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
  Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
  Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
@@ -28,37 +30,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 03.10.14 06:42, Michael Ellerman wrote:
-> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
->> The generic Linux framework to power off the machine is a function pointer
->> called pm_power_off. The trick about this pointer is that device drivers can
->> potentially implement it rather than board files.
->>
->> Today on PowerPC we set pm_power_off to invoke our generic full machine power
->> off logic which then calls ppc_md.power_off to invoke machine specific power
->> off.
->>
->> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
->> pm_power_off as was intended. Then individual drivers such as the GPIO power off
->> driver can implement power off logic via that function pointer.
+On 05.10.14 02:39, Segher Boessenkool wrote:
+> On Wed, Oct 01, 2014 at 03:27:49PM +0200, Alexander Graf wrote:
+>> diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+>> index 33986c1..7027015 100644
+>> --- a/arch/powerpc/platforms/44x/ppc476.c
+>> +++ b/arch/powerpc/platforms/44x/ppc476.c
+>> @@ -94,7 +94,7 @@ static int avr_probe(struct i2c_client *client,
+>>  {
+>>  	avr_i2c_client = client;
+>>  	ppc_md.restart = avr_reset_system;
+>> -	ppc_md.power_off = avr_power_off_system;
+>> +	pm_power_off = avr_power_off_system
+>>  	return 0;
+>>  }
 > 
-> This looks OK to me with one caveat.
-> 
-> In several of the patches you're replacing a static initialisation with a
-> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
-> That's reasonably late, so I'd prefer you did it in xxx_probe().
+> That doesn't compile afaics?
 
-Heh, I had it in xxx_probe() originally and then realized that
-
-  a) the power off function is basically a driver. Driver initialization
-happens in xxx_setup_arch() and
-
-  b) the maple target already does overwrite its power_off callback in
-xxx_setup_arch and
-
-  c) on all targets xxx_probe() is very slim and doesn't do much
-
-but I'll happily change it back to put the bits in xxx_probe() instead.
+Oops :(. Is there any easy way to test compile all targets?
 
 
 Alex
