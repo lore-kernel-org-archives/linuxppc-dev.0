@@ -1,25 +1,24 @@
-Return-Path: <geoff@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F50D1A0228
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 04:35:03 +1100 (EST)
-Message-ID: <1412616877.32313.55.camel@smoke>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94AFC1A02C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 04:45:08 +1100 (EST)
+Message-ID: <5432D4E7.3060804@zytor.com>
+Date: Mon, 06 Oct 2014 10:44:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: Paul Bolle <pebolle@tiscali.nl>, Vivek Goyal <vgoyal@redhat.com>
 Subject: Re: [PATCH 1/5] kexec: Fix make headers_check
-From: Geoff Levand <geoff@infradead.org>
-To: Paul Bolle <pebolle@tiscali.nl>, Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 06 Oct 2014 10:34:37 -0700
-In-Reply-To: <1412604734.4054.72.camel@x220>
-References: <cover.1408731991.git.geoff@infradead.org>
- <115373b6ac68ee7a305975896e1c4971e8e51d4c.1408731991.git.geoff@infradead.org>
+References: <cover.1408731991.git.geoff@infradead.org>	
+ <115373b6ac68ee7a305975896e1c4971e8e51d4c.1408731991.git.geoff@infradead.org>	
  <20140825172234.GD14379@redhat.com> <1409402838.21896.99.camel@x220>
- <1412604734.4054.72.camel@x220>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: maximilian attems <max@stro.at>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
+In-Reply-To: <1409402838.21896.99.camel@x220>
+Content-Type: text/plain; charset=utf-8
+Cc: maximilian attems <max@stro.at>, Geoff Levand <geoff@infradead.org>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Eric Biederman <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Mon, 2014-10-06 at 16:12 +0200, Paul Bolle wrote:
-> On Sat, 2014-08-30 at 14:47 +0200, Paul Bolle wrote:
-> > [Added Peter Anvin.]
-> > 
-> > On Mon, 2014-08-25 at 13:22 -0400, Vivek Goyal wrote:
-> > > On Fri, Aug 22, 2014 at 06:39:47PM +0000, Geoff Levand wrote:
-> > > > Remove the unneded declaration for a kexec_load() routine.
-> > > > 
-> > > > Fixes errors like these when running 'make headers_check':
-> > > > 
-> > > > include/uapi/linux/kexec.h: userspace cannot reference function or variable defined in the kernel
-> > > > 
-> > > > Signed-off-by: Geoff Levand <geoff@infradead.org>
-> > > 
-> > > I think Paul Bolle tried to remove this in the past and maximilian
-> > > had objections.
-> > > 
-> > > http://lists.infradead.org/pipermail/kexec/2014-January/010902.html
-> > 
-> > I've wanted to resend my patch, perhaps with a new commit explanation,
-> > for quite some time now. I never got around doing that.
-> > 
-> > > I can't see that how exporting kernel prototype helps here.
-> > 
-> > It doesn't, for the reasons I've set out in
-> > http://lists.infradead.org/pipermail/kexec/2014-January/010900.html . In
-> > short: why bother using this prototype if one still needs to define the
-> > matching function oneself?
-> > 
-> > > kexec-tools
-> > > seems to be using syscall(__NR_kexec_load) directly for non-xen case. So
-> > > I would be fine with removing this definition. Just trying to make sure
-> > > that it does not break any other library or users of this declaration.
-> > 
-> > Obviously, this can only break compiling those libraries, or other
-> > users. It can't break already compiled binaries. Besides I don't think
-> > those libraries, etc actually exist. Maximilian mentioned klibc in
-> > January, but I wasn't able to find a version of klibc that cared about
-> > this prototype. No one pointed me at a version that does (or any other
-> > library, etc., for that matter).
-> > 
-> > (If we do decide to keep this prototype, we should special case this
-> > prototype in headers_check.pl just to silence the build.)
-> > 
-> > The above can be summarized like this:
-> >     Acked-by: Paul Bolle <pebolle@tiscali.nl>
+On 08/30/2014 05:47 AM, Paul Bolle wrote:
 > 
-> It seems not much happened after I added my Acked-by. I assume you still
-> want to get this merged. Is that correct?
+> Obviously, this can only break compiling those libraries, or other
+> users. It can't break already compiled binaries. Besides I don't think
+> those libraries, etc actually exist. Maximilian mentioned klibc in
+> January, but I wasn't able to find a version of klibc that cared about
+> this prototype. No one pointed me at a version that does (or any other
+> library, etc., for that matter).
+> 
 
-Yes, I think we concluded there are no real users of this kexec_load()
-ptototype, and so it can be removed.
+... and that would be a klibc bug and we'd just fix it.
 
--Geoff
+	-hpa
