@@ -1,36 +1,23 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0139.outbound.protection.outlook.com [207.46.100.139])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0FD411A038F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 09:37:03 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 6 Oct 2014 16:37:01 -0600
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BC5D96E8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 18:25:42 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s96Mawq67602436
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 22:36:58 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s96MavSf027772
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 18:36:57 -0400
-Date: Mon, 6 Oct 2014 15:36:40 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/vphn: fix endian issue in NUMA device node code
-Message-ID: <20141006223639.GC9339@linux.vnet.ibm.com>
-References: <20141003091250.28354.13766.stgit@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15AD01A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 11:16:18 +1100 (EST)
+Message-ID: <1412640953.13320.502.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] spi: fsl-spi: Fix parameter ram offset setup for
+ CPM1
+From: Scott Wood <scottwood@freescale.com>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Date: Mon, 6 Oct 2014 19:15:53 -0500
+In-Reply-To: <542FE1C4.7000403@c-s.fr>
+References: <20141003164916.DBD631AAFA2@localhost.localdomain>
+ <1412368198.13320.434.camel@snotra.buserror.net> <542FE1C4.7000403@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141003091250.28354.13766.stgit@bahia.local>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +27,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03.10.2014 [11:13:17 +0200], Greg Kurz wrote:
-> The associativity domain numbers are obtained from the hypervisor through
-> registers and written into memory by the guest: the packed array passed to
-> vphn_unpack_associativity() is then native-endian, unlike what was assumed
-> in the following commit:
+On Sat, 2014-10-04 at 14:02 +0200, christophe leroy wrote:
+> Le 03/10/2014 22:29, Scott Wood a écrit :
+> > On Fri, 2014-10-03 at 18:49 +0200, Christophe Leroy wrote:
+> >> On CPM1, the SPI parameter RAM has a default location. In fsl_spi_cpm_get_pram()
+> >> there was a confusion between the SPI_BASE register and the base of the SPI
+> >> parameter RAM. Fortunatly, it was working properly with MPC866 and MPC885
+> >> because they do set SPI_BASE, but on MPC860 and other old MPC8xx that doesn't
+> >> set SPI_BASE, pram_ofs was not properly set. This patch fixes this confusion.
+> >>
+> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> >>
+> >> ---
+> >> Changes from v1 to v2: none
+> >>
+> >>   drivers/spi/spi-fsl-cpm.c | 9 ++++-----
+> >>   1 file changed, 4 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+> >> index 54b0637..0f3a912 100644
+> >> --- a/drivers/spi/spi-fsl-cpm.c
+> >> +++ b/drivers/spi/spi-fsl-cpm.c
+> >> @@ -262,15 +262,14 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+> >>   		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+> >>   		out_be16(spi_base, pram_ofs);
+> >>   	} else {
+> >> -		struct spi_pram __iomem *pram = spi_base;
+> >> -		u16 rpbase = in_be16(&pram->rpbase);
+> >> +		u16 rpbase = in_be16(spi_base);
+> >>   
+> >> -		/* Microcode relocation patch applied? */
+> >> +		/* Microcode relocation patch applied | rpbase set by default */
+> >>   		if (rpbase) {
+> >>   			pram_ofs = rpbase;
+> >>   		} else {
+> >> -			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+> >> -			out_be16(spi_base, pram_ofs);
+> >> +			pram_ofs = offsetof(cpm8xx_t, cp_dparam[PROFF_SPI]) -
+> >> +				   offsetof(cpm8xx_t, cp_dpmem[0]);
+> >>   		}
+> >>   	}
+> > Why is PROFF_SPI not coming from the device tree?
+> That's where it starts to become tricky.
 > 
-> commit b08a2a12e44eaec5024b2b969f4fcb98169d1ca3
-> Author: Alistair Popple <alistair@popple.id.au>
-> Date:   Wed Aug 7 02:01:44 2013 +1000
-> 
->     powerpc: Make NUMA device node code endian safe
-> 
-> If a CPU home node changes, the topology gets filled with
-> bogus values. This leads to severe performance breakdowns.
-> 
-> This patch does two things:
-> - extract values from the packed array with shifts, in order to be endian
->   neutral
-> - convert the resulting values to be32 as expected
-> 
-> Suggested-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> PROFF_SPI is defined in cpm1.h which is included by the driver already. 
 
-Reviewed-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Yes, but those values shouldn't be used.  It's a leftover from the old
+way of hardcoding things and describing the hardware with kconfig rather
+than the device tree.
 
-> ---
+> It provides the default offset from the start of the parameter RAM.
+> Previously I had the following in my device tree, and the last part of 
+> the source above (the one for rpbase == 0) could not work.
 > 
-> Changes in v2:
-> - removed the left out __be16 *field declaration
-> - removed the left out be16_to_cpup() call
-> - updated the comment of the magic formula
+>              spi: spi@a80 {
+>                  cell-index = <0>;
+>                  compatible = "fsl,spi", "fsl,cpm1-spi";
+>                  reg = <0xa80 0x30 0x3d80 0x30>;
 > 
-> Thanks again Nish... the two left outs probably explain why PowerVM wasn't
-> happy that patch. :P
+> First reg area was the area for SPI registers. Second area was the 
+> parameter RAM zone, which was just mapped to get access to the SPI_BASE 
+> pointer (rpbase)
+> 
+> Now I have
+> 
+>                  compatible = "fsl,spi", "fsl,cpm1-spi-reloc";
+>                  reg = <0xa80 0x30 0x3dac 0x2>;
+> 
+> First reg area is the area for SPI registers. Second area is the 
+> SPI_BASE, as for the CPM2.
+> 
+> On recent 8xx (885 and 866 at least) it contains the offset (=0x1D80) of 
+> the parameter RAM. But on old ones (860, ...) it contains 0. Therefore 
+> we have to get the default index in another way.
+> What I wanted was to keep something similar to what's done with CPM2.
+> 
+> What should it look like if that offset had to be in the device tree ?
 
-Yep, I've tested this v2 patch successfully now!
+If the offset is not relocatable or discoverable, it should stay in the
+device tree.  If you have an old chip you wouldn't have
+fsl,cpm1-spi-reloc and thus you'd still have "0x3d80 0x30" in reg.
 
--Nish
+> > Why don't I see any
+> > cpm spi in any device tree nor any binding for it?
+> There's one in mgcoge.dts:
+> 
+>              spi@11aa0 {
+>                  cell-index = <0>;
+>                  compatible = "fsl,spi", "fsl,cpm2-spi";
+>                  reg = <0x11a80 0x40 0x89fc 0x2>;
+
+I'm not sure why I missed that, but this patch is for cpm1-spi, not
+cpm2-spi...
+
+Even if you insist on keeping your board dts out-of-tree, there should
+at least be a binding in-tree.
+
+BTW, more specific compatibles should come first.
+
+-Scott
