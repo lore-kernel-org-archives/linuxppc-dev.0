@@ -2,13 +2,13 @@ Return-Path: <geoff@infradead.org>
 Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D57481A0793
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD8CD1A0771
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 11:21:48 +1100 (EST)
-Message-Id: <adf97d602657c72f6ee59aefe5d51149159a3e99.1412640584.git.geoff@infradead.org>
+Message-Id: <de975a34c5beb9715359eaa4d74ba82a7798aae3.1412640584.git.geoff@infradead.org>
 In-Reply-To: <cover.1412640584.git.geoff@infradead.org>
 References: <cover.1412640584.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH V25/5] powerpc/kexec: Use global IND_FLAGS macro
+Subject: [PATCH V24/5] kexec: Add IND_FLAGS macro
 To: Andrew Morton <akpm@linux-foundation.org>
 Date: Tue, 07 Oct 2014 00:21:30 +0000
 Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
@@ -22,26 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-linux/kexec.h now defines an IND_FLAGS macro.  Remove the local powerpc
-definition and use the generic one.
+Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
+all the possible kexec IND_ kimage_entry indirection flags.
+
+Having this macro allows for simplified code in the prosessing of the
+kexec kimage_entry items.
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- arch/powerpc/kernel/machine_kexec_64.c | 2 --
- 1 file changed, 2 deletions(-)
+ include/linux/kexec.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 879b3aa..75652a32 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -96,8 +96,6 @@ int default_machine_kexec_prepare(struct kimage *image)
- 	return 0;
- }
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 8c628ca..a4758f9 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -10,6 +10,7 @@
+ #define IND_INDIRECTION  (1 << IND_INDIRECTION_BIT)
+ #define IND_DONE         (1 << IND_DONE_BIT)
+ #define IND_SOURCE       (1 << IND_SOURCE_BIT)
++#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
  
--#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
--
- static void copy_segments(unsigned long ind)
- {
- 	unsigned long entry;
+ #if !defined(__ASSEMBLY__)
+ 
 -- 
 1.9.1
