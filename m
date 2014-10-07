@@ -1,15 +1,58 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id D45941A174D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 00:05:04 +1100 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 2/2] net: fs_enet: Add NAPI TX
-Message-Id: <20141007130502.893401AB266@localhost.localdomain>
-Date: Tue,  7 Oct 2014 15:05:02 +0200 (CEST)
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <richard@nod.at>
+Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAB2D1A0608
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 01:06:15 +1100 (EST)
+Message-ID: <5433F197.8040801@nod.at>
+Date: Tue, 07 Oct 2014 15:58:47 +0200
+From: Richard Weinberger <richard@nod.at>
+MIME-Version: 1.0
+To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-9-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1412659726-29957-9-git-send-email-linux@roeck-us.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: Jonas Bonn <jonas@southpole.se>, linux-mips@linux-mips.org,
+ linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Steven Miao <realmz6@gmail.com>, linux-xtensa@linux-xtensa.org,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
+ Lennox Wu <lennox.wu@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ Jesper Nilsson <jesper.nilsson@axis.com>, lguest@lists.ozlabs.org,
+ Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
+ Len Brown <len.brown@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ linux-hexagon@vger.kernel.org, Hirokazu Takata <takata@linux-m32r.org>,
+ linux-sh@vger.kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
+ xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>,
+ Chen Liqin <liqin.linux@gmail.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ devicetree@vger.kernel.org, James Hogan <james.hogan@imgtec.com>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ Aurelien Jacquiot <a-jacquiot@ti.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ adi-buildroot-devel@lists.sourceforge.net, Chris Metcalf <cmetcalf@tilera.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Mikael Starvik <starvik@axis.com>, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+ Vineet Gupta <vgupta@synopsys.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, Richard Kuo <rkuo@codeaurora.org>,
+ David Vrabel <david.vrabel@citrix.com>, linux-alpha@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,420 +62,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using a MPC8xx as a router, 'perf' shows a significant time spent in 
-fs_enet_interrupt() and fs_enet_start_xmit().
-'perf annotate' shows that the time spent in fs_enet_start_xmit is indeed spent
-between spin_unlock_irqrestore() and the following instruction, hence in
-interrupt handling. This is due to the TX complete interrupt that fires after
-each transmitted packet.
-This patch modifies the handling of TX complete to use NAPI.
-With this patch, my NAT router offers a throughput improved by 21%
+Am 07.10.2014 07:28, schrieb Guenter Roeck:
+>  arch/um/kernel/reboot.c            |  2 --
 
-Original performance:
+Acked-by: Richard Weinberger <richard@nod.at>
 
-[root@localhost tmp]# scp toto pgs:/tmp 
-toto                                          100%  256MB   2.8MB/s   01:31    
-
-Performance with the patch:
-
-[root@localhost tmp]# scp toto pgs:/tmp
-toto                                          100%  256MB   3.4MB/s   01:16    
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
----
- .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 47 +++++++++++++++++-----
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h   |  9 ++++-
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c   | 29 +++++++++++++
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c   | 29 +++++++++++++
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c   | 29 +++++++++++++
- 5 files changed, 132 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 71a25b4..c92c3b7 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -215,17 +215,23 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
- 	return received;
- }
- 
--static void fs_enet_tx(struct net_device *dev)
-+static int fs_enet_tx_napi(struct napi_struct *napi, int budget)
- {
--	struct fs_enet_private *fep = netdev_priv(dev);
-+	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private,
-+						   napi_tx);
-+	struct net_device *dev = fep->ndev;
- 	cbd_t __iomem *bdp;
- 	struct sk_buff *skb;
- 	int dirtyidx, do_wake, do_restart;
- 	u16 sc;
-+	int has_tx_work = 0;
- 
- 	spin_lock(&fep->tx_lock);
- 	bdp = fep->dirty_tx;
- 
-+	/* clear TX status bits for napi*/
-+	(*fep->ops->napi_clear_tx_event)(dev);
-+
- 	do_wake = do_restart = 0;
- 	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0) {
- 		dirtyidx = bdp - fep->tx_bd_base;
-@@ -278,7 +284,7 @@ static void fs_enet_tx(struct net_device *dev)
- 		/*
- 		 * Free the sk buffer associated with this last transmit.
- 		 */
--		dev_kfree_skb_irq(skb);
-+		dev_kfree_skb(skb);
- 		fep->tx_skbuff[dirtyidx] = NULL;
- 
- 		/*
-@@ -295,6 +301,7 @@ static void fs_enet_tx(struct net_device *dev)
- 		 */
- 		if (!fep->tx_free++)
- 			do_wake = 1;
-+		has_tx_work = 1;
- 	}
- 
- 	fep->dirty_tx = bdp;
-@@ -302,10 +309,19 @@ static void fs_enet_tx(struct net_device *dev)
- 	if (do_restart)
- 		(*fep->ops->tx_restart)(dev);
- 
-+	if (!has_tx_work) {
-+		napi_complete(napi);
-+		(*fep->ops->napi_enable_tx)(dev);
-+	}
-+
- 	spin_unlock(&fep->tx_lock);
- 
- 	if (do_wake)
- 		netif_wake_queue(dev);
-+
-+	if (has_tx_work)
-+		return budget;
-+	return 0;
- }
- 
- /*
-@@ -350,8 +366,17 @@ fs_enet_interrupt(int irq, void *dev_id)
- 				__napi_schedule(&fep->napi);
- 		}
- 
--		if (int_events & fep->ev_tx)
--			fs_enet_tx(dev);
-+		if (int_events & fep->ev_tx) {
-+			napi_ok = napi_schedule_prep(&fep->napi_tx);
-+
-+			(*fep->ops->napi_disable_tx)(dev);
-+			(*fep->ops->clear_int_events)(dev, fep->ev_napi_tx);
-+
-+			/* NOTE: it is possible for FCCs in NAPI mode    */
-+			/* to submit a spurious interrupt while in poll  */
-+			if (napi_ok)
-+				__napi_schedule(&fep->napi_tx);
-+		}
- 	}
- 
- 	handled = nr > 0;
-@@ -484,7 +509,6 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	cbd_t __iomem *bdp;
- 	int curidx;
- 	u16 sc;
--	unsigned long flags;
- 
- #ifdef CONFIG_FS_ENET_MPC5121_FEC
- 	if (((unsigned long)skb->data) & 0x3) {
-@@ -499,7 +523,7 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		}
- 	}
- #endif
--	spin_lock_irqsave(&fep->tx_lock, flags);
-+	spin_lock(&fep->tx_lock);
- 
- 	/*
- 	 * Fill in a Tx ring entry
-@@ -508,7 +532,7 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	if (!fep->tx_free || (CBDR_SC(bdp) & BD_ENET_TX_READY)) {
- 		netif_stop_queue(dev);
--		spin_unlock_irqrestore(&fep->tx_lock, flags);
-+		spin_unlock(&fep->tx_lock);
- 
- 		/*
- 		 * Ooops.  All transmit buffers are full.  Bail out.
-@@ -564,7 +588,7 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	(*fep->ops->tx_kickstart)(dev);
- 
--	spin_unlock_irqrestore(&fep->tx_lock, flags);
-+	spin_unlock(&fep->tx_lock);
- 
- 	return NETDEV_TX_OK;
- }
-@@ -685,6 +709,7 @@ static int fs_enet_open(struct net_device *dev)
- 	fs_init_bds(fep->ndev);
- 
- 	napi_enable(&fep->napi);
-+	napi_enable(&fep->napi_tx);
- 
- 	/* Install our interrupt handler. */
- 	r = request_irq(fep->interrupt, fs_enet_interrupt, IRQF_SHARED,
-@@ -692,6 +717,7 @@ static int fs_enet_open(struct net_device *dev)
- 	if (r != 0) {
- 		dev_err(fep->dev, "Could not allocate FS_ENET IRQ!");
- 		napi_disable(&fep->napi);
-+		napi_disable(&fep->napi_tx);
- 		return -EINVAL;
- 	}
- 
-@@ -699,6 +725,7 @@ static int fs_enet_open(struct net_device *dev)
- 	if (err) {
- 		free_irq(fep->interrupt, dev);
- 		napi_disable(&fep->napi);
-+		napi_disable(&fep->napi_tx);
- 		return err;
- 	}
- 	phy_start(fep->phydev);
-@@ -716,6 +743,7 @@ static int fs_enet_close(struct net_device *dev)
- 	netif_stop_queue(dev);
- 	netif_carrier_off(dev);
- 	napi_disable(&fep->napi);
-+	napi_disable(&fep->napi_tx);
- 	phy_stop(fep->phydev);
- 
- 	spin_lock_irqsave(&fep->lock, flags);
-@@ -971,6 +999,7 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 	ndev->netdev_ops = &fs_enet_netdev_ops;
- 	ndev->watchdog_timeo = 2 * HZ;
- 	netif_napi_add(ndev, &fep->napi, fs_enet_rx_napi, fpi->napi_weight);
-+	netif_napi_add(ndev, &fep->napi_tx, fs_enet_tx_napi, 2);
- 
- 	ndev->ethtool_ops = &fs_ethtool_ops;
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index 1ece4b1..3a4b49e 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -84,6 +84,9 @@ struct fs_ops {
- 	void (*napi_clear_rx_event)(struct net_device *dev);
- 	void (*napi_enable_rx)(struct net_device *dev);
- 	void (*napi_disable_rx)(struct net_device *dev);
-+	void (*napi_clear_tx_event)(struct net_device *dev);
-+	void (*napi_enable_tx)(struct net_device *dev);
-+	void (*napi_disable_tx)(struct net_device *dev);
- 	void (*rx_bd_done)(struct net_device *dev);
- 	void (*tx_kickstart)(struct net_device *dev);
- 	u32 (*get_int_events)(struct net_device *dev);
-@@ -119,6 +122,7 @@ struct phy_info {
- 
- struct fs_enet_private {
- 	struct napi_struct napi;
-+	struct napi_struct napi_tx;
- 	struct device *dev;	/* pointer back to the device (must be initialized first) */
- 	struct net_device *ndev;
- 	spinlock_t lock;	/* during all ops except TX pckt processing */
-@@ -149,6 +153,7 @@ struct fs_enet_private {
- 
- 	/* event masks */
- 	u32 ev_napi_rx;		/* mask of NAPI rx events */
-+	u32 ev_napi_tx;		/* mask of NAPI rx events */
- 	u32 ev_rx;		/* rx event mask          */
- 	u32 ev_tx;		/* tx event mask          */
- 	u32 ev_err;		/* error event mask       */
-@@ -191,8 +196,8 @@ void fs_cleanup_bds(struct net_device *dev);
- 
- #define DRV_MODULE_NAME		"fs_enet"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"1.0"
--#define DRV_MODULE_RELDATE	"Aug 8, 2005"
-+#define DRV_MODULE_VERSION	"1.1"
-+#define DRV_MODULE_RELDATE	"Sep 22, 2014"
- 
- /***************************************************************************/
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index f5383ab..2c578db 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -125,6 +125,7 @@ out:
- }
- 
- #define FCC_NAPI_RX_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB)
-+#define FCC_NAPI_TX_EVENT_MSK	(FCC_ENET_TXF | FCC_ENET_TXB)
- #define FCC_RX_EVENT		(FCC_ENET_RXF)
- #define FCC_TX_EVENT		(FCC_ENET_TXB)
- #define FCC_ERR_EVENT_MSK	(FCC_ENET_TXE)
-@@ -137,6 +138,7 @@ static int setup_data(struct net_device *dev)
- 		return -EINVAL;
- 
- 	fep->ev_napi_rx = FCC_NAPI_RX_EVENT_MSK;
-+	fep->ev_napi_tx = FCC_NAPI_TX_EVENT_MSK;
- 	fep->ev_rx = FCC_RX_EVENT;
- 	fep->ev_tx = FCC_TX_EVENT;
- 	fep->ev_err = FCC_ERR_EVENT_MSK;
-@@ -446,6 +448,30 @@ static void napi_disable_rx(struct net_device *dev)
- 	C16(fccp, fcc_fccm, FCC_NAPI_RX_EVENT_MSK);
- }
- 
-+static void napi_clear_tx_event(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	fcc_t __iomem *fccp = fep->fcc.fccp;
-+
-+	W16(fccp, fcc_fcce, FCC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_enable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	fcc_t __iomem *fccp = fep->fcc.fccp;
-+
-+	S16(fccp, fcc_fccm, FCC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_disable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	fcc_t __iomem *fccp = fep->fcc.fccp;
-+
-+	C16(fccp, fcc_fccm, FCC_NAPI_TX_EVENT_MSK);
-+}
-+
- static void rx_bd_done(struct net_device *dev)
- {
- 	/* nothing */
-@@ -572,6 +598,9 @@ const struct fs_ops fs_fcc_ops = {
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-+	.napi_clear_tx_event	= napi_clear_tx_event,
-+	.napi_enable_tx		= napi_enable_tx,
-+	.napi_disable_tx	= napi_disable_tx,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index 1eedfba2..3d4e08b 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -110,6 +110,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
- }
- 
- #define FEC_NAPI_RX_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB)
-+#define FEC_NAPI_TX_EVENT_MSK	(FEC_ENET_TXF | FEC_ENET_TXB)
- #define FEC_RX_EVENT		(FEC_ENET_RXF)
- #define FEC_TX_EVENT		(FEC_ENET_TXF)
- #define FEC_ERR_EVENT_MSK	(FEC_ENET_HBERR | FEC_ENET_BABR | \
-@@ -126,6 +127,7 @@ static int setup_data(struct net_device *dev)
- 	fep->fec.htlo = 0;
- 
- 	fep->ev_napi_rx = FEC_NAPI_RX_EVENT_MSK;
-+	fep->ev_napi_tx = FEC_NAPI_TX_EVENT_MSK;
- 	fep->ev_rx = FEC_RX_EVENT;
- 	fep->ev_tx = FEC_TX_EVENT;
- 	fep->ev_err = FEC_ERR_EVENT_MSK;
-@@ -415,6 +417,30 @@ static void napi_disable_rx(struct net_device *dev)
- 	FC(fecp, imask, FEC_NAPI_RX_EVENT_MSK);
- }
- 
-+static void napi_clear_tx_event(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	struct fec __iomem *fecp = fep->fec.fecp;
-+
-+	FW(fecp, ievent, FEC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_enable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	struct fec __iomem *fecp = fep->fec.fecp;
-+
-+	FS(fecp, imask, FEC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_disable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	struct fec __iomem *fecp = fep->fec.fecp;
-+
-+	FC(fecp, imask, FEC_NAPI_TX_EVENT_MSK);
-+}
-+
- static void rx_bd_done(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -487,6 +513,9 @@ const struct fs_ops fs_fec_ops = {
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-+	.napi_clear_tx_event	= napi_clear_tx_event,
-+	.napi_enable_tx		= napi_enable_tx,
-+	.napi_disable_tx	= napi_disable_tx,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 90b3b19..41aa0b4 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -116,6 +116,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
- }
- 
- #define SCC_NAPI_RX_EVENT_MSK	(SCCE_ENET_RXF | SCCE_ENET_RXB)
-+#define SCC_NAPI_TX_EVENT_MSK	(SCCE_ENET_TXF | SCCE_ENET_TXB)
- #define SCC_RX_EVENT		(SCCE_ENET_RXF)
- #define SCC_TX_EVENT		(SCCE_ENET_TXB)
- #define SCC_ERR_EVENT_MSK	(SCCE_ENET_TXE | SCCE_ENET_BSY)
-@@ -130,6 +131,7 @@ static int setup_data(struct net_device *dev)
- 	fep->scc.htlo = 0;
- 
- 	fep->ev_napi_rx = SCC_NAPI_RX_EVENT_MSK;
-+	fep->ev_napi_tx = SCC_NAPI_TX_EVENT_MSK;
- 	fep->ev_rx = SCC_RX_EVENT;
- 	fep->ev_tx = SCC_TX_EVENT | SCCE_ENET_TXE;
- 	fep->ev_err = SCC_ERR_EVENT_MSK;
-@@ -398,6 +400,30 @@ static void napi_disable_rx(struct net_device *dev)
- 	C16(sccp, scc_sccm, SCC_NAPI_RX_EVENT_MSK);
- }
- 
-+static void napi_clear_tx_event(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	scc_t __iomem *sccp = fep->scc.sccp;
-+
-+	W16(sccp, scc_scce, SCC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_enable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	scc_t __iomem *sccp = fep->scc.sccp;
-+
-+	S16(sccp, scc_sccm, SCC_NAPI_TX_EVENT_MSK);
-+}
-+
-+static void napi_disable_tx(struct net_device *dev)
-+{
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+	scc_t __iomem *sccp = fep->scc.sccp;
-+
-+	C16(sccp, scc_sccm, SCC_NAPI_TX_EVENT_MSK);
-+}
-+
- static void rx_bd_done(struct net_device *dev)
- {
- 	/* nothing */
-@@ -471,6 +497,9 @@ const struct fs_ops fs_scc_ops = {
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-+	.napi_clear_tx_event	= napi_clear_tx_event,
-+	.napi_enable_tx		= napi_enable_tx,
-+	.napi_disable_tx	= napi_disable_tx,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
--- 
-2.1.0
+Thanks,
+//richard
