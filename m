@@ -2,13 +2,13 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DB881A1772
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:38 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D75C1A176E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:41 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 11/16] powerpc/mm: Add hooks for cxl
-Date: Tue,  7 Oct 2014 21:48:17 +1100
-Message-Id: <1412678902-18672-12-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 12/16] cxl: Add base builtin support
+Date: Tue,  7 Oct 2014 21:48:18 +1100
+Message-Id: <1412678902-18672-13-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 References: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,68 +26,164 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This add a hook into tlbie() so that we use global invalidations when there are
-cxl contexts active.
+This adds the base cxl support that needs to be build into the kernel to use
+cxl as a module. This is needed so that the cxl call backs from the core
+powerpc mm code always exist irrespective of if the cxl module is loaded or
+not. This is similar to how cell works with CONFIG_SPU_BASE.
 
-Normally cxl snoops broadcast tlbie. cxl can have TLB entries invalidated via
-MMIO, but we aren't doing that yet. So for now we are just disabling local
-tlbies when cxl contexts are active. In future we can make tlbie() local mode
-smarter so that it invalidates cxl contexts explicitly when it needs to.
+This adds a cxl_slbia() call (similar to spu_flush_all_slbs()) which checks for
+the cxl module being loaded. If the modules is not loaded we return, otherwise
+we call into the cxl SLB invalidation code.
 
-This also adds a hooks for when SLBs are invalidated to ensure any
-corresponding SLBs in cxl are also invalidated at the same time.
+This also adds the cxl_ctx_in_use() function for use in the mm code to see if
+any cxl contexts are currently in use. This is used by the tlbie() to
+determine if it can do local TLB invalidations or not. This also adds get/put
+calls for the cxl driver module to refcount the active cxl contexts.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/mm/copro_fault.c    | 2 ++
- arch/powerpc/mm/hash_native_64.c | 6 +++++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/misc/Kconfig      |  1 +
+ drivers/misc/Makefile     |  1 +
+ drivers/misc/cxl/Kconfig  |  8 +++++
+ drivers/misc/cxl/Makefile |  1 +
+ drivers/misc/cxl/base.c   | 86 +++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 97 insertions(+)
+ create mode 100644 drivers/misc/cxl/Kconfig
+ create mode 100644 drivers/misc/cxl/Makefile
+ create mode 100644 drivers/misc/cxl/base.c
 
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index 222ef9b..55791fc 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -26,6 +26,7 @@
- #include <asm/reg.h>
- #include <asm/copro.h>
- #include <asm/spu.h>
-+#include <misc/cxl.h>
- 
- /*
-  * This ought to be kept in sync with the powerpc specific do_page_fault
-@@ -143,5 +144,6 @@ void copro_flush_all_slbs(struct mm_struct *mm)
- #ifdef CONFIG_SPU_BASE
- 	spu_flush_all_slbs(mm);
- #endif
-+	cxl_slbia(mm);
- }
- EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index afc0a82..ae4962a 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -29,6 +29,8 @@
- #include <asm/kexec.h>
- #include <asm/ppc-opcode.h>
- 
-+#include <misc/cxl.h>
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index b841180..bbeb451 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -527,4 +527,5 @@ source "drivers/misc/vmw_vmci/Kconfig"
+ source "drivers/misc/mic/Kconfig"
+ source "drivers/misc/genwqe/Kconfig"
+ source "drivers/misc/echo/Kconfig"
++source "drivers/misc/cxl/Kconfig"
+ endmenu
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 5497d02..7d5c4cd 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -55,3 +55,4 @@ obj-y				+= mic/
+ obj-$(CONFIG_GENWQE)		+= genwqe/
+ obj-$(CONFIG_ECHO)		+= echo/
+ obj-$(CONFIG_VEXPRESS_SYSCFG)	+= vexpress-syscfg.o
++obj-$(CONFIG_CXL_BASE)		+= cxl/
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+new file mode 100644
+index 0000000..5cdd319
+--- /dev/null
++++ b/drivers/misc/cxl/Kconfig
+@@ -0,0 +1,8 @@
++#
++# IBM Coherent Accelerator (CXL) compatible devices
++#
 +
- #ifdef DEBUG_LOW
- #define DBG_LOW(fmt...) udbg_printf(fmt)
- #else
-@@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- static inline void tlbie(unsigned long vpn, int psize, int apsize,
- 			 int ssize, int local)
- {
--	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
-+	unsigned int use_local;
- 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
- 
-+	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
++config CXL_BASE
++	bool
++	default n
++	select PPC_COPRO_BASE
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+new file mode 100644
+index 0000000..e30ad0a
+--- /dev/null
++++ b/drivers/misc/cxl/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_CXL_BASE)		+= base.o
+diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
+new file mode 100644
+index 0000000..0654ad8
+--- /dev/null
++++ b/drivers/misc/cxl/base.c
+@@ -0,0 +1,86 @@
++/*
++ * Copyright 2014 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
- 	if (use_local)
- 		use_local = mmu_psize_defs[psize].tlbiel;
- 	if (lock_tlbie && !use_local)
++#include <linux/module.h>
++#include <linux/rcupdate.h>
++#include <asm/errno.h>
++#include <misc/cxl.h>
++#include "cxl.h"
++
++/* protected by rcu */
++static struct cxl_calls *cxl_calls;
++
++atomic_t cxl_use_count = ATOMIC_INIT(0);
++EXPORT_SYMBOL(cxl_use_count);
++
++#ifdef CONFIG_CXL_MODULE
++
++static inline struct cxl_calls *cxl_calls_get(void)
++{
++	struct cxl_calls *calls = NULL;
++
++	rcu_read_lock();
++	calls = rcu_dereference(cxl_calls);
++	if (calls && !try_module_get(calls->owner))
++		calls = NULL;
++	rcu_read_unlock();
++
++	return calls;
++}
++
++static inline void cxl_calls_put(struct cxl_calls *calls)
++{
++	BUG_ON(calls != cxl_calls);
++
++	/* we don't need to rcu this, as we hold a reference to the module */
++	module_put(cxl_calls->owner);
++}
++
++#else /* !defined CONFIG_CXL_MODULE */
++
++static inline struct cxl_calls *cxl_calls_get(void)
++{
++	return cxl_calls;
++}
++
++static inline void cxl_calls_put(struct cxl_calls *calls) { }
++
++#endif /* CONFIG_CXL_MODULE */
++
++void cxl_slbia(struct mm_struct *mm)
++{
++	struct cxl_calls *calls;
++
++	calls = cxl_calls_get();
++	if (!calls)
++		return;
++
++	if (cxl_ctx_in_use())
++	    calls->cxl_slbia(mm);
++
++	cxl_calls_put(calls);
++}
++
++int register_cxl_calls(struct cxl_calls *calls)
++{
++	if (cxl_calls)
++		return -EBUSY;
++
++	rcu_assign_pointer(cxl_calls, calls);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(register_cxl_calls);
++
++void unregister_cxl_calls(struct cxl_calls *calls)
++{
++	BUG_ON(cxl_calls->owner != calls->owner);
++	RCU_INIT_POINTER(cxl_calls, NULL);
++	synchronize_rcu();
++}
++EXPORT_SYMBOL_GPL(unregister_cxl_calls);
 -- 
 1.9.1
