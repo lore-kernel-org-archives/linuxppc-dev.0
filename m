@@ -1,31 +1,38 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 7 Oct 2014 17:51:24 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 07/44] qnap-poweroff: Drop reference to pm_power_off from
- devicetree bindings
-Message-ID: <20141007155124.GB19005@lunn.ch>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-8-git-send-email-linux@roeck-us.net>
+Return-Path: <rob@landley.net>
+Received: from mail-oi0-f43.google.com (mail-oi0-f43.google.com
+ [209.85.218.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E56D91A03EA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 03:21:35 +1100 (EST)
+Received: by mail-oi0-f43.google.com with SMTP id u20so5402622oif.30
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Oct 2014 09:21:32 -0700 (PDT)
+Message-ID: <543412F7.8040909@landley.net>
+Date: Tue, 07 Oct 2014 11:21:11 -0500
+From: Rob Landley <rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1412659726-29957-8-git-send-email-linux@roeck-us.net>
+To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
+ devicetree bindings
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-6-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1412659726-29957-6-git-send-email-linux@roeck-us.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, devicetree@vger.kernel.org,
- Mark Rutland <mark.rutland@arm.com>, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
- linux-xtensa@linux-xtensa.org, Pawel Moll <pawel.moll@arm.com>,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- linux-alpha@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org
+ linux-xtensa@linux-xtensa.org, Mark Rutland <mark.rutland@arm.com>,
+ devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-acpi@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>,
+ xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, Rob Herring <robh+dt@kernel.org>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,44 +42,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 06, 2014 at 10:28:09PM -0700, Guenter Roeck wrote:
-> Replace reference to pm_power_off (which is an implementation detail)
-> and replace it with a more generic description of the driver's functionality.
+On 10/07/14 00:28, Guenter Roeck wrote:
+> Devicetree bindings are supposed to be operating system independent
+> and should thus not describe how a specific functionality is implemented
+> in Linux.
 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+So your argument is that linux/Documentation/devicetree/bindings should
+not be specific to Linux. Merely hosted in the Linux kernel source
+repository.
 
-Thanks
-	Andrew
+Well that's certainly a point of view.
 
-> 
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->  Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt b/Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt
-> index af25e77..1e2260a 100644
-> --- a/Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt
-> +++ b/Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt
-> @@ -3,8 +3,8 @@
->  QNAP NAS devices have a microcontroller controlling the main power
->  supply. This microcontroller is connected to UART1 of the Kirkwood and
->  Orion5x SoCs. Sending the character 'A', at 19200 baud, tells the
-> -microcontroller to turn the power off. This driver adds a handler to
-> -pm_power_off which is called to turn the power off.
-> +microcontroller to turn the power off. This driver installs a handler
-> +to power off the system.
->  
->  Synology NAS devices use a similar scheme, but a different baud rate,
->  9600, and a different character, '1'.
-> -- 
-> 1.9.1
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Rob
