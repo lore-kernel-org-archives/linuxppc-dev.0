@@ -1,41 +1,16 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1412659726-29957-36-git-send-email-linux@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-36-git-send-email-linux@roeck-us.net>
-Date: Tue, 7 Oct 2014 11:19:36 +0200
-Message-ID: <CAMuHMdVZmsjK9FdK0T6mWwrnNc=Xc97B7ynm+QbWUMBCnvQB_g@mail.gmail.com>
-Subject: Re: [PATCH 35/44] m68k: Register with kernel poweroff handler
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-m32r-ja@ml.linux-m32r.org,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>, linux-efi@vger.kernel.org,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- driverdevel <devel@driverdev.osuosl.org>,
- linux-s390 <linux-s390@vger.kernel.org>, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org,
- "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- xen-devel@lists.xenproject.org,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Linux PM list <linux-pm@vger.kernel.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "moderated list:PANASONIC MN10300..." <linux-am33-list@redhat.com>,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- "open list:METAG ARCHITECTURE" <linux-metag@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>, Cris <linux-cris-kernel@axis.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- alpha <linux-alpha@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Joshua Thompson <funaho@jurai.org>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F7991A0287
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 20:28:23 +1100 (EST)
+In-Reply-To: <20141003091250.28354.13766.stgit@bahia.local>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v2] powerpc/vphn: fix endian issue in NUMA device node code
+Message-Id: <20141007092823.7994A1400BE@ozlabs.org>
+Date: Tue,  7 Oct 2014 20:28:23 +1100 (EST)
+Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,32 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 7, 2014 at 7:28 AM, Guenter Roeck <linux@roeck-us.net> wrote:
-> Register with kernel poweroff handler instead of setting pm_power_off
-> directly.
->
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Joshua Thompson <funaho@jurai.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+On Fri, 2014-03-10 at 09:13:17 UTC, Greg Kurz wrote:
+> The associativity domain numbers are obtained from the hypervisor through
+> registers and written into memory by the guest: the packed array passed to
+> vphn_unpack_associativity() is then native-endian, unlike what was assumed
+> in the following commit:
+> 
+> This patch does two things:
+> - extract values from the packed array with shifts, in order to be endian
+>   neutral
+> - convert the resulting values to be32 as expected
+> 
+> Suggested-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> Reviewed-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-As someone already mentioned, having #defines instead of hardcoded
-numbers for the priorities would be nice.
 
-Apart from that:
+Hi Greg,
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+I'm a bit dense, it's after 8pm, but this seems like it's more complicated than
+it needs to be?
 
-> +       register_poweroff_handler_simple(nf_poweroff, 128);
+We get six 64-bit registers back from the hypervisor, they're cpu endian
+obviously, and each is defined to consist of four 2 byte fields.
 
-> +       register_poweroff_handler_simple(mac_poweroff, 128);
+So to unpack them, can't we just iterate over those six 64-bit values, which if
+we load them as 64-bit values will be back in cpu endian?
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+cheers
