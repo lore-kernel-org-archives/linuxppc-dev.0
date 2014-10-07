@@ -1,21 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EFDED1A06C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 07:26:29 +1100 (EST)
-Message-ID: <1412713571.32313.132.camel@smoke>
-Subject: Re: [PATCH V3 4/5] kexec: Add IND_FLAGS macro
-From: Geoff Levand <geoff@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 07 Oct 2014 13:26:11 -0700
-In-Reply-To: <de975a34c5beb9715359eaa4d74ba82a7798aae3.1412640584.git.geoff@infradead.org>
-References: <cover.1412640584.git.geoff@infradead.org>
- <de975a34c5beb9715359eaa4d74ba82a7798aae3.1412640584.git.geoff@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F2801A179F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 09:59:05 +1100 (EST)
+In-Reply-To: <1412678902-18672-9-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ benh@kernel.crashing.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v3,
+ 08/16] powerpc/powerpc: Add new PCIe functions for allocating cxl
+ interrupts
+Message-Id: <20141007225905.0F85514011E@ozlabs.org>
+Date: Wed,  8 Oct 2014 09:59:04 +1100 (EST)
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ linux-kernel@vger.kernel.org, imunsie@au.ibm.com, linuxppc-dev@ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, anton@samba.org,
+ jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
-all the possible kexec IND_ kimage_entry indirection flags.  Having this
-macro allows for simplified code in the prosessing of the kexec
-kimage_entry items.  Also, remove the local powerpc definition and use
-the generic one.
+On Tue, 2014-07-10 at 10:48:14 UTC, Michael Neuling wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> This adds a number of functions for allocating IRQs under powernv PCIe for cxl.
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index baf3de6..3b67010b 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -38,6 +38,8 @@
+>  #include <asm/debug.h>
+>  #include <asm/firmware.h>
+>  
+> +#include <misc/cxl.h>
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
----
+You should be including pnv-pci.h here.
 
->From V2: Folded patch 5 into patch 4.
+Otherwise the header and the implementation could get out of sync, it will also
+fix these:
 
- arch/powerpc/kernel/machine_kexec_64.c | 2 --
- include/linux/kexec.h                  | 1 +
- 2 files changed, 1 insertion(+), 2 deletions(-)
+  arch/powerpc/platforms/powernv/pci-ioda.c:1365:5: warning: symbol 'pnv_phb_to_cxl' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1389:5: warning: symbol 'pnv_cxl_alloc_hwirqs' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1404:6: warning: symbol 'pnv_cxl_release_hwirqs' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1413:6: warning: symbol 'pnv_cxl_release_hwirq_ranges' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1433:5: warning: symbol 'pnv_cxl_alloc_hwirq_ranges' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1470:5: warning: symbol 'pnv_cxl_get_irq_count' was not declared. Should it be static?
+  arch/powerpc/platforms/powernv/pci-ioda.c:1479:5: warning: symbol 'pnv_cxl_ioda_msi_setup' was not declared. Should it be static?
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 879b3aa..75652a32 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -96,8 +96,6 @@ int default_machine_kexec_prepare(struct kimage *image)
- 	return 0;
- }
- 
--#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
--
- static void copy_segments(unsigned long ind)
- {
- 	unsigned long entry;
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 8c628ca..a4758f9 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -10,6 +10,7 @@
- #define IND_INDIRECTION  (1 << IND_INDIRECTION_BIT)
- #define IND_DONE         (1 << IND_DONE_BIT)
- #define IND_SOURCE       (1 << IND_SOURCE_BIT)
-+#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
- 
- #if !defined(__ASSEMBLY__)
- 
--- 
-1.9.1
+cheers
