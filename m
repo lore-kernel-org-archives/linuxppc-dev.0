@@ -1,26 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83B831A003D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:57:37 +1100 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D0E5814007B
- for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2014 17:57:36 +1100 (EST)
-Message-ID: <1412656674.30859.120.camel@pasglop>
-Subject: [PATCH v3 2/7] pci/msi: Add device flag indicating that 64-bit MSIs
- don't work
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Deucher <alexdeucher@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 07 Oct 2014 15:37:54 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- linux-pci@vger.kernel.org, Anton Blanchard <anton@au1.ibm.com>,
- Yijing Wang <wangyijing@huawei.com>, Takashi Iwai <tiwai@suse.de>,
- Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <philippe.retornaz@gmail.com>
+Message-ID: <54339A73.40107@gmail.com>
+Date: Tue, 07 Oct 2014 09:46:59 +0200
+From: =?windows-1252?Q?Philippe_R=E9tornaz?=
+ <philippe.retornaz@gmail.com>
+MIME-Version: 1.0
+To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Heiko Stuebner <heiko@sntech.de>, linux-sh@vger.kernel.org,
+ devicetree@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+ devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ xen-devel@lists.xenproject.org, Len Brown <len.brown@intel.com>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, adi-buildroot-devel@lists.sourceforge.net,
+ linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,81 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This can be set by quirks/drivers to be used by the architecture code
-that assigns the MSI addresses.
+Hello
 
-We additionally add verification in the core MSI code that the values
-assigned by the architecture do satisfy the limitation in order to fail
-gracefully if they don't (ie. the arch hasn't been updated to deal with
-that quirk yet).
+This seems exactly what I would need on the mc13783 to handle cleanly 
+the poweroff,
+but after reading this patchset I have the following question:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org>
----
- drivers/pci/msi.c   | 26 ++++++++++++++++++++++++++
- include/linux/pci.h |  1 +
- 2 files changed, 27 insertions(+)
+[...]
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 5a40516..6807edd 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -610,6 +610,20 @@ static struct msi_desc *msi_setup_entry(struct pci_dev *dev)
- 	return entry;
- }
- 
-+static int msi_verify_entries(struct pci_dev *dev)
-+{
-+	struct msi_desc *entry;
-+
-+	list_for_each_entry(entry, &dev->msi_list, list) {
-+		if (!dev->no_64bit_msi || !entry->msg.address_hi)
-+			continue;
-+		dev_err(&dev->dev, "Device has broken 64-bit MSI but arch"
-+			" tried to assign one above 4G\n");
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+
- /**
-  * msi_capability_init - configure device's MSI capability structure
-  * @dev: pointer to the pci_dev data structure of MSI device function
-@@ -647,6 +661,13 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
- 		return ret;
- 	}
- 
-+	ret = msi_verify_entries(dev);
-+	if (ret) {
-+		msi_mask_irq(entry, mask, ~mask);
-+		free_msi_irqs(dev);
-+		return ret;
-+	}
-+
- 	ret = populate_msi_sysfs(dev);
- 	if (ret) {
- 		msi_mask_irq(entry, mask, ~mask);
-@@ -760,6 +781,11 @@ static int msix_capability_init(struct pci_dev *dev,
- 	if (ret)
- 		goto out_avail;
- 
-+	/* Check if all MSI entries honor device restrictions */
-+	ret = msi_verify_entries(dev);
-+	if (ret)
-+		goto out_free;
-+
- 	/*
- 	 * Some devices require MSI-X to be enabled before we can touch the
- 	 * MSI-X registers.  We need to mask all the vectors to prevent
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 96453f9..6b6da8f 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -331,6 +331,7 @@ struct pci_dev {
- 	unsigned int	is_added:1;
- 	unsigned int	is_busmaster:1; /* device is busmaster */
- 	unsigned int	no_msi:1;	/* device may not use msi */
-+	unsigned int	no_64bit_msi:1; /* device may only use 32-bit MSIs */
- 	unsigned int	block_cfg_access:1;	/* config space access is blocked */
- 	unsigned int	broken_parity_status:1;	/* Device generates false positive parity */
- 	unsigned int	irq_reroute_variant:2;	/* device needs IRQ rerouting variant */
+> +/*
+> + *	Notifier list for kernel code which wants to be called
+> + *	to power off the system.
+> + */
+> +static ATOMIC_NOTIFIER_HEAD(poweroff_handler_list);
+
+[...]
+
+> +void do_kernel_poweroff(void)
+> +{
+> +	atomic_notifier_call_chain(&poweroff_handler_list, 0, NULL);
+> +}
+> +
+
+It seems that the poweroff callback needs to be atomic as per
+_atomic_notifier_call_chain documentation:
+
+	"Calls each function in a notifier chain in turn.  The functions
+	 run in an atomic context"
+
+But this is a problem for many MFD (mc13783, twl4030 etc ...) which are
+accessible on only a blocking bus (SPI, I2C).
+
+What I am missing here ?
+
+Thanks,
+
+Philippe
