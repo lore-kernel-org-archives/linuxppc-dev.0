@@ -1,27 +1,40 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+Return-Path: <pc@us.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 569571A0ACA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 06:03:47 +1100 (EST)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xba2z-002hIg-Fd
- for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 19:03:45 +0000
-Date: Tue, 7 Oct 2014 12:03:25 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-Message-ID: <20141007190325.GA30399@roeck-us.net>
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
- <1412663147.10747.1.camel@concordia> <5433CFEB.9040104@suse.de>
- <20141007170052.GB16931@roeck-us.net> <54342737.5010802@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 086161A07DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 06:13:28 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
+ Tue, 7 Oct 2014 15:13:26 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C62636E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 15:02:09 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s97JDP2U6291922
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 19:13:25 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s97JDOmv011381
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 15:13:25 -0400
+Received: from oc3241255568.ibm.com (oc3241255568.ibm.com.austin.ibm.com
+ [9.41.242.49])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s97JDON9011348
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 15:13:24 -0400
+Message-ID: <54343B54.4060500@us.ibm.com>
+Date: Tue, 07 Oct 2014 14:13:24 -0500
+From: Paul Clarke <pc@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54342737.5010802@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: mitigate impact of decrementer reset
+References: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
+In-Reply-To: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,81 +44,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 07, 2014 at 07:47:35PM +0200, Alexander Graf wrote:
-> 
-> 
-> On 07.10.14 19:00, Guenter Roeck wrote:
-> > On Tue, Oct 07, 2014 at 01:35:07PM +0200, Alexander Graf wrote:
-> >>
-> >>
-> >> On 07.10.14 08:25, Michael Ellerman wrote:
-> >>> On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
-> >>>>
-> >>>> On 03.10.14 06:42, Michael Ellerman wrote:
-> >>>>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
-> >>>>>> The generic Linux framework to power off the machine is a function pointer
-> >>>>>> called pm_power_off. The trick about this pointer is that device drivers can
-> >>>>>> potentially implement it rather than board files.
-> >>>>>>
-> >>>>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
-> >>>>>> off logic which then calls ppc_md.power_off to invoke machine specific power
-> >>>>>> off.
-> >>>>>>
-> >>>>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
-> >>>>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
-> >>>>>> driver can implement power off logic via that function pointer.
-> >>>>>
-> >>>>> This looks OK to me with one caveat.
-> >>>>>
-> >>>>> In several of the patches you're replacing a static initialisation with a
-> >>>>> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
-> >>>>> That's reasonably late, so I'd prefer you did it in xxx_probe().
-> >>>>
-> >>>> Heh, I had it in xxx_probe() originally and then realized that
-> >>>>
-> >>>>   a) the power off function is basically a driver. Driver initialization
-> >>>> happens in xxx_setup_arch() and
-> >>>>
-> >>>>   b) the maple target already does overwrite its power_off callback in
-> >>>> xxx_setup_arch and
-> >>>>
-> >>>>   c) on all targets xxx_probe() is very slim and doesn't do much
-> >>>>
-> >>>> but I'll happily change it back to put the bits in xxx_probe() instead.
-> >>>
-> >>> Thanks.
-> >>>
-> >>> That way you shouldn't be changing behaviour.
-> >>>
-> >>> It may still be the case that some power off routines don't actually work until
-> >>> later, but that's an existing problem. Some power off routines *do* work before
-> >>> setup_arch(), so they will continue to work.
-> >>
-> >> Ok, works for me :). Just wanted to make sure you're aware of the
-> >> reasoning why I didn't do it in probe().
-> >>
-> >>> Also, how does your series interact with Guenter's that removes pm_power_off ?
-> >>> It seems at the moment they are unaware of each other.
-> >>
-> >> Guenters patches convert users of pm_power_off to his new scheme. We're
-> >> not even at that stage at all yet in the powerpc tree. Converting
-> >> everything to pm_power_off is basically a first step. His patch set
-> >> maintains pm_power_off, so there shouldn't be nasty conflicts.
-> >>
-> > Onlly the first m68k patch, though. The very last patch in the series
-> > remvoes pm_power_off.
-> 
-> And there go my patch reading skills ... :).
-> 
-> For which window are you targeting this? 3.18 or 3.19? If you're trying
-> to hit 3.18, I can easily wait with my patch set and base it on top of
-> yours.
-> 
-Definitely 3.19; this is way too late for 3.18 and will need some time
-to mature in -next.
+The POWER ISA defines an always-running decrementer which can be used
+to schedule interrupts after a certain time interval has elapsed.
+The decrementer counts down at the same frequency as the Time Base,
+which is 512 MHz.  The maximum value of the decrementer is 0x7fffffff.
+This works out to a maximum interval of about 4.19 seconds.
 
-I can merge with your code once it is ready to go and you can make an
-immutable branch available.
+If a larger interval is desired, the kernel will set the decrementer
+to its maximum value and reset it after it expires (underflows)
+a sufficient number of times until the desired interval has elapsed.
 
-Thanks,
-Guenter
+The negative effect of this is that an unwanted latency spike will
+impact normal processing at most every 4.19 seconds.  On an IBM
+POWER8-based system, this spike was measured at about 25-30
+microseconds, much of which was basic, opportunistic housekeeping
+tasks that could otherwise have waited.
+
+This patch short-circuits the reset of the decrementer, exiting after
+the decrementer reset, but before the housekeeping tasks if the only
+need for the interrupt is simply to reset it.  After this patch,
+the latency spike was measured at about 150 nanoseconds.
+
+Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+---
+  arch/powerpc/kernel/time.c | 13 +++++++++++++
+  1 file changed, 13 insertions(+)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 368ab37..962a06b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -528,6 +528,7 @@ void timer_interrupt(struct pt_regs * regs)
+  {
+  	struct pt_regs *old_regs;
+  	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
++	u64 now;
+
+  	/* Ensure a positive value is written to the decrementer, or else
+  	 * some CPUs will continue to take decrementer exceptions.
+@@ -550,6 +551,18 @@ void timer_interrupt(struct pt_regs * regs)
+  	 */
+  	may_hard_irq_enable();
+
++	/* If this is simply the decrementer expiring (underflow) due to
++	 * the limited size of the decrementer, and not a set timer,
++	 * reset (if needed) and return
++	 */
++	now = get_tb_or_rtc();
++	if (now < *next_tb) {
++		now = *next_tb - now;
++		if (now <= DECREMENTER_MAX)
++			set_dec((int)now);
++		__get_cpu_var(irq_stat).timer_irqs_others++;
++		return;
++	}
+
+  #if defined(CONFIG_PPC32) && defined(CONFIG_PPC_PMAC)
+  	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+-- 
+2.1.2.330.g565301e
