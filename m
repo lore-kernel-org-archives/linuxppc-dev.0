@@ -1,16 +1,15 @@
 Return-Path: <rjw@rjwysocki.net>
 Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id DE6DB1A06EC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 10:21:53 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with SMTP id 207621A17B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 10:23:01 +1100 (EST)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 03/44] hibernate: Call have_kernel_poweroff instead of
- checking pm_power_off
-Date: Wed, 08 Oct 2014 01:41:56 +0200
-Message-ID: <1798000.odl6y9uKis@vostro.rjw.lan>
-In-Reply-To: <1412659726-29957-4-git-send-email-linux@roeck-us.net>
+Subject: Re: [PATCH 44/44] kernel: Remove pm_power_off
+Date: Wed, 08 Oct 2014 01:43:07 +0200
+Message-ID: <1469166.g4FqVc5SJX@vostro.rjw.lan>
+In-Reply-To: <1412659726-29957-45-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-4-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-45-git-send-email-linux@roeck-us.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
@@ -37,10 +36,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, October 06, 2014 10:28:05 PM Guenter Roeck wrote:
-> Poweroff handlers may now be installed with register_poweroff_handler.
-> Use the new API function have_kernel_poweroff to determine if a poweroff
-> handler has been installed.
+On Monday, October 06, 2014 10:28:46 PM Guenter Roeck wrote:
+> No users of pm_power_off are left, so it is safe to remove the function.
 > 
 > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 > Cc: Pavel Machek <pavel@ucw.cz>
@@ -50,22 +47,56 @@ On Monday, October 06, 2014 10:28:05 PM Guenter Roeck wrote:
 ACK
 
 > ---
->  kernel/power/hibernate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  include/linux/pm.h              |  1 -
+>  kernel/power/poweroff_handler.c | 10 +---------
+>  2 files changed, 1 insertion(+), 10 deletions(-)
 > 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index a9dfa79..20353c5 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -602,7 +602,7 @@ static void power_down(void)
->  	case HIBERNATION_PLATFORM:
->  		hibernation_platform_enter();
->  	case HIBERNATION_SHUTDOWN:
-> -		if (pm_power_off)
-> +		if (have_kernel_poweroff())
->  			kernel_power_off();
->  		break;
->  #ifdef CONFIG_SUSPEND
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 45271b5..fce7645 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -31,7 +31,6 @@
+>  /*
+>   * Callbacks for platform drivers to implement.
+>   */
+> -extern void (*pm_power_off)(void);
+>  extern void (*pm_power_off_prepare)(void);
+>  
+>  /*
+> diff --git a/kernel/power/poweroff_handler.c b/kernel/power/poweroff_handler.c
+> index 96f59ef..01a3a39 100644
+> --- a/kernel/power/poweroff_handler.c
+> +++ b/kernel/power/poweroff_handler.c
+> @@ -20,12 +20,6 @@
+>  #include <linux/types.h>
+>  
+>  /*
+> - * If set, calling this function will power off the system immediately.
+> - */
+> -void (*pm_power_off)(void);
+> -EXPORT_SYMBOL(pm_power_off);
+> -
+> -/*
+>   *	Notifier list for kernel code which wants to be called
+>   *	to power off the system.
+>   */
+> @@ -163,8 +157,6 @@ int register_poweroff_handler_simple(void (*handler)(void), int priority)
+>   */
+>  void do_kernel_poweroff(void)
+>  {
+> -	if (pm_power_off)
+> -		pm_power_off();
+>  	atomic_notifier_call_chain(&poweroff_handler_list, 0, NULL);
+>  }
+>  
+> @@ -175,6 +167,6 @@ void do_kernel_poweroff(void)
+>   */
+>  bool have_kernel_poweroff(void)
+>  {
+> -	return pm_power_off != NULL || poweroff_handler_list.head != NULL;
+> +	return poweroff_handler_list.head != NULL;
+>  }
+>  EXPORT_SYMBOL(have_kernel_poweroff);
 > 
 
 -- 
