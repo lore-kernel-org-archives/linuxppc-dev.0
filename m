@@ -1,22 +1,27 @@
-Return-Path: <vgoyal@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1E9A11A078A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 04:53:41 +1100 (EST)
-Date: Tue, 7 Oct 2014 13:52:48 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH V25/5] powerpc/kexec: Use global IND_FLAGS macro
-Message-ID: <20141007175248.GG27464@redhat.com>
-References: <cover.1412640584.git.geoff@infradead.org>
- <adf97d602657c72f6ee59aefe5d51149159a3e99.1412640584.git.geoff@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 569571A0ACA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 06:03:47 +1100 (EST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1Xba2z-002hIg-Fd
+ for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 19:03:45 +0000
+Date: Tue, 7 Oct 2014 12:03:25 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+Message-ID: <20141007190325.GA30399@roeck-us.net>
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+ <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
+ <1412663147.10747.1.camel@concordia> <5433CFEB.9040104@suse.de>
+ <20141007170052.GB16931@roeck-us.net> <54342737.5010802@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adf97d602657c72f6ee59aefe5d51149159a3e99.1412640584.git.geoff@infradead.org>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <54342737.5010802@suse.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +31,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 07, 2014 at 12:21:30AM +0000, Geoff Levand wrote:
-> linux/kexec.h now defines an IND_FLAGS macro.  Remove the local powerpc
-> definition and use the generic one.
+On Tue, Oct 07, 2014 at 07:47:35PM +0200, Alexander Graf wrote:
 > 
-> Signed-off-by: Geoff Levand <geoff@infradead.org>
+> 
+> On 07.10.14 19:00, Guenter Roeck wrote:
+> > On Tue, Oct 07, 2014 at 01:35:07PM +0200, Alexander Graf wrote:
+> >>
+> >>
+> >> On 07.10.14 08:25, Michael Ellerman wrote:
+> >>> On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
+> >>>>
+> >>>> On 03.10.14 06:42, Michael Ellerman wrote:
+> >>>>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
+> >>>>>> The generic Linux framework to power off the machine is a function pointer
+> >>>>>> called pm_power_off. The trick about this pointer is that device drivers can
+> >>>>>> potentially implement it rather than board files.
+> >>>>>>
+> >>>>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+> >>>>>> off logic which then calls ppc_md.power_off to invoke machine specific power
+> >>>>>> off.
+> >>>>>>
+> >>>>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> >>>>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> >>>>>> driver can implement power off logic via that function pointer.
+> >>>>>
+> >>>>> This looks OK to me with one caveat.
+> >>>>>
+> >>>>> In several of the patches you're replacing a static initialisation with a
+> >>>>> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
+> >>>>> That's reasonably late, so I'd prefer you did it in xxx_probe().
+> >>>>
+> >>>> Heh, I had it in xxx_probe() originally and then realized that
+> >>>>
+> >>>>   a) the power off function is basically a driver. Driver initialization
+> >>>> happens in xxx_setup_arch() and
+> >>>>
+> >>>>   b) the maple target already does overwrite its power_off callback in
+> >>>> xxx_setup_arch and
+> >>>>
+> >>>>   c) on all targets xxx_probe() is very slim and doesn't do much
+> >>>>
+> >>>> but I'll happily change it back to put the bits in xxx_probe() instead.
+> >>>
+> >>> Thanks.
+> >>>
+> >>> That way you shouldn't be changing behaviour.
+> >>>
+> >>> It may still be the case that some power off routines don't actually work until
+> >>> later, but that's an existing problem. Some power off routines *do* work before
+> >>> setup_arch(), so they will continue to work.
+> >>
+> >> Ok, works for me :). Just wanted to make sure you're aware of the
+> >> reasoning why I didn't do it in probe().
+> >>
+> >>> Also, how does your series interact with Guenter's that removes pm_power_off ?
+> >>> It seems at the moment they are unaware of each other.
+> >>
+> >> Guenters patches convert users of pm_power_off to his new scheme. We're
+> >> not even at that stage at all yet in the powerpc tree. Converting
+> >> everything to pm_power_off is basically a first step. His patch set
+> >> maintains pm_power_off, so there shouldn't be nasty conflicts.
+> >>
+> > Onlly the first m68k patch, though. The very last patch in the series
+> > remvoes pm_power_off.
+> 
+> And there go my patch reading skills ... :).
+> 
+> For which window are you targeting this? 3.18 or 3.19? If you're trying
+> to hit 3.18, I can easily wait with my patch set and base it on top of
+> yours.
+> 
+Definitely 3.19; this is way too late for 3.18 and will need some time
+to mature in -next.
 
-I think this patch should be merged in previous patch. I guess after
-applying patch4, series might not be compilable as there are two
-definitions of IND_FLAGS now.
+I can merge with your code once it is ready to go and you can make an
+immutable branch available.
 
-Thanks
-Vivek
-
-> ---
->  arch/powerpc/kernel/machine_kexec_64.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-> index 879b3aa..75652a32 100644
-> --- a/arch/powerpc/kernel/machine_kexec_64.c
-> +++ b/arch/powerpc/kernel/machine_kexec_64.c
-> @@ -96,8 +96,6 @@ int default_machine_kexec_prepare(struct kimage *image)
->  	return 0;
->  }
->  
-> -#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
-> -
->  static void copy_segments(unsigned long ind)
->  {
->  	unsigned long entry;
-> -- 
-> 1.9.1
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+Thanks,
+Guenter
