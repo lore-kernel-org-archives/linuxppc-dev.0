@@ -1,40 +1,21 @@
-Return-Path: <pc@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geoff@infradead.org>
+Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 086161A07DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 06:13:28 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pc@us.ibm.com>;
- Tue, 7 Oct 2014 15:13:26 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C62636E8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 15:02:09 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s97JDP2U6291922
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 19:13:25 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s97JDOmv011381
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 15:13:25 -0400
-Received: from oc3241255568.ibm.com (oc3241255568.ibm.com.austin.ibm.com
- [9.41.242.49])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s97JDON9011348
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 15:13:24 -0400
-Message-ID: <54343B54.4060500@us.ibm.com>
-Date: Tue, 07 Oct 2014 14:13:24 -0500
-From: Paul Clarke <pc@us.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: mitigate impact of decrementer reset
-References: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
-In-Reply-To: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id EFDED1A06C1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 07:26:29 +1100 (EST)
+Message-ID: <1412713571.32313.132.camel@smoke>
+Subject: Re: [PATCH V3 4/5] kexec: Add IND_FLAGS macro
+From: Geoff Levand <geoff@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 07 Oct 2014 13:26:11 -0700
+In-Reply-To: <de975a34c5beb9715359eaa4d74ba82a7798aae3.1412640584.git.geoff@infradead.org>
+References: <cover.1412640584.git.geoff@infradead.org>
+ <de975a34c5beb9715359eaa4d74ba82a7798aae3.1412640584.git.geoff@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,62 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER ISA defines an always-running decrementer which can be used
-to schedule interrupts after a certain time interval has elapsed.
-The decrementer counts down at the same frequency as the Time Base,
-which is 512 MHz.  The maximum value of the decrementer is 0x7fffffff.
-This works out to a maximum interval of about 4.19 seconds.
+Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
+all the possible kexec IND_ kimage_entry indirection flags.  Having this
+macro allows for simplified code in the prosessing of the kexec
+kimage_entry items.  Also, remove the local powerpc definition and use
+the generic one.
 
-If a larger interval is desired, the kernel will set the decrementer
-to its maximum value and reset it after it expires (underflows)
-a sufficient number of times until the desired interval has elapsed.
-
-The negative effect of this is that an unwanted latency spike will
-impact normal processing at most every 4.19 seconds.  On an IBM
-POWER8-based system, this spike was measured at about 25-30
-microseconds, much of which was basic, opportunistic housekeeping
-tasks that could otherwise have waited.
-
-This patch short-circuits the reset of the decrementer, exiting after
-the decrementer reset, but before the housekeeping tasks if the only
-need for the interrupt is simply to reset it.  After this patch,
-the latency spike was measured at about 150 nanoseconds.
-
-Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
 ---
-  arch/powerpc/kernel/time.c | 13 +++++++++++++
-  1 file changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 368ab37..962a06b 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -528,6 +528,7 @@ void timer_interrupt(struct pt_regs * regs)
-  {
-  	struct pt_regs *old_regs;
-  	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
-+	u64 now;
+>From V2: Folded patch 5 into patch 4.
 
-  	/* Ensure a positive value is written to the decrementer, or else
-  	 * some CPUs will continue to take decrementer exceptions.
-@@ -550,6 +551,18 @@ void timer_interrupt(struct pt_regs * regs)
-  	 */
-  	may_hard_irq_enable();
+ arch/powerpc/kernel/machine_kexec_64.c | 2 --
+ include/linux/kexec.h                  | 1 +
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-+	/* If this is simply the decrementer expiring (underflow) due to
-+	 * the limited size of the decrementer, and not a set timer,
-+	 * reset (if needed) and return
-+	 */
-+	now = get_tb_or_rtc();
-+	if (now < *next_tb) {
-+		now = *next_tb - now;
-+		if (now <= DECREMENTER_MAX)
-+			set_dec((int)now);
-+		__get_cpu_var(irq_stat).timer_irqs_others++;
-+		return;
-+	}
-
-  #if defined(CONFIG_PPC32) && defined(CONFIG_PPC_PMAC)
-  	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 879b3aa..75652a32 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -96,8 +96,6 @@ int default_machine_kexec_prepare(struct kimage *image)
+ 	return 0;
+ }
+ 
+-#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
+-
+ static void copy_segments(unsigned long ind)
+ {
+ 	unsigned long entry;
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 8c628ca..a4758f9 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -10,6 +10,7 @@
+ #define IND_INDIRECTION  (1 << IND_INDIRECTION_BIT)
+ #define IND_DONE         (1 << IND_DONE_BIT)
+ #define IND_SOURCE       (1 << IND_SOURCE_BIT)
++#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
+ 
+ #if !defined(__ASSEMBLY__)
+ 
 -- 
-2.1.2.330.g565301e
+1.9.1
