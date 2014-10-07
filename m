@@ -2,21 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE8871A037F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:25:48 +1100 (EST)
-Message-ID: <1412663147.10747.1.camel@concordia>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04D871A0B0A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:28:40 +1100 (EST)
+Message-ID: <1412663318.10747.2.camel@concordia>
+Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
+ verify_cpu_node_mapping()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexander Graf <agraf@suse.de>
-Date: Tue, 07 Oct 2014 17:25:47 +1100
-In-Reply-To: <54326850.1030801@suse.de>
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>
- <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Tue, 07 Oct 2014 17:28:38 +1100
+In-Reply-To: <20141003232606.GA9339@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <20141002211305.GB12862@linux.vnet.ibm.com>
+ <1412297420.2783.3.camel@concordia>
+ <20141003232606.GA9339@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Li Zhong <zhong@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
-> 
-> On 03.10.14 06:42, Michael Ellerman wrote:
-> > On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
-> >> The generic Linux framework to power off the machine is a function pointer
-> >> called pm_power_off. The trick about this pointer is that device drivers can
-> >> potentially implement it rather than board files.
-> >>
-> >> Today on PowerPC we set pm_power_off to invoke our generic full machine power
-> >> off logic which then calls ppc_md.power_off to invoke machine specific power
-> >> off.
-> >>
-> >> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
-> >> pm_power_off as was intended. Then individual drivers such as the GPIO power off
-> >> driver can implement power off logic via that function pointer.
+On Fri, 2014-10-03 at 16:26 -0700, Nishanth Aravamudan wrote:
+> On 03.10.2014 [10:50:20 +1000], Michael Ellerman wrote:
+> > On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
+> > > Ben & Michael,
+> > > 
+> > > What's the status of these patches?
 > > 
-> > This looks OK to me with one caveat.
+> > Been in my next for a week :)
 > > 
-> > In several of the patches you're replacing a static initialisation with a
-> > runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
-> > That's reasonably late, so I'd prefer you did it in xxx_probe().
+> > https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
 > 
-> Heh, I had it in xxx_probe() originally and then realized that
-> 
->   a) the power off function is basically a driver. Driver initialization
-> happens in xxx_setup_arch() and
-> 
->   b) the maple target already does overwrite its power_off callback in
-> xxx_setup_arch and
-> 
->   c) on all targets xxx_probe() is very slim and doesn't do much
-> 
-> but I'll happily change it back to put the bits in xxx_probe() instead.
+> Ah ok, thanks -- I wasn't following your tree, my fault. 
 
-Thanks.
+Not really your fault, I hadn't announced my trees existence :)
 
-That way you shouldn't be changing behaviour.
+> Do we want these to go back to 3.17-stable, as they fix some annoying splats
+> during boot (non-fatal afaict, though)?
 
-It may still be the case that some power off routines don't actually work until
-later, but that's an existing problem. Some power off routines *do* work before
-setup_arch(), so they will continue to work.
-
-
-Also, how does your series interact with Guenter's that removes pm_power_off ?
-It seems at the moment they are unaware of each other.
+Up to you really, I don't know how often/bad they were. I haven't added CC
+stable tags to the commits, so if you want them in stable you should send them
+explicitly.
 
 cheers
