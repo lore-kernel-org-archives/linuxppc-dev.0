@@ -2,32 +2,34 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B1D031A0A43
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:08 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B8B71A0B18
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:12 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XbNLa-002ddg-LE
- for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:06 +0000
+ (envelope-from <linux@roeck-us.net>) id 1XbNLf-002e7x-2R
+ for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:11 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 19/44] ipmi: Register with kernel poweroff handler
-Date: Mon,  6 Oct 2014 22:28:21 -0700
-Message-Id: <1412659726-29957-20-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 22/44] power/reset: as3722-poweroff: Register with kernel
+ poweroff handler
+Date: Mon,  6 Oct 2014 22:28:24 -0700
+Message-Id: <1412659726-29957-23-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, devel@driverdev.osuosl.org,
  linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>,
- devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Corey Minyard <minyard@acm.org>, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-alpha@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, David Woodhouse <dwmw2@infradead.org>,
+ Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,107 +41,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Register with a high priority value of 192 to reflect that
-the original code overwrites pm_power_off unconditionally.
+directly. Register with a low priority value of 64 to reflect that
+the original code only sets pm_power_off if it was not already set.
 
-Register poweroff handler after the ipmi system is ready, and unregister
-it prior to cleanup. This avoids having to check for the ready variable
-in the poweroff callback.
-
-Cc: Corey Minyard <minyard@acm.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/char/ipmi/ipmi_poweroff.c | 30 +++++++++++++++++++-----------
- 1 file changed, 19 insertions(+), 11 deletions(-)
+ drivers/power/reset/as3722-poweroff.c | 36 ++++++++++++++++++-----------------
+ 1 file changed, 19 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9f2e3be..a942a41 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -36,6 +36,7 @@
- #include <linux/proc_fs.h>
- #include <linux/string.h>
- #include <linux/completion.h>
+diff --git a/drivers/power/reset/as3722-poweroff.c b/drivers/power/reset/as3722-poweroff.c
+index 6849711..7ebaed9 100644
+--- a/drivers/power/reset/as3722-poweroff.c
++++ b/drivers/power/reset/as3722-poweroff.c
+@@ -17,32 +17,33 @@
+ 
+ #include <linux/mfd/as3722.h>
+ #include <linux/module.h>
 +#include <linux/notifier.h>
- #include <linux/pm.h>
- #include <linux/kdev_t.h>
- #include <linux/ipmi.h>
-@@ -63,9 +64,6 @@ static ipmi_user_t ipmi_user;
- static int ipmi_ifnum;
- static void (*specific_poweroff_func)(ipmi_user_t user);
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/slab.h>
  
--/* Holds the old poweroff function so we can restore it on removal. */
--static void (*old_poweroff_func)(void);
+ struct as3722_poweroff {
+ 	struct device *dev;
+ 	struct as3722 *as3722;
++	struct notifier_block poweroff_nb;
+ };
+ 
+-static struct as3722_poweroff *as3722_pm_poweroff;
 -
- static int set_param_ifnum(const char *val, struct kernel_param *kp)
+-static void as3722_pm_power_off(void)
++static int as3722_power_off(struct notifier_block *this, unsigned long unused1,
++			    void *unused2)
  {
- 	int rv = param_set_int(val, kp);
-@@ -544,15 +542,20 @@ static struct poweroff_function poweroff_functions[] = {
++	struct as3722_poweroff *as3722_poweroff =
++		container_of(this, struct as3722_poweroff, poweroff_nb);
+ 	int ret;
  
- 
- /* Called on a powerdown request. */
--static void ipmi_poweroff_function(void)
-+static int ipmi_poweroff_function(struct notifier_block *this,
-+				  unsigned long unused1, void *unused2)
- {
--	if (!ready)
+-	if (!as3722_pm_poweroff) {
+-		pr_err("AS3722 poweroff is not initialised\n");
 -		return;
+-	}
 -
- 	/* Use run-to-completion mode, since interrupts may be off. */
- 	specific_poweroff_func(ipmi_user);
+-	ret = as3722_update_bits(as3722_pm_poweroff->as3722,
++	ret = as3722_update_bits(as3722_poweroff->as3722,
+ 		AS3722_RESET_CONTROL_REG, AS3722_POWER_OFF, AS3722_POWER_OFF);
+ 	if (ret < 0)
+-		dev_err(as3722_pm_poweroff->dev,
++		dev_err(as3722_poweroff->dev,
+ 			"RESET_CONTROL_REG update failed, %d\n", ret);
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block ipmi_poweroff_nb = {
-+	.notifier_call = ipmi_poweroff_function,
-+	.priority = 192,
-+};
+ static int as3722_poweroff_probe(struct platform_device *pdev)
+@@ -63,18 +64,19 @@ static int as3722_poweroff_probe(struct platform_device *pdev)
+ 
+ 	as3722_poweroff->as3722 = dev_get_drvdata(pdev->dev.parent);
+ 	as3722_poweroff->dev = &pdev->dev;
+-	as3722_pm_poweroff = as3722_poweroff;
+-	if (!pm_power_off)
+-		pm_power_off = as3722_pm_power_off;
++	as3722_poweroff->poweroff_nb.notifier_call = as3722_power_off;
++	as3722_poweroff->poweroff_nb.priority = 64;
+ 
+-	return 0;
++	platform_set_drvdata(pdev, as3722_poweroff);
 +
- /* Wait for an IPMI interface to be installed, the first one installed
-    will be grabbed by this code and used to perform the powerdown. */
- static void ipmi_po_new_smi(int if_num, struct device *device)
-@@ -631,9 +634,12 @@ static void ipmi_po_new_smi(int if_num, struct device *device)
- 	printk(KERN_INFO PFX "Found a %s style poweroff function\n",
- 	       poweroff_functions[i].platform_type);
- 	specific_poweroff_func = poweroff_functions[i].poweroff_func;
--	old_poweroff_func = pm_power_off;
--	pm_power_off = ipmi_poweroff_function;
-+
- 	ready = 1;
-+
-+	rv = register_poweroff_handler(&ipmi_poweroff_nb);
-+	if (rv)
-+		pr_err(PFX "failed to register poweroff handler\n");
++	return register_poweroff_handler(&as3722_poweroff->poweroff_nb);
  }
  
- static void ipmi_po_smi_gone(int if_num)
-@@ -644,9 +650,10 @@ static void ipmi_po_smi_gone(int if_num)
- 	if (ipmi_ifnum != if_num)
- 		return;
- 
-+	unregister_poweroff_handler(&ipmi_poweroff_nb);
+ static int as3722_poweroff_remove(struct platform_device *pdev)
+ {
+-	if (pm_power_off == as3722_pm_power_off)
+-		pm_power_off = NULL;
+-	as3722_pm_poweroff = NULL;
++	struct as3722_poweroff *as3722_poweroff = platform_get_drvdata(pdev);
 +
- 	ready = 0;
- 	ipmi_destroy_user(ipmi_user);
--	pm_power_off = old_poweroff_func;
++	unregister_poweroff_handler(&as3722_poweroff->poweroff_nb);
+ 
+ 	return 0;
  }
- 
- static struct ipmi_smi_watcher smi_watcher = {
-@@ -732,12 +739,13 @@ static void __exit ipmi_poweroff_cleanup(void)
- 
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 
-+	unregister_poweroff_handler(&ipmi_poweroff_nb);
-+
- 	if (ready) {
- 		rv = ipmi_destroy_user(ipmi_user);
- 		if (rv)
- 			printk(KERN_ERR PFX "could not cleanup the IPMI"
- 			       " user: 0x%x\n", rv);
--		pm_power_off = old_poweroff_func;
- 	}
- }
- module_exit(ipmi_poweroff_cleanup);
 -- 
 1.9.1
