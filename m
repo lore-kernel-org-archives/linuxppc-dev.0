@@ -1,23 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0118.outbound.protection.outlook.com [157.56.111.118])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 466131A0707
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 11:24:25 +1100 (EST)
-Message-ID: <1412641450.13320.509.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 2/2] spi: fsl-spi: Allow dynamic allocation of CPM1
- parameter RAM
-From: Scott Wood <scottwood@freescale.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Date: Mon, 6 Oct 2014 19:24:10 -0500
-In-Reply-To: <542FC6CC.4000507@c-s.fr>
-References: <20141003164917.397871AB276@localhost.localdomain>
- <1412365908.13320.429.camel@snotra.buserror.net> <542FC6CC.4000507@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D4F2B1A01A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 15:37:01 +1100 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 6 Oct 2014 22:36:59 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D815819D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Oct 2014 22:25:39 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s974atOc39780424
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 06:36:55 +0200
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s974atS6017745
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Oct 2014 22:36:55 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/4] powerpc/powernv: Add OPAL check token call
+In-Reply-To: <1408423682-14297-1-git-send-email-mikey@neuling.org>
+References: <1408423682-14297-1-git-send-email-mikey@neuling.org>
+Date: Tue, 07 Oct 2014 15:36:46 +1100
+Message-ID: <m3y4ssfqch.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-10-04 at 12:07 +0200, christophe leroy wrote:
-> The bindings for that driver are described in 
-> Documentation/devicetree/bindings/spi/fsl-spi.txt. But it seems that it 
-> doesn't describe anything related to those compatibles. The driver has a 
-> match on "fsl,fsl-spi" only,
+Michael Neuling <mikey@neuling.org> writes:
+> Currently there is no way to generically check if an OPAL call exists or not
+> from the host kernel.
+>
+> This adds an OPAL call opal_check_token() which tells you if the given token is
+> present in OPAL or not.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-I think you mean "fsl,spi", and that's a terrible compatible name.
+(checked the firmware code)
 
->  and for using it with CPM you have to add 
-> "fsl,cpm1-spi" or "fsl,cpm2-spi" to tell the driver that it is CPM 
-> (existing code below).
+Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-fsl-spi.txt doesn't describe CPM1/2 at all, but rather QE (CPM3) and
-non-CPM.
-
--Scott
+(although should we be checking if the call returns OPAL_PARAMETER?
+The opal call will return that if booting on firmware without
+OPAL_CHECK_TOKEN.. which granted, is pretty old firmware that I don't
+*think* we had leave the lab... or at least not to too many places)
