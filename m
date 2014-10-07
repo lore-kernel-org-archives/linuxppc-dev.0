@@ -1,31 +1,31 @@
 Return-Path: <andrew@lunn.ch>
-Date: Tue, 7 Oct 2014 18:06:38 +0200
+Date: Tue, 7 Oct 2014 17:50:44 +0200
 From: Andrew Lunn <andrew@lunn.ch>
 To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 20/44] power/reset: restart-poweroff: Register with
- kernel poweroff handler
-Message-ID: <20141007160638.GE19005@lunn.ch>
+Subject: Re: [PATCH 06/44] gpio-poweroff: Drop reference to pm_power_off from
+ devicetree bindings
+Message-ID: <20141007155044.GA19005@lunn.ch>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-21-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-7-git-send-email-linux@roeck-us.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1412659726-29957-21-git-send-email-linux@roeck-us.net>
+In-Reply-To: <1412659726-29957-7-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
- devicetree@vger.kernel.org, devel@driverdev.osuosl.org,
+ linux-sh@vger.kernel.org, devicetree@vger.kernel.org,
+ Mark Rutland <mark.rutland@arm.com>, devel@driverdev.osuosl.org,
  linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- linux-hexagon@vger.kernel.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- David Woodhouse <dwmw2@infradead.org>
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linux-xtensa@linux-xtensa.org, Pawel Moll <pawel.moll@arm.com>,
+ linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
+ linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ linux-alpha@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,84 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 06, 2014 at 10:28:22PM -0700, Guenter Roeck wrote:
-> Register with kernel poweroff handler instead of seting pm_power_off
-> directly.  Register as poweroff handler of last resort since the driver
-> does not really power off the system but executes a restart.
-
-I would not say last resort, this is how it is designed to work. There
-is no way to turn the power off from with linux, it is designed that
-u-boot will put the hardware into minimal power consumption until the
-"power" button is pressed.
-
-Other than that, 
+On Mon, Oct 06, 2014 at 10:28:08PM -0700, Guenter Roeck wrote:
+> pm_power_off is an implementation detail. Replace it with a more generic
+> description of the driver's functionality.
+> 
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
 Acked-by: Andrew Lunn <andrew@lunn.ch>
 
 Thanks
 	Andrew
-
-> 
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > ---
->  drivers/power/reset/restart-poweroff.c | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
+>  Documentation/devicetree/bindings/gpio/gpio-poweroff.txt | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/power/reset/restart-poweroff.c b/drivers/power/reset/restart-poweroff.c
-> index edd707e..5437697 100644
-> --- a/drivers/power/reset/restart-poweroff.c
-> +++ b/drivers/power/reset/restart-poweroff.c
-> @@ -12,35 +12,34 @@
->   */
->  #include <linux/kernel.h>
->  #include <linux/init.h>
-> +#include <linux/notifier.h>
->  #include <linux/platform_device.h>
->  #include <linux/of_platform.h>
->  #include <linux/module.h>
-> +#include <linux/pm.h>
->  #include <linux/reboot.h>
-> -#include <asm/system_misc.h>
+> diff --git a/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt b/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
+> index d4eab92..c95a1a6 100644
+> --- a/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
+> +++ b/Documentation/devicetree/bindings/gpio/gpio-poweroff.txt
+> @@ -2,12 +2,12 @@ Driver a GPIO line that can be used to turn the power off.
 >  
-> -static void restart_poweroff_do_poweroff(void)
-> +static int restart_poweroff_do_poweroff(struct notifier_block *this,
-> +					unsigned long unused1, void *unused2)
->  {
->  	reboot_mode = REBOOT_HARD;
->  	machine_restart(NULL);
-> +
-> +	return NOTIFY_DONE;
->  }
+>  The driver supports both level triggered and edge triggered power off.
+>  At driver load time, the driver will request the given gpio line and
+> -install a pm_power_off handler. If the optional properties 'input' is
+> -not found, the GPIO line will be driven in the inactive
+> +install a handler to power off the system. If the optional properties
+> +'input' is not found, the GPIO line will be driven in the inactive
+>  state. Otherwise its configured as an input.
 >  
-> +static struct notifier_block restart_poweroff_handler = {
-> +	.notifier_call = restart_poweroff_do_poweroff,
-> +};
-> +
->  static int restart_poweroff_probe(struct platform_device *pdev)
->  {
-> -	/* If a pm_power_off function has already been added, leave it alone */
-> -	if (pm_power_off != NULL) {
-> -		dev_err(&pdev->dev,
-> -			"pm_power_off function already registered");
-> -		return -EBUSY;
-> -	}
-> -
-> -	pm_power_off = &restart_poweroff_do_poweroff;
-> -	return 0;
-> +	return register_poweroff_handler(&restart_poweroff_handler);
->  }
+> -When the pm_power_off is called, the gpio is configured as an output,
+> -and drive active, so triggering a level triggered power off
+> +When the the poweroff handler is called, the gpio is configured as an
+> +output, and drive active, so triggering a level triggered power off
+>  condition. This will also cause an inactive->active edge condition, so
+>  triggering positive edge triggered power off. After a delay of 100ms,
+>  the GPIO is set to inactive, thus causing an active->inactive edge,
+> @@ -24,7 +24,7 @@ Required properties:
 >  
->  static int restart_poweroff_remove(struct platform_device *pdev)
->  {
-> -	if (pm_power_off == &restart_poweroff_do_poweroff)
-> -		pm_power_off = NULL;
-> +	unregister_poweroff_handler(&restart_poweroff_handler);
+>  Optional properties:
+>  - input : Initially configure the GPIO line as an input. Only reconfigure
+> -  it to an output when the pm_power_off function is called. If this optional
+> +  it to an output when the poweroff handler is called. If this optional
+>    property is not specified, the GPIO is initialized as an output in its
+>    inactive state.
 >  
->  	return 0;
->  }
 > -- 
 > 1.9.1
 > 
