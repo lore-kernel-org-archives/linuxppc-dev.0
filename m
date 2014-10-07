@@ -2,33 +2,33 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41F2B1A0986
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:23 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0DF61A0B1C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:26 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XbNLp-002en4-8j
- for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:21 +0000
+ (envelope-from <linux@roeck-us.net>) id 1XbNLs-002fCb-Gt
+ for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:24 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 27/44] x86: apm: Register with kernel poweroff handler
-Date: Mon,  6 Oct 2014 22:28:29 -0700
-Message-Id: <1412659726-29957-28-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 30/44] acpi: Register poweroff handler with kernel poweroff
+ handler
+Date: Mon,  6 Oct 2014 22:28:32 -0700
+Message-Id: <1412659726-29957-31-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, devel@driverdev.osuosl.org,
+ linux-xtensa@linux-xtensa.org, devel@driverdev.osuosl.org,
  linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
  linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
  linux-sh@vger.kernel.org, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org,
+ xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>,
+ Len Brown <lenb@kernel.org>, devicetree@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
  adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
  linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
  openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, Jiri Kosina <jkosina@suse.cz>,
+ linux-cris-kernel@axis.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,78 +41,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Register with kernel poweroff handler instead of setting pm_power_off
 directly. Register with high priority value of 192 to reflect that
-the original code overwrites existing poweroff handlers.
+the driver explicitly overrides existing poweroff handlers.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- arch/x86/kernel/apm_32.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ drivers/acpi/sleep.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 5848744..84566a6 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -219,6 +219,7 @@
- #include <linux/init.h>
- #include <linux/time.h>
- #include <linux/sched.h>
-+#include <linux/notifier.h>
- #include <linux/pm.h>
- #include <linux/capability.h>
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 54da4a3..25aad22 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -15,6 +15,8 @@
+ #include <linux/dmi.h>
  #include <linux/device.h>
-@@ -981,7 +982,8 @@ recalc:
-  *	on their first cpu.
-  */
+ #include <linux/suspend.h>
++#include <linux/notifier.h>
++#include <linux/pm.h>
+ #include <linux/reboot.h>
+ #include <linux/acpi.h>
+ #include <linux/module.h>
+@@ -811,14 +813,22 @@ static void acpi_power_off_prepare(void)
+ 	acpi_disable_all_gpes();
+ }
  
--static void apm_power_off(void)
-+static int apm_power_off(struct notifier_block *this, unsigned long unused1,
-+			 void *unused2)
+-static void acpi_power_off(void)
++static int acpi_power_off(struct notifier_block *this,
++			  unsigned long unused1, void *unused2)
  {
- 	/* Some bioses don't like being called from CPU != 0 */
- 	if (apm_info.realmode_power_off) {
-@@ -990,8 +992,14 @@ static void apm_power_off(void)
- 	} else {
- 		(void)set_system_power_state(APM_STATE_OFF);
- 	}
+ 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+ 	printk(KERN_DEBUG "%s called\n", __func__);
+ 	local_irq_disable();
+ 	acpi_enter_sleep_state(ACPI_STATE_S5);
++
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block apm_poweroff_nb = {
-+	.notifier_call = apm_power_off,
++static struct notifier_block acpi_poweroff_nb = {
++	.notifier_call = acpi_power_off,
 +	.priority = 192,
 +};
 +
- #ifdef CONFIG_APM_DO_ENABLE
- 
- /**
-@@ -1847,8 +1855,11 @@ static int apm(void *unused)
+ int __init acpi_sleep_init(void)
+ {
+ 	char supported[ACPI_S_STATE_COUNT * 3 + 1];
+@@ -835,7 +845,8 @@ int __init acpi_sleep_init(void)
+ 	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+ 		sleep_states[ACPI_STATE_S5] = 1;
+ 		pm_power_off_prepare = acpi_power_off_prepare;
+-		pm_power_off = acpi_power_off;
++		if (register_poweroff_handler(&acpi_poweroff_nb))
++			pr_err("acpi: Failed to register poweroff handler\n");
  	}
  
- 	/* Install our power off handler.. */
--	if (power_off)
--		pm_power_off = apm_power_off;
-+	if (power_off) {
-+		error = register_poweroff_handler(&apm_poweroff_nb);
-+		if (error)
-+			pr_err("apm: Failed to register poweroff handler\n");
-+	}
- 
- 	if (num_online_cpus() == 1 || smp) {
- #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
-@@ -2408,9 +2419,8 @@ static void __exit apm_exit(void)
- 			apm_error("disengage power management", error);
- 	}
- 	misc_deregister(&apm_device);
-+	unregister_poweroff_handler(&apm_poweroff_nb);
- 	remove_proc_entry("apm", NULL);
--	if (power_off)
--		pm_power_off = NULL;
- 	if (kapmd_task) {
- 		kthread_stop(kapmd_task);
- 		kapmd_task = NULL;
+ 	supported[0] = 0;
 -- 
 1.9.1
