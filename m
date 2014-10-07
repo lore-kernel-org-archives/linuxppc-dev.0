@@ -1,32 +1,26 @@
-Return-Path: <ddaney.cavm@gmail.com>
-Message-ID: <54341BF1.9020001@gmail.com>
-Date: Tue, 07 Oct 2014 09:59:29 -0700
-From: David Daney <ddaney.cavm@gmail.com>
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D0E81A18E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 04:01:08 +1100 (EST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1XbY8I-000RvT-O7
+ for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 17:01:06 +0000
+Date: Tue, 7 Oct 2014 10:00:52 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+Message-ID: <20141007170052.GB16931@roeck-us.net>
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+ <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
+ <1412663147.10747.1.camel@concordia> <5433CFEB.9040104@suse.de>
 MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>, Rob Landley <rob@landley.net>
-Subject: Re: [PATCH 05/44] mfd: as3722: Drop reference to pm_power_off from
- devicetree bindings
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-6-git-send-email-linux@roeck-us.net>
- <543412F7.8040909@landley.net> <20141007163131.GE28835@roeck-us.net>
-In-Reply-To: <20141007163131.GE28835@roeck-us.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, Mark Rutland <mark.rutland@arm.com>,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-acpi@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>,
- xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5433CFEB.9040104@suse.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,35 +30,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/07/2014 09:31 AM, Guenter Roeck wrote:
-> On Tue, Oct 07, 2014 at 11:21:11AM -0500, Rob Landley wrote:
->> On 10/07/14 00:28, Guenter Roeck wrote:
->>> Devicetree bindings are supposed to be operating system independent
->>> and should thus not describe how a specific functionality is implemented
->>> in Linux.
->>
->> So your argument is that linux/Documentation/devicetree/bindings should
->> not be specific to Linux. Merely hosted in the Linux kernel source
->> repository.
->>
->> Well that's certainly a point of view.
->>
-> Not specifically my argument, really, and nothing new either. But, yes, I do
-> think that devicetree bindings descriptions should not include implementation
-> details, especially since those may change over time (as is the case here).
->
+On Tue, Oct 07, 2014 at 01:35:07PM +0200, Alexander Graf wrote:
+> 
+> 
+> On 07.10.14 08:25, Michael Ellerman wrote:
+> > On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
+> >>
+> >> On 03.10.14 06:42, Michael Ellerman wrote:
+> >>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
+> >>>> The generic Linux framework to power off the machine is a function pointer
+> >>>> called pm_power_off. The trick about this pointer is that device drivers can
+> >>>> potentially implement it rather than board files.
+> >>>>
+> >>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+> >>>> off logic which then calls ppc_md.power_off to invoke machine specific power
+> >>>> off.
+> >>>>
+> >>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> >>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> >>>> driver can implement power off logic via that function pointer.
+> >>>
+> >>> This looks OK to me with one caveat.
+> >>>
+> >>> In several of the patches you're replacing a static initialisation with a
+> >>> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
+> >>> That's reasonably late, so I'd prefer you did it in xxx_probe().
+> >>
+> >> Heh, I had it in xxx_probe() originally and then realized that
+> >>
+> >>   a) the power off function is basically a driver. Driver initialization
+> >> happens in xxx_setup_arch() and
+> >>
+> >>   b) the maple target already does overwrite its power_off callback in
+> >> xxx_setup_arch and
+> >>
+> >>   c) on all targets xxx_probe() is very slim and doesn't do much
+> >>
+> >> but I'll happily change it back to put the bits in xxx_probe() instead.
+> > 
+> > Thanks.
+> > 
+> > That way you shouldn't be changing behaviour.
+> > 
+> > It may still be the case that some power off routines don't actually work until
+> > later, but that's an existing problem. Some power off routines *do* work before
+> > setup_arch(), so they will continue to work.
+> 
+> Ok, works for me :). Just wanted to make sure you're aware of the
+> reasoning why I didn't do it in probe().
+> 
+> > Also, how does your series interact with Guenter's that removes pm_power_off ?
+> > It seems at the moment they are unaware of each other.
+> 
+> Guenters patches convert users of pm_power_off to his new scheme. We're
+> not even at that stage at all yet in the powerpc tree. Converting
+> everything to pm_power_off is basically a first step. His patch set
+> maintains pm_power_off, so there shouldn't be nasty conflicts.
+> 
+Onlly the first m68k patch, though. The very last patch in the series
+remvoes pm_power_off.
 
-I fully agree.
+Guenter
 
-Many device trees come from outside the kernel (i.e. they are supplied 
-by the system boot environment).  Obviously these device trees cannot be 
-changed at the whim of kernel developers, *and* it is perfectly 
-reasonable to think that software other than the Linux kernel will run 
-on this type of system too.
-
-So yes, it is really true, device trees are not a Linux kernel private 
-implementation detail, they are really an external ABI that, although 
-documented in the kernel source tree, cannot be changed in incompatible 
-ways as time progresses.
-
-David Daney
+> Once we converted from ppc_md tables to actual code, we can just run a
+> simple coccinelle patch to convert from pm_power_off to his new scheme
+> later.
+> 
+> 
+> Alex
