@@ -2,16 +2,16 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 14F071A03A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:18 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41F2B1A0986
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:23 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XbNLj-002eKv-LV
- for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:15 +0000
+ (envelope-from <linux@roeck-us.net>) id 1XbNLp-002en4-8j
+ for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:21 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 26/44] x86: iris: Register with kernel poweroff handler
-Date: Mon,  6 Oct 2014 22:28:28 -0700
-Message-Id: <1412659726-29957-27-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 27/44] x86: apm: Register with kernel poweroff handler
+Date: Mon,  6 Oct 2014 22:28:29 -0700
+Message-Id: <1412659726-29957-28-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
@@ -28,8 +28,8 @@ Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
  openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ linux-cris-kernel@axis.com, Jiri Kosina <jkosina@suse.cz>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,77 +46,73 @@ the original code overwrites existing poweroff handlers.
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- arch/x86/platform/iris/iris.c | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
+ arch/x86/kernel/apm_32.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/platform/iris/iris.c b/arch/x86/platform/iris/iris.c
-index 4d171e8..662c4e8 100644
---- a/arch/x86/platform/iris/iris.c
-+++ b/arch/x86/platform/iris/iris.c
-@@ -23,6 +23,7 @@
- 
- #include <linux/moduleparam.h>
- #include <linux/module.h>
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 5848744..84566a6 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -219,6 +219,7 @@
+ #include <linux/init.h>
+ #include <linux/time.h>
+ #include <linux/sched.h>
 +#include <linux/notifier.h>
- #include <linux/platform_device.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -47,15 +48,21 @@ static bool force;
- module_param(force, bool, 0);
- MODULE_PARM_DESC(force, "Set to one to force poweroff handler installation.");
+ #include <linux/pm.h>
+ #include <linux/capability.h>
+ #include <linux/device.h>
+@@ -981,7 +982,8 @@ recalc:
+  *	on their first cpu.
+  */
  
--static void (*old_pm_power_off)(void);
--
--static void iris_power_off(void)
-+static int iris_power_off(struct notifier_block *this, unsigned long unused1,
-+			  void *unused2)
+-static void apm_power_off(void)
++static int apm_power_off(struct notifier_block *this, unsigned long unused1,
++			 void *unused2)
  {
- 	outb(IRIS_GIO_PULSE, IRIS_GIO_OUTPUT);
- 	msleep(850);
- 	outb(IRIS_GIO_REST, IRIS_GIO_OUTPUT);
-+
+ 	/* Some bioses don't like being called from CPU != 0 */
+ 	if (apm_info.realmode_power_off) {
+@@ -990,8 +992,14 @@ static void apm_power_off(void)
+ 	} else {
+ 		(void)set_system_power_state(APM_STATE_OFF);
+ 	}
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block iris_poweroff_nb = {
-+	.notifier_call = iris_power_off,
++static struct notifier_block apm_poweroff_nb = {
++	.notifier_call = apm_power_off,
 +	.priority = 192,
 +};
 +
- /*
-  * Before installing the power_off handler, try to make sure the OS is
-  * running on an Iris.  Since Iris does not support DMI, this is done
-@@ -65,20 +72,26 @@ static void iris_power_off(void)
- static int iris_probe(struct platform_device *pdev)
- {
- 	unsigned char status = inb(IRIS_GIO_INPUT);
-+	int ret;
-+
- 	if (status == IRIS_GIO_NODEV) {
- 		printk(KERN_ERR "This machine does not seem to be an Iris. "
- 			"Power off handler not installed.\n");
- 		return -ENODEV;
- 	}
--	old_pm_power_off = pm_power_off;
--	pm_power_off = &iris_power_off;
-+
-+	ret = register_poweroff_handler(&iris_poweroff_nb);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to register poweroff handler\n");
-+		return ret;
-+	}
- 	printk(KERN_INFO "Iris power_off handler installed.\n");
- 	return 0;
- }
+ #ifdef CONFIG_APM_DO_ENABLE
  
- static int iris_remove(struct platform_device *pdev)
- {
--	pm_power_off = old_pm_power_off;
-+	unregister_poweroff_handler(&iris_poweroff_nb);
- 	printk(KERN_INFO "Iris power_off handler uninstalled.\n");
- 	return 0;
- }
+ /**
+@@ -1847,8 +1855,11 @@ static int apm(void *unused)
+ 	}
+ 
+ 	/* Install our power off handler.. */
+-	if (power_off)
+-		pm_power_off = apm_power_off;
++	if (power_off) {
++		error = register_poweroff_handler(&apm_poweroff_nb);
++		if (error)
++			pr_err("apm: Failed to register poweroff handler\n");
++	}
+ 
+ 	if (num_online_cpus() == 1 || smp) {
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+@@ -2408,9 +2419,8 @@ static void __exit apm_exit(void)
+ 			apm_error("disengage power management", error);
+ 	}
+ 	misc_deregister(&apm_device);
++	unregister_poweroff_handler(&apm_poweroff_nb);
+ 	remove_proc_entry("apm", NULL);
+-	if (power_off)
+-		pm_power_off = NULL;
+ 	if (kapmd_task) {
+ 		kthread_stop(kapmd_task);
+ 		kapmd_task = NULL;
 -- 
 1.9.1
