@@ -1,24 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F24611A0793
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 22:35:13 +1100 (EST)
-Message-ID: <5433CFEB.9040104@suse.de>
-Date: Tue, 07 Oct 2014 13:35:07 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
-References: <1412170086-57971-1-git-send-email-agraf@suse.de>	
- <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
- <1412663147.10747.1.camel@concordia>
-In-Reply-To: <1412663147.10747.1.camel@concordia>
-Content-Type: text/plain; charset=utf-8
-Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
- Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C9191A1748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 23:15:19 +1100 (EST)
+Message-ID: <1412684116.1268.0.camel@concordia>
+Subject: Re: [PATCH] powerpc: fix sys_call_table declaration
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Romeo Cane <romeo.cane.ext@coriant.com>
+Date: Tue, 07 Oct 2014 23:15:16 +1100
+In-Reply-To: <20141003100046.GB2144@rcane-VirtualBox>
+References: <20141002144131.GA3855@rcane-VirtualBox>
+ <1412285674.28143.35.camel@pasglop>
+ <20141003100046.GB2144@rcane-VirtualBox>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,65 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 07.10.14 08:25, Michael Ellerman wrote:
-> On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
->>
->> On 03.10.14 06:42, Michael Ellerman wrote:
->>> On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
->>>> The generic Linux framework to power off the machine is a function pointer
->>>> called pm_power_off. The trick about this pointer is that device drivers can
->>>> potentially implement it rather than board files.
->>>>
->>>> Today on PowerPC we set pm_power_off to invoke our generic full machine power
->>>> off logic which then calls ppc_md.power_off to invoke machine specific power
->>>> off.
->>>>
->>>> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
->>>> pm_power_off as was intended. Then individual drivers such as the GPIO power off
->>>> driver can implement power off logic via that function pointer.
->>>
->>> This looks OK to me with one caveat.
->>>
->>> In several of the patches you're replacing a static initialisation with a
->>> runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
->>> That's reasonably late, so I'd prefer you did it in xxx_probe().
->>
->> Heh, I had it in xxx_probe() originally and then realized that
->>
->>   a) the power off function is basically a driver. Driver initialization
->> happens in xxx_setup_arch() and
->>
->>   b) the maple target already does overwrite its power_off callback in
->> xxx_setup_arch and
->>
->>   c) on all targets xxx_probe() is very slim and doesn't do much
->>
->> but I'll happily change it back to put the bits in xxx_probe() instead.
+On Fri, 2014-10-03 at 11:00 +0100, Romeo Cane wrote:
+> On Fri, Oct 03, 2014 at 07:34:34AM +1000, Benjamin Herrenschmidt wrote:
+> > On Thu, 2014-10-02 at 15:41 +0100, Romeo Cane wrote:
+> > > Declaring sys_call_table as a pointer causes the compiler to generate the wrong lookup code in arch_syscall_addr
+> > 
+> > Care to elaborate ?
+> > 
+> > > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+> > > index b54b2ad..528ba9d 100644
+> > > --- a/arch/powerpc/include/asm/syscall.h
+> > > +++ b/arch/powerpc/include/asm/syscall.h
+> > > @@ -17,7 +17,7 @@
+> > >  
+> > >  /* ftrace syscalls requires exporting the sys_call_table */
+> > >  #ifdef CONFIG_FTRACE_SYSCALLS
+> > > -extern const unsigned long *sys_call_table;
+> > > +extern const unsigned long sys_call_table[];
+> > >  #endif /* CONFIG_FTRACE_SYSCALLS */
+> > >  
+> > >  static inline long syscall_get_nr(struct task_struct *task,
 > 
-> Thanks.
+> Hi Ben,
 > 
-> That way you shouldn't be changing behaviour.
+> this is the arch_syscall_addr function from kernel/trace/trace_syscalls.c:
 > 
-> It may still be the case that some power off routines don't actually work until
-> later, but that's an existing problem. Some power off routines *do* work before
-> setup_arch(), so they will continue to work.
+> unsigned long __init __weak arch_syscall_addr(int nr)
+> {
+>     return (unsigned long)sys_call_table[nr];
+> }
+> 
+> on my platform (E500MC) the generated assembly code is as follows:
+> 
+> without the patch:
+>   <arch_syscall_addr>:
+>      lis     r9,-16384
+>      rlwinm  r3,r3,2,0,29
+>      lwz     r11,30640(r9)
+>      lwzx    r3,r11,r3
+>      blr
+> 
+> with the patch:
+>   <arch_syscall_addr>:
+>      lis     r9,-16384
+>      rlwinm  r3,r3,2,0,29
+>      addi    r9,r9,30640
+>      lwzx    r3,r9,r3
+>      blr
+> 
+> 
+> the goal of the function is to retrieve the n-th element of the table (i.e.
+> the address of a syscall)
+> Without the patch, the returned value is in fact the memory content pointed
+> by the address of the first syscall plus an offset, that is not what we want.
+> The consequence is that ftrace of syscalls doesn't work.
+> 
+> That table has always been declared as a pointer since the support for
+> syscalls tracing has been introduced for powerpc years ago, so I'm wondering
+> why nobody else had this problem before.
+> Other architectures are not affected since in their includes the table is
+> already declared as an array.
 
-Ok, works for me :). Just wanted to make sure you're aware of the
-reasoning why I didn't do it in probe().
+Yeah looks like you're right.
 
-> Also, how does your series interact with Guenter's that removes pm_power_off ?
-> It seems at the moment they are unaware of each other.
+I've only ever used the raw_syscall tracing, which does work.
 
-Guenters patches convert users of pm_power_off to his new scheme. We're
-not even at that stage at all yet in the powerpc tree. Converting
-everything to pm_power_off is basically a first step. His patch set
-maintains pm_power_off, so there shouldn't be nasty conflicts.
+Worringly we also use sys_call_table as extern unsigned long * in vdso.c, so I
+wonder if that is also broken.
 
-Once we converted from ppc_md tables to actual code, we can just run a
-simple coccinelle patch to convert from pm_power_off to his new scheme
-later.
-
-
-Alex
+cheers
