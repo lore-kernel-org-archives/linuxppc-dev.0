@@ -1,58 +1,20 @@
-Return-Path: <richard@nod.at>
-Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <b37399@nmglablinux22.freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAB2D1A0608
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 01:06:15 +1100 (EST)
-Message-ID: <5433F197.8040801@nod.at>
-Date: Tue, 07 Oct 2014 15:58:47 +0200
-From: Richard Weinberger <richard@nod.at>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53B471A0495
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 02:08:50 +1100 (EST)
+From: Ashish Kumar <Ashish.Kumar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] mpc85xx: dts: Remove SPI and NAND partition from
+ bsc9131rdb.dtsi
+Date: Tue, 7 Oct 2014 18:04:36 +0530
+Message-ID: <1412685276-5834-1-git-send-email-Ashish.Kumar@freescale.com>
 MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-9-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1412659726-29957-9-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Jonas Bonn <jonas@southpole.se>, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- Steven Miao <realmz6@gmail.com>, linux-xtensa@linux-xtensa.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
- Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
- Lennox Wu <lennox.wu@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- Jesper Nilsson <jesper.nilsson@axis.com>, lguest@lists.ozlabs.org,
- Russell King <linux@arm.linux.org.uk>, linux-c6x-dev@linux-c6x.org,
- Len Brown <len.brown@intel.com>, "David S. Miller" <davem@davemloft.net>,
- linux-hexagon@vger.kernel.org, Hirokazu Takata <takata@linux-m32r.org>,
- linux-sh@vger.kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>,
- Chen Liqin <liqin.linux@gmail.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
- devicetree@vger.kernel.org, James Hogan <james.hogan@imgtec.com>,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- adi-buildroot-devel@lists.sourceforge.net, Chris Metcalf <cmetcalf@tilera.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Mikael Starvik <starvik@axis.com>, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- Vineet Gupta <vgupta@synopsys.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Richard Kuo <rkuo@codeaurora.org>,
- David Vrabel <david.vrabel@citrix.com>, linux-alpha@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
+Content-Type: text/plain
+Cc: b07421@freescale.com, b01044@freesscale.com,
+ Ashish Kumar <Ashish.Kumar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,10 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 07.10.2014 07:28, schrieb Guenter Roeck:
->  arch/um/kernel/reboot.c            |  2 --
+ * Run "mtdparts default" on u-boot to create dynamic partitions
+ * Or use dynamic mtd partition with the help of bootargs in u-boot
+   Append bootargs with:
+    "mtdparts=ff800000.flash:1m(nand_uboot),512K(nand_dtb),8m(nand_kernel),-(fs);\
+     spiff707000.0:1m(spi_uboot),4m(spi_kernel),512k(spi_dtb),-(fs)'"
 
-Acked-by: Richard Weinberger <richard@nod.at>
+Signed-off-by: Ashish Kumar <Ashish.Kumar@freescale.com>
+---
+ arch/powerpc/boot/dts/bsc9131rdb.dtsi |   50 ---------------------------------
+ 1 files changed, 0 insertions(+), 50 deletions(-)
 
-Thanks,
-//richard
+diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+index 9e6c013..45efcba 100644
+--- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
++++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+@@ -40,31 +40,6 @@
+ 		compatible = "fsl,ifc-nand";
+ 		reg = <0x0 0x0 0x4000>;
+ 
+-		partition@0 {
+-			/* This location must not be altered  */
+-			/* 3MB for u-boot Bootloader Image */
+-			reg = <0x0 0x00300000>;
+-			label = "NAND U-Boot Image";
+-			read-only;
+-		};
+-
+-		partition@300000 {
+-			/* 1MB for DTB Image */
+-			reg = <0x00300000 0x00100000>;
+-			label = "NAND DTB Image";
+-		};
+-
+-		partition@400000 {
+-			/* 8MB for Linux Kernel Image */
+-			reg = <0x00400000 0x00800000>;
+-			label = "NAND Linux Kernel Image";
+-		};
+-
+-		partition@c00000 {
+-			/* Rest space for Root file System Image */
+-			reg = <0x00c00000 0x07400000>;
+-			label = "NAND RFS Image";
+-		};
+ 	};
+ };
+ 
+@@ -82,31 +57,6 @@
+ 			reg = <0>;
+ 			spi-max-frequency = <50000000>;
+ 
+-			/* 512KB for u-boot Bootloader Image */
+-			partition@0 {
+-				reg = <0x0 0x00080000>;
+-				label = "SPI Flash U-Boot Image";
+-				read-only;
+-			};
+-
+-			/* 512KB for DTB Image */
+-			partition@80000 {
+-				reg = <0x00080000 0x00080000>;
+-				label = "SPI Flash DTB Image";
+-			};
+-
+-			/* 4MB for Linux Kernel Image */
+-			partition@100000 {
+-				reg = <0x00100000 0x00400000>;
+-				label = "SPI Flash Kernel Image";
+-			};
+-
+-			/*11MB for RFS Image */
+-			partition@500000 {
+-				reg = <0x00500000 0x00B00000>;
+-				label = "SPI Flash RFS Image";
+-			};
+-
+ 		};
+ 	};
+ 
+-- 
+1.7.6.GIT
