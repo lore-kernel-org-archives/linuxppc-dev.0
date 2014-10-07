@@ -1,25 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04D871A0B0A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:28:40 +1100 (EST)
-Message-ID: <1412663318.10747.2.camel@concordia>
-Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
- verify_cpu_node_mapping()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Tue, 07 Oct 2014 17:28:38 +1100
-In-Reply-To: <20141003232606.GA9339@linux.vnet.ibm.com>
-References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
- <20141002211305.GB12862@linux.vnet.ibm.com>
- <1412297420.2783.3.camel@concordia>
- <20141003232606.GA9339@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 83B831A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:57:37 +1100 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D0E5814007B
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2014 17:57:36 +1100 (EST)
+Message-ID: <1412656674.30859.120.camel@pasglop>
+Subject: [PATCH v3 2/7] pci/msi: Add device flag indicating that 64-bit MSIs
+ don't work
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Deucher <alexdeucher@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 07 Oct 2014 15:37:54 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Li Zhong <zhong@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ linux-pci@vger.kernel.org, Anton Blanchard <anton@au1.ibm.com>,
+ Yijing Wang <wangyijing@huawei.com>, Takashi Iwai <tiwai@suse.de>,
+ Brian King <brking@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-10-03 at 16:26 -0700, Nishanth Aravamudan wrote:
-> On 03.10.2014 [10:50:20 +1000], Michael Ellerman wrote:
-> > On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
-> > > Ben & Michael,
-> > > 
-> > > What's the status of these patches?
-> > 
-> > Been in my next for a week :)
-> > 
-> > https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
-> 
-> Ah ok, thanks -- I wasn't following your tree, my fault. 
+This can be set by quirks/drivers to be used by the architecture code
+that assigns the MSI addresses.
 
-Not really your fault, I hadn't announced my trees existence :)
+We additionally add verification in the core MSI code that the values
+assigned by the architecture do satisfy the limitation in order to fail
+gracefully if they don't (ie. the arch hasn't been updated to deal with
+that quirk yet).
 
-> Do we want these to go back to 3.17-stable, as they fix some annoying splats
-> during boot (non-fatal afaict, though)?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: <stable@vger.kernel.org>
+---
+ drivers/pci/msi.c   | 26 ++++++++++++++++++++++++++
+ include/linux/pci.h |  1 +
+ 2 files changed, 27 insertions(+)
 
-Up to you really, I don't know how often/bad they were. I haven't added CC
-stable tags to the commits, so if you want them in stable you should send them
-explicitly.
-
-cheers
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 5a40516..6807edd 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -610,6 +610,20 @@ static struct msi_desc *msi_setup_entry(struct pci_dev *dev)
+ 	return entry;
+ }
+ 
++static int msi_verify_entries(struct pci_dev *dev)
++{
++	struct msi_desc *entry;
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		if (!dev->no_64bit_msi || !entry->msg.address_hi)
++			continue;
++		dev_err(&dev->dev, "Device has broken 64-bit MSI but arch"
++			" tried to assign one above 4G\n");
++		return -EIO;
++	}
++	return 0;
++}
++
+ /**
+  * msi_capability_init - configure device's MSI capability structure
+  * @dev: pointer to the pci_dev data structure of MSI device function
+@@ -647,6 +661,13 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
+ 		return ret;
+ 	}
+ 
++	ret = msi_verify_entries(dev);
++	if (ret) {
++		msi_mask_irq(entry, mask, ~mask);
++		free_msi_irqs(dev);
++		return ret;
++	}
++
+ 	ret = populate_msi_sysfs(dev);
+ 	if (ret) {
+ 		msi_mask_irq(entry, mask, ~mask);
+@@ -760,6 +781,11 @@ static int msix_capability_init(struct pci_dev *dev,
+ 	if (ret)
+ 		goto out_avail;
+ 
++	/* Check if all MSI entries honor device restrictions */
++	ret = msi_verify_entries(dev);
++	if (ret)
++		goto out_free;
++
+ 	/*
+ 	 * Some devices require MSI-X to be enabled before we can touch the
+ 	 * MSI-X registers.  We need to mask all the vectors to prevent
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 96453f9..6b6da8f 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -331,6 +331,7 @@ struct pci_dev {
+ 	unsigned int	is_added:1;
+ 	unsigned int	is_busmaster:1; /* device is busmaster */
+ 	unsigned int	no_msi:1;	/* device may not use msi */
++	unsigned int	no_64bit_msi:1; /* device may only use 32-bit MSIs */
+ 	unsigned int	block_cfg_access:1;	/* config space access is blocked */
+ 	unsigned int	broken_parity_status:1;	/* Device generates false positive parity */
+ 	unsigned int	irq_reroute_variant:2;	/* device needs IRQ rerouting variant */
