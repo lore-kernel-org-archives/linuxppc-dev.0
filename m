@@ -1,32 +1,30 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 207621A17B6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 10:23:01 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 44/44] kernel: Remove pm_power_off
-Date: Wed, 08 Oct 2014 01:43:07 +0200
-Message-ID: <1469166.g4FqVc5SJX@vostro.rjw.lan>
-In-Reply-To: <1412659726-29957-45-git-send-email-linux@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-45-git-send-email-linux@roeck-us.net>
+Return-Path: <alexdeucher@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 733021A06FF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 10:47:12 +1100 (EST)
+Received: from mail-qc0-x230.google.com (mail-qc0-x230.google.com
+ [IPv6:2607:f8b0:400d:c01::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B49711400AA
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2014 10:47:11 +1100 (EST)
+Received: by mail-qc0-f176.google.com with SMTP id r5so6804268qcx.35
+ for <linuxppc-dev@ozlabs.org>; Tue, 07 Oct 2014 16:47:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org,
- Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1412656696.30859.122.camel@pasglop>
+References: <1412656696.30859.122.camel@pasglop>
+Date: Tue, 7 Oct 2014 19:47:08 -0400
+Message-ID: <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
+Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
+ Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,69 +34,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, October 06, 2014 10:28:46 PM Guenter Roeck wrote:
-> No users of pm_power_off are left, so it is safe to remove the function.
-> 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+On Tue, Oct 7, 2014 at 12:38 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> From: Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+>
+> A number of radeon cards have a HW limitation causing them to be
+> unable to generate the full 64-bit of address bits for MSIs. This
+> breaks MSIs on some platforms such as POWER machines.
+>
+> We used to have a powerpc specific quirk to address that on a
+> single card, but this doesn't scale very well, this is better
+> put under control of the drivers who know precisely what a given
+> HW revision can do.
+>
+> This moves the setting of the quirk flag to the audio driver.
+>
+> While recent ASICs have that problem fixed, they don't seem to
+> be listed in the PCI IDs of the current driver, so let's quirk all
+> the ATI HDMI for now. The consequences are nil on x86 anyway.
+>
+> Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: <stable@vger.kernel.org>
 
-ACK
+Further discussion with the hw teams have revealed that this is still
+an issue on newer asics so I think your original patch is correct
+after all.  Just disable 64 bit MSIs on all AMD audio PCI ids.
+
+Alex
 
 > ---
->  include/linux/pm.h              |  1 -
->  kernel/power/poweroff_handler.c | 10 +---------
->  2 files changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 45271b5..fce7645 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -31,7 +31,6 @@
->  /*
->   * Callbacks for platform drivers to implement.
->   */
-> -extern void (*pm_power_off)(void);
->  extern void (*pm_power_off_prepare)(void);
->  
->  /*
-> diff --git a/kernel/power/poweroff_handler.c b/kernel/power/poweroff_handler.c
-> index 96f59ef..01a3a39 100644
-> --- a/kernel/power/poweroff_handler.c
-> +++ b/kernel/power/poweroff_handler.c
-> @@ -20,12 +20,6 @@
->  #include <linux/types.h>
->  
->  /*
-> - * If set, calling this function will power off the system immediately.
-> - */
-> -void (*pm_power_off)(void);
-> -EXPORT_SYMBOL(pm_power_off);
-> -
-> -/*
->   *	Notifier list for kernel code which wants to be called
->   *	to power off the system.
->   */
-> @@ -163,8 +157,6 @@ int register_poweroff_handler_simple(void (*handler)(void), int priority)
->   */
->  void do_kernel_poweroff(void)
->  {
-> -	if (pm_power_off)
-> -		pm_power_off();
->  	atomic_notifier_call_chain(&poweroff_handler_list, 0, NULL);
->  }
->  
-> @@ -175,6 +167,6 @@ void do_kernel_poweroff(void)
->   */
->  bool have_kernel_poweroff(void)
->  {
-> -	return pm_power_off != NULL || poweroff_handler_list.head != NULL;
-> +	return poweroff_handler_list.head != NULL;
->  }
->  EXPORT_SYMBOL(have_kernel_poweroff);
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>  sound/pci/hda/hda_intel.c | 96 +++++++++++++++++++++++++++++++++--------------
+>  sound/pci/hda/hda_priv.h  |  1 +
+>  2 files changed, 69 insertions(+), 28 deletions(-)
+>
+> diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+> index 99b367b..af38ed9 100644
+> --- a/sound/pci/hda/hda_intel.c
+> +++ b/sound/pci/hda/hda_intel.c
+> @@ -1506,9 +1506,14 @@ static int azx_first_init(struct azx *chip)
+>                 return -ENXIO;
+>         }
+>
+> -       if (chip->msi)
+> +       if (chip->msi) {
+> +               if (chip->driver_caps & AZX_DCAPS_NO_MSI64) {
+> +                       dev_dbg(card->dev, "Disabling 64bit MSI\n");
+> +                       pci->no_64bit_msi = true;
+> +               }
+>                 if (pci_enable_msi(pci) < 0)
+>                         chip->msi = 0;
+> +       }
+>
+>         if (azx_acquire_irq(chip, 0) < 0)
+>                 return -EBUSY;
+> @@ -2070,58 +2075,93 @@ static const struct pci_device_id azx_ids[] = {
+>         { PCI_DEVICE(0x1022, 0x780d),
+>           .driver_data = AZX_DRIVER_GENERIC | AZX_DCAPS_PRESET_ATI_SB },
+>         /* ATI HDMI */
+> -       { PCI_DEVICE(0x1002, 0x793b),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +       { PCI_DEVICE(0x1002, 0x1314),
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0x7919),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+> +       { PCI_DEVICE(0x1002, 0x7969),
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+> +       { PCI_DEVICE(0x1002, 0x793b),
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0x960f),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+> +       { PCI_DEVICE(0x1002, 0x9646),
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0x970f),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa00),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa08),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa10),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa18),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa20),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa28),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa30),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa38),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa40),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa48),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa50),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa58),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa60),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa68),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa80),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa88),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa90),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaa98),
+> -         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0x9902),
+> -         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaaa0),
+> -         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaaa8),
+> -         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         { PCI_DEVICE(0x1002, 0xaab0),
+> -         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI },
+> +         .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI |
+> +         AZX_DCAPS_NO_MSI64 },
+>         /* VIA VT8251/VT8237A */
+>         { PCI_DEVICE(0x1106, 0x3288),
+>           .driver_data = AZX_DRIVER_VIA | AZX_DCAPS_POSFIX_VIA },
+> diff --git a/sound/pci/hda/hda_priv.h b/sound/pci/hda/hda_priv.h
+> index 949cd43..5016014 100644
+> --- a/sound/pci/hda/hda_priv.h
+> +++ b/sound/pci/hda/hda_priv.h
+> @@ -171,6 +171,7 @@ enum { SDI0, SDI1, SDI2, SDI3, SDO0, SDO1, SDO2, SDO3 };
+>  #define AZX_DCAPS_PM_RUNTIME   (1 << 26)       /* runtime PM support */
+>  #define AZX_DCAPS_I915_POWERWELL (1 << 27)     /* HSW i915 powerwell support */
+>  #define AZX_DCAPS_CORBRP_SELF_CLEAR (1 << 28)  /* CORBRP clears itself after reset */
+> +#define AZX_DCAPS_NO_MSI64      (1 << 29)      /* Stick to 32-bit MSIs */
+>
+>  /* HD Audio class code */
+>  #define PCI_CLASS_MULTIMEDIA_HD_AUDIO  0x0403
+>
+>
