@@ -2,16 +2,16 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CC1B1A0608
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDAAB1A03A6
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:29:57 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XbNLP-002cX6-6O
+ (envelope-from <linux@roeck-us.net>) id 1XbNLP-002cXM-7E
  for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:29:55 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 16/44] mfd: tps6586x: Register with kernel poweroff handler
-Date: Mon,  6 Oct 2014 22:28:18 -0700
-Message-Id: <1412659726-29957-17-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 15/44] mfd: dm355evm_msp: Register with kernel poweroff handler
+Date: Mon,  6 Oct 2014 22:28:17 -0700
+Message-Id: <1412659726-29957-16-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
@@ -46,84 +46,57 @@ Cc: Samuel Ortiz <sameo@linux.intel.com>
 Cc: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/mfd/tps6586x.c | 31 +++++++++++++++++++++++--------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ drivers/mfd/dm355evm_msp.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/tps6586x.c b/drivers/mfd/tps6586x.c
-index 8e1dbc4..bc14509 100644
---- a/drivers/mfd/tps6586x.c
-+++ b/drivers/mfd/tps6586x.c
-@@ -21,10 +21,12 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/notifier.h>
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/i2c.h>
+diff --git a/drivers/mfd/dm355evm_msp.c b/drivers/mfd/dm355evm_msp.c
+index 4c826f7..52a82f3 100644
+--- a/drivers/mfd/dm355evm_msp.c
++++ b/drivers/mfd/dm355evm_msp.c
+@@ -14,6 +14,8 @@
  #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
 +#include <linux/pm.h>
- #include <linux/regmap.h>
- #include <linux/of.h>
+ #include <linux/err.h>
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+@@ -352,14 +354,22 @@ static void dm355evm_command(unsigned command)
+ 				command, status);
+ }
  
-@@ -133,6 +135,8 @@ struct tps6586x {
- 	u32			irq_en;
- 	u8			mask_reg[5];
- 	struct irq_domain	*irq_domain;
-+
-+	struct notifier_block	poweroff_nb;
- };
- 
- static inline struct tps6586x *dev_to_tps6586x(struct device *dev)
-@@ -472,13 +476,18 @@ static const struct regmap_config tps6586x_regmap_config = {
- 	.cache_type = REGCACHE_RBTREE,
- };
- 
--static struct device *tps6586x_dev;
--static void tps6586x_power_off(void)
-+static int tps6586x_power_off(struct notifier_block *this,
+-static void dm355evm_power_off(void)
++static int dm355evm_power_off(struct notifier_block *this,
 +			      unsigned long unused1, void *unused2)
  {
--	if (tps6586x_clr_bits(tps6586x_dev, TPS6586X_SUPPLYENE, EXITSLREQ_BIT))
--		return;
-+	struct tps6586x *tps6586x = container_of(this, struct tps6586x,
-+						 poweroff_nb);
-+
-+	if (tps6586x_clr_bits(tps6586x->dev, TPS6586X_SUPPLYENE, EXITSLREQ_BIT))
-+		return NOTIFY_DONE;
- 
--	tps6586x_set_bits(tps6586x_dev, TPS6586X_SUPPLYENE, SLEEP_MODE_BIT);
-+	tps6586x_set_bits(tps6586x->dev, TPS6586X_SUPPLYENE, SLEEP_MODE_BIT);
+ 	dm355evm_command(MSP_COMMAND_POWEROFF);
 +
 +	return NOTIFY_DONE;
  }
  
- static void tps6586x_print_version(struct i2c_client *client, int version)
-@@ -575,9 +584,13 @@ static int tps6586x_i2c_probe(struct i2c_client *client,
- 		goto err_add_devs;
- 	}
++static struct notifier_block dm355evm_msp_poweroff_nb = {
++	.notifier_call = dm355evm_power_off,
++	.priority = 64,
++};
++
+ static int dm355evm_msp_remove(struct i2c_client *client)
+ {
+-	pm_power_off = NULL;
++	unregister_poweroff_handler(&dm355evm_msp_poweroff_nb);
+ 	msp430 = NULL;
+ 	return 0;
+ }
+@@ -398,7 +408,9 @@ dm355evm_msp_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		goto fail;
  
--	if (pdata->pm_off && !pm_power_off) {
--		tps6586x_dev = &client->dev;
--		pm_power_off = tps6586x_power_off;
-+	if (pdata->pm_off) {
-+		tps6586x->poweroff_nb.notifier_call = tps6586x_power_off;
-+		tps6586x->poweroff_nb.priority = 64;
-+		ret = register_poweroff_handler(&tps6586x->poweroff_nb);
-+		if (ret)
-+			dev_err(&client->dev,
-+				"failed to register poweroff handler\n");
- 	}
+ 	/* PM hookup */
+-	pm_power_off = dm355evm_power_off;
++	status = register_poweroff_handler(&dm355evm_msp_poweroff_nb);
++	if (status)
++		dev_err(&client->dev, "Failed to register poweroff handler\n");
  
  	return 0;
-@@ -594,6 +607,8 @@ static int tps6586x_i2c_remove(struct i2c_client *client)
- {
- 	struct tps6586x *tps6586x = i2c_get_clientdata(client);
  
-+	unregister_poweroff_handler(&tps6586x->poweroff_nb);
-+
- 	tps6586x_remove_subdevs(tps6586x);
- 	mfd_remove_devices(tps6586x->dev);
- 	if (client->irq)
 -- 
 1.9.1
