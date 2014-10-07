@@ -1,15 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FD2C1A1765
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:29 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DDB1A176F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:30 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 02/16] powerpc/cell: Move data segment faulting code out of
- cell platform
-Date: Tue,  7 Oct 2014 21:48:08 +1100
-Message-Id: <1412678902-18672-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 03/16] powerpc/cell: Make spu_flush_all_slbs() generic
+Date: Tue,  7 Oct 2014 21:48:09 +1100
+Message-Id: <1412678902-18672-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 References: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -27,241 +26,127 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-__spu_trap_data_seg() currently contains code to determine the VSID and ESID
-required for a particular EA and mm struct.
+This moves spu_flush_all_slbs() into a generic call copro_flush_all_slbs().
 
-This code is generically useful for other co-processors. This moves the code
-of the cell platform so it can be used by other powerpc code. It also adds 1TB
-segment handling which Cell didn't have.
-
-This also moves the internal struct spu_slb to a generic struct copro_slb which
-is now used in the spu and copro code.  We use this new struct instead of the
-us passing around esid and vsid parameters.
+This will be useful when we add cxl which also needs a similar SLB flush call.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/copro.h       |  7 ++++-
- arch/powerpc/include/asm/mmu-hash64.h  |  7 ++++-
- arch/powerpc/mm/copro_fault.c          | 46 ++++++++++++++++++++++++++++
- arch/powerpc/mm/slb.c                  |  3 --
- arch/powerpc/platforms/cell/spu_base.c | 55 ++++++----------------------------
- 5 files changed, 67 insertions(+), 51 deletions(-)
+ arch/powerpc/include/asm/copro.h |  6 ++++++
+ arch/powerpc/mm/copro_fault.c    |  9 +++++++++
+ arch/powerpc/mm/hash_utils_64.c  | 10 +++-------
+ arch/powerpc/mm/slice.c          | 10 +++-------
+ 4 files changed, 21 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/copro.h b/arch/powerpc/include/asm/copro.h
-index 2858108..9badb09 100644
+index 9badb09..6897431 100644
 --- a/arch/powerpc/include/asm/copro.h
 +++ b/arch/powerpc/include/asm/copro.h
-@@ -10,9 +10,14 @@
- #ifndef _ASM_POWERPC_COPRO_H
- #define _ASM_POWERPC_COPRO_H
+@@ -20,4 +20,10 @@ int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
  
-+struct copro_slb
-+{
-+	u64 esid, vsid;
-+};
+ int copro_calc_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb);
+ 
 +
- int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
- 			  unsigned long dsisr, unsigned *flt);
- 
--int copro_data_segment(struct mm_struct *mm, u64 ea, u64 *esid, u64 *vsid);
-+int copro_calc_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb);
- 
++#ifdef CONFIG_PPC_COPRO_BASE
++void copro_flush_all_slbs(struct mm_struct *mm);
++#else
++static inline void copro_flush_all_slbs(struct mm_struct *mm) {}
++#endif
  #endif /* _ASM_POWERPC_COPRO_H */
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index d765144..6d0b7a2 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -189,7 +189,12 @@ static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
- #define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
- 
- #ifndef __ASSEMBLY__
--
-+static inline int slb_vsid_shift(int ssize)
-+{
-+	if (ssize == MMU_SEGSIZE_256M)
-+		return SLB_VSID_SHIFT;
-+	return SLB_VSID_SHIFT_1T;
-+}
- static inline int segment_shift(int ssize)
- {
- 	if (ssize == MMU_SEGSIZE_256M)
 diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index ba7df14..367ea01 100644
+index 367ea01..222ef9b 100644
 --- a/arch/powerpc/mm/copro_fault.c
 +++ b/arch/powerpc/mm/copro_fault.c
-@@ -24,6 +24,7 @@
- #include <linux/mm.h>
+@@ -25,6 +25,7 @@
  #include <linux/export.h>
  #include <asm/reg.h>
-+#include <asm/copro.h>
+ #include <asm/copro.h>
++#include <asm/spu.h>
  
  /*
   * This ought to be kept in sync with the powerpc specific do_page_fault
-@@ -90,3 +91,48 @@ out_unlock:
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
-+
-+int copro_calc_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
-+{
-+	u64 vsid;
-+	int psize, ssize;
-+
-+	slb->esid = (ea & ESID_MASK) | SLB_ESID_V;
-+
-+	switch (REGION_ID(ea)) {
-+	case USER_REGION_ID:
-+		pr_devel("%s: 0x%llx -- USER_REGION_ID\n", __func__, ea);
-+		psize = get_slice_psize(mm, ea);
-+		ssize = user_segment_size(ea);
-+		vsid = get_vsid(mm->context.id, ea, ssize);
-+		break;
-+	case VMALLOC_REGION_ID:
-+		pr_devel("%s: 0x%llx -- VMALLOC_REGION_ID\n", __func__, ea);
-+		if (ea < VMALLOC_END)
-+			psize = mmu_vmalloc_psize;
-+		else
-+			psize = mmu_io_psize;
-+		ssize = mmu_kernel_ssize;
-+		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-+		break;
-+	case KERNEL_REGION_ID:
-+		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
-+		psize = mmu_linear_psize;
-+		ssize = mmu_kernel_ssize;
-+		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-+		break;
-+	default:
-+		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
-+		return 1;
-+	}
-+
-+	vsid = (vsid << slb_vsid_shift(ssize)) | SLB_VSID_USER;
-+
-+	vsid |= mmu_psize_defs[psize].sllp |
-+		((ssize == MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
-+
-+	slb->vsid = vsid;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(copro_calc_slb);
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 0399a67..6e450ca 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -46,9 +46,6 @@ static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
- 	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
- }
- 
--#define slb_vsid_shift(ssize)	\
--	((ssize) == MMU_SEGSIZE_256M? SLB_VSID_SHIFT: SLB_VSID_SHIFT_1T)
--
- static inline unsigned long mk_vsid_data(unsigned long ea, int ssize,
- 					 unsigned long flags)
- {
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 2930d1e..bdb24de 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -76,10 +76,6 @@ static LIST_HEAD(spu_full_list);
- static DEFINE_SPINLOCK(spu_full_list_lock);
- static DEFINE_MUTEX(spu_full_list_mutex);
- 
--struct spu_slb {
--	u64 esid, vsid;
--};
--
- void spu_invalidate_slbs(struct spu *spu)
- {
- 	struct spu_priv2 __iomem *priv2 = spu->priv2;
-@@ -149,7 +145,7 @@ static void spu_restart_dma(struct spu *spu)
- 	}
- }
- 
--static inline void spu_load_slb(struct spu *spu, int slbe, struct spu_slb *slb)
-+static inline void spu_load_slb(struct spu *spu, int slbe, struct copro_slb *slb)
- {
- 	struct spu_priv2 __iomem *priv2 = spu->priv2;
- 
-@@ -167,45 +163,12 @@ static inline void spu_load_slb(struct spu *spu, int slbe, struct spu_slb *slb)
- 
- static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
- {
--	struct mm_struct *mm = spu->mm;
--	struct spu_slb slb;
--	int psize;
--
--	pr_debug("%s\n", __func__);
--
--	slb.esid = (ea & ESID_MASK) | SLB_ESID_V;
-+	struct copro_slb slb;
-+	int ret;
- 
--	switch(REGION_ID(ea)) {
--	case USER_REGION_ID:
--#ifdef CONFIG_PPC_MM_SLICES
--		psize = get_slice_psize(mm, ea);
--#else
--		psize = mm->context.user_psize;
--#endif
--		slb.vsid = (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
--		break;
--	case VMALLOC_REGION_ID:
--		if (ea < VMALLOC_END)
--			psize = mmu_vmalloc_psize;
--		else
--			psize = mmu_io_psize;
--		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
--		break;
--	case KERNEL_REGION_ID:
--		psize = mmu_linear_psize;
--		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
--		break;
--	default:
--		/* Future: support kernel segments so that drivers
--		 * can use SPUs.
--		 */
--		pr_debug("invalid region access at %016lx\n", ea);
--		return 1;
--	}
--	slb.vsid |= mmu_psize_defs[psize].sllp;
-+	ret = copro_calc_slb(spu->mm, ea, &slb);
-+	if (ret)
-+		return ret;
- 
- 	spu_load_slb(spu, spu->slb_replace, &slb);
- 
-@@ -253,7 +216,7 @@ static int __spu_trap_data_map(struct spu *spu, unsigned long ea, u64 dsisr)
+@@ -136,3 +137,11 @@ int copro_calc_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
  	return 0;
  }
+ EXPORT_SYMBOL_GPL(copro_calc_slb);
++
++void copro_flush_all_slbs(struct mm_struct *mm)
++{
++#ifdef CONFIG_SPU_BASE
++	spu_flush_all_slbs(mm);
++#endif
++}
++EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index daee7f4..5c0738d 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -51,7 +51,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/cputable.h>
+ #include <asm/sections.h>
+-#include <asm/spu.h>
++#include <asm/copro.h>
+ #include <asm/udbg.h>
+ #include <asm/code-patching.h>
+ #include <asm/fadump.h>
+@@ -901,9 +901,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ 	if (get_slice_psize(mm, addr) == MMU_PAGE_4K)
+ 		return;
+ 	slice_set_range_psize(mm, addr, 1, MMU_PAGE_4K);
+-#ifdef CONFIG_SPU_BASE
+-	spu_flush_all_slbs(mm);
+-#endif
++	copro_flush_all_slbs(mm);
+ 	if (get_paca_psize(addr) != MMU_PAGE_4K) {
+ 		get_paca()->context = mm->context;
+ 		slb_flush_and_rebolt();
+@@ -1141,9 +1139,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 			       "to 4kB pages because of "
+ 			       "non-cacheable mapping\n");
+ 			psize = mmu_vmalloc_psize = MMU_PAGE_4K;
+-#ifdef CONFIG_SPU_BASE
+-			spu_flush_all_slbs(mm);
+-#endif
++			copro_flush_all_slbs(mm);
+ 		}
+ 	}
  
--static void __spu_kernel_slb(void *addr, struct spu_slb *slb)
-+static void __spu_kernel_slb(void *addr, struct copro_slb *slb)
- {
- 	unsigned long ea = (unsigned long)addr;
- 	u64 llp;
-@@ -272,7 +235,7 @@ static void __spu_kernel_slb(void *addr, struct spu_slb *slb)
-  * Given an array of @nr_slbs SLB entries, @slbs, return non-zero if the
-  * address @new_addr is present.
-  */
--static inline int __slb_present(struct spu_slb *slbs, int nr_slbs,
-+static inline int __slb_present(struct copro_slb *slbs, int nr_slbs,
- 		void *new_addr)
- {
- 	unsigned long ea = (unsigned long)new_addr;
-@@ -297,7 +260,7 @@ static inline int __slb_present(struct spu_slb *slbs, int nr_slbs,
- void spu_setup_kernel_slbs(struct spu *spu, struct spu_lscsa *lscsa,
- 		void *code, int code_size)
- {
--	struct spu_slb slbs[4];
-+	struct copro_slb slbs[4];
- 	int i, nr_slbs = 0;
- 	/* start and end addresses of both mappings */
- 	void *addrs[] = {
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index b0c75cc..a81791c 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -32,7 +32,7 @@
+ #include <linux/export.h>
+ #include <asm/mman.h>
+ #include <asm/mmu.h>
+-#include <asm/spu.h>
++#include <asm/copro.h>
+ 
+ /* some sanity checks */
+ #if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
+@@ -232,9 +232,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 
+ 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 
+-#ifdef CONFIG_SPU_BASE
+-	spu_flush_all_slbs(mm);
+-#endif
++	copro_flush_all_slbs(mm);
+ }
+ 
+ /*
+@@ -671,9 +669,7 @@ void slice_set_psize(struct mm_struct *mm, unsigned long address,
+ 
+ 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 
+-#ifdef CONFIG_SPU_BASE
+-	spu_flush_all_slbs(mm);
+-#endif
++	copro_flush_all_slbs(mm);
+ }
+ 
+ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
 -- 
 1.9.1
