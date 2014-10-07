@@ -2,13 +2,14 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CFDE1A1778
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:31 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E7A11A1773
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:32 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 04/16] powerpc/msi: Improve IRQ bitmap allocator
-Date: Tue,  7 Oct 2014 21:48:10 +1100
-Message-Id: <1412678902-18672-5-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 05/16] powerpc/mm: Export mmu_kernel_ssize and
+ mmu_linear_psize
+Date: Tue,  7 Oct 2014 21:48:11 +1100
+Message-Id: <1412678902-18672-6-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 References: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,89 +27,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-Currently msi_bitmap_alloc_hwirqs() will round up any IRQ allocation requests
-to the nearest power of 2. eg. ask for 5 IRQs and you'll get 8. This wastes a
-lot of IRQs which can be a scarce resource.
-
-For cxl we may require multiple IRQs for every context that is attached to the
-accelerator. There may be 1000s of contexts attached, hence we can easily run
-out of IRQs, especially if we are needlessly wasting them.
-
-This changes the msi_bitmap_alloc_hwirqs() to allocate only the required number
-of IRQs, hence avoiding this wastage. It keeps the natural alignment
-requirement though.
+Export mmu_kernel_ssize and mmu_linear_psize.  These are needed by the cxl
+driver which has it's own MMU.  To setup the MMU cxl need access to these.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/sysdev/msi_bitmap.c | 33 ++++++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-index 2ff6302..56c8b13 100644
---- a/arch/powerpc/sysdev/msi_bitmap.c
-+++ b/arch/powerpc/sysdev/msi_bitmap.c
-@@ -20,32 +20,37 @@ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num)
- 	int offset, order = get_count_order(num);
- 
- 	spin_lock_irqsave(&bmp->lock, flags);
--	/*
--	 * This is fast, but stricter than we need. We might want to add
--	 * a fallback routine which does a linear search with no alignment.
--	 */
--	offset = bitmap_find_free_region(bmp->bitmap, bmp->irq_count, order);
-+
-+	offset = bitmap_find_next_zero_area(bmp->bitmap, bmp->irq_count, 0,
-+					    num, (1 << order) - 1);
-+	if (offset > bmp->irq_count)
-+		goto err;
-+
-+	bitmap_set(bmp->bitmap, offset, num);
- 	spin_unlock_irqrestore(&bmp->lock, flags);
- 
--	pr_debug("msi_bitmap: allocated 0x%x (2^%d) at offset 0x%x\n",
--		 num, order, offset);
-+	pr_debug("msi_bitmap: allocated 0x%x at offset 0x%x\n", num, offset);
- 
- 	return offset;
-+err:
-+	spin_unlock_irqrestore(&bmp->lock, flags);
-+	return -ENOMEM;
- }
-+EXPORT_SYMBOL(msi_bitmap_alloc_hwirqs);
- 
- void msi_bitmap_free_hwirqs(struct msi_bitmap *bmp, unsigned int offset,
- 			    unsigned int num)
- {
- 	unsigned long flags;
--	int order = get_count_order(num);
- 
--	pr_debug("msi_bitmap: freeing 0x%x (2^%d) at offset 0x%x\n",
--		 num, order, offset);
-+	pr_debug("msi_bitmap: freeing 0x%x at offset 0x%x\n",
-+		 num, offset);
- 
- 	spin_lock_irqsave(&bmp->lock, flags);
--	bitmap_release_region(bmp->bitmap, offset, order);
-+	bitmap_clear(bmp->bitmap, offset, num);
- 	spin_unlock_irqrestore(&bmp->lock, flags);
- }
-+EXPORT_SYMBOL(msi_bitmap_free_hwirqs);
- 
- void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq)
- {
-@@ -180,6 +185,12 @@ void __init test_basics(void)
- 	msi_bitmap_free_hwirqs(&bmp, size / 2, 1);
- 	check(msi_bitmap_alloc_hwirqs(&bmp, 1) == size / 2);
- 
-+	/* Check we get a naturally aligned offset */
-+	check(msi_bitmap_alloc_hwirqs(&bmp, 2) % 2 == 0);
-+	check(msi_bitmap_alloc_hwirqs(&bmp, 4) % 4 == 0);
-+	check(msi_bitmap_alloc_hwirqs(&bmp, 8) % 8 == 0);
-+	check(msi_bitmap_alloc_hwirqs(&bmp, 9) % 16 == 0);
-+
- 	msi_bitmap_free(&bmp);
- 
- 	/* Clients may check bitmap == NULL for "not-allocated" */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 5c0738d..bbdb054 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -98,6 +98,7 @@ unsigned long htab_size_bytes;
+ unsigned long htab_hash_mask;
+ EXPORT_SYMBOL_GPL(htab_hash_mask);
+ int mmu_linear_psize = MMU_PAGE_4K;
++EXPORT_SYMBOL_GPL(mmu_linear_psize);
+ int mmu_virtual_psize = MMU_PAGE_4K;
+ int mmu_vmalloc_psize = MMU_PAGE_4K;
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+@@ -105,6 +106,7 @@ int mmu_vmemmap_psize = MMU_PAGE_4K;
+ #endif
+ int mmu_io_psize = MMU_PAGE_4K;
+ int mmu_kernel_ssize = MMU_SEGSIZE_256M;
++EXPORT_SYMBOL_GPL(mmu_kernel_ssize);
+ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
+ u16 mmu_slb_size = 64;
+ EXPORT_SYMBOL_GPL(mmu_slb_size);
 -- 
 1.9.1
