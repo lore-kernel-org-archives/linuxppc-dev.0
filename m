@@ -1,40 +1,22 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 32DC11A03F3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:23:39 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 7 Oct 2014 00:23:37 -0600
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 924DCC90041
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 02:12:17 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s976NXKg5636474
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 06:23:33 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s976NWZP001391
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 02:23:33 -0400
-Date: Mon, 6 Oct 2014 23:23:05 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, ak@linux.intel.com,
- Jiri Olsa <jolsa@redhat.com>, peterz@infradead.org, eranian@google.com,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v3 0/5] powerpc/perf: Miscellaneous fixes
-Message-ID: <20141007062305.GA20849@us.ibm.com>
-References: <1412143402-26061-1-git-send-email-sukadev@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="FCuugMFkClbJLl1L"
-In-Reply-To: <1412143402-26061-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org,
- Michael Ellerman <michaele@au1.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE8871A037F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 17:25:48 +1100 (EST)
+Message-ID: <1412663147.10747.1.camel@concordia>
+Subject: Re: [PATCH 00/20] powerpc: Convert power off logic to pm_power_off
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 07 Oct 2014 17:25:47 +1100
+In-Reply-To: <54326850.1030801@suse.de>
+References: <1412170086-57971-1-git-send-email-agraf@suse.de>
+ <1412311350.2783.4.camel@concordia> <54326850.1030801@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoff@infradead.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,111 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2014-10-06 at 12:00 +0200, Alexander Graf wrote:
+> 
+> On 03.10.14 06:42, Michael Ellerman wrote:
+> > On Wed, 2014-10-01 at 15:27 +0200, Alexander Graf wrote:
+> >> The generic Linux framework to power off the machine is a function pointer
+> >> called pm_power_off. The trick about this pointer is that device drivers can
+> >> potentially implement it rather than board files.
+> >>
+> >> Today on PowerPC we set pm_power_off to invoke our generic full machine power
+> >> off logic which then calls ppc_md.power_off to invoke machine specific power
+> >> off.
+> >>
+> >> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> >> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> >> driver can implement power off logic via that function pointer.
+> > 
+> > This looks OK to me with one caveat.
+> > 
+> > In several of the patches you're replacing a static initialisation with a
+> > runtime one, and you're doing the runtime initialisation in xxx_setup_arch().
+> > That's reasonably late, so I'd prefer you did it in xxx_probe().
+> 
+> Heh, I had it in xxx_probe() originally and then realized that
+> 
+>   a) the power off function is basically a driver. Driver initialization
+> happens in xxx_setup_arch() and
+> 
+>   b) the maple target already does overwrite its power_off callback in
+> xxx_setup_arch and
+> 
+>   c) on all targets xxx_probe() is very slim and doesn't do much
+> 
+> but I'll happily change it back to put the bits in xxx_probe() instead.
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks.
 
-Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
-| Miscellaenous fixes for perf and 24x7 counters in powerpc.
-| 
-| Patches 1,3,4 were submitted earlier as a part of the parametrized
-| events for 24x7 counters. But they are not directly related to the
-| parametrized events.
-| 
-| Patch 2 simplifies and fixes a bug in catalog_read() which causes the
-| catalog file to not read first page.
-| 
-| Changelog[v3]
-| 	[Michael Ellerman] Cleanup patches 1 and 2 and fix a bug
-| 	Add patch 5/5 to update contact info for 24x7 and GPCI counters
-| 
-| Changelog[v2]
-| 	Rebase to perf/core tree.
-| 
-| Cody P Schafer (3):
-|   powerpc/perf/hv-24x7: use kmem_cache instead of aligned stack
-|     allocations
-|   perf Documentation: sysfs events/ interfaces
-|   perf Documentation: remove duplicated docs for powerpc cpu specific
-|     events
+That way you shouldn't be changing behaviour.
 
-Per Michael Ellerman's suggestion, attaching an informal test case to
-demonstrate the bug and the fix.
+It may still be the case that some power off routines don't actually work until
+later, but that's an existing problem. Some power off routines *do* work before
+setup_arch(), so they will continue to work.
 
-Sukadev
 
---FCuugMFkClbJLl1L
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Description: cp-catalog.c
-Content-Disposition: attachment; filename="cp-catalog.c"
+Also, how does your series interact with Guenter's that removes pm_power_off ?
+It seems at the moment they are unaware of each other.
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <sys/stat.h>
-
-/*
- * Usage: cp-catalog <read_size>
- *
- * Read the catalog from beginning to end. Read 'read_size' bytes
- * on each read.
- *
- * To ensure that a bug in catalog_read() in the kernel code is fixed.
- * 	cp-catalog 5 > /tmp/catalog-5
- * 	cp-catalog  > /tmp/catalog-4096
- * 	diff /tmp/catalog-5 /tmp/catalog-4096
- *
- * If both files are identical and size is about 256K, the bug is fixed.
- */
-#define CATALOG	"/sys/bus/event_source/devices/hv_24x7/interface/catalog"
-#define TMP_CATALOG	"/tmp/catalog"
-
-main(int argc, char *argv[])
-{
-	int read_size, rfd, wfd, rc;
-	struct stat stat_buf;
-	char *input_file;
-	char buf[4096];
-	char output_file[256];
-
-	read_size = 4096;
-	if (argc > 1)
-		read_size = atoi(argv[1]);
-
-	if (read_size > sizeof(buf))
-		read_size = sizeof(buf);
-
-	input_file = CATALOG;
-	sprintf(output_file, "%s-%d", TMP_CATALOG, read_size);
-
-	rfd = open(input_file, O_RDONLY);
-	if (rfd < 0) {
-		perror(input_file);
-		_Exit(1);
-	}
-
-	wfd  = open(output_file, O_WRONLY|O_CREAT|O_TRUNC);
-	if (wfd < 0) {
-		perror(output_file);
-		_Exit(1);
-	}
-
-	while(1) {
-		memset(buf, 0, sizeof(buf));
-		rc = read(rfd, buf, read_size);
-		if (rc <= 0)
-			break;
-		if (write(wfd, buf, rc) != rc) {
-			perror("write()");
-			break;
-		}
-	}
-	if (fstat(wfd, &stat_buf) < 0) {
-		perror("fstat()");
-		_Exit(1);
-	}
-	printf("catalog size %zd\n", stat_buf.st_size);
-}
-
---FCuugMFkClbJLl1L--
+cheers
