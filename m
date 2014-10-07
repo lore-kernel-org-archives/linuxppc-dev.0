@@ -2,33 +2,35 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401271A0655
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:17 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 378721A05D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 16:30:16 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XbNLj-002eJL-5m
+ (envelope-from <linux@roeck-us.net>) id 1XbNLj-002eIs-2R
  for linuxppc-dev@lists.ozlabs.org; Tue, 07 Oct 2014 05:30:15 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 24/44] power/reset: msm-powroff: Register with kernel poweroff
- handler
-Date: Mon,  6 Oct 2014 22:28:26 -0700
-Message-Id: <1412659726-29957-25-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 23/44] power/reset: qnap-poweroff: Register with kernel
+ poweroff handler
+Date: Mon,  6 Oct 2014 22:28:25 -0700
+Message-Id: <1412659726-29957-24-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
 Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
  linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, devel@driverdev.osuosl.org,
  linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>,
- devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ linux-c6x-dev@linux-c6x.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, David Woodhouse <dwmw2@infradead.org>,
+ Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,56 +41,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Register with kernel poweroff handler instead of setting pm_power_off
-directly. Select proprity 0 since the code does not really poweroff
-the system.
+directly. Register with default priority value of 128 to reflect that
+the original code generates an error if another poweroff handler has
+already been registered when the driver is loaded.
 
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/power/reset/msm-poweroff.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ drivers/power/reset/qnap-poweroff.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
-index 774f9a3..189bcd3 100644
---- a/drivers/power/reset/msm-poweroff.c
-+++ b/drivers/power/reset/msm-poweroff.c
-@@ -19,6 +19,7 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
+diff --git a/drivers/power/reset/qnap-poweroff.c b/drivers/power/reset/qnap-poweroff.c
+index a75db7f..c474980 100644
+--- a/drivers/power/reset/qnap-poweroff.c
++++ b/drivers/power/reset/qnap-poweroff.c
+@@ -16,7 +16,9 @@
+ 
+ #include <linux/kernel.h>
  #include <linux/module.h>
 +#include <linux/notifier.h>
- #include <linux/reboot.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/serial_reg.h>
+ #include <linux/kallsyms.h>
+ #include <linux/of.h>
+@@ -55,7 +57,8 @@ static void __iomem *base;
+ static unsigned long tclk;
+ static const struct power_off_cfg *cfg;
  
- #include <asm/system_misc.h>
-@@ -31,12 +32,19 @@ static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
- 	mdelay(10000);
- }
- 
--static void do_msm_poweroff(void)
-+static int do_msm_poweroff(struct notifier_block *this,
-+			   unsigned long unused1, void *unused2)
+-static void qnap_power_off(void)
++static int qnap_power_off(struct notifier_block *this, unsigned long unused1,
++			  void *unused2)
  {
- 	/* TODO: Add poweroff capability */
- 	do_msm_restart(REBOOT_HARD, NULL);
+ 	const unsigned divisor = ((tclk + (8 * cfg->baud)) / (16 * cfg->baud));
+ 
+@@ -72,14 +75,20 @@ static void qnap_power_off(void)
+ 
+ 	/* send the power-off command to PIC */
+ 	writel(cfg->cmd, UART1_REG(TX));
 +
 +	return NOTIFY_DONE;
  }
  
-+static struct notifier_block msm_powroff_nb = {
-+	.notifier_call = do_msm_poweroff,
++static struct notifier_block qnap_poweroff_nb = {
++	.notifier_call = qnap_power_off,
++	.priority = 128,
 +};
 +
- static int msm_restart_probe(struct platform_device *pdev)
+ static int qnap_power_off_probe(struct platform_device *pdev)
  {
- 	struct device *dev = &pdev->dev;
-@@ -47,7 +55,8 @@ static int msm_restart_probe(struct platform_device *pdev)
- 	if (IS_ERR(msm_ps_hold))
- 		return PTR_ERR(msm_ps_hold);
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct resource *res;
+ 	struct clk *clk;
+-	char symname[KSYM_NAME_LEN];
  
--	pm_power_off = do_msm_poweroff;
-+	if (register_poweroff_handler(&msm_powroff_nb))
-+		dev_err(&pdev->dev, "Failed to register poweroff handler\n");
- 	arm_pm_restart = do_msm_restart;
+ 	const struct of_device_id *match =
+ 		of_match_node(qnap_power_off_of_match_table, np);
+@@ -106,22 +115,13 @@ static int qnap_power_off_probe(struct platform_device *pdev)
+ 
+ 	tclk = clk_get_rate(clk);
+ 
+-	/* Check that nothing else has already setup a handler */
+-	if (pm_power_off) {
+-		lookup_symbol_name((ulong)pm_power_off, symname);
+-		dev_err(&pdev->dev,
+-			"pm_power_off already claimed %p %s",
+-			pm_power_off, symname);
+-		return -EBUSY;
+-	}
+-	pm_power_off = qnap_power_off;
+-
+-	return 0;
++	return register_poweroff_handler(&qnap_poweroff_nb);
+ }
+ 
+ static int qnap_power_off_remove(struct platform_device *pdev)
+ {
+-	pm_power_off = NULL;
++	unregister_poweroff_handler(&qnap_poweroff_nb);
++
  	return 0;
  }
+ 
 -- 
 1.9.1
