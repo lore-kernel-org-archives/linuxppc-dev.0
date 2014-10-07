@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 345DD1A1773
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DB881A1772
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Oct 2014 21:49:38 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 10/16] powerpc/opal: Add PHB to cxl mode call
-Date: Tue,  7 Oct 2014 21:48:16 +1100
-Message-Id: <1412678902-18672-11-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 11/16] powerpc/mm: Add hooks for cxl
+Date: Tue,  7 Oct 2014 21:48:17 +1100
+Message-Id: <1412678902-18672-12-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 References: <1412678902-18672-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,43 +26,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This adds the OPAL call to change a PHB into cxl mode.
+This add a hook into tlbie() so that we use global invalidations when there are
+cxl contexts active.
+
+Normally cxl snoops broadcast tlbie. cxl can have TLB entries invalidated via
+MMIO, but we aren't doing that yet. So for now we are just disabling local
+tlbies when cxl contexts are active. In future we can make tlbie() local mode
+smarter so that it invalidates cxl contexts explicitly when it needs to.
+
+This also adds a hooks for when SLBs are invalidated to ensure any
+corresponding SLBs in cxl are also invalidated at the same time.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/opal.h                | 2 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 2 files changed, 3 insertions(+)
+ arch/powerpc/mm/copro_fault.c    | 2 ++
+ arch/powerpc/mm/hash_native_64.c | 6 +++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 86055e5..84c37c4dbc 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -146,6 +146,7 @@ struct opal_sg_list {
- #define OPAL_GET_PARAM				89
- #define OPAL_SET_PARAM				90
- #define OPAL_DUMP_RESEND			91
-+#define OPAL_PCI_SET_PHB_CXL_MODE		93
- #define OPAL_DUMP_INFO2				94
- #define OPAL_PCI_EEH_FREEZE_SET			97
- #define OPAL_HANDLE_HMI				98
-@@ -924,6 +925,7 @@ int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
- int64_t opal_handle_hmi(void);
- int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
- int64_t opal_unregister_dump_region(uint32_t id);
-+int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index 222ef9b..55791fc 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -26,6 +26,7 @@
+ #include <asm/reg.h>
+ #include <asm/copro.h>
+ #include <asm/spu.h>
++#include <misc/cxl.h>
  
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 2e6ce1b..0fb56dc 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -247,3 +247,4 @@ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-+OPAL_CALL(opal_pci_set_phb_cxl_mode,		OPAL_PCI_SET_PHB_CXL_MODE);
+ /*
+  * This ought to be kept in sync with the powerpc specific do_page_fault
+@@ -143,5 +144,6 @@ void copro_flush_all_slbs(struct mm_struct *mm)
+ #ifdef CONFIG_SPU_BASE
+ 	spu_flush_all_slbs(mm);
+ #endif
++	cxl_slbia(mm);
+ }
+ EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index afc0a82..ae4962a 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -29,6 +29,8 @@
+ #include <asm/kexec.h>
+ #include <asm/ppc-opcode.h>
+ 
++#include <misc/cxl.h>
++
+ #ifdef DEBUG_LOW
+ #define DBG_LOW(fmt...) udbg_printf(fmt)
+ #else
+@@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ static inline void tlbie(unsigned long vpn, int psize, int apsize,
+ 			 int ssize, int local)
+ {
+-	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
++	unsigned int use_local;
+ 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+ 
++	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
++
+ 	if (use_local)
+ 		use_local = mmu_psize_defs[psize].tlbiel;
+ 	if (lock_tlbie && !use_local)
 -- 
 1.9.1
