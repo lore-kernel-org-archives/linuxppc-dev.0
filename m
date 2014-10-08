@@ -1,37 +1,18 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C7B581A01DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:48:09 +1100 (EST)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 8 Oct 2014 09:48:05 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3FDFC17D804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 09:50:16 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s988m2Ld51249232
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Oct 2014 08:48:02 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s988m2WS019077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Oct 2014 02:48:02 -0600
-Message-ID: <1412758077.4479.14.camel@TP420>
-Subject: Re: [PATCH] powerpc: Reimplement __get_SP() as a function not a define
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Date: Wed, 08 Oct 2014 16:47:57 +0800
-In-Reply-To: <20141001151000.0d754938@kryten>
-References: <20141001151000.0d754938@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC1D81A02F5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:55:18 +1100 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH v4 0/16] POWER8 Coherent Accelerator device driver
+Date: Wed,  8 Oct 2014 19:54:49 +1100
+Message-Id: <1412758505-23495-1-git-send-email-mikey@neuling.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, imunsie@au.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,125 +22,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 三, 2014-10-01 at 15:10 +1000, Anton Blanchard wrote:
-> Li Zhong points out an issue with our current __get_SP()
-> implementation. If ftrace function tracing is enabled (ie -pg
-> profiling using _mcount) we spill a stack frame on 64bit all the
-> time.
-> 
-> If a function calls __get_SP() and later calls a function that is
-> tail call optimised, we will pop the stack frame and the value
-> returned by __get_SP() is no longer valid. An example from Li can
-> be found in save_stack_trace -> save_context_stack:
-> 
-> c0000000000432c0 <.save_stack_trace>:
-> c0000000000432c0:       mflr    r0
-> c0000000000432c4:       std     r0,16(r1)
-> c0000000000432c8:       stdu    r1,-128(r1) <-- stack frame for _mcount
-> c0000000000432cc:       std     r3,112(r1)
-> c0000000000432d0:       bl      <._mcount>
-> c0000000000432d4:       nop
-> 
-> c0000000000432d8:       mr      r4,r1 <-- __get_SP()
-> 
-> c0000000000432dc:       ld      r5,632(r13)
-> c0000000000432e0:       ld      r3,112(r1)
-> c0000000000432e4:       li      r6,1
-> 
-> c0000000000432e8:       addi    r1,r1,128 <-- pop stack frame
-> 
-> c0000000000432ec:       ld      r0,16(r1)
-> c0000000000432f0:       mtlr    r0
-> c0000000000432f4:       b       <.save_context_stack> <-- tail call optimized
-> 
-> save_context_stack ends up with a stack pointer below the current
-> one, and it is likely to be scribbled over.
-> 
-> Fix this by making __get_SP() a function which returns the
-> callers stack frame. Also replace inline assembly which grabs
-> the stack pointer in save_stack_trace and show_stack with
-> __get_SP().
-> 
-> Reported-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  arch/powerpc/include/asm/reg.h   | 3 +--
->  arch/powerpc/kernel/misc.S       | 4 ++++
->  arch/powerpc/kernel/process.c    | 2 +-
->  arch/powerpc/kernel/stacktrace.c | 2 +-
->  4 files changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 0c05059..0f973c0 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1264,8 +1264,7 @@ static inline unsigned long mfvtb (void)
->  
->  #define proc_trap()	asm volatile("trap")
->  
-> -#define __get_SP()	({unsigned long sp; \
-> -			asm volatile("mr %0,1": "=r" (sp)); sp;})
-> +extern unsigned long __get_SP(void);
+This is the latest version of the cxl driver.  Change log below:
 
-It seems that some module code is using __get_SP, e.g. xfs in the
-example below:
-ERROR: ".__get_SP" [fs/xfs/xfs.ko] undefined!
+v4:
+ - Updates based on comments from mpe (offline and online).
+ - Refactor the sstp lock to be an entry lock.
+ - Fixed error paths on new status_mutex in start_work
+ - added some missing include files
+ - moved associating pid/mm from open() to start_work ioctl.
+ - improved IDR setup and destroy
+ - fix block comments.
+ - remove #undef at top of files
+ - wed -> work_element_descriptor on user visible interfaces
+ - Lots of documentation updates.
+ - Device name changes.
+   - No longer has a default dev name /dev/afuM.N for each mode.
+   - Dedicated, slave and master all have distinct char devs.
+ - Prevent AFU reset when contexts active.
+ - Endian bug fix for find_free_sste().
+ - Fix locking on reset_store_afu.
+ - Make CXL_IOCTL_GET_PROCESS_ELEMENT return a __u32 instead of int.
+ - Rename event.afu_err.err to error
+ - Fixed master specific sysfs attribute creation
+ - fix sparse errors with debugfs.  Was passing iomem ptrs to userspace.
 
-Maybe we need export this symbol in arch/powerpc/kernel/ppc_ksyms.c? 
+v3:
+ - Updates based on comments from mpe, benh, aneesh and offline reviews.
+ - Fixed bug freeing AFU IRQs that also freed the multiplexed PSL IRQ
+ - Change copro_flush_all_slbs to a static inline as suggested by mpe
+ - Implement sanitisation routines to clear out more registers and do full
+   adapter wide tlbia and slbia when initialising hardware
+ - Add self testcase to msi_bitmap to test allocations are aligned to a power of
+   2 and cleanup comment as suggested by mpe
+ - Clean up cxl_use_count
+ - Split out detach_process_native into two logical functions
+ - Improve comment in set_msi_irq_chip as requested by mpe
+ - Move cxl functions in pci-ioda.c to be under just one #ifdef CONFIG_CXL_BASE
+ - Cleanup hash_page and hash_page_mm from mpes and Aneesh' reviews
+ - Remove dead code in cxl_alloc_sst
+ - Add timeout in afu_slbia_native
+ - Remove cxl backend and driver ops abstractions
+   - Removed separate cxl-pci module
+   - Merged cxl pci module init calls into main driver init
+ - Refactor afu_read() to be a bit simpler and more closely follow exising
+   patterns in the kernel
+ - Userspace API updates from reviews:
+   - Added ioctl to get the process element number, and removed it as a return
+     from the start work ioctl
+   - Alter cxl_event to have one common header struct
+   - Dropped check error ioctl
+   - Added current and binary compatible API version numbers to sysfs
+   - read() now takes a 4K (or greater) buffer
+   - Pack event structs to reduce unecessary reserved fields
+     - Event sizes can now differ
+     - All event sizes are 64bit multiples to allow future event coalescing
+   - Add flags fields to indicate which fields contain valid data
+   - Add BUILD_BUG_ONs to protect against inadvertantly changing API without
+     bumping version number and/or flags
+   - Update documentation
+ - Skip CXL SLBIA codepath if CXL is not in use
+ - Split cxl_slbia_core into two functions to be easier to read
+ - Refactor copro_data_segment (renamed to copro_calc_slb) since we are no
+   longer merging with hash_page and cleaned up parameters.
+ - Some renames:
+   - struct cxl_t -> struct cxl
+   - struct cxl_afu_t -> struct cxl_afu
+   - struct cxl_context_t -> struct cxl_context
+   - copro_data_segment -> copro_calc_slb
+   - ctx->ph -> ctx->pe
+ - Added ctx->status mutex lock around for start and release context
 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 48d17d6f..eebd4e4 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -207,3 +207,5 @@ EXPORT_SYMBOL_GPL(mmu_psize_defs);
- #ifdef CONFIG_EPAPR_PARAVIRT
- EXPORT_SYMBOL(epapr_hypercall_start);
- #endif
-+
-+EXPORT_SYMBOL(__get_SP);
+v2:
+ - Updates based on comments from, Anton, Gavin, Aneesh, jk and offline reviews
+ - Simplified copro_data_segment() and merged code with hash_page_mm()
+    (New patch 10/17)
+ - PCIe code simplifications based on Gavin's review
+ - Removed redundant comment in msi_bitmap_alloc_hwirqs()
+ - Fix for locking in idr_remove in core driver
+ - Ensure PSL is enabled when PHB is flipped to CXL mode
+ - Added CONFIG_PPC_COPRO_BASE to compile copro_fault.c
+ - Merged SPU and cxl slb flushing calls into copro_flush_all_slbs()
+    (New patch 03/17)
+ - Moved slb_vsid_shift() to static inline from #define
+ - Don't write paca->context when demoting segments and mm != current
+ - Fix minor typos in documentation
 
-With the above compiling error fixed, this patch solved the SP issue I saw, so 
+v1:
+ - Initial post
 
-Tested-by: Li Zhong <zhong@linux.vnet.ibm.com>
+This add support for the Coherent Accelerator (cxl) attached to POWER8
+processors.  This coherent accelerator interface is designed to allow the
+coherent connection of FPGA based accelerators (and other devices) to a POWER
+systems.
 
->  
->  extern unsigned long scom970_read(unsigned int address);
->  extern void scom970_write(unsigned int address, unsigned long value);
-> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-> index 7ce26d4..120deb7 100644
-> --- a/arch/powerpc/kernel/misc.S
-> +++ b/arch/powerpc/kernel/misc.S
-> @@ -114,3 +114,7 @@ _GLOBAL(longjmp)
->  	mtlr	r0
->  	mr	r3,r4
->  	blr
-> +
-> +_GLOBAL(__get_SP)
-> +	PPC_LL	r3,0(r1)
-> +	blr
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index aa1df89..3cc6439 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1545,7 +1545,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
->  		tsk = current;
->  	if (sp == 0) {
->  		if (tsk == current)
-> -			asm("mr %0,1" : "=r" (sp));
-> +			sp = __get_SP();
->  		else
->  			sp = tsk->thread.ksp;
->  	}
-> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> index 3d30ef1..7f65bae 100644
-> --- a/arch/powerpc/kernel/stacktrace.c
-> +++ b/arch/powerpc/kernel/stacktrace.c
-> @@ -50,7 +50,7 @@ void save_stack_trace(struct stack_trace *trace)
->  {
->  	unsigned long sp;
->  
-> -	asm("mr %0,1" : "=r" (sp));
-> +	sp = __get_SP();
->  
->  	save_context_stack(trace, sp, current, 1);
->  }
+IBM refers to this as the Coherent Accelerator Processor Interface or CAPI.  In
+this driver it's referred to by the name cxl to avoid confusion with the ISDN
+CAPI subsystem.
+
+An overview of the patches:
+  Patches  1-3:  Split some of the old Cell co-processor code out so it can be
+		   reused.
+  Patches  4-10: Add infrastructure to arch/powerpc needed by cxl.
+  Patches  11:   Add call backs needed for invalidating cxl mm contexts.
+  Patch    12:   Add cxl specific support that needs to be built in to the
+		   kernel (can't be a module).
+  Patches 13-15: Add the majority of the device driver and API header.
+  Patch    16:   Documentation.
+
+The documentation in this last patch gives an overview of the hardware
+architecture as well as the userspace API.
+
+The cxl driver has a user-space interface described in include/uapi/misc/cxl.h
+and Documentation/powerpc/cxl.txt.  There are two ioctls which can be used to
+talk to the driver once the new /dev/cxl/afu0.0 device is opened.  This device
+can also be read and mmaped.
+
+There's also sysfs entries used to communicate information about the cxl
+configuration to userspace.  These are documented in
+Documentation/ABI/testing/sysfs-class-cxl.
+
+Many contributed to this device driver but Ian Munsie is the principal author.
+
+Driver can also be found here (based on 3.17-rc5):
+   git://github.com/mikey/linux.git cxl
+   https://github.com/mikey/linux/commits/cxl
+(Series rebases on recent linux-next with one trivial include file conflict)
+
+Please consider for inclusion.  Feedback welcome!
+
+Regards,
+Mikey
