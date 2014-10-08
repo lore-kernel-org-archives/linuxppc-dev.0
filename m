@@ -1,36 +1,34 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9330D1A1B0A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 21:28:08 +1100 (EST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 19C351A0B6E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 21:27:28 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5D70D1400E2
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2014 21:28:08 +1100 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 8 Oct 2014 06:27:26 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1428D6E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 06:16:08 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s98ARNhZ3801596
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Oct 2014 10:27:23 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s98ARMeA015794
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Oct 2014 06:27:23 -0400
-Message-ID: <54351185.2020005@linux.vnet.ibm.com>
-Date: Wed, 08 Oct 2014 15:57:17 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Clarke <pc@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: mitigate impact of decrementer reset
-References: <20141008025210.AF949140144@ozlabs.org>
-In-Reply-To: <20141008025210.AF949140144@ozlabs.org>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 8 Oct 2014 20:28:07 +1000
 Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v4 13/16] cxl: Driver code for powernv PCIe based cards
+ for userspace access
+In-reply-to: <1412758505-23495-14-git-send-email-mikey@neuling.org>
+References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
+ <1412758505-23495-14-git-send-email-mikey@neuling.org>
+Date: Wed, 08 Oct 2014 21:28:05 +1100
+Message-Id: <1412763264-sup-2737@delenn.ozlabs.ibm.com>
+Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, arnd <arnd@arndb.de>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, greg <greg@kroah.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
+ jk <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,47 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/08/2014 08:22 AM, Michael Ellerman wrote:
-> On Tue, 2014-07-10 at 19:13:24 UTC, Paul Clarke wrote:
->> The POWER ISA defines an always-running decrementer which can be used
->> to schedule interrupts after a certain time interval has elapsed.
->> The decrementer counts down at the same frequency as the Time Base,
->> which is 512 MHz.  The maximum value of the decrementer is 0x7fffffff.
->> This works out to a maximum interval of about 4.19 seconds.
->>
->> If a larger interval is desired, the kernel will set the decrementer
->> to its maximum value and reset it after it expires (underflows)
->> a sufficient number of times until the desired interval has elapsed.
->>
->> The negative effect of this is that an unwanted latency spike will
->> impact normal processing at most every 4.19 seconds.  On an IBM
->> POWER8-based system, this spike was measured at about 25-30
->> microseconds, much of which was basic, opportunistic housekeeping
->> tasks that could otherwise have waited.
->>
->> This patch short-circuits the reset of the decrementer, exiting after
->> the decrementer reset, but before the housekeeping tasks if the only
->> need for the interrupt is simply to reset it.  After this patch,
->> the latency spike was measured at about 150 nanoseconds.
-> 
-> Hi Paul,
-> 
-> Thanks for the excellent changelog. But this patch makes me a bit nervous :)
-> 
-> Do you know where the latency is coming from? Is it primarily the irq work?
-> 
-> If so I'd prefer if we could move the short circuit into __timer_interrupt()
-> itself. That way we'd still have the trace points usable, and it would
-> hopefully result in less duplicated logic.
+Excerpts from Michael Neuling's message of 2014-10-08 19:55:02 +1100:
+> +static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+> +            loff_t *off)
+...
+> +    for (;;) {
+> +        prepare_to_wait(&ctx->wq, &wait, TASK_INTERRUPTIBLE);
+> +        if (ctx_event_pending(ctx))
+> +            break;
+> +
+> +        spin_unlock_irqrestore(&ctx->lock, flags);
+> +        if (file->f_flags & O_NONBLOCK)
+> +            return -EAGAIN;
+> +
+> +        if (signal_pending(current))
+> +            return -ERESTARTSYS;
 
-I agree, this is perhaps the better approach.
+Looks like I mucked this up while refactoring - these two cases no
+longer call finish_wait() which can lead to a crash if something later
+wakes up the ctx->wq... I'll post a fix in a separate patch shortly.
 
-Regards
-Preeti U Murthy
-> 
-> cheers
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+-Ian
