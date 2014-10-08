@@ -1,21 +1,32 @@
-Return-Path: <Heinz.Wrobel@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alexdeucher@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F11DC1A0434
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 17:11:23 +1100 (EST)
-From: Heinz Wrobel <Heinz.Wrobel@freescale.com>
-To: Paul Clarke <pc@us.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] powerpc: mitigate impact of decrementer reset
-Date: Wed, 8 Oct 2014 05:37:12 +0000
-Message-ID: <cf20308cc3b44935a604f409958b610d@BLUPR03MB167.namprd03.prod.outlook.com>
-References: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
- <54343B54.4060500@us.ibm.com>
-In-Reply-To: <54343B54.4060500@us.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A1EE1A0127
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 17:23:23 +1100 (EST)
+Received: from mail-qc0-x234.google.com (mail-qc0-x234.google.com
+ [IPv6:2607:f8b0:400d:c01::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AEEC5140085
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2014 17:23:21 +1100 (EST)
+Received: by mail-qc0-f180.google.com with SMTP id x3so6896589qcv.25
+ for <linuxppc-dev@ozlabs.org>; Tue, 07 Oct 2014 23:23:19 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1412746096.30859.229.camel@pasglop>
+References: <1412656696.30859.122.camel@pasglop>
+ <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
+ <1412746096.30859.229.camel@pasglop>
+Date: Wed, 8 Oct 2014 02:23:19 -0400
+Message-ID: <CADnq5_MH+sLjm=_teX-oJ0k+2BsR+pthen7VDUDVFsKPJw6kqg@mail.gmail.com>
+Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
+ Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-UGF1bCwNCg0Kd2hhdCBpZiB5b3VyIHRiIHdyYXBzIGR1cmluZyB0aGUgIHRlc3Q/DQoNCj4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFttYWlsdG86bGlu
-dXhwcGMtZGV2LQ0KPiBib3VuY2VzK2hlaW56Lndyb2JlbD1mcmVlc2NhbGUuY29tQGxpc3RzLm96
-bGFicy5vcmddIE9uIEJlaGFsZiBPZiBQYXVsDQo+IENsYXJrZQ0KPiBTZW50OiBUdWVzZGF5LCBP
-Y3RvYmVyIDA3LCAyMDE0IDIxOjEzDQo+IFRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
-Zw0KPiBTdWJqZWN0OiBbUEFUQ0hdIHBvd2VycGM6IG1pdGlnYXRlIGltcGFjdCBvZiBkZWNyZW1l
-bnRlciByZXNldA0KPiANCj4gVGhlIFBPV0VSIElTQSBkZWZpbmVzIGFuIGFsd2F5cy1ydW5uaW5n
-IGRlY3JlbWVudGVyIHdoaWNoIGNhbiBiZSB1c2VkIHRvDQo+IHNjaGVkdWxlIGludGVycnVwdHMg
-YWZ0ZXIgYSBjZXJ0YWluIHRpbWUgaW50ZXJ2YWwgaGFzIGVsYXBzZWQuDQo+IFRoZSBkZWNyZW1l
-bnRlciBjb3VudHMgZG93biBhdCB0aGUgc2FtZSBmcmVxdWVuY3kgYXMgdGhlIFRpbWUgQmFzZSwg
-d2hpY2gNCj4gaXMgNTEyIE1Iei4gIFRoZSBtYXhpbXVtIHZhbHVlIG9mIHRoZSBkZWNyZW1lbnRl
-ciBpcyAweDdmZmZmZmZmLg0KPiBUaGlzIHdvcmtzIG91dCB0byBhIG1heGltdW0gaW50ZXJ2YWwg
-b2YgYWJvdXQgNC4xOSBzZWNvbmRzLg0KPiANCj4gSWYgYSBsYXJnZXIgaW50ZXJ2YWwgaXMgZGVz
-aXJlZCwgdGhlIGtlcm5lbCB3aWxsIHNldCB0aGUgZGVjcmVtZW50ZXIgdG8gaXRzDQo+IG1heGlt
-dW0gdmFsdWUgYW5kIHJlc2V0IGl0IGFmdGVyIGl0IGV4cGlyZXMgKHVuZGVyZmxvd3MpIGEgc3Vm
-ZmljaWVudCBudW1iZXIgb2YNCj4gdGltZXMgdW50aWwgdGhlIGRlc2lyZWQgaW50ZXJ2YWwgaGFz
-IGVsYXBzZWQuDQo+IA0KPiBUaGUgbmVnYXRpdmUgZWZmZWN0IG9mIHRoaXMgaXMgdGhhdCBhbiB1
-bndhbnRlZCBsYXRlbmN5IHNwaWtlIHdpbGwgaW1wYWN0IG5vcm1hbA0KPiBwcm9jZXNzaW5nIGF0
-IG1vc3QgZXZlcnkgNC4xOSBzZWNvbmRzLiAgT24gYW4gSUJNIFBPV0VSOC1iYXNlZCBzeXN0ZW0s
-IHRoaXMNCj4gc3Bpa2Ugd2FzIG1lYXN1cmVkIGF0IGFib3V0IDI1LTMwIG1pY3Jvc2Vjb25kcywg
-bXVjaCBvZiB3aGljaCB3YXMgYmFzaWMsDQo+IG9wcG9ydHVuaXN0aWMgaG91c2VrZWVwaW5nIHRh
-c2tzIHRoYXQgY291bGQgb3RoZXJ3aXNlIGhhdmUgd2FpdGVkLg0KPiANCj4gVGhpcyBwYXRjaCBz
-aG9ydC1jaXJjdWl0cyB0aGUgcmVzZXQgb2YgdGhlIGRlY3JlbWVudGVyLCBleGl0aW5nIGFmdGVy
-IHRoZQ0KPiBkZWNyZW1lbnRlciByZXNldCwgYnV0IGJlZm9yZSB0aGUgaG91c2VrZWVwaW5nIHRh
-c2tzIGlmIHRoZSBvbmx5IG5lZWQgZm9yIHRoZQ0KPiBpbnRlcnJ1cHQgaXMgc2ltcGx5IHRvIHJl
-c2V0IGl0LiAgQWZ0ZXIgdGhpcyBwYXRjaCwgdGhlIGxhdGVuY3kgc3Bpa2Ugd2FzIG1lYXN1cmVk
-DQo+IGF0IGFib3V0IDE1MCBuYW5vc2Vjb25kcy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFBhdWwg
-QS4gQ2xhcmtlIDxwY0B1cy5pYm0uY29tPg0KPiAtLS0NCj4gICBhcmNoL3Bvd2VycGMva2VybmVs
-L3RpbWUuYyB8IDEzICsrKysrKysrKysrKysNCj4gICAxIGZpbGUgY2hhbmdlZCwgMTMgaW5zZXJ0
-aW9ucygrKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvdGltZS5jIGIv
-YXJjaC9wb3dlcnBjL2tlcm5lbC90aW1lLmMgaW5kZXgNCj4gMzY4YWIzNy4uOTYyYTA2YiAxMDA2
-NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC90aW1lLmMNCj4gKysrIGIvYXJjaC9wb3dl
-cnBjL2tlcm5lbC90aW1lLmMNCj4gQEAgLTUyOCw2ICs1MjgsNyBAQCB2b2lkIHRpbWVyX2ludGVy
-cnVwdChzdHJ1Y3QgcHRfcmVncyAqIHJlZ3MpDQo+ICAgew0KPiAgIAlzdHJ1Y3QgcHRfcmVncyAq
-b2xkX3JlZ3M7DQo+ICAgCXU2NCAqbmV4dF90YiA9ICZfX2dldF9jcHVfdmFyKGRlY3JlbWVudGVy
-c19uZXh0X3RiKTsNCj4gKwl1NjQgbm93Ow0KPiANCj4gICAJLyogRW5zdXJlIGEgcG9zaXRpdmUg
-dmFsdWUgaXMgd3JpdHRlbiB0byB0aGUgZGVjcmVtZW50ZXIsIG9yIGVsc2UNCj4gICAJICogc29t
-ZSBDUFVzIHdpbGwgY29udGludWUgdG8gdGFrZSBkZWNyZW1lbnRlciBleGNlcHRpb25zLg0KPiBA
-QCAtNTUwLDYgKzU1MSwxOCBAQCB2b2lkIHRpbWVyX2ludGVycnVwdChzdHJ1Y3QgcHRfcmVncyAq
-IHJlZ3MpDQo+ICAgCSAqLw0KPiAgIAltYXlfaGFyZF9pcnFfZW5hYmxlKCk7DQo+IA0KPiArCS8q
-IElmIHRoaXMgaXMgc2ltcGx5IHRoZSBkZWNyZW1lbnRlciBleHBpcmluZyAodW5kZXJmbG93KSBk
-dWUgdG8NCj4gKwkgKiB0aGUgbGltaXRlZCBzaXplIG9mIHRoZSBkZWNyZW1lbnRlciwgYW5kIG5v
-dCBhIHNldCB0aW1lciwNCj4gKwkgKiByZXNldCAoaWYgbmVlZGVkKSBhbmQgcmV0dXJuDQo+ICsJ
-ICovDQo+ICsJbm93ID0gZ2V0X3RiX29yX3J0YygpOw0KPiArCWlmIChub3cgPCAqbmV4dF90Yikg
-ew0KDQpXaGF0IGlmICJub3ciIGFuZCAqbmV4dF90YiBhcmUgbm90IG9uIHRoZSBzYW1lIHdyYXAg
-Y291bnQ/IFRoZXkgYXJlIGJvdGggbW9kdWxvIHZhbHVlcyBBRkFDUy4NClNob3VsZG4ndCB0aGlz
-IGJlIHJpZ2h0IGhlcmUgbW9yZSBsaWtlIGEgImlmICgoKm5leHRfdGIgLSBub3cpIDwgMl42Myki
-IHN0eWxlIHRlc3QgdG8gY2hlY2sgZm9yIGRlbHRhcyB3aXRoaW4gdGhlIHJhbmdlIGluc3RlYWQg
-b2YgYWJzb2x1dGUgdmFsdWVzPw0KDQo+ICsJCW5vdyA9ICpuZXh0X3RiIC0gbm93Ow0KPiArCQlp
-ZiAobm93IDw9IERFQ1JFTUVOVEVSX01BWCkNCj4gKwkJCXNldF9kZWMoKGludClub3cpOw0KPiAr
-CQlfX2dldF9jcHVfdmFyKGlycV9zdGF0KS50aW1lcl9pcnFzX290aGVycysrOw0KPiArCQlyZXR1
-cm47DQo+ICsJfQ0KPiANCj4gICAjaWYgZGVmaW5lZChDT05GSUdfUFBDMzIpICYmIGRlZmluZWQo
-Q09ORklHX1BQQ19QTUFDKQ0KPiAgIAlpZiAoYXRvbWljX3JlYWQoJnBwY19uX2xvc3RfaW50ZXJy
-dXB0cykgIT0gMCkNCj4gLS0NCj4gMi4xLjIuMzMwLmc1NjUzMDFlDQoNCkJSLA0KDQpIZWlueg0K
+On Wed, Oct 8, 2014 at 1:28 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2014-10-07 at 19:47 -0400, Alex Deucher wrote:
+>> > This moves the setting of the quirk flag to the audio driver.
+>> >
+>> > While recent ASICs have that problem fixed, they don't seem to
+>> > be listed in the PCI IDs of the current driver, so let's quirk all
+>> > the ATI HDMI for now. The consequences are nil on x86 anyway.
+>> >
+>> > Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+>> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> > CC: <stable@vger.kernel.org>
+>>
+>> Further discussion with the hw teams have revealed that this is still
+>> an issue on newer asics so I think your original patch is correct
+>> after all.  Just disable 64 bit MSIs on all AMD audio PCI ids.
+>
+> Allright, I won't resend the whole series, I can just pickup my previous
+> patch. Takashi, Bjorn, Dave, this series covers your 3 areas of
+> maintainership, how do you want to proceed ? I'm happy to merge the
+> whole lot via powerpc ASAP (since it's all CC'ed stable) if you guys
+> send me the appropriate acks, otherwise, let me know.
+>
+
+I don't remember if I gave my formal review of your original patch, so if not,
+Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+
+Alex
