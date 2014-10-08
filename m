@@ -1,27 +1,28 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0142.outbound.protection.outlook.com [65.55.169.142])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F1C3A1A0610
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 14:25:55 +1100 (EST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Guenter Roeck <linux@roeck-us.net>
-Subject: RE: [PATCH] powerpc/fsl: Add support for pci(e) machine check
- exception on E500MC / E5500
-Date: Wed, 8 Oct 2014 03:10:32 +0000
-Message-ID: <c402851215544e58a8b0bdaabde79395@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <D04F3201.10DEB%jojyv@juniper.net>
- <1412033466.13320.293.camel@snotra.buserror.net>
- <20140930155029.GA4724@roeck-us.net>
- <1412124210.13320.330.camel@snotra.buserror.net>
-In-Reply-To: <1412124210.13320.330.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 997521A04AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 14:56:13 +1100 (EST)
+Message-ID: <5434B5D3.4060308@hurleysoftware.com>
+Date: Tue, 07 Oct 2014 23:56:03 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Guenter Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
+To: David Laight <David.Laight@ACULAB.COM>, Arnd Bergmann <arnd@arndb.de>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jojy Varghese <jojyv@juniper.net>
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH tty-next 14/22] tty: Remove
+ tty_wait_until_sent_from_close()
+References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
+ <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
+ <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Karsten Keil <isdn@linux-pingi.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +32,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBPY3RvYmVyIDAxLCAyMDE0IDg6NDQgQU0NCj4gVG86IEd1
-ZW50ZXIgUm9lY2sNCj4gQ2M6IEpvankgVmFyZ2hlc2U7IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7
-IFBhdWwgTWFja2VycmFzOyBNaWNoYWVsDQo+IEVsbGVybWFuOyBsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gR3VlbnRlciBSb2Vj
-azsgSmlhIEhvbmd0YW8tQjM4OTUxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZnNs
-OiBBZGQgc3VwcG9ydCBmb3IgcGNpKGUpIG1hY2hpbmUgY2hlY2sNCj4gZXhjZXB0aW9uIG9uIEU1
-MDBNQyAvIEU1NTAwDQo+IA0KPiBPbiBUdWUsIDIwMTQtMDktMzAgYXQgMDg6NTAgLTA3MDAsIEd1
-ZW50ZXIgUm9lY2sgd3JvdGU6DQo+ID4gT24gTW9uLCBTZXAgMjksIDIwMTQgYXQgMDY6MzE6MDZQ
-TSAtMDUwMCwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+IE9uIE1vbiwgMjAxNC0wOS0yOSBhdCAy
-MzowMyArMDAwMCwgSm9qeSBWYXJnaGVzZSB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4gT24gOS8y
-OS8xNCAxMjowNiBQTSwgIkd1ZW50ZXIgUm9lY2siIDxsaW51eEByb2Vjay11cy5uZXQ+IHdyb3Rl
-Og0KPiA+ID4gPg0KPiA+ID4gPiA+VGhvc2UgYXJlIGVycm9ycyByZWxhdGVkIHRvIFBDSWUgaG90
-cGx1ZywgYW5kIGFyZSBzZWVuIHdpdGgNCj4gPiA+ID4gPnVuZXhwZWN0ZWQgUENJZSBkZXZpY2Ug
-cmVtb3ZhbHMgKHRyaWdnZXJlZCwgZm9yIGV4YW1wbGUsIGJ5DQo+ID4gPiA+ID5yZW1vdmluZyBw
-b3dlciBmcm9tIGEgUENJZSBhZGFwdGVyKS4NCj4gPiA+ID4gPlRoZSBiZWhhdmlvciB3ZSBzZWUg
-b24gRTU1MDAgaXMgcXVpdGUgc2ltaWxhciB0byB0aGUgc2FtZQ0KPiA+ID4gPiA+YmVoYXZpb3Ig
-b24NCj4gPiA+ID4gPkU1MDA6DQo+ID4gPiA+ID5JZiB1bmhhbmRsZWQsIHRoZSBDUFUga2VlcHMg
-ZXhlY3V0aW5nIHRoZSBzYW1lIGluc3RydWN0aW9uIG92ZXINCj4gPiA+ID4gPmFuZCBvdmVyIGFn
-YWluIGlmIHRoZXJlIGlzIGFuIGVycm9yIG9uIGEgUENJZSBhY2Nlc3MgYW5kIHRodXMNCj4gPiA+
-ID4gPnN0YWxscy4gSSBkb24ndCBrbm93IGlmIHRoaXMgaXMgY29uc2lkZXJlZCBhbiBlcnJhdHVt
-IG9yIGV4cGVjdGVkDQo+ID4gPiA+ID5iZWhhdmlvciwgYnV0IGl0IGlzIG9uZSB3ZSBoYXZlIHRv
-IGFkZHJlc3Mgc2luY2Ugd2UgaGF2ZSB0byBiZQ0KPiA+ID4gPiA+YWJsZSB0byBoYW5kbGUgdGhh
-dCBjb25kaXRpb24uDQo+ID4gPg0KPiA+ID4gVGhlIHJlYXNvbiBJIGFzayBpcyB0aGF0IHRoZSBo
-YW5kbGluZyBmb3IgZTUwMCB3YXMgZGVzY3JpYmVkIGFzIGFuDQo+ID4gPiBlcnJhdHVtIHdvcmth
-cm91bmQuICBJZiBpdCBpcyBhbiBlcnJhdHVtIGl0IHdvdWxkIGJlIG5pY2UgdG8ga25vdw0KPiA+
-ID4gdGhlIGVycmF0dW0gbnVtYmVyIGFuZCB0aGUgZnVsbCBsaXN0IG9mIGFmZmVjdGVkIGNoaXBz
-Lg0KPiA+ID4NCj4gPiBNeSB1bmRlcnN0YW5kaW5nLCB3aGljaCBtYXkgYmUgd3JvbmcsIHdhcyB0
-aGF0IHRoaXMgaXMgZXhwZWN0ZWQNCj4gPiBiZWhhdmlvciwgYXQgbGVhc3QgZm9yIEU1NTAwLiBJ
-IGFjdHVhbGx5IHRob3VnaHQgSSBoYWQgc2VlbiBpdA0KPiA+IHNvbWV3aGVyZSBpbiB0aGUgc3Bl
-Y2lmaWNhdGlvbiAocmVzcG9uc2UgdG8gUENJZSBlcnJvcnMpLCBidXQgSSBkb24ndA0KPiByZWNh
-bGwgd2hlcmUgZXhhY3RseS4NCj4gPg0KPiA+IEF0IGxlYXN0IGZvciBteSBwYXJ0IEkgYW0gbm90
-IGF3YXJlIG9mIGFuIGVycmF0dW0uDQo+IA0KPiBKaWEgSG9uZ3RhbywgY2FuIHlvdSBjb21tZW50
-IGhlcmU/DQoNCkkgZGlkIG5vdCBmaW5kIGFueSByZWxhdGVkIGVycmF0dW0gZWl0aGVyLg0KDQo+
-IA0KPiA+ID4gPiA+VWx0aW1hdGVseSwgd2UnbGwgd2FudA0KPiA+ID4gPiA+dG8NCj4gPiA+ID4g
-PmltcGxlbWVudCBQQ0llIGVycm9yIGhhbmRsZXJzIGZvciB0aGUgYWZmZWN0ZWQgZHJpdmVycywg
-YnV0IHRoYXQNCj4gPiA+ID4gPndpbGwgYmUgYSBuZXh0IHN0ZXAuDQo+ID4gPg0KPiA+ID4gRm9y
-IG5vdyBjYW4gd2UgYXQgbGVhc3QgcHJpbnQgYSByYXRlbGltaXRlZCBlcnJvciBtZXNzYWdlPyAg
-SSBkb24ndA0KPiA+ID4gbGlrZSB0aGUgaWRlYSBvZiBzaWxlbnRseSBpZ25vcmluZyB0aGVzZSBl
-cnJvcnMuICBJIHN1cHBvc2UgaXQncyBhDQo+ID4gPiBzZXBhcmF0ZSBpc3N1ZSBmcm9tIGV4dGVu
-ZGluZyB0aGUgd29ya2Fyb3VuZCB0byBjb3ZlciBlNTAwbWMsIHRob3VnaC4NCj4gPiA+DQo+ID4g
-SSBkb24ndCByZWFsbHkgbGlrZSB0aGUgaWRlYSBvZiBwcmludGluZyBhbiBlcnJvciBtZXNzYWdl
-IHByZXR0eSBtdWNoDQo+ID4gZWFjaCB0aW1lIHdoZW4gYW4gdW5leHBlY3RlZCBob3RwbHVnIGV2
-ZW50IG9jY3Vycy4NCj4gDQo+IFVuZXhwZWN0ZWQgZXZlbnRzIHNlZW0gbGlrZSB0aGUgc29ydCBv
-ZiB0aGluZyB5b3UnZCB3YW50IHRvIGxvZywgYnV0IG15DQo+IGNvbmNlcm4gaXMgdGhhdCB0aGlz
-IG1pZ2h0IG5vdCBiZSB0aGUgb25seSBjYXVzZSBvZiBQQ0kgZXJyb3JzLg0KPiANCj4gLVNjb3R0
-DQo+IA0KDQo=
+On 06/17/2014 07:03 AM, David Laight wrote:
+> From: Peter Hurley
+> ...
+>>> I don't understand the second half of the changelog, it doesn't seem
+>>> to fit here: there deadlock that we are trying to avoid here happens
+>>> when the *same* tty needs the lock to complete the function that
+>>> sends the pending data. I don't think we do still do that any more,
+>>> but it doesn't seem related to the tty lock being system-wide or not.
+>>
+>> The tty lock is not used in the i/o path; it's purpose is to
+>> mutually exclude state changes in open(), close() and hangup().
+>>
+>> The commit that added this [1] comments that _other_ ttys may wait
+>> for this tty to complete, and comments in the code note that this
+>> function should be removed when the system-wide tty mutex was removed
+>> (which happened with the commit noted in the changelog).
+
+I just wanted to revisit this discussion briefly so I can clarify the
+situation regarding holding the tty lock while closing, and how that
+affects parallel opens.
+
+I've unnested the tty lock from the tty mutex (which I'm still testing)
+but will be submitting after the merge window re-opens for 3.19. So this
+is more relevant now.
+
+The original patch that led to this thread is here:
+https://lkml.org/lkml/2014/6/16/306
+
+
+> What happens if another process tries to do a non-blocking open
+> while you are sleeping in close waiting for output to drain?
+> 
+> Hopefully this returns before that data has drained.
+
+Current mainline blocks on _any_ racing re-open while this lock is
+dropped in tty_wait_until_sent_from_close(); blocking while
+ASYNC_CLOSING has been in mainline since at least 2.6.29 and that just
+merged existing code together. See tty_port_block_til_ready(); note
+the test for O_NONBLOCK is after the wait while ASYNC_CLOSING.
+
+IOW, currently a non-blocking open will sleep for the _entire_ duration
+of a parallel hardware shutdown, and when it wakes, the error return will
+cause a release of its tty, and it will restart with a fresh attempt
+to open. Same with a blocking open that is already waiting; when its
+woken the hardware shutdown has already completed so ASYNC_INITIALIZED
+is cleared, which forces a release and restart too.
+
+The point being that holding the tty lock across the _entire_ close
+is equivalent to the current outcome, regardless of O_NONBLOCK.
+
+I'm reluctant to start returning EGAIN for non-blocking tty opens
+because no tty driver does that now, and I don't think userspace will
+deal well with new return codes from tty opens.
+
+Regards,
+Peter Hurley
