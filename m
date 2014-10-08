@@ -1,15 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB2EB1A042E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 13:52:10 +1100 (EST)
-In-Reply-To: <54343B54.4060500@us.ibm.com>
-To: Paul Clarke <pc@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc: mitigate impact of decrementer reset
-Message-Id: <20141008025210.AF949140144@ozlabs.org>
-Date: Wed,  8 Oct 2014 13:52:10 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C485F1A0463
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 14:28:28 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCHv4] clk: ppc-corenet: rename to ppc-qoriq and add
+ CLK_OF_DECLARE support
+Date: Wed, 8 Oct 2014 03:28:20 +0000
+Message-ID: <920830473fda4de3abcbf5ae11dd2360@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1411454806-8214-1-git-send-email-jingchang.lu@freescale.com>
+ <d4a375f40b544cf1ae78ac82dc20569c@BL2PR03MB467.namprd03.prod.outlook.com>
+ <1411675680.13320.201.camel@snotra.buserror.net>
+ <20140925225406.19023.25065@quantum>
+ <1411685780.13320.209.camel@snotra.buserror.net>
+ <20140926232900.19023.35854@quantum>
+ <d637914864824bda8d0dd62639e9097b@DM2PR03MB574.namprd03.prod.outlook.com>
+ <1412035075.13320.302.camel@snotra.buserror.net>
+In-Reply-To: <1412035075.13320.302.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mike Turquette <mturquette@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-07-10 at 19:13:24 UTC, Paul Clarke wrote:
-> The POWER ISA defines an always-running decrementer which can be used
-> to schedule interrupts after a certain time interval has elapsed.
-> The decrementer counts down at the same frequency as the Time Base,
-> which is 512 MHz.  The maximum value of the decrementer is 0x7fffffff.
-> This works out to a maximum interval of about 4.19 seconds.
-> 
-> If a larger interval is desired, the kernel will set the decrementer
-> to its maximum value and reset it after it expires (underflows)
-> a sufficient number of times until the desired interval has elapsed.
-> 
-> The negative effect of this is that an unwanted latency spike will
-> impact normal processing at most every 4.19 seconds.  On an IBM
-> POWER8-based system, this spike was measured at about 25-30
-> microseconds, much of which was basic, opportunistic housekeeping
-> tasks that could otherwise have waited.
-> 
-> This patch short-circuits the reset of the decrementer, exiting after
-> the decrementer reset, but before the housekeeping tasks if the only
-> need for the interrupt is simply to reset it.  After this patch,
-> the latency spike was measured at about 150 nanoseconds.
-
-Hi Paul,
-
-Thanks for the excellent changelog. But this patch makes me a bit nervous :)
-
-Do you know where the latency is coming from? Is it primarily the irq work?
-
-If so I'd prefer if we could move the short circuit into __timer_interrupt()
-itself. That way we'd still have the trace points usable, and it would
-hopefully result in less duplicated logic.
-
-cheers
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBUdWVzZGF5LCBTZXB0ZW1iZXIgMzAsIDIwMTQgNzo1OCBBTQ0KPiBUbzogVGFuZyBZ
+dWFudGlhbi1CMjk5ODMNCj4gQ2M6IE1pa2UgVHVycXVldHRlOyBsaW51eHBwYy1kZXZAbGlzdHMu
+b3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgtYXJtLWtl
+cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBMdSBKaW5nY2hhbmctQjM1MDgzDQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0h2NF0gY2xrOiBwcGMtY29yZW5ldDogcmVuYW1lIHRvIHBwYy1xb3JpcSBhbmQg
+YWRkDQo+IENMS19PRl9ERUNMQVJFIHN1cHBvcnQNCj4gDQo+IE9uIFNhdCwgMjAxNC0wOS0yNyBh
+dCAyMToxOCAtMDUwMCwgVGFuZyBZdWFudGlhbi1CMjk5ODMgd3JvdGU6DQo+ID4gPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogTGludXhwcGMtZGV2DQo+ID4gPiBbbWFp
+bHRvOmxpbnV4cHBjLWRldi1ib3VuY2VzK2IyOTk4Mz1mcmVlc2NhbGUuY29tQGxpc3RzLm96bGFi
+cy5vcmddDQo+ID4gPiBPbiBCZWhhbGYgT2YgTWlrZSBUdXJxdWV0dGUNCj4gPiA+IFNlbnQ6IFNh
+dHVyZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTQgNzoyOSBBTQ0KPiA+ID4gVG86IFdvb2QgU2NvdHQt
+QjA3NDIxDQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
+ZGVhZC5vcmc7IEx1IEppbmdjaGFuZy1CMzUwODMNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0h2
+NF0gY2xrOiBwcGMtY29yZW5ldDogcmVuYW1lIHRvIHBwYy1xb3JpcSBhbmQgYWRkDQo+ID4gPiBD
+TEtfT0ZfREVDTEFSRSBzdXBwb3J0DQo+ID4gPg0KPiA+ID4gUXVvdGluZyBTY290dCBXb29kICgy
+MDE0LTA5LTI1IDE1OjU2OjIwKQ0KPiA+ID4gPiBPbiBUaHUsIDIwMTQtMDktMjUgYXQgMTU6NTQg
+LTA3MDAsIE1pa2UgVHVycXVldHRlIHdyb3RlOg0KPiA+ID4gPiA+IFF1b3RpbmcgU2NvdHQgV29v
+ZCAoMjAxNC0wOS0yNSAxMzowODowMCkNCj4gPiA+ID4gPiA+IFdlbGwsIGxpa2UgSSBzYWlkLCBJ
+J2QgcmF0aGVyIHNlZSB0aGUgQ0xLX09GX0RFQ0xBUkUgc3R1ZmYgYmUNCj4gPiA+ID4gPiA+IG1h
+ZGUgdG8gd29yayBvbiBQUEMgcmF0aGVyIHRoYW4gaGF2ZSB0aGUgZHJpdmVyIGNhcnJ5IGFyb3Vu
+ZA0KPiA+ID4gPiA+ID4gdHdvIGJpbmRpbmcgbWV0aG9kcy4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+
+IEkgZ3Vlc3MgdGhhdCBpcyBhbiBleGlzdGluZyBwcm9ibGVtLCBhbmQgbm90IHJlbGF0ZWQgZGly
+ZWN0bHkgdG8NCj4gPiA+ID4gPiB0aGlzIHBhdGNoPyBUaGlzIHBhdGNoIGlzIGVzc2VudGlhbGx5
+IGp1c3QgcmVuYW1lcyAodGhvdWdoIHRoZQ0KPiA+ID4gPiA+IFYxLjAvVjIuMCBzdHVmZiBzZWVt
+cyB3ZWlyZCkuDQo+ID4gPiA+DQo+ID4gPiA+IFRoaXMgcGF0Y2ggaXMgYWRkaW5nIENMS19PRl9E
+RUNMQVJFLg0KPiA+ID4NCj4gPiA+IEknbSBmaW5lIHRha2luZyB0aGlzIHBhdGNoIGJ1dCB5b3Vy
+IGNvbW1lbnRzIGFyZSBzdGlsbCB1bnJlc29sdmVkLg0KPiA+ID4gV2hhdCBkbyB5b3UgdGhpbmsg
+bmVlZHMgdG8gYmUgZG9uZSB0byBmaXggdGhlIHByb2JsZW1zIHRoYXQgeW91IHNlZT8NCj4gPiA+
+DQo+ID4gQ0xLX09GX0RFQ0xBUkUgaXMgdG90YWxseSB3b3JrZWQgb24gUFBDLiBJIHdpbGwgZG8g
+aXQgaW4gYSBzZXBhcmF0ZSBwYXRjaC4NCj4gPiBSZWdhcmRpbmcgVjEuMCBhbmQgVjIuMCwgaXQg
+aXMgbm90IHdpcmVkIGp1c3Qgc2FtZSBmb3Igbm93LiBCdXQgd2UgYXJlIG5vdCBzdXJlDQo+IGlm
+IGl0IGlzIHNhbWUgZm9yIHYzLjAgaW4gdGhlIGZ1dHVyZS4NCj4gPg0KPiA+IEJlc2lkZXMgdXBk
+YXRpbmcgZHJpdmVycy9jcHVmcmVxL0tjb25maWcucG93ZXJwYywgdGhlcmUgaXMgb25lIG1vcmUg
+dGhpbmcgSQ0KPiBhbSBub3QgY29tZm9ydGFibGUgd2l0aDoNCj4gPiBUaGlzIHBhdGNoIHVzZXMg
+IiBmaXhlZC1jbG9jayIgYXMgc3lzY2xrJ3MgY29tcGF0aWJsZSBzdHJpbmcsIHdoaWxlIG9uIFBQ
+QyB3ZQ0KPiB0cmVhdGVkIGl0IGFzICIgZnNsLHFvcmlxLXN5c2Nsay1bMS0yXS4wIi4NCj4gPiBU
+aGF0J3MgaW5jb25zaXN0ZW50IG9uIGJvdGggQVJNIGFuZCBQUEMgcGxhdGZvcm1zLCBuZWl0aGVy
+IGRpZCBvbiBiaW5kaW5ncy4NCj4gDQo+IGZzbCxxb3JpcS1zeXNjbGstWFhYIGlzIHRoZSB3YXkg
+aXQgaXMgYmVjYXVzZSBvZiBjb21wYXRpYmlsaXR5IHdpdGggdGhlIGZpeHVwcyBpbg0KPiBleGlz
+dGluZyBVLUJvb3RzLiAgSXQgc2hvdWxkbid0IGJlIHVzZWQgYXMgYSBtb2RlbC4NCj4gDQo+IFRo
+YXQgc2FpZCwgSSBkb24ndCB0aGluayB5b3UgcmVhbGx5IG1lYW4gInRoaXMgcGF0Y2giLCBhcyBp
+dCBkb2Vzbid0IGNvbnRhaW4gdGhlDQo+IGRldmljZSB0cmVlIHVwZGF0ZXMsIGFuZCAiZml4ZWQt
+Y2xvY2siIGRvZXMgbm90IGFwcGVhci4NCj4gDQoiZml4ZWQtY2xvY2siIHdpbGwgYXBwZWFyIHdo
+ZW4gbHMxMDJ4IHBsYXRmb3JtIERUUyBnZXRzIHVwc3RyZWFtZWQgZXZlbnR1YWxseS4NClRoYXQg
+d291bGQgYmUgZmluZSBpZiB5b3UgZG9uJ3QgdGhpbmsgImZzbCxxb3JpcS1zeXNjbGsteHh4IiBo
+YXZpbmcgZGlmZmVyZW50IG1lYW5pbmcgb24gQVJNIGFuZCBQb3dlclBDIGlzIGEgaXNzdWUuDQoN
+ClRoYW5rcywNCll1YW50aWFuDQo+IC1TY290dA0KPiANCg0K
