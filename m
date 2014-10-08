@@ -2,13 +2,13 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B951A173F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:55:29 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 737F31A1791
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:55:30 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v4 10/16] powerpc/opal: Add PHB to cxl mode call
-Date: Wed,  8 Oct 2014 19:54:59 +1100
-Message-Id: <1412758505-23495-11-git-send-email-mikey@neuling.org>
+Subject: [PATCH v4 11/16] powerpc/mm: Add hooks for cxl
+Date: Wed,  8 Oct 2014 19:55:00 +1100
+Message-Id: <1412758505-23495-12-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412758505-23495-1-git-send-email-mikey@neuling.org>
 References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,43 +26,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This adds the OPAL call to change a PHB into cxl mode.
+This adds hooks into the core powerpc mm code for cxl.
+
+The core powerpc code sometimes uses local tlbie. Unfortunately this won't
+work with the current cxl driver as it relies on snooping tlbie broadcasts.
+
+The cxl hardware can have TLB entries invalidated via MMIO but this is not
+currently supported by the driver. In future we can make local tlbie smarter so
+that it invalidates cxl contexts via MMIO when it needs to but for now we have
+this workaround.
+
+This workaround checks for any active cxl contexts and if so, disables local
+tlbie.
+
+This also adds a hook for when SLBs are invalidated. This ensures any
+corresponding SLBs in cxl are also invalidated at the same time. This is
+required for segment demotion.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/opal.h                | 2 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 2 files changed, 3 insertions(+)
+ arch/powerpc/mm/copro_fault.c    | 2 ++
+ arch/powerpc/mm/hash_native_64.c | 6 +++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 86055e5..84c37c4dbc 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -146,6 +146,7 @@ struct opal_sg_list {
- #define OPAL_GET_PARAM				89
- #define OPAL_SET_PARAM				90
- #define OPAL_DUMP_RESEND			91
-+#define OPAL_PCI_SET_PHB_CXL_MODE		93
- #define OPAL_DUMP_INFO2				94
- #define OPAL_PCI_EEH_FREEZE_SET			97
- #define OPAL_HANDLE_HMI				98
-@@ -924,6 +925,7 @@ int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
- int64_t opal_handle_hmi(void);
- int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
- int64_t opal_unregister_dump_region(uint32_t id);
-+int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index f2aa5a8..0f9939e 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -26,6 +26,7 @@
+ #include <asm/reg.h>
+ #include <asm/copro.h>
+ #include <asm/spu.h>
++#include <misc/cxl.h>
  
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 2e6ce1b..0fb56dc 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -247,3 +247,4 @@ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-+OPAL_CALL(opal_pci_set_phb_cxl_mode,		OPAL_PCI_SET_PHB_CXL_MODE);
+ /*
+  * This ought to be kept in sync with the powerpc specific do_page_fault
+@@ -143,5 +144,6 @@ void copro_flush_all_slbs(struct mm_struct *mm)
+ #ifdef CONFIG_SPU_BASE
+ 	spu_flush_all_slbs(mm);
+ #endif
++	cxl_slbia(mm);
+ }
+ EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index afc0a82..ae4962a 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -29,6 +29,8 @@
+ #include <asm/kexec.h>
+ #include <asm/ppc-opcode.h>
+ 
++#include <misc/cxl.h>
++
+ #ifdef DEBUG_LOW
+ #define DBG_LOW(fmt...) udbg_printf(fmt)
+ #else
+@@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ static inline void tlbie(unsigned long vpn, int psize, int apsize,
+ 			 int ssize, int local)
+ {
+-	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
++	unsigned int use_local;
+ 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+ 
++	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
++
+ 	if (use_local)
+ 		use_local = mmu_psize_defs[psize].tlbiel;
+ 	if (lock_tlbie && !use_local)
 -- 
 1.9.1
