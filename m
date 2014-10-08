@@ -1,14 +1,14 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D96B01A06C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:55:31 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0C7F1A173F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 19:55:33 +1100 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: greg@kroah.com, arnd@arndb.de, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v4 12/16] cxl: Add base builtin support
-Date: Wed,  8 Oct 2014 19:55:01 +1100
-Message-Id: <1412758505-23495-13-git-send-email-mikey@neuling.org>
+Subject: [PATCH v4 14/16] cxl: Add userspace header file
+Date: Wed,  8 Oct 2014 19:55:03 +1100
+Message-Id: <1412758505-23495-15-git-send-email-mikey@neuling.org>
 In-Reply-To: <1412758505-23495-1-git-send-email-mikey@neuling.org>
 References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -26,74 +26,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This adds the base cxl support that cannot be built as a module. Specifically
-it adds the cxl callbacks that are called from the core powerpc mm code which
-must always exist irrespective of if the cxl module is loaded or not. This is
-similar to how cell works with CONFIG_SPU_BASE.
+This adds a header file for use by userspace programs wanting to interact with
+the kernel cxl driver.  It defines structs and magic numbers required for
+userspace to interact with devices in /dev/cxl/afuM.N.
 
-This adds a cxl_slbia() call (similar to spu_flush_all_slbs()) which checks if
-the cxl module is loaded and in use, returning immediately if it is not. If it
-is in use it calls into the cxl SLB invalidation code.
+Further documentation on this interface is added in a subsequent patch in
+Documentation/powerpc/cxl.txt.
+
+It also adds this new userspace header file to Kbuild so it's exported when
+doing "make headers_installs".
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/Kconfig      |  1 +
- drivers/misc/Makefile     |  1 +
- drivers/misc/cxl/Kconfig  |  8 +++++
- drivers/misc/cxl/Makefile |  1 +
- drivers/misc/cxl/base.c   | 86 +++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 97 insertions(+)
- create mode 100644 drivers/misc/cxl/Kconfig
- create mode 100644 drivers/misc/cxl/Makefile
- create mode 100644 drivers/misc/cxl/base.c
+ include/uapi/Kbuild      |  1 +
+ include/uapi/misc/Kbuild |  2 ++
+ include/uapi/misc/cxl.h  | 87 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 90 insertions(+)
+ create mode 100644 include/uapi/misc/Kbuild
+ create mode 100644 include/uapi/misc/cxl.h
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b841180..bbeb451 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -527,4 +527,5 @@ source "drivers/misc/vmw_vmci/Kconfig"
- source "drivers/misc/mic/Kconfig"
- source "drivers/misc/genwqe/Kconfig"
- source "drivers/misc/echo/Kconfig"
-+source "drivers/misc/cxl/Kconfig"
- endmenu
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 5497d02..7d5c4cd 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -55,3 +55,4 @@ obj-y				+= mic/
- obj-$(CONFIG_GENWQE)		+= genwqe/
- obj-$(CONFIG_ECHO)		+= echo/
- obj-$(CONFIG_VEXPRESS_SYSCFG)	+= vexpress-syscfg.o
-+obj-$(CONFIG_CXL_BASE)		+= cxl/
-diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+diff --git a/include/uapi/Kbuild b/include/uapi/Kbuild
+index 81d2106..245aa6e 100644
+--- a/include/uapi/Kbuild
++++ b/include/uapi/Kbuild
+@@ -12,3 +12,4 @@ header-y += video/
+ header-y += drm/
+ header-y += xen/
+ header-y += scsi/
++header-y += misc/
+diff --git a/include/uapi/misc/Kbuild b/include/uapi/misc/Kbuild
 new file mode 100644
-index 0000000..5cdd319
+index 0000000..e96cae7
 --- /dev/null
-+++ b/drivers/misc/cxl/Kconfig
-@@ -0,0 +1,8 @@
-+#
-+# IBM Coherent Accelerator (CXL) compatible devices
-+#
-+
-+config CXL_BASE
-+	bool
-+	default n
-+	select PPC_COPRO_BASE
-diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
++++ b/include/uapi/misc/Kbuild
+@@ -0,0 +1,2 @@
++# misc Header export list
++header-y += cxl.h
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
 new file mode 100644
-index 0000000..e30ad0a
+index 0000000..c232be6
 --- /dev/null
-+++ b/drivers/misc/cxl/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_CXL_BASE)		+= base.o
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-new file mode 100644
-index 0000000..0654ad8
---- /dev/null
-+++ b/drivers/misc/cxl/base.c
-@@ -0,0 +1,86 @@
++++ b/include/uapi/misc/cxl.h
+@@ -0,0 +1,87 @@
 +/*
 + * Copyright 2014 IBM Corp.
 + *
@@ -103,82 +78,83 @@ index 0000000..0654ad8
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/rcupdate.h>
-+#include <asm/errno.h>
-+#include <misc/cxl.h>
-+#include "cxl.h"
++#ifndef _UAPI_MISC_CXL_H
++#define _UAPI_MISC_CXL_H
 +
-+/* protected by rcu */
-+static struct cxl_calls *cxl_calls;
++#include <linux/types.h>
++#include <linux/ioctl.h>
 +
-+atomic_t cxl_use_count = ATOMIC_INIT(0);
-+EXPORT_SYMBOL(cxl_use_count);
++/* Structs for IOCTLS for userspace to talk to the kernel */
++struct cxl_ioctl_start_work {
++	__u64 flags;
++	__u64 work_element_descriptor;
++	__u64 amr;
++	__s16 num_interrupts;
++	__s16 reserved1;
++	__s32 reserved2;
++	__u64 reserved3;
++	__u64 reserved4;
++	__u64 reserved5;
++	__u64 reserved6;
++};
++#define CXL_START_WORK_AMR		0x0000000000000001ULL
++#define CXL_START_WORK_NUM_IRQS		0x0000000000000002ULL
++#define CXL_START_WORK_ALL		(CXL_START_WORK_AMR |\
++					 CXL_START_WORK_NUM_IRQS)
 +
-+#ifdef CONFIG_CXL_MODULE
++/* IOCTL numbers */
++#define CXL_MAGIC 0xCA
++#define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
++#define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
 +
-+static inline struct cxl_calls *cxl_calls_get(void)
-+{
-+	struct cxl_calls *calls = NULL;
++/* Events from read() */
++#define CXL_READ_MIN_SIZE 0x1000 /* 4K */
 +
-+	rcu_read_lock();
-+	calls = rcu_dereference(cxl_calls);
-+	if (calls && !try_module_get(calls->owner))
-+		calls = NULL;
-+	rcu_read_unlock();
++enum cxl_event_type {
++	CXL_EVENT_RESERVED      = 0,
++	CXL_EVENT_AFU_INTERRUPT = 1,
++	CXL_EVENT_DATA_STORAGE  = 2,
++	CXL_EVENT_AFU_ERROR     = 3,
++};
 +
-+	return calls;
-+}
++struct cxl_event_header {
++	__u16 type;
++	__u16 size;
++	__u16 process_element;
++	__u16 reserved1;
++};
 +
-+static inline void cxl_calls_put(struct cxl_calls *calls)
-+{
-+	BUG_ON(calls != cxl_calls);
++struct cxl_event_afu_interrupt {
++	__u16 flags;
++	__u16 irq; /* Raised AFU interrupt number */
++	__u32 reserved1;
++};
 +
-+	/* we don't need to rcu this, as we hold a reference to the module */
-+	module_put(cxl_calls->owner);
-+}
++struct cxl_event_data_storage {
++	__u16 flags;
++	__u16 reserved1;
++	__u32 reserved2;
++	__u64 addr;
++	__u64 dsisr;
++	__u64 reserved3;
++};
 +
-+#else /* !defined CONFIG_CXL_MODULE */
++struct cxl_event_afu_error {
++	__u16 flags;
++	__u16 reserved1;
++	__u32 reserved2;
++	__u64 error;
++};
 +
-+static inline struct cxl_calls *cxl_calls_get(void)
-+{
-+	return cxl_calls;
-+}
++struct cxl_event {
++	struct cxl_event_header header;
++	union {
++		struct cxl_event_afu_interrupt irq;
++		struct cxl_event_data_storage fault;
++		struct cxl_event_afu_error afu_error;
++	};
++};
 +
-+static inline void cxl_calls_put(struct cxl_calls *calls) { }
-+
-+#endif /* CONFIG_CXL_MODULE */
-+
-+void cxl_slbia(struct mm_struct *mm)
-+{
-+	struct cxl_calls *calls;
-+
-+	calls = cxl_calls_get();
-+	if (!calls)
-+		return;
-+
-+	if (cxl_ctx_in_use())
-+	    calls->cxl_slbia(mm);
-+
-+	cxl_calls_put(calls);
-+}
-+
-+int register_cxl_calls(struct cxl_calls *calls)
-+{
-+	if (cxl_calls)
-+		return -EBUSY;
-+
-+	rcu_assign_pointer(cxl_calls, calls);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(register_cxl_calls);
-+
-+void unregister_cxl_calls(struct cxl_calls *calls)
-+{
-+	BUG_ON(cxl_calls->owner != calls->owner);
-+	RCU_INIT_POINTER(cxl_calls, NULL);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(unregister_cxl_calls);
++#endif /* _UAPI_MISC_CXL_H */
 -- 
 1.9.1
