@@ -1,28 +1,44 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 997521A04AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 14:56:13 +1100 (EST)
-Message-ID: <5434B5D3.4060308@hurleysoftware.com>
-Date: Tue, 07 Oct 2014 23:56:03 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>, Arnd Bergmann <arnd@arndb.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH tty-next 14/22] tty: Remove
- tty_wait_until_sent_from_close()
-References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
- <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
- <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
- <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Karsten Keil <isdn@linux-pingi.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2AEAF1A06EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 15:51:14 +1100 (EST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Wed, 8 Oct 2014 05:51:11 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 48ECE17D8047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2014 05:53:21 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s984p7qd61014106
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Oct 2014 04:51:08 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s984p6C1023165
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Oct 2014 22:51:07 -0600
+Message-ID: <1412743862.4479.4.camel@TP420>
+Subject: Re: [RFC PATCH v3 1/3] powerpc: Fix warning reported by
+ verify_cpu_node_mapping()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Wed, 08 Oct 2014 12:51:02 +0800
+In-Reply-To: <20141007153346.GE9339@linux.vnet.ibm.com>
+References: <1409132041-11890-1-git-send-email-zhong@linux.vnet.ibm.com>
+ <20141002211305.GB12862@linux.vnet.ibm.com>
+ <1412297420.2783.3.camel@concordia>
+ <20141003232606.GA9339@linux.vnet.ibm.com>
+ <1412663318.10747.2.camel@concordia>
+ <20141007153346.GE9339@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +48,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2014 07:03 AM, David Laight wrote:
-> From: Peter Hurley
-> ...
->>> I don't understand the second half of the changelog, it doesn't seem
->>> to fit here: there deadlock that we are trying to avoid here happens
->>> when the *same* tty needs the lock to complete the function that
->>> sends the pending data. I don't think we do still do that any more,
->>> but it doesn't seem related to the tty lock being system-wide or not.
->>
->> The tty lock is not used in the i/o path; it's purpose is to
->> mutually exclude state changes in open(), close() and hangup().
->>
->> The commit that added this [1] comments that _other_ ttys may wait
->> for this tty to complete, and comments in the code note that this
->> function should be removed when the system-wide tty mutex was removed
->> (which happened with the commit noted in the changelog).
-
-I just wanted to revisit this discussion briefly so I can clarify the
-situation regarding holding the tty lock while closing, and how that
-affects parallel opens.
-
-I've unnested the tty lock from the tty mutex (which I'm still testing)
-but will be submitting after the merge window re-opens for 3.19. So this
-is more relevant now.
-
-The original patch that led to this thread is here:
-https://lkml.org/lkml/2014/6/16/306
-
-
-> What happens if another process tries to do a non-blocking open
-> while you are sleeping in close waiting for output to drain?
+On 二, 2014-10-07 at 08:33 -0700, Nishanth Aravamudan wrote:
+> On 07.10.2014 [17:28:38 +1100], Michael Ellerman wrote:
+> > On Fri, 2014-10-03 at 16:26 -0700, Nishanth Aravamudan wrote:
+> > > On 03.10.2014 [10:50:20 +1000], Michael Ellerman wrote:
+> > > > On Thu, 2014-10-02 at 14:13 -0700, Nishanth Aravamudan wrote:
+> > > > > Ben & Michael,
+> > > > > 
+> > > > > What's the status of these patches?
+> > > > 
+> > > > Been in my next for a week :)
+> > > > 
+> > > > https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
+> > > 
+> > > Ah ok, thanks -- I wasn't following your tree, my fault. 
+> > 
+> > Not really your fault, I hadn't announced my trees existence :)
+> > 
+> > > Do we want these to go back to 3.17-stable, as they fix some annoying splats
+> > > during boot (non-fatal afaict, though)?
+> > 
+> > Up to you really, I don't know how often/bad they were. I haven't added CC
+> > stable tags to the commits, so if you want them in stable you should send them
+> > explicitly.
 > 
-> Hopefully this returns before that data has drained.
+> I think they occur every boot, unconditionally, on pseries. Doesn't
+> prevent boot, just really noisy. I think it'd be good to get them into
+> -stable.
+> 
+> Li Zhong, can you push them once they get sent upstream?
 
-Current mainline blocks on _any_ racing re-open while this lock is
-dropped in tty_wait_until_sent_from_close(); blocking while
-ASYNC_CLOSING has been in mainline since at least 2.6.29 and that just
-merged existing code together. See tty_port_block_til_ready(); note
-the test for O_NONBLOCK is after the wait while ASYNC_CLOSING.
+Ok, I will send these patches to stable mailing list after it is merged.
 
-IOW, currently a non-blocking open will sleep for the _entire_ duration
-of a parallel hardware shutdown, and when it wakes, the error return will
-cause a release of its tty, and it will restart with a fresh attempt
-to open. Same with a blocking open that is already waiting; when its
-woken the hardware shutdown has already completed so ASYNC_INITIALIZED
-is cleared, which forces a release and restart too.
-
-The point being that holding the tty lock across the _entire_ close
-is equivalent to the current outcome, regardless of O_NONBLOCK.
-
-I'm reluctant to start returning EGAIN for non-blocking tty opens
-because no tty driver does that now, and I don't think userspace will
-deal well with new return codes from tty opens.
-
-Regards,
-Peter Hurley
+Thanks, Zhong
+> 
+> Thanks,
+> Nish
