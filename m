@@ -1,32 +1,27 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C8F71A099B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 11:19:10 +1100 (EST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E1F9D1400D5
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2014 11:19:09 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 9 Oct 2014 10:19:07 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH] CXL: Fix afu_read() not doing finish_wait() on signal or
- non-blocking
-Date: Thu,  9 Oct 2014 11:17:46 +1100
-Message-Id: <1412813866-22717-1-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1412764803-sup-6790@delenn.ozlabs.ibm.com>
-References: <1412764803-sup-6790@delenn.ozlabs.ibm.com>
-Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
- arnd <arnd@arndb.de>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- greg <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
- imunsie <imunsie@au1.ibm.com>, jk <jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F26AB1A0A3D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 13:18:20 +1100 (EST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc/fsl: Add support for pci(e) machine check
+ exception on E500MC / E5500
+Date: Thu, 9 Oct 2014 02:18:10 +0000
+Message-ID: <aeabfa2d438542c3962a57854c155066@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1412009312-7400-1-git-send-email-linux@roeck-us.net>
+ <1412015766.13320.253.camel@snotra.buserror.net>
+ <cfa12996b9a54b3baaa75f517f78c7ea@BLUPR03MB149.namprd03.prod.outlook.com>
+ <1412812099.13320.547.camel@snotra.buserror.net>
+In-Reply-To: <1412812099.13320.547.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Guenter
+ Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Guenter Roeck <linux@roeck-us.net>, Jojy G Varghese <jojyv@juniper.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,71 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
-
-If afu_read() returned due to a signal or the AFU file descriptor being
-opened non-blocking it would not call finish_wait() before returning,
-which could lead to a crash later when something else wakes up the wait
-queue.
-
-This patch restructures the wait logic to ensure that the cleanup is
-done correctly.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
-
-Resending with correct whitespace as my mailer decided to replace tabs with
-spaces on the last try.
-
- drivers/misc/cxl/file.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 847b7e6..378b099 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -273,6 +273,7 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 	struct cxl_context *ctx = file->private_data;
- 	struct cxl_event event;
- 	unsigned long flags;
-+	int rc;
- 	DEFINE_WAIT(wait);
- 
- 	if (count < CXL_READ_MIN_SIZE)
-@@ -285,13 +286,17 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 		if (ctx_event_pending(ctx))
- 			break;
- 
--		spin_unlock_irqrestore(&ctx->lock, flags);
--		if (file->f_flags & O_NONBLOCK)
--			return -EAGAIN;
-+		if (file->f_flags & O_NONBLOCK) {
-+			rc = -EAGAIN;
-+			goto out;
-+		}
- 
--		if (signal_pending(current))
--			return -ERESTARTSYS;
-+		if (signal_pending(current)) {
-+			rc = -ERESTARTSYS;
-+			goto out;
-+		}
- 
-+		spin_unlock_irqrestore(&ctx->lock, flags);
- 		pr_devel("afu_read going to sleep...\n");
- 		schedule();
- 		pr_devel("afu_read woken up\n");
-@@ -336,6 +341,11 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 	if (copy_to_user(buf, &event, event.header.size))
- 		return -EFAULT;
- 	return event.header.size;
-+
-+out:
-+	finish_wait(&ctx->wq, &wait);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+	return rc;
- }
- 
- static const struct file_operations afu_fops = {
--- 
-2.1.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMDksIDIwMTQgNzo0OCBBTQ0KPiBUbzogSmlh
+IEhvbmd0YW8tQjM4OTUxDQo+IENjOiBHdWVudGVyIFJvZWNrOyBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0OyBQYXVsIE1hY2tlcnJhczsgTWljaGFlbA0KPiBFbGxlcm1hbjsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IEpvankgRyBW
+YXJnaGVzZTsgR3VlbnRlciBSb2Vjaw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjL2Zz
+bDogQWRkIHN1cHBvcnQgZm9yIHBjaShlKSBtYWNoaW5lIGNoZWNrDQo+IGV4Y2VwdGlvbiBvbiBF
+NTAwTUMgLyBFNTUwMA0KPiANCj4gT24gVHVlLCAyMDE0LTEwLTA3IGF0IDIyOjA4IC0wNTAwLCBK
+aWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2Rh
+eSwgU2VwdGVtYmVyIDMwLCAyMDE0IDI6MzYgQU0NCj4gPiA+IFRvOiBHdWVudGVyIFJvZWNrDQo+
+ID4gPiBDYzogQmVuamFtaW4gSGVycmVuc2NobWlkdDsgUGF1bCBNYWNrZXJyYXM7IE1pY2hhZWwg
+RWxsZXJtYW47DQo+ID4gPiBsaW51eHBwYy0gZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEpvankgRw0KPiA+ID4gVmFyZ2hlc2U7IEd1ZW50ZXIgUm9l
+Y2s7IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93ZXJw
+Yy9mc2w6IEFkZCBzdXBwb3J0IGZvciBwY2koZSkgbWFjaGluZQ0KPiA+ID4gY2hlY2sgZXhjZXB0
+aW9uIG9uIEU1MDBNQyAvIEU1NTAwDQo+ID4gPg0KPiA+ID4gT24gTW9uLCAyMDE0LTA5LTI5IGF0
+IDA5OjQ4IC0wNzAwLCBHdWVudGVyIFJvZWNrIHdyb3RlOg0KPiA+ID4gPiBGcm9tOiBKb2p5IEcg
+VmFyZ2hlc2UgPGpvanl2QGp1bmlwZXIubmV0Pg0KPiA+ID4gPg0KPiA+ID4gPiBGb3IgRTUwME1D
+IGFuZCBFNTUwMCwgYSBtYWNoaW5lIGNoZWNrIGV4Y2VwdGlvbiBpbiBwY2koZSkgbWVtb3J5DQo+
+ID4gPiA+IHNwYWNlIGNyYXNoZXMgdGhlIGtlcm5lbC4NCj4gPiA+ID4NCj4gPiA+ID4gVGVzdGlu
+ZyBzaG93cyB0aGF0IHRoZSBNQ0FSKFUpIHJlZ2lzdGVyIGlzIHplcm8gb24gYSBNQyBleGNlcHRp
+b24NCj4gPiA+ID4gZm9yIHRoZQ0KPiA+ID4gPiBFNTUwMCBjb3JlLiBBdCB0aGUgc2FtZSB0aW1l
+LCBERUFSIHJlZ2lzdGVyIGhhcyBiZWVuIGZvdW5kIHRvIGhhdmUNCj4gPiA+ID4gdGhlIGFkZHJl
+c3Mgb2YgdGhlIGZhdWx0eSBsb2FkIGFkZHJlc3MgZHVyaW5nIGFuIE1DIGV4Y2VwdGlvbiBmb3IN
+Cj4gdGhpcyBjb3JlLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGlzIGZpeCBjaGFuZ2VzIHRoZSBjdXJy
+ZW50IGJlaGF2aW9yIHRvIGZpeHVwIHRoZSByZXN1bHQgcmVnaXN0ZXINCj4gPiA+ID4gYW5kIGlu
+c3RydWN0aW9uIHBvaW50ZXJzIGluIHRoZSBjYXNlIG9mIGEgbG9hZCBvcGVyYXRpb24gb24gYQ0K
+PiA+ID4gPiBmYXVsdHkgUENJIGFkZHJlc3MuDQo+ID4gPiA+DQo+ID4gPiA+IFRoZSBjaGFuZ2Vz
+IGFyZToNCj4gPiA+ID4gLSBBZGRlZCB0aGUgaG9vayB0byBwY2kgbWFjaGluZSBjaGVjayBoYW5k
+aW5nIHRvIHRoZSBlNTAwbWMNCj4gPiA+ID4gbWFjaGluZQ0KPiA+ID4gY2hlY2sNCj4gPiA+ID4g
+ICBleGNlcHRpb24gaGFuZGxlci4NCj4gPiA+ID4gLSBGb3IgdGhlIEU1NTAwIGNvcmUsIGxvYWQg
+ZmF1bHRpbmcgYWRkcmVzcyBmcm9tIFNQUk5fREVBUiByZWdpc3Rlci4NCj4gPiA+ID4gICBBcyBt
+ZW50aW9uZWQgYWJvdmUsIHRoaXMgaXMgbmVjZXNzYXJ5IGJlY2F1c2UgdGhlIEU1NTAwIGNvcmUg
+ZG9lcw0KPiBub3QNCj4gPiA+ID4gICByZXBvcnQgdGhlIGZhdWx0IGFkZHJlc3MgaW4gdGhlIE1D
+QVIgcmVnaXN0ZXIuDQo+ID4gPiA+DQo+ID4gPiA+IENjOiBTY290dCBXb29kIDxzY290dHdvb2RA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogSm9qeSBHIFZhcmdoZXNlIDxq
+b2p5dkBqdW5pcGVyLm5ldD4gW0d1ZW50ZXIgUm9lY2s6DQo+ID4gPiA+IHVwZGF0ZWQgZGVzY3Jp
+cHRpb25dDQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEd1ZW50ZXIgUm9lY2sgPGdyb2Vja0BqdW5p
+cGVyLm5ldD4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogR3VlbnRlciBSb2VjayA8bGludXhAcm9l
+Y2stdXMubmV0Pg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIGFyY2gvcG93ZXJwYy9rZXJuZWwvdHJh
+cHMuYyAgIHwgMyArKy0NCj4gPiA+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jIHwg
+NSArKysrKw0KPiA+ID4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDEgZGVs
+ZXRpb24oLSkNCj4gPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJu
+ZWwvdHJhcHMuYw0KPiA+ID4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvdHJhcHMuYyBpbmRleCAw
+ZGM0M2Y5Li5lY2I3MDliIDEwMDY0NA0KPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVs
+L3RyYXBzLmMNCj4gPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC90cmFwcy5jDQo+ID4g
+PiA+IEBAIC00OTQsNyArNDk0LDggQEAgaW50IG1hY2hpbmVfY2hlY2tfZTUwMG1jKHN0cnVjdCBw
+dF9yZWdzICpyZWdzKQ0KPiA+ID4gPiAgCWludCByZWNvdmVyYWJsZSA9IDE7DQo+ID4gPiA+DQo+
+ID4gPiA+ICAJaWYgKHJlYXNvbiAmIE1DU1JfTEQpIHsNCj4gPiA+ID4gLQkJcmVjb3ZlcmFibGUg
+PSBmc2xfcmlvX21jaGVja19leGNlcHRpb24ocmVncyk7DQo+ID4gPiA+ICsJCXJlY292ZXJhYmxl
+ID0gZnNsX3Jpb19tY2hlY2tfZXhjZXB0aW9uKHJlZ3MpIHx8DQo+ID4gPiA+ICsJCQlmc2xfcGNp
+X21jaGVja19leGNlcHRpb24ocmVncyk7DQo+ID4gPiA+ICAJCWlmIChyZWNvdmVyYWJsZSA9PSAx
+KQ0KPiA+ID4gPiAgCQkJZ290byBzaWxlbnRfb3V0Ow0KPiA+ID4gPiAgCX0NCj4gPiA+ID4gZGlm
+ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jDQo+ID4gPiA+IGIvYXJjaC9w
+b3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMgaW5kZXggYzUwNzc2Ny4uYmRiOTU2YiAxMDA2NDQNCj4g
+PiA+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiA+ID4gKysrIGIv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiA+ID4gQEAgLTEwMjEsNiArMTAyMSwx
+MSBAQCBpbnQgZnNsX3BjaV9tY2hlY2tfZXhjZXB0aW9uKHN0cnVjdCBwdF9yZWdzDQo+ID4gPiA+
+ICpyZWdzKSAgI2VuZGlmDQo+ID4gPiA+ICAJYWRkciArPSBtZnNwcihTUFJOX01DQVIpOw0KPiA+
+ID4gPg0KPiA+ID4gPiArI2lmZGVmIENPTkZJR19FNTUwMF9DUFUNCj4gPiA+ID4gKwlpZiAobWZz
+cHIoU1BSTl9FUENSKSAmIFNQUk5fRVBDUl9JQ00pDQo+ID4gPiA+ICsJCWFkZHIgPSBQRk5fUEhZ
+Uyh2bWFsbG9jX3RvX3Bmbigodm9pZA0KPiAqKW1mc3ByKFNQUk5fREVBUikpKTsNCj4gPiA+ICNl
+bmRpZg0KPiA+ID4NCj4gPiA+IEtjb25maWcgdGVsbHMgeW91IHdoYXQgaGFyZHdhcmUgaXMgc3Vw
+cG9ydGVkLCBub3Qgd2hhdCBoYXJkd2FyZQ0KPiA+ID4geW91J3JlIGFjdHVhbGx5IHJ1bm5pbmcg
+b24uDQo+ID4gPg0KPiA+ID4gSmlhIEhvbmd0YW8sIGRvIHlvdSBrbm93IGFueXRoaW5nIGFib3V0
+IHRoaXMgaXNzdWU/ICBJcyB0aGVyZSBhbg0KPiBlcnJhdHVtPw0KPiA+DQo+ID4gU29ycnkgZm9y
+IHRoZSBsYXRlIHJlc3BvbnNlLCBJIGp1c3QgcmV0dXJuIGZyb20gbXkgdmFjYXRpb24uDQo+ID4g
+SSBkb24ndCBrbm93IHRoaXMgaXNzdWUuDQo+ID4NCj4gPiA+IFdoYXQgY2hpcHMgYXJlIGFmZmVj
+dGVkIGJ5IHRoZSB0aGUgZXJyYXR1bSBjb3ZlcmVkIGJ5DQo+ID4gPiA8aHR0cDovL3BhdGNod29y
+ay5vemxhYnMub3JnL3BhdGNoLzI0MDIzOS8+Pw0KPiA+DQo+ID4gTVBDODU0NCwgTVBDODU0OCwg
+TVBDODU3MiBhcmUgYWZmZWN0ZWQgYnkgdGhpcyBlcnJhdHVtLg0KPiANCj4gV2hhdCBpcyB0aGUg
+ZXJyYXR1bSBudW1iZXI/DQoNClRoZSBudW1iZXIgb2YgdGhpcyBlcnJhdHVtIGZvciBlYWNoIGNo
+aXAgaXMgbm90IGNvbnNpc3RlbnQuDQpNUEM4NTQ0OiBQQ0llIDQNCk1QQzg1NDg6IFBDSS1FeCAz
+OQ0KTVBDODU3MjogUENJLUV4IDMNCg0KPiANCj4gPiBJIGNoZWNrZWQgUDQwODAgd2hpY2ggdXNp
+bmcgZTUwMG1jIGFuZCBubyBzdWNoIGVycmF0dW0gaXMgZm91bmQuDQo+IA0KPiBXaGF0IGlzIHRo
+ZSBlcnJhdHVtIGJlaGF2aW9yLCBhbmQgaG93IGRvZXMgaXQgZGlmZmVyIGZyb20gdGhlIHByb2Js
+ZW0NCj4gdGhhdCBKb2p5IGFuZCBHdWVudGVyIGFyZSB0cnlpbmcgdG8gc29sdmU/DQoNCkhlcmUg
+aXMgdGhlIGRlc2NyaXB0aW9uIG9mIHRoZSBlcnJhdHVtOg0KDQoiV2hlbiBpdHMgbGluayBnb2Vz
+IGRvd24sIHRoZSBQQ0kgRXhwcmVzcyBjb250cm9sbGVyIGNsZWFycyBhbGwgb3V0c3RhbmRpbmcg
+dHJhbnNhY3Rpb25zIHdpdGggYW4NCmVycm9yIGluZGljYXRvciBhbmQgc2VuZHMgYSBsaW5rIGRv
+d24gZXhjZXB0aW9uIHRvIHRoZSBpbnRlcnJ1cHQgY29udHJvbGxlciBpZg0KUEVYX1BNRV9NRVNf
+RElTUltMREREXSA9IDAuIElmLCBob3dldmVyLCBhbnkgdHJhbnNhY3Rpb25zIGFyZSBzZW50IHRv
+IHRoZSBjb250cm9sbGVyDQphZnRlciB0aGUgbGluayBkb3duIGV2ZW50LCB0aGV5IHdpbGwgYmUg
+YWNjZXB0ZWQgYnkgdGhlIGNvbnRyb2xsZXIgYW5kIHdhaXQgZm9yIHRoZSBsaW5rIHRvIGNvbWUN
+CmJhY2sgdXAgYmVmb3JlIHN0YXJ0aW5nIGFueSB0aW1lb3V0IGNvdW50ZXJzIChlLmcuIGNvbXBs
+ZXRpb24gdGltZW91dCkuIFRoZXJlIGlzIG5vIG1lY2hhbmlzbQ0KdG8gY2FuY2VsIHRoZSBuZXcg
+dHJhbnNhY3Rpb25zIHNob3J0IG9mIGEgZGV2aWNlIEhSRVNFVC4iDQoNCkZvciBlNTAwbWMgYXMg
+Sm9qeSBhbmQgR3VlbnRlciBkZXNjcmliZWQgaXQncyBsaWtlIHRoZSBzYW1lIGVycmF0dW0gb24g
+ZTUwMCwgbm90IDEwMCUgc3VyZS4NCg0KRm9yIGU1NTAwIEkgZG9uJ3QgcXVpdGUgdW5kZXJzdGFu
+ZCB5ZXQuDQoNCj4gDQo+IC1TY290dA0KPiANCg0K
