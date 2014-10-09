@@ -1,77 +1,43 @@
-Return-Path: <Vineet.Gupta1@synopsys.com>
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-To: Guenter Roeck <linux@roeck-us.net>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
-Date: Thu, 9 Oct 2014 10:35:34 +0000
-Message-ID: <C2D7FE5348E1B147BCA15975FBA230753C5E5304@IN01WEMBXA.internal.synopsys.com>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-9-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+Date: Thu, 9 Oct 2014 13:31:40 +0200
+Message-ID: <CAMuHMdVOBnZ=pyVeGSxbOT9MtRR2iNY4V-PUm0NU=UFQ2pxE_g@mail.gmail.com>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-m32r-ja@ml.linux-m32r.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>, linux-efi@vger.kernel.org,
  "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Steven Miao <realmz6@gmail.com>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, Boris
- Ostrovsky <boris.ostrovsky@oracle.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will
- Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
- Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
- Lennox Wu <lennox.wu@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- "lguest@lists.ozlabs.org" <lguest@lists.ozlabs.org>,
- Russell King <linux@arm.linux.org.uk>,
- "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
- Len Brown <len.brown@intel.com>, "David S. Miller" <davem@davemloft.net>,
- "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
- Hirokazu Takata <takata@linux-m32r.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Geert
- Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- Matt Turner <mattst88@gmail.com>, Chen Liqin <liqin.linux@gmail.com>,
- Jonas Bonn <jonas@southpole.se>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ Pavel Machek <pavel@ucw.cz>, driverdevel <devel@driverdev.osuosl.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, lguest@lists.ozlabs.org,
+ linux-c6x-dev@linux-c6x.org,
+ "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, Alexander Graf <agraf@suse.de>,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ xen-devel@lists.xenproject.org,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- James Hogan <james.hogan@imgtec.com>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Vineet Gupta <Vineet.Gupta1@synopsys.com>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux PM list <linux-pm@vger.kernel.org>,
  "adi-buildroot-devel@lists.sourceforge.net"
  <adi-buildroot-devel@lists.sourceforge.net>,
- Chris Metcalf <cmetcalf@tilera.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Mikael Starvik <starvik@axis.com>, Richard Weinberger <richard@nod.at>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>, Ivan
- Kokshaysky <ink@jurassic.park.msu.ru>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "openipmi-developer@lists.sourceforge.net"
- <openipmi-developer@lists.sourceforge.net>,
- "linux-metag@vger.kernel.org" <linux-metag@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ "moderated list:PANASONIC MN10300..." <linux-am33-list@redhat.com>,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ "open list:METAG ARCHITECTURE" <linux-metag@vger.kernel.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fenghua Yu <fenghua.yu@intel.com>,
- Richard Kuo <rkuo@codeaurora.org>, David Vrabel <david.vrabel@citrix.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Koichi
- Yasutake <yasutake.koichi@jp.panasonic.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Helge
- Deller <deller@gmx.de>
+ Parisc List <linux-parisc@vger.kernel.org>, Cris <linux-cris-kernel@axis.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ alpha <linux-alpha@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Romain Perier <romain.perier@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -81,25 +47,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 07 October 2014 11:01 AM, Guenter Roeck wrote:
+On Tue, Oct 7, 2014 at 7:28 AM, Guenter Roeck <linux@roeck-us.net> wrote:
+> +int register_poweroff_handler_simple(void (*handler)(void), int priority)
+> +{
+> +       char symname[KSYM_NAME_LEN];
+> +
+> +       if (poweroff_handler_data.handler) {
+> +               lookup_symbol_name((unsigned long)poweroff_handler_data.handler,
+> +                                  symname);
+> +               pr_warn("Poweroff function already registered (%s)", symname);
+> +               lookup_symbol_name((unsigned long)handler, symname);
+> +               pr_cont(", cannot register %s\n", symname);
 
-diff --git a/arch/arc/kernel/reset.c b/arch/arc/kernel/reset.c
-index 2768fa1..8a4fc47 100644
---- a/arch/arc/kernel/reset.c
-+++ b/arch/arc/kernel/reset.c
-@@ -26,9 +26,6 @@ void machine_restart(char *__unused)
+Doesn't %ps work to look up symbols?
 
- void machine_power_off(void)
- {
--       /* FIXME ::  power off ??? */
-+       do_kernel_poweroff();
-        machine_halt();
- }
--
--void (*pm_power_off) (void) =3D NULL;
--EXPORT_SYMBOL(pm_power_off);
+pr_warn("Poweroff function already registered (%ps), cannot register
+%ps\n", poweroff_handler_data.handler, handler);
 
-Acked-by: Vineet Gupta <vgupta@synopsys.com><mailto:vgupta@synopsys.com>
+> +               return -EBUSY;
+> +       }
 
-Thx,
--Vineet
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
