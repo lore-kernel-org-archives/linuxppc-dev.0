@@ -1,36 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90A3A1A15D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 22:48:53 +1100 (EST)
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1389F1400AA
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2014 22:48:51 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 9 Oct 2014 17:18:46 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id CAF4BE0044
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2014 17:21:36 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s99BnB3749938442
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2014 17:19:12 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s99Bmfxm009659
- for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2014 17:18:42 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V3] powerpc, xmon: Enable HW instruction breakpoint on POWER8
-Date: Thu,  9 Oct 2014 17:18:41 +0530
-Message-Id: <1412855321-21276-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B2B91A1684
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 00:25:31 +1100 (EST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1XcDii-000izA-1w
+ for linuxppc-dev@lists.ozlabs.org; Thu, 09 Oct 2014 13:25:28 +0000
+Message-ID: <54368C7D.5040402@roeck-us.net>
+Date: Thu, 09 Oct 2014 06:24:13 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 03/44] hibernate: Call have_kernel_poweroff instead of
+ checking pm_power_off
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-4-git-send-email-linux@roeck-us.net>
+ <20141009103254.GB6787@amd>
+In-Reply-To: <20141009103254.GB6787@amd>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org,
+ devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
+ linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,277 +43,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for hardware instruction breakpoints
-on POWER8 with the help of a new register CIABR (Completed
-Instruction Address Breakpoint Register). With this patch, single
-hardware instruction breakpoint can be added and cleared during
-any active xmon debug session. This hardware based instruction
-breakpoint mechanism works correctly along with the existing TRAP
-based instruction breakpoints available on xmon.
+On 10/09/2014 03:32 AM, Pavel Machek wrote:
+> On Mon 2014-10-06 22:28:05, Guenter Roeck wrote:
+>> Poweroff handlers may now be installed with register_poweroff_handler.
+>> Use the new API function have_kernel_poweroff to determine if a poweroff
+>> handler has been installed.
+>>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Pavel Machek <pavel@ucw.cz>
+>> Cc: Len Brown <len.brown@intel.com>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> ---
+>>   kernel/power/hibernate.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index a9dfa79..20353c5 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -602,7 +602,7 @@ static void power_down(void)
+>>   	case HIBERNATION_PLATFORM:
+>>   		hibernation_platform_enter();
+>>   	case HIBERNATION_SHUTDOWN:
+>> -		if (pm_power_off)
+>> +		if (have_kernel_poweroff())
+>>   			kernel_power_off();
+>>   		break;
+>
+> poweroff -> power_off.
+>
+As mentioned in my other reply, that was on purpose to distinguish
+existing functions from poweroff handler functions.
 
-With this new patch, we would be able to interact with xmon debugger
-as demonstrated in the following sample debug session.
------------------------------
-(A) Start xmon session:
-$echo x > /proc/sysrq-trigger
-SysRq : Entering xmon
-cpu 0x0: Vector: 0  at [c000001f6c67f960]
-    pc: c000000000072078: .sysrq_handle_xmon+0x58/0x60
-    lr: c000000000072078: .sysrq_handle_xmon+0x58/0x60
-    sp: c000001f6c67fac0
-   msr: 9000000000009032
-  current = 0xc000001f6e709ac0
-  paca    = 0xc00000000fffa000 softe: 0 irq_happened: 0x00
-    pid   = 3250, comm = bash
-enter ? for help
-0:mon> b
-   type            address
+> But if you are playing with this, anyway... does it make sense to
+> introduce kernel_power_off() that just works, no need to check
+> have_..?
+> 									Pavel
 
-(B) Set one HW instruction breakpoint:
-0:mon> ls .power_pmu_add
-.power_pmu_add: c000000000078f50
-0:mon> bi c000000000078f50
-0:mon> b
-   type            address
- 1 inst   c000000000078f50  .power_pmu_add+0x0/0x2e0
-0:mon> ls .perf_event_interrupt
-.perf_event_interrupt: c00000000007aee0
-0:mon> bi c00000000007aee0
-One instruction breakpoint possible with CIABR [as expected]
-0:mon> x
+I am trying not to change existing behavior.
 
-(C) Run the sampple workload [with the breakpoint in place]:
-$./perf record ls
-cpu 0x2: Vector: d00 (Single Step) at [c000001f718133a0]
-    pc: c000000000078f54: .power_pmu_add+0x4/0x2e0
-    lr: c000000000155be0: .event_sched_in+0x90/0x1d0
-    sp: c000001f71813620
-   msr: 9000000040109032
-  current = 0xc000001f6ce30000
-  paca    = 0xc00000000fffa600 softe: 0 irq_happened: 0x01
-    pid   = 3270, comm = ls
-        std     r22,-80(r1)
-enter ? for help
+kernel_power_off is an existing function which does some cleanup
+before calling machine_power_off which in turn calls do_kernel_poweroff
+(or currently pm_power_off and may do some other machine specific stuff.
 
-(D) Clear the breakpoint:
-2:mon> bc
-All breakpoints cleared
-2:mon> x
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.002 MB perf.data (~66 samples) ]
+Sure, poweroff handling could be unified further. We could decide to
+enter an endless loop if machine_power_off() returns, or we could decide
+to dump a warning or panic in this case. But that is all separate from
+the issue I am trying to solve here, which is to provide a capability to
+register more than one poweroff handler. It would also not be that simple,
+since some architectures call machine_power_off() directly from various
+places.
 
-(E) Run the workload again [without any breakpoints]:
-$./perf record ls
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.001 MB perf.data (~61 samples) ]
----------------------------
-Changes in V3:
-- Moved the 'ciabr_used' early init inside 'cmds' function
-- Some minor code cleanup
-- Added more in-code documentation
-- Changed the commit message
-
-Changes in V2: (http://patchwork.ozlabs.org/patch/373114/)
-- Fixed the compilation problem in 32 bit archs
-- Selective inclusion of plapr_set_ciabr for required platforms
-- Cleaned up the white space issues
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/xmon.h |  6 +++
- arch/powerpc/xmon/xmon.c        | 83 +++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 85 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/xmon.h b/arch/powerpc/include/asm/xmon.h
-index 5eb8e59..5d17aec 100644
---- a/arch/powerpc/include/asm/xmon.h
-+++ b/arch/powerpc/include/asm/xmon.h
-@@ -29,5 +29,11 @@ static inline void xmon_register_spus(struct list_head *list) { };
- extern int cpus_are_in_xmon(void);
- #endif
- 
-+#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_SPLPAR)
-+#include <asm/plpar_wrappers.h>
-+#else
-+static inline long plapr_set_ciabr(unsigned long ciabr) {return 0; };
-+#endif
-+
- #endif /* __KERNEL __ */
- #endif /* __ASM_POWERPC_XMON_H */
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index b988b5a..c2f601a 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -90,6 +90,7 @@ struct bpt {
- /* Bits in bpt.enabled */
- #define BP_IABR_TE	1		/* IABR translation enabled */
- #define BP_IABR		2
-+#define BP_CIABR	4
- #define BP_TRAP		8
- #define BP_DABR		0x10
- 
-@@ -98,6 +99,7 @@ static struct bpt bpts[NBPTS];
- static struct bpt dabr;
- static struct bpt *iabr;
- static unsigned bpinstr = 0x7fe00008;	/* trap */
-+static bool ciabr_used;			/* CIABR instruction breakpoint */
- 
- #define BP_NUM(bp)	((bp) - bpts + 1)
- 
-@@ -271,6 +273,55 @@ static inline void cinval(void *p)
- }
- 
- /*
-+ * write_ciabr
-+ *
-+ * This function writes a value to the
-+ * CIARB register either directly through
-+ * mtspr instruction if the kernel is in HV
-+ * privilege mode or call a hypervisor function
-+ * to achieve the same in case the kernel is in
-+ * supervisor privilege mode.
-+ */
-+static void write_ciabr(unsigned long ciabr)
-+{
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		mtspr(SPRN_CIABR, ciabr);
-+		return;
-+	}
-+	plapr_set_ciabr(ciabr);
-+}
-+
-+/*
-+ * set_ciabr
-+ *
-+ * This function sets the correct privilege
-+ * value into the the HW breakpoint address
-+ * before writing it up in the CIABR register.
-+ */
-+static void set_ciabr(unsigned long addr)
-+{
-+	addr &= ~CIABR_PRIV;
-+	if (cpu_has_feature(CPU_FTR_HVMODE))
-+		addr |= CIABR_PRIV_HYPER;
-+	else
-+		addr |= CIABR_PRIV_SUPER;
-+	write_ciabr(addr);
-+}
-+
-+/*
-+ * clear_ciabr
-+ *
-+ * This function clears the CIABR register
-+ * which in turn removes the hardware
-+ * instruction breakpoint from the CPU.
-+ */
-+static void clear_ciabr(void)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		write_ciabr(0);
-+}
-+
-+/*
-  * Disable surveillance (the service processor watchdog function)
-  * while we are in xmon.
-  * XXX we should re-enable it when we leave. :)
-@@ -767,6 +818,9 @@ static void insert_cpu_bpts(void)
- 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
- 		mtspr(SPRN_IABR, iabr->address
- 			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
-+
-+	if (iabr && cpu_has_feature(CPU_FTR_ARCH_207S))
-+		set_ciabr(iabr->address);
- }
- 
- static void remove_bpts(void)
-@@ -794,6 +848,7 @@ static void remove_cpu_bpts(void)
- 	hw_breakpoint_disable();
- 	if (cpu_has_feature(CPU_FTR_IABR))
- 		mtspr(SPRN_IABR, 0);
-+	clear_ciabr();
- }
- 
- /* Command interpreting routine */
-@@ -806,6 +861,7 @@ cmds(struct pt_regs *excp)
- 
- 	last_cmd = NULL;
- 	xmon_regs = excp;
-+	ciabr_used = false;
- 
- 	if (!xmon_no_auto_backtrace) {
- 		xmon_no_auto_backtrace = 1;
-@@ -1127,7 +1183,7 @@ static char *breakpoint_help_string =
-     "b <addr> [cnt]   set breakpoint at given instr addr\n"
-     "bc               clear all breakpoints\n"
-     "bc <n/addr>      clear breakpoint number n or at addr\n"
--    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64 only)\n"
-+    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64/POWER8 only)\n"
-     "bd <addr> [cnt]  set hardware data breakpoint\n"
-     "";
- 
-@@ -1166,11 +1222,21 @@ bpt_cmds(void)
- 		break;
- 
- 	case 'i':	/* bi - hardware instr breakpoint */
--		if (!cpu_has_feature(CPU_FTR_IABR)) {
-+		if (!cpu_has_feature(CPU_FTR_IABR) &&
-+					!cpu_has_feature(CPU_FTR_ARCH_207S)) {
- 			printf("Hardware instruction breakpoint "
- 			       "not supported on this cpu\n");
- 			break;
- 		}
-+
-+		if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-+			if (ciabr_used) {
-+				printf("One instruction breakpoint "
-+					"possible with CIABR\n");
-+				break;
-+			}
-+		}
-+
- 		if (iabr) {
- 			iabr->enabled &= ~(BP_IABR | BP_IABR_TE);
- 			iabr = NULL;
-@@ -1181,7 +1247,11 @@ bpt_cmds(void)
- 			break;
- 		bp = new_breakpoint(a);
- 		if (bp != NULL) {
--			bp->enabled |= BP_IABR | BP_IABR_TE;
-+			if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-+				bp->enabled |= BP_CIABR;
-+				ciabr_used = true;
-+			} else
-+				bp->enabled |= BP_IABR | BP_IABR_TE;
- 			iabr = bp;
- 		}
- 		break;
-@@ -1194,6 +1264,7 @@ bpt_cmds(void)
- 				bpts[i].enabled = 0;
- 			iabr = NULL;
- 			dabr.enabled = 0;
-+			ciabr_used = false;
- 			printf("All breakpoints cleared\n");
- 			break;
- 		}
-@@ -1210,6 +1281,9 @@ bpt_cmds(void)
- 			}
- 		}
- 
-+		if (bp->enabled & BP_CIABR)
-+			ciabr_used = false;
-+
- 		printf("Cleared breakpoint %lx (", BP_NUM(bp));
- 		xmon_print_symbol(bp->address, " ", ")\n");
- 		bp->enabled = 0;
-@@ -1238,7 +1312,8 @@ bpt_cmds(void)
- 				if (!bp->enabled)
- 					continue;
- 				printf("%2x %s   ", BP_NUM(bp),
--				    (bp->enabled & BP_IABR)? "inst": "trap");
-+					(bp->enabled & (BP_IABR | BP_CIABR))
-+							? "inst" : "trap");
- 				xmon_print_symbol(bp->address, "  ", "\n");
- 			}
- 			break;
--- 
-1.9.3
+Guenter
