@@ -1,27 +1,47 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F26AB1A0A3D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 13:18:20 +1100 (EST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/fsl: Add support for pci(e) machine check
- exception on E500MC / E5500
-Date: Thu, 9 Oct 2014 02:18:10 +0000
-Message-ID: <aeabfa2d438542c3962a57854c155066@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1412009312-7400-1-git-send-email-linux@roeck-us.net>
- <1412015766.13320.253.camel@snotra.buserror.net>
- <cfa12996b9a54b3baaa75f517f78c7ea@BLUPR03MB149.namprd03.prod.outlook.com>
- <1412812099.13320.547.camel@snotra.buserror.net>
-In-Reply-To: <1412812099.13320.547.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3CF01A0989
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 16:04:44 +1100 (EST)
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DF23E1400B2
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2014 16:04:43 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 9 Oct 2014 10:34:40 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id A881CE004B
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2014 10:37:29 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s99555jP43188418
+ for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2014 10:35:05 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9954ZXh019931
+ for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2014 10:34:36 +0530
+Message-ID: <54361763.70603@linux.vnet.ibm.com>
+Date: Thu, 09 Oct 2014 10:34:35 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Guenter
- Roeck <groeck@juniper.net>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Guenter Roeck <linux@roeck-us.net>, Jojy G Varghese <jojyv@juniper.net>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 2/3] powerpc, ptrace: Enable support for transactional
+ memory register sets
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1400858138-3939-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <20140827213514.GA11489@us.ibm.com>
+In-Reply-To: <20140827213514.GA11489@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
+ palves@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
+ dhowells@redhat.com, linuxppc-dev@ozlabs.org, davej@redhat.com,
+ akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,94 +51,883 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMDksIDIwMTQgNzo0OCBBTQ0KPiBUbzogSmlh
-IEhvbmd0YW8tQjM4OTUxDQo+IENjOiBHdWVudGVyIFJvZWNrOyBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0OyBQYXVsIE1hY2tlcnJhczsgTWljaGFlbA0KPiBFbGxlcm1hbjsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IEpvankgRyBW
-YXJnaGVzZTsgR3VlbnRlciBSb2Vjaw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjL2Zz
-bDogQWRkIHN1cHBvcnQgZm9yIHBjaShlKSBtYWNoaW5lIGNoZWNrDQo+IGV4Y2VwdGlvbiBvbiBF
-NTAwTUMgLyBFNTUwMA0KPiANCj4gT24gVHVlLCAyMDE0LTEwLTA3IGF0IDIyOjA4IC0wNTAwLCBK
-aWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2Rh
-eSwgU2VwdGVtYmVyIDMwLCAyMDE0IDI6MzYgQU0NCj4gPiA+IFRvOiBHdWVudGVyIFJvZWNrDQo+
-ID4gPiBDYzogQmVuamFtaW4gSGVycmVuc2NobWlkdDsgUGF1bCBNYWNrZXJyYXM7IE1pY2hhZWwg
-RWxsZXJtYW47DQo+ID4gPiBsaW51eHBwYy0gZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEpvankgRw0KPiA+ID4gVmFyZ2hlc2U7IEd1ZW50ZXIgUm9l
-Y2s7IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93ZXJw
-Yy9mc2w6IEFkZCBzdXBwb3J0IGZvciBwY2koZSkgbWFjaGluZQ0KPiA+ID4gY2hlY2sgZXhjZXB0
-aW9uIG9uIEU1MDBNQyAvIEU1NTAwDQo+ID4gPg0KPiA+ID4gT24gTW9uLCAyMDE0LTA5LTI5IGF0
-IDA5OjQ4IC0wNzAwLCBHdWVudGVyIFJvZWNrIHdyb3RlOg0KPiA+ID4gPiBGcm9tOiBKb2p5IEcg
-VmFyZ2hlc2UgPGpvanl2QGp1bmlwZXIubmV0Pg0KPiA+ID4gPg0KPiA+ID4gPiBGb3IgRTUwME1D
-IGFuZCBFNTUwMCwgYSBtYWNoaW5lIGNoZWNrIGV4Y2VwdGlvbiBpbiBwY2koZSkgbWVtb3J5DQo+
-ID4gPiA+IHNwYWNlIGNyYXNoZXMgdGhlIGtlcm5lbC4NCj4gPiA+ID4NCj4gPiA+ID4gVGVzdGlu
-ZyBzaG93cyB0aGF0IHRoZSBNQ0FSKFUpIHJlZ2lzdGVyIGlzIHplcm8gb24gYSBNQyBleGNlcHRp
-b24NCj4gPiA+ID4gZm9yIHRoZQ0KPiA+ID4gPiBFNTUwMCBjb3JlLiBBdCB0aGUgc2FtZSB0aW1l
-LCBERUFSIHJlZ2lzdGVyIGhhcyBiZWVuIGZvdW5kIHRvIGhhdmUNCj4gPiA+ID4gdGhlIGFkZHJl
-c3Mgb2YgdGhlIGZhdWx0eSBsb2FkIGFkZHJlc3MgZHVyaW5nIGFuIE1DIGV4Y2VwdGlvbiBmb3IN
-Cj4gdGhpcyBjb3JlLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGlzIGZpeCBjaGFuZ2VzIHRoZSBjdXJy
-ZW50IGJlaGF2aW9yIHRvIGZpeHVwIHRoZSByZXN1bHQgcmVnaXN0ZXINCj4gPiA+ID4gYW5kIGlu
-c3RydWN0aW9uIHBvaW50ZXJzIGluIHRoZSBjYXNlIG9mIGEgbG9hZCBvcGVyYXRpb24gb24gYQ0K
-PiA+ID4gPiBmYXVsdHkgUENJIGFkZHJlc3MuDQo+ID4gPiA+DQo+ID4gPiA+IFRoZSBjaGFuZ2Vz
-IGFyZToNCj4gPiA+ID4gLSBBZGRlZCB0aGUgaG9vayB0byBwY2kgbWFjaGluZSBjaGVjayBoYW5k
-aW5nIHRvIHRoZSBlNTAwbWMNCj4gPiA+ID4gbWFjaGluZQ0KPiA+ID4gY2hlY2sNCj4gPiA+ID4g
-ICBleGNlcHRpb24gaGFuZGxlci4NCj4gPiA+ID4gLSBGb3IgdGhlIEU1NTAwIGNvcmUsIGxvYWQg
-ZmF1bHRpbmcgYWRkcmVzcyBmcm9tIFNQUk5fREVBUiByZWdpc3Rlci4NCj4gPiA+ID4gICBBcyBt
-ZW50aW9uZWQgYWJvdmUsIHRoaXMgaXMgbmVjZXNzYXJ5IGJlY2F1c2UgdGhlIEU1NTAwIGNvcmUg
-ZG9lcw0KPiBub3QNCj4gPiA+ID4gICByZXBvcnQgdGhlIGZhdWx0IGFkZHJlc3MgaW4gdGhlIE1D
-QVIgcmVnaXN0ZXIuDQo+ID4gPiA+DQo+ID4gPiA+IENjOiBTY290dCBXb29kIDxzY290dHdvb2RA
-ZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogSm9qeSBHIFZhcmdoZXNlIDxq
-b2p5dkBqdW5pcGVyLm5ldD4gW0d1ZW50ZXIgUm9lY2s6DQo+ID4gPiA+IHVwZGF0ZWQgZGVzY3Jp
-cHRpb25dDQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEd1ZW50ZXIgUm9lY2sgPGdyb2Vja0BqdW5p
-cGVyLm5ldD4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogR3VlbnRlciBSb2VjayA8bGludXhAcm9l
-Y2stdXMubmV0Pg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIGFyY2gvcG93ZXJwYy9rZXJuZWwvdHJh
-cHMuYyAgIHwgMyArKy0NCj4gPiA+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jIHwg
-NSArKysrKw0KPiA+ID4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDEgZGVs
-ZXRpb24oLSkNCj4gPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJu
-ZWwvdHJhcHMuYw0KPiA+ID4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvdHJhcHMuYyBpbmRleCAw
-ZGM0M2Y5Li5lY2I3MDliIDEwMDY0NA0KPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVs
-L3RyYXBzLmMNCj4gPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC90cmFwcy5jDQo+ID4g
-PiA+IEBAIC00OTQsNyArNDk0LDggQEAgaW50IG1hY2hpbmVfY2hlY2tfZTUwMG1jKHN0cnVjdCBw
-dF9yZWdzICpyZWdzKQ0KPiA+ID4gPiAgCWludCByZWNvdmVyYWJsZSA9IDE7DQo+ID4gPiA+DQo+
-ID4gPiA+ICAJaWYgKHJlYXNvbiAmIE1DU1JfTEQpIHsNCj4gPiA+ID4gLQkJcmVjb3ZlcmFibGUg
-PSBmc2xfcmlvX21jaGVja19leGNlcHRpb24ocmVncyk7DQo+ID4gPiA+ICsJCXJlY292ZXJhYmxl
-ID0gZnNsX3Jpb19tY2hlY2tfZXhjZXB0aW9uKHJlZ3MpIHx8DQo+ID4gPiA+ICsJCQlmc2xfcGNp
-X21jaGVja19leGNlcHRpb24ocmVncyk7DQo+ID4gPiA+ICAJCWlmIChyZWNvdmVyYWJsZSA9PSAx
-KQ0KPiA+ID4gPiAgCQkJZ290byBzaWxlbnRfb3V0Ow0KPiA+ID4gPiAgCX0NCj4gPiA+ID4gZGlm
-ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5jDQo+ID4gPiA+IGIvYXJjaC9w
-b3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMgaW5kZXggYzUwNzc2Ny4uYmRiOTU2YiAxMDA2NDQNCj4g
-PiA+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiA+ID4gKysrIGIv
-YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiA+ID4gQEAgLTEwMjEsNiArMTAyMSwx
-MSBAQCBpbnQgZnNsX3BjaV9tY2hlY2tfZXhjZXB0aW9uKHN0cnVjdCBwdF9yZWdzDQo+ID4gPiA+
-ICpyZWdzKSAgI2VuZGlmDQo+ID4gPiA+ICAJYWRkciArPSBtZnNwcihTUFJOX01DQVIpOw0KPiA+
-ID4gPg0KPiA+ID4gPiArI2lmZGVmIENPTkZJR19FNTUwMF9DUFUNCj4gPiA+ID4gKwlpZiAobWZz
-cHIoU1BSTl9FUENSKSAmIFNQUk5fRVBDUl9JQ00pDQo+ID4gPiA+ICsJCWFkZHIgPSBQRk5fUEhZ
-Uyh2bWFsbG9jX3RvX3Bmbigodm9pZA0KPiAqKW1mc3ByKFNQUk5fREVBUikpKTsNCj4gPiA+ICNl
-bmRpZg0KPiA+ID4NCj4gPiA+IEtjb25maWcgdGVsbHMgeW91IHdoYXQgaGFyZHdhcmUgaXMgc3Vw
-cG9ydGVkLCBub3Qgd2hhdCBoYXJkd2FyZQ0KPiA+ID4geW91J3JlIGFjdHVhbGx5IHJ1bm5pbmcg
-b24uDQo+ID4gPg0KPiA+ID4gSmlhIEhvbmd0YW8sIGRvIHlvdSBrbm93IGFueXRoaW5nIGFib3V0
-IHRoaXMgaXNzdWU/ICBJcyB0aGVyZSBhbg0KPiBlcnJhdHVtPw0KPiA+DQo+ID4gU29ycnkgZm9y
-IHRoZSBsYXRlIHJlc3BvbnNlLCBJIGp1c3QgcmV0dXJuIGZyb20gbXkgdmFjYXRpb24uDQo+ID4g
-SSBkb24ndCBrbm93IHRoaXMgaXNzdWUuDQo+ID4NCj4gPiA+IFdoYXQgY2hpcHMgYXJlIGFmZmVj
-dGVkIGJ5IHRoZSB0aGUgZXJyYXR1bSBjb3ZlcmVkIGJ5DQo+ID4gPiA8aHR0cDovL3BhdGNod29y
-ay5vemxhYnMub3JnL3BhdGNoLzI0MDIzOS8+Pw0KPiA+DQo+ID4gTVBDODU0NCwgTVBDODU0OCwg
-TVBDODU3MiBhcmUgYWZmZWN0ZWQgYnkgdGhpcyBlcnJhdHVtLg0KPiANCj4gV2hhdCBpcyB0aGUg
-ZXJyYXR1bSBudW1iZXI/DQoNClRoZSBudW1iZXIgb2YgdGhpcyBlcnJhdHVtIGZvciBlYWNoIGNo
-aXAgaXMgbm90IGNvbnNpc3RlbnQuDQpNUEM4NTQ0OiBQQ0llIDQNCk1QQzg1NDg6IFBDSS1FeCAz
-OQ0KTVBDODU3MjogUENJLUV4IDMNCg0KPiANCj4gPiBJIGNoZWNrZWQgUDQwODAgd2hpY2ggdXNp
-bmcgZTUwMG1jIGFuZCBubyBzdWNoIGVycmF0dW0gaXMgZm91bmQuDQo+IA0KPiBXaGF0IGlzIHRo
-ZSBlcnJhdHVtIGJlaGF2aW9yLCBhbmQgaG93IGRvZXMgaXQgZGlmZmVyIGZyb20gdGhlIHByb2Js
-ZW0NCj4gdGhhdCBKb2p5IGFuZCBHdWVudGVyIGFyZSB0cnlpbmcgdG8gc29sdmU/DQoNCkhlcmUg
-aXMgdGhlIGRlc2NyaXB0aW9uIG9mIHRoZSBlcnJhdHVtOg0KDQoiV2hlbiBpdHMgbGluayBnb2Vz
-IGRvd24sIHRoZSBQQ0kgRXhwcmVzcyBjb250cm9sbGVyIGNsZWFycyBhbGwgb3V0c3RhbmRpbmcg
-dHJhbnNhY3Rpb25zIHdpdGggYW4NCmVycm9yIGluZGljYXRvciBhbmQgc2VuZHMgYSBsaW5rIGRv
-d24gZXhjZXB0aW9uIHRvIHRoZSBpbnRlcnJ1cHQgY29udHJvbGxlciBpZg0KUEVYX1BNRV9NRVNf
-RElTUltMREREXSA9IDAuIElmLCBob3dldmVyLCBhbnkgdHJhbnNhY3Rpb25zIGFyZSBzZW50IHRv
-IHRoZSBjb250cm9sbGVyDQphZnRlciB0aGUgbGluayBkb3duIGV2ZW50LCB0aGV5IHdpbGwgYmUg
-YWNjZXB0ZWQgYnkgdGhlIGNvbnRyb2xsZXIgYW5kIHdhaXQgZm9yIHRoZSBsaW5rIHRvIGNvbWUN
-CmJhY2sgdXAgYmVmb3JlIHN0YXJ0aW5nIGFueSB0aW1lb3V0IGNvdW50ZXJzIChlLmcuIGNvbXBs
-ZXRpb24gdGltZW91dCkuIFRoZXJlIGlzIG5vIG1lY2hhbmlzbQ0KdG8gY2FuY2VsIHRoZSBuZXcg
-dHJhbnNhY3Rpb25zIHNob3J0IG9mIGEgZGV2aWNlIEhSRVNFVC4iDQoNCkZvciBlNTAwbWMgYXMg
-Sm9qeSBhbmQgR3VlbnRlciBkZXNjcmliZWQgaXQncyBsaWtlIHRoZSBzYW1lIGVycmF0dW0gb24g
-ZTUwMCwgbm90IDEwMCUgc3VyZS4NCg0KRm9yIGU1NTAwIEkgZG9uJ3QgcXVpdGUgdW5kZXJzdGFu
-ZCB5ZXQuDQoNCj4gDQo+IC1TY290dA0KPiANCg0K
+On 08/28/2014 03:05 AM, Sukadev Bhattiprolu wrote:
+> Anshuman Khandual [khandual@linux.vnet.ibm.com] wrote:
+> | This patch enables get and set of transactional memory related register
+> | sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
+> | four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
+> | REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
+> | ELF core note types added previously in this regard.
+> | 
+> | 	(1) NT_PPC_TM_SPR
+> | 	(2) NT_PPC_TM_CGPR
+> | 	(3) NT_PPC_TM_CFPR
+> | 	(4) NT_PPC_TM_CVMX
+> | 
+> | Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> | ---
+> |  arch/powerpc/include/asm/switch_to.h |   8 +
+> |  arch/powerpc/kernel/process.c        |  24 ++
+> |  arch/powerpc/kernel/ptrace.c         | 792 +++++++++++++++++++++++++++++++++--
+> |  3 files changed, 795 insertions(+), 29 deletions(-)
+> | 
+> | diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+> | index 0e83e7d..2737f46 100644
+> | --- a/arch/powerpc/include/asm/switch_to.h
+> | +++ b/arch/powerpc/include/asm/switch_to.h
+> | @@ -80,6 +80,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
+> |  }
+> |  #endif
+> |  
+> | +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> | +extern void flush_tmregs_to_thread(struct task_struct *);
+> | +#else
+> | +static inline void flush_tmregs_to_thread(struct task_struct *t)
+> | +{
+> | +}
+> | +#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> | +
+> |  static inline void clear_task_ebb(struct task_struct *t)
+> |  {
+> |  #ifdef CONFIG_PPC_BOOK3S_64
+> | diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> | index 31d0215..e247898 100644
+> | --- a/arch/powerpc/kernel/process.c
+> | +++ b/arch/powerpc/kernel/process.c
+> | @@ -695,6 +695,30 @@ static inline void __switch_to_tm(struct task_struct *prev)
+> |  	}
+> |  }
+> |  
+> | +void flush_tmregs_to_thread(struct task_struct *tsk)
+> | +{
+> | +	/*
+> | +	 * If task is not current, it should have been flushed
+> | +	 * already to it's thread_struct during __switch_to().
+> | +	 */
+> | +	if (tsk != current)
+> | +		return;
+> | +
+> | +	preempt_disable();
+> | +	if (tsk->thread.regs) {
+> | +		/*
+> | +		 * If we are still current, the TM state need to
+> | +		 * be flushed to thread_struct as it will be still
+> | +		 * present in the current cpu.
+> | +		 */
+> | +		if (MSR_TM_ACTIVE(tsk->thread.regs->msr)) {
+> | +			__switch_to_tm(tsk);
+> | +			tm_recheckpoint_new_task(tsk);
+> | +		}
+> | +	}
+> | +	preempt_enable();
+> | +}
+> | +
+> |  /*
+> |   * This is called if we are on the way out to userspace and the
+> |   * TIF_RESTORE_TM flag is set.  It checks if we need to reload
+> | diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> | index 2e3d2bf..17642ef 100644
+> | --- a/arch/powerpc/kernel/ptrace.c
+> | +++ b/arch/powerpc/kernel/ptrace.c
+> | @@ -357,6 +357,17 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
+> |  	return ret;
+> |  }
+> |  
+> | +/*
+> | + * When any transaction is active, "thread_struct->transact_fp" holds
+> | + * the current running value of all FPR registers and "thread_struct->
+> | + * fp_state" holds the last checkpointed FPR registers state for the
+> | + * current transaction.
+> | + *
+> | + * struct data {
+> | + * 	u64	fpr[32];
+> | + * 	u64	fpscr;
+> | + * };
+> | + */
+> 
+> Maybe a reference to 'struct thread_fp_state' in the comments will help ?
+
+Okay, will try to add.
+
+> 
+> 
+> |  static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+> |  		   unsigned int pos, unsigned int count,
+> |  		   void *kbuf, void __user *ubuf)
+> | @@ -365,21 +376,41 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+> |  	u64 buf[33];
+> |  	int i;
+> |  #endif
+> | -	flush_fp_to_thread(target);
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		flush_fp_to_thread(target);
+> | +		flush_altivec_to_thread(target);
+> | +		flush_tmregs_to_thread(target);
+> | +	} else {
+> | +		flush_fp_to_thread(target);
+> | +	}
+> 
+> flush_fp_to_thread(target) is uncondtional - so could be outside
+> the if and else blocks ?
+
+yes
+
+> 
+> |  
+> |  #ifdef CONFIG_VSX
+> |  	/* copy to local buffer then write that out */
+> | -	for (i = 0; i < 32 ; i++)
+> | -		buf[i] = target->thread.TS_FPR(i);
+> | -	buf[32] = target->thread.fp_state.fpscr;
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		for (i = 0; i < 32 ; i++)
+> | +			buf[i] = target->thread.TS_TRANS_FPR(i);
+> | +		buf[32] = target->thread.transact_fp.fpscr;
+> | +	} else {
+> | +		for (i = 0; i < 32 ; i++)
+> | +			buf[i] = target->thread.TS_FPR(i);
+> | +		buf[32] = target->thread.fp_state.fpscr;
+> | +	}
+> |  	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+> |  
+> |  #else
+> | -	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | -		     offsetof(struct thread_fp_state, fpr[32][0]));
+> | +	if (MSR_TM_ACTIVE(tsk->thread.regs->msr)) {
+> | +		BUILD_BUG_ON(offsetof(struct transact_fp, fpscr) !=
+> | +				offsetof(struct transact_fp, fpr[32][0]));
+> 
+> Is MSR_TM_ACTIVE() a run time check or compile time ?
+
+Its a run time check.
+
+> ie is there a reason to move the compile time check into the if block ?
+
+Have cleaned up all of these.
+
+> 
+> |  
+> | -	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +				   &target->thread.transact_fp, 0, -1);
+> | +	} esle {
+> | +		BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | +			     offsetof(struct thread_fp_state, fpr[32][0]));
+> | +
+> | +		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> |  				   &target->thread.fp_state, 0, -1);
+> | +	}
+> |  #endif
+> |  }
+> |  
+> | @@ -391,23 +422,44 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
+> |  	u64 buf[33];
+> |  	int i;
+> |  #endif
+> | -	flush_fp_to_thread(target);
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		flush_fp_to_thread(target);
+> | +		flush_altivec_to_thread(target);
+> | +		flush_tmregs_to_thread(target);
+> | +	} else {
+> | +		flush_fp_to_thread(target);
+> | +	}
+> |  
+> 
+> As mentioned above, flush_fp_to_thread() could be outside the if block.
+
+sure
+
+> |  #ifdef CONFIG_VSX
+> |  	/* copy to local buffer then write that out */
+> |  	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+> |  	if (i)
+> |  		return i;
+> | -	for (i = 0; i < 32 ; i++)
+> | -		target->thread.TS_FPR(i) = buf[i];
+> | -	target->thread.fp_state.fpscr = buf[32];
+> | +	for (i = 0; i < 32 ; i++) {
+> | +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +			target->thread.TS_TRANS_FPR(i) = buf[i];
+> | +		else
+> | +			target->thread.TS_FPR(i) = buf[i];
+> | +	}
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		target->thread.transact_fp.fpscr = buf[32];
+> | +	else
+> | +		target->thread.fp_state.fpscr = buf[32];
+> 
+> I think this code is easier to read than the similar code above
+> in fpr_get() where you have the 'for' loop in both if and else blocks.
+
+Have done some modifications here.
+
+> 
+> |  	return 0;
+> |  #else
+> | -	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | -		     offsetof(struct thread_fp_state, fpr[32][0]));
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		BUILD_BUG_ON(offsetof(struct transact_fp, fpscr) !=
+> | +			     offsetof(struct transact_fp, fpr[32][0]));
+> |  
+> | -	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | -				  &target->thread.fp_state, 0, -1);
+> | +		return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +					  &target->thread.transact_fp, 0, -1);
+> | +	} else {
+> | +		BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | +			     offsetof(struct thread_fp_state, fpr[32][0]));
+> | +
+> | +		return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.fp_state, 0, -1);
+> | +	}
+> |  #endif
+> |  }
+> |  
+> | @@ -432,20 +484,44 @@ static int vr_active(struct task_struct *target,
+> |  	return target->thread.used_vr ? regset->n : 0;
+> |  }
+> |  
+> | +/*
+> | + * When any transaction is active, "thread_struct->transact_vr" holds
+> | + * the current running value of all VMX registers and "thread_struct->
+> | + * vr_state" holds the last checkpointed value of VMX registers for the
+> | + * current transaction.
+> | + *
+> | + * struct data {
+> | + * 	vector128	vr[32];
+> | + * 	vector128	vscr;
+> | + * 	vector128	vrsave;
+> | + * };
+> | + */
+> |  static int vr_get(struct task_struct *target, const struct user_regset *regset,
+> |  		  unsigned int pos, unsigned int count,
+> |  		  void *kbuf, void __user *ubuf)
+> |  {
+> |  	int ret;
+> | +	struct thread_vr_state *addr;
+> |  
+> | -	flush_altivec_to_thread(target);
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		flush_fp_to_thread(target);
+> | +		flush_altivec_to_thread(target);
+> 
+> Is order of flush_fp_to_thread() and flush_altivec_to_thread()
+> significant or can we call flush_altivec_to_thread() unconditionally
+> outside the if block ?
+
+We can move it outside the if block.
+
+> | +		flush_tmregs_to_thread(target);
+> | +	} else {
+> | +		flush_altivec_to_thread(target);
+> | +	}
+> |  
+> |  	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+> |  		     offsetof(struct thread_vr_state, vr[32]));
+> |  
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		addr = &target->thread.transact_vr;
+> | +	else
+> | +		addr = &target->thread.vr_state;
+> | +
+> |  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | -				  &target->thread.vr_state, 0,
+> | -				  33 * sizeof(vector128));
+> | +				addr, 0, 33 * sizeof(vector128));
+> | +
+> |  	if (!ret) {
+> |  		/*
+> |  		 * Copy out only the low-order word of vrsave.
+> | @@ -455,11 +531,14 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+> |  			u32 word;
+> |  		} vrsave;
+> |  		memset(&vrsave, 0, sizeof(vrsave));
+> | -		vrsave.word = target->thread.vrsave;
+> | +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +			vrsave.word = target->thread.transact_vrsave;
+> | +		else
+> | +			vrsave.word = target->thread.vrsave;
+> | +
+> |  		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+> |  					  33 * sizeof(vector128), -1);
+> |  	}
+> | -
+> |  	return ret;
+> |  }
+> |  
+> | @@ -467,16 +546,27 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+> |  		  unsigned int pos, unsigned int count,
+> |  		  const void *kbuf, const void __user *ubuf)
+> |  {
+> | +	struct thread_vr_state *addr;
+> |  	int ret;
+> |  
+> | -	flush_altivec_to_thread(target);
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
+> | +		flush_fp_to_thread(target);
+> | +		flush_altivec_to_thread(target);
+> | +		flush_tmregs_to_thread(target);
+> | +	} else {
+> | +		flush_altivec_to_thread(target);
+> | +	}
+> |  
+> |  	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+> |  		     offsetof(struct thread_vr_state, vr[32]));
+> |  
+> | +	if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		addr = &target->thread.transact_vr;
+> | +	else
+> | +		addr = &target->thread.vr_state;
+> |  	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | -				 &target->thread.vr_state, 0,
+> | -				 33 * sizeof(vector128));
+> | +			addr, 0, 33 * sizeof(vector128));
+> | +
+> |  	if (!ret && count > 0) {
+> |  		/*
+> |  		 * We use only the first word of vrsave.
+> | @@ -486,13 +576,21 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+> |  			u32 word;
+> |  		} vrsave;
+> |  		memset(&vrsave, 0, sizeof(vrsave));
+> | -		vrsave.word = target->thread.vrsave;
+> | +
+> | +		if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +			vrsave.word = target->thread.transact_vrsave;
+> | +		else
+> | +			vrsave.word = target->thread.vrsave;
+> | +
+> |  		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+> |  					 33 * sizeof(vector128), -1);
+> | -		if (!ret)
+> | -			target->thread.vrsave = vrsave.word;
+> | +		if (!ret) {
+> | +			if (MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +				target->thread.transact_vrsave = vrsave.word;
+> | +			else
+> | +				target->thread.vrsave = vrsave.word;
+> | +		}
+> |  	}
+> | -
+> |  	return ret;
+> |  }
+> |  #endif /* CONFIG_ALTIVEC */
+> | @@ -613,6 +711,442 @@ static int evr_set(struct task_struct *target, const struct user_regset *regset,
+> |  }
+> |  #endif /* CONFIG_SPE */
+> |  
+> | +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> | +
+> | +static int tm_spr_active(struct task_struct *target,
+> | +				const struct user_regset *regset)
+> | +{
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return 0;
+> | +
+> | +	return regset->n;
+> | +}
+> | +/*
+> | + *  Transactional memory SPR
+> | + *
+> | + * struct {
+> | + * 	u64		tm_tfhar;
+> | + *	u64		tm_texasr;
+> | + *	u64		tm_tfiar;
+> | + *	unsigned long	tm_orig_msr;
+> | + * 	unsigned long	tm_tar;
+> | + *	unsigned long	tm_ppr;
+> | + *	unsigned long	tm_dscr;
+> | + * };
+> | + */
+> | +static int tm_spr_get(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   void *kbuf, void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> 
+> Can we copy all the values ot a local buf and then do a single
+> copyout to user space ?
+
+In the present code, it can copy out registers to user space
+till one attempt fails. Just one copy out to user space will
+not give this opportunity. Either all of them go or none of
+them goes.
+
+> 
+> | +	/* TFHAR register */
+> | +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_tfhar, 0, sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfhar) +
+> | +			sizeof(u64) != offsetof(struct thread_struct, tm_texasr));
+> | +
+> | +	/* TEXASR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_texasr, sizeof(u64), 2 * sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_texasr) +
+> | +			sizeof(u64) != offsetof(struct thread_struct, tm_tfiar));
+> | +
+> | +	/* TFIAR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_tfiar, 2 * sizeof(u64), 3 * sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfiar) +
+> | +			sizeof(u64) != offsetof(struct thread_struct, tm_orig_msr));
+> | +
+> | +	/* TM checkpointed original MSR */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_orig_msr, 3 * sizeof(u64),
+> | +				3 * sizeof(u64) + sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_orig_msr) +
+> | +			sizeof(unsigned long) + sizeof(struct pt_regs)
+> | +				!= offsetof(struct thread_struct, tm_tar));
+> | +
+> | +	/* TM checkpointed TAR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_tar, 3 * sizeof(u64) +
+> | +				sizeof(unsigned long) , 3 * sizeof(u64) +
+> | +					2 * sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tar)
+> | +			+ sizeof(unsigned long) !=
+> | +				offsetof(struct thread_struct, tm_ppr));
+> | +
+> | +	/* TM checkpointed PPR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.tm_ppr, 3 * sizeof(u64) +
+> | +					2 * sizeof(unsigned long), 3 * sizeof(u64) +
+> | +						3 * sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_ppr) +
+> | +			sizeof(unsigned long) !=
+> | +				offsetof(struct thread_struct, tm_dscr));
+> | +
+> | +	/* TM checkpointed DSCR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_dscr, 3 * sizeof(u64)
+> | +				+ 3 * sizeof(unsigned long), 3 * sizeof(u64)
+> | +						+ 4 * sizeof(unsigned long));
+> | +	return ret;
+> | +}
+> | +
+> | +static int tm_spr_set(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   const void *kbuf, const void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> | +	/* TFHAR register */
+> | +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.tm_tfhar, 0, sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfhar)
+> | +		+ sizeof(u64) != offsetof(struct thread_struct, tm_texasr));
+> 
+> A single copyin into a local buffer followed by a local assignment would
+> be easier to read ?
+
+I guess the same logic applies here as well.
+
+> 
+> It could be easier to read if all BUILD_BUG_ON() calls are in one place
+> maybe near the beginning of the function or in the header file.
+
+Will move them to the beginning of the function.
+> 
+> | +
+> | +	/* TEXASR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_texasr, sizeof(u64), 2 * sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_texasr)
+> | +		+ sizeof(u64) != offsetof(struct thread_struct, tm_tfiar));
+> | +
+> | +	/* TFIAR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_tfiar, 2 * sizeof(u64), 3 * sizeof(u64));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tfiar)
+> | +		+ sizeof(u64) != offsetof(struct thread_struct, tm_orig_msr));
+> | +
+> | +	/* TM checkpointed orig MSR */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_orig_msr, 3 * sizeof(u64),
+> | +				3 * sizeof(u64) + sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_orig_msr)
+> | +		+ sizeof(unsigned long) + sizeof(struct pt_regs) !=
+> | +			offsetof(struct thread_struct, tm_tar));
+> | +
+> | +	/* TM checkpointed TAR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.tm_tar, 3 * sizeof(u64) +
+> | +				sizeof(unsigned long), 3 * sizeof(u64) +
+> | +					2 * sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_tar)
+> | +			+ sizeof(unsigned long) != offsetof(struct thread_struct, tm_ppr));
+> | +
+> | +	/* TM checkpointed PPR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.tm_ppr, 3 * sizeof(u64)
+> | +					+ 2 * sizeof(unsigned long), 3 * sizeof(u64)
+> | +					+ 3 * sizeof(unsigned long));
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_struct, tm_ppr) +
+> | +			sizeof(unsigned long) !=
+> | +				offsetof(struct thread_struct, tm_dscr));
+> | +
+> | +	/* TM checkpointed DSCR register */
+> | +	if (!ret)
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.tm_dscr,
+> | +					3 * sizeof(u64) + 3 * sizeof(unsigned long),
+> | +					3 * sizeof(u64) + 4 * sizeof(unsigned long));
+> | +
+> | +	return ret;
+> | +}
+> | +
+> | +static int tm_cgpr_active(struct task_struct *target,
+> | +				const struct user_regset *regset)
+> | +{
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return 0;
+> | +
+> | +	return regset->n;
+> | +}
+> | +
+> | +/*
+> | + * TM Checkpointed GPR
+> | + *
+> | + * struct data {
+> | + * 	struct pt_regs ckpt_regs;
+> | + * };
+> | + */
+> | +static int tm_cgpr_get(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   void *kbuf, void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.ckpt_regs, 0,
+> | +				sizeof(struct pt_regs));
+> | +	return ret;
+> | +}
+> | +
+> | +static int tm_cgpr_set(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   const void *kbuf, const void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +					&target->thread.ckpt_regs, 0,
+> | +						sizeof(struct pt_regs));
+> | +	return ret;
+> | +}
+> | +
+> | +static int tm_cfpr_active(struct task_struct *target,
+> | +				const struct user_regset *regset)
+> | +{
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return 0;
+> | +
+> | +	return regset->n;
+> | +}
+> | +
+> | +/*
+> | + * TM Checkpointed FPR
+> | + *
+> | + * struct data {
+> | + * 	u64	fpr[32];
+> | + * 	u64	fpscr;
+> | + * };
+> | + */
+> | +static int tm_cfpr_get(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   void *kbuf, void __user *ubuf)
+> | +{
+> | +#ifdef CONFIG_VSX
+> | +	u64 buf[33];
+> | +	int i;
+> | +#endif
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> | +#ifdef CONFIG_VSX
+> | +	/* copy to local buffer then write that out */
+> | +	for (i = 0; i < 32 ; i++)
+> | +		buf[i] = target->thread.TS_FPR(i);
+> | +	buf[32] = target->thread.fp_state.fpscr;
+> | +	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+> | +
+> | +#else
+> | +	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | +		offsetof(struct thread_fp_state, fpr[32][0]));
+> | +
+> | +	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +			&target->thread.thread_fp_state, 0, -1);
+> | +#endif
+> | +}
+> | +
+> | +static int tm_cfpr_set(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   const void *kbuf, const void __user *ubuf)
+> | +{
+> | +#ifdef CONFIG_VSX
+> | +	u64 buf[33];
+> | +	int i;
+> | +#endif
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> | +#ifdef CONFIG_VSX
+> | +	/* copy to local buffer then write that out */
+> | +	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+> | +	if (i)
+> | +		return i;
+> | +	for (i = 0; i < 32 ; i++)
+> | +		target->thread.TS_FPR(i) = buf[i];
+> | +	target->thread.fp_state.fpscr = buf[32];
+> | +	return 0;
+> | +#else
+> | +	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+> | +		      offsetof(struct thread_fp_state, fpr[32][0]));
+> | +
+> | +	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				&target->thread.fp_state, 0, -1);
+> | +#endif
+> | +}
+> | +
+> | +static int tm_cvmx_active(struct task_struct *target,
+> | +				const struct user_regset *regset)
+> | +{
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return 0;
+> | +
+> | +	return regset->n;
+> | +}
+> 
+> All these tm_*_active() functions do the same checks - maybe they could all
+> call a common function ?
+
+Will look into it.
+
+> 
+> | +
+> | +/*
+> | + * TM Checkpointed VMX
+> | + *
+> | + * struct data {
+> | + * 	vector128	vr[32];
+> | + * 	vector128	vscr;
+> | + * 	vector128	vrsave;
+> | + *};
+> | + */
+> | +static int tm_cvmx_get(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   void *kbuf, void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+> | +		     offsetof(struct thread_vr_state, vr[32]));
+> | +
+> | +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> | +				  &target->thread.vr_state, 0,
+> | +				  33 * sizeof(vector128));
+> | +	if (!ret) {
+> | +		/*
+> | +		 * Copy out only the low-order word of vrsave.
+> | +		 */
+> | +		union {
+> | +			elf_vrreg_t reg;
+> | +			u32 word;
+> | +		} vrsave;
+> | +		memset(&vrsave, 0, sizeof(vrsave));
+> | +		vrsave.word = target->thread.vrsave;
+> | +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+> | +					  33 * sizeof(vector128), -1);
+> | +	}
+> | +	return ret;
+> | +}
+> | +
+> | +static int tm_cvmx_set(struct task_struct *target, const struct user_regset *regset,
+> | +		   unsigned int pos, unsigned int count,
+> | +		   const void *kbuf, const void __user *ubuf)
+> | +{
+> | +	int ret;
+> | +
+> | +	if (!cpu_has_feature(CPU_FTR_TM))
+> | +		return -ENODEV;
+> | +
+> | +	if(!MSR_TM_ACTIVE(target->thread.regs->msr))
+> | +		return -ENODATA;
+> | +
+> | +	flush_fp_to_thread(target);
+> | +	flush_altivec_to_thread(target);
+> | +	flush_tmregs_to_thread(target);
+> | +
+> | +	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+> | +		offsetof(struct thread_vr_state, vr[32]));
+> | +
+> | +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> | +				 &target->thread.vr_state, 0,
+> | +				 33 * sizeof(vector128));
+> | +	if (!ret && count > 0) {
+> | +		/*
+> | +		 * We use only the first word of vrsave.
+> | +		 */
+> | +		union {
+> | +			elf_vrreg_t reg;
+> | +			u32 word;
+> | +		} vrsave;
+> | +		memset(&vrsave, 0, sizeof(vrsave));
+> | +		vrsave.word = target->thread.vrsave;
+> | +		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+> | +					 33 * sizeof(vector128), -1);
+> | +		if (!ret)
+> | +			target->thread.vrsave = vrsave.word;
+> | +	}
+> | +	return ret;
+> | +}
+> | +#endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
+> |  
+> |  /*
+> |   * These are our native regset flavors.
+> | @@ -629,6 +1163,12 @@ enum powerpc_regset {
+> |  #ifdef CONFIG_SPE
+> |  	REGSET_SPE,
+> |  #endif
+> | +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> | +	REGSET_TM_SPR,		/* TM specific SPR */
+> | +	REGSET_TM_CGPR,		/* TM checkpointed GPR */
+> | +	REGSET_TM_CFPR,		/* TM checkpointed FPR */
+> | +	REGSET_TM_CVMX,		/* TM checkpointed VMX */
+> | +#endif
+> |  };
+> |  
+> |  static const struct user_regset native_regsets[] = {
+> | @@ -663,6 +1203,28 @@ static const struct user_regset native_regsets[] = {
+> |  		.active = evr_active, .get = evr_get, .set = evr_set
+> |  	},
+> |  #endif
+> | +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> | +	[REGSET_TM_SPR] = {
+> | +		.core_note_type = NT_PPC_TM_SPR, .n = 7,
+> 
+> How about adding a macro ELF_NSPRREG for the 7 special registers ?
+
+Will do that.
+
+> 
+> | +		.size = sizeof(u64), .align = sizeof(u64),
+> | +		.active = tm_spr_active, .get = tm_spr_get, .set = tm_spr_set
+> | +	},
+> | +	[REGSET_TM_CGPR] = {
+> | +		.core_note_type = NT_PPC_TM_CGPR, .n = ELF_NGREG,
+> | +		.size = sizeof(long), .align = sizeof(long),
+> | +		.active = tm_cgpr_active, .get = tm_cgpr_get, .set = tm_cgpr_set
+> | +	},
+> | +	[REGSET_TM_CFPR] = {
+> | +		.core_note_type = NT_PPC_TM_CFPR, .n = ELF_NFPREG,
+> | +		.size = sizeof(double), .align = sizeof(double),
+> | +		.active = tm_cfpr_active, .get = tm_cfpr_get, .set = tm_cfpr_set
+> | +	},
+> | +	[REGSET_TM_CVMX] = {
+> | +		.core_note_type = NT_PPC_TM_CVMX, .n = 34,
+> 
+> Similarly for the .n = 34
+
+Sure.
