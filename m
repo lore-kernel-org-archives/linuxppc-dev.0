@@ -1,29 +1,28 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 727B11A19CE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:05:21 +1100 (EST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8D9B1A0986
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:20:59 +1100 (EST)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 92D6A1400BB
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:05:20 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id ACDE914008F
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:20:59 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 9 Oct 2014 20:35:18 +0530
+ Fri, 10 Oct 2014 01:20:58 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
  mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH v4 05/16] powerpc/mm: Export mmu_kernel_ssize and
- mmu_linear_psize
-In-Reply-To: <1412758505-23495-6-git-send-email-mikey@neuling.org>
+Subject: Re: [PATCH v4 11/16] powerpc/mm: Add hooks for cxl
+In-Reply-To: <1412758505-23495-12-git-send-email-mikey@neuling.org>
 References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
- <1412758505-23495-6-git-send-email-mikey@neuling.org>
-Date: Thu, 09 Oct 2014 20:35:02 +0530
-Message-ID: <871tqh2sip.fsf@linux.vnet.ibm.com>
+ <1412758505-23495-12-git-send-email-mikey@neuling.org>
+Date: Thu, 09 Oct 2014 20:50:49 +0530
+Message-ID: <87wq891d7y.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -42,38 +41,83 @@ Michael Neuling <mikey@neuling.org> writes:
 
 > From: Ian Munsie <imunsie@au1.ibm.com>
 >
-> Export mmu_kernel_ssize and mmu_linear_psize.  These are needed by the cxl
-> driver which has it's own MMU.  To setup the MMU cxl needs access to these.
+> This adds hooks into the core powerpc mm code for cxl.
 >
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
+> The core powerpc code sometimes uses local tlbie. Unfortunately this won't
+> work with the current cxl driver as it relies on snooping tlbie broadcasts.
+>
+> The cxl hardware can have TLB entries invalidated via MMIO but this is not
+> currently supported by the driver. In future we can make local tlbie smarter so
+> that it invalidates cxl contexts via MMIO when it needs to but for now we have
+> this workaround.
+>
+> This workaround checks for any active cxl contexts and if so, disables local
+> tlbie.
+>
+> This also adds a hook for when SLBs are invalidated. This ensures any
+> corresponding SLBs in cxl are also invalidated at the same time. This is
+> required for segment demotion.
+>
 > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
 > ---
->  arch/powerpc/mm/hash_utils_64.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  arch/powerpc/mm/copro_fault.c    | 2 ++
+>  arch/powerpc/mm/hash_native_64.c | 6 +++++-
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 5c0738d..bbdb054 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -98,6 +98,7 @@ unsigned long htab_size_bytes;
->  unsigned long htab_hash_mask;
->  EXPORT_SYMBOL_GPL(htab_hash_mask);
->  int mmu_linear_psize = MMU_PAGE_4K;
-> +EXPORT_SYMBOL_GPL(mmu_linear_psize);
->  int mmu_virtual_psize = MMU_PAGE_4K;
->  int mmu_vmalloc_psize = MMU_PAGE_4K;
->  #ifdef CONFIG_SPARSEMEM_VMEMMAP
-> @@ -105,6 +106,7 @@ int mmu_vmemmap_psize = MMU_PAGE_4K;
+> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+> index f2aa5a8..0f9939e 100644
+> --- a/arch/powerpc/mm/copro_fault.c
+> +++ b/arch/powerpc/mm/copro_fault.c
+> @@ -26,6 +26,7 @@
+>  #include <asm/reg.h>
+>  #include <asm/copro.h>
+>  #include <asm/spu.h>
+> +#include <misc/cxl.h>
+>  
+>  /*
+>   * This ought to be kept in sync with the powerpc specific do_page_fault
+> @@ -143,5 +144,6 @@ void copro_flush_all_slbs(struct mm_struct *mm)
+>  #ifdef CONFIG_SPU_BASE
+>  	spu_flush_all_slbs(mm);
 >  #endif
->  int mmu_io_psize = MMU_PAGE_4K;
->  int mmu_kernel_ssize = MMU_SEGSIZE_256M;
-> +EXPORT_SYMBOL_GPL(mmu_kernel_ssize);
->  int mmu_highuser_ssize = MMU_SEGSIZE_256M;
->  u16 mmu_slb_size = 64;
->  EXPORT_SYMBOL_GPL(mmu_slb_size);
+> +	cxl_slbia(mm);
+>  }
+
+If you split this patch into two and move the above hunk in a patch
+before "[PATCH v4 09/16] powerpc/mm: Add new hash_page_mm()", it would
+make it much easier to follow. We could then update the commit of the
+09th patch to carry additional information that talk about how the
+hash_page_mm really work as I replied to that patch.
+
+
+>  EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+> index afc0a82..ae4962a 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -29,6 +29,8 @@
+>  #include <asm/kexec.h>
+>  #include <asm/ppc-opcode.h>
+>  
+> +#include <misc/cxl.h>
+> +
+>  #ifdef DEBUG_LOW
+>  #define DBG_LOW(fmt...) udbg_printf(fmt)
+>  #else
+> @@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+>  static inline void tlbie(unsigned long vpn, int psize, int apsize,
+>  			 int ssize, int local)
+>  {
+> -	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
+> +	unsigned int use_local;
+>  	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+>  
+> +	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
+> +
+>  	if (use_local)
+>  		use_local = mmu_psize_defs[psize].tlbiel;
+>  	if (lock_tlbie && !use_local)
 > -- 
 > 1.9.1
 >
