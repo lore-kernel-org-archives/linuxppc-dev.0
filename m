@@ -1,34 +1,50 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
- by lists.ozlabs.org (Postfix) with ESMTP id CB9E01A0728
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 21:32:56 +1100 (EST)
-Date: Thu, 9 Oct 2014 12:32:54 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 03/44] hibernate: Call have_kernel_poweroff instead of
- checking pm_power_off
-Message-ID: <20141009103254.GB6787@amd>
+Return-Path: <catalin.marinas@arm.com>
+Date: Thu, 9 Oct 2014 11:36:56 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 12/44] mfd: ab8500-sysctrl: Register with kernel poweroff
+ handler
+Message-ID: <20141009103656.GF17836@e104818-lin.cambridge.arm.com>
 References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-4-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-13-git-send-email-linux@roeck-us.net>
+ <20141007080048.GB25331@lee--X1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1412659726-29957-4-git-send-email-linux@roeck-us.net>
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
- devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20141007080048.GB25331@lee--X1>
+Cc: "linux-m32r-ja@ml.linux-m32r.org" <linux-m32r-ja@ml.linux-m32r.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-m68k@vger.kernel.org" <linux-m68k@vger.kernel.org>,
+ "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "lguest@lists.ozlabs.org" <lguest@lists.ozlabs.org>,
+ "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
+ "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ Guenter Roeck <linux@roeck-us.net>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "user-mode-linux-devel@lists.sourceforge.net"
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>,
+ "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ "openipmi-developer@lists.sourceforge.net"
+ <openipmi-developer@lists.sourceforge.net>,
+ "linux-metag@vger.kernel.org" <linux-metag@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Samuel Ortiz <sameo@linux.intel.com>,
+ "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,38 +54,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 2014-10-06 22:28:05, Guenter Roeck wrote:
-> Poweroff handlers may now be installed with register_poweroff_handler.
-> Use the new API function have_kernel_poweroff to determine if a poweroff
-> handler has been installed.
+On Tue, Oct 07, 2014 at 09:00:48AM +0100, Lee Jones wrote:
+> On Mon, 06 Oct 2014, Guenter Roeck wrote:
+> > --- a/drivers/mfd/ab8500-sysctrl.c
+> > +++ b/drivers/mfd/ab8500-sysctrl.c
+> > @@ -6,6 +6,7 @@
 > 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->  kernel/power/hibernate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> [...]
 > 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index a9dfa79..20353c5 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -602,7 +602,7 @@ static void power_down(void)
->  	case HIBERNATION_PLATFORM:
->  		hibernation_platform_enter();
->  	case HIBERNATION_SHUTDOWN:
-> -		if (pm_power_off)
-> +		if (have_kernel_poweroff())
->  			kernel_power_off();
->  		break;
+> > +static int ab8500_power_off(struct notifier_block *this, unsigned long unused1,
+> > +			    void *unused2)
+> >  {
+> >  	sigset_t old;
+> >  	sigset_t all;
+> > @@ -34,11 +36,6 @@ static void ab8500_power_off(void)
+> >  	struct power_supply *psy;
+> >  	int ret;
+> >  
+> > -	if (sysctrl_dev == NULL) {
+> > -		pr_err("%s: sysctrl not initialized\n", __func__);
+> > -		return;
+> > -	}
+> 
+> Can you explain the purpose of this change please?
 
-poweroff -> power_off.
+I guess it's because the sysctrl_dev is already initialised when
+registering the power_off handler, so there isn't a way to call the
+above function with a NULL sysctrl_dev. Probably even with the original
+code you didn't need this check (after some race fix in
+ab8500_sysctrl_remove but races is one of the things Guenter's patches
+try to address).
 
-But if you are playing with this, anyway... does it make sense to
-introduce kernel_power_off() that just works, no need to check
-have_..?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Catalin
