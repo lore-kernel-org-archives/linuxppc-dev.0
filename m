@@ -1,28 +1,28 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8D9B1A0986
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:20:59 +1100 (EST)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40F6B1A0A5F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:28:42 +1100 (EST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ACDE914008F
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:20:59 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1F8A01400D2
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:28:42 +1100 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 10 Oct 2014 01:20:58 +1000
+ Fri, 10 Oct 2014 01:28:41 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
  mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH v4 11/16] powerpc/mm: Add hooks for cxl
-In-Reply-To: <1412758505-23495-12-git-send-email-mikey@neuling.org>
+Subject: Re: [PATCH v4 09/16] powerpc/mm: Add new hash_page_mm()
+In-Reply-To: <1412758505-23495-10-git-send-email-mikey@neuling.org>
 References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
- <1412758505-23495-12-git-send-email-mikey@neuling.org>
-Date: Thu, 09 Oct 2014 20:50:49 +0530
-Message-ID: <87wq891d7y.fsf@linux.vnet.ibm.com>
+ <1412758505-23495-10-git-send-email-mikey@neuling.org>
+Date: Thu, 09 Oct 2014 20:58:32 +0530
+Message-ID: <87tx3d1cv3.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
@@ -41,83 +41,126 @@ Michael Neuling <mikey@neuling.org> writes:
 
 > From: Ian Munsie <imunsie@au1.ibm.com>
 >
-> This adds hooks into the core powerpc mm code for cxl.
+> This adds a new function hash_page_mm() based on the existing hash_page().
+> This version allows any struct mm to be passed in, rather than assuming
+> current. This is useful for servicing co-processor faults which are not in the
+> context of the current running process.
 >
-> The core powerpc code sometimes uses local tlbie. Unfortunately this won't
-> work with the current cxl driver as it relies on snooping tlbie broadcasts.
->
-> The cxl hardware can have TLB entries invalidated via MMIO but this is not
-> currently supported by the driver. In future we can make local tlbie smarter so
-> that it invalidates cxl contexts via MMIO when it needs to but for now we have
-> this workaround.
->
-> This workaround checks for any active cxl contexts and if so, disables local
-> tlbie.
->
-> This also adds a hook for when SLBs are invalidated. This ensures any
-> corresponding SLBs in cxl are also invalidated at the same time. This is
-> required for segment demotion.
+> We need to be careful here as the current hash_page() assumes current in a few
+> places.
+
+if you move cxl_slbia patch before this, then we could add additonal
+information here.
+
+1) We use this to insert hpte entries on-behalf of co-processor.
+2) we don't need to flush cpu slb entries when adding new hpte entries
+3) We do flush the co-processor slb cache, if adding hpte entry result
+in a segement demotion or have mmu_ci_restrictions enabled.
+4) We do update the slice array to indicate the new base page size
+5) w.r.t co-processor on segment miss we look at slice array and add new slb entry
+using newly added copro_calculate_slb "powerpc/cell: Move data segment faulting code out of cell platform"
+
 >
 > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
 > ---
->  arch/powerpc/mm/copro_fault.c    | 2 ++
->  arch/powerpc/mm/hash_native_64.c | 6 +++++-
->  2 files changed, 7 insertions(+), 1 deletion(-)
+>  arch/powerpc/include/asm/mmu-hash64.h |  1 +
+>  arch/powerpc/mm/hash_utils_64.c       | 24 +++++++++++++++++-------
+>  2 files changed, 18 insertions(+), 7 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-> index f2aa5a8..0f9939e 100644
-> --- a/arch/powerpc/mm/copro_fault.c
-> +++ b/arch/powerpc/mm/copro_fault.c
-> @@ -26,6 +26,7 @@
->  #include <asm/reg.h>
->  #include <asm/copro.h>
->  #include <asm/spu.h>
-> +#include <misc/cxl.h>
->  
->  /*
->   * This ought to be kept in sync with the powerpc specific do_page_fault
-> @@ -143,5 +144,6 @@ void copro_flush_all_slbs(struct mm_struct *mm)
->  #ifdef CONFIG_SPU_BASE
->  	spu_flush_all_slbs(mm);
->  #endif
-> +	cxl_slbia(mm);
->  }
-
-If you split this patch into two and move the above hunk in a patch
-before "[PATCH v4 09/16] powerpc/mm: Add new hash_page_mm()", it would
-make it much easier to follow. We could then update the commit of the
-09th patch to carry additional information that talk about how the
-hash_page_mm really work as I replied to that patch.
-
-
->  EXPORT_SYMBOL_GPL(copro_flush_all_slbs);
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index afc0a82..ae4962a 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -29,6 +29,8 @@
->  #include <asm/kexec.h>
->  #include <asm/ppc-opcode.h>
->  
-> +#include <misc/cxl.h>
-> +
->  #ifdef DEBUG_LOW
->  #define DBG_LOW(fmt...) udbg_printf(fmt)
->  #else
-> @@ -149,9 +151,11 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
->  static inline void tlbie(unsigned long vpn, int psize, int apsize,
->  			 int ssize, int local)
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index aeabd02..764e141 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -324,6 +324,7 @@ extern int __hash_page_64K(unsigned long ea, unsigned long access,
+>  			   unsigned int local, int ssize);
+>  struct mm_struct;
+>  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
+> +extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap);
+>  extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap);
+>  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+>  		     pte_t *ptep, unsigned long trap, int local, int ssize,
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index bbdb054..698834d 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -904,7 +904,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+>  		return;
+>  	slice_set_range_psize(mm, addr, 1, MMU_PAGE_4K);
+>  	copro_flush_all_slbs(mm);
+> -	if (get_paca_psize(addr) != MMU_PAGE_4K) {
+> +	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
+>  		get_paca()->context = mm->context;
+>  		slb_flush_and_rebolt();
+>  	}
+> @@ -989,12 +989,11 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+>   * -1 - critical hash insertion error
+>   * -2 - access not permitted by subpage protection mechanism
+>   */
+> -int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap)
 >  {
-> -	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
-> +	unsigned int use_local;
->  	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+>  	enum ctx_state prev_state = exception_enter();
+>  	pgd_t *pgdir;
+>  	unsigned long vsid;
+> -	struct mm_struct *mm;
+>  	pte_t *ptep;
+>  	unsigned hugeshift;
+>  	const struct cpumask *tmp;
+> @@ -1008,7 +1007,6 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>   	switch (REGION_ID(ea)) {
+>  	case USER_REGION_ID:
+>  		user_region = 1;
+> -		mm = current->mm;
+>  		if (! mm) {
+>  			DBG_LOW(" user region with no mm !\n");
+>  			rc = 1;
+> @@ -1019,7 +1017,6 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  		vsid = get_vsid(mm->context.id, ea, ssize);
+>  		break;
+>  	case VMALLOC_REGION_ID:
+> -		mm = &init_mm;
+>  		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
+>  		if (ea < VMALLOC_END)
+>  			psize = mmu_vmalloc_psize;
+> @@ -1104,7 +1101,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  			WARN_ON(1);
+>  		}
+>  #endif
+> -		check_paca_psize(ea, mm, psize, user_region);
+> +		if (current->mm == mm)
+> +			check_paca_psize(ea, mm, psize, user_region);
 >  
-> +	use_local = local && mmu_has_feature(MMU_FTR_TLBIEL) && !cxl_ctx_in_use();
+>  		goto bail;
+>  	}
+> @@ -1145,7 +1143,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>  		}
+>  	}
+>  
+> -	check_paca_psize(ea, mm, psize, user_region);
+> +	if (current->mm == mm)
+> +		check_paca_psize(ea, mm, psize, user_region);
+>  #endif /* CONFIG_PPC_64K_PAGES */
+>  
+>  #ifdef CONFIG_PPC_HAS_HASH_64K
+> @@ -1180,6 +1179,17 @@ bail:
+>  	exception_exit(prev_state);
+>  	return rc;
+>  }
+> +EXPORT_SYMBOL_GPL(hash_page_mm);
 > +
->  	if (use_local)
->  		use_local = mmu_psize_defs[psize].tlbiel;
->  	if (lock_tlbie && !use_local)
+> +int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+> +{
+> +	struct mm_struct *mm = current->mm;
+> +
+> +	if (REGION_ID(ea) == VMALLOC_REGION_ID)
+> +		mm = &init_mm;
+> +
+> +	return hash_page_mm(mm, ea, access, trap);
+> +}
+>  EXPORT_SYMBOL_GPL(hash_page);
+>  
+>  void hash_preload(struct mm_struct *mm, unsigned long ea,
 > -- 
 > 1.9.1
 >
