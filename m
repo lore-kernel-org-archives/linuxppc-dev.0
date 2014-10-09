@@ -1,15 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id EEA0D1A0835
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 01:54:46 +1100 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
-Subject: [PATCH] net: fs_enet: error: 'SCCE_ENET_TXF' undeclared
-Message-Id: <20141009145443.74AD61AB275@localhost.localdomain>
-Date: Thu,  9 Oct 2014 16:54:43 +0200 (CEST)
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA8911A0835
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:01:51 +1100 (EST)
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0B8EA1400BB
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:01:50 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 9 Oct 2014 20:31:48 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
+ mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: Re: [PATCH v4 01/16] powerpc/cell: Move spu_handle_mm_fault() out of
+ cell platform
+In-Reply-To: <1412758505-23495-2-git-send-email-mikey@neuling.org>
+References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
+ <1412758505-23495-2-git-send-email-mikey@neuling.org>
+Date: Thu, 09 Oct 2014 20:31:37 +0530
+Message-ID: <87a9552soe.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
+ imunsie@au1.ibm.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,45 +38,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[linux-devel:devel-hourly-2014100909 3763/3915] drivers/net/ethernet/freescale/fs_enet/mac-scc.c:119:32: error: 'SCCE_ENET_TXF' undeclared
+Michael Neuling <mikey@neuling.org> writes:
 
-Due to patch d43a396 net: fs_enet: Add NAPI TX, it appears that some target
-compilations are broken.
-This is due to the fact that unlike the FEC, the SCC and FCC don't have a TXF
-event (complete Frame transmitted) but only TXB (buffer transmitted).
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> Currently spu_handle_mm_fault() is in the cell platform.
+>
+> This code is generically useful for other non-cell co-processors on powerpc.
+>
+> This patch moves this function out of the cell platform into arch/powerpc/mm so
+> that others may use it.
+>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
----
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c | 2 +-
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index 2c578db..08f5b91 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -125,7 +125,7 @@ out:
- }
- 
- #define FCC_NAPI_RX_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB)
--#define FCC_NAPI_TX_EVENT_MSK	(FCC_ENET_TXF | FCC_ENET_TXB)
-+#define FCC_NAPI_TX_EVENT_MSK	(FCC_ENET_TXB)
- #define FCC_RX_EVENT		(FCC_ENET_RXF)
- #define FCC_TX_EVENT		(FCC_ENET_TXB)
- #define FCC_ERR_EVENT_MSK	(FCC_ENET_TXE)
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 5b592a6..90c9652 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -117,7 +117,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
- }
- 
- #define SCC_NAPI_RX_EVENT_MSK	(SCCE_ENET_RXF | SCCE_ENET_RXB)
--#define SCC_NAPI_TX_EVENT_MSK	(SCCE_ENET_TXF | SCCE_ENET_TXB)
-+#define SCC_NAPI_TX_EVENT_MSK	(SCCE_ENET_TXB)
- #define SCC_RX_EVENT		(SCCE_ENET_RXF)
- #define SCC_TX_EVENT		(SCCE_ENET_TXB)
- #define SCC_ERR_EVENT_MSK	(SCCE_ENET_TXE | SCCE_ENET_BSY)
--- 
-2.1.0
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  arch/powerpc/Kconfig                                     |  4 ++++
+>  arch/powerpc/include/asm/copro.h                         | 16 ++++++++++++++++
+>  arch/powerpc/include/asm/spu.h                           |  5 ++---
+>  arch/powerpc/mm/Makefile                                 |  1 +
+>  .../{platforms/cell/spu_fault.c => mm/copro_fault.c}     | 14 ++++++--------
+>  arch/powerpc/platforms/cell/Kconfig                      |  1 +
+>  arch/powerpc/platforms/cell/Makefile                     |  2 +-
+>  arch/powerpc/platforms/cell/spufs/fault.c                |  4 ++--
+>  8 files changed, 33 insertions(+), 14 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/copro.h
+>  rename arch/powerpc/{platforms/cell/spu_fault.c => mm/copro_fault.c} (89%)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 4bc7b62..8f094e9 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -603,6 +603,10 @@ config PPC_SUBPAGE_PROT
+>  	  to set access permissions (read/write, readonly, or no access)
+>  	  on the 4k subpages of each 64k page.
+>  
+> +config PPC_COPRO_BASE
+> +	bool
+> +	default n
+> +
+>  config SCHED_SMT
+>  	bool "SMT (Hyperthreading) scheduler support"
+>  	depends on PPC64 && SMP
+> diff --git a/arch/powerpc/include/asm/copro.h b/arch/powerpc/include/asm/copro.h
+> new file mode 100644
+> index 0000000..51cae85
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/copro.h
+> @@ -0,0 +1,16 @@
+> +/*
+> + * Copyright 2014 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#ifndef _ASM_POWERPC_COPRO_H
+> +#define _ASM_POWERPC_COPRO_H
+> +
+> +int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+> +			  unsigned long dsisr, unsigned *flt);
+> +
+> +#endif /* _ASM_POWERPC_COPRO_H */
+> diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
+> index 37b7ca3..a6e6e2b 100644
+> --- a/arch/powerpc/include/asm/spu.h
+> +++ b/arch/powerpc/include/asm/spu.h
+> @@ -27,6 +27,8 @@
+>  #include <linux/workqueue.h>
+>  #include <linux/device.h>
+>  #include <linux/mutex.h>
+> +#include <asm/reg.h>
+> +#include <asm/copro.h>
+>  
+>  #define LS_SIZE (256 * 1024)
+>  #define LS_ADDR_MASK (LS_SIZE - 1)
+> @@ -277,9 +279,6 @@ void spu_remove_dev_attr(struct device_attribute *attr);
+>  int spu_add_dev_attr_group(struct attribute_group *attrs);
+>  void spu_remove_dev_attr_group(struct attribute_group *attrs);
+>  
+> -int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+> -		unsigned long dsisr, unsigned *flt);
+> -
+>  /*
+>   * Notifier blocks:
+>   *
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index d0130ff..325e861 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -34,3 +34,4 @@ obj-$(CONFIG_TRANSPARENT_HUGEPAGE) += hugepage-hash64.o
+>  obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+>  obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+>  obj-$(CONFIG_HIGHMEM)		+= highmem.o
+> +obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+> diff --git a/arch/powerpc/platforms/cell/spu_fault.c b/arch/powerpc/mm/copro_fault.c
+> similarity index 89%
+> rename from arch/powerpc/platforms/cell/spu_fault.c
+> rename to arch/powerpc/mm/copro_fault.c
+> index 641e727..ba7df14 100644
+> --- a/arch/powerpc/platforms/cell/spu_fault.c
+> +++ b/arch/powerpc/mm/copro_fault.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * SPU mm fault handler
+> + * CoProcessor (SPU/AFU) mm fault handler
+>   *
+>   * (C) Copyright IBM Deutschland Entwicklung GmbH 2007
+>   *
+> @@ -23,16 +23,14 @@
+>  #include <linux/sched.h>
+>  #include <linux/mm.h>
+>  #include <linux/export.h>
+> -
+> -#include <asm/spu.h>
+> -#include <asm/spu_csa.h>
+> +#include <asm/reg.h>
+>  
+>  /*
+>   * This ought to be kept in sync with the powerpc specific do_page_fault
+>   * function. Currently, there are a few corner cases that we haven't had
+>   * to handle fortunately.
+>   */
+> -int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+> +int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+>  		unsigned long dsisr, unsigned *flt)
+>  {
+>  	struct vm_area_struct *vma;
+> @@ -58,12 +56,12 @@ int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+>  			goto out_unlock;
+>  	}
+>  
+> -	is_write = dsisr & MFC_DSISR_ACCESS_PUT;
+> +	is_write = dsisr & DSISR_ISSTORE;
+>  	if (is_write) {
+>  		if (!(vma->vm_flags & VM_WRITE))
+>  			goto out_unlock;
+>  	} else {
+> -		if (dsisr & MFC_DSISR_ACCESS_DENIED)
+> +		if (dsisr & DSISR_PROTFAULT)
+>  			goto out_unlock;
+>  		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
+>  			goto out_unlock;
+> @@ -91,4 +89,4 @@ out_unlock:
+>  	up_read(&mm->mmap_sem);
+>  	return ret;
+>  }
+> -EXPORT_SYMBOL_GPL(spu_handle_mm_fault);
+> +EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+> index 9978f59..870b6db 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -86,6 +86,7 @@ config SPU_FS_64K_LS
+>  config SPU_BASE
+>  	bool
+>  	default n
+> +	select PPC_COPRO_BASE
+>  
+>  config CBE_RAS
+>  	bool "RAS features for bare metal Cell BE"
+> diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+> index fe053e7..2d16884 100644
+> --- a/arch/powerpc/platforms/cell/Makefile
+> +++ b/arch/powerpc/platforms/cell/Makefile
+> @@ -20,7 +20,7 @@ spu-manage-$(CONFIG_PPC_CELL_COMMON)	+= spu_manage.o
+>  
+>  obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
+>  					   spu_notify.o \
+> -					   spu_syscalls.o spu_fault.o \
+> +					   spu_syscalls.o \
+>  					   $(spu-priv1-y) \
+>  					   $(spu-manage-y) \
+>  					   spufs/
+> diff --git a/arch/powerpc/platforms/cell/spufs/fault.c b/arch/powerpc/platforms/cell/spufs/fault.c
+> index 8cb6260..e45894a 100644
+> --- a/arch/powerpc/platforms/cell/spufs/fault.c
+> +++ b/arch/powerpc/platforms/cell/spufs/fault.c
+> @@ -138,7 +138,7 @@ int spufs_handle_class1(struct spu_context *ctx)
+>  	if (ctx->state == SPU_STATE_RUNNABLE)
+>  		ctx->spu->stats.hash_flt++;
+>  
+> -	/* we must not hold the lock when entering spu_handle_mm_fault */
+> +	/* we must not hold the lock when entering copro_handle_mm_fault */
+>  	spu_release(ctx);
+>  
+>  	access = (_PAGE_PRESENT | _PAGE_USER);
+> @@ -149,7 +149,7 @@ int spufs_handle_class1(struct spu_context *ctx)
+>  
+>  	/* hashing failed, so try the actual fault handler */
+>  	if (ret)
+> -		ret = spu_handle_mm_fault(current->mm, ea, dsisr, &flt);
+> +		ret = copro_handle_mm_fault(current->mm, ea, dsisr, &flt);
+>  
+>  	/*
+>  	 * This is nasty: we need the state_mutex for all the bookkeeping even
+> -- 
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
