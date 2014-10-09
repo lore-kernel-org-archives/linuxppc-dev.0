@@ -1,55 +1,35 @@
-Return-Path: <pavel@ucw.cz>
-Date: Thu, 9 Oct 2014 22:24:19 +0200
-From: Pavel Machek <pavel@denx.de>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 08/44] kernel: Move pm_power_off to common code
-Message-ID: <20141009202419.GA16885@amd>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-9-git-send-email-linux@roeck-us.net>
- <20141009103847.GC6787@amd> <54368A30.9070101@roeck-us.net>
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18EC11A08CE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 10:41:56 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 9 Oct 2014 17:41:54 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CC9803E4003D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Oct 2014 17:41:50 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s99Nfo9Q53084176
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 01:41:50 +0200
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s99NfoGQ002561
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Oct 2014 17:41:50 -0600
+Date: Thu, 9 Oct 2014 16:41:28 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/numa: check error return from proc_create
+Message-ID: <20141009234128.GB30604@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54368A30.9070101@roeck-us.net>
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- Steven Miao <realmz6@gmail.com>, linux-xtensa@linux-xtensa.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Thomas Gleixner <tglx@linutronix.de>, Lennox Wu <lennox.wu@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
- lguest@lists.ozlabs.org, Russell King <linux@arm.linux.org.uk>,
- linux-c6x-dev@linux-c6x.org, Len Brown <len.brown@intel.com>,
- "David S. Miller" <davem@davemloft.net>, linux-hexagon@vger.kernel.org,
- Hirokazu Takata <takata@linux-m32r.org>, linux-sh@vger.kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mark Salter <msalter@redhat.com>, xen-devel@lists.xenproject.org,
- Matt Turner <mattst88@gmail.com>, Chen Liqin <liqin.linux@gmail.com>,
- Jonas Bonn <jonas@southpole.se>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
- devicetree@vger.kernel.org, James Hogan <james.hogan@imgtec.com>,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- Aurelien Jacquiot <a-jacquiot@ti.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- adi-buildroot-devel@lists.sourceforge.net, Chris Metcalf <cmetcalf@tilera.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Mikael Starvik <starvik@axis.com>, Richard Weinberger <richard@nod.at>,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, Vineet Gupta <vgupta@synopsys.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, Richard Kuo <rkuo@codeaurora.org>,
- David Vrabel <david.vrabel@citrix.com>, linux-alpha@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,24 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+proc_create can fail, we should check the return value and pass up the
+failure.
 
-> >>@@ -184,6 +179,8 @@ machine_halt(void)
-> >>  void
-> >>  machine_power_off(void)
-> >>  {
-> >>+	do_kernel_poweroff();
-> >>+
-> >
-> >poweroff -> power_off for consistency.
-> >
-> Dunno; matter of personal preference. I started with that, but ultimately went
-> with poweroff to distinguish poweroff handler functions from existing code,
-> specifically kernel_power_off().
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-That works for you, but once it is merged, it is ugly/confusing typo.
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d7737a542fd7..e28c21ba862d 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1808,7 +1808,8 @@ static const struct file_operations topology_ops = {
+ static int topology_update_init(void)
+ {
+ 	start_topology_update();
+-	proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops);
++	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_ops))
++		return -ENOMEM;
+ 
+ 	return 0;
+ }
