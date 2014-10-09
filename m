@@ -1,33 +1,34 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40F6B1A0A5F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 02:28:42 +1100 (EST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1F8A01400D2
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2014 02:28:42 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 10 Oct 2014 01:28:41 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, greg@kroah.com, arnd@arndb.de,
- mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH v4 09/16] powerpc/mm: Add new hash_page_mm()
-In-Reply-To: <1412758505-23495-10-git-send-email-mikey@neuling.org>
-References: <1412758505-23495-1-git-send-email-mikey@neuling.org>
- <1412758505-23495-10-git-send-email-mikey@neuling.org>
-Date: Thu, 09 Oct 2014 20:58:32 +0530
-Message-ID: <87tx3d1cv3.fsf@linux.vnet.ibm.com>
+Return-Path: <groeck7@gmail.com>
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Thu, 9 Oct 2014 08:38:36 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+Message-ID: <20141009153836.GA31987@roeck-us.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+ <20141009103143.GA6787@amd>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: cbe-oss-dev@lists.ozlabs.org, mikey@neuling.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jk@ozlabs.org,
- imunsie@au1.ibm.com, anton@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141009103143.GA6787@amd>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
+ linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>,
+ linux-xtensa@linux-xtensa.org, devel@driverdev.osuosl.org,
+ linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-sh@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,135 +38,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Thu, Oct 09, 2014 at 12:31:43PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > +/**
+> > + *	register_poweroff_handler_simple - Register function to be called to power off
+> > + *					   the system
+> > + *	@handler:	Function to be called to power off the system
+> > + *	@priority:	Handler priority. For priority guidelines see
+> > + *			register_poweroff_handler.
+> > + *
+> > + *	This is a simplified version of register_poweroff_handler. It does not
+> > + *	take a notifier as argument, but a function pointer. The function
+> > + *	registers a poweroff handler with specified priority. Poweroff
+> > + *	handlers registered with this function can not be unregistered,
+> > + *	and only a single poweroff handler can be installed using it.
+> > + *
+> > + *	This function must not be called from modules and is therefore
+> > + *	not exported.
+> > + *
+> > + *	Returns -EBUSY if a poweroff handler has already been registered
+> > + *	using register_poweroff_handler_simple. Otherwise returns zero,
+> > + *	since atomic_notifier_chain_register() currently always returns zero.
+> > + */
+> > +int register_poweroff_handler_simple(void (*handler)(void), int priority)
+> > +{
+> > +	char symname[KSYM_NAME_LEN];
+> > +
+> > +	if (poweroff_handler_data.handler) {
+> > +		lookup_symbol_name((unsigned long)poweroff_handler_data.handler,
+> > +				   symname);
+> > +		pr_warn("Poweroff function already registered (%s)", symname);
+> > +		lookup_symbol_name((unsigned long)handler, symname);
+> > +		pr_cont(", cannot register %s\n", symname);
+> > +		return -EBUSY;
+> > +	}
+> 
+> Dunno, are you maybe overdoing the debugging infrastructure a bit?
+> This is not going to happen in production, and if it does happen,
+> developer can look the symbol name himself.
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> This adds a new function hash_page_mm() based on the existing hash_page().
-> This version allows any struct mm to be passed in, rather than assuming
-> current. This is useful for servicing co-processor faults which are not in the
-> context of the current running process.
->
-> We need to be careful here as the current hash_page() assumes current in a few
-> places.
+On the other side, I don't think it hurts to have that message.
+Anyway, I'll use %ps as suggested by Geert.
 
-if you move cxl_slbia patch before this, then we could add additonal
-information here.
-
-1) We use this to insert hpte entries on-behalf of co-processor.
-2) we don't need to flush cpu slb entries when adding new hpte entries
-3) We do flush the co-processor slb cache, if adding hpte entry result
-in a segement demotion or have mmu_ci_restrictions enabled.
-4) We do update the slice array to indicate the new base page size
-5) w.r.t co-processor on segment miss we look at slice array and add new slb entry
-using newly added copro_calculate_slb "powerpc/cell: Move data segment faulting code out of cell platform"
-
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h |  1 +
->  arch/powerpc/mm/hash_utils_64.c       | 24 +++++++++++++++++-------
->  2 files changed, 18 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-> index aeabd02..764e141 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -324,6 +324,7 @@ extern int __hash_page_64K(unsigned long ea, unsigned long access,
->  			   unsigned int local, int ssize);
->  struct mm_struct;
->  unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap);
-> +extern int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap);
->  extern int hash_page(unsigned long ea, unsigned long access, unsigned long trap);
->  int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
->  		     pte_t *ptep, unsigned long trap, int local, int ssize,
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index bbdb054..698834d 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -904,7 +904,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
->  		return;
->  	slice_set_range_psize(mm, addr, 1, MMU_PAGE_4K);
->  	copro_flush_all_slbs(mm);
-> -	if (get_paca_psize(addr) != MMU_PAGE_4K) {
-> +	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
->  		get_paca()->context = mm->context;
->  		slb_flush_and_rebolt();
->  	}
-> @@ -989,12 +989,11 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
->   * -1 - critical hash insertion error
->   * -2 - access not permitted by subpage protection mechanism
->   */
-> -int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
-> +int hash_page_mm(struct mm_struct *mm, unsigned long ea, unsigned long access, unsigned long trap)
->  {
->  	enum ctx_state prev_state = exception_enter();
->  	pgd_t *pgdir;
->  	unsigned long vsid;
-> -	struct mm_struct *mm;
->  	pte_t *ptep;
->  	unsigned hugeshift;
->  	const struct cpumask *tmp;
-> @@ -1008,7 +1007,6 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->   	switch (REGION_ID(ea)) {
->  	case USER_REGION_ID:
->  		user_region = 1;
-> -		mm = current->mm;
->  		if (! mm) {
->  			DBG_LOW(" user region with no mm !\n");
->  			rc = 1;
-> @@ -1019,7 +1017,6 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  		vsid = get_vsid(mm->context.id, ea, ssize);
->  		break;
->  	case VMALLOC_REGION_ID:
-> -		mm = &init_mm;
->  		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
->  		if (ea < VMALLOC_END)
->  			psize = mmu_vmalloc_psize;
-> @@ -1104,7 +1101,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  			WARN_ON(1);
->  		}
->  #endif
-> -		check_paca_psize(ea, mm, psize, user_region);
-> +		if (current->mm == mm)
-> +			check_paca_psize(ea, mm, psize, user_region);
->  
->  		goto bail;
->  	}
-> @@ -1145,7 +1143,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->  		}
->  	}
->  
-> -	check_paca_psize(ea, mm, psize, user_region);
-> +	if (current->mm == mm)
-> +		check_paca_psize(ea, mm, psize, user_region);
->  #endif /* CONFIG_PPC_64K_PAGES */
->  
->  #ifdef CONFIG_PPC_HAS_HASH_64K
-> @@ -1180,6 +1179,17 @@ bail:
->  	exception_exit(prev_state);
->  	return rc;
->  }
-> +EXPORT_SYMBOL_GPL(hash_page_mm);
-> +
-> +int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
-> +{
-> +	struct mm_struct *mm = current->mm;
-> +
-> +	if (REGION_ID(ea) == VMALLOC_REGION_ID)
-> +		mm = &init_mm;
-> +
-> +	return hash_page_mm(mm, ea, access, trap);
-> +}
->  EXPORT_SYMBOL_GPL(hash_page);
->  
->  void hash_preload(struct mm_struct *mm, unsigned long ea,
-> -- 
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Guenter
