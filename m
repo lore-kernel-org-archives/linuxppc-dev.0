@@ -1,31 +1,21 @@
-Return-Path: <gnomes@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk
- (7.3.c.8.2.a.e.f.f.f.8.1.0.3.2.0.9.6.0.7.2.3.f.b.0.b.8.0.1.0.0.2.ip6.arpa
- [IPv6:2001:8b0:bf32:7069:230:18ff:fea2:8c37])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jingchang.lu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0145.outbound.protection.outlook.com [65.55.169.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 196241A06F1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 19:58:57 +1100 (EST)
-Date: Fri, 10 Oct 2014 09:58:28 +0100
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-To: Peter Hurley <peter@hurleysoftware.com>
-Subject: Re: [PATCH tty-next 14/22] tty: Remove
- tty_wait_until_sent_from_close()
-Message-ID: <20141010095828.1f0de28b@alan.etchedpixels.co.uk>
-In-Reply-To: <5434B5D3.4060308@hurleysoftware.com>
-References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
- <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
- <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
- <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
- <5434B5D3.4060308@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8FC791A0B39
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 21:00:40 +1100 (EST)
+From: Jingchang Lu <jingchang.lu@freescale.com>
+To: <mturquette@linaro.org>
+Subject: [PATCHv5] clk: ppc-corenet: rename to qoriq and add CLK_OF_DECLARE
+ support
+Date: Fri, 10 Oct 2014 17:14:57 +0800
+Message-ID: <1412932497-27995-1-git-send-email-jingchang.lu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Karsten Keil <isdn@linux-pingi.de>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- David Laight <David.Laight@ACULAB.COM>,
- "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,20 +25,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> The point being that holding the tty lock across the _entire_ close
-> is equivalent to the current outcome, regardless of O_NONBLOCK.
-> 
-> I'm reluctant to start returning EGAIN for non-blocking tty opens
-> because no tty driver does that now, and I don't think userspace will
-> deal well with new return codes from tty opens.
+The IP is shared by PPC and ARM, this renames it to qoriq for better
+represention, and this also adds the CLK_OF_DECLARE support for being
+initialized by of_clk_init() on ARM.
 
-I do not know about the non blocking case mattering. The blocking open
-does need to wait, when I broke that case before I broke the console
-login drivers (mingetty).
+Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
+---
+changes in v5:
+ update drivers/cpufreq/Kconfig.powerpc to slect the renamed config option.
 
-Returning EAGAIN would also only work if poll/select did the right thing.
-Currently Linux can't support a System5 style ttymon process because of
-this limitation, which means, for example, that systemd can't implement a
-single thread to manage all console prompts/setup
+changes in v4:
+ remove "corenet" literals omitted in v3 remove.
 
-Alan
+changes in v3:
+ generate the patch with -M -C option
+
+changes in v2:
+ rename the driver name to ppc-qoriq.c for shared on PPC and ARM.
+
+ drivers/clk/Kconfig                            | 10 ++++-----
+ drivers/clk/Makefile                           |  2 +-
+ drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c} | 29 +++++++++++++++-----------
+ drivers/cpufreq/Kconfig.powerpc                |  2 +-
+ 4 files changed, 24 insertions(+), 19 deletions(-)
+ rename drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c} (89%)
+
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index 455fd17..4706a9f 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -101,12 +101,12 @@ config COMMON_CLK_AXI_CLKGEN
+ 	  Support for the Analog Devices axi-clkgen pcore clock generator for Xilinx
+ 	  FPGAs. It is commonly used in Analog Devices' reference designs.
+ 
+-config CLK_PPC_CORENET
+-	bool "Clock driver for PowerPC corenet platforms"
+-	depends on PPC_E500MC && OF
++config CLK_QORIQ
++	bool "Clock driver for Freescale QorIQ platforms"
++	depends on (PPC_E500MC || ARM) && OF
+ 	---help---
+-	  This adds the clock driver support for Freescale PowerPC corenet
+-	  platforms using common clock framework.
++	  This adds the clock driver support for Freescale QorIQ platforms
++	  using common clock framework.
+ 
+ config COMMON_CLK_XGENE
+ 	bool "Clock driver for APM XGene SoC"
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index d5fba5b..4ff94cd 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -30,7 +30,7 @@ obj-$(CONFIG_ARCH_MOXART)		+= clk-moxart.o
+ obj-$(CONFIG_ARCH_NOMADIK)		+= clk-nomadik.o
+ obj-$(CONFIG_ARCH_NSPIRE)		+= clk-nspire.o
+ obj-$(CONFIG_COMMON_CLK_PALMAS)		+= clk-palmas.o
+-obj-$(CONFIG_CLK_PPC_CORENET)		+= clk-ppc-corenet.o
++obj-$(CONFIG_CLK_QORIQ)			+= clk-qoriq.o
+ obj-$(CONFIG_COMMON_CLK_RK808)		+= clk-rk808.o
+ obj-$(CONFIG_COMMON_CLK_S2MPS11)	+= clk-s2mps11.o
+ obj-$(CONFIG_COMMON_CLK_SI5351)		+= clk-si5351.o
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-qoriq.c
+similarity index 89%
+rename from drivers/clk/clk-ppc-corenet.c
+rename to drivers/clk/clk-qoriq.c
+index 8e58edf..48cb923 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-qoriq.c
+@@ -5,7 +5,7 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  *
+- * clock driver for Freescale PowerPC corenet SoCs.
++ * clock driver for Freescale QorIQ SoCs.
+  */
+ #include <linux/clk-provider.h>
+ #include <linux/io.h>
+@@ -155,7 +155,7 @@ static void __init core_pll_init(struct device_node *np)
+ 
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+-		pr_err("clk-ppc: iomap error\n");
++		pr_err("clk-qoriq: iomap error\n");
+ 		return;
+ 	}
+ 
+@@ -252,7 +252,7 @@ static void __init sysclk_init(struct device_node *node)
+ 	u32 rate;
+ 
+ 	if (!np) {
+-		pr_err("ppc-clk: could not get parent node\n");
++		pr_err("qoriq-clk: could not get parent node\n");
+ 		return;
+ 	}
+ 
+@@ -278,30 +278,35 @@ static const struct of_device_id clk_match[] __initconst = {
+ 	{}
+ };
+ 
+-static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
++static int __init qoriq_clk_probe(struct platform_device *pdev)
+ {
+ 	of_clk_init(clk_match);
+ 
+ 	return 0;
+ }
+ 
+-static const struct of_device_id ppc_clk_ids[] __initconst = {
++static const struct of_device_id qoriq_clk_ids[] __initconst = {
+ 	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+ 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+ 	{}
+ };
+ 
+-static struct platform_driver ppc_corenet_clk_driver __initdata = {
++static struct platform_driver qoriq_clk_driver __initdata = {
+ 	.driver = {
+-		.name = "ppc_corenet_clock",
++		.name = "qoriq_clock",
+ 		.owner = THIS_MODULE,
+-		.of_match_table = ppc_clk_ids,
++		.of_match_table = qoriq_clk_ids,
+ 	},
+-	.probe = ppc_corenet_clk_probe,
++	.probe = qoriq_clk_probe,
+ };
+ 
+-static int __init ppc_corenet_clk_init(void)
++static int __init qoriq_clk_init(void)
+ {
+-	return platform_driver_register(&ppc_corenet_clk_driver);
++	return platform_driver_register(&qoriq_clk_driver);
+ }
+-subsys_initcall(ppc_corenet_clk_init);
++subsys_initcall(qoriq_clk_init);
++
++CLK_OF_DECLARE(qoriq_core_pll_v1, "fsl,qoriq-core-pll-1.0", core_pll_init);
++CLK_OF_DECLARE(qoriq_core_pll_v2, "fsl,qoriq-core-pll-2.0", core_pll_init);
++CLK_OF_DECLARE(qoriq_core_mux_v1, "fsl,qoriq-core-mux-1.0", core_mux_init);
++CLK_OF_DECLARE(qoriq_core_mux_v2, "fsl,qoriq-core-mux-2.0", core_mux_init);
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index 72564b7..7ea2441 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -26,7 +26,7 @@ config CPU_FREQ_MAPLE
+ config PPC_CORENET_CPUFREQ
+ 	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
+ 	depends on PPC_E500MC && OF && COMMON_CLK
+-	select CLK_PPC_CORENET
++	select CLK_QORIQ
+ 	help
+ 	  This adds the CPUFreq driver support for Freescale e500mc,
+ 	  e5500 and e6500 series SoCs which are capable of changing
+-- 
+1.8.0
