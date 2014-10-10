@@ -1,19 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87DE91A06FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 17:23:19 +1100 (EST)
-In-Reply-To: <20141006093358.1828.36741.stgit@mars>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/powernv: Fallback to old HMI handling behavior for old
- firmware
-Message-Id: <20141010062319.6000B1400DE@ozlabs.org>
-Date: Fri, 10 Oct 2014 17:23:19 +1100 (EST)
-Cc: Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C1A531A01E4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 17:49:27 +1100 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <B07421@freescale.com>
+Subject: [PATCH 2/3] qe: run qe_init and qe_ic_init
+Date: Fri, 10 Oct 2014 14:48:45 +0800
+Message-ID: <1412923725-9611-1-git-send-email-B45475@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,79 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-06-10 at 09:34:19 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+qe and qe_ic need to be initialized before the
+qe app drivers, using subsys_initcall to run
+qe_init and qe_ic_init
 
-Hi Mahesh,
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ drivers/soc/qe/qe.c    | 15 +++++++++++++++
+ drivers/soc/qe/qe_ic.c | 15 +++++++++++++++
+ 2 files changed, 30 insertions(+)
 
-> Recently we moved HMI handling into Linux kernel instead of taking
-> HMI directly in OPAL. This new change is dependent on new OPAL call
-> for HMI recovery which was introduced in newer firmware. While this new
-> change works fine with latest OPAL firmware, we broke the HMI handling
-> if we run newer kernel on old OPAL firmware that results in system hang.
-> 
-> This patch fixes this issue by falling back to old HMI behavior on older
-> OPAL firmware.
-
-It sounds like "older" firmware is actually "the currently released firmware".
-The "newer" firmware is still in development, is that right?
-
-If so please update the comment and changelog to better reflect that.
-
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index b44eec3..2768cd3 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -194,6 +194,24 @@ static int __init opal_register_exception_handlers(void)
->  	 * fwnmi area at 0x7000 to provide the glue space to OPAL
->  	 */
->  	glue = 0x7000;
-> +
-> +	/* Check if we are running on newer firmware that exports
-
-Please format your long comments like:
-
-/*
- * Check if we are ..
- */
-
-I know some of our code uses the other style but this is the commonly accepted
-style.
-
-> +	 * OPAL_HANDLE_HMI token. If yes, then don't ask opal to patch
-> +	 * HMI interrupt and we catch it directly in Linux kernel.
-> +	 *
-> +	 * For older firmware we will fallback to old behavior and
-> +	 * let OPAL patch the HMI vector and handle it inside OPAL
-> +	 * firmware.
-> +	 */
-> +	if (opal_check_token(OPAL_HANDLE_HMI) != OPAL_TOKEN_PRESENT) {
-
-OPAL_TOKEN_PRESENT was dropped from the API. Just use:
-
-	if (!opal_check_token(OPAL_HANDLE_HMI)) {
-
-> +		/* We are on old firmware. fallback to old behavior. */
-> +		pr_info("%s: Falling back to old HMI handling behavior.\n",
-> +			__func__);
-
-Please just use "opal: " rather than __func__.
-
-And rather than the user having to know what the old vs new behaviour is, can
-you make it explicit in the message, eg:
-
-"opal: Old firmware detected, letting OPAL handle HMIs."
-
-> +		opal_register_exception_handler(
-> +				OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
-> +				0, glue);
-> +		glue += 128;
-> +	}
-
-Newline here please.
-
->  	opal_register_exception_handler(OPAL_SOFTPATCH_HANDLER, 0, glue);
->  #endif
-
-
-cheers
+diff --git a/drivers/soc/qe/qe.c b/drivers/soc/qe/qe.c
+index 2aaa5b2..bfea0f8 100644
+--- a/drivers/soc/qe/qe.c
++++ b/drivers/soc/qe/qe.c
+@@ -683,6 +683,21 @@ unsigned int qe_get_num_of_snums(void)
+ }
+ EXPORT_SYMBOL(qe_get_num_of_snums);
+ 
++static int __init qe_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np) {
++		pr_err("%s: Could not find Quicc Engine node\n", __func__);
++		return -ENODEV;
++	}
++	qe_reset();
++	of_node_put(np);
++	return 0;
++}
++subsys_initcall(qe_init);
++
+ #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC_85xx)
+ static int qe_resume(struct platform_device *ofdev)
+ {
+diff --git a/drivers/soc/qe/qe_ic.c b/drivers/soc/qe/qe_ic.c
+index cc1b8d5..11fe98c 100644
+--- a/drivers/soc/qe/qe_ic.c
++++ b/drivers/soc/qe/qe_ic.c
+@@ -34,6 +34,7 @@
+ #include <linux/fsl/qe_ic.h>
+ 
+ #include "qe_ic.h"
++#include "../../irqchip/irqchip.h"
+ 
+ static DEFINE_RAW_SPINLOCK(qe_ic_lock);
+ 
+@@ -501,4 +502,18 @@ static int __init init_qe_ic_sysfs(void)
+ 	return 0;
+ }
+ 
++static int __init qeic_of_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (np) {
++		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
++			   qe_ic_cascade_high_mpic);
++		of_node_put(np);
++	}
++	return 0;
++}
++subsys_initcall(qeic_of_init);
++
+ subsys_initcall(init_qe_ic_sysfs);
+-- 
+2.1.0.27.g96db324
