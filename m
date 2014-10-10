@@ -1,16 +1,16 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
+ (mail-bn1bon0147.outbound.protection.outlook.com [157.56.111.147])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1A531A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 17:49:27 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44FCC1A02F5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 17:50:39 +1100 (EST)
 From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <B07421@freescale.com>
-Subject: [PATCH 2/3] qe: run qe_init and qe_ic_init
-Date: Fri, 10 Oct 2014 14:48:45 +0800
-Message-ID: <1412923725-9611-1-git-send-email-B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ <devicetree@vger.kernel.org>, <B07421@freescale.com>
+Subject: [PATCH 3/3] ls1021a-twr/qe: add qe node to ls1-twr
+Date: Fri, 10 Oct 2014 14:49:58 +0800
+Message-ID: <1412923798-9757-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
@@ -23,72 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qe and qe_ic need to be initialized before the
-qe app drivers, using subsys_initcall to run
-qe_init and qe_ic_init
+add qe node to ls1021atwr fdt.
 
 Signed-off-by: Zhao Qiang <B45475@freescale.com>
 ---
- drivers/soc/qe/qe.c    | 15 +++++++++++++++
- drivers/soc/qe/qe_ic.c | 15 +++++++++++++++
- 2 files changed, 30 insertions(+)
+ arch/arm/boot/dts/ls1021a-twr.dts | 24 +++++++++++++++
+ arch/arm/boot/dts/ls1021a.dtsi    | 64 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 88 insertions(+)
 
-diff --git a/drivers/soc/qe/qe.c b/drivers/soc/qe/qe.c
-index 2aaa5b2..bfea0f8 100644
---- a/drivers/soc/qe/qe.c
-+++ b/drivers/soc/qe/qe.c
-@@ -683,6 +683,21 @@ unsigned int qe_get_num_of_snums(void)
- }
- EXPORT_SYMBOL(qe_get_num_of_snums);
+diff --git a/arch/arm/boot/dts/ls1021a-twr.dts b/arch/arm/boot/dts/ls1021a-twr.dts
+index a52be7b..415387f 100755
+--- a/arch/arm/boot/dts/ls1021a-twr.dts
++++ b/arch/arm/boot/dts/ls1021a-twr.dts
+@@ -164,6 +164,30 @@
+ 	};
+ };
  
-+static int __init qe_init(void)
-+{
-+	struct device_node *np;
++&uqe {
++	tdma: ucc@2000 {
++		compatible = "fsl,ucc-tdm";
++		rx-clock-name = "clk8";
++		tx-clock-name = "clk9";
++		fsl,rx-sync-clock = "rsync_pin";
++		fsl,tx-sync-clock = "tsync_pin";
++		fsl,tx-timeslot = <0xfffffffe>;
++		fsl,rx-timeslot = <0xfffffffe>;
++		fsl,tdm-framer-type = "e1";
++		fsl,tdm-mode = "normal";
++		fsl,tdm-id = <0>;
++		fsl,siram-entry-id = <0>;
++	};
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-+		return -ENODEV;
-+	}
-+	qe_reset();
-+	of_node_put(np);
-+	return 0;
-+}
-+subsys_initcall(qe_init);
++	serial: ucc@2200 {
++		device_type = "serial";
++		compatible = "ucc_uart";
++		port-number = <1>;
++		rx-clock-name = "brg2";
++		tx-clock-name = "brg2";
++	};
++};
 +
- #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC_85xx)
- static int qe_resume(struct platform_device *ofdev)
- {
-diff --git a/drivers/soc/qe/qe_ic.c b/drivers/soc/qe/qe_ic.c
-index cc1b8d5..11fe98c 100644
---- a/drivers/soc/qe/qe_ic.c
-+++ b/drivers/soc/qe/qe_ic.c
-@@ -34,6 +34,7 @@
- #include <linux/fsl/qe_ic.h>
+ &pwm6 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 80747dc..3f2ab89 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -314,6 +314,70 @@
+ 			status = "disabled";
+ 		};
  
- #include "qe_ic.h"
-+#include "../../irqchip/irqchip.h"
- 
- static DEFINE_RAW_SPINLOCK(qe_ic_lock);
- 
-@@ -501,4 +502,18 @@ static int __init init_qe_ic_sysfs(void)
- 	return 0;
- }
- 
-+static int __init qeic_of_init(void)
-+{
-+	struct device_node *np;
++		uqe: uqe@2400000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			device_type = "qe";
++			compatible = "fsl,qe", "simple-bus";
++			ranges = <0x0 0x0 0x2400000 0x40000>;
++			reg = <0x0 0x2400000 0x0 0x480>;
++			brg-frequency = <100000000>;
++			bus-frequency = <200000000>;
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+			   qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+	}
-+	return 0;
-+}
-+subsys_initcall(qeic_of_init);
++			fsl,qe-num-riscs = <1>;
++			fsl,qe-num-snums = <28>;
 +
- subsys_initcall(init_qe_ic_sysfs);
++			qeic: qeic@80 {
++				compatible = "fsl,qe-ic";
++				reg = <0x80 0x80>;
++				#address-cells = <0>;
++				interrupt-controller;
++				#interrupt-cells = <1>;
++				interrupts = <0 109 0x04 0 109 0x04>;
++			};
++
++			si1: si@700 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,qe-si";
++				reg = <0x700 0x80>;
++			};
++
++			siram1: siram@1000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "fsl,qe-siram";
++				reg = <0x1000 0x800>;
++			};
++
++			ucc@2000 {
++				cell-index = <1>;
++				reg = <0x2000 0x200>;
++				interrupts = <32>;
++				interrupt-parent = <&qeic>;
++			};
++
++			ucc@2200 {
++				cell-index = <3>;
++				reg = <0x2200 0x200>;
++				interrupts = <34>;
++				interrupt-parent = <&qeic>;
++			};
++
++			muram@10000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "fsl,qe-muram", "fsl,cpm-muram";
++				ranges = <0x0 0x10000 0x6000>;
++
++				data-only@0 {
++					compatible = "fsl,qe-muram-data",
++					"fsl,cpm-muram-data";
++					reg = <0x0 0x6000>;
++				};
++			};
++		};
++
+ 		lpuart0: serial@2950000 {
+ 			compatible = "fsl,ls1021a-lpuart";
+ 			reg = <0x0 0x2950000 0x0 0x1000>;
 -- 
 2.1.0.27.g96db324
