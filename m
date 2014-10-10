@@ -1,20 +1,31 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gnomes@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk
+ (7.3.c.8.2.a.e.f.f.f.8.1.0.3.2.0.9.6.0.7.2.3.f.b.0.b.8.0.1.0.0.2.ip6.arpa
+ [IPv6:2001:8b0:bf32:7069:230:18ff:fea2:8c37])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 383B51A09A6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 19:28:47 +1100 (EST)
-Message-ID: <543794C2.7010309@freescale.com>
-Date: Fri, 10 Oct 2014 11:11:46 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 196241A06F1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 19:58:57 +1100 (EST)
+Date: Fri, 10 Oct 2014 09:58:28 +0100
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+To: Peter Hurley <peter@hurleysoftware.com>
+Subject: Re: [PATCH tty-next 14/22] tty: Remove
+ tty_wait_until_sent_from_close()
+Message-ID: <20141010095828.1f0de28b@alan.etchedpixels.co.uk>
+In-Reply-To: <5434B5D3.4060308@hurleysoftware.com>
+References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
+ <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
+ <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
+ <5434B5D3.4060308@hurleysoftware.com>
 MIME-Version: 1.0
-To: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/msi: Use WARN_ON() in msi bitmap selftests
-References: <1412928265-21991-1-git-send-email-mpe@ellerman.id.au>
- <1412928265-21991-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1412928265-21991-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Cc: Karsten Keil <isdn@linux-pingi.de>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Laight <David.Laight@ACULAB.COM>,
+ "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,101 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-Comment inline.
-
-On 10/10/2014 11:04 AM, Michael Ellerman wrote:
-> As demonstrated in the previous commit, the failure message from the msi
-> bitmap selftests is a bit subtle, it's easy to miss a failure in a busy
-> boot log.
+> The point being that holding the tty lock across the _entire_ close
+> is equivalent to the current outcome, regardless of O_NONBLOCK.
 > 
-> So drop our check() macro and use WARN_ON() instead. This necessitates
-> inverting all the conditions as well.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/sysdev/msi_bitmap.c | 54 ++++++++++++++++++----------------------
+> I'm reluctant to start returning EGAIN for non-blocking tty opens
+> because no tty driver does that now, and I don't think userspace will
+> deal well with new return codes from tty opens.
 
-[snip]
+I do not know about the non blocking case mattering. The blocking open
+does need to wait, when I broke that case before I broke the console
+login drivers (mingetty).
 
->  
->  	/* Free most of them for the alignment tests */
->  	msi_bitmap_free_hwirqs(&bmp, 3, size - 3);
->  
->  	/* Check we get a naturally aligned offset */
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 2);
-> -	check(rc >= 0 && rc % 2 == 0);
-> +	WARN_ON(rc < 0 && rc % 2 != 0);
+Returning EAGAIN would also only work if poll/select did the right thing.
+Currently Linux can't support a System5 style ttymon process because of
+this limitation, which means, for example, that systemd can't implement a
+single thread to manage all console prompts/setup
 
-Here and below, shouldn't these be:
-
-	WARN_ON(rc < 0 || rc % 2 != 0);
-
-?
-
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 4);
-> -	check(rc >= 0 && rc % 4 == 0);
-> +	WARN_ON(rc < 0 && rc % 4 != 0);
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 8);
-> -	check(rc >= 0 && rc % 8 == 0);
-> +	WARN_ON(rc < 0 && rc % 8 != 0);
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 9);
-> -	check(rc >= 0 && rc % 16 == 0);
-> +	WARN_ON(rc < 0 && rc % 16 != 0);
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 3);
-> -	check(rc >= 0 && rc % 4 == 0);
-> +	WARN_ON(rc < 0 && rc % 4 != 0);
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 7);
-> -	check(rc >= 0 && rc % 8 == 0);
-> +	WARN_ON(rc < 0 && rc % 8 != 0);
->  	rc = msi_bitmap_alloc_hwirqs(&bmp, 121);
-> -	check(rc >= 0 && rc % 128 == 0);
-> +	WARN_ON(rc < 0 && rc % 128 != 0);
->  
->  	msi_bitmap_free(&bmp);
->  
-> -	/* Clients may check bitmap == NULL for "not-allocated" */
-> -	check(bmp.bitmap == NULL);
-> +	/* Clients may WARN_ON bitmap == NULL for "not-allocated" */
-> +	WARN_ON(bmp.bitmap != NULL);
->  
->  	kfree(bmp.bitmap);
->  }
-> @@ -229,14 +224,13 @@ static void __init test_of_node(void)
->  	of_node_init(&of_node);
->  	of_node.full_name = node_name;
->  
-> -	check(0 == msi_bitmap_alloc(&bmp, size, &of_node));
-> +	WARN_ON(msi_bitmap_alloc(&bmp, size, &of_node));
->  
->  	/* No msi-available-ranges, so expect > 0 */
-> -	check(msi_bitmap_reserve_dt_hwirqs(&bmp) > 0);
-> +	WARN_ON(msi_bitmap_reserve_dt_hwirqs(&bmp) <= 0);
->  
->  	/* Should all still be free */
-> -	check(0 == bitmap_find_free_region(bmp.bitmap, size,
-> -					   get_count_order(size)));
-> +	WARN_ON(bitmap_find_free_region(bmp.bitmap, size, get_count_order(size)));
->  	bitmap_release_region(bmp.bitmap, 0, get_count_order(size));
->  
->  	/* Now create a fake msi-available-ranges property */
-> @@ -250,11 +244,11 @@ static void __init test_of_node(void)
->  	of_node.properties = &prop;
->  
->  	/* msi-available-ranges, so expect == 0 */
-> -	check(msi_bitmap_reserve_dt_hwirqs(&bmp) == 0);
-> +	WARN_ON(msi_bitmap_reserve_dt_hwirqs(&bmp));
->  
->  	/* Check we got the expected result */
-> -	check(0 == bitmap_parselist(expected_str, expected, size));
-> -	check(bitmap_equal(expected, bmp.bitmap, size));
-> +	WARN_ON(bitmap_parselist(expected_str, expected, size));
-> +	WARN_ON(!bitmap_equal(expected, bmp.bitmap, size));
->  
->  	msi_bitmap_free(&bmp);
->  	kfree(bmp.bitmap);
-> 
-
----
-Best Regards, Laurentiu
+Alan
