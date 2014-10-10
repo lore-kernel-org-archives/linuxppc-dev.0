@@ -1,19 +1,23 @@
-Return-Path: <vvijayan@mvista.com>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
+ [IPv6:2607:f8b0:4002:c07::22b])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D8D91A060A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 16:45:54 +1100 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id kq14so1070732pab.40
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Oct 2014 22:45:51 -0700 (PDT)
-From: Vineeth Vijayan <vvijayan@mvista.com>
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: Fix Text randomization
-Date: Fri, 10 Oct 2014 11:15:26 +0530
-Message-Id: <1412919926-13123-1-git-send-email-vvijayan@mvista.com>
-Cc: Vineeth Vijayan <vvijayan@mvista.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 874DC1A099F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 16:53:43 +1100 (EST)
+Received: by mail-yk0-f171.google.com with SMTP id 79so1360533ykr.16
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Oct 2014 22:53:40 -0700 (PDT)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anton Blanchard <anton@samba.org>, David Herrmann <dh.herrmann@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Fabian Frederick <fabf@skynet.be>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] powerpc: Wire up sys_bpf() syscall
+Date: Fri, 10 Oct 2014 01:53:45 -0400
+Message-Id: <1412920428-29263-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,104 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Right now there is no way to disable TEXT randomization on a PPC32
-machine. text randomization happens even in the case of "echo 0 >
-/proc/sys/kernel/randomize_va_space"
+This patch wires up the new syscall sys_bpf() on powerpc.
 
-This happens due to the incorrect definition of ELF_ET_DYN_BASE at
-arch/powerpc/include/asm/elf.h
-
-Signed-off-by: Vineeth Vijayan <vvijayan@mvista.com>
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
 ---
-Test details:
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-#include <stdio.h>
-
-int main(int argc,char *argv)
-{
-        printf("main = %p\n",main);
-        return 0;
-}
-
-Compile the same as position-independent executable
-
-Results without Patch:
-
-p5040ds:~# gcc test.c -o test -fPIE -pie
-p5040ds:~# echo 2 > /proc/sys/kernel/randomize_va_space 
-p5040ds:~# ./test 
-main = 0xb7e9681c
-p5040ds:~# ./test 
-main = 0xb7aba81c
-p5040ds:~# ./test 
-main = 0xb7fac81c
-p5040ds:~# ./test 
-main = 0xb7f4c81c
-p5040ds:~# echo 0 > /proc/sys/kernel/randomize_va_space                                                                                                                                              
-p5040ds:~# ./test 
-main = 0x2010281c
-p5040ds:~# ./test 
-main = 0x2018d81c
-p5040ds:~# ./test 
-main = 0x206a981c
-p5040ds:~# ./test 
-main = 0x2036681c
-
-
-Results with Patch:
-
-p5040ds:~# gcc test.c -o test -fPIE -pie
-p5040ds:~# 
-p5040ds:~# echo 2 > /proc/sys/kernel/randomize_va_space 
-p5040ds:~# 
-p5040ds:~# ./test 
-main = 0xb78a581c
-p5040ds:~# ./test 
-main = 0xb792c81c
-p5040ds:~# ./test 
-main = 0xb79de81c
-p5040ds:~# ./test 
-main = 0xb78ae81c
-p5040ds:~# echo 0 > /proc/sys/kernel/randomize_va_space                                                                                                                                              
-p5040ds:~# 
-p5040ds:~# ./test 
-main = 0x2000081c
-p5040ds:~# ./test 
-main = 0x2000081c
-p5040ds:~# ./test 
-main = 0x2000081c
-p5040ds:~# ./test 
-main = 0x2000081c
-
-
- arch/powerpc/Kconfig           |    1 +
- arch/powerpc/include/asm/elf.h |    2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4bc7b62..f99ddae 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -88,6 +88,7 @@ config PPC
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select BINFMT_ELF
-+	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
- 	select OF
- 	select OF_EARLY_FLATTREE
- 	select OF_RESERVED_MEM
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 888d8f3..162813b 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -29,7 +29,7 @@
-    that it will "exec", and that there is sufficient room for the brk.  */
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 7d8a600..ce9577d 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -365,3 +365,4 @@ SYSCALL_SPU(renameat2)
+ SYSCALL_SPU(seccomp)
+ SYSCALL_SPU(getrandom)
+ SYSCALL_SPU(memfd_create)
++SYSCALL_SPU(bpf)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 4e9af3f..e0da021 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
  
- extern unsigned long randomize_et_dyn(unsigned long base);
--#define ELF_ET_DYN_BASE		(randomize_et_dyn(0x20000000))
-+#define ELF_ET_DYN_BASE		(0x20000000)
  
- #define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
+-#define __NR_syscalls		361
++#define __NR_syscalls		362
  
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 0688fc0..f55351f 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -383,5 +383,6 @@
+ #define __NR_seccomp		358
+ #define __NR_getrandom		359
+ #define __NR_memfd_create	360
++#define __NR_bpf		361
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-1.7.9.5
+2.1.0
