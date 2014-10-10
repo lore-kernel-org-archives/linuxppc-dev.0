@@ -1,23 +1,19 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
- [IPv6:2607:f8b0:4002:c07::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 874DC1A099F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 16:53:43 +1100 (EST)
-Received: by mail-yk0-f171.google.com with SMTP id 79so1360533ykr.16
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Oct 2014 22:53:40 -0700 (PDT)
-From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, David Herrmann <dh.herrmann@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Fabian Frederick <fabf@skynet.be>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powerpc: Wire up sys_bpf() syscall
-Date: Fri, 10 Oct 2014 01:53:45 -0400
-Message-Id: <1412920428-29263-1-git-send-email-bobby.prani@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87DE91A06FE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2014 17:23:19 +1100 (EST)
+In-Reply-To: <20141006093358.1828.36741.stgit@mars>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/powernv: Fallback to old HMI handling behavior for old
+ firmware
+Message-Id: <20141010062319.6000B1400DE@ozlabs.org>
+Date: Fri, 10 Oct 2014 17:23:19 +1100 (EST)
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch wires up the new syscall sys_bpf() on powerpc.
+On Mon, 2014-06-10 at 09:34:19 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+Hi Mahesh,
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 7d8a600..ce9577d 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -365,3 +365,4 @@ SYSCALL_SPU(renameat2)
- SYSCALL_SPU(seccomp)
- SYSCALL_SPU(getrandom)
- SYSCALL_SPU(memfd_create)
-+SYSCALL_SPU(bpf)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 4e9af3f..e0da021 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		361
-+#define __NR_syscalls		362
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 0688fc0..f55351f 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -383,5 +383,6 @@
- #define __NR_seccomp		358
- #define __NR_getrandom		359
- #define __NR_memfd_create	360
-+#define __NR_bpf		361
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.1.0
+> Recently we moved HMI handling into Linux kernel instead of taking
+> HMI directly in OPAL. This new change is dependent on new OPAL call
+> for HMI recovery which was introduced in newer firmware. While this new
+> change works fine with latest OPAL firmware, we broke the HMI handling
+> if we run newer kernel on old OPAL firmware that results in system hang.
+> 
+> This patch fixes this issue by falling back to old HMI behavior on older
+> OPAL firmware.
+
+It sounds like "older" firmware is actually "the currently released firmware".
+The "newer" firmware is still in development, is that right?
+
+If so please update the comment and changelog to better reflect that.
+
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index b44eec3..2768cd3 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -194,6 +194,24 @@ static int __init opal_register_exception_handlers(void)
+>  	 * fwnmi area at 0x7000 to provide the glue space to OPAL
+>  	 */
+>  	glue = 0x7000;
+> +
+> +	/* Check if we are running on newer firmware that exports
+
+Please format your long comments like:
+
+/*
+ * Check if we are ..
+ */
+
+I know some of our code uses the other style but this is the commonly accepted
+style.
+
+> +	 * OPAL_HANDLE_HMI token. If yes, then don't ask opal to patch
+> +	 * HMI interrupt and we catch it directly in Linux kernel.
+> +	 *
+> +	 * For older firmware we will fallback to old behavior and
+> +	 * let OPAL patch the HMI vector and handle it inside OPAL
+> +	 * firmware.
+> +	 */
+> +	if (opal_check_token(OPAL_HANDLE_HMI) != OPAL_TOKEN_PRESENT) {
+
+OPAL_TOKEN_PRESENT was dropped from the API. Just use:
+
+	if (!opal_check_token(OPAL_HANDLE_HMI)) {
+
+> +		/* We are on old firmware. fallback to old behavior. */
+> +		pr_info("%s: Falling back to old HMI handling behavior.\n",
+> +			__func__);
+
+Please just use "opal: " rather than __func__.
+
+And rather than the user having to know what the old vs new behaviour is, can
+you make it explicit in the message, eg:
+
+"opal: Old firmware detected, letting OPAL handle HMIs."
+
+> +		opal_register_exception_handler(
+> +				OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
+> +				0, glue);
+> +		glue += 128;
+> +	}
+
+Newline here please.
+
+>  	opal_register_exception_handler(OPAL_SOFTPATCH_HANDLER, 0, glue);
+>  #endif
+
+
+cheers
