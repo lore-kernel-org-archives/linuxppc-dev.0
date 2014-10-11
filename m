@@ -1,13 +1,12 @@
 Return-Path: <vinod.koul@intel.com>
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id C27D31A1A11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:52 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id BF8691A1AC4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:54 +1100 (EST)
 From: Vinod Koul <vinod.koul@intel.com>
 To: dmaengine@vger.kernel.org
-Subject: [PATCH 2/6] dmaengine: freescale: add and export
- fsl_dma_external_start()
-Date: Sat, 11 Oct 2014 21:16:44 +0530
-Message-Id: <1413042408-28491-3-git-send-email-vinod.koul@intel.com>
+Subject: [PATCH 3/6] carma-fpga: use dmaengine_xxx() API
+Date: Sat, 11 Oct 2014 21:16:45 +0530
+Message-Id: <1413042408-28491-4-git-send-email-vinod.koul@intel.com>
 In-Reply-To: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 References: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 Cc: Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
@@ -21,70 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The freescale driver uses custom device control FSLDMA_EXTERNAL_START to
-put the controller in external start mode.
-Since we are planning to deprecate the device control, move this to exported
-API. Subsequent patches will remove the FSLDMA_EXTERNAL_START
+The drivers should use dmaengine_slave_config() and dmaengine_prep_dma_sg()
+API instead of accessing the device_control which will be deprecated soon
 
 Signed-off-by: Vinod Koul <vinod.koul@intel.com>
 ---
- drivers/dma/fsldma.c   |   16 +++++++++++++++-
- include/linux/fsldma.h |   13 +++++++++++++
- 2 files changed, 28 insertions(+), 1 deletions(-)
- create mode 100644 include/linux/fsldma.h
+ drivers/misc/carma/carma-fpga-program.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index d5d6885..0cded86 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -36,7 +36,7 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
--
-+#include <linux/fsldma.h>
- #include "dmaengine.h"
- #include "fsldma.h"
+diff --git a/drivers/misc/carma/carma-fpga-program.c b/drivers/misc/carma/carma-fpga-program.c
+index 7be8983..fd0cb8b 100644
+--- a/drivers/misc/carma/carma-fpga-program.c
++++ b/drivers/misc/carma/carma-fpga-program.c
+@@ -518,8 +518,7 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
+ 	config.direction = DMA_MEM_TO_DEV;
+ 	config.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+ 	config.dst_maxburst = fpga_fifo_size(priv->regs) / 2 / 4;
+-	ret = chan->device->device_control(chan, DMA_SLAVE_CONFIG,
+-					   (unsigned long)&config);
++	ret = dmaengine_slave_config(chan, &config);
+ 	if (ret) {
+ 		dev_err(priv->dev, "DMA slave configuration failed\n");
+ 		goto out_dma_unmap;
+@@ -532,9 +531,9 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
+ 	}
  
-@@ -367,6 +367,20 @@ static void fsl_chan_toggle_ext_start(struct fsldma_chan *chan, int enable)
- 		chan->feature &= ~FSL_DMA_CHAN_START_EXT;
- }
- 
-+int fsl_dma_external_start(struct dma_chan *dchan, int enable)
-+{
-+	struct fsldma_chan *chan;
+ 	/* setup and submit the DMA transaction */
+-	tx = chan->device->device_prep_dma_sg(chan,
+-					      table.sgl, num_pages,
+-					      vb->sglist, vb->sglen, 0);
 +
-+	if (!dchan)
-+		return -EINVAL;
-+
-+	chan = to_fsl_chan(dchan);
-+
-+	fsl_chan_toggle_ext_start(chan, enable);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(fsl_dma_external_start);
-+
- static void append_ld_queue(struct fsldma_chan *chan, struct fsl_desc_sw *desc)
- {
- 	struct fsl_desc_sw *tail = to_fsl_desc(chan->ld_pending.prev);
-diff --git a/include/linux/fsldma.h b/include/linux/fsldma.h
-new file mode 100644
-index 0000000..b213c02
---- /dev/null
-+++ b/include/linux/fsldma.h
-@@ -0,0 +1,13 @@
-+/*
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef FSL_DMA_H
-+#define FSL_DMA_H
-+/* fsl dma API for enxternal start */
-+int fsl_dma_external_start(struct dma_chan *dchan, int enable);
-+
-+#endif
++	tx = dmaengine_prep_dma_sg(chan, table.sgl, num_pages,
++			vb->sglist, vb->sglen, 0);
+ 	if (!tx) {
+ 		dev_err(priv->dev, "Unable to prep DMA transaction\n");
+ 		ret = -ENOMEM;
 -- 
 1.7.0.4
