@@ -1,12 +1,13 @@
 Return-Path: <vinod.koul@intel.com>
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 53D1F1A1A49
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:57 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 087121A1B0D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:59 +1100 (EST)
 From: Vinod Koul <vinod.koul@intel.com>
 To: dmaengine@vger.kernel.org
-Subject: [PATCH 4/6] carma-fpga: move to fsl_dma_external_start()
-Date: Sat, 11 Oct 2014 21:16:46 +0530
-Message-Id: <1413042408-28491-5-git-send-email-vinod.koul@intel.com>
+Subject: [PATCH 5/6] dmaengine: freescale: remove FSLDMA_EXTERNAL_START
+ control method
+Date: Sat, 11 Oct 2014 21:16:47 +0530
+Message-Id: <1413042408-28491-6-git-send-email-vinod.koul@intel.com>
 In-Reply-To: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 References: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 Cc: Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
@@ -20,35 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-carma-fpga driver uses device control with custom FSLDMA_EXTERNAL_START
-command. Since we wnat to deprecate the device control, move this driver to
-use new fsl_dma_external_start() API
+since users have been move to fsl_dma_external_start() API, so remove this
+now
 
 Signed-off-by: Vinod Koul <vinod.koul@intel.com>
 ---
- drivers/misc/carma/carma-fpga-program.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/dma/fsldma.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/misc/carma/carma-fpga-program.c b/drivers/misc/carma/carma-fpga-program.c
-index fd0cb8b..298f912 100644
---- a/drivers/misc/carma/carma-fpga-program.c
-+++ b/drivers/misc/carma/carma-fpga-program.c
-@@ -16,6 +16,7 @@
- #include <linux/completion.h>
- #include <linux/miscdevice.h>
- #include <linux/dmaengine.h>
-+#include <linux/fsldma.h>
- #include <linux/interrupt.h>
- #include <linux/highmem.h>
- #include <linux/kernel.h>
-@@ -524,7 +525,7 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
- 		goto out_dma_unmap;
- 	}
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 0cded86..994bcb2 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1012,15 +1012,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+ 		chan->set_request_count(chan, size);
+ 		return 0;
  
--	ret = chan->device->device_control(chan, FSLDMA_EXTERNAL_START, 1);
-+	ret = fsl_dma_external_start(chan, 1)
- 	if (ret) {
- 		dev_err(priv->dev, "DMA external control setup failed\n");
- 		goto out_dma_unmap;
+-	case FSLDMA_EXTERNAL_START:
+-
+-		/* make sure the channel supports external start */
+-		if (!chan->toggle_ext_start)
+-			return -ENXIO;
+-
+-		chan->toggle_ext_start(chan, arg);
+-		return 0;
+-
+ 	default:
+ 		return -ENXIO;
+ 	}
 -- 
 1.7.0.4
