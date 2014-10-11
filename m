@@ -1,12 +1,12 @@
 Return-Path: <vinod.koul@intel.com>
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id BF8691A1AC4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:54 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 53D1F1A1A49
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:57 +1100 (EST)
 From: Vinod Koul <vinod.koul@intel.com>
 To: dmaengine@vger.kernel.org
-Subject: [PATCH 3/6] carma-fpga: use dmaengine_xxx() API
-Date: Sat, 11 Oct 2014 21:16:45 +0530
-Message-Id: <1413042408-28491-4-git-send-email-vinod.koul@intel.com>
+Subject: [PATCH 4/6] carma-fpga: move to fsl_dma_external_start()
+Date: Sat, 11 Oct 2014 21:16:46 +0530
+Message-Id: <1413042408-28491-5-git-send-email-vinod.koul@intel.com>
 In-Reply-To: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 References: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
 Cc: Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
@@ -20,40 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The drivers should use dmaengine_slave_config() and dmaengine_prep_dma_sg()
-API instead of accessing the device_control which will be deprecated soon
+carma-fpga driver uses device control with custom FSLDMA_EXTERNAL_START
+command. Since we wnat to deprecate the device control, move this driver to
+use new fsl_dma_external_start() API
 
 Signed-off-by: Vinod Koul <vinod.koul@intel.com>
 ---
- drivers/misc/carma/carma-fpga-program.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/misc/carma/carma-fpga-program.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/misc/carma/carma-fpga-program.c b/drivers/misc/carma/carma-fpga-program.c
-index 7be8983..fd0cb8b 100644
+index fd0cb8b..298f912 100644
 --- a/drivers/misc/carma/carma-fpga-program.c
 +++ b/drivers/misc/carma/carma-fpga-program.c
-@@ -518,8 +518,7 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
- 	config.direction = DMA_MEM_TO_DEV;
- 	config.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
- 	config.dst_maxburst = fpga_fifo_size(priv->regs) / 2 / 4;
--	ret = chan->device->device_control(chan, DMA_SLAVE_CONFIG,
--					   (unsigned long)&config);
-+	ret = dmaengine_slave_config(chan, &config);
- 	if (ret) {
- 		dev_err(priv->dev, "DMA slave configuration failed\n");
+@@ -16,6 +16,7 @@
+ #include <linux/completion.h>
+ #include <linux/miscdevice.h>
+ #include <linux/dmaengine.h>
++#include <linux/fsldma.h>
+ #include <linux/interrupt.h>
+ #include <linux/highmem.h>
+ #include <linux/kernel.h>
+@@ -524,7 +525,7 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
  		goto out_dma_unmap;
-@@ -532,9 +531,9 @@ static noinline int fpga_program_dma(struct fpga_dev *priv)
  	}
  
- 	/* setup and submit the DMA transaction */
--	tx = chan->device->device_prep_dma_sg(chan,
--					      table.sgl, num_pages,
--					      vb->sglist, vb->sglen, 0);
-+
-+	tx = dmaengine_prep_dma_sg(chan, table.sgl, num_pages,
-+			vb->sglist, vb->sglen, 0);
- 	if (!tx) {
- 		dev_err(priv->dev, "Unable to prep DMA transaction\n");
- 		ret = -ENOMEM;
+-	ret = chan->device->device_control(chan, FSLDMA_EXTERNAL_START, 1);
++	ret = fsl_dma_external_start(chan, 1)
+ 	if (ret) {
+ 		dev_err(priv->dev, "DMA external control setup failed\n");
+ 		goto out_dma_unmap;
 -- 
 1.7.0.4
