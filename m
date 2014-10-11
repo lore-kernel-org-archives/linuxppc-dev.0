@@ -1,23 +1,14 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0101.outbound.protection.outlook.com [65.55.169.101])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06CB11A06F5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Oct 2014 17:22:23 +1100 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 2/3] qe: run qe_init and qe_ic_init
-Date: Sat, 11 Oct 2014 06:22:12 +0000
-Message-ID: <eb56ebcaf05b41818cfa5e1b199b8d03@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1412923725-9611-1-git-send-email-B45475@freescale.com>
- <1412962492.13320.587.camel@snotra.buserror.net>
-In-Reply-To: <1412962492.13320.587.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Xiaobo Xie <X.Xie@freescale.com>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id EA28D1A05B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:20:48 +1100 (EST)
+From: Vinod Koul <vinod.koul@intel.com>
+To: dmaengine@vger.kernel.org
+Subject: [PATCH 0/6] dmaengine: remove FSLDMA_EXTERNAL_START
+Date: Sat, 11 Oct 2014 21:16:42 +0530
+Message-Id: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gU2F0LCAyMDE0LTEwLTExIGF0IDAxOjM1QU0sIFdvb2QgU2NvdHQgd3JvdGU6DQo+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6
-IFNhdHVyZGF5LCBPY3RvYmVyIDExLCAyMDE0IDE6MzUgQU0NCj4gVG86IFpoYW8gUWlhbmctQjQ1
-NDc1DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsgV29vZA0KPiBTY290dC1CMDc0MjE7IFhpZSBYaWFvYm8tUjYzMDYxDQo+
-IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zXSBxZTogcnVuIHFlX2luaXQgYW5kIHFlX2ljX2luaXQN
-Cj4gDQo+IE9uIEZyaSwgMjAxNC0xMC0xMCBhdCAxNDo0OCArMDgwMCwgWmhhbyBRaWFuZyB3cm90
-ZToNCj4gPiBxZSBhbmQgcWVfaWMgbmVlZCB0byBiZSBpbml0aWFsaXplZCBiZWZvcmUgdGhlIHFl
-IGFwcCBkcml2ZXJzLCB1c2luZw0KPiA+IHN1YnN5c19pbml0Y2FsbCB0byBydW4gcWVfaW5pdCBh
-bmQgcWVfaWNfaW5pdA0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFuZyA8QjQ1NDc1
-QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvc29jL3FlL3FlLmMgICAgfCAx
-NSArKysrKysrKysrKysrKysNCj4gPiAgZHJpdmVycy9zb2MvcWUvcWVfaWMuYyB8IDE1ICsrKysr
-KysrKysrKysrKw0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKykNCj4gPg0K
-PiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9xZS9xZS5jIGIvZHJpdmVycy9zb2MvcWUvcWUu
-YyBpbmRleA0KPiA+IDJhYWE1YjIuLmJmZWEwZjggMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9z
-b2MvcWUvcWUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL3FlL3FlLmMNCj4gPiBAQCAtNjgzLDYg
-KzY4MywyMSBAQCB1bnNpZ25lZCBpbnQgcWVfZ2V0X251bV9vZl9zbnVtcyh2b2lkKSAgfQ0KPiA+
-IEVYUE9SVF9TWU1CT0wocWVfZ2V0X251bV9vZl9zbnVtcyk7DQo+ID4NCj4gPiArc3RhdGljIGlu
-dCBfX2luaXQgcWVfaW5pdCh2b2lkKQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUg
-Km5wOw0KPiA+ICsNCj4gPiArCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVM
-TCwgImZzbCxxZSIpOw0KPiA+ICsJaWYgKCFucCkgew0KPiA+ICsJCXByX2VycigiJXM6IENvdWxk
-IG5vdCBmaW5kIFF1aWNjIEVuZ2luZSBub2RlXG4iLCBfX2Z1bmNfXyk7DQo+ID4gKwkJcmV0dXJu
-IC1FTk9ERVY7DQo+ID4gKwl9DQo+ID4gKwlxZV9yZXNldCgpOw0KPiA+ICsJb2Zfbm9kZV9wdXQo
-bnApOw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gPiArc3Vic3lzX2luaXRjYWxsKHFlX2lu
-aXQpOw0KPiANCj4gSXQgaXMgbm90IGFuIGVycm9yIHRvIGVuYWJsZSBRRSBzdXBwb3J0IG9uIGhh
-cmR3YXJlIHRoYXQgZG9lc24ndCBoYXZlIFFFLg0KPiBQbGVhc2UgcmVtb3ZlIHRoZSBwcl9lcnIo
-KS4NCk9LLCB3aWxsIGJlIG1vZGlmaWVkIG9uIFYyLg0KPiANCj4gPiArDQo+ID4gICNpZiBkZWZp
-bmVkKENPTkZJR19TVVNQRU5EKSAmJiBkZWZpbmVkKENPTkZJR19QUENfODV4eCkgIHN0YXRpYyBp
-bnQNCj4gPiBxZV9yZXN1bWUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqb2ZkZXYpICB7IGRpZmYg
-LS1naXQNCj4gPiBhL2RyaXZlcnMvc29jL3FlL3FlX2ljLmMgYi9kcml2ZXJzL3NvYy9xZS9xZV9p
-Yy5jIGluZGV4DQo+ID4gY2MxYjhkNS4uMTFmZTk4YyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJz
-L3NvYy9xZS9xZV9pYy5jDQo+ID4gKysrIGIvZHJpdmVycy9zb2MvcWUvcWVfaWMuYw0KPiA+IEBA
-IC0zNCw2ICszNCw3IEBADQo+ID4gICNpbmNsdWRlIDxsaW51eC9mc2wvcWVfaWMuaD4NCj4gPg0K
-PiA+ICAjaW5jbHVkZSAicWVfaWMuaCINCj4gPiArI2luY2x1ZGUgIi4uLy4uL2lycWNoaXAvaXJx
-Y2hpcC5oIg0KPiANCj4gV2hhdCBkbyB5b3UgbmVlZCBmcm9tIGhlcmUsIGFuZCBjYW4gaXQgYmUg
-bW92ZWQgdG8gaW5jbHVkZS9saW51eC8uLi4/DQo+IA0KPiBUaGUgb25seSB0aGluZyBJIHNlZSBk
-ZWZpbmVkIGluIGlycWNoaXAuaCBpcyBJUlFDSElQX0RFQ0xBUkUsIGFuZCB5b3UNCj4gZG9uJ3Qg
-dXNlIHRoYXQgaW4gdGhpcyBwYXRjaC4uLg0KT0ssIHdpbGwgYmUgbW9kaWZpZWQgb24gVjIuDQo+
-IA0KPiAtU2NvdHQNCj4gDQo+ID4gIHN0YXRpYyBERUZJTkVfUkFXX1NQSU5MT0NLKHFlX2ljX2xv
-Y2spOw0KPiA+DQo+ID4gQEAgLTUwMSw0ICs1MDIsMTggQEAgc3RhdGljIGludCBfX2luaXQgaW5p
-dF9xZV9pY19zeXNmcyh2b2lkKQ0KPiA+ICAJcmV0dXJuIDA7DQo+ID4gIH0NCj4gPg0KPiA+ICtz
-dGF0aWMgaW50IF9faW5pdCBxZWljX29mX2luaXQodm9pZCkNCj4gPiArew0KPiA+ICsJc3RydWN0
-IGRldmljZV9ub2RlICpucDsNCj4gPiArDQo+ID4gKwlucCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9u
-b2RlKE5VTEwsIE5VTEwsICJmc2wscWUtaWMiKTsNCj4gPiArCWlmIChucCkgew0KPiA+ICsJCXFl
-X2ljX2luaXQobnAsIDAsIHFlX2ljX2Nhc2NhZGVfbG93X21waWMsDQo+ID4gKwkJCSAgIHFlX2lj
-X2Nhc2NhZGVfaGlnaF9tcGljKTsNCj4gPiArCQlvZl9ub2RlX3B1dChucCk7DQo+ID4gKwl9DQo+
-ID4gKwlyZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICtzdWJzeXNfaW5pdGNhbGwocWVpY19vZl9pbml0
-KTsNCj4gPiArDQo+ID4gIHN1YnN5c19pbml0Y2FsbChpbml0X3FlX2ljX3N5c2ZzKTsNCj4gDQoN
-Cg0KQmVzdCBSZWdhcmRzDQpaaGFvIFFpYW5nDQo=
+FSLDMA_EXTERNAL_START is one of the custom methods in device_control. Since
+we are planning to deprecate device_control, we should move this to an API.
+
+This serries adds the fsl_dma_external_start() API for users and also
+converts the users.
+
+I would like this to be merged thru dmanegine tree due to new dependency.
+
+Vinod Koul (6):
+  dmaengine: add dmaengine_prep_dma_sg() helper
+  dmaengine: freescale: add and export fsl_dma_external_start()
+  carma-fpga: use dmaengine_xxx() API
+  carma-fpga: move to fsl_dma_external_start()
+  dmaengine: freescale: remove FSLDMA_EXTERNAL_START control method
+  dmaengine: remove FSLDMA_EXTERNAL_START
+
+ drivers/dma/fsldma.c                    |   25 +++++++++++++++----------
+ drivers/misc/carma/carma-fpga-program.c |   12 ++++++------
+ include/linux/dmaengine.h               |   13 ++++++++++---
+ include/linux/fsldma.h                  |   13 +++++++++++++
+ 4 files changed, 44 insertions(+), 19 deletions(-)
+ create mode 100644 include/linux/fsldma.h
