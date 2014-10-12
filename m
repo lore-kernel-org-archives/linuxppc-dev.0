@@ -1,16 +1,20 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 936191A1B73
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 03:21:02 +1100 (EST)
-From: Vinod Koul <vinod.koul@intel.com>
-To: dmaengine@vger.kernel.org
-Subject: [PATCH 6/6] dmaengine: remove FSLDMA_EXTERNAL_START
-Date: Sat, 11 Oct 2014 21:16:48 +0530
-Message-Id: <1413042408-28491-7-git-send-email-vinod.koul@intel.com>
-In-Reply-To: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
-References: <1413042408-28491-1-git-send-email-vinod.koul@intel.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, Zhang Wei <zw@zh-kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <joro-2013@t-online.de>
+Received: from mailout11.t-online.de (mailout11.t-online.de [194.25.134.85])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A778A1A021A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 03:32:27 +1100 (EST)
+Received: from fwd40.aul.t-online.de (fwd40.aul.t-online.de [172.20.26.139])
+ by mailout11.t-online.de (Postfix) with SMTP id CCF524C9902
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 18:23:23 +0200 (CEST)
+Message-ID: <543AAADB.1070304@t-online.de>
+Date: Sun, 12 Oct 2014 18:22:51 +0200
+From: Jochen Rollwagen <joro-2013@t-online.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc32: add support for csum_add()
+Content-Type: multipart/alternative;
+ boundary="------------090602020601000902080309"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-as users have been converted, so no need of this custom method
+This is a multi-part message in MIME format.
+--------------090602020601000902080309
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Vinod Koul <vinod.koul@intel.com>
----
- include/linux/dmaengine.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+This patch
 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index ce8a08e..3254a03 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -199,15 +199,12 @@ enum dma_ctrl_flags {
-  * configuration data in statically from the platform). An additional
-  * argument of struct dma_slave_config must be passed in with this
-  * command.
-- * @FSLDMA_EXTERNAL_START: this command will put the Freescale DMA controller
-- * into external start mode.
-  */
- enum dma_ctrl_cmd {
- 	DMA_TERMINATE_ALL,
- 	DMA_PAUSE,
- 	DMA_RESUME,
- 	DMA_SLAVE_CONFIG,
--	FSLDMA_EXTERNAL_START,
- };
- 
- /**
--- 
-1.7.0.4
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html
+
+only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD around the 
+definition in include/net/checksum.h
+
+This is missing from the patch
+
+--------------090602020601000902080309
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    This patch<br>
+    <br>
+    <span
+style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;color:black"><a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html">https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html</a><br>
+      <br>
+      only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD around
+      the definition in include/net/checksum.h<br>
+      <br>
+      This is missing from the patch<br>
+    </span>
+  </body>
+</html>
+
+--------------090602020601000902080309--
