@@ -1,33 +1,32 @@
-Return-Path: <alexdeucher@gmail.com>
+Return-Path: <bhelgaas@google.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D6861A0208
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 07:39:05 +1100 (EST)
-Received: from mail-qg0-x236.google.com (mail-qg0-x236.google.com
- [IPv6:2607:f8b0:400d:c04::236])
+ by lists.ozlabs.org (Postfix) with ESMTPS id A5AE01A02F5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 07:46:46 +1100 (EST)
+Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
+ [IPv6:2607:f8b0:400d:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 98340140085
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2014 07:39:04 +1100 (EST)
-Received: by mail-qg0-f54.google.com with SMTP id z107so7391045qgd.13
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2014 13:39:02 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 1DF1B140085
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2014 07:46:45 +1100 (EST)
+Received: by mail-qc0-f178.google.com with SMTP id c9so5601880qcz.37
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2014 13:46:43 -0700 (PDT)
 MIME-Version: 1.0
 In-Reply-To: <1413231118.26478.21.camel@pasglop>
 References: <1412656696.30859.122.camel@pasglop>
  <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
- <1412746096.30859.229.camel@pasglop>
- <1413231118.26478.21.camel@pasglop>
-Date: Mon, 13 Oct 2014 16:39:02 -0400
-Message-ID: <CADnq5_Od-cr5u8vsMbLw3sTTsbKDGwJcbvoMNgKETAeDpUXhTw@mail.gmail.com>
+ <1412746096.30859.229.camel@pasglop> <1413231118.26478.21.camel@pasglop>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 13 Oct 2014 14:46:23 -0600
+Message-ID: <CAErSpo4gZwHy-P=w8qD9CMSkrNhJ9PE+sE1Dxfqgi_N8O_GRjQ@mail.gmail.com>
 Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
-From: Alex Deucher <alexdeucher@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
  Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, Yijing Wang <wangyijing@huawei.com>,
- Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>
+ Takashi Iwai <tiwai@suse.de>, Yijing Wang <wangyijing@huawei.com>,
+ Brian King <brking@linux.vnet.ibm.com>, Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,7 +36,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 13, 2014 at 4:11 PM, Benjamin Herrenschmidt
+On Mon, Oct 13, 2014 at 2:11 PM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
 > On Wed, 2014-10-08 at 16:28 +1100, Benjamin Herrenschmidt wrote:
 >
@@ -55,7 +54,7 @@ On Mon, Oct 13, 2014 at 4:11 PM, Benjamin Herrenschmidt
 >
 > Ping ?
 
-I'm fine with the radeon patches going through your tree rather than
-through my tree.
+Sorry, I've been taking a breather after the v3.17 release.  I'll try
+to look at these soon, but I will be on vacation Thu-Fri this week).
 
-Alex
+Bjorn
