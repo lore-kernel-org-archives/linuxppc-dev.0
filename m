@@ -1,21 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 4721E1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 03:44:40 +1100 (EST)
-Message-ID: <543C0176.5050706@c-s.fr>
-Date: Mon, 13 Oct 2014 18:44:38 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 00/21] powerpc/8xx: Optimise MMU TLB handling and add
- support of 16k pages
-References: <20140917163656.E09D81AB026@localhost.localdomain>	
- <1410972043.24184.532.camel@snotra.buserror.net> <5419F017.8010603@c-s.fr>
- <1410986079.24184.534.camel@snotra.buserror.net>
-In-Reply-To: <1410986079.24184.534.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Return-Path: <ydroneaud@opteya.com>
+From: Yann Droneaud <ydroneaud@opteya.com>
+To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <trivial@kernel.org>
+Subject: [PATCHv9 2/5] ppc/cell: trivial: replace get_unused_fd() by
+ get_unused_fd_flags(0)
+Date: Mon, 13 Oct 2014 21:30:59 +0200
+Message-Id: <9a145561123e28585d7994b61359a531128a80b8.1413223900.git.ydroneaud@opteya.com>
+In-Reply-To: <cover.1413223900.git.ydroneaud@opteya.com>
+References: <cover.1413223900.git.ydroneaud@opteya.com>
+In-Reply-To: <cover.1413223900.git.ydroneaud@opteya.com>
+References: <cover.1413223900.git.ydroneaud@opteya.com>
+Cc: Yann Droneaud <ydroneaud@opteya.com>, cbe-oss-dev@lists.ozlabs.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch replaces calls to get_unused_fd() with equivalent call to
+get_unused_fd_flags(0) to preserve current behavor for existing code.
 
-Le 17/09/2014 22:34, Scott Wood a écrit :
-> On Wed, 2014-09-17 at 22:33 +0200, christophe leroy wrote:
->> Le 17/09/2014 18:40, Scott Wood a écrit :
->>> On Wed, 2014-09-17 at 18:36 +0200, Christophe Leroy wrote:
->>>> This patchset:
->>>> 1) provides several MMU TLB handling optimisation on MPC8xx.
->>>> 2) adds support of 16k pages on MPC8xx.
->>>> All changes have been successfully tested on a custom board equipped with MPC885
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>> I've already applied patches 1, 2, 4, 5, 6, 9, and 10 from the previous
->>> patchset -- have they changed?
->>>
->>> -Scott
->>>
->> No, only 3, 7, 17 are changed, and 20,21 are new.
->> I didn't notice you already applied some. How should I then proceed now
->> for the remaining ones ? Submit a new set ?
->>
-> No, I'll just skip the ones I've already applied.
->
->
-I think I took into account all Joakim's and your's comments in v4.
-Since I submitted v4, I think I didn't get any new comment.
-What's the way forward to get the remaining ones applied ?
+In a further patch, get_unused_fd() will be removed so that new code
+start using get_unused_fd_flags(), with the hope O_CLOEXEC could be
+used, either by default or choosen by userspace.
 
-Christophe
+Link: http://lkml.kernel.org/r/cover.1413223900.git.ydroneaud@opteya.com
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: trivial@kernel.org
+Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
+---
+ arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 87ba7cf99cd7..51effcec30d8 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -301,7 +301,7 @@ static int spufs_context_open(struct path *path)
+ 	int ret;
+ 	struct file *filp;
+ 
+-	ret = get_unused_fd();
++	ret = get_unused_fd_flags(0);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -518,7 +518,7 @@ static int spufs_gang_open(struct path *path)
+ 	int ret;
+ 	struct file *filp;
+ 
+-	ret = get_unused_fd();
++	ret = get_unused_fd_flags(0);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-- 
+1.9.3
