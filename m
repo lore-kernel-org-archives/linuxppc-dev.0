@@ -1,16 +1,16 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6163C1A021C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 20:21:24 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B08CA1A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 20:27:18 +1100 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
 	paulus@samba.org,
 	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Add printk levels to setup_system output
-Date: Mon, 13 Oct 2014 20:21:22 +1100
-Message-Id: <1413192082-2475-1-git-send-email-anton@samba.org>
+Subject: [PATCH] powerpc: Use probe_kernel_address in show_instructions
+Date: Mon, 13 Oct 2014 20:27:15 +1100
+Message-Id: <1413192435-2797-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,67 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We really don't want to take a pagefault in show_instructions,
+so use probe_kernel_address instead of __get_user.
+
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/setup_64.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/process.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index cd07d79..4f3cfe1 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -522,36 +522,36 @@ void __init setup_system(void)
- 	smp_release_cpus();
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 923cd2d..e5698f1 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -37,9 +37,9 @@
+ #include <linux/personality.h>
+ #include <linux/random.h>
+ #include <linux/hw_breakpoint.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/pgtable.h>
+-#include <asm/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+@@ -921,12 +921,8 @@ static void show_instructions(struct pt_regs *regs)
+ 			pc = (unsigned long)phys_to_virt(pc);
  #endif
  
--	printk("Starting Linux PPC64 %s\n", init_utsname()->version);
-+	pr_info("Starting Linux PPC64 %s\n", init_utsname()->version);
- 
--	printk("-----------------------------------------------------\n");
--	printk("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
--	printk("phys_mem_size     = 0x%llx\n", memblock_phys_mem_size());
-+	pr_info("-----------------------------------------------------\n");
-+	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
-+	pr_info("phys_mem_size     = 0x%llx\n", memblock_phys_mem_size());
- 
- 	if (ppc64_caches.dline_size != 0x80)
--		printk("dcache_line_size  = 0x%x\n", ppc64_caches.dline_size);
-+		pr_info("dcache_line_size  = 0x%x\n", ppc64_caches.dline_size);
- 	if (ppc64_caches.iline_size != 0x80)
--		printk("icache_line_size  = 0x%x\n", ppc64_caches.iline_size);
-+		pr_info("icache_line_size  = 0x%x\n", ppc64_caches.iline_size);
- 
--	printk("cpu_features      = 0x%016lx\n", cur_cpu_spec->cpu_features);
--	printk("  possible        = 0x%016lx\n", CPU_FTRS_POSSIBLE);
--	printk("  always          = 0x%016lx\n", CPU_FTRS_ALWAYS);
--	printk("cpu_user_features = 0x%08x 0x%08x\n", cur_cpu_spec->cpu_user_features,
-+	pr_info("cpu_features      = 0x%016lx\n", cur_cpu_spec->cpu_features);
-+	pr_info("  possible        = 0x%016lx\n", CPU_FTRS_POSSIBLE);
-+	pr_info("  always          = 0x%016lx\n", CPU_FTRS_ALWAYS);
-+	pr_info("cpu_user_features = 0x%08x 0x%08x\n", cur_cpu_spec->cpu_user_features,
- 		cur_cpu_spec->cpu_user_features2);
--	printk("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
--	printk("firmware_features = 0x%016lx\n", powerpc_firmware_features);
-+	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
-+	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
- 
- #ifdef CONFIG_PPC_STD_MMU_64
- 	if (htab_address)
--		printk("htab_address      = 0x%p\n", htab_address);
-+		pr_info("htab_address      = 0x%p\n", htab_address);
- 
--	printk("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
-+	pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
- #endif
- 
- 	if (PHYSICAL_START > 0)
--		printk("physical_start    = 0x%llx\n",
-+		pr_info("physical_start    = 0x%llx\n",
- 		       (unsigned long long)PHYSICAL_START);
--	printk("-----------------------------------------------------\n");
-+	pr_info("-----------------------------------------------------\n");
- 
- 	DBG(" <- setup_system()\n");
- }
+-		/* We use __get_user here *only* to avoid an OOPS on a
+-		 * bad address because the pc *should* only be a
+-		 * kernel address.
+-		 */
+ 		if (!__kernel_text_address(pc) ||
+-		     __get_user(instr, (unsigned int __user *)pc)) {
++		     probe_kernel_address((unsigned int __user *)pc, instr)) {
+ 			printk(KERN_CONT "XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
 -- 
 1.9.1
