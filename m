@@ -1,32 +1,20 @@
-Return-Path: <bhelgaas@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joro-2013@t-online.de>
+Received: from mailout12.t-online.de (mailout12.t-online.de [194.25.134.22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5AE01A02F5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 07:46:46 +1100 (EST)
-Received: from mail-qc0-x232.google.com (mail-qc0-x232.google.com
- [IPv6:2607:f8b0:400d:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1DF1B140085
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2014 07:46:45 +1100 (EST)
-Received: by mail-qc0-f178.google.com with SMTP id c9so5601880qcz.37
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2014 13:46:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD1631A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 03:23:27 +1100 (EST)
+Message-ID: <543BFC6C.10701@t-online.de>
+Date: Mon, 13 Oct 2014 18:23:08 +0200
+From: Jochen Rollwagen <joro-2013@t-online.de>
 MIME-Version: 1.0
-In-Reply-To: <1413231118.26478.21.camel@pasglop>
-References: <1412656696.30859.122.camel@pasglop>
- <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
- <1412746096.30859.229.camel@pasglop> <1413231118.26478.21.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 13 Oct 2014 14:46:23 -0600
-Message-ID: <CAErSpo4gZwHy-P=w8qD9CMSkrNhJ9PE+sE1Dxfqgi_N8O_GRjQ@mail.gmail.com>
-Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
- Takashi Iwai <tiwai@suse.de>, Yijing Wang <wangyijing@huawei.com>,
- Brian King <brking@linux.vnet.ibm.com>, Alex Deucher <alexdeucher@gmail.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Subject: Re: powerpc32: add support for csum_add()
+References: <543AAADB.1070304@t-online.de> <543BB4CB.6030105@c-s.fr>
+In-Reply-To: <543BB4CB.6030105@c-s.fr>
+Content-Type: multipart/alternative;
+ boundary="------------080308010400080006060607"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,25 +24,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 13, 2014 at 2:11 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2014-10-08 at 16:28 +1100, Benjamin Herrenschmidt wrote:
->
->> > Further discussion with the hw teams have revealed that this is still
->> > an issue on newer asics so I think your original patch is correct
->> > after all.  Just disable 64 bit MSIs on all AMD audio PCI ids.
+This is a multi-part message in MIME format.
+--------------080308010400080006060607
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Am 13.10.2014 um 13:17 schrieb leroy christophe:
+> Le 12/10/2014 18:22, Jochen Rollwagen a écrit :
+>> This patch
 >>
->> Allright, I won't resend the whole series, I can just pickup my previous
->> patch. Takashi, Bjorn, Dave, this series covers your 3 areas of
->> maintainership, how do you want to proceed ? I'm happy to merge the
->> whole lot via powerpc ASAP (since it's all CC'ed stable) if you guys
->> send me the appropriate acks, otherwise, let me know.
+>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html
+>>
+>> only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD around the 
+>> definition in include/net/checksum.h
+>>
+>> This is missing from the patch
+>>
+>>
 >
-> So I got an Ack from Takashi but so far silence from Bjorn and Dave :-)
+> This is already included upstream since May 2014, see patch below
 >
-> Ping ?
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=07064c6e022ba8dc0c86ce12f7851a1de24e04fc
+>
+>  From 07064c6e022ba8dc0c86ce12f7851a1de24e04fc Mon Sep 17 00:00:00 2001
+> From: Tom Herbert<therbert@google.com>
+> Date: Fri, 2 May 2014 16:28:03 -0700
+> Subject: net: Allow csum_add to be provided in arch
+>
+> csum_add is really nothing more then add-with-carry which
+> can be implemented efficiently in some architectures.
+> Allow architecture to define this protected by HAVE_ARCH_CSUM_ADD.
+>
+> Signed-off-by: Tom Herbert<therbert@google.com>
+> Signed-off-by: David S. Miller<davem@davemloft.net>
+>
+> diff --git a/include/net/checksum.h b/include/net/checksum.h
+> index a28f4e0..87cb190 100644
+> --- a/include/net/checksum.h
+> +++ b/include/net/checksum.h
+> @@ -57,12 +57,14 @@ static __inline__ __wsum csum_and_copy_to_user
+>   }
+>   #endif
+>   
+> +#ifndef HAVE_ARCH_CSUM_ADD
+>   static inline __wsum csum_add(__wsum csum, __wsum addend)
+>   {
+>   	u32 res = (__force u32)csum;
+>   	res += (__force u32)addend;
+>   	return (__force __wsum)(res + (res < (__force u32)addend));
+>   }
+> +#endif
+>   
+>   static inline __wsum csum_sub(__wsum csum, __wsum addend)
+>   {
+> -- 
+> cgit v0.10.1
+>
+>
+Ah bon. Obviously this wasn't backported to 3.14, that's what i compiled 
+for. So i backported the 2 Lines of code manually et tout est bon.
 
-Sorry, I've been taking a breather after the v3.17 release.  I'll try
-to look at these soon, but I will be on vacation Thu-Fri this week).
+Salut
 
-Bjorn
+Jochen
+
+--------------080308010400080006060607
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">Am 13.10.2014 um 13:17 schrieb leroy
+      christophe:<br>
+    </div>
+    <blockquote cite="mid:543BB4CB.6030105@c-s.fr" type="cite">
+      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+      Le 12/10/2014 18:22, Jochen Rollwagen a écrit :<br>
+      <blockquote cite="mid:543AAADB.1070304@t-online.de" type="cite">
+        <meta http-equiv="content-type" content="text/html;
+          charset=utf-8">
+        This patch<br>
+        <br>
+        <span
+style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;color:black"><a
+            moz-do-not-send="true" class="moz-txt-link-freetext"
+href="https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html">https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html</a><br>
+          <br>
+          only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD
+          around the definition in include/net/checksum.h<br>
+          <br>
+          This is missing from the patch<br>
+        </span> <br>
+        <fieldset class="mimeAttachmentHeader"></fieldset>
+        <br>
+      </blockquote>
+      <br>
+      This is already included upstream since May 2014, see patch below<br>
+      <br>
+      <a moz-do-not-send="true"
+href="https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=07064c6e022ba8dc0c86ce12f7851a1de24e04fc">https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=07064c6e022ba8dc0c86ce12f7851a1de24e04fc</a><br>
+      <br>
+      <pre style="color: rgb(0, 0, 0); font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; word-wrap: break-word; white-space: pre-wrap;">From 07064c6e022ba8dc0c86ce12f7851a1de24e04fc Mon Sep 17 00:00:00 2001
+From: Tom Herbert <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:therbert@google.com">&lt;therbert@google.com&gt;</a>
+Date: Fri, 2 May 2014 16:28:03 -0700
+Subject: net: Allow csum_add to be provided in arch
+
+csum_add is really nothing more then add-with-carry which
+can be implemented efficiently in some architectures.
+Allow architecture to define this protected by HAVE_ARCH_CSUM_ADD.
+
+Signed-off-by: Tom Herbert <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:therbert@google.com">&lt;therbert@google.com&gt;</a>
+Signed-off-by: David S. Miller <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:davem@davemloft.net">&lt;davem@davemloft.net&gt;</a>
+
+diff --git a/include/net/checksum.h b/include/net/checksum.h
+index a28f4e0..87cb190 100644
+--- a/include/net/checksum.h
++++ b/include/net/checksum.h
+@@ -57,12 +57,14 @@ static __inline__ __wsum csum_and_copy_to_user
+ }
+ #endif
+ 
++#ifndef HAVE_ARCH_CSUM_ADD
+ static inline __wsum csum_add(__wsum csum, __wsum addend)
+ {
+ 	u32 res = (__force u32)csum;
+ 	res += (__force u32)addend;
+ 	return (__force __wsum)(res + (res &lt; (__force u32)addend));
+ }
++#endif
+ 
+ static inline __wsum csum_sub(__wsum csum, __wsum addend)
+ {
+-- 
+cgit v0.10.1
+</pre>
+      <br class="Apple-interchange-newline">
+      <br>
+    </blockquote>
+    Ah bon. Obviously this wasn't backported to 3.14, that's what i
+    compiled for. So i backported the 2 Lines of code manually et tout
+    est bon.<br>
+    <br>
+    Salut<br>
+    <br>
+    Jochen<br>
+  </body>
+</html>
+
+--------------080308010400080006060607--
