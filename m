@@ -1,18 +1,29 @@
-Return-Path: <ydroneaud@opteya.com>
-From: Yann Droneaud <ydroneaud@opteya.com>
-To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- linux-ia64@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Jiri Kosina <trivial@kernel.org>
-Subject: [PATCHv9 0/5] Getting rid of get_unused_fd()
-Date: Mon, 13 Oct 2014 21:30:57 +0200
-Message-Id: <cover.1413223900.git.ydroneaud@opteya.com>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 827431A0213
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 07:14:37 +1100 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DD8161400E2
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2014 07:14:36 +1100 (EST)
+Message-ID: <1413231118.26478.21.camel@pasglop>
+Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 14 Oct 2014 07:11:58 +1100
+In-Reply-To: <1412746096.30859.229.camel@pasglop>
+References: <1412656696.30859.122.camel@pasglop>
+ <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
+ <1412746096.30859.229.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ Linux PCI <linux-pci@vger.kernel.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Takashi Iwai <tiwai@suse.de>, Yijing Wang <wangyijing@huawei.com>,
+ Brian King <brking@linux.vnet.ibm.com>, Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,53 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 2014-10-08 at 16:28 +1100, Benjamin Herrenschmidt wrote:
 
-Please find the 9th revision of my patchset to remove
-get_unused_fd() macro.
+> > Further discussion with the hw teams have revealed that this is still
+> > an issue on newer asics so I think your original patch is correct
+> > after all.  Just disable 64 bit MSIs on all AMD audio PCI ids.
+> 
+> Allright, I won't resend the whole series, I can just pickup my previous
+> patch. Takashi, Bjorn, Dave, this series covers your 3 areas of
+> maintainership, how do you want to proceed ? I'm happy to merge the
+> whole lot via powerpc ASAP (since it's all CC'ed stable) if you guys
+> send me the appropriate acks, otherwise, let me know.
 
-In linux-next, tag next-20141013, they're currently:
+So I got an Ack from Takashi but so far silence from Bjorn and Dave :-)
 
-- 33 calls to fd_install()
-       with one call part of anon_inode_getfd()
-- 27 calls to get_unused_fd_flags()
-       with one call part of anon_inode_getfd()
-       with another part of get_unused_fd() macro
-- 13 calls to anon_inode_getfd()
--  8 calls to anon_inode_getfile()
-       with one call part of anon_inode_getfd()
--  5 calls to get_unused_fd()
+Ping ?
 
-The following patchset replaces the 5 last calls to
-get_unused_fd() by calls to get_unused_fd_flags(0)
-and remove the macro so that it won't be used in
-newer code.
-
-For some detailed background information, please have
-a look at my previous patchset's cover letter[1].
-
-Changes from patchset v8[1]
-- fanotify: enable close-on-exec on events' fd when requested in
-    fanotify_init()
-  DROPPED: applied upstream, commit 0b37e097a648.
-- reduce the amount of explanation in cover letter
-
-[1] http://lkml.kernel.org/r/cover.1411562410.git.ydroneaud@opteya.com
-
-Yann Droneaud (5):
-  ia64: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
-  ppc/cell: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
-  binfmt_misc: trivial: replace get_unused_fd() by
-    get_unused_fd_flags(0)
-  file: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
-  file: remove get_unused_fd() macro
-
- arch/ia64/kernel/perfmon.c                | 2 +-
- arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
- fs/binfmt_misc.c                          | 2 +-
- fs/file.c                                 | 2 +-
- include/linux/file.h                      | 1 -
- 5 files changed, 5 insertions(+), 6 deletions(-)
-
--- 
-1.9.3
+Cheers,
+Ben.
