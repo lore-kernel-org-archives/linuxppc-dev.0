@@ -1,15 +1,15 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 396D31A07E6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 19:41:44 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC6AE1A0988
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 19:41:45 +1100 (EST)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  zhong@linux.vnet.ibm.com
-Subject: [PATCH 2/3] powerpc: Rename __get_SP() to current_stack_pointer()
-Date: Mon, 13 Oct 2014 19:41:39 +1100
-Message-Id: <1413189700-30322-2-git-send-email-anton@samba.org>
+Subject: [PATCH 3/3] powerpc/pseries: Use dump_stack instead of show_stack
+Date: Mon, 13 Oct 2014 19:41:40 +1100
+Message-Id: <1413189700-30322-3-git-send-email-anton@samba.org>
 In-Reply-To: <1413189700-30322-1-git-send-email-anton@samba.org>
 References: <1413189700-30322-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -22,106 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael points out that __get_SP() is a pretty horrible
-function name. Let's give it a better name.
+We can use the simpler dump_stack() instead of
+show_stack(current, __get_SP())
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/perf_event.h | 2 +-
- arch/powerpc/include/asm/reg.h        | 2 +-
- arch/powerpc/kernel/irq.c             | 2 +-
- arch/powerpc/kernel/misc.S            | 2 +-
- arch/powerpc/kernel/ppc_ksyms.c       | 2 +-
- arch/powerpc/kernel/process.c         | 2 +-
- arch/powerpc/kernel/stacktrace.c      | 2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_event.h b/arch/powerpc/include/asm/perf_event.h
-index b058568..8bf1b63 100644
---- a/arch/powerpc/include/asm/perf_event.h
-+++ b/arch/powerpc/include/asm/perf_event.h
-@@ -34,7 +34,7 @@
- 	do {							\
- 		(regs)->result = 0;				\
- 		(regs)->nip = __ip;				\
--		(regs)->gpr[1] = __get_SP();			\
-+		(regs)->gpr[1] = current_stack_pointer();	\
- 		asm volatile("mfmsr %0" : "=r" ((regs)->msr));	\
- 	} while (0)
- #endif
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index e539d7e..c998279 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1265,7 +1265,7 @@ static inline unsigned long mfvtb (void)
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index de1ec54..e32e009 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -30,7 +30,6 @@
+ #include <linux/mm.h>
+ #include <linux/memblock.h>
+ #include <linux/spinlock.h>
+-#include <linux/sched.h>	/* for show_stack */
+ #include <linux/string.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
+@@ -168,7 +167,7 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+ 			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+ 			printk("\ttce val = 0x%llx\n", tce );
+-			show_stack(current, (unsigned long *)__get_SP());
++			dump_stack();
+ 		}
  
- #define proc_trap()	asm volatile("trap")
- 
--extern unsigned long __get_SP(void);
-+extern unsigned long current_stack_pointer(void);
- 
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 8eb857f..c143835 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -466,7 +466,7 @@ static inline void check_stack_overflow(void)
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	long sp;
- 
--	sp = __get_SP() & (THREAD_SIZE-1);
-+	sp = current_stack_pointer() & (THREAD_SIZE-1);
- 
- 	/* check for stack overflow: is there less than 2KB free? */
- 	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 120deb7..0d43219 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -115,6 +115,6 @@ _GLOBAL(longjmp)
- 	mr	r3,r4
- 	blr
- 
--_GLOBAL(__get_SP)
-+_GLOBAL(current_stack_pointer)
- 	PPC_LL	r3,0(r1)
- 	blr
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 9d84efb..202963e 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -42,4 +42,4 @@ EXPORT_SYMBOL(giveup_spe);
- EXPORT_SYMBOL(epapr_hypercall_start);
- #endif
- 
--EXPORT_SYMBOL(__get_SP);
-+EXPORT_SYMBOL(current_stack_pointer);
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3cc6439..923cd2d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1545,7 +1545,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		tsk = current;
- 	if (sp == 0) {
- 		if (tsk == current)
--			sp = __get_SP();
-+			sp = current_stack_pointer();
- 		else
- 			sp = tsk->thread.ksp;
+ 		tcenum++;
+@@ -257,7 +256,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+ 		printk("\tnpages  = 0x%llx\n", (u64)npages);
+ 		printk("\ttce[0] val = 0x%llx\n", tcep[0]);
+-		show_stack(current, (unsigned long *)__get_SP());
++		dump_stack();
  	}
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 7f65bae..ea43a34 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -50,7 +50,7 @@ void save_stack_trace(struct stack_trace *trace)
- {
- 	unsigned long sp;
- 
--	sp = __get_SP();
-+	sp = current_stack_pointer();
- 
- 	save_context_stack(trace, sp, current, 1);
+ 	return ret;
  }
+@@ -273,7 +272,7 @@ static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages
+ 			printk("tce_free_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
+ 			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+ 			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+-			show_stack(current, (unsigned long *)__get_SP());
++			dump_stack();
+ 		}
+ 
+ 		tcenum++;
+@@ -292,7 +291,7 @@ static void tce_freemulti_pSeriesLP(struct iommu_table *tbl, long tcenum, long n
+ 		printk("\trc      = %lld\n", rc);
+ 		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+ 		printk("\tnpages  = 0x%llx\n", (u64)npages);
+-		show_stack(current, (unsigned long *)__get_SP());
++		dump_stack();
+ 	}
+ }
+ 
+@@ -307,7 +306,7 @@ static unsigned long tce_get_pSeriesLP(struct iommu_table *tbl, long tcenum)
+ 		printk("tce_get_pSeriesLP: plpar_tce_get failed. rc=%lld\n", rc);
+ 		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+ 		printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+-		show_stack(current, (unsigned long *)__get_SP());
++		dump_stack();
+ 	}
+ 
+ 	return tce_ret;
 -- 
 1.9.1
