@@ -1,20 +1,18 @@
 Return-Path: <ydroneaud@opteya.com>
 From: Yann Droneaud <ydroneaud@opteya.com>
-To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ linux-ia64@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
+ Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Al Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <trivial@kernel.org>
-Subject: [PATCHv9 2/5] ppc/cell: trivial: replace get_unused_fd() by
- get_unused_fd_flags(0)
-Date: Mon, 13 Oct 2014 21:30:59 +0200
-Message-Id: <9a145561123e28585d7994b61359a531128a80b8.1413223900.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1413223900.git.ydroneaud@opteya.com>
-References: <cover.1413223900.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1413223900.git.ydroneaud@opteya.com>
-References: <cover.1413223900.git.ydroneaud@opteya.com>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, cbe-oss-dev@lists.ozlabs.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ cbe-oss-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Jiri Kosina <trivial@kernel.org>
+Subject: [PATCHv9 0/5] Getting rid of get_unused_fd()
+Date: Mon, 13 Oct 2014 21:30:57 +0200
+Message-Id: <cover.1413223900.git.ydroneaud@opteya.com>
+Cc: Yann Droneaud <ydroneaud@opteya.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch replaces calls to get_unused_fd() with equivalent call to
-get_unused_fd_flags(0) to preserve current behavor for existing code.
+Hi,
 
-In a further patch, get_unused_fd() will be removed so that new code
-start using get_unused_fd_flags(), with the hope O_CLOEXEC could be
-used, either by default or choosen by userspace.
+Please find the 9th revision of my patchset to remove
+get_unused_fd() macro.
 
-Link: http://lkml.kernel.org/r/cover.1413223900.git.ydroneaud@opteya.com
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: trivial@kernel.org
-Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
----
+In linux-next, tag next-20141013, they're currently:
+
+- 33 calls to fd_install()
+       with one call part of anon_inode_getfd()
+- 27 calls to get_unused_fd_flags()
+       with one call part of anon_inode_getfd()
+       with another part of get_unused_fd() macro
+- 13 calls to anon_inode_getfd()
+-  8 calls to anon_inode_getfile()
+       with one call part of anon_inode_getfd()
+-  5 calls to get_unused_fd()
+
+The following patchset replaces the 5 last calls to
+get_unused_fd() by calls to get_unused_fd_flags(0)
+and remove the macro so that it won't be used in
+newer code.
+
+For some detailed background information, please have
+a look at my previous patchset's cover letter[1].
+
+Changes from patchset v8[1]
+- fanotify: enable close-on-exec on events' fd when requested in
+    fanotify_init()
+  DROPPED: applied upstream, commit 0b37e097a648.
+- reduce the amount of explanation in cover letter
+
+[1] http://lkml.kernel.org/r/cover.1411562410.git.ydroneaud@opteya.com
+
+Yann Droneaud (5):
+  ia64: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
+  ppc/cell: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
+  binfmt_misc: trivial: replace get_unused_fd() by
+    get_unused_fd_flags(0)
+  file: trivial: replace get_unused_fd() by get_unused_fd_flags(0)
+  file: remove get_unused_fd() macro
+
+ arch/ia64/kernel/perfmon.c                | 2 +-
  arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/binfmt_misc.c                          | 2 +-
+ fs/file.c                                 | 2 +-
+ include/linux/file.h                      | 1 -
+ 5 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 87ba7cf99cd7..51effcec30d8 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -301,7 +301,7 @@ static int spufs_context_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -518,7 +518,7 @@ static int spufs_gang_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
 -- 
 1.9.3
