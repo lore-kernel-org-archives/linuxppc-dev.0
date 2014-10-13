@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47D201A06FE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F5331A0702
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 01:01:43 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 11/20] powerpc/chrp: Use pm_power_off rather than
+Subject: [PATCH v2 17/20] powerpc/powernv: Use pm_power_off rather than
  ppc_md.power_off
-Date: Mon, 13 Oct 2014 16:01:19 +0200
-Message-Id: <1413208888-49211-12-git-send-email-agraf@suse.de>
+Date: Mon, 13 Oct 2014 16:01:25 +0200
+Message-Id: <1413208888-49211-18-git-send-email-agraf@suse.de>
 In-Reply-To: <1413208888-49211-1-git-send-email-agraf@suse.de>
 References: <1413208888-49211-1-git-send-email-agraf@suse.de>
 Cc: arnd@arndb.de, geoff@infradead.org, alistair@popple.id.au,
@@ -27,36 +27,31 @@ The generic power off callback is pm_power_off. Use that one rather than
 the powerpc specific ppc_md.power_off.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ arch/powerpc/platforms/powernv/setup.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-v1 -> v2:
-
-  - write pm_power_off in probe function
----
- arch/powerpc/platforms/chrp/setup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 5b77b19..dbe7d16 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -585,6 +585,8 @@ static int __init chrp_probe(void)
- 	DMA_MODE_READ = 0x44;
- 	DMA_MODE_WRITE = 0x48;
- 
-+	pm_power_off = rtas_power_off,
-+
- 	return 1;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 3f9546d..941831d 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -268,7 +268,7 @@ static void __init pnv_setup_machdep_opal(void)
+ 	ppc_md.get_rtc_time = opal_get_rtc_time;
+ 	ppc_md.set_rtc_time = opal_set_rtc_time;
+ 	ppc_md.restart = pnv_restart;
+-	ppc_md.power_off = pnv_power_off;
++	pm_power_off = pnv_power_off;
+ 	ppc_md.halt = pnv_halt;
+ 	ppc_md.machine_check_exception = opal_machine_check;
+ 	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+@@ -285,7 +285,7 @@ static void __init pnv_setup_machdep_rtas(void)
+ 		ppc_md.set_rtc_time = rtas_set_rtc_time;
+ 	}
+ 	ppc_md.restart = rtas_restart;
+-	ppc_md.power_off = rtas_power_off;
++	pm_power_off = rtas_power_off;
+ 	ppc_md.halt = rtas_halt;
  }
- 
-@@ -597,7 +599,6 @@ define_machine(chrp) {
- 	.show_cpuinfo		= chrp_show_cpuinfo,
- 	.init_IRQ		= chrp_init_IRQ,
- 	.restart		= rtas_restart,
--	.power_off		= rtas_power_off,
- 	.halt			= rtas_halt,
- 	.time_init		= chrp_time_init,
- 	.set_rtc_time		= chrp_set_rtc_time,
+ #endif /* CONFIG_PPC_POWERNV_RTAS */
 -- 
 1.8.1.4
