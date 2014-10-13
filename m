@@ -2,13 +2,13 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF16A1A00E5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 02:52:56 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 069BB1A0076
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 02:55:11 +1100 (EST)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xdhva-001hVe-6g
- for linuxppc-dev@lists.ozlabs.org; Mon, 13 Oct 2014 15:52:54 +0000
-Message-ID: <543BF40D.80902@roeck-us.net>
-Date: Mon, 13 Oct 2014 08:47:25 -0700
+ (envelope-from <linux@roeck-us.net>) id 1Xdhxl-001jrt-Go
+ for linuxppc-dev@lists.ozlabs.org; Mon, 13 Oct 2014 15:55:09 +0000
+Message-ID: <543BF5AF.9010806@roeck-us.net>
+Date: Mon, 13 Oct 2014 08:54:23 -0700
 From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>, linuxppc-dev@lists.ozlabs.org
@@ -57,15 +57,54 @@ On 10/13/2014 07:01 AM, Alexander Graf wrote:
 >
 >    git://github.com/agraf/linux-2.6.git pm_power_off-v2
 >
+> Alex
+>
+> ---
+>
+> v1 -> v2:
+>
+>    - fix typo in 47x
+>    - put ppc_md static replacement setters into probe function
+>
+> Alexander Graf (20):
+>    powerpc: Support override of pm_power_off
+>    powerpc/xmon: Support either ppc_md.power_off or pm_power_off
+>    powerpc/47x: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/52xx/efika: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/mpc8349emitx: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/corenet: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/85xx/sgy_cts1000: Use pm_power_off rather than
+>      ppc_md.power_off
+>    powerpc/celleb: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/cell/qpace: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/cell: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/chrp: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/6xx/gamecube: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/6xx/linkstation: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/6xx/wii: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/maple: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/powermac: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/powernv: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/ps3: Use pm_power_off rather than ppc_md.power_off
+>    powerpc/pseries: Use pm_power_off rather than ppc_md.power_off
+>    powerpc: Remove ppc_md.power_off
+>
 
-Best for me would be if someone (you or Ben or Michael) could create an
-immutable branch which contains the patch set as to be submitted to Linus,
-with all signatures, so I can merge it into my poweroff branch. If possible
-that branch should have a signed tag which I can merge, to ensure that
-I don't merge anything bad.
+On another note, and maybe you discussed this separately: I don't really
+see the value of having 20 separate patches here, other than creating
+a lot of work for the maintainer. Wouldn't it be easier
+to just have one patch instead ?
 
-If I just merge your branch, I would not get the maintainer signature(s),
-nor would it have the final SHA. Both would obviously be less than desirable.
+Sure, it would touch 20+ files instead of just one, but then you
+could drop some of the workarounds you have to put in place just
+to undo it at the end, and it is not as if the patches are really
+independent of each other or as if there would be any benefit
+in respect to the ability to bisect or merge into earlier versions
+of the kernel.
+
+I for my part don't plan for 20 patches when I convert it to
+use the poweroff handler. Hope it is ok with everyone that it
+will be just one patch.
 
 Thanks,
 Guenter
