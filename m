@@ -1,20 +1,21 @@
-Return-Path: <joro-2013@t-online.de>
-Received: from mailout11.t-online.de (mailout11.t-online.de [194.25.134.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A778A1A021A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 03:32:27 +1100 (EST)
-Received: from fwd40.aul.t-online.de (fwd40.aul.t-online.de [172.20.26.139])
- by mailout11.t-online.de (Postfix) with SMTP id CCF524C9902
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Oct 2014 18:23:23 +0200 (CEST)
-Message-ID: <543AAADB.1070304@t-online.de>
-Date: Sun, 12 Oct 2014 18:22:51 +0200
-From: Jochen Rollwagen <joro-2013@t-online.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D45D31A0242
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 18:14:37 +1100 (EST)
+Date: Mon, 13 Oct 2014 18:14:36 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/4] powerpc: Dynamic DMA zone limits
+Message-ID: <20141013181436.300988c8@kryten>
+In-Reply-To: <1407541245-27617-1-git-send-email-scottwood@freescale.com>
+References: <1407541245-27617-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc32: add support for csum_add()
-Content-Type: multipart/alternative;
- boundary="------------090602020601000902080309"
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +25,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090602020601000902080309
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Scott,
 
-This patch
+> Platform code can call limit_zone_pfn() to set appropriate limits
+> for ZONE_DMA and ZONE_DMA32, and dma_direct_alloc_coherent() will
+> select a suitable zone based on a device's mask and the pfn limits
+> that platform code has configured.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html
+This patch breaks my POWER8 box:
 
-only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD around the 
-definition in include/net/checksum.h
+ipr 0001:08:00.0: Using 64-bit DMA iommu bypass
+ipr 0001:08:00.0: dma_direct_alloc_coherent: No suitable zone for pfn 0x10000
+ipr 0001:08:00.0: Couldn't allocate enough memory for device driver! 
+ipr: probe of 0001:08:00.0 failed with error -12
 
-This is missing from the patch
+ipr isn't setting a coherent mask, but we shouldn't care on these boxes.
+Could we ignore the coherent mask or copy the dma mask to it?
 
---------------090602020601000902080309
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Anton
+--
 
-<html>
-  <head>
-
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    This patch<br>
-    <br>
-    <span
-style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;color:black"><a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html">https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html</a><br>
-      <br>
-      only compiles after putting an #ifndef ARCH_HAS_CSUM_ADD around
-      the definition in include/net/checksum.h<br>
-      <br>
-      This is missing from the patch<br>
-    </span>
-  </body>
-</html>
-
---------------090602020601000902080309--
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+>  arch/powerpc/Kconfig               |  4 +++
+>  arch/powerpc/include/asm/pgtable.h |  3 ++
+>  arch/powerpc/kernel/dma.c          | 20 +++++++++++++
+>  arch/powerpc/mm/mem.c              | 61
+> ++++++++++++++++++++++++++++++++++---- 4 files changed, 83
+> insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 80b94b0..56dc47a 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -286,6 +286,10 @@ config PPC_EMULATE_SSTEP
+>  	bool
+>  	default y if KPROBES || UPROBES || XMON || HAVE_HW_BREAKPOINT
+>  
+> +config ZONE_DMA32
+> +	bool
+> +	default y if PPC64
+> +
+>  source "init/Kconfig"
+>  
+>  source "kernel/Kconfig.freezer"
+> diff --git a/arch/powerpc/include/asm/pgtable.h
+> b/arch/powerpc/include/asm/pgtable.h index d98c1ec..6d74167 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -4,6 +4,7 @@
+>  
+>  #ifndef __ASSEMBLY__
+>  #include <linux/mmdebug.h>
+> +#include <linux/mmzone.h>
+>  #include <asm/processor.h>		/* For TASK_SIZE */
+>  #include <asm/mmu.h>
+>  #include <asm/page.h>
+> @@ -281,6 +282,8 @@ extern unsigned long empty_zero_page[];
+>  
+>  extern pgd_t swapper_pg_dir[];
+>  
+> +void limit_zone_pfn(enum zone_type zone, unsigned long max_pfn);
+> +int dma_pfn_limit_to_zone(u64 pfn_limit);
+>  extern void paging_init(void);
+>  
+>  /*
+> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> index ee78f6e..dfd99ef 100644
+> --- a/arch/powerpc/kernel/dma.c
+> +++ b/arch/powerpc/kernel/dma.c
+> @@ -40,6 +40,26 @@ void *dma_direct_alloc_coherent(struct device
+> *dev, size_t size, #else
+>  	struct page *page;
+>  	int node = dev_to_node(dev);
+> +	u64 pfn = (dev->coherent_dma_mask >> PAGE_SHIFT) + 1;
+> +	int zone;
+> +
+> +	zone = dma_pfn_limit_to_zone(pfn);
+> +	if (zone < 0) {
+> +		dev_err(dev, "%s: No suitable zone for pfn %#llx\n",
+> +			__func__, pfn);
+> +		return NULL;
+> +	}
+> +
+> +	switch (zone) {
+> +	case ZONE_DMA:
+> +		flag |= GFP_DMA;
+> +		break;
+> +#ifdef CONFIG_ZONE_DMA32
+> +	case ZONE_DMA32:
+> +		flag |= GFP_DMA32;
+> +		break;
+> +#endif
+> +	};
+>  
+>  	/* ignore region specifiers */
+>  	flag  &= ~(__GFP_HIGHMEM);
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index e0f7a18..3b23e17 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -261,6 +261,54 @@ static int __init mark_nonram_nosave(void)
+>  	return 0;
+>  }
+>  
+> +static bool zone_limits_final;
+> +
+> +static unsigned long max_zone_pfns[MAX_NR_ZONES] = {
+> +	[0 ... MAX_NR_ZONES - 1] = ~0UL
+> +};
+> +
+> +/*
+> + * Restrict the specified zone and all more restrictive zones
+> + * to be below the specified pfn.  May not be called after
+> + * paging_init().
+> + */
+> +void __init limit_zone_pfn(enum zone_type zone, unsigned long
+> pfn_limit) +{
+> +	int i;
+> +
+> +	if (WARN_ON(zone_limits_final))
+> +		return;
+> +
+> +	for (i = zone; i >= 0; i--) {
+> +		if (max_zone_pfns[i] > pfn_limit)
+> +			max_zone_pfns[i] = pfn_limit;
+> +	}
+> +}
+> +
+> +/*
+> + * Find the least restrictive zone that is entirely below the
+> + * specified pfn limit.  Returns < 0 if no suitable zone is found.
+> + *
+> + * pfn_limit must be u64 because it can exceed 32 bits even on 32-bit
+> + * systems -- the DMA limit can be higher than any possible real pfn.
+> + */
+> +int dma_pfn_limit_to_zone(u64 pfn_limit)
+> +{
+> +	enum zone_type top_zone = ZONE_NORMAL;
+> +	int i;
+> +
+> +#ifdef CONFIG_HIGHMEM
+> +	top_zone = ZONE_HIGHMEM;
+> +#endif
+> +
+> +	for (i = top_zone; i >= 0; i--) {
+> +		if (max_zone_pfns[i] <= pfn_limit)
+> +			return i;
+> +	}
+> +
+> +	return -EPERM;
+> +}
+> +
+>  /*
+>   * paging_init() sets up the page tables - in fact we've already
+> done this. */
+> @@ -268,7 +316,7 @@ void __init paging_init(void)
+>  {
+>  	unsigned long long total_ram = memblock_phys_mem_size();
+>  	phys_addr_t top_of_ram = memblock_end_of_DRAM();
+> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
+> +	enum zone_type top_zone;
+>  
+>  #ifdef CONFIG_PPC32
+>  	unsigned long v = __fix_to_virt(__end_of_fixed_addresses -
+> 1); @@ -290,13 +338,16 @@ void __init paging_init(void)
+>  	       (unsigned long long)top_of_ram, total_ram);
+>  	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+>  	       (long int)((top_of_ram - total_ram) >> 20));
+> -	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+> +
+>  #ifdef CONFIG_HIGHMEM
+> -	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
+> -	max_zone_pfns[ZONE_HIGHMEM] = top_of_ram >> PAGE_SHIFT;
+> +	top_zone = ZONE_HIGHMEM;
+> +	limit_zone_pfn(ZONE_NORMAL, lowmem_end_addr >> PAGE_SHIFT);
+>  #else
+> -	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
+> +	top_zone = ZONE_NORMAL;
+>  #endif
+> +
+> +	limit_zone_pfn(top_zone, top_of_ram >> PAGE_SHIFT);
+> +	zone_limits_final = true;
+>  	free_area_init_nodes(max_zone_pfns);
+>  
+>  	mark_nonram_nosave();
