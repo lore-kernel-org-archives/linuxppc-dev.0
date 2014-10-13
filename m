@@ -1,23 +1,30 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 069BB1A0076
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 02:55:11 +1100 (EST)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xdhxl-001jrt-Go
- for linuxppc-dev@lists.ozlabs.org; Mon, 13 Oct 2014 15:55:09 +0000
-Message-ID: <543BF5AF.9010806@roeck-us.net>
-Date: Mon, 13 Oct 2014 08:54:23 -0700
-From: Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 960A71A02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 03:30:27 +1100 (EST)
+Received: from mail-ig0-f181.google.com (mail-ig0-f181.google.com
+ [209.85.213.181])
+ by muin.pair.com (Postfix) with ESMTPSA id 116168FC20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 12:30:23 -0400 (EDT)
+Received: by mail-ig0-f181.google.com with SMTP id r10so11074702igi.14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 09:30:22 -0700 (PDT)
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 00/20] powerpc: Convert power off logic to pm_power_off
-References: <1413208888-49211-1-git-send-email-agraf@suse.de>
-In-Reply-To: <1413208888-49211-1-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: arnd@arndb.de, geoff@infradead.org, alistair@popple.id.au,
- scottwood@freescale.com, agust@denx.de
+In-Reply-To: <1412964307.13320.603.camel@snotra.buserror.net>
+References: <1412923663-4374-1-git-send-email-B45475@freescale.com>
+ <1412964307.13320.603.camel@snotra.buserror.net>
+Date: Mon, 13 Oct 2014 11:30:22 -0500
+Message-ID: <CAOZdJXUvqzex6oFTEoFRAXUCMfYHZ4GzSESQOvhx_9-vCC_C3Q@mail.gmail.com>
+Subject: Re: [PATCH 1/3] qe-uart: modify qe-uart to adapt both powerpc and arm
+From: Timur Tabi <timur@tabi.org>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <B07421@freescale.com>, Zhao Qiang <B45475@freescale.com>,
+ Timur Tabi <timur@tabi.org>, linux-serial@vger.kernel.org,
+ R63061@freescale.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,84 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/13/2014 07:01 AM, Alexander Graf wrote:
-> The generic Linux framework to power off the machine is a function pointer
-> called pm_power_off. The trick about this pointer is that device drivers can
-> potentially implement it rather than board files.
+On Fri, Oct 10, 2014 at 1:05 PM, Scott Wood <scottwood@freescale.com> wrote:
+> There are many changes in here that ought to be separate patches with
+> separate justification.
 >
-> Today on PowerPC we set pm_power_off to invoke our generic full machine power
-> off logic which then calls ppc_md.power_off to invoke machine specific power
-> off.
->
-> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
-> this card house falls apart. That driver only registers itself if pm_power_off
-> is NULL to ensure it doesn't override board specific logic. However, since we
-> always set pm_power_off to the generic power off logic (which will just not
-> power off the machine if no ppc_md.power_off call is implemented), we can't
-> implement power off via the generic GPIO power off driver.
->
-> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
-> pm_power_off as was intended. Then individual drivers such as the GPIO power off
-> driver can implement power off logic via that function pointer.
->
-> With this patch set applied and a few patches on top of QEMU that implement a
-> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
-> machine after halt.
->
-> Michael / Ben, you can find this patch set as a git branch at the URL below.
-> When applying it, please use that one to ensure that Guenter can easily merge
-> his work with my work.
->
->    git://github.com/agraf/linux-2.6.git pm_power_off-v2
->
-> Alex
->
-> ---
->
-> v1 -> v2:
->
->    - fix typo in 47x
->    - put ppc_md static replacement setters into probe function
->
-> Alexander Graf (20):
->    powerpc: Support override of pm_power_off
->    powerpc/xmon: Support either ppc_md.power_off or pm_power_off
->    powerpc/47x: Use pm_power_off rather than ppc_md.power_off
->    powerpc/52xx/efika: Use pm_power_off rather than ppc_md.power_off
->    powerpc/mpc8349emitx: Use pm_power_off rather than ppc_md.power_off
->    powerpc/corenet: Use pm_power_off rather than ppc_md.power_off
->    powerpc/85xx/sgy_cts1000: Use pm_power_off rather than
->      ppc_md.power_off
->    powerpc/celleb: Use pm_power_off rather than ppc_md.power_off
->    powerpc/cell/qpace: Use pm_power_off rather than ppc_md.power_off
->    powerpc/cell: Use pm_power_off rather than ppc_md.power_off
->    powerpc/chrp: Use pm_power_off rather than ppc_md.power_off
->    powerpc/6xx/gamecube: Use pm_power_off rather than ppc_md.power_off
->    powerpc/6xx/linkstation: Use pm_power_off rather than ppc_md.power_off
->    powerpc/6xx/wii: Use pm_power_off rather than ppc_md.power_off
->    powerpc/maple: Use pm_power_off rather than ppc_md.power_off
->    powerpc/powermac: Use pm_power_off rather than ppc_md.power_off
->    powerpc/powernv: Use pm_power_off rather than ppc_md.power_off
->    powerpc/ps3: Use pm_power_off rather than ppc_md.power_off
->    powerpc/pseries: Use pm_power_off rather than ppc_md.power_off
->    powerpc: Remove ppc_md.power_off
->
+> Also, some of the QE changes seem to be reasonable cleanup, but not
+> related to making the code work on ARM.
 
-On another note, and maybe you discussed this separately: I don't really
-see the value of having 20 separate patches here, other than creating
-a lot of work for the maintainer. Wouldn't it be easier
-to just have one patch instead ?
+I agree with Scott.  This patch already makes significant code
+changes, so you should have one patch that just makes the
+out_be32->iowrite32be changes.  Changes to the QE library should NOT
+be in the same patch as changes to ucc_uart.c.
 
-Sure, it would touch 20+ files instead of just one, but then you
-could drop some of the workarounds you have to put in place just
-to undo it at the end, and it is not as if the patches are really
-independent of each other or as if there would be any benefit
-in respect to the ability to bisect or merge into earlier versions
-of the kernel.
+In addition, changes like this:
 
-I for my part don't plan for 20 patches when I convert it to
-use the poweroff handler. Hope it is ok with everyone that it
-will be just one patch.
+-       iprop = of_get_property(np, "port-number", NULL);
+-       if (!iprop) {
++       ret = of_property_read_u32_index(np, "port-number", 0, &val);
++       if (ret) {
 
-Thanks,
-Guenter
+should be changed to remove the OF dependency.  If you're going to
+replace of_get_property, replace it with device_property_read_u32(),
+to remove the OF dependency.
+
+>> diff --git a/arch/arm/include/asm/delay.h b/arch/arm/include/asm/delay.h
+>> index dff714d..a932f99 100644
+>> --- a/arch/arm/include/asm/delay.h
+>> +++ b/arch/arm/include/asm/delay.h
+>> @@ -57,6 +57,22 @@ extern void __bad_udelay(void);
+>>                       __const_udelay((n) * UDELAY_MULT)) :            \
+>>         __udelay(n))
+>>
+>> +#define spin_event_timeout(condition, timeout, delay)                          \
+>> +({                                                                             \
+>> +     typeof(condition) __ret;                                               \
+>> +     int i = 0;                                                             \
+>> +     while (!(__ret = (condition)) && (i++ < timeout)) {                    \
+>> +             if (delay)                                                     \
+>> +                     udelay(delay);                                         \
+>> +             else                                                           \
+>> +                     cpu_relax();                                           \
+>> +             udelay(1);                                                     \
+>> +     }                                                                      \
+>
+> This will delay too long if "delay" is used.
+
+Shouldn't ARM have a version of tb_ticks_since() by now?
+
+>> +     if (!__ret)                                                            \
+>> +             __ret = (condition);                                           \
+>> +     __ret;                                                                 \
+>
+> Timur, do you remember why that final "if (!__ret) __ret = (condition);"
+> is needed?
+
+    powerpc: Fix spin_event_timeout() to be robust over context switches
+
+    Current implementation of spin_event_timeout can be interrupted by an
+    IRQ or context switch after testing the condition, but before checking
+    the timeout.  This can cause the loop to report a timeout when the
+    condition actually became true in the middle.
+
+    This patch adds one final check of the condition upon exit of the loop
+    if the last test of the condition was still false.
