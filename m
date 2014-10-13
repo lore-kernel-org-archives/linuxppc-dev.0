@@ -1,30 +1,21 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 960A71A02A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 03:30:27 +1100 (EST)
-Received: from mail-ig0-f181.google.com (mail-ig0-f181.google.com
- [209.85.213.181])
- by muin.pair.com (Postfix) with ESMTPSA id 116168FC20
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 12:30:23 -0400 (EDT)
-Received: by mail-ig0-f181.google.com with SMTP id r10so11074702igi.14
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 09:30:22 -0700 (PDT)
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4721E1A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 03:44:40 +1100 (EST)
+Message-ID: <543C0176.5050706@c-s.fr>
+Date: Mon, 13 Oct 2014 18:44:38 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <1412964307.13320.603.camel@snotra.buserror.net>
-References: <1412923663-4374-1-git-send-email-B45475@freescale.com>
- <1412964307.13320.603.camel@snotra.buserror.net>
-Date: Mon, 13 Oct 2014 11:30:22 -0500
-Message-ID: <CAOZdJXUvqzex6oFTEoFRAXUCMfYHZ4GzSESQOvhx_9-vCC_C3Q@mail.gmail.com>
-Subject: Re: [PATCH 1/3] qe-uart: modify qe-uart to adapt both powerpc and arm
-From: Timur Tabi <timur@tabi.org>
 To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <B07421@freescale.com>, Zhao Qiang <B45475@freescale.com>,
- Timur Tabi <timur@tabi.org>, linux-serial@vger.kernel.org,
- R63061@freescale.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH v3 00/21] powerpc/8xx: Optimise MMU TLB handling and add
+ support of 16k pages
+References: <20140917163656.E09D81AB026@localhost.localdomain>	
+ <1410972043.24184.532.camel@snotra.buserror.net> <5419F017.8010603@c-s.fr>
+ <1410986079.24184.534.camel@snotra.buserror.net>
+In-Reply-To: <1410986079.24184.534.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,66 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 10, 2014 at 1:05 PM, Scott Wood <scottwood@freescale.com> wrote:
-> There are many changes in here that ought to be separate patches with
-> separate justification.
->
-> Also, some of the QE changes seem to be reasonable cleanup, but not
-> related to making the code work on ARM.
 
-I agree with Scott.  This patch already makes significant code
-changes, so you should have one patch that just makes the
-out_be32->iowrite32be changes.  Changes to the QE library should NOT
-be in the same patch as changes to ucc_uart.c.
-
-In addition, changes like this:
-
--       iprop = of_get_property(np, "port-number", NULL);
--       if (!iprop) {
-+       ret = of_property_read_u32_index(np, "port-number", 0, &val);
-+       if (ret) {
-
-should be changed to remove the OF dependency.  If you're going to
-replace of_get_property, replace it with device_property_read_u32(),
-to remove the OF dependency.
-
->> diff --git a/arch/arm/include/asm/delay.h b/arch/arm/include/asm/delay.h
->> index dff714d..a932f99 100644
->> --- a/arch/arm/include/asm/delay.h
->> +++ b/arch/arm/include/asm/delay.h
->> @@ -57,6 +57,22 @@ extern void __bad_udelay(void);
->>                       __const_udelay((n) * UDELAY_MULT)) :            \
->>         __udelay(n))
+Le 17/09/2014 22:34, Scott Wood a écrit :
+> On Wed, 2014-09-17 at 22:33 +0200, christophe leroy wrote:
+>> Le 17/09/2014 18:40, Scott Wood a écrit :
+>>> On Wed, 2014-09-17 at 18:36 +0200, Christophe Leroy wrote:
+>>>> This patchset:
+>>>> 1) provides several MMU TLB handling optimisation on MPC8xx.
+>>>> 2) adds support of 16k pages on MPC8xx.
+>>>> All changes have been successfully tested on a custom board equipped with MPC885
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> I've already applied patches 1, 2, 4, 5, 6, 9, and 10 from the previous
+>>> patchset -- have they changed?
+>>>
+>>> -Scott
+>>>
+>> No, only 3, 7, 17 are changed, and 20,21 are new.
+>> I didn't notice you already applied some. How should I then proceed now
+>> for the remaining ones ? Submit a new set ?
 >>
->> +#define spin_event_timeout(condition, timeout, delay)                          \
->> +({                                                                             \
->> +     typeof(condition) __ret;                                               \
->> +     int i = 0;                                                             \
->> +     while (!(__ret = (condition)) && (i++ < timeout)) {                    \
->> +             if (delay)                                                     \
->> +                     udelay(delay);                                         \
->> +             else                                                           \
->> +                     cpu_relax();                                           \
->> +             udelay(1);                                                     \
->> +     }                                                                      \
+> No, I'll just skip the ones I've already applied.
 >
-> This will delay too long if "delay" is used.
-
-Shouldn't ARM have a version of tb_ticks_since() by now?
-
->> +     if (!__ret)                                                            \
->> +             __ret = (condition);                                           \
->> +     __ret;                                                                 \
 >
-> Timur, do you remember why that final "if (!__ret) __ret = (condition);"
-> is needed?
+I think I took into account all Joakim's and your's comments in v4.
+Since I submitted v4, I think I didn't get any new comment.
+What's the way forward to get the remaining ones applied ?
 
-    powerpc: Fix spin_event_timeout() to be robust over context switches
-
-    Current implementation of spin_event_timeout can be interrupted by an
-    IRQ or context switch after testing the condition, but before checking
-    the timeout.  This can cause the loop to report a timeout when the
-    condition actually became true in the middle.
-
-    This patch adds one final check of the condition upon exit of the loop
-    if the last test of the condition was still false.
+Christophe
