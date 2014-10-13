@@ -1,19 +1,17 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 851B91A0A43
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 20:14:40 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BD7A1A0029
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Oct 2014 20:17:35 +1100 (EST)
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- wenxiong@linux.vnet.ibm.com, brking@linux.vnet.ibm.com,
- scottwood@freescale.com
-Subject: [PATCH 2/2] ipr: set coherent DMA mask
-Date: Mon, 13 Oct 2014 20:14:36 +1100
-Message-Id: <1413191676-1663-2-git-send-email-anton@samba.org>
-In-Reply-To: <1413191676-1663-1-git-send-email-anton@samba.org>
-References: <1413191676-1663-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc: sync pseries_le_defconfig with pseries_defconfig
+Date: Mon, 13 Oct 2014 20:17:33 +1100
+Message-Id: <1413191853-2095-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use dma_set_mask_and_coherent() to set both the DMA and coherent
-DMA mask.
+Now KVM is working on LE, enable it. Also enable transarent
+hugepage which has already been enabled on BE.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- drivers/scsi/ipr.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/configs/pseries_le_defconfig | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-index 3aa28bd..15f4575 100644
---- a/drivers/scsi/ipr.c
-+++ b/drivers/scsi/ipr.c
-@@ -9611,16 +9611,17 @@ static int ipr_probe_ioa(struct pci_dev *pdev,
- 	ipr_init_regs(ioa_cfg);
- 
- 	if (ioa_cfg->sis64) {
--		rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+		rc = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
- 		if (rc < 0) {
--			dev_dbg(&pdev->dev, "Failed to set 64 bit PCI DMA mask\n");
--			rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+			dev_dbg(&pdev->dev, "Failed to set 64 bit DMA mask\n");
-+			rc = dma_set_mask_and_coherent(&pdev->dev,
-+						       DMA_BIT_MASK(32));
- 		}
- 	} else
--		rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+		rc = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 
- 	if (rc < 0) {
--		dev_err(&pdev->dev, "Failed to set PCI DMA mask\n");
-+		dev_err(&pdev->dev, "Failed to set DMA mask\n");
- 		goto cleanup_nomem;
- 	}
- 
+diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
+index 4428ee4..96a230c 100644
+--- a/arch/powerpc/configs/pseries_le_defconfig
++++ b/arch/powerpc/configs/pseries_le_defconfig
+@@ -48,7 +48,6 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
+-CONFIG_CMA=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+@@ -137,6 +136,7 @@ CONFIG_NETCONSOLE=y
+ CONFIG_NETPOLL_TRAP=y
+ CONFIG_TUN=m
+ CONFIG_VIRTIO_NET=m
++CONFIG_VHOST_NET=m
+ CONFIG_VORTEX=y
+ CONFIG_ACENIC=m
+ CONFIG_ACENIC_OMIT_TIGON_I=y
+@@ -302,4 +302,9 @@ CONFIG_CRYPTO_LZO=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
++CONFIG_VIRTUALIZATION=y
++CONFIG_KVM_BOOK3S_64=m
++CONFIG_KVM_BOOK3S_64_HV=y
++CONFIG_TRANSPARENT_HUGEPAGE=y
++CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
 -- 
 1.9.1
