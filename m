@@ -1,17 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07DBF1A0228
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 12:24:38 +1100 (EST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Remove ppc64_boot_msg
-Date: Tue, 14 Oct 2014 12:24:35 +1100
-Message-Id: <1413249875-25551-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1413251832.21120.4.camel@concordia>
+Subject: Re: [PATCHv9 2/5] ppc/cell: trivial: replace get_unused_fd() by
+ get_unused_fd_flags(0)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Yann Droneaud <ydroneaud@opteya.com>
+Date: Tue, 14 Oct 2014 12:57:12 +1100
+In-Reply-To: <9a145561123e28585d7994b61359a531128a80b8.1413223900.git.ydroneaud@opteya.com>
+References: <cover.1413223900.git.ydroneaud@opteya.com>
+ <9a145561123e28585d7994b61359a531128a80b8.1413223900.git.ydroneaud@opteya.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, Jiri Kosina <trivial@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+ Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Al Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,84 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ppc64_boot_msg is meant to be a boot debug aid, but
-is only used in one spot. Get rid of it, and save
-ourseleves a couple of lines in the kernel log
-buffer.
+On Mon, 2014-10-13 at 21:30 +0200, Yann Droneaud wrote:
+> This patch replaces calls to get_unused_fd() with equivalent call to
+> get_unused_fd_flags(0) to preserve current behavor for existing code.
+> 
+> In a further patch, get_unused_fd() will be removed so that new code
+> start using get_unused_fd_flags(), with the hope O_CLOEXEC could be
+> used, either by default or choosen by userspace.
+> 
+> Link: http://lkml.kernel.org/r/cover.1413223900.git.ydroneaud@opteya.com
+> Cc: Al Viro <viro@zeniv.linux.org.uk>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: trivial@kernel.org
+> Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/machdep.h | 10 ----------
- arch/powerpc/kernel/setup_64.c     | 29 -----------------------------
- 2 files changed, 39 deletions(-)
+This is fine by me, do you want an ack, or do you want us to take it via the
+powerpc tree?
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 327e8dd..6ac6dfd 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -341,16 +341,6 @@ extern sys_ctrler_t sys_ctrler;
- 
- #endif /* CONFIG_PPC_PMAC */
- 
--
--/* Functions to produce codes on the leds.
-- * The SRC code should be unique for the message category and should
-- * be limited to the lower 24 bits (the upper 8 are set by these funcs),
-- * and (for boot & dump) should be sorted numerically in the order
-- * the events occur.
-- */
--/* Print a boot progress message. */
--void ppc64_boot_msg(unsigned int src, const char *msg);
--
- static inline void log_error(char *buf, unsigned int err_type, int fatal)
- {
- 	if (ppc_md.log_error)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 317e96a..1b56320 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -665,8 +665,6 @@ static void __init emergency_stack_init(void)
-  */
- void __init setup_arch(char **cmdline_p)
- {
--	ppc64_boot_msg(0x12, "Setup Arch");
--
- 	*cmdline_p = boot_command_line;
- 
- 	/*
-@@ -711,33 +709,6 @@ void __init setup_arch(char **cmdline_p)
- 	if ((unsigned long)_stext & 0xffff)
- 		panic("Kernelbase not 64K-aligned (0x%lx)!\n",
- 		      (unsigned long)_stext);
--
--	ppc64_boot_msg(0x15, "Setup Done");
--}
--
--
--/* ToDo: do something useful if ppc_md is not yet setup. */
--#define PPC64_LINUX_FUNCTION 0x0f000000
--#define PPC64_IPL_MESSAGE 0xc0000000
--#define PPC64_TERM_MESSAGE 0xb0000000
--
--static void ppc64_do_msg(unsigned int src, const char *msg)
--{
--	if (ppc_md.progress) {
--		char buf[128];
--
--		sprintf(buf, "%08X\n", src);
--		ppc_md.progress(buf, 0);
--		snprintf(buf, 128, "%s", msg);
--		ppc_md.progress(buf, 0);
--	}
--}
--
--/* Print a boot progress message. */
--void ppc64_boot_msg(unsigned int src, const char *msg)
--{
--	ppc64_do_msg(PPC64_LINUX_FUNCTION|PPC64_IPL_MESSAGE|src, msg);
--	printk("[boot]%04x %s\n", src, msg);
- }
- 
- #ifdef CONFIG_SMP
--- 
-1.9.1
+If the former:
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+cheers
