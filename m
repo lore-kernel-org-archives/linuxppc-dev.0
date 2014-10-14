@@ -1,16 +1,15 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6529D1A024F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 11:40:27 +1100 (EST)
-Date: Tue, 14 Oct 2014 11:40:26 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id B36281A02FD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 12:04:05 +1100 (EST)
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/pci: Quieten unset I/O resource warning
-Message-ID: <20141014114026.1d340c1c@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ nfont@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Remove ppc_md.remove_memory
+Date: Tue, 14 Oct 2014 12:04:04 +1100
+Message-Id: <1413248644-11429-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,25 +20,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Newer POWER designs do not implement PCI I/O space, so we
-expect to see a number of these.
+We have an extra level of indirection on memory hot remove which is not
+matched on memory hot add. Memory hotplug is book3s only, so there is
+no need for it.
 
-Reduce the severity of the warning so it doesn't mask other
-real issues.
+This also enables means remove_memory() (ie memory hot unplug) works
+on powernv.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
+ arch/powerpc/include/asm/machdep.h              |  4 ----
+ arch/powerpc/mm/mem.c                           | 12 ++++++++++--
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 21 ---------------------
+ 3 files changed, 10 insertions(+), 27 deletions(-)
 
-Index: b/arch/powerpc/kernel/pci-common.c
-===================================================================
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1460,7 +1460,7 @@ static void pcibios_setup_phb_resources(
- 	res = &hose->io_resource;
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 902ab20..327e8dd 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -294,10 +294,6 @@ struct machdep_calls {
+ #ifdef CONFIG_ARCH_RANDOM
+ 	int (*get_random_long)(unsigned long *v);
+ #endif
+-
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	int (*remove_memory)(u64, u64);
+-#endif
+ };
  
- 	if (!res->flags) {
--		printk(KERN_WARNING "PCI: I/O resource not set for host"
-+		pr_info("PCI: I/O resource not set for host"
- 		       " bridge %s (domain %d)\n",
- 		       hose->dn->full_name, hose->global_number);
- 	} else {
+ extern void e500_idle(void);
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8ebaac7..b9f2e7c 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -35,6 +35,7 @@
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
+ #include <linux/slab.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/prom.h>
+@@ -144,8 +145,15 @@ int arch_remove_memory(u64 start, u64 size)
+ 
+ 	zone = page_zone(pfn_to_page(start_pfn));
+ 	ret = __remove_pages(zone, start_pfn, nr_pages);
+-	if (!ret && (ppc_md.remove_memory))
+-		ret = ppc_md.remove_memory(start, size);
++
++	start = (unsigned long)__va(start);
++	if (!ret)
++		ret = remove_section_mapping(start, start + size);
++
++	/* Ensure all vmalloc mappings are flushed in case they also
++	 * hit that section of memory
++	 */
++	vm_unmap_aliases();
+ 
+ 	return ret;
+ }
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 187ecfa..d5426ec 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -12,7 +12,6 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/memblock.h>
+-#include <linux/vmalloc.h>
+ #include <linux/memory.h>
+ #include <linux/memory_hotplug.h>
+ 
+@@ -66,22 +65,6 @@ unsigned long pseries_memory_block_size(void)
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+-static int pseries_remove_memory(u64 start, u64 size)
+-{
+-	int ret;
+-
+-	/* Remove htab bolted mappings for this section of memory */
+-	start = (unsigned long)__va(start);
+-	ret = remove_section_mapping(start, start + size);
+-
+-	/* Ensure all vmalloc mappings are flushed in case they also
+-	 * hit that section of memory
+-	 */
+-	vm_unmap_aliases();
+-
+-	return ret;
+-}
+-
+ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+ {
+ 	unsigned long block_sz, start_pfn;
+@@ -262,10 +245,6 @@ static int __init pseries_memory_hotplug_init(void)
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		of_reconfig_notifier_register(&pseries_mem_nb);
+ 
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	ppc_md.remove_memory = pseries_remove_memory;
+-#endif
+-
+ 	return 0;
+ }
+ machine_device_initcall(pseries, pseries_memory_hotplug_init);
+-- 
+1.9.1
