@@ -2,14 +2,15 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B36281A02FD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 12:04:05 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07DBF1A0228
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 12:24:38 +1100 (EST)
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- nfont@linux.vnet.ibm.com
-Subject: [PATCH] powerpc: Remove ppc_md.remove_memory
-Date: Tue, 14 Oct 2014 12:04:04 +1100
-Message-Id: <1413248644-11429-1-git-send-email-anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Remove ppc64_boot_msg
+Date: Tue, 14 Oct 2014 12:24:35 +1100
+Message-Id: <1413249875-25551-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,110 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have an extra level of indirection on memory hot remove which is not
-matched on memory hot add. Memory hotplug is book3s only, so there is
-no need for it.
-
-This also enables means remove_memory() (ie memory hot unplug) works
-on powernv.
+ppc64_boot_msg is meant to be a boot debug aid, but
+is only used in one spot. Get rid of it, and save
+ourseleves a couple of lines in the kernel log
+buffer.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/machdep.h              |  4 ----
- arch/powerpc/mm/mem.c                           | 12 ++++++++++--
- arch/powerpc/platforms/pseries/hotplug-memory.c | 21 ---------------------
- 3 files changed, 10 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/machdep.h | 10 ----------
+ arch/powerpc/kernel/setup_64.c     | 29 -----------------------------
+ 2 files changed, 39 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 902ab20..327e8dd 100644
+index 327e8dd..6ac6dfd 100644
 --- a/arch/powerpc/include/asm/machdep.h
 +++ b/arch/powerpc/include/asm/machdep.h
-@@ -294,10 +294,6 @@ struct machdep_calls {
- #ifdef CONFIG_ARCH_RANDOM
- 	int (*get_random_long)(unsigned long *v);
- #endif
+@@ -341,16 +341,6 @@ extern sys_ctrler_t sys_ctrler;
+ 
+ #endif /* CONFIG_PPC_PMAC */
+ 
 -
--#ifdef CONFIG_MEMORY_HOTREMOVE
--	int (*remove_memory)(u64, u64);
--#endif
- };
- 
- extern void e500_idle(void);
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 8ebaac7..b9f2e7c 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -35,6 +35,7 @@
- #include <linux/memblock.h>
- #include <linux/hugetlb.h>
- #include <linux/slab.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
-@@ -144,8 +145,15 @@ int arch_remove_memory(u64 start, u64 size)
- 
- 	zone = page_zone(pfn_to_page(start_pfn));
- 	ret = __remove_pages(zone, start_pfn, nr_pages);
--	if (!ret && (ppc_md.remove_memory))
--		ret = ppc_md.remove_memory(start, size);
-+
-+	start = (unsigned long)__va(start);
-+	if (!ret)
-+		ret = remove_section_mapping(start, start + size);
-+
-+	/* Ensure all vmalloc mappings are flushed in case they also
-+	 * hit that section of memory
-+	 */
-+	vm_unmap_aliases();
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 187ecfa..d5426ec 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -12,7 +12,6 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/memblock.h>
--#include <linux/vmalloc.h>
- #include <linux/memory.h>
- #include <linux/memory_hotplug.h>
- 
-@@ -66,22 +65,6 @@ unsigned long pseries_memory_block_size(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
--static int pseries_remove_memory(u64 start, u64 size)
--{
--	int ret;
+-/* Functions to produce codes on the leds.
+- * The SRC code should be unique for the message category and should
+- * be limited to the lower 24 bits (the upper 8 are set by these funcs),
+- * and (for boot & dump) should be sorted numerically in the order
+- * the events occur.
+- */
+-/* Print a boot progress message. */
+-void ppc64_boot_msg(unsigned int src, const char *msg);
 -
--	/* Remove htab bolted mappings for this section of memory */
--	start = (unsigned long)__va(start);
--	ret = remove_section_mapping(start, start + size);
+ static inline void log_error(char *buf, unsigned int err_type, int fatal)
+ {
+ 	if (ppc_md.log_error)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 317e96a..1b56320 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -665,8 +665,6 @@ static void __init emergency_stack_init(void)
+  */
+ void __init setup_arch(char **cmdline_p)
+ {
+-	ppc64_boot_msg(0x12, "Setup Arch");
 -
--	/* Ensure all vmalloc mappings are flushed in case they also
--	 * hit that section of memory
--	 */
--	vm_unmap_aliases();
+ 	*cmdline_p = boot_command_line;
+ 
+ 	/*
+@@ -711,33 +709,6 @@ void __init setup_arch(char **cmdline_p)
+ 	if ((unsigned long)_stext & 0xffff)
+ 		panic("Kernelbase not 64K-aligned (0x%lx)!\n",
+ 		      (unsigned long)_stext);
 -
--	return ret;
+-	ppc64_boot_msg(0x15, "Setup Done");
 -}
 -
- static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
- {
- 	unsigned long block_sz, start_pfn;
-@@ -262,10 +245,6 @@ static int __init pseries_memory_hotplug_init(void)
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		of_reconfig_notifier_register(&pseries_mem_nb);
- 
--#ifdef CONFIG_MEMORY_HOTREMOVE
--	ppc_md.remove_memory = pseries_remove_memory;
--#endif
 -
- 	return 0;
+-/* ToDo: do something useful if ppc_md is not yet setup. */
+-#define PPC64_LINUX_FUNCTION 0x0f000000
+-#define PPC64_IPL_MESSAGE 0xc0000000
+-#define PPC64_TERM_MESSAGE 0xb0000000
+-
+-static void ppc64_do_msg(unsigned int src, const char *msg)
+-{
+-	if (ppc_md.progress) {
+-		char buf[128];
+-
+-		sprintf(buf, "%08X\n", src);
+-		ppc_md.progress(buf, 0);
+-		snprintf(buf, 128, "%s", msg);
+-		ppc_md.progress(buf, 0);
+-	}
+-}
+-
+-/* Print a boot progress message. */
+-void ppc64_boot_msg(unsigned int src, const char *msg)
+-{
+-	ppc64_do_msg(PPC64_LINUX_FUNCTION|PPC64_IPL_MESSAGE|src, msg);
+-	printk("[boot]%04x %s\n", src, msg);
  }
- machine_device_initcall(pseries, pseries_memory_hotplug_init);
+ 
+ #ifdef CONFIG_SMP
 -- 
 1.9.1
