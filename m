@@ -1,25 +1,16 @@
-Return-Path: <jingchang.lu@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 641F71A05E1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 21:32:39 +1100 (EST)
-From: Jingchang Lu <jingchang.lu@freescale.com>
-To: Jingchang Lu <jingchang.lu@freescale.com>, "mturquette@linaro.org"
- <mturquette@linaro.org>
-Subject: RE: [PATCHv5] clk: ppc-corenet: rename to qoriq and add
- CLK_OF_DECLARE support
-Date: Tue, 14 Oct 2014 10:32:32 +0000
-Message-ID: <ccb7de6dc94e4493bbf8685c4d8b3421@BL2PR03MB467.namprd03.prod.outlook.com>
-References: <1412932497-27995-1-git-send-email-jingchang.lu@freescale.com>
-In-Reply-To: <1412932497-27995-1-git-send-email-jingchang.lu@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7DD121A02D7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2014 22:17:49 +1100 (EST)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ nfont@linux.vnet.ibm.com
+Subject: [PATCH v2] powerpc: Remove ppc_md.remove_memory
+Date: Tue, 14 Oct 2014 22:17:47 +1100
+Message-Id: <1413285467-25798-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,112 +20,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGksIFNjb3R0IGFuZCBNaWtlLA0KICANCiAgQ291bGQgeW91IHBsZWFzZSBoZWxwIHJldmlldyB0
-aGlzIHBhdGNoLiBUaGFua3MuDQoNCkJlc3QgUmVnYXJkcywNCkppbmdjaGFuZw0KDQo+LS0tLS1P
-cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj5Gcm9tOiBKaW5nY2hhbmcgTHUgW21haWx0bzpqaW5nY2hh
-bmcubHVAZnJlZXNjYWxlLmNvbV0NCj5TZW50OiBGcmlkYXksIE9jdG9iZXIgMTAsIDIwMTQgNTox
-NSBQTQ0KPlRvOiBtdHVycXVldHRlQGxpbmFyby5vcmcNCj5DYzogV29vZCBTY290dC1CMDc0MjE7
-IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj5rZXJuZWxAdmdlci5rZXJu
-ZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IEx1DQo+SmluZ2No
-YW5nLUIzNTA4Mw0KPlN1YmplY3Q6IFtQQVRDSHY1XSBjbGs6IHBwYy1jb3JlbmV0OiByZW5hbWUg
-dG8gcW9yaXEgYW5kIGFkZA0KPkNMS19PRl9ERUNMQVJFIHN1cHBvcnQNCj4NCj5UaGUgSVAgaXMg
-c2hhcmVkIGJ5IFBQQyBhbmQgQVJNLCB0aGlzIHJlbmFtZXMgaXQgdG8gcW9yaXEgZm9yIGJldHRl
-cg0KPnJlcHJlc2VudGlvbiwgYW5kIHRoaXMgYWxzbyBhZGRzIHRoZSBDTEtfT0ZfREVDTEFSRSBz
-dXBwb3J0IGZvciBiZWluZw0KPmluaXRpYWxpemVkIGJ5IG9mX2Nsa19pbml0KCkgb24gQVJNLg0K
-Pg0KPlNpZ25lZC1vZmYtYnk6IEppbmdjaGFuZyBMdSA8amluZ2NoYW5nLmx1QGZyZWVzY2FsZS5j
-b20+DQo+LS0tDQo+Y2hhbmdlcyBpbiB2NToNCj4gdXBkYXRlIGRyaXZlcnMvY3B1ZnJlcS9LY29u
-ZmlnLnBvd2VycGMgdG8gc2xlY3QgdGhlIHJlbmFtZWQgY29uZmlnIG9wdGlvbi4NCj4NCj5jaGFu
-Z2VzIGluIHY0Og0KPiByZW1vdmUgImNvcmVuZXQiIGxpdGVyYWxzIG9taXR0ZWQgaW4gdjMgcmVt
-b3ZlLg0KPg0KPmNoYW5nZXMgaW4gdjM6DQo+IGdlbmVyYXRlIHRoZSBwYXRjaCB3aXRoIC1NIC1D
-IG9wdGlvbg0KPg0KPmNoYW5nZXMgaW4gdjI6DQo+IHJlbmFtZSB0aGUgZHJpdmVyIG5hbWUgdG8g
-cHBjLXFvcmlxLmMgZm9yIHNoYXJlZCBvbiBQUEMgYW5kIEFSTS4NCj4NCj4gZHJpdmVycy9jbGsv
-S2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDEwICsrKystLS0tLQ0KPiBkcml2
-ZXJzL2Nsay9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gZHJp
-dmVycy9jbGsve2Nsay1wcGMtY29yZW5ldC5jID0+IGNsay1xb3JpcS5jfSB8IDI5ICsrKysrKysr
-KysrKysrKy0tLS0tLQ0KPi0tLS0tDQo+IGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMg
-ICAgICAgICAgICAgICAgfCAgMiArLQ0KPiA0IGZpbGVzIGNoYW5nZWQsIDI0IGluc2VydGlvbnMo
-KyksIDE5IGRlbGV0aW9ucygtKSAgcmVuYW1lDQo+ZHJpdmVycy9jbGsve2Nsay1wcGMtY29yZW5l
-dC5jID0+IGNsay1xb3JpcS5jfSAoODklKQ0KPg0KPmRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9L
-Y29uZmlnIGIvZHJpdmVycy9jbGsvS2NvbmZpZyBpbmRleA0KPjQ1NWZkMTcuLjQ3MDZhOWYgMTAw
-NjQ0DQo+LS0tIGEvZHJpdmVycy9jbGsvS2NvbmZpZw0KPisrKyBiL2RyaXZlcnMvY2xrL0tjb25m
-aWcNCj5AQCAtMTAxLDEyICsxMDEsMTIgQEAgY29uZmlnIENPTU1PTl9DTEtfQVhJX0NMS0dFTg0K
-PiAJICBTdXBwb3J0IGZvciB0aGUgQW5hbG9nIERldmljZXMgYXhpLWNsa2dlbiBwY29yZSBjbG9j
-ayBnZW5lcmF0b3INCj5mb3IgWGlsaW54DQo+IAkgIEZQR0FzLiBJdCBpcyBjb21tb25seSB1c2Vk
-IGluIEFuYWxvZyBEZXZpY2VzJyByZWZlcmVuY2UgZGVzaWducy4NCj4NCj4tY29uZmlnIENMS19Q
-UENfQ09SRU5FVA0KPi0JYm9vbCAiQ2xvY2sgZHJpdmVyIGZvciBQb3dlclBDIGNvcmVuZXQgcGxh
-dGZvcm1zIg0KPi0JZGVwZW5kcyBvbiBQUENfRTUwME1DICYmIE9GDQo+K2NvbmZpZyBDTEtfUU9S
-SVENCj4rCWJvb2wgIkNsb2NrIGRyaXZlciBmb3IgRnJlZXNjYWxlIFFvcklRIHBsYXRmb3JtcyIN
-Cj4rCWRlcGVuZHMgb24gKFBQQ19FNTAwTUMgfHwgQVJNKSAmJiBPRg0KPiAJLS0taGVscC0tLQ0K
-Pi0JICBUaGlzIGFkZHMgdGhlIGNsb2NrIGRyaXZlciBzdXBwb3J0IGZvciBGcmVlc2NhbGUgUG93
-ZXJQQyBjb3JlbmV0DQo+LQkgIHBsYXRmb3JtcyB1c2luZyBjb21tb24gY2xvY2sgZnJhbWV3b3Jr
-Lg0KPisJICBUaGlzIGFkZHMgdGhlIGNsb2NrIGRyaXZlciBzdXBwb3J0IGZvciBGcmVlc2NhbGUg
-UW9ySVEgcGxhdGZvcm1zDQo+KwkgIHVzaW5nIGNvbW1vbiBjbG9jayBmcmFtZXdvcmsuDQo+DQo+
-IGNvbmZpZyBDT01NT05fQ0xLX1hHRU5FDQo+IAlib29sICJDbG9jayBkcml2ZXIgZm9yIEFQTSBY
-R2VuZSBTb0MiDQo+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2xrL01ha2VmaWxlIGIvZHJpdmVycy9j
-bGsvTWFrZWZpbGUgaW5kZXgNCj5kNWZiYTViLi40ZmY5NGNkIDEwMDY0NA0KPi0tLSBhL2RyaXZl
-cnMvY2xrL01ha2VmaWxlDQo+KysrIGIvZHJpdmVycy9jbGsvTWFrZWZpbGUNCj5AQCAtMzAsNyAr
-MzAsNyBAQCBvYmotJChDT05GSUdfQVJDSF9NT1hBUlQpCQkrPSBjbGstbW94YXJ0Lm8NCj4gb2Jq
-LSQoQ09ORklHX0FSQ0hfTk9NQURJSykJCSs9IGNsay1ub21hZGlrLm8NCj4gb2JqLSQoQ09ORklH
-X0FSQ0hfTlNQSVJFKQkJKz0gY2xrLW5zcGlyZS5vDQo+IG9iai0kKENPTkZJR19DT01NT05fQ0xL
-X1BBTE1BUykJCSs9IGNsay1wYWxtYXMubw0KPi1vYmotJChDT05GSUdfQ0xLX1BQQ19DT1JFTkVU
-KQkJKz0gY2xrLXBwYy1jb3JlbmV0Lm8NCj4rb2JqLSQoQ09ORklHX0NMS19RT1JJUSkJCQkrPSBj
-bGstcW9yaXEubw0KPiBvYmotJChDT05GSUdfQ09NTU9OX0NMS19SSzgwOCkJCSs9IGNsay1yazgw
-OC5vDQo+IG9iai0kKENPTkZJR19DT01NT05fQ0xLX1MyTVBTMTEpCSs9IGNsay1zMm1wczExLm8N
-Cj4gb2JqLSQoQ09ORklHX0NPTU1PTl9DTEtfU0k1MzUxKQkJKz0gY2xrLXNpNTM1MS5vDQo+ZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvY2xrL2Nsay1wcGMtY29yZW5ldC5jIGIvZHJpdmVycy9jbGsvY2xr
-LXFvcmlxLmMNCj5zaW1pbGFyaXR5IGluZGV4IDg5JSByZW5hbWUgZnJvbSBkcml2ZXJzL2Nsay9j
-bGstcHBjLWNvcmVuZXQuYyByZW5hbWUgdG8NCj5kcml2ZXJzL2Nsay9jbGstcW9yaXEuYyBpbmRl
-eCA4ZTU4ZWRmLi40OGNiOTIzIDEwMDY0NA0KPi0tLSBhL2RyaXZlcnMvY2xrL2Nsay1wcGMtY29y
-ZW5ldC5jDQo+KysrIGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCj5AQCAtNSw3ICs1LDcgQEAN
-Cj4gICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5z
-ZSB2ZXJzaW9uIDIgYXMNCj4gICogcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5k
-YXRpb24uDQo+ICAqDQo+LSAqIGNsb2NrIGRyaXZlciBmb3IgRnJlZXNjYWxlIFBvd2VyUEMgY29y
-ZW5ldCBTb0NzLg0KPisgKiBjbG9jayBkcml2ZXIgZm9yIEZyZWVzY2FsZSBRb3JJUSBTb0NzLg0K
-PiAgKi8NCj4gI2luY2x1ZGUgPGxpbnV4L2Nsay1wcm92aWRlci5oPg0KPiAjaW5jbHVkZSA8bGlu
-dXgvaW8uaD4NCj5AQCAtMTU1LDcgKzE1NSw3IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBjb3JlX3Bs
-bF9pbml0KHN0cnVjdCBkZXZpY2Vfbm9kZQ0KPipucCkNCj4NCj4gCWJhc2UgPSBvZl9pb21hcChu
-cCwgMCk7DQo+IAlpZiAoIWJhc2UpIHsNCj4tCQlwcl9lcnIoImNsay1wcGM6IGlvbWFwIGVycm9y
-XG4iKTsNCj4rCQlwcl9lcnIoImNsay1xb3JpcTogaW9tYXAgZXJyb3JcbiIpOw0KPiAJCXJldHVy
-bjsNCj4gCX0NCj4NCj5AQCAtMjUyLDcgKzI1Miw3IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBzeXNj
-bGtfaW5pdChzdHJ1Y3QgZGV2aWNlX25vZGUNCj4qbm9kZSkNCj4gCXUzMiByYXRlOw0KPg0KPiAJ
-aWYgKCFucCkgew0KPi0JCXByX2VycigicHBjLWNsazogY291bGQgbm90IGdldCBwYXJlbnQgbm9k
-ZVxuIik7DQo+KwkJcHJfZXJyKCJxb3JpcS1jbGs6IGNvdWxkIG5vdCBnZXQgcGFyZW50IG5vZGVc
-biIpOw0KPiAJCXJldHVybjsNCj4gCX0NCj4NCj5AQCAtMjc4LDMwICsyNzgsMzUgQEAgc3RhdGlj
-IGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgY2xrX21hdGNoW10NCj5fX2luaXRjb25zdCA9IHsN
-Cj4gCXt9DQo+IH07DQo+DQo+LXN0YXRpYyBpbnQgX19pbml0IHBwY19jb3JlbmV0X2Nsa19wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPitzdGF0aWMgaW50IF9faW5pdCBxb3Jp
-cV9jbGtfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gew0KPiAJb2ZfY2xr
-X2luaXQoY2xrX21hdGNoKTsNCj4NCj4gCXJldHVybiAwOw0KPiB9DQo+DQo+LXN0YXRpYyBjb25z
-dCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIHBwY19jbGtfaWRzW10gX19pbml0Y29uc3QgPSB7DQo+K3N0
-YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIHFvcmlxX2Nsa19pZHNbXSBfX2luaXRjb25z
-dCA9IHsNCj4gCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWNsb2NrZ2VuLTEuMCIsIH0sDQo+
-IAl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1jbG9ja2dlbi0yLjAiLCB9LA0KPiAJe30NCj4g
-fTsNCj4NCj4tc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgcHBjX2NvcmVuZXRfY2xrX2Ry
-aXZlciBfX2luaXRkYXRhID0gew0KPitzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBxb3Jp
-cV9jbGtfZHJpdmVyIF9faW5pdGRhdGEgPSB7DQo+IAkuZHJpdmVyID0gew0KPi0JCS5uYW1lID0g
-InBwY19jb3JlbmV0X2Nsb2NrIiwNCj4rCQkubmFtZSA9ICJxb3JpcV9jbG9jayIsDQo+IAkJLm93
-bmVyID0gVEhJU19NT0RVTEUsDQo+LQkJLm9mX21hdGNoX3RhYmxlID0gcHBjX2Nsa19pZHMsDQo+
-KwkJLm9mX21hdGNoX3RhYmxlID0gcW9yaXFfY2xrX2lkcywNCj4gCX0sDQo+LQkucHJvYmUgPSBw
-cGNfY29yZW5ldF9jbGtfcHJvYmUsDQo+KwkucHJvYmUgPSBxb3JpcV9jbGtfcHJvYmUsDQo+IH07
-DQo+DQo+LXN0YXRpYyBpbnQgX19pbml0IHBwY19jb3JlbmV0X2Nsa19pbml0KHZvaWQpDQo+K3N0
-YXRpYyBpbnQgX19pbml0IHFvcmlxX2Nsa19pbml0KHZvaWQpDQo+IHsNCj4tCXJldHVybiBwbGF0
-Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJnBwY19jb3JlbmV0X2Nsa19kcml2ZXIpOw0KPisJcmV0dXJu
-IHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmcW9yaXFfY2xrX2RyaXZlcik7DQo+IH0NCj4tc3Vi
-c3lzX2luaXRjYWxsKHBwY19jb3JlbmV0X2Nsa19pbml0KTsNCj4rc3Vic3lzX2luaXRjYWxsKHFv
-cmlxX2Nsa19pbml0KTsNCj4rDQo+K0NMS19PRl9ERUNMQVJFKHFvcmlxX2NvcmVfcGxsX3YxLCAi
-ZnNsLHFvcmlxLWNvcmUtcGxsLTEuMCIsDQo+K2NvcmVfcGxsX2luaXQpOyBDTEtfT0ZfREVDTEFS
-RShxb3JpcV9jb3JlX3BsbF92MiwNCj4rImZzbCxxb3JpcS1jb3JlLXBsbC0yLjAiLCBjb3JlX3Bs
-bF9pbml0KTsNCj4rQ0xLX09GX0RFQ0xBUkUocW9yaXFfY29yZV9tdXhfdjEsICJmc2wscW9yaXEt
-Y29yZS1tdXgtMS4wIiwNCj4rY29yZV9tdXhfaW5pdCk7IENMS19PRl9ERUNMQVJFKHFvcmlxX2Nv
-cmVfbXV4X3YyLA0KPisiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCIsIGNvcmVfbXV4X2luaXQpOw0K
-PmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5wb3dlcnBjDQo+Yi9kcml2ZXJz
-L2NwdWZyZXEvS2NvbmZpZy5wb3dlcnBjIGluZGV4IDcyNTY0YjcuLjdlYTI0NDEgMTAwNjQ0DQo+
-LS0tIGEvZHJpdmVycy9jcHVmcmVxL0tjb25maWcucG93ZXJwYw0KPisrKyBiL2RyaXZlcnMvY3B1
-ZnJlcS9LY29uZmlnLnBvd2VycGMNCj5AQCAtMjYsNyArMjYsNyBAQCBjb25maWcgQ1BVX0ZSRVFf
-TUFQTEUNCj4gY29uZmlnIFBQQ19DT1JFTkVUX0NQVUZSRVENCj4gCXRyaXN0YXRlICJDUFUgZnJl
-cXVlbmN5IHNjYWxpbmcgZHJpdmVyIGZvciBGcmVlc2NhbGUgRTUwME1DIFNvQ3MiDQo+IAlkZXBl
-bmRzIG9uIFBQQ19FNTAwTUMgJiYgT0YgJiYgQ09NTU9OX0NMSw0KPi0Jc2VsZWN0IENMS19QUENf
-Q09SRU5FVA0KPisJc2VsZWN0IENMS19RT1JJUQ0KPiAJaGVscA0KPiAJICBUaGlzIGFkZHMgdGhl
-IENQVUZyZXEgZHJpdmVyIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBlNTAwbWMsDQo+IAkgIGU1NTAw
-IGFuZCBlNjUwMCBzZXJpZXMgU29DcyB3aGljaCBhcmUgY2FwYWJsZSBvZiBjaGFuZ2luZw0KPi0t
-DQo+MS44LjANCg0K
+We have an extra level of indirection on memory hot remove which is not
+matched on memory hot add. Memory hotplug is book3s only, so there is
+no need for it.
+
+This also enables means remove_memory() (ie memory hot unplug) works
+on powernv.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/machdep.h              |  4 ----
+ arch/powerpc/mm/mem.c                           | 14 ++++++++++++--
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 21 ---------------------
+ 3 files changed, 12 insertions(+), 27 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 902ab20..327e8dd 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -294,10 +294,6 @@ struct machdep_calls {
+ #ifdef CONFIG_ARCH_RANDOM
+ 	int (*get_random_long)(unsigned long *v);
+ #endif
+-
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	int (*remove_memory)(u64, u64);
+-#endif
+ };
+ 
+ extern void e500_idle(void);
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8ebaac7..2add0b7 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -35,6 +35,7 @@
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
+ #include <linux/slab.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/prom.h>
+@@ -144,8 +145,17 @@ int arch_remove_memory(u64 start, u64 size)
+ 
+ 	zone = page_zone(pfn_to_page(start_pfn));
+ 	ret = __remove_pages(zone, start_pfn, nr_pages);
+-	if (!ret && (ppc_md.remove_memory))
+-		ret = ppc_md.remove_memory(start, size);
++	if (ret)
++		return ret;
++
++	/* Remove htab bolted mappings for this section of memory */
++	start = (unsigned long)__va(start);
++	ret = remove_section_mapping(start, start + size);
++
++	/* Ensure all vmalloc mappings are flushed in case they also
++	 * hit that section of memory
++	 */
++	vm_unmap_aliases();
+ 
+ 	return ret;
+ }
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 187ecfa..d5426ec 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -12,7 +12,6 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/memblock.h>
+-#include <linux/vmalloc.h>
+ #include <linux/memory.h>
+ #include <linux/memory_hotplug.h>
+ 
+@@ -66,22 +65,6 @@ unsigned long pseries_memory_block_size(void)
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+-static int pseries_remove_memory(u64 start, u64 size)
+-{
+-	int ret;
+-
+-	/* Remove htab bolted mappings for this section of memory */
+-	start = (unsigned long)__va(start);
+-	ret = remove_section_mapping(start, start + size);
+-
+-	/* Ensure all vmalloc mappings are flushed in case they also
+-	 * hit that section of memory
+-	 */
+-	vm_unmap_aliases();
+-
+-	return ret;
+-}
+-
+ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+ {
+ 	unsigned long block_sz, start_pfn;
+@@ -262,10 +245,6 @@ static int __init pseries_memory_hotplug_init(void)
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		of_reconfig_notifier_register(&pseries_mem_nb);
+ 
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-	ppc_md.remove_memory = pseries_remove_memory;
+-#endif
+-
+ 	return 0;
+ }
+ machine_device_initcall(pseries, pseries_memory_hotplug_init);
+-- 
+1.9.1
