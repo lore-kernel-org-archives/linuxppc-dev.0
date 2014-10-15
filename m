@@ -2,14 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 075DB1A03E5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22A041A03F3
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:14 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 03/27] s390/MSI: Use __msi_mask_irq() instead of
- default_msi_mask_irq()
-Date: Wed, 15 Oct 2014 11:06:51 +0800
-Message-ID: <1413342435-7876-4-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v3 05/27] PCI: tegra: Save msi chip in pci_sys_data
+Date: Wed, 15 Oct 2014 11:06:53 +0800
+Message-ID: <1413342435-7876-6-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -41,45 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now only s390/MSI use default_msi_mask_irq() and
-default_msix_mask_irq(), replace them with the common
-msi mask irq functions __msi_mask_irq() and __msix_mask_irq().
-Remove default_msi_mask_irq() and default_msix_mask_irq().
+Save msi chip in pci_sys_data instead of assign
+msi chip to every pci bus in .add_bus().
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/s390/pci/pci.c |    4 ++--
- include/linux/msi.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/pci/host/pci-tegra.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-index 2fa7b14..552b990 100644
---- a/arch/s390/pci/pci.c
-+++ b/arch/s390/pci/pci.c
-@@ -448,9 +448,9 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
- 	/* Release MSI interrupts */
- 	list_for_each_entry(msi, &pdev->msi_list, list) {
- 		if (msi->msi_attrib.is_msix)
--			default_msix_mask_irq(msi, 1);
-+			__msix_mask_irq(msi, 1);
- 		else
--			default_msi_mask_irq(msi, 1, 1);
-+			__msi_mask_irq(msi, 1, 1);
- 		irq_set_msi_desc(msi->irq, NULL);
- 		irq_free_desc(msi->irq);
- 		msi->msg.address_lo = 0;
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 9ac1e3b..175aa21 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -65,8 +65,6 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
+diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+index 3d43874..5af0525 100644
+--- a/drivers/pci/host/pci-tegra.c
++++ b/drivers/pci/host/pci-tegra.c
+@@ -694,15 +694,6 @@ static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
+ 	return irq;
+ }
  
- void default_teardown_msi_irqs(struct pci_dev *dev);
- void default_restore_msi_irqs(struct pci_dev *dev);
--#define default_msi_mask_irq	__msi_mask_irq
--#define default_msix_mask_irq	__msix_mask_irq
+-static void tegra_pcie_add_bus(struct pci_bus *bus)
+-{
+-	if (IS_ENABLED(CONFIG_PCI_MSI)) {
+-		struct tegra_pcie *pcie = sys_to_pcie(bus->sysdata);
+-
+-		bus->msi = &pcie->msi.chip;
+-	}
+-}
+-
+ static struct pci_bus *tegra_pcie_scan_bus(int nr, struct pci_sys_data *sys)
+ {
+ 	struct tegra_pcie *pcie = sys_to_pcie(sys);
+@@ -1881,11 +1872,13 @@ static int tegra_pcie_enable(struct tegra_pcie *pcie)
  
- struct msi_chip {
- 	struct module *owner;
+ 	memset(&hw, 0, sizeof(hw));
+ 
++#ifdef CONFIG_PCI_MSI
++	hw.msi_chip = &pcie->msi.chip;
++#endif
+ 	hw.nr_controllers = 1;
+ 	hw.private_data = (void **)&pcie;
+ 	hw.setup = tegra_pcie_setup;
+ 	hw.map_irq = tegra_pcie_map_irq;
+-	hw.add_bus = tegra_pcie_add_bus;
+ 	hw.scan = tegra_pcie_scan_bus;
+ 	hw.ops = &tegra_pcie_ops;
+ 
 -- 
 1.7.1
