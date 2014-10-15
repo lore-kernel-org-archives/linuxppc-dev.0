@@ -1,30 +1,21 @@
 Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.19.201])
- by lists.ozlabs.org (Postfix) with ESMTP id 239041A02C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 07:53:03 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id C9FA41A02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 07:53:11 +1100 (EST)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [GIT PULL 00/15] perf/core improvements and fixes
-Date: Wed, 15 Oct 2014 17:52:33 -0300
-Message-Id: <1413406368-26245-1-git-send-email-acme@kernel.org>
-Cc: Mike Galbraith <efault@gmx.de>,
- Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Stephane Eranian <eranian@google.com>, Masanari Iida <standby24x7@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Namhyung Kim <namhyung.kim@lge.com>, Andi Kleen <ak@linux.intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Cody P Schafer <dev@codyps.com>, Jean Pihet <jean.pihet@linaro.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Arun Sharma <asharma@fb.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Yasser Shalabi <yassershalabi@gmail.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Kan Liang <kan.liang@intel.com>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- Taeung Song <treeze.taeung@gmail.com>, David Ahern <dsahern@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 02/15] perf Documentation: sysfs events/ interfaces
+Date: Wed, 15 Oct 2014 17:52:35 -0300
+Message-Id: <1413406368-26245-3-git-send-email-acme@kernel.org>
+In-Reply-To: <1413406368-26245-1-git-send-email-acme@kernel.org>
+References: <1413406368-26245-1-git-send-email-acme@kernel.org>
+Cc: Andi Kleen <ak@linux.intel.com>, Michael Ellerman <michaele@au1.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, Cody P Schafer <dev@codyps.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,115 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+From: Cody P Schafer <dev@codyps.com>
 
-	Please consider pulling, I guess the changes are minor of affect just some
-non-core feature, so it is you call if you prefer to pull it into perf/urgent instead.
+Add documentation for the <event>, <event>.scale, and <event>.unit
+files in sysfs.
 
-Best Regards,
+	<event>.scale and <event>.unit were undocumented.
+	<event> was previously documented only for specific powerpc pmu events.
 
-- Arnaldo
-
-The following changes since commit ec4212d88a77eb6caec10777ddd629b702a5ebbd:
-
-  Merge tag 'perf-core-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2014-10-15 11:54:14 +0200)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo
-
-for you to fetch changes up to 673d659f5c5918b7ddbafebf1f129c9eb82973b4:
-
-  perf kvm stat live: Enable events copying (2014-10-15 17:39:03 -0300)
-
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-User visible:
-
-* Add a visual cue for toggle zeroing of samples in 'perf top' (Taeung Song)
-
-* Fix for double free in 'perf stat' when using some specific invalid
-  command line combo (Yasser Shalabi)
-
-Infrastructure:
-
-* Add option to copy events when queuing for sorting across cpu buffers
-  and enable it for 'perf kvm stat live', to avoid having events left
-  in the queue pointing to the ring buffer be rewritten in high volume
-  sessions.  (Alexander Yarygin, improving work done by David Ahern):
-
-* Document sysfs events/ interfaces (Cody P Schafer)
-
-* Add support to new style format of kernel PMU event. (Kan Liang)
-
-* Fix typos in perf/Documentation (Masanari Iida)
-
-* Improve callchains when using libunwind (Namhyung Kim)
-
+Signed-off-by: Cody P Schafer <dev@codyps.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Cody P Schafer <dev@codyps.com>
+Cc: Haren Myneni <hbabu@us.ibm.com>
+Cc: Haren Myneni <hbabu@us.ibm.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/1412143402-26061-4-git-send-email-sukadev@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-  Lines starting with '#' will be ignored.
+---
+ .../testing/sysfs-bus-event_source-devices-events  | 60 ++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-----------------------------------------------------------------
-Alexander Yarygin (2):
-      perf session: Add option to copy events when queueing
-      perf kvm stat live: Enable events copying
-
-Cody P Schafer (2):
-      perf Documentation: sysfs events/ interfaces
-      perf Documentation: Remove Ruplicated docs for powerpc cpu specific events
-
-Kan Liang (4):
-      Revert "perf tools: Default to cpu// for events v5"
-      perf tools: Parse the pmu event prefix and suffix
-      perf tools: Add support to new style format of kernel PMU event
-      perf test: Add test case for pmu event new style format
-
-Masanari Iida (1):
-      perf Documentation: Fix typos in perf/Documentation
-
-Namhyung Kim (4):
-      perf report: Set callchain_param.record_mode for future use
-      perf callchain: Create an address space per thread
-      perf kvm: Use thread_{,_set}_priv helpers
-      perf trace: Use thread_{,_set}_priv helpers
-
-Taeung Song (1):
-      perf top: Add a visual cue for toggle zeroing of samples
-
-Yasser Shalabi (1):
-      perf evlist: Fix for double free in tools/perf stat
-
- .../testing/sysfs-bus-event_source-devices-events  | 611 ++-------------------
- tools/perf/Documentation/perf-diff.txt             |   6 +-
- tools/perf/Documentation/perf-kvm.txt              |   4 +-
- tools/perf/Documentation/perf-list.txt             |   2 +-
- tools/perf/Documentation/perf-record.txt           |   2 +-
- tools/perf/Documentation/perf-script-perl.txt      |   4 +-
- tools/perf/Documentation/perf-script-python.txt    |   6 +-
- tools/perf/Documentation/perf-script.txt           |   2 +-
- tools/perf/Documentation/perf-test.txt             |   2 +-
- tools/perf/Documentation/perf-trace.txt            |   2 +-
- tools/perf/builtin-kvm.c                           |   7 +-
- tools/perf/builtin-report.c                        |   7 +
- tools/perf/builtin-trace.c                         |  16 +-
- tools/perf/tests/dwarf-unwind.c                    |   3 +
- tools/perf/tests/parse-events.c                    |  36 ++
- tools/perf/ui/browsers/hists.c                     |  32 +-
- tools/perf/util/evlist.c                           |   1 +
- tools/perf/util/include/linux/string.h             |   1 -
- tools/perf/util/ordered-events.c                   |  49 +-
- tools/perf/util/ordered-events.h                   |  10 +-
- tools/perf/util/parse-events.c                     | 133 ++++-
- tools/perf/util/parse-events.h                     |  14 +
- tools/perf/util/parse-events.l                     |  30 +-
- tools/perf/util/parse-events.y                     |  40 ++
- tools/perf/util/pmu.c                              |  10 -
- tools/perf/util/pmu.h                              |  10 +
- tools/perf/util/session.c                          |   5 +-
- tools/perf/util/string.c                           |  24 -
- tools/perf/util/thread.c                           |   6 +
- tools/perf/util/unwind-libunwind.c                 |  37 +-
- tools/perf/util/unwind.h                           |  17 +
- 31 files changed, 460 insertions(+), 669 deletions(-)
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+index 7b40a3cbc26a..a5226f094159 100644
+--- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+@@ -599,3 +599,63 @@ Description:	POWER-systems specific performance monitoring events
+ 		Further, multiple terms like 'event=0xNNNN' can be specified
+ 		and separated with comma. All available terms are defined in
+ 		the /sys/bus/event_source/devices/<dev>/format file.
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Per-pmu performance monitoring events specific to the running system
++
++		Each file (except for some of those with a '.' in them, '.unit'
++		and '.scale') in the 'events' directory describes a single
++		performance monitoring event supported by the <pmu>. The name
++		of the file is the name of the event.
++
++		File contents:
++
++			<term>[=<value>][,<term>[=<value>]]...
++
++		Where <term> is one of the terms listed under
++		/sys/bus/event_source/devices/<pmu>/format/ and <value> is
++		a number is base-16 format with a '0x' prefix (lowercase only).
++		If a <term> is specified alone (without an assigned value), it
++		is implied that 0x1 is assigned to that <term>.
++
++		Examples (each of these lines would be in a seperate file):
++
++			event=0x2abc
++			event=0x423,inv,cmask=0x3
++			domain=0x1,offset=0x8,starting_index=0xffff
++
++		Each of the assignments indicates a value to be assigned to a
++		particular set of bits (as defined by the format file
++		corresponding to the <term>) in the perf_event structure passed
++		to the perf_open syscall.
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>.unit
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Perf event units
++
++		A string specifying the English plural numerical unit that <event>
++		(once multiplied by <event>.scale) represents.
++
++		Example:
++
++			Joules
++
++What: /sys/bus/event_source/devices/<pmu>/events/<event>.scale
++Date: 2014/02/24
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Perf event scaling factors
++
++		A string representing a floating point value expressed in
++		scientific notation to be multiplied by the event count
++		recieved from the kernel to match the unit specified in the
++		<event>.unit file.
++
++		Example:
++
++			2.3283064365386962890625e-10
++
++		This is provided to avoid performing floating point arithmetic
++		in the kernel.
+-- 
+1.9.3
