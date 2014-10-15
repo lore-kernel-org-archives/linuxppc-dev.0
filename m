@@ -2,13 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC4D31A1791
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:17 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C40E21A1807
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:32 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 16/27] Mips/MSI: Save msi chip in pci sysdata
-Date: Wed, 15 Oct 2014 11:07:04 +0800
-Message-ID: <1413342435-7876-17-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v3 22/27] s390/MSI: Use MSI chip framework to configure
+ MSI/MSI-X irq
+Date: Wed, 15 Oct 2014 11:07:10 +0800
+Message-ID: <1413342435-7876-23-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -40,45 +41,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Save msi chip in pci sysdata, add arch pci_find_msi_chip()
-to extract out msi chip.
+Use MSI chip framework instead of arch MSI functions to configure
+MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/mips/include/asm/pci.h |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+Hi Sebastian,
+   I dropped the Acked-by , because this version has a
+lot changes compared to last. So, I guess you may want to check it again.
+---
+ arch/s390/include/asm/pci.h |    9 +++++++++
+ arch/s390/pci/pci.c         |   12 ++++++++++--
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
-index 974b0e3..287661b 100644
---- a/arch/mips/include/asm/pci.h
-+++ b/arch/mips/include/asm/pci.h
-@@ -43,6 +43,9 @@ struct pci_controller {
+diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+index c030900..4d41f08 100644
+--- a/arch/s390/include/asm/pci.h
++++ b/arch/s390/include/asm/pci.h
+@@ -88,6 +88,8 @@ struct zpci_dev {
+ 	u32 uid;			/* user defined id */
+ 	u8 util_str[CLP_UTIL_STR_LEN];	/* utility string */
  
- 	int iommu;
- 
-+#ifdef CONFIG_PCI_MSI
 +	struct msi_chip *msi_chip;
-+#endif
- 	/* Optional access methods for reading/writing the bus number
- 	   of the PCI controller */
- 	int (*get_busno)(void);
-@@ -54,6 +57,17 @@ struct pci_controller {
-  */
- extern void register_pci_controller(struct pci_controller *hose);
- 
-+#ifdef CONFIG_PCI_MSI
 +
+ 	/* IRQ stuff */
+ 	u64		msi_addr;	/* MSI address */
+ 	struct airq_iv *aibv;		/* adapter interrupt bit vector */
+@@ -121,6 +123,13 @@ struct zpci_dev {
+ 	struct dentry	*debugfs_perf;
+ };
+ 
 +static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
 +{
-+	struct pci_controller *control = (struct pci_controller *)bus->sysdata;
++	struct zpci_dev *zpci = bus->sysdata;
 +
-+	return control->msi_chip;
++	return zpci->msi_chip;
 +}
 +
-+#endif
+ static inline bool zdev_enabled(struct zpci_dev *zdev)
+ {
+ 	return (zdev->fh & (1UL << 31)) ? true : false;
+diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
+index 552b990..bf6732f 100644
+--- a/arch/s390/pci/pci.c
++++ b/arch/s390/pci/pci.c
+@@ -358,7 +358,8 @@ static void zpci_irq_handler(struct airq_struct *airq)
+ 	}
+ }
+ 
+-int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
++static int zpci_setup_msi_irqs(struct msi_chip *chip,
++		struct pci_dev *pdev, int nvec, int type)
+ {
+ 	struct zpci_dev *zdev = get_zdev(pdev);
+ 	unsigned int hwirq, msi_vecs;
+@@ -434,7 +435,8 @@ out:
+ 	return rc;
+ }
+ 
+-void arch_teardown_msi_irqs(struct pci_dev *pdev)
++static void zpci_teardown_msi_irqs(struct msi_chip *chip,
++		struct pci_dev *pdev)
+ {
+ 	struct zpci_dev *zdev = get_zdev(pdev);
+ 	struct msi_desc *msi;
+@@ -464,6 +466,11 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
+ 	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
+ }
+ 
++static struct msi_chip zpci_msi_chip = {
++	.setup_irqs = zpci_setup_msi_irqs,
++	.teardown_irqs = zpci_teardown_msi_irqs,
++};
 +
- /*
-  * board supplied pci irq fixup routine
-  */
+ static void zpci_map_resources(struct zpci_dev *zdev)
+ {
+ 	struct pci_dev *pdev = zdev->pdev;
+@@ -749,6 +756,7 @@ static int zpci_scan_bus(struct zpci_dev *zdev)
+ 	if (ret)
+ 		return ret;
+ 
++	zdev->msi_chip = &zpci_msi_chip;
+ 	zdev->bus = pci_scan_root_bus(NULL, ZPCI_BUS_NR, &pci_root_ops,
+ 				      zdev, &resources);
+ 	if (!zdev->bus) {
 -- 
 1.7.1
