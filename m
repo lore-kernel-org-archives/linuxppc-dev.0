@@ -2,14 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B6A591A08CD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07A5D1A1756
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:16 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 14/27] Irq_remapping/MSI: Use MSI chip framework to
- configure MSI/MSI-X irq
-Date: Wed, 15 Oct 2014 11:07:02 +0800
-Message-ID: <1413342435-7876-15-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v3 10/27] PCI/MSI: Remove useless bus->msi assignment
+Date: Wed, 15 Oct 2014 11:06:58 +0800
+Message-ID: <1413342435-7876-11-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -41,51 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use MSI chip framework instead of arch MSI functions to configure
-MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+Now msi chip is saved in pci_sys_data in arm,
+we could clean the bus->msi assignment in
+pci core.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Thierry Reding <thierry.reding@gmail.com>
+CC: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- drivers/iommu/irq_remapping.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/pci/probe.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
-index 33c4395..48d57e9 100644
---- a/drivers/iommu/irq_remapping.c
-+++ b/drivers/iommu/irq_remapping.c
-@@ -139,8 +139,8 @@ error:
- 	return ret;
- }
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index efa48dc..98bf4c3 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -682,7 +682,6 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
  
--static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
--					int nvec, int type)
-+static int irq_remapping_setup_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	if (type == PCI_CAP_ID_MSI)
- 		return do_setup_msi_irqs(dev, nvec);
-@@ -148,6 +148,11 @@ static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
- 		return do_setup_msix_irqs(dev, nvec);
- }
+ 	child->parent = parent;
+ 	child->ops = parent->ops;
+-	child->msi = parent->msi;
+ 	child->sysdata = parent->sysdata;
+ 	child->bus_flags = parent->bus_flags;
  
-+static struct msi_chip remap_msi_chip = {
-+	.setup_irqs = irq_remapping_setup_msi_irqs,
-+	.teardown_irq = native_teardown_msi_irq,
-+};
-+
- static void eoi_ioapic_pin_remapped(int apic, int pin, int vector)
- {
- 	/*
-@@ -165,9 +170,9 @@ static void __init irq_remapping_modify_x86_ops(void)
- 	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
- 	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
- 	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
--	x86_msi.setup_msi_irqs		= irq_remapping_setup_msi_irqs;
- 	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
- 	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
-+	x86_msi_chip = &remap_msi_chip;
- }
- 
- static __init int setup_nointremap(char *str)
 -- 
 1.7.1
