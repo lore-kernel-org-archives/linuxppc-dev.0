@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF91F1A040C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 142AA1A0606
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:15 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 13/27] x86/xen/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-Date: Wed, 15 Oct 2014 11:07:01 +0800
-Message-ID: <1413342435-7876-14-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v3 09/27] arm/PCI: Clean unused pcibios_add_bus() and
+ pcibios_remove_bus()
+Date: Wed, 15 Oct 2014 11:06:57 +0800
+Message-ID: <1413342435-7876-10-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -41,142 +41,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use MSI chip framework instead of arch MSI functions to configure
-MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+MSI chip will be saved in pci_sys_data, now we can
+clean up pcibios_add_bus() and pcibios_remove_bus()
+in arm, and use pci_find_msi_chip() to get msi chip
+in core MSI code.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-Acked-by: David Vrabel <david.vrabel@citrix.com>
-CC: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/pci/xen.c |   58 +++++++++++++++++++++++++++++++++++-----------------
- 1 files changed, 39 insertions(+), 19 deletions(-)
+ arch/arm/include/asm/mach/pci.h |    4 ----
+ arch/arm/kernel/bios32.c        |   16 ----------------
+ drivers/pci/msi.c               |   11 +++--------
+ 3 files changed, 3 insertions(+), 28 deletions(-)
 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index e5b8b78..75067ca 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -157,7 +157,8 @@ static int acpi_register_gsi_xen(struct device *dev, u32 gsi,
- struct xen_pci_frontend_ops *xen_pci_frontend;
- EXPORT_SYMBOL_GPL(xen_pci_frontend);
+diff --git a/arch/arm/include/asm/mach/pci.h b/arch/arm/include/asm/mach/pci.h
+index 59b0d87..230b2c9 100644
+--- a/arch/arm/include/asm/mach/pci.h
++++ b/arch/arm/include/asm/mach/pci.h
+@@ -39,8 +39,6 @@ struct hw_pci {
+ 					  resource_size_t start,
+ 					  resource_size_t size,
+ 					  resource_size_t align);
+-	void		(*add_bus)(struct pci_bus *bus);
+-	void		(*remove_bus)(struct pci_bus *bus);
+ };
  
--static int xen_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_setup_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int irq, ret, i;
- 	struct msi_desc *msidesc;
-@@ -219,7 +220,8 @@ static void xen_msi_compose_msg(struct pci_dev *pdev, unsigned int pirq,
- 	msg->data = XEN_PIRQ_MSI_DATA;
+ /*
+@@ -71,8 +69,6 @@ struct pci_sys_data {
+ 					  resource_size_t start,
+ 					  resource_size_t size,
+ 					  resource_size_t align);
+-	void		(*add_bus)(struct pci_bus *bus);
+-	void		(*remove_bus)(struct pci_bus *bus);
+ 	void		*private_data;	/* platform controller private data	*/
+ };
+ 
+diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
+index a19038d..b1b872e 100644
+--- a/arch/arm/kernel/bios32.c
++++ b/arch/arm/kernel/bios32.c
+@@ -360,20 +360,6 @@ void pcibios_fixup_bus(struct pci_bus *bus)
  }
+ EXPORT_SYMBOL(pcibios_fixup_bus);
  
--static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_hvm_setup_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int irq, pirq;
- 	struct msi_desc *msidesc;
-@@ -267,7 +269,8 @@ error:
- #ifdef CONFIG_XEN_DOM0
- static bool __read_mostly pci_seg_supported = true;
- 
--static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_initdom_setup_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int ret = 0;
- 	struct msi_desc *msidesc;
-@@ -349,7 +352,8 @@ out:
- 	return ret;
- }
- 
--static void xen_initdom_restore_msi_irqs(struct pci_dev *dev)
-+static void xen_initdom_restore_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev)
- {
- 	int ret = 0;
- 
-@@ -376,7 +380,13 @@ static void xen_initdom_restore_msi_irqs(struct pci_dev *dev)
- }
- #endif
- 
--static void xen_teardown_msi_irqs(struct pci_dev *dev)
-+static void xen_teardown_msi_irq(struct msi_chip *chip, unsigned int irq)
-+{
-+	xen_destroy_irq(irq);
-+}
-+
-+static void xen_teardown_msi_irqs(struct msi_chip *chip,
-+		struct pci_dev *dev)
- {
- 	struct msi_desc *msidesc;
- 
-@@ -386,14 +396,22 @@ static void xen_teardown_msi_irqs(struct pci_dev *dev)
- 	else
- 		xen_pci_frontend_disable_msi(dev);
- 
--	/* Free the IRQ's and the msidesc using the generic code. */
--	default_teardown_msi_irqs(dev);
--}
-+	list_for_each_entry(msidesc, &dev->msi_list, list) {
-+		int i, nvec;
-+		if (msidesc->irq == 0)
-+			continue;
-+		if (msidesc->nvec_used)
-+			nvec = msidesc->nvec_used;
-+		else
-+			nvec = 1 << msidesc->msi_attrib.multiple;
-+		for (i = 0; i < nvec; i++)
-+			xen_teardown_msi_irq(chip, msidesc->irq + i);
-+	}
- 
--static void xen_teardown_msi_irq(unsigned int irq)
+-void pcibios_add_bus(struct pci_bus *bus)
 -{
--	xen_destroy_irq(irq);
- }
-+
-+struct msi_chip xen_msi_chip;
-+
- #endif
+-	struct pci_sys_data *sys = bus->sysdata;
+-	if (sys->add_bus)
+-		sys->add_bus(bus);
+-}
+-
+-void pcibios_remove_bus(struct pci_bus *bus)
+-{
+-	struct pci_sys_data *sys = bus->sysdata;
+-	if (sys->remove_bus)
+-		sys->remove_bus(bus);
+-}
+-
+ /*
+  * Swizzle the device pin each time we cross a bridge.  If a platform does
+  * not provide a swizzle function, we perform the standard PCI swizzling.
+@@ -478,8 +464,6 @@ static void pcibios_init_hw(struct device *parent, struct hw_pci *hw,
+ 		sys->swizzle = hw->swizzle;
+ 		sys->map_irq = hw->map_irq;
+ 		sys->align_resource = hw->align_resource;
+-		sys->add_bus = hw->add_bus;
+-		sys->remove_bus = hw->remove_bus;
+ 		INIT_LIST_HEAD(&sys->resources);
  
- int __init pci_xen_init(void)
-@@ -414,9 +432,9 @@ int __init pci_xen_init(void)
- #endif
+ 		if (hw->private_data)
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index f11108c..56e54ad 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -32,12 +32,10 @@ int pci_msi_ignore_mask;
  
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
--	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
-+	xen_msi_chip.setup_irqs = xen_setup_msi_irqs;
-+	xen_msi_chip.teardown_irqs = xen_teardown_msi_irqs;
-+	x86_msi_chip = &xen_msi_chip;
- 	pci_msi_ignore_mask = 1;
- #endif
- 	return 0;
-@@ -436,8 +454,9 @@ int __init pci_xen_hvm_init(void)
- #endif
+ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ {
+-	struct msi_chip *chip = dev->bus->msi;
++	struct msi_chip *chip;
+ 	int err;
  
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_hvm_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-+	xen_msi_chip.setup_irqs = xen_hvm_setup_msi_irqs;
-+	xen_msi_chip.teardown_irq = xen_teardown_msi_irq;
-+	x86_msi_chip = &xen_msi_chip;
- #endif
- 	return 0;
- }
-@@ -494,9 +513,10 @@ int __init pci_xen_initial_domain(void)
- 	int irq;
+-	if (!chip)
+-		chip = pci_msi_chip(dev->bus);
+-
++	chip = pci_msi_chip(dev->bus);
+ 	if (!chip || !chip->setup_irq)
+ 		return -EINVAL;
  
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
--	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
-+	xen_msi_chip.setup_irqs = xen_initdom_setup_msi_irqs;
-+	xen_msi_chip.teardown_irq = xen_teardown_msi_irq;
-+	xen_msi_chip.restore_irqs = xen_initdom_restore_msi_irqs;
-+	x86_msi_chip = &xen_msi_chip;
- 	pci_msi_ignore_mask = 1;
- #endif
- 	xen_setup_acpi_sci();
+@@ -51,10 +49,7 @@ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ void __weak arch_teardown_msi_irq(unsigned int irq)
+ {
+ 	struct msi_desc *entry = irq_get_msi_desc(irq);
+-	struct msi_chip *chip = entry->dev->bus->msi;
+-
+-	if (!chip)
+-		chip = pci_msi_chip(entry->dev->bus);
++	struct msi_chip *chip = pci_msi_chip(entry->dev->bus);
+ 
+ 	if (!chip || !chip->teardown_irq)
+ 		return;
 -- 
 1.7.1
