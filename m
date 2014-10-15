@@ -2,13 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E72D21A042B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:15 +1100 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 659791A03F3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:16 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 04/27] arm/MSI: Save MSI chip in pci_sys_data
-Date: Wed, 15 Oct 2014 11:06:52 +0800
-Message-ID: <1413342435-7876-5-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v3 08/27] PCI: mvebu: Save msi chip in pci_sys_data
+Date: Wed, 15 Oct 2014 11:06:56 +0800
+Message-ID: <1413342435-7876-9-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -40,127 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Saving msi chip in pci_sys_data can make pci bus and
-devices don't need to know msi chip detail, it also
-make pci enumeration code be decoupled from msi chip.
-In fact, all pci devices under the same pci hostbridge
-share same msi chip. So msi chip should be seen as one
-of resources or attributes to be initialized in pci host
-bridge driver. Currently, pci hostbridge drivers create
-pci_host_bridge in pci_create_root_bus(), and pass arch
-specific pci sysdata to core pci scan functions. So pci
-arch sysdata is good place to save msi chip.
+Save msi chip in pci_sys_data instead of assign
+msi chip to every pci bus in .add_bus().
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/arm/include/asm/mach/pci.h |    6 ++++++
- arch/arm/include/asm/pci.h      |    9 +++++++++
- arch/arm/kernel/bios32.c        |    3 +++
- drivers/pci/msi.c               |    6 ++++++
- include/linux/pci.h             |    9 +++++++++
- 5 files changed, 33 insertions(+), 0 deletions(-)
+ drivers/pci/host/pci-mvebu.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/include/asm/mach/pci.h b/arch/arm/include/asm/mach/pci.h
-index 7fc4278..59b0d87 100644
---- a/arch/arm/include/asm/mach/pci.h
-+++ b/arch/arm/include/asm/mach/pci.h
-@@ -22,6 +22,9 @@ struct hw_pci {
- #ifdef CONFIG_PCI_DOMAINS
- 	int		domain;
- #endif
-+#ifdef CONFIG_PCI_MSI
-+	struct msi_chip *msi_chip;
-+#endif
- 	struct pci_ops	*ops;
- 	int		nr_controllers;
- 	void		**private_data;
-@@ -47,6 +50,9 @@ struct pci_sys_data {
- #ifdef CONFIG_PCI_DOMAINS
- 	int		domain;
- #endif
-+#ifdef CONFIG_PCI_MSI
-+	struct msi_chip *msi_chip;
-+#endif
- 	struct list_head node;
- 	int		busnr;		/* primary bus number			*/
- 	u64		mem_offset;	/* bus->cpu memory mapping offset	*/
-diff --git a/arch/arm/include/asm/pci.h b/arch/arm/include/asm/pci.h
-index 7e95d85..b562c09 100644
---- a/arch/arm/include/asm/pci.h
-+++ b/arch/arm/include/asm/pci.h
-@@ -31,6 +31,15 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+diff --git a/drivers/pci/host/pci-mvebu.c b/drivers/pci/host/pci-mvebu.c
+index b1315e1..f8e9c6c 100644
+--- a/drivers/pci/host/pci-mvebu.c
++++ b/drivers/pci/host/pci-mvebu.c
+@@ -774,12 +774,6 @@ static struct pci_bus *mvebu_pcie_scan_bus(int nr, struct pci_sys_data *sys)
+ 	return bus;
  }
- #endif /* CONFIG_PCI_DOMAINS */
+ 
+-static void mvebu_pcie_add_bus(struct pci_bus *bus)
+-{
+-	struct mvebu_pcie *pcie = sys_to_pcie(bus->sysdata);
+-	bus->msi = pcie->msi;
+-}
+-
+ static resource_size_t mvebu_pcie_align_resource(struct pci_dev *dev,
+ 						 const struct resource *res,
+ 						 resource_size_t start,
+@@ -816,6 +810,9 @@ static void mvebu_pcie_enable(struct mvebu_pcie *pcie)
+ 
+ 	memset(&hw, 0, sizeof(hw));
  
 +#ifdef CONFIG_PCI_MSI
-+static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
-+{
-+	struct pci_sys_data *root = bus->sysdata;
-+
-+	return root->msi_chip;
-+}
++	hw.msi_chip = pcie->msi;
 +#endif
-+
- /*
-  * The PCI address space does equal the physical memory address space.
-  * The networking and block device layers use this boolean for bounce
-diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-index 17a26c1..a19038d 100644
---- a/arch/arm/kernel/bios32.c
-+++ b/arch/arm/kernel/bios32.c
-@@ -471,6 +471,9 @@ static void pcibios_init_hw(struct device *parent, struct hw_pci *hw,
- #ifdef CONFIG_PCI_DOMAINS
- 		sys->domain  = hw->domain;
- #endif
-+#ifdef CONFIG_PCI_MSI
-+		sys->msi_chip = hw->msi_chip;
-+#endif
- 		sys->busnr   = busnr;
- 		sys->swizzle = hw->swizzle;
- 		sys->map_irq = hw->map_irq;
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 22e413c..f11108c 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -35,6 +35,9 @@ int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
- 	struct msi_chip *chip = dev->bus->msi;
- 	int err;
+ 	hw.nr_controllers = 1;
+ 	hw.private_data   = (void **)&pcie;
+ 	hw.setup          = mvebu_pcie_setup;
+@@ -823,7 +820,6 @@ static void mvebu_pcie_enable(struct mvebu_pcie *pcie)
+ 	hw.map_irq        = of_irq_parse_and_map_pci;
+ 	hw.ops            = &mvebu_pcie_ops;
+ 	hw.align_resource = mvebu_pcie_align_resource;
+-	hw.add_bus        = mvebu_pcie_add_bus;
  
-+	if (!chip)
-+		chip = pci_msi_chip(dev->bus);
-+
- 	if (!chip || !chip->setup_irq)
- 		return -EINVAL;
- 
-@@ -50,6 +53,9 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
- 	struct msi_desc *entry = irq_get_msi_desc(irq);
- 	struct msi_chip *chip = entry->dev->bus->msi;
- 
-+	if (!chip)
-+		chip = pci_msi_chip(entry->dev->bus);
-+
- 	if (!chip || !chip->teardown_irq)
- 		return;
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 9cd2721..7a48b40 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1433,6 +1433,15 @@ static inline int pci_get_new_domain_nr(void) { return -ENOSYS; }
- 
- #include <asm/pci.h>
- 
-+/* Just avoid compile error, will be clean up later */
-+#ifdef CONFIG_PCI_MSI
-+
-+#ifndef pci_msi_chip
-+#define pci_msi_chip(bus)	NULL
-+#endif
-+
-+#endif
-+
- /* these helpers provide future and backwards compatibility
-  * for accessing popular PCI BAR info */
- #define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
+ 	pci_common_init(&hw);
+ }
 -- 
 1.7.1
