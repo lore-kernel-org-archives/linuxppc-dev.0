@@ -1,17 +1,37 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDD761A02CE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:20:55 +1100 (EST)
-In-Reply-To: <20141010102033.49af46f4@bahia.local>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2] powerpc/vphn: fix endian issue in NUMA device node code
-Message-Id: <20141015022055.ABDF214012A@ozlabs.org>
-Date: Wed, 15 Oct 2014 13:20:55 +1100 (EST)
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 075DB1A03E5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 13:26:14 +1100 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v3 03/27] s390/MSI: Use __msi_mask_irq() instead of
+ default_msi_mask_irq()
+Date: Wed, 15 Oct 2014 11:06:51 +0800
+Message-ID: <1413342435-7876-4-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
+References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ Yijing Wang <wangyijing@huawei.com>, Thierry Reding <thierry.reding@gmail.com>,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, xen-devel@lists.xenproject.org,
+ arnab.basu@freescale.com, Liviu Dudau <liviu@dudau.co.uk>,
+ Arnd Bergmann <arnd@arndb.de>, Konrad
+ Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
+ Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
+ David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-10-10 at 08:20:33 UTC, Greg Kurz wrote:
-> On Tue,  7 Oct 2014 20:28:23 +1100 (EST)
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
-> 
-> > On Fri, 2014-03-10 at 09:13:17 UTC, Greg Kurz wrote:
-> > > The associativity domain numbers are obtained from the hypervisor through
-> > > registers and written into memory by the guest: the packed array passed to
-> > > vphn_unpack_associativity() is then native-endian, unlike what was assumed
-> > > in the following commit:
-> > > 
-> > > This patch does two things:
-> > > - extract values from the packed array with shifts, in order to be endian
-> > >   neutral
-> > > - convert the resulting values to be32 as expected
-> > 
-> > So to unpack them, can't we just iterate over those six 64-bit values, which if
-> > we load them as 64-bit values will be back in cpu endian?
-> 
-> Hi Michael,
-> 
-> Do you mean something like the following ?
+Now only s390/MSI use default_msi_mask_irq() and
+default_msix_mask_irq(), replace them with the common
+msi mask irq functions __msi_mask_irq() and __msix_mask_irq().
+Remove default_msi_mask_irq() and default_msix_mask_irq().
 
-Not exactly, but that's certainly a lot simpler than the original patch.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/s390/pci/pci.c |    4 ++--
+ include/linux/msi.h |    2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
+index 2fa7b14..552b990 100644
+--- a/arch/s390/pci/pci.c
++++ b/arch/s390/pci/pci.c
+@@ -448,9 +448,9 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
+ 	/* Release MSI interrupts */
+ 	list_for_each_entry(msi, &pdev->msi_list, list) {
+ 		if (msi->msi_attrib.is_msix)
+-			default_msix_mask_irq(msi, 1);
++			__msix_mask_irq(msi, 1);
+ 		else
+-			default_msi_mask_irq(msi, 1, 1);
++			__msi_mask_irq(msi, 1, 1);
+ 		irq_set_msi_desc(msi->irq, NULL);
+ 		irq_free_desc(msi->irq);
+ 		msi->msg.address_lo = 0;
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 9ac1e3b..175aa21 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -65,8 +65,6 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
  
-> Sure it also works and is a lot simplier... but it adds an extra loop. Also,
-> if the 3 first elements of the array contain 12 VPHN_FIELD_MSB fields, then
-> we don't even need to swap the remaining elements: only the parsing code
-> knows.
->
-> On the other hand, I understand this is not a hot path... so what should we
-> do ?
-
-So I prefer this to your original patch. I know the original was cool and
-tricky but it was also complicated :)
-
-What I was thinking of was that the actual parsing code, in vphn_unpack_associativity()
-would do the 64-bit loads. That will require changing the parsing loop quite a
-bit, but I think it might be worth it.
-
-So can you resend this version with a proper changelog, and I'll merge that
-straight away as a bug fix. Then if you can look at reworking the parsing loop
-to avoid all the endian swapping on the input side that'd be great.
-
-cheers
+ void default_teardown_msi_irqs(struct pci_dev *dev);
+ void default_restore_msi_irqs(struct pci_dev *dev);
+-#define default_msi_mask_irq	__msi_mask_irq
+-#define default_msix_mask_irq	__msix_mask_irq
+ 
+ struct msi_chip {
+ 	struct module *owner;
+-- 
+1.7.1
