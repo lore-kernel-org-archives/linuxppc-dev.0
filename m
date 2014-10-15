@@ -1,35 +1,29 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qc0-x22b.google.com (mail-qc0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BE371A01EF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 21:43:13 +1100 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 15 Oct 2014 11:43:08 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CF7932190061
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 11:42:43 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9FAh6A316974188
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 10:43:06 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9FAh6Qt012109
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 04:43:06 -0600
-Subject: [PATCH v3] powerpc/vphn: NUMA node code expects big-endian
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 15 Oct 2014 12:42:58 +0200
-Message-ID: <20141015103804.20932.99794.stgit@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37CEA1A0431
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 00:52:40 +1100 (EST)
+Received: by mail-qc0-f171.google.com with SMTP id i17so959213qcy.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 06:52:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+In-Reply-To: <20141015090014.GA13499@richard>
+References: <1406182947-11302-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140819211942.GA6295@google.com> <20140820023404.GC6904@richard>
+ <CAErSpo5Dm4Eu0TcvJn2fYLVd005OgJCy-yZAhqsttjbb8jwm=A@mail.gmail.com>
+ <20140820033546.GA7669@richard> <20141002155943.GA19392@google.com>
+ <20141015090014.GA13499@richard>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 15 Oct 2014 07:52:16 -0600
+Message-ID: <CAErSpo4g1gtizAsVpxXGWRMDDaNLkjajqdj3xUdckiTf6f3g4Q@mail.gmail.com>
+Subject: Re: [PATCH V7 00/17] Enable SRIOV on POWER8
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,50 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The associativity domain numbers are obtained from the hypervisor through
-registers and written into memory by the guest: the packed array passed to
-vphn_unpack_associativity() is then native-endian, unlike what was assumed
-in the following commit:
+On Wed, Oct 15, 2014 at 3:00 AM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
+> On Thu, Oct 02, 2014 at 09:59:43AM -0600, Bjorn Helgaas wrote:
+...
+>>I haven't seen any more on this series, and I'm assuming you'll post a
+>>rebased series (maybe you're waiting for v3.18-rc1?).  I'm just checking to
+>>make sure you're not waiting for something from me...
+>>
+>
+> Hi, Bjorn
+>
+> Haven't seen you for a long time :-) I am just back from vocation and the mail
+> box doesn't work well for previous two days.
+>
+> Yep, I am rebasing the code on top of v3.17, is this fine for you?
 
-commit b08a2a12e44eaec5024b2b969f4fcb98169d1ca3
-Author: Alistair Popple <alistair@popple.id.au>
-Date:   Wed Aug 7 02:01:44 2013 +1000
+When I apply your patches, they will be on a branch based on
+v3.18-rc1, so the easiest thing for me would be if you generate them
+from that base.  Here's why:
 
-    powerpc: Make NUMA device node code endian safe
+  - Linus released v3.17 on Oct 5, 2014
+  - Merge window for v3.18 opened when v3.17 released
+  - All changes intended for v3.18 will be merged during window
+(theoretically, at least)
+  - Merge window closes when Linus releases v3.18-rc1 (probably Oct 19 or 26)
 
-This issue fills the topology with bogus data and makes it unusable. It may
-lead to severe performance breakdowns.
+Your changes will miss the v3.18 merge window, so the next chance to
+merge them will be during the v3.19 merge window that opens when v3.18
+releases.  v3.18-rc1 is a close approximation of what v3.18 will
+eventually be, so rebasing to v3.18-rc1 will minimize merge conflicts
+when we eventually merge your changes on top of v3.18.
 
-We should ideally patch the vphn_unpack_associativity() function to do the
-64-bit loads, but this requires some more brain storming.
+v3.18-rc1 isn't out yet, but if you rebase to the current head of
+Linus' tree, that should be fairly close.  The PCI changes are already
+in (80213c03c415), and at least some of the powerpc changes are in
+(fd9879b9bb32).
 
-In the meantime, let's go for a suboptimal and temporary bug fix: this patch
-converts each 64-bit value of the packed array to big endian, as expected by
-the current parsing code in vphn_unpack_associativity().
-
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
-
-Changes in v3:
-- dropped the complicated bit-shift based solution as requested by Michael
-  Ellerman
-
- arch/powerpc/mm/numa.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 649666d..b81bfe3 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1442,8 +1442,11 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
- 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
- 	u64 flags = 1;
- 	int hwcpu = get_hard_smp_processor_id(cpu);
-+	int i;
- 
- 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
-+	for (i = 0; i < 6; i++)
-+		retbuf[i] = cpu_to_be64(retbuf[i]);
- 	vphn_unpack_associativity(retbuf, associativity);
- 
- 	return rc;
+Bjorn
