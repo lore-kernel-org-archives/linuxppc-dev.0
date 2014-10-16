@@ -1,20 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA56C1A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 17:13:50 +1100 (AEDT)
-Message-ID: <1413440004.20705.7.camel@concordia>
-Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8EC41A02B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 17:47:53 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 16 Oct 2014 17:13:24 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-NksMaltrWCP8aPwOPI+U"
-Mime-Version: 1.0
-Cc: linus.walleij@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev list <linuxppc-dev@ozlabs.org>, bhelgaas@google.com
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] powerpc: Only do dynamic DMA zone limits on platforms that
+ need it
+Date: Thu, 16 Oct 2014 17:47:48 +1100
+Message-Id: <1413442068-5957-1-git-send-email-mpe@ellerman.id.au>
+Cc: scottwood@freescale.com, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,71 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Scott's patch 1c98025c6c95 "Dynamic DMA zone limits" changed
+dma_direct_alloc_coherent() to start using dev->coherent_dma_mask.
 
---=-NksMaltrWCP8aPwOPI+U
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+That seems fair enough, but it exposes the fact that some of the drivers
+we care about on IBM platforms aren't setting the coherent mask.
 
-Hi Linus,
+The proper fix is to have drivers set the coherent mask and also have
+the platform code honor it.
 
-There was a bit of a misunderstanding between us and the ARM guys in the de=
-vice
-tree PCI code, which is breaking virtio on powerpc. This is the minimal fix
-until we can sort it out properly.
+For now, just restrict the dynamic DMA zone limits to the platforms that
+need it.
 
-cheers
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/dma.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
+v2: Use FSL_SOC.
 
-The following changes since commit 0429fbc0bdc297d64188483ba029a23773ae07b0=
-:
-
-  Merge branch 'for-3.18-consistent-ops' of git://git.kernel.org/pub/scm/li=
-nux/kernel/git/tj/percpu (2014-10-15 07:48:18 +0200)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
-
-for you to fetch changes up to aeba3731b150188685225b510886f1370d8814de:
-
-  powerpc/pci: Fix IO space breakage after of_pci_range_to_resource() chang=
-e (2014-10-16 14:19:07 +1100)
-
-----------------------------------------------------------------
-Michael Ellerman (1):
-      powerpc/pci: Fix IO space breakage after of_pci_range_to_resource() c=
-hange
-
- arch/powerpc/kernel/pci-common.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-
-
-
-
-
---=-NksMaltrWCP8aPwOPI+U
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAABAgAGBQJUP2IdAAoJEFHr6jzI4aWARvEP/jGscqO0rkyONPO1EOxVBjoE
-ft+a7qcUHDCM1CQxYGk6MP4CThbomCvmDfGCBma8nYy6BpxYYEDHLts8X1tZ7gqL
-Q+OSS5zI1UyLlZjFs0kT6eGGT/9Gxf9r5Fp+nGX5sHcUYyvUWn75KwDguojxx1pZ
-c5I5PfjLea3DTAZKqMqVHw2WaYYiFAxt/AwvbjAEufzsrN0QdCNCOcpmi0XCNZjZ
-kZpXElA9AJ7wJKsIpGeEPayMaDPd0V4S7zi0NvKuvAnr1ZTXfbtk9to49XYvXdXb
-H7uKj2VsksbPmGhgS+VTllySSubKao5AYtJZ+K/4PUNnkWlz/oiZSNGExoTCnVIr
-6lk+m/fUszC2Ill9WfCsYfTGumXyIw4PxBc1jdf30mNTQC4H2Us+sMAskxqOOEZV
-qxkA8djXU5aYkZdPJy349w7qNAu0dJRO/V/YdolHl7ux0HXtWRHpKqsy7IT5HKu3
-DrrkKj4jxCTAort8+ui+kiDhL6Qs/uY5Rw1JTSpeTGgf1zdb44QvJ4Z8TVUtRR6f
-xdrJ2e0aJjPlTHiHuQB4ubL8i2n/WNSUJGtinnN2OJoVVTdPnrE79NavFofZVw5q
-C+mrD0qeTegt1dfBFZyEJSmeBNZ381Nwffws0MPNAPyDF0nHad+aykTXibsrPp7G
-i4ssU5j5qAQ7pO2qK5Ll
-=K7Wa
------END PGP SIGNATURE-----
-
---=-NksMaltrWCP8aPwOPI+U--
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index adac9dc54aee..484b2d4462c1 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -53,9 +53,16 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ #else
+ 	struct page *page;
+ 	int node = dev_to_node(dev);
++#ifdef CONFIG_FSL_SOC
+ 	u64 pfn = get_pfn_limit(dev);
+ 	int zone;
+ 
++	/*
++	 * This code should be OK on other platforms, but we have drivers that
++	 * don't set coherent_dma_mask. As a workaround we just ifdef it. This
++	 * whole routine needs some serious cleanup.
++	 */
++
+ 	zone = dma_pfn_limit_to_zone(pfn);
+ 	if (zone < 0) {
+ 		dev_err(dev, "%s: No suitable zone for pfn %#llx\n",
+@@ -73,6 +80,7 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 		break;
+ #endif
+ 	};
++#endif /* CONFIG_FSL_SOC */
+ 
+ 	/* ignore region specifiers */
+ 	flag  &= ~(__GFP_HIGHMEM);
+-- 
+1.9.1
