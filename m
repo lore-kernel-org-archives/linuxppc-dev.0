@@ -1,24 +1,24 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7AD551A037E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 09:31:34 +1100 (AEDT)
-Received: by mail-pa0-f41.google.com with SMTP id eu11so4286670pac.28
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 15:31:32 -0700 (PDT)
-Date: Fri, 17 Oct 2014 06:31:24 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id F342B1A01C9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 09:35:07 +1100 (AEDT)
+Received: by mail-pa0-f51.google.com with SMTP id lj1so4236583pab.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 15:35:06 -0700 (PDT)
+Date: Fri, 17 Oct 2014 06:34:58 +0800
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 0/2] fix a kernel panic on fsl corenet board when
- CONFIG_CLK_PPC_CORENET is enabled
-Message-ID: <20141016223124.GA9593@pek-khao-d1.corp.ad.wrs.com>
+Subject: Re: [PATCH 1/2] powerpc: move ppc_init() to common place
+Message-ID: <20141016223458.GB9593@pek-khao-d1.corp.ad.wrs.com>
 References: <1413458321-23880-1-git-send-email-haokexin@gmail.com>
- <1413496162.7417.9.camel@aoeu.buserror.net>
+ <1413458321-23880-2-git-send-email-haokexin@gmail.com>
+ <1413496486.7417.11.camel@aoeu.buserror.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-In-Reply-To: <1413496162.7417.9.camel@aoeu.buserror.net>
+ protocol="application/pgp-signature"; boundary="0eh6TmSyL6TZE2Uz"
+In-Reply-To: <1413496486.7417.11.camel@aoeu.buserror.net>
 Cc: Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
  Mike Turquette <mturquette@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,39 +31,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---fdj2RfSjLxBAspz7
+--0eh6TmSyL6TZE2Uz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 16, 2014 at 11:49:22PM +0200, Scott Wood wrote:
+On Thu, Oct 16, 2014 at 11:54:46PM +0200, Scott Wood wrote:
 > On Thu, 2014-10-16 at 19:18 +0800, Kevin Hao wrote:
-> > Hi,
+> > So they can be used by ppc64 board. Also remove the unneeded {} to
+> > make checkpatch happy.
 > >=20
-> > This tries to fix a kernel panic introduced by commit da788acb2838
-> > ("clk: ppc-corenet: Fix Section mismatch warning").
+> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> > ---
+> >  arch/powerpc/include/asm/machdep.h |  2 +-
+> >  arch/powerpc/kernel/setup-common.c | 15 +++++++++++++++
+> >  arch/powerpc/kernel/setup_32.c     | 15 ---------------
+> >  3 files changed, 16 insertions(+), 16 deletions(-)
 >=20
-> That patch is just wrong and should be reverted, separately from any new
-> attempt to fix the section mismatch warning.
+> This is unnecessary -- why not just use machine_arch_initcall?
 
-OK, I will make a patch to revert that first.
+OK, I will drop this patch.
 
 Thanks,
 Kevin
 
---fdj2RfSjLxBAspz7
+--0eh6TmSyL6TZE2Uz
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUQEc8AAoJEJNY7TDerrFxNnMIAM8rAgnKuBf9Jl/oBWfwLbS4
-Abgv/IvS7k2/E8aLA4T6OUfrUgbPjUb7YAT23bSVVfO1oNvl5BUPiJ2upIxGVjWM
-0H8lGWUGf1Lah9U8IUAUf2JIRO0zVY2RtzUxnaVqwHofF6S11smEkVWs6sCKPteT
-G82+IuFpopyS6E94yL9dlgKZcCL/j94vNCPAbfYxAIyPbvgUNkdsoIpP0fT8y6QO
-Hyepkc/AqNApA86EeOJdeahfGIytzOQSECm965O533zz7HX05WjaQ111aXt0LvWl
-7m7CuK3LU9nCMPAcJN5mp+U//NVxhL/RJkeNp73RUXclxrKFbbnw9R4ZmmEzbXs=
-=exgM
+iQEcBAEBAgAGBQJUQEgSAAoJEJNY7TDerrFxIf8H/3ySCc0xkIfTmO7olrLxzZ7L
+DofEXUrIFPXoIsM082KrIDck7YWIj+oZPYJIZBEdwUQ5RafVPgdxak/SjE63GJgJ
+eSa36JlIQL2ncpEUaLSIgg+M9atuXszldCPz5oXpVA8LP/7z/NamA5xavE1ecAdb
+P8QZQKwmwd8NmjtW4cJGimwTPHK26EuL7JZhuQBgHd5c3/3yim3hhn7oaolDskxM
+rkO2M2SN3lf6KH9zwohiWOV4eO1LUg673Wd6RLoJ9xE1Wb711E41cv7gojAiGK+P
+3ey5SQVNjfJSraDmsw0v4Gg+uMzEq1qwHEmYFzBuYwdb8tieIkjUBVKztMF1x50=
+=rwhA
 -----END PGP SIGNATURE-----
 
---fdj2RfSjLxBAspz7--
+--0eh6TmSyL6TZE2Uz--
