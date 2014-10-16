@@ -1,22 +1,21 @@
-Return-Path: <maxime.ripard@free-electrons.com>
-Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
- by lists.ozlabs.org (Postfix) with ESMTP id 2C9261A02EB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 21:20:09 +1100 (AEDT)
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-To: dmaengine@vger.kernel.org,
-	Vinod Koul <vinod.koul@intel.com>
-Subject: [PATCH v2 26/53] dmaengine: fsl-dma: Split device_control
-Date: Thu, 16 Oct 2014 12:17:25 +0200
-Message-Id: <1413454672-27400-27-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1413454672-27400-1-git-send-email-maxime.ripard@free-electrons.com>
-References: <1413454672-27400-1-git-send-email-maxime.ripard@free-electrons.com>
-Cc: lars@metafoo.de, Russell King <linux@arm.linux.org.uk>,
- linux-kernel@vger.kernel.org, Zhang Wei <zw@zh-kernel.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Maxime Ripard <maxime.ripard@free-electrons.com>,
- linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
- linux-arm-kernel@lists.infradead.org,
- =?UTF-8?q?Antoine=20T=C3=A9nart?= <antoine@free-electrons.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c02::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FB271A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 22:19:54 +1100 (AEDT)
+Received: by mail-pd0-f171.google.com with SMTP id ft15so3085095pdb.30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 04:19:52 -0700 (PDT)
+From: Kevin Hao <haokexin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] fix a kernel panic on fsl corenet board when
+ CONFIG_CLK_PPC_CORENET is enabled
+Date: Thu, 16 Oct 2014 19:18:39 +0800
+Message-Id: <1413458321-23880-1-git-send-email-haokexin@gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ Mike Turquette <mturquette@linaro.org>,
+ Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,150 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split the device_control callback of the Freescale Elo DMA driver to make use
-of the newly introduced callbacks, that will eventually be used to retrieve
-slave capabilities.
+Hi,
 
-While we're at it, remove the useless prep_sg callback.
+This tries to fix a kernel panic introduced by commit da788acb2838
+("clk: ppc-corenet: Fix Section mismatch warning").
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/dma/fsldma.c | 100 ++++++++++++++++++++++++---------------------------
- 1 file changed, 46 insertions(+), 54 deletions(-)
+Kevin Hao (2):
+  powerpc: move ppc_init() to common place
+  clk: ppc-corenet: don't use platform_driver to init the clock device
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index d5d6885ab341..4da5b4dcb45c 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -927,35 +927,7 @@ fail:
- 	return NULL;
- }
- 
--/**
-- * fsl_dma_prep_slave_sg - prepare descriptors for a DMA_SLAVE transaction
-- * @chan: DMA channel
-- * @sgl: scatterlist to transfer to/from
-- * @sg_len: number of entries in @scatterlist
-- * @direction: DMA direction
-- * @flags: DMAEngine flags
-- * @context: transaction context (ignored)
-- *
-- * Prepare a set of descriptors for a DMA_SLAVE transaction. Following the
-- * DMA_SLAVE API, this gets the device-specific information from the
-- * chan->private variable.
-- */
--static struct dma_async_tx_descriptor *fsl_dma_prep_slave_sg(
--	struct dma_chan *dchan, struct scatterlist *sgl, unsigned int sg_len,
--	enum dma_transfer_direction direction, unsigned long flags,
--	void *context)
--{
--	/*
--	 * This operation is not supported on the Freescale DMA controller
--	 *
--	 * However, we need to provide the function pointer to allow the
--	 * device_control() method to work.
--	 */
--	return NULL;
--}
--
--static int fsl_dma_device_control(struct dma_chan *dchan,
--				  enum dma_ctrl_cmd cmd, unsigned long arg)
-+static int fsl_dma_device_terminate_all(struct dma_chan *dchan)
- {
- 	struct dma_slave_config *config;
- 	struct fsldma_chan *chan;
-@@ -966,38 +938,57 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- 
- 	chan = to_fsl_chan(dchan);
- 
--	switch (cmd) {
--	case DMA_TERMINATE_ALL:
--		spin_lock_bh(&chan->desc_lock);
-+	spin_lock_bh(&chan->desc_lock);
-+
-+	/* Halt the DMA engine */
-+	dma_halt(chan);
- 
--		/* Halt the DMA engine */
--		dma_halt(chan);
-+	/* Remove and free all of the descriptors in the LD queue */
-+	fsldma_free_desc_list(chan, &chan->ld_pending);
-+	fsldma_free_desc_list(chan, &chan->ld_running);
-+	fsldma_free_desc_list(chan, &chan->ld_completed);
-+	chan->idle = true;
- 
--		/* Remove and free all of the descriptors in the LD queue */
--		fsldma_free_desc_list(chan, &chan->ld_pending);
--		fsldma_free_desc_list(chan, &chan->ld_running);
--		fsldma_free_desc_list(chan, &chan->ld_completed);
--		chan->idle = true;
-+	spin_unlock_bh(&chan->desc_lock);
-+	return 0;
-+}
- 
--		spin_unlock_bh(&chan->desc_lock);
--		return 0;
-+static int fsl_dma_device_config(struct dma_chan *dchan,
-+				 struct dma_slave_config *config)
-+{
-+	struct fsldma_chan *chan;
-+	int size;
- 
--	case DMA_SLAVE_CONFIG:
--		config = (struct dma_slave_config *)arg;
-+	if (!dchan)
-+		return -EINVAL;
- 
--		/* make sure the channel supports setting burst size */
--		if (!chan->set_request_count)
--			return -ENXIO;
-+	chan = to_fsl_chan(dchan);
- 
--		/* we set the controller burst size depending on direction */
--		if (config->direction == DMA_MEM_TO_DEV)
--			size = config->dst_addr_width * config->dst_maxburst;
--		else
--			size = config->src_addr_width * config->src_maxburst;
-+	/* make sure the channel supports setting burst size */
-+	if (!chan->set_request_count)
-+		return -ENXIO;
- 
--		chan->set_request_count(chan, size);
--		return 0;
-+	/* we set the controller burst size depending on direction */
-+	if (config->direction == DMA_MEM_TO_DEV)
-+		size = config->dst_addr_width * config->dst_maxburst;
-+	else
-+		size = config->src_addr_width * config->src_maxburst;
- 
-+	chan->set_request_count(chan, size);
-+	return 0;
-+}
-+
-+static int fsl_dma_device_control(struct dma_chan *dchan,
-+				  enum dma_ctrl_cmd cmd, unsigned long arg)
-+{
-+	struct fsldma_chan *chan;
-+
-+	if (!dchan)
-+		return -EINVAL;
-+
-+	chan = to_fsl_chan(dchan);
-+
-+	switch (cmd) {
- 	case FSLDMA_EXTERNAL_START:
- 
- 		/* make sure the channel supports external start */
-@@ -1391,8 +1382,9 @@ static int fsldma_of_probe(struct platform_device *op)
- 	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
- 	fdev->common.device_tx_status = fsl_tx_status;
- 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
--	fdev->common.device_prep_slave_sg = fsl_dma_prep_slave_sg;
-+	fdev->common.device_config = fsl_dma_device_config;
- 	fdev->common.device_control = fsl_dma_device_control;
-+	fdev->common.device_terminate_all = fsl_dma_device_terminate_all;
- 	fdev->common.dev = &op->dev;
- 
- 	dma_set_mask(&(op->dev), DMA_BIT_MASK(36));
+ arch/powerpc/include/asm/machdep.h            |  2 +-
+ arch/powerpc/kernel/setup-common.c            | 15 ++++++++++
+ arch/powerpc/kernel/setup_32.c                | 15 ----------
+ arch/powerpc/platforms/85xx/corenet_generic.c |  7 +++++
+ drivers/clk/clk-ppc-corenet.c                 | 43 ++++-----------------------
+ 5 files changed, 29 insertions(+), 53 deletions(-)
+
 -- 
-2.1.1
+1.9.3
