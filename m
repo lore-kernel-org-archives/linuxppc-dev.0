@@ -1,19 +1,19 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
- [IPv6:2607:f8b0:4001:c03::22a])
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C0A21A03BC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 18:25:51 +1100 (AEDT)
-Received: by mail-ie0-f170.google.com with SMTP id rd18so2877354iec.29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 00:25:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 723031A055A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 18:25:55 +1100 (AEDT)
+Received: by mail-pa0-f46.google.com with SMTP id fa1so2890419pad.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 00:25:53 -0700 (PDT)
 From: kernelfans@gmail.com
 To: linuxppc-dev@lists.ozlabs.org,
 	kvm-ppc@vger.kernel.org
-Subject: [RFC 03/11] powerpc: kvm: add interface to control kvm function on a
- core
-Date: Thu, 16 Oct 2014 15:29:52 -0400
-Message-Id: <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
+Subject: [RFC 04/11] powerpc: kvm: introduce a kthread on primary thread to
+ anti tickless
+Date: Thu, 16 Oct 2014 15:29:53 -0400
+Message-Id: <1413487800-7162-5-git-send-email-kernelfans@gmail.com>
 In-Reply-To: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
 References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
 Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
@@ -26,91 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When kvm is enabled on a core, we migrate all external irq to primary
-thread. Since currently, the kvmirq logic is handled by the primary
-hwthread.
+(This patch is a place holder.)
 
-Todo: this patch lacks re-enable of irqbalance when kvm is disable on
-the core
+If there is only one vcpu thread is ready(the other vcpu thread can
+wait for it to execute), the primary thread can enter tickless mode,
+which causes the primary keeps running, so the secondary has no
+opportunity to exit to host, even they have other tsk on them.
+
+Introduce a kthread (anti_tickless) on primary, so when there is only
+one vcpu thread on primary, the secondary can resort to anti_tickless
+to keep the primary out of tickless mode.
+(I thought that anti_tickless thread can goto NAP, so we can let the
+secondary run).
 
 Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/sysfs.c            | 39 ++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/xics/xics-common.c | 12 +++++++++++
- 2 files changed, 51 insertions(+)
+ arch/powerpc/kernel/sysfs.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 67fd2fd..a2595dd 100644
+index a2595dd..f0b110e 100644
 --- a/arch/powerpc/kernel/sysfs.c
 +++ b/arch/powerpc/kernel/sysfs.c
-@@ -552,6 +552,45 @@ static void sysfs_create_dscr_default(void)
- 	if (cpu_has_feature(CPU_FTR_DSCR))
- 		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
- }
-+
-+#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
-+#define NR_CORES	(CONFIG_NR_CPUS/threads_per_core)
-+static DECLARE_BITMAP(kvm_on_core, NR_CORES) __read_mostly
-+
-+static ssize_t show_kvm_enable(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+}
-+
-+static ssize_t __used store_kvm_enable(struct device *dev,
-+		struct device_attribute *attr, const char *buf,
-+		size_t count)
-+{
-+	struct cpumask stop_cpus;
-+	unsigned long core, thr;
-+
-+	sscanf(buf, "%lx", &core);
-+	if (core > NR_CORES)
-+		return -1;
-+	if (!test_bit(core, &kvm_on_core))
-+		for (thr = 1; thr< threads_per_core; thr++)
-+			if (cpu_online(thr * threads_per_core + thr))
-+				cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
-+
-+	stop_machine(xics_migrate_irqs_away_secondary, NULL, &stop_cpus);
-+	set_bit(core, &kvm_on_core);
-+	return count;
-+}
-+
-+static DEVICE_ATTR(kvm_enable, 0600,
-+	show_kvm_enable, store_kvm_enable);
-+
-+static void sysfs_create_kvm_enable(void)
-+{
-+	device_create_file(cpu_subsys.dev_root, &dev_attr_kvm_enable);
-+}
-+#endif
-+
- #endif /* CONFIG_PPC64 */
+@@ -575,9 +575,11 @@ static ssize_t __used store_kvm_enable(struct device *dev,
+ 	if (!test_bit(core, &kvm_on_core))
+ 		for (thr = 1; thr< threads_per_core; thr++)
+ 			if (cpu_online(thr * threads_per_core + thr))
+-				cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
++				cpumask_set_cpu(core * threads_per_core + thr, &stop_cpus);
  
- #ifdef HAS_PPC_PMC_PA6T
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index fe0cca4..68b33d8 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -258,6 +258,18 @@ unlock:
- 		raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	}
+ 	stop_machine(xics_migrate_irqs_away_secondary, NULL, &stop_cpus);
++	/* fixme, create a kthread on primary hwthread to handle tickless mode */
++	//kthread_create_on_cpu(prevent_tickless, NULL, core * threads_per_core, "ppckvm_prevent_tickless");
+ 	set_bit(core, &kvm_on_core);
+ 	return count;
  }
-+
-+int xics_migrate_irqs_away_secondary(void *data)
-+{
-+	int cpu = smp_processor_id();
-+	if(cpu%thread_per_core != 0) {
-+		WARN(condition, format...);
-+		return 0;
-+	}
-+	/* In fact, if we can migrate the primary, it will be more fine */
-+	xics_migrate_irqs_away();
-+	return 0;
-+}
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- #ifdef CONFIG_SMP
 -- 
 1.8.3.1
