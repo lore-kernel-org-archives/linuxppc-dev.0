@@ -1,55 +1,22 @@
-Return-Path: <sebott@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C26FE1A02BC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 23:13:40 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sebott@linux.vnet.ibm.com>;
- Thu, 16 Oct 2014 13:13:36 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 918041B08023
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 13:14:52 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9GCDXXt15663506
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 12:13:33 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9GCDNmM023917
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 06:13:33 -0600
-Date: Thu, 16 Oct 2014 14:13:20 +0200 (CEST)
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v3 22/27] s390/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-In-Reply-To: <1413342435-7876-23-git-send-email-wangyijing@huawei.com>
-Message-ID: <alpine.LFD.2.11.1410161411340.1575@denkbrett>
-References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
- <1413342435-7876-23-git-send-email-wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 000231A0313
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 01:05:58 +1100 (AEDT)
+Date: Thu, 16 Oct 2014 16:05:44 +0200 (CEST)
+From: "arnd@arndb.de" <arnd@arndb.de>
+Reply-To: "arnd@arndb.de" <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Message-ID: <279386619.169619.1413468344794.JavaMail.open-xchange@oxbsltgw00.schlund.de>
+In-Reply-To: <1413429775-716-1-git-send-email-mpe@ellerman.id.au>
+References: <1413429775-716-1-git-send-email-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pci: Fix IO space breakage after
+ of_pci_range_to_resource() change
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: bhelgaas@google.com, linus.walleij@linaro.org, Liviu.Dudau@arm.com,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,98 +26,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 15 Oct 2014, Yijing Wang wrote:
-> Use MSI chip framework instead of arch MSI functions to configure
-> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
-> 
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+(hope my email makes it everywhere, using a webmail client at the moment as=
+ I'm
+at plumbersconf
+
+Michael Ellerman <mpe@ellerman.id.au> hat am 16. Oktober 2014 um 05:22
+geschrieben:
+>
+>
+> Commit 0b0b0893d49b "of/pci: Fix the conversion of IO ranges into IO
+> resources" changed the behaviour of of_pci_range_to_resource().
+
+I just looked at this after benh mentioned the problem on IRC, here's a log=
+ dump
+
+:26 AM   <benh> argh =20
+9:27 AM   <benh> the whole ARM OF PCI rework seems to completely break PIO =
+on
+powerpc =20
+9:30 AM   =E2=86=92 willy <willy> joined (^willy@62.156.150.204) =20
+9:35 AM   <benh> and reverting it would mean reverting all of ARM new PCI s=
+tuff
+=20
+9:35 AM   <benh> crap =20
+9:35 AM   <benh> that business with IO space allocation taking over our cod=
+e
+without understanding what it does =20
+9:35 AM   <benh> yuck =20
+9:41 AM     =E2=86=92 markf <markf> , olaf <olaf> , sarnold <sarnold> , gos=
+po <gospo> ,
+cmarinas <cmarinas> , Mahesh1 <Mahesh1> , joern <joern> , clark_ <clark_> a=
+nd
+benhjoined  =E2=87=90 gcl <gcl> and clark <clark> quit  =E2=86=94 willy <wi=
+lly> , jbarnes
+<jbarnes> , jbrandeb_ <jbrandeb_> and Mahesh <Mahesh> popped in  =E2=86=94 =
+sameo <sameo>
+, jbrandeb <jbrandeb> , steved <steved> and jj <jj> nipped out  =E2=80=A2  =
+srikar =E2=86=92
+srikar_away <srikar_away> , raghu =E2=86=92 raghu_away <raghu_away> =20
+Thursday, October 16th, 2014 =20
+12:06 AM     =E2=86=92 fweisbec <fweisbec> , Mahesh <Mahesh> , kamalesh <ka=
+malesh> ,
+heiko <heiko> , olaf <olaf> , riel <riel> and willy <willy> joined  =E2=87=
+=90 shaggy
+<shaggy> , sammj <sammj> , sameo <sameo> , clark_ <clark_> , lenb <lenb> an=
+d jj
+<jj> quit  =E2=86=94 jbrandeb <jbrandeb> , cdub <cdub> , Mahesh1 <Mahesh1> =
+and gcl <gcl>
+popped in  =E2=86=94 jbrandeb_ <jbrandeb_> , benh, joern <joern> and BenC <=
+BenC> nipped
+out  =E2=80=A2  mpe|away =E2=86=92 mpe|away <mpe%7Caway> , raghu_away =E2=
+=86=92 raghu <raghu> ,
+srikar_away =E2=86=92 srikar <srikar> =20
+10:16 AM   <arnd_> benh: is it the of_pci_range_to_resource change? =20
+10:17 AM   <arnd_> the new pci_ioremap_iospace logic should not get used on
+powerpc at all, so I didn't expect any breakage =20
+10:18 AM   <arnd_> I wasn't too happy with all the details of Liviu's serie=
+s,
+bit in the end it seemed reasonable enough =20
+10:20 AM   <arnd_> he really wanted to use the pci_address_to_pio code from
+powerpc and in the end I stopped complaining =20
+10:21 AM   <arnd_> the new code can do a few things that simpler versions c=
+ould
+not, e.g. handling multiple host bridges getting registered when they have =
+the
+same I/O space window =20
+10:23 AM   =E2=86=92 jj <jj> joined (^jj@static-50-53-60-87.bvtn.or.frontie=
+rnet.net) =20
+10:33 AM   <arnd_> benh: I can see how it breaks your
+pci_process_bridge_OF_ranges, we had the same problem in some of the ARM
+platforms and Liviu fixed those but apparently didn't realize he had to cha=
+nge
+the ppc implementation (and get your ack) too =20
+10:35 AM   <arnd_> the good news is that it should in fact simplify your co=
+de to
+fix it, but the fact that this bug got into the kernel in the first place i=
+s
+extremely annoying =20
+10:39 AM   <arnd_> benh: the fixup that is done in your
+pcibios_reserve_legacy_regions is now already performed in
+of_pci_range_to_resource =20
+10:39 AM   <arnd_> we had duplicated the same thing in each pci host driver=
+ (and
+they all got it wrong), so the intent was to move it into a common place =
+=20
+10:40 AM   <arnd_> but of course it's a bug to do it twice =20
+10:43 AM   <arnd_> pci_register_io_range is trying to do a more generalized
+version of how you assign hose->io_base_virt, you should probably override =
+that
+to keep the current behavior =20
+10:45 AM   <arnd_> pcibios_map_phb_io_space I mean, for ppc64 =20
+10:52 AM   =E2=86=92 cmarinas <cmarinas> joined (~cmarinas@fw-tnat.cambridg=
+e.arm.com) =20
+10:53 AM   <arnd_> benh: for 3.18, the best approach is likely to #ifdef
+<%23ifdef> PCI_IOBASE the changes in of_pci_range_to_resource =20
+10:54 AM   <arnd_> I suspect you are fine with effectively reverting Liviu'=
+s
+changes that way, and you can decide whether or not you want to later make =
+the
+powerpc code use the common logic =20
+11:01 AM     =E2=86=92 cdub <cdub> and sarnold <sarnold> joined  =E2=87=90 =
+cmarinas <cmarinas>
+quit =20
+11:28 AM   <benh> arnd_: can you shoot the above in an email CCed to mpe ? =
+=20
+11:28 AM   <benh> arnd_: he did a band aid that works =20
+11:28 AM   <benh> arnd_: and see the comment I made today about using his s=
+tuff
+if I can specify where I want the IO ranges =20
+11:28 AM   <benh> arnd_: I want to keep the way I do the layout on ppc64 =
+=20
+
+> Previously it simply populated the resource based on the arguments. Now
+> it calls pci_register_io_range() and pci_address_to_pio(). These both
+> have two implementations depending on whether PCI_IOBASE is defined,
+> which it is not for powerpc.
+>
+> Further complicating matters, both routines are weak, and powerpc
+> implements it's own version of one - pci_address_to_pio(). However
+> powerpc's implementation depends on other initialisations which are done
+> later in boot.
+
+Right, sorry for missing this during the last review of the broken patches.
+
+> The end result is incorrectly initialised IO space. Often we can get
+> away with that, because we don't make much use of IO space. However
+> virtio requires it, so we see eg:
+>
+> pci_bus 0000:00: root bus resource [io 0xffff] (bus address
+> [0xffffffffffffffff-0xffffffffffffffff])
+> PCI: Cannot allocate resource region 0 of device 0000:00:01.0, will remap
+> virtio-pci 0000:00:01.0: can't enable device: BAR 0 [io size 0x0020] not
+> assigned
+>
+> The simplest fix for now is to just stop using of_pci_range_to_resource()=
+,
+> and open-code the original imp`lementation, that's all we want it to do.
+
+The same bug is likely to be present on microblaze and mips, which may or m=
+ay
+not
+care about it. I'll ask Michal about whether microblaze actually has any
+I/O space, otherwise we have to fix it too for 3.18.
+
+I believe for 3.19, we should probably migrate microblaze over to use the s=
+ame
+code
+as ARM.
+
+> Fixes: 0b0b0893d49b ("of/pci: Fix the conversion of IO ranges into IO
+> resources")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
-> Hi Sebastian,
->    I dropped the Acked-by , because this version has a
-> lot changes compared to last. So, I guess you may want to check it again.
+> arch/powerpc/kernel/pci-common.c | 6 +++++-
+> 1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/pci-common.c
+> b/arch/powerpc/kernel/pci-common.c
+> index bd70a51d5747..e5dad9a9edc0 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -747,7 +747,11 @@ void pci_process_bridge_OF_ranges(struct pci_control=
+ler
+> *hose,
+> break;
+> }
+> if (res !=3D NULL) {
+> - of_pci_range_to_resource(&range, dev, res);
+> + res->name =3D dev->full_name;
+> + res->flags =3D range.flags;
+> + res->start =3D range.cpu_addr;
+> + res->end =3D range.cpu_addr + range.size - 1;
+> + res->parent =3D res->child =3D res->sibling =3D NULL;
+> }
+> }
 
-I did and I agree with that one too.
+This looks reasonable to me as a hack to work around the breakage. It would=
+ be
+good
+to work together on this for 3.19 to move on to the a common implementation=
+ that
+works on both ARM and PowerPC. This might be possibly by removing a lot of =
+code
+for PowerPC (at least 64-bit) that is now present in common code, but it wi=
+ll
+change the structure of the powerpc implementation significantly, since the
+returned numbers are now in different memory spaces (logical I/O space rath=
+er
+than physical). The PowerPC _IO_BASE is the equivalent of the now generic
+PCI_IOBASE,
+but it's used slightly differently. If you want to use the generic code,=20
+you should probably change host->io_base_virt to host->io_base in logical
+space (i.e. removing the _IO_BASE offset), or using hose->io_resource.start
+instead.
 
-Regards,
-Sebastian
-
-> ---
->  arch/s390/include/asm/pci.h |    9 +++++++++
->  arch/s390/pci/pci.c         |   12 ++++++++++--
->  2 files changed, 19 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
-> index c030900..4d41f08 100644
-> --- a/arch/s390/include/asm/pci.h
-> +++ b/arch/s390/include/asm/pci.h
-> @@ -88,6 +88,8 @@ struct zpci_dev {
->  	u32 uid;			/* user defined id */
->  	u8 util_str[CLP_UTIL_STR_LEN];	/* utility string */
-> 
-> +	struct msi_chip *msi_chip;
-> +
->  	/* IRQ stuff */
->  	u64		msi_addr;	/* MSI address */
->  	struct airq_iv *aibv;		/* adapter interrupt bit vector */
-> @@ -121,6 +123,13 @@ struct zpci_dev {
->  	struct dentry	*debugfs_perf;
->  };
-> 
-> +static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
-> +{
-> +	struct zpci_dev *zpci = bus->sysdata;
-> +
-> +	return zpci->msi_chip;
-> +}
-> +
->  static inline bool zdev_enabled(struct zpci_dev *zdev)
->  {
->  	return (zdev->fh & (1UL << 31)) ? true : false;
-> diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-> index 552b990..bf6732f 100644
-> --- a/arch/s390/pci/pci.c
-> +++ b/arch/s390/pci/pci.c
-> @@ -358,7 +358,8 @@ static void zpci_irq_handler(struct airq_struct *airq)
->  	}
->  }
-> 
-> -int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-> +static int zpci_setup_msi_irqs(struct msi_chip *chip,
-> +		struct pci_dev *pdev, int nvec, int type)
->  {
->  	struct zpci_dev *zdev = get_zdev(pdev);
->  	unsigned int hwirq, msi_vecs;
-> @@ -434,7 +435,8 @@ out:
->  	return rc;
->  }
-> 
-> -void arch_teardown_msi_irqs(struct pci_dev *pdev)
-> +static void zpci_teardown_msi_irqs(struct msi_chip *chip,
-> +		struct pci_dev *pdev)
->  {
->  	struct zpci_dev *zdev = get_zdev(pdev);
->  	struct msi_desc *msi;
-> @@ -464,6 +466,11 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
->  	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
->  }
-> 
-> +static struct msi_chip zpci_msi_chip = {
-> +	.setup_irqs = zpci_setup_msi_irqs,
-> +	.teardown_irqs = zpci_teardown_msi_irqs,
-> +};
-> +
->  static void zpci_map_resources(struct zpci_dev *zdev)
->  {
->  	struct pci_dev *pdev = zdev->pdev;
-> @@ -749,6 +756,7 @@ static int zpci_scan_bus(struct zpci_dev *zdev)
->  	if (ret)
->  		return ret;
-> 
-> +	zdev->msi_chip = &zpci_msi_chip;
->  	zdev->bus = pci_scan_root_bus(NULL, ZPCI_BUS_NR, &pci_root_ops,
->  				      zdev, &resources);
->  	if (!zdev->bus) {
-> -- 
-> 1.7.1
-> 
-> 
+       Arnd
