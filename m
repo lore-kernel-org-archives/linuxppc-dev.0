@@ -1,22 +1,19 @@
-Return-Path: <ydroneaud@opteya.com>
-Message-ID: <1413450624.17854.3.camel@localhost.localdomain>
-From: Yann Droneaud <ydroneaud@opteya.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 16 Oct 2014 11:10:24 +0200
-In-Reply-To: <1413251832.21120.4.camel@concordia>
-References: <cover.1413223900.git.ydroneaud@opteya.com>
- <9a145561123e28585d7994b61359a531128a80b8.1413223900.git.ydroneaud@opteya.com>
- <1413251832.21120.4.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCHv9 2/5] ppc/cell: trivial: replace get_unused_fd() by
- get_unused_fd_flags(0)
-Cc: cbe-oss-dev@lists.ozlabs.org, Yann Droneaud <ydroneaud@opteya.com>,
- Jiri Kosina <trivial@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Al Viro <viro@zeniv.linux.org.uk>
+Return-Path: <maxime.ripard@free-electrons.com>
+Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
+ by lists.ozlabs.org (Postfix) with ESMTP id E1E261A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 20:05:14 +1100 (AEDT)
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+To: dmaengine@vger.kernel.org,
+	Vinod Koul <vinod.koul@intel.com>
+Subject: [PATCH 04/11] dmaengine: fsldma: Remove chancnt affectations
+Date: Thu, 16 Oct 2014 11:00:56 +0200
+Message-Id: <1413450063-23829-5-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1413450063-23829-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1413450063-23829-1-git-send-email-maxime.ripard@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, Zhang Wei <zw@zh-kernel.org>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>,
+ linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+chanctnt is already filled by dma_async_device_register, which uses the channel
+list to know how much channels there is.
 
-Le mardi 14 octobre 2014 à 12:57 +1100, Michael Ellerman a écrit :
-> On Mon, 2014-10-13 at 21:30 +0200, Yann Droneaud wrote:
-> > This patch replaces calls to get_unused_fd() with equivalent call to
-> > get_unused_fd_flags(0) to preserve current behavor for existing code.
-> > 
-> > In a further patch, get_unused_fd() will be removed so that new code
-> > start using get_unused_fd_flags(), with the hope O_CLOEXEC could be
-> > used, either by default or choosen by userspace.
-> > 
-> > Link: http://lkml.kernel.org/r/cover.1413223900.git.ydroneaud@opteya.com
-> > Cc: Al Viro <viro@zeniv.linux.org.uk>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: trivial@kernel.org
-> > Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
-> 
-> This is fine by me, do you want an ack, or do you want us to take it via the
-> powerpc tree?
-> 
+Since it's already filled, we can safely remove it from the drivers' probe
+function.
 
-The patch was added in -mm by Andrew, so I guess the patch will be
-merged sooner or later.
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/dma/fsldma.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Anyway, you could investigate to check if O_CLOEXEC could be used
-instead of 0 in call to get_unused_fd_flags().
-
-> If the former:
-> 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-
-Thanks a lot.
-
-Regards.
-
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index d5d6885ab341..75ae6405a5ee 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1332,7 +1332,6 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 
+ 	/* Add the channel to DMA device channel list */
+ 	list_add_tail(&chan->common.device_node, &fdev->common.channels);
+-	fdev->common.chancnt++;
+ 
+ 	dev_info(fdev->dev, "#%d (%s), irq %d\n", chan->id, compatible,
+ 		 chan->irq != NO_IRQ ? chan->irq : fdev->irq);
 -- 
-Yann Droneaud
-OPTEYA
+2.1.1
