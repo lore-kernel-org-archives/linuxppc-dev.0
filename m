@@ -1,20 +1,26 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
- [IPv6:2607:f8b0:4001:c05::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 695BB1A0244
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 06:30:46 +1100 (AEDT)
-Received: by mail-ig0-f170.google.com with SMTP id hn15so1657573igb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 12:30:44 -0700 (PDT)
-Sender: Dan Streetman <ddstreet@gmail.com>
-From: Dan Streetman <ddstreet@ieee.org>
-To: benh@kernel.crashing.org, Seth Jennings <sjennings@variantweb.net>,
- Robert Jennings <rcj4747@gmail.com>
-Subject: [PATCH] drivers/crypto/nx: prevent oops on module exit
-Date: Thu, 16 Oct 2014 15:30:19 -0400
-Message-Id: <1413487819-6119-1-git-send-email-ddstreet@ieee.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Dan Streetman <ddstreet@ieee.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 982211A028B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 08:39:55 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C64741400B8
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2014 08:39:53 +1100 (AEDT)
+Message-ID: <1413495568.7417.7.camel@aoeu.buserror.net>
+Subject: Re: [PATCH v2] powerpc: Only do dynamic DMA zone limits on
+ platforms that need it
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 16 Oct 2014 23:39:28 +0200
+In-Reply-To: <1413442068-5957-1-git-send-email-mpe@ellerman.id.au>
+References: <1413442068-5957-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check old_devdata->dev in nx-842 driver before accessing it, as
-on systems without any nx-842 hardware, the ->dev will never be
-set.  Currently, the module will cause an oops during unload
-since old_devdata->dev is null.
+On Thu, 2014-10-16 at 17:47 +1100, Michael Ellerman wrote:
+> Scott's patch 1c98025c6c95 "Dynamic DMA zone limits" changed
+> dma_direct_alloc_coherent() to start using dev->coherent_dma_mask.
+> 
+> That seems fair enough, but it exposes the fact that some of the drivers
+> we care about on IBM platforms aren't setting the coherent mask.
+> 
+> The proper fix is to have drivers set the coherent mask and also have
+> the platform code honor it.
+> 
+> For now, just restrict the dynamic DMA zone limits to the platforms that
+> need it.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/dma.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> v2: Use FSL_SOC.
 
-Signed-off-by: Dan Streetman <ddstreet@ieee.org>
----
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-Also Seth and Rob, you guys should change your emails in this
-driver, your IBM emails are still listed.
-
- drivers/crypto/nx/nx-842.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
-index 061407d..809a220 100644
---- a/drivers/crypto/nx/nx-842.c
-+++ b/drivers/crypto/nx/nx-842.c
-@@ -1269,7 +1269,7 @@ static void __exit nx842_exit(void)
- 	RCU_INIT_POINTER(devdata, NULL);
- 	spin_unlock_irqrestore(&devdata_mutex, flags);
- 	synchronize_rcu();
--	if (old_devdata)
-+	if (old_devdata && old_devdata->dev)
- 		dev_set_drvdata(old_devdata->dev, NULL);
- 	kfree(old_devdata);
- 	vio_unregister_driver(&nx842_driver);
--- 
-1.8.3.1
+-Scott
