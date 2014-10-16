@@ -1,17 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
+ [IPv6:2a00:1450:400c:c05::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B77831A0304
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 14:23:02 +1100 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/pci: Fix IO space breakage after
- of_pci_range_to_resource() change
-Date: Thu, 16 Oct 2014 14:22:55 +1100
-Message-Id: <1413429775-716-1-git-send-email-mpe@ellerman.id.au>
-Cc: bhelgaas@google.com, linus.walleij@linaro.org, Liviu.Dudau@arm.com,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 724FA1A0295
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 16:18:17 +1100 (AEDT)
+Received: by mail-wi0-f172.google.com with SMTP id n3so431712wiv.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 22:18:12 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Thu, 16 Oct 2014 07:18:07 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Subject: Re: [GIT PULL 00/15] perf/core improvements and fixes
+Message-ID: <20141016051807.GA14796@gmail.com>
+References: <1413406368-26245-1-git-send-email-acme@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1413406368-26245-1-git-send-email-acme@kernel.org>
+Cc: Mike Galbraith <efault@gmx.de>,
+ Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Stephane Eranian <eranian@google.com>, Masanari Iida <standby24x7@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Namhyung Kim <namhyung.kim@lge.com>, Andi Kleen <ak@linux.intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Cody P Schafer <dev@codyps.com>, Jean Pihet <jean.pihet@linaro.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Arun Sharma <asharma@fb.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Yasser Shalabi <yassershalabi@gmail.com>,
+ Michael Ellerman <michaele@au1.ibm.com>, Kan Liang <kan.liang@intel.com>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ Taeung Song <treeze.taeung@gmail.com>, David Ahern <dsahern@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,52 +43,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 0b0b0893d49b "of/pci: Fix the conversion of IO ranges into IO
-resources" changed the behaviour of of_pci_range_to_resource().
 
-Previously it simply populated the resource based on the arguments. Now
-it calls pci_register_io_range() and pci_address_to_pio(). These both
-have two implementations depending on whether PCI_IOBASE is defined,
-which it is not for powerpc.
+* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
 
-Further complicating matters, both routines are weak, and powerpc
-implements it's own version of one - pci_address_to_pio(). However
-powerpc's implementation depends on other initialisations which are done
-later in boot.
+> Hi Ingo,
+> 
+> 	Please consider pulling, I guess the changes are minor of affect just some
+> non-core feature, so it is you call if you prefer to pull it into perf/urgent instead.
+> 
+> Best Regards,
+> 
+> - Arnaldo
+> 
+> The following changes since commit ec4212d88a77eb6caec10777ddd629b702a5ebbd:
+> 
+>   Merge tag 'perf-core-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2014-10-15 11:54:14 +0200)
+> 
+> are available in the git repository at:
+> 
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo
+> 
+> for you to fetch changes up to 673d659f5c5918b7ddbafebf1f129c9eb82973b4:
+> 
+>   perf kvm stat live: Enable events copying (2014-10-15 17:39:03 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/core improvements and fixes:
+> 
+> User visible:
+> 
+> * Add a visual cue for toggle zeroing of samples in 'perf top' (Taeung Song)
+> 
+> * Fix for double free in 'perf stat' when using some specific invalid
+>   command line combo (Yasser Shalabi)
+> 
+> Infrastructure:
+> 
+> * Add option to copy events when queuing for sorting across cpu buffers
+>   and enable it for 'perf kvm stat live', to avoid having events left
+>   in the queue pointing to the ring buffer be rewritten in high volume
+>   sessions.  (Alexander Yarygin, improving work done by David Ahern):
+> 
+> * Document sysfs events/ interfaces (Cody P Schafer)
+> 
+> * Add support to new style format of kernel PMU event. (Kan Liang)
+> 
+> * Fix typos in perf/Documentation (Masanari Iida)
+> 
+> * Improve callchains when using libunwind (Namhyung Kim)
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+>   Lines starting with '#' will be ignored.
+> 
+> ----------------------------------------------------------------
+> Alexander Yarygin (2):
+>       perf session: Add option to copy events when queueing
+>       perf kvm stat live: Enable events copying
+> 
+> Cody P Schafer (2):
+>       perf Documentation: sysfs events/ interfaces
+>       perf Documentation: Remove Ruplicated docs for powerpc cpu specific events
+> 
+> Kan Liang (4):
+>       Revert "perf tools: Default to cpu// for events v5"
+>       perf tools: Parse the pmu event prefix and suffix
+>       perf tools: Add support to new style format of kernel PMU event
+>       perf test: Add test case for pmu event new style format
+> 
+> Masanari Iida (1):
+>       perf Documentation: Fix typos in perf/Documentation
+> 
+> Namhyung Kim (4):
+>       perf report: Set callchain_param.record_mode for future use
+>       perf callchain: Create an address space per thread
+>       perf kvm: Use thread_{,_set}_priv helpers
+>       perf trace: Use thread_{,_set}_priv helpers
+> 
+> Taeung Song (1):
+>       perf top: Add a visual cue for toggle zeroing of samples
+> 
+> Yasser Shalabi (1):
+>       perf evlist: Fix for double free in tools/perf stat
+> 
+>  .../testing/sysfs-bus-event_source-devices-events  | 611 ++-------------------
+>  tools/perf/Documentation/perf-diff.txt             |   6 +-
+>  tools/perf/Documentation/perf-kvm.txt              |   4 +-
+>  tools/perf/Documentation/perf-list.txt             |   2 +-
+>  tools/perf/Documentation/perf-record.txt           |   2 +-
+>  tools/perf/Documentation/perf-script-perl.txt      |   4 +-
+>  tools/perf/Documentation/perf-script-python.txt    |   6 +-
+>  tools/perf/Documentation/perf-script.txt           |   2 +-
+>  tools/perf/Documentation/perf-test.txt             |   2 +-
+>  tools/perf/Documentation/perf-trace.txt            |   2 +-
+>  tools/perf/builtin-kvm.c                           |   7 +-
+>  tools/perf/builtin-report.c                        |   7 +
+>  tools/perf/builtin-trace.c                         |  16 +-
+>  tools/perf/tests/dwarf-unwind.c                    |   3 +
+>  tools/perf/tests/parse-events.c                    |  36 ++
+>  tools/perf/ui/browsers/hists.c                     |  32 +-
+>  tools/perf/util/evlist.c                           |   1 +
+>  tools/perf/util/include/linux/string.h             |   1 -
+>  tools/perf/util/ordered-events.c                   |  49 +-
+>  tools/perf/util/ordered-events.h                   |  10 +-
+>  tools/perf/util/parse-events.c                     | 133 ++++-
+>  tools/perf/util/parse-events.h                     |  14 +
+>  tools/perf/util/parse-events.l                     |  30 +-
+>  tools/perf/util/parse-events.y                     |  40 ++
+>  tools/perf/util/pmu.c                              |  10 -
+>  tools/perf/util/pmu.h                              |  10 +
+>  tools/perf/util/session.c                          |   5 +-
+>  tools/perf/util/string.c                           |  24 -
+>  tools/perf/util/thread.c                           |   6 +
+>  tools/perf/util/unwind-libunwind.c                 |  37 +-
+>  tools/perf/util/unwind.h                           |  17 +
+>  31 files changed, 460 insertions(+), 669 deletions(-)
 
-The end result is incorrectly initialised IO space. Often we can get
-away with that, because we don't make much use of IO space. However
-virtio requires it, so we see eg:
+Pulled, thanks a lot Arnaldo!
 
-  pci_bus 0000:00: root bus resource [io  0xffff] (bus address [0xffffffffffffffff-0xffffffffffffffff])
-  PCI: Cannot allocate resource region 0 of device 0000:00:01.0, will remap
-  virtio-pci 0000:00:01.0: can't enable device: BAR 0 [io  size 0x0020] not assigned
-
-The simplest fix for now is to just stop using of_pci_range_to_resource(),
-and open-code the original implementation, that's all we want it to do.
-
-Fixes: 0b0b0893d49b ("of/pci: Fix the conversion of IO ranges into IO resources")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/pci-common.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index bd70a51d5747..e5dad9a9edc0 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -747,7 +747,11 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			break;
- 		}
- 		if (res != NULL) {
--			of_pci_range_to_resource(&range, dev, res);
-+			res->name = dev->full_name;
-+			res->flags = range.flags;
-+			res->start = range.cpu_addr;
-+			res->end = range.cpu_addr + range.size - 1;
-+			res->parent = res->child = res->sibling = NULL;
- 		}
- 	}
- }
--- 
-1.9.1
+	Ingo
