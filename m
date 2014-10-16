@@ -1,39 +1,20 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
- [IPv6:2a00:1450:400c:c05::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 724FA1A0295
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 16:18:17 +1100 (AEDT)
-Received: by mail-wi0-f172.google.com with SMTP id n3so431712wiv.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2014 22:18:12 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Thu, 16 Oct 2014 07:18:07 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: Re: [GIT PULL 00/15] perf/core improvements and fixes
-Message-ID: <20141016051807.GA14796@gmail.com>
-References: <1413406368-26245-1-git-send-email-acme@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1413406368-26245-1-git-send-email-acme@kernel.org>
-Cc: Mike Galbraith <efault@gmx.de>,
- Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Stephane Eranian <eranian@google.com>, Masanari Iida <standby24x7@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Namhyung Kim <namhyung.kim@lge.com>, Andi Kleen <ak@linux.intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Cody P Schafer <dev@codyps.com>, Jean Pihet <jean.pihet@linaro.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Arun Sharma <asharma@fb.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Yasser Shalabi <yassershalabi@gmail.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Kan Liang <kan.liang@intel.com>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- Taeung Song <treeze.taeung@gmail.com>, David Ahern <dsahern@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA56C1A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 17:13:50 +1100 (AEDT)
+Message-ID: <1413440004.20705.7.camel@concordia>
+Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 16 Oct 2014 17:13:24 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-NksMaltrWCP8aPwOPI+U"
+Mime-Version: 1.0
+Cc: linus.walleij@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev list <linuxppc-dev@ozlabs.org>, bhelgaas@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,121 +25,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+--=-NksMaltrWCP8aPwOPI+U
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Ingo,
-> 
-> 	Please consider pulling, I guess the changes are minor of affect just some
-> non-core feature, so it is you call if you prefer to pull it into perf/urgent instead.
-> 
-> Best Regards,
-> 
-> - Arnaldo
-> 
-> The following changes since commit ec4212d88a77eb6caec10777ddd629b702a5ebbd:
-> 
->   Merge tag 'perf-core-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2014-10-15 11:54:14 +0200)
-> 
-> are available in the git repository at:
-> 
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo
-> 
-> for you to fetch changes up to 673d659f5c5918b7ddbafebf1f129c9eb82973b4:
-> 
->   perf kvm stat live: Enable events copying (2014-10-15 17:39:03 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements and fixes:
-> 
-> User visible:
-> 
-> * Add a visual cue for toggle zeroing of samples in 'perf top' (Taeung Song)
-> 
-> * Fix for double free in 'perf stat' when using some specific invalid
->   command line combo (Yasser Shalabi)
-> 
-> Infrastructure:
-> 
-> * Add option to copy events when queuing for sorting across cpu buffers
->   and enable it for 'perf kvm stat live', to avoid having events left
->   in the queue pointing to the ring buffer be rewritten in high volume
->   sessions.  (Alexander Yarygin, improving work done by David Ahern):
-> 
-> * Document sysfs events/ interfaces (Cody P Schafer)
-> 
-> * Add support to new style format of kernel PMU event. (Kan Liang)
-> 
-> * Fix typos in perf/Documentation (Masanari Iida)
-> 
-> * Improve callchains when using libunwind (Namhyung Kim)
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
->   Lines starting with '#' will be ignored.
-> 
-> ----------------------------------------------------------------
-> Alexander Yarygin (2):
->       perf session: Add option to copy events when queueing
->       perf kvm stat live: Enable events copying
-> 
-> Cody P Schafer (2):
->       perf Documentation: sysfs events/ interfaces
->       perf Documentation: Remove Ruplicated docs for powerpc cpu specific events
-> 
-> Kan Liang (4):
->       Revert "perf tools: Default to cpu// for events v5"
->       perf tools: Parse the pmu event prefix and suffix
->       perf tools: Add support to new style format of kernel PMU event
->       perf test: Add test case for pmu event new style format
-> 
-> Masanari Iida (1):
->       perf Documentation: Fix typos in perf/Documentation
-> 
-> Namhyung Kim (4):
->       perf report: Set callchain_param.record_mode for future use
->       perf callchain: Create an address space per thread
->       perf kvm: Use thread_{,_set}_priv helpers
->       perf trace: Use thread_{,_set}_priv helpers
-> 
-> Taeung Song (1):
->       perf top: Add a visual cue for toggle zeroing of samples
-> 
-> Yasser Shalabi (1):
->       perf evlist: Fix for double free in tools/perf stat
-> 
->  .../testing/sysfs-bus-event_source-devices-events  | 611 ++-------------------
->  tools/perf/Documentation/perf-diff.txt             |   6 +-
->  tools/perf/Documentation/perf-kvm.txt              |   4 +-
->  tools/perf/Documentation/perf-list.txt             |   2 +-
->  tools/perf/Documentation/perf-record.txt           |   2 +-
->  tools/perf/Documentation/perf-script-perl.txt      |   4 +-
->  tools/perf/Documentation/perf-script-python.txt    |   6 +-
->  tools/perf/Documentation/perf-script.txt           |   2 +-
->  tools/perf/Documentation/perf-test.txt             |   2 +-
->  tools/perf/Documentation/perf-trace.txt            |   2 +-
->  tools/perf/builtin-kvm.c                           |   7 +-
->  tools/perf/builtin-report.c                        |   7 +
->  tools/perf/builtin-trace.c                         |  16 +-
->  tools/perf/tests/dwarf-unwind.c                    |   3 +
->  tools/perf/tests/parse-events.c                    |  36 ++
->  tools/perf/ui/browsers/hists.c                     |  32 +-
->  tools/perf/util/evlist.c                           |   1 +
->  tools/perf/util/include/linux/string.h             |   1 -
->  tools/perf/util/ordered-events.c                   |  49 +-
->  tools/perf/util/ordered-events.h                   |  10 +-
->  tools/perf/util/parse-events.c                     | 133 ++++-
->  tools/perf/util/parse-events.h                     |  14 +
->  tools/perf/util/parse-events.l                     |  30 +-
->  tools/perf/util/parse-events.y                     |  40 ++
->  tools/perf/util/pmu.c                              |  10 -
->  tools/perf/util/pmu.h                              |  10 +
->  tools/perf/util/session.c                          |   5 +-
->  tools/perf/util/string.c                           |  24 -
->  tools/perf/util/thread.c                           |   6 +
->  tools/perf/util/unwind-libunwind.c                 |  37 +-
->  tools/perf/util/unwind.h                           |  17 +
->  31 files changed, 460 insertions(+), 669 deletions(-)
+Hi Linus,
 
-Pulled, thanks a lot Arnaldo!
+There was a bit of a misunderstanding between us and the ARM guys in the de=
+vice
+tree PCI code, which is breaking virtio on powerpc. This is the minimal fix
+until we can sort it out properly.
 
-	Ingo
+cheers
+
+
+The following changes since commit 0429fbc0bdc297d64188483ba029a23773ae07b0=
+:
+
+  Merge branch 'for-3.18-consistent-ops' of git://git.kernel.org/pub/scm/li=
+nux/kernel/git/tj/percpu (2014-10-15 07:48:18 +0200)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
+
+for you to fetch changes up to aeba3731b150188685225b510886f1370d8814de:
+
+  powerpc/pci: Fix IO space breakage after of_pci_range_to_resource() chang=
+e (2014-10-16 14:19:07 +1100)
+
+----------------------------------------------------------------
+Michael Ellerman (1):
+      powerpc/pci: Fix IO space breakage after of_pci_range_to_resource() c=
+hange
+
+ arch/powerpc/kernel/pci-common.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+
+
+
+
+
+--=-NksMaltrWCP8aPwOPI+U
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAABAgAGBQJUP2IdAAoJEFHr6jzI4aWARvEP/jGscqO0rkyONPO1EOxVBjoE
+ft+a7qcUHDCM1CQxYGk6MP4CThbomCvmDfGCBma8nYy6BpxYYEDHLts8X1tZ7gqL
+Q+OSS5zI1UyLlZjFs0kT6eGGT/9Gxf9r5Fp+nGX5sHcUYyvUWn75KwDguojxx1pZ
+c5I5PfjLea3DTAZKqMqVHw2WaYYiFAxt/AwvbjAEufzsrN0QdCNCOcpmi0XCNZjZ
+kZpXElA9AJ7wJKsIpGeEPayMaDPd0V4S7zi0NvKuvAnr1ZTXfbtk9to49XYvXdXb
+H7uKj2VsksbPmGhgS+VTllySSubKao5AYtJZ+K/4PUNnkWlz/oiZSNGExoTCnVIr
+6lk+m/fUszC2Ill9WfCsYfTGumXyIw4PxBc1jdf30mNTQC4H2Us+sMAskxqOOEZV
+qxkA8djXU5aYkZdPJy349w7qNAu0dJRO/V/YdolHl7ux0HXtWRHpKqsy7IT5HKu3
+DrrkKj4jxCTAort8+ui+kiDhL6Qs/uY5Rw1JTSpeTGgf1zdb44QvJ4Z8TVUtRR6f
+xdrJ2e0aJjPlTHiHuQB4ubL8i2n/WNSUJGtinnN2OJoVVTdPnrE79NavFofZVw5q
+C+mrD0qeTegt1dfBFZyEJSmeBNZ381Nwffws0MPNAPyDF0nHad+aykTXibsrPp7G
+i4ssU5j5qAQ7pO2qK5Ll
+=K7Wa
+-----END PGP SIGNATURE-----
+
+--=-NksMaltrWCP8aPwOPI+U--
