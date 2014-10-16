@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c02::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 462D41A034C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 09:52:44 +1100 (AEDT)
-Message-ID: <1413499949.4567.3.camel@pasglop>
-Subject: Re: [PATCH] drivers/crypto/nx: prevent oops on module exit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 17 Oct 2014 09:52:29 +1100
-In-Reply-To: <1413499435.28062.2.camel@concordia>
-References: <1413487819-6119-1-git-send-email-ddstreet@ieee.org>
- <1413499435.28062.2.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Seth Jennings <sjennings@variantweb.net>,
- Dan Streetman <ddstreet@ieee.org>, Robert Jennings <rcj4747@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2F6F1A02A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 09:56:01 +1100 (AEDT)
+Received: by mail-pd0-f175.google.com with SMTP id v10so4054632pde.20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2014 15:55:59 -0700 (PDT)
+Date: Fri, 17 Oct 2014 06:55:52 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] clk: ppc-corenet: don't use platform_driver to init
+ the clock device
+Message-ID: <20141016225552.GC9593@pek-khao-d1.corp.ad.wrs.com>
+References: <1413458321-23880-1-git-send-email-haokexin@gmail.com>
+ <1413458321-23880-3-git-send-email-haokexin@gmail.com>
+ <1413496523.7417.12.camel@aoeu.buserror.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="s9fJI615cBHmzTOP"
+In-Reply-To: <1413496523.7417.12.camel@aoeu.buserror.net>
+Cc: Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Mike Turquette <mturquette@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-10-17 at 09:43 +1100, Michael Ellerman wrote:
-> On Thu, 2014-10-16 at 15:30 -0400, Dan Streetman wrote:
-> > Check old_devdata->dev in nx-842 driver before accessing it, as
-> > on systems without any nx-842 hardware, the ->dev will never be
-> > set.  Currently, the module will cause an oops during unload
-> > since old_devdata->dev is null.
-> 
-> Hi Dan,
-> 
-> Patch looks reasonable. But I can't merge it, at least not without an ACK:
-> 
-> $ ./scripts/get_maintainer.pl -f drivers/crypto/nx/
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> (supporter:IBM Power 842 com...)
-> Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com> (supporter:IBM Power in-Nest...)
-> Fionnuala Gunter <fin@linux.vnet.ibm.com> (supporter:IBM Power in-Nest...)
-> Herbert Xu <herbert@gondor.apana.org.au> (maintainer:CRYPTO API)
-> "David S. Miller" <davem@davemloft.net> (maintainer:CRYPTO API)
-> linux-crypto@vger.kernel.org (open list:IBM Power in-Nest...)
-> linux-kernel@vger.kernel.org (open list)
-> 
-> 
-> If any of the above is out of date please send me a patch for MAINTAINERS.
 
-I think Dan now owns that driver, Dan, please confirm.
+--s9fJI615cBHmzTOP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Thu, Oct 16, 2014 at 11:55:23PM +0200, Scott Wood wrote:
+> On Thu, 2014-10-16 at 19:18 +0800, Kevin Hao wrote:
+> > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/power=
+pc/platforms/85xx/corenet_generic.c
+> > index e56b89a792ed..7677cfecb787 100644
+> > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > @@ -16,6 +16,7 @@
+> >  #include <linux/kdev_t.h>
+> >  #include <linux/delay.h>
+> >  #include <linux/interrupt.h>
+> > +#include <linux/clk-provider.h>
+> > =20
+> >  #include <asm/time.h>
+> >  #include <asm/machdep.h>
+> > @@ -188,11 +189,17 @@ static int __init corenet_generic_probe(void)
+> >  	return 0;
+> >  }
+> > =20
+> > +static void __init corenet_gen_init(void)
+> > +{
+> > +	of_clk_init(NULL);
+> > +}
+>=20
+> Why is this board-specific?
+
+I have thought about to put it in a more common place such as time_init(),
+but this will be in conflict with mpc512x board. How about add an
+arch_initcall(mpc85xx_clk_init) in arch/powerpc/platforms/85xx/common.c?
+
+Thanks,
+Kevin
+
+--s9fJI615cBHmzTOP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUQEz4AAoJEJNY7TDerrFx6sIIALugMQ/0w/FxEdD+FtbbN4V+
+EfHgtbOHN5k80uxK5GvFlrjqixbuQx2cOzbOvM7gnFaYn+3sWciQmoNok/joIboW
+4VV7wLW5NA11Y/5cmtHu94Fcg63rFzoQCelTtYBmfvoElj21vZyDus7tUAaAbSv5
+WC81eV4pZKdCjH8t4NHQ8/RFD0W9KWEz+EF3fuxr01Ujig+0JppxVHOzzI3MXNJ4
+peXTRHIWDXsTtWoI7KXSisADA6ECZiLoyrkK9XZff55zvxp5/HqDQ3oniqgiG/XZ
+LDQUS9Uh0dc3OfN6xxGrwBTJCqQBLQpbP3zUHyfKVy4DQkc1MZMI9/E20CEqXRk=
+=hR3R
+-----END PGP SIGNATURE-----
+
+--s9fJI615cBHmzTOP--
