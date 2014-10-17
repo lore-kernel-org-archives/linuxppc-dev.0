@@ -1,39 +1,21 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 968DE1A02BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:43:08 +1100 (AEDT)
-Message-ID: <5440C84E.6050408@huawei.com>
-Date: Fri, 17 Oct 2014 15:42:06 +0800
-From: Yijing Wang <wangyijing@huawei.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 21/27] Powerpc/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>	
- <1413342435-7876-22-git-send-email-wangyijing@huawei.com>
- <1413530600.21650.5.camel@concordia>
-In-Reply-To: <1413530600.21650.5.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
- Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D38E61A0312
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:54:08 +1100 (AEDT)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Subject: Re: [PATCH 3/3] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1411613237-2271-2-git-send-email-B45475@freescale.com>
+Date: Fri, 17 Oct 2014 09:53:55 +0200
+Message-Id: <57D1E2E0-077A-4CBE-8534-5B9EE5C81BAE@kernel.crashing.org>
+References: <1411613237-2271-1-git-send-email-B45475@freescale.com>
+ <1411613237-2271-2-git-send-email-B45475@freescale.com>
+To: Zhao Qiang <B45475@freescale.com>
+Cc: B07421@freescale.com, R63061@freescale.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,41 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/10/17 15:23, Michael Ellerman wrote:
-> On Wed, 2014-10-15 at 11:07 +0800, Yijing Wang wrote:
->> Use MSI chip framework instead of arch MSI functions to configure
->> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
->>
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->> ---
->> Hi Michael,
->>    I dropped the Acked-by , because this version has a
->> lot changes compared to last. So, I guess you may want to check it again.
-> 
-> OK thanks.
-> 
-> Still looks OK and boots on one of my test systems that uses MSI.
 
-Good!
+On Sep 25, 2014, at 4:47 AM, Zhao Qiang <B45475@freescale.com> wrote:
 
-> 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+> qe need to use the rheap, so move it to public directory.
+>=20
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+> arch/powerpc/Kconfig                                    | 3 ---
+> arch/powerpc/include/asm/fsl_85xx_cache_sram.h          | 2 +-
+> arch/powerpc/lib/Makefile                               | 2 --
+> arch/powerpc/platforms/44x/Kconfig                      | 2 +-
+> arch/powerpc/platforms/85xx/Kconfig                     | 2 +-
+> arch/powerpc/platforms/Kconfig                          | 2 +-
+> arch/powerpc/platforms/Kconfig.cputype                  | 2 +-
+> arch/powerpc/sysdev/cpm1.c                              | 2 +-
+> arch/powerpc/sysdev/cpm2.c                              | 2 +-
+> arch/powerpc/sysdev/cpm_common.c                        | 2 +-
+> arch/powerpc/sysdev/ppc4xx_ocm.c                        | 2 +-
+> drivers/dma/bestcomm/Kconfig                            | 2 +-
+> drivers/soc/qe/Kconfig                                  | 2 +-
+> drivers/soc/qe/qe.c                                     | 2 +-
+> drivers/soc/qe/qe_common.c                              | 2 +-
+> drivers/video/Kconfig                                   | 2 +-
+> include/linux/fsl/bestcomm/sram.h                       | 2 +-
+> {arch/powerpc/include/asm =3D> include/linux/fsl}/rheap.h | 0
+> lib/Kconfig                                             | 3 +++
+> lib/Makefile                                            | 2 ++
+> {arch/powerpc/lib =3D> lib}/rheap.c                       | 2 +-
+> 21 files changed, 21 insertions(+), 21 deletions(-)
+> rename {arch/powerpc/include/asm =3D> include/linux/fsl}/rheap.h =
+(100%)
+> rename {arch/powerpc/lib =3D> lib}/rheap.c (99%)
 
-Thanks very much!
+Have you guys looked at moving to lib/genalloc.c.  If we are going to =
+keep rheap around the include should be just in include/linux/rheap.h =
+not include/linux/fsl/rheap.h
 
-Thanks!
-Yijing.
+However, I think genalloc should be used and kill off rheap usage.
 
-> 
-> 
-> cheers
-> 
-> 
-> 
-> .
-> 
-
-
--- 
-Thanks!
-Yijing
+- k=
