@@ -1,25 +1,25 @@
-Return-Path: <steve.capper@linaro.org>
-Received: from mail-wg0-f41.google.com (mail-wg0-f41.google.com [74.125.82.41])
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
+ [IPv6:2a00:1450:400c:c05::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1EE71A02BC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 01:10:20 +1100 (AEDT)
-Received: by mail-wg0-f41.google.com with SMTP id b13so1019370wgh.24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 07:10:16 -0700 (PDT)
-Date: Fri, 17 Oct 2014 15:10:10 +0100
-From: Steve Capper <steve.capper@linaro.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
- hugepage directory
-Message-ID: <20141017141009.GA24167@linaro.org>
-References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 60F561A02B6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 09:05:27 +1100 (AEDT)
+Received: by mail-wi0-f176.google.com with SMTP id hi2so3121732wib.15
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 15:05:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, will.deacon@arm.com, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, catalin.marinas@arm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Sender: ddstreet@gmail.com
+In-Reply-To: <1413499949.4567.3.camel@pasglop>
+References: <1413487819-6119-1-git-send-email-ddstreet@ieee.org>
+ <1413499435.28062.2.camel@concordia> <1413499949.4567.3.camel@pasglop>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Fri, 17 Oct 2014 18:05:01 -0400
+Message-ID: <CALZtONAvDZWqz5tcE3wV6baC1fEa-27+4jDoEN+iWwvsL7c-NA@mail.gmail.com>
+Subject: Re: [PATCH] drivers/crypto/nx: prevent oops on module exit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, nfont@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Seth Jennings <sjennings@variantweb.net>,
+ Robert Jennings <rcj4747@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,297 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2014 at 10:08:06AM +0530, Aneesh Kumar K.V wrote:
-> Update generic gup implementation with powerpc specific details.
-> On powerpc at pmd level we can have hugepte, normal pmd pointer
-> or a pointer to the hugepage directory.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> Changes from V1: 
-> * Folded arm/arm64 related changes into the patch
-> * Dropped pgd_huge from generic header
-> 
->  arch/arm/include/asm/pgtable.h   |   2 +
->  arch/arm64/include/asm/pgtable.h |   2 +
->  include/linux/mm.h               |  26 +++++++++
->  mm/gup.c                         | 113 +++++++++++++++++++--------------------
->  4 files changed, 84 insertions(+), 59 deletions(-)
-> 
+Yep, I own the driver now, I'll send a maintainers patch.
 
-Hi Aneesh,
-Thanks for coding this up. I've tested this for arm (Arndale board) and
-arm64 (Juno); it builds without any issues and passes my futex on THP
-tail test.
 
-Please add my:
-Tested-by: Steve Capper <steve.capper@linaro.org>
-
-As this patch progresses through -mm, the arm maintainer:
-Russell King <linux@arm.linux.org.uk>
-
-and arm64 maintainers:
-Catalin Marinas <catalin.marinas@arm.com>
-Will Deacon <will.deacon@arm.com>
-
-should also be on CC.
-
-Cheers,
--- 
-Steve
-
-> diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
-> index 90aa4583b308..46f81fbaa4a5 100644
-> --- a/arch/arm/include/asm/pgtable.h
-> +++ b/arch/arm/include/asm/pgtable.h
-> @@ -181,6 +181,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
->  /* to find an entry in a kernel page-table-directory */
->  #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
->  
-> +#define pgd_huge(pgd)		(0)
-> +
->  #define pmd_none(pmd)		(!pmd_val(pmd))
->  #define pmd_present(pmd)	(pmd_val(pmd))
->  
-> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-> index cefd3e825612..ed8f42497ac4 100644
-> --- a/arch/arm64/include/asm/pgtable.h
-> +++ b/arch/arm64/include/asm/pgtable.h
-> @@ -464,6 +464,8 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
->  extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
->  extern pgd_t idmap_pg_dir[PTRS_PER_PGD];
->  
-> +#define pgd_huge(pgd)		(0)
-> +
->  /*
->   * Encode and decode a swap entry:
->   *	bits 0-1:	present (must be zero)
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 02d11ee7f19d..f97732412cb4 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1219,6 +1219,32 @@ long get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
->  		    struct vm_area_struct **vmas);
->  int get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  			struct page **pages);
-> +
-> +#ifdef CONFIG_HAVE_GENERIC_RCU_GUP
-> +#ifndef is_hugepd
-> +/*
-> + * Some architectures support hugepage directory format that is
-> + * required to support different hugetlbfs sizes.
-> + */
-> +typedef struct { unsigned long pd; } hugepd_t;
-> +#define is_hugepd(hugepd) (0)
-> +#define __hugepd(x) ((hugepd_t) { (x) })
-> +static inline int gup_hugepd(hugepd_t hugepd, unsigned long addr,
-> +			     unsigned pdshift, unsigned long end,
-> +			     int write, struct page **pages, int *nr)
-> +{
-> +	return 0;
-> +}
-> +#else
-> +extern int gup_hugepd(hugepd_t hugepd, unsigned long addr,
-> +		      unsigned pdshift, unsigned long end,
-> +		      int write, struct page **pages, int *nr);
-> +#endif
-> +extern int gup_huge_pte(pte_t orig, pte_t *ptep, unsigned long addr,
-> +			unsigned long sz, unsigned long end, int write,
-> +			struct page **pages, int *nr);
-> +#endif
-> +
->  struct kvec;
->  int get_kernel_pages(const struct kvec *iov, int nr_pages, int write,
->  			struct page **pages);
-> diff --git a/mm/gup.c b/mm/gup.c
-> index cd62c8c90d4a..13c560ef9ddf 100644
-> --- a/mm/gup.c
-> +++ b/mm/gup.c
-> @@ -786,65 +786,31 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
->  }
->  #endif /* __HAVE_ARCH_PTE_SPECIAL */
->  
-> -static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
-> -		unsigned long end, int write, struct page **pages, int *nr)
-> +int gup_huge_pte(pte_t orig, pte_t *ptep, unsigned long addr,
-> +		 unsigned long sz, unsigned long end, int write,
-> +		 struct page **pages, int *nr)
->  {
-> -	struct page *head, *page, *tail;
->  	int refs;
-> +	unsigned long pte_end;
-> +	struct page *head, *page, *tail;
->  
-> -	if (write && !pmd_write(orig))
-> -		return 0;
-> -
-> -	refs = 0;
-> -	head = pmd_page(orig);
-> -	page = head + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-> -	tail = page;
-> -	do {
-> -		VM_BUG_ON_PAGE(compound_head(page) != head, page);
-> -		pages[*nr] = page;
-> -		(*nr)++;
-> -		page++;
-> -		refs++;
-> -	} while (addr += PAGE_SIZE, addr != end);
->  
-> -	if (!page_cache_add_speculative(head, refs)) {
-> -		*nr -= refs;
-> +	if (write && !pte_write(orig))
->  		return 0;
-> -	}
->  
-> -	if (unlikely(pmd_val(orig) != pmd_val(*pmdp))) {
-> -		*nr -= refs;
-> -		while (refs--)
-> -			put_page(head);
-> +	if (!pte_present(orig))
->  		return 0;
-> -	}
->  
-> -	/*
-> -	 * Any tail pages need their mapcount reference taken before we
-> -	 * return. (This allows the THP code to bump their ref count when
-> -	 * they are split into base pages).
-> -	 */
-> -	while (refs--) {
-> -		if (PageTail(tail))
-> -			get_huge_page_tail(tail);
-> -		tail++;
-> -	}
-> -
-> -	return 1;
-> -}
-> -
-> -static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
-> -		unsigned long end, int write, struct page **pages, int *nr)
-> -{
-> -	struct page *head, *page, *tail;
-> -	int refs;
-> +	pte_end = (addr + sz) & ~(sz-1);
-> +	if (pte_end < end)
-> +		end = pte_end;
->  
-> -	if (write && !pud_write(orig))
-> -		return 0;
-> +	/* hugepages are never "special" */
-> +	VM_BUG_ON(!pfn_valid(pte_pfn(orig)));
->  
->  	refs = 0;
-> -	head = pud_page(orig);
-> -	page = head + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
-> +	head = pte_page(orig);
-> +	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
->  	tail = page;
->  	do {
->  		VM_BUG_ON_PAGE(compound_head(page) != head, page);
-> @@ -859,13 +825,18 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
->  		return 0;
->  	}
->  
-> -	if (unlikely(pud_val(orig) != pud_val(*pudp))) {
-> +	if (unlikely(pte_val(orig) != pte_val(*ptep))) {
->  		*nr -= refs;
->  		while (refs--)
->  			put_page(head);
->  		return 0;
->  	}
->  
-> +	/*
-> +	 * Any tail pages need their mapcount reference taken before we
-> +	 * return. (This allows the THP code to bump their ref count when
-> +	 * they are split into base pages).
-> +	 */
->  	while (refs--) {
->  		if (PageTail(tail))
->  			get_huge_page_tail(tail);
-> @@ -898,10 +869,19 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
->  			if (pmd_numa(pmd))
->  				return 0;
->  
-> -			if (!gup_huge_pmd(pmd, pmdp, addr, next, write,
-> -				pages, nr))
-> +			if (!gup_huge_pte(__pte(pmd_val(pmd)), (pte_t *)pmdp,
-> +					  addr, PMD_SIZE, next,
-> +					  write, pages, nr))
->  				return 0;
->  
-> +		} else if (unlikely(is_hugepd(__hugepd(pmd_val(pmd))))) {
-> +			/*
-> +			 * architecture have different format for hugetlbfs
-> +			 * pmd format and THP pmd format
-> +			 */
-> +			if (!gup_hugepd(__hugepd(pmd_val(pmd)), addr, PMD_SHIFT,
-> +					next, write, pages, nr))
-> +				return 0;
->  		} else if (!gup_pte_range(pmd, addr, next, write, pages, nr))
->  				return 0;
->  	} while (pmdp++, addr = next, addr != end);
-> @@ -909,22 +889,27 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
->  	return 1;
->  }
->  
-> -static int gup_pud_range(pgd_t *pgdp, unsigned long addr, unsigned long end,
-> +static int gup_pud_range(pgd_t pgd, unsigned long addr, unsigned long end,
->  		int write, struct page **pages, int *nr)
->  {
->  	unsigned long next;
->  	pud_t *pudp;
->  
-> -	pudp = pud_offset(pgdp, addr);
-> +	pudp = pud_offset(&pgd, addr);
->  	do {
->  		pud_t pud = ACCESS_ONCE(*pudp);
->  
->  		next = pud_addr_end(addr, end);
->  		if (pud_none(pud))
->  			return 0;
-> -		if (pud_huge(pud)) {
-> -			if (!gup_huge_pud(pud, pudp, addr, next, write,
-> -					pages, nr))
-> +		if (unlikely(pud_huge(pud))) {
-> +			if (!gup_huge_pte(__pte(pud_val(pud)), (pte_t *)pudp,
-> +					  addr, PUD_SIZE, next,
-> +					  write, pages, nr))
-> +				return 0;
-> +		} else if (unlikely(is_hugepd(__hugepd(pud_val(pud))))) {
-> +			if (!gup_hugepd(__hugepd(pud_val(pud)), addr, PUD_SHIFT,
-> +					next, write, pages, nr))
->  				return 0;
->  		} else if (!gup_pmd_range(pud, addr, next, write, pages, nr))
->  			return 0;
-> @@ -970,10 +955,21 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  	local_irq_save(flags);
->  	pgdp = pgd_offset(mm, addr);
->  	do {
-> +		pgd_t pgd = ACCESS_ONCE(*pgdp);
-> +
->  		next = pgd_addr_end(addr, end);
-> -		if (pgd_none(*pgdp))
-> +		if (pgd_none(pgd))
->  			break;
-> -		else if (!gup_pud_range(pgdp, addr, next, write, pages, &nr))
-> +		if (unlikely(pgd_huge(pgd))) {
-> +			if (!gup_huge_pte(__pte(pgd_val(pgd)), (pte_t *)pgdp,
-> +					  addr, PGDIR_SIZE, next,
-> +					  write, pages, &nr))
-> +				break;
-> +		} else if (unlikely(is_hugepd(__hugepd(pgd_val(pgd))))) {
-> +			if (!gup_hugepd(__hugepd(pgd_val(pgd)), addr, PGDIR_SHIFT,
-> +					next, write, pages, &nr))
-> +				break;
-> +		} else if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
->  			break;
->  	} while (pgdp++, addr = next, addr != end);
->  	local_irq_restore(flags);
-> @@ -1028,5 +1024,4 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  
->  	return ret;
->  }
-> -
->  #endif /* CONFIG_HAVE_GENERIC_RCU_GUP */
-> -- 
-> 1.9.1
-> 
+On Thu, Oct 16, 2014 at 6:52 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2014-10-17 at 09:43 +1100, Michael Ellerman wrote:
+>> On Thu, 2014-10-16 at 15:30 -0400, Dan Streetman wrote:
+>> > Check old_devdata->dev in nx-842 driver before accessing it, as
+>> > on systems without any nx-842 hardware, the ->dev will never be
+>> > set.  Currently, the module will cause an oops during unload
+>> > since old_devdata->dev is null.
+>>
+>> Hi Dan,
+>>
+>> Patch looks reasonable. But I can't merge it, at least not without an ACK:
+>>
+>> $ ./scripts/get_maintainer.pl -f drivers/crypto/nx/
+>> Nathan Fontenot <nfont@linux.vnet.ibm.com> (supporter:IBM Power 842 com...)
+>> Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com> (supporter:IBM Power in-Nest...)
+>> Fionnuala Gunter <fin@linux.vnet.ibm.com> (supporter:IBM Power in-Nest...)
+>> Herbert Xu <herbert@gondor.apana.org.au> (maintainer:CRYPTO API)
+>> "David S. Miller" <davem@davemloft.net> (maintainer:CRYPTO API)
+>> linux-crypto@vger.kernel.org (open list:IBM Power in-Nest...)
+>> linux-kernel@vger.kernel.org (open list)
+>>
+>>
+>> If any of the above is out of date please send me a patch for MAINTAINERS.
+>
+> I think Dan now owns that driver, Dan, please confirm.
+>
+> Cheers,
+> Ben.
+>
+>
