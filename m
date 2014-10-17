@@ -1,25 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFE4B1A1781
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 15:01:23 +1100 (AEDT)
-Message-ID: <1413518464.7417.23.camel@aoeu.buserror.net>
-Subject: Re: [PATCH 1/3] qe-uart: modify qe-uart to adapt both powerpc and arm
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Date: Fri, 17 Oct 2014 06:01:04 +0200
-In-Reply-To: <CAOZdJXUvqzex6oFTEoFRAXUCMfYHZ4GzSESQOvhx_9-vCC_C3Q@mail.gmail.com>
-References: <1412923663-4374-1-git-send-email-B45475@freescale.com>
- <1412964307.13320.603.camel@snotra.buserror.net>
- <CAOZdJXUvqzex6oFTEoFRAXUCMfYHZ4GzSESQOvhx_9-vCC_C3Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Scott Wood <B07421@freescale.com>, Zhao Qiang <B45475@freescale.com>,
- linux-serial@vger.kernel.org, R63061@freescale.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D9111A02A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 15:38:22 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 17 Oct 2014 10:08:19 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CCBC43940045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 10:08:16 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9H4cls15112252
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 10:08:47 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9H4cEwp000615
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 10:08:15 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, Steve Capper <steve.capper@linaro.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au
+Subject: [PATCH V2 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+Date: Fri, 17 Oct 2014 10:08:06 +0530
+Message-Id: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,77 +40,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-10-13 at 11:30 -0500, Timur Tabi wrote:
-> On Fri, Oct 10, 2014 at 1:05 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > There are many changes in here that ought to be separate patches with
-> > separate justification.
-> >
-> > Also, some of the QE changes seem to be reasonable cleanup, but not
-> > related to making the code work on ARM.
-> 
-> I agree with Scott.  This patch already makes significant code
-> changes, so you should have one patch that just makes the
-> out_be32->iowrite32be changes.  Changes to the QE library should NOT
-> be in the same patch as changes to ucc_uart.c.
-> 
-> In addition, changes like this:
-> 
-> -       iprop = of_get_property(np, "port-number", NULL);
-> -       if (!iprop) {
-> +       ret = of_property_read_u32_index(np, "port-number", 0, &val);
-> +       if (ret) {
-> 
-> should be changed to remove the OF dependency.  If you're going to
-> replace of_get_property, replace it with device_property_read_u32(),
-> to remove the OF dependency.
-> 
-> >> diff --git a/arch/arm/include/asm/delay.h b/arch/arm/include/asm/delay.h
-> >> index dff714d..a932f99 100644
-> >> --- a/arch/arm/include/asm/delay.h
-> >> +++ b/arch/arm/include/asm/delay.h
-> >> @@ -57,6 +57,22 @@ extern void __bad_udelay(void);
-> >>                       __const_udelay((n) * UDELAY_MULT)) :            \
-> >>         __udelay(n))
-> >>
-> >> +#define spin_event_timeout(condition, timeout, delay)                          \
-> >> +({                                                                             \
-> >> +     typeof(condition) __ret;                                               \
-> >> +     int i = 0;                                                             \
-> >> +     while (!(__ret = (condition)) && (i++ < timeout)) {                    \
-> >> +             if (delay)                                                     \
-> >> +                     udelay(delay);                                         \
-> >> +             else                                                           \
-> >> +                     cpu_relax();                                           \
-> >> +             udelay(1);                                                     \
-> >> +     }                                                                      \
-> >
-> > This will delay too long if "delay" is used.
-> 
-> Shouldn't ARM have a version of tb_ticks_since() by now?
+Update generic gup implementation with powerpc specific details.
+On powerpc at pmd level we can have hugepte, normal pmd pointer
+or a pointer to the hugepage directory.
 
-There's get_cycles(), but it's not clear to me whether loops_per_jiffy
-is OK to use with get_cycles() on 32-bit ARM.  Is avoiding the udelay
-worth making this non-generic?
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+Changes from V1: 
+* Folded arm/arm64 related changes into the patch
+* Dropped pgd_huge from generic header
 
-> 
-> >> +     if (!__ret)                                                            \
-> >> +             __ret = (condition);                                           \
-> >> +     __ret;                                                                 \
-> >
-> > Timur, do you remember why that final "if (!__ret) __ret = (condition);"
-> > is needed?
-> 
->     powerpc: Fix spin_event_timeout() to be robust over context switches
-> 
->     Current implementation of spin_event_timeout can be interrupted by an
->     IRQ or context switch after testing the condition, but before checking
->     the timeout.  This can cause the loop to report a timeout when the
->     condition actually became true in the middle.
-> 
->     This patch adds one final check of the condition upon exit of the loop
->     if the last test of the condition was still false.
+ arch/arm/include/asm/pgtable.h   |   2 +
+ arch/arm64/include/asm/pgtable.h |   2 +
+ include/linux/mm.h               |  26 +++++++++
+ mm/gup.c                         | 113 +++++++++++++++++++--------------------
+ 4 files changed, 84 insertions(+), 59 deletions(-)
 
-OK, so this shouldn't be needed in the udelay version, since an
-interrupt shouldn't cause a significant difference in the timeout count.
-
--Scott
+diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
+index 90aa4583b308..46f81fbaa4a5 100644
+--- a/arch/arm/include/asm/pgtable.h
++++ b/arch/arm/include/asm/pgtable.h
+@@ -181,6 +181,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+ /* to find an entry in a kernel page-table-directory */
+ #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
+ 
++#define pgd_huge(pgd)		(0)
++
+ #define pmd_none(pmd)		(!pmd_val(pmd))
+ #define pmd_present(pmd)	(pmd_val(pmd))
+ 
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index cefd3e825612..ed8f42497ac4 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -464,6 +464,8 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
+ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+ extern pgd_t idmap_pg_dir[PTRS_PER_PGD];
+ 
++#define pgd_huge(pgd)		(0)
++
+ /*
+  * Encode and decode a swap entry:
+  *	bits 0-1:	present (must be zero)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 02d11ee7f19d..f97732412cb4 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1219,6 +1219,32 @@ long get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 		    struct vm_area_struct **vmas);
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
++
++#ifdef CONFIG_HAVE_GENERIC_RCU_GUP
++#ifndef is_hugepd
++/*
++ * Some architectures support hugepage directory format that is
++ * required to support different hugetlbfs sizes.
++ */
++typedef struct { unsigned long pd; } hugepd_t;
++#define is_hugepd(hugepd) (0)
++#define __hugepd(x) ((hugepd_t) { (x) })
++static inline int gup_hugepd(hugepd_t hugepd, unsigned long addr,
++			     unsigned pdshift, unsigned long end,
++			     int write, struct page **pages, int *nr)
++{
++	return 0;
++}
++#else
++extern int gup_hugepd(hugepd_t hugepd, unsigned long addr,
++		      unsigned pdshift, unsigned long end,
++		      int write, struct page **pages, int *nr);
++#endif
++extern int gup_huge_pte(pte_t orig, pte_t *ptep, unsigned long addr,
++			unsigned long sz, unsigned long end, int write,
++			struct page **pages, int *nr);
++#endif
++
+ struct kvec;
+ int get_kernel_pages(const struct kvec *iov, int nr_pages, int write,
+ 			struct page **pages);
+diff --git a/mm/gup.c b/mm/gup.c
+index cd62c8c90d4a..13c560ef9ddf 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -786,65 +786,31 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+ }
+ #endif /* __HAVE_ARCH_PTE_SPECIAL */
+ 
+-static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
++int gup_huge_pte(pte_t orig, pte_t *ptep, unsigned long addr,
++		 unsigned long sz, unsigned long end, int write,
++		 struct page **pages, int *nr)
+ {
+-	struct page *head, *page, *tail;
+ 	int refs;
++	unsigned long pte_end;
++	struct page *head, *page, *tail;
+ 
+-	if (write && !pmd_write(orig))
+-		return 0;
+-
+-	refs = 0;
+-	head = pmd_page(orig);
+-	page = head + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+-	tail = page;
+-	do {
+-		VM_BUG_ON_PAGE(compound_head(page) != head, page);
+-		pages[*nr] = page;
+-		(*nr)++;
+-		page++;
+-		refs++;
+-	} while (addr += PAGE_SIZE, addr != end);
+ 
+-	if (!page_cache_add_speculative(head, refs)) {
+-		*nr -= refs;
++	if (write && !pte_write(orig))
+ 		return 0;
+-	}
+ 
+-	if (unlikely(pmd_val(orig) != pmd_val(*pmdp))) {
+-		*nr -= refs;
+-		while (refs--)
+-			put_page(head);
++	if (!pte_present(orig))
+ 		return 0;
+-	}
+ 
+-	/*
+-	 * Any tail pages need their mapcount reference taken before we
+-	 * return. (This allows the THP code to bump their ref count when
+-	 * they are split into base pages).
+-	 */
+-	while (refs--) {
+-		if (PageTail(tail))
+-			get_huge_page_tail(tail);
+-		tail++;
+-	}
+-
+-	return 1;
+-}
+-
+-static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
+-{
+-	struct page *head, *page, *tail;
+-	int refs;
++	pte_end = (addr + sz) & ~(sz-1);
++	if (pte_end < end)
++		end = pte_end;
+ 
+-	if (write && !pud_write(orig))
+-		return 0;
++	/* hugepages are never "special" */
++	VM_BUG_ON(!pfn_valid(pte_pfn(orig)));
+ 
+ 	refs = 0;
+-	head = pud_page(orig);
+-	page = head + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
++	head = pte_page(orig);
++	page = head + ((addr & (sz-1)) >> PAGE_SHIFT);
+ 	tail = page;
+ 	do {
+ 		VM_BUG_ON_PAGE(compound_head(page) != head, page);
+@@ -859,13 +825,18 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+ 		return 0;
+ 	}
+ 
+-	if (unlikely(pud_val(orig) != pud_val(*pudp))) {
++	if (unlikely(pte_val(orig) != pte_val(*ptep))) {
+ 		*nr -= refs;
+ 		while (refs--)
+ 			put_page(head);
+ 		return 0;
+ 	}
+ 
++	/*
++	 * Any tail pages need their mapcount reference taken before we
++	 * return. (This allows the THP code to bump their ref count when
++	 * they are split into base pages).
++	 */
+ 	while (refs--) {
+ 		if (PageTail(tail))
+ 			get_huge_page_tail(tail);
+@@ -898,10 +869,19 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 			if (pmd_numa(pmd))
+ 				return 0;
+ 
+-			if (!gup_huge_pmd(pmd, pmdp, addr, next, write,
+-				pages, nr))
++			if (!gup_huge_pte(__pte(pmd_val(pmd)), (pte_t *)pmdp,
++					  addr, PMD_SIZE, next,
++					  write, pages, nr))
+ 				return 0;
+ 
++		} else if (unlikely(is_hugepd(__hugepd(pmd_val(pmd))))) {
++			/*
++			 * architecture have different format for hugetlbfs
++			 * pmd format and THP pmd format
++			 */
++			if (!gup_hugepd(__hugepd(pmd_val(pmd)), addr, PMD_SHIFT,
++					next, write, pages, nr))
++				return 0;
+ 		} else if (!gup_pte_range(pmd, addr, next, write, pages, nr))
+ 				return 0;
+ 	} while (pmdp++, addr = next, addr != end);
+@@ -909,22 +889,27 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 	return 1;
+ }
+ 
+-static int gup_pud_range(pgd_t *pgdp, unsigned long addr, unsigned long end,
++static int gup_pud_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ 		int write, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pud_t *pudp;
+ 
+-	pudp = pud_offset(pgdp, addr);
++	pudp = pud_offset(&pgd, addr);
+ 	do {
+ 		pud_t pud = ACCESS_ONCE(*pudp);
+ 
+ 		next = pud_addr_end(addr, end);
+ 		if (pud_none(pud))
+ 			return 0;
+-		if (pud_huge(pud)) {
+-			if (!gup_huge_pud(pud, pudp, addr, next, write,
+-					pages, nr))
++		if (unlikely(pud_huge(pud))) {
++			if (!gup_huge_pte(__pte(pud_val(pud)), (pte_t *)pudp,
++					  addr, PUD_SIZE, next,
++					  write, pages, nr))
++				return 0;
++		} else if (unlikely(is_hugepd(__hugepd(pud_val(pud))))) {
++			if (!gup_hugepd(__hugepd(pud_val(pud)), addr, PUD_SHIFT,
++					next, write, pages, nr))
+ 				return 0;
+ 		} else if (!gup_pmd_range(pud, addr, next, write, pages, nr))
+ 			return 0;
+@@ -970,10 +955,21 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	local_irq_save(flags);
+ 	pgdp = pgd_offset(mm, addr);
+ 	do {
++		pgd_t pgd = ACCESS_ONCE(*pgdp);
++
+ 		next = pgd_addr_end(addr, end);
+-		if (pgd_none(*pgdp))
++		if (pgd_none(pgd))
+ 			break;
+-		else if (!gup_pud_range(pgdp, addr, next, write, pages, &nr))
++		if (unlikely(pgd_huge(pgd))) {
++			if (!gup_huge_pte(__pte(pgd_val(pgd)), (pte_t *)pgdp,
++					  addr, PGDIR_SIZE, next,
++					  write, pages, &nr))
++				break;
++		} else if (unlikely(is_hugepd(__hugepd(pgd_val(pgd))))) {
++			if (!gup_hugepd(__hugepd(pgd_val(pgd)), addr, PGDIR_SHIFT,
++					next, write, pages, &nr))
++				break;
++		} else if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
+ 			break;
+ 	} while (pgdp++, addr = next, addr != end);
+ 	local_irq_restore(flags);
+@@ -1028,5 +1024,4 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	return ret;
+ }
+-
+ #endif /* CONFIG_HAVE_GENERIC_RCU_GUP */
+-- 
+1.9.1
