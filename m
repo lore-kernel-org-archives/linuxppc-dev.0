@@ -1,39 +1,27 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <xuelin.shi@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 596371A02AA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 12:05:35 +1100 (AEDT)
-Message-ID: <54406B06.4020401@huawei.com>
-Date: Fri, 17 Oct 2014 09:04:06 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 380421A02B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 13:47:27 +1100 (AEDT)
+From: Xuelin Shi <xuelin.shi@freescale.com>
+To: Dan Williams <dan.j.williams@intel.com>, "Koul, Vinod"
+ <vinod.koul@intel.com>
+Subject: RE: [PATCH v3] dmaengine: driver support for FSL RaidEngine device.
+Date: Fri, 17 Oct 2014 02:13:20 +0000
+Message-ID: <4cd56c90d1e44249bd2d417005183ec7@BL2PR03MB147.namprd03.prod.outlook.com>
+References: <1397202086-22489-1-git-send-email-xuelin.shi@freescale.com>
+ <CAA9_cme=Bo3tYi0-bNXBRNLZnC-4FZyaSYZ=3iRD_5xfiVX5Mw@mail.gmail.com>
+ <0c8d1963a25648f8a8f820bbc55afe4f@BL2PR03MB147.namprd03.prod.outlook.com>
+ <CAPcyv4go1ghjD7fiEzwPJmcjRMBv7p0t7Sm9Ki=1Hu-0GKqoCQ@mail.gmail.com>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 22/27] s390/MSI: Use MSI chip framework to configure
- MSI/MSI-X irq
-References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
- <1413342435-7876-23-git-send-email-wangyijing@huawei.com>
- <alpine.LFD.2.11.1410161411340.1575@denkbrett>
-In-Reply-To: <alpine.LFD.2.11.1410161411340.1575@denkbrett>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, Ralf
- Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org, David
- Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Lucas Stach <l.stach@pengutronix.de>
+Cc: "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Harninder Rai <harninder.rai@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "andriy.shevchenko@intel.com" <andriy.shevchenko@intel.com>,
+ Naveen Burmi <NaveenBurmi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,114 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/10/16 20:13, Sebastian Ott wrote:
-> On Wed, 15 Oct 2014, Yijing Wang wrote:
->> Use MSI chip framework instead of arch MSI functions to configure
->> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
->>
->> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->> ---
->> Hi Sebastian,
->>    I dropped the Acked-by , because this version has a
->> lot changes compared to last. So, I guess you may want to check it again.
-> 
-> I did and I agree with that one too.
-
-Thanks very much!
-
-Thanks!
-Yijing.
-
-> 
-> Regards,
-> Sebastian
-> 
->> ---
->>  arch/s390/include/asm/pci.h |    9 +++++++++
->>  arch/s390/pci/pci.c         |   12 ++++++++++--
->>  2 files changed, 19 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
->> index c030900..4d41f08 100644
->> --- a/arch/s390/include/asm/pci.h
->> +++ b/arch/s390/include/asm/pci.h
->> @@ -88,6 +88,8 @@ struct zpci_dev {
->>  	u32 uid;			/* user defined id */
->>  	u8 util_str[CLP_UTIL_STR_LEN];	/* utility string */
->>
->> +	struct msi_chip *msi_chip;
->> +
->>  	/* IRQ stuff */
->>  	u64		msi_addr;	/* MSI address */
->>  	struct airq_iv *aibv;		/* adapter interrupt bit vector */
->> @@ -121,6 +123,13 @@ struct zpci_dev {
->>  	struct dentry	*debugfs_perf;
->>  };
->>
->> +static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
->> +{
->> +	struct zpci_dev *zpci = bus->sysdata;
->> +
->> +	return zpci->msi_chip;
->> +}
->> +
->>  static inline bool zdev_enabled(struct zpci_dev *zdev)
->>  {
->>  	return (zdev->fh & (1UL << 31)) ? true : false;
->> diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
->> index 552b990..bf6732f 100644
->> --- a/arch/s390/pci/pci.c
->> +++ b/arch/s390/pci/pci.c
->> @@ -358,7 +358,8 @@ static void zpci_irq_handler(struct airq_struct *airq)
->>  	}
->>  }
->>
->> -int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
->> +static int zpci_setup_msi_irqs(struct msi_chip *chip,
->> +		struct pci_dev *pdev, int nvec, int type)
->>  {
->>  	struct zpci_dev *zdev = get_zdev(pdev);
->>  	unsigned int hwirq, msi_vecs;
->> @@ -434,7 +435,8 @@ out:
->>  	return rc;
->>  }
->>
->> -void arch_teardown_msi_irqs(struct pci_dev *pdev)
->> +static void zpci_teardown_msi_irqs(struct msi_chip *chip,
->> +		struct pci_dev *pdev)
->>  {
->>  	struct zpci_dev *zdev = get_zdev(pdev);
->>  	struct msi_desc *msi;
->> @@ -464,6 +466,11 @@ void arch_teardown_msi_irqs(struct pci_dev *pdev)
->>  	airq_iv_free_bit(zpci_aisb_iv, zdev->aisb);
->>  }
->>
->> +static struct msi_chip zpci_msi_chip = {
->> +	.setup_irqs = zpci_setup_msi_irqs,
->> +	.teardown_irqs = zpci_teardown_msi_irqs,
->> +};
->> +
->>  static void zpci_map_resources(struct zpci_dev *zdev)
->>  {
->>  	struct pci_dev *pdev = zdev->pdev;
->> @@ -749,6 +756,7 @@ static int zpci_scan_bus(struct zpci_dev *zdev)
->>  	if (ret)
->>  		return ret;
->>
->> +	zdev->msi_chip = &zpci_msi_chip;
->>  	zdev->bus = pci_scan_root_bus(NULL, ZPCI_BUS_NR, &pci_root_ops,
->>  				      zdev, &resources);
->>  	if (!zdev->bus) {
->> -- 
->> 1.7.1
->>
->>
-> 
-> 
-> .
-> 
-
-
--- 
-Thanks!
-Yijing
+SGkgRGFuICYgVmlub2QsDQoNCkkgaGF2ZSBzZW50IG91dCB0aGUgdjQgb2YgdGhpcyBwYXRjaCBh
+bmQgbm90IHJlY2VpdmVkIGFueSBmdXJ0aGVyIGZlZWRiYWNrIHlldC4NCg0KVGhpcyBwYXRjaCBs
+b29rcyBydWxlZCBvdXQgZnJvbSB0aGUgcGF0Y2h3b3JrLiBodHRwczovL3BhdGNod29yay5rZXJu
+ZWwub3JnL3Byb2plY3QvbGludXgtZG1hZW5naW5lL2xpc3QvP3BhZ2U9Mg0KDQpTbyBkbyB5b3Ug
+a25vdyB3aGF0IGhhcHBlbmVkIHRvIHRoaXMgcGF0Y2g/DQoNClRoYW5rcywNClh1ZWxpbiBTaGkN
+Cg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogU2hpIFh1ZWxpbi1CMjkyMzcg
+DQpTZW50OiAyMDE0xOo01MIxNcjVIDExOjA4DQpUbzogJ0RhbiBXaWxsaWFtcycNCkNjOiBLb3Vs
+LCBWaW5vZDsgYW5kcml5LnNoZXZjaGVua29AaW50ZWwuY29tOyBkbWFlbmdpbmVAdmdlci5rZXJu
+ZWwub3JnOyBsaW51eHBwYy1kZXY7IFJhaSBIYXJuaW5kZXItQjAxMDQ0OyBCdXJtaSBOYXZlZW4t
+QjE2NTAyDQpTdWJqZWN0OiBSRTogW1BBVENIIHYzXSBkbWFlbmdpbmU6IGRyaXZlciBzdXBwb3J0
+IGZvciBGU0wgUmFpZEVuZ2luZSBkZXZpY2UuDQoNClllcywgImRlcGVuZCBvbiAhQVNZTkNfVFhf
+Q0hBTk5FTF9TV0lUQ0giIGlzIGJldHRlciBzaW5jZSBmc2xkbWEgc2VsZWN0cyB0aGlzIGNvbmRp
+dGlvbi4NCg0KVGhhbmtzLA0KWHVlbGluIFNoaQ0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KRnJvbTogRGFuIFdpbGxpYW1zIFttYWlsdG86ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tXQ0K
+U2VudDogMjAxNMTqNNTCMTXI1SA4OjMwDQpUbzogU2hpIFh1ZWxpbi1CMjkyMzcNCkNjOiBLb3Vs
+LCBWaW5vZDsgYW5kcml5LnNoZXZjaGVua29AaW50ZWwuY29tOyBkbWFlbmdpbmVAdmdlci5rZXJu
+ZWwub3JnOyBsaW51eHBwYy1kZXY7IFJhaSBIYXJuaW5kZXItQjAxMDQ0OyBCdXJtaSBOYXZlZW4t
+QjE2NTAyDQpTdWJqZWN0OiBSZTogW1BBVENIIHYzXSBkbWFlbmdpbmU6IGRyaXZlciBzdXBwb3J0
+IGZvciBGU0wgUmFpZEVuZ2luZSBkZXZpY2UuDQoNCk9uIFN1biwgQXByIDEzLCAyMDE0IGF0IDc6
+NDggUE0sIFh1ZWxpbiBTaGkgPHh1ZWxpbi5zaGlAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+IEhp
+IERhbiwNCj4NCj4gZnNsIGRtYSBkZXZpY2UgYW5kIGZzbCByYWlkIGRldmljZSBhcmUgdHdvIGRp
+ZmZlcmVuY3QgZGV2aWNlcyB0aGF0IA0KPiBib3RoIHByb3ZpZGUgYXN5bmNfbWVtY3B5IGNhcGFi
+aWxpdHksIHNvIEkgdXNlICFGU0xfRE1BIHRvIGRpc2FibGUgdGhlIGZzbCBkbWEgZGV2aWNlLg0K
+Pg0KPiBUaGF0J3MgdG8gc2F5LCBlaXRoZXIgc2VsZWN0IGZzbGRtYSBkZXZpY2UsIGVpdGhlciBm
+c2wgcmFpZCBkZXZpY2UuDQo+DQoNClJpZ2h0LCBidXQgdGhhdCdzIG5vdCB3aGF0IHlvdXIgcHJv
+cG9zZWQgS2NvbmZpZyBkZXBlbmRlbmN5IGxpbmUgZG9lcy4NCg0KWW91IHdhbnQgc29tZXRoaW5n
+IGxpa2UgImRlcGVuZHMgb24gRlNMX1NPQyAmJiAhKEZTTF9ETUEgfHwgRlNMX0RNQT1tKSINCg0K
+SG93ZXZlciwgdGhlIG1vcmUgcHJvYmxlbWF0aWMgb3B0aW9uIGlzIEFTWU5DX1RYX0NIQU5ORUxf
+U1dJVENILiAgVGhhdCBvcHRpb24gaXMgcHJvYmxlbWF0aWMgZm9yIFJBSUQsIHNvIEkgcHJvcG9z
+ZSAiZGVwZW5kIG9uICFBU1lOQ19UWF9DSEFOTkVMX1NXSVRDSCIgc2luY2UgdGhhdCBhZGRyZXNz
+ZXMgYm90aCBwcm9ibGVtcy4NCg0KDQo=
