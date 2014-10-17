@@ -1,21 +1,19 @@
-Return-Path: <sjennings@variantweb.net>
-Received: from relay.variantweb.net (unknown [104.131.199.242])
- by lists.ozlabs.org (Postfix) with ESMTP id A43F91A0337
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 19:09:56 +1100 (AEDT)
-Message-ID: <c5208e76ca917ccb0ca7c5fd5953cf21.squirrel@www.variantweb.net>
-In-Reply-To: <f05dbb0844d1f0431532a186b56034f3.squirrel@www.variantweb.net>
-References: <1413487819-6119-1-git-send-email-ddstreet@ieee.org>
- <1413499435.28062.2.camel@concordia> <1413499949.4567.3.camel@pasglop>
- <f05dbb0844d1f0431532a186b56034f3.squirrel@www.variantweb.net>
-Date: Fri, 17 Oct 2014 08:02:17 -0000
-Subject: Re: [PATCH] drivers/crypto/nx: prevent oops on module exit
-From: "Seth Jennings" <sjennings@variantweb.net>
-To: sjennings@variantweb.net
-Reply-To: sjennings@variantweb.net
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: Robert Jennings <rcj4747@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Streetman <ddstreet@ieee.org>
+Return-Path: <prvs=03676dbd9c=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 117731A0382
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 20:33:07 +1100 (AEDT)
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
+To: Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>,
+ Linux device trees <devicetree@vger.kernel.org>,
+ Linux I2C <linux-i2c@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
+Date: Fri, 17 Oct 2014 11:27:06 +0200
+Message-Id: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
+Cc: Rainer Boschung <rainer.boschung@keymile.com>,
+ Valentin Longchamp <valentin.longchamp@keymile.com>,
+ Holger Brunck <holger.brunck@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> On Fri, 2014-10-17 at 09:43 +1100, Michael Ellerman wrote:
->>> On Thu, 2014-10-16 at 15:30 -0400, Dan Streetman wrote:
->>> > Check old_devdata->dev in nx-842 driver before accessing it, as
->>> > on systems without any nx-842 hardware, the ->dev will never be
->>> > set.  Currently, the module will cause an oops during unload
->>> > since old_devdata->dev is null.
->>>
->>> Hi Dan,
->>>
->>> Patch looks reasonable. But I can't merge it, at least not without an
->>> ACK:
->>>
->>> $ ./scripts/get_maintainer.pl -f drivers/crypto/nx/
->>> Nathan Fontenot <nfont@linux.vnet.ibm.com> (supporter:IBM Power 842
->>> com...)
->>> Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com> (supporter:IBM
->>> Power
->>> in-Nest...)
->>> Fionnuala Gunter <fin@linux.vnet.ibm.com> (supporter:IBM Power
->>> in-Nest...)
->>> Herbert Xu <herbert@gondor.apana.org.au> (maintainer:CRYPTO API)
->>> "David S. Miller" <davem@davemloft.net> (maintainer:CRYPTO API)
->>> linux-crypto@vger.kernel.org (open list:IBM Power in-Nest...)
->>> linux-kernel@vger.kernel.org (open list)
->>>
->>>
->>> If any of the above is out of date please send me a patch for
->>> MAINTAINERS.
->>
->> I think Dan now owns that driver, Dan, please confirm.
->
-> I guess I'm not on the maintainer list anymore, as I shouldn't be
-> since I don't work at IBM anymore.
+With "fsl-i2c" compatibility the i2c frequency is not set
+correctly, because it sets no prescaler. According to the AN2919 from
+Freescale and the QorIQ (P2041) documentation, the source clock is 1/2
+the platform clock. This implies that a prescaler of 2 must be used.
 
-Wow, I messed that up.  Repeating myself :-/  Sorry for the noise.
+This changes the compatibility of the qoriq-i2c .dtsi files to pick the
+mpc8543, which uses the same driver but sets the correct prescaler.
 
-Seth
+Signed-off-by: Rainer Boschung <rainer.boschung@keymile.com>
+Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+---
 
->
-> So... yeah.  I was the original co-author of driver so I acked it
-> but I'm not the maintainer anymore.  Which I shouldn't be, since
-> I don't work at IBM anymore.
->
-> Seth
->
->>
->> Cheers,
->> Ben.
->>
->>
->>
->
->
+ arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi | 4 ++--
+ arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
+index 5f9bf7d..aa6c366 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
+@@ -36,7 +36,7 @@ i2c@118000 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 	cell-index = <0>;
+-	compatible = "fsl-i2c";
++	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
+ 	reg = <0x118000 0x100>;
+ 	interrupts = <38 2 0 0>;
+ 	dfsrr;
+@@ -46,7 +46,7 @@ i2c@118100 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 	cell-index = <1>;
+-	compatible = "fsl-i2c";
++	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
+ 	reg = <0x118100 0x100>;
+ 	interrupts = <38 2 0 0>;
+ 	dfsrr;
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi
+index 7989bf5..b697a3b 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi
+@@ -36,7 +36,7 @@ i2c@119000 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 	cell-index = <2>;
+-	compatible = "fsl-i2c";
++	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
+ 	reg = <0x119000 0x100>;
+ 	interrupts = <39 2 0 0>;
+ 	dfsrr;
+@@ -46,7 +46,7 @@ i2c@119100 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 	cell-index = <3>;
+-	compatible = "fsl-i2c";
++	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
+ 	reg = <0x119100 0x100>;
+ 	interrupts = <39 2 0 0>;
+ 	dfsrr;
+-- 
+1.8.0.1
