@@ -1,25 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 121001A032B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 16:59:23 +1100 (AEDT)
-Message-ID: <1413525535.7417.27.camel@aoeu.buserror.net>
-Subject: Re: [PATCH 2/2] clk: ppc-corenet: don't use platform_driver to init
- the clock device
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Fri, 17 Oct 2014 07:58:55 +0200
-In-Reply-To: <20141016225552.GC9593@pek-khao-d1.corp.ad.wrs.com>
-References: <1413458321-23880-1-git-send-email-haokexin@gmail.com>
- <1413458321-23880-3-git-send-email-haokexin@gmail.com>
- <1413496523.7417.12.camel@aoeu.buserror.net>
- <20141016225552.GC9593@pek-khao-d1.corp.ad.wrs.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 60A9B1A0345
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:23:23 +1100 (AEDT)
+Message-ID: <1413530600.21650.5.camel@concordia>
+Subject: Re: [PATCH v3 21/27] Powerpc/MSI: Use MSI chip framework to
+ configure MSI/MSI-X irq
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Yijing Wang <wangyijing@huawei.com>
+Date: Fri, 17 Oct 2014 18:23:20 +1100
+In-Reply-To: <1413342435-7876-22-git-send-email-wangyijing@huawei.com>
+References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
+ <1413342435-7876-22-git-send-email-wangyijing@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Gerhard Sittig <gsi@denx.de>, Jingchang Lu <jingchang.lu@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
+ Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
+ x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
+ Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, David Vrabel <david.vrabel@citrix.com>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +42,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-10-17 at 06:55 +0800, Kevin Hao wrote:
-> On Thu, Oct 16, 2014 at 11:55:23PM +0200, Scott Wood wrote:
-> > On Thu, 2014-10-16 at 19:18 +0800, Kevin Hao wrote:
-> > > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > index e56b89a792ed..7677cfecb787 100644
-> > > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > @@ -16,6 +16,7 @@
-> > >  #include <linux/kdev_t.h>
-> > >  #include <linux/delay.h>
-> > >  #include <linux/interrupt.h>
-> > > +#include <linux/clk-provider.h>
-> > >  
-> > >  #include <asm/time.h>
-> > >  #include <asm/machdep.h>
-> > > @@ -188,11 +189,17 @@ static int __init corenet_generic_probe(void)
-> > >  	return 0;
-> > >  }
-> > >  
-> > > +static void __init corenet_gen_init(void)
-> > > +{
-> > > +	of_clk_init(NULL);
-> > > +}
-> > 
-> > Why is this board-specific?
+On Wed, 2014-10-15 at 11:07 +0800, Yijing Wang wrote:
+> Use MSI chip framework instead of arch MSI functions to configure
+> MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 > 
-> I have thought about to put it in a more common place such as time_init(),
-> but this will be in conflict with mpc512x board. How about add an
-> arch_initcall(mpc85xx_clk_init) in arch/powerpc/platforms/85xx/common.c?
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+> ---
+> Hi Michael,
+>    I dropped the Acked-by , because this version has a
+> lot changes compared to last. So, I guess you may want to check it again.
 
-Gerhard, does 512x really require of_clk_init() to be called at that
-specific time, or can it be replaced by a common of_clk_init()?
+OK thanks.
 
--Scott
+Still looks OK and boots on one of my test systems that uses MSI.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (for powerpc)
+
+
+cheers
