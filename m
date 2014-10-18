@@ -1,37 +1,37 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 458751A039E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 11:01:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 11EE41A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 11:49:54 +1100 (AEDT)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 17 Oct 2014 18:01:07 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3822E3E4003D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:01:05 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9I0133r43516138
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 02:01:04 +0200
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9I0136d002636
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:01:03 -0600
-Message-ID: <5441ADBA.1070800@linux.vnet.ibm.com>
-Date: Fri, 17 Oct 2014 19:00:58 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 17 Oct 2014 18:49:52 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A805A19D803D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:38:33 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9I0no0m50266178
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Oct 2014 02:49:50 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9I0nnx8030768
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2014 18:49:50 -0600
+Date: Fri, 17 Oct 2014 17:49:44 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/numa: use cached value of update->cpu in
+ update_cpu_topology
+Message-ID: <20141018004944.GA3969@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Dan Streetman <ddstreet@ieee.org>, Michael Ellerman <mpe@ellerman.id.au>,
- benh@kernel.crashing.org
-Subject: Re: [PATCH] MAINTAINERS: nx-842 driver maintainer change
-References: <1413587999-12684-1-git-send-email-ddstreet@ieee.org>
-In-Reply-To: <1413587999-12684-1-git-send-email-ddstreet@ieee.org>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Li Zhong <zhong@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Wang <wangyun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ jstancek@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/2014 06:19 PM, Dan Streetman wrote:
-> Change maintainer of nx-842 compression coprocessor driver
-> to Dan Streetman.
-> 
-> Signed-off-by: Dan Streetman <ddstreet@ieee.org>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+There isn't any need to keep referring to update->cpu, as we've already
+checked cpu == update->cpu at this point.
 
-Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-> ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index b0f17d5..3cc3e41 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4605,7 +4605,7 @@ S:	Supported
->  F:	drivers/crypto/nx/
-> 
->  IBM Power 842 compression accelerator
-> -M:	Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> +M:	Dan Streetman <ddstreet@us.ibm.com>
->  S:	Supported
->  F:	drivers/crypto/nx/nx-842.c
->  F:	include/linux/nx842.h
-> 
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 649666d5d1c2..86fdb004ad2f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1491,8 +1491,8 @@ static int update_cpu_topology(void *data)
+ 		if (cpu != update->cpu)
+ 			continue;
+ 
+-		unmap_cpu_from_node(update->cpu);
+-		map_cpu_to_node(update->cpu, update->new_nid);
++		unmap_cpu_from_node(cpu);
++		map_cpu_to_node(cpu, update->new_nid);
+ 		vdso_getcpu_init();
+ 	}
+ 
