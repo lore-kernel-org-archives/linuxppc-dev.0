@@ -1,30 +1,29 @@
 Return-Path: <Yuantian.Tang@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 783231A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 14:53:09 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AFDC1A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 17:10:25 +1100 (AEDT)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 627D9140085
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2014 14:53:07 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 88DAE140088
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2014 17:10:23 +1100 (AEDT)
 From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: RE: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
  platforms
-Date: Mon, 20 Oct 2014 02:20:12 +0000
-Message-ID: <8b12e15ad9634583b6985aea5e5fa077@DM2PR03MB574.namprd03.prod.outlook.com>
+Date: Mon, 20 Oct 2014 06:10:18 +0000
+Message-ID: <77a038b0dba1456e903de284cb9d213d@DM2PR03MB574.namprd03.prod.outlook.com>
 References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
- <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
-In-Reply-To: <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+ <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
+In-Reply-To: <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,418 +34,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for your comments.  Will address them in next version.
-Also some explanations inline for your comments.
-
-Thanks,
-Yuantian
-
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, October 17, 2014 4:04 PM
-> To: Tang Yuantian-B29983
-> Cc: rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-kernel@vger.kernel.=
-org;
-> linux-pm@vger.kernel.org; linuxppc-dev@ozlabs.org; Tang Yuantian-B29983
-> Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
-> platforms
->=20
->=20
-> On Oct 17, 2014, at 5:13 AM, b29983@freescale.com wrote:
->=20
-> > From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> >
-> > Freescale introduced new ARM core-based SoCs which support dynamic
-> > frequency switch feature. DFS on new SoCs are compatible with current
-> > PowerPC CoreNet platforms. In order to support those new platforms,
-> > this driver needs to be slightly adjusted. The main changes include:
-> >
-> > 1. Changed the names of driver and functions in driver.
->=20
-> split the name changes/renaming into a separate patch from the other chan=
-ges.
->=20
-> > 2. Added two new functions get_cpu_physical_id() and get_bus_freq().
-> > 3. Used a new way to get all the CPUs which sharing clock wire.
-> >
-> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > ---
-> > drivers/cpufreq/Kconfig.arm                        |   8 ++
-> > drivers/cpufreq/Kconfig.powerpc                    |  11 +-
-> > drivers/cpufreq/Makefile                           |   2 +-
-> > .../{ppc-corenet-cpufreq.c =3D> qoriq-cpufreq.c}     | 150 ++++++++++++=
-++-------
-> > 4 files changed, 114 insertions(+), 57 deletions(-) rename
-> > drivers/cpufreq/{ppc-corenet-cpufreq.c =3D> qoriq-cpufreq.c} (72%)
-> >
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index 83a75dc..1925ae94 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -247,3 +247,11 @@ config ARM_TEGRA_CPUFREQ
-> > 	default y
-> > 	help
-> > 	  This adds the CPUFreq driver support for TEGRA SOCs.
-> > +
-> > +config QORIQ_CPUFREQ
-> > +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> > +	depends on OF && COMMON_CLK
-> > +	select CLK_PPC_CORENET
->=20
-> Why are you not also renaming 'CLK_PPC_CORENET' to 'CLK_QORIQ' or
-> something like that?  Seems rather odd to select a PPC CLK support on ARM=
- ;)
->=20
-Yes, someone else is working on that.
-
-> > +	help
-> > +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> > +	  which are capable of changing the CPU's frequency dynamically.
-> > diff --git a/drivers/cpufreq/Kconfig.powerpc
-> > b/drivers/cpufreq/Kconfig.powerpc index 72564b7..3a34248 100644
-> > --- a/drivers/cpufreq/Kconfig.powerpc
-> > +++ b/drivers/cpufreq/Kconfig.powerpc
-> > @@ -23,14 +23,13 @@ config CPU_FREQ_MAPLE
-> > 	  This adds support for frequency switching on Maple 970FX
-> > 	  Evaluation Board and compatible boards (IBM JS2x blades).
-> >
-> > -config PPC_CORENET_CPUFREQ
-> > -	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-> > -	depends on PPC_E500MC && OF && COMMON_CLK
-> > +config QORIQ_CPUFREQ
-> > +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> > +	depends on OF && COMMON_CLK
-> > 	select CLK_PPC_CORENET
-> > 	help
-> > -	  This adds the CPUFreq driver support for Freescale e500mc,
-> > -	  e5500 and e6500 series SoCs which are capable of changing
-> > -	  the CPU's frequency dynamically.
-> > +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> > +	  which are capable of changing the CPU's frequency dynamically.
-> >
-> > config CPU_FREQ_PMAC
-> > 	bool "Support for Apple PowerBooks"
-> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile index
-> > 40c53dc..0020049 100644
-> > --- a/drivers/cpufreq/Makefile
-> > +++ b/drivers/cpufreq/Makefile
-> > @@ -84,7 +84,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+=3D
-> ppc-cbe-cpufreq.o
-> > ppc-cbe-cpufreq-y			+=3D ppc_cbe_cpufreq_pervasive.o
-> ppc_cbe_cpufreq.o
-> > obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+=3D ppc_cbe_cpufreq_pmi.o
-> > obj-$(CONFIG_CPU_FREQ_MAPLE)		+=3D maple-cpufreq.o
-> > -obj-$(CONFIG_PPC_CORENET_CPUFREQ)   +=3D ppc-corenet-cpufreq.o
-> > +obj-$(CONFIG_QORIQ_CPUFREQ)   		+=3D qoriq-cpufreq.o
-> > obj-$(CONFIG_CPU_FREQ_PMAC)		+=3D pmac32-cpufreq.o
-> > obj-$(CONFIG_CPU_FREQ_PMAC64)		+=3D pmac64-cpufreq.o
-> > obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+=3D pasemi-cpufreq.o
-> > diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> > b/drivers/cpufreq/qoriq-cpufreq.c similarity index 72% rename from
-> > drivers/cpufreq/ppc-corenet-cpufreq.c
-> > rename to drivers/cpufreq/qoriq-cpufreq.c index bee5df7..80def0c
-> > 100644
-> > --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> > +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> > @@ -1,7 +1,7 @@
-> > /*
-> >  * Copyright 2013 Freescale Semiconductor, Inc.
-> >  *
-> > - * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
-> > + * CPU Frequency Scaling driver for Freescale QorIQ SoCs.
-> >  *
-> >  * This program is free software; you can redistribute it and/or
-> > modify
-> >  * it under the terms of the GNU General Public License version 2 as
-> > @@ -20,7 +20,6 @@ #include <linux/of.h> #include <linux/slab.h>
-> > #include <linux/smp.h> -#include <sysdev/fsl_soc.h>
-> >
-> > /**
-> >  * struct cpu_data - per CPU data struct @@ -69,9 +68,6 @@ static
-> > const u32 *fmask;
-> >
-> > static DEFINE_PER_CPU(struct cpu_data *, cpu_data);
-> >
-> > -/* cpumask in a cluster */
-> > -static DEFINE_PER_CPU(cpumask_var_t, cpu_mask);
-> > -
-> > #ifndef CONFIG_SMP
-> > static inline const struct cpumask *cpu_core_mask(int cpu) { @@ -79,6
-> > +75,79 @@ static inline const struct cpumask *cpu_core_mask(int cpu) }
-> > #endif
-> >
-> > +#if defined(CONFIG_PPC_E500MC)
->=20
-> Probably should just be CONFIG_PPC, but do we need this at all.  Can't we=
- just
-> use topology_core_id() on both ARM & PPC?
->=20
-I will investigate if topology_core_id() works for PPC.
-
-Regards,
-Yuantian
-
-> > +static int get_cpu_physical_id(int cpu) {
-> > +	return get_hard_smp_processor_id(cpu); } #elif defined(CONFIG_ARM)
-> > +static int get_cpu_physical_id(int cpu) {
-> > +	return topology_core_id(cpu);
-> > +}
-> > +#endif
-> > +
-> > +static u32 get_bus_freq(void)
-> > +{
-> > +	struct device_node *soc;
-> > +	u32 sysfreq;
-> > +
-> > +	soc =3D of_find_node_by_type(NULL, "soc");
-> > +	if (!soc)
-> > +		return 0;
-> > +
-> > +	if (of_property_read_u32(soc, "bus-frequency", &sysfreq))
-> > +		sysfreq =3D 0;
-> > +
-> > +	of_node_put(soc);
-> > +
-> > +	return sysfreq;
-> > +}
-> > +
-> > +static struct device_node *cpu_to_clk_node(int cpu) {
-> > +	struct device_node *np, *clk_np;
-> > +
-> > +	if (!cpu_present(cpu))
-> > +		return NULL;
-> > +
-> > +	np =3D of_get_cpu_node(cpu, NULL);
-> > +	if (!np)
-> > +		return NULL;
-> > +
-> > +	clk_np =3D of_parse_phandle(np, "clocks", 0);
-> > +	if (!clk_np)
-> > +		return NULL;
-> > +
-> > +	of_node_put(np);
-> > +
-> > +	return clk_np;
-> > +}
-> > +
-> > +/* traverse cpu nodes to get cpu mask of sharing clock wire */ static
-> > +void set_affected_cpus(struct cpufreq_policy *policy) {
-> > +	struct device_node *np, *clk_np;
-> > +	struct cpumask *dstp =3D policy->cpus;
-> > +	int i;
-> > +
-> > +	np =3D cpu_to_clk_node(policy->cpu);
-> > +	if (!np)
-> > +		return;
-> > +
-> > +	for_each_present_cpu(i) {
-> > +		clk_np =3D cpu_to_clk_node(i);
-> > +		if (!clk_np)
-> > +			continue;
-> > +
-> > +		if (clk_np =3D=3D np)
-> > +			cpumask_set_cpu(i, dstp);
-> > +
-> > +		of_node_put(clk_np);
-> > +	}
-> > +	of_node_put(np);
-> > +}
-> > +
-> > /* reduce the duplicated frequencies in frequency table */ static void
-> > freq_table_redup(struct cpufreq_frequency_table *freq_table,
-> > 		int count)
-> > @@ -105,6 +174,7 @@ static void freq_table_sort(struct
-> cpufreq_frequency_table *freq_table,
-> > 	int i, j, ind;
-> > 	unsigned int freq, max_freq;
-> > 	struct cpufreq_frequency_table table;
-> > +
-> > 	for (i =3D 0; i < count - 1; i++) {
-> > 		max_freq =3D freq_table[i].frequency;
-> > 		ind =3D i;
-> > @@ -129,7 +199,7 @@ static void freq_table_sort(struct
-> cpufreq_frequency_table *freq_table,
-> > 	}
-> > }
-> >
-> > -static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> > +static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> > {
-> > 	struct device_node *np;
-> > 	int i, count, ret;
-> > @@ -145,10 +215,8 @@ static int corenet_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> > 		return -ENODEV;
-> >
-> > 	data =3D kzalloc(sizeof(*data), GFP_KERNEL);
-> > -	if (!data) {
-> > -		pr_err("%s: no memory\n", __func__);
-> > +	if (!data)
-> > 		goto err_np;
-> > -	}
-> >
-> > 	policy->clk =3D of_clk_get(np, 0);
-> > 	if (IS_ERR(policy->clk)) {
-> > @@ -170,7 +238,7 @@ static int corenet_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> > 	}
-> >
-> > 	if (fmask)
-> > -		mask =3D fmask[get_hard_smp_processor_id(cpu)];
-> > +		mask =3D fmask[get_cpu_physical_id(cpu)];
-> > 	else
-> > 		mask =3D 0x0;
-> >
-> > @@ -201,13 +269,13 @@ static int corenet_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> > 	data->table =3D table;
-> >
-> > 	/* update ->cpus if we have cluster, no harm if not */
-> > -	cpumask_copy(policy->cpus, per_cpu(cpu_mask, cpu));
-> > -	for_each_cpu(i, per_cpu(cpu_mask, cpu))
-> > +	set_affected_cpus(policy);
-> > +	for_each_cpu(i, policy->cpus)
-> > 		per_cpu(cpu_data, i) =3D data;
-> >
-> > 	/* Minimum transition latency is 12 platform clocks */
-> > 	u64temp =3D 12ULL * NSEC_PER_SEC;
-> > -	do_div(u64temp, fsl_get_sys_freq());
-> > +	do_div(u64temp, get_bus_freq());
-> > 	policy->cpuinfo.transition_latency =3D u64temp + 1;
-> >
-> > 	of_node_put(np);
-> > @@ -227,7 +295,7 @@ err_np:
-> > 	return -ENODEV;
-> > }
-> >
-> > -static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy
-> > *policy)
-> > +static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy
-> > +*policy)
-> > {
-> > 	struct cpu_data *data =3D per_cpu(cpu_data, policy->cpu);
-> > 	unsigned int cpu;
-> > @@ -236,13 +304,13 @@ static int __exit corenet_cpufreq_cpu_exit(struct
-> cpufreq_policy *policy)
-> > 	kfree(data->table);
-> > 	kfree(data);
-> >
-> > -	for_each_cpu(cpu, per_cpu(cpu_mask, policy->cpu))
-> > +	for_each_cpu(cpu, policy->cpus)
-> > 		per_cpu(cpu_data, cpu) =3D NULL;
-> >
-> > 	return 0;
-> > }
-> >
-> > -static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-> > +static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-> > 		unsigned int index)
-> > {
-> > 	struct clk *parent;
-> > @@ -252,18 +320,18 @@ static int corenet_cpufreq_target(struct
-> cpufreq_policy *policy,
-> > 	return clk_set_parent(policy->clk, parent); }
-> >
-> > -static struct cpufreq_driver ppc_corenet_cpufreq_driver =3D {
-> > -	.name		=3D "ppc_cpufreq",
-> > +static struct cpufreq_driver qoriq_cpufreq_driver =3D {
-> > +	.name		=3D "qoriq_cpufreq",
-> > 	.flags		=3D CPUFREQ_CONST_LOOPS,
-> > -	.init		=3D corenet_cpufreq_cpu_init,
-> > -	.exit		=3D __exit_p(corenet_cpufreq_cpu_exit),
-> > +	.init		=3D qoriq_cpufreq_cpu_init,
-> > +	.exit		=3D __exit_p(qoriq_cpufreq_cpu_exit),
-> > 	.verify		=3D cpufreq_generic_frequency_table_verify,
-> > -	.target_index	=3D corenet_cpufreq_target,
-> > +	.target_index	=3D qoriq_cpufreq_target,
-> > 	.get		=3D cpufreq_generic_get,
-> > 	.attr		=3D cpufreq_generic_attr,
-> > };
-> >
-> > -static const struct of_device_id node_matches[] __initdata =3D {
-> > +static const struct of_device_id node_matches[] __initconst =3D {
-> > 	{ .compatible =3D "fsl,p2041-clockgen", .data =3D &sdata[0], },
-> > 	{ .compatible =3D "fsl,p3041-clockgen", .data =3D &sdata[0], },
-> > 	{ .compatible =3D "fsl,p5020-clockgen", .data =3D &sdata[1], }, @@
-> > -273,61 +341,43 @@ static const struct of_device_id node_matches[]
-> __initdata =3D {
-> > 	{}
-> > };
-> >
-> > -static int __init ppc_corenet_cpufreq_init(void)
-> > +static int __init qoriq_cpufreq_init(void)
-> > {
-> > 	int ret;
-> > 	struct device_node  *np;
-> > 	const struct of_device_id *match;
-> > 	const struct soc_data *data;
-> > -	unsigned int cpu;
-> >
-> > 	np =3D of_find_matching_node(NULL, node_matches);
-> > 	if (!np)
-> > 		return -ENODEV;
-> >
-> > -	for_each_possible_cpu(cpu) {
-> > -		if (!alloc_cpumask_var(&per_cpu(cpu_mask, cpu), GFP_KERNEL))
-> > -			goto err_mask;
-> > -		cpumask_copy(per_cpu(cpu_mask, cpu), cpu_core_mask(cpu));
-> > -	}
-> > -
-> > 	match =3D of_match_node(node_matches, np);
-> > 	data =3D match->data;
-> > 	if (data) {
-> > 		if (data->flag)
-> > 			fmask =3D data->freq_mask;
-> > -		min_cpufreq =3D fsl_get_sys_freq();
-> > +		min_cpufreq =3D get_bus_freq();
-> > 	} else {
-> > -		min_cpufreq =3D fsl_get_sys_freq() / 2;
-> > +		min_cpufreq =3D get_bus_freq() / 2;
-> > 	}
-> >
-> > 	of_node_put(np);
-> >
-> > -	ret =3D cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
-> > +	ret =3D cpufreq_register_driver(&qoriq_cpufreq_driver);
-> > 	if (!ret)
-> > -		pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
-> > +		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
-> >
-> > 	return ret;
-> > -
-> > -err_mask:
-> > -	for_each_possible_cpu(cpu)
-> > -		free_cpumask_var(per_cpu(cpu_mask, cpu));
-> > -
-> > -	return -ENOMEM;
-> > }
-> > -module_init(ppc_corenet_cpufreq_init);
-> > +module_init(qoriq_cpufreq_init);
-> >
-> > -static void __exit ppc_corenet_cpufreq_exit(void)
-> > +static void __exit qoriq_cpufreq_exit(void)
-> > {
-> > -	unsigned int cpu;
-> > -
-> > -	for_each_possible_cpu(cpu)
-> > -		free_cpumask_var(per_cpu(cpu_mask, cpu));
-> > -
-> > -	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
-> > +	cpufreq_unregister_driver(&qoriq_cpufreq_driver);
-> > }
-> > -module_exit(ppc_corenet_cpufreq_exit);
-> > +module_exit(qoriq_cpufreq_exit);
-> >
-> > MODULE_LICENSE("GPL");
-> > MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
-> > -MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series
-> > SoCs");
-> > +MODULE_DESCRIPTION("cpufreq driver for Freescale QorIQ series SoCs");
-> > --
-> > 2.1.0.27.g96db324
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe
-> > linux-kernel" in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+VGhhbmtzIGZvciB5b3VyIGNvbW1lbnRzLiAgWW91ciBjb21tZW50cyB3aWxsIGJlIGFkZHJlc3Nl
+ZCBpbiBuZXh0IHZlcnNpb24uDQpTb21lIGV4cGxhbmF0aW9ucyBpbmxpbmUuDQoNClRoYW5rcywN
+Cll1YW50aWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogVmlyZXNo
+IEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+IFNlbnQ6IEZyaWRheSwg
+T2N0b2JlciAxNywgMjAxNCA0OjA5IFBNDQo+IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4Mw0KPiBD
+YzogUmFmYWVsIEouIFd5c29ja2k7IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3Q7IGxpbnV4LXBt
+QHZnZXIua2VybmVsLm9yZzsNCj4gbGludXhwcGMtZGV2QG96bGFicy5vcmc7IFRhbmcgWXVhbnRp
+YW4tQjI5OTgzDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IHFvcmlxOiBNYWtlIHRo
+ZSBkcml2ZXIgdXNhYmxlIG9uIGFsbCBRb3JJUQ0KPiBwbGF0Zm9ybXMNCj4gDQo+IE9uIDE3IE9j
+dG9iZXIgMjAxNCAwODo0MywgIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+IA0KPiBI
+aSBCMjk5ODMgOikNCj4gDQo+ID4gRnJvbTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0Bm
+cmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gRnJlZXNjYWxlIGludHJvZHVjZWQgbmV3IEFSTSBjb3Jl
+LWJhc2VkIFNvQ3Mgd2hpY2ggc3VwcG9ydCBkeW5hbWljDQo+ID4gZnJlcXVlbmN5IHN3aXRjaCBm
+ZWF0dXJlLiBERlMgb24gbmV3IFNvQ3MgYXJlIGNvbXBhdGlibGUgd2l0aCBjdXJyZW50DQo+ID4g
+UG93ZXJQQyBDb3JlTmV0IHBsYXRmb3Jtcy4gSW4gb3JkZXIgdG8gc3VwcG9ydCB0aG9zZSBuZXcg
+cGxhdGZvcm1zLA0KPiA+IHRoaXMgZHJpdmVyIG5lZWRzIHRvIGJlIHNsaWdodGx5IGFkanVzdGVk
+LiBUaGUgbWFpbiBjaGFuZ2VzIGluY2x1ZGU6DQo+ID4NCj4gPiAxLiBDaGFuZ2VkIHRoZSBuYW1l
+cyBvZiBkcml2ZXIgYW5kIGZ1bmN0aW9ucyBpbiBkcml2ZXIuDQo+ID4gMi4gQWRkZWQgdHdvIG5l
+dyBmdW5jdGlvbnMgZ2V0X2NwdV9waHlzaWNhbF9pZCgpIGFuZCBnZXRfYnVzX2ZyZXEoKS4NCj4g
+PiAzLiBVc2VkIGEgbmV3IHdheSB0byBnZXQgYWxsIHRoZSBDUFVzIHdoaWNoIHNoYXJpbmcgY2xv
+Y2sgd2lyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
+LlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVmcmVxL0tjb25m
+aWcuYXJtICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDggKysNCj4gPiAgZHJpdmVycy9jcHVm
+cmVxL0tjb25maWcucG93ZXJwYyAgICAgICAgICAgICAgICAgICAgfCAgMTEgKy0NCj4gPiAgZHJp
+dmVycy9jcHVmcmVxL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDIgKy0N
+Cj4gPiAgLi4uL3twcGMtY29yZW5ldC1jcHVmcmVxLmMgPT4gcW9yaXEtY3B1ZnJlcS5jfSAgICAg
+fCAxNTANCj4gKysrKysrKysrKysrKystLS0tLS0tDQo+ID4gIDQgZmlsZXMgY2hhbmdlZCwgMTE0
+IGluc2VydGlvbnMoKyksIDU3IGRlbGV0aW9ucygtKSAgcmVuYW1lDQo+ID4gZHJpdmVycy9jcHVm
+cmVxL3twcGMtY29yZW5ldC1jcHVmcmVxLmMgPT4gcW9yaXEtY3B1ZnJlcS5jfSAoNzIlKQ0KPiA+
+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybSBiL2RyaXZlcnMv
+Y3B1ZnJlcS9LY29uZmlnLmFybQ0KPiA+IGluZGV4IDgzYTc1ZGMuLjE5MjVhZTk0IDEwMDY0NA0K
+PiA+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybQ0KPiA+ICsrKyBiL2RyaXZlcnMv
+Y3B1ZnJlcS9LY29uZmlnLmFybQ0KPiA+IEBAIC0yNDcsMyArMjQ3LDExIEBAIGNvbmZpZyBBUk1f
+VEVHUkFfQ1BVRlJFUQ0KPiA+ICAgICAgICAgZGVmYXVsdCB5DQo+ID4gICAgICAgICBoZWxwDQo+
+ID4gICAgICAgICAgIFRoaXMgYWRkcyB0aGUgQ1BVRnJlcSBkcml2ZXIgc3VwcG9ydCBmb3IgVEVH
+UkEgU09Dcy4NCj4gPiArDQo+ID4gK2NvbmZpZyBRT1JJUV9DUFVGUkVRDQo+ID4gKyAgICAgICB0
+cmlzdGF0ZSAiQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nIGRyaXZlciBmb3IgRnJlZXNjYWxlIFFvcklR
+IFNvQ3MiDQo+ID4gKyAgICAgICBkZXBlbmRzIG9uIE9GICYmIENPTU1PTl9DTEsNCj4gPiArICAg
+ICAgIHNlbGVjdCBDTEtfUFBDX0NPUkVORVQNCj4gPiArICAgICAgIGhlbHANCj4gPiArICAgICAg
+ICAgVGhpcyBhZGRzIHRoZSBDUFVGcmVxIGRyaXZlciBzdXBwb3J0IGZvciBGcmVlc2NhbGUgUW9y
+SVEgU29Dcw0KPiA+ICsgICAgICAgICB3aGljaCBhcmUgY2FwYWJsZSBvZiBjaGFuZ2luZyB0aGUg
+Q1BVJ3MgZnJlcXVlbmN5IGR5bmFtaWNhbGx5Lg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
+dWZyZXEvS2NvbmZpZy5wb3dlcnBjDQo+ID4gYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5wb3dl
+cnBjIGluZGV4IDcyNTY0YjcuLjNhMzQyNDggMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL0tjb25maWcucG93ZXJwYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBv
+d2VycGMNCj4gPiBAQCAtMjMsMTQgKzIzLDEzIEBAIGNvbmZpZyBDUFVfRlJFUV9NQVBMRQ0KPiA+
+ICAgICAgICAgICBUaGlzIGFkZHMgc3VwcG9ydCBmb3IgZnJlcXVlbmN5IHN3aXRjaGluZyBvbiBN
+YXBsZSA5NzBGWA0KPiA+ICAgICAgICAgICBFdmFsdWF0aW9uIEJvYXJkIGFuZCBjb21wYXRpYmxl
+IGJvYXJkcyAoSUJNIEpTMnggYmxhZGVzKS4NCj4gPg0KPiA+IC1jb25maWcgUFBDX0NPUkVORVRf
+Q1BVRlJFUQ0KPiA+IC0gICAgICAgdHJpc3RhdGUgIkNQVSBmcmVxdWVuY3kgc2NhbGluZyBkcml2
+ZXIgZm9yIEZyZWVzY2FsZSBFNTAwTUMgU29DcyINCj4gPiAtICAgICAgIGRlcGVuZHMgb24gUFBD
+X0U1MDBNQyAmJiBPRiAmJiBDT01NT05fQ0xLDQo+ID4gK2NvbmZpZyBRT1JJUV9DUFVGUkVRDQo+
+ID4gKyAgICAgICB0cmlzdGF0ZSAiQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nIGRyaXZlciBmb3IgRnJl
+ZXNjYWxlIFFvcklRIFNvQ3MiDQo+ID4gKyAgICAgICBkZXBlbmRzIG9uIE9GICYmIENPTU1PTl9D
+TEsNCj4gPiAgICAgICAgIHNlbGVjdCBDTEtfUFBDX0NPUkVORVQNCj4gPiAgICAgICAgIGhlbHAN
+Cj4gPiAtICAgICAgICAgVGhpcyBhZGRzIHRoZSBDUFVGcmVxIGRyaXZlciBzdXBwb3J0IGZvciBG
+cmVlc2NhbGUgZTUwMG1jLA0KPiA+IC0gICAgICAgICBlNTUwMCBhbmQgZTY1MDAgc2VyaWVzIFNv
+Q3Mgd2hpY2ggYXJlIGNhcGFibGUgb2YgY2hhbmdpbmcNCj4gPiAtICAgICAgICAgdGhlIENQVSdz
+IGZyZXF1ZW5jeSBkeW5hbWljYWxseS4NCj4gPiArICAgICAgICAgVGhpcyBhZGRzIHRoZSBDUFVG
+cmVxIGRyaXZlciBzdXBwb3J0IGZvciBGcmVlc2NhbGUgUW9ySVEgU29Dcw0KPiA+ICsgICAgICAg
+ICB3aGljaCBhcmUgY2FwYWJsZSBvZiBjaGFuZ2luZyB0aGUgQ1BVJ3MgZnJlcXVlbmN5IGR5bmFt
+aWNhbGx5Lg0KPiA+DQo+ID4gIGNvbmZpZyBDUFVfRlJFUV9QTUFDDQo+ID4gICAgICAgICBib29s
+ICJTdXBwb3J0IGZvciBBcHBsZSBQb3dlckJvb2tzIg0KPiANCj4gRG9uJ3QgbmVlZCB0aGlzIGR1
+cGxpY2F0aW9uIGF0IGFsbC4gSnVzdCBtb3ZlIHRoaXMgdG8gS2NvbmZpZyBpbnN0ZWFkIG9mIC5h
+cm0gYW5kDQo+IHBwYy4NCj4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9wcGMt
+Y29yZW5ldC1jcHVmcmVxLmMNCj4gPiBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMN
+Cj4gDQo+ID4gIC8qKg0KPiA+ICAgKiBzdHJ1Y3QgY3B1X2RhdGEgLSBwZXIgQ1BVIGRhdGEgc3Ry
+dWN0IEBAIC02OSw5ICs2OCw2IEBAIHN0YXRpYw0KPiA+IGNvbnN0IHUzMiAqZm1hc2s7DQo+ID4N
+Cj4gPiAgc3RhdGljIERFRklORV9QRVJfQ1BVKHN0cnVjdCBjcHVfZGF0YSAqLCBjcHVfZGF0YSk7
+DQo+ID4NCj4gPiAtLyogY3B1bWFzayBpbiBhIGNsdXN0ZXIgKi8NCj4gPiAtc3RhdGljIERFRklO
+RV9QRVJfQ1BVKGNwdW1hc2tfdmFyX3QsIGNwdV9tYXNrKTsNCj4gPiAtDQo+ID4gICNpZm5kZWYg
+Q09ORklHX1NNUA0KPiA+ICBzdGF0aWMgaW5saW5lIGNvbnN0IHN0cnVjdCBjcHVtYXNrICpjcHVf
+Y29yZV9tYXNrKGludCBjcHUpICB7IEBADQo+ID4gLTc5LDYgKzc1LDc5IEBAIHN0YXRpYyBpbmxp
+bmUgY29uc3Qgc3RydWN0IGNwdW1hc2sgKmNwdV9jb3JlX21hc2soaW50DQo+ID4gY3B1KSAgfSAg
+I2VuZGlmDQo+ID4NCj4gPiArI2lmIGRlZmluZWQoQ09ORklHX1BQQ19FNTAwTUMpDQo+ID4gK3N0
+YXRpYyBpbnQgZ2V0X2NwdV9waHlzaWNhbF9pZChpbnQgY3B1KSB7DQo+ID4gKyAgICAgICByZXR1
+cm4gZ2V0X2hhcmRfc21wX3Byb2Nlc3Nvcl9pZChjcHUpOyB9ICNlbGlmDQo+ID4gK2RlZmluZWQo
+Q09ORklHX0FSTSkNCj4gDQo+IFdvdWxkbid0IGEgI2Vsc2Ugd29yayBoZXJlIGFzIHRoZXJlIGFy
+ZSBqdXN0IHR3byBwbGF0Zm9ybXMgd2UgYXJlIHRhbGtpbmcgYWJvdXQgPw0KPiANCj4gPiArc3Rh
+dGljIGludCBnZXRfY3B1X3BoeXNpY2FsX2lkKGludCBjcHUpIHsNCj4gPiArICAgICAgIHJldHVy
+biB0b3BvbG9neV9jb3JlX2lkKGNwdSk7DQo+ID4gK30NCj4gPiArI2VuZGlmDQo+ID4gKw0KPiA+
+ICtzdGF0aWMgdTMyIGdldF9idXNfZnJlcSh2b2lkKQ0KPiA+ICt7DQo+ID4gKyAgICAgICBzdHJ1
+Y3QgZGV2aWNlX25vZGUgKnNvYzsNCj4gPiArICAgICAgIHUzMiBzeXNmcmVxOw0KPiA+ICsNCj4g
+PiArICAgICAgIHNvYyA9IG9mX2ZpbmRfbm9kZV9ieV90eXBlKE5VTEwsICJzb2MiKTsNCj4gPiAr
+ICAgICAgIGlmICghc29jKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsNCj4gPiArDQo+
+ID4gKyAgICAgICBpZiAob2ZfcHJvcGVydHlfcmVhZF91MzIoc29jLCAiYnVzLWZyZXF1ZW5jeSIs
+ICZzeXNmcmVxKSkNCj4gPiArICAgICAgICAgICAgICAgc3lzZnJlcSA9IDA7DQo+ID4gKw0KPiA+
+ICsgICAgICAgb2Zfbm9kZV9wdXQoc29jKTsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4gc3lz
+ZnJlcTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCBkZXZpY2Vfbm9kZSAqY3B1
+X3RvX2Nsa19ub2RlKGludCBjcHUpIHsNCj4gPiArICAgICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAq
+bnAsICpjbGtfbnA7DQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKCFjcHVfcHJlc2VudChjcHUpKQ0K
+PiA+ICsgICAgICAgICAgICAgICByZXR1cm4gTlVMTDsNCj4gPiArDQo+ID4gKyAgICAgICBucCA9
+IG9mX2dldF9jcHVfbm9kZShjcHUsIE5VTEwpOw0KPiA+ICsgICAgICAgaWYgKCFucCkNCj4gPiAr
+ICAgICAgICAgICAgICAgcmV0dXJuIE5VTEw7DQo+ID4gKw0KPiA+ICsgICAgICAgY2xrX25wID0g
+b2ZfcGFyc2VfcGhhbmRsZShucCwgImNsb2NrcyIsIDApOw0KPiA+ICsgICAgICAgaWYgKCFjbGtf
+bnApDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiBOVUxMOw0KPiA+ICsNCj4gPiArICAgICAg
+IG9mX25vZGVfcHV0KG5wKTsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4gY2xrX25wOw0KPiA+
+ICt9DQo+ID4gKw0KPiA+ICsvKiB0cmF2ZXJzZSBjcHUgbm9kZXMgdG8gZ2V0IGNwdSBtYXNrIG9m
+IHNoYXJpbmcgY2xvY2sgd2lyZSAqLyBzdGF0aWMNCj4gPiArdm9pZCBzZXRfYWZmZWN0ZWRfY3B1
+cyhzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkgew0KPiA+ICsgICAgICAgc3RydWN0IGRl
+dmljZV9ub2RlICpucCwgKmNsa19ucDsNCj4gPiArICAgICAgIHN0cnVjdCBjcHVtYXNrICpkc3Rw
+ID0gcG9saWN5LT5jcHVzOw0KPiA+ICsgICAgICAgaW50IGk7DQo+ID4gKw0KPiA+ICsgICAgICAg
+bnAgPSBjcHVfdG9fY2xrX25vZGUocG9saWN5LT5jcHUpOw0KPiA+ICsgICAgICAgaWYgKCFucCkN
+Cj4gPiArICAgICAgICAgICAgICAgcmV0dXJuOw0KPiA+ICsNCj4gPiArICAgICAgIGZvcl9lYWNo
+X3ByZXNlbnRfY3B1KGkpIHsNCj4gPiArICAgICAgICAgICAgICAgY2xrX25wID0gY3B1X3RvX2Ns
+a19ub2RlKGkpOw0KPiA+ICsgICAgICAgICAgICAgICBpZiAoIWNsa19ucCkNCj4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICBjb250aW51ZTsNCj4gPiArDQo+ID4gKyAgICAgICAgICAgICAgIGlm
+IChjbGtfbnAgPT0gbnApDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgY3B1bWFza19zZXRf
+Y3B1KGksIGRzdHApOw0KPiANCj4gU28geW91IGFyZSBkZXBlbmRpbmcgb24gbWF0Y2hpbmcgdGhl
+IGNsb2NrLW5vZGVzIGZyb20gRFQgZm9yIGdldHRpbmcgdGhpcw0KPiBpbmZvcm1hdGlvbiwgcmln
+aHQgPyBUaGVyZSBpcyBub3RoaW5nIHRoYXQgdGhlIGFyY2hpdGVjdHVyZSBnaXZlcz8NCj4gDQpZ
+ZXMuIEkgdXNlZCBhbiBhcmNoaXRlY3R1cmUgZGVwZW5kZW50IHdheS4NCg0KPiA+ICsNCj4gPiAr
+ICAgICAgICAgICAgICAgb2Zfbm9kZV9wdXQoY2xrX25wKTsNCj4gPiArICAgICAgIH0NCj4gPiAr
+ICAgICAgIG9mX25vZGVfcHV0KG5wKTsNCj4gPiArfQ0KPiA+ICsNCj4gPiAgLyogcmVkdWNlIHRo
+ZSBkdXBsaWNhdGVkIGZyZXF1ZW5jaWVzIGluIGZyZXF1ZW5jeSB0YWJsZSAqLyAgc3RhdGljDQo+
+ID4gdm9pZCBmcmVxX3RhYmxlX3JlZHVwKHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSAq
+ZnJlcV90YWJsZSwNCj4gPiAgICAgICAgICAgICAgICAgaW50IGNvdW50KQ0KPiA+IEBAIC0xMDUs
+NiArMTc0LDcgQEAgc3RhdGljIHZvaWQgZnJlcV90YWJsZV9zb3J0KHN0cnVjdA0KPiBjcHVmcmVx
+X2ZyZXF1ZW5jeV90YWJsZSAqZnJlcV90YWJsZSwNCj4gPiAgICAgICAgIGludCBpLCBqLCBpbmQ7
+DQo+ID4gICAgICAgICB1bnNpZ25lZCBpbnQgZnJlcSwgbWF4X2ZyZXE7DQo+ID4gICAgICAgICBz
+dHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgdGFibGU7DQo+ID4gKw0KPiA+ICAgICAgICAg
+Zm9yIChpID0gMDsgaSA8IGNvdW50IC0gMTsgaSsrKSB7DQo+ID4gICAgICAgICAgICAgICAgIG1h
+eF9mcmVxID0gZnJlcV90YWJsZVtpXS5mcmVxdWVuY3k7DQo+ID4gICAgICAgICAgICAgICAgIGlu
+ZCA9IGk7DQo+ID4gQEAgLTEyOSw3ICsxOTksNyBAQCBzdGF0aWMgdm9pZCBmcmVxX3RhYmxlX3Nv
+cnQoc3RydWN0DQo+IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlICpmcmVxX3RhYmxlLA0KPiA+ICAg
+ICAgICAgfQ0KPiA+ICB9DQo+ID4NCj4gPiAtc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1
+X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQo+ID4gK3N0YXRpYyBpbnQgcW9y
+aXFfY3B1ZnJlcV9jcHVfaW5pdChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkNCj4gPiAg
+ew0KPiA+ICAgICAgICAgc3RydWN0IGRldmljZV9ub2RlICpucDsNCj4gPiAgICAgICAgIGludCBp
+LCBjb3VudCwgcmV0Ow0KPiA+IEBAIC0xNDUsMTAgKzIxNSw4IEBAIHN0YXRpYyBpbnQgY29yZW5l
+dF9jcHVmcmVxX2NwdV9pbml0KHN0cnVjdA0KPiBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KPiA+
+ICAgICAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPg0KPiA+ICAgICAgICAgZGF0YSA9
+IGt6YWxsb2Moc2l6ZW9mKCpkYXRhKSwgR0ZQX0tFUk5FTCk7DQo+ID4gLSAgICAgICBpZiAoIWRh
+dGEpIHsNCj4gPiAtICAgICAgICAgICAgICAgcHJfZXJyKCIlczogbm8gbWVtb3J5XG4iLCBfX2Z1
+bmNfXyk7DQo+IA0KPiBXYXNuJ3QgdGhpcyB1c2VmdWwgPw0KPiANClRvIGdldCByaWQgb2YgY2hl
+Y2twYXRjaCB3YXJuaW5nLg0KQ3VycmVudGx5LCBjaGVja3BhdGNoIHNjcmlwdCBkb2Vzbid0IGFs
+bG93IHRvIG91dHB1dCBtZW1vcnkgYWxsb2NhdGlvbiBlcnJvciBpbmZvcm1hdGlvbi4NCldlIHdp
+bGwgZ2V0IG1lbW9yeSBpbmZvcm1hdGlvbiBldmVudHVhbGx5IGlmIHRoZXJlIGFyZSBtZW1vcnkg
+cmVsYXRlZCBlcnJvci4NCg0KUmVnYXJkcywNCll1YW50aWFuDQoNCj4gPiArICAgICAgIGlmICgh
+ZGF0YSkNCj4gPiAgICAgICAgICAgICAgICAgZ290byBlcnJfbnA7DQo+ID4gLSAgICAgICB9DQo+
+ID4NCj4gPiAgICAgICAgIHBvbGljeS0+Y2xrID0gb2ZfY2xrX2dldChucCwgMCk7DQo+ID4gICAg
+ICAgICBpZiAoSVNfRVJSKHBvbGljeS0+Y2xrKSkgew0KPiA+IEBAIC0xNzAsNyArMjM4LDcgQEAg
+c3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0DQo+IGNwdWZyZXFfcG9s
+aWN5ICpwb2xpY3kpDQo+ID4gICAgICAgICB9DQo+ID4NCj4gPiAgICAgICAgIGlmIChmbWFzaykN
+Cj4gPiAtICAgICAgICAgICAgICAgbWFzayA9IGZtYXNrW2dldF9oYXJkX3NtcF9wcm9jZXNzb3Jf
+aWQoY3B1KV07DQo+ID4gKyAgICAgICAgICAgICAgIG1hc2sgPSBmbWFza1tnZXRfY3B1X3BoeXNp
+Y2FsX2lkKGNwdSldOw0KPiA+ICAgICAgICAgZWxzZQ0KPiA+ICAgICAgICAgICAgICAgICBtYXNr
+ID0gMHgwOw0KPiA+DQo+ID4gQEAgLTIwMSwxMyArMjY5LDEzIEBAIHN0YXRpYyBpbnQgY29yZW5l
+dF9jcHVmcmVxX2NwdV9pbml0KHN0cnVjdA0KPiBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KPiA+
+ICAgICAgICAgZGF0YS0+dGFibGUgPSB0YWJsZTsNCj4gPg0KPiA+ICAgICAgICAgLyogdXBkYXRl
+IC0+Y3B1cyBpZiB3ZSBoYXZlIGNsdXN0ZXIsIG5vIGhhcm0gaWYgbm90ICovDQo+ID4gLSAgICAg
+ICBjcHVtYXNrX2NvcHkocG9saWN5LT5jcHVzLCBwZXJfY3B1KGNwdV9tYXNrLCBjcHUpKTsNCj4g
+PiAtICAgICAgIGZvcl9lYWNoX2NwdShpLCBwZXJfY3B1KGNwdV9tYXNrLCBjcHUpKQ0KPiA+ICsg
+ICAgICAgc2V0X2FmZmVjdGVkX2NwdXMocG9saWN5KTsNCj4gPiArICAgICAgIGZvcl9lYWNoX2Nw
+dShpLCBwb2xpY3ktPmNwdXMpDQo+ID4gICAgICAgICAgICAgICAgIHBlcl9jcHUoY3B1X2RhdGEs
+IGkpID0gZGF0YTsNCj4gDQo+IEdldCByaWQgb2YgdGhpcyBwZXItY3B1IGRhdGEgYW5kIHVzZSBw
+b2xpY3ktPmRyaXZlcl9kYXRhIGluc3RlYWQuDQo+IA0KPiA+DQo+ID4gICAgICAgICAvKiBNaW5p
+bXVtIHRyYW5zaXRpb24gbGF0ZW5jeSBpcyAxMiBwbGF0Zm9ybSBjbG9ja3MgKi8NCj4gPiAgICAg
+ICAgIHU2NHRlbXAgPSAxMlVMTCAqIE5TRUNfUEVSX1NFQzsNCj4gPiAtICAgICAgIGRvX2Rpdih1
+NjR0ZW1wLCBmc2xfZ2V0X3N5c19mcmVxKCkpOw0KPiA+ICsgICAgICAgZG9fZGl2KHU2NHRlbXAs
+IGdldF9idXNfZnJlcSgpKTsNCj4gPiAgICAgICAgIHBvbGljeS0+Y3B1aW5mby50cmFuc2l0aW9u
+X2xhdGVuY3kgPSB1NjR0ZW1wICsgMTsNCj4gPg0KPiA+ICAgICAgICAgb2Zfbm9kZV9wdXQobnAp
+Ow0KPiA+IEBAIC0yMjcsNyArMjk1LDcgQEAgZXJyX25wOg0KPiA+ICAgICAgICAgcmV0dXJuIC1F
+Tk9ERVY7DQo+ID4gIH0NCj4gPg0KPiA+IC1zdGF0aWMgaW50IF9fZXhpdCBjb3JlbmV0X2NwdWZy
+ZXFfY3B1X2V4aXQoc3RydWN0IGNwdWZyZXFfcG9saWN5DQo+ID4gKnBvbGljeSkNCj4gPiArc3Rh
+dGljIGludCBfX2V4aXQgcW9yaXFfY3B1ZnJlcV9jcHVfZXhpdChzdHJ1Y3QgY3B1ZnJlcV9wb2xp
+Y3kNCj4gPiArKnBvbGljeSkNCj4gPiAgew0KPiA+ICAgICAgICAgc3RydWN0IGNwdV9kYXRhICpk
+YXRhID0gcGVyX2NwdShjcHVfZGF0YSwgcG9saWN5LT5jcHUpOw0KPiA+ICAgICAgICAgdW5zaWdu
+ZWQgaW50IGNwdTsNCj4gPiBAQCAtMjM2LDEzICszMDQsMTMgQEAgc3RhdGljIGludCBfX2V4aXQg
+Y29yZW5ldF9jcHVmcmVxX2NwdV9leGl0KHN0cnVjdA0KPiBjcHVmcmVxX3BvbGljeSAqcG9saWN5
+KQ0KPiA+ICAgICAgICAga2ZyZWUoZGF0YS0+dGFibGUpOw0KPiA+ICAgICAgICAga2ZyZWUoZGF0
+YSk7DQo+ID4NCj4gPiAtICAgICAgIGZvcl9lYWNoX2NwdShjcHUsIHBlcl9jcHUoY3B1X21hc2ss
+IHBvbGljeS0+Y3B1KSkNCj4gPiArICAgICAgIGZvcl9lYWNoX2NwdShjcHUsIHBvbGljeS0+Y3B1
+cykNCj4gPiAgICAgICAgICAgICAgICAgcGVyX2NwdShjcHVfZGF0YSwgY3B1KSA9IE5VTEw7DQo+
+ID4NCj4gPiAgICAgICAgIHJldHVybiAwOw0KPiA+ICB9DQo+ID4NCj4gPiAtc3RhdGljIGludCBj
+b3JlbmV0X2NwdWZyZXFfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LA0KPiA+
+ICtzdGF0aWMgaW50IHFvcmlxX2NwdWZyZXFfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
+cG9saWN5LA0KPiA+ICAgICAgICAgICAgICAgICB1bnNpZ25lZCBpbnQgaW5kZXgpDQo+ID4gIHsN
+Cj4gPiAgICAgICAgIHN0cnVjdCBjbGsgKnBhcmVudDsNCj4gPiBAQCAtMjUyLDE4ICszMjAsMTgg
+QEAgc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfdGFyZ2V0KHN0cnVjdA0KPiBjcHVmcmVxX3Bv
+bGljeSAqcG9saWN5LA0KPiA+ICAgICAgICAgcmV0dXJuIGNsa19zZXRfcGFyZW50KHBvbGljeS0+
+Y2xrLCBwYXJlbnQpOyAgfQ0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9kcml2ZXIg
+cHBjX2NvcmVuZXRfY3B1ZnJlcV9kcml2ZXIgPSB7DQo+ID4gLSAgICAgICAubmFtZSAgICAgICAg
+ICAgPSAicHBjX2NwdWZyZXEiLA0KPiA+ICtzdGF0aWMgc3RydWN0IGNwdWZyZXFfZHJpdmVyIHFv
+cmlxX2NwdWZyZXFfZHJpdmVyID0gew0KPiA+ICsgICAgICAgLm5hbWUgICAgICAgICAgID0gInFv
+cmlxX2NwdWZyZXEiLA0KPiA+ICAgICAgICAgLmZsYWdzICAgICAgICAgID0gQ1BVRlJFUV9DT05T
+VF9MT09QUywNCj4gPiAtICAgICAgIC5pbml0ICAgICAgICAgICA9IGNvcmVuZXRfY3B1ZnJlcV9j
+cHVfaW5pdCwNCj4gPiAtICAgICAgIC5leGl0ICAgICAgICAgICA9IF9fZXhpdF9wKGNvcmVuZXRf
+Y3B1ZnJlcV9jcHVfZXhpdCksDQo+ID4gKyAgICAgICAuaW5pdCAgICAgICAgICAgPSBxb3JpcV9j
+cHVmcmVxX2NwdV9pbml0LA0KPiA+ICsgICAgICAgLmV4aXQgICAgICAgICAgID0gX19leGl0X3Ao
+cW9yaXFfY3B1ZnJlcV9jcHVfZXhpdCksDQo+ID4gICAgICAgICAudmVyaWZ5ICAgICAgICAgPSBj
+cHVmcmVxX2dlbmVyaWNfZnJlcXVlbmN5X3RhYmxlX3ZlcmlmeSwNCj4gPiAtICAgICAgIC50YXJn
+ZXRfaW5kZXggICA9IGNvcmVuZXRfY3B1ZnJlcV90YXJnZXQsDQo+ID4gKyAgICAgICAudGFyZ2V0
+X2luZGV4ICAgPSBxb3JpcV9jcHVmcmVxX3RhcmdldCwNCj4gPiAgICAgICAgIC5nZXQgICAgICAg
+ICAgICA9IGNwdWZyZXFfZ2VuZXJpY19nZXQsDQo+ID4gICAgICAgICAuYXR0ciAgICAgICAgICAg
+PSBjcHVmcmVxX2dlbmVyaWNfYXR0ciwNCj4gPiAgfTsNCj4gPg0KPiA+IC1zdGF0aWMgY29uc3Qg
+c3RydWN0IG9mX2RldmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRkYXRhID0gew0KPiA+ICtz
+dGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRjb25z
+dCA9IHsNCj4gPiAgICAgICAgIHsgLmNvbXBhdGlibGUgPSAiZnNsLHAyMDQxLWNsb2NrZ2VuIiwg
+LmRhdGEgPSAmc2RhdGFbMF0sIH0sDQo+ID4gICAgICAgICB7IC5jb21wYXRpYmxlID0gImZzbCxw
+MzA0MS1jbG9ja2dlbiIsIC5kYXRhID0gJnNkYXRhWzBdLCB9LA0KPiA+ICAgICAgICAgeyAuY29t
+cGF0aWJsZSA9ICJmc2wscDUwMjAtY2xvY2tnZW4iLCAuZGF0YSA9ICZzZGF0YVsxXSwgfSwgQEAN
+Cj4gPiAtMjczLDYxICszNDEsNDMgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQg
+bm9kZV9tYXRjaGVzW10NCj4gX19pbml0ZGF0YSA9IHsNCj4gPiAgICAgICAgIHt9DQo+ID4gIH07
+DQo+ID4NCj4gPiAtc3RhdGljIGludCBfX2luaXQgcHBjX2NvcmVuZXRfY3B1ZnJlcV9pbml0KHZv
+aWQpDQo+ID4gK3N0YXRpYyBpbnQgX19pbml0IHFvcmlxX2NwdWZyZXFfaW5pdCh2b2lkKQ0KPiA+
+ICB7DQo+ID4gICAgICAgICBpbnQgcmV0Ow0KPiA+ICAgICAgICAgc3RydWN0IGRldmljZV9ub2Rl
+ICAqbnA7DQo+ID4gICAgICAgICBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICptYXRjaDsNCj4g
+PiAgICAgICAgIGNvbnN0IHN0cnVjdCBzb2NfZGF0YSAqZGF0YTsNCj4gPiAtICAgICAgIHVuc2ln
+bmVkIGludCBjcHU7DQo+ID4NCj4gPiAgICAgICAgIG5wID0gb2ZfZmluZF9tYXRjaGluZ19ub2Rl
+KE5VTEwsIG5vZGVfbWF0Y2hlcyk7DQo+ID4gICAgICAgICBpZiAoIW5wKQ0KPiA+ICAgICAgICAg
+ICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPg0KPiA+IC0gICAgICAgZm9yX2VhY2hfcG9zc2li
+bGVfY3B1KGNwdSkgew0KPiA+IC0gICAgICAgICAgICAgICBpZiAoIWFsbG9jX2NwdW1hc2tfdmFy
+KCZwZXJfY3B1KGNwdV9tYXNrLCBjcHUpLA0KPiBHRlBfS0VSTkVMKSkNCj4gPiAtICAgICAgICAg
+ICAgICAgICAgICAgICBnb3RvIGVycl9tYXNrOw0KPiA+IC0gICAgICAgICAgICAgICBjcHVtYXNr
+X2NvcHkocGVyX2NwdShjcHVfbWFzaywgY3B1KSwNCj4gY3B1X2NvcmVfbWFzayhjcHUpKTsNCj4g
+PiAtICAgICAgIH0NCj4gPiAtDQo+ID4gICAgICAgICBtYXRjaCA9IG9mX21hdGNoX25vZGUobm9k
+ZV9tYXRjaGVzLCBucCk7DQo+ID4gICAgICAgICBkYXRhID0gbWF0Y2gtPmRhdGE7DQo+ID4gICAg
+ICAgICBpZiAoZGF0YSkgew0KPiA+ICAgICAgICAgICAgICAgICBpZiAoZGF0YS0+ZmxhZykNCj4g
+PiAgICAgICAgICAgICAgICAgICAgICAgICBmbWFzayA9IGRhdGEtPmZyZXFfbWFzazsNCj4gPiAt
+ICAgICAgICAgICAgICAgbWluX2NwdWZyZXEgPSBmc2xfZ2V0X3N5c19mcmVxKCk7DQo+ID4gKyAg
+ICAgICAgICAgICAgIG1pbl9jcHVmcmVxID0gZ2V0X2J1c19mcmVxKCk7DQo+ID4gICAgICAgICB9
+IGVsc2Ugew0KPiA+IC0gICAgICAgICAgICAgICBtaW5fY3B1ZnJlcSA9IGZzbF9nZXRfc3lzX2Zy
+ZXEoKSAvIDI7DQo+ID4gKyAgICAgICAgICAgICAgIG1pbl9jcHVmcmVxID0gZ2V0X2J1c19mcmVx
+KCkgLyAyOw0KPiA+ICAgICAgICAgfQ0KPiA+DQo+ID4gICAgICAgICBvZl9ub2RlX3B1dChucCk7
+DQo+ID4NCj4gPiAtICAgICAgIHJldCA9IGNwdWZyZXFfcmVnaXN0ZXJfZHJpdmVyKCZwcGNfY29y
+ZW5ldF9jcHVmcmVxX2RyaXZlcik7DQo+ID4gKyAgICAgICByZXQgPSBjcHVmcmVxX3JlZ2lzdGVy
+X2RyaXZlcigmcW9yaXFfY3B1ZnJlcV9kcml2ZXIpOw0KPiA+ICAgICAgICAgaWYgKCFyZXQpDQo+
+ID4gLSAgICAgICAgICAgICAgIHByX2luZm8oIkZyZWVzY2FsZSBQb3dlclBDIGNvcmVuZXQgQ1BV
+IGZyZXF1ZW5jeSBzY2FsaW5nDQo+IGRyaXZlclxuIik7DQo+ID4gKyAgICAgICAgICAgICAgIHBy
+X2luZm8oIkZyZWVzY2FsZSBRb3JJUSBDUFUgZnJlcXVlbmN5IHNjYWxpbmcNCj4gPiArIGRyaXZl
+clxuIik7DQo+ID4NCj4gPiAgICAgICAgIHJldHVybiByZXQ7DQo+ID4gLQ0KPiA+IC1lcnJfbWFz
+azoNCj4gPiAtICAgICAgIGZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpDQo+ID4gLSAgICAgICAg
+ICAgICAgIGZyZWVfY3B1bWFza192YXIocGVyX2NwdShjcHVfbWFzaywgY3B1KSk7DQo+ID4gLQ0K
+PiA+IC0gICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ID4gIH0NCj4gPiAtbW9kdWxlX2luaXQocHBj
+X2NvcmVuZXRfY3B1ZnJlcV9pbml0KTsNCj4gPiArbW9kdWxlX2luaXQocW9yaXFfY3B1ZnJlcV9p
+bml0KTsNCj4gPg0KPiA+IC1zdGF0aWMgdm9pZCBfX2V4aXQgcHBjX2NvcmVuZXRfY3B1ZnJlcV9l
+eGl0KHZvaWQpDQo+ID4gK3N0YXRpYyB2b2lkIF9fZXhpdCBxb3JpcV9jcHVmcmVxX2V4aXQodm9p
+ZCkNCj4gPiAgew0KPiA+IC0gICAgICAgdW5zaWduZWQgaW50IGNwdTsNCj4gPiAtDQo+ID4gLSAg
+ICAgICBmb3JfZWFjaF9wb3NzaWJsZV9jcHUoY3B1KQ0KPiA+IC0gICAgICAgICAgICAgICBmcmVl
+X2NwdW1hc2tfdmFyKHBlcl9jcHUoY3B1X21hc2ssIGNwdSkpOw0KPiA+IC0NCj4gPiAtICAgICAg
+IGNwdWZyZXFfdW5yZWdpc3Rlcl9kcml2ZXIoJnBwY19jb3JlbmV0X2NwdWZyZXFfZHJpdmVyKTsN
+Cj4gPiArICAgICAgIGNwdWZyZXFfdW5yZWdpc3Rlcl9kcml2ZXIoJnFvcmlxX2NwdWZyZXFfZHJp
+dmVyKTsNCj4gPiAgfQ0KPiA+IC1tb2R1bGVfZXhpdChwcGNfY29yZW5ldF9jcHVmcmVxX2V4aXQp
+Ow0KPiA+ICttb2R1bGVfZXhpdChxb3JpcV9jcHVmcmVxX2V4aXQpOw0KPiA+DQo+ID4gIE1PRFVM
+RV9MSUNFTlNFKCJHUEwiKTsNCj4gPiAgTU9EVUxFX0FVVEhPUigiVGFuZyBZdWFudGlhbiA8WXVh
+bnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tPiIpOw0KPiA+IC1NT0RVTEVfREVTQ1JJUFRJT04oImNw
+dWZyZXEgZHJpdmVyIGZvciBGcmVlc2NhbGUgZTUwMG1jIHNlcmllcw0KPiA+IFNvQ3MiKTsNCj4g
+PiArTU9EVUxFX0RFU0NSSVBUSU9OKCJjcHVmcmVxIGRyaXZlciBmb3IgRnJlZXNjYWxlIFFvcklR
+IHNlcmllcyBTb0NzIik7DQo+IA0KPiArIGNvbW1lbnRzIGZyb20gS3VtYXIgR2FsYSA6KQ0K
