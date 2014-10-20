@@ -1,32 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C2FB1A0027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:26:52 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 20 Oct 2014 19:26:50 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 776C0357804E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:26:46 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9K9ScSJ31981728
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:28:47 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9K9QDFN013329
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:26:13 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Add missing HPTE unlock
-Date: Mon, 20 Oct 2014 14:55:35 +0530
-Message-Id: <1413797135-17354-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <minchan@kernel.org>
+Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
+ by lists.ozlabs.org (Postfix) with ESMTP id 98E121A003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 21:26:48 +1100 (AEDT)
+From: Minchan Kim <minchan@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v17 4/7] powerpc: add pmd_[dirty|mkclean] for THP
+Date: Mon, 20 Oct 2014 19:12:01 +0900
+Message-Id: <1413799924-17946-5-git-send-email-minchan@kernel.org>
+In-Reply-To: <1413799924-17946-1-git-send-email-minchan@kernel.org>
+References: <1413799924-17946-1-git-send-email-minchan@kernel.org>
+Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
+ Minchan Kim <minchan@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-api@vger.kernel.org, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, zhangyanfei@cn.fujitsu.com,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,34 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In kvm_test_clear_dirty_npages(), if we find an invalid HPTE we move on to the
-next HPTE without unlocking the invalid one.  In fact we should never
-find an invalid and unlocked HPTE in the rmap chain, but for robustness
-we should unlock it.  This adds the missing unlock.
+MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
+overwrite of the contents since MADV_FREE syscall is called for
+THP page.
 
-Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
+support.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Minchan Kim <minchan@kernel.org>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index d40770248b6a..cebb86bc4a37 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1117,9 +1117,11 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
- 		}
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 889c6fa9ee01..7c07e5975871 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
  
- 		/* Now check and modify the HPTE */
--		if (!(hptep[0] & cpu_to_be64(HPTE_V_VALID)))
-+		if (!(hptep[0] & cpu_to_be64(HPTE_V_VALID))) {
-+			/* unlock and continue */
-+			hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
- 			continue;
--
-+		}
- 		/* need to make it temporarily absent so C is stable */
- 		hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
- 		kvmppc_invalidate_hpte(kvm, hptep, i);
+ #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
+ #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
++#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+ #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
++#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+ 
 -- 
-1.9.1
+2.0.0
