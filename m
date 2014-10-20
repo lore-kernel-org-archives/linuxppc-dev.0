@@ -1,20 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2CE71A0032
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:16:13 +1100 (AEDT)
-Message-ID: <1413796558.8828.5.camel@concordia>
-Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 20 Oct 2014 20:15:58 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-7w44MxwH2gTD2diWRpzA"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D5DD91A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:20:07 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 20 Oct 2014 19:20:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2D7D72BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:20:03 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9K9Jtsf40304706
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:19:55 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9K9K2Z2013511
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 20:20:02 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH] arch/powerpc: Fix build error with hugetlfs disabled
+Date: Mon, 20 Oct 2014 14:49:46 +0530
+Message-Id: <1413796786-16451-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,140 +38,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+arch/powerpc/mm/slice.c:704:5: error: expected identifier or ‘(’ before numeric constant
+ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+     ^
+make[1]: *** [arch/powerpc/mm/slice.o] Error 1
+make: *** [arch/powerpc/mm/slice.o] Error 2
 
---=-7w44MxwH2gTD2diWRpzA
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This got introduced via 1217d34b531c76362217057ca70a8ce8950574e0
+"powerpc: Ensure global functions include their prototype". We
+started including linux/hugetlb.h with that patch and now we have
 
-Hi Linus,
+ #define is_hugepage_only_range(mm, addr, len)	0
 
-Here's some more updates for powerpc for 3.18.
+with hugetlbfs disabled
 
-They are a bit late I know, though must are actually bug fixes. In my defen=
-ce I
-nearly cut the top of my finger off last weekend in a gruesome bike mainten=
-ance
-accident, so I spent a good part of the week waiting around for doctors. Tr=
-ue
-story, I can send photos if you like :)
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/hugetlb.h | 2 +-
+ arch/powerpc/mm/slice.c            | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-
-Probably the most interesting fix is the sys_call_table one, which enables
-syscall tracing for powerpc. There's a fix for HMI handling for old firmwar=
-e,
-more endian fixes for firmware interfaces, more EEH fixes, Anton fixed our
-routine that gets the current stack pointer, and a few other misc bits.
-
-
-The following changes since commit d53ba6b3bba33432cc37b7101a86f8f3392c46e7=
-:
-
-  cxl: Fix afu_read() not doing finish_wait() on signal or non-blocking (20=
-14-10-09 11:29:57 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
-
-for you to fetch changes up to e89dafb5ca5022d3bc63602018adfc766c73bc2b:
-
-  powerpc: Only do dynamic DMA zone limits on platforms that need it (2014-=
-10-17 09:21:44 +1100)
-
-----------------------------------------------------------------
-Anton Blanchard (5):
-      powerpc: Reimplement __get_SP() as a function not a define
-      powerpc: Rename __get_SP() to current_stack_pointer()
-      powerpc/pseries: Use dump_stack instead of show_stack
-      powerpc: Add printk levels to setup_system output
-      powerpc: sync pseries_le_defconfig with pseries_defconfig
-
-Bharata B Rao (1):
-      powerpc/pseries: Make CPU hotplug path endian safe
-
-Gavin Shan (7):
-      powerpc/eeh: Fix condition for isolated state
-      powerpc/eeh: Rename flag EEH_PE_RESET to EEH_PE_CFG_BLOCKED
-      powerpc/powernv: Drop config requests in EEH accessors
-      powerpc/pseries: Drop config requests in EEH accessors
-      powerpc/eeh: Block PCI config access upon frozen PE
-      powerpc/eeh: Don't collect logs on PE with blocked config space
-      powerpc/eeh: Block CFG upon frozen Shiner adapter
-
-Greg Kurz (1):
-      powerpc/vphn: NUMA node code expects big-endian
-
-Mahesh Salgaonkar (2):
-      powerpc/book3s: Don't clear MSR_RI in hmi handler.
-      powerpc/powernv: Fallback to old HMI handling behavior for old firmwa=
-re
-
-Michael Ellerman (3):
-      powerpc/msi: Fix the msi bitmap alignment tests
-      powerpc/msi: Use WARN_ON() in msi bitmap selftests
-      powerpc: Only do dynamic DMA zone limits on platforms that need it
-
-Nishanth Aravamudan (2):
-      powerpc/numa: check error return from proc_create
-      powerpc/numa: Add ability to disable and debug topology updates
-
-Romeo Cane (1):
-      powerpc: Fix sys_call_table declaration to enable syscall tracing
-
- Documentation/kernel-parameters.txt          |  6 +++
- arch/powerpc/configs/pseries_le_defconfig    |  7 ++-
- arch/powerpc/include/asm/eeh.h               |  3 +-
- arch/powerpc/include/asm/perf_event.h        |  2 +-
- arch/powerpc/include/asm/reg.h               |  3 +-
- arch/powerpc/include/asm/syscall.h           |  2 +-
- arch/powerpc/kernel/dma.c                    |  8 ++++
- arch/powerpc/kernel/eeh.c                    | 19 +++++---
- arch/powerpc/kernel/eeh_driver.c             | 12 ++---
- arch/powerpc/kernel/eeh_pe.c                 | 10 ++++-
- arch/powerpc/kernel/exceptions-64s.S         |  5 ---
- arch/powerpc/kernel/irq.c                    |  2 +-
- arch/powerpc/kernel/misc.S                   |  4 ++
- arch/powerpc/kernel/ppc_ksyms.c              |  2 +
- arch/powerpc/kernel/process.c                |  2 +-
- arch/powerpc/kernel/rtas_pci.c               | 30 +++++--------
- arch/powerpc/kernel/setup_64.c               | 32 +++++++-------
- arch/powerpc/kernel/stacktrace.c             |  2 +-
- arch/powerpc/mm/numa.c                       | 41 ++++++++++++++++-
- arch/powerpc/platforms/powernv/eeh-ioda.c    |  2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 57 +++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/opal.c        | 21 +++++++++
- arch/powerpc/platforms/powernv/pci.c         |  2 +-
- arch/powerpc/platforms/pseries/dlpar.c       | 22 +++++-----
- arch/powerpc/platforms/pseries/hotplug-cpu.c |  4 +-
- arch/powerpc/platforms/pseries/iommu.c       | 11 +++--
- arch/powerpc/platforms/pseries/pseries.h     |  3 +-
- arch/powerpc/sysdev/msi_bitmap.c             | 66 +++++++++++++++---------=
-----
- 28 files changed, 261 insertions(+), 119 deletions(-)
-
-
-
---=-7w44MxwH2gTD2diWRpzA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAABAgAGBQJURNLcAAoJEFHr6jzI4aWAtjEQAJ4XhYOEIfARMJ32P8XQ2dbX
-4ISt/N1H7C71Xter4uaeQ5hTjaDZnuQNt8QIXkemCOIHPm8/XhVwvEWJ+Oiq0bYl
-8fGXNEJpZ8naRGcO+jqHDZ1762hcYl6ut+lyV8yYjkjzzLiKdB/rDAwqfOKkKoUo
-Nd/BoVUSTcQVB7clY32Xe+km9+5LIIlu4UdVetf6u9/IQQJm45Jcy41hqFhaENa4
-PkmV+j32yQaKO4XAhnWeypJldFJrjbbW1GD7KZ+c2xk3vzGtCgs6o1Sy8/87HwUH
-LiYHB9r7xvOVJ9pG21OKl5OUYhahgL0J71YYu0fjL255JRmPlcoTOKZu7vN/gawi
-bQ316xv4F232tB8P+/Yyi7YDJNhfYg3+zLdO4RVPlh3/usNWg6W2hLuZDNlSS0Xs
-GbAc7rsAbdRL5ydYytpHg2cH7o1kr8PNe7W1O+xCahuYp4ida9PrOcWDhfv/C3Q5
-Uwo6VWESpsZqPtjv2mLcZP+UBi+4DZtL2SpZNXXrbzfIfwL13FpPvpvJcx8fy2QT
-AZmcMklWKwostXy3esBF4IgACos/jkA+5kh2qIcEIb7F93APj2F5o1wO28UrLQZJ
-UZqT2PPc370WQZBHhjsP6bshEGDa68M4xCuHJmuXDqlRJXVMnuLLz+EXlGzQO3oC
-CsgHN2LtE2KI6VIKbaED
-=1lzm
------END PGP SIGNATURE-----
-
---=-7w44MxwH2gTD2diWRpzA--
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 623f2971ce0e..766b77d527ac 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -71,7 +71,7 @@ pte_t *huge_pte_offset_and_shift(struct mm_struct *mm,
+ 
+ void flush_dcache_icache_hugepage(struct page *page);
+ 
+-#if defined(CONFIG_PPC_MM_SLICES) || defined(CONFIG_PPC_SUBPAGE_PROT)
++#if defined(CONFIG_PPC_MM_SLICES)
+ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 			   unsigned long len);
+ #else
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 8d7bda94d196..ded0ea1afde4 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -682,6 +682,7 @@ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 	slice_convert(mm, mask, psize);
+ }
+ 
++#ifdef CONFIG_HUGETLB_PAGE
+ /*
+  * is_hugepage_only_range() is used by generic code to verify whether
+  * a normal mmap mapping (non hugetlbfs) is valid on a given area.
+@@ -726,4 +727,4 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ #endif
+ 	return !slice_check_fit(mask, available);
+ }
+-
++#endif
+-- 
+1.9.1
