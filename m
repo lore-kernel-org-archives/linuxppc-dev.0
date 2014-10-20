@@ -1,24 +1,19 @@
-Return-Path: <minchan@kernel.org>
-Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
- by lists.ozlabs.org (Postfix) with ESMTP id 98E121A003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 21:26:48 +1100 (AEDT)
-From: Minchan Kim <minchan@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v17 4/7] powerpc: add pmd_[dirty|mkclean] for THP
-Date: Mon, 20 Oct 2014 19:12:01 +0900
-Message-Id: <1413799924-17946-5-git-send-email-minchan@kernel.org>
-In-Reply-To: <1413799924-17946-1-git-send-email-minchan@kernel.org>
-References: <1413799924-17946-1-git-send-email-minchan@kernel.org>
-Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
- Minchan Kim <minchan@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-api@vger.kernel.org, Hugh Dickins <hughd@google.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, zhangyanfei@cn.fujitsu.com,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 756041A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 22:48:11 +1100 (AEDT)
+Message-ID: <1413802359.18300.7.camel@pasglop>
+Subject: Re: [POWERPC] 4xx: EP405 boards support for arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 20 Oct 2014 21:52:39 +1100
+In-Reply-To: <20141020090627.GA24768@mwanda>
+References: <20141020090627.GA24768@mwanda>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
-overwrite of the contents since MADV_FREE syscall is called for
-THP page.
+On Mon, 2014-10-20 at 12:06 +0300, Dan Carpenter wrote:
+> Hello Benjamin Herrenschmidt,
+> 
+> The patch 619740384ceb: "[POWERPC] 4xx: EP405 boards support for
+> arch/powerpc" from Dec 21, 2007, leads to the following static
+> checker warning:
 
-This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
-support.
+Ah, I even forgot I wrote that ... I'll have to dig out the docs of
+that chip, maybe later this week. Thanks !
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Minchan Kim <minchan@kernel.org>
----
- arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
- 1 file changed, 2 insertions(+)
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 889c6fa9ee01..7c07e5975871 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
- 
- #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
- #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
-+#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
- #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
- #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
- #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
-+#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
- #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
- #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
- 
--- 
-2.0.0
+> 	arch/powerpc/boot/4xx.c:567 ibm405gp_fixup_clocks()
+> 	warn: shifting and masking to zero
+> 
+> arch/powerpc/boot/4xx.c
+>    562          fbdv = (pllmr & 0x1e000000) >> 25;
+>    563          if (fbdv == 0)
+>    564                  fbdv = 16;
+>    565          cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
+>    566          opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
+>    567          ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
+>                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+> This mask and shift means that ppdv is always 1.
+> 
+>    568          epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
+>    569          udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
+>    570  
+>    571          /* check for 405GPr */
+>    572          if ((mfpvr() & 0xfffffff0) == (0x50910951 & 0xfffffff0)) {
+>    573                  fwdvb = 8 - (pllmr & 0x00000007);
+>    574                  if (!(psr & 0x00001000)) /* PCI async mode enable == 0 */
+>    575                          if (psr & 0x00000020) /* New mode enable */
+>    576                                  m = fwdvb * 2 * ppdv;
+>    577                          else
+>    578                                  m = fwdvb * cbdv * ppdv;
+> 
+> regards,
+> dan carpenter
