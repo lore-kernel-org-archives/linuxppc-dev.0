@@ -1,19 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 756041A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 22:48:11 +1100 (AEDT)
-Message-ID: <1413802359.18300.7.camel@pasglop>
-Subject: Re: [POWERPC] 4xx: EP405 boards support for arch/powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 20 Oct 2014 21:52:39 +1100
-In-Reply-To: <20141020090627.GA24768@mwanda>
-References: <20141020090627.GA24768@mwanda>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D1F61A0053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 01:29:16 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 20 Oct 2014 19:59:12 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 12880125804B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 19:58:57 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9KETevh62193710
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 19:59:40 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9KET9AD031666
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 19:59:09 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 2/3] KVM: PPC: BOOK3S: HV: Use unlock variant with memory
+ barrier
+Date: Mon, 20 Oct 2014 19:58:59 +0530
+Message-Id: <1413815340-22426-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1413815340-22426-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1413815340-22426-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +39,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-10-20 at 12:06 +0300, Dan Carpenter wrote:
-> Hello Benjamin Herrenschmidt,
-> 
-> The patch 619740384ceb: "[POWERPC] 4xx: EP405 boards support for
-> arch/powerpc" from Dec 21, 2007, leads to the following static
-> checker warning:
+We switch to unlock variant with memory barriers in the error path
+and also in code path where we had implicit dependency on previous
+functions calling lwsync/ptesync. In most of the cases we don't really
+need an explicit barrier, but using the variant make sure we don't make
+mistakes later with code movements. We also document why a
+non-barrier variant is ok in performance critical path.
 
-Ah, I even forgot I wrote that ... I'll have to dig out the docs of
-that chip, maybe later this week. Thanks !
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 10 +++++-----
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 15 ++++++++++-----
+ 2 files changed, 15 insertions(+), 10 deletions(-)
 
-Cheers,
-Ben.
-
-> 	arch/powerpc/boot/4xx.c:567 ibm405gp_fixup_clocks()
-> 	warn: shifting and masking to zero
-> 
-> arch/powerpc/boot/4xx.c
->    562          fbdv = (pllmr & 0x1e000000) >> 25;
->    563          if (fbdv == 0)
->    564                  fbdv = 16;
->    565          cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
->    566          opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
->    567          ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
->                          ^^^^^^^^^^^^^^^^^^^^^^^^^
-> This mask and shift means that ppdv is always 1.
-> 
->    568          epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
->    569          udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
->    570  
->    571          /* check for 405GPr */
->    572          if ((mfpvr() & 0xfffffff0) == (0x50910951 & 0xfffffff0)) {
->    573                  fwdvb = 8 - (pllmr & 0x00000007);
->    574                  if (!(psr & 0x00001000)) /* PCI async mode enable == 0 */
->    575                          if (psr & 0x00000020) /* New mode enable */
->    576                                  m = fwdvb * 2 * ppdv;
->    577                          else
->    578                                  m = fwdvb * cbdv * ppdv;
-> 
-> regards,
-> dan carpenter
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 5ea4b2b6a157..c97690ffb5f6 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -774,7 +774,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	return ret;
+ 
+  out_unlock:
+-	__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
++	unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ 	preempt_enable();
+ 	goto out_put;
+ }
+@@ -903,8 +903,8 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 				note_hpte_modification(kvm, &rev[i]);
+ 			}
+ 		}
++		unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ 		unlock_rmap(rmapp);
+-		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ 	}
+ 	return 0;
+ }
+@@ -992,7 +992,7 @@ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 			}
+ 			ret = 1;
+ 		}
+-		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
++		unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ 	} while ((i = j) != head);
+ 
+ 	unlock_rmap(rmapp);
+@@ -1115,7 +1115,7 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
+ 
+ 		/* Now check and modify the HPTE */
+ 		if (!(hptep[0] & cpu_to_be64(HPTE_V_VALID))) {
+-			__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
++			unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ 			continue;
+ 		}
+ 		/* need to make it temporarily absent so C is stable */
+@@ -1137,7 +1137,7 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
+ 		}
+ 		v &= ~HPTE_V_ABSENT;
+ 		v |= HPTE_V_VALID;
+-		__unlock_hpte(hptep, v);
++		unlock_hpte(hptep, v);
+ 	} while ((i = j) != head);
+ 
+ 	unlock_rmap(rmapp);
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 769a5d4c0430..78e689b066f1 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -292,6 +292,9 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 				pte = be64_to_cpu(hpte[0]);
+ 				if (!(pte & (HPTE_V_VALID | HPTE_V_ABSENT)))
+ 					break;
++				/*
++				 * Data dependency will avoid re-ordering
++				 */
+ 				__unlock_hpte(hpte, pte);
+ 				hpte += 2;
+ 			}
+@@ -310,7 +313,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 				cpu_relax();
+ 			pte = be64_to_cpu(hpte[0]);
+ 			if (pte & (HPTE_V_VALID | HPTE_V_ABSENT)) {
+-				__unlock_hpte(hpte, pte);
++				unlock_hpte(hpte, pte);
+ 				return H_PTEG_FULL;
+ 			}
+ 		}
+@@ -481,7 +484,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+ 	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
+ 	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn) ||
+ 	    ((flags & H_ANDCOND) && (pte & avpn) != 0)) {
+-		__unlock_hpte(hpte, pte);
++		unlock_hpte(hpte, pte);
+ 		return H_NOT_FOUND;
+ 	}
+ 
+@@ -617,7 +620,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 				be64_to_cpu(hp[0]), be64_to_cpu(hp[1]));
+ 			rcbits = rev->guest_rpte & (HPTE_R_R|HPTE_R_C);
+ 			args[j] |= rcbits << (56 - 5);
+-			__unlock_hpte(hp, 0);
++			unlock_hpte(hp, 0);
+ 		}
+ 	}
+ 
+@@ -643,7 +646,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	pte = be64_to_cpu(hpte[0]);
+ 	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
+ 	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn)) {
+-		__unlock_hpte(hpte, pte);
++		unlock_hpte(hpte, pte);
+ 		return H_NOT_FOUND;
+ 	}
+ 
+@@ -834,7 +837,9 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+ 			    hpte_base_page_size(v, r) == (1ul << pshift))
+ 				/* Return with the HPTE still locked */
+ 				return (hash << 3) + (i >> 1);
+-
++			/*
++			 * Data dependency should avoid re-ordering
++			 */
+ 			__unlock_hpte(&hpte[i], v);
+ 		}
+ 
+-- 
+1.9.1
