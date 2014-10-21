@@ -1,15 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 870581A0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:12:41 +1100 (AEDT)
-Message-ID: <54461576.1060006@c-s.fr>
-Date: Tue, 21 Oct 2014 10:12:38 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3AB61A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:25:48 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D138B140092
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2014 19:25:47 +1100 (AEDT)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
+ platforms
+Date: Tue, 21 Oct 2014 08:25:42 +0000
+Message-ID: <8cf6bdb05e9b4d04994366db335f3a52@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
+ <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
+In-Reply-To: <8F5E4DA7-8A64-4614-91E7-BFB28D91C737@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: kernel 3.17 - perf build failure
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,23 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-   LINK     perf
-libperf.a(skip-callchain-idx.o): In function `arch_skip_callchain_idx':
-/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:250: 
-undefined reference to `pr_debug'
-libperf.a(skip-callchain-idx.o): In function `check_return_addr':
-/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:188: 
-undefined reference to `pr_debug'
-libperf.a(skip-callchain-idx.o): In function `arch_skip_callchain_idx':
-/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:250: 
-undefined reference to `pr_debug'
-libperf.a(skip-callchain-idx.o): In function `check_return_addr':
-/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:165: 
-undefined reference to `pr_debug'
-/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:171: 
-undefined reference to `pr_debug'
-libperf.a(skip-callchain-idx.o):/root/gen/trunk/knl/tools/perf/arch/powerpc/util/skip-callchain-idx.c:101: 
-more undefined references to `pr_debug' follow
-collect2: ld returned 1 exit status
-make[1]: *** [perf] Error 1
-make: *** [install] Error 2
+> > #ifndef CONFIG_SMP
+> > static inline const struct cpumask *cpu_core_mask(int cpu) { @@ -79,6
+> > +75,79 @@ static inline const struct cpumask *cpu_core_mask(int cpu) }
+> > #endif
+> >
+> > +#if defined(CONFIG_PPC_E500MC)
+>=20
+> Probably should just be CONFIG_PPC, but do we need this at all.  Can't we=
+ just
+> use topology_core_id() on both ARM & PPC?
+>=20
+topology_core_id() doesn't work on PPC.
+This function only supports PPC64 and non-thread SOCs.
+
+I can make it work on PPC, but we are used to use get_hard_smp_processor_id=
+() on ppc.
+
+Regards,
+Yuantian
+
+> > +static int get_cpu_physical_id(int cpu) {
+> > +	return get_hard_smp_processor_id(cpu); } #elif defined(CONFIG_ARM)
+> > +static int get_cpu_physical_id(int cpu) {
+> > +	return topology_core_id(cpu);
+> > +}
+> > +#endif
+> > +
