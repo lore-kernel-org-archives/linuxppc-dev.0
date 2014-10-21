@@ -1,26 +1,32 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2FB511A0029
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:10:40 +1100 (AEDT)
-Received: by mail-pd0-f181.google.com with SMTP id w10so833332pde.40
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 01:10:37 -0700 (PDT)
-Date: Tue, 21 Oct 2014 16:10:28 +0800
-From: Kevin Hao <haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69F151A0128
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:11:37 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 21 Oct 2014 18:11:36 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 35D6B2CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:11:33 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9L8DXFg31391782
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:13:34 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9L8BWc5013658
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 19:11:32 +1100
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/3] fix a kernel panic on fsl corenet board when
- CONFIG_CLK_PPC_CORENET is enabled
-Message-ID: <20141021081028.GA22757@pek-khao-d1.corp.ad.wrs.com>
-References: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-In-Reply-To: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
- Mike Turquette <mturquette@linaro.org>,
- Jingchang Lu <jingchang.lu@freescale.com>
+Subject: [PATCH] powerpc,
+ pseries: All events of EPOW_SYSTEM_SHUTDOWN must initiate shutdown
+Date: Tue, 21 Oct 2014 13:41:29 +0530
+Message-Id: <1413879089-1485-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The current handling of EPOW_SHUTDOWN_ON_UPS event does not shutdown the
+system after logging the message. All the events of EPOW_SYSTEM_SHUTDOWN
+action code (EPOW_SHUTDOWN_ON_UPS is a part of it) must initiate system
+shutdown as per the SPAPR spec. If the LPAR does not shutdown after
+receiving this rtas based event, it will expose itself to a forced abrupt
+shutdown initiated by the platform firmware. This patch fixes the situation.
 
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/ras.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On Sun, Oct 19, 2014 at 02:11:36PM +0800, Kevin Hao wrote:
-> Hi,
->=20
-> I have done a boot test on p2014rdb and t4240qds boards. I don't have an =
-access
-> to mpc512x board, so only build test for that.
-
-I do find a mpc5121ads board in our lab, the kernel boot well with these ch=
-anges.
-
-Thanks,
-Kevin
-
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJURhT0AAoJEJNY7TDerrFxfoMH/0z7VAwLBUfVAlDRHAkmOjLf
-9j8RBlrUUtUIPzeKvaY2Opr9vzqRMh2EnfiABqoW8pLIgzCQS1bdBB23dc/6i2GP
-KlE05oMCAb8BorExUkCa56UoDvPWIWRthgt628P3FNDiNB8bBpZnioR4EqXafPcr
-71z5u279LPjj5IiQqIjCbJhCwy/d4sGcGLiLWCB9aQYNkq6ydn6DUOiVp556Vjuj
-rZeHwUMVwPdgM6TeMZ9Od+KgpIfBnh7jjsLz68Da/exuKNgxqXz7O9JwShG6WXeH
-epMassgyXF9CmVtFAGpboNt++K2ekug45RWOrjzWfFe84qiDidkUQwPNQUIRQQ8=
-=6Gs8
------END PGP SIGNATURE-----
-
---OXfL5xGRrasGEqWY--
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 5a4d0fc..b46cab8 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -89,6 +89,8 @@ static void handle_system_shutdown(char event_modifier)
+ 	case EPOW_SHUTDOWN_ON_UPS:
+ 		pr_emerg("Loss of power reported by firmware, system is "
+ 			"running on UPS/battery");
++		pr_emerg("Check RTAS error log for details");
++		orderly_poweroff(true);
+ 		break;
+ 
+ 	case EPOW_SHUTDOWN_LOSS_OF_CRITICAL_FUNCTIONS:
+-- 
+1.9.3
