@@ -1,33 +1,22 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+23e76a8edc52560517a7+4076+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 32F6D1A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 20:03:35 +1100 (AEDT)
-Received: from mail-ob0-f181.google.com (mail-ob0-f181.google.com
- [209.85.214.181])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A163114007B
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2014 20:03:34 +1100 (AEDT)
-Received: by mail-ob0-f181.google.com with SMTP id wm4so607762obc.26
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2014 02:03:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CAE721A0003
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 21:59:27 +1100 (AEDT)
+Date: Tue, 21 Oct 2014 03:59:16 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/2] ipr: Convert to generic DMA API
+Message-ID: <20141021105916.GB1950@infradead.org>
+References: <1413191676-1663-1-git-send-email-anton@samba.org>
 MIME-Version: 1.0
-In-Reply-To: <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
- <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
- <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
-Date: Tue, 21 Oct 2014 14:33:31 +0530
-Message-ID: <CAKohpokSuKOwZ3-OWFtU0z7E1fsMg4tyPiUoFUfw26pD9Py=MA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
- platforms
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1413191676-1663-1-git-send-email-anton@samba.org>
+Cc: wenxiong@linux.vnet.ibm.com, linux-scsi@vger.kernel.org,
+ scottwood@freescale.com, paulus@samba.org, brking@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,16 +26,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21 October 2014 14:29, Yuantian Tang <Yuantian.Tang@freescale.com> wrote:
-> If I do so, menuconfig will display like this(on PPC):
->         PowerPC CPU frequency scaling drivers  ----
->     QorIQ CPU Frequency scaling  --->
->                 <*> CPU frequency scaling driver for Freescale QorIQ SoCs
-> On ARM, there should be a similar problem.
-> Isn't weird?
+Wendy, Brian,
 
-Similar is true for cpufreq-cpu0 driver as well.. Maybe we can create a
-Kconfig.drivers configuration and include it from all architecture specific
-ones ?
-
-@ Rafael ?
+can you give me an ACK for this series?
