@@ -1,28 +1,19 @@
-Return-Path: <kirjanov@gmail.com>
-Received: from mail-yh0-x232.google.com (mail-yh0-x232.google.com
- [IPv6:2607:f8b0:4002:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4AFA41A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 16:12:56 +1100 (AEDT)
-Received: by mail-yh0-f50.google.com with SMTP id a41so692046yho.37
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Oct 2014 22:12:53 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1413867285.5498.2.camel@concordia>
-References: <1412920428-29263-1-git-send-email-bobby.prani@gmail.com>
- <20141021043846.8E5D4140092@ozlabs.org>
- <CAHj3AVnj4Etu71egZ30a-KHYdLHjd2S4J8TY0mjHX_Q+BLvLMA@mail.gmail.com>
- <1413867285.5498.2.camel@concordia>
-Date: Tue, 21 Oct 2014 09:12:53 +0400
-Message-ID: <CAHj3AV=Zqo=gOkQk2dRZS2S3CQO774QiwoOVkQxAOYYtWmpAvA@mail.gmail.com>
-Subject: Re: powerpc: Wire up sys_bpf() syscall
-From: Denis Kirjanov <kirjanov@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, Fabian Frederick <fabf@skynet.be>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Herrmann <dh.herrmann@gmail.com>, Pranith Kumar <bobby.prani@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C53E1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 16:32:08 +1100 (AEDT)
+Message-ID: <1413869527.32433.6.camel@ale.ozlabs.ibm.com>
+Subject: [PATCH] powerpc: Enable NUMA balancing in pseries[_le]_defconfig
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Tue, 21 Oct 2014 16:32:07 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I don't see any problems with it
+This enables NUMA balancing in pseries[_le]_defconfig.
 
-On 10/21/14, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Tue, 2014-10-21 at 08:52 +0400, Denis Kirjanov wrote:
->> We have a test suite under samples/bpf/
->
-> Thanks.
->
-> I looked under tools/testing/selftests, could it move in there?
->
-> cheers
->
->
->
+NUMA balancing can do some nasty things with the low level mm code and
+has been causing some issues with the cxl driver.  Also distros are
+enabling it (eg Ubuntu), so it would be good to get some more test
+coverage with it.
 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+mpe: This might help us find some bugs in v3.18, but it's probably
+     better suited for your next tree.
 
--- 
-Regards,
-Denis
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/=
+pseries_defconfig
+index dd2a9ca..de51828 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -17,6 +17,8 @@ CONFIG_TASK_XACCT=3Dy
+ CONFIG_TASK_IO_ACCOUNTING=3Dy
+ CONFIG_IKCONFIG=3Dy
+ CONFIG_IKCONFIG_PROC=3Dy
++CONFIG_NUMA_BALANCING=3Dy
++CONFIG_NUMA_BALANCING_DEFAULT_ENABLED=3Dy
+ CONFIG_CGROUPS=3Dy
+ CONFIG_CGROUP_FREEZER=3Dy
+ CONFIG_CGROUP_DEVICE=3Dy
+diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/confi=
+gs/pseries_le_defconfig
+index 63392f4..db0b636 100644
+--- a/arch/powerpc/configs/pseries_le_defconfig
++++ b/arch/powerpc/configs/pseries_le_defconfig
+@@ -18,6 +18,8 @@ CONFIG_TASK_XACCT=3Dy
+ CONFIG_TASK_IO_ACCOUNTING=3Dy
+ CONFIG_IKCONFIG=3Dy
+ CONFIG_IKCONFIG_PROC=3Dy
++CONFIG_NUMA_BALANCING=3Dy
++CONFIG_NUMA_BALANCING_DEFAULT_ENABLED=3Dy
+ CONFIG_CGROUPS=3Dy
+ CONFIG_CGROUP_FREEZER=3Dy
+ CONFIG_CGROUP_DEVICE=3Dy
