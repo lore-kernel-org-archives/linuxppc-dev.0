@@ -1,19 +1,24 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 8E3BE1A0171
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2014 00:13:29 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv: Populate cpuidle state details by
- querying the device-tree
-Date: Tue, 21 Oct 2014 15:33:50 +0200
-Message-ID: <8968481.QJxQ6T207t@vostro.rjw.lan>
-In-Reply-To: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
-References: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-x22d.google.com (mail-lb0-x22d.google.com
+ [IPv6:2a00:1450:4010:c04::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D3991A0032
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2014 05:17:16 +1100 (AEDT)
+Received: by mail-lb0-f173.google.com with SMTP id 10so1486871lbg.32
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 11:17:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-pm@vger.kernel.org, shreyas@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1413915046-32485-1-git-send-email-geert+renesas@glider.be>
+References: <1413915046-32485-1-git-send-email-geert+renesas@glider.be>
+Date: Tue, 21 Oct 2014 20:17:11 +0200
+Message-ID: <CAMuHMdWTOzvDGjtkQkw5ZnF+6HmHppj7P6-BdkOhB=xwxn7f-w@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.18-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,95 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, October 14, 2014 01:23:00 PM Preeti U Murthy wrote:
-> We hard code the metrics relevant for cpuidle states in the kernel today.
-> Instead pick them up from the device tree so that they remain relevant
-> and updated for the system that the kernel is running on.
-> 
-> Cc: linux-pm@vger.kernel.org
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: devicetree@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+On Tue, Oct 21, 2014 at 8:10 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v3.18-rc1[1] compared to v3.17[2].
+>
+> Summarized:
+>   - build errors: +21/-15
 
-Applied, thanks!
+> [1] http://kisskb.ellerman.id.au/kisskb/head/8002/ (all 119 configs)
+> [2] http://kisskb.ellerman.id.au/kisskb/head/7938/ (118 out of 119 configs)
 
-> ---
-> 
->  drivers/cpuidle/cpuidle-powernv.c |   27 ++++++++++++++++++++++-----
->  1 file changed, 22 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index fa79392..b57681d 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -165,7 +165,8 @@ static int powernv_add_idle_states(void)
->  	int nr_idle_states = 1; /* Snooze */
->  	int dt_idle_states;
->  	const __be32 *idle_state_flags;
-> -	u32 len_flags, flags;
-> +	const __be32 *idle_state_latency;
-> +	u32 len_flags, flags, latency_ns;
->  	int i;
->  
->  	/* Currently we have snooze statically defined */
-> @@ -182,18 +183,32 @@ static int powernv_add_idle_states(void)
->  		return nr_idle_states;
->  	}
->  
-> +	idle_state_latency = of_get_property(power_mgt,
-> +			"ibm,cpu-idle-state-latencies-ns", NULL);
-> +	if (!idle_state_latency) {
-> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
-> +		return nr_idle_states;
-> +	}
-> +
->  	dt_idle_states = len_flags / sizeof(u32);
->  
->  	for (i = 0; i < dt_idle_states; i++) {
->  
->  		flags = be32_to_cpu(idle_state_flags[i]);
-> +
-> +		/* Cpuidle accepts exit_latency in us and we estimate
-> +		 * target residency to be 10x exit_latency
-> +		 */
-> +		latency_ns = be32_to_cpu(idle_state_latency[i]);
->  		if (flags & IDLE_USE_INST_NAP) {
->  			/* Add NAP state */
->  			strcpy(powernv_states[nr_idle_states].name, "Nap");
->  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
->  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-> -			powernv_states[nr_idle_states].exit_latency = 10;
-> -			powernv_states[nr_idle_states].target_residency = 100;
-> +			powernv_states[nr_idle_states].exit_latency =
-> +					((unsigned int)latency_ns) / 1000;
-> +			powernv_states[nr_idle_states].target_residency =
-> +					((unsigned int)latency_ns / 100);
->  			powernv_states[nr_idle_states].enter = &nap_loop;
->  			nr_idle_states++;
->  		}
-> @@ -204,8 +219,10 @@ static int powernv_add_idle_states(void)
->  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
->  			powernv_states[nr_idle_states].flags =
->  				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
-> -			powernv_states[nr_idle_states].exit_latency = 300;
-> -			powernv_states[nr_idle_states].target_residency = 1000000;
-> +			powernv_states[nr_idle_states].exit_latency =
-> +					((unsigned int)latency_ns) / 1000;
-> +			powernv_states[nr_idle_states].target_residency =
-> +					((unsigned int)latency_ns / 100);
->  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
->  			nr_idle_states++;
->  		}
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   + /scratch/kisskb/src/arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 525:2
+>   + /scratch/kisskb/src/arch/powerpc/lib/rheap.c: error: 'be' may be used uninitialized in this function [-Werror=uninitialized]:  => 417:2
+>   + /scratch/kisskb/src/arch/powerpc/lib/rheap.c: error: 'bs' may be used uninitialized in this function [-Werror=uninitialized]:  => 424:17
+>   + /scratch/kisskb/src/arch/powerpc/lib/rheap.c: error: 'start' may be used uninitialized in this function [-Werror=uninitialized]:  => 497:22
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: 'do_lfd' undeclared (first use in this function):  => 1874:29
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: 'do_lfs' undeclared (first use in this function):  => 1872:29
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: 'do_stfd' undeclared (first use in this function):  => 1928:30
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: 'do_stfs' undeclared (first use in this function):  => 1926:30
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: implicit declaration of function 'do_fp_load' [-Werror=implicit-function-declaration]:  => 1872:4
+>   + /scratch/kisskb/src/arch/powerpc/lib/sstep.c: error: implicit declaration of function 'do_fp_store' [-Werror=implicit-function-declaration]:  => 1926:4
+>   + /scratch/kisskb/src/arch/powerpc/xmon/xmon.c: error: unused variable 'badaddr' [-Werror=unused-variable]:  => 1141:13
+>   + /scratch/kisskb/src/arch/powerpc/xmon/xmon.c: error: unused variable 'mode' [-Werror=unused-variable]:  => 1139:6
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+powerpc-randconfig
+
+sstep.c lacks some #ifdef CONFIG_PPC_FPU
+
+>   + /scratch/kisskb/src/drivers/bcma/main.c: error: implicit declaration of function 'of_translate_address' [-Werror=implicit-function-declaration]:  => 150:3
+
+sparc64-allmodconfig, sparc-allmodconfig
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
