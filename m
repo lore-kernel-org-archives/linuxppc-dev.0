@@ -1,21 +1,18 @@
-Return-Path: <BATV+23e76a8edc52560517a7+4076+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAE721A0003
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2014 21:59:27 +1100 (AEDT)
-Date: Tue, 21 Oct 2014 03:59:16 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] ipr: Convert to generic DMA API
-Message-ID: <20141021105916.GB1950@infradead.org>
-References: <1413191676-1663-1-git-send-email-anton@samba.org>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 8E3BE1A0171
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2014 00:13:29 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv: Populate cpuidle state details by
+ querying the device-tree
+Date: Tue, 21 Oct 2014 15:33:50 +0200
+Message-ID: <8968481.QJxQ6T207t@vostro.rjw.lan>
+In-Reply-To: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
+References: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1413191676-1663-1-git-send-email-anton@samba.org>
-Cc: wenxiong@linux.vnet.ibm.com, linux-scsi@vger.kernel.org,
- scottwood@freescale.com, paulus@samba.org, brking@linux.vnet.ibm.com,
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-pm@vger.kernel.org, shreyas@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,6 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wendy, Brian,
+On Tuesday, October 14, 2014 01:23:00 PM Preeti U Murthy wrote:
+> We hard code the metrics relevant for cpuidle states in the kernel today.
+> Instead pick them up from the device tree so that they remain relevant
+> and updated for the system that the kernel is running on.
+> 
+> Cc: linux-pm@vger.kernel.org
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: devicetree@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-can you give me an ACK for this series?
+Applied, thanks!
+
+> ---
+> 
+>  drivers/cpuidle/cpuidle-powernv.c |   27 ++++++++++++++++++++++-----
+>  1 file changed, 22 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index fa79392..b57681d 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -165,7 +165,8 @@ static int powernv_add_idle_states(void)
+>  	int nr_idle_states = 1; /* Snooze */
+>  	int dt_idle_states;
+>  	const __be32 *idle_state_flags;
+> -	u32 len_flags, flags;
+> +	const __be32 *idle_state_latency;
+> +	u32 len_flags, flags, latency_ns;
+>  	int i;
+>  
+>  	/* Currently we have snooze statically defined */
+> @@ -182,18 +183,32 @@ static int powernv_add_idle_states(void)
+>  		return nr_idle_states;
+>  	}
+>  
+> +	idle_state_latency = of_get_property(power_mgt,
+> +			"ibm,cpu-idle-state-latencies-ns", NULL);
+> +	if (!idle_state_latency) {
+> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
+> +		return nr_idle_states;
+> +	}
+> +
+>  	dt_idle_states = len_flags / sizeof(u32);
+>  
+>  	for (i = 0; i < dt_idle_states; i++) {
+>  
+>  		flags = be32_to_cpu(idle_state_flags[i]);
+> +
+> +		/* Cpuidle accepts exit_latency in us and we estimate
+> +		 * target residency to be 10x exit_latency
+> +		 */
+> +		latency_ns = be32_to_cpu(idle_state_latency[i]);
+>  		if (flags & IDLE_USE_INST_NAP) {
+>  			/* Add NAP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "Nap");
+>  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+>  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
+> -			powernv_states[nr_idle_states].exit_latency = 10;
+> -			powernv_states[nr_idle_states].target_residency = 100;
+> +			powernv_states[nr_idle_states].exit_latency =
+> +					((unsigned int)latency_ns) / 1000;
+> +			powernv_states[nr_idle_states].target_residency =
+> +					((unsigned int)latency_ns / 100);
+>  			powernv_states[nr_idle_states].enter = &nap_loop;
+>  			nr_idle_states++;
+>  		}
+> @@ -204,8 +219,10 @@ static int powernv_add_idle_states(void)
+>  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+>  			powernv_states[nr_idle_states].flags =
+>  				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
+> -			powernv_states[nr_idle_states].exit_latency = 300;
+> -			powernv_states[nr_idle_states].target_residency = 1000000;
+> +			powernv_states[nr_idle_states].exit_latency =
+> +					((unsigned int)latency_ns) / 1000;
+> +			powernv_states[nr_idle_states].target_residency =
+> +					((unsigned int)latency_ns / 100);
+>  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+>  			nr_idle_states++;
+>  		}
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
