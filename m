@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 171EE1A0074
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2014 17:11:00 +1100 (AEDT)
-Message-ID: <1413958248.364.11.camel@pasglop>
-Subject: Re: [PATCH] powernv: Use _GLOBAL_TOC for opal wrappers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 22 Oct 2014 17:10:48 +1100
-In-Reply-To: <1413955870.9754.3.camel@concordia>
-References: <1413948772.62479.492398078454.1.gpush@pablo>
- <1413955870.9754.3.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 01F761A014C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2014 18:05:50 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
+Subject: [PATCH] net: fs_enet: set back promiscuity mode after restart
+Message-Id: <20141022070547.83AAB1A5E63@localhost.localdomain>
+Date: Wed, 22 Oct 2014 09:05:47 +0200 (CEST)
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Germain Montoies <germain.montoies@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-10-22 at 16:31 +1100, Michael Ellerman wrote:
-> On Wed, 2014-10-22 at 11:32 +0800, Jeremy Kerr wrote:
-> > Currently, we can't call opal wrappers from modules when using the LE
-> > ABIv2, which requires a TOC init.
-> 
-> What happens if we try? Build failure or run time bug?
+After interface restart (eg: after link disconnection/reconnection), the bridge
+function doesn't work anymore. This is due to the promiscuous mode being cleared
+by the restart.
 
-Kaboom.
+The mac-fcc already includes code to set the promiscuous mode back during the restart.
+This patch adds the same handling to mac-fec and mac-scc.
 
-> > This change uses the _GLOBAL_TOC() macro (rather than _GLOBAL) for the
-> > opal wrappers, so that we can do non-local calls to them.
-> 
-> Are we doing that now, or we would like to?
+Tested with bridge function on MPC885 with FEC.
 
-We do now for a test module (the one that test using the invalid
-OPAL call), but we would like to use it for real for the new IPMI
-driver among others.
+Reported-by: Germain Montoies <germain.montoies@c-s.fr>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Cheers,
-Ben.
+---
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 3 +++
+ drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index 3d4e08b..b34214e 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -341,6 +341,9 @@ static void restart(struct net_device *dev)
+ 		FC(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD disable */
+ 	}
+ 
++	/* Restore multicast and promiscuous settings */
++	set_multicast_list(dev);
++
+ 	/*
+ 	 * Enable interrupts we wish to service.
+ 	 */
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+index f30411f..7a184e8 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+@@ -355,6 +355,9 @@ static void restart(struct net_device *dev)
+ 	if (fep->phydev->duplex)
+ 		S16(sccp, scc_psmr, SCC_PSMR_LPB | SCC_PSMR_FDE);
+ 
++	/* Restore multicast and promiscuous settings */
++	set_multicast_list(dev);
++
+ 	S32(sccp, scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+ }
+ 
+-- 
+2.1.0
