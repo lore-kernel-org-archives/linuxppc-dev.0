@@ -1,23 +1,27 @@
-Return-Path: <maxime.ripard@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 17D101A00E6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 02:54:58 +1100 (AEDT)
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-To: dmaengine@vger.kernel.org,
-	Vinod Koul <vinod.koul@intel.com>
-Subject: [PATCH v3 30/59] dmaengine: fsl-dma: Split device_control
-Date: Wed, 22 Oct 2014 17:43:44 +0200
-Message-Id: <1413992653-21963-31-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1413992653-21963-1-git-send-email-maxime.ripard@free-electrons.com>
-References: <1413992653-21963-1-git-send-email-maxime.ripard@free-electrons.com>
-Cc: lars@metafoo.de, Russell King <linux@arm.linux.org.uk>,
- linux-kernel@vger.kernel.org, Zhang Wei <zw@zh-kernel.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Maxime Ripard <maxime.ripard@free-electrons.com>,
- linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
- linux-arm-kernel@lists.infradead.org,
- =?UTF-8?q?Antoine=20T=C3=A9nart?= <antoine@free-electrons.com>
+Return-Path: <linux@roeck-us.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E7701A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 06:23:23 +1100 (AEDT)
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E9B54140076
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2014 06:23:22 +1100 (AEDT)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1Xgnqr-001LAF-94
+ for linuxppc-dev@ozlabs.org; Wed, 22 Oct 2014 04:48:49 +0000
+Message-ID: <5447372F.4090304@roeck-us.net>
+Date: Tue, 21 Oct 2014 21:48:47 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Convert power off logic to pm_power_off
+References: <1413952677-31662-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1413952677-31662-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-dev@ozlabs.org, agraf@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,145 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split the device_control callback of the Freescale Elo DMA driver to make use
-of the newly introduced callbacks, that will eventually be used to retrieve
-slave capabilities.
+On 10/21/2014 09:37 PM, Michael Ellerman wrote:
+> The generic Linux framework to power off the machine is a function pointer
+> called pm_power_off. The trick about this pointer is that device drivers can
+> potentially implement it rather than board files.
+>
+> Today on powerpc we set pm_power_off to invoke our generic full machine power
+> off logic which then calls ppc_md.power_off to invoke machine specific power
+> off.
+>
+> However, when we want to add a power off GPIO via the "gpio-poweroff" driver,
+> this card house falls apart. That driver only registers itself if pm_power_off
+> is NULL to ensure it doesn't override board specific logic. However, since we
+> always set pm_power_off to the generic power off logic (which will just not
+> power off the machine if no ppc_md.power_off call is implemented), we can't
+> implement power off via the generic GPIO power off driver.
+>
+> To fix this up, let's get rid of the ppc_md.power_off logic and just always use
+> pm_power_off as was intended. Then individual drivers such as the GPIO power off
+> driver can implement power off logic via that function pointer.
+>
+> With this patch set applied and a few patches on top of QEMU that implement a
+> power off GPIO on the virt e500 machine, I can successfully turn off my virtual
+> machine after halt.
+>
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> [mpe: Squash into one patch and update changelog based on cover letter]
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>   arch/powerpc/include/asm/machdep.h               |  1 -
+>   arch/powerpc/kernel/setup-common.c               |  6 +--
+>   arch/powerpc/platforms/44x/ppc476.c              |  2 +-
+>   arch/powerpc/platforms/52xx/efika.c              |  3 +-
+>   arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c   |  8 ++--
+>   arch/powerpc/platforms/85xx/corenet_generic.c    |  2 +-
+>   arch/powerpc/platforms/85xx/sgy_cts1000.c        |  4 +-
+>   arch/powerpc/platforms/cell/celleb_setup.c       |  4 +-
+>   arch/powerpc/platforms/cell/qpace_setup.c        |  2 +-
+>   arch/powerpc/platforms/cell/setup.c              |  2 +-
+>   arch/powerpc/platforms/chrp/setup.c              |  3 +-
+>   arch/powerpc/platforms/embedded6xx/gamecube.c    |  3 +-
+>   arch/powerpc/platforms/embedded6xx/linkstation.c |  4 +-
+>   arch/powerpc/platforms/embedded6xx/wii.c         |  3 +-
+>   arch/powerpc/platforms/maple/setup.c             |  4 +-
+>   arch/powerpc/platforms/powermac/setup.c          |  3 +-
+>   arch/powerpc/platforms/powernv/setup.c           |  4 +-
+>   arch/powerpc/platforms/ps3/setup.c               |  2 +-
+>   arch/powerpc/platforms/pseries/setup.c           | 59 ++++++++++++------------
+>   arch/powerpc/sysdev/fsl_soc.c                    |  2 +-
+>   arch/powerpc/xmon/xmon.c                         |  3 +-
+>   21 files changed, 66 insertions(+), 58 deletions(-)
+>
+>
+> Hi guys, how does this look?
+>
+> If it's OK I'll put it in a topic branch for Guenter.
+>
 
-While we're at it, remove the useless prep_sg callback.
+Looks good to me.
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/dma/fsldma.c | 91 ++++++++++++++++++----------------------------------
- 1 file changed, 32 insertions(+), 59 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 994bcb2c6b92..4b557643a737 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -941,37 +941,8 @@ fail:
- 	return NULL;
- }
- 
--/**
-- * fsl_dma_prep_slave_sg - prepare descriptors for a DMA_SLAVE transaction
-- * @chan: DMA channel
-- * @sgl: scatterlist to transfer to/from
-- * @sg_len: number of entries in @scatterlist
-- * @direction: DMA direction
-- * @flags: DMAEngine flags
-- * @context: transaction context (ignored)
-- *
-- * Prepare a set of descriptors for a DMA_SLAVE transaction. Following the
-- * DMA_SLAVE API, this gets the device-specific information from the
-- * chan->private variable.
-- */
--static struct dma_async_tx_descriptor *fsl_dma_prep_slave_sg(
--	struct dma_chan *dchan, struct scatterlist *sgl, unsigned int sg_len,
--	enum dma_transfer_direction direction, unsigned long flags,
--	void *context)
--{
--	/*
--	 * This operation is not supported on the Freescale DMA controller
--	 *
--	 * However, we need to provide the function pointer to allow the
--	 * device_control() method to work.
--	 */
--	return NULL;
--}
--
--static int fsl_dma_device_control(struct dma_chan *dchan,
--				  enum dma_ctrl_cmd cmd, unsigned long arg)
-+static int fsl_dma_device_terminate_all(struct dma_chan *dchan)
- {
--	struct dma_slave_config *config;
- 	struct fsldma_chan *chan;
- 	int size;
- 
-@@ -980,45 +951,47 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- 
- 	chan = to_fsl_chan(dchan);
- 
--	switch (cmd) {
--	case DMA_TERMINATE_ALL:
--		spin_lock_bh(&chan->desc_lock);
--
--		/* Halt the DMA engine */
--		dma_halt(chan);
-+	spin_lock_bh(&chan->desc_lock);
- 
--		/* Remove and free all of the descriptors in the LD queue */
--		fsldma_free_desc_list(chan, &chan->ld_pending);
--		fsldma_free_desc_list(chan, &chan->ld_running);
--		fsldma_free_desc_list(chan, &chan->ld_completed);
--		chan->idle = true;
-+	/* Halt the DMA engine */
-+	dma_halt(chan);
- 
--		spin_unlock_bh(&chan->desc_lock);
--		return 0;
-+	/* Remove and free all of the descriptors in the LD queue */
-+	fsldma_free_desc_list(chan, &chan->ld_pending);
-+	fsldma_free_desc_list(chan, &chan->ld_running);
-+	fsldma_free_desc_list(chan, &chan->ld_completed);
-+	chan->idle = true;
- 
--	case DMA_SLAVE_CONFIG:
--		config = (struct dma_slave_config *)arg;
-+	spin_unlock_bh(&chan->desc_lock);
-+	return 0;
-+}
- 
--		/* make sure the channel supports setting burst size */
--		if (!chan->set_request_count)
--			return -ENXIO;
-+static int fsl_dma_device_config(struct dma_chan *dchan,
-+				 struct dma_slave_config *config)
-+{
-+	struct fsldma_chan *chan;
-+	int size;
- 
--		/* we set the controller burst size depending on direction */
--		if (config->direction == DMA_MEM_TO_DEV)
--			size = config->dst_addr_width * config->dst_maxburst;
--		else
--			size = config->src_addr_width * config->src_maxburst;
-+	if (!dchan)
-+		return -EINVAL;
- 
--		chan->set_request_count(chan, size);
--		return 0;
-+	chan = to_fsl_chan(dchan);
- 
--	default:
-+	/* make sure the channel supports setting burst size */
-+	if (!chan->set_request_count)
- 		return -ENXIO;
--	}
- 
-+	/* we set the controller burst size depending on direction */
-+	if (config->direction == DMA_MEM_TO_DEV)
-+		size = config->dst_addr_width * config->dst_maxburst;
-+	else
-+		size = config->src_addr_width * config->src_maxburst;
-+
-+	chan->set_request_count(chan, size);
- 	return 0;
- }
- 
-+
- /**
-  * fsl_dma_memcpy_issue_pending - Issue the DMA start command
-  * @chan : Freescale DMA channel
-@@ -1396,8 +1369,8 @@ static int fsldma_of_probe(struct platform_device *op)
- 	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
- 	fdev->common.device_tx_status = fsl_tx_status;
- 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
--	fdev->common.device_prep_slave_sg = fsl_dma_prep_slave_sg;
--	fdev->common.device_control = fsl_dma_device_control;
-+	fdev->common.device_config = fsl_dma_device_config;
-+	fdev->common.device_terminate_all = fsl_dma_device_terminate_all;
- 	fdev->common.dev = &op->dev;
- 
- 	dma_set_mask(&(op->dev), DMA_BIT_MASK(36));
--- 
-2.1.1
+Guenter
