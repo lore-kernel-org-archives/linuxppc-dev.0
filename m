@@ -1,35 +1,23 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E41A41A02E8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 02:45:32 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xgy6L-002Ou0-Ld
- for linuxppc-dev@lists.ozlabs.org; Wed, 22 Oct 2014 15:45:29 +0000
-Date: Wed, 22 Oct 2014 08:43:51 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v2 08/47] kernel: Move pm_power_off to common code
-Message-ID: <20141022154351.GD26229@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-9-git-send-email-linux@roeck-us.net>
- <20141022153136.GA11045@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141022153136.GA11045@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux@openrisc.net,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org,
- linux-xtensa@linux-xtensa.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <maxime.ripard@free-electrons.com>
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238])
+ by lists.ozlabs.org (Postfix) with ESMTP id 17D101A00E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 02:54:58 +1100 (AEDT)
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+To: dmaengine@vger.kernel.org,
+	Vinod Koul <vinod.koul@intel.com>
+Subject: [PATCH v3 30/59] dmaengine: fsl-dma: Split device_control
+Date: Wed, 22 Oct 2014 17:43:44 +0200
+Message-Id: <1413992653-21963-31-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1413992653-21963-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1413992653-21963-1-git-send-email-maxime.ripard@free-electrons.com>
+Cc: lars@metafoo.de, Russell King <linux@arm.linux.org.uk>,
+ linux-kernel@vger.kernel.org, Zhang Wei <zw@zh-kernel.org>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>,
+ linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+ linux-arm-kernel@lists.infradead.org,
+ =?UTF-8?q?Antoine=20T=C3=A9nart?= <antoine@free-electrons.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +27,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2014 at 05:31:36PM +0200, Ralf Baechle wrote:
-> On Mon, Oct 20, 2014 at 09:12:24PM -0700, Guenter Roeck wrote:
-> 
-> > pm_power_off is defined for all architectures. Move it to common code.
-> > 
-> > Have all architectures call do_kernel_power_off instead of pm_power_off.
-> > Some architectures point pm_power_off to machine_power_off. For those,
-> > call do_kernel_power_off from machine_power_off instead.
-> > 
-> > Acked-by: David Vrabel <david.vrabel@citrix.com>
-> > Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > Acked-by: Hirokazu Takata <takata@linux-m32r.org>
-> > Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-> > Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-> > Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Acked-by: Richard Weinberger <richard@nod.at>
-> > Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> 
-> Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Split the device_control callback of the Freescale Elo DMA driver to make use
+of the newly introduced callbacks, that will eventually be used to retrieve
+slave capabilities.
 
-Thanks!
+While we're at it, remove the useless prep_sg callback.
 
-Guenter
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/dma/fsldma.c | 91 ++++++++++++++++++----------------------------------
+ 1 file changed, 32 insertions(+), 59 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 994bcb2c6b92..4b557643a737 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -941,37 +941,8 @@ fail:
+ 	return NULL;
+ }
+ 
+-/**
+- * fsl_dma_prep_slave_sg - prepare descriptors for a DMA_SLAVE transaction
+- * @chan: DMA channel
+- * @sgl: scatterlist to transfer to/from
+- * @sg_len: number of entries in @scatterlist
+- * @direction: DMA direction
+- * @flags: DMAEngine flags
+- * @context: transaction context (ignored)
+- *
+- * Prepare a set of descriptors for a DMA_SLAVE transaction. Following the
+- * DMA_SLAVE API, this gets the device-specific information from the
+- * chan->private variable.
+- */
+-static struct dma_async_tx_descriptor *fsl_dma_prep_slave_sg(
+-	struct dma_chan *dchan, struct scatterlist *sgl, unsigned int sg_len,
+-	enum dma_transfer_direction direction, unsigned long flags,
+-	void *context)
+-{
+-	/*
+-	 * This operation is not supported on the Freescale DMA controller
+-	 *
+-	 * However, we need to provide the function pointer to allow the
+-	 * device_control() method to work.
+-	 */
+-	return NULL;
+-}
+-
+-static int fsl_dma_device_control(struct dma_chan *dchan,
+-				  enum dma_ctrl_cmd cmd, unsigned long arg)
++static int fsl_dma_device_terminate_all(struct dma_chan *dchan)
+ {
+-	struct dma_slave_config *config;
+ 	struct fsldma_chan *chan;
+ 	int size;
+ 
+@@ -980,45 +951,47 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+ 
+ 	chan = to_fsl_chan(dchan);
+ 
+-	switch (cmd) {
+-	case DMA_TERMINATE_ALL:
+-		spin_lock_bh(&chan->desc_lock);
+-
+-		/* Halt the DMA engine */
+-		dma_halt(chan);
++	spin_lock_bh(&chan->desc_lock);
+ 
+-		/* Remove and free all of the descriptors in the LD queue */
+-		fsldma_free_desc_list(chan, &chan->ld_pending);
+-		fsldma_free_desc_list(chan, &chan->ld_running);
+-		fsldma_free_desc_list(chan, &chan->ld_completed);
+-		chan->idle = true;
++	/* Halt the DMA engine */
++	dma_halt(chan);
+ 
+-		spin_unlock_bh(&chan->desc_lock);
+-		return 0;
++	/* Remove and free all of the descriptors in the LD queue */
++	fsldma_free_desc_list(chan, &chan->ld_pending);
++	fsldma_free_desc_list(chan, &chan->ld_running);
++	fsldma_free_desc_list(chan, &chan->ld_completed);
++	chan->idle = true;
+ 
+-	case DMA_SLAVE_CONFIG:
+-		config = (struct dma_slave_config *)arg;
++	spin_unlock_bh(&chan->desc_lock);
++	return 0;
++}
+ 
+-		/* make sure the channel supports setting burst size */
+-		if (!chan->set_request_count)
+-			return -ENXIO;
++static int fsl_dma_device_config(struct dma_chan *dchan,
++				 struct dma_slave_config *config)
++{
++	struct fsldma_chan *chan;
++	int size;
+ 
+-		/* we set the controller burst size depending on direction */
+-		if (config->direction == DMA_MEM_TO_DEV)
+-			size = config->dst_addr_width * config->dst_maxburst;
+-		else
+-			size = config->src_addr_width * config->src_maxburst;
++	if (!dchan)
++		return -EINVAL;
+ 
+-		chan->set_request_count(chan, size);
+-		return 0;
++	chan = to_fsl_chan(dchan);
+ 
+-	default:
++	/* make sure the channel supports setting burst size */
++	if (!chan->set_request_count)
+ 		return -ENXIO;
+-	}
+ 
++	/* we set the controller burst size depending on direction */
++	if (config->direction == DMA_MEM_TO_DEV)
++		size = config->dst_addr_width * config->dst_maxburst;
++	else
++		size = config->src_addr_width * config->src_maxburst;
++
++	chan->set_request_count(chan, size);
+ 	return 0;
+ }
+ 
++
+ /**
+  * fsl_dma_memcpy_issue_pending - Issue the DMA start command
+  * @chan : Freescale DMA channel
+@@ -1396,8 +1369,8 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
+ 	fdev->common.device_tx_status = fsl_tx_status;
+ 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
+-	fdev->common.device_prep_slave_sg = fsl_dma_prep_slave_sg;
+-	fdev->common.device_control = fsl_dma_device_control;
++	fdev->common.device_config = fsl_dma_device_config;
++	fdev->common.device_terminate_all = fsl_dma_device_terminate_all;
+ 	fdev->common.dev = &op->dev;
+ 
+ 	dma_set_mask(&(op->dev), DMA_BIT_MASK(36));
+-- 
+2.1.1
