@@ -1,36 +1,23 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A85BE1A1773
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 07:07:12 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 32E5E14007F
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2014 07:07:10 +1100 (AEDT)
-Message-ID: <54480DF8.3070604@Freescale.com>
-Date: Wed, 22 Oct 2014 15:05:12 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 3/4] dt/bindings: Introduce the FSL QorIQ DPAA QMan
-References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
- <1413986972-621-3-git-send-email-Emilian.Medve@Freescale.com>
- <20141022143732.GB4010@leverpostej>
-In-Reply-To: <20141022143732.GB4010@leverpostej>
-Content-Type: text/plain; charset="windows-1252"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
- "Geoff.Thorpe@freescale.com" <Geoff.Thorpe@Freescale.com>,
- "corbet@lwn.net" <corbet@lwn.net>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "galak@codeaurora.org" <galak@codeaurora.org>,
- "scottwood@freescale.com" <scottwood@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 007FB1A00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 10:02:25 +1100 (AEDT)
+Date: Wed, 22 Oct 2014 16:02:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+Message-Id: <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
+In-Reply-To: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ Steve Capper <steve.capper@linaro.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,220 +27,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Mark,
+On Fri, 17 Oct 2014 10:08:06 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-
-On 10/22/2014 09:37 AM, Mark Rutland wrote:
-> On Wed, Oct 22, 2014 at 03:09:31PM +0100, Emil Medve wrote:
->> The Queue Manager is part of the Data-Path Acceleration Architecture (DPAA).
->> QMan supports queuing and QoS scheduling of frames to CPUs, network interfaces
->> and DPAA logic modules, maintains packet ordering within flows. Besides
->> providing flow-level queuing, is also responsible for congestion management
->> functions such as RED/WRED, congestion notifications and tail discards. This
->> binding covers the CCSR space programming model
->>
->> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
->> Change-Id: I3acb223893e42003d6c9dc061db568ec0b10d29b
->> ---
->>  .../devicetree/bindings/powerpc/fsl/qman.txt       | 134 +++++++++++++++++++++
->>  1 file changed, 134 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/qman.txt
->>
->> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/qman.txt b/Documentation/devicetree/bindings/powerpc/fsl/qman.txt
->> new file mode 100644
->> index 0000000..b9f288f
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/powerpc/fsl/qman.txt
->> @@ -0,0 +1,134 @@
->> +QorIQ DPAA Queue Manager Device Tree Binding
->> +
->> +Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
->> +
->> +CONTENTS
->> +
->> +	- QMan Node
->> +	- QMan Private Memory Nodes
->> +	- Example
->> +
->> +NOTE:	The bindings described in this document are preliminary and subject to
->> +	change
+> Update generic gup implementation with powerpc specific details.
+> On powerpc at pmd level we can have hugepte, normal pmd pointer
+> or a pointer to the hugepage directory.
 > 
-> As with the BMan portal binding, I'm rather uncomfortable with a
-> preliminary binding.
+> ...
+>
+> --- a/arch/arm/include/asm/pgtable.h
+> +++ b/arch/arm/include/asm/pgtable.h
+> @@ -181,6 +181,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+>  /* to find an entry in a kernel page-table-directory */
+>  #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
+>  
+> +#define pgd_huge(pgd)		(0)
+> +
+>  #define pmd_none(pmd)		(!pmd_val(pmd))
+>  #define pmd_present(pmd)	(pmd_val(pmd))
+>  
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index cefd3e825612..ed8f42497ac4 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -464,6 +464,8 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
+>  extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+>  extern pgd_t idmap_pg_dir[PTRS_PER_PGD];
+>  
+> +#define pgd_huge(pgd)		(0)
+> +
 
-Ditto
+So only arm, arm64 and powerpc implement CONFIG_HAVE_GENERIC_RCU_GUP
+and only powerpc impements pgd_huge().
 
->> +
->> +QMan Node
->> +
->> +PROPERTIES
->> +
->> +- compatible
->> +	Usage:		Required
->> +	Value type:	<stringlist>
->> +	Definition:	Must include "fsl,qman"
->> +			May include "fsl,<SoC>-qman"
->> +
->> +- reg
->> +	Usage:		Required
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Registers region within the CCSR address space
->> +
->> +- fsl,liodn
->> +	Usage:		See pamu.txt
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	PAMU property used for static LIODN assignment
->> +
->> +- fsl,iommu-parent
->> +	Usage:		See pamu.txt
->> +	Value type:	<phandle>
->> +	Definition:	PAMU property used for dynamic LIODN assignment
->> +
->> +	For additional details about the PAMU/LIODN binding(s) see pamu.txt
-> 
-> This is not present in the example. Is this always required?
+Could we get a bit of documentation in place for pgd_huge() so that
+people who aren't familiar with powerpc can understand what's going on?
 
-Sort of. Initial hardware (and current documentation) programming
-suggestion was to configure all the PAMU instances the same way
-regardless of what devices were behind them. Given the PAMU internal
-caches sizes, this proved suboptimal from a performance perspective so
-we're trying to discover/describe/use the PAMU topology
+>  /*
+>   * Encode and decode a swap entry:
+>   *	bits 0-1:	present (must be zero)
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 02d11ee7f19d..f97732412cb4 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1219,6 +1219,32 @@ long get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>  		    struct vm_area_struct **vmas);
+>  int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+>  			struct page **pages);
+> +
+> +#ifdef CONFIG_HAVE_GENERIC_RCU_GUP
+> +#ifndef is_hugepd
 
-fsl,liodn is part of the undocumented static LIODN assignment binding
-that the current PAMU driver uses. If fsl,iommu-parent is present,
-fsl,liodn can be ignored and the LIODN can be assigned dynamically
-and/or programmed only in the relevant PAMU instance
+And is_hugepd is a bit of a mystery.  Let's get some description in
+place for this as well?  Why it exists, what its role is.  Also,
+specifically which arch header file is responsible for defining it.
 
->> +
->> +- clocks
->> +	Usage:		See clock-bindings.txt and qoriq-clock.txt
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Half of the platform clock
->> +
-> 
-> I don't understand the description here. What is the clock from the PoV
-> of the QMan? Which input line on the QMan is this clock attached to?
-> 
-> Is there only one clock input? Or jsut one that you need to manage at
-> the moment?
+It takes a hugepd_t argument, but hugepd_t is defined later in this
+header file.  This is weird because any preceding implementation of
+is_hugepd() can't actually be implemented because it hasn't seen the
+hugepd_t definition yet!  So any is_hugepd() implementation is forced
+to be a simple macro which punts to a C function which *has* seen the
+hugepd_t definition.  What a twisty maze.
 
-As part of the programming model (QoS features specifically) QMan needs
-to know its clock speed. Prior to the existence of the
-clock-bindings.txt, a "static" clock-frequency property was/is used
-convey such information. Using clock-binding.txt to describe the
-clocking hierarchy in the SoC makes it easier with DFS, power
-management, etc.
+It all seems messy, confusing and poorly documented.  Can we clean this
+up?
 
-The platform clock/PLL binding is part of qoriq-clock.txt
+> +/*
+> + * Some architectures support hugepage directory format that is
+> + * required to support different hugetlbfs sizes.
+> + */
+> +typedef struct { unsigned long pd; } hugepd_t;
+> +#define is_hugepd(hugepd) (0)
+> +#define __hugepd(x) ((hugepd_t) { (x) })
 
-> You also seem to have an interrupt in the example. How many do you
-> expect, and what are their their logical functions?
+What's this.
 
-That's the error interrupt and hopefully it never triggers. I didn't add
-[many] words about it as it's a standard property
-
->> +QMan Private Memory Nodes
->> +
->> +QMan requires two contiguous range of physical memory used for the backing store
->> +for QMan Frame Queue Descriptor and Packed Frame Descriptor Record. This memory
->> +is reserved/allocated as a nodes under the /reserved-memory node
->> +
->> +The QMan FQD memory node must be named "qman-fqd"
->> +
->> +PROPERTIES
->> +
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<stringlist>
->> +	Definition:	Must inclide "fsl,qman-fqd"
->> +
->> +The QMan PFDR memory node must be named "qman-pfdr"
->> +
->> +PROPERTIES
->> +
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<stringlist>
->> +	Definition:	Must inclide "fsl,qman-pfdr"
->> +
->> +The following constraints are relevant to the FQD and PFDR private memory:
->> +	- The size must be 2^(size + 1), with size = 11..29. That is 4 KiB to
->> +	  1 GiB
->> +	- The alignment must be a muliptle of the memory size
->> +
->> +The size of the FQD and PFDP must be chosen by observing the hardware features
->> +configured via the RCW and that are relevant to a specific board (e.g. number of
->> +MAC(s) pinned-out, number of offline/host command FMan ports, etc.). The size
->> +configured in the DT must reflect the hardware capabilities and not the specific
->> +needs of an application
->> +
->> +If the memory reserved in the device tree proves to be larger then the needs of
->> +the application a QMan driver may provide a method to release the extra memory
->> +back to the OS
-> 
-> Driver details should be unimportant to the binding. This sentence can
-> disappear.
-
-I'm trying to discourage reserved-memory nodes to be used to "optimize"
-the memory allocation/usage. If it comes to it, I can drop this sentence
-
-
-Cheers,
-
-
-> Thanks,
-> Mark.
-> 
->> +
->> +For additional details about reserved memory regions see reserved-memory.txt
->> +
->> +EXAMPLE
->> +
->> +The example below shows a QMan FQD and a PFDR dynamic allocation memory nodes
->> +
->> +	reserved-memory {
->> +		#address-cells = <2>;
->> +		#size-cells = <2>;
->> +		ranges;
->> +
->> +		qman-fqd {
->> +			compatible = "fsl,qman-fqd";
->> +			alloc-ranges = <0 0 0xf 0xffffffff>;
->> +			size = <0 0x400000>;
->> +			alignment = <0 0x400000>;
->> +		};
->> +		qman-pfdr {
->> +			compatible = "fsl,qman-pfdr";
->> +			alloc-ranges = <0 0 0xf 0xffffffff>;
->> +			size = <0 0x2000000>;
->> +			alignment = <0 0x2000000>;
->> +		};
->> +	};
->> +
->> +The example below shows a (P4080) QMan CCSR-space node
->> +
->> +	clockgen: global-utilities@e1000 {
->> +		...
->> +		sysclk: sysclk {
->> +			...
->> +		};
->> +		...
->> +		platform-pll: platform-pll@c00 {
->> +			#clock-cells = <1>;
->> +			reg = <0xc00 0x4>;
->> +			compatible = "fsl,qoriq-platform-pll-1.0";
->> +			clocks = <&sysclk>;
->> +			clock-output-names = "platform-pll", "platform-pll-div2";
->> +		};
->> +		...
->> +	};
->> +
->> +	qman@318000 {
->> +		compatible = "fsl,qman";
->> +		reg = <0x318000 0x1000>;
->> +		interrupts = <16 2 1 3>
->> +		fsl,liodn = <0x16>;
->> +		clocks = <&platform-pll 1>;
->> +	};
->> -- 
->> 2.1.2
+> +static inline int gup_hugepd(hugepd_t hugepd, unsigned long addr,
+> +			     unsigned pdshift, unsigned long end,
+> +			     int write, struct page **pages, int *nr)
+> +{
+> +	return 0;
+> +}
+> +#else
+> +extern int gup_hugepd(hugepd_t hugepd, unsigned long addr,
+> +		      unsigned pdshift, unsigned long end,
+> +		      int write, struct page **pages, int *nr);
+> +#endif
+> +extern int gup_huge_pte(pte_t orig, pte_t *ptep, unsigned long addr,
+> +			unsigned long sz, unsigned long end, int write,
+> +			struct page **pages, int *nr);
+> +#endif
+> +
+>
+> ...
+>
