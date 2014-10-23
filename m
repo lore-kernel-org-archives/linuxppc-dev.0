@@ -1,38 +1,33 @@
-Return-Path: <Geoff.Thorpe@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E58051A019F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 01:15:53 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DD4A414009A
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2014 01:15:52 +1100 (AEDT)
-From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-To: Mark Rutland <mark.rutland@arm.com>, Emilian Medve
- <Emilian.Medve@freescale.com>
-Subject: RE: [PATCH 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
- portal(s)
-Date: Thu, 23 Oct 2014 13:28:49 +0000
-Message-ID: <bb882c85ecf447589d2ff62121541889@BL2PR03MB483.namprd03.prod.outlook.com>
-References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
- <1413986972-621-2-git-send-email-Emilian.Medve@Freescale.com>
- <20141022142931.GA4010@leverpostej> <54480DE6.4090604@Freescale.com>
- <20141023111622.GB13690@leverpostej>
-In-Reply-To: <20141023111622.GB13690@leverpostej>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
- "corbet@lwn.net" <corbet@lwn.net>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "galak@codeaurora.org" <galak@codeaurora.org>,
- Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 909381A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 08:19:50 +1100 (AEDT)
+Received: from /spool/local
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Thu, 23 Oct 2014 19:19:46 -0200
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 1A96B3520059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 17:18:48 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9NLJe0J54395078
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:19:41 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9NLJesA025734
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:19:41 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powernv/iommu: disable IOMMU bypass with param
+ iommu=nobypass
+Date: Thu, 23 Oct 2014 19:19:35 -0200
+Message-Id: <1414099175-27863-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, gwshan@linux.vnet.ibm.com, corbet@lwn.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,66 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGksDQoNCkxlYXBpbmcgaW4gaGVyZSBhIGxpdHRsZSBhZnRlciB0aGUgZmFjdCwgdG8gYWRkIGEg
-Yml0IG9mIGJhY2tncm91bmQgaW5mbyBvbiB0aGUgaGFyZHdhcmUgaW4gY2FzZSBpdCBoZWxwcy4N
-Cg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYXJrIFJ1dGxhbmQgW21h
-aWx0bzptYXJrLnJ1dGxhbmRAYXJtLmNvbV0NCj4gU2VudDogT2N0b2Jlci0yMy0xNCA3OjE2IEFN
-DQo+IFRvOiBNZWR2ZSBFbWlsaWFuLUVNTUVEVkUxDQo+IA0KPiBPbiBXZWQsIE9jdCAyMiwgMjAx
-NCBhdCAwOTowNDo1NFBNICswMTAwLCBFbWlsIE1lZHZlIHdyb3RlOg0KPiA+IEhlbGxvIE1hcmss
-DQo+ID4NCj4gPg0KPiA+IFRoYW5rcyBmb3IgaGF2aW5nIGEgbG9vayBhdCB0aGlzDQo+ID4NCj4g
-PiBPbiAxMC8yMi8yMDE0IDA5OjI5IEFNLCBNYXJrIFJ1dGxhbmQgd3JvdGU6DQo+ID4gPiBPbiBX
-ZWQsIE9jdCAyMiwgMjAxNCBhdCAwMzowOTozMFBNICswMTAwLCBFbWlsIE1lZHZlIHdyb3RlOg0K
-PiA+ID4+IFBvcnRhbHMgYXJlIHVzZWQgYnkgc29mdHdhcmUgcnVubmluZyBvbiBwcm9jZXNzb3Ig
-Y29yZXMsDQo+IGFjY2VsZXJhdG9ycyBhbmQNCj4gPiA+PiBuZXR3b3JrIGludGVyZmFjZXMgdG8g
-Y29tbXVuaWNhdGUgd2l0aCB0aGUgQk1hbg0KPiA+ID4NCj4gPiA+IFdoYXQgZXhhY3RseSBpcyBh
-IHBvcnRhbD8NCj4gPiA+DQo+ID4gPiBJcyBpdCBhIHJlZ2lvbiBvZiBzaGFyZWQgbWVtb3J5PyBB
-IGRldmljZT8NCg0KSnVzdCB0byBzdXBwbGVtZW50IHdoYXQgRW1pbCBhbHJlYWR5IG1lbnRpb25l
-ZCwgdGhlIHBvcnRhbHMgZWFjaCBjb250YWluIHR3byBtZW1vcnktbWFwcGVkIHJlZ2lvbnMgYW5k
-IGEgc2luZ2xlIGludGVycnVwdC4gT25lIG9mIHRoZSByZWdpb25zIGlzIGEgY29udmVudGlvbmFs
-IDRLIHBhZ2Ugb2YgMzItYml0IGNhY2hlLWluaGliaXRlZCByZWdpc3RlcnMgKGFuZCB0aGlzIGlu
-Y2x1ZGVzIGFsbCB0aGUgY29udHJvbHMgYW5kIHN0YXR1cyBmb3IgdGhlIHBvcnRhbCdzIGludGVy
-cnVwdCBsaW5lLCB3aGljaCBjb252ZXlzIGEgdmFyaWV0eSBvZiBpbmRpdmlkdWFsbHktY29uZmln
-dXJhYmxlIGludGVycnVwdCBzb3VyY2UgY29uZGl0aW9ucykuIFRoZSBvdGhlciByZWdpb24gaXMg
-YSAxNksgY2FjaGUtZW5hYmxlZCBzcGFjZSwgc28gdGhlICJyZWdpc3RlcnMiIGFyZSBjYWNoZWxp
-bmUgd2lkdGggLSBpbnRlcmFjdGlvbiB3aXRoIHRoaXMgcmVsaWVzIG9uIGNhY2hlbGluZSBtYW5p
-cHVsYXRpb24gaW5zdHJ1Y3Rpb25zIChmbHVzaGluZywgcHJlZmV0Y2hpbmcsIGV0YyksIGFuZCBp
-biBzb21lIGNvbmZpZ3VyYXRpb25zIGhhcmR3YXJlIHdpbGwgaW5pdGlhdGUgc3Rhc2hpbmcgKGNh
-Y2hlLXdhcm1pbmcpIGZvciBzb21lIG9mIHRob3NlIGNhY2hlbGluZXMsIHdoaWNoIGlzIG9uZSBv
-ZiB0aGUgcmVhc29ucyB0aGF0IHRoZXNlIHBvcnRhbHMgaGF2ZSAiTElPRE4iIGluZm9ybWF0aW9u
-IGNvbmZpZ3VyZWQgaW50byB0aGVtIChzdGFzaGluZyB0cmFuc2FjdGlvbnMgZ28gdGhyb3VnaCB0
-aGUgSU9NTVUpLiBUaGUgb3RoZXIgcmVhc29uIGZvciBMSU9ETi9JT01NVSBjb250ZXh0IGlzIHRo
-YXQgYWxsIHRoZSBhY2NlbGVyYXRvciBhbmQgbmV0d29ya2luZyBmdW5jdGlvbnMgYWNjZXNzZWQg
-dmlhIGEgcG9ydGFsIHdpbGwgYmUgc3ViamVjdGVkIHRvIHRoZSBJT01NVSBjb250ZXh0IGluZm8g
-b2YgdGhhdCBwb3J0YWwuIEluIHRoaXMgd2F5LCBhIHBvcnRhbCB0aGF0IGlzIG1hcHBlZC91c2Vk
-IGJ5IGEgZ2l2ZW4gc29mdHdhcmUgY29udGV4dCBjYW4gYmUgc2V0dXAgc3VjaCB0aGF0IERNQSBn
-ZW5lcmF0ZWQgYnkgaXRzIGhhcmR3YXJlIGludGVyYWN0aW9ucyB3aWxsIHJlc3BlY3QgdGhlIHNh
-bWUgZ3Vlc3QtcGh5c2ljYWwgdHJhbnNsYXRpb25zIGFuZCByZXN0cmljdGlvbnMgYXMgYXBwbHkg
-dG8gdGhlIHNvZnR3YXJlIGNvbnRleHQgaXRzZWxmLg0KDQpCVFcsIGEgc3Vic2V0IG9mIHRoZSBD
-Q1NSIHJlZ2lzdGVycyBmb3IgdGhlIFFNYW4gYW5kIEJNYW4gYmxvY2tzIGFyZSB1c2VkIHRvIGNv
-bmZpZ3VyZSB0aGVzZSBMSU9ETi9JT01NVSBhdHRyaWJ1dGVzIG9mIHRoZSBwb3J0YWxzLCBhcyBv
-cHBvc2VkIHRvIHRob3NlIGF0dHJpYnV0ZXMgYmVpbmcgZXhwb3NlZCBpbiB0aGUgcmVnaXN0ZXIg
-c3BhY2Ugb2YgdGhlIHBvcnRhbHMgdGhlbXNlbHZlcy4gSW4gdGhpcyB3YXksIHRoZSB1c2VyIG9m
-IGEgbWVtb3J5LW1hcHBlZCBwb3J0YWwgY2Fubm90IHNldCB0aGVpciBvd24gTElPRE4vSU9NTVUg
-YXR0cmlidXRlcywgdGhhdCBkZWNpc2lvbiBiZWxvbmdzIHRvIHdob2V2ZXIgdHdpZGRsZXMgd2l0
-aCBDQ1NSLg0KDQo+ID4gR2l2ZW4gdGhlIGRlc2NyaXB0aW9uIGFib3ZlLCBzdXJlbHkgeW91IG5l
-ZWQgdG8ga25vdyB3aGF0IHRoZQ0KPiBwb3J0YWwgaXMNCj4gPiA+IHVzZWQgZm9yPyBPciBpcyB0
-aGF0IHF1ZXJpZWQgZnJvbSB0aGUgcG9ydGFsPw0KPiA+DQo+ID4gV2UgZG9uJ3QgbmVlZC93YW50
-IHRvIGluY2x1ZGUgc3VjaCBpbmZvcm1hdGlvbiBpbiB0aGUgRFQuIFBvcnRhbHMNCj4gYXJlDQo+
-ID4gImFsbG9jYXRlZCIgZHluYW1pY2FsbHkgYW5kIHVzZWQgYnkgdGhlIHJlc3BlY3RpdmUgY29u
-dGV4dA0KPiANCj4gT2suIFNvIHRoZXkgaGF2ZSBubyBmaXhlZCBwdXJwb3NlIGFuZCBzb2Z0d2Fy
-ZSBhbGxvY2F0ZXMgYXMgbmVjZXNzYXJ5Pw0KPiBUaGVyZSBhcmUgbm8gY29uc3RyYWludHMgb24g
-aG93IGVhY2ggcG9ydGFsIG1heSBiZSB1c2VkLCBvciB3aGljaA0KPiBwb3J0YWwNCj4gYW5vdGhl
-ciBhZ2V0biBtaWdodCB1c2U/DQoNClllcywgcHJlY2lzZWx5LiBUaGV5J3JlIGludGVyY2hhbmdl
-YWJsZSB3aW5kb3dzL2NvbnRleHRzIGludG8gdGhlIGhhcmR3YXJlLCBmb3IgaXNzdWluZyB2YXJp
-b3VzIGtpbmRzIG9mIGNvbW1hbmRzIGFuZCBvYnRhaW5pbmcgdmFyaW91cyBraW5kcyBvZiByZXN1
-bHRzL3N0YXR1cy4gVGhlIFNvQyBwcm92aWRlcyBhIGNlcnRhaW4gbnVtYmVyIG9mIHRoZXNlIHBv
-cnRhbHMsIGFuZCBzb2Z0d2FyZSBjYW4gYWxsb2NhdGUgdGhlbSBvdXQgYW5kIGNvbmZpZ3VyZSB0
-aGVtIGluIHdoYXRldmVyIG1hbm5lciAoc3RhdGljLCBkeW5hbWljLCAuLi4pLiBCZWNhdXNlIG9m
-IHRoZSBDQ1NSLWNvbnRyb2xsZWQgTElPRE4vSU9NTVUgcG9ydGFsIGF0dHJpYnV0ZXMsIHR3byBw
-b3J0YWxzIGNhbiBiZSBzZXQgdXAgdG8gaGF2ZSBkaWZmZXJlbnQgImFjY2VzcyIgYW5kIG9wZXJh
-dGUgaW4gZGlmZmVyZW50IGNvbnRleHRzIChlZy4gYXBwcywgdmlydHVhbCBtYWNoaW5lcyksIGJ1
-dCB0aGF0IGlzIGRldGVybWluZWQgYnkgY29udHJvbCBzb2Z0d2FyZSAoa2VybmVsIGRyaXZlcikg
-Y29uZmlndXJhdGlvbiBvZiB0aG9zZSBwb3J0YWxzIGJlZm9yZSB0aGVpciB1c2UuIEluIHNob3J0
-LCB0aGVyZSdzIG5vdGhpbmcgaW50cmluc2ljIHRvIHRoZSBwb3J0YWxzIChpZS4gZnJvbSBhIGhh
-cmR3YXJlIHBlcnNwZWN0aXZlKSB0aGF0IGRpc3Rpbmd1aXNoZXMgdGhlbSBvciBwcmVkZXRlcm1p
-bmVzIHRoZWlyIHVzZS4NCg0KQ2hlZXJzLA0KR2VvZmYNCg0KDQo=
+When IOMMU bypass is enabled, a PCI device can read and write memory
+that was not mapped by the driver without causing an EEH. That might
+cause memory corruption, for example.
+
+When we disable bypass, DMA reads and writes to addresses not mapped by
+the IOMMU will cause an EEH, allowing us to debug such issues.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ Documentation/kernel-parameters.txt       |    2 ++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   24 +++++++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 988160a..b03322a 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1454,6 +1454,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		forcesac
+ 		soft
+ 		pt		[x86, IA-64]
++		nobypass	[PPC/POWERNV]
++			Disable IOMMU bypass, using IOMMU for PCI devices.
+ 
+ 
+ 	io7=		[HW] IO7 for Marvel based alpha systems
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 468a0f2..a7d2f32 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -75,6 +75,27 @@ static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ #define pe_info(pe, fmt, ...)					\
+ 	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+ 
++static bool pnv_iommu_bypass_disabled __read_mostly;
++
++static int __init iommu_setup(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	while (*str) {
++		if (!strncmp(str, "nobypass", 8)) {
++			pnv_iommu_bypass_disabled = true;
++			pr_info("PowerNV: IOMMU bypass window disabled.\n");
++		}
++		str += strcspn(str, ",");
++		if (*str == ',')
++			str++;
++	}
++
++	return 0;
++}
++
++early_param("iommu", iommu_setup);
++
+ /*
+  * stdcix is only supposed to be used in hypervisor real mode as per
+  * the architecture spec
+@@ -1243,7 +1264,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
+ 
+ 	/* Also create a bypass window */
+-	pnv_pci_ioda2_setup_bypass_pe(phb, pe);
++	if (!pnv_iommu_bypass_disabled)
++		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
+ 	return;
+ fail:
+ 	if (pe->tce32_seg >= 0)
+-- 
+1.7.1
