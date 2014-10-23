@@ -1,37 +1,39 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9E5D1A008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 18:46:40 +1100 (AEDT)
-Message-ID: <5448B21C.1020906@huawei.com>
-Date: Thu, 23 Oct 2014 15:45:32 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A8D31A004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:09:30 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 23 Oct 2014 18:09:27 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D5A80357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:09:23 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9N8BGo136896850
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:11:25 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9N88oDO008760
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:08:51 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+In-Reply-To: <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
+References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
+Date: Thu, 23 Oct 2014 13:38:30 +0530
+Message-ID: <87r3xzgqdd.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v3 00/27] Use MSI chip framework to configure MSI/MSI-X
- in all platforms
-References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
- <20141023054326.GF4795@google.com>
-In-Reply-To: <20141023054326.GF4795@google.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>, Sergei
- Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: text/plain
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ Steve Capper <steve.capper@linaro.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,205 +43,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> v1->v2:
->> Add a patch to make s390 MSI code build happy between patch "x86/xen/MSI: E.."
->> and "s390/MSI: Use MSI..". Fix several typo problems found by Lucas.
+Andrew Morton <akpm@linux-foundation.org> writes:
+
+> On Fri, 17 Oct 2014 10:08:06 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Update generic gup implementation with powerpc specific details.
+>> On powerpc at pmd level we can have hugepte, normal pmd pointer
+>> or a pointer to the hugepage directory.
+>> 
+>> ...
 >>
->> RFC->v1: 
->> Updated "[patch 4/21] x86/xen/MSI: Eliminate...", export msi_chip instead
->> of #ifdef to fix MSI bug in xen running in x86. 
->> Rename arch_get_match_msi_chip() to arch_find_msi_chip().
->> Drop use struct device as the msi_chip argument, we will do that
->> later in another patchset.
->>
->> Yijing Wang (27):
-> 
-> This is a lot of stuff, and it's not all related, so putting it all
-> together in one series makes it hard for me to deal with it.
-> 
->>   MSI: Remove the redundant irq_set_chip_data()
-
-OK, will post it out separately.
-
-> 
-> This doesn't seem related to eliminating weak functions.
-> 
->>   x86/xen/MSI: Eliminate arch_msix_mask_irq() and arch_msi_mask_irq()
->>   s390/MSI: Use __msi_mask_irq() instead of default_msi_mask_irq()
-
-Will update your comments and post these together.
-
-> 
-> These two seem to go together.
-> 
->>   arm/MSI: Save MSI chip in pci_sys_data
->>   PCI: tegra: Save msi chip in pci_sys_data
->>   PCI: designware: Save msi chip in pci_sys_data
->>   PCI: rcar: Save msi chip in pci_sys_data
->>   PCI: mvebu: Save msi chip in pci_sys_data
->>   arm/PCI: Clean unused pcibios_add_bus() and pcibios_remove_bus()
->>   PCI/MSI: Remove useless bus->msi assignment
-> 
-> These seem to go together (it'd be nice if they were all capitalized the
-> same).
-
-OK, will update the titles and post together.
-
-> 
-> I don't like the "msi_chip" name because the "chip" part doesn't convey
-> much information, other than telling us that apparently some sort of
-> semiconductor integrated circuit is involved.  I sort of assumed that
-> much :)
-
-I think so, msi_chip easily make me confuse with x86 irq_chip msi_chip.
-
-> 
-> Something like "msi_controller" would be more descriptive since we're
-> talking about an interrupt controller that accepts writes from a device and
-> turns them into CPU interrupts, e.g., a LAPIC.
-
-Hm, it's a better one, arm also use "msi-controller" to represent the msi related
-object in DTS file.
+>> --- a/arch/arm/include/asm/pgtable.h
+>> +++ b/arch/arm/include/asm/pgtable.h
+>> @@ -181,6 +181,8 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+>>  /* to find an entry in a kernel page-table-directory */
+>>  #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
+>>  
+>> +#define pgd_huge(pgd)		(0)
+>> +
+>>  #define pmd_none(pmd)		(!pmd_val(pmd))
+>>  #define pmd_present(pmd)	(pmd_val(pmd))
+>>  
+>> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+>> index cefd3e825612..ed8f42497ac4 100644
+>> --- a/arch/arm64/include/asm/pgtable.h
+>> +++ b/arch/arm64/include/asm/pgtable.h
+>> @@ -464,6 +464,8 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
+>>  extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+>>  extern pgd_t idmap_pg_dir[PTRS_PER_PGD];
+>>  
+>> +#define pgd_huge(pgd)		(0)
+>> +
+>
+> So only arm, arm64 and powerpc implement CONFIG_HAVE_GENERIC_RCU_GUP
+> and only powerpc impements pgd_huge().
+>
+> Could we get a bit of documentation in place for pgd_huge() so that
+> people who aren't familiar with powerpc can understand what's going
+> on?
 
 
-> 
->>   PCI/MSI: Refactor struct msi_chip to make it become more common
->>   x86/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   x86/xen/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   Irq_remapping/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   x86/MSI: Remove unused MSI weak arch functions
->>   Mips/MSI: Save msi chip in pci sysdata
->>   MIPS/Octeon/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   MIPS/Xlp: Remove the dead function destroy_irq() to fix build error
->>   MIPS/Xlp/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   MIPS/Xlr/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   Powerpc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   s390/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   arm/iop13xx/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   IA64/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   Sparc/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   tile/MSI: Use MSI chip framework to configure MSI/MSI-X irq
->>   PCI/MSI: Clean up unused MSI arch functions
->>
->>  arch/arm/include/asm/mach/pci.h                 |   10 +-
->>  arch/arm/include/asm/pci.h                      |    9 ++
->>  arch/arm/kernel/bios32.c                        |   19 +---
->>  arch/arm/mach-iop13xx/include/mach/pci.h        |    4 +
->>  arch/arm/mach-iop13xx/iq81340mc.c               |    3 +
->>  arch/arm/mach-iop13xx/iq81340sc.c               |    5 +-
->>  arch/arm/mach-iop13xx/msi.c                     |   11 ++-
->>  arch/ia64/include/asm/pci.h                     |   10 ++
->>  arch/ia64/kernel/msi_ia64.c                     |   14 ++-
->>  arch/ia64/pci/pci.c                             |    1 +
->>  arch/mips/include/asm/netlogic/xlp-hal/pcibus.h |    1 +
->>  arch/mips/include/asm/octeon/pci-octeon.h       |    4 +
->>  arch/mips/include/asm/pci.h                     |   14 +++
->>  arch/mips/pci/msi-octeon.c                      |   31 +++---
->>  arch/mips/pci/msi-xlp.c                         |   15 ++-
->>  arch/mips/pci/pci-octeon.c                      |    3 +
->>  arch/mips/pci/pci-xlp.c                         |    3 +
->>  arch/mips/pci/pci-xlr.c                         |   17 +++-
->>  arch/powerpc/include/asm/pci-bridge.h           |   15 +++
->>  arch/powerpc/kernel/msi.c                       |   12 ++-
->>  arch/powerpc/kernel/pci-common.c                |    3 +
->>  arch/s390/include/asm/pci.h                     |    9 ++
->>  arch/s390/pci/pci.c                             |   16 ++-
->>  arch/sparc/kernel/pci.c                         |   14 ++-
->>  arch/sparc/kernel/pci_impl.h                    |   12 ++
->>  arch/tile/include/asm/pci.h                     |   10 ++
->>  arch/tile/kernel/pci_gx.c                       |   13 ++-
->>  arch/x86/include/asm/pci.h                      |   18 +++-
->>  arch/x86/include/asm/x86_init.h                 |    7 --
->>  arch/x86/kernel/apic/io_apic.c                  |   12 ++-
->>  arch/x86/kernel/x86_init.c                      |   34 ------
->>  arch/x86/pci/acpi.c                             |    1 +
->>  arch/x86/pci/common.c                           |    3 +
->>  arch/x86/pci/xen.c                              |   72 +++++++------
->>  drivers/iommu/irq_remapping.c                   |   13 ++-
->>  drivers/pci/host/pci-mvebu.c                    |   10 +--
->>  drivers/pci/host/pci-tegra.c                    |   13 +--
->>  drivers/pci/host/pcie-designware.c              |   15 +--
->>  drivers/pci/host/pcie-rcar.c                    |   13 +--
->>  drivers/pci/msi.c                               |  133 ++++++++++-------------
->>  drivers/pci/probe.c                             |    1 -
->>  include/linux/msi.h                             |   24 ++---
->>  include/linux/pci.h                             |    1 +
->>  43 files changed, 379 insertions(+), 269 deletions(-)
-> 
-> Huh.  I was hoping this was going to simplify things, and maybe it does
-> somehow, but it's unfortunate that it adds 110 lines of code overall.  Does
-> that seem right to you?  Why does it add code?
+I ended up moving that to include/linux/hugetlb.h with the below
+comments added. Let me know if the below is ok 
 
-I filter out these patches which add code.
+/*
+ * hugepages at page global directory. If arch support
+ * hugepages at pgd level, they need to define this.
+ */
+#ifndef pgd_huge
+#define pgd_huge(x)	0
+#endif
 
-[PATCH v3 04/27] arm/MSI: Save MSI chip in pci_sys_data
- 5 files changed, 33 insertions(+), 0 deletions(-)
-Insertions code mainly to introduce arch specific pci_msi_chip() to extract msi_chip from pci_sys_data, and temporary #ifdef
-
-[PATCH v3 11/27] PCI/MSI: Refactor struct msi_chip to make it become more common
- 2 files changed, 19 insertions(+), 0 deletions(-)
-Insertions here is to add msi ops like restore, teardown to msi_chip.
-
-[PATCH v3 12/27] x86/MSI: Use MSI chip framework to configure MSI/MSI-X irq
- 4 files changed, 36 insertions(+), 0 deletions(-)
-Arch specific pci_msi_chip() and declaration of msi_chip in x86, also some temporary code to compile ok.
-
-[PATCH v3 13/27] x86/xen/MSI: Use MSI chip framework to configure MSI/MSI-X irq
- 1 files changed, 39 insertions(+), 19 deletions(-)
-To avoid call default_teardown_msi_irq(), copy the default_teardown_msi_irq() code in this file.
-
-[PATCH v3 16/27] Mips/MSI: Save msi chip in pci sysdata
- 1 files changed, 14 insertions(+), 0 deletions(-)
-Arch specific pci_msi_chip() and some #ifdef code
-
-[PATCH v3 17/27] MIPS/Octeon/MSI: Use MSI chip framework to configure MSI/MSI-X irq
- 3 files changed, 25 insertions(+), 13 deletions(-)
-
-Archs Use msi chip framework to configure MSI/MSI-x
- 3 files changed, 13 insertions(+), 2 deletions(-)
- 1 files changed, 15 insertions(+), 2 deletions(-)
- 3 files changed, 28 insertions(+), 2 deletions(-)
- 2 files changed, 19 insertions(+), 2 deletions(-)
- 4 files changed, 20 insertions(+), 3 deletions(-)
- 3 files changed, 21 insertions(+), 4 deletions(-)
- 2 files changed, 24 insertions(+), 2 deletions(-)
- 2 files changed, 21 insertions(+), 2 deletions(-)
-
-So the most adding code is to introduce arch specific pci_msi_chip(), this one will be removed after we make
-pci_host_bridge generic and save msi_chip in it. There are also lots of #ifdef in arm code for msi_chip.
-
-> 
-> Who do you want to apply this?  I can take it if that makes the most sense,
-
-I hope you can apply this.
-
-> but I'd like acks from the architecture folks for their pieces, and
-> especially one from Thomas for the overall direction and the x86 parts.
-
-OK.
-
-> 
-> If you want me to take this, can you refresh it to be based on v3.18-rc1?
-> I tried to apply it on v3.18-rc1, but [15/27] didn't apply because of
-> conflicts in arch/x86/kernel/apic/io_apic.c.
-
-OK.
-
-> 
-> I'll look at these more tomorrow, I'm getting bleary-eyed tonight.
-
-Thanks for your review and comments very much!
-
-Thanks!
-Yijing.
-
-> 
-> Bjorn
-> 
-> .
-> 
+#ifndef is_hugepd
+/*
+ * Some architectures requires a hugepage directory format that is
+ * required to support multiple hugepage sizes. For example
+ * a4fe3ce7699bfe1bd88f816b55d42d8fe1dac655 introduced the same
+ * on powerpc. This allows for a more flexible hugepage pagetable
+ * layout.
+ */
+typedef struct { unsigned long pd; } hugepd_t;
+#define is_hugepd(hugepd) (0)
+#define __hugepd(x) ((hugepd_t) { (x) })
+static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
+			      unsigned pdshift, unsigned long end,
+			      int write, struct page **pages, int *nr)
+{
+	return 0;
+}
+#else
+extern int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
+		       unsigned pdshift, unsigned long end,
+		       int write, struct page **pages, int *nr);
+#endif
 
 
--- 
-Thanks!
-Yijing
+-aneesh
