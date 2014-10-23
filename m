@@ -1,36 +1,35 @@
-Return-Path: <daniel@ffwll.ch>
-Received: from mail-wi0-x231.google.com (mail-wi0-x231.google.com
- [IPv6:2a00:1450:400c:c05::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mark.rutland@arm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C03AA1A199E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 19:10:29 +1100 (AEDT)
-Received: by mail-wi0-f177.google.com with SMTP id ex7so1057834wid.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 01:10:26 -0700 (PDT)
-Sender: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Thu, 23 Oct 2014 10:10:34 +0200
-From: Daniel Vetter <daniel@ffwll.ch>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Subject: Re: [PATCH] drivers: depend on instead of select
- BACKLIGHT_CLASS_DEVICE and ACPI_VIDEO
-Message-ID: <20141023081034.GA26941@phenom.ffwll.local>
-References: <1413580403-16225-1-git-send-email-jani.nikula@intel.com>
- <54476492.6090105@ti.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7013A1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2014 22:16:54 +1100 (AEDT)
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id A64C214007D
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2014 22:16:52 +1100 (AEDT)
+Date: Thu, 23 Oct 2014 12:16:22 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Emil Medve <Emilian.Medve@freescale.com>
+Subject: Re: [PATCH 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+ portal(s)
+Message-ID: <20141023111622.GB13690@leverpostej>
+References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1413986972-621-2-git-send-email-Emilian.Medve@Freescale.com>
+ <20141022142931.GA4010@leverpostej>
+ <54480DE6.4090604@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54476492.6090105@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- linux-fbdev@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>,
- Daniel Drake <dsd@laptop.org>, Jens Frederich <jfrederich@gmail.com>,
- Jani Nikula <jani.nikula@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jon Nettleton <jon.nettleton@gmail.com>, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
- Randy Dunlap <rdunlap@infradead.org>, Daniel Vetter <daniel.vetter@intel.com>,
- Darren Hart <dvhart@infradead.org>, Bryan Wu <cooloney@gmail.com>,
- linuxppc-dev@lists.ozlabs.org,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+In-Reply-To: <54480DE6.4090604@Freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "Geoff.Thorpe@freescale.com" <Geoff.Thorpe@freescale.com>,
+ "corbet@lwn.net" <corbet@lwn.net>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,102 +39,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2014 at 11:02:26AM +0300, Tomi Valkeinen wrote:
-> On 18/10/14 00:13, Jani Nikula wrote:
-> > Documentation/kbuild/kconfig-language.txt warns to use select with care,
-> > and in general use select only for non-visible symbols and for symbols
-> > with no dependencies, because select will force a symbol to a value
-> > without visiting the dependencies.
-> > 
-> > Select has become particularly problematic, interdependently, with the
-> > BACKLIGHT_CLASS_DEVICE and ACPI_VIDEO configs. For example:
-> > 
-> > scripts/kconfig/conf --randconfig Kconfig
-> > KCONFIG_SEED=0x48312B00
-> > warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
-> > DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
-> > && FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
-> > EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
-> > which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
-> > warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
-> > DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
-> > && FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
-> > EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
-> > which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
-> > 
-> > With tristates it's possible to end up selecting FOO=y depending on
-> > BAR=m in the config, which gets discovered at build time, not config
-> > time, like reported in the thread referenced below.
-> > 
-> > Do the following to fix the dependencies:
-> > 
-> > * Depend on instead of select BACKLIGHT_CLASS_DEVICE everywhere. Drop
-> >   select BACKLIGHT_LCD_SUPPORT in such cases, as it's a dependency of
-> >   BACKLIGHT_CLASS_DEVICE.
-> > 
-> > * Remove config FB_BACKLIGHT altogether, and replace it with a
-> >   dependency on BACKLIGHT_CLASS_DEVICE. All configs selecting
-> >   FB_BACKLIGHT select or depend on FB anyway, so we can simplify.
-> > 
-> > * Depend on (ACPI && ACPI_VIDEO) || ACPI=n in several places instead of
-> >   selecting ACPI_VIDEO and a number of its dependencies if ACPI is
-> >   enabled. This is tied to backlight, as ACPI_VIDEO depends on
-> >   BACKLIGHT_CLASS_DEVICE.
-> > 
-> > * Replace a couple of select INPUT/VT with depends as it seemed to be
-> >   necessary.
+On Wed, Oct 22, 2014 at 09:04:54PM +0100, Emil Medve wrote:
+> Hello Mark,
 > 
-> While doing 'depends on' instead of 'select' is an "easy" fix for this,
-> I do dislike it quite a bit. It's a major pain to go around the kernel
-> config, trying to find all the dependencies that a particular driver
-> wants. If I need fb-foobar, I should just be able to enable it, instead
-> of first searching and selecting its minor dependencies individually.
 > 
-> So, not a NACK, but a "isn't there an another way to fix this?".
+> Thanks for having a look at this
 > 
-> Looking at backlight... BACKLIGHT_LCD_SUPPORT seems to be a "meta"
-> option, it only enables a Kconfig submenu.
+> On 10/22/2014 09:29 AM, Mark Rutland wrote:
+> > On Wed, Oct 22, 2014 at 03:09:30PM +0100, Emil Medve wrote:
+> >> Portals are used by software running on processor cores, accelerators and
+> >> network interfaces to communicate with the BMan
+> > 
+> > What exactly is a portal?
+> > 
+> > Is it a region of shared memory? A device?
 > 
-> So I think we could just remove the whole BACKLIGHT_LCD_SUPPORT option.
-> But if we do that, all the items in drivers/video/backlight/Kconfig with
-> default 'y' or 'm' would get enabled by default, so I think we should
-> remove the 'default's from that file. That makes sense in any case, as I
-> don't see why "HP Jornada 700 series LCD Driver" should be "default y".
+> In a nutshell a (software, i.e. processor core accessible) portal is a
+> memory mapped interface to the B/QMan that allows low latency, lock-less
+> interaction by logically separated units of software. The original
+> intent was to have one affine portal per core. As of now we're
+> sprinkling portals to use from various (core affine) contexts:
+> hypervisor, guests, user-space, containers, etc.
 > 
-> BACKLIGHT_CLASS_DEVICE doesn't depend on anything except
-> BACKLIGHT_LCD_SUPPORT, so after removing BACKLIGHT_LCD_SUPPORT it should
-> be safe to 'select' BACKLIGHT_CLASS_DEVICE.
-> 
-> BACKLIGHT_CLASS_DEVICE could be made a hidden option, and the drivers in
-> drivers/video/backlight/Kconfig which are under BACKLIGHT_CLASS_DEVICE
-> could be made to select BACKLIGHT_CLASS_DEVICE instead.
-> 
-> That doesn't exactly fix anything, but I think it makes sense as
-> BACKLIGHT_CLASS_DEVICE is something that's selected from all around the
-> kernel, so it should be a selectable "library" instead of a Kconfig menu
-> option.
-> 
-> I didn't look at the ACPI_VIDEO side, so no idea how messy that is.
+> I'll make the definition more palatable in the next round
 
-If we want to make BACKLIGHT_CLASS_DEVICE into a library thing then I
-guess we could do that, but we must then also drag it out of all the other
-meta options to make sure it's always available. No need I think to ditch
-the entire BACKLIGHT_LCD_SUPPORT meta option. And then everyone could
-select it.
+Thanks,
 
-The problem is if you mix depends and select Kconfig falls over and starts
-to see loops where there are none. So you really can't ever mix them for
-the same symbol.
+> > I only received emails 2 and 3 of this series, so I'm lacking the
+> > context necessary to understand the bindings.
+> 
+> Some bubble in the pipe... As of now they all seem to have hit the
+> e-mail list(s), patchwork and hopefully your Inbox
 
-I think if we get the BACKLIGHT_CLASS_DEVICE out of the picture with that
-ACPI_VIDEO should be fixable with some
+They've all come through now, yes.
 
-	select ACPI_VIDEO if ACPI
+I'd expected to see the relevant code too -- in isolation the bindings
+are somewhat difficult to grok.
 
-or so. Currently that doesn't work because of the backlight class knob and
-select being broken.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+> 
+> >> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> >> Change-Id: I6d245ffc14ba3d0e91d403ac7c3b91b75a9e6a95
+> >> ---
+> >>  .../bindings/powerpc/fsl/bman-portals.txt          | 50 ++++++++++++++++++++++
+> >>  1 file changed, 50 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
+> >> new file mode 100644
+> >> index 0000000..40e607e
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
+> >> @@ -0,0 +1,50 @@
+> >> +QorIQ DPAA Buffer Manager Portals Device Tree Binding
+> >> +
+> >> +Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
+> >> +
+> >> +CONTENTS
+> >> +
+> >> +	- BMan Portal
+> >> +	- Example
+> >> +
+> >> +NOTE:	The bindings described in this document are preliminary and subject to
+> >> +	change
+> > 
+> > While we've tried that elsewhere, unstable DT bindings have been shown
+> > to be a major source of pain.
+> 
+> Agreed
+> 
+> > I'd feel rather uncomfortable accepting a
+> > binding that we already believe to be insufficient to describe the
+> > hardware.
+> > 
+> > What do you expect to change?
+> 
+> Related bindings seem incomplete. As such, the PAMU binding (pamu.txt)
+> covers incompletely a dynamic LIODN assignment/programming model. The
+> current driver uses a static assignment scheme that the binding needs to
+> include. I also suspect that once the driver starts supporting the
+> dynamic LIODN assignment/programming we might find some wrinkles
+
+Ok. Given that the driver doesn't seem to be in mainline (per a quick
+grep), just put "DO NOT MERGE" or something like that in the commit
+message. Once this is merged you're going to need to support it.
+
+> >> +BMan Portal Node
+> >> +
+> >> +PROPERTIES
+> >> +
+> >> +- compatible
+> >> +	Usage:		Required
+> >> +	Value type:	<stringlist>
+> >> +	Definition:	Must include "fsl,bman-portal-<hardware revision>"
+> >> +			May include "fsl,<SoC>-bman-portal" or "fsl,bman-portal"
+> >> +
+> >> +- reg
+> >> +	Usage:		Required
+> >> +	Value type:	<prop-encoded-array>
+> >> +	Definition:	Two regions. The first is the cache-enabled region of
+> >> +			the portal. The second is the cache-inhibited region of
+> >> +			the portal
+> >> +
+> >> +EXAMPLE
+> >> +
+> >> +The example below shows a (P4080) BMan portals container/bus node with two portals
+> > 
+> > Is there any particular reason to place these under a simple-bus?
+> 
+> I think they fit the ePAPR definition for simple-bus container. They can
+> be accessed directly and can be used independently. What are you suggesting?
+> 
+> >> +
+> >> +	bman-portals@ff4000000 {
+> >> +		#address-cells = <1>;
+> >> +		#size-cells = <1>;
+> >> +		compatible = "simple-bus";
+> >> +		ranges = <0 0xf 0xf4000000 0x200000>;
+> >> +
+> >> +		bman-portal@0 {
+> >> +			compatible = "fsl,bman-portal-1.0.0", "fsl,bman-portal";
+> >> +			reg = <0x0 0x4000 0x100000 0x1000>;
+> > 
+> > It would be easier to read is each entry had its own set of brackets.
+> > Initially this looked to me like a single 64-bit address/size pair.
+> 
+> Something like <>, <>?
+
+So here we'd have:
+
+	reg = <0x000000 0x4000>,
+	      <0x100000 0x1000>;
+
+> It doesn't seem widely used but I agree is more readable. I can
+> include it in the the next spin
+
+Thanks.
+
+> 
+> >> +			interrupts = <105 2 0 0>;
+> >> +		};
+> > 
+> > Given the description above, surely you need to know what the portal is
+> > used for? Or is that queried from the portal?
+> 
+> We don't need/want to include such information in the DT. Portals are
+> "allocated" dynamically and used by the respective context
+
+Ok. So they have no fixed purpose and software allocates as necessary?
+There are no constraints on how each portal may be used, or which portal
+another agetn might use?
+
+Thanks,
+Mark.
