@@ -2,26 +2,25 @@ Return-Path: <Emilian.Medve@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 106FB1A007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 20:28:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CF601A01FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 20:55:56 +1100 (AEDT)
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+ (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1BB51140081
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2014 20:28:35 +1100 (AEDT)
-Message-ID: <544A1B4D.3050904@Freescale.com>
-Date: Fri, 24 Oct 2014 04:26:37 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 62D65140082
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2014 20:55:54 +1100 (AEDT)
+Message-ID: <544A21B0.9040204@Freescale.com>
+Date: Fri, 24 Oct 2014 04:53:52 -0500
 From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
- portal(s)
+Subject: Re: [PATCH 3/4] dt/bindings: Introduce the FSL QorIQ DPAA QMan
 References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
- <1413986972-621-2-git-send-email-Emilian.Medve@Freescale.com>
- <20141022142931.GA4010@leverpostej> <54480DE6.4090604@Freescale.com>
- <20141023111622.GB13690@leverpostej>
-In-Reply-To: <20141023111622.GB13690@leverpostej>
+ <1413986972-621-3-git-send-email-Emilian.Medve@Freescale.com>
+ <20141022143732.GB4010@leverpostej> <54480DF8.3070604@Freescale.com>
+ <20141023112628.GC13690@leverpostej>
+In-Reply-To: <20141023112628.GC13690@leverpostej>
 Content-Type: text/plain; charset="windows-1252"
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  Pawel Moll <Pawel.Moll@arm.com>,
@@ -45,33 +44,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Hello Mark,
 
 
-On 10/23/2014 06:16 AM, Mark Rutland wrote:
->>>> +NOTE:	The bindings described in this document are preliminary and subject to
->>>> +	change
+On 10/23/2014 06:26 AM, Mark Rutland wrote:
+>>>> +- clocks
+>>>> +	Usage:		See clock-bindings.txt and qoriq-clock.txt
+>>>> +	Value type:	<prop-encoded-array>
+>>>> +	Definition:	Half of the platform clock
+>>>> +
 >>>
->>> While we've tried that elsewhere, unstable DT bindings have been shown
->>> to be a major source of pain.
->>
->> Agreed
->>
->>> I'd feel rather uncomfortable accepting a
->>> binding that we already believe to be insufficient to describe the
->>> hardware.
+>>> I don't understand the description here. What is the clock from the PoV
+>>> of the QMan? Which input line on the QMan is this clock attached to?
 >>>
->>> What do you expect to change?
+>>> Is there only one clock input? Or jsut one that you need to manage at
+>>> the moment?
 >>
->> Related bindings seem incomplete. As such, the PAMU binding (pamu.txt)
->> covers incompletely a dynamic LIODN assignment/programming model. The
->> current driver uses a static assignment scheme that the binding needs to
->> include. I also suspect that once the driver starts supporting the
->> dynamic LIODN assignment/programming we might find some wrinkles
+>> As part of the programming model (QoS features specifically) QMan needs
+>> to know its clock speed. Prior to the existence of the
+>> clock-bindings.txt, a "static" clock-frequency property was/is used
+>> convey such information. Using clock-binding.txt to describe the
+>> clocking hierarchy in the SoC makes it easier with DFS, power
+>> management, etc.
 > 
-> Ok. Given that the driver doesn't seem to be in mainline (per a quick
-> grep), just put "DO NOT MERGE" or something like that in the commit
-> message. Once this is merged you're going to need to support it.
+> Ok. My concern is the phrase "Half of the platform clock" is meaingless.
+> The property contains a phandle + clock-specifier pair that describe a
+> single input clock by reference (some bindings just say "clock
+> reference" for that, which is fine). This is not "half" of any
+> particular clock.
+> 
+> The description of the clock should describe what it logically is from
+> the PoV of the consumer (i.e. _this_ device) rather than the provider.
+> To me "platform clock" sounds like a description of the provider. Is
+> there a name for the clock input line on this device?
+> 
+> Is there only a single clock input? Or just one that you care about at
+> the moment?
 
-We have a driver and once the bindings get accepted we'll (update the
-driver as needed and) post the code
+This is the reference clock for QMan and is the only input clock. It's
+derived form the platform PLL/clock and its frequency/speed is half of
+the platform PLL. I'll update its description
 
 
 Cheers,
