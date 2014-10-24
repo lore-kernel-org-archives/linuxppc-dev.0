@@ -1,33 +1,38 @@
-Return-Path: <steve.capper@linaro.org>
-Received: from mail-qa0-f53.google.com (mail-qa0-f53.google.com
- [209.85.216.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0911A006C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 19:33:20 +1100 (AEDT)
-Received: by mail-qa0-f53.google.com with SMTP id v10so530932qac.40
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 01:33:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 106FB1A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 20:28:37 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1BB51140081
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2014 20:28:35 +1100 (AEDT)
+Message-ID: <544A1B4D.3050904@Freescale.com>
+Date: Fri, 24 Oct 2014 04:26:37 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1414107635.364.91.camel@pasglop>
-References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
- <20141023.184035.388557314666522484.davem@davemloft.net>
- <1414107635.364.91.camel@pasglop>
-Date: Fri, 24 Oct 2014 09:33:17 +0100
-Message-ID: <CAPvkgC0myFkGjv=L7XMhjfOSyB=3VAMHzkY9JGwwo_x7i=k0Kw@mail.gmail.com>
-Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
- hugepage directory
-From: Steve Capper <steve.capper@linaro.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+ portal(s)
+References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1413986972-621-2-git-send-email-Emilian.Medve@Freescale.com>
+ <20141022142931.GA4010@leverpostej> <54480DE6.4090604@Freescale.com>
+ <20141023111622.GB13690@leverpostej>
+In-Reply-To: <20141023111622.GB13690@leverpostej>
+Content-Type: text/plain; charset="windows-1252"
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "Geoff.Thorpe@freescale.com" <Geoff.Thorpe@Freescale.com>,
+ "corbet@lwn.net" <corbet@lwn.net>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "scottwood@freescale.com" <scottwood@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,46 +42,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24 October 2014 00:40, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Thu, 2014-10-23 at 18:40 -0400, David Miller wrote:
->> Hey guys, was looking over the generic GUP while working on a sparc64
->> issue and I noticed that you guys do speculative page gets, and after
->> talking with Johannes Weiner (CC:'d) about this we don't see how it
->> could be necessary.
+Hello Mark,
+
+
+On 10/23/2014 06:16 AM, Mark Rutland wrote:
+>>>> +NOTE:	The bindings described in this document are preliminary and subject to
+>>>> +	change
+>>>
+>>> While we've tried that elsewhere, unstable DT bindings have been shown
+>>> to be a major source of pain.
 >>
->> If interrupts are disabled during the page table scan (which they
->> are), no IPI tlb flushes can arrive.  Therefore any removal from the
->> page tables is guarded by interrupts being re-enabled.  And as a
->> result, page counts of pages we see in the page tables must always
->> have a count > 0.
+>> Agreed
 >>
->> x86 does direct atomic_add() on &page->_count because of this
->> invariant and I would rather see the generic version do this too.
->
-> This is of course only true of archs who use IPIs for TLB flushes, so if
-> we are going down the path of not being speculative, powerpc would have
-> to go back to doing its own since our broadcast TLB flush means we
-> aren't protected (we are only protected vs. the page tables themselves
-> being freed since we do that via sched RCU).
->
-> AFAIK, ARM also broadcasts TLB flushes...
+>>> I'd feel rather uncomfortable accepting a
+>>> binding that we already believe to be insufficient to describe the
+>>> hardware.
+>>>
+>>> What do you expect to change?
+>>
+>> Related bindings seem incomplete. As such, the PAMU binding (pamu.txt)
+>> covers incompletely a dynamic LIODN assignment/programming model. The
+>> current driver uses a static assignment scheme that the binding needs to
+>> include. I also suspect that once the driver starts supporting the
+>> dynamic LIODN assignment/programming we might find some wrinkles
+> 
+> Ok. Given that the driver doesn't seem to be in mainline (per a quick
+> grep), just put "DO NOT MERGE" or something like that in the commit
+> message. Once this is merged you're going to need to support it.
 
-Indeed, for most ARM cores we have hardware TLB broadcasts, thus we
-need the speculative path.
+We have a driver and once the bindings get accepted we'll (update the
+driver as needed and) post the code
 
->
-> Another option would be to make the generic code use something defined
-> by the arch to decide whether to use speculative get or
-> not. I like the idea of keeping the bulk of that code generic...
-
-It would be nice to have the code generalised further.
-In addition to the speculative/atomic helpers the implementation would
-need to be renamed from GENERIC_RCU_GUP to GENERIC_GUP.
-The other noteworthy assumption made in the RCU GUP is that pte's can
-be read atomically. For x86 this isn't true when running with 64-bit
-pte's, thus a helper would be needed.
 
 Cheers,
--- 
-Steve
