@@ -1,35 +1,25 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 299881A0029
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 02:54:49 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1XhhCQ-002Hrc-72
- for linuxppc-dev@lists.ozlabs.org; Fri, 24 Oct 2014 15:54:46 +0000
-Date: Fri, 24 Oct 2014 08:53:40 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: James Hogan <james.hogan@imgtec.com>
-Subject: Re: [PATCH v2 08/47] kernel: Move pm_power_off to common code
-Message-ID: <20141024155340.GA22426@roeck-us.net>
-References: <1413864783-3271-1-git-send-email-linux@roeck-us.net>
- <1413864783-3271-9-git-send-email-linux@roeck-us.net>
- <544A2017.7020804@imgtec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <544A2017.7020804@imgtec.com>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux@openrisc.net,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org,
- linux-xtensa@linux-xtensa.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+ [66.63.167.143])
+ by lists.ozlabs.org (Postfix) with ESMTP id 71BE31A01C7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 03:22:45 +1100 (AEDT)
+Message-ID: <1414167761.19984.17.camel@jarvis.lan>
+Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 24 Oct 2014 09:22:41 -0700
+In-Reply-To: <1414107635.364.91.camel@pasglop>
+References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
+ <20141023.184035.388557314666522484.davem@davemloft.net>
+ <1414107635.364.91.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aarcange@redhat.com, linux-arch@vger.kernel.org, steve.capper@linaro.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com, hannes@cmpxchg.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,28 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 24, 2014 at 10:47:03AM +0100, James Hogan wrote:
-> Hi Guenter,
-> 
-> On 21/10/14 05:12, Guenter Roeck wrote:
-> > pm_power_off is defined for all architectures. Move it to common code.
+On Fri, 2014-10-24 at 10:40 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-10-23 at 18:40 -0400, David Miller wrote:
+> > Hey guys, was looking over the generic GUP while working on a sparc64
+> > issue and I noticed that you guys do speculative page gets, and after
+> > talking with Johannes Weiner (CC:'d) about this we don't see how it
+> > could be necessary.
 > > 
-> > Have all architectures call do_kernel_power_off instead of pm_power_off.
-> > Some architectures point pm_power_off to machine_power_off. For those,
-> > call do_kernel_power_off from machine_power_off instead.
+> > If interrupts are disabled during the page table scan (which they
+> > are), no IPI tlb flushes can arrive.  Therefore any removal from the
+> > page tables is guarded by interrupts being re-enabled.  And as a
+> > result, page counts of pages we see in the page tables must always
+> > have a count > 0.
 > > 
-> > Acked-by: David Vrabel <david.vrabel@citrix.com>
-> > Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > Acked-by: Hirokazu Takata <takata@linux-m32r.org>
-> > Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-> > Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-> > Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Acked-by: Richard Weinberger <richard@nod.at>
-> > Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
+> > x86 does direct atomic_add() on &page->_count because of this
+> > invariant and I would rather see the generic version do this too.
 > 
-> For metag:
-> Acked-by: James Hogan <james.hogan@imgtec.com>
+> This is of course only true of archs who use IPIs for TLB flushes, so if
+> we are going down the path of not being speculative, powerpc would have
+> to go back to doing its own since our broadcast TLB flush means we
+> aren't protected (we are only protected vs. the page tables themselves
+> being freed since we do that via sched RCU).
 > 
-Thanks!
+> AFAIK, ARM also broadcasts TLB flushes...
 
-Guenter
+Parisc does this.  As soon as one CPU issues a TLB purge, it's broadcast
+to all the CPUs on the inter-CPU bus.  The next instruction isn't
+executed until they respond.
+
+But this is only for our CPU TLB.  There's no other external
+consequence, so removal from the page tables isn't effected by this TLB
+flush, therefore the theory on which Dave bases the change to
+atomic_add() should work for us (of course, atomic_add is lock add
+unlock on our CPU, so it's not going to be of much benefit).
+
+James
+
+> Another option would be to make the generic code use something defined
+> by the arch to decide whether to use speculative get or
+> not. I like the idea of keeping the bulk of that code generic...
+> 
+> Cheers,
+> Ben.
+> 
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
