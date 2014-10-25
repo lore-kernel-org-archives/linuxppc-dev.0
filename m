@@ -1,19 +1,40 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA78A1A0029
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 13:04:05 +1100 (AEDT)
-Received: by mail-pa0-f49.google.com with SMTP id hz1so2103505pad.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2014 19:04:03 -0700 (PDT)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org
-Subject: [PATCH] ASoC: fsl_asrc: Add reg_defaults for regmap to fix kernel dump
-Date: Fri, 24 Oct 2014 19:03:57 -0700
-Message-Id: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 048A41A0130
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 21:30:26 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 25 Oct 2014 20:30:24 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 338D53578048
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 21:30:18 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9PAWIqd29229218
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 21:32:18 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9PAUGCn021288
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Oct 2014 21:30:17 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>, akpm@linux-foundation.org
+Subject: Re: [PATCH V2 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+In-Reply-To: <20141023.184035.388557314666522484.davem@davemloft.net>
+References: <1413520687-31729-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20141022160224.9c2268795e55d5a2eff5b94d@linux-foundation.org>
+ <20141023.184035.388557314666522484.davem@davemloft.net>
+Date: Sat, 25 Oct 2014 16:00:05 +0530
+Message-ID: <87ppdg30ia.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: aarcange@redhat.com, linux-arch@vger.kernel.org, steve.capper@linaro.org,
+ hannes@cmpxchg.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,109 +44,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kernel dump (WARN_ON) ocurred during system boot-up inside regmap_write():
+David Miller <davem@davemloft.net> writes:
 
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 47 at kernel/locking/lockdep.c:2744 lockdep_trace_alloc+0xe8/0x108()
-DEBUG_LOCKS_WARN_ON(irqs_disabled_flags(flags))
-Modules linked in:
-CPU: 0 PID: 47 Comm: kworker/u2:2 Not tainted 3.18.0-rc1-10245-gb75d289-dirty #56
-Workqueue: deferwq deferred_probe_work_func
-Backtrace:
-[<80012294>] (dump_backtrace) from [<80012578>] (show_stack+0x18/0x1c)
- r6:8097c73c r5:8097c73c r4:00000000 r3:be33ba80
-[<80012560>] (show_stack) from [<806aac48>] (dump_stack+0x8c/0xa4)
-[<806aabbc>] (dump_stack) from [<8002a694>] (warn_slowpath_common+0x70/0x94)
- r6:80062838 r5:00000009 r4:bd827b30 r3:be33ba80
-[<8002a624>] (warn_slowpath_common) from [<8002a6f0>] (warn_slowpath_fmt+0x38/0x40)
- r8:00000004 r7:00000001 r6:000080d0 r5:60000193 r4:bd826010
-[<8002a6bc>] (warn_slowpath_fmt) from [<80062838>] (lockdep_trace_alloc+0xe8/0x108)
- r3:80831590 r2:8082e160
-[<80062750>] (lockdep_trace_alloc) from [<800ea5dc>] (kmem_cache_alloc+0x28/0x134)
- r5:000080d0 r4:be001f00
-[<800ea5b4>] (kmem_cache_alloc) from [<8038d72c>] (regcache_rbtree_write+0x15c/0x648)
- r10:00000000 r9:0000001c r8:00000004 r7:00000001 r6:00000000 r5:bd819a00
- r4:00000000 r3:811aea88
-[<8038d5d0>] (regcache_rbtree_write) from [<8038c4d8>] (regcache_write+0x5c/0x64)
- r10:be3f9f88 r9:00000000 r8:00000004 r7:00000001 r6:00000000 r5:00000001
- r4:bd819a00
-[<8038c47c>] (regcache_write) from [<8038b0dc>] (_regmap_raw_write+0x134/0x5f4)
- r6:be3f9f84 r5:00000001 r4:bd819a00 r3:00000001
-[<8038afa8>] (_regmap_raw_write) from [<8038b610>] (_regmap_bus_raw_write+0x74/0x94)
- r10:00000000 r9:00000001 r8:be3fb080 r7:bd819a00 r6:00000001 r5:00000000
- r4:bd819a00
-[<8038b59c>] (_regmap_bus_raw_write) from [<8038a8b4>] (_regmap_write+0x60/0x9c)
- r6:00000001 r5:00000000 r4:bd819a00 r3:8038b59c
-[<8038a854>] (_regmap_write) from [<8038ba24>] (regmap_write+0x48/0x68)
- r7:bd81ad80 r6:00000001 r5:00000000 r4:bd819a00
-[<8038b9dc>] (regmap_write) from [<80528f30>] (fsl_asrc_dai_probe+0x34/0x104)
- r6:bd888628 r5:be3fb080 r4:be3b4410 r3:be3b442c
-------------[ dump end ]------------
+> Hey guys, was looking over the generic GUP while working on a sparc64
+> issue and I noticed that you guys do speculative page gets, and after
+> talking with Johannes Weiner (CC:'d) about this we don't see how it
+> could be necessary.
+>
+> If interrupts are disabled during the page table scan (which they
+> are), no IPI tlb flushes can arrive.  Therefore any removal from the
+> page tables is guarded by interrupts being re-enabled.  And as a
+> result, page counts of pages we see in the page tables must always
+> have a count > 0.
+>
+> x86 does direct atomic_add() on &page->_count because of this
+> invariant and I would rather see the generic version do this too.
 
-=============================================================================
-2741         /*
-2742          * Oi! Can't be having __GFP_FS allocations with IRQs disabled.
-2743          */
-2744         if (DEBUG_LOCKS_WARN_ON(irqs_disabled_flags(flags)))
-2745                 return;
-=============================================================================
 
-By looking at 2744 line, we can get that it's because regcache_rbtree_write()
-would call kmalloc() with GFP flag if it couldn't find an existing block to
-insert nodes while this kmalloc() call is inside a spin_lock_irq_save pair,
-i.e. IRQs disabled.
+But that won't work with RCU GUP. For example on powerpc the tlb flush
+doesn't involve an IPI and we can essentially find page count 0.
 
-Even though this may be a bug that should be fixed, I still try to send this
-patch as a quick fix (work around) since it does no harm to assign default
-values of every registers when using regcache.
-
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- sound/soc/fsl/fsl_asrc.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index f2d8652..817d304 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -684,12 +684,38 @@ static bool fsl_asrc_writeable_reg(struct device *dev, unsigned int reg)
- 	}
- }
- 
-+static struct reg_default fsl_asrc_reg[] = {
-+	{ REG_ASRCTR, 0x0000 }, { REG_ASRIER, 0x0000 },
-+	{ REG_ASRCNCR, 0x0000 }, { REG_ASRCFG, 0x0000 },
-+	{ REG_ASRCSR, 0x0000 }, { REG_ASRCDR1, 0x0000 },
-+	{ REG_ASRCDR2, 0x0000 }, { REG_ASRSTR, 0x0000 },
-+	{ REG_ASRRA, 0x0000 }, { REG_ASRRB, 0x0000 },
-+	{ REG_ASRRC, 0x0000 }, { REG_ASRPM1, 0x0000 },
-+	{ REG_ASRPM2, 0x0000 }, { REG_ASRPM3, 0x0000 },
-+	{ REG_ASRPM4, 0x0000 }, { REG_ASRPM5, 0x0000 },
-+	{ REG_ASRTFR1, 0x0000 }, { REG_ASRCCR, 0x0000 },
-+	{ REG_ASRDIA, 0x0000 }, { REG_ASRDOA, 0x0000 },
-+	{ REG_ASRDIB, 0x0000 }, { REG_ASRDOB, 0x0000 },
-+	{ REG_ASRDIC, 0x0000 }, { REG_ASRDOC, 0x0000 },
-+	{ REG_ASRIDRHA, 0x0000 }, { REG_ASRIDRLA, 0x0000 },
-+	{ REG_ASRIDRHB, 0x0000 }, { REG_ASRIDRLB, 0x0000 },
-+	{ REG_ASRIDRHC, 0x0000 }, { REG_ASRIDRLC, 0x0000 },
-+	{ REG_ASR76K, 0x0A47 }, { REG_ASR56K, 0x0DF3 },
-+	{ REG_ASRMCRA, 0x0000 }, { REG_ASRFSTA, 0x0000 },
-+	{ REG_ASRMCRB, 0x0000 }, { REG_ASRFSTB, 0x0000 },
-+	{ REG_ASRMCRC, 0x0000 }, { REG_ASRFSTC, 0x0000 },
-+	{ REG_ASRMCR1A, 0x0000 }, { REG_ASRMCR1B, 0x0000 },
-+	{ REG_ASRMCR1C, 0x0000 },
-+};
-+
- static const struct regmap_config fsl_asrc_regmap_config = {
- 	.reg_bits = 32,
- 	.reg_stride = 4,
- 	.val_bits = 32,
- 
- 	.max_register = REG_ASRMCR1C,
-+	.reg_defaults = fsl_asrc_reg,
-+	.num_reg_defaults = ARRAY_SIZE(fsl_asrc_reg),
- 	.readable_reg = fsl_asrc_readable_reg,
- 	.volatile_reg = fsl_asrc_volatile_reg,
- 	.writeable_reg = fsl_asrc_writeable_reg,
--- 
-1.9.1
+-aneesh
