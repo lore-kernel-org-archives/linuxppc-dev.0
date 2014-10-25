@@ -1,22 +1,23 @@
 Return-Path: <ralf@linux-mips.org>
 Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
- by lists.ozlabs.org (Postfix) with ESMTP id 5E5381A015B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Oct 2014 00:04:59 +1100 (AEDT)
-Received: from localhost.localdomain ([127.0.0.1]:33853 "EHLO linux-mips.org"
+ by lists.ozlabs.org (Postfix) with ESMTP id C540B1A01E7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Oct 2014 00:11:32 +1100 (AEDT)
+Received: from localhost.localdomain ([127.0.0.1]:34022 "EHLO linux-mips.org"
  rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
- id S27010816AbaJYNE5OAsE6 (ORCPT
+ id S27010817AbaJYNLawTb-f (ORCPT
  <rfc822;linuxppc-dev@lists.ozlabs.org>);
- Sat, 25 Oct 2014 15:04:57 +0200
-Date: Sat, 25 Oct 2014 15:04:28 +0200
+ Sat, 25 Oct 2014 15:11:30 +0200
+Date: Sat, 25 Oct 2014 15:11:15 +0200
 From: Ralf Baechle <ralf@linux-mips.org>
 To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v3 16/27] Mips/MSI: Save msi chip in pci sysdata
-Message-ID: <20141025130428.GD16738@linux-mips.org>
+Subject: Re: [PATCH v3 18/27] MIPS/Xlp: Remove the dead function
+ destroy_irq() to fix build error
+Message-ID: <20141025131115.GE16738@linux-mips.org>
 References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
- <1413342435-7876-17-git-send-email-wangyijing@huawei.com>
+ <1413342435-7876-19-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1413342435-7876-17-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1413342435-7876-19-git-send-email-wangyijing@huawei.com>
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
  linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
  Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
@@ -44,12 +45,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 15, 2014 at 11:07:04AM +0800, Yijing Wang wrote:
-
-> +static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
-> +{
-> +	struct pci_controller *control = (struct pci_controller *)bus->sysdata;
-
-bus->sysdata is void * so this cast is unnecessary.
+Applied, thanks.
 
   Ralf
