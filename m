@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0F431A1998
+ by lists.ozlabs.org (Postfix) with ESMTPS id C74C71A1A25
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:36 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 14/16] Sparc/MSI: Use MSI controller framework to configure
+Subject: [PATCH 15/16] tile/MSI: Use MSI controller framework to configure
  MSI/MSI-X irq
-Date: Mon, 27 Oct 2014 21:22:20 +0800
-Message-ID: <1414416142-31239-15-git-send-email-wangyijing@huawei.com>
+Date: Mon, 27 Oct 2014 21:22:21 +0800
+Message-ID: <1414416142-31239-16-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -43,84 +43,73 @@ Use MSI controller framework instead of arch MSI functions to configure
 MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-Acked-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/kernel/pci.c      |   20 ++++++++++++++++++--
- arch/sparc/kernel/pci_impl.h |    3 +++
- 2 files changed, 21 insertions(+), 2 deletions(-)
+ arch/tile/include/asm/pci.h |    2 ++
+ arch/tile/kernel/pci_gx.c   |   18 ++++++++++++++++--
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index b36365f..c691a10 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -656,6 +656,9 @@ struct pci_bus *pci_scan_one_pbm(struct pci_pbm_info *pbm,
+diff --git a/arch/tile/include/asm/pci.h b/arch/tile/include/asm/pci.h
+index dfedd7a..3ebd66b 100644
+--- a/arch/tile/include/asm/pci.h
++++ b/arch/tile/include/asm/pci.h
+@@ -152,6 +152,7 @@ struct pci_controller {
+ 	int pio_io_index;	/* PIO region index for I/O space access */
+ #endif
  
- 	printk("PCI: Scanning PBM %s\n", node->full_name);
++	struct msi_controller *msi_ctrl;
+ 	/*
+ 	 * Mem-Map regions for all the memory controllers so that Linux can
+ 	 * map all of its physical memory space to the PCI bus.
+@@ -179,6 +180,7 @@ struct pci_controller {
+ 	int irq_intx_table[4];
+ };
  
-+#ifdef CONFIG_PCI_MSI
-+	pbm->msi_ctrl = &sparc_msi_ctrl;
-+#endif
- 	pci_add_resource_offset(&resources, &pbm->io_space,
- 				pbm->io_space.start);
- 	pci_add_resource_offset(&resources, &pbm->mem_space,
-@@ -905,7 +908,15 @@ int pci_domain_nr(struct pci_bus *pbus)
- EXPORT_SYMBOL(pci_domain_nr);
++extern struct msi_controller tilegx_msi_ctrl;
+ extern struct pci_controller pci_controllers[TILEGX_NUM_TRIO * TILEGX_TRIO_PCIES];
+ extern gxio_trio_context_t trio_contexts[TILEGX_NUM_TRIO];
+ extern int num_trio_shims;
+diff --git a/arch/tile/kernel/pci_gx.c b/arch/tile/kernel/pci_gx.c
+index e39f9c5..6bf5a24 100644
+--- a/arch/tile/kernel/pci_gx.c
++++ b/arch/tile/kernel/pci_gx.c
+@@ -887,6 +887,7 @@ int __init pcibios_init(void)
+ 					controller->mem_offset);
+ 		pci_add_resource(&resources, &controller->io_space);
+ 		controller->first_busno = next_busno;
++		controller->msi_ctrl = &tilegx_msi_ctrl;
+ 		bus = pci_scan_root_bus(NULL, next_busno, controller->ops,
+ 					controller, &resources);
+ 		controller->root_bus = bus;
+@@ -1485,7 +1486,15 @@ static struct irq_chip tilegx_msi_chip = {
+ 	/* TBD: support set_affinity. */
+ };
  
- #ifdef CONFIG_PCI_MSI
 -int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
 +struct msi_controller *pcibios_msi_controller(struct pci_bus *bus)
 +{
-+	struct pci_pbm_info *pbm = bus->sysdata;
++	struct pci_controller *controller = bus->sysdata;
 +
-+	return pbm->msi_ctrl;
++	return controller->msi_ctrl;
 +}
 +
-+static int sparc_setup_msi_irq(struct msi_controller *ctrl,
++static int tile_setup_msi_irq(struct msi_controller *ctrl,
 +		struct pci_dev *pdev, struct msi_desc *desc)
  {
- 	struct pci_pbm_info *pbm = pdev->dev.archdata.host_controller;
- 	unsigned int irq;
-@@ -916,7 +927,7 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
- 	return pbm->setup_msi_irq(&irq, pdev, desc);
+ 	struct pci_controller *controller;
+ 	gxio_trio_context_t *trio_context;
+@@ -1604,7 +1613,12 @@ is_64_failure:
+ 	return ret;
  }
  
 -void arch_teardown_msi_irq(unsigned int irq)
-+static void sparc_teardown_msi_irq(struct msi_controller *ctrl, unsigned int irq)
++static void tile_teardown_msi_irq(struct msi_controller *ctrl, unsigned int irq)
  {
- 	struct msi_desc *entry = irq_get_msi_desc(irq);
- 	struct pci_dev *pdev = entry->dev;
-@@ -925,6 +936,11 @@ void arch_teardown_msi_irq(unsigned int irq)
- 	if (pbm->teardown_msi_irq)
- 		pbm->teardown_msi_irq(irq, pdev);
+ 	irq_free_hwirq(irq);
  }
 +
-+struct msi_controller sparc_msi_ctrl = {
-+	.setup_irq = sparc_setup_msi_irq,
-+	.teardown_irq = sparc_teardown_msi_irq,
++struct msi_controller tilegx_msi_ctrl = {
++	.setup_irq = tile_setup_msi_irq,
++	.teardown_irq = tile_teardown_msi_irq,
 +};
- #endif /* !(CONFIG_PCI_MSI) */
- 
- static void ali_sound_dma_hack(struct pci_dev *pdev, int set_bit)
-diff --git a/arch/sparc/kernel/pci_impl.h b/arch/sparc/kernel/pci_impl.h
-index 75803c7..e02642d 100644
---- a/arch/sparc/kernel/pci_impl.h
-+++ b/arch/sparc/kernel/pci_impl.h
-@@ -55,6 +55,8 @@ struct sparc64_msiq_cookie {
- 	struct pci_pbm_info *pbm;
- 	unsigned long msiqid;
- };
-+
-+extern struct msi_controller sparc_msi_ctrl;
- #endif
- 
- struct pci_pbm_info {
-@@ -132,6 +134,7 @@ struct pci_pbm_info {
- 	void				*msi_queues;
- 	unsigned long			*msi_bitmap;
- 	unsigned int			*msi_irq_table;
-+	struct msi_controller *msi_ctrl;
- 	int (*setup_msi_irq)(unsigned int *irq_p, struct pci_dev *pdev,
- 			     struct msi_desc *entry);
- 	void (*teardown_msi_irq)(unsigned int irq, struct pci_dev *pdev);
 -- 
 1.7.1
