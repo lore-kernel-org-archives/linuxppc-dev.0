@@ -1,38 +1,25 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAB5B1A006C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 12:09:05 +1100 (AEDT)
-Message-ID: <544D9A8E.6030607@huawei.com>
-Date: Mon, 27 Oct 2014 09:06:22 +0800
-From: Yijing Wang <wangyijing@huawei.com>
-MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v3 16/27] Mips/MSI: Save msi chip in pci sysdata
-References: <1413342435-7876-1-git-send-email-wangyijing@huawei.com>
- <1413342435-7876-17-git-send-email-wangyijing@huawei.com>
- <20141025130428.GD16738@linux-mips.org>
-In-Reply-To: <20141025130428.GD16738@linux-mips.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Bharat.Bhushan@freescale.com,
- Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, arnab.basu@freescale.com,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>, Konrad
- Rzeszutek Wilk <konrad.wilk@oracle.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Xinwei Hu <huxinwei@huawei.com>, Tony Luck <tony.luck@intel.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D185F1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 14:34:31 +1100 (AEDT)
+Message-ID: <1414380870.24967.0.camel@concordia>
+Subject: Re: [PATCH] cpuidle/powernv: Populate cpuidle state details by
+ querying the device-tree
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Date: Mon, 27 Oct 2014 14:34:30 +1100
+In-Reply-To: <20141024143030.GA25966@red-moon>
+References: <20141014075259.11810.50996.stgit@preeti.in.ibm.com>
+ <20141024143030.GA25966@red-moon>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "shreyas@linux.vnet.ibm.com" <shreyas@linux.vnet.ibm.com>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,24 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/10/25 21:04, Ralf Baechle wrote:
-> On Wed, Oct 15, 2014 at 11:07:04AM +0800, Yijing Wang wrote:
+On Fri, 2014-10-24 at 15:30 +0100, Lorenzo Pieralisi wrote:
+> On Tue, Oct 14, 2014 at 08:53:00AM +0100, Preeti U Murthy wrote:
+> > We hard code the metrics relevant for cpuidle states in the kernel today.
+> > Instead pick them up from the device tree so that they remain relevant
+> > and updated for the system that the kernel is running on.
 > 
->> +static inline struct msi_chip *pci_msi_chip(struct pci_bus *bus)
->> +{
->> +	struct pci_controller *control = (struct pci_controller *)bus->sysdata;
-> 
-> bus->sysdata is void * so this cast is unnecessary.
+> Device tree properties should be documented, and these bindings are
+> getting very similar to the ones I have just completed for ARM,
+> I wonder whether we should take the generic bits out of ARM bindings (ie
+> exit_latency) and make those available to other architectures.
 
-Yes, will update it, thanks!
+The firmware that emits those properties is already in the field, so it would
+have been nice to use a generic binding but it's too late now.
 
-> 
->   Ralf
-> 
-> .
-> 
-
-
--- 
-Thanks!
-Yijing
+cheers
