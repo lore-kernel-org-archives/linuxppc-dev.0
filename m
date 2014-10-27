@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B259D1A0063
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:43:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 204281A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:43:58 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 03/16] x86/xen/MSI: Use MSI controller framework to configure
+Subject: [PATCH 02/16] x86/MSI: Use MSI controller framework to configure
  MSI/MSI-X irq
-Date: Mon, 27 Oct 2014 21:22:09 +0800
-Message-ID: <1414416142-31239-4-git-send-email-wangyijing@huawei.com>
+Date: Mon, 27 Oct 2014 21:22:08 +0800
+Message-ID: <1414416142-31239-3-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -43,123 +43,101 @@ Use MSI controller framework instead of arch MSI functions to configure
 MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-CC: David Vrabel <david.vrabel@citrix.com>
-CC: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/pci/xen.c |   45 +++++++++++++++++++++++++++------------------
- 1 files changed, 27 insertions(+), 18 deletions(-)
+ arch/x86/include/asm/pci.h     |    4 ++++
+ arch/x86/kernel/apic/io_apic.c |   25 +++++++++++++++++++++++++
+ arch/x86/pci/acpi.c            |    1 +
+ arch/x86/pci/common.c          |    3 +++
+ 4 files changed, 33 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 466b978..83d8d50 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -157,7 +157,8 @@ static int acpi_register_gsi_xen(struct device *dev, u32 gsi,
- struct xen_pci_frontend_ops *xen_pci_frontend;
- EXPORT_SYMBOL_GPL(xen_pci_frontend);
- 
--static int xen_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_setup_msi_irqs(struct msi_controller *ctrl,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int irq, ret, i;
- 	struct msi_desc *msidesc;
-@@ -219,7 +220,8 @@ static void xen_msi_compose_msg(struct pci_dev *pdev, unsigned int pirq,
- 	msg->data = XEN_PIRQ_MSI_DATA;
- }
- 
--static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_hvm_setup_msi_irqs(struct msi_controller *ctrl,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int irq, pirq;
- 	struct msi_desc *msidesc;
-@@ -267,7 +269,8 @@ error:
- #ifdef CONFIG_XEN_DOM0
- static bool __read_mostly pci_seg_supported = true;
- 
--static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+static int xen_initdom_setup_msi_irqs(struct msi_controller *ctrl,
-+		struct pci_dev *dev, int nvec, int type)
- {
- 	int ret = 0;
- 	struct msi_desc *msidesc;
-@@ -349,7 +352,8 @@ out:
- 	return ret;
- }
- 
--static void xen_initdom_restore_msi_irqs(struct pci_dev *dev)
-+static void xen_initdom_restore_msi_irqs(struct msi_controller *ctrl,
-+		struct pci_dev *dev)
- {
- 	int ret = 0;
- 
-@@ -376,7 +380,13 @@ static void xen_initdom_restore_msi_irqs(struct pci_dev *dev)
- }
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index 0892ea0..1af3d77 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -20,6 +20,9 @@ struct pci_sysdata {
+ #ifdef CONFIG_X86_64
+ 	void		*iommu;		/* IOMMU private data */
  #endif
++#ifdef CONFIG_PCI_MSI
++	struct msi_controller *msi_ctrl;
++#endif
+ };
  
--static void xen_teardown_msi_irqs(struct pci_dev *dev)
-+static void xen_teardown_msi_irq(struct msi_controller *ctrl, unsigned int irq)
+ extern int pci_routeirq;
+@@ -101,6 +104,7 @@ void native_teardown_msi_irq(unsigned int irq);
+ void native_restore_msi_irqs(struct pci_dev *dev);
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 		  unsigned int irq_base, unsigned int irq_offset);
++extern struct msi_controller *x86_msi_ctrl;
+ #else
+ #define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 1183d54..8b8c671 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3234,11 +3234,36 @@ int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	return 0;
+ }
+ 
++static int __native_setup_msi_irqs(struct msi_controller *ctrl,
++		struct pci_dev *dev, int nvec, int type)
 +{
-+	xen_destroy_irq(irq);
++	return native_setup_msi_irqs(dev, nvec, type);
 +}
 +
-+static void xen_teardown_msi_irqs(struct msi_controller *ctrl,
-+		struct pci_dev *dev)
+ void native_teardown_msi_irq(unsigned int irq)
  {
- 	struct msi_desc *msidesc;
- 
-@@ -390,11 +400,7 @@ static void xen_teardown_msi_irqs(struct pci_dev *dev)
- 	default_teardown_msi_irqs(dev);
+ 	irq_free_hwirq(irq);
  }
  
--static void xen_teardown_msi_irq(unsigned int irq)
--{
--	xen_destroy_irq(irq);
--}
--
-+struct msi_controller xen_msi_ctrl;
- #endif
++static void __native_teardown_msi_irq(struct msi_controller *ctrl,
++		unsigned int irq)
++{
++	native_teardown_msi_irq(irq);
++}
++
++static struct msi_controller native_msi_ctrl = {
++	.setup_irqs = __native_setup_msi_irqs,
++	.teardown_irq = __native_teardown_msi_irq,
++};
++
++struct msi_controller *pcibios_msi_controller(struct pci_bus *bus)
++{
++	struct pci_sysdata *sys = bus->sysdata;
++
++	return sys->msi_ctrl;
++}
++struct msi_controller *x86_msi_ctrl = &native_msi_ctrl;
++
+ #ifdef CONFIG_DMAR_TABLE
+ static int
+ dmar_msi_set_affinity(struct irq_data *data, const struct cpumask *mask,
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index cfd1b13..edb14dd 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -508,6 +508,7 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
  
- int __init pci_xen_init(void)
-@@ -415,9 +421,10 @@ int __init pci_xen_init(void)
- #endif
+ 	sd = &info->sd;
+ 	sd->domain = domain;
++	sd->msi_ctrl = x86_msi_ctrl;
+ 	sd->node = node;
+ 	sd->companion = device;
  
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
--	x86_msi.teardown_msi_irqs = xen_teardown_msi_irqs;
-+	xen_msi_ctrl.setup_irqs = xen_setup_msi_irqs;
-+	xen_msi_ctrl.teardown_irq = xen_teardown_msi_irq;
-+	xen_msi_ctrl.teardown_irqs = xen_teardown_msi_irqs;
-+	x86_msi_ctrl = &xen_msi_ctrl;
- 	pci_msi_ignore_mask = 1;
- #endif
- 	return 0;
-@@ -437,8 +444,9 @@ int __init pci_xen_hvm_init(void)
- #endif
- 
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_hvm_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-+	xen_msi_ctrl.setup_irqs = xen_hvm_setup_msi_irqs;
-+	xen_msi_ctrl.teardown_irq = xen_teardown_msi_irq;
-+	x86_msi_ctrl = &xen_msi_ctrl;
- #endif
- 	return 0;
- }
-@@ -495,9 +503,10 @@ int __init pci_xen_initial_domain(void)
- 	int irq;
- 
- #ifdef CONFIG_PCI_MSI
--	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
--	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
--	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
-+	xen_msi_ctrl.setup_irqs = xen_initdom_setup_msi_irqs;
-+	xen_msi_ctrl.teardown_irq = xen_teardown_msi_irq;
-+	xen_msi_ctrl.restore_irqs = xen_initdom_restore_msi_irqs;
-+	x86_msi_ctrl = &xen_msi_ctrl;
- 	pci_msi_ignore_mask = 1;
- #endif
- 	xen_setup_acpi_sci();
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 7b20bcc..4deb240 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -468,6 +468,9 @@ void pcibios_scan_root(int busnum)
+ 		return;
+ 	}
+ 	sd->node = x86_pci_root_bus_node(busnum);
++#ifdef CONFIG_PCI_MSI
++	sd->msi_ctrl = x86_msi_ctrl;
++#endif
+ 	x86_pci_root_bus_resources(busnum, &resources);
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x)\n", busnum);
+ 	bus = pci_scan_root_bus(NULL, busnum, &pci_root_ops, sd, &resources);
 -- 
 1.7.1
