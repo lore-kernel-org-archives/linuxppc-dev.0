@@ -1,39 +1,29 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA4ED1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 15:24:54 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C8571A006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 15:05:22 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3AA6914009A
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2014 15:24:52 +1100 (AEDT)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 27 Oct 2014 00:05:18 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2E15D38C804A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 00:05:15 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9R45Ffg19595270
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 04:05:15 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9R45EMo021580
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 00:05:14 -0400
-Message-ID: <544DC46A.4050906@linux.vnet.ibm.com>
-Date: Mon, 27 Oct 2014 09:34:58 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: kernelfans@gmail.com, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
-Subject: Re: [RFC 03/11] powerpc: kvm: add interface to control kvm function
- on a core
-References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
- <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
-In-Reply-To: <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 27 Oct 2014 14:24:48 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Subject: [PATCH] CXL: Fix PSL error due to duplicate segment table entries
+Date: Mon, 27 Oct 2014 15:24:35 +1100
+Message-Id: <1414383875-20835-1-git-send-email-imunsie@au.ibm.com>
+Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
+ arnd <arnd@arndb.de>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ greg <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
+ imunsie <imunsie@au1.ibm.com>, jk <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,112 +33,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Liu,
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-On 10/17/2014 12:59 AM, kernelfans@gmail.com wrote:
-> When kvm is enabled on a core, we migrate all external irq to primary
-> thread. Since currently, the kvmirq logic is handled by the primary
-> hwthread.
-> 
-> Todo: this patch lacks re-enable of irqbalance when kvm is disable on
-> the core
+In certain circumstances the PSL can send an interrupt for a segment
+miss that the kernel has already handled. This can happen if multiple
+translations for the same segment are queued in the PSL before the
+kernel has restarted the first translation.
 
-Why is a sysfs file introduced to trigger irq migration? Why is it not
-done during kvm module insert ? And similarly spread interrupts when the
-module is removed? Isn't this a saner way ?
-> 
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/sysfs.c            | 39 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/sysdev/xics/xics-common.c | 12 +++++++++++
->  2 files changed, 51 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 67fd2fd..a2595dd 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -552,6 +552,45 @@ static void sysfs_create_dscr_default(void)
->  	if (cpu_has_feature(CPU_FTR_DSCR))
->  		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
->  }
-> +
-> +#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
-> +#define NR_CORES	(CONFIG_NR_CPUS/threads_per_core)
-> +static DECLARE_BITMAP(kvm_on_core, NR_CORES) __read_mostly
-> +
-> +static ssize_t show_kvm_enable(struct device *dev,
-> +		struct device_attribute *attr, char *buf)
-> +{
-> +}
-> +
-> +static ssize_t __used store_kvm_enable(struct device *dev,
-> +		struct device_attribute *attr, const char *buf,
-> +		size_t count)
-> +{
-> +	struct cpumask stop_cpus;
-> +	unsigned long core, thr;
-> +
-> +	sscanf(buf, "%lx", &core);
-> +	if (core > NR_CORES)
-> +		return -1;
-> +	if (!test_bit(core, &kvm_on_core))
-> +		for (thr = 1; thr< threads_per_core; thr++)
-> +			if (cpu_online(thr * threads_per_core + thr))
-> +				cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
+The CXL driver did not expect this situation and did not check if a
+segment had already been handled. This could cause a duplicate segment
+table entry which in turn caused a PSL error taking down the card.
 
-What is the above logic trying to do? Did you mean
-cpu_online(threads_per_core * core + thr) ?
+This patch fixes the issue by checking for existing entries in the
+segment table that match the segment it is trying to insert to avoid
+inserting duplicate entries.
 
-> +
-> +	stop_machine(xics_migrate_irqs_away_secondary, NULL, &stop_cpus);
-> +	set_bit(core, &kvm_on_core);
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(kvm_enable, 0600,
-> +	show_kvm_enable, store_kvm_enable);
-> +
-> +static void sysfs_create_kvm_enable(void)
-> +{
-> +	device_create_file(cpu_subsys.dev_root, &dev_attr_kvm_enable);
-> +}
-> +#endif
-> +
->  #endif /* CONFIG_PPC64 */
->  
->  #ifdef HAS_PPC_PMC_PA6T
-> diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-> index fe0cca4..68b33d8 100644
-> --- a/arch/powerpc/sysdev/xics/xics-common.c
-> +++ b/arch/powerpc/sysdev/xics/xics-common.c
-> @@ -258,6 +258,18 @@ unlock:
->  		raw_spin_unlock_irqrestore(&desc->lock, flags);
->  	}
->  }
-> +
-> +int xics_migrate_irqs_away_secondary(void *data)
-> +{
-> +	int cpu = smp_processor_id();
-> +	if(cpu%thread_per_core != 0) {
-> +		WARN(condition, format...);
-> +		return 0;
-> +	}
-> +	/* In fact, if we can migrate the primary, it will be more fine */
-> +	xics_migrate_irqs_away();
+Some of the code has been refactored to simplify it - the segment table
+hash has been moved from cxl_load_segment to find_free_sste where it is
+used and we have disabled the secondary hash in the segment table to
+reduce the number of entries that need to be tested from 16 to 8. Due to
+the large segment sizes we use it is extremely unlikely that the
+secondary hash would ever have been used in practice, so this should not
+have any negative impacts and may even improve performance.
 
-Isn't the aim of the patch to migrate irqs away from the secondary onto
-the primary? But from above it looks like we are returning when we find
-out that we are secondary threads, isn't it?
+copro_calculate_slb will now mask the ESID by the correct mask for 1T vs
+256M segments. This has no effect by itself as the extra bits were
+ignored, but it makes debugging the segment table entries easier and
+means that we can directly compare the ESID values for duplicates
+without needing to worry about masking in the comparison.
 
-> +	return 0;
-> +}
->  #endif /* CONFIG_HOTPLUG_CPU */
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ arch/powerpc/mm/copro_fault.c |  3 +-
+ drivers/misc/cxl/fault.c      | 73 ++++++++++++++++++++++---------------------
+ drivers/misc/cxl/native.c     |  4 +--
+ 3 files changed, 41 insertions(+), 39 deletions(-)
 
-Note that xics_migrate_irqs_away() is defined under CONFIG_CPU_HOTPLUG.
-But we will need this option on PowerKVM even when hotplug is not
-configured in.
-
-Regards
-Preeti U Murthy
->  #ifdef CONFIG_SMP
-> 
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index 0f9939e..5a236f0 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -99,8 +99,6 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 	u64 vsid;
+ 	int psize, ssize;
+ 
+-	slb->esid = (ea & ESID_MASK) | SLB_ESID_V;
+-
+ 	switch (REGION_ID(ea)) {
+ 	case USER_REGION_ID:
+ 		pr_devel("%s: 0x%llx -- USER_REGION_ID\n", __func__, ea);
+@@ -133,6 +131,7 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 	vsid |= mmu_psize_defs[psize].sllp |
+ 		((ssize == MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
+ 
++	slb->esid = (ea & (ssize == MMU_SEGSIZE_1T ? ESID_MASK_1T : ESID_MASK)) | SLB_ESID_V;
+ 	slb->vsid = vsid;
+ 
+ 	return 0;
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 69506eb..421cfd6 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -21,60 +21,63 @@
+ 
+ #include "cxl.h"
+ 
+-static struct cxl_sste* find_free_sste(struct cxl_sste *primary_group,
+-				       bool sec_hash,
+-				       struct cxl_sste *secondary_group,
+-				       unsigned int *lru)
++static bool sste_matches(struct cxl_sste *sste, struct copro_slb *slb)
+ {
+-	unsigned int i, entry;
+-	struct cxl_sste *sste, *group = primary_group;
+-
+-	for (i = 0; i < 2; i++) {
+-		for (entry = 0; entry < 8; entry++) {
+-			sste = group + entry;
+-			if (!(be64_to_cpu(sste->esid_data) & SLB_ESID_V))
+-				return sste;
+-		}
+-		if (!sec_hash)
+-			break;
+-		group = secondary_group;
++	return ((sste->vsid_data == cpu_to_be64(slb->vsid)) &&
++		(sste->esid_data == cpu_to_be64(slb->esid)));
++}
++
++/* This finds a free SSTE and checks to see if it's already in table */
++static struct cxl_sste* find_free_sste(struct cxl_context *ctx,
++				       struct copro_slb *slb)
++{
++	struct cxl_sste *primary, *sste, *ret = NULL;
++	unsigned int mask = (ctx->sst_size >> 7) - 1; /* SSTP0[SegTableSize] */
++	unsigned int entry;
++	unsigned int hash;
++
++	if (slb->vsid & SLB_VSID_B_1T)
++		hash = (slb->esid >> SID_SHIFT_1T) & mask;
++	else /* 256M */
++		hash = (slb->esid >> SID_SHIFT) & mask;
++
++	primary = ctx->sstp + (hash << 3);
++	sste = primary;
++
++	for (entry = 0; entry < 8; entry++) {
++		if (!ret && !(be64_to_cpu(sste->esid_data) & SLB_ESID_V))
++			ret = sste;
++		if (sste_matches(sste, slb))
++			return NULL;
++		sste++;
+ 	}
++	if (ret)
++		return ret;
++
+ 	/* Nothing free, select an entry to cast out */
+-	if (sec_hash && (*lru & 0x8))
+-		sste = secondary_group + (*lru & 0x7);
+-	else
+-		sste = primary_group + (*lru & 0x7);
+-	*lru = (*lru + 1) & 0xf;
++	ret = primary + ctx->sst_lru;
++	ctx->sst_lru = (ctx->sst_lru + 1) & 0x7;
+ 
+-	return sste;
++	return ret;
+ }
+ 
+ static void cxl_load_segment(struct cxl_context *ctx, struct copro_slb *slb)
+ {
+ 	/* mask is the group index, we search primary and secondary here. */
+-	unsigned int mask = (ctx->sst_size >> 7)-1; /* SSTP0[SegTableSize] */
+-	bool sec_hash = 1;
+ 	struct cxl_sste *sste;
+-	unsigned int hash;
+ 	unsigned long flags;
+ 
+-
+-	sec_hash = !!(cxl_p1n_read(ctx->afu, CXL_PSL_SR_An) & CXL_PSL_SR_An_SC);
+-
+-	if (slb->vsid & SLB_VSID_B_1T)
+-		hash = (slb->esid >> SID_SHIFT_1T) & mask;
+-	else /* 256M */
+-		hash = (slb->esid >> SID_SHIFT) & mask;
+-
+ 	spin_lock_irqsave(&ctx->sste_lock, flags);
+-	sste = find_free_sste(ctx->sstp + (hash << 3), sec_hash,
+-			      ctx->sstp + ((~hash & mask) << 3), &ctx->sst_lru);
++	sste = find_free_sste(ctx, slb);
++	if (!sste)
++		goto out_unlock;
+ 
+ 	pr_devel("CXL Populating SST[%li]: %#llx %#llx\n",
+ 			sste - ctx->sstp, slb->vsid, slb->esid);
+ 
+ 	sste->vsid_data = cpu_to_be64(slb->vsid);
+ 	sste->esid_data = cpu_to_be64(slb->esid);
++out_unlock:
+ 	spin_unlock_irqrestore(&ctx->sste_lock, flags);
+ }
+ 
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 623286a..d47532e 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -417,7 +417,7 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+ 	ctx->elem->haurp = 0; /* disable */
+ 	ctx->elem->sdr = cpu_to_be64(mfspr(SPRN_SDR1));
+ 
+-	sr = CXL_PSL_SR_An_SC;
++	sr = 0;
+ 	if (ctx->master)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+@@ -508,7 +508,7 @@ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
+ 	u64 sr;
+ 	int rc;
+ 
+-	sr = CXL_PSL_SR_An_SC;
++	sr = 0;
+ 	set_endian(sr);
+ 	if (ctx->master)
+ 		sr |= CXL_PSL_SR_An_MP;
+-- 
+2.1.1
