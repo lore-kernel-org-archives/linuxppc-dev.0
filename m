@@ -2,13 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 989001A1787
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 535B91A0410
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:21 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 06/16] Mips/MSI: Save MSI controller in pci sysdata
-Date: Mon, 27 Oct 2014 21:22:12 +0800
-Message-ID: <1414416142-31239-7-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 04/16] Irq_remapping/MSI: Use MSI controller framework to
+ configure MSI/MSI-X irq
+Date: Mon, 27 Oct 2014 21:22:10 +0800
+Message-ID: <1414416142-31239-5-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -38,48 +39,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Save MSI controller in pci sysdata, add arch pcibios_msi_controller()
-to extract out MSI controller.
+Use MSI controller framework instead of arch MSI functions to configure
+MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/mips/include/asm/pci.h |    3 +++
- arch/mips/pci/pci.c         |    9 +++++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/iommu/irq_remapping.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
-index 974b0e3..d7cd850 100644
---- a/arch/mips/include/asm/pci.h
-+++ b/arch/mips/include/asm/pci.h
-@@ -43,6 +43,9 @@ struct pci_controller {
+diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
+index 74a1767..6db1459 100644
+--- a/drivers/iommu/irq_remapping.c
++++ b/drivers/iommu/irq_remapping.c
+@@ -140,8 +140,8 @@ error:
+ 	return ret;
+ }
  
- 	int iommu;
+-static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
+-					int nvec, int type)
++static int irq_remapping_setup_msi_irqs(struct msi_controller *ctrl,
++		struct pci_dev *dev, int nvec, int type)
+ {
+ 	if (type == PCI_CAP_ID_MSI)
+ 		return do_setup_msi_irqs(dev, nvec);
+@@ -149,6 +149,11 @@ static int irq_remapping_setup_msi_irqs(struct pci_dev *dev,
+ 		return do_setup_msix_irqs(dev, nvec);
+ }
  
-+#ifdef CONFIG_PCI_MSI
-+	struct msi_controller *msi_ctrl;
-+#endif
- 	/* Optional access methods for reading/writing the bus number
- 	   of the PCI controller */
- 	int (*get_busno)(void);
-diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
-index 1bf60b1..7917cba 100644
---- a/arch/mips/pci/pci.c
-+++ b/arch/mips/pci/pci.c
-@@ -36,6 +36,15 @@ unsigned long PCIBIOS_MIN_MEM;
- 
- static int pci_initialized;
- 
-+#ifdef CONFIG_PCI_MSI
-+struct msi_controller *pcibios_msi_controller(struct pci_bus *bus)
-+{
-+	struct pci_controller *ctrl = bus->sysdata;
++static struct msi_controller remap_msi_ctrl = {
++	.setup_irqs = irq_remapping_setup_msi_irqs,
++	.teardown_irq = native_teardown_msi_irq,
++};
 +
-+	return ctrl->msi_ctrl;
-+}
-+#endif
-+
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
+ static void eoi_ioapic_pin_remapped(int apic, int pin, int vector)
+ {
+ 	/*
+@@ -166,9 +171,9 @@ static void __init irq_remapping_modify_x86_ops(void)
+ 	x86_io_apic_ops.set_affinity	= set_remapped_irq_affinity;
+ 	x86_io_apic_ops.setup_entry	= setup_ioapic_remapped_entry;
+ 	x86_io_apic_ops.eoi_ioapic_pin	= eoi_ioapic_pin_remapped;
+-	x86_msi.setup_msi_irqs		= irq_remapping_setup_msi_irqs;
+ 	x86_msi.setup_hpet_msi		= setup_hpet_msi_remapped;
+ 	x86_msi.compose_msi_msg		= compose_remapped_msi_msg;
++	x86_msi_ctrl = &remap_msi_ctrl;
+ }
+ 
+ static __init int setup_nointremap(char *str)
 -- 
 1.7.1
