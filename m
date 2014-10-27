@@ -1,37 +1,36 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A74B71A1967
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 00:33:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B93C1A0274
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 01:31:25 +1100 (AEDT)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 27 Oct 2014 09:33:26 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5A4586E804D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 09:22:07 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9RDXN7065208488
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 13:33:23 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9RDXNBZ006967
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 09:33:23 -0400
-Received: from preeti.in.ibm.com ([9.77.204.76])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s9RDXBxX005890
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 09:33:22 -0400
-Message-ID: <544E4996.3050403@linux.vnet.ibm.com>
-Date: Mon, 27 Oct 2014 19:03:10 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Mon, 27 Oct 2014 14:31:20 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 162961B08051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 14:31:18 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9REVFTP2818428
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 14:31:15 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9REVEmi014945
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 08:31:15 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerc: fix build failure when CONFIG_HUGETLB_PAGE is not set
+Date: Mon, 27 Oct 2014 15:30:06 +0100
+Message-Id: <1414420206-7869-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Warnings reported while building the vanilla kernel on powerpc
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-I noticed the following warnings while building the upstream kernel as of yesterday.
-The commit I checked out at was cac7f2429872d3 : Linux 3.18-rc2.
-
-Please verify if any of these can be fixed.
-
-a. lib/cpumask.c: In function ‘cpumask_set_cpu_local_first’:
-   lib/cpumask.c:194:25: warning: the address of ‘cpu_all_bits’ will always evaluate as ‘true’ [-Waddress]
-  if (numa_node == -1 || !cpumask_of_node(numa_node)) {
-
-
-b. drivers/infiniband/hw/ehca/ehca_mrmw.c: In function ‘ehca_set_pagebuf’:
-   drivers/infiniband/hw/ehca/ehca_mrmw.c:1907:6: warning: ‘prev_pgaddr’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-   if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
-      ^
-c. drivers/infiniband/hw/ehca/ehca_mrmw.c:1924:14: note: ‘prev_pgaddr’ was declared here
-   u64 pgaddr, prev_pgaddr;
-              ^
-d. drivers/infiniband/hw/ehca/ehca_mrmw.c: In function ‘ehca_reg_mr’:
-   drivers/infiniband/hw/ehca/ehca_mrmw.c:2430:5: warning: ‘hret’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-   if (hret == H_SUCCESS)
+  CC      arch/powerpc/mm/slice.o
+In file included from ../arch/powerpc/mm/slice.c:33:0:
+../include/linux/hugetlb.h:141:47: error: expected identifier or â€˜(â€™ before numeric constant
+ #define is_hugepage_only_range(mm, addr, len) 0
+                                               ^
+../arch/powerpc/mm/slice.c:704:5: note: in expansion of macro â€˜is_hugepage_only_rangeâ€™
+ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
      ^
-e. drivers/infiniband/hw/ehca/ehca_mrmw.c:2413:6: note: ‘hret’ was declared here
-   u64 hret, *kpage;
 
-f. drivers/net/ethernet/broadcom/tg3.c: In function ‘tg3_set_eeprom’:
-    drivers/net/ethernet/broadcom/tg3.c:12059:10: warning: ‘start’ may be used uninitialized in this function [-Wmaybe-uninitialized]
-    memcpy(buf, &start, 4);
+Signed-off-by: CÃ©dric Le Goater <clg@fr.ibm.com>
+---
+ arch/powerpc/mm/slice.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-g.  drivers/net/ethernet/ibm/ehea/ehea_main.c:106:28: warning: ‘ehea_module_device_table’ defined but not used [-Wunused-variable]
-    static struct of_device_id ehea_module_device_table[] = {
-
-
-Thanks
-
-Regards
-Preeti U Murthy
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 8d7bda94d196..89bc01222649 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -682,6 +682,7 @@ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 	slice_convert(mm, mask, psize);
+ }
+ 
++#ifdef CONFIG_HUGETLB_PAGE
+ /*
+  * is_hugepage_only_range() is used by generic code to verify whether
+  * a normal mmap mapping (non hugetlbfs) is valid on a given area.
+@@ -727,3 +728,4 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 	return !slice_check_fit(mask, available);
+ }
+ 
++#endif
+-- 
+1.7.10.4
