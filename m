@@ -1,35 +1,16 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BC0E1A1B6E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:46:28 +1100 (AEDT)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 12/16] arm/iop13xx/MSI: Use MSI controller framework to
- configure MSI/MSI-X irq
-Date: Mon, 27 Oct 2014 21:22:18 +0800
-Message-ID: <1414416142-31239-13-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
-References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5C7741A20A7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:52:05 +1100 (AEDT)
+Message-ID: <544E3FF6.7090300@c-s.fr>
+Date: Mon, 27 Oct 2014 13:52:06 +0100
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-pci@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>, Thierry Reding <thierry.reding@gmail.com>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- xen-devel@lists.xenproject.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Thomas
- Petazzoni <thomas.petazzoni@free-electrons.com>,
- Tony Luck <tony.luck@intel.com>, Sergei
- Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, iommu@lists.linux-foundation.org,
- David Vrabel <david.vrabel@citrix.com>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>, Lucas Stach <l.stach@pengutronix.de>
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <scottwood@freescale.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: What is the reel purpose of in_beXX() and out_beXX() fonctions ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,90 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use MSI controller framework instead of arch MSI functions to configure
-MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
+Many drivers use in_be16(), in_be32(), out_be16(), out_be32(), etc .... 
+to access to registrers in IO mapped memory.
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
----
- arch/arm/mach-iop13xx/include/mach/pci.h |    4 ++++
- arch/arm/mach-iop13xx/iq81340mc.c        |    3 +++
- arch/arm/mach-iop13xx/iq81340sc.c        |    5 ++++-
- arch/arm/mach-iop13xx/msi.c              |   11 +++++++++--
- 4 files changed, 20 insertions(+), 3 deletions(-)
+What is the real purpose of those functions, and are they really needed ?
 
-diff --git a/arch/arm/mach-iop13xx/include/mach/pci.h b/arch/arm/mach-iop13xx/include/mach/pci.h
-index 59f42b5..c8f5caf 100644
---- a/arch/arm/mach-iop13xx/include/mach/pci.h
-+++ b/arch/arm/mach-iop13xx/include/mach/pci.h
-@@ -11,6 +11,10 @@ void iop13xx_atu_select(struct hw_pci *plat_pci);
- void iop13xx_pci_init(void);
- void iop13xx_map_pci_memory(void);
- 
-+#ifdef CONFIG_PCI_MSI
-+extern struct msi_controller iop13xx_msi_ctrl;
-+#endif
-+
- #define IOP_PCI_STATUS_ERROR (PCI_STATUS_PARITY |	     \
- 			       PCI_STATUS_SIG_TARGET_ABORT | \
- 			       PCI_STATUS_REC_TARGET_ABORT | \
-diff --git a/arch/arm/mach-iop13xx/iq81340mc.c b/arch/arm/mach-iop13xx/iq81340mc.c
-index 9cd07d3..7b802f5 100644
---- a/arch/arm/mach-iop13xx/iq81340mc.c
-+++ b/arch/arm/mach-iop13xx/iq81340mc.c
-@@ -59,6 +59,9 @@ static struct hw_pci iq81340mc_pci __initdata = {
- 	.map_irq	= iq81340mc_pcix_map_irq,
- 	.scan		= iop13xx_scan_bus,
- 	.preinit	= iop13xx_pci_init,
-+#ifdef CONFIG_PCI_MSI
-+	.msi_ctrl	= &iop13xx_msi_ctrl,
-+#endif
- };
- 
- static int __init iq81340mc_pci_init(void)
-diff --git a/arch/arm/mach-iop13xx/iq81340sc.c b/arch/arm/mach-iop13xx/iq81340sc.c
-index b3ec11c..934de2e 100644
---- a/arch/arm/mach-iop13xx/iq81340sc.c
-+++ b/arch/arm/mach-iop13xx/iq81340sc.c
-@@ -60,7 +60,10 @@ static struct hw_pci iq81340sc_pci __initdata = {
- 	.setup		= iop13xx_pci_setup,
- 	.scan		= iop13xx_scan_bus,
- 	.map_irq	= iq81340sc_atux_map_irq,
--	.preinit	= iop13xx_pci_init
-+	.preinit	= iop13xx_pci_init,
-+#ifdef CONFIG_PCI_MSI
-+	.msi_ctrl	= &iop13xx_msi_ctrl,
-+#endif
- };
- 
- static int __init iq81340sc_pci_init(void)
-diff --git a/arch/arm/mach-iop13xx/msi.c b/arch/arm/mach-iop13xx/msi.c
-index e7730cf..07a512e 100644
---- a/arch/arm/mach-iop13xx/msi.c
-+++ b/arch/arm/mach-iop13xx/msi.c
-@@ -132,7 +132,8 @@ static struct irq_chip iop13xx_msi_chip = {
- 	.irq_unmask = unmask_msi_irq,
- };
- 
--int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
-+static int iop13xx_setup_msi_irq(struct msi_controller *ctrl,
-+		struct pci_dev *dev, struct msi_desc *desc)
- {
- 	int id, irq = irq_alloc_desc_from(IRQ_IOP13XX_MSI_0, -1);
- 	struct msi_msg msg;
-@@ -159,7 +160,13 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
- 	return 0;
- }
- 
--void arch_teardown_msi_irq(unsigned int irq)
-+static void iop13xx_teardown_msi_irq(struct msi_controller *ctrl,
-+		unsigned int irq)
- {
- 	irq_free_desc(irq);
- }
-+
-+struct msi_controller iop13xx_msi_ctrl = {
-+	.setup_irq = iop13xx_setup_msi_irq,
-+	.teardown_irq = iop13xx_teardown_msi_irq,
-+};
--- 
-1.7.1
+ioremap() maps the related areas as GUARDED, which means that accesses 
+can't be speculative. So what is the benefit of using in_beXX() and 
+out_beXX() over simple memory accesses in the area ?
+
+Christophe
