@@ -1,31 +1,24 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cl@linux.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB8981A00BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 02:57:35 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Ximfk-000dRC-Nd
- for linuxppc-dev@lists.ozlabs.org; Mon, 27 Oct 2014 15:57:33 +0000
-From: Guenter Roeck <linux@roeck-us.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 08/47] kernel: Move pm_power_off to common code
-Date: Mon, 27 Oct 2014 08:55:15 -0700
-Message-Id: <1414425354-10359-9-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-References: <1414425354-10359-1-git-send-email-linux@roeck-us.net>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux@lists.openrisc.net, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>,
- linux-xtensa@linux-xtensa.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, user-mode-linux-user@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-alpha@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id F126A1A00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 03:02:43 +1100 (AEDT)
+Received: from resqmta-ch2-12v.sys.comcast.net
+ (resqmta-ch2-12v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:44])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DAB111400A6
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2014 03:02:42 +1100 (AEDT)
+Date: Mon, 27 Oct 2014 10:57:24 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: Replace __get_cpu_var uses
+In-Reply-To: <alpine.DEB.2.11.1410211520470.20253@gentwo.org>
+Message-ID: <alpine.DEB.2.11.1410271055380.18104@gentwo.org>
+References: <alpine.DEB.2.11.1410211520470.20253@gentwo.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,888 +28,1097 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pm_power_off is defined for all architectures. Move it to common code.
+Ping? We are planning to remove support for __get_cpu_var in the
+3.19 merge period. I can move the definition for __get_cpu_var into the
+powerpc per cpu definition instead if we cannot get this merged?
 
-Have all architectures call do_kernel_power_off instead of pm_power_off.
-Some architectures point pm_power_off to machine_power_off. For those,
-call do_kernel_power_off from machine_power_off instead.
+On Tue, 21 Oct 2014, Christoph Lameter wrote:
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
-Acked-by: James Hogan <james.hogan@imgtec.com>
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-Acked-by: Richard Weinberger <richard@nod.at>
-Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-v3:
-- Replace poweroff in all newly introduced variables and in text
-  with power_off or power-off as appropriate
-v2:
-- do_kernel_poweroff -> do_kernel_power_off
-- have_kernel_poweroff -> have_kernel_power_off
-
- arch/alpha/kernel/process.c        |  9 +++------
- arch/arc/kernel/reset.c            |  5 +----
- arch/arm/kernel/process.c          |  5 +----
- arch/arm64/kernel/process.c        |  5 +----
- arch/avr32/kernel/process.c        |  6 +-----
- arch/blackfin/kernel/process.c     |  3 ---
- arch/blackfin/kernel/reboot.c      |  2 ++
- arch/c6x/kernel/process.c          |  9 +--------
- arch/cris/kernel/process.c         |  4 +---
- arch/frv/kernel/process.c          |  5 ++---
- arch/hexagon/kernel/reset.c        |  5 ++---
- arch/ia64/kernel/process.c         |  5 +----
- arch/m32r/kernel/process.c         |  8 ++++----
- arch/m68k/kernel/process.c         |  6 +-----
- arch/metag/kernel/process.c        |  6 +-----
- arch/microblaze/kernel/process.c   |  3 ---
- arch/microblaze/kernel/reset.c     |  1 +
- arch/mips/kernel/reset.c           |  6 +-----
- arch/mn10300/kernel/process.c      |  8 ++------
- arch/openrisc/kernel/process.c     |  8 +++++---
- arch/parisc/kernel/process.c       |  8 ++++----
- arch/powerpc/kernel/setup-common.c |  6 +++---
- arch/s390/kernel/setup.c           |  8 ++------
- arch/score/kernel/process.c        |  8 ++++----
- arch/sh/kernel/reboot.c            |  6 +-----
- arch/sparc/kernel/process_32.c     | 10 ++--------
- arch/sparc/kernel/reboot.c         |  8 ++------
- arch/tile/kernel/reboot.c          |  7 +++----
- arch/um/kernel/reboot.c            |  2 --
- arch/unicore32/kernel/process.c    |  9 +--------
- arch/x86/kernel/reboot.c           | 11 +++--------
- arch/x86/xen/enlighten.c           |  3 +--
- arch/xtensa/kernel/process.c       |  4 ----
- drivers/parisc/power.c             |  3 +--
- kernel/power/power_off_handler.c   |  8 ++++++++
- kernel/reboot.c                    |  4 ++--
- 36 files changed, 68 insertions(+), 146 deletions(-)
-
-diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
-index 1941a07..81c43f8 100644
---- a/arch/alpha/kernel/process.c
-+++ b/arch/alpha/kernel/process.c
-@@ -24,6 +24,7 @@
- #include <linux/vt.h>
- #include <linux/mman.h>
- #include <linux/elfcore.h>
-+#include <linux/pm.h>
- #include <linux/reboot.h>
- #include <linux/tty.h>
- #include <linux/console.h>
-@@ -40,12 +41,6 @@
- #include "proto.h"
- #include "pci_impl.h"
- 
--/*
-- * Power off function, if any
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- #ifdef CONFIG_ALPHA_WTINT
- /*
-  * Sleep the CPU.
-@@ -184,6 +179,8 @@ machine_halt(void)
- void
- machine_power_off(void)
- {
-+	do_kernel_power_off();
-+
- 	common_shutdown(LINUX_REBOOT_CMD_POWER_OFF, NULL);
- }
- 
-diff --git a/arch/arc/kernel/reset.c b/arch/arc/kernel/reset.c
-index 2768fa1..0758d9d 100644
---- a/arch/arc/kernel/reset.c
-+++ b/arch/arc/kernel/reset.c
-@@ -26,9 +26,6 @@ void machine_restart(char *__unused)
- 
- void machine_power_off(void)
- {
--	/* FIXME ::  power off ??? */
-+	do_kernel_power_off();
- 	machine_halt();
- }
--
--void (*pm_power_off) (void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index fe972a2..aa3f656 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -117,8 +117,6 @@ void soft_restart(unsigned long addr)
- /*
-  * Function pointers to optional machine specific functions
-  */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
- 
- void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
- 
-@@ -205,8 +203,7 @@ void machine_power_off(void)
- 	local_irq_disable();
- 	smp_send_stop();
- 
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-index fde9923..6f623a0 100644
---- a/arch/arm64/kernel/process.c
-+++ b/arch/arm64/kernel/process.c
-@@ -68,8 +68,6 @@ void soft_restart(unsigned long addr)
- /*
-  * Function pointers to optional machine specific functions
-  */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL_GPL(pm_power_off);
- 
- void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
- 
-@@ -129,8 +127,7 @@ void machine_power_off(void)
- {
- 	local_irq_disable();
- 	smp_send_stop();
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/avr32/kernel/process.c b/arch/avr32/kernel/process.c
-index 42a53e74..529c1f6 100644
---- a/arch/avr32/kernel/process.c
-+++ b/arch/avr32/kernel/process.c
-@@ -23,9 +23,6 @@
- 
- #include <mach/pm.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * This file handles the architecture-dependent parts of process handling..
-  */
-@@ -48,8 +45,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- void machine_restart(char *cmd)
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 4aa5545..812dd83 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -39,9 +39,6 @@ int nr_l1stack_tasks;
- void *l1_stack_base;
- unsigned long l1_stack_len;
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * The idle loop on BFIN
-  */
-diff --git a/arch/blackfin/kernel/reboot.c b/arch/blackfin/kernel/reboot.c
-index c4f50a3..387d610 100644
---- a/arch/blackfin/kernel/reboot.c
-+++ b/arch/blackfin/kernel/reboot.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/interrupt.h>
-+#include <linux/pm.h>
- #include <asm/bfin-global.h>
- #include <asm/reboot.h>
- #include <asm/bfrom.h>
-@@ -106,6 +107,7 @@ void machine_halt(void)
- __attribute__((weak))
- void native_machine_power_off(void)
- {
-+	do_kernel_power_off();
- 	idle_with_irq_disabled();
- }
- 
-diff --git a/arch/c6x/kernel/process.c b/arch/c6x/kernel/process.c
-index 57d2ea8..edf7e5a 100644
---- a/arch/c6x/kernel/process.c
-+++ b/arch/c6x/kernel/process.c
-@@ -27,12 +27,6 @@ void	(*c6x_halt)(void);
- extern asmlinkage void ret_from_fork(void);
- extern asmlinkage void ret_from_kernel_thread(void);
- 
--/*
-- * power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void arch_cpu_idle(void)
- {
- 	unsigned long tmp;
-@@ -73,8 +67,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	halt_loop();
- }
- 
-diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
-index b78498e..9ebd76b 100644
---- a/arch/cris/kernel/process.c
-+++ b/arch/cris/kernel/process.c
-@@ -31,9 +31,6 @@
- 
- extern void default_idle(void);
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void arch_cpu_idle(void)
- {
- 	default_idle();
-@@ -60,6 +57,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
-index 5d40aeb77..502dabb 100644
---- a/arch/frv/kernel/process.c
-+++ b/arch/frv/kernel/process.c
-@@ -42,9 +42,6 @@ asmlinkage void ret_from_kernel_thread(void);
- 
- #include <asm/pgalloc.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- static void core_sleep_idle(void)
- {
- #ifdef LED_DEBUG_SLEEP
-@@ -107,6 +104,8 @@ void machine_power_off(void)
- 	gdbstub_exit(0);
- #endif
- 
-+	do_kernel_power_off();
-+
- 	for (;;);
- }
- 
-diff --git a/arch/hexagon/kernel/reset.c b/arch/hexagon/kernel/reset.c
-index 76483c1..6f607b6 100644
---- a/arch/hexagon/kernel/reset.c
-+++ b/arch/hexagon/kernel/reset.c
-@@ -16,11 +16,13 @@
-  * 02110-1301, USA.
-  */
- 
-+#include <linux/pm.h>
- #include <linux/smp.h>
- #include <asm/hexagon_vm.h>
- 
- void machine_power_off(void)
- {
-+	do_kernel_power_off();
- 	smp_send_stop();
- 	__vmstop();
- }
-@@ -32,6 +34,3 @@ void machine_halt(void)
- void machine_restart(char *cmd)
- {
- }
--
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
-index b515149..88121a2 100644
---- a/arch/ia64/kernel/process.c
-+++ b/arch/ia64/kernel/process.c
-@@ -57,8 +57,6 @@ void (*ia64_mark_idle)(int);
- 
- unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
- EXPORT_SYMBOL(boot_option_idle_override);
--void (*pm_power_off) (void);
--EXPORT_SYMBOL(pm_power_off);
- 
- void
- ia64_do_show_stack (struct unw_frame_info *info, void *arg)
-@@ -675,8 +673,7 @@ machine_halt (void)
- void
- machine_power_off (void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	machine_halt();
- }
- 
-diff --git a/arch/m32r/kernel/process.c b/arch/m32r/kernel/process.c
-index e69221d..65a037e 100644
---- a/arch/m32r/kernel/process.c
-+++ b/arch/m32r/kernel/process.c
-@@ -23,6 +23,7 @@
- #include <linux/fs.h>
- #include <linux/slab.h>
- #include <linux/module.h>
-+#include <linux/pm.h>
- #include <linux/ptrace.h>
- #include <linux/unistd.h>
- #include <linux/hardirq.h>
-@@ -44,9 +45,6 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- 	return tsk->thread.lr;
- }
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_restart(char *__unused)
- {
- #if defined(CONFIG_PLAT_MAPPI3)
-@@ -67,7 +65,9 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	/* M32R_FIXME */
-+	do_kernel_power_off();
-+	for (;;)
-+		;
- }
- 
- void show_regs(struct pt_regs * regs)
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index afe3d6e..bbc0a63 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -78,14 +78,10 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	for (;;);
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- void show_regs(struct pt_regs * regs)
- {
- 	printk("\n");
-diff --git a/arch/metag/kernel/process.c b/arch/metag/kernel/process.c
-index 483dff9..8d95773 100644
---- a/arch/metag/kernel/process.c
-+++ b/arch/metag/kernel/process.c
-@@ -67,9 +67,6 @@ void arch_cpu_idle_dead(void)
- }
- #endif
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void (*soc_restart)(char *cmd);
- void (*soc_halt)(void);
- 
-@@ -90,8 +87,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	smp_send_stop();
- 	hard_processor_halt(HALT_OK);
- }
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-index b2dd371..0ebca36 100644
---- a/arch/microblaze/kernel/process.c
-+++ b/arch/microblaze/kernel/process.c
-@@ -44,9 +44,6 @@ void show_regs(struct pt_regs *regs)
- 				regs->msr, regs->ear, regs->esr, regs->fsr);
- }
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void flush_thread(void)
- {
- }
-diff --git a/arch/microblaze/kernel/reset.c b/arch/microblaze/kernel/reset.c
-index fbe58c6..2c6b32c 100644
---- a/arch/microblaze/kernel/reset.c
-+++ b/arch/microblaze/kernel/reset.c
-@@ -103,6 +103,7 @@ void machine_halt(void)
- void machine_power_off(void)
- {
- 	pr_notice("Machine power off...\n");
-+	do_kernel_power_off();
- 	while (1)
- 		;
- }
-diff --git a/arch/mips/kernel/reset.c b/arch/mips/kernel/reset.c
-index 07fc524..09e74d2 100644
---- a/arch/mips/kernel/reset.c
-+++ b/arch/mips/kernel/reset.c
-@@ -21,9 +21,6 @@
-  */
- void (*_machine_restart)(char *command);
- void (*_machine_halt)(void);
--void (*pm_power_off)(void);
--
--EXPORT_SYMBOL(pm_power_off);
- 
- void machine_restart(char *command)
- {
-@@ -39,6 +36,5 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
-diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
-index 3707da5..c78b2eb 100644
---- a/arch/mn10300/kernel/process.c
-+++ b/arch/mn10300/kernel/process.c
-@@ -20,6 +20,7 @@
- #include <linux/user.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/pm.h>
- #include <linux/reboot.h>
- #include <linux/percpu.h>
- #include <linux/err.h>
-@@ -45,12 +46,6 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- }
- 
- /*
-- * power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
--/*
-  * On SMP it's slightly faster (but much more power-consuming!)
-  * to poll the ->work.need_resched flag instead of waiting for the
-  * cross-CPU IPI to arrive. Use this option with caution.
-@@ -93,6 +88,7 @@ void machine_power_off(void)
- #ifdef CONFIG_KERNEL_DEBUGGER
- 	gdbstub_exit(0);
- #endif
-+	do_kernel_power_off();
- }
- 
- void show_regs(struct pt_regs *regs)
-diff --git a/arch/openrisc/kernel/process.c b/arch/openrisc/kernel/process.c
-index 386af25..494afd2 100644
---- a/arch/openrisc/kernel/process.c
-+++ b/arch/openrisc/kernel/process.c
-@@ -25,6 +25,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mm.h>
-+#include <linux/pm.h>
- #include <linux/stddef.h>
- #include <linux/unistd.h>
- #include <linux/ptrace.h>
-@@ -51,7 +52,7 @@
-  */
- struct thread_info *current_thread_info_set[NR_CPUS] = { &init_thread_info, };
- 
--void machine_restart(void)
-+void machine_restart(char *cmd)
- {
- 	printk(KERN_INFO "*** MACHINE RESTART ***\n");
- 	__asm__("l.nop 1");
-@@ -72,11 +73,12 @@ void machine_halt(void)
- void machine_power_off(void)
- {
- 	printk(KERN_INFO "*** MACHINE POWER OFF ***\n");
-+
-+	do_kernel_power_off();
-+
- 	__asm__("l.nop 1");
- }
- 
--void (*pm_power_off) (void) = machine_power_off;
--
- /*
-  * When a process does an "exec", machine state like FPU and debug
-  * registers need to be reset.  This is a hook function for that.
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index 0bbbf0d..3f5d14a 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -41,6 +41,7 @@
- #include <linux/fs.h>
- #include <linux/module.h>
- #include <linux/personality.h>
-+#include <linux/pm.h>
- #include <linux/ptrace.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-@@ -133,7 +134,9 @@ void machine_power_off(void)
- 	pdc_soft_power_button(0);
- 	
- 	pdc_chassis_send_status(PDC_CHASSIS_DIRECT_SHUTDOWN);
--		
-+
-+	do_kernel_power_off();
-+
- 	/* It seems we have no way to power the system off via
- 	 * software. The user has to press the button himself. */
- 
-@@ -141,9 +144,6 @@ void machine_power_off(void)
- 	       "Please power this system off now.");
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * Free current thread data structures etc..
-  */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 1362cd6..5b7a851 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -141,6 +141,9 @@ void machine_power_off(void)
- 	machine_shutdown();
- 	if (ppc_md.power_off)
- 		ppc_md.power_off();
-+
-+	do_kernel_power_off();
-+
- #ifdef CONFIG_SMP
- 	smp_send_stop();
- #endif
-@@ -151,9 +154,6 @@ void machine_power_off(void)
- /* Used by the G5 thermal driver */
- EXPORT_SYMBOL_GPL(machine_power_off);
- 
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL_GPL(pm_power_off);
--
- void machine_halt(void)
- {
- 	machine_shutdown();
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index e80d9ff..267e025 100644
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -263,13 +263,9 @@ void machine_power_off(void)
- 		 */
- 		console_unblank();
- 	_machine_power_off();
--}
- 
--/*
-- * Dummy power off function.
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL_GPL(pm_power_off);
-+	do_kernel_power_off();
-+}
- 
- static int __init early_parse_mem(char *p)
- {
-diff --git a/arch/score/kernel/process.c b/arch/score/kernel/process.c
-index a1519ad3..b76ea67 100644
---- a/arch/score/kernel/process.c
-+++ b/arch/score/kernel/process.c
-@@ -29,9 +29,6 @@
- #include <linux/pm.h>
- #include <linux/rcupdate.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- /* If or when software machine-restart is implemented, add code here. */
- void machine_restart(char *command) {}
- 
-@@ -39,7 +36,10 @@ void machine_restart(char *command) {}
- void machine_halt(void) {}
- 
- /* If or when software machine-power-off is implemented, add code here. */
--void machine_power_off(void) {}
-+void machine_power_off(void)
-+{
-+	do_kernel_power_off();
-+}
- 
- void ret_from_fork(void);
- void ret_from_kernel_thread(void);
-diff --git a/arch/sh/kernel/reboot.c b/arch/sh/kernel/reboot.c
-index 04afe5b..065de12 100644
---- a/arch/sh/kernel/reboot.c
-+++ b/arch/sh/kernel/reboot.c
-@@ -11,9 +11,6 @@
- #include <asm/tlbflush.h>
- #include <asm/traps.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- #ifdef CONFIG_SUPERH32
- static void watchdog_trigger_immediate(void)
- {
-@@ -51,8 +48,7 @@ static void native_machine_shutdown(void)
- 
- static void native_machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- static void native_machine_halt(void)
-diff --git a/arch/sparc/kernel/process_32.c b/arch/sparc/kernel/process_32.c
-index 50e7b62..cb8148a 100644
---- a/arch/sparc/kernel/process_32.c
-+++ b/arch/sparc/kernel/process_32.c
-@@ -48,14 +48,6 @@
-  */
- void (*sparc_idle)(void);
- 
--/* 
-- * Power-off handler instantiation for pm.h compliance
-- * This is done via auxio, but could be used as a fallback
-- * handler when auxio is not present-- unused for now...
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * sysctl - toggle power-off restriction for serial console 
-  * systems in machine_power_off()
-@@ -112,6 +104,8 @@ void machine_power_off(void)
- 		sbus_writeb(power_register, auxio_power_register);
- 	}
- 
-+	do_kernel_power_off();
-+
- 	machine_halt();
- }
- 
-diff --git a/arch/sparc/kernel/reboot.c b/arch/sparc/kernel/reboot.c
-index eba7d91..3c0bb03 100644
---- a/arch/sparc/kernel/reboot.c
-+++ b/arch/sparc/kernel/reboot.c
-@@ -16,17 +16,13 @@
-  */
- int scons_pwroff = 1;
- 
--/* This isn't actually used, it exists merely to satisfy the
-- * reference in kernel/sys.c
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_power_off(void)
- {
- 	if (strcmp(of_console_device->type, "serial") || scons_pwroff)
- 		prom_halt_power_off();
- 
-+	do_kernel_power_off();
-+
- 	prom_halt();
- }
- 
-diff --git a/arch/tile/kernel/reboot.c b/arch/tile/kernel/reboot.c
-index 6c5d2c0..8ff4a7f 100644
---- a/arch/tile/kernel/reboot.c
-+++ b/arch/tile/kernel/reboot.c
-@@ -36,6 +36,9 @@ void machine_power_off(void)
- {
- 	arch_local_irq_disable_all();
- 	smp_send_stop();
-+
-+	do_kernel_power_off();
-+
- 	hv_power_off();
- }
- 
-@@ -45,7 +48,3 @@ void machine_restart(char *cmd)
- 	smp_send_stop();
- 	hv_restart((HV_VirtAddr) "vmlinux", (HV_VirtAddr) cmd);
- }
--
--/* No interesting distinction to be made here. */
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/um/kernel/reboot.c b/arch/um/kernel/reboot.c
-index ced8903..a82ef28 100644
---- a/arch/um/kernel/reboot.c
-+++ b/arch/um/kernel/reboot.c
-@@ -11,8 +11,6 @@
- #include <os.h>
- #include <skas.h>
- 
--void (*pm_power_off)(void);
--
- static void kill_off_processes(void)
- {
- 	if (proc_mm)
-diff --git a/arch/unicore32/kernel/process.c b/arch/unicore32/kernel/process.c
-index b008e99..9490dd5 100644
---- a/arch/unicore32/kernel/process.c
-+++ b/arch/unicore32/kernel/process.c
-@@ -56,16 +56,9 @@ void machine_halt(void)
- 	gpio_set_value(GPO_SOFT_OFF, 0);
- }
- 
--/*
-- * Function pointers to optional machine specific functions
-- */
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	machine_halt();
- }
- 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 17962e6..5c09e28 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -30,12 +30,6 @@
- #include <asm/x86_init.h>
- #include <asm/efi.h>
- 
--/*
-- * Power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- static const struct desc_ptr no_idt = {};
- 
- /*
-@@ -647,11 +641,12 @@ static void native_machine_halt(void)
- 
- static void native_machine_power_off(void)
- {
--	if (pm_power_off) {
-+	if (have_kernel_power_off()) {
- 		if (!reboot_force)
- 			machine_shutdown();
--		pm_power_off();
-+		do_kernel_power_off();
- 	}
-+
- 	/* A fallback in case there is no PM info available */
- 	tboot_shutdown(TB_SHUTDOWN_HALT);
- }
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index fac5e4f..bc08998 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1320,8 +1320,7 @@ static void xen_machine_halt(void)
- 
- static void xen_machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	xen_reboot(SHUTDOWN_poweroff);
- }
- 
-diff --git a/arch/xtensa/kernel/process.c b/arch/xtensa/kernel/process.c
-index 1c85323..c487296 100644
---- a/arch/xtensa/kernel/process.c
-+++ b/arch/xtensa/kernel/process.c
-@@ -49,10 +49,6 @@ extern void ret_from_kernel_thread(void);
- 
- struct task_struct *current_set[NR_CPUS] = {&init_task, };
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
--
- #if XTENSA_HAVE_COPROCESSORS
- 
- void coprocessor_release_all(struct thread_info *ti)
-diff --git a/drivers/parisc/power.c b/drivers/parisc/power.c
-index ef31b77..f10cf92 100644
---- a/drivers/parisc/power.c
-+++ b/drivers/parisc/power.c
-@@ -95,8 +95,7 @@ static void process_shutdown(void)
- 		/* send kill signal */
- 		if (kill_cad_pid(SIGINT, 1)) {
- 			/* just in case killing init process failed */
--			if (pm_power_off)
--				pm_power_off();
-+			kernel_power_off();
- 		}
- 	}
- }
-diff --git a/kernel/power/power_off_handler.c b/kernel/power/power_off_handler.c
-index f838e63..97b7163 100644
---- a/kernel/power/power_off_handler.c
-+++ b/kernel/power/power_off_handler.c
-@@ -22,6 +22,12 @@
- #include <linux/types.h>
- 
- /*
-+ * If set, calling this function will power off the system immediately.
-+ */
-+void (*pm_power_off)(void);
-+EXPORT_SYMBOL(pm_power_off);
-+
-+/*
-  *	Notifier list for kernel code which wants to be called
-  *	to power off the system.
-  */
-@@ -253,6 +259,8 @@ void do_kernel_power_off(void)
- 	 * removed while the call chain is traversed, but we'll have to carry
- 	 * that risk.
- 	 */
-+	if (pm_power_off)
-+		pm_power_off();
- 	raw_notifier_call_chain(&power_off_handler_list, 0, NULL);
- }
- 
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 5925f5a..d87d921 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -306,9 +306,9 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 		return ret;
- 
- 	/* Instead of trying to make the power_off code look like
--	 * halt when pm_power_off is not set do it the easy way.
-+	 * halt when no power-off handler exists do it the easy way.
- 	 */
--	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
-+	if (cmd == LINUX_REBOOT_CMD_POWER_OFF && !have_kernel_power_off())
- 		cmd = LINUX_REBOOT_CMD_HALT;
- 
- 	mutex_lock(&reboot_mutex);
--- 
-1.9.1
+>
+> This still has not been merged and now powerpc is the only arch that does
+> not have this change. Sorry about missing linuxppc-dev before.
+>
+>
+> V2->V2
+>   - Fix up to work against 3.18-rc1
+>
+> __get_cpu_var() is used for multiple purposes in the kernel source. One of
+> them is address calculation via the form &__get_cpu_var(x).  This calculates
+> the address for the instance of the percpu variable of the current processor
+> based on an offset.
+>
+> Other use cases are for storing and retrieving data from the current
+> processors percpu area.  __get_cpu_var() can be used as an lvalue when
+> writing data or on the right side of an assignment.
+>
+> __get_cpu_var() is defined as :
+>
+>
+> #define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
+>
+>
+>
+> __get_cpu_var() always only does an address determination. However, store
+> and retrieve operations could use a segment prefix (or global register on
+> other platforms) to avoid the address calculation.
+>
+> this_cpu_write() and this_cpu_read() can directly take an offset into a
+> percpu area and use optimized assembly code to read and write per cpu
+> variables.
+>
+>
+> This patch converts __get_cpu_var into either an explicit address
+> calculation using this_cpu_ptr() or into a use of this_cpu operations that
+> use the offset.  Thereby address calculations are avoided and less registers
+> are used when code is generated.
+>
+> At the end of the patch set all uses of __get_cpu_var have been removed so
+> the macro is removed too.
+>
+> The patch set includes passes over all arches as well. Once these operations
+> are used throughout then specialized macros can be defined in non -x86
+> arches as well in order to optimize per cpu access by f.e.  using a global
+> register that may be set to the per cpu base.
+>
+>
+>
+>
+> Transformations done to __get_cpu_var()
+>
+>
+> 1. Determine the address of the percpu instance of the current processor.
+>
+> 	DEFINE_PER_CPU(int, y);
+> 	int *x = &__get_cpu_var(y);
+>
+>     Converts to
+>
+> 	int *x = this_cpu_ptr(&y);
+>
+>
+> 2. Same as #1 but this time an array structure is involved.
+>
+> 	DEFINE_PER_CPU(int, y[20]);
+> 	int *x = __get_cpu_var(y);
+>
+>     Converts to
+>
+> 	int *x = this_cpu_ptr(y);
+>
+>
+> 3. Retrieve the content of the current processors instance of a per cpu
+> variable.
+>
+> 	DEFINE_PER_CPU(int, y);
+> 	int x = __get_cpu_var(y)
+>
+>    Converts to
+>
+> 	int x = __this_cpu_read(y);
+>
+>
+> 4. Retrieve the content of a percpu struct
+>
+> 	DEFINE_PER_CPU(struct mystruct, y);
+> 	struct mystruct x = __get_cpu_var(y);
+>
+>    Converts to
+>
+> 	memcpy(&x, this_cpu_ptr(&y), sizeof(x));
+>
+>
+> 5. Assignment to a per cpu variable
+>
+> 	DEFINE_PER_CPU(int, y)
+> 	__get_cpu_var(y) = x;
+>
+>    Converts to
+>
+> 	__this_cpu_write(y, x);
+>
+>
+> 6. Increment/Decrement etc of a per cpu variable
+>
+> 	DEFINE_PER_CPU(int, y);
+> 	__get_cpu_var(y)++
+>
+>    Converts to
+>
+> 	__this_cpu_inc(y)
+>
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Christoph Lameter <cl@linux.com>
+> ---
+>  arch/powerpc/include/asm/hardirq.h           |  4 +++-
+>  arch/powerpc/include/asm/tlbflush.h          |  4 ++--
+>  arch/powerpc/include/asm/xics.h              |  8 ++++----
+>  arch/powerpc/kernel/dbell.c                  |  2 +-
+>  arch/powerpc/kernel/hw_breakpoint.c          |  6 +++---
+>  arch/powerpc/kernel/iommu.c                  |  2 +-
+>  arch/powerpc/kernel/irq.c                    |  4 ++--
+>  arch/powerpc/kernel/kgdb.c                   |  2 +-
+>  arch/powerpc/kernel/kprobes.c                |  6 +++---
+>  arch/powerpc/kernel/mce.c                    | 24 ++++++++++++------------
+>  arch/powerpc/kernel/process.c                | 10 +++++-----
+>  arch/powerpc/kernel/smp.c                    |  6 +++---
+>  arch/powerpc/kernel/sysfs.c                  |  4 ++--
+>  arch/powerpc/kernel/time.c                   | 22 +++++++++++-----------
+>  arch/powerpc/kernel/traps.c                  |  6 +++---
+>  arch/powerpc/kvm/e500.c                      | 14 +++++++-------
+>  arch/powerpc/kvm/e500mc.c                    |  4 ++--
+>  arch/powerpc/mm/hash_native_64.c             |  2 +-
+>  arch/powerpc/mm/hash_utils_64.c              |  2 +-
+>  arch/powerpc/mm/hugetlbpage-book3e.c         |  6 +++---
+>  arch/powerpc/mm/hugetlbpage.c                |  2 +-
+>  arch/powerpc/mm/stab.c                       | 12 ++++++------
+>  arch/powerpc/perf/core-book3s.c              | 22 +++++++++++-----------
+>  arch/powerpc/perf/core-fsl-emb.c             |  6 +++---
+>  arch/powerpc/platforms/cell/interrupt.c      |  6 +++---
+>  arch/powerpc/platforms/ps3/interrupt.c       |  2 +-
+>  arch/powerpc/platforms/pseries/dtl.c         |  2 +-
+>  arch/powerpc/platforms/pseries/hvCall_inst.c |  4 ++--
+>  arch/powerpc/platforms/pseries/iommu.c       |  8 ++++----
+>  arch/powerpc/platforms/pseries/lpar.c        |  6 +++---
+>  arch/powerpc/platforms/pseries/ras.c         |  4 ++--
+>  arch/powerpc/sysdev/xics/xics-common.c       |  2 +-
+>  32 files changed, 108 insertions(+), 106 deletions(-)
+>
+> Index: linux/arch/powerpc/include/asm/hardirq.h
+> ===================================================================
+> --- linux.orig/arch/powerpc/include/asm/hardirq.h
+> +++ linux/arch/powerpc/include/asm/hardirq.h
+> @@ -21,7 +21,9 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpust
+>
+>  #define __ARCH_IRQ_STAT
+>
+> -#define local_softirq_pending()	__get_cpu_var(irq_stat).__softirq_pending
+> +#define local_softirq_pending()	__this_cpu_read(irq_stat.__softirq_pending)
+> +#define set_softirq_pending(x) __this_cpu_write(irq_stat._softirq_pending, (x))
+> +#define or_softirq_pending(x) __this_cpu_or(irq_stat._softirq_pending, (x))
+>
+>  static inline void ack_bad_irq(unsigned int irq)
+>  {
+> Index: linux/arch/powerpc/include/asm/tlbflush.h
+> ===================================================================
+> --- linux.orig/arch/powerpc/include/asm/tlbflush.h
+> +++ linux/arch/powerpc/include/asm/tlbflush.h
+> @@ -107,14 +107,14 @@ extern void __flush_tlb_pending(struct p
+>
+>  static inline void arch_enter_lazy_mmu_mode(void)
+>  {
+> -	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
+> +	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+>
+>  	batch->active = 1;
+>  }
+>
+>  static inline void arch_leave_lazy_mmu_mode(void)
+>  {
+> -	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
+> +	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+>
+>  	if (batch->index)
+>  		__flush_tlb_pending(batch);
+> Index: linux/arch/powerpc/include/asm/xics.h
+> ===================================================================
+> --- linux.orig/arch/powerpc/include/asm/xics.h
+> +++ linux/arch/powerpc/include/asm/xics.h
+> @@ -98,7 +98,7 @@ DECLARE_PER_CPU(struct xics_cppr, xics_c
+>
+>  static inline void xics_push_cppr(unsigned int vec)
+>  {
+> -	struct xics_cppr *os_cppr = &__get_cpu_var(xics_cppr);
+> +	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+>
+>  	if (WARN_ON(os_cppr->index >= MAX_NUM_PRIORITIES - 1))
+>  		return;
+> @@ -111,7 +111,7 @@ static inline void xics_push_cppr(unsign
+>
+>  static inline unsigned char xics_pop_cppr(void)
+>  {
+> -	struct xics_cppr *os_cppr = &__get_cpu_var(xics_cppr);
+> +	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+>
+>  	if (WARN_ON(os_cppr->index < 1))
+>  		return LOWEST_PRIORITY;
+> @@ -121,7 +121,7 @@ static inline unsigned char xics_pop_cpp
+>
+>  static inline void xics_set_base_cppr(unsigned char cppr)
+>  {
+> -	struct xics_cppr *os_cppr = &__get_cpu_var(xics_cppr);
+> +	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+>
+>  	/* we only really want to set the priority when there's
+>  	 * just one cppr value on the stack
+> @@ -133,7 +133,7 @@ static inline void xics_set_base_cppr(un
+>
+>  static inline unsigned char xics_cppr_top(void)
+>  {
+> -	struct xics_cppr *os_cppr = &__get_cpu_var(xics_cppr);
+> +	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+>
+>  	return os_cppr->stack[os_cppr->index];
+>  }
+> Index: linux/arch/powerpc/kernel/dbell.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/dbell.c
+> +++ linux/arch/powerpc/kernel/dbell.c
+> @@ -41,7 +41,7 @@ void doorbell_exception(struct pt_regs *
+>
+>  	may_hard_irq_enable();
+>
+> -	__get_cpu_var(irq_stat).doorbell_irqs++;
+> +	__this_cpu_inc(irq_stat.doorbell_irqs);
+>
+>  	smp_ipi_demux();
+>
+> Index: linux/arch/powerpc/kernel/hw_breakpoint.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/hw_breakpoint.c
+> +++ linux/arch/powerpc/kernel/hw_breakpoint.c
+> @@ -63,7 +63,7 @@ int hw_breakpoint_slots(int type)
+>  int arch_install_hw_breakpoint(struct perf_event *bp)
+>  {
+>  	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
+> -	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
+> +	struct perf_event **slot = this_cpu_ptr(&bp_per_reg);
+>
+>  	*slot = bp;
+>
+> @@ -88,7 +88,7 @@ int arch_install_hw_breakpoint(struct pe
+>   */
+>  void arch_uninstall_hw_breakpoint(struct perf_event *bp)
+>  {
+> -	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
+> +	struct perf_event **slot = this_cpu_ptr(&bp_per_reg);
+>
+>  	if (*slot != bp) {
+>  		WARN_ONCE(1, "Can't find the breakpoint");
+> @@ -226,7 +226,7 @@ int __kprobes hw_breakpoint_handler(stru
+>  	 */
+>  	rcu_read_lock();
+>
+> -	bp = __get_cpu_var(bp_per_reg);
+> +	bp = __this_cpu_read(bp_per_reg);
+>  	if (!bp)
+>  		goto out;
+>  	info = counter_arch_bp(bp);
+> Index: linux/arch/powerpc/kernel/iommu.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/iommu.c
+> +++ linux/arch/powerpc/kernel/iommu.c
+> @@ -208,7 +208,7 @@ static unsigned long iommu_range_alloc(s
+>  	 * We don't need to disable preemption here because any CPU can
+>  	 * safely use any IOMMU pool.
+>  	 */
+> -	pool_nr = __raw_get_cpu_var(iommu_pool_hash) & (tbl->nr_pools - 1);
+> +	pool_nr = __this_cpu_read(iommu_pool_hash) & (tbl->nr_pools - 1);
+>
+>  	if (largealloc)
+>  		pool = &(tbl->large_pool);
+> Index: linux/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/irq.c
+> +++ linux/arch/powerpc/kernel/irq.c
+> @@ -114,7 +114,7 @@ static inline notrace void set_soft_enab
+>  static inline notrace int decrementer_check_overflow(void)
+>  {
+>   	u64 now = get_tb_or_rtc();
+> - 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+> +	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+>
+>  	return now >= *next_tb;
+>  }
+> @@ -499,7 +499,7 @@ void __do_irq(struct pt_regs *regs)
+>
+>  	/* And finally process it */
+>  	if (unlikely(irq == NO_IRQ))
+> -		__get_cpu_var(irq_stat).spurious_irqs++;
+> +		__this_cpu_inc(irq_stat.spurious_irqs);
+>  	else
+>  		generic_handle_irq(irq);
+>
+> Index: linux/arch/powerpc/kernel/kgdb.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/kgdb.c
+> +++ linux/arch/powerpc/kernel/kgdb.c
+> @@ -155,7 +155,7 @@ static int kgdb_singlestep(struct pt_reg
+>  {
+>  	struct thread_info *thread_info, *exception_thread_info;
+>  	struct thread_info *backup_current_thread_info =
+> -		&__get_cpu_var(kgdb_thread_info);
+> +		this_cpu_ptr(&kgdb_thread_info);
+>
+>  	if (user_mode(regs))
+>  		return 0;
+> Index: linux/arch/powerpc/kernel/kprobes.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/kprobes.c
+> +++ linux/arch/powerpc/kernel/kprobes.c
+> @@ -119,7 +119,7 @@ static void __kprobes save_previous_kpro
+>
+>  static void __kprobes restore_previous_kprobe(struct kprobe_ctlblk *kcb)
+>  {
+> -	__get_cpu_var(current_kprobe) = kcb->prev_kprobe.kp;
+> +	__this_cpu_write(current_kprobe, kcb->prev_kprobe.kp);
+>  	kcb->kprobe_status = kcb->prev_kprobe.status;
+>  	kcb->kprobe_saved_msr = kcb->prev_kprobe.saved_msr;
+>  }
+> @@ -127,7 +127,7 @@ static void __kprobes restore_previous_k
+>  static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+>  				struct kprobe_ctlblk *kcb)
+>  {
+> -	__get_cpu_var(current_kprobe) = p;
+> +	__this_cpu_write(current_kprobe, p);
+>  	kcb->kprobe_saved_msr = regs->msr;
+>  }
+>
+> @@ -192,7 +192,7 @@ static int __kprobes kprobe_handler(stru
+>  				ret = 1;
+>  				goto no_kprobe;
+>  			}
+> -			p = __get_cpu_var(current_kprobe);
+> +			p = __this_cpu_read(current_kprobe);
+>  			if (p->break_handler && p->break_handler(p, regs)) {
+>  				goto ss_probe;
+>  			}
+> Index: linux/arch/powerpc/kernel/mce.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/mce.c
+> +++ linux/arch/powerpc/kernel/mce.c
+> @@ -73,8 +73,8 @@ void save_mce_event(struct pt_regs *regs
+>  		    uint64_t nip, uint64_t addr)
+>  {
+>  	uint64_t srr1;
+> -	int index = __get_cpu_var(mce_nest_count)++;
+> -	struct machine_check_event *mce = &__get_cpu_var(mce_event[index]);
+> +	int index = __this_cpu_inc_return(mce_nest_count);
+> +	struct machine_check_event *mce = this_cpu_ptr(&mce_event[index]);
+>
+>  	/*
+>  	 * Return if we don't have enough space to log mce event.
+> @@ -143,7 +143,7 @@ void save_mce_event(struct pt_regs *regs
+>   */
+>  int get_mce_event(struct machine_check_event *mce, bool release)
+>  {
+> -	int index = __get_cpu_var(mce_nest_count) - 1;
+> +	int index = __this_cpu_read(mce_nest_count) - 1;
+>  	struct machine_check_event *mc_evt;
+>  	int ret = 0;
+>
+> @@ -153,7 +153,7 @@ int get_mce_event(struct machine_check_e
+>
+>  	/* Check if we have MCE info to process. */
+>  	if (index < MAX_MC_EVT) {
+> -		mc_evt = &__get_cpu_var(mce_event[index]);
+> +		mc_evt = this_cpu_ptr(&mce_event[index]);
+>  		/* Copy the event structure and release the original */
+>  		if (mce)
+>  			*mce = *mc_evt;
+> @@ -163,7 +163,7 @@ int get_mce_event(struct machine_check_e
+>  	}
+>  	/* Decrement the count to free the slot. */
+>  	if (release)
+> -		__get_cpu_var(mce_nest_count)--;
+> +		__this_cpu_dec(mce_nest_count);
+>
+>  	return ret;
+>  }
+> @@ -184,13 +184,13 @@ void machine_check_queue_event(void)
+>  	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
+>  		return;
+>
+> -	index = __get_cpu_var(mce_queue_count)++;
+> +	index = __this_cpu_inc_return(mce_queue_count);
+>  	/* If queue is full, just return for now. */
+>  	if (index >= MAX_MC_EVT) {
+> -		__get_cpu_var(mce_queue_count)--;
+> +		__this_cpu_dec(mce_queue_count);
+>  		return;
+>  	}
+> -	__get_cpu_var(mce_event_queue[index]) = evt;
+> +	memcpy(this_cpu_ptr(&mce_event_queue[index]), &evt, sizeof(evt));
+>
+>  	/* Queue irq work to process this event later. */
+>  	irq_work_queue(&mce_event_process_work);
+> @@ -208,11 +208,11 @@ static void machine_check_process_queued
+>  	 * For now just print it to console.
+>  	 * TODO: log this error event to FSP or nvram.
+>  	 */
+> -	while (__get_cpu_var(mce_queue_count) > 0) {
+> -		index = __get_cpu_var(mce_queue_count) - 1;
+> +	while (__this_cpu_read(mce_queue_count) > 0) {
+> +		index = __this_cpu_read(mce_queue_count) - 1;
+>  		machine_check_print_event_info(
+> -				&__get_cpu_var(mce_event_queue[index]));
+> -		__get_cpu_var(mce_queue_count)--;
+> +				this_cpu_ptr(&mce_event_queue[index]));
+> +		__this_cpu_dec(mce_queue_count);
+>  	}
+>  }
+>
+> Index: linux/arch/powerpc/kernel/process.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/process.c
+> +++ linux/arch/powerpc/kernel/process.c
+> @@ -499,7 +499,7 @@ static inline int set_dawr(struct arch_h
+>
+>  void __set_breakpoint(struct arch_hw_breakpoint *brk)
+>  {
+> -	__get_cpu_var(current_brk) = *brk;
+> +	__this_cpu_write(current_brk, *brk);
+>
+>  	if (cpu_has_feature(CPU_FTR_DAWR))
+>  		set_dawr(brk);
+> @@ -842,7 +842,7 @@ struct task_struct *__switch_to(struct t
+>   * schedule DABR
+>   */
+>  #ifndef CONFIG_HAVE_HW_BREAKPOINT
+> -	if (unlikely(!hw_brk_match(&__get_cpu_var(current_brk), &new->thread.hw_brk)))
+> +	if (unlikely(!hw_brk_match(this_cpu_ptr(&current_brk), &new->thread.hw_brk)))
+>  		__set_breakpoint(&new->thread.hw_brk);
+>  #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+>  #endif
+> @@ -856,7 +856,7 @@ struct task_struct *__switch_to(struct t
+>  	 * Collect processor utilization data per process
+>  	 */
+>  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+> -		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
+> +		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
+>  		long unsigned start_tb, current_tb;
+>  		start_tb = old_thread->start_tb;
+>  		cu->current_tb = current_tb = mfspr(SPRN_PURR);
+> @@ -866,7 +866,7 @@ struct task_struct *__switch_to(struct t
+>  #endif /* CONFIG_PPC64 */
+>
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> -	batch = &__get_cpu_var(ppc64_tlb_batch);
+> +	batch = this_cpu_ptr(&ppc64_tlb_batch);
+>  	if (batch->active) {
+>  		current_thread_info()->local_flags |= _TLF_LAZY_MMU;
+>  		if (batch->index)
+> @@ -889,7 +889,7 @@ struct task_struct *__switch_to(struct t
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  	if (current_thread_info()->local_flags & _TLF_LAZY_MMU) {
+>  		current_thread_info()->local_flags &= ~_TLF_LAZY_MMU;
+> -		batch = &__get_cpu_var(ppc64_tlb_batch);
+> +		batch = this_cpu_ptr(&ppc64_tlb_batch);
+>  		batch->active = 1;
+>  	}
+>  #endif /* CONFIG_PPC_BOOK3S_64 */
+> Index: linux/arch/powerpc/kernel/smp.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/smp.c
+> +++ linux/arch/powerpc/kernel/smp.c
+> @@ -243,7 +243,7 @@ void smp_muxed_ipi_message_pass(int cpu,
+>
+>  irqreturn_t smp_ipi_demux(void)
+>  {
+> -	struct cpu_messages *info = &__get_cpu_var(ipi_message);
+> +	struct cpu_messages *info = this_cpu_ptr(&ipi_message);
+>  	unsigned int all;
+>
+>  	mb();	/* order any irq clear */
+> @@ -442,9 +442,9 @@ void generic_mach_cpu_die(void)
+>  	idle_task_exit();
+>  	cpu = smp_processor_id();
+>  	printk(KERN_DEBUG "CPU%d offline\n", cpu);
+> -	__get_cpu_var(cpu_state) = CPU_DEAD;
+> +	__this_cpu_write(cpu_state, CPU_DEAD);
+>  	smp_wmb();
+> -	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
+> +	while (__this_cpu_read(cpu_state) != CPU_UP_PREPARE)
+>  		cpu_relax();
+>  }
+>
+> Index: linux/arch/powerpc/kernel/sysfs.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/sysfs.c
+> +++ linux/arch/powerpc/kernel/sysfs.c
+> @@ -394,10 +394,10 @@ void ppc_enable_pmcs(void)
+>  	ppc_set_pmu_inuse(1);
+>
+>  	/* Only need to enable them once */
+> -	if (__get_cpu_var(pmcs_enabled))
+> +	if (__this_cpu_read(pmcs_enabled))
+>  		return;
+>
+> -	__get_cpu_var(pmcs_enabled) = 1;
+> +	__this_cpu_write(pmcs_enabled, 1);
+>
+>  	if (ppc_md.enable_pmcs)
+>  		ppc_md.enable_pmcs();
+> Index: linux/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/time.c
+> +++ linux/arch/powerpc/kernel/time.c
+> @@ -458,9 +458,9 @@ static inline void clear_irq_work_pendin
+>
+>  DEFINE_PER_CPU(u8, irq_work_pending);
+>
+> -#define set_irq_work_pending_flag()	__get_cpu_var(irq_work_pending) = 1
+> -#define test_irq_work_pending()		__get_cpu_var(irq_work_pending)
+> -#define clear_irq_work_pending()	__get_cpu_var(irq_work_pending) = 0
+> +#define set_irq_work_pending_flag()	__this_cpu_write(irq_work_pending, 1)
+> +#define test_irq_work_pending()		__this_cpu_read(irq_work_pending)
+> +#define clear_irq_work_pending()	__this_cpu_write(irq_work_pending, 0)
+>
+>  #endif /* 32 vs 64 bit */
+>
+> @@ -482,8 +482,8 @@ void arch_irq_work_raise(void)
+>  static void __timer_interrupt(void)
+>  {
+>  	struct pt_regs *regs = get_irq_regs();
+> -	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+> -	struct clock_event_device *evt = &__get_cpu_var(decrementers);
+> +	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+> +	struct clock_event_device *evt = this_cpu_ptr(&decrementers);
+>  	u64 now;
+>
+>  	trace_timer_interrupt_entry(regs);
+> @@ -498,7 +498,7 @@ static void __timer_interrupt(void)
+>  		*next_tb = ~(u64)0;
+>  		if (evt->event_handler)
+>  			evt->event_handler(evt);
+> -		__get_cpu_var(irq_stat).timer_irqs_event++;
+> +		__this_cpu_inc(irq_stat.timer_irqs_event);
+>  	} else {
+>  		now = *next_tb - now;
+>  		if (now <= DECREMENTER_MAX)
+> @@ -506,13 +506,13 @@ static void __timer_interrupt(void)
+>  		/* We may have raced with new irq work */
+>  		if (test_irq_work_pending())
+>  			set_dec(1);
+> -		__get_cpu_var(irq_stat).timer_irqs_others++;
+> +		__this_cpu_inc(irq_stat.timer_irqs_others);
+>  	}
+>
+>  #ifdef CONFIG_PPC64
+>  	/* collect purr register values often, for accurate calculations */
+>  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+> -		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
+> +		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
+>  		cu->current_tb = mfspr(SPRN_PURR);
+>  	}
+>  #endif
+> @@ -527,7 +527,7 @@ static void __timer_interrupt(void)
+>  void timer_interrupt(struct pt_regs * regs)
+>  {
+>  	struct pt_regs *old_regs;
+> -	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+> +	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+>
+>  	/* Ensure a positive value is written to the decrementer, or else
+>  	 * some CPUs will continue to take decrementer exceptions.
+> @@ -813,7 +813,7 @@ static void __init clocksource_init(void
+>  static int decrementer_set_next_event(unsigned long evt,
+>  				      struct clock_event_device *dev)
+>  {
+> -	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+> +	__this_cpu_write(decrementers_next_tb, get_tb_or_rtc() + evt);
+>  	set_dec(evt);
+>
+>  	/* We may have raced with new irq work */
+> @@ -833,7 +833,7 @@ static void decrementer_set_mode(enum cl
+>  /* Interrupt handler for the timer broadcast IPI */
+>  void tick_broadcast_ipi_handler(void)
+>  {
+> -	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+> +	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+>
+>  	*next_tb = get_tb_or_rtc();
+>  	__timer_interrupt();
+> Index: linux/arch/powerpc/kernel/traps.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/traps.c
+> +++ linux/arch/powerpc/kernel/traps.c
+> @@ -295,7 +295,7 @@ long machine_check_early(struct pt_regs
+>  {
+>  	long handled = 0;
+>
+> -	__get_cpu_var(irq_stat).mce_exceptions++;
+> +	__this_cpu_inc(irq_stat.mce_exceptions);
+>
+>  	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+>  		handled = cur_cpu_spec->machine_check_early(regs);
+> @@ -304,7 +304,7 @@ long machine_check_early(struct pt_regs
+>
+>  long hmi_exception_realmode(struct pt_regs *regs)
+>  {
+> -	__get_cpu_var(irq_stat).hmi_exceptions++;
+> +	__this_cpu_inc(irq_stat.hmi_exceptions);
+>
+>  	if (ppc_md.hmi_exception_early)
+>  		ppc_md.hmi_exception_early(regs);
+> @@ -700,7 +700,7 @@ void machine_check_exception(struct pt_r
+>  	enum ctx_state prev_state = exception_enter();
+>  	int recover = 0;
+>
+> -	__get_cpu_var(irq_stat).mce_exceptions++;
+> +	__this_cpu_inc(irq_stat.mce_exceptions);
+>
+>  	/* See if any machine dependent calls. In theory, we would want
+>  	 * to call the CPU first, and call the ppc_md. one if the CPU
+> @@ -1519,7 +1519,7 @@ void vsx_unavailable_tm(struct pt_regs *
+>
+>  void performance_monitor_exception(struct pt_regs *regs)
+>  {
+> -	__get_cpu_var(irq_stat).pmu_irqs++;
+> +	__this_cpu_inc(irq_stat.pmu_irqs);
+>
+>  	perf_irq(regs);
+>  }
+> Index: linux/arch/powerpc/kvm/e500.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kvm/e500.c
+> +++ linux/arch/powerpc/kvm/e500.c
+> @@ -76,11 +76,11 @@ static inline int local_sid_setup_one(st
+>  	unsigned long sid;
+>  	int ret = -1;
+>
+> -	sid = ++(__get_cpu_var(pcpu_last_used_sid));
+> +	sid = __this_cpu_inc_return(pcpu_last_used_sid);
+>  	if (sid < NUM_TIDS) {
+> -		__get_cpu_var(pcpu_sids).entry[sid] = entry;
+> +		__this_cpu_write(pcpu_sids)entry[sid], entry);
+>  		entry->val = sid;
+> -		entry->pentry = &__get_cpu_var(pcpu_sids).entry[sid];
+> +		entry->pentry = this_cpu_ptr(&pcpu_sids.entry[sid]);
+>  		ret = sid;
+>  	}
+>
+> @@ -108,8 +108,8 @@ static inline int local_sid_setup_one(st
+>  static inline int local_sid_lookup(struct id *entry)
+>  {
+>  	if (entry && entry->val != 0 &&
+> -	    __get_cpu_var(pcpu_sids).entry[entry->val] == entry &&
+> -	    entry->pentry == &__get_cpu_var(pcpu_sids).entry[entry->val])
+> +	    __this_cpu_read(pcpu_sids.entry[entry->val]) == entry &&
+> +	    entry->pentry == this_cpu_ptr(&pcpu_sids.entry[entry->val]))
+>  		return entry->val;
+>  	return -1;
+>  }
+> @@ -117,8 +117,8 @@ static inline int local_sid_lookup(struc
+>  /* Invalidate all id mappings on local core -- call with preempt disabled */
+>  static inline void local_sid_destroy_all(void)
+>  {
+> -	__get_cpu_var(pcpu_last_used_sid) = 0;
+> -	memset(&__get_cpu_var(pcpu_sids), 0, sizeof(__get_cpu_var(pcpu_sids)));
+> +	__this_cpu_write(pcpu_last_used_sid, 0);
+> +	memset(this_cpu_ptr(&pcpu_sids), 0, sizeof(pcpu_sids));
+>  }
+>
+>  static void *kvmppc_e500_id_table_alloc(struct kvmppc_vcpu_e500 *vcpu_e500)
+> Index: linux/arch/powerpc/kvm/e500mc.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kvm/e500mc.c
+> +++ linux/arch/powerpc/kvm/e500mc.c
+> @@ -144,9 +144,9 @@ static void kvmppc_core_vcpu_load_e500mc
+>  	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
+>
+>  	if (vcpu->arch.oldpir != mfspr(SPRN_PIR) ||
+> -	    __get_cpu_var(last_vcpu_of_lpid)[get_lpid(vcpu)] != vcpu) {
+> +	    __this_cpu_read(last_vcpu_of_lpid[get_lpid(vcpu)]) != vcpu) {
+>  		kvmppc_e500_tlbil_all(vcpu_e500);
+> -		__get_cpu_var(last_vcpu_of_lpid)[get_lpid(vcpu)] = vcpu;
+> +		__this_cpu_write(last_vcpu_of_lpid[get_lpid(vcpu)], vcpu);
+>  	}
+>  }
+>
+> Index: linux/arch/powerpc/mm/hash_native_64.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/mm/hash_native_64.c
+> +++ linux/arch/powerpc/mm/hash_native_64.c
+> @@ -629,7 +629,7 @@ static void native_flush_hash_range(unsi
+>  	unsigned long want_v;
+>  	unsigned long flags;
+>  	real_pte_t pte;
+> -	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
+> +	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+>  	unsigned long psize = batch->psize;
+>  	int ssize = batch->ssize;
+>  	int i;
+> Index: linux/arch/powerpc/mm/hash_utils_64.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/mm/hash_utils_64.c
+> +++ linux/arch/powerpc/mm/hash_utils_64.c
+> @@ -1322,7 +1322,7 @@ void flush_hash_range(unsigned long numb
+>  	else {
+>  		int i;
+>  		struct ppc64_tlb_batch *batch =
+> -			&__get_cpu_var(ppc64_tlb_batch);
+> +			this_cpu_ptr(&ppc64_tlb_batch);
+>
+>  		for (i = 0; i < number; i++)
+>  			flush_hash_page(batch->vpn[i], batch->pte[i],
+> Index: linux/arch/powerpc/mm/hugetlbpage-book3e.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/mm/hugetlbpage-book3e.c
+> +++ linux/arch/powerpc/mm/hugetlbpage-book3e.c
+> @@ -33,13 +33,13 @@ static inline int tlb1_next(void)
+>
+>  	ncams = mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY;
+>
+> -	index = __get_cpu_var(next_tlbcam_idx);
+> +	index = this_cpu_read(next_tlbcam_idx);
+>
+>  	/* Just round-robin the entries and wrap when we hit the end */
+>  	if (unlikely(index == ncams - 1))
+> -		__get_cpu_var(next_tlbcam_idx) = tlbcam_index;
+> +		__this_cpu_write(next_tlbcam_idx, tlbcam_index);
+>  	else
+> -		__get_cpu_var(next_tlbcam_idx)++;
+> +		__this_cpu_inc(next_tlbcam_idx);
+>
+>  	return index;
+>  }
+> Index: linux/arch/powerpc/mm/hugetlbpage.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/mm/hugetlbpage.c
+> +++ linux/arch/powerpc/mm/hugetlbpage.c
+> @@ -462,7 +462,7 @@ static void hugepd_free(struct mmu_gathe
+>  {
+>  	struct hugepd_freelist **batchp;
+>
+> -	batchp = &get_cpu_var(hugepd_freelist_cur);
+> +	batchp = this_cpu_ptr(&hugepd_freelist_cur);
+>
+>  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+>  	    cpumask_equal(mm_cpumask(tlb->mm),
+> Index: linux/arch/powerpc/perf/core-book3s.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/perf/core-book3s.c
+> +++ linux/arch/powerpc/perf/core-book3s.c
+> @@ -339,7 +339,7 @@ static void power_pmu_bhrb_reset(void)
+>
+>  static void power_pmu_bhrb_enable(struct perf_event *event)
+>  {
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	if (!ppmu->bhrb_nr)
+>  		return;
+> @@ -354,7 +354,7 @@ static void power_pmu_bhrb_enable(struct
+>
+>  static void power_pmu_bhrb_disable(struct perf_event *event)
+>  {
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	if (!ppmu->bhrb_nr)
+>  		return;
+> @@ -1144,7 +1144,7 @@ static void power_pmu_disable(struct pmu
+>  	if (!ppmu)
+>  		return;
+>  	local_irq_save(flags);
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	if (!cpuhw->disabled) {
+>  		/*
+> @@ -1211,7 +1211,7 @@ static void power_pmu_enable(struct pmu
+>  		return;
+>  	local_irq_save(flags);
+>
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	if (!cpuhw->disabled)
+>  		goto out;
+>
+> @@ -1403,7 +1403,7 @@ static int power_pmu_add(struct perf_eve
+>  	 * Add the event to the list (if there is room)
+>  	 * and check whether the total set is still feasible.
+>  	 */
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	n0 = cpuhw->n_events;
+>  	if (n0 >= ppmu->n_counter)
+>  		goto out;
+> @@ -1469,7 +1469,7 @@ static void power_pmu_del(struct perf_ev
+>
+>  	power_pmu_read(event);
+>
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	for (i = 0; i < cpuhw->n_events; ++i) {
+>  		if (event == cpuhw->event[i]) {
+>  			while (++i < cpuhw->n_events) {
+> @@ -1575,7 +1575,7 @@ static void power_pmu_stop(struct perf_e
+>   */
+>  static void power_pmu_start_txn(struct pmu *pmu)
+>  {
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	perf_pmu_disable(pmu);
+>  	cpuhw->group_flag |= PERF_EVENT_TXN;
+> @@ -1589,7 +1589,7 @@ static void power_pmu_start_txn(struct p
+>   */
+>  static void power_pmu_cancel_txn(struct pmu *pmu)
+>  {
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	cpuhw->group_flag &= ~PERF_EVENT_TXN;
+>  	perf_pmu_enable(pmu);
+> @@ -1607,7 +1607,7 @@ static int power_pmu_commit_txn(struct p
+>
+>  	if (!ppmu)
+>  		return -EAGAIN;
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	n = cpuhw->n_events;
+>  	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
+>  		return -EAGAIN;
+> @@ -1964,7 +1964,7 @@ static void record_and_restart(struct pe
+>
+>  		if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK) {
+>  			struct cpu_hw_events *cpuhw;
+> -			cpuhw = &__get_cpu_var(cpu_hw_events);
+> +			cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  			power_pmu_bhrb_read(cpuhw);
+>  			data.br_stack = &cpuhw->bhrb_stack;
+>  		}
+> @@ -2037,7 +2037,7 @@ static bool pmc_overflow(unsigned long v
+>  static void perf_event_interrupt(struct pt_regs *regs)
+>  {
+>  	int i, j;
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	struct perf_event *event;
+>  	unsigned long val[8];
+>  	int found, active;
+> Index: linux/arch/powerpc/perf/core-fsl-emb.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/perf/core-fsl-emb.c
+> +++ linux/arch/powerpc/perf/core-fsl-emb.c
+> @@ -210,7 +210,7 @@ static void fsl_emb_pmu_disable(struct p
+>  	unsigned long flags;
+>
+>  	local_irq_save(flags);
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+>  	if (!cpuhw->disabled) {
+>  		cpuhw->disabled = 1;
+> @@ -249,7 +249,7 @@ static void fsl_emb_pmu_enable(struct pm
+>  	unsigned long flags;
+>
+>  	local_irq_save(flags);
+> -	cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	if (!cpuhw->disabled)
+>  		goto out;
+>
+> @@ -653,7 +653,7 @@ static void record_and_restart(struct pe
+>  static void perf_event_interrupt(struct pt_regs *regs)
+>  {
+>  	int i;
+> -	struct cpu_hw_events *cpuhw = &__get_cpu_var(cpu_hw_events);
+> +	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  	struct perf_event *event;
+>  	unsigned long val;
+>  	int found = 0;
+> Index: linux/arch/powerpc/platforms/cell/interrupt.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/cell/interrupt.c
+> +++ linux/arch/powerpc/platforms/cell/interrupt.c
+> @@ -82,7 +82,7 @@ static void iic_unmask(struct irq_data *
+>
+>  static void iic_eoi(struct irq_data *d)
+>  {
+> -	struct iic *iic = &__get_cpu_var(cpu_iic);
+> +	struct iic *iic = this_cpu_ptr(&cpu_iic);
+>  	out_be64(&iic->regs->prio, iic->eoi_stack[--iic->eoi_ptr]);
+>  	BUG_ON(iic->eoi_ptr < 0);
+>  }
+> @@ -148,7 +148,7 @@ static unsigned int iic_get_irq(void)
+>  	struct iic *iic;
+>  	unsigned int virq;
+>
+> -	iic = &__get_cpu_var(cpu_iic);
+> +	iic = this_cpu_ptr(&cpu_iic);
+>  	*(unsigned long *) &pending =
+>  		in_be64((u64 __iomem *) &iic->regs->pending_destr);
+>  	if (!(pending.flags & CBE_IIC_IRQ_VALID))
+> @@ -163,7 +163,7 @@ static unsigned int iic_get_irq(void)
+>
+>  void iic_setup_cpu(void)
+>  {
+> -	out_be64(&__get_cpu_var(cpu_iic).regs->prio, 0xff);
+> +	out_be64(this_cpu_ptr(&cpu_iic.regs->prio), 0xff);
+>  }
+>
+>  u8 iic_get_target_id(int cpu)
+> Index: linux/arch/powerpc/platforms/ps3/interrupt.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/ps3/interrupt.c
+> +++ linux/arch/powerpc/platforms/ps3/interrupt.c
+> @@ -711,7 +711,7 @@ void __init ps3_register_ipi_irq(unsigne
+>
+>  static unsigned int ps3_get_irq(void)
+>  {
+> -	struct ps3_private *pd = &__get_cpu_var(ps3_private);
+> +	struct ps3_private *pd = this_cpu_ptr(&ps3_private);
+>  	u64 x = (pd->bmp.status & pd->bmp.mask);
+>  	unsigned int plug;
+>
+> Index: linux/arch/powerpc/platforms/pseries/dtl.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/dtl.c
+> +++ linux/arch/powerpc/platforms/pseries/dtl.c
+> @@ -75,7 +75,7 @@ static atomic_t dtl_count;
+>   */
+>  static void consume_dtle(struct dtl_entry *dtle, u64 index)
+>  {
+> -	struct dtl_ring *dtlr = &__get_cpu_var(dtl_rings);
+> +	struct dtl_ring *dtlr = this_cpu_ptr(&dtl_rings);
+>  	struct dtl_entry *wp = dtlr->write_ptr;
+>  	struct lppaca *vpa = local_paca->lppaca_ptr;
+>
+> Index: linux/arch/powerpc/platforms/pseries/hvCall_inst.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/hvCall_inst.c
+> +++ linux/arch/powerpc/platforms/pseries/hvCall_inst.c
+> @@ -110,7 +110,7 @@ static void probe_hcall_entry(void *igno
+>  	if (opcode > MAX_HCALL_OPCODE)
+>  		return;
+>
+> -	h = &__get_cpu_var(hcall_stats)[opcode / 4];
+> +	h = this_cpu_ptr(&hcall_stats[opcode / 4]);
+>  	h->tb_start = mftb();
+>  	h->purr_start = mfspr(SPRN_PURR);
+>  }
+> @@ -123,7 +123,7 @@ static void probe_hcall_exit(void *ignor
+>  	if (opcode > MAX_HCALL_OPCODE)
+>  		return;
+>
+> -	h = &__get_cpu_var(hcall_stats)[opcode / 4];
+> +	h = this_cpu_ptr(&hcall_stats[opcode / 4]);
+>  	h->num_calls++;
+>  	h->tb_total += mftb() - h->tb_start;
+>  	h->purr_total += mfspr(SPRN_PURR) - h->purr_start;
+> Index: linux/arch/powerpc/platforms/pseries/iommu.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/iommu.c
+> +++ linux/arch/powerpc/platforms/pseries/iommu.c
+> @@ -199,7 +199,7 @@ static int tce_buildmulti_pSeriesLP(stru
+>
+>  	local_irq_save(flags);	/* to protect tcep and the page behind it */
+>
+> -	tcep = __get_cpu_var(tce_page);
+> +	tcep = __this_cpu_read(tce_page);
+>
+>  	/* This is safe to do since interrupts are off when we're called
+>  	 * from iommu_alloc{,_sg}()
+> @@ -212,7 +212,7 @@ static int tce_buildmulti_pSeriesLP(stru
+>  			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+>  					    direction, attrs);
+>  		}
+> -		__get_cpu_var(tce_page) = tcep;
+> +		__this_cpu_write(tce_page, tcep);
+>  	}
+>
+>  	rpn = __pa(uaddr) >> TCE_SHIFT;
+> @@ -398,7 +398,7 @@ static int tce_setrange_multi_pSeriesLP(
+>  	long l, limit;
+>
+>  	local_irq_disable();	/* to protect tcep and the page behind it */
+> -	tcep = __get_cpu_var(tce_page);
+> +	tcep = __this_cpu_read(tce_page);
+>
+>  	if (!tcep) {
+>  		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
+> @@ -406,7 +406,7 @@ static int tce_setrange_multi_pSeriesLP(
+>  			local_irq_enable();
+>  			return -ENOMEM;
+>  		}
+> -		__get_cpu_var(tce_page) = tcep;
+> +		__this_cpu_write(tce_page, tcep);
+>  	}
+>
+>  	proto_tce = TCE_PCI_READ | TCE_PCI_WRITE;
+> Index: linux/arch/powerpc/platforms/pseries/lpar.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/lpar.c
+> +++ linux/arch/powerpc/platforms/pseries/lpar.c
+> @@ -505,7 +505,7 @@ static void pSeries_lpar_flush_hash_rang
+>  	unsigned long vpn;
+>  	unsigned long i, pix, rc;
+>  	unsigned long flags = 0;
+> -	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
+> +	struct ppc64_tlb_batch *batch = this_cpu_ptr(&ppc64_tlb_batch);
+>  	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+>  	unsigned long param[9];
+>  	unsigned long hash, index, shift, hidx, slot;
+> @@ -695,7 +695,7 @@ void __trace_hcall_entry(unsigned long o
+>
+>  	local_irq_save(flags);
+>
+> -	depth = &__get_cpu_var(hcall_trace_depth);
+> +	depth = this_cpu_ptr(&hcall_trace_depth);
+>
+>  	if (*depth)
+>  		goto out;
+> @@ -720,7 +720,7 @@ void __trace_hcall_exit(long opcode, uns
+>
+>  	local_irq_save(flags);
+>
+> -	depth = &__get_cpu_var(hcall_trace_depth);
+> +	depth = this_cpu_ptr(&hcall_trace_depth);
+>
+>  	if (*depth)
+>  		goto out;
+> Index: linux/arch/powerpc/platforms/pseries/ras.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/ras.c
+> +++ linux/arch/powerpc/platforms/pseries/ras.c
+> @@ -302,8 +302,8 @@ static struct rtas_error_log *fwnmi_get_
+>  	/* If it isn't an extended log we can use the per cpu 64bit buffer */
+>  	h = (struct rtas_error_log *)&savep[1];
+>  	if (!rtas_error_extended(h)) {
+> -		memcpy(&__get_cpu_var(mce_data_buf), h, sizeof(__u64));
+> -		errhdr = (struct rtas_error_log *)&__get_cpu_var(mce_data_buf);
+> +		memcpy(this_cpu_ptr(&mce_data_buf), h, sizeof(__u64));
+> +		errhdr = (struct rtas_error_log *)this_cpu_ptr(&mce_data_buf);
+>  	} else {
+>  		int len, error_log_length;
+>
+> Index: linux/arch/powerpc/sysdev/xics/xics-common.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/sysdev/xics/xics-common.c
+> +++ linux/arch/powerpc/sysdev/xics/xics-common.c
+> @@ -155,7 +155,7 @@ int __init xics_smp_probe(void)
+>
+>  void xics_teardown_cpu(void)
+>  {
+> -	struct xics_cppr *os_cppr = &__get_cpu_var(xics_cppr);
+> +	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+>
+>  	/*
+>  	 * we have to reset the cppr index to 0 because we're
+> Index: linux/arch/powerpc/platforms/powernv/opal-tracepoints.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/powernv/opal-tracepoints.c
+> +++ linux/arch/powerpc/platforms/powernv/opal-tracepoints.c
+> @@ -48,7 +48,7 @@ void __trace_opal_entry(unsigned long op
+>
+>  	local_irq_save(flags);
+>
+> -	depth = &__get_cpu_var(opal_trace_depth);
+> +	depth = this_cpu_ptr(&opal_trace_depth);
+>
+>  	if (*depth)
+>  		goto out;
+> @@ -69,7 +69,7 @@ void __trace_opal_exit(long opcode, unsi
+>
+>  	local_irq_save(flags);
+>
+> -	depth = &__get_cpu_var(opal_trace_depth);
+> +	depth = this_cpu_ptr(&opal_trace_depth);
+>
+>  	if (*depth)
+>  		goto out;
+>
