@@ -1,14 +1,15 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EFEC1A189C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BC0E1A1B6E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:46:28 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 16/16] PCI/MSI: Clean up unused MSI arch functions
-Date: Mon, 27 Oct 2014 21:22:22 +0800
-Message-ID: <1414416142-31239-17-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 12/16] arm/iop13xx/MSI: Use MSI controller framework to
+ configure MSI/MSI-X irq
+Date: Mon, 27 Oct 2014 21:22:18 +0800
+Message-ID: <1414416142-31239-13-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -38,234 +39,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we use MSI controller in all platforms to configure
-MSI/MSI-X. We can clean up the unused arch functions.
+Use MSI controller framework instead of arch MSI functions to configure
+MSI/MSI-X irq. So we can manage MSI/MSI-X irq in a unified framework.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
 ---
- drivers/pci/msi.c   |   90 ++++++++++++++++++--------------------------------
- include/linux/msi.h |   11 ------
- 2 files changed, 33 insertions(+), 68 deletions(-)
+ arch/arm/mach-iop13xx/include/mach/pci.h |    4 ++++
+ arch/arm/mach-iop13xx/iq81340mc.c        |    3 +++
+ arch/arm/mach-iop13xx/iq81340sc.c        |    5 ++++-
+ arch/arm/mach-iop13xx/msi.c              |   11 +++++++++--
+ 4 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 0e1da3e..cdb4634 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -27,7 +27,6 @@ int pci_msi_ignore_mask;
+diff --git a/arch/arm/mach-iop13xx/include/mach/pci.h b/arch/arm/mach-iop13xx/include/mach/pci.h
+index 59f42b5..c8f5caf 100644
+--- a/arch/arm/mach-iop13xx/include/mach/pci.h
++++ b/arch/arm/mach-iop13xx/include/mach/pci.h
+@@ -11,6 +11,10 @@ void iop13xx_atu_select(struct hw_pci *plat_pci);
+ void iop13xx_pci_init(void);
+ void iop13xx_map_pci_memory(void);
  
- #define msix_table_size(flags)	((flags & PCI_MSIX_FLAGS_QSIZE) + 1)
- 
--
- /* Arch hooks */
- 
- struct msi_controller * __weak pcibios_msi_controller(struct pci_bus *bus)
-@@ -35,56 +34,31 @@ struct msi_controller * __weak pcibios_msi_controller(struct pci_bus *bus)
- 	return NULL;
- }
- 
--struct msi_controller *pci_msi_controller(struct pci_bus *bus)
--{
--	return pcibios_msi_controller(bus);
--}
--
--int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
--{
--	struct msi_controller *ctrl = pci_msi_controller(dev->bus);
--	int err;
--
--	if (!ctrl || !ctrl->setup_irq)
--		return -EINVAL;
--
--	err = ctrl->setup_irq(ctrl, dev, desc);
--	if (err < 0)
--		return err;
--
--	return 0;
--}
--
--void __weak arch_teardown_msi_irq(unsigned int irq)
--{
--	struct msi_desc *entry = irq_get_msi_desc(irq);
--	struct msi_controller *ctrl = pci_msi_controller(entry->dev->bus);
--
--	if (!ctrl || !ctrl->teardown_irq)
--		return;
--
--	ctrl->teardown_irq(ctrl, irq);
--}
--
--int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
- 	struct msi_controller *ctrl;
- 
--	ctrl = pci_msi_controller(dev->bus);
--	if (ctrl && ctrl->setup_irqs)
-+	ctrl = pcibios_msi_controller(dev->bus);
-+	if (!ctrl)
-+		return -EINVAL;
++#ifdef CONFIG_PCI_MSI
++extern struct msi_controller iop13xx_msi_ctrl;
++#endif
 +
-+	if (ctrl->setup_irqs)
- 		return ctrl->setup_irqs(ctrl, dev, nvec, type);
- 
- 	/*
- 	 * If an architecture wants to support multiple MSI, it needs to
--	 * override arch_setup_msi_irqs()
-+	 * implement ctrl->setup_irqs().
- 	 */
- 	if (type == PCI_CAP_ID_MSI && nvec > 1)
- 		return 1;
- 
-+	if (!ctrl->setup_irq)
-+		return -EINVAL;
-+
- 	list_for_each_entry(entry, &dev->msi_list, list) {
--		ret = arch_setup_msi_irq(dev, entry);
-+		ret = ctrl->setup_irq(ctrl, dev, entry);
- 		if (ret < 0)
- 			return ret;
- 		if (ret > 0)
-@@ -101,6 +75,10 @@ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- void default_teardown_msi_irqs(struct pci_dev *dev)
- {
- 	struct msi_desc *entry;
-+	struct msi_controller *ctrl = pcibios_msi_controller(dev->bus);
-+
-+	if (!ctrl->teardown_irq)
-+		return;
- 
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		int i, nvec;
-@@ -111,18 +89,18 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
- 		else
- 			nvec = 1 << entry->msi_attrib.multiple;
- 		for (i = 0; i < nvec; i++)
--			arch_teardown_msi_irq(entry->irq + i);
-+			ctrl->teardown_irq(ctrl, entry->irq + i);
- 	}
- }
- 
--void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
-+static void teardown_msi_irqs(struct pci_dev *dev)
- {
--	struct msi_controller *ctrl = pci_msi_controller(dev->bus);
-+	struct msi_controller *ctrl = pcibios_msi_controller(dev->bus);
- 
- 	if (ctrl && ctrl->teardown_irqs)
- 		return ctrl->teardown_irqs(ctrl, dev);
- 
--	return default_teardown_msi_irqs(dev);
-+	default_teardown_msi_irqs(dev);
- }
- 
- static void default_restore_msi_irq(struct pci_dev *dev, int irq)
-@@ -143,10 +121,17 @@ static void default_restore_msi_irq(struct pci_dev *dev, int irq)
- 		__write_msi_msg(entry, &entry->msg);
- }
- 
--void __weak arch_restore_msi_irqs(struct pci_dev *dev)
-+void default_restore_msi_irqs(struct pci_dev *dev)
- {
--	struct msi_controller *ctrl = pci_msi_controller(dev->bus);
-+	struct msi_desc *entry;
- 
-+	list_for_each_entry(entry, &dev->msi_list, list)
-+		default_restore_msi_irq(dev, entry->irq);
-+}
-+
-+static void restore_msi_irqs(struct pci_dev *dev)
-+{
-+	struct msi_controller *ctrl = pcibios_msi_controller(dev->bus);
- 	if (ctrl && ctrl->restore_irqs)
-              return ctrl->restore_irqs(ctrl, dev);
- 
-@@ -259,15 +244,6 @@ void unmask_msi_irq(struct irq_data *data)
- 	msi_set_mask_bit(data, 0);
- }
- 
--void default_restore_msi_irqs(struct pci_dev *dev)
--{
--	struct msi_desc *entry;
--
--	list_for_each_entry(entry, &dev->msi_list, list) {
--		default_restore_msi_irq(dev, entry->irq);
--	}
--}
--
- void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
- {
- 	BUG_ON(entry->dev->current_state != PCI_D0);
-@@ -387,7 +363,7 @@ static void free_msi_irqs(struct pci_dev *dev)
- 			BUG_ON(irq_has_action(entry->irq + i));
- 	}
- 
--	arch_teardown_msi_irqs(dev);
-+	teardown_msi_irqs(dev);
- 
- 	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
- 		if (entry->msi_attrib.is_msix) {
-@@ -446,7 +422,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
- 
- 	pci_intx_for_msi(dev, 0);
- 	msi_set_enable(dev, 0);
--	arch_restore_msi_irqs(dev);
-+	restore_msi_irqs(dev);
- 
- 	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &control);
- 	msi_mask_irq(entry, msi_mask(entry->msi_attrib.multi_cap),
-@@ -469,7 +445,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
- 	msix_clear_and_set_ctrl(dev, 0,
- 				PCI_MSIX_FLAGS_ENABLE | PCI_MSIX_FLAGS_MASKALL);
- 
--	arch_restore_msi_irqs(dev);
-+	restore_msi_irqs(dev);
- 	list_for_each_entry(entry, &dev->msi_list, list) {
- 		msix_mask_irq(entry, entry->masked);
- 	}
-@@ -639,7 +615,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
- 	list_add_tail(&entry->list, &dev->msi_list);
- 
- 	/* Configure MSI capability structure */
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
-+	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
- 	if (ret) {
- 		msi_mask_irq(entry, mask, ~mask);
- 		free_msi_irqs(dev);
-@@ -754,7 +730,7 @@ static int msix_capability_init(struct pci_dev *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-+	ret = setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
- 	if (ret)
- 		goto out_avail;
- 
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 4426cb4..e4eb137 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -51,19 +51,8 @@ struct msi_desc {
- 	struct msi_msg msg;
+ #define IOP_PCI_STATUS_ERROR (PCI_STATUS_PARITY |	     \
+ 			       PCI_STATUS_SIG_TARGET_ABORT | \
+ 			       PCI_STATUS_REC_TARGET_ABORT | \
+diff --git a/arch/arm/mach-iop13xx/iq81340mc.c b/arch/arm/mach-iop13xx/iq81340mc.c
+index 9cd07d3..7b802f5 100644
+--- a/arch/arm/mach-iop13xx/iq81340mc.c
++++ b/arch/arm/mach-iop13xx/iq81340mc.c
+@@ -59,6 +59,9 @@ static struct hw_pci iq81340mc_pci __initdata = {
+ 	.map_irq	= iq81340mc_pcix_map_irq,
+ 	.scan		= iop13xx_scan_bus,
+ 	.preinit	= iop13xx_pci_init,
++#ifdef CONFIG_PCI_MSI
++	.msi_ctrl	= &iop13xx_msi_ctrl,
++#endif
  };
  
--/*
-- * The arch hooks to setup up msi irqs. Those functions are
-- * implemented as weak symbols so that they /can/ be overriden by
-- * architecture specific code if needed.
-- */
--int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
--void arch_teardown_msi_irq(unsigned int irq);
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
--void arch_teardown_msi_irqs(struct pci_dev *dev);
--void arch_restore_msi_irqs(struct pci_dev *dev);
+ static int __init iq81340mc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/iq81340sc.c b/arch/arm/mach-iop13xx/iq81340sc.c
+index b3ec11c..934de2e 100644
+--- a/arch/arm/mach-iop13xx/iq81340sc.c
++++ b/arch/arm/mach-iop13xx/iq81340sc.c
+@@ -60,7 +60,10 @@ static struct hw_pci iq81340sc_pci __initdata = {
+ 	.setup		= iop13xx_pci_setup,
+ 	.scan		= iop13xx_scan_bus,
+ 	.map_irq	= iq81340sc_atux_map_irq,
+-	.preinit	= iop13xx_pci_init
++	.preinit	= iop13xx_pci_init,
++#ifdef CONFIG_PCI_MSI
++	.msi_ctrl	= &iop13xx_msi_ctrl,
++#endif
+ };
  
- void default_teardown_msi_irqs(struct pci_dev *dev);
--void default_restore_msi_irqs(struct pci_dev *dev);
+ static int __init iq81340sc_pci_init(void)
+diff --git a/arch/arm/mach-iop13xx/msi.c b/arch/arm/mach-iop13xx/msi.c
+index e7730cf..07a512e 100644
+--- a/arch/arm/mach-iop13xx/msi.c
++++ b/arch/arm/mach-iop13xx/msi.c
+@@ -132,7 +132,8 @@ static struct irq_chip iop13xx_msi_chip = {
+ 	.irq_unmask = unmask_msi_irq,
+ };
  
- struct msi_controller {
- 	struct module *owner;
+-int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
++static int iop13xx_setup_msi_irq(struct msi_controller *ctrl,
++		struct pci_dev *dev, struct msi_desc *desc)
+ {
+ 	int id, irq = irq_alloc_desc_from(IRQ_IOP13XX_MSI_0, -1);
+ 	struct msi_msg msg;
+@@ -159,7 +160,13 @@ int arch_setup_msi_irq(struct pci_dev *pdev, struct msi_desc *desc)
+ 	return 0;
+ }
+ 
+-void arch_teardown_msi_irq(unsigned int irq)
++static void iop13xx_teardown_msi_irq(struct msi_controller *ctrl,
++		unsigned int irq)
+ {
+ 	irq_free_desc(irq);
+ }
++
++struct msi_controller iop13xx_msi_ctrl = {
++	.setup_irq = iop13xx_setup_msi_irq,
++	.teardown_irq = iop13xx_teardown_msi_irq,
++};
 -- 
 1.7.1
