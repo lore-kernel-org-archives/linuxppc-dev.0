@@ -1,39 +1,14 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F0FB1A0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 17:44:21 +1100 (AEDT)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 27 Oct 2014 02:44:18 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 12247C90042
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 02:33:00 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9R6iGwU4522406
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 06:44:16 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9R6iGoX001750
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 02:44:16 -0400
-Message-ID: <544DE9B0.2050500@linux.vnet.ibm.com>
-Date: Mon, 27 Oct 2014 12:14:00 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: kernelfans@gmail.com, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
-Subject: Re: [RFC 11/11] powerpc: kvm: Kconfig add an option for enabling
- secondary hwthread
-References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
- <1413487800-7162-12-git-send-email-kernelfans@gmail.com>
-In-Reply-To: <1413487800-7162-12-git-send-email-kernelfans@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBA651A0182
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 20:56:17 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Remove unused vgacon_remap_base & fix build break
+Date: Mon, 27 Oct 2014 20:56:14 +1100
+Message-Id: <1414403774-18652-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,27 +18,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/2014 01:00 AM, kernelfans@gmail.com wrote:
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kvm/Kconfig | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> index 602eb51..de38566 100644
-> --- a/arch/powerpc/kvm/Kconfig
-> +++ b/arch/powerpc/kvm/Kconfig
-> @@ -93,6 +93,10 @@ config KVM_BOOK3S_64_HV
->  
->  	  If unsure, say N.
->  
-> +config KVMPPC_ENABLE_SECONDARY
-> +	tristate "KVM support for running on secondary hwthread in host"
-> +	depends on KVM_BOOK3S_64_HV
+The build is broken with CONFIG_PPC32=y, CONFIG_FB_VGA16=y and
+CONFIG_VGA_CONSOLE=n.
 
-This patch is required ontop of all the rest :) The top patches won't
-compile without this one. Every patch in the patchset should be able to
-compile successfully without the aid of the patches that come after it.
+The problem is that vgacon_remap_base is not defined. It's used in:
 
-Regards
-Preeti U Murthy
+    #define VGA_MAP_MEM(x,s) (x + vgacon_remap_base)
+
+Which is used in the vga16fb.c code.
+
+Digging down it seems vgacon_remap_base is never initialised. It used to
+be, back in arch/ppc (pplus.c and prep_setup.c), but none of that code
+ever made it to arch/powerpc.
+
+So given it's been unused for >6 years, remove it.
+
+Whether vga16fb.c works on 32-bit is another question, but this patch
+shouldn't affect it.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/vga.h | 4 +---
+ arch/powerpc/kernel/setup_32.c | 5 -----
+ 2 files changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/vga.h b/arch/powerpc/include/asm/vga.h
+index a2eac409c1ec..e5f8dd366212 100644
+--- a/arch/powerpc/include/asm/vga.h
++++ b/arch/powerpc/include/asm/vga.h
+@@ -38,12 +38,10 @@ static inline u16 scr_readw(volatile const u16 *addr)
+ 
+ #endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
+ 
+-extern unsigned long vgacon_remap_base;
+-
+ #ifdef __powerpc64__
+ #define VGA_MAP_MEM(x,s) ((unsigned long) ioremap((x), s))
+ #else
+-#define VGA_MAP_MEM(x,s) (x + vgacon_remap_base)
++#define VGA_MAP_MEM(x,s) (x)
+ #endif
+ 
+ #define vga_readb(x) (*(x))
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 07831ed0d9ef..e46b56657c53 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -53,11 +53,6 @@ unsigned long ISA_DMA_THRESHOLD;
+ unsigned int DMA_MODE_READ;
+ unsigned int DMA_MODE_WRITE;
+ 
+-#ifdef CONFIG_VGA_CONSOLE
+-unsigned long vgacon_remap_base;
+-EXPORT_SYMBOL(vgacon_remap_base);
+-#endif
+-
+ /*
+  * These are used in binfmt_elf.c to put aux entries on the stack
+  * for each elf executable being started.
+-- 
+1.9.1
