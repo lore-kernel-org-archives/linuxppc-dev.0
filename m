@@ -2,13 +2,15 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1DFB21A18D8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 989001A1787
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 23:44:18 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 00/16] Use MSI controller framework to configure MSI/MSI-X
-Date: Mon, 27 Oct 2014 21:22:06 +0800
-Message-ID: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 06/16] Mips/MSI: Save MSI controller in pci sysdata
+Date: Mon, 27 Oct 2014 21:22:12 +0800
+Message-ID: <1414416142-31239-7-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
+References: <1414416142-31239-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
@@ -36,96 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based on "[PATCH 00/10] Save MSI chip in pci_sys_data",
-https://lkml.org/lkml/2014/10/27/85.
+Save MSI controller in pci sysdata, add arch pcibios_msi_controller()
+to extract out MSI controller.
 
-This series is the v4 of "Use MSI chip framework to configure MSI/MSI-X in all platforms".
-I split it out and post it together.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/mips/include/asm/pci.h |    3 +++
+ arch/mips/pci/pci.c         |    9 +++++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-v3->new:
-Some trivial changes in "IA64/MSI: Use MSI controller framework to configure MSI/MSI-X irq".
-
-Old history:
-v2->v3:
-1. For patch "x86/xen/MSI: Eliminate...", introduce a new global flag "pci_msi_ignore_mask"
-to control the msi mask instead of replacing the irqchip->mask with nop function,
-the latter method has problem pointed out by Konrad Rzeszutek Wilk.
-2. Save msi chip in arch pci sysdata instead of associating msi chip to pci bus.
-Because pci devices under same host share the same msi chip, so I think associate
-msi chip to pci host/pci sysdata is better than to bother every pci bus/devices.
-A better solution suggested by Liviu is to rip out pci_host_bridge from pci_create_root_bus(), 
-then we can save some pci host common attributes like domain_nr, msi_chip, resources,
-into the generic pci_host_bridge. Because this changes to pci host bridge is also 
-a large series, so I think we should go step by step, I will try to post it in another
-series later.
-4. Clean up arm pcibios_add_bus() and pcibios_remove_bus() which were used to associate
-msi chip to pci bus.
-
-v1->v2:
-Add a patch to make s390 MSI code build happy between patch "x86/xen/MSI: E.."
-and "s390/MSI: Use MSI..". Fix several typo problems found by Lucas.
-
-RFC->v1: 
-Updated "[patch 4/21] x86/xen/MSI: Eliminate...", export msi_chip instead
-of #ifdef to fix MSI bug in xen running in x86. 
-Rename arch_get_match_msi_chip() to arch_find_msi_chip().
-Drop use struct device as the msi_chip argument, we will do that
-later in another patchset.
-
-Yijing Wang (16):
-  PCI/MSI: Refactor MSI controller to make it become more common
-  x86/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  x86/xen/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  Irq_remapping/MSI: Use MSI controller framework to configure
-    MSI/MSI-X irq
-  x86/MSI: Remove unused MSI weak arch functions
-  Mips/MSI: Save MSI controller in pci sysdata
-  MIPS/Octeon/MSI: Use MSI controller framework to configure MSI/MSI-X
-    irq
-  MIPS/Xlp/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  MIPS/Xlr/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  Powerpc/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  s390/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  arm/iop13xx/MSI: Use MSI controller framework to configure MSI/MSI-X
-    irq
-  IA64/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  Sparc/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  tile/MSI: Use MSI controller framework to configure MSI/MSI-X irq
-  PCI/MSI: Clean up unused MSI arch functions
-
- arch/arm/mach-iop13xx/include/mach/pci.h        |    4 +
- arch/arm/mach-iop13xx/iq81340mc.c               |    3 +
- arch/arm/mach-iop13xx/iq81340sc.c               |    5 +-
- arch/arm/mach-iop13xx/msi.c                     |   11 ++-
- arch/ia64/include/asm/pci.h                     |    3 +-
- arch/ia64/kernel/msi_ia64.c                     |   24 ++++--
- arch/ia64/pci/pci.c                             |    1 +
- arch/mips/include/asm/netlogic/xlp-hal/pcibus.h |    1 +
- arch/mips/include/asm/octeon/pci-octeon.h       |    4 +
- arch/mips/include/asm/pci.h                     |    3 +
- arch/mips/pci/msi-octeon.c                      |   31 ++++---
- arch/mips/pci/msi-xlp.c                         |   11 ++-
- arch/mips/pci/pci-octeon.c                      |    3 +
- arch/mips/pci/pci-xlp.c                         |    3 +
- arch/mips/pci/pci-xlr.c                         |   17 ++++-
- arch/mips/pci/pci.c                             |    9 ++
- arch/powerpc/include/asm/pci-bridge.h           |    8 ++
- arch/powerpc/kernel/msi.c                       |   19 ++++-
- arch/powerpc/kernel/pci-common.c                |    3 +
- arch/s390/include/asm/pci.h                     |    1 +
- arch/s390/pci/pci.c                             |   19 ++++-
- arch/sparc/kernel/pci.c                         |   20 ++++-
- arch/sparc/kernel/pci_impl.h                    |    3 +
- arch/tile/include/asm/pci.h                     |    2 +
- arch/tile/kernel/pci_gx.c                       |   18 ++++-
- arch/x86/include/asm/pci.h                      |    9 +-
- arch/x86/include/asm/x86_init.h                 |    4 -
- arch/x86/kernel/apic/io_apic.c                  |   18 ++++-
- arch/x86/kernel/x86_init.c                      |   24 ------
- arch/x86/pci/acpi.c                             |    1 +
- arch/x86/pci/common.c                           |    3 +
- arch/x86/pci/xen.c                              |   45 ++++++----
- drivers/iommu/irq_remapping.c                   |   11 ++-
- drivers/pci/msi.c                               |   97 ++++++++++------------
- include/linux/msi.h                             |   19 ++---
- 35 files changed, 301 insertions(+), 156 deletions(-)
+diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+index 974b0e3..d7cd850 100644
+--- a/arch/mips/include/asm/pci.h
++++ b/arch/mips/include/asm/pci.h
+@@ -43,6 +43,9 @@ struct pci_controller {
+ 
+ 	int iommu;
+ 
++#ifdef CONFIG_PCI_MSI
++	struct msi_controller *msi_ctrl;
++#endif
+ 	/* Optional access methods for reading/writing the bus number
+ 	   of the PCI controller */
+ 	int (*get_busno)(void);
+diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
+index 1bf60b1..7917cba 100644
+--- a/arch/mips/pci/pci.c
++++ b/arch/mips/pci/pci.c
+@@ -36,6 +36,15 @@ unsigned long PCIBIOS_MIN_MEM;
+ 
+ static int pci_initialized;
+ 
++#ifdef CONFIG_PCI_MSI
++struct msi_controller *pcibios_msi_controller(struct pci_bus *bus)
++{
++	struct pci_controller *ctrl = bus->sysdata;
++
++	return ctrl->msi_ctrl;
++}
++#endif
++
+ /*
+  * We need to avoid collisions with `mirrored' VGA ports
+  * and other strange ISA hardware, so we always want the
+-- 
+1.7.1
