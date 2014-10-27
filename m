@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B76751A00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 08:17:06 +1100 (AEDT)
-Message-ID: <1414444286.364.193.camel@pasglop>
-Subject: Re: What is the reel purpose of in_beXX() and out_beXX() fonctions ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Date: Tue, 28 Oct 2014 08:11:26 +1100
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9DFACE@AcuExch.aculab.com>
-References: <544E3FF6.7090300@c-s.fr>
- <063D6719AE5E284EB5DD2968C1650D6D1C9DFACE@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57AAD1A0064
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 09:04:36 +1100 (AEDT)
+Message-ID: <1414447475.1913.1.camel@concordia>
+Subject: Re: powerpc: Replace __get_cpu_var uses
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 28 Oct 2014 09:04:35 +1100
+In-Reply-To: <1414444233.364.192.camel@pasglop>
+References: <alpine.DEB.2.11.1410211520470.20253@gentwo.org>
+ <alpine.DEB.2.11.1410271055380.18104@gentwo.org>
+ <1414444233.364.192.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Christoph Lameter <cl@linux.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-10-27 at 15:05 +0000, David Laight wrote:
+On Tue, 2014-10-28 at 08:10 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2014-10-27 at 10:57 -0500, Christoph Lameter wrote:
+> > Ping? We are planning to remove support for __get_cpu_var in the
+> > 3.19 merge period. I can move the definition for __get_cpu_var into the
+> > powerpc per cpu definition instead if we cannot get this merged?
 > 
-> Unfortunately the functions sometimes contain additional (often
-> unneeded) 
-> sequencing instructions - the driver may be able to perform multiple 
-> operations between the sequencing instructions.
+> Yes, yes, I know, we should merge that, Michael, can you still throw
+> that in ?
 
-That's in part why some folks are working on proper relaxed accessors
-(see Will Deacon's stuff)
+For 3.18, nah. We didn't even see it until after the merge window had closed.
 
-Cheers,
-Ben.
+I realise they're all fairly simple translations, but it's too big and too easy
+for one of them to be wrong.
+
+I'm happy to put it in a topic branch for 3.19, or move the definition or
+whatever, your choice Christoph.
+
+cheers
