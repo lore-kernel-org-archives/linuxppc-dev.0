@@ -1,25 +1,16 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D6D31A000C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 21:48:18 +1100 (AEDT)
-Date: Tue, 28 Oct 2014 10:47:42 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20141028104742.GP18557@sirena.org.uk>
-References: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
- <20141028001904.GH18557@sirena.org.uk>
- <20141028042603.GA5548@Asurada>
+Return-Path: <simon.kagstrom@netinsight.net>
+Received: from ernst.netinsight.se (ernst.netinsight.se [194.16.221.21])
+ by lists.ozlabs.org (Postfix) with SMTP id 2D3B91A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 22:19:12 +1100 (AEDT)
+Date: Tue, 28 Oct 2014 12:19:00 +0100
+From: Simon =?UTF-8?B?S8OlZ3N0csO2bQ==?= <simon.kagstrom@netinsight.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <grant.likely@linaro.org>, <geert@linux-m68k.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH v3] PowerPC: boot: Parse chosen/cmdline-timeout parameter
+Message-ID: <20141028121900.0f3bccc7@marrow.netinsight.se>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="scYsJfBjqkrBfg1Z"
-In-Reply-To: <20141028042603.GA5548@Asurada>
-Subject: Re: [PATCH] ASoC: fsl_asrc: Add reg_defaults for regmap to fix
- kernel dump
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +20,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+A 5 second timeout during boot might be too long, so make it
+configurable. Run the loop at least once to let the user stop the boot
+by holding a key pressed. If the timeout is set to 0, don't wait for
+input, which can be used as a workaround if the boot hangs on random
+data coming in on the serial port.
 
---scYsJfBjqkrBfg1Z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+---
 
-On Mon, Oct 27, 2014 at 09:26:26PM -0700, Nicolin Chen wrote:
-> On Tue, Oct 28, 2014 at 12:19:04AM +0000, Mark Brown wrote:
+I googled for it, and can't find v2 applied anywhere. I've made an
+improvement to the patch: If the timeout is 0, don't wait for input. We
+have a board where the serial port gives garbage when it's not
+connected - this board would then hang in the bootloader.
 
-> > It's not a bug, it's not reasonable to default allocations to atomic and
-> > we can't really tell what context we're in.  Anything used inside a
-> > heavily locked path should either have a default provided or arrange for
-> > a prior write to set up the cache.
+If someone (Michael Ellerman?) has already applied it somewhere, I can
+send a separate patch for that particular change.
 
-> I've a little trouble to understand the prior write over here. Inside my
-> probe() there's a register_init() call which has a set of regmap_write().
-> And then the first regmap_write() results the dump. Does that mean this
-> regmap_write() isn't prior write? If so, how should I do if not setting
+ChangeLog:
 
-Oh, bother.  We fixed things so that we're now always running with the
-spinlock held...  never mind.
+v3:
+- Don't wait for input if the timeout is 0
 
-> default values here -- Some IPs may have default value 0 for registers.
-> And this would make reg_defaults tedious since there's nothing special
-> to assign.
+v2:
+- Rename the property linux,cmdline-timeout (Grant Likely)
+- Run the loop at least once to allow (Grant Likely)
 
-Write a small script then, or a little bit of code to create the
-defaults dynamically.
+ arch/powerpc/boot/main.c   |   13 +++++++++++--
+ arch/powerpc/boot/ops.h    |    2 +-
+ arch/powerpc/boot/serial.c |    6 +++---
+ 3 files changed, 15 insertions(+), 6 deletions(-)
 
-> And actually I remember I haven't seen any dump when I sent the initial
-> patch for the whole ASRC driver but it manifested last month. I thought
-> it might be a partially-merging issue and it would be fixed after merge
-> window's done.....
-
-Nothing has changed here for a while as far as I remember.
-
---scYsJfBjqkrBfg1Z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUT3RNAAoJECTWi3JdVIfQ6dgH/31xUY+Mj0t8ZJ640hvt2+hz
-02CP6IhL9gVdQ0/K6+AupVIIln9sbR5Ys9PWnZShGmcULb99c4wcwuo0pQhI3He8
-00TCixzko3Q3rFo3Hbs5GaxlmUpUOlki3n5O34rZ4whOHqWuBk7MVEB/crrJHANS
-M3FzS0IB5wymEWPnr2PYXwQi52JNcSYhXOHVqmhnJJJPiFut1otsqo4qAaSjLmxz
-MRw0qSFWwuT0YdRK8ku0jvpZgOsyC2uyRR9ZIRvX4sufNDXgv18spfATbk5DtxSy
-1vbZETpugd6Bu/B3Tn97rv/M2NIDEtNN5txJEZpmG277LPjiq1ujx1vuGpUogVs=
-=YnuJ
------END PGP SIGNATURE-----
-
---scYsJfBjqkrBfg1Z--
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index a28f021..acd0414 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -144,13 +144,22 @@ static char cmdline[COMMAND_LINE_SIZE]
+ 
+ static void prep_cmdline(void *chosen)
+ {
++	unsigned int getline_timeout = 5000;
++	int v;
++	int n;
++
++	/* Wait-for-input time */
++	n = getprop(chosen, "linux,cmdline-timeout", &v, sizeof(v));
++	if (n == sizeof(v))
++		getline_timeout = v;
++
+ 	if (cmdline[0] == '\0')
+ 		getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
+ 
+ 	printf("\n\rLinux/PowerPC load: %s", cmdline);
+ 	/* If possible, edit the command line */
+-	if (console_ops.edit_cmdline)
+-		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE);
++	if (console_ops.edit_cmdline && getline_timeout)
++		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE, getline_timeout);
+ 	printf("\n\r");
+ 
+ 	/* Put the command line back into the devtree for the kernel */
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index b3218ce..c42ea70 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -58,7 +58,7 @@ extern struct dt_ops dt_ops;
+ struct console_ops {
+ 	int	(*open)(void);
+ 	void	(*write)(const char *buf, int len);
+-	void	(*edit_cmdline)(char *buf, int len);
++	void	(*edit_cmdline)(char *buf, int len, unsigned int getline_timeout);
+ 	void	(*close)(void);
+ 	void	*data;
+ };
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+index f2156f0..167ee94 100644
+--- a/arch/powerpc/boot/serial.c
++++ b/arch/powerpc/boot/serial.c
+@@ -33,7 +33,7 @@ static void serial_write(const char *buf, int len)
+ 		scdp->putc(*buf++);
+ }
+ 
+-static void serial_edit_cmdline(char *buf, int len)
++static void serial_edit_cmdline(char *buf, int len, unsigned int timeout)
+ {
+ 	int timer = 0, count;
+ 	char ch, *cp;
+@@ -44,7 +44,7 @@ static void serial_edit_cmdline(char *buf, int len)
+ 	cp = &buf[count];
+ 	count++;
+ 
+-	while (timer++ < 5*1000) {
++	do {
+ 		if (scdp->tstc()) {
+ 			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
+ 				/* Test for backspace/delete */
+@@ -70,7 +70,7 @@ static void serial_edit_cmdline(char *buf, int len)
+ 			break;  /* Exit 'timer' loop */
+ 		}
+ 		udelay(1000);  /* 1 msec */
+-	}
++	} while (timer++ < timeout);
+ 	*cp = 0;
+ }
+ 
+-- 
+1.7.9.6
