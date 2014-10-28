@@ -1,26 +1,37 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E1EE1A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 15:55:50 +1100 (AEDT)
-Date: Tue, 28 Oct 2014 15:55:49 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powerpc/ftrace: simplify prepare_ftrace_return
-Message-ID: <20141028155549.0430c96a@kryten>
-In-Reply-To: <20140927002228.GC18404@gate.crashing.org>
-References: <1410937624-25140-1-git-send-email-anton@samba.org>
- <1410937624-25140-3-git-send-email-anton@samba.org>
- <20140923194604.233bdbad@gandalf.local.home>
- <20140923195436.45ae7e2c@gandalf.local.home>
- <20140924122202.62feb950@kryten> <1411525460.4184.29.camel@pasglop>
- <20140924123307.7649bec8@kryten>
- <20140927002228.GC18404@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36B351A00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 18:30:45 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Tue, 28 Oct 2014 07:30:39 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id C2DDF219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 07:30:13 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9S7UcKt60817418
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 07:30:38 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9S7UbxY017817
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 01:30:37 -0600
+Message-ID: <544F45D9.2080009@fr.ibm.com>
+Date: Tue, 28 Oct 2014 08:29:29 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>, Alan Modra <amodra@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerc: fix build failure when CONFIG_HUGETLB_PAGE is not set
+References: <20141028043122.9E00E14007F@ozlabs.org>
+In-Reply-To: <20141028043122.9E00E14007F@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Segher,
+Hello Michael,
 
-> On Wed, Sep 24, 2014 at 12:33:07PM +1000, Anton Blanchard wrote:
-> > We are scratching our heads trying to remember details of the issue
-> > right now. In retrospect we should have linked the gcc bugzilla or
-> > gcc commit details in the kernel commit message :)
+On 10/28/2014 05:31 AM, Michael Ellerman wrote:
+> On Mon, 2014-27-10 at 14:30:06 UTC, =?utf-8?q?C=C3=A9dric_Le_Goater?= wrote:
+>> CC      arch/powerpc/mm/slice.o
+>> In file included from ../arch/powerpc/mm/slice.c:33:0:
+>> ../include/linux/hugetlb.h:141:47: error: expected identifier or ‘(’ before numeric constant
+>>  #define is_hugepage_only_range(mm, addr, len) 0
+>>                                                ^
+>> ../arch/powerpc/mm/slice.c:704:5: note: in expansion of macro ‘is_hugepage_only_range’
+>>  int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+>>      ^
 > 
-> There have been many GCC bugs in this area.
+> Hi Cedric,
 > 
-> 30282 (for 32-bit)
-> 44199 (for 64-bit)
-> 52828 (for everything, and this one should finally handle things for
-> good) Also a bunch of duplicates, and I'm sure I've missed some more.
+> I'm pretty sure this is fixed in my fixes branch:
 > 
-> The original issue as far as I remember: when using a frame pointer,
-> GCC would sometimes schedule the epilogue to do the stack adjust
-> before restoring all regs from the stack.  Then an interrupt comes
-> in, those saved regs are clobbered, kaboom.  We cannot disable the
-> frame pointer because -pg forces it (although PowerPC does not need
-> it).  The -mno-sched-epilog flag is a workaround: the epilogue (and
-> prologue) will not be reordered by instruction scheduling.  Slow code
-> is better than blowing up fast ;-)
+>   https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=fixes
 
-Thanks for explaining it! It does look like the last issue wasn't
-fixed until gcc 4.8. We'll drop that patch.
+Indeed. I just picked -rc2 without checking your branch. I will next time.
 
-Anton
+Thanks,
+
+C.
