@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1D211A09A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 14:53:12 +1100 (AEDT)
-Message-ID: <1414468386.364.212.camel@pasglop>
-Subject: Re: [PATCH] Revert "powerpc/powernv: Fix endian bug in LPC bus
- debugfs accessors"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 28 Oct 2014 14:53:06 +1100
-In-Reply-To: <1414458920-7166-1-git-send-email-mpe@ellerman.id.au>
-References: <1414458920-7166-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 268391A0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 15:26:35 +1100 (AEDT)
+Received: by mail-pa0-f52.google.com with SMTP id fa1so5202933pad.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2014 21:26:33 -0700 (PDT)
+Date: Mon, 27 Oct 2014 21:26:26 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] ASoC: fsl_asrc: Add reg_defaults for regmap to fix
+ kernel dump
+Message-ID: <20141028042603.GA5548@Asurada>
+References: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
+ <20141028001904.GH18557@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141028001904.GH18557@sirena.org.uk>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-10-28 at 12:15 +1100, Michael Ellerman wrote:
-> This reverts commit bf7588a0859580a45c63cb082825d77c13eca357.
-> 
-> Ben says, "The original code was fine, I think the bug was actually in
-> the userspace tool I was using (don't worry, nothing on the field uses
-> that interface yet and I can still fix the tool)."
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Tue, Oct 28, 2014 at 12:19:04AM +0000, Mark Brown wrote:
+> On Fri, Oct 24, 2014 at 07:03:57PM -0700, Nicolin Chen wrote:
+> > Kernel dump (WARN_ON) ocurred during system boot-up inside regmap_write():
+> > 
+> > ------------[ cut here ]------------
+> > WARNING: CPU: 0 PID: 47 at kernel/locking/lockdep.c:2744 lockdep_trace_alloc+0xe8/0x108()
 
-The original code wasn't fine actually :-) But the fix was completely
-wrong and does more damages than it fixes things. So Ack the revert and
-I'll sort things out properly later.
-
-Cheers,
-Ben.
-
-> ---
->  arch/powerpc/platforms/powernv/opal-lpc.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+> > Even though this may be a bug that should be fixed, I still try to send this
+> > patch as a quick fix (work around) since it does no harm to assign default
+> > values of every registers when using regcache.
 > 
-> diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-> index dd2c285ad170..ad4b31df779a 100644
-> --- a/arch/powerpc/platforms/powernv/opal-lpc.c
-> +++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-> @@ -191,7 +191,6 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
->  {
->  	struct lpc_debugfs_entry *lpc = filp->private_data;
->  	u32 data, pos, len, todo;
-> -	__be32 bedata;
->  	int rc;
->  
->  	if (!access_ok(VERIFY_WRITE, ubuf, count))
-> @@ -214,10 +213,9 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
->  				len = 2;
->  		}
->  		rc = opal_lpc_read(opal_lpc_chip_id, lpc->lpc_type, pos,
-> -				   &bedata, len);
-> +				   &data, len);
->  		if (rc)
->  			return -ENXIO;
-> -		data = be32_to_cpu(bedata);
->  		switch(len) {
->  		case 4:
->  			rc = __put_user((u32)data, (u32 __user *)ubuf);
+> It's not a bug, it's not reasonable to default allocations to atomic and
+> we can't really tell what context we're in.  Anything used inside a
+> heavily locked path should either have a default provided or arrange for
+> a prior write to set up the cache.
+
+I've a little trouble to understand the prior write over here. Inside my
+probe() there's a register_init() call which has a set of regmap_write().
+And then the first regmap_write() results the dump. Does that mean this
+regmap_write() isn't prior write? If so, how should I do if not setting
+default values here -- Some IPs may have default value 0 for registers.
+And this would make reg_defaults tedious since there's nothing special
+to assign.
+
+And actually I remember I haven't seen any dump when I sent the initial
+patch for the whole ASRC driver but it manifested last month. I thought
+it might be a partially-merging issue and it would be fixed after merge
+window's done.....
+
+Thank you
+Nicolin
