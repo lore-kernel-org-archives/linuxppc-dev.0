@@ -1,32 +1,23 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F096F1A061B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 11:17:48 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B5B7914007D
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2014 11:17:48 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Tue, 28 Oct 2014 10:17:46 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: CXL: Fix PSL error due to duplicate segment table entries
-In-reply-to: <20141027064100.D12B514007D@ozlabs.org>
-References: <20141027064100.D12B514007D@ozlabs.org>
-Date: Tue, 28 Oct 2014 11:17:47 +1100
-Message-Id: <1414455360-sup-2142@delenn.ozlabs.ibm.com>
-Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
- arnd <arnd@arndb.de>, greg <greg@kroah.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, jk <jk@ozlabs.org>,
- anton <anton@samba.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 12C861A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 11:19:31 +1100 (AEDT)
+Date: Tue, 28 Oct 2014 00:19:04 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20141028001904.GH18557@sirena.org.uk>
+References: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Zlo2GrDIozf6aQFY"
+In-Reply-To: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_asrc: Add reg_defaults for regmap to fix
+ kernel dump
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,53 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Michael Ellerman's message of 2014-10-27 17:41:00 +1100:
-> On Mon, 2014-27-10 at 04:24:35 UTC, Ian Munsie wrote:
-> > From: Ian Munsie <imunsie@au1.ibm.com>
-> > 
-> > In certain circumstances the PSL can send an interrupt for a segment
-> 
-> Define PSL before using it please.
 
-ok
+--Zlo2GrDIozf6aQFY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > The CXL driver did not expect this situation and did not check if a
-> 
-> does not and does not, you haven't patched it yet.
+On Fri, Oct 24, 2014 at 07:03:57PM -0700, Nicolin Chen wrote:
+> Kernel dump (WARN_ON) ocurred during system boot-up inside regmap_write():
+>=20
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 47 at kernel/locking/lockdep.c:2744 lockdep_trace_al=
+loc+0xe8/0x108()
 
-ok
+Applied, thanks.  Please edit down or elide backtraces - they take up a
+lot of space in the changelog compared to the amount of information they
+contain.
 
-> > Some of the code has been refactored to simplify it - the segment table
-> > hash has been moved from cxl_load_segment to find_free_sste where it is
-> 
-> Any reason that's not a separate patch?
+> By looking at 2744 line, we can get that it's because regcache_rbtree_wri=
+te()
+> would call kmalloc() with GFP flag if it couldn't find an existing block =
+to
+> insert nodes while this kmalloc() call is inside a spin_lock_irq_save pai=
+r,
+> i.e. IRQs disabled.
 
-ok, I'll split it.
+> Even though this may be a bug that should be fixed, I still try to send t=
+his
+> patch as a quick fix (work around) since it does no harm to assign default
+> values of every registers when using regcache.
 
-> > used and we have disabled the secondary hash in the segment table to
-> > reduce the number of entries that need to be tested from 16 to 8. Due to
-> > the large segment sizes we use it is extremely unlikely that the
-> > secondary hash would ever have been used in practice, so this should not
-> > have any negative impacts and may even improve performance.
-> 
-> Any reason that's not a separate patch?
+It's not a bug, it's not reasonable to default allocations to atomic and
+we can't really tell what context we're in.  Anything used inside a
+heavily locked path should either have a default provided or arrange for
+a prior write to set up the cache.
 
-ok, I'll split it.
+--Zlo2GrDIozf6aQFY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> > copro_calculate_slb will now mask the ESID by the correct mask for 1T vs
-> 
-> Didn't, but will after this patch?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-ok, will reword
+iQEcBAEBAgAGBQJUTuD4AAoJECTWi3JdVIfQJEIH/iDOZISkXC669AIXlfD4zREZ
+FlbJ3Nui/RiIAQUYLjFmOPphMH+SwzJyX4GMl99i73c9koKnlp8CxDxXsbUEap0z
+/iVwhUrTgteuZl6rK+z+R1gn0Jt+m/kqgl3d5RfAfKSNSp6yfvqhyHXKfKxe9FLR
+R8jRyZ3jQDBYh4ua1g5Dxx+eoxK5KucUma0sLXGAwEHPNS9KsZbsajnFs/r6QjAW
+4IAkK0XhTrpW1630Hi/n7xlA4q8R+U8Mm2HTzOKqXJBQYy+gUtQdQ93NbuXIFfFa
+/9GV3B8KFPsStNOc9xSlWl2LNTrc5mT5mh7xwSJelpWyWZ+rPDlU4RLtsZXiCIY=
+=5gSx
+-----END PGP SIGNATURE-----
 
-> > 256M segments. This has no effect by itself as the extra bits were
-> > ignored, but it makes debugging the segment table entries easier and
-> > means that we can directly compare the ESID values for duplicates
-> > without needing to worry about masking in the comparison.
-> 
-> Separate patch?
-
-ok, I'll split it.
-
-Cheers,
--Ian
+--Zlo2GrDIozf6aQFY--
