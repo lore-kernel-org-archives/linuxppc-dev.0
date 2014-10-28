@@ -1,40 +1,37 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33F621A00B7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 05:02:30 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 28 Oct 2014 12:02:27 -0600
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1FD8BC9003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 13:51:08 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9SI2OKf50725032
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 18:02:24 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9SI2OOE031087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 14:02:24 -0400
-Date: Tue, 28 Oct 2014 10:33:19 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [2/2] powerpc/numa: ensure per-cpu NUMA mappings are correct on
- topology update
-Message-ID: <20141028173318.GA4211@linux.vnet.ibm.com>
-References: <20141018005040.GB3969@linux.vnet.ibm.com>
- <20141021043627.99A4F14008C@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2B8F1A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 05:10:00 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0105.outbound.protection.outlook.com [157.56.111.105])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E4A04140077
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 05:09:58 +1100 (AEDT)
+Message-ID: <1414519788.23458.85.camel@snotra.buserror.net>
+Subject: Re: [PATCH 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+ portal(s)
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Tue, 28 Oct 2014 13:09:48 -0500
+In-Reply-To: <54480DE6.4090604@Freescale.com>
+References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1413986972-621-2-git-send-email-Emilian.Medve@Freescale.com>
+ <20141022142931.GA4010@leverpostej> <54480DE6.4090604@Freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141021043627.99A4F14008C@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Michael Wang <wangyun@linux.vnet.ibm.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
- jstancek@redhat.com
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "Geoff.Thorpe@freescale.com" <Geoff.Thorpe@Freescale.com>,
+ "corbet@lwn.net" <corbet@lwn.net>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,20 +41,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-On 21.10.2014 [15:36:27 +1100], Michael Ellerman wrote:
-> On Sat, 2014-18-10 at 00:50:40 UTC, Nishanth Aravamudan wrote:
-> > We received a report of warning in kernel/sched/core.c where the sched
-> > group was NULL on an LPAR after a topology update. This seems to occur
-> > because after the topology update has moved the CPUs, cpu_to_node is
-> > returning the old value still, which ends up breaking the consistency of
-> > the NUMA topology in the per-cpu maps. Ensure that we update the per-cpu
-> > fields when we re-map CPUs.
+On Wed, 2014-10-22 at 15:04 -0500, Emil Medve wrote:
+> Hello Mark,
 > 
-> This looks like a bug fix, I assume you want it to go in for 3.18 ?
+> 
+> Thanks for having a look at this
+> 
+> On 10/22/2014 09:29 AM, Mark Rutland wrote:
+> > I'd feel rather uncomfortable accepting a
+> > binding that we already believe to be insufficient to describe the
+> > hardware.
+> > 
+> > What do you expect to change?
+> 
+> Related bindings seem incomplete. As such, the PAMU binding (pamu.txt)
+> covers incompletely a dynamic LIODN assignment/programming model. The
+> current driver uses a static assignment scheme that the binding needs to
+> include. I also suspect that once the driver starts supporting the
+> dynamic LIODN assignment/programming we might find some wrinkles
 
-Yes, please!
+How is this different from any of the other QorIQ bindings that have
+been merged without such a disclaimer?  The static LIODN model is
+already there, even if documentation is missing, and should continue to
+be supported even if we eventually implement a dynamic LIODN model.
 
-Thanks,
-Nish
+> >> +
+> >> +	bman-portals@ff4000000 {
+> >> +		#address-cells = <1>;
+> >> +		#size-cells = <1>;
+> >> +		compatible = "simple-bus";
+> >> +		ranges = <0 0xf 0xf4000000 0x200000>;
+> >> +
+> >> +		bman-portal@0 {
+> >> +			compatible = "fsl,bman-portal-1.0.0", "fsl,bman-portal";
+> >> +			reg = <0x0 0x4000 0x100000 0x1000>;
+> > 
+> > It would be easier to read is each entry had its own set of brackets.
+> > Initially this looked to me like a single 64-bit address/size pair.
+> 
+> Something like <>, <>? It doesn't seem widely used but I agree is more
+> readable. I can include it in the the next spin
+
+The older PPC device trees haven't used it much but I think it's pretty
+common in the newer ARM trees.
+
+-Scott
