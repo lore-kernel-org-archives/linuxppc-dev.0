@@ -1,16 +1,24 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8787F1A015B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 12:15:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1AA261A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 12:20:30 +1100 (AEDT)
+Message-ID: <1414459229.31711.0.camel@concordia>
+Subject: Re: [PATCH V3 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Revert "powerpc/powernv: Fix endian bug in LPC bus debugfs
- accessors"
-Date: Tue, 28 Oct 2014 12:15:20 +1100
-Message-Id: <1414458920-7166-1-git-send-email-mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 28 Oct 2014 12:20:29 +1100
+In-Reply-To: <20141027160612.b7fd0b1cc9d82faeaa674940@linux-foundation.org>
+References: <1414233860-7683-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20141027160612.b7fd0b1cc9d82faeaa674940@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ Steve Capper <steve.capper@linaro.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,40 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit bf7588a0859580a45c63cb082825d77c13eca357.
-
-Ben says, "The original code was fine, I think the bug was actually in
-the userspace tool I was using (don't worry, nothing on the field uses
-that interface yet and I can still fix the tool)."
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/opal-lpc.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-index dd2c285ad170..ad4b31df779a 100644
---- a/arch/powerpc/platforms/powernv/opal-lpc.c
-+++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-@@ -191,7 +191,6 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
- {
- 	struct lpc_debugfs_entry *lpc = filp->private_data;
- 	u32 data, pos, len, todo;
--	__be32 bedata;
- 	int rc;
+On Mon, 2014-10-27 at 16:06 -0700, Andrew Morton wrote:
+> On Sat, 25 Oct 2014 16:14:19 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> 
+> > Update generic gup implementation with powerpc specific details.
+> > On powerpc at pmd level we can have hugepte, normal pmd pointer
+> > or a pointer to the hugepage directory.
+> 
+> I grabbed these.  It would be better if they were merged into the powerpc
+> tree where they'll get more testing than in linux-next alone.
  
- 	if (!access_ok(VERIFY_WRITE, ubuf, count))
-@@ -214,10 +213,9 @@ static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
- 				len = 2;
- 		}
- 		rc = opal_lpc_read(opal_lpc_chip_id, lpc->lpc_type, pos,
--				   &bedata, len);
-+				   &data, len);
- 		if (rc)
- 			return -ENXIO;
--		data = be32_to_cpu(bedata);
- 		switch(len) {
- 		case 4:
- 			rc = __put_user((u32)data, (u32 __user *)ubuf);
--- 
-1.9.1
+Fine by me. Can I get an ack from you and/or someone else on CC?
+
+cheers
