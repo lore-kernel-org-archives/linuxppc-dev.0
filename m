@@ -1,29 +1,25 @@
-Return-Path: <galak@codeaurora.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 58BD71A01DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 01:41:30 +1100 (AEDT)
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.11.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D1A65140076
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 01:41:29 +1100 (AEDT)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Subject: Re: [PATCH v2 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
- portal(s)
-From: Kumar Gala <galak@codeaurora.org>
-In-Reply-To: <1414487751-31568-3-git-send-email-Emilian.Medve@Freescale.com>
-Date: Tue, 28 Oct 2014 09:41:24 -0500
-Message-Id: <044D58B4-690A-4CEA-B2DB-8AF4549D4AE2@codeaurora.org>
-References: <1414487751-31568-1-git-send-email-Emilian.Medve@Freescale.com>
- <1414487751-31568-3-git-send-email-Emilian.Medve@Freescale.com>
-To: Emil Medve <Emilian.Medve@freescale.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
- ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
- linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, grant.likely@linaro.org,
- robh+dt@kernel.org, scottwood@Freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id D26FE1A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 03:05:39 +1100 (AEDT)
+Date: Tue, 28 Oct 2014 16:05:16 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20141028160516.GZ18557@sirena.org.uk>
+References: <cover.1414193668.git.nicoleotsuka@gmail.com>
+ <1414194502-14052-1-git-send-email-nicoleotsuka@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="sC1KxrFoiW8MuHBc"
+In-Reply-To: <1414194502-14052-1-git-send-email-nicoleotsuka@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl-asoc-card: Don't bypass settings if cpu-dai is
+ Master
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, b02247@freescale.com,
+ linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,102 +30,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 28, 2014, at 4:15 AM, Emil Medve <Emilian.Medve@freescale.com> =
-wrote:
+--sC1KxrFoiW8MuHBc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Portals are memory mapped interfaces to BMan that allow low-latency,
-> lock-less interaction by software running on processor cores, =
-accelerators
-> and network interfaces with the BMan
->=20
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> Change-Id: I6d245ffc14ba3d0e91d403ac7c3b91b75a9e6a95
-> ---
-> .../bindings/powerpc/fsl/bman-portals.txt          | 52 =
-++++++++++++++++++++++
-> 1 file changed, 52 insertions(+)
-> create mode 100644 =
-Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
->=20
-> diff --git =
-a/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt =
-b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
+On Fri, Oct 24, 2014 at 04:48:11PM -0700, Nicolin Chen wrote:
+> When cpu-dai is the DAI Master (CBM_CFx), it may need some configurations,
+> set_sysclk() call for eample, for cpu-dai side in the hw_params(), even if
+> the set_bias_level() has already taken care of the codec-dai side.
 
-similar comment about location of binding not being PPC specific.
+Applied, thanks.
 
-> new file mode 100644
-> index 0000000..02e0231
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
-> @@ -0,0 +1,52 @@
-> +QorIQ DPAA Buffer Manager Portals Device Tree Binding
-> +
+--sC1KxrFoiW8MuHBc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Probably worth putting the text from the commit message here as well.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> +Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
-> +
-> +CONTENTS
-> +
-> +	- BMan Portal
-> +	- Example
-> +
-> +BMan Portal Node
-> +
-> +PROPERTIES
-> +
-> +- compatible
-> +	Usage:		Required
-> +	Value type:	<stringlist>
-> +	Definition:	Must include "fsl,bman-portal-<hardware =
-revision>"
-> +			May include "fsl,<SoC>-bman-portal" or =
-"fsl,bman-portal"
-> +
-> +- reg
-> +	Usage:		Required
-> +	Value type:	<prop-encoded-array>
-> +	Definition:	Two regions. The first is the cache-enabled =
-region of
-> +			the portal. The second is the cache-inhibited =
-region of
-> +			the portal
-> +
-> +- interrupts
-> +	Usage:		Required
-> +	Value type:	<prop-encoded-array>
-> +	Definition:	Standard property
-> +
-> +EXAMPLE
-> +
-> +The example below shows a (P4080) BMan portals container/bus node =
-with two portals
-> +
-> +	bman-portals@ff4000000 {
-> +		#address-cells =3D <1>;
-> +		#size-cells =3D <1>;
-> +		compatible =3D "simple-bus";
-> +		ranges =3D <0 0xf 0xf4000000 0x200000>;
-> +
-> +		bman-portal@0 {
-> +			compatible =3D "fsl,bman-portal-1.0.0", =
-"fsl,bman-portal";
-> +			reg =3D <0x0 0x4000>, <0x100000 0x1000>;
-> +			interrupts =3D <105 2 0 0>;
-> +		};
-> +		bman-portal@4000 {
-> +			compatible =3D "fsl,bman-portal-1.0.0", =
-"fsl,bman-portal";
-> +			reg =3D <0x4000 0x4000>, <0x101000 0x1000>;
-> +			interrupts =3D <107 2 0 0>;
-> +		};
-> +	};
-> --=20
-> 2.1.2
->=20
+iQEcBAEBAgAGBQJUT768AAoJECTWi3JdVIfQwmUH/3kHoarWO77yk17oVY3U4Aby
+R/vlzUFosMqGZBNmEFamsfbBEd5jNq9P5I5eWvOCoP7bw+OL5RU9F3XU2blZVA+d
+7Nt28CXcF7ankJs0Qa2h/3tpbbAbFnx3HW/NIS/xVktH8eYrNZMZ0uVILOePBc5B
+P9HWZC+k9CqCIxpi3PWzoPt9e5ipjCknDDQhhdcINrIosnK8sG7vUfUASlSk7YrU
+ayMFCqFjL6etw0bX5uoVixA0qmLsOG5UZ1wMZaM7IKy4FmaRsfELhAArX2IAASD9
+H7TgQtvIiTufcFUqGVnp5XL5VJME9VoL5/P1haidTca/8HfKi8lTalcVkC9hMcg=
+=xXnR
+-----END PGP SIGNATURE-----
 
---=20
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora =
-Forum,
-a Linux Foundation Collaborative Project
+--sC1KxrFoiW8MuHBc--
