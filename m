@@ -1,16 +1,29 @@
-Return-Path: <simon.kagstrom@netinsight.net>
-Received: from ernst.netinsight.se (ernst.netinsight.se [194.16.221.21])
- by lists.ozlabs.org (Postfix) with SMTP id 2D3B91A0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 22:19:12 +1100 (AEDT)
-Date: Tue, 28 Oct 2014 12:19:00 +0100
-From: Simon =?UTF-8?B?S8OlZ3N0csO2bQ==?= <simon.kagstrom@netinsight.net>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <grant.likely@linaro.org>, <geert@linux-m68k.org>,
- <scottwood@freescale.com>
-Subject: [PATCH v3] PowerPC: boot: Parse chosen/cmdline-timeout parameter
-Message-ID: <20141028121900.0f3bccc7@marrow.netinsight.se>
+Return-Path: <hanjun.guo@linaro.org>
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C35931A00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 18:29:13 +1100 (AEDT)
+Received: by mail-pa0-f48.google.com with SMTP id ey11so126344pad.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 00:29:11 -0700 (PDT)
+Message-ID: <544F4550.701@linaro.org>
+Date: Tue, 28 Oct 2014 15:27:12 +0800
+From: Hanjun Guo <hanjun.guo@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Mark Rutland <mark.rutland@arm.com>, Kumar Gala <galak@codeaurora.org>,
+ Ganapatrao Kulkarni <ganapatrao.kulkarni@caviumnetworks.com>
+Subject: Re: [RFC PATCH] dt:numa: adding numa node mapping for memory nodes.
+References: <1410944189-3608-1-git-send-email-ganapatrao.kulkarni@caviumnetworks.com>
+ <A4205FCA-D4DE-48A4-B19F-58400A3FBF5C@codeaurora.org>
+ <20140917193452.GD7983@leverpostej>
+In-Reply-To: <20140917193452.GD7983@leverpostej>
+Content-Type: text/plain; charset=UTF-8
+Cc: "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
+ Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Rob Herring <robh+dt@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "gpkulkarni@gmail.com" <gpkulkarni@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,109 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A 5 second timeout during boot might be too long, so make it
-configurable. Run the loop at least once to let the user stop the boot
-by holding a key pressed. If the timeout is set to 0, don't wait for
-input, which can be used as a workaround if the boot hangs on random
-data coming in on the serial port.
+On 2014-9-18 3:34, Mark Rutland wrote:
+> On Wed, Sep 17, 2014 at 04:37:30PM +0100, Kumar Gala wrote:
+>>
+>> On Sep 17, 2014, at 1:56 AM, Ganapatrao Kulkarni <ganapatrao.kulkarni@caviumnetworks.com> wrote:
+>>
+>>> From: Ganapatrao Kulkarni <ganapatrao.kulkarni@cavium.com>
+>>>
+>>> This patch adds property "nid" to memory node to provide the memory range to
+>>> numa node id mapping.
+>>>
+>>> Signed-off-by: Ganapatrao Kulkarni <ganapatrao.kulkarni@cavium.com>
+>>>
+>>> —
+>>
+>> Adding the PPC guys as they’ve been doing NUMA on IBM Power Servers
+>> for years with OF/DT.  So we should really try and follow what they’ve
+>> done.
+> 
+> Agreed.
+> 
+>>> Documentation/devicetree/bindings/numa.txt | 58 ++++++++++++++++++++++++++++++
+>>> 1 file changed, 58 insertions(+)
+>>> create mode 100644 Documentation/devicetree/bindings/numa.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/numa.txt b/Documentation/devicetree/bindings/numa.txt
+>>> new file mode 100644
+>>> index 0000000..c4a94f2
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/numa.txt
+>>> @@ -0,0 +1,58 @@
+>>> +======================================================
+>>> +numa id binding description
+>>> +======================================================
+>>> +
+>>> +======================================================
+>>> +1 - Introduction
+>>> +======================================================
+>>> +The device node  property "nid(numa node id)" can be added to memory
+> 
+> Why the quotes?
+> 
+>>> +device node to map the range of memory addresses as defined in property "reg".
+>>> +The property "nid" maps the memory range to the numa node id, which is used to
+>>> +find the local and remory pages on numa aware systems.
+> 
+> What is a "numa node id", exactly, and how is the OS intended to use it?
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
----
+I think "Proximity Domain" would be more suitably, processors and memory or IOs
+in the same domain will have better performance than crossing other domains.
 
-I googled for it, and can't find v2 applied anywhere. I've made an
-improvement to the patch: If the timeout is 0, don't wait for input. We
-have a board where the serial port gives garbage when it's not
-connected - this board would then hang in the bootloader.
-
-If someone (Michael Ellerman?) has already applied it somewhere, I can
-send a separate patch for that particular change.
-
-ChangeLog:
-
-v3:
-- Don't wait for input if the timeout is 0
-
-v2:
-- Rename the property linux,cmdline-timeout (Grant Likely)
-- Run the loop at least once to allow (Grant Likely)
-
- arch/powerpc/boot/main.c   |   13 +++++++++++--
- arch/powerpc/boot/ops.h    |    2 +-
- arch/powerpc/boot/serial.c |    6 +++---
- 3 files changed, 15 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index a28f021..acd0414 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -144,13 +144,22 @@ static char cmdline[COMMAND_LINE_SIZE]
- 
- static void prep_cmdline(void *chosen)
- {
-+	unsigned int getline_timeout = 5000;
-+	int v;
-+	int n;
-+
-+	/* Wait-for-input time */
-+	n = getprop(chosen, "linux,cmdline-timeout", &v, sizeof(v));
-+	if (n == sizeof(v))
-+		getline_timeout = v;
-+
- 	if (cmdline[0] == '\0')
- 		getprop(chosen, "bootargs", cmdline, COMMAND_LINE_SIZE-1);
- 
- 	printf("\n\rLinux/PowerPC load: %s", cmdline);
- 	/* If possible, edit the command line */
--	if (console_ops.edit_cmdline)
--		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE);
-+	if (console_ops.edit_cmdline && getline_timeout)
-+		console_ops.edit_cmdline(cmdline, COMMAND_LINE_SIZE, getline_timeout);
- 	printf("\n\r");
- 
- 	/* Put the command line back into the devtree for the kernel */
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index b3218ce..c42ea70 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -58,7 +58,7 @@ extern struct dt_ops dt_ops;
- struct console_ops {
- 	int	(*open)(void);
- 	void	(*write)(const char *buf, int len);
--	void	(*edit_cmdline)(char *buf, int len);
-+	void	(*edit_cmdline)(char *buf, int len, unsigned int getline_timeout);
- 	void	(*close)(void);
- 	void	*data;
- };
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index f2156f0..167ee94 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -33,7 +33,7 @@ static void serial_write(const char *buf, int len)
- 		scdp->putc(*buf++);
- }
- 
--static void serial_edit_cmdline(char *buf, int len)
-+static void serial_edit_cmdline(char *buf, int len, unsigned int timeout)
- {
- 	int timer = 0, count;
- 	char ch, *cp;
-@@ -44,7 +44,7 @@ static void serial_edit_cmdline(char *buf, int len)
- 	cp = &buf[count];
- 	count++;
- 
--	while (timer++ < 5*1000) {
-+	do {
- 		if (scdp->tstc()) {
- 			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
- 				/* Test for backspace/delete */
-@@ -70,7 +70,7 @@ static void serial_edit_cmdline(char *buf, int len)
- 			break;  /* Exit 'timer' loop */
- 		}
- 		udelay(1000);  /* 1 msec */
--	}
-+	} while (timer++ < timeout);
- 	*cp = 0;
- }
- 
--- 
-1.7.9.6
+Thanks
+Hanjun
