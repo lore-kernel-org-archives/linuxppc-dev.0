@@ -1,29 +1,25 @@
-Return-Path: <steve.capper@linaro.org>
-Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com
- [209.85.212.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 75C411A0182
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 21:44:58 +1100 (AEDT)
-Received: by mail-wi0-f174.google.com with SMTP id q5so8849676wiv.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 03:44:54 -0700 (PDT)
-Date: Tue, 28 Oct 2014 10:44:52 +0000
-From: Steve Capper <steve.capper@linaro.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH V3 1/2] mm: Update generic gup implementation to handle
- hugepage directory
-Message-ID: <20141028104451.GB4187@linaro.org>
-References: <1414233860-7683-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20141027160612.b7fd0b1cc9d82faeaa674940@linux-foundation.org>
- <1414459229.31711.0.camel@concordia>
- <20141027183241.a5339085.akpm@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D6D31A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 21:48:18 +1100 (AEDT)
+Date: Tue, 28 Oct 2014 10:47:42 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20141028104742.GP18557@sirena.org.uk>
+References: <1414202637-18929-1-git-send-email-nicoleotsuka@gmail.com>
+ <20141028001904.GH18557@sirena.org.uk>
+ <20141028042603.GA5548@Asurada>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141027183241.a5339085.akpm@linux-foundation.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="scYsJfBjqkrBfg1Z"
+In-Reply-To: <20141028042603.GA5548@Asurada>
+Subject: Re: [PATCH] ASoC: fsl_asrc: Add reg_defaults for regmap to fix
+ kernel dump
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 27, 2014 at 06:32:41PM -0700, Andrew Morton wrote:
-> On Tue, 28 Oct 2014 12:20:29 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> 
-> > On Mon, 2014-10-27 at 16:06 -0700, Andrew Morton wrote:
-> > > On Sat, 25 Oct 2014 16:14:19 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Update generic gup implementation with powerpc specific details.
-> > > > On powerpc at pmd level we can have hugepte, normal pmd pointer
-> > > > or a pointer to the hugepage directory.
-> > > 
-> > > I grabbed these.  It would be better if they were merged into the powerpc
-> > > tree where they'll get more testing than in linux-next alone.
-> >  
-> > Fine by me. Can I get an ack from you and/or someone else on CC?
-> > 
-> 
-> Only arm and arm64 use this code.  Steve, could you please look it over
-> and check that arm is still happy?
 
-Hi Andrew,
-I've tested it and posted some comments on it.
+--scYsJfBjqkrBfg1Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If the arch/arm and arch/arm64 changes are removed and a comment about
-an assumption made by the new gup_huge_pte code is added then I'm happy.
+On Mon, Oct 27, 2014 at 09:26:26PM -0700, Nicolin Chen wrote:
+> On Tue, Oct 28, 2014 at 12:19:04AM +0000, Mark Brown wrote:
 
-Cheers,
--- 
-Steve
+> > It's not a bug, it's not reasonable to default allocations to atomic and
+> > we can't really tell what context we're in.  Anything used inside a
+> > heavily locked path should either have a default provided or arrange for
+> > a prior write to set up the cache.
+
+> I've a little trouble to understand the prior write over here. Inside my
+> probe() there's a register_init() call which has a set of regmap_write().
+> And then the first regmap_write() results the dump. Does that mean this
+> regmap_write() isn't prior write? If so, how should I do if not setting
+
+Oh, bother.  We fixed things so that we're now always running with the
+spinlock held...  never mind.
+
+> default values here -- Some IPs may have default value 0 for registers.
+> And this would make reg_defaults tedious since there's nothing special
+> to assign.
+
+Write a small script then, or a little bit of code to create the
+defaults dynamically.
+
+> And actually I remember I haven't seen any dump when I sent the initial
+> patch for the whole ASRC driver but it manifested last month. I thought
+> it might be a partially-merging issue and it would be fixed after merge
+> window's done.....
+
+Nothing has changed here for a while as far as I remember.
+
+--scYsJfBjqkrBfg1Z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUT3RNAAoJECTWi3JdVIfQ6dgH/31xUY+Mj0t8ZJ640hvt2+hz
+02CP6IhL9gVdQ0/K6+AupVIIln9sbR5Ys9PWnZShGmcULb99c4wcwuo0pQhI3He8
+00TCixzko3Q3rFo3Hbs5GaxlmUpUOlki3n5O34rZ4whOHqWuBk7MVEB/crrJHANS
+M3FzS0IB5wymEWPnr2PYXwQi52JNcSYhXOHVqmhnJJJPiFut1otsqo4qAaSjLmxz
+MRw0qSFWwuT0YdRK8ku0jvpZgOsyC2uyRR9ZIRvX4sufNDXgv18spfATbk5DtxSy
+1vbZETpugd6Bu/B3Tn97rv/M2NIDEtNN5txJEZpmG277LPjiq1ujx1vuGpUogVs=
+=YnuJ
+-----END PGP SIGNATURE-----
+
+--scYsJfBjqkrBfg1Z--
