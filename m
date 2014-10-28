@@ -2,14 +2,14 @@ Return-Path: <Emilian.Medve@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 373131A011A
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B8AD1A011A
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2014 20:24:37 +1100 (AEDT)
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0115.outbound.protection.outlook.com [207.46.100.115])
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EDE1814007B
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2014 20:24:35 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 8A3EA14007F
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2014 20:24:36 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <scottwood@Freescale.com>, <galak@kernel.crashing.org>, <corbet@lwn.net>,
  <robh+dt@kernel.org>, <ijc+devicetree@hellion.org.uk>,
@@ -17,9 +17,10 @@ To: <scottwood@Freescale.com>, <galak@kernel.crashing.org>, <corbet@lwn.net>,
  <grant.likely@linaro.org>, <Geoff.Thorpe@Freescale.com>,
  <linuxppc-dev@ozlabs.org>, <devicetree@vger.kernel.org>,
  <linux-doc@vger.kernel.org>
-Subject: [PATCH v2 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
-Date: Tue, 28 Oct 2014 04:15:48 -0500
-Message-ID: <1414487751-31568-2-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH v2 2/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+ portal(s)
+Date: Tue, 28 Oct 2014 04:15:49 -0500
+Message-ID: <1414487751-31568-3-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1414487751-31568-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1414487751-31568-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -34,118 +35,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Buffer Manager is part of the Data-Path Acceleration Architecture (DPAA).
-BMan supports hardware allocation and deallocation of buffers belonging to
-pools originally created by software with configurable depletion thresholds.
-This binding covers the CCSR space programming model
+Portals are memory mapped interfaces to BMan that allow low-latency,
+lock-less interaction by software running on processor cores, accelerators
+and network interfaces with the BMan
 
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-Change-Id: I3ec479bfb3c91951e96902f091f5d7d2adbef3b2
+Change-Id: I6d245ffc14ba3d0e91d403ac7c3b91b75a9e6a95
 ---
- .../devicetree/bindings/powerpc/fsl/bman.txt       | 95 ++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/bman.txt
+ .../bindings/powerpc/fsl/bman-portals.txt          | 52 ++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/bman.txt b/Documentation/devicetree/bindings/powerpc/fsl/bman.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
 new file mode 100644
-index 0000000..d3fd1e3
+index 0000000..02e0231
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/bman.txt
-@@ -0,0 +1,95 @@
-+QorIQ DPAA Buffer Manager Device Tree Bindings
++++ b/Documentation/devicetree/bindings/powerpc/fsl/bman-portals.txt
+@@ -0,0 +1,52 @@
++QorIQ DPAA Buffer Manager Portals Device Tree Binding
 +
 +Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
 +
 +CONTENTS
 +
-+	- BMan Node
-+	- BMan Private Memory Node
++	- BMan Portal
 +	- Example
 +
-+BMan Node
++BMan Portal Node
 +
 +PROPERTIES
 +
 +- compatible
 +	Usage:		Required
 +	Value type:	<stringlist>
-+	Definition:	Must include "fsl,bman"
-+			May include "fsl,<SoC>-bman"
++	Definition:	Must include "fsl,bman-portal-<hardware revision>"
++			May include "fsl,<SoC>-bman-portal" or "fsl,bman-portal"
 +
 +- reg
 +	Usage:		Required
 +	Value type:	<prop-encoded-array>
-+	Definition:	Registers region within the CCSR address space
++	Definition:	Two regions. The first is the cache-enabled region of
++			the portal. The second is the cache-inhibited region of
++			the portal
 +
 +- interrupts
 +	Usage:		Required
 +	Value type:	<prop-encoded-array>
-+	Definition:	Standard property. The error interrupt
-+
-+- fsl,liodn
-+	Usage:		See pamu.txt
-+	Value type:	<prop-encoded-array>
-+	Definition:	PAMU property used for static LIODN assignment
-+
-+- fsl,iommu-parent
-+	Usage:		See pamu.txt
-+	Value type:	<phandle>
-+	Definition:	PAMU property used for dynamic LIODN assignment
-+
-+	For additional details about the PAMU/LIODN binding(s) see pamu.txt
-+
-+BMan Private Memory Node
-+
-+BMan requires a contiguous range of physical memory used for the backing store
-+for BMan Free Buffer Proxy Records. This memory is reserved/allocated as a node
-+under the /reserved-memory node
-+
-+The BMan FBPR memory node must be named "bman-fbpr"
-+
-+PROPERTIES
-+
-+- compatible
-+	Usage:		required
-+	Value type:	<stringlist>
-+	Definition:	Must inclide "fsl,bman-fbpr"
-+
-+The following constraints are relevant to the FBPR private memory:
-+	- The size must be 2^(size + 1), with size = 11..33. That is 4 KiB to
-+	  16 GiB
-+	- The alignment must be a muliptle of the memory size
-+
-+The size of the FBPR must be chosen by observing the hardware features configured
-+via the RCW and that are relevant to a specific board (e.g. number of MAC(s)
-+pinned-out, number of offline/host command FMan ports, etc.). The size configured
-+in the DT must reflect the hardware capabilities and not the specific needs of an
-+application
-+
-+For additional details about reserved memory regions see reserved-memory.txt
++	Definition:	Standard property
 +
 +EXAMPLE
 +
-+The example below shows a BMan FBPR dynamic allocation memory node
++The example below shows a (P4080) BMan portals container/bus node with two portals
 +
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
++	bman-portals@ff4000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges = <0 0xf 0xf4000000 0x200000>;
 +
-+		bman-fbpr {
-+			compatible = "fsl,bman-fbpr";
-+			alloc-ranges = <0 0 0xf 0xffffffff>;
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
++		bman-portal@0 {
++			compatible = "fsl,bman-portal-1.0.0", "fsl,bman-portal";
++			reg = <0x0 0x4000>, <0x100000 0x1000>;
++			interrupts = <105 2 0 0>;
 +		};
-+	};
-+
-+The example below shows a (P4080) BMan CCSR-space node
-+
-+	bman@31a000 {
-+		compatible = "fsl,bman";
-+		reg = <0x31a000 0x1000>;
-+		interrupts = <16 2 1 2>;
-+		fsl,liodn = <0x17>;
++		bman-portal@4000 {
++			compatible = "fsl,bman-portal-1.0.0", "fsl,bman-portal";
++			reg = <0x4000 0x4000>, <0x101000 0x1000>;
++			interrupts = <107 2 0 0>;
++		};
 +	};
 -- 
 2.1.2
