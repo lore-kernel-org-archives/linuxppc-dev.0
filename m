@@ -2,26 +2,27 @@ Return-Path: <galak@codeaurora.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC1561A011A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 01:36:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24A651A011A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 01:39:14 +1100 (AEDT)
 Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.11.231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6DB59140077
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 01:36:51 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id A26FB140076
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 01:39:13 +1100 (AEDT)
 Content-Type: text/plain; charset=windows-1252
 Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Subject: Re: [PATCH 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+Subject: Re: [PATCH v2 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
 From: Kumar Gala <galak@codeaurora.org>
-In-Reply-To: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
-Date: Tue, 28 Oct 2014 09:36:41 -0500
-Message-Id: <EA33D307-CCDA-4A30-9386-46FA832FE0CA@codeaurora.org>
-References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1414487751-31568-2-git-send-email-Emilian.Medve@Freescale.com>
+Date: Tue, 28 Oct 2014 09:39:07 -0500
+Message-Id: <5DC63911-AD43-4EDA-8675-8A28EDC3F491@codeaurora.org>
+References: <1414487751-31568-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1414487751-31568-2-git-send-email-Emilian.Medve@Freescale.com>
 To: Emil Medve <Emilian.Medve@freescale.com>
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
  ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
- linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
- scottwood@Freescale.com
+ linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, grant.likely@linaro.org,
+ robh+dt@kernel.org, scottwood@Freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,7 +33,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 22, 2014, at 9:09 AM, Emil Medve <Emilian.Medve@freescale.com> =
+On Oct 28, 2014, at 4:15 AM, Emil Medve <Emilian.Medve@freescale.com> =
 wrote:
 
 > The Buffer Manager is part of the Data-Path Acceleration Architecture =
@@ -46,9 +47,9 @@ thresholds.
 > Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 > Change-Id: I3ec479bfb3c91951e96902f091f5d7d2adbef3b2
 > ---
-> .../devicetree/bindings/powerpc/fsl/bman.txt       | 98 =
+> .../devicetree/bindings/powerpc/fsl/bman.txt       | 95 =
 ++++++++++++++++++++++
-> 1 file changed, 98 insertions(+)
+> 1 file changed, 95 insertions(+)
 > create mode 100644 =
 Documentation/devicetree/bindings/powerpc/fsl/bman.txt
 
@@ -56,16 +57,17 @@ Should these really be in bindings/powerpc/fsl, aren=92t you guys using =
 this on ARM SoCs as well?
 
 I can=92t remember if the TI guys had a HW allocator as part of their =
-similar HW.
+similar HW.  If so, possibly worth while to see where they have their =
+binding.
 
 >=20
 > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/bman.txt =
 b/Documentation/devicetree/bindings/powerpc/fsl/bman.txt
 > new file mode 100644
-> index 0000000..c30bdde
+> index 0000000..d3fd1e3
 > --- /dev/null
 > +++ b/Documentation/devicetree/bindings/powerpc/fsl/bman.txt
-> @@ -0,0 +1,98 @@
+> @@ -0,0 +1,95 @@
 > +QorIQ DPAA Buffer Manager Device Tree Bindings
 > +
 > +Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
@@ -75,10 +77,6 @@ b/Documentation/devicetree/bindings/powerpc/fsl/bman.txt
 > +	- BMan Node
 > +	- BMan Private Memory Node
 > +	- Example
-> +
-> +NOTE:	The bindings described in this document are preliminary =
-and subject to
-> +	change
 > +
 > +BMan Node
 > +
@@ -95,6 +93,11 @@ and subject to
 > +	Value type:	<prop-encoded-array>
 > +	Definition:	Registers region within the CCSR address space
 > +
+> +- interrupts
+> +	Usage:		Required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Standard property. The error interrupt
+> +
 > +- fsl,liodn
 > +	Usage:		See pamu.txt
 > +	Value type:	<prop-encoded-array>
@@ -108,15 +111,17 @@ and subject to
 > +	For additional details about the PAMU/LIODN binding(s) see =
 pamu.txt
 > +
-
-interrupts should be in this list.
-
 > +BMan Private Memory Node
 > +
 > +BMan requires a contiguous range of physical memory used for the =
 backing store
 > +for BMan Free Buffer Proxy Records. This memory is reserved/allocated =
 as a node
+
+=85 Proxy Records (FBPR).  This
+
+[ so we get context for the acronym used later ]
+
 > +under the /reserved-memory node
 > +
 > +The BMan FBPR memory node must be named "bman-fbpr"
@@ -147,12 +152,6 @@ needs of an
 RCW doesn=92t have any context here
 
 > +
-> +If the memory reserved in the device tree proves to be larger then =
-the needs of
-> +the application a BMan driver may provide a method to release the =
-extra memory
-> +back to the OS
-> +
 > +For additional details about reserved memory regions see =
 reserved-memory.txt
 > +
@@ -171,7 +170,6 @@ reserved-memory.txt
 > +			size =3D <0 0x1000000>;
 > +			alignment =3D <0 0x1000000>;
 > +		};
-> +
 > +	};
 > +
 > +The example below shows a (P4080) BMan CCSR-space node
