@@ -1,21 +1,38 @@
-Return-Path: <alexei.starovoitov@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 105E21A0001
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 04:08:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 607F81A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 04:34:59 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 29 Oct 2014 11:34:56 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B56453E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 11:34:53 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9THYr2851052692
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 18:34:53 +0100
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9THYqWV002772
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 11:34:53 -0600
+Message-ID: <54512539.5040501@linux.vnet.ibm.com>
+Date: Wed, 29 Oct 2014 12:34:49 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K0t3G-bHm_24GjrTp9mmKnYZS1_bdGgrwQBLjC_s5is6w@mail.gmail.com>
-References: <1414351406-4122-1-git-send-email-kda@linux-powerpc.org>
- <CAOJe8K0t3G-bHm_24GjrTp9mmKnYZS1_bdGgrwQBLjC_s5is6w@mail.gmail.com>
-Date: Wed, 29 Oct 2014 10:08:04 -0700
-Message-ID: <CAADnVQLmW1var8ebSJJYhmBXCuFbRwX01KXjrnKxyUz1cqFXmA@mail.gmail.com>
-Subject: Re: [PATCH] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-To: Denis Kirjanov <kda@linux-powerpc.org>
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, wenxiong@linux.vnet.ibm.com,
+ scottwood@freescale.com
+Subject: Re: [PATCH 1/2] ipr: Convert to generic DMA API
+References: <1413191676-1663-1-git-send-email-anton@samba.org>
+In-Reply-To: <1413191676-1663-1-git-send-email-anton@samba.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Matt Evans <matt@ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,9 +42,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 29, 2014 at 2:21 AM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> Any feedback from PPC folks?
+Acked-by: Brian King <brking@linux.vnet.ibm.com>
 
-not a ppc guy, but looks reasonable to me.
-What lib/test_bpf says? Like performance difference before/after
-for LD_PKTTYPE test...
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
