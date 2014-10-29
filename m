@@ -1,24 +1,21 @@
-Return-Path: <cl@linux.com>
+Return-Path: <alexei.starovoitov@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4389D1A04B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 00:49:34 +1100 (AEDT)
-Received: from resqmta-po-11v.sys.comcast.net (resqmta-po-11v.sys.comcast.net
- [96.114.154.170])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B43C7140085
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2014 00:49:33 +1100 (AEDT)
-Date: Wed, 29 Oct 2014 08:49:25 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc: Replace __get_cpu_var uses
-In-Reply-To: <20141029063957.76C6014008E@ozlabs.org>
-Message-ID: <alpine.DEB.2.11.1410290848470.1768@gentwo.org>
-References: <20141029063957.76C6014008E@ozlabs.org>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 105E21A0001
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 04:08:08 +1100 (AEDT)
+MIME-Version: 1.0
+In-Reply-To: <CAOJe8K0t3G-bHm_24GjrTp9mmKnYZS1_bdGgrwQBLjC_s5is6w@mail.gmail.com>
+References: <1414351406-4122-1-git-send-email-kda@linux-powerpc.org>
+ <CAOJe8K0t3G-bHm_24GjrTp9mmKnYZS1_bdGgrwQBLjC_s5is6w@mail.gmail.com>
+Date: Wed, 29 Oct 2014 10:08:04 -0700
+Message-ID: <CAADnVQLmW1var8ebSJJYhmBXCuFbRwX01KXjrnKxyUz1cqFXmA@mail.gmail.com>
+Subject: Re: [PATCH] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Matt Evans <matt@ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Oct 2014, Michael Ellerman wrote:
+On Wed, Oct 29, 2014 at 2:21 AM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> Any feedback from PPC folks?
 
-> >  #define __ARCH_IRQ_STAT
-> >
-> > -#define local_softirq_pending()	__get_cpu_var(irq_stat).__softirq_pending
-> > +#define local_softirq_pending()	__this_cpu_read(irq_stat.__softirq_pending)
-> > +#define set_softirq_pending(x) __this_cpu_write(irq_stat._softirq_pending, (x))
-> > +#define or_softirq_pending(x) __this_cpu_or(irq_stat._softirq_pending, (x))
->
-> This breaks the build, because we also get the version of set_ and or_ from
-> include/linux/interrupt.h, and then because it's __softirq_pending.
->
-> Fixed by adding:
->
-> #define __ARCH_SET_SOFTIRQ_PENDING
->
-> And fixing the typo.
-
-Ok.
-
-> >
-> >  void __set_breakpoint(struct arch_hw_breakpoint *brk)
-> >  {
-> > -	__get_cpu_var(current_brk) = *brk;
-> > +	__this_cpu_write(current_brk, *brk);
->
-> This breaks the build because we're trying to do a structure assignment but
-> __this_cpu_write() only supports certain sizes.
->
-> I replaced it with this which I think is right?
->
-> 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
->
->
-
-Yes that is right. Thank you.
+not a ppc guy, but looks reasonable to me.
+What lib/test_bpf says? Like performance difference before/after
+for LD_PKTTYPE test...
