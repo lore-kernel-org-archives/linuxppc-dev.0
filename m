@@ -1,20 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB0E11A006B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 15:21:12 +1100 (AEDT)
-Date: Wed, 29 Oct 2014 15:20:57 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: lockdep warning with 2d65a9f48fcdf7866aab6457bc707ca233e0c791
-Message-ID: <20141029042057.GA24657@drongo>
-References: <87d29tkzsi.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87d29tkzsi.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8067A1A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 15:46:51 +1100 (AEDT)
+Message-ID: <1414558008.7417.2.camel@concordia>
+Subject: Re: [PATCH V3 1/2] mm: Update generic gup implementation to handle
+ hugepage directory
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Steve Capper <steve.capper@linaro.org>
+Date: Wed, 29 Oct 2014 15:46:48 +1100
+In-Reply-To: <20141028104451.GB4187@linaro.org>
+References: <1414233860-7683-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20141027160612.b7fd0b1cc9d82faeaa674940@linux-foundation.org>
+ <1414459229.31711.0.camel@concordia>
+ <20141027183241.a5339085.akpm@linux-foundation.org>
+ <20141028104451.GB4187@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 15, 2014 at 10:58:45PM +0530, Aneesh Kumar K.V wrote:
+On Tue, 2014-10-28 at 10:44 +0000, Steve Capper wrote:
+> On Mon, Oct 27, 2014 at 06:32:41PM -0700, Andrew Morton wrote:
+> > On Tue, 28 Oct 2014 12:20:29 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > 
+> > > On Mon, 2014-10-27 at 16:06 -0700, Andrew Morton wrote:
+> > > > On Sat, 25 Oct 2014 16:14:19 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > Update generic gup implementation with powerpc specific details.
+> > > > > On powerpc at pmd level we can have hugepte, normal pmd pointer
+> > > > > or a pointer to the hugepage directory.
+> > > > 
+> > > > I grabbed these.  It would be better if they were merged into the powerpc
+> > > > tree where they'll get more testing than in linux-next alone.
+> > >  
+> > > Fine by me. Can I get an ack from you and/or someone else on CC?
+> > 
+> > Only arm and arm64 use this code.  Steve, could you please look it over
+> > and check that arm is still happy?
 > 
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 3.17.0+ #31 Not tainted
-> ---------------------------------------------
-> qemu-system-ppc/9112 is trying to acquire lock:
->  (&(&vcpu->arch.tbacct_lock)->rlock){......}, at: [<d000000011591f84>] .vcore_stolen_time+0x44/0xb0 [kvm_hv]
+> Hi Andrew,
+> I've tested it and posted some comments on it.
 > 
-> but task is already holding lock:
->  (&(&vcpu->arch.tbacct_lock)->rlock){......}, at: [<d000000011592524>] .kvmppc_remove_runnable.part.2+0x34/0xd0 [kvm_hv]
+> If the arch/arm and arch/arm64 changes are removed and a comment about
+> an assumption made by the new gup_huge_pte code is added then I'm happy.
 
-This is actually harmless, because the lock taken in
-vcore_stolen_time() is always a different lock from the one taken in
-kvmppc_remove_runnable().  In vcore_stolen_time() we take the lock of
-the runner vcpu if we are not the runner vcpu (if we are the runner,
-we don't take any lock there).  Nor is there any lock ordering
-problem, because we always take the runner's lock last.
+OK thanks Steve.
 
-This is all a bit subtle, probably a bit too subtle.  I have been
-meaning to rework it but haven't had the time yet.
+Aneesh can you do those changes and resend and I'll put it in powerpc next.
 
-Paul.
+cheers
