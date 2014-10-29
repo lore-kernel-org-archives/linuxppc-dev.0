@@ -1,24 +1,24 @@
-Return-Path: <steve.capper@linaro.org>
-Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <cl@linux.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E49DE1A00E5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 20:26:12 +1100 (AEDT)
-Received: by mail-wg0-f51.google.com with SMTP id l18so2814278wgh.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 02:26:08 -0700 (PDT)
-Date: Wed, 29 Oct 2014 09:25:58 +0000
-From: Steve Capper <steve.capper@linaro.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 1/2] mm: Update generic gup implementation to handle
- hugepage directory
-Message-ID: <20141029092557.GA3440@linaro.org>
-References: <1414570785-18966-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1414570785-18966-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4389D1A04B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 00:49:34 +1100 (AEDT)
+Received: from resqmta-po-11v.sys.comcast.net (resqmta-po-11v.sys.comcast.net
+ [96.114.154.170])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B43C7140085
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2014 00:49:33 +1100 (AEDT)
+Date: Wed, 29 Oct 2014 08:49:25 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc: Replace __get_cpu_var uses
+In-Reply-To: <20141029063957.76C6014008E@ozlabs.org>
+Message-ID: <alpine.DEB.2.11.1410290848470.1768@gentwo.org>
+References: <20141029063957.76C6014008E@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 29, 2014 at 01:49:44PM +0530, Aneesh Kumar K.V wrote:
-> Update generic gup implementation with powerpc specific details.
-> On powerpc at pmd level we can have hugepte, normal pmd pointer
-> or a pointer to the hugepage directory.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Wed, 29 Oct 2014, Michael Ellerman wrote:
 
-Acked-by: Steve Capper <steve.capper@linaro.org>
+> >  #define __ARCH_IRQ_STAT
+> >
+> > -#define local_softirq_pending()	__get_cpu_var(irq_stat).__softirq_pending
+> > +#define local_softirq_pending()	__this_cpu_read(irq_stat.__softirq_pending)
+> > +#define set_softirq_pending(x) __this_cpu_write(irq_stat._softirq_pending, (x))
+> > +#define or_softirq_pending(x) __this_cpu_or(irq_stat._softirq_pending, (x))
+>
+> This breaks the build, because we also get the version of set_ and or_ from
+> include/linux/interrupt.h, and then because it's __softirq_pending.
+>
+> Fixed by adding:
+>
+> #define __ARCH_SET_SOFTIRQ_PENDING
+>
+> And fixing the typo.
 
-Thanks Aneesh,
---
-Steve
+Ok.
+
+> >
+> >  void __set_breakpoint(struct arch_hw_breakpoint *brk)
+> >  {
+> > -	__get_cpu_var(current_brk) = *brk;
+> > +	__this_cpu_write(current_brk, *brk);
+>
+> This breaks the build because we're trying to do a structure assignment but
+> __this_cpu_write() only supports certain sizes.
+>
+> I replaced it with this which I think is right?
+>
+> 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+>
+>
+
+Yes that is right. Thank you.
