@@ -1,27 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8067A1A0079
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 15:46:51 +1100 (AEDT)
-Message-ID: <1414558008.7417.2.camel@concordia>
-Subject: Re: [PATCH V3 1/2] mm: Update generic gup implementation to handle
- hugepage directory
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBE0F1A0198
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 16:06:05 +1100 (AEDT)
+In-Reply-To: <20141028121900.0f3bccc7@marrow.netinsight.se>
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+ <linuxppc-dev@lists.ozlabs.org>, <grant.likely@linaro.org>,
+ <geert@linux-m68k.org>, <scottwood@freescale.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steve Capper <steve.capper@linaro.org>
-Date: Wed, 29 Oct 2014 15:46:48 +1100
-In-Reply-To: <20141028104451.GB4187@linaro.org>
-References: <1414233860-7683-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20141027160612.b7fd0b1cc9d82faeaa674940@linux-foundation.org>
- <1414459229.31711.0.camel@concordia>
- <20141027183241.a5339085.akpm@linux-foundation.org>
- <20141028104451.GB4187@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v3] PowerPC: boot: Parse chosen/cmdline-timeout parameter
+Message-Id: <20141029050605.A9F7D14008E@ozlabs.org>
+Date: Wed, 29 Oct 2014 16:06:05 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-10-28 at 10:44 +0000, Steve Capper wrote:
-> On Mon, Oct 27, 2014 at 06:32:41PM -0700, Andrew Morton wrote:
-> > On Tue, 28 Oct 2014 12:20:29 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > 
-> > > On Mon, 2014-10-27 at 16:06 -0700, Andrew Morton wrote:
-> > > > On Sat, 25 Oct 2014 16:14:19 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > Update generic gup implementation with powerpc specific details.
-> > > > > On powerpc at pmd level we can have hugepte, normal pmd pointer
-> > > > > or a pointer to the hugepage directory.
-> > > > 
-> > > > I grabbed these.  It would be better if they were merged into the powerpc
-> > > > tree where they'll get more testing than in linux-next alone.
-> > >  
-> > > Fine by me. Can I get an ack from you and/or someone else on CC?
-> > 
-> > Only arm and arm64 use this code.  Steve, could you please look it over
-> > and check that arm is still happy?
+On Tue, 2014-28-10 at 11:19:00 UTC, Simon Kagstrom wrote:
+> A 5 second timeout during boot might be too long, so make it
+> configurable. Run the loop at least once to let the user stop the boot
+> by holding a key pressed. If the timeout is set to 0, don't wait for
+> input, which can be used as a workaround if the boot hangs on random
+> data coming in on the serial port.
 > 
-> Hi Andrew,
-> I've tested it and posted some comments on it.
+> Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+> ---
 > 
-> If the arch/arm and arch/arm64 changes are removed and a comment about
-> an assumption made by the new gup_huge_pte code is added then I'm happy.
+> I googled for it, and can't find v2 applied anywhere. I've made an
+> improvement to the patch: If the timeout is 0, don't wait for input. We
+> have a board where the serial port gives garbage when it's not
+> connected - this board would then hang in the bootloader.
+> 
+> If someone (Michael Ellerman?) has already applied it somewhere, I can
+> send a separate patch for that particular change.
 
-OK thanks Steve.
-
-Aneesh can you do those changes and resend and I'll put it in powerpc next.
+No I haven't applied it yet. I will put it in next in the next week or so for
+3.19, you don't need to do anything.
 
 cheers
