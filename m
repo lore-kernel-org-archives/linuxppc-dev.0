@@ -1,24 +1,28 @@
-Return-Path: <prvs=0379e8dc59=valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEB581A0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 19:59:58 +1100 (AEDT)
-Message-ID: <5450AC85.40302@keymile.com>
-Date: Wed, 29 Oct 2014 09:59:49 +0100
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E62E1A05F6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 20:21:10 +1100 (AEDT)
+Received: from mail-ob0-f173.google.com (mail-ob0-f173.google.com
+ [209.85.214.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7BE14140085
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 20:21:08 +1100 (AEDT)
+Received: by mail-ob0-f173.google.com with SMTP id wn1so2043460obc.32
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2014 02:21:06 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
- <1414537731.23458.120.camel@snotra.buserror.net>
-In-Reply-To: <1414537731.23458.120.camel@snotra.buserror.net>
+In-Reply-To: <1414351406-4122-1-git-send-email-kda@linux-powerpc.org>
+References: <1414351406-4122-1-git-send-email-kda@linux-powerpc.org>
+Date: Wed, 29 Oct 2014 13:21:06 +0400
+Message-ID: <CAOJe8K0t3G-bHm_24GjrTp9mmKnYZS1_bdGgrwQBLjC_s5is6w@mail.gmail.com>
+Subject: Re: [PATCH] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=UTF-8
-Cc: "Boschung, Rainer" <Rainer.Boschung@keymile.com>,
- Linux device trees <devicetree@vger.kernel.org>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>,
- Linux I2C <linux-i2c@vger.kernel.org>
+Cc: netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/29/2014 12:08 AM, Scott Wood wrote:
-> On Fri, 2014-10-17 at 11:27 +0200, Valentin Longchamp wrote:
->> With "fsl-i2c" compatibility the i2c frequency is not set
->> correctly, because it sets no prescaler. According to the AN2919 from
->> Freescale and the QorIQ (P2041) documentation, the source clock is 1/2
->> the platform clock. This implies that a prescaler of 2 must be used.
->>
->> This changes the compatibility of the qoriq-i2c .dtsi files to pick the
->> mpc8543, which uses the same driver but sets the correct prescaler.
->>
->> Signed-off-by: Rainer Boschung <rainer.boschung@keymile.com>
->> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
->> ---
->>
->>  arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi | 4 ++--
->>  arch/powerpc/boot/dts/fsl/qoriq-i2c-1.dtsi | 4 ++--
->>  2 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
->> index 5f9bf7d..aa6c366 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-i2c-0.dtsi
->> @@ -36,7 +36,7 @@ i2c@118000 {
->>  	#address-cells = <1>;
->>  	#size-cells = <0>;
->>  	cell-index = <0>;
->> -	compatible = "fsl-i2c";
->> +	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
->>  	reg = <0x118000 0x100>;
->>  	interrupts = <38 2 0 0>;
->>  	dfsrr;
->> @@ -46,7 +46,7 @@ i2c@118100 {
->>  	#address-cells = <1>;
->>  	#size-cells = <0>;
->>  	cell-index = <1>;
->> -	compatible = "fsl-i2c";
->> +	compatible = "fsl,mpc8543-i2c", "fsl-i2c";
->>  	reg = <0x118100 0x100>;
->>  	interrupts = <38 2 0 0>;
->>  	dfsrr;
-> 
-> Are all chips that use this dtsi 100% compatible with mpc8543's i2c, or
-> just in ways the Linux driver cares about?
+Any feedback from PPC folks?
 
-I have just looked briefly at the mpc8548 RM (covers mpc8543) and its i2c
-controller looks the same as the qoriq's. I cannot however state if they are
-100% compatible.
-
-If we wanted to be on the safe side and strict (since we are not sure that the
-hardware is 100% compatible), we maybe should add a fsl,qoriq-i2c compatible to
-the driver that does the same as mpc8543-i2c.
-
-> 
-> What about fsl,mpc8544-i2c, which has additional special handling in the
-> driver, but is only used in socrates.dts (not mpc8544ds.dts)?
-
->From the mpc8544 RM, this controller looks the same as the above 2, except for
-the prescaler from the driver which is set to 3. As to why it is only used in
-the socrates.dts, I cannot comment about it.
-
-The prescaler is confirmed to be 3 by default by the Table 3 of the AN-219 for
-the mpc8544.
-
-> 
-> What about pq3-i2c-*.dtsi?
-> 
-
-This is also interesting: from the AN-219 Table 4, some pq3 have a 2:1
-(mcpc8536/43/45/47/48/67/68/72, plus p2020) prescaler where some don't
-(mpc8533/44, where it can be 3:1 -default- or 2:1). However pq3-i2c-*.dtsi
-defines no prescaler.
-
-Now if I look at what files include these pq3-i2c-*.dtsi, I see some that are in
-the the 2:1 list:
-arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
-arch/powerpc/boot/dts/fsl/mpc8568si-post.dtsi
-arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
-
-I don't have any hardware to do some tests with these, but from my measurements
-on our qoriq based system (P2041 SoC) I think that the generated I2C clocks for
-the above SoC currently are not correct because of the ignored prescaler.
-
-Valentin
+On 10/26/14, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> Cc: Matt Evans <matt@ozlabs.org>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> ---
+>  arch/powerpc/include/asm/ppc-opcode.h | 1 +
+>  arch/powerpc/net/bpf_jit.h            | 7 +++++++
+>  arch/powerpc/net/bpf_jit_comp.c       | 5 +++++
+>  3 files changed, 13 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h
+> b/arch/powerpc/include/asm/ppc-opcode.h
+> index 6f85362..1a52877 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -204,6 +204,7 @@
+>  #define PPC_INST_ERATSX_DOT		0x7c000127
+>
+>  /* Misc instructions for BPF compiler */
+> +#define PPC_INST_LBZ			0x88000000
+>  #define PPC_INST_LD			0xe8000000
+>  #define PPC_INST_LHZ			0xa0000000
+>  #define PPC_INST_LHBRX			0x7c00062c
+> diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+> index 9aee27c..c406aa9 100644
+> --- a/arch/powerpc/net/bpf_jit.h
+> +++ b/arch/powerpc/net/bpf_jit.h
+> @@ -87,6 +87,9 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+>  #define PPC_STD(r, base, i)	EMIT(PPC_INST_STD | ___PPC_RS(r) |	      \
+>  				     ___PPC_RA(base) | ((i) & 0xfffc))
+>
+> +
+> +#define PPC_LBZ(r, base, i)	EMIT(PPC_INST_LBZ | ___PPC_RT(r) |	      \
+> +				     ___PPC_RA(base) | IMM_L(i))
+>  #define PPC_LD(r, base, i)	EMIT(PPC_INST_LD | ___PPC_RT(r) |	      \
+>  				     ___PPC_RA(base) | IMM_L(i))
+>  #define PPC_LWZ(r, base, i)	EMIT(PPC_INST_LWZ | ___PPC_RT(r) |	      \
+> @@ -96,6 +99,10 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+>  #define PPC_LHBRX(r, base, b)	EMIT(PPC_INST_LHBRX | ___PPC_RT(r) |	      \
+>  				     ___PPC_RA(base) | ___PPC_RB(b))
+>  /* Convenience helpers for the above with 'far' offsets: */
+> +#define PPC_LBZ_OFFS(r, base, i) do { if ((i) < 32768) PPC_LBZ(r, base, i);
+>   \
+> +		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+> +			PPC_LBZ(r, r, IMM_L(i)); } } while(0)
+> +
+>  #define PPC_LD_OFFS(r, base, i) do { if ((i) < 32768) PPC_LD(r, base, i);
+>   \
+>  		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+>  			PPC_LD(r, r, IMM_L(i)); } } while(0)
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c
+> b/arch/powerpc/net/bpf_jit_comp.c
+> index cbae2df..d110e28 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -407,6 +407,11 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32
+> *image,
+>  			PPC_LHZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,
+>  							  queue_mapping));
+>  			break;
+> +		case BPF_ANC | SKF_AD_PKTTYPE:
+> +			PPC_LBZ_OFFS(r_A, r_skb, PKT_TYPE_OFFSET());
+> +			PPC_ANDI(r_A, r_A, PKT_TYPE_MAX);
+> +			PPC_SRWI(r_A, r_A, 5);
+> +			break;
+>  		case BPF_ANC | SKF_AD_CPU:
+>  #ifdef CONFIG_SMP
+>  			/*
+> --
+> 2.1.0
+>
+>
