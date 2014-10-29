@@ -2,34 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E2C4B1A006B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 19:27:43 +1100 (AEDT)
-Message-ID: <1414571262.5922.0.camel@concordia>
-Subject: Re: [PATCH] drivers: depend on instead of select
- BACKLIGHT_CLASS_DEVICE and ACPI_VIDEO
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0CC01A0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2014 19:52:32 +1100 (AEDT)
+Message-ID: <1414572739.5922.4.camel@concordia>
+Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jani Nikula <jani.nikula@intel.com>
-Date: Wed, 29 Oct 2014 19:27:42 +1100
-In-Reply-To: <87tx2njooz.fsf@intel.com>
-References: <1413580403-16225-1-git-send-email-jani.nikula@intel.com>
- <54476492.6090105@ti.com> <87a94hu3j0.fsf@intel.com>
- <544E44E9.4040208@ti.com> <544FFC91.9040104@infradead.org>
- <1414551853.7417.1.camel@concordia> <87tx2njooz.fsf@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 29 Oct 2014 19:52:19 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-7BJVI6lbi5ZMcCbXTFRE"
 Mime-Version: 1.0
-Cc: linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>,
- Daniel Drake <dsd@laptop.org>, Jens Frederich <jfrederich@gmail.com>,
- David Airlie <airlied@linux.ie>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jon Nettleton <jon.nettleton@gmail.com>, Jingoo Han <jg1.han@samsung.com>,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, Bryan Wu <cooloney@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Daniel Vetter <daniel.vetter@intel.com>, Darren Hart <dvhart@infradead.org>,
- Lee Jones <lee.jones@linaro.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- linux-usb@vger.kernel.org
+Cc: nacc@linux.vnet.ibm.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ jk@ozlabs.org, imunsie@au1.ibm.com, bobby.prani@gmail.com, ddstreet@ieee.org,
+ aneesh.kumar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,28 +25,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-10-29 at 09:54 +0200, Jani Nikula wrote:
-> On Wed, 29 Oct 2014, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Tue, 2014-10-28 at 13:29 -0700, Randy Dunlap wrote:
-> >> On 10/27/14 06:13, Tomi Valkeinen wrote:
-> >> > I also think the 'depends on BACKLIGHT_CLASS_DEVICE ||
-> >> > BACKLIGHT_CLASS_DEVICE=n' pattern is quite... interesting (i.e. sounds
-> >> > like a hack to me =).
-> >> 
-> >> It does exactly what is needed and it is used in many places in kernel
-> >> Kconfig files.
-> >
-> > Is there any reason you can't do:
-> >
-> >   depends on BACKLIGHT_CLASS_DEVICE != m
-> 
-> That's not the same thing. The FOO || FOO=n allows for all options, but
-> forbids it being a module when the option depending on it is
-> built-in.
 
-OK right. Because "BAR depends on FOO" is short for "depends on FOO=y || FOO=m",
-but also adds the implicit condition that if FOO=m then BAR must also be m.
+--=-7BJVI6lbi5ZMcCbXTFRE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for clueing me in.
+Hi Linus,
+
+Here are some updates for powerpc.
+
+There's some bug fixes or cleanups to facilitate fixes, a MAINTAINERS updat=
+e,
+and a new syscall (bpf).
 
 cheers
+
+
+The following changes since commit c3351dfabf5c78fb5ddc79d0f7b65ebd9e441337=
+:
+
+  Merge branch 'for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/=
+nab/target-pending (2014-10-21 13:06:38 -0700)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
+
+for you to fetch changes up to 2c0a33f9861d38631245f7ef434ecad3413324fb:
+
+  powerpc/numa: ensure per-cpu NUMA mappings are correct on topology update=
+ (2014-10-29 09:41:22 +1100)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (2):
+      powerpc/mm: Fix build error with hugetlfs disabled
+      powerpc/mm: Remove redundant #if case
+
+Dan Streetman (1):
+      MAINTAINERS: nx-842 driver maintainer change
+
+Ian Munsie (4):
+      cxl: Disable secondary hash in segment table
+      cxl: Refactor cxl_load_segment() and find_free_sste()
+      powerpc/mm: Use appropriate ESID mask in copro_calculate_slb()
+      cxl: Fix PSL error due to duplicate segment table entries
+
+Jeremy Kerr (1):
+      powernv: Use _GLOBAL_TOC for opal wrappers
+
+Michael Ellerman (1):
+      Revert "powerpc/powernv: Fix endian bug in LPC bus debugfs accessors"
+
+Nishanth Aravamudan (2):
+      powerpc/numa: use cached value of update->cpu in update_cpu_topology
+      powerpc/numa: ensure per-cpu NUMA mappings are correct on topology up=
+date
+
+Pranith Kumar (1):
+      powerpc: Wire up sys_bpf() syscall
+
+ MAINTAINERS                                    |  2 +-
+ arch/powerpc/include/asm/hugetlb.h             |  2 +-
+ arch/powerpc/include/asm/systbl.h              |  1 +
+ arch/powerpc/include/asm/unistd.h              |  2 +-
+ arch/powerpc/include/uapi/asm/unistd.h         |  1 +
+ arch/powerpc/mm/copro_fault.c                  |  3 +-
+ arch/powerpc/mm/numa.c                         |  7 ++-
+ arch/powerpc/mm/slice.c                        |  3 +-
+ arch/powerpc/platforms/powernv/opal-lpc.c      |  4 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  2 +-
+ drivers/misc/cxl/fault.c                       | 74 ++++++++++++++--------=
+----
+ drivers/misc/cxl/native.c                      |  4 +-
+ 12 files changed, 56 insertions(+), 49 deletions(-)
+
+
+
+--=-7BJVI6lbi5ZMcCbXTFRE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAABAgAGBQJUUKrPAAoJEFHr6jzI4aWAkNoP/RDC4OVOXUtYxSMCxaUp/UCe
+NIHeQQG88sBF2N/27ZyvphiyOcpjvfp3kHllmC+f6QivsfGBAgohid5pWenCIWb2
+QauJzQ/5KIMGlQcCmmH0oM9OJZQ0by9KoXzgBQJpfd0qToNQFw1BdHzkLQ/nx3gd
+k5hQpsZmXxE2TLAw55eXUtMh2lRCbyMUi8TikzqDxRsxIq5lmZEzW2KFPyKpRKPr
+04P1A3QX2WTwo0UDE0y1tmlrsPj+QQb8jkdzAW2/7I3PgDQPe5CZ4NnLIt/nRmPP
+q/wzQArTbd0XeatFqWc7DrK30ih0MvPQn++lLw4NckkJ5n56wJOjD6BNdpevaL9p
+0J5UtL9fvdw6dG8s5IimnkiTAq+BmERE1SfH72X8L/lXNhnL8+zNwwW+EH4lDQRH
+Vwc4aXDUC/CVvSzVuUQ+QmLqvzq+2+u80mkx26Xl8Ks6PuYE9DQTslE+qc0ZoQCo
+VB+JzMDUvHtA9IGX6CcP8dr2Npz9iUKHU1KECBmi10J7zLEh3TdwKKH6p5jw2Xml
+NFunot6xtmq/Oksvbe8WElMBlyRYl94q+bJDNy4wG3CVjGlF6WYXtNz3Hm5lH2OW
+KlVqTl1SsRLBiZ5yROzQL88CZYWtfBFljTzXxZPgU9w9Jrs3vMncfpjSdbBgJphB
+TX0YbqDXGftPBZUQuSVB
+=Rykg
+-----END PGP SIGNATURE-----
+
+--=-7BJVI6lbi5ZMcCbXTFRE--
