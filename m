@@ -1,33 +1,25 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B4DF31A0583
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 09:27:16 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Thu, 30 Oct 2014 16:27:14 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AECC338C8039
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 18:20:32 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- s9UMRCWM48758812
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 22:27:12 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s9UMRBw3027839
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 18:27:12 -0400
-Message-Id: <201410302227.s9UMRAix027807@d01av02.pok.ibm.com>
-Subject: [PATCH 3/3] ipr: Wait for aborted command responses
-To: James.Bottomley@HansenPartnership.com
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 30 Oct 2014 17:27:10 -0500
-Cc: hch@infradead.org, brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, linux-scsi@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB6071A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 10:12:26 +1100 (AEDT)
+Message-ID: <1414710720.23458.169.camel@snotra.buserror.net>
+Subject: Re: [PATCHv5] clk: ppc-corenet: rename to qoriq and add
+ CLK_OF_DECLARE support
+From: Scott Wood <scottwood@freescale.com>
+To: Lu Jingchang-B35083 <jingchang.lu@freescale.com>
+Date: Thu, 30 Oct 2014 18:12:00 -0500
+In-Reply-To: <ccb7de6dc94e4493bbf8685c4d8b3421@BL2PR03MB467.namprd03.prod.outlook.com>
+References: <1412932497-27995-1-git-send-email-jingchang.lu@freescale.com>
+ <ccb7de6dc94e4493bbf8685c4d8b3421@BL2PR03MB467.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mturquette@linaro.org" <mturquette@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,178 +29,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The CLK_OF_DECLARE part is addressed by:
+http://patchwork.ozlabs.org/patch/400740/
+http://patchwork.ozlabs.org/patch/400741/
+http://patchwork.ozlabs.org/patch/400742/
 
-Fixes a race condition in abort handling that was injected
-when multiple interrupt support was added. When only a single
-interrupt is present, the adapter guarantees it will send
-responses for aborted commands prior to the response for the
-abort command itself. With multiple interrupts, these responses
-generally come back on different interrupts, so we need to
-ensure the abort thread waits until the aborted command is
-complete so we don't perform a double completion. This race
-condition was being hit frequently in environments which
-were triggering command timeouts, which was resulting in
-a double completion causing a kernel oops.
+...which does what I was asking earlier, getting rid of the (currently
+broken due to a misguided attempt to remove an __init warning) platform
+driver part rather than maintaining both approaches.
 
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+I suggest sending a rename patch that applies after those patches.
 
- drivers/scsi/ipr.c |   92 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/ipr.h |    1 
- 2 files changed, 93 insertions(+)
+-Scott
 
-diff -puN drivers/scsi/ipr.c~ipr_eh_wait drivers/scsi/ipr.c
---- scsi-queue/drivers/scsi/ipr.c~ipr_eh_wait	2014-10-30 17:15:37.302753120 -0500
-+++ scsi-queue-bjking1/drivers/scsi/ipr.c	2014-10-30 17:15:37.311753039 -0500
-@@ -683,6 +683,7 @@ static void ipr_init_ipr_cmnd(struct ipr
- 	ipr_reinit_ipr_cmnd(ipr_cmd);
- 	ipr_cmd->u.scratch = 0;
- 	ipr_cmd->sibling = NULL;
-+	ipr_cmd->eh_comp = NULL;
- 	ipr_cmd->fast_done = fast_done;
- 	init_timer(&ipr_cmd->timer);
- }
-@@ -848,6 +849,8 @@ static void ipr_scsi_eh_done(struct ipr_
- 
- 	scsi_dma_unmap(ipr_cmd->scsi_cmd);
- 	scsi_cmd->scsi_done(scsi_cmd);
-+	if (ipr_cmd->eh_comp)
-+		complete(ipr_cmd->eh_comp);
- 	list_add_tail(&ipr_cmd->queue, &ipr_cmd->hrrq->hrrq_free_q);
- }
- 
-@@ -4854,6 +4857,84 @@ static int ipr_slave_alloc(struct scsi_d
- 	return rc;
- }
- 
-+/**
-+ * ipr_match_lun - Match function for specified LUN
-+ * @ipr_cmd:	ipr command struct
-+ * @device:		device to match (sdev)
-+ *
-+ * Returns:
-+ *	1 if command matches sdev / 0 if command does not match sdev
-+ **/
-+static int ipr_match_lun(struct ipr_cmnd *ipr_cmd, void *device)
-+{
-+	if (ipr_cmd->scsi_cmd && ipr_cmd->scsi_cmd->device == device)
-+		return 1;
-+	return 0;
-+}
-+
-+/**
-+ * ipr_wait_for_ops - Wait for matching commands to complete
-+ * @ipr_cmd:	ipr command struct
-+ * @device:		device to match (sdev)
-+ * @match:		match function to use
-+ *
-+ * Returns:
-+ *	SUCCESS / FAILED
-+ **/
-+static int ipr_wait_for_ops(struct ipr_ioa_cfg *ioa_cfg, void *device,
-+			    int (*match)(struct ipr_cmnd *, void *))
-+{
-+	struct ipr_cmnd *ipr_cmd;
-+	int wait;
-+	unsigned long flags;
-+	struct ipr_hrr_queue *hrrq;
-+	signed long timeout = IPR_ABORT_TASK_TIMEOUT;
-+	DECLARE_COMPLETION_ONSTACK(comp);
-+
-+	ENTER;
-+	do {
-+		wait = 0;
-+
-+		for_each_hrrq(hrrq, ioa_cfg) {
-+			spin_lock_irqsave(hrrq->lock, flags);
-+			list_for_each_entry(ipr_cmd, &hrrq->hrrq_pending_q, queue) {
-+				if (match(ipr_cmd, device)) {
-+					ipr_cmd->eh_comp = &comp;
-+					wait++;
-+				}
-+			}
-+			spin_unlock_irqrestore(hrrq->lock, flags);
-+		}
-+
-+		if (wait) {
-+			timeout = wait_for_completion_timeout(&comp, timeout);
-+
-+			if (!timeout) {
-+				wait = 0;
-+
-+				for_each_hrrq(hrrq, ioa_cfg) {
-+					spin_lock_irqsave(hrrq->lock, flags);
-+					list_for_each_entry(ipr_cmd, &hrrq->hrrq_pending_q, queue) {
-+						if (match(ipr_cmd, device)) {
-+							ipr_cmd->eh_comp = NULL;
-+							wait++;
-+						}
-+					}
-+					spin_unlock_irqrestore(hrrq->lock, flags);
-+				}
-+
-+				if (wait)
-+					dev_err(&ioa_cfg->pdev->dev, "Timed out waiting for aborted commands\n");
-+				LEAVE;
-+				return wait ? FAILED : SUCCESS;
-+			}
-+		}
-+	} while (wait);
-+
-+	LEAVE;
-+	return SUCCESS;
-+}
-+
- static int ipr_eh_host_reset(struct scsi_cmnd *cmd)
- {
- 	struct ipr_ioa_cfg *ioa_cfg;
-@@ -5073,11 +5154,17 @@ static int __ipr_eh_dev_reset(struct scs
- static int ipr_eh_dev_reset(struct scsi_cmnd *cmd)
- {
- 	int rc;
-+	struct ipr_ioa_cfg *ioa_cfg;
-+
-+	ioa_cfg = (struct ipr_ioa_cfg *) cmd->device->host->hostdata;
- 
- 	spin_lock_irq(cmd->device->host->host_lock);
- 	rc = __ipr_eh_dev_reset(cmd);
- 	spin_unlock_irq(cmd->device->host->host_lock);
- 
-+	if (rc == SUCCESS)
-+		rc = ipr_wait_for_ops(ioa_cfg, cmd->device, ipr_match_lun);
-+
- 	return rc;
- }
- 
-@@ -5255,13 +5342,18 @@ static int ipr_eh_abort(struct scsi_cmnd
- {
- 	unsigned long flags;
- 	int rc;
-+	struct ipr_ioa_cfg *ioa_cfg;
- 
- 	ENTER;
- 
-+	ioa_cfg = (struct ipr_ioa_cfg *) scsi_cmd->device->host->hostdata;
-+
- 	spin_lock_irqsave(scsi_cmd->device->host->host_lock, flags);
- 	rc = ipr_cancel_op(scsi_cmd);
- 	spin_unlock_irqrestore(scsi_cmd->device->host->host_lock, flags);
- 
-+	if (rc == SUCCESS)
-+		rc = ipr_wait_for_ops(ioa_cfg, scsi_cmd->device, ipr_match_lun);
- 	LEAVE;
- 	return rc;
- }
-diff -puN drivers/scsi/ipr.h~ipr_eh_wait drivers/scsi/ipr.h
---- scsi-queue/drivers/scsi/ipr.h~ipr_eh_wait	2014-10-30 17:15:37.305753093 -0500
-+++ scsi-queue-bjking1/drivers/scsi/ipr.h	2014-10-30 17:15:37.315753003 -0500
-@@ -1608,6 +1608,7 @@ struct ipr_cmnd {
- 		struct scsi_device *sdev;
- 	} u;
- 
-+	struct completion *eh_comp;
- 	struct ipr_hrr_queue *hrrq;
- 	struct ipr_ioa_cfg *ioa_cfg;
- };
-_
+On Tue, 2014-10-14 at 05:32 -0500, Lu Jingchang-B35083 wrote:
+> Hi, Scott and Mike,
+>   
+>   Could you please help review this patch. Thanks.
+> 
+> Best Regards,
+> Jingchang
+> 
+> >-----Original Message-----
+> >From: Jingchang Lu [mailto:jingchang.lu@freescale.com]
+> >Sent: Friday, October 10, 2014 5:15 PM
+> >To: mturquette@linaro.org
+> >Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; linux-
+> >kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Lu
+> >Jingchang-B35083
+> >Subject: [PATCHv5] clk: ppc-corenet: rename to qoriq and add
+> >CLK_OF_DECLARE support
+> >
+> >The IP is shared by PPC and ARM, this renames it to qoriq for better
+> >represention, and this also adds the CLK_OF_DECLARE support for being
+> >initialized by of_clk_init() on ARM.
+> >
+> >Signed-off-by: Jingchang Lu <jingchang.lu@freescale.com>
+> >---
+> >changes in v5:
+> > update drivers/cpufreq/Kconfig.powerpc to slect the renamed config option.
+> >
+> >changes in v4:
+> > remove "corenet" literals omitted in v3 remove.
+> >
+> >changes in v3:
+> > generate the patch with -M -C option
+> >
+> >changes in v2:
+> > rename the driver name to ppc-qoriq.c for shared on PPC and ARM.
+> >
+> > drivers/clk/Kconfig                            | 10 ++++-----
+> > drivers/clk/Makefile                           |  2 +-
+> > drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c} | 29 +++++++++++++++------
+> >-----
+> > drivers/cpufreq/Kconfig.powerpc                |  2 +-
+> > 4 files changed, 24 insertions(+), 19 deletions(-)  rename
+> >drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c} (89%)
+> >
+> >diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig index
+> >455fd17..4706a9f 100644
+> >--- a/drivers/clk/Kconfig
+> >+++ b/drivers/clk/Kconfig
+> >@@ -101,12 +101,12 @@ config COMMON_CLK_AXI_CLKGEN
+> > 	  Support for the Analog Devices axi-clkgen pcore clock generator
+> >for Xilinx
+> > 	  FPGAs. It is commonly used in Analog Devices' reference designs.
+> >
+> >-config CLK_PPC_CORENET
+> >-	bool "Clock driver for PowerPC corenet platforms"
+> >-	depends on PPC_E500MC && OF
+> >+config CLK_QORIQ
+> >+	bool "Clock driver for Freescale QorIQ platforms"
+> >+	depends on (PPC_E500MC || ARM) && OF
+> > 	---help---
+> >-	  This adds the clock driver support for Freescale PowerPC corenet
+> >-	  platforms using common clock framework.
+> >+	  This adds the clock driver support for Freescale QorIQ platforms
+> >+	  using common clock framework.
+> >
+> > config COMMON_CLK_XGENE
+> > 	bool "Clock driver for APM XGene SoC"
+> >diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile index
+> >d5fba5b..4ff94cd 100644
+> >--- a/drivers/clk/Makefile
+> >+++ b/drivers/clk/Makefile
+> >@@ -30,7 +30,7 @@ obj-$(CONFIG_ARCH_MOXART)		+= clk-moxart.o
+> > obj-$(CONFIG_ARCH_NOMADIK)		+= clk-nomadik.o
+> > obj-$(CONFIG_ARCH_NSPIRE)		+= clk-nspire.o
+> > obj-$(CONFIG_COMMON_CLK_PALMAS)		+= clk-palmas.o
+> >-obj-$(CONFIG_CLK_PPC_CORENET)		+= clk-ppc-corenet.o
+> >+obj-$(CONFIG_CLK_QORIQ)			+= clk-qoriq.o
+> > obj-$(CONFIG_COMMON_CLK_RK808)		+= clk-rk808.o
+> > obj-$(CONFIG_COMMON_CLK_S2MPS11)	+= clk-s2mps11.o
+> > obj-$(CONFIG_COMMON_CLK_SI5351)		+= clk-si5351.o
+> >diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-qoriq.c
+> >similarity index 89% rename from drivers/clk/clk-ppc-corenet.c rename to
+> >drivers/clk/clk-qoriq.c index 8e58edf..48cb923 100644
+> >--- a/drivers/clk/clk-ppc-corenet.c
+> >+++ b/drivers/clk/clk-qoriq.c
+> >@@ -5,7 +5,7 @@
+> >  * it under the terms of the GNU General Public License version 2 as
+> >  * published by the Free Software Foundation.
+> >  *
+> >- * clock driver for Freescale PowerPC corenet SoCs.
+> >+ * clock driver for Freescale QorIQ SoCs.
+> >  */
+> > #include <linux/clk-provider.h>
+> > #include <linux/io.h>
+> >@@ -155,7 +155,7 @@ static void __init core_pll_init(struct device_node
+> >*np)
+> >
+> > 	base = of_iomap(np, 0);
+> > 	if (!base) {
+> >-		pr_err("clk-ppc: iomap error\n");
+> >+		pr_err("clk-qoriq: iomap error\n");
+> > 		return;
+> > 	}
+> >
+> >@@ -252,7 +252,7 @@ static void __init sysclk_init(struct device_node
+> >*node)
+> > 	u32 rate;
+> >
+> > 	if (!np) {
+> >-		pr_err("ppc-clk: could not get parent node\n");
+> >+		pr_err("qoriq-clk: could not get parent node\n");
+> > 		return;
+> > 	}
+> >
+> >@@ -278,30 +278,35 @@ static const struct of_device_id clk_match[]
+> >__initconst = {
+> > 	{}
+> > };
+> >
+> >-static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
+> >+static int __init qoriq_clk_probe(struct platform_device *pdev)
+> > {
+> > 	of_clk_init(clk_match);
+> >
+> > 	return 0;
+> > }
+> >
+> >-static const struct of_device_id ppc_clk_ids[] __initconst = {
+> >+static const struct of_device_id qoriq_clk_ids[] __initconst = {
+> > 	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+> > 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+> > 	{}
+> > };
+> >
+> >-static struct platform_driver ppc_corenet_clk_driver __initdata = {
+> >+static struct platform_driver qoriq_clk_driver __initdata = {
+> > 	.driver = {
+> >-		.name = "ppc_corenet_clock",
+> >+		.name = "qoriq_clock",
+> > 		.owner = THIS_MODULE,
+> >-		.of_match_table = ppc_clk_ids,
+> >+		.of_match_table = qoriq_clk_ids,
+> > 	},
+> >-	.probe = ppc_corenet_clk_probe,
+> >+	.probe = qoriq_clk_probe,
+> > };
+> >
+> >-static int __init ppc_corenet_clk_init(void)
+> >+static int __init qoriq_clk_init(void)
+> > {
+> >-	return platform_driver_register(&ppc_corenet_clk_driver);
+> >+	return platform_driver_register(&qoriq_clk_driver);
+> > }
+> >-subsys_initcall(ppc_corenet_clk_init);
+> >+subsys_initcall(qoriq_clk_init);
+> >+
+> >+CLK_OF_DECLARE(qoriq_core_pll_v1, "fsl,qoriq-core-pll-1.0",
+> >+core_pll_init); CLK_OF_DECLARE(qoriq_core_pll_v2,
+> >+"fsl,qoriq-core-pll-2.0", core_pll_init);
+> >+CLK_OF_DECLARE(qoriq_core_mux_v1, "fsl,qoriq-core-mux-1.0",
+> >+core_mux_init); CLK_OF_DECLARE(qoriq_core_mux_v2,
+> >+"fsl,qoriq-core-mux-2.0", core_mux_init);
+> >diff --git a/drivers/cpufreq/Kconfig.powerpc
+> >b/drivers/cpufreq/Kconfig.powerpc index 72564b7..7ea2441 100644
+> >--- a/drivers/cpufreq/Kconfig.powerpc
+> >+++ b/drivers/cpufreq/Kconfig.powerpc
+> >@@ -26,7 +26,7 @@ config CPU_FREQ_MAPLE
+> > config PPC_CORENET_CPUFREQ
+> > 	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
+> > 	depends on PPC_E500MC && OF && COMMON_CLK
+> >-	select CLK_PPC_CORENET
+> >+	select CLK_QORIQ
+> > 	help
+> > 	  This adds the CPUFreq driver support for Freescale e500mc,
+> > 	  e5500 and e6500 series SoCs which are capable of changing
+> >--
+> >1.8.0
+> 
