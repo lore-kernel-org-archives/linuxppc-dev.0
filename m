@@ -1,38 +1,33 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 159CF1A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 08:32:17 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8D9D2140080
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2014 08:32:14 +1100 (AEDT)
-Message-ID: <5452ADE0.1030709@Freescale.com>
-Date: Thu, 30 Oct 2014 16:30:08 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@Freescale.com>
-Subject: Re: [PATCH 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
-References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
- <EA33D307-CCDA-4A30-9386-46FA832FE0CA@codeaurora.org>
- <1414519738.23458.84.camel__4795.38602890006$1414521743$gmane$org@snotra.buserror.net>
- <54515ECB.70404@Freescale.com>
- <1414620996.23458.141.camel__29590.7804662876$1414621051$gmane$org@snotra.buserror.net>
- <5451BF49.6050106@Freescale.com>
- <1414680683.23458.148.camel__4514.07629666409$1414680744$gmane$org@snotra.buserror.net>
- <54526521.1090601@Freescale.com>
- <1414686590.23458.151.camel__44619.4786033176$1414686664$gmane$org@snotra.buserror.net>
- <54526B13.3010704@Freescale.com>
- <1414704371.23458.157.camel@snotra.buserror.net>
-In-Reply-To: <1414704371.23458.157.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
- corbet@lwn.net, Geoff.Thorpe@Freescale.com, ijc+devicetree@hellion.org.uk,
- linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
- Kumar Gala <galak@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19AAC1A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 09:27:14 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 30 Oct 2014 16:27:12 -0600
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6DC6B6E8028
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 18:27:09 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ s9UMRA6863701064
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 22:27:10 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s9UMR9VI008817
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Oct 2014 18:27:09 -0400
+Message-Id: <201410302227.s9UMR8qs008773@d01av04.pok.ibm.com>
+Subject: [PATCH 1/3] ipr: Convert to generic DMA API
+To: James.Bottomley@HansenPartnership.com
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 30 Oct 2014 17:27:08 -0500
+Cc: hch@infradead.org, brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anton@samba.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,106 +37,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
 
+From: Anton Blanchard <anton@samba.org>
 
-On 10/30/2014 04:26 PM, Scott Wood wrote:
-> On Thu, 2014-10-30 at 11:45 -0500, Emil Medve wrote:
->> Hello Scott,
->>
->>
->> On 10/30/2014 11:29 AM, Scott Wood wrote:
->>> On Thu, 2014-10-30 at 11:19 -0500, Emil Medve wrote:
->>>> Hello Scott,
->>>>
->>>>
->>>> On 10/30/2014 09:51 AM, Scott Wood wrote:
->>>>> On Wed, 2014-10-29 at 23:32 -0500, Emil Medve wrote:
->>>>>> Hello Scott,
->>>>>>
->>>>>>
->>>>>> On 10/29/2014 05:16 PM, Scott Wood wrote:
->>>>>>> On Wed, 2014-10-29 at 16:40 -0500, Emil Medve wrote:
->>>>>>>> Hello Scott,
->>>>>>>>
->>>>>>>>
->>>>>>>> On 10/28/2014 01:08 PM, Scott Wood wrote:
->>>>>>>>> On Tue, 2014-10-28 at 09:36 -0500, Kumar Gala wrote:
->>>>>>>>>> On Oct 22, 2014, at 9:09 AM, Emil Medve <Emilian.Medve@freescale.com> wrote:
->>>>>>>>>>
->>>>>>>>>>> The Buffer Manager is part of the Data-Path Acceleration Architecture (DPAA).
->>>>>>>>>>> BMan supports hardware allocation and deallocation of buffers belonging to
->>>>>>>>>>> pools originally created by software with configurable depletion thresholds.
->>>>>>>>>>> This binding covers the CCSR space programming model
->>>>>>>>>>>
->>>>>>>>>>> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
->>>>>>>>>>> Change-Id: I3ec479bfb3c91951e96902f091f5d7d2adbef3b2
->>>>>>>>>>> ---
->>>>>>>>>>> .../devicetree/bindings/powerpc/fsl/bman.txt       | 98 ++++++++++++++++++++++
->>>>>>>>>>> 1 file changed, 98 insertions(+)
->>>>>>>>>>> create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/bman.txt
->>>>>>>>>>
->>>>>>>>>> Should these really be in bindings/powerpc/fsl, aren’t you guys using this on ARM SoCs as well?
->>>>>>>>>
->>>>>>>>> The hardware on the ARM SoCs is different enough that I'm not sure the
->>>>>>>>> same binding will cover it.  That said, putting things under <arch>
->>>>>>>>> should be a last resort if nowhere else fits.
->>>>>>>>
->>>>>>>> OTC started ported the driver to the the ARM SoC and the feedback has
->>>>>>>> been that the driver needed minimal changes. The IOMMU has been the only
->>>>>>>> area of concern, and a small change to the binding has been suggested
->>>>>>>
->>>>>>> Do we need something in the binding to indicate device endianness?
->>>>>>
->>>>>> As I said, I didn't have enough exposure to the ARM SoC so I can't
->>>>>> answer that
->>>>>>
->>>>>>> If this binding is going to continue to be relevant to future DPAA
->>>>>>> generations, I think we really ought to deal with the possibility that
->>>>>>> there is more than one datapath instance
->>>>>>
->>>>>> I'm unsure how relevant this will be going forward. In LS2 B/QMan is
->>>>>> abstracted/hidden away behind the MC (firmware).
->>>>>
->>>>> This is why I was wondering whether the binding would be at all the
->>>>> same...
->>>>>
->>>>>>  I wouldn't over-engineer this without a clear picture of what multiple
->>>>>> data-paths per SoC even means at this point
->>>>>
->>>>> I don't think it's over-engineering.  Assuming only one instance of
->>>>> something is generally sloppy engineering.  Linux doesn't need to
->>>>> actually pay attention to it until and unless it becomes necessary, but
->>>>> it's good to have the information in the device tree up front.
->>>>
->>>> I asked around and the "multiple data-path SoC" seems to be at this
->>>> point a speculation. It seems unclear how would it work, what
->>>> requirements/problems it would address/solve, what programming interface
->>>> it would have. I'm not sure what do you suggest we do
->>>>
->>>> In order to reduce the sloppiness of this binding. I'll add a
->>>> memory-region phandle to connect each B/QMan node to their
->>>> reserved-memory node
->>>
->>> Thanks, that's the sort of thing I was looking for.  There should also
->>> be a connection from the portals to the relevant bqman node
->>
->> Nothing in the current programing model requires a portal to know its
->> B/QMan "parent". Should I add a phandle of sorts anyway?
-> 
-> Well, you at least have the requirement to initialize the qbman parent
-> before using its portals, and you need to use the portals that go with
-> the qbman instances that are connected to the device you want to
-> access...
-> 
->>> So there's no hardware connection between the bman and qman themselves?
->>
->> Not a single one
-> 
-> OK.  Please keep in mind that I haven't worked with this stuff as
-> closely as you have. :-)
+Even though the ipr driver is only used on PCI, convert it
+to use the generic DMA API.
 
-Huh? What do you mean?
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
+ drivers/scsi/ipr.c |  103 +++++++++++++++++++++++++++--------------------------
+ drivers/scsi/ipr.h |    2 -
+ 2 files changed, 54 insertions(+), 51 deletions(-)
 
-Cheers,
+diff -puN drivers/scsi/ipr.c~ipr_convert_to_generic_DMA_API drivers/scsi/ipr.c
+--- scsi-queue/drivers/scsi/ipr.c~ipr_convert_to_generic_DMA_API	2014-10-30 17:15:26.135856602 -0500
++++ scsi-queue-bjking1/drivers/scsi/ipr.c	2014-10-30 17:15:26.144856521 -0500
+@@ -3942,8 +3942,9 @@ static int ipr_update_ioa_ucode(struct i
+ 		return -EIO;
+ 	}
+ 
+-	sglist->num_dma_sg = pci_map_sg(ioa_cfg->pdev, sglist->scatterlist,
+-					sglist->num_sg, DMA_TO_DEVICE);
++	sglist->num_dma_sg = dma_map_sg(&ioa_cfg->pdev->dev,
++					sglist->scatterlist, sglist->num_sg,
++					DMA_TO_DEVICE);
+ 
+ 	if (!sglist->num_dma_sg) {
+ 		spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
+@@ -5585,7 +5586,7 @@ static int ipr_build_ioadl64(struct ipr_
+ 	nseg = scsi_dma_map(scsi_cmd);
+ 	if (nseg < 0) {
+ 		if (printk_ratelimit())
+-			dev_err(&ioa_cfg->pdev->dev, "pci_map_sg failed!\n");
++			dev_err(&ioa_cfg->pdev->dev, "scsi_dma_map failed!\n");
+ 		return -1;
+ 	}
+ 
+@@ -5636,7 +5637,7 @@ static int ipr_build_ioadl(struct ipr_io
+ 
+ 	nseg = scsi_dma_map(scsi_cmd);
+ 	if (nseg < 0) {
+-		dev_err(&ioa_cfg->pdev->dev, "pci_map_sg failed!\n");
++		dev_err(&ioa_cfg->pdev->dev, "scsi_dma_map failed!\n");
+ 		return -1;
+ 	}
+ 
+@@ -8431,7 +8432,7 @@ static int ipr_reset_ucode_download_done
+ 	struct ipr_ioa_cfg *ioa_cfg = ipr_cmd->ioa_cfg;
+ 	struct ipr_sglist *sglist = ioa_cfg->ucode_sglist;
+ 
+-	pci_unmap_sg(ioa_cfg->pdev, sglist->scatterlist,
++	dma_unmap_sg(&ioa_cfg->pdev->dev, sglist->scatterlist,
+ 		     sglist->num_sg, DMA_TO_DEVICE);
+ 
+ 	ipr_cmd->job_step = ipr_reset_alert;
+@@ -8871,7 +8872,7 @@ static void ipr_free_cmd_blks(struct ipr
+ 
+ 	for (i = 0; i < IPR_NUM_CMD_BLKS; i++) {
+ 		if (ioa_cfg->ipr_cmnd_list[i])
+-			pci_pool_free(ioa_cfg->ipr_cmd_pool,
++			dma_pool_free(ioa_cfg->ipr_cmd_pool,
+ 				      ioa_cfg->ipr_cmnd_list[i],
+ 				      ioa_cfg->ipr_cmnd_list_dma[i]);
+ 
+@@ -8879,7 +8880,7 @@ static void ipr_free_cmd_blks(struct ipr
+ 	}
+ 
+ 	if (ioa_cfg->ipr_cmd_pool)
+-		pci_pool_destroy(ioa_cfg->ipr_cmd_pool);
++		dma_pool_destroy(ioa_cfg->ipr_cmd_pool);
+ 
+ 	kfree(ioa_cfg->ipr_cmnd_list);
+ 	kfree(ioa_cfg->ipr_cmnd_list_dma);
+@@ -8900,25 +8901,24 @@ static void ipr_free_mem(struct ipr_ioa_
+ 	int i;
+ 
+ 	kfree(ioa_cfg->res_entries);
+-	pci_free_consistent(ioa_cfg->pdev, sizeof(struct ipr_misc_cbs),
+-			    ioa_cfg->vpd_cbs, ioa_cfg->vpd_cbs_dma);
++	dma_free_coherent(&ioa_cfg->pdev->dev, sizeof(struct ipr_misc_cbs),
++			  ioa_cfg->vpd_cbs, ioa_cfg->vpd_cbs_dma);
+ 	ipr_free_cmd_blks(ioa_cfg);
+ 
+ 	for (i = 0; i < ioa_cfg->hrrq_num; i++)
+-		pci_free_consistent(ioa_cfg->pdev,
+-					sizeof(u32) * ioa_cfg->hrrq[i].size,
+-					ioa_cfg->hrrq[i].host_rrq,
+-					ioa_cfg->hrrq[i].host_rrq_dma);
++		dma_free_coherent(&ioa_cfg->pdev->dev,
++				  sizeof(u32) * ioa_cfg->hrrq[i].size,
++				  ioa_cfg->hrrq[i].host_rrq,
++				  ioa_cfg->hrrq[i].host_rrq_dma);
+ 
+-	pci_free_consistent(ioa_cfg->pdev, ioa_cfg->cfg_table_size,
+-			    ioa_cfg->u.cfg_table,
+-			    ioa_cfg->cfg_table_dma);
++	dma_free_coherent(&ioa_cfg->pdev->dev, ioa_cfg->cfg_table_size,
++			  ioa_cfg->u.cfg_table, ioa_cfg->cfg_table_dma);
+ 
+ 	for (i = 0; i < IPR_NUM_HCAMS; i++) {
+-		pci_free_consistent(ioa_cfg->pdev,
+-				    sizeof(struct ipr_hostrcb),
+-				    ioa_cfg->hostrcb[i],
+-				    ioa_cfg->hostrcb_dma[i]);
++		dma_free_coherent(&ioa_cfg->pdev->dev,
++				  sizeof(struct ipr_hostrcb),
++				  ioa_cfg->hostrcb[i],
++				  ioa_cfg->hostrcb_dma[i]);
+ 	}
+ 
+ 	ipr_free_dump(ioa_cfg);
+@@ -8979,7 +8979,7 @@ static int ipr_alloc_cmd_blks(struct ipr
+ 	dma_addr_t dma_addr;
+ 	int i, entries_each_hrrq, hrrq_id = 0;
+ 
+-	ioa_cfg->ipr_cmd_pool = pci_pool_create(IPR_NAME, ioa_cfg->pdev,
++	ioa_cfg->ipr_cmd_pool = dma_pool_create(IPR_NAME, &ioa_cfg->pdev->dev,
+ 						sizeof(struct ipr_cmnd), 512, 0);
+ 
+ 	if (!ioa_cfg->ipr_cmd_pool)
+@@ -9029,7 +9029,7 @@ static int ipr_alloc_cmd_blks(struct ipr
+ 	}
+ 
+ 	for (i = 0; i < IPR_NUM_CMD_BLKS; i++) {
+-		ipr_cmd = pci_pool_alloc(ioa_cfg->ipr_cmd_pool, GFP_KERNEL, &dma_addr);
++		ipr_cmd = dma_pool_alloc(ioa_cfg->ipr_cmd_pool, GFP_KERNEL, &dma_addr);
+ 
+ 		if (!ipr_cmd) {
+ 			ipr_free_cmd_blks(ioa_cfg);
+@@ -9100,9 +9100,10 @@ static int ipr_alloc_mem(struct ipr_ioa_
+ 		ioa_cfg->res_entries[i].ioa_cfg = ioa_cfg;
+ 	}
+ 
+-	ioa_cfg->vpd_cbs = pci_alloc_consistent(ioa_cfg->pdev,
+-						sizeof(struct ipr_misc_cbs),
+-						&ioa_cfg->vpd_cbs_dma);
++	ioa_cfg->vpd_cbs = dma_alloc_coherent(&pdev->dev,
++					      sizeof(struct ipr_misc_cbs),
++					      &ioa_cfg->vpd_cbs_dma,
++					      GFP_KERNEL);
+ 
+ 	if (!ioa_cfg->vpd_cbs)
+ 		goto out_free_res_entries;
+@@ -9111,13 +9112,14 @@ static int ipr_alloc_mem(struct ipr_ioa_
+ 		goto out_free_vpd_cbs;
+ 
+ 	for (i = 0; i < ioa_cfg->hrrq_num; i++) {
+-		ioa_cfg->hrrq[i].host_rrq = pci_alloc_consistent(ioa_cfg->pdev,
++		ioa_cfg->hrrq[i].host_rrq = dma_alloc_coherent(&pdev->dev,
+ 					sizeof(u32) * ioa_cfg->hrrq[i].size,
+-					&ioa_cfg->hrrq[i].host_rrq_dma);
++					&ioa_cfg->hrrq[i].host_rrq_dma,
++					GFP_KERNEL);
+ 
+ 		if (!ioa_cfg->hrrq[i].host_rrq)  {
+ 			while (--i > 0)
+-				pci_free_consistent(pdev,
++				dma_free_coherent(&pdev->dev,
+ 					sizeof(u32) * ioa_cfg->hrrq[i].size,
+ 					ioa_cfg->hrrq[i].host_rrq,
+ 					ioa_cfg->hrrq[i].host_rrq_dma);
+@@ -9126,17 +9128,19 @@ static int ipr_alloc_mem(struct ipr_ioa_
+ 		ioa_cfg->hrrq[i].ioa_cfg = ioa_cfg;
+ 	}
+ 
+-	ioa_cfg->u.cfg_table = pci_alloc_consistent(ioa_cfg->pdev,
+-						    ioa_cfg->cfg_table_size,
+-						    &ioa_cfg->cfg_table_dma);
++	ioa_cfg->u.cfg_table = dma_alloc_coherent(&pdev->dev,
++						  ioa_cfg->cfg_table_size,
++						  &ioa_cfg->cfg_table_dma,
++						  GFP_KERNEL);
+ 
+ 	if (!ioa_cfg->u.cfg_table)
+ 		goto out_free_host_rrq;
+ 
+ 	for (i = 0; i < IPR_NUM_HCAMS; i++) {
+-		ioa_cfg->hostrcb[i] = pci_alloc_consistent(ioa_cfg->pdev,
+-							   sizeof(struct ipr_hostrcb),
+-							   &ioa_cfg->hostrcb_dma[i]);
++		ioa_cfg->hostrcb[i] = dma_alloc_coherent(&pdev->dev,
++							 sizeof(struct ipr_hostrcb),
++							 &ioa_cfg->hostrcb_dma[i],
++							 GFP_KERNEL);
+ 
+ 		if (!ioa_cfg->hostrcb[i])
+ 			goto out_free_hostrcb_dma;
+@@ -9160,25 +9164,24 @@ out:
+ 
+ out_free_hostrcb_dma:
+ 	while (i-- > 0) {
+-		pci_free_consistent(pdev, sizeof(struct ipr_hostrcb),
+-				    ioa_cfg->hostrcb[i],
+-				    ioa_cfg->hostrcb_dma[i]);
+-	}
+-	pci_free_consistent(pdev, ioa_cfg->cfg_table_size,
+-			    ioa_cfg->u.cfg_table,
+-			    ioa_cfg->cfg_table_dma);
++		dma_free_coherent(&pdev->dev, sizeof(struct ipr_hostrcb),
++				  ioa_cfg->hostrcb[i],
++				  ioa_cfg->hostrcb_dma[i]);
++	}
++	dma_free_coherent(&pdev->dev, ioa_cfg->cfg_table_size,
++			  ioa_cfg->u.cfg_table, ioa_cfg->cfg_table_dma);
+ out_free_host_rrq:
+ 	for (i = 0; i < ioa_cfg->hrrq_num; i++) {
+-		pci_free_consistent(pdev,
+-				sizeof(u32) * ioa_cfg->hrrq[i].size,
+-				ioa_cfg->hrrq[i].host_rrq,
+-				ioa_cfg->hrrq[i].host_rrq_dma);
++		dma_free_coherent(&pdev->dev,
++				  sizeof(u32) * ioa_cfg->hrrq[i].size,
++				  ioa_cfg->hrrq[i].host_rrq,
++				  ioa_cfg->hrrq[i].host_rrq_dma);
+ 	}
+ out_ipr_free_cmd_blocks:
+ 	ipr_free_cmd_blks(ioa_cfg);
+ out_free_vpd_cbs:
+-	pci_free_consistent(pdev, sizeof(struct ipr_misc_cbs),
+-			    ioa_cfg->vpd_cbs, ioa_cfg->vpd_cbs_dma);
++	dma_free_coherent(&pdev->dev, sizeof(struct ipr_misc_cbs),
++			  ioa_cfg->vpd_cbs, ioa_cfg->vpd_cbs_dma);
+ out_free_res_entries:
+ 	kfree(ioa_cfg->res_entries);
+ 	goto out;
+@@ -9618,13 +9621,13 @@ static int ipr_probe_ioa(struct pci_dev 
+ 	ipr_init_regs(ioa_cfg);
+ 
+ 	if (ioa_cfg->sis64) {
+-		rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
++		rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
+ 		if (rc < 0) {
+ 			dev_dbg(&pdev->dev, "Failed to set 64 bit PCI DMA mask\n");
+-			rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
++			rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+ 		}
+ 	} else
+-		rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
++		rc = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+ 
+ 	if (rc < 0) {
+ 		dev_err(&pdev->dev, "Failed to set PCI DMA mask\n");
+diff -puN drivers/scsi/ipr.h~ipr_convert_to_generic_DMA_API drivers/scsi/ipr.h
+--- scsi-queue/drivers/scsi/ipr.h~ipr_convert_to_generic_DMA_API	2014-10-30 17:15:26.138856575 -0500
++++ scsi-queue-bjking1/drivers/scsi/ipr.h	2014-10-30 17:15:26.148856485 -0500
+@@ -1549,7 +1549,7 @@ struct ipr_ioa_cfg {
+ 	struct ipr_misc_cbs *vpd_cbs;
+ 	dma_addr_t vpd_cbs_dma;
+ 
+-	struct pci_pool *ipr_cmd_pool;
++	struct dma_pool *ipr_cmd_pool;
+ 
+ 	struct ipr_cmnd *reset_cmd;
+ 	int (*reset) (struct ipr_cmnd *);
+_
