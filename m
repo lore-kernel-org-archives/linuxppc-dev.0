@@ -1,37 +1,36 @@
-Return-Path: <Varun.Sethi@freescale.com>
+Return-Path: <Emilian.Medve@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A3541A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 03:46:12 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48D951A0198
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 03:47:16 +1100 (AEDT)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 247D61400A0
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2014 03:46:10 +1100 (AEDT)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: Emilian Medve <Emilian.Medve@freescale.com>, Scott Wood
- <scottwood@freescale.com>, Kumar Gala <galak@codeaurora.org>
-Subject: RE: [PATCH 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
-Date: Thu, 30 Oct 2014 15:10:18 +0000
-Message-ID: <583a6b251a064011afbee7c64ca62cff@DM2PR03MB479.namprd03.prod.outlook.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4C36814007F
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2014 03:47:14 +1100 (AEDT)
+Message-ID: <54526B13.3010704@Freescale.com>
+Date: Thu, 30 Oct 2014 11:45:07 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
 References: <1413986972-621-1-git-send-email-Emilian.Medve@Freescale.com>
  <EA33D307-CCDA-4A30-9386-46FA832FE0CA@codeaurora.org>
  <1414519738.23458.84.camel__4795.38602890006$1414521743$gmane$org@snotra.buserror.net>
  <54515ECB.70404@Freescale.com>
-In-Reply-To: <54515ECB.70404@Freescale.com>
+ <1414620996.23458.141.camel__29590.7804662876$1414621051$gmane$org@snotra.buserror.net>
+ <5451BF49.6050106@Freescale.com>
+ <1414680683.23458.148.camel__4514.07629666409$1414680744$gmane$org@snotra.buserror.net>
+ <54526521.1090601@Freescale.com>
+ <1414686590.23458.151.camel__44619.4786033176$1414686664$gmane$org@snotra.buserror.net>
+In-Reply-To: <1414686590.23458.151.camel__44619.4786033176$1414686664$gmane$org@snotra.buserror.net>
 Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
- Geoff Thorpe <Geoff.Thorpe@freescale.com>, "corbet@lwn.net" <corbet@lwn.net>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, Rajan
- Srivastava <Rajan.Srivastava@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
+ corbet@lwn.net, Geoff.Thorpe@Freescale.com, ijc+devicetree@hellion.org.uk,
+ linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
+ Kumar Gala <galak@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +40,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
-YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK3ZhcnVuLnNldGhpPWZyZWVzY2FsZS5jb21A
-bGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIEVtaWwNCj4gTWVkdmUNCj4gU2VudDogVGh1
-cnNkYXksIE9jdG9iZXIgMzAsIDIwMTQgMzoxMCBBTQ0KPiBUbzogV29vZCBTY290dC1CMDc0MjE7
-IEt1bWFyIEdhbGENCj4gQ2M6IG1hcmsucnV0bGFuZEBhcm0uY29tOyBkZXZpY2V0cmVlQHZnZXIu
-a2VybmVsLm9yZzsNCj4gcGF3ZWwubW9sbEBhcm0uY29tOyBjb3JiZXRAbHduLm5ldDsgVGhvcnBl
-IEdlb2ZmLVIwMTM2MTsNCj4gaWpjK2RldmljZXRyZWVAaGVsbGlvbi5vcmcudWs7IGxpbnV4LWRv
-Y0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAb3psYWJzLm9yZzsgcm9iaCtkdEBr
-ZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS80XSBkdC9iaW5kaW5nczogSW50cm9k
-dWNlIHRoZSBGU0wgUW9ySVEgRFBBQSBCTWFuDQo+IA0KPiBIZWxsbyBTY290dCwNCj4gDQo+IA0K
-PiBPbiAxMC8yOC8yMDE0IDAxOjA4IFBNLCBTY290dCBXb29kIHdyb3RlOg0KPiA+IE9uIFR1ZSwg
-MjAxNC0xMC0yOCBhdCAwOTozNiAtMDUwMCwgS3VtYXIgR2FsYSB3cm90ZToNCj4gPj4gT24gT2N0
-IDIyLCAyMDE0LCBhdCA5OjA5IEFNLCBFbWlsIE1lZHZlIDxFbWlsaWFuLk1lZHZlQGZyZWVzY2Fs
-ZS5jb20+DQo+IHdyb3RlOg0KPiA+Pg0KPiA+Pj4gVGhlIEJ1ZmZlciBNYW5hZ2VyIGlzIHBhcnQg
-b2YgdGhlIERhdGEtUGF0aCBBY2NlbGVyYXRpb24gQXJjaGl0ZWN0dXJlDQo+IChEUEFBKS4NCj4g
-Pj4+IEJNYW4gc3VwcG9ydHMgaGFyZHdhcmUgYWxsb2NhdGlvbiBhbmQgZGVhbGxvY2F0aW9uIG9m
-IGJ1ZmZlcnMNCj4gPj4+IGJlbG9uZ2luZyB0byBwb29scyBvcmlnaW5hbGx5IGNyZWF0ZWQgYnkg
-c29mdHdhcmUgd2l0aCBjb25maWd1cmFibGUNCj4gZGVwbGV0aW9uIHRocmVzaG9sZHMuDQo+ID4+
-PiBUaGlzIGJpbmRpbmcgY292ZXJzIHRoZSBDQ1NSIHNwYWNlIHByb2dyYW1taW5nIG1vZGVsDQo+
-ID4+Pg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogRW1pbCBNZWR2ZSA8RW1pbGlhbi5NZWR2ZUBGcmVl
-c2NhbGUuY29tPg0KPiA+Pj4gQ2hhbmdlLUlkOiBJM2VjNDc5YmZiM2M5MTk1MWU5NjkwMmYwOTFm
-NWQ3ZDJhZGJlZjNiMg0KPiA+Pj4gLS0tDQo+ID4+PiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9w
-b3dlcnBjL2ZzbC9ibWFuLnR4dCAgICAgICB8IDk4DQo+ICsrKysrKysrKysrKysrKysrKysrKysN
-Cj4gPj4+IDEgZmlsZSBjaGFuZ2VkLCA5OCBpbnNlcnRpb25zKCspDQo+ID4+PiBjcmVhdGUgbW9k
-ZSAxMDA2NDQNCj4gPj4+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBj
-L2ZzbC9ibWFuLnR4dA0KPiA+Pg0KPiA+PiBTaG91bGQgdGhlc2UgcmVhbGx5IGJlIGluIGJpbmRp
-bmdzL3Bvd2VycGMvZnNsLCBhcmVu4oCZdCB5b3UgZ3V5cyB1c2luZyB0aGlzIG9uDQo+IEFSTSBT
-b0NzIGFzIHdlbGw/DQo+ID4NCj4gPiBUaGUgaGFyZHdhcmUgb24gdGhlIEFSTSBTb0NzIGlzIGRp
-ZmZlcmVudCBlbm91Z2ggdGhhdCBJJ20gbm90IHN1cmUgdGhlDQo+ID4gc2FtZSBiaW5kaW5nIHdp
-bGwgY292ZXIgaXQuICBUaGF0IHNhaWQsIHB1dHRpbmcgdGhpbmdzIHVuZGVyIDxhcmNoPg0KPiA+
-IHNob3VsZCBiZSBhIGxhc3QgcmVzb3J0IGlmIG5vd2hlcmUgZWxzZSBmaXRzLg0KPiANCj4gT1RD
-IHN0YXJ0ZWQgcG9ydGVkIHRoZSBkcml2ZXIgdG8gdGhlIHRoZSBBUk0gU29DIGFuZCB0aGUgZmVl
-ZGJhY2sgaGFzIGJlZW4NCj4gdGhhdCB0aGUgZHJpdmVyIG5lZWRlZCBtaW5pbWFsIGNoYW5nZXMu
-IFRoZSBJT01NVSBoYXMgYmVlbiB0aGUgb25seSBhcmVhDQo+IG9mIGNvbmNlcm4sIGFuZCBhIHNt
-YWxsIGNoYW5nZSB0byB0aGUgYmluZGluZyBoYXMgYmVlbiBzdWdnZXN0ZWQNCklPTU1VIHNwZWNp
-ZmljIGJpbmRpbmcgd291bGQgYmUgZGlmZmVyZW50LiBUaGUgYmluZGluZyB3b3VsZCBoYXZlIHRv
-IGNvbXBseSB0byB0aGUgYXJtLXNtbXUgYmluZGluZyAod2hpY2ggbmVlZHMgdG8gYmUgdXBkYXRl
-ZCkuDQoNCi1WYXJ1bg0K
+Hello Scott,
+
+
+On 10/30/2014 11:29 AM, Scott Wood wrote:
+> On Thu, 2014-10-30 at 11:19 -0500, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> On 10/30/2014 09:51 AM, Scott Wood wrote:
+>>> On Wed, 2014-10-29 at 23:32 -0500, Emil Medve wrote:
+>>>> Hello Scott,
+>>>>
+>>>>
+>>>> On 10/29/2014 05:16 PM, Scott Wood wrote:
+>>>>> On Wed, 2014-10-29 at 16:40 -0500, Emil Medve wrote:
+>>>>>> Hello Scott,
+>>>>>>
+>>>>>>
+>>>>>> On 10/28/2014 01:08 PM, Scott Wood wrote:
+>>>>>>> On Tue, 2014-10-28 at 09:36 -0500, Kumar Gala wrote:
+>>>>>>>> On Oct 22, 2014, at 9:09 AM, Emil Medve <Emilian.Medve@freescale.com> wrote:
+>>>>>>>>
+>>>>>>>>> The Buffer Manager is part of the Data-Path Acceleration Architecture (DPAA).
+>>>>>>>>> BMan supports hardware allocation and deallocation of buffers belonging to
+>>>>>>>>> pools originally created by software with configurable depletion thresholds.
+>>>>>>>>> This binding covers the CCSR space programming model
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+>>>>>>>>> Change-Id: I3ec479bfb3c91951e96902f091f5d7d2adbef3b2
+>>>>>>>>> ---
+>>>>>>>>> .../devicetree/bindings/powerpc/fsl/bman.txt       | 98 ++++++++++++++++++++++
+>>>>>>>>> 1 file changed, 98 insertions(+)
+>>>>>>>>> create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/bman.txt
+>>>>>>>>
+>>>>>>>> Should these really be in bindings/powerpc/fsl, aren’t you guys using this on ARM SoCs as well?
+>>>>>>>
+>>>>>>> The hardware on the ARM SoCs is different enough that I'm not sure the
+>>>>>>> same binding will cover it.  That said, putting things under <arch>
+>>>>>>> should be a last resort if nowhere else fits.
+>>>>>>
+>>>>>> OTC started ported the driver to the the ARM SoC and the feedback has
+>>>>>> been that the driver needed minimal changes. The IOMMU has been the only
+>>>>>> area of concern, and a small change to the binding has been suggested
+>>>>>
+>>>>> Do we need something in the binding to indicate device endianness?
+>>>>
+>>>> As I said, I didn't have enough exposure to the ARM SoC so I can't
+>>>> answer that
+>>>>
+>>>>> If this binding is going to continue to be relevant to future DPAA
+>>>>> generations, I think we really ought to deal with the possibility that
+>>>>> there is more than one datapath instance
+>>>>
+>>>> I'm unsure how relevant this will be going forward. In LS2 B/QMan is
+>>>> abstracted/hidden away behind the MC (firmware).
+>>>
+>>> This is why I was wondering whether the binding would be at all the
+>>> same...
+>>>
+>>>>  I wouldn't over-engineer this without a clear picture of what multiple
+>>>> data-paths per SoC even means at this point
+>>>
+>>> I don't think it's over-engineering.  Assuming only one instance of
+>>> something is generally sloppy engineering.  Linux doesn't need to
+>>> actually pay attention to it until and unless it becomes necessary, but
+>>> it's good to have the information in the device tree up front.
+>>
+>> I asked around and the "multiple data-path SoC" seems to be at this
+>> point a speculation. It seems unclear how would it work, what
+>> requirements/problems it would address/solve, what programming interface
+>> it would have. I'm not sure what do you suggest we do
+>>
+>> In order to reduce the sloppiness of this binding. I'll add a
+>> memory-region phandle to connect each B/QMan node to their
+>> reserved-memory node
+> 
+> Thanks, that's the sort of thing I was looking for.  There should also
+> be a connection from the portals to the relevant bqman node
+
+Nothing in the current programing model requires a portal to know its
+B/QMan "parent". Should I add a phandle of sorts anyway?
+
+> though we
+> need to deal with the possibility that the bqman node may not be present
+> (e.g. in a vm guest).
+> 
+>>>>> by having phandles and/or a parent container to connect the related
+>>>>> components.
+>>>>
+>>>> Connecting the related components is beyond the scope of this binding.
+>>>> It will soon hit the e-mail list(s) as part of upstreaming the Ethernet
+>>>> driver
+>>>
+>>> So you want us to merge this binding without being told how this works?
+>>
+>> This binding stands on its own and each block (B/QMan) can be used for
+>> some useful purpose by itself. All other blocks/applications that use
+>> the B/QMan use the same basic interface acquire/release a "buffer" and
+>> enqueue/dequeue a "packet". I'm not sure what you feel I didn't share
+> 
+> So there's no hardware connection between the bman and qman themselves?
+
+Not a single one
+
+
+Cheers,
