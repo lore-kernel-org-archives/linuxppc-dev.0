@@ -1,22 +1,17 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 115C81A0174
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 14:38:04 +1100 (AEDT)
-Message-ID: <54530396.1020306@Freescale.com>
-Date: Thu, 30 Oct 2014 22:35:50 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/5] powerpc: Remove bootmem allocator
-References: <1410956137-4824-1-git-send-email-anton@samba.org>
- <5451D416.7030300@Freescale.com> <1414721739.21815.4.camel@concordia>
-In-Reply-To: <1414721739.21815.4.camel@concordia>
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CB7891A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 14:47:28 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ulrich.weigand@de.ibm.com
+Subject: [PATCH 1/3] powerpc: Don't use local named register variable in
+ current_thread_info
+Date: Fri, 31 Oct 2014 14:47:25 +1100
+Message-Id: <1414727247-31838-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Michael,
+LLVM doesn't support local named register variables and is unlikely
+to. current_thread_info is using one, fix it by moving it out and
+calling it __current_r1().
 
+I gave it a bit of an obscure name because we don't want anyone else
+using it - they should use current_stack_pointer(). This specific
+case is performance critical and we can't afford to call a function
+to get it. Furthermore it isn't important to know exactly where in
+the stack we are since we mask the lower bits.
 
-On 10/30/2014 09:15 PM, Michael Ellerman wrote:
-> On Thu, 2014-10-30 at 01:00 -0500, Emil Medve wrote:
->> On 09/17/2014 07:15 AM, Anton Blanchard wrote:
->>> At the moment we transition from the memblock alloctor to the bootmem
->>> allocator. Gitting rid of the bootmem allocator removes a bunch of
->>> complicated code (most of which I owe the dubious honour of being
->>> responsible for writing).
->>
->> Any idea on how to move these patches forward?
-> 
-> It's in my test branch and will go into next on Monday.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/thread_info.h | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Thank you
-
-
-Cheers,
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index b034ecd..ebc4f16 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -71,13 +71,12 @@ struct thread_info {
+ #define THREAD_SIZE_ORDER	(THREAD_SHIFT - PAGE_SHIFT)
+ 
+ /* how to get the thread information struct from C */
++register unsigned long __current_r1 asm("r1");
+ static inline struct thread_info *current_thread_info(void)
+ {
+-	register unsigned long sp asm("r1");
+-
+ 	/* gcc4, at least, is smart enough to turn this into a single
+ 	 * rlwinm for ppc32 and clrrdi for ppc64 */
+-	return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
++	return (struct thread_info *)(__current_r1 & ~(THREAD_SIZE-1));
+ }
+ 
+ #endif /* __ASSEMBLY__ */
+-- 
+1.9.1
