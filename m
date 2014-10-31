@@ -1,22 +1,19 @@
-Return-Path: <kirjanov@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 062351A00E5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 17:09:47 +1100 (AEDT)
-MIME-Version: 1.0
-In-Reply-To: <CAADnVQKvfay7zC-kNGXz7uAjVrhqL80xQ=zvmAsSz4pNhD=9NQ@mail.gmail.com>
-References: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
- <CAADnVQKvfay7zC-kNGXz7uAjVrhqL80xQ=zvmAsSz4pNhD=9NQ@mail.gmail.com>
-Date: Fri, 31 Oct 2014 10:09:43 +0400
-Message-ID: <CAHj3AVkpouHa1y0jt9c5dyYvnd6dctociTMW1ORdxaKdsFEbhQ@mail.gmail.com>
-Subject: Re: [PATCH v2] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
-From: Denis Kirjanov <kirjanov@gmail.com>
-To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Denis Kirjanov <kda@linux-powerpc.org>, Matt Evans <matt@ozlabs.org>,
- linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93E131A0206
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 17:28:10 +1100 (AEDT)
+Message-ID: <1414736879.28356.51.camel@pasglop>
+Subject: Re: [PATCH] powerpc/pseries: Quieten ibm,pcie-link-speed-stats warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Date: Fri, 31 Oct 2014 17:27:59 +1100
+In-Reply-To: <1414731901-2096-1-git-send-email-anton@samba.org>
+References: <1414731901-2096-1-git-send-email-anton@samba.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/30/14, Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
-> On Wed, Oct 29, 2014 at 11:12 PM, Denis Kirjanov <kda@linux-powerpc.org>
-> wrote:
->> Add BPF extension SKF_AD_PKTTYPE to ppc JIT to load
->> skb->pkt_type field.
->>
->> Before:
->> [   88.262622] test_bpf: #11 LD_IND_NET 86 97 99 PASS
->> [   88.265740] test_bpf: #12 LD_PKTTYPE 109 107 PASS
->>
->> After:
->> [   80.605964] test_bpf: #11 LD_IND_NET 44 40 39 PASS
->> [   80.607370] test_bpf: #12 LD_PKTTYPE 9 9 PASS
->
-> if you'd only quoted #12, it would all make sense ;)
-> but #11 test is not using PKTTYPE. So your patch shouldn't
-> make a difference. Are these numbers with JIT on and off?
+On Fri, 2014-10-31 at 16:05 +1100, Anton Blanchard wrote:
+> The ibm,pcie-link-speed-stats isn't mandatory, so we shouldn't print
+> a high priority error message when missing. One example where we see
+> this is QEMU.
+> 
+> Reduce it to pr_info.
 
-Right.
+I would reduce it even further to pr_dbg.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Cheers,
+Ben.
 
-
--- 
-Regards,
-Denis
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/platforms/pseries/pci.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+> index 67e4859..57dd7a0 100644
+> --- a/arch/powerpc/platforms/pseries/pci.c
+> +++ b/arch/powerpc/platforms/pseries/pci.c
+> @@ -134,7 +134,7 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+>  	of_node_put(pdn);
+>  
+>  	if (rc) {
+> -		pr_err("no ibm,pcie-link-speed-stats property\n");
+> +		pr_info("no ibm,pcie-link-speed-stats property\n");
+>  		return 0;
+>  	}
+>  
