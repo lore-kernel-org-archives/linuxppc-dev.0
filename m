@@ -1,18 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <kirjanov@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D30DF1A01EB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 16:50:58 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: do_notify_resume can be called with bad thread_info
- flags argument
-Date: Fri, 31 Oct 2014 16:50:57 +1100
-Message-Id: <1414734657-5004-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 062351A00E5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 17:09:47 +1100 (AEDT)
+MIME-Version: 1.0
+In-Reply-To: <CAADnVQKvfay7zC-kNGXz7uAjVrhqL80xQ=zvmAsSz4pNhD=9NQ@mail.gmail.com>
+References: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
+ <CAADnVQKvfay7zC-kNGXz7uAjVrhqL80xQ=zvmAsSz4pNhD=9NQ@mail.gmail.com>
+Date: Fri, 31 Oct 2014 10:09:43 +0400
+Message-ID: <CAHj3AVkpouHa1y0jt9c5dyYvnd6dctociTMW1ORdxaKdsFEbhQ@mail.gmail.com>
+Subject: Re: [PATCH v2] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
+From: Denis Kirjanov <kirjanov@gmail.com>
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Denis Kirjanov <kda@linux-powerpc.org>, Matt Evans <matt@ozlabs.org>,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,49 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Back in 7230c5644188 ("powerpc: Rework lazy-interrupt handling") we
-added a call out to restore_interrupts() (written in c) before calling
-do_notify_resume:
+On 10/30/14, Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
+> On Wed, Oct 29, 2014 at 11:12 PM, Denis Kirjanov <kda@linux-powerpc.org>
+> wrote:
+>> Add BPF extension SKF_AD_PKTTYPE to ppc JIT to load
+>> skb->pkt_type field.
+>>
+>> Before:
+>> [   88.262622] test_bpf: #11 LD_IND_NET 86 97 99 PASS
+>> [   88.265740] test_bpf: #12 LD_PKTTYPE 109 107 PASS
+>>
+>> After:
+>> [   80.605964] test_bpf: #11 LD_IND_NET 44 40 39 PASS
+>> [   80.607370] test_bpf: #12 LD_PKTTYPE 9 9 PASS
+>
+> if you'd only quoted #12, it would all make sense ;)
+> but #11 test is not using PKTTYPE. So your patch shouldn't
+> make a difference. Are these numbers with JIT on and off?
 
-        bl      restore_interrupts
-        addi    r3,r1,STACK_FRAME_OVERHEAD
-        bl      do_notify_resume
+Right.
 
-Unfortunately do_notify_resume takes two arguments, the second one
-being the thread_info flags:
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
 
-We do populate r4 (the second argument) earlier, but
-restore_interrupts() is free to muck it up all it wants. My guess is
-the gcc compiler gods shone down on us and its register allocator
-never used r4. Sometimes, rarely, luck is on our side.
-
-LLVM on the other hand did trample r4.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@vger.kernel.org
----
- arch/powerpc/kernel/entry_64.S | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 9caab69..194e46d 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -659,7 +659,13 @@ _GLOBAL(ret_from_except_lite)
- 3:
- #endif
- 	bl	save_nvgprs
-+	/*
-+	 * Use a non volatile GPR to save and restore our thread_info flags
-+	 * across the call to restore_interrupts.
-+	 */
-+	mr	r30,r4
- 	bl	restore_interrupts
-+	mr	r4,r30
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	do_notify_resume
- 	b	ret_from_except
 -- 
-1.9.1
+Regards,
+Denis
