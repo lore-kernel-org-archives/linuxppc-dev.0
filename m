@@ -1,22 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFAE1A01E2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 20:36:20 +1100 (AEDT)
-Date: Fri, 31 Oct 2014 17:36:09 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Subject: Re: [PATCH] hwrng: pseries - port to new read API and fix stack
- corruption
-Message-ID: <20141031093609.GA8454@gondor.apana.org.au>
-References: <20141031063233.1884.86309.stgit@bahia.local>
- <1414738812.21815.5.camel@concordia>
- <20141031103141.7b91c647@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7FFDF1A040D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 22:28:28 +1100 (AEDT)
+Message-ID: <54537254.5050401@linutronix.de>
+Date: Fri, 31 Oct 2014 12:28:20 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141031103141.7b91c647@bahia.local>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Johannes Thumshirn <johannes.thumshirn@men.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: FSL MSI Mapping
+References: <20141028170604.GA1536@jtlinux>
+ <1414641117.12600.4.camel@concordia> <20141031081225.GA20831@jtlinux>
+In-Reply-To: <20141031081225.GA20831@jtlinux>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org, 'David Engster' <david.engster@mahr.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2014 at 10:31:41AM +0100, Greg Kurz wrote:
->
-> > > Cc'ing stable as I could reproduce back to 3.15.10
-> > 
-> > The right way to CC stable for a patch that isn't yet in upstream is to add:
-> > 
-> > CC: stable@vger.kernel.org
-> > 
-> > Before your Signed-off-by. They will then pick it up once it's merged into
-> > Linus' tree. See Documentation/stable_kernel_rules.txt
-> > 
-> > cheers
-> > 
+On 10/31/2014 09:12 AM, Johannes Thumshirn wrote:
+> On Thu, Oct 30, 2014 at 02:51:57PM +1100, Michael Ellerman wrote:
+>> Why would you not use MSI-X ?
+
+If I'm not mistaken, a PCI-E requirement is to support MSI but MSI-X is
+optional. And with MSI you can have multiple interrupts per single
+device (power of two, max 32).
+Now imagine you have a FPGA with two (or more) different devices in it
+and you don't want them to share the IRQ line (for $reason). I bet the
+HW developer sees MSI and MSI-X and the former is for some reason
+cheaper compared to MSI-X and it fits the needs. So…
+
 > 
-> Oops... should I repost then ?
+> Does anyone (especially the original author) have any objections if I re-spin
+> the patch series?
 
-Don't worry, I can fix this up.
+I didn't get around to address the review comments so it did not went
+in and there was no v2. Feel free re-do the series.
 
-Cheers,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Sebastian
