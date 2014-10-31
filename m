@@ -1,25 +1,32 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c03::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45ED11A01DB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Nov 2014 05:16:42 +1100 (AEDT)
-Received: by mail-pa0-f48.google.com with SMTP id ey11so8191255pad.21
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 11:16:39 -0700 (PDT)
-Date: Fri, 31 Oct 2014 11:16:27 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 0/2] ASoC: fsl: Use dynamic slot width for ESAI.
-Message-ID: <20141031181626.GA7772@Asurada>
-References: <cover.1414193668.git.nicoleotsuka@gmail.com>
- <20141031181224.GR18557@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141031181224.GR18557@sirena.org.uk>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, b02247@freescale.com,
- linux-kernel@vger.kernel.org, timur@tabi.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 88E821A01B8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Nov 2014 06:41:54 +1100 (AEDT)
+Received: by mail-ie0-f172.google.com with SMTP id at20so1989968iec.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2014 12:41:52 -0700 (PDT)
+Sender: Dan Streetman <ddstreet@gmail.com>
+From: Dan Streetman <ddstreet@ieee.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: use device_online/offline() instead of cpu_up/down()
+Date: Fri, 31 Oct 2014 15:41:34 -0400
+Message-Id: <1414784494-12573-1-git-send-email-ddstreet@ieee.org>
+In-Reply-To: <CALZtONCwrBb+HPY7j7x4R-xmyhajFNCwaS3sns50RMDxHxyiEQ@mail.gmail.com>
+References: <CALZtONCwrBb+HPY7j7x4R-xmyhajFNCwaS3sns50RMDxHxyiEQ@mail.gmail.com>
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Daniel Walter <dwalter@google.com>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Neil Zhang <zhangwm@marvell.com>,
+ linuxppc-dev@lists.ozlabs.org, Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2014 at 06:12:24PM +0000, Mark Brown wrote:
-> On Fri, Oct 24, 2014 at 04:48:10PM -0700, Nicolin Chen wrote:
-> 
-> > @Shengjiu,
-> > Will you be available to test this series on Sabre Auto for both
-> > Master and Slave cases? I'd like to wait for your Test-by. Thanks.
-> 
-> Any ETA on the testing?
+In powerpc pseries platform dlpar operations, Use device_online() and
+device_offline() instead of cpu_up() and cpu_down().
 
-Please hold one more week. I'll also try to contact him personally.
+Calling cpu_up/down directly does not update the cpu device offline
+field, which is used to online/offline a cpu from sysfs.  Calling
+device_online/offline instead keeps the sysfs cpu online value correct.
+The hotplug lock, which is required to be held when calling
+device_online/offline, is already held when dlpar_online/offline_cpu
+are called, since they are called only from cpu_probe|release_store.
 
-Thank you.
-Nicolin
+This patch fixes errors on PowerVM systems that have cpu(s) added/removed
+using dlpar operations; without this patch, the
+/sys/devices/system/cpu/cpuN/online nodes do not correctly show the
+online state of added/removed cpus.
+
+Signed-off-by: Dan Streetman <ddstreet@ieee.org>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+
+Previous discussion for this:
+https://lkml.org/lkml/2014/10/29/839
+
+ arch/powerpc/platforms/pseries/dlpar.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 6ad83bd..c22bb1b 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -382,7 +382,7 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 			BUG_ON(get_cpu_current_state(cpu)
+ 					!= CPU_STATE_OFFLINE);
+ 			cpu_maps_update_done();
+-			rc = cpu_up(cpu);
++			rc = device_online(get_cpu_device(cpu));
+ 			if (rc)
+ 				goto out;
+ 			cpu_maps_update_begin();
+@@ -467,7 +467,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
+ 			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
+ 				set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
+ 				cpu_maps_update_done();
+-				rc = cpu_down(cpu);
++				rc = device_offline(get_cpu_device(cpu));
+ 				if (rc)
+ 					goto out;
+ 				cpu_maps_update_begin();
+-- 
+1.8.3.1
