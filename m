@@ -2,22 +2,22 @@ Return-Path: <dborkman@redhat.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 74FA41A0057
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Nov 2014 05:31:53 +1100 (AEDT)
-Message-ID: <54552709.7000409@redhat.com>
-Date: Sat, 01 Nov 2014 19:31:37 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 782051A0057
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Nov 2014 05:40:52 +1100 (AEDT)
+Message-ID: <54552926.1020504@redhat.com>
+Date: Sat, 01 Nov 2014 19:40:38 +0100
 From: Daniel Borkmann <dborkman@redhat.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
+To: Denis Kirjanov <kirjanov@gmail.com>
 Subject: Re: [PATCH v2] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
-References: <CAOJe8K31iB9+7c1BnS=6DdriU08WUisM7sYgj8nOBo4Fg=XUBg@mail.gmail.com>
- <20141101.133957.1365371956675094081.davem@davemloft.net>
- <CAOJe8K2FzuPTZ5pch8_UK7X==+=k8RKLnfz0mZb2hca19aU4pg@mail.gmail.com>
- <20141101.140035.13626854970331774.davem@davemloft.net>
-In-Reply-To: <20141101.140035.13626854970331774.davem@davemloft.net>
+References: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
+ <CAADnVQKvfay7zC-kNGXz7uAjVrhqL80xQ=zvmAsSz4pNhD=9NQ@mail.gmail.com>
+ <CAHj3AVkpouHa1y0jt9c5dyYvnd6dctociTMW1ORdxaKdsFEbhQ@mail.gmail.com>
+In-Reply-To: <CAHj3AVkpouHa1y0jt9c5dyYvnd6dctociTMW1ORdxaKdsFEbhQ@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: matt@ozlabs.org, kda@linux-powerpc.org, linuxppc-dev@ozlabs.org,
- netdev@vger.kernel.org, alexei.starovoitov@gmail.com
+Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev@ozlabs.org, "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/01/2014 07:00 PM, David Miller wrote:
-> From: Denis Kirjanov <kda@linux-powerpc.org>
-> Date: Sat, 1 Nov 2014 21:49:27 +0400
->
->> David, you need a feedback from other guys to apply this patch, right?
+On 10/31/2014 07:09 AM, Denis Kirjanov wrote:
+> On 10/30/14, Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
+>> On Wed, Oct 29, 2014 at 11:12 PM, Denis Kirjanov <kda@linux-powerpc.org>
+>> wrote:
+>>> Add BPF extension SKF_AD_PKTTYPE to ppc JIT to load
+>>> skb->pkt_type field.
+>>>
+>>> Before:
+>>> [   88.262622] test_bpf: #11 LD_IND_NET 86 97 99 PASS
+>>> [   88.265740] test_bpf: #12 LD_PKTTYPE 109 107 PASS
+>>>
+>>> After:
+>>> [   80.605964] test_bpf: #11 LD_IND_NET 44 40 39 PASS
+>>> [   80.607370] test_bpf: #12 LD_PKTTYPE 9 9 PASS
 >>
->> Alexei wanted some output before/after the patch.
->> Michael Ellerman wanted the explanation what a BPF_ANC | SKF_AD_PKTTYPE means.
-
-The BPF_ANC | SKF_AD_PKTTYPE case means that this is an ancillary
-operation aka BPF extension which loads the value of skb->pkt_type
-into the accumulator.
-
-A similar transformation, that is, from BPF into eBPF insns can be
-found in convert_bpf_extensions() in the SKF_AD_PKTTYPE case, or
-commit 709f6c58d4dc ("sparc: bpf_jit: add SKF_AD_PKTTYPE support
-to JIT") that recently enabled the same in sparc.
-
->> So I'm waiting  the ack/nack from them...
+>> if you'd only quoted #12, it would all make sense ;)
+>> but #11 test is not using PKTTYPE. So your patch shouldn't
+>> make a difference. Are these numbers with JIT on and off?
 >
-> I don't really think performance metrics are necessary just for adding
-> SKF_AD_PKTTYPE support, that's sort of an over the top requirement
-> if you ask me.
+> Right.
 
-Right, lib/test_bpf.c actually brings the quoted output w/ numbers
-for free. I think the important point was that the 'After:' case
-with ``echo 1 > /proc/sys/net/core/bpf_jit_enable'' runs through for
-that test case, which has been shown here.
+Ok.
 
-> It's pretty obvious that we should support as many operations as
-> possible to each JIT, because all of program has to do is use that
-> unsupported opcode and then we have none of that program being JIT'd.
+Please mention this in future log messages, as it was not quite
+clear that "before" was actually with JIT off, and "after" was
+with JIT on.
+
+One could have read it that actually both cases were with JIT on,
+and thus the inconsistent result for LD_IND_NET is a bit confusing
+since you've quoted it here as well.
