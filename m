@@ -1,32 +1,31 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04C121A04DD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 214981A060B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:54 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 3 Nov 2014 01:41:50 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 017C52BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:49 +1100 (EST)
+ Mon, 3 Nov 2014 01:41:53 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 360AA2BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:51 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sA2FfltH30998782
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:47 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sA2FfnaD27197576
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:49 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sA2FfmJq028068
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:48 +1100
+ sA2Ffojg028094
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:50 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V9 04/18] PCI: Take additional PF's IOV BAR alignment in
- sizing and assigning
-Date: Sun,  2 Nov 2014 23:41:20 +0800
-Message-Id: <1414942894-17034-5-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V9 05/18] powerpc/pci: Add PCI resource alignment documentation
+Date: Sun,  2 Nov 2014 23:41:21 +0800
+Message-Id: <1414942894-17034-6-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
@@ -39,194 +38,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At resource sizing/assigning stage, resources are divided into two lists,
-requested list and additional list, while the alignement of the additional
-IOV BAR is not taken into the sizing and assigning procedure.
+In order to enable SRIOV on PowerNV platform, the PF's IOV BAR needs to be
+adjusted:
+    1. size expaned
+    2. aligned to M64BT size
 
-This is reasonable in the original implementation, since IOV BAR's alignment is
-mostly the size of a PF BAR alignemt. This means the alignment is already taken
-into consideration. While this rule may be violated on some platform, eg.
-PowerNV platform.
-
-This patch takes the additional IOV BAR alignment in sizing and assigning stage
-explicitly. When system MMIO space is not enough, the PF's IOV BAR alignment
-will not contribute to the bridge. When system MMIO space is enough, the
-additional alignment will contribute to the bridge.
-
-Also it take advantage of pci_dev_resource::min_align to store this additional
-alignment.
+This patch documents this change on the reason and how.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/setup-bus.c |   85 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 71 insertions(+), 14 deletions(-)
+ .../powerpc/pci_iov_resource_on_powernv.txt        |   75 ++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
+ create mode 100644 Documentation/powerpc/pci_iov_resource_on_powernv.txt
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 0482235..05c7df0 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -99,8 +99,8 @@ static void remove_from_list(struct list_head *head,
- 	}
- }
- 
--static resource_size_t get_res_add_size(struct list_head *head,
--					struct resource *res)
-+static struct pci_dev_resource *res_to_dev_res(struct list_head *head,
-+					       struct resource *res)
- {
- 	struct pci_dev_resource *dev_res;
- 
-@@ -109,17 +109,37 @@ static resource_size_t get_res_add_size(struct list_head *head,
- 			int idx = res - &dev_res->dev->resource[0];
- 
- 			dev_printk(KERN_DEBUG, &dev_res->dev->dev,
--				 "res[%d]=%pR get_res_add_size add_size %llx\n",
-+				 "res[%d]=%pR res_to_dev_res add_size %llx min_align %llx\n",
- 				 idx, dev_res->res,
--				 (unsigned long long)dev_res->add_size);
-+				 (unsigned long long)dev_res->add_size,
-+				 (unsigned long long)dev_res->min_align);
- 
--			return dev_res->add_size;
-+			return dev_res;
- 		}
- 	}
- 
--	return 0;
-+	return NULL;
-+}
+diff --git a/Documentation/powerpc/pci_iov_resource_on_powernv.txt b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
+new file mode 100644
+index 0000000..8b3f346
+--- /dev/null
++++ b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
+@@ -0,0 +1,75 @@
++Wei Yang <weiyang@linux.vnet.ibm.com>
++26 Aug 2014
 +
-+static resource_size_t get_res_add_size(struct list_head *head,
-+					struct resource *res)
-+{
-+	struct pci_dev_resource *dev_res;
++This document describes the requirement from hardware for PCI MMIO resource
++sizing and assignment on PowerNV platform and how generic PCI code handle this
++requirement.
 +
-+	dev_res = res_to_dev_res(head, res);
-+	return dev_res ? dev_res->add_size : 0;
-+}
++1. Hardware requirement on PowerNV platform
++On PowerNV platform, IODA2 version, it has 16 M64 BARs, which is used to map
++MMIO range to PE#. Each M64 BAR would cover one MMIO range and this range is
++divided by *total_pe* number evenly with one piece corresponding to one PE.
 +
-+static resource_size_t get_res_add_align(struct list_head *head,
-+		struct resource *res)
-+{
-+	struct pci_dev_resource *dev_res;
++We decide to leverage this M64 BAR to map VFs to their individual PE, since
++for SRIOV VFs their BAR share the same size.
 +
-+	dev_res = res_to_dev_res(head, res);
-+	return dev_res ? dev_res->min_align : 0;
- }
- 
++By doing so, it introduces another problem. The *total_pe* number usually is
++bigger than the total_VFs. If we map one IOV BAR directly to one M64 BAR, some
++part in M64 BAR will map to another devices MMIO range.
 +
- /* Sort resources by alignment */
- static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
- {
-@@ -368,8 +388,9 @@ static void __assign_resources_sorted(struct list_head *head,
- 	LIST_HEAD(save_head);
- 	LIST_HEAD(local_fail_head);
- 	struct pci_dev_resource *save_res;
--	struct pci_dev_resource *dev_res, *tmp_res;
-+	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
- 	unsigned long fail_type;
-+	resource_size_t add_align, align;
- 
- 	/* Check if optional add_size is there */
- 	if (!realloc_head || list_empty(realloc_head))
-@@ -384,10 +405,38 @@ static void __assign_resources_sorted(struct list_head *head,
- 	}
- 
- 	/* Update res in head list with add_size in realloc_head list */
--	list_for_each_entry(dev_res, head, list)
-+	list_for_each_entry_safe(dev_res, tmp_res, head, list) {
- 		dev_res->res->end += get_res_add_size(realloc_head,
- 							dev_res->res);
- 
-+		/* 
-+		 * There are two kinds additional resources in the list:
-+		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
-+		 * 2. SRIOV resource   -- IORESOURCE_SIZEALIGN
-+		 * Here just fix the additional alignment for bridge
-+		 */
-+		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
-+			continue;
++     0      1                     total_VFs - 1
++     +------+------+-     -+------+------+
++     |      |      |  ...  |      |      |
++     +------+------+-     -+------+------+
 +
-+		add_align = get_res_add_align(realloc_head, dev_res->res);
++                           IOV BAR
++     0      1                     total_VFs - 1          total_pe - 1
++     +------+------+-     -+------+------+-      -+------+------+
++     |      |      |  ...  |      |      |   ...  |      |      |
++     +------+------+-     -+------+------+-      -+------+------+
 +
-+		/* Reorder the list by their alignment */
-+		if (add_align > dev_res->res->start) {
-+			dev_res->res->start = add_align;
-+			dev_res->res->end = add_align +
-+				            resource_size(dev_res->res);
++                           M64 BAR
 +
-+			list_for_each_entry(dev_res2, head, list) {
-+				align = pci_resource_alignment(dev_res2->dev,
-+							       dev_res2->res);
-+				if (add_align > align)
-+					list_move_tail(&dev_res->list,
-+						       &dev_res2->list);
-+			}
-+               }
++		Figure 1.0 Direct map IOV BAR
 +
-+	}
++As Figure 1.0 indicates, the range [total_VFs, total_pe - 1] in M64 BAR may
++map to some MMIO range on other device.
 +
- 	/* Try updated head list with add_size added */
- 	assign_requested_resources_sorted(head, &local_fail_head);
- 
-@@ -930,6 +979,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 	struct resource *b_res = find_free_bus_resource(bus,
- 					mask | IORESOURCE_PREFETCH, type);
- 	resource_size_t children_add_size = 0;
-+	resource_size_t children_add_align = 0;
-+	resource_size_t add_align = 0;
- 
- 	if (!b_res)
- 		return -ENOSPC;
-@@ -954,6 +1005,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 			/* put SRIOV requested res to the optional list */
- 			if (realloc_head && i >= PCI_IOV_RESOURCES &&
- 					i <= PCI_IOV_RESOURCE_END) {
-+				add_align = max(pci_resource_alignment(dev, r), add_align);
- 				r->end = r->start - 1;
- 				add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
- 				children_add_size += r_size;
-@@ -984,19 +1036,23 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 			if (order > max_order)
- 				max_order = order;
- 
--			if (realloc_head)
-+			if (realloc_head) {
- 				children_add_size += get_res_add_size(realloc_head, r);
-+				children_add_align = get_res_add_align(realloc_head, r);
-+				add_align = max(add_align, children_add_align);
-+			}
- 		}
- 	}
- 
- 	min_align = calculate_mem_align(aligns, max_order);
- 	min_align = max(min_align, window_alignment(bus, b_res->flags));
- 	size0 = calculate_memsize(size, min_size, 0, resource_size(b_res), min_align);
-+	add_align = max(min_align, add_align);
- 	if (children_add_size > add_size)
- 		add_size = children_add_size;
- 	size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
- 		calculate_memsize(size, min_size, add_size,
--				resource_size(b_res), min_align);
-+				resource_size(b_res), add_align);
- 	if (!size0 && !size1) {
- 		if (b_res->start || b_res->end)
- 			dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
-@@ -1008,10 +1064,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 	b_res->end = size0 + min_align - 1;
- 	b_res->flags |= IORESOURCE_STARTALIGN;
- 	if (size1 > size0 && realloc_head) {
--		add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
--		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
--			   b_res, &bus->busn_res,
--			   (unsigned long long)size1-size0);
-+		add_to_list(realloc_head, bus->self, b_res, size1-size0, add_align);
-+		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
-+				 "%pR to %pR add_size %llx add_align %llx\n", b_res,
-+				 &bus->busn_res, (unsigned long long)size1-size0,
-+				 add_align);
- 	}
- 	return 0;
- }
++The solution currently we have is to expand the IOV BAR to *total_pe* number.
++
++     0      1                     total_VFs - 1          total_pe - 1
++     +------+------+-     -+------+------+-      -+------+------+
++     |      |      |  ...  |      |      |   ...  |      |      |
++     +------+------+-     -+------+------+-      -+------+------+
++
++                           IOV BAR
++     0      1                     total_VFs - 1          total_pe - 1
++     +------+------+-     -+------+------+-      -+------+------+
++     |      |      |  ...  |      |      |   ...  |      |      |
++     +------+------+-     -+------+------+-      -+------+------+
++
++                           M64 BAR
++
++		Figure 1.1 Map expanded IOV BAR
++
++By expanding the IOV BAR, this ensures the whole M64 range will not effect
++others.
++
++2. How generic PCI code handle it
++Till now, it looks good to make it work, while another problem comes. The M64
++BAR start address needs to be size aligned, while the original generic PCI
++code assign the IOV BAR with individual VF BAR size aligned.
++
++Since usually one SRIOV VF BAR size is the same as its PF size, the original
++generic PCI code will not count in the IOV BAR alignment. (The alignment is
++the same as its PF.) With the change from PowerNV platform, this changes. The
++alignment of the IOV BAR is now the total size, then we need to count in it.
++
++From:
++	alignment(IOV BAR) = size(VF BAR) = size(PF BAR)
++To:
++	alignment(IOV BAR) = size(IOV BAR)
++
++In commit(PCI: Take additional IOV BAR alignment in sizing and assigning), it
++has add_align to track the alignment from IOV BAR and use it to meet the
++requirement.
 -- 
 1.7.9.5
