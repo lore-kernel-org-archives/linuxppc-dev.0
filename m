@@ -1,31 +1,32 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03D8D1A099E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04C121A04DD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:51 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 3 Nov 2014 01:41:48 +1000
+ Mon, 3 Nov 2014 01:41:50 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 826653578047
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:46 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 017C52BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 02:41:49 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sA2FfjsQ42860664
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:45 +1100
+ sA2FfltH30998782
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:47 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sA2FfjWF028053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:46 +1100
+ sA2FfmJq028068
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Nov 2014 02:41:48 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V9 03/18] PCI: Add weak pcibios_iov_resource_size() interface
-Date: Sun,  2 Nov 2014 23:41:19 +0800
-Message-Id: <1414942894-17034-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V9 04/18] PCI: Take additional PF's IOV BAR alignment in
+ sizing and assigning
+Date: Sun,  2 Nov 2014 23:41:20 +0800
+Message-Id: <1414942894-17034-5-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
@@ -38,98 +39,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When retrieving VF IOV BAR in virtfn_add(), it will divide the total PF's IOV
-BAR size with the totalVF number. This is true for most cases, while may not
-be correct on some specific platform.
+At resource sizing/assigning stage, resources are divided into two lists,
+requested list and additional list, while the alignement of the additional
+IOV BAR is not taken into the sizing and assigning procedure.
 
-For example on PowerNV platform, in order to fix PF's IOV BAR into a hardware
-alignment, the PF's IOV BAR size would be expended. This means the original
-method couldn't work.
+This is reasonable in the original implementation, since IOV BAR's alignment is
+mostly the size of a PF BAR alignemt. This means the alignment is already taken
+into consideration. While this rule may be violated on some platform, eg.
+PowerNV platform.
 
-This patch introduces a weak pcibios_iov_resource_size() interface, which
-gives platform a chance to implement specific method to calculate the VF BAR
-resource size.
+This patch takes the additional IOV BAR alignment in sizing and assigning stage
+explicitly. When system MMIO space is not enough, the PF's IOV BAR alignment
+will not contribute to the bridge. When system MMIO space is enough, the
+additional alignment will contribute to the bridge.
+
+Also it take advantage of pci_dev_resource::min_align to store this additional
+alignment.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/iov.c   |   27 +++++++++++++++++++++++++--
- include/linux/pci.h |    5 +++++
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ drivers/pci/setup-bus.c |   85 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 71 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 4d1685d..6866830 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -61,6 +61,30 @@ static void virtfn_remove_bus(struct pci_bus *physbus, struct pci_bus *virtbus)
- 		pci_remove_bus(virtbus);
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 0482235..05c7df0 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -99,8 +99,8 @@ static void remove_from_list(struct list_head *head,
+ 	}
  }
  
-+resource_size_t __weak pcibios_iov_resource_size(struct pci_dev *dev, int resno)
-+{
-+	return 0;
+-static resource_size_t get_res_add_size(struct list_head *head,
+-					struct resource *res)
++static struct pci_dev_resource *res_to_dev_res(struct list_head *head,
++					       struct resource *res)
+ {
+ 	struct pci_dev_resource *dev_res;
+ 
+@@ -109,17 +109,37 @@ static resource_size_t get_res_add_size(struct list_head *head,
+ 			int idx = res - &dev_res->dev->resource[0];
+ 
+ 			dev_printk(KERN_DEBUG, &dev_res->dev->dev,
+-				 "res[%d]=%pR get_res_add_size add_size %llx\n",
++				 "res[%d]=%pR res_to_dev_res add_size %llx min_align %llx\n",
+ 				 idx, dev_res->res,
+-				 (unsigned long long)dev_res->add_size);
++				 (unsigned long long)dev_res->add_size,
++				 (unsigned long long)dev_res->min_align);
+ 
+-			return dev_res->add_size;
++			return dev_res;
+ 		}
+ 	}
+ 
+-	return 0;
++	return NULL;
 +}
 +
-+resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
++static resource_size_t get_res_add_size(struct list_head *head,
++					struct resource *res)
 +{
-+	resource_size_t size;
-+	struct pci_sriov *iov;
++	struct pci_dev_resource *dev_res;
 +
-+	if (!dev->is_physfn)
-+		return 0;
-+
-+	size = pcibios_iov_resource_size(dev, resno);
-+	if (size != 0)
-+		return size;
-+
-+	iov = dev->sriov;
-+	size = resource_size(dev->resource + resno);
-+	do_div(size, iov->total_VFs);
-+
-+	return size;
++	dev_res = res_to_dev_res(head, res);
++	return dev_res ? dev_res->add_size : 0;
 +}
 +
- static int virtfn_add(struct pci_dev *dev, int id, int reset)
- {
- 	int i;
-@@ -96,8 +120,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 			continue;
- 		virtfn->resource[i].name = pci_name(virtfn);
- 		virtfn->resource[i].flags = res->flags;
--		size = resource_size(res);
--		do_div(size, iov->total_VFs);
-+		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
- 		virtfn->resource[i].start = res->start + size * id;
- 		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
- 		rc = request_resource(res, &virtfn->resource[i]);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index bbf8058..2f5b454 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1162,6 +1162,8 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
- resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev,
- 						 int resno,
- 						 resource_size_t align);
-+resource_size_t pcibios_iov_resource_size(struct pci_dev *dev,
-+		                            int resno);
++static resource_size_t get_res_add_align(struct list_head *head,
++		struct resource *res)
++{
++	struct pci_dev_resource *dev_res;
++
++	dev_res = res_to_dev_res(head, res);
++	return dev_res ? dev_res->min_align : 0;
+ }
  
- #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
- #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
-@@ -1666,6 +1668,7 @@ int pci_num_vf(struct pci_dev *dev);
- int pci_vfs_assigned(struct pci_dev *dev);
- int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
- int pci_sriov_get_totalvfs(struct pci_dev *dev);
-+resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno);
- #else
- static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
++
+ /* Sort resources by alignment */
+ static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
  {
-@@ -1685,6 +1688,8 @@ static inline int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs)
- { return 0; }
- static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
- { return 0; }
-+static inline resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
-+{ return 0; }
- #endif
+@@ -368,8 +388,9 @@ static void __assign_resources_sorted(struct list_head *head,
+ 	LIST_HEAD(save_head);
+ 	LIST_HEAD(local_fail_head);
+ 	struct pci_dev_resource *save_res;
+-	struct pci_dev_resource *dev_res, *tmp_res;
++	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
+ 	unsigned long fail_type;
++	resource_size_t add_align, align;
  
- #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
+ 	/* Check if optional add_size is there */
+ 	if (!realloc_head || list_empty(realloc_head))
+@@ -384,10 +405,38 @@ static void __assign_resources_sorted(struct list_head *head,
+ 	}
+ 
+ 	/* Update res in head list with add_size in realloc_head list */
+-	list_for_each_entry(dev_res, head, list)
++	list_for_each_entry_safe(dev_res, tmp_res, head, list) {
+ 		dev_res->res->end += get_res_add_size(realloc_head,
+ 							dev_res->res);
+ 
++		/* 
++		 * There are two kinds additional resources in the list:
++		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
++		 * 2. SRIOV resource   -- IORESOURCE_SIZEALIGN
++		 * Here just fix the additional alignment for bridge
++		 */
++		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
++			continue;
++
++		add_align = get_res_add_align(realloc_head, dev_res->res);
++
++		/* Reorder the list by their alignment */
++		if (add_align > dev_res->res->start) {
++			dev_res->res->start = add_align;
++			dev_res->res->end = add_align +
++				            resource_size(dev_res->res);
++
++			list_for_each_entry(dev_res2, head, list) {
++				align = pci_resource_alignment(dev_res2->dev,
++							       dev_res2->res);
++				if (add_align > align)
++					list_move_tail(&dev_res->list,
++						       &dev_res2->list);
++			}
++               }
++
++	}
++
+ 	/* Try updated head list with add_size added */
+ 	assign_requested_resources_sorted(head, &local_fail_head);
+ 
+@@ -930,6 +979,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 	struct resource *b_res = find_free_bus_resource(bus,
+ 					mask | IORESOURCE_PREFETCH, type);
+ 	resource_size_t children_add_size = 0;
++	resource_size_t children_add_align = 0;
++	resource_size_t add_align = 0;
+ 
+ 	if (!b_res)
+ 		return -ENOSPC;
+@@ -954,6 +1005,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			/* put SRIOV requested res to the optional list */
+ 			if (realloc_head && i >= PCI_IOV_RESOURCES &&
+ 					i <= PCI_IOV_RESOURCE_END) {
++				add_align = max(pci_resource_alignment(dev, r), add_align);
+ 				r->end = r->start - 1;
+ 				add_to_list(realloc_head, dev, r, r_size, 0/* don't care */);
+ 				children_add_size += r_size;
+@@ -984,19 +1036,23 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			if (order > max_order)
+ 				max_order = order;
+ 
+-			if (realloc_head)
++			if (realloc_head) {
+ 				children_add_size += get_res_add_size(realloc_head, r);
++				children_add_align = get_res_add_align(realloc_head, r);
++				add_align = max(add_align, children_add_align);
++			}
+ 		}
+ 	}
+ 
+ 	min_align = calculate_mem_align(aligns, max_order);
+ 	min_align = max(min_align, window_alignment(bus, b_res->flags));
+ 	size0 = calculate_memsize(size, min_size, 0, resource_size(b_res), min_align);
++	add_align = max(min_align, add_align);
+ 	if (children_add_size > add_size)
+ 		add_size = children_add_size;
+ 	size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
+ 		calculate_memsize(size, min_size, add_size,
+-				resource_size(b_res), min_align);
++				resource_size(b_res), add_align);
+ 	if (!size0 && !size1) {
+ 		if (b_res->start || b_res->end)
+ 			dev_info(&bus->self->dev, "disabling bridge window %pR to %pR (unused)\n",
+@@ -1008,10 +1064,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 	b_res->end = size0 + min_align - 1;
+ 	b_res->flags |= IORESOURCE_STARTALIGN;
+ 	if (size1 > size0 && realloc_head) {
+-		add_to_list(realloc_head, bus->self, b_res, size1-size0, min_align);
+-		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window %pR to %pR add_size %llx\n",
+-			   b_res, &bus->busn_res,
+-			   (unsigned long long)size1-size0);
++		add_to_list(realloc_head, bus->self, b_res, size1-size0, add_align);
++		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
++				 "%pR to %pR add_size %llx add_align %llx\n", b_res,
++				 &bus->busn_res, (unsigned long long)size1-size0,
++				 add_align);
+ 	}
+ 	return 0;
+ }
 -- 
 1.7.9.5
