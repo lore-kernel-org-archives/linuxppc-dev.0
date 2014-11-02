@@ -1,20 +1,17 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 517461A00C8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 07:17:22 +1100 (AEDT)
-Date: Mon, 3 Nov 2014 07:17:19 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E50A1A009A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 08:18:08 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Replace cc constraint in inline assembly with cr0
-Message-ID: <20141103071719.6f50de76@kryten>
-In-Reply-To: <20141101133317.GA1608@gate.crashing.org>
-References: <1414802571-20225-1-git-send-email-anton@samba.org>
- <20141101133317.GA1608@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ulrich.weigand@de.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc/pseries: Quieten ibm,pcie-link-speed-stats warning
+Date: Mon,  3 Nov 2014 08:18:06 +1100
+Message-Id: <1414963086-14939-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Segher,
+The ibm,pcie-link-speed-stats isn't mandatory, so we shouldn't print
+a high priority error message when missing. One example where we see
+this is QEMU.
 
-> > Our inline assembly only clobbers the first condition register
-> > field, but we mark all of them as being clobbered.
-> 
-> No, we don't.  "cc" has been an alias for cr0 for over twenty two and
-> a half years now; it has never changed meaning.  This is an LLVM bug.
+Reduce it to pr_debug.
 
-Thanks! I opened http://llvm.org/bugs/show_bug.cgi?id=21451 to track it.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/platforms/pseries/pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Anton
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 67e4859..fe16a50 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -134,7 +134,7 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+ 	of_node_put(pdn);
+ 
+ 	if (rc) {
+-		pr_err("no ibm,pcie-link-speed-stats property\n");
++		pr_debug("no ibm,pcie-link-speed-stats property\n");
+ 		return 0;
+ 	}
+ 
+-- 
+1.9.1
