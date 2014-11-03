@@ -1,16 +1,16 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <paulus@samba.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 718931A0246
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 08:34:03 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org
-Subject: [PATCH] powerpc/pseries: Quieten relocation on exceptions warning
-Date: Mon,  3 Nov 2014 08:34:01 +1100
-Message-Id: <1414964041-15859-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9941B1A00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 15:47:07 +1100 (AEDT)
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: Save/restore PPR for KVM hypercalls
+Date: Mon,  3 Nov 2014 15:46:42 +1100
+Message-Id: <1414990003-6104-1-git-send-email-paulus@samba.org>
+Cc: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,37 +20,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The H_SET_MODE hcall returns H_P2 if a function is not implemented
-and all callers should handle this case.
+From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
 
-The call to enable relocation on exceptions currently prints an error
-message if the feature is not implemented. While H_SET_MODE was
-first introduced on POWER8 (which has relocation on exceptions), it
-has been now added on some POWER7 configurations (which does not).
+The system call FLIH (first-level interrupt handler) at 0xc00
+unconditionally sets hardware priority to medium. For hypercalls, this
+means we lose guest OS priority. The front end (do_kvm_0x**) to the
+KVM interrupt handler always assumes that PPR priority is saved in
+PACA exception save area, so it copies this to the kvm_hstate
+structure. For hypercalls, this would be the saved priority from any
+previous exception. Eventually, the guest gets resumed with an
+incorrect priority.
 
-Check for H_P2 and print an informational message instead.
+The fix is to save the PPR priority in PACA exception save area before
+switching HMT priorities in the FLIH so that existing code described above
+in the KVM interrupt handler can copy it from there into the VCPU's saved
+context.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/platforms/pseries/setup.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 125c589..fcc9227 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -499,7 +499,11 @@ static void __init pSeries_setup_arch(void)
- 
- 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
- 		long rc;
--		if ((rc = pSeries_enable_reloc_on_exc()) != H_SUCCESS) {
-+
-+		rc = pSeries_enable_reloc_on_exc();
-+		if (rc == H_P2) {
-+			pr_info("Relocation on exceptions not supported\n");
-+		} else if (rc != H_SUCCESS) {
- 			pr_warn("Unable to enable relocation on exceptions: "
- 				"%ld\n", rc);
- 		}
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 72e783e..f67d909 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -292,15 +292,26 @@ decrementer_pSeries:
+ 	. = 0xc00
+ 	.globl	system_call_pSeries
+ system_call_pSeries:
+-	HMT_MEDIUM
++	/*
++	 * Switch to HMT medium priority on systems where we don't support
++	 * saving/restoring PPR or if CONFIG_KVM_BOOK3S_64_HANDLER is not
++	 * set. Otherwise, we save PPR in the CONFIG_KVM_BOOK3S_64_HANDLER
++	 * path before switching priority.
++	 */
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	GET_PACA(r13)
+ 	std	r9,PACA_EXGEN+EX_R9(r13)
++	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);
++	HMT_MEDIUM;
+ 	std	r10,PACA_EXGEN+EX_R10(r13)
++	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r9, CPU_FTR_HAS_PPR);
+ 	mfcr	r9
+ 	KVMTEST(0xc00)
+ 	GET_SCRATCH0(r13)
++#else
++	HMT_MEDIUM;
+ #endif
+ 	SYSCALL_PSERIES_1
+ 	SYSCALL_PSERIES_2_RFID
 -- 
-1.9.1
+2.1.1
