@@ -1,22 +1,21 @@
-Return-Path: <alexei.starovoitov@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 765481A01B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2014 04:21:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 229881A0296
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2014 04:52:12 +1100 (AEDT)
+Message-ID: <1415037117.23458.233.camel@snotra.buserror.net>
+Subject: Re: [PATCH 0/2] Support multiple MSI interrupts on FSL-MPIC
+From: Scott Wood <scottwood@freescale.com>
+To: Johannes Thumshirn <johannes.thumshirn@men.de>
+Date: Mon, 3 Nov 2014 11:51:57 -0600
+In-Reply-To: <1415031514-27284-1-git-send-email-johannes.thumshirn@men.de>
+References: <1415031514-27284-1-git-send-email-johannes.thumshirn@men.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20141103.120633.183870310578884991.davem@davemloft.net>
-References: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
- <20141103.120633.183870310578884991.davem@davemloft.net>
-Date: Mon, 3 Nov 2014 09:21:03 -0800
-Message-ID: <CAADnVQJYNB15cQvDi0+AcL==n+f8PAb1=Dnp_vBWku4SA-Q_6Q@mail.gmail.com>
-Subject: Re: [PATCH v2] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-To: David Miller <davem@davemloft.net>, felix@linux.vnet.ibm.com
-Content-Type: text/plain; charset=UTF-8
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Denis Kirjanov <kda@linux-powerpc.org>, Matt Evans <matt@ozlabs.org>,
- linuxppc-dev@ozlabs.org
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 3, 2014 at 9:06 AM, David Miller <davem@davemloft.net> wrote:
-> From: Denis Kirjanov <kda@linux-powerpc.org>
-> Date: Thu, 30 Oct 2014 09:12:15 +0300
->
->> Add BPF extension SKF_AD_PKTTYPE to ppc JIT to load
->> skb->pkt_type field.
->>
->> Before:
->> [   88.262622] test_bpf: #11 LD_IND_NET 86 97 99 PASS
->> [   88.265740] test_bpf: #12 LD_PKTTYPE 109 107 PASS
->>
->> After:
->> [   80.605964] test_bpf: #11 LD_IND_NET 44 40 39 PASS
->> [   80.607370] test_bpf: #12 LD_PKTTYPE 9 9 PASS
->>
->> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
->> CC: Michael Ellerman<mpe@ellerman.id.au>
->> Cc: Matt Evans <matt@ozlabs.org>
->> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
->>
->> v2: Added test rusults
->
-> So, can I apply this now?
+On Mon, 2014-11-03 at 17:18 +0100, Johannes Thumshirn wrote:
+> This series adds support for multiple MSI interrupts on FSL's MPIC.  The patch
+> series was originally done by Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> and re-applied and tested by me.
+> 
+> I dodn't know whether it is OK to put my name on it or not. So if Sebastian has
+> a problem with it I'll of cause change it immediately. It was just convenient to
+> use my name in the git commit but I don't want to do any kind of copyright
+> infrigement.
 
-I think this question is more towards ppc folks,
-since both Daniel and myself said before that it looks ok.
-Philippe just tested the previous version of this patch on ppc64le...
-I'm guessing that Matt (original author of bpf jit for ppc) is not replying,
-because he has no objections.
-Either way the addition is tiny and contained, so can go in now.
+You should set the Author field to Sebastian, which will result in a
+"From:" line at the top of the message body when sending patches via
+e-mail.
+
+-Scott
