@@ -1,20 +1,20 @@
-Return-Path: <Johannes.Thumshirn@men.de>
-Received: from mail1.bemta14.messagelabs.com (mail1.bemta14.messagelabs.com
- [193.109.254.111])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <davem@davemloft.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE0BC1A050D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2014 03:19:07 +1100 (AEDT)
-From: Johannes Thumshirn <johannes.thumshirn@men.de>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Scott Wood
- <scottwood@freescale.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/2] Support multiple MSI interrupts on FSL-MPIC
-Date: Mon, 3 Nov 2014 17:18:32 +0100
-Message-ID: <1415031514-27284-1-git-send-email-johannes.thumshirn@men.de>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Johannes Thumshirn <johannes.thumshirn@men.de>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2EFE1A00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2014 04:06:38 +1100 (AEDT)
+Date: Mon, 03 Nov 2014 12:06:33 -0500 (EST)
+Message-Id: <20141103.120633.183870310578884991.davem@davemloft.net>
+To: kda@linux-powerpc.org
+Subject: Re: [PATCH v2] PPC: bpf_jit_comp: add SKF_AD_PKTTYPE instruction
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
+References: <1414649535-3956-1-git-send-email-kda@linux-powerpc.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, alexei.starovoitov@gmail.com, matt@ozlabs.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series adds support for multiple MSI interrupts on FSL's MPIC.  The patch
-series was originally done by Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-and re-applied and tested by me.
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Thu, 30 Oct 2014 09:12:15 +0300
 
-I dodn't know whether it is OK to put my name on it or not. So if Sebastian has
-a problem with it I'll of cause change it immediately. It was just convenient to
-use my name in the git commit but I don't want to do any kind of copyright
-infrigement.
+> Add BPF extension SKF_AD_PKTTYPE to ppc JIT to load
+> skb->pkt_type field.
+> 
+> Before:
+> [   88.262622] test_bpf: #11 LD_IND_NET 86 97 99 PASS
+> [   88.265740] test_bpf: #12 LD_PKTTYPE 109 107 PASS
+> 
+> After:
+> [   80.605964] test_bpf: #11 LD_IND_NET 44 40 39 PASS
+> [   80.607370] test_bpf: #12 LD_PKTTYPE 9 9 PASS
+> 
+> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
+> CC: Michael Ellerman<mpe@ellerman.id.au>
+> Cc: Matt Evans <matt@ozlabs.org>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> 
+> v2: Added test rusults
 
-Johannes Thumshirn (2):
-  irqdomain: add support for creating a continous mapping
-  powerpc: msi: fsl: add support for multiple MSI interrupts
-
- arch/powerpc/kernel/msi.c              |  4 --
- arch/powerpc/platforms/cell/axon_msi.c |  3 ++
- arch/powerpc/platforms/powernv/pci.c   |  3 ++
- arch/powerpc/platforms/pseries/msi.c   |  3 ++
- arch/powerpc/sysdev/fsl_msi.c          | 22 ++++++---
- arch/powerpc/sysdev/mpic_pasemi_msi.c  |  3 ++
- arch/powerpc/sysdev/mpic_u3msi.c       |  3 ++
- arch/powerpc/sysdev/ppc4xx_msi.c       |  2 +
- include/linux/irqdomain.h              | 10 +++-
- kernel/irq/irqdomain.c                 | 85 ++++++++++++++++++++++++++--------
- 10 files changed, 106 insertions(+), 32 deletions(-)
-
---
-1.9.1
+So, can I apply this now?
