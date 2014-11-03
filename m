@@ -1,16 +1,16 @@
 Return-Path: <Johannes.Thumshirn@men.de>
-Received: from mail1.bemta3.messagelabs.com (mail1.bemta3.messagelabs.com
- [195.245.230.161])
+Received: from mail1.bemta5.messagelabs.com (mail1.bemta5.messagelabs.com
+ [195.245.231.140])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF40D1A02A5
+ by lists.ozlabs.org (Postfix) with ESMTPS id D5FE01A02B3
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2014 03:18:53 +1100 (AEDT)
 From: Johannes Thumshirn <johannes.thumshirn@men.de>
 To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Scott Wood
  <scottwood@freescale.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/2] irqdomain: add support for creating a continous mapping
-Date: Mon, 3 Nov 2014 17:18:33 +0100
-Message-ID: <1415031514-27284-2-git-send-email-johannes.thumshirn@men.de>
+Subject: [PATCH 2/2] powerpc: msi: fsl: add support for multiple MSI interrupts
+Date: Mon, 3 Nov 2014 17:18:34 +0100
+Message-ID: <1415031514-27284-3-git-send-email-johannes.thumshirn@men.de>
 In-Reply-To: <1415031514-27284-1-git-send-email-johannes.thumshirn@men.de>
 References: <1415031514-27284-1-git-send-email-johannes.thumshirn@men.de>
 MIME-Version: 1.0
@@ -26,173 +26,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A MSI device may have multiple interrupts. That means that the
-interrupts numbers should be continuos so that pdev->irq refers to the
-first interrupt, pdev->irq + 1 to the second and so on.
-This patch adds support for continuous allocation of virqs for a range
-of hwirqs. The function is based on irq_create_mapping() but due to the
-number argument there is very little in common now.
+This patch pushes the check for nvec > 1 && MSI into the check function
+of each MSI driver except for FSL's MSI where the functionality is
+added.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Johannes Thumshirn <johannes.thumshirn@men.de>
 ---
- include/linux/irqdomain.h | 10 ++++--
- kernel/irq/irqdomain.c    | 85 ++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 73 insertions(+), 22 deletions(-)
+ arch/powerpc/kernel/msi.c              |  4 ----
+ arch/powerpc/platforms/cell/axon_msi.c |  3 +++
+ arch/powerpc/platforms/powernv/pci.c   |  3 +++
+ arch/powerpc/platforms/pseries/msi.c   |  3 +++
+ arch/powerpc/sysdev/fsl_msi.c          | 22 ++++++++++++++++------
+ arch/powerpc/sysdev/mpic_pasemi_msi.c  |  3 +++
+ arch/powerpc/sysdev/mpic_u3msi.c       |  3 +++
+ arch/powerpc/sysdev/ppc4xx_msi.c       |  2 ++
+ 8 files changed, 33 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index b0f9d16..75662f3 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -175,8 +175,14 @@ extern void irq_domain_associate_many(struct irq_domain *domain,
- extern void irq_domain_disassociate(struct irq_domain *domain,
- 				    unsigned int irq);
- 
--extern unsigned int irq_create_mapping(struct irq_domain *host,
--				       irq_hw_number_t hwirq);
-+extern unsigned int irq_create_mapping_block(struct irq_domain *host,
-+				irq_hw_number_t hwirq, unsigned int num);
-+static inline unsigned int irq_create_mapping(struct irq_domain *host,
-+					irq_hw_number_t hwirq)
-+{
-+	return irq_create_mapping_block(host, hwirq, 1);
-+}
-+
- extern void irq_dispose_mapping(unsigned int virq);
- 
- /**
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index 6534ff6..fba488f 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -375,27 +375,61 @@ unsigned int irq_create_direct_mapping(struct irq_domain *domain)
- }
- EXPORT_SYMBOL_GPL(irq_create_direct_mapping);
- 
-+static int irq_check_continuous_mapping(struct irq_domain *domain,
-+					irq_hw_number_t hwirq, unsigned int num)
-+{
-+	int virq;
-+	int i;
-+
-+	virq = irq_find_mapping(domain, hwirq);
-+
-+	for (i = 1; i < num; i++) {
-+		unsigned int next;
-+
-+		next = irq_find_mapping(domain, hwirq + i);
-+		if (next == virq + i)
-+			continue;
-+
-+		pr_err("irq: invalid partial mapping. First hwirq %lu maps to "
-+			"%d and\n", hwirq, virq);
-+		pr_err("irq: +%d hwirq (%lu) maps to %d but should be %d.\n",
-+			i, hwirq + i, next, virq + i);
-+		return -EINVAL;
-+	}
-+
-+	pr_debug("-> existing mapping on virq %d\n", virq);
-+	return virq;
-+}
-+
-+
- /**
-- * irq_create_mapping() - Map a hardware interrupt into linux irq space
-+ * irq_create_mapping_block() - Map multiple hardware interrupts
-  * @domain: domain owning this hardware interrupt or NULL for default domain
-  * @hwirq: hardware irq number in that domain space
-+ * @num: number of interrupts
-+ *
-+ * Maps a hwirq to a newly allocated virq. If num is greater than 1 then num
-+ * hwirqs (hwirq ... hwirq + num - 1) will be mapped and virq will be
-+ * continuous.
-+ * Returns the first linux virq number.
-  *
-- * Only one mapping per hardware interrupt is permitted. Returns a linux
-- * irq number.
-  * If the sense/trigger is to be specified, set_irq_type() should be called
-  * on the number returned from that call.
-  */
--unsigned int irq_create_mapping(struct irq_domain *domain,
-+unsigned int irq_create_mapping_block(struct irq_domain *domain,
- 				irq_hw_number_t hwirq)
- {
- 	unsigned int hint;
- 	int virq;
-+	int node;
-+	int i;
- 
--	pr_debug("irq_create_mapping(0x%p, 0x%lx)\n", domain, hwirq);
-+	pr_debug("%s(0x%p, 0x%lx, %d)\n", __func__, domain, hwirq, num);
- 
- 	/* Look for default domain if nececssary */
--	if (domain == NULL)
-+	if (!domain && num == 1)
- 		domain = irq_default_domain;
-+
- 	if (domain == NULL) {
- 		WARN(1, "%s(, %lx) called with NULL domain\n", __func__, hwirq);
- 		return 0;
-@@ -403,35 +437,46 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
- 	pr_debug("-> using domain @%p\n", domain);
- 
- 	/* Check if mapping already exists */
--	virq = irq_find_mapping(domain, hwirq);
--	if (virq) {
--		pr_debug("-> existing mapping on virq %d\n", virq);
--		return virq;
-+	for (i = 0; i < num; i++) {
-+		virq = irq_find_mapping(domain, hwirq + i);
-+		if (virq != NO_IRQ) {
-+			if (i == 0)
-+				return irq_check_continuous_mapping(domain,
-+								hwirq, num);
-+			pr_err("irq: hwirq %ld has no mapping but hwirq %ld "
-+				"maps to virq %d. This can't be a block\n",
-+				hwirq, hwirq + i, virq);
-+			return -EINVAL;
-+		}
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index 71bd161..80ee2f4 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -20,10 +20,6 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 		return -ENOSYS;
  	}
  
-+	node = of_node_to_nid(domain->of_node);
-+
- 	/* Allocate a virtual interrupt number */
- 	hint = hwirq % nr_irqs;
- 	if (hint == 0)
- 		hint++;
--	virq = irq_alloc_desc_from(hint, of_node_to_nid(domain->of_node));
--	if (virq <= 0)
--		virq = irq_alloc_desc_from(1, of_node_to_nid(domain->of_node));
-+	virq = irq_alloc_desc_from(hint, node);
-+	if (virq <= 0 && hint != 1)
-+		virq = irq_alloc_desc_from(1, node);
- 	if (virq <= 0) {
- 		pr_debug("-> virq allocation failed\n");
- 		return 0;
- 	}
- 
--	if (irq_domain_associate(domain, virq, hwirq)) {
--		irq_free_desc(virq);
--		return 0;
-+	irq_domain_associate_many(domain, virq, hwirq, num);
-+	if (num == 1) {
-+		pr_debug("irq %lu on domain %s mapped to virtual irq %u\n"
-+			 hwirq, of_node_full_name(domain->of_node), virq);
-+		return virq;
- 	}
- 
--	pr_debug("irq %lu on domain %s mapped to virtual irq %u\n",
--		hwirq, of_node_full_name(domain->of_node), virq);
+-	/* PowerPC doesn't support multiple MSI yet */
+-	if (type == PCI_CAP_ID_MSI && nvec > 1)
+-		return 1;
 -
-+	pr_debug("irqs %lu...%lu on domain %s mapped to virtual irqs %u..%u\n",
-+		 hwirq, hwirq + num - 1, of_node_full_name(domain->of_node),
-+		 virq, virq + num - 1);
- 	return virq;
+ 	return ppc_md.setup_msi_irqs(dev, nvec, type);
  }
--EXPORT_SYMBOL_GPL(irq_create_mapping);
-+EXPORT_SYMBOL_GPL(irq_create_mapping_block);
  
- /**
-  * irq_create_strict_mappings() - Map a range of hw irqs to fixed linux irqs
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 862b327..537a70e 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -250,6 +250,9 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
+ 
+ 	of_node_put(dn);
+ 
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index b2187d0..de33ec0 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -63,6 +63,9 @@ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	if (pdn && pdn->force_32bit_msi && !phb->msi32_support)
+ 		return -ENODEV;
+ 
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
++
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		if (!entry->msi_attrib.is_64 && !phb->msi32_support) {
+ 			pr_warn("%s: Supports only 64-bit MSIs\n",
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 8ab5add..544e924 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -383,6 +383,9 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
+ 	int nvec = nvec_in;
+ 	int use_32bit_msi_hack = 0;
+ 
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
++
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		rc = check_req_msix(pdev, nvec);
+ 	else
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index de40b48..454e8b1 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -131,13 +131,19 @@ static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
+ 	struct fsl_msi *msi_data;
+ 
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
++		int num;
++		int i;
++
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
+ 		msi_data = irq_get_chip_data(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
++		num = 1 << entry->msi_attrib.multiple;
+ 		msi_bitmap_free_hwirqs(&msi_data->bitmap,
+-				       virq_to_hw(entry->irq), 1);
+-		irq_dispose_mapping(entry->irq);
++				       virq_to_hw(entry->irq), num);
++
++		for (i = 0; i < num; i++)
++			irq_dispose_mapping(entry->irq + i);
+ 	}
+ 
+ 	return;
+@@ -180,6 +186,7 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+ 	struct fsl_msi *msi_data;
++	int i;
+ 
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+@@ -219,7 +226,8 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 			if (phandle && (phandle != msi_data->phandle))
+ 				continue;
+ 
+-			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
++			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap,
++							nvec);
+ 			if (hwirq >= 0)
+ 				break;
+ 		}
+@@ -230,16 +238,18 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 			goto out_free;
+ 		}
+ 
+-		virq = irq_create_mapping(msi_data->irqhost, hwirq);
++		virq = irq_create_mapping_block(msi_data->irqhost, hwirq, nvec);
+ 
+ 		if (virq == NO_IRQ) {
+ 			dev_err(&pdev->dev, "fail mapping hwirq %i\n", hwirq);
+-			msi_bitmap_free_hwirqs(&msi_data->bitmap, hwirq, 1);
++			msi_bitmap_free_hwirqs(&msi_data->bitmap, hwirq, nvec);
+ 			rc = -ENOSPC;
+ 			goto out_free;
+ 		}
++		entry->msi_attrib.multiple = get_count_order(nvec);
+ 		/* chip_data is msi_data via host->hostdata in host->map() */
+-		irq_set_msi_desc(virq, entry);
++		for (i = nvec - 1; i >= 0; i--)
++			irq_set_msi_desc(virq + i, entry);
+ 
+ 		fsl_compose_msi_msg(pdev, hwirq, &msg, msi_data);
+ 		write_msi_msg(virq, &msg);
+diff --git a/arch/powerpc/sysdev/mpic_pasemi_msi.c b/arch/powerpc/sysdev/mpic_pasemi_msi.c
+index 15dccd3..03bace0 100644
+--- a/arch/powerpc/sysdev/mpic_pasemi_msi.c
++++ b/arch/powerpc/sysdev/mpic_pasemi_msi.c
+@@ -139,6 +139,9 @@ static int pasemi_msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		write_msi_msg(virq, &msg);
+ 	}
+ 
++	if (typpe == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
+index 623d7fb..5024629 100644
+--- a/arch/powerpc/sysdev/mpic_u3msi.c
++++ b/arch/powerpc/sysdev/mpic_u3msi.c
+@@ -133,6 +133,9 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		pr_debug("u3msi: MSI-X untested, trying anyway.\n");
+ 
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
++
+ 	/* If we can't find a magic address then MSI ain't gonna work */
+ 	if (find_ht_magic_addr(pdev, 0) == 0 &&
+ 	    find_u4_magic_addr(pdev, 0) == 0) {
+diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
+index 22b5200..8bbb228 100644
+--- a/arch/powerpc/sysdev/ppc4xx_msi.c
++++ b/arch/powerpc/sysdev/ppc4xx_msi.c
+@@ -89,6 +89,8 @@ static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 		__func__, nvec, type);
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		pr_debug("ppc4xx msi: MSI-X untested, trying anyway.\n");
++	if (type == PCI_CAP_ID_MSI && nvec > 1)
++		return 1;
+ 
+ 	msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int), GFP_KERNEL);
+ 	if (!msi_data->msi_virqs)
 -- 
 1.9.1
