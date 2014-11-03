@@ -1,16 +1,17 @@
 Return-Path: <paulus@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9941B1A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 15:47:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58B5F1A0985
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Nov 2014 15:47:17 +1100 (AEDT)
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc: Save/restore PPR for KVM hypercalls
-Date: Mon,  3 Nov 2014 15:46:42 +1100
-Message-Id: <1414990003-6104-1-git-send-email-paulus@samba.org>
-Cc: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/2] powerpc: Fix compilation of emulate_step()
+Date: Mon,  3 Nov 2014 15:46:43 +1100
+Message-Id: <1414990003-6104-2-git-send-email-paulus@samba.org>
+In-Reply-To: <1414990003-6104-1-git-send-email-paulus@samba.org>
+References: <1414990003-6104-1-git-send-email-paulus@samba.org>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,59 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
+Commit be96f63375a1 ("powerpc: Split out instruction analysis
+part of emulate_step()") added some calls to do_fp_load()
+and do_fp_store(), which fail to compile on configs with
+CONFIG_PPC_FPU=n and CONFIG_PPC_EMULATE_SSTEP=y.  This fixes
+the compile by adding #ifdef CONFIG_PPC_FPU around the code
+that calls these functions.
 
-The system call FLIH (first-level interrupt handler) at 0xc00
-unconditionally sets hardware priority to medium. For hypercalls, this
-means we lose guest OS priority. The front end (do_kvm_0x**) to the
-KVM interrupt handler always assumes that PPR priority is saved in
-PACA exception save area, so it copies this to the kvm_hstate
-structure. For hypercalls, this would be the saved priority from any
-previous exception. Eventually, the guest gets resumed with an
-incorrect priority.
-
-The fix is to save the PPR priority in PACA exception save area before
-switching HMT priorities in the FLIH so that existing code described above
-in the KVM interrupt handler can copy it from there into the VCPU's saved
-context.
-
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ arch/powerpc/lib/sstep.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 72e783e..f67d909 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -292,15 +292,26 @@ decrementer_pSeries:
- 	. = 0xc00
- 	.globl	system_call_pSeries
- system_call_pSeries:
--	HMT_MEDIUM
-+	/*
-+	 * Switch to HMT medium priority on systems where we don't support
-+	 * saving/restoring PPR or if CONFIG_KVM_BOOK3S_64_HANDLER is not
-+	 * set. Otherwise, we save PPR in the CONFIG_KVM_BOOK3S_64_HANDLER
-+	 * path before switching priority.
-+	 */
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
-+	HMT_MEDIUM_PPR_DISCARD
- 	SET_SCRATCH0(r13)
- 	GET_PACA(r13)
- 	std	r9,PACA_EXGEN+EX_R9(r13)
-+	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR);
-+	HMT_MEDIUM;
- 	std	r10,PACA_EXGEN+EX_R10(r13)
-+	OPT_SAVE_REG_TO_PACA(PACA_EXGEN+EX_PPR, r9, CPU_FTR_HAS_PPR);
- 	mfcr	r9
- 	KVMTEST(0xc00)
- 	GET_SCRATCH0(r13)
-+#else
-+	HMT_MEDIUM;
- #endif
- 	SYSCALL_PSERIES_1
- 	SYSCALL_PSERIES_2_RFID
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 54651fc..dc885b3 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1865,6 +1865,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		}
+ 		goto ldst_done;
+ 
++#ifdef CONFIG_PPC_FPU
+ 	case LOAD_FP:
+ 		if (regs->msr & MSR_LE)
+ 			return 0;
+@@ -1873,7 +1874,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		else
+ 			err = do_fp_load(op.reg, do_lfd, op.ea, size, regs);
+ 		goto ldst_done;
+-
++#endif
+ #ifdef CONFIG_ALTIVEC
+ 	case LOAD_VMX:
+ 		if (regs->msr & MSR_LE)
+@@ -1919,6 +1920,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		err = write_mem(op.val, op.ea, size, regs);
+ 		goto ldst_done;
+ 
++#ifdef CONFIG_PPC_FPU
+ 	case STORE_FP:
+ 		if (regs->msr & MSR_LE)
+ 			return 0;
+@@ -1927,7 +1929,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		else
+ 			err = do_fp_store(op.reg, do_stfd, op.ea, size, regs);
+ 		goto ldst_done;
+-
++#endif
+ #ifdef CONFIG_ALTIVEC
+ 	case STORE_VMX:
+ 		if (regs->msr & MSR_LE)
 -- 
 2.1.1
