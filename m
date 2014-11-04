@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB3B11A038B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 00:43:48 +1100 (AEDT)
-Message-ID: <1415108571.19220.13.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 628F61A0349
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 03:08:28 +1100 (AEDT)
+Date: Tue, 4 Nov 2014 08:07:16 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Grant Likely <grant.likely@linaro.org>
 Subject: Re: [PATCH] of/platform: Move platform devices under
  /sys/devices/platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@linaro.org>
-Date: Wed, 05 Nov 2014 00:42:51 +1100
-In-Reply-To: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
+Message-ID: <20141104160716.GA1630@kroah.com>
 References: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
 Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,7 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-11-04 at 10:45 +0000, Grant Likely wrote:
+On Tue, Nov 04, 2014 at 10:45:20AM +0000, Grant Likely wrote:
 > Currently the devices created by drivers/of/platform.c get created at
 > the root of /sys/devices. This goes against the typical pattern for
 > sysfs where the top level /sys/devices structure contains categories of
@@ -41,41 +41,10 @@ On Tue, 2014-11-04 at 10:45 +0000, Grant Likely wrote:
 > /sys/devices/... path will be affected. It isn't /supposed/ to do that,
 > but if anyone complains then I'll add a default-off workaround option to
 > put them back into the root.
-
-Ack !
-
-Cheers,
-Ben.
-
 > 
 > Signed-off-by: Grant Likely <grant.likely@linaro.org>
 > Cc: Rob Herring <robh+dt@kernel.org>
 > Cc: Arnd Bergmann <arnd@arndb.de>
 > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  drivers/of/platform.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-> index 3b64d0bf5bba..7c6771986c06 100644
-> --- a/drivers/of/platform.c
-> +++ b/drivers/of/platform.c
-> @@ -138,7 +138,7 @@ struct platform_device *of_device_alloc(struct device_node *np,
->  	}
->  
->  	dev->dev.of_node = of_node_get(np);
-> -	dev->dev.parent = parent;
-> +	dev->dev.parent = parent ? : &platform_bus;
->  
->  	if (bus_id)
->  		dev_set_name(&dev->dev, "%s", bus_id);
-> @@ -291,7 +291,7 @@ static struct amba_device *of_amba_device_create(struct device_node *node,
->  
->  	/* setup generic device info */
->  	dev->dev.of_node = of_node_get(node);
-> -	dev->dev.parent = parent;
-> +	dev->dev.parent = parent ? : &platform_bus;
->  	dev->dev.platform_data = platform_data;
->  	if (bus_id)
->  		dev_set_name(&dev->dev, "%s", bus_id);
+
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
