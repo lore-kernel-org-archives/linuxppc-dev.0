@@ -1,19 +1,23 @@
-Return-Path: <shh.xie@gmail.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0077.outbound.protection.outlook.com [157.56.111.77])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF8531A0243
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 00:29:15 +1100 (AEDT)
-From: <shh.xie@gmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH] DT: add MDIO node for FMan node
-Date: Tue, 4 Nov 2014 19:56:36 +0800
-Message-ID: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, Emilian.Medve@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB3B11A038B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 00:43:48 +1100 (AEDT)
+Message-ID: <1415108571.19220.13.camel@kernel.crashing.org>
+Subject: Re: [PATCH] of/platform: Move platform devices under
+ /sys/devices/platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@linaro.org>
+Date: Wed, 05 Nov 2014 00:42:51 +1100
+In-Reply-To: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
+References: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,109 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
+On Tue, 2014-11-04 at 10:45 +0000, Grant Likely wrote:
+> Currently the devices created by drivers/of/platform.c get created at
+> the root of /sys/devices. This goes against the typical pattern for
+> sysfs where the top level /sys/devices structure contains categories of
+> devices, and the structure of devices is placed below that. To fix this,
+> make the code in drivers/of/platform.c follow the drivers/base/platform.c
+> behaviour, and use &platform_bus as the default parent for all new
+> platform_devices and amba_devices.
+> 
+> This change has been discussed for a long time, but nobody has actually
+> acted on it. Userspace code that expects to find devices under a fixed
+> /sys/devices/... path will be affected. It isn't /supposed/ to do that,
+> but if anyone complains then I'll add a default-off workaround option to
+> put them back into the root.
 
-This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+Ack !
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-based on http://patchwork.ozlabs.org/patch/390351/
-for 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+Cheers,
+Ben.
 
- .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-index da8e5f2..83c2f14 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-@@ -7,6 +7,7 @@ CONTENTS
-   - FMan MURAM Node
-   - FMan dTSEC/XGEC/mEMAC Node
-   - FMan IEEE 1588 Node
-+  - FMan MDIO Node
-   - Example
- 
- =============================================================================
-@@ -352,6 +353,67 @@ ptp-timer@fe000 {
- };
- 
- =============================================================================
-+FMan MDIO Node
-+
-+DESCRIPTION
-+
-+The MDIO is a bus to which the PHY devices are connected.
-+
-+PROPERTIES
-+
-+- compatible
-+		Usage: required
-+		Value type: <stringlist>
-+		Definition: A standard property.
-+		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-+		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-+		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-+		FMan v3.
-+
-+- reg
-+		Usage: required
-+		Value type: <prop-encoded-array>
-+		Definition: A standard property.
-+
-+- bus-frequency
-+		Usage: optional
-+		Value type: <u32>
-+		Definition: Default MDIO bus clock speed.
-+
-+- interrupts
-+		Usage: optional
-+		Value type: <prop-encoded-array>
-+		Definition: MDIO controller event interrupts.
-+
-+- type
-+		Usage: required for FMan v3
-+		Value type: <stringlist>
-+		Definition: A standard property.
-+		FMan v3 has internal MDIO for internal PCS(Physical Coding
-+		Sublayer) PHYs and external MDIO for external PHYs.
-+		The settings and programming routines for internal/external
-+		MDIO are different. Must include "internal" for internal MDIO,
-+		must include "external" for external MDIO.
-+
-+EXAMPLE
-+
-+Example for FMan v2:
-+
-+mdio@f1000 {
-+	compatible = "fsl,fman-xmdio";
-+	reg = <0xf1000 0x1000>;
-+};
-+
-+Example for FMan v3:
-+
-+mdio@fd000 {
-+	compatible = "fsl,fman-memac-mdio";
-+	reg = <0xfd000 0x1000>;
-+	bus-frequency = <2500000>;
-+	type = "external";
-+};
-+
-+=============================================================================
- Example
- 
- fman@400000 {
-@@ -526,4 +588,11 @@ fman@400000 {
- 		compatible = "fsl,fman-ptp-timer";
- 		reg = <0xfe000 0x1000>;
- 	};
-+
-+	mdio@fd000 {
-+		compatible = "fsl,fman-memac-mdio";
-+		reg = <0xfd000 0x1000>;
-+		bus-frequency = <2500000>;
-+		type = "external";
-+	};
- };
--- 
-1.8.4.1
+> 
+> Signed-off-by: Grant Likely <grant.likely@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/of/platform.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> index 3b64d0bf5bba..7c6771986c06 100644
+> --- a/drivers/of/platform.c
+> +++ b/drivers/of/platform.c
+> @@ -138,7 +138,7 @@ struct platform_device *of_device_alloc(struct device_node *np,
+>  	}
+>  
+>  	dev->dev.of_node = of_node_get(np);
+> -	dev->dev.parent = parent;
+> +	dev->dev.parent = parent ? : &platform_bus;
+>  
+>  	if (bus_id)
+>  		dev_set_name(&dev->dev, "%s", bus_id);
+> @@ -291,7 +291,7 @@ static struct amba_device *of_amba_device_create(struct device_node *node,
+>  
+>  	/* setup generic device info */
+>  	dev->dev.of_node = of_node_get(node);
+> -	dev->dev.parent = parent;
+> +	dev->dev.parent = parent ? : &platform_bus;
+>  	dev->dev.platform_data = platform_data;
+>  	if (bus_id)
+>  		dev_set_name(&dev->dev, "%s", bus_id);
