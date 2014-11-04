@@ -1,24 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <leif.lindholm@linaro.org>
+Received: from mail-wg0-f44.google.com (mail-wg0-f44.google.com [74.125.82.44])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD9831A06DC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 04:12:08 +1100 (AEDT)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Subject: Re: [PATCH v3 1/3] QE: move qe code from arch/powerpc to drivers/soc
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <58731211e1a24702a8b5e18834e88663@BLUPR03MB341.namprd03.prod.outlook.com>
-Date: Tue, 4 Nov 2014 11:11:58 -0600
-Message-Id: <51ADDE93-5400-4664-B37F-05710F6AE8A5@kernel.crashing.org>
-References: <1414654264-2596-1-git-send-email-B45475@freescale.com>
- <845EBC7E-52A3-48D6-826D-886FC18B0B88@kernel.crashing.org>
- <58731211e1a24702a8b5e18834e88663@BLUPR03MB341.namprd03.prod.outlook.com>
-To: qiang.zhao@freescale.com
-Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Xiaobo Xie <X.Xie@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED82E1A0332
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 04:23:43 +1100 (AEDT)
+Received: by mail-wg0-f44.google.com with SMTP id x12so13621937wgg.31
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Nov 2014 09:23:40 -0800 (PST)
+From: Leif Lindholm <leif.lindholm@linaro.org>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+Subject: [RFC PATCH] make CONFIG_STRICT_DEVMEM a core non-debug feature
+Date: Tue,  4 Nov 2014 17:23:56 +0000
+Message-Id: <1415121836-16241-1-git-send-email-leif.lindholm@linaro.org>
+Cc: catalin.marinas@arm.com, will.deacon@arm.com, metcalf@tilera.com,
+ hpa@zytor.com, gxt@mprc.pku.edu.cn, keescook@chromium.org,
+ linux@arm.linux.org.uk, x86@kernel.org, hch@infradead.org, mingo@redhat.com,
+ dave.long@linaro.org, eiko.carstens@de.ibm.com, arnd@arndb.de,
+ linux390@de.ibm.com, tglx@linutronix.de, arjan@linux.intel.com,
+ gregkh@linuxfoundation.org, oleg@redhat.com, luto@amacapital.net,
+ schwidefsky@de.ibm.com, paulus@samba.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +28,318 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Most, but not all, architectures supporting CONFIG_STRICT_DEVMEM treat
+it as a debug feature - although its function is pretty much the
+opposite of debug.
 
-On Oct 31, 2014, at 2:24 AM, qiang.zhao@freescale.com wrote:
+This patch deletes all architecture-specific config options and moves
+the option to core code, as a non-debug option.
 
-> On Oct 30, 2014, at 9:37 AM, Kumar Gala wrote:
-> 
-> 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Thursday, October 30, 2014 9:37 PM
->> To: Zhao Qiang-B45475
->> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood
->> Scott-B07421; Xie Xiaobo-R63061
->> Subject: Re: [PATCH v3 1/3] QE: move qe code from arch/powerpc to
->> drivers/soc
->> 
->> 
->> On Oct 30, 2014, at 2:31 AM, Zhao Qiang <B45475@freescale.com> wrote:
->> 
->>> LS1 is arm cpu and it has qe ip block.
->>> move qe code from platform directory to public directory.
->>> 
->>> QE is an IP block integrates several comunications peripheral
->>> controllers. It can implement a variety of applications, such as uart,
->>> usb and tdm and so on.
->>> 
->>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
->>> ---
->>> Changes for v2:
->>> 	- move code to driver/soc
->>> Changes for v3:
->>> 	- change drivers/soc/qe to drivers/soc/fsl-qe
->>> 
->>> arch/powerpc/Kconfig                               |  2 -
->>> arch/powerpc/platforms/83xx/km83xx.c               |  4 +-
->>> arch/powerpc/platforms/83xx/misc.c                 |  2 +-
->>> arch/powerpc/platforms/83xx/mpc832x_mds.c          |  4 +-
->>> arch/powerpc/platforms/83xx/mpc832x_rdb.c          |  4 +-
->>> arch/powerpc/platforms/83xx/mpc836x_mds.c          |  4 +-
->>> arch/powerpc/platforms/83xx/mpc836x_rdk.c          |  4 +-
->>> arch/powerpc/platforms/85xx/common.c               |  2 +-
->>> arch/powerpc/platforms/85xx/corenet_generic.c      |  2 +-
->>> arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  4 +-
->>> arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  4 +-
->>> arch/powerpc/platforms/85xx/twr_p102x.c            |  4 +-
->>> arch/powerpc/platforms/Kconfig                     | 19 ---------
->>> arch/powerpc/sysdev/Makefile                       |  1 -
->>> arch/powerpc/sysdev/qe_lib/Kconfig                 | 27 -------------
->>> drivers/net/ethernet/freescale/fsl_pq_mdio.c       |  2 +-
->>> drivers/net/ethernet/freescale/ucc_geth.c          |  8 ++--
->>> drivers/net/ethernet/freescale/ucc_geth.h          |  8 ++--
->>> drivers/soc/Kconfig                                |  2 +
->>> drivers/soc/Makefile                               |  1 +
->>> drivers/soc/fsl-qe/Kconfig                         | 45
->> ++++++++++++++++++++++
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/Makefile  |  0
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/gpio.c    |  2 +-
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe.c      |  4 +-
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.c   |  2 +-
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.h   |  2 +-
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_io.c   |  2 +-
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/ucc.c     |  6 +--
->>> .../qe_lib => drivers/soc/fsl-qe}/ucc_fast.c       |  8 ++--
->>> .../qe_lib => drivers/soc/fsl-qe}/ucc_slow.c       |  8 ++--
->>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/usb.c     |  4 +-
->>> drivers/spi/spi-fsl-cpm.c                          |  2 +-
->>> drivers/tty/serial/ucc_uart.c                      |  2 +-
->>> drivers/usb/gadget/fsl_qe_udc.c                    |  2 +-
->>> drivers/usb/host/fhci-hcd.c                        |  2 +-
->>> drivers/usb/host/fhci-hub.c                        |  2 +-
->>> drivers/usb/host/fhci-sched.c                      |  2 +-
->>> drivers/usb/host/fhci.h                            |  4 +-
->>> .../include/asm => include/linux/fsl}/immap_qe.h   |  0
->>> .../powerpc/include/asm => include/linux/fsl}/qe.h |  2 +-
->>> .../include/asm => include/linux/fsl}/qe_ic.h      |  0
->>> .../include/asm => include/linux/fsl}/ucc.h        |  4 +-
->>> .../include/asm => include/linux/fsl}/ucc_fast.h   |  6 +--
->>> .../include/asm => include/linux/fsl}/ucc_slow.h   |  6 +--
->>> 44 files changed, 112 insertions(+), 113 deletions(-) delete mode
->>> 100644 arch/powerpc/sysdev/qe_lib/Kconfig
->>> create mode 100644 drivers/soc/fsl-qe/Kconfig rename
->>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/Makefile (100%)
->>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/gpio.c (99%)
->>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/qe.c (99%)
->>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.c
->>> (99%) rename {arch/powerpc/sysdev/qe_lib =>
->>> drivers/soc/fsl-qe}/qe_ic.h (98%) rename {arch/powerpc/sysdev/qe_lib
->>> => drivers/soc/fsl-qe}/qe_io.c (99%) rename
->>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc.c (98%) rename
->>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc_fast.c (98%)
->>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc_slow.c
->>> (98%) rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/usb.c
->>> (96%) rename {arch/powerpc/include/asm =>
->>> include/linux/fsl}/immap_qe.h (100%) rename {arch/powerpc/include/asm
->>> => include/linux/fsl}/qe.h (99%) rename {arch/powerpc/include/asm =>
->>> include/linux/fsl}/qe_ic.h (100%) rename {arch/powerpc/include/asm =>
->>> include/linux/fsl}/ucc.h (96%) rename {arch/powerpc/include/asm =>
->>> include/linux/fsl}/ucc_fast.h (98%) rename {arch/powerpc/include/asm
->>> => include/linux/fsl}/ucc_slow.h (99%)
->> 
->> 
->> So you should be moving things to drivers/soc/fsl/qe/ not
->> drivers/soc/fsl-qe/
->> 
->> The headers should be in include/soc/fsl, not include/linux/fsl
-> 
-> I don't understand why I need to put headers in include/soc/fsl,
-> Can you explain more?
+Signed-off-by: Leif Lindholm <leif.lindholm@linaro.org>
+---
+Apologies for wide distribution, but this is a bit invasive,
+if trivial.
 
-Because that is the location of headers associated with drivers/soc
+ arch/Kconfig                 |    3 +++
+ arch/arm/Kconfig             |    1 +
+ arch/arm/Kconfig.debug       |   14 --------------
+ arch/arm64/Kconfig           |    1 +
+ arch/arm64/Kconfig.debug     |   14 --------------
+ arch/powerpc/Kconfig         |    1 +
+ arch/powerpc/Kconfig.debug   |   12 ------------
+ arch/s390/Kconfig            |    1 +
+ arch/s390/Kconfig.debug      |   12 ------------
+ arch/tile/Kconfig            |    4 +---
+ arch/unicore32/Kconfig       |    1 +
+ arch/unicore32/Kconfig.debug |   14 --------------
+ arch/x86/Kconfig             |    1 +
+ arch/x86/Kconfig.debug       |   17 -----------------
+ drivers/char/Kconfig         |   16 ++++++++++++++++
+ 15 files changed, 26 insertions(+), 86 deletions(-)
 
-- k
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 05d7a8a..e5f4f03 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -484,6 +484,9 @@ config HAVE_IRQ_EXIT_ON_IRQ_STACK
+ 	  This spares a stack switch and improves cache usage on softirq
+ 	  processing.
+ 
++config HAVE_ARCH_RESTRICTED_DEVMEM
++       bool
++
+ #
+ # ABI hall of shame
+ #
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 89c4b5c..e04910f 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -30,6 +30,7 @@ config ARM
+ 	select HAVE_ARCH_AUDITSYSCALL if (AEABI && !OABI_COMPAT)
+ 	select HAVE_ARCH_JUMP_LABEL if !XIP_KERNEL
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_RESTRICTED_DEVMEM if MMU
+ 	select HAVE_ARCH_SECCOMP_FILTER if (AEABI && !OABI_COMPAT)
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_BPF_JIT
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index d8f6a2e..2a02a7d 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -14,20 +14,6 @@ config ARM_PTDUMP
+ 	  kernel.
+ 	  If in doubt, say "N"
+ 
+-config STRICT_DEVMEM
+-	bool "Filter access to /dev/mem"
+-	depends on MMU
+-	---help---
+-	  If this option is disabled, you allow userspace (root) access to all
+-	  of memory, including kernel and userspace memory. Accidental
+-	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel.
+-
+-	  If this option is switched on, the /dev/mem file only allows
+-	  userspace access to memory mapped peripherals.
+-
+-          If in doubt, say Y.
+-
+ # RMK wants arm kernels compiled with frame pointers or stack unwinding.
+ # If you know what you are doing and are willing to live without stack
+ # traces, you can get a slightly smaller kernel by setting this option to
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 9532f8d..90abbb2 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -37,6 +37,7 @@ config ARM64
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_RESTRICTED_DEVMEM if MMU
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_BPF_JIT
+ 	select HAVE_C_RECORDMCOUNT
+diff --git a/arch/arm64/Kconfig.debug b/arch/arm64/Kconfig.debug
+index 0a12933..d0036dd 100644
+--- a/arch/arm64/Kconfig.debug
++++ b/arch/arm64/Kconfig.debug
+@@ -6,20 +6,6 @@ config FRAME_POINTER
+ 	bool
+ 	default y
+ 
+-config STRICT_DEVMEM
+-	bool "Filter access to /dev/mem"
+-	depends on MMU
+-	help
+-	  If this option is disabled, you allow userspace (root) access to all
+-	  of memory, including kernel and userspace memory. Accidental
+-	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel.
+-
+-	  If this option is switched on, the /dev/mem file only allows
+-	  userspace access to memory mapped peripherals.
+-
+-	  If in doubt, say Y.
+-
+ config PID_IN_CONTEXTIDR
+ 	bool "Write the current PID to the CONTEXTIDR register"
+ 	help
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 88eace4..cd35068 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -148,6 +148,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
++	select HAVE_ARCH_RESTRICTED_DEVMEM
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index ec2e40f..6f11382 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -334,18 +334,6 @@ config PPC_EARLY_DEBUG_CPM_ADDR
+ 	  platform probing is done, all platforms selected must
+ 	  share the same address.
+ 
+-config STRICT_DEVMEM
+-	def_bool y
+-	prompt "Filter access to /dev/mem"
+-	help
+-	  This option restricts access to /dev/mem.  If this option is
+-	  disabled, you allow userspace access to all memory, including
+-	  kernel and userspace memory. Accidental memory access is likely
+-	  to be disastrous.
+-	  Memory access is required for experts who want to debug the kernel.
+-
+-	  If you are unsure, say Y.
+-
+ config FAIL_IOMMU
+ 	bool "Fault-injection capability for IOMMU"
+ 	depends on FAULT_INJECTION
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index f2cf1f9..fe92272 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -109,6 +109,7 @@ config S390
+ 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_JUMP_LABEL if !MARCH_G5
++	select HAVE_ARCH_RESTRICTED_DEVMEM
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if 64BIT
+diff --git a/arch/s390/Kconfig.debug b/arch/s390/Kconfig.debug
+index c56878e..26c5d5be 100644
+--- a/arch/s390/Kconfig.debug
++++ b/arch/s390/Kconfig.debug
+@@ -5,18 +5,6 @@ config TRACE_IRQFLAGS_SUPPORT
+ 
+ source "lib/Kconfig.debug"
+ 
+-config STRICT_DEVMEM
+-	def_bool y
+-	prompt "Filter access to /dev/mem"
+-	---help---
+-	  This option restricts access to /dev/mem.  If this option is
+-	  disabled, you allow userspace access to all memory, including
+-	  kernel and userspace memory. Accidental memory access is likely
+-	  to be disastrous.
+-	  Memory access is required for experts who want to debug the kernel.
+-
+-	  If you are unsure, say Y.
+-
+ config S390_PTDUMP
+ 	bool "Export kernel pagetable layout to userspace via debugfs"
+ 	depends on DEBUG_KERNEL
+diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
+index 7cca418..f881168 100644
+--- a/arch/tile/Kconfig
++++ b/arch/tile/Kconfig
+@@ -27,6 +27,7 @@ config TILE
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select ARCH_WANT_FRAME_POINTERS
++	select HAVE_ARCH_RESTRICTED_DEVMEM
+ 
+ # FIXME: investigate whether we need/want these options.
+ #	select HAVE_IOREMAP_PROT
+@@ -110,9 +111,6 @@ config ARCH_DISCONTIGMEM_DEFAULT
+ config TRACE_IRQFLAGS_SUPPORT
+ 	def_bool y
+ 
+-config STRICT_DEVMEM
+-	def_bool y
+-
+ # SMP is required for Tilera Linux.
+ config SMP
+ 	def_bool y
+diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
+index 928237a..574b07f 100644
+--- a/arch/unicore32/Kconfig
++++ b/arch/unicore32/Kconfig
+@@ -18,6 +18,7 @@ config UNICORE32
+ 	select ARCH_WANT_FRAME_POINTERS
+ 	select GENERIC_IOMAP
+ 	select MODULES_USE_ELF_REL
++	select HAVE_ARCH_RESTRICTED_DEVMEM if MMU
+ 	help
+ 	  UniCore-32 is 32-bit Instruction Set Architecture,
+ 	  including a series of low-power-consumption RISC chip
+diff --git a/arch/unicore32/Kconfig.debug b/arch/unicore32/Kconfig.debug
+index 1a36262..f075bbe 100644
+--- a/arch/unicore32/Kconfig.debug
++++ b/arch/unicore32/Kconfig.debug
+@@ -2,20 +2,6 @@ menu "Kernel hacking"
+ 
+ source "lib/Kconfig.debug"
+ 
+-config STRICT_DEVMEM
+-	bool "Filter access to /dev/mem"
+-	depends on MMU
+-	---help---
+-	  If this option is disabled, you allow userspace (root) access to all
+-	  of memory, including kernel and userspace memory. Accidental
+-	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel.
+-
+-	  If this option is switched on, the /dev/mem file only allows
+-	  userspace access to memory mapped peripherals.
+-
+-          If in doubt, say Y.
+-
+ config EARLY_PRINTK
+ 	def_bool DEBUG_OCD
+ 	help
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ded8a67..91392bf 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -137,6 +137,7 @@ config X86
+ 	select HAVE_ACPI_APEI_NMI if ACPI
+ 	select ACPI_LEGACY_TABLES_LOOKUP if ACPI
+ 	select X86_FEATURE_NAMES if PROC_FS
++	select HAVE_ARCH_RESTRICTED_DEVMEM
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool y
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 61bd2ad..e35d4a1 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -5,23 +5,6 @@ config TRACE_IRQFLAGS_SUPPORT
+ 
+ source "lib/Kconfig.debug"
+ 
+-config STRICT_DEVMEM
+-	bool "Filter access to /dev/mem"
+-	---help---
+-	  If this option is disabled, you allow userspace (root) access to all
+-	  of memory, including kernel and userspace memory. Accidental
+-	  access to this is obviously disastrous, but specific access can
+-	  be used by people debugging the kernel. Note that with PAT support
+-	  enabled, even in this case there are restrictions on /dev/mem
+-	  use due to the cache aliasing requirements.
+-
+-	  If this option is switched on, the /dev/mem file only allows
+-	  userspace access to PCI space and the BIOS code and data regions.
+-	  This is sufficient for dosemu and X and all common users of
+-	  /dev/mem.
+-
+-	  If in doubt, say Y.
+-
+ config X86_VERBOSE_BOOTUP
+ 	bool "Enable verbose x86 bootup info messages"
+ 	default y
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index efefd12..39f7817 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -6,6 +6,22 @@ menu "Character devices"
+ 
+ source "drivers/tty/Kconfig"
+ 
++config STRICT_DEVMEM
++	bool "Reduced access to /dev/mem"
++	depends on HAVE_ARCH_RESTRICTED_DEVMEM
++	default y
++	help
++	  If this option is disabled, you allow userspace (root) access to all
++	  of memory, including kernel and userspace memory. Accidental
++	  access to this is obviously disastrous, but specific access can
++	  be used by people debugging the kernel.
++
++	  If this option is switched on, the /dev/mem file restricts userspace
++	  access to an architecture-specific subset of the physical address
++	  space.
++
++	  If in doubt, say Y.
++
+ config DEVKMEM
+ 	bool "/dev/kmem virtual device support"
+ 	default y
+-- 
+1.7.10.4
