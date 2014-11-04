@@ -1,23 +1,24 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 628F61A0349
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 03:08:28 +1100 (AEDT)
-Date: Tue, 4 Nov 2014 08:07:16 -0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH] of/platform: Move platform devices under
- /sys/devices/platform
-Message-ID: <20141104160716.GA1630@kroah.com>
-References: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD9831A06DC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 04:12:08 +1100 (AEDT)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
-Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Subject: Re: [PATCH v3 1/3] QE: move qe code from arch/powerpc to drivers/soc
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <58731211e1a24702a8b5e18834e88663@BLUPR03MB341.namprd03.prod.outlook.com>
+Date: Tue, 4 Nov 2014 11:11:58 -0600
+Message-Id: <51ADDE93-5400-4664-B37F-05710F6AE8A5@kernel.crashing.org>
+References: <1414654264-2596-1-git-send-email-B45475@freescale.com>
+ <845EBC7E-52A3-48D6-826D-886FC18B0B88@kernel.crashing.org>
+ <58731211e1a24702a8b5e18834e88663@BLUPR03MB341.namprd03.prod.outlook.com>
+To: qiang.zhao@freescale.com
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Xiaobo Xie <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +28,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 04, 2014 at 10:45:20AM +0000, Grant Likely wrote:
-> Currently the devices created by drivers/of/platform.c get created at
-> the root of /sys/devices. This goes against the typical pattern for
-> sysfs where the top level /sys/devices structure contains categories of
-> devices, and the structure of devices is placed below that. To fix this,
-> make the code in drivers/of/platform.c follow the drivers/base/platform.c
-> behaviour, and use &platform_bus as the default parent for all new
-> platform_devices and amba_devices.
-> 
-> This change has been discussed for a long time, but nobody has actually
-> acted on it. Userspace code that expects to find devices under a fixed
-> /sys/devices/... path will be affected. It isn't /supposed/ to do that,
-> but if anyone complains then I'll add a default-off workaround option to
-> put them back into the root.
-> 
-> Signed-off-by: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+On Oct 31, 2014, at 2:24 AM, qiang.zhao@freescale.com wrote:
+
+> On Oct 30, 2014, at 9:37 AM, Kumar Gala wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Thursday, October 30, 2014 9:37 PM
+>> To: Zhao Qiang-B45475
+>> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood
+>> Scott-B07421; Xie Xiaobo-R63061
+>> Subject: Re: [PATCH v3 1/3] QE: move qe code from arch/powerpc to
+>> drivers/soc
+>> 
+>> 
+>> On Oct 30, 2014, at 2:31 AM, Zhao Qiang <B45475@freescale.com> wrote:
+>> 
+>>> LS1 is arm cpu and it has qe ip block.
+>>> move qe code from platform directory to public directory.
+>>> 
+>>> QE is an IP block integrates several comunications peripheral
+>>> controllers. It can implement a variety of applications, such as uart,
+>>> usb and tdm and so on.
+>>> 
+>>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+>>> ---
+>>> Changes for v2:
+>>> 	- move code to driver/soc
+>>> Changes for v3:
+>>> 	- change drivers/soc/qe to drivers/soc/fsl-qe
+>>> 
+>>> arch/powerpc/Kconfig                               |  2 -
+>>> arch/powerpc/platforms/83xx/km83xx.c               |  4 +-
+>>> arch/powerpc/platforms/83xx/misc.c                 |  2 +-
+>>> arch/powerpc/platforms/83xx/mpc832x_mds.c          |  4 +-
+>>> arch/powerpc/platforms/83xx/mpc832x_rdb.c          |  4 +-
+>>> arch/powerpc/platforms/83xx/mpc836x_mds.c          |  4 +-
+>>> arch/powerpc/platforms/83xx/mpc836x_rdk.c          |  4 +-
+>>> arch/powerpc/platforms/85xx/common.c               |  2 +-
+>>> arch/powerpc/platforms/85xx/corenet_generic.c      |  2 +-
+>>> arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  4 +-
+>>> arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  4 +-
+>>> arch/powerpc/platforms/85xx/twr_p102x.c            |  4 +-
+>>> arch/powerpc/platforms/Kconfig                     | 19 ---------
+>>> arch/powerpc/sysdev/Makefile                       |  1 -
+>>> arch/powerpc/sysdev/qe_lib/Kconfig                 | 27 -------------
+>>> drivers/net/ethernet/freescale/fsl_pq_mdio.c       |  2 +-
+>>> drivers/net/ethernet/freescale/ucc_geth.c          |  8 ++--
+>>> drivers/net/ethernet/freescale/ucc_geth.h          |  8 ++--
+>>> drivers/soc/Kconfig                                |  2 +
+>>> drivers/soc/Makefile                               |  1 +
+>>> drivers/soc/fsl-qe/Kconfig                         | 45
+>> ++++++++++++++++++++++
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/Makefile  |  0
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/gpio.c    |  2 +-
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe.c      |  4 +-
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.c   |  2 +-
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.h   |  2 +-
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/qe_io.c   |  2 +-
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/ucc.c     |  6 +--
+>>> .../qe_lib => drivers/soc/fsl-qe}/ucc_fast.c       |  8 ++--
+>>> .../qe_lib => drivers/soc/fsl-qe}/ucc_slow.c       |  8 ++--
+>>> .../sysdev/qe_lib => drivers/soc/fsl-qe}/usb.c     |  4 +-
+>>> drivers/spi/spi-fsl-cpm.c                          |  2 +-
+>>> drivers/tty/serial/ucc_uart.c                      |  2 +-
+>>> drivers/usb/gadget/fsl_qe_udc.c                    |  2 +-
+>>> drivers/usb/host/fhci-hcd.c                        |  2 +-
+>>> drivers/usb/host/fhci-hub.c                        |  2 +-
+>>> drivers/usb/host/fhci-sched.c                      |  2 +-
+>>> drivers/usb/host/fhci.h                            |  4 +-
+>>> .../include/asm => include/linux/fsl}/immap_qe.h   |  0
+>>> .../powerpc/include/asm => include/linux/fsl}/qe.h |  2 +-
+>>> .../include/asm => include/linux/fsl}/qe_ic.h      |  0
+>>> .../include/asm => include/linux/fsl}/ucc.h        |  4 +-
+>>> .../include/asm => include/linux/fsl}/ucc_fast.h   |  6 +--
+>>> .../include/asm => include/linux/fsl}/ucc_slow.h   |  6 +--
+>>> 44 files changed, 112 insertions(+), 113 deletions(-) delete mode
+>>> 100644 arch/powerpc/sysdev/qe_lib/Kconfig
+>>> create mode 100644 drivers/soc/fsl-qe/Kconfig rename
+>>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/Makefile (100%)
+>>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/gpio.c (99%)
+>>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/qe.c (99%)
+>>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/qe_ic.c
+>>> (99%) rename {arch/powerpc/sysdev/qe_lib =>
+>>> drivers/soc/fsl-qe}/qe_ic.h (98%) rename {arch/powerpc/sysdev/qe_lib
+>>> => drivers/soc/fsl-qe}/qe_io.c (99%) rename
+>>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc.c (98%) rename
+>>> {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc_fast.c (98%)
+>>> rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/ucc_slow.c
+>>> (98%) rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl-qe}/usb.c
+>>> (96%) rename {arch/powerpc/include/asm =>
+>>> include/linux/fsl}/immap_qe.h (100%) rename {arch/powerpc/include/asm
+>>> => include/linux/fsl}/qe.h (99%) rename {arch/powerpc/include/asm =>
+>>> include/linux/fsl}/qe_ic.h (100%) rename {arch/powerpc/include/asm =>
+>>> include/linux/fsl}/ucc.h (96%) rename {arch/powerpc/include/asm =>
+>>> include/linux/fsl}/ucc_fast.h (98%) rename {arch/powerpc/include/asm
+>>> => include/linux/fsl}/ucc_slow.h (99%)
+>> 
+>> 
+>> So you should be moving things to drivers/soc/fsl/qe/ not
+>> drivers/soc/fsl-qe/
+>> 
+>> The headers should be in include/soc/fsl, not include/linux/fsl
+> 
+> I don't understand why I need to put headers in include/soc/fsl,
+> Can you explain more?
+
+Because that is the location of headers associated with drivers/soc
+
+- k
