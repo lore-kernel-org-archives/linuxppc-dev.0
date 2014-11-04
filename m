@@ -1,37 +1,17 @@
-Return-Path: <leif.lindholm@linaro.org>
-Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71AB01A0315
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 07:19:06 +1100 (AEDT)
-Received: by mail-wg0-f51.google.com with SMTP id l18so14313655wgh.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Nov 2014 12:19:03 -0800 (PST)
-Date: Tue, 4 Nov 2014 20:18:59 +0000
-From: Leif Lindholm <leif.lindholm@linaro.org>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [RFC PATCH] make CONFIG_STRICT_DEVMEM a core non-debug feature
-Message-ID: <20141104201859.GZ22224@bivouac.eciton.net>
-References: <1415121836-16241-1-git-send-email-leif.lindholm@linaro.org>
- <CAGXu5jL1BBAvoxVqFa1YHJSMCbGdLiPey-dyC15YKVPB2xGfig@mail.gmail.com>
- <20141104195914.GY22224@bivouac.eciton.net>
- <CAGXu5jJnaAFMUBR50TgapRzRcvKS0j=XO7u9z6fdNouwMb=_sQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAGXu5jJnaAFMUBR50TgapRzRcvKS0j=XO7u9z6fdNouwMb=_sQ@mail.gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Oleg Nesterov <oleg@redhat.com>,
- paulus@samba.org, "H. Peter Anvin" <hpa@zytor.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-s390@vger.kernel.org,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- "x86@kernel.org" <x86@kernel.org>, Christoph Hellwig <hch@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, dave.long@linaro.org, eiko.carstens@de.ibm.com,
- Arnd Bergmann <arnd@arndb.de>, Chris Metcalf <cmetcalf@tilera.com>,
- Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@linux.intel.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Greg KH <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>,
- Andy Lutomirski <luto@amacapital.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 67F621A0232
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 08:46:44 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Add ppc64 hard lockup detector support
+Date: Wed,  5 Nov 2014 08:46:42 +1100
+Message-Id: <1415137602-17402-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,19 +21,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 04, 2014 at 12:02:32PM -0800, Kees Cook wrote:
-> > I considered doing that, but didn't want to risk listing too many
-> > details of one architecture, and too few of others.
-> 
-> Well, the others only say "memory mapped peripherals", so that's what
-> I was suggesting adding the x86 language: it was the most detailed
-> about what that would really mean to the end-user.
+The hard lockup detector uses a PMU event as a periodic NMI to
+detect if we are stuck (where stuck means no timer interrupts have
+occurred).
 
-The problem is that this currently isn't strictly speaking true for
-some architectures (at least not arm*). Without a standardised memory
-map, we are exposing mapping anything not system RAM.
+Ben's rework of the ppc64 soft disable code has made ppc64 PMU
+exceptions a partial NMI. They can get disabled if an external
+interrupt comes in, but otherwise PMU interrupts will fire in
+interrupt disabled regions.
 
-(Patches related to that will follow later this month.)
+We disable the hard lockup detector by default for a few reasons:
 
-/
-    Leif
+- It breaks userspace event based branches on POWER8.
+- It is likely to produce false positives on KVM guests.
+- Since PMCs can only count to 2^31, counting cycles means we might
+  take multiple PMU exceptions per second per hardware thread even
+  if our hard lockup timeout is 10 seconds.
+
+It can be enabled via a boot option, or via procfs.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/Kconfig                   |  2 +-
+ arch/powerpc/Kconfig           |  1 +
+ arch/powerpc/include/asm/nmi.h |  4 ++++
+ arch/powerpc/kernel/setup_64.c | 20 ++++++++++++++++++++
+ 4 files changed, 26 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/nmi.h
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 05d7a8a..a8551b0 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -32,7 +32,7 @@ config HAVE_OPROFILE
+ 
+ config OPROFILE_NMI_TIMER
+ 	def_bool y
+-	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI
++	depends on (PERF_EVENTS && HAVE_PERF_EVENTS_NMI) && !PPC
+ 
+ config KPROBES
+ 	bool "Kprobes"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 88eace4..03791c4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -148,6 +148,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
++	select HAVE_PERF_EVENTS_NMI if PPC64
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
+new file mode 100644
+index 0000000..ff1ccb3
+--- /dev/null
++++ b/arch/powerpc/include/asm/nmi.h
+@@ -0,0 +1,4 @@
++#ifndef _ASM_NMI_H
++#define _ASM_NMI_H
++
++#endif /* _ASM_NMI_H */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 1b56320..c368397 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -37,6 +37,7 @@
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
+ #include <linux/memory.h>
++#include <linux/nmi.h>
+ 
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+@@ -781,3 +782,22 @@ unsigned long memory_block_size_bytes(void)
+ struct ppc_pci_io ppc_pci_io;
+ EXPORT_SYMBOL(ppc_pci_io);
+ #endif
++
++#ifdef CONFIG_HARDLOCKUP_DETECTOR
++u64 hw_nmi_get_sample_period(int watchdog_thresh)
++{
++	return ppc_proc_freq * watchdog_thresh;
++}
++
++/*
++ * The hardlockup detector breaks PMU event based branches and is likely
++ * to get false positives in KVM guests, so disable it by default.
++ */
++static int __init disable_hardlockup_detector(void)
++{
++	watchdog_enable_hardlockup_detector(false);
++
++	return 0;
++}
++early_initcall(disable_hardlockup_detector);
++#endif
+-- 
+1.9.1
