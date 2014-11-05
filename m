@@ -1,17 +1,19 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67F621A0232
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 08:46:44 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Add ppc64 hard lockup detector support
-Date: Wed,  5 Nov 2014 08:46:42 +1100
-Message-Id: <1415137602-17402-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53F231A0338
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2014 13:47:37 +1100 (AEDT)
+Date: Wed, 5 Nov 2014 13:47:31 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: linux-next: build failure after merge of the iommu tree
+Message-ID: <20141105134731.799a1a3d@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/Nzz4gyi3FMw/SdAxw8nTwAn"; protocol="application/pgp-signature"
+Cc: Olav Haugan <ohaugan@codeaurora.org>, linux-next@vger.kernel.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,103 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hard lockup detector uses a PMU event as a periodic NMI to
-detect if we are stuck (where stuck means no timer interrupts have
-occurred).
+--Sig_/Nzz4gyi3FMw/SdAxw8nTwAn
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Ben's rework of the ppc64 soft disable code has made ppc64 PMU
-exceptions a partial NMI. They can get disabled if an external
-interrupt comes in, but otherwise PMU interrupts will fire in
-interrupt disabled regions.
+Hi Joerg,
 
-We disable the hard lockup detector by default for a few reasons:
+After merging the iommu tree, today's linux-next build (powerpc
+pc64_defconfig) failed like this:
 
-- It breaks userspace event based branches on POWER8.
-- It is likely to produce false positives on KVM guests.
-- Since PMCs can only count to 2^31, counting cycles means we might
-  take multiple PMU exceptions per second per hardware thread even
-  if our hard lockup timeout is 10 seconds.
+In file included from arch/powerpc/platforms/powernv/pci.c:33:0:
+arch/powerpc/include/asm/iommu.h:140:12: error: conflicting types for 'iomm=
+u_map_sg'
+ extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+            ^
+In file included from arch/powerpc/platforms/powernv/pci.c:23:0:
+include/linux/iommu.h:311:22: note: previous definition of 'iommu_map_sg' w=
+as here
+ static inline size_t iommu_map_sg(struct iommu_domain *domain,
+                      ^
 
-It can be enabled via a boot option, or via procfs.
+Caused by commit 315786ebbf4a ("iommu: Add iommu_map_sg() function").
+Grep is your friend ...
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/Kconfig                   |  2 +-
- arch/powerpc/Kconfig           |  1 +
- arch/powerpc/include/asm/nmi.h |  4 ++++
- arch/powerpc/kernel/setup_64.c | 20 ++++++++++++++++++++
- 4 files changed, 26 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/nmi.h
+I have used the iommu tree from next-20141104 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 05d7a8a..a8551b0 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -32,7 +32,7 @@ config HAVE_OPROFILE
- 
- config OPROFILE_NMI_TIMER
- 	def_bool y
--	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI
-+	depends on (PERF_EVENTS && HAVE_PERF_EVENTS_NMI) && !PPC
- 
- config KPROBES
- 	bool "Kprobes"
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 88eace4..03791c4 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -148,6 +148,7 @@ config PPC
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
-+	select HAVE_PERF_EVENTS_NMI if PPC64
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-new file mode 100644
-index 0000000..ff1ccb3
---- /dev/null
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -0,0 +1,4 @@
-+#ifndef _ASM_NMI_H
-+#define _ASM_NMI_H
-+
-+#endif /* _ASM_NMI_H */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 1b56320..c368397 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -37,6 +37,7 @@
- #include <linux/memblock.h>
- #include <linux/hugetlb.h>
- #include <linux/memory.h>
-+#include <linux/nmi.h>
- 
- #include <asm/io.h>
- #include <asm/kdump.h>
-@@ -781,3 +782,22 @@ unsigned long memory_block_size_bytes(void)
- struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif
-+
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR
-+u64 hw_nmi_get_sample_period(int watchdog_thresh)
-+{
-+	return ppc_proc_freq * watchdog_thresh;
-+}
-+
-+/*
-+ * The hardlockup detector breaks PMU event based branches and is likely
-+ * to get false positives in KVM guests, so disable it by default.
-+ */
-+static int __init disable_hardlockup_detector(void)
-+{
-+	watchdog_enable_hardlockup_detector(false);
-+
-+	return 0;
-+}
-+early_initcall(disable_hardlockup_detector);
-+#endif
--- 
-1.9.1
+--Sig_/Nzz4gyi3FMw/SdAxw8nTwAn
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJUWY/HAAoJEMDTa8Ir7ZwVWlUP/2xm4CG2Vu9zK8V79BB9zXH6
+GEQk0u4Ow2TrGB+tbDab+tBsESaUpB51mVqq80WLSB05pkk39kviBM7Ra7O6ygOg
+28aMo0+GO7Nx4VPwIam8l1/OZqwmrBkNq8UzvIDLmZmeiWQ1ORMbQQDvEHkmGUdT
+05nTxaftgj9v7i5ENnGI/q+LCmTuXADPK+A0YYvdw2HRK0Zgc/gZYd8/W5qca4Ya
+OZCZq+yPjkE2GKCqPeUCxZscZJliQSZYOx1bUexvPrH0k4mojnZrXmpqJyLTHrVm
+ohWYULHVkDyOgLF5cnh6Hqgi7+FqFk3Jfxs9WGs8DF6jV8KlXRO41xgdh75HUDQV
+REOZP6S+gtOxk8yV59AxvJfbQ8HWp5bGub8WkRhCyA6AlsSeVinNVNFtwlhtYKpn
+FwVWrax0LUU4GEn+sW+KVi613E23yqIxzCAHF9bveeSubyUkT/JHxw1GBy9d4Xkh
+NuHfHxe1b6jxeaBzOgBiXkfGJbscW/y6E3qRfA2FESHi51qxsDUw93PET87+OKb4
+Xat9ivrIzit/i+HCwo/A1ZPu2eGolZbXD1+/zUjMJQOK5Hm+eQ6eikuFjt00/utu
+Ya//qgJDso5xE3LMsbGlaKrDOauM3tjPADwfYyxsXYBJl5MpPCK/LkobOqHE4Ooy
+CgKsM/YwY13DToXqSQ9V
+=KoTk
+-----END PGP SIGNATURE-----
+
+--Sig_/Nzz4gyi3FMw/SdAxw8nTwAn--
