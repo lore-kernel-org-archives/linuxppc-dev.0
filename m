@@ -1,24 +1,29 @@
-Return-Path: <tcminyard@gmail.com>
-Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
- [IPv6:2607:f8b0:4003:c06::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A10B1A025B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 01:15:16 +1100 (AEDT)
-Received: by mail-oi0-f46.google.com with SMTP id g201so792190oib.19
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Nov 2014 06:15:14 -0800 (PST)
-Sender: Corey Minyard <tcminyard@gmail.com>
-Message-ID: <545B826F.7050501@acm.org>
-Date: Thu, 06 Nov 2014 08:15:11 -0600
-From: Corey Minyard <minyard@acm.org>
-Reply-To: minyard@acm.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E16361A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 08:49:50 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 64E831400A0
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2014 08:49:49 +1100 (AEDT)
+Message-ID: <1415310579.23458.402.camel@snotra.buserror.net>
+Subject: Re: [PATCH v3 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Thu, 6 Nov 2014 15:49:39 -0600
+In-Reply-To: <1415200734-6978-2-git-send-email-Emilian.Medve@Freescale.com>
+References: <1415200734-6978-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1415200734-6978-2-git-send-email-Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Jeremy Kerr <jk@ozlabs.org>,
- openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Add IPMI support for powernv powerpc machines
-References: <1415245107.292153.444216242273.0.gpush@pablo>
-In-Reply-To: <1415245107.292153.444216242273.0.gpush@pablo>
-Content-Type: text/plain; charset=UTF-8
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
+ ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
+ linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
+ galak@codeaurora.org, grant.likely@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2014 09:38 PM, Jeremy Kerr wrote:
-> This series adds IPMI driver and arch glue for OPAL-firmware-based
-> powernv machines. The first change exposes the firmware's IPMI API, and
-> the second adds an actual driver.
->
-> IPMI folks: the IPMI driver could do with a little review, as it's not a
-> conventional BT/KCS/SMI SI, in that the low-level send/recv interface
-> will handle the entire message at once.
+On Wed, 2014-11-05 at 09:18 -0600, Emil Medve wrote:
+> +Devices connected to a BMan instance via Direct Connect Portals (DCP) must link
+> +to the respective BMan instance
+> +
+> +- fsl,bman
+> +	Usage:		Required
+> +	Value type:	<prop-encoded-array>
+> +	Description:	List of phandle and DCP index pairs, to the BMan instance
+> +			to which this device is connected via the DCP
 
-Handling the entire message at once should be fine, as that's what this
-driver level is designed to do for the message handler.  That part all
-looks correct.  The code itself looks good, but I have a couple of
-high-level comments.
+Does software need the DCP index (though for QMan there do seem to be a
+few registers associated with each DCP)?  Where can I find that info in
+the manual?
 
-The driver at this level can receive more than one message to handle at
-a time, so it needs some sort of queue.  This is to allow multiple users
-and to allow the message handler to send its own commands while other
-commands are going on.  You might argue that the queuing should be done
-in ipmi_msghandler, and you would probably be right.  I'll look at doing
-that.  If that is the case, then your NULL check for current message
-should probably be a BUG_ON().
-
-Do you need to handle any BMC flags?  Particularly incoming events?
-
-
-> Corey & Michael: if this is acceptable, it may be mergable as two
-> separate patches - one for the IPMI subsystem, one for the powernv
-> platform.  However, we'd need to preserve their order: patch 2/2 depends
-> on 1/2, which provides the structure & function definitions. This'll
-> break the build if only 2/2 is in the tree, and CONFIG_IPMI_POWERNV is
-> set.
->
-> Alternatively, they could be merged by one maintainer, pending an ack
-> from the other.
-
-I'm fine either way.
-
-Thanks,
-
--corey
-
-> Comments / queries / etc welcome.
->
-> Cheers,
->
->
-> Jeremy
->
-> ---
-> Jeremy Kerr (2):
->       powerpc/powernv: Add OPAL IPMI interface
->       drivers/char/ipmi: Add powernv IPMI driver
->
+-Scott
