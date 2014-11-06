@@ -1,18 +1,25 @@
-Return-Path: <jk@ozlabs.org>
+Return-Path: <kda@linux-powerpc.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 320FA1A0A0D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2014 14:38:35 +1100 (AEDT)
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [PATCH 2/2] drivers/char/ipmi: Add powernv IPMI driver
-Message-Id: <1415245107.292778.415651579461.2.gpush@pablo>
-In-Reply-To: <1415245107.292153.444216242273.0.gpush@pablo>
-To: <openipmi-developer@lists.sourceforge.net>, Corey Minyard <minyard@acm.org>,
- linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Thu, 06 Nov 2014 11:38:27 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB04B1A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2014 17:30:24 +1100 (AEDT)
+Received: from mail-la0-f50.google.com (mail-la0-f50.google.com
+ [209.85.215.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E46761400A8
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2014 17:30:21 +1100 (AEDT)
+Received: by mail-la0-f50.google.com with SMTP id hz20so2020899lab.37
+ for <linuxppc-dev@ozlabs.org>; Wed, 05 Nov 2014 22:30:17 -0800 (PST)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE instruction
+Date: Thu,  6 Nov 2014 09:02:35 +0300
+Message-Id: <1415253755-4001-1-git-send-email-kda@linux-powerpc.org>
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ Denis Kirjanov <kda@linux-powerpc.org>, Daniel Borkmann <dborkman@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,348 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change adds an initial IPMI driver for powerpc OPAL firmware. The
-interface is exposed entirely through firmware: we have two functions to
-send and receive IPMI messages, and an interrupt notification from the
-firmware to signify that a message is available.
+Add BPF extension SKF_AD_HATYPE to ppc JIT to check
+the hw type of the interface
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+JIT off:
+[   69.106783] test_bpf: #20 LD_HATYPE 48 48 PASS
+JIT on:
+[   64.721757] test_bpf: #20 LD_HATYPE 7 6 PASS
 
+CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
+CC: Daniel Borkmann<dborkman@redhat.com>
+CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 ---
- drivers/char/ipmi/Kconfig        |    6 
- drivers/char/ipmi/Makefile       |    1 
- drivers/char/ipmi/ipmi_powernv.c |  298 +++++++++++++++++++++++++++++++
- 3 files changed, 305 insertions(+)
+ arch/powerpc/net/bpf_jit_comp.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
-index db1c9b7..a6a8cb3 100644
---- a/drivers/char/ipmi/Kconfig
-+++ b/drivers/char/ipmi/Kconfig
-@@ -62,6 +62,12 @@ config IPMI_SI_PROBE_DEFAULTS
- 	 only be available on older systems if the "ipmi_si_intf.trydefaults=1"
- 	 boot argument is passed.
- 
-+config IPMI_POWERNV
-+       depends on PPC_POWERNV
-+       tristate 'POWERNV (OPAL firmware) IPMI interface'
-+       help
-+         Provides a driver for OPAL firmware-based IPMI interfaces.
-+
- config IPMI_WATCHDOG
-        tristate 'IPMI Watchdog Timer'
-        help
-diff --git a/drivers/char/ipmi/Makefile b/drivers/char/ipmi/Makefile
-index 16a9364..6620404 100644
---- a/drivers/char/ipmi/Makefile
-+++ b/drivers/char/ipmi/Makefile
-@@ -7,5 +7,6 @@ ipmi_si-y := ipmi_si_intf.o ipmi_kcs_sm.o ipmi_smic_sm.o ipmi_bt_sm.o
- obj-$(CONFIG_IPMI_HANDLER) += ipmi_msghandler.o
- obj-$(CONFIG_IPMI_DEVICE_INTERFACE) += ipmi_devintf.o
- obj-$(CONFIG_IPMI_SI) += ipmi_si.o
-+obj-$(CONFIG_IPMI_POWERNV) += ipmi_powernv.o
- obj-$(CONFIG_IPMI_WATCHDOG) += ipmi_watchdog.o
- obj-$(CONFIG_IPMI_POWEROFF) += ipmi_poweroff.o
-diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
-new file mode 100644
-index 0000000..79bbed9
---- /dev/null
-+++ b/drivers/char/ipmi/ipmi_powernv.c
-@@ -0,0 +1,298 @@
-+
-+#define pr_fmt(fmt)        "ipmi-powernv: " fmt
-+
-+#include <linux/ipmi_smi.h>
-+#include <linux/list.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+
-+#include <asm/opal.h>
-+
-+
-+struct ipmi_smi_powernv {
-+	u64			interface_id;
-+	struct ipmi_device_id	ipmi_id;
-+	ipmi_smi_t		intf;
-+	u64			event;
-+	struct notifier_block	event_nb;
-+
-+	/**
-+	 * We assume that there can only be one outstanding request, so
-+	 * keep the pending message in cur_msg. We protect this from concurrent
-+	 * updates through send & recv calls, (and consequently opal_msg, which
-+	 * is in-use when cur_msg is set) with msg_lock
-+	 */
-+	spinlock_t		msg_lock;
-+	struct ipmi_smi_msg	*cur_msg;
-+	struct opal_ipmi_msg	*opal_msg;
-+};
-+
-+static int ipmi_powernv_start_processing(void *send_info, ipmi_smi_t intf)
-+{
-+	struct ipmi_smi_powernv *smi = send_info;
-+	smi->intf = intf;
-+	return 0;
-+}
-+
-+static void send_error_reply(struct ipmi_smi_powernv *smi,
-+		struct ipmi_smi_msg *msg, u8 completion_code)
-+{
-+	msg->rsp[0] = msg->data[0] | 0x4;
-+	msg->rsp[1] = msg->data[1];
-+	msg->rsp[2] = completion_code;
-+	msg->rsp_size = 3;
-+	ipmi_smi_msg_received(smi->intf, msg);
-+}
-+
-+static void ipmi_powernv_send(void *send_info, struct ipmi_smi_msg *msg,
-+		int priority)
-+{
-+	struct ipmi_smi_powernv *smi = send_info;
-+	struct opal_ipmi_msg *opal_msg;
-+	unsigned long flags;
-+	int comp, rc;
-+	size_t size;
-+
-+	/* ensure data_len will fit in the opal_ipmi_msg buffer... */
-+	if (msg->data_size > IPMI_MAX_MSG_LENGTH) {
-+		comp = IPMI_REQ_LEN_EXCEEDED_ERR;
-+		goto err;
-+	}
-+
-+	/* ... and that we at least have netfn and cmd bytes */
-+	if (msg->data_size < 2) {
-+		comp = IPMI_REQ_LEN_INVALID_ERR;
-+		goto err;
-+	}
-+
-+	spin_lock_irqsave(&smi->msg_lock, flags);
-+
-+	if (smi->cur_msg) {
-+		comp = IPMI_NODE_BUSY_ERR;
-+		goto err_unlock;
-+	}
-+
-+	/* format our data for the OPAL API */
-+	opal_msg = smi->opal_msg;
-+	opal_msg->version = OPAL_IPMI_MSG_FORMAT_VERSION_1;
-+	opal_msg->netfn = msg->data[0];
-+	opal_msg->cmd = msg->data[1];
-+	if (msg->data_size > 2)
-+		memcpy(opal_msg->data, msg->data + 2, msg->data_size - 2);
-+
-+	/* data_size already includes the netfn and cmd bytes */
-+	size = sizeof(*opal_msg) + msg->data_size - 2;
-+
-+	pr_devel("%s: opal_ipmi_send(0x%llx, %p, %ld)\n", __func__,
-+			smi->interface_id, opal_msg, size);
-+	rc = opal_ipmi_send(smi->interface_id, opal_msg, size);
-+	pr_devel("%s:  -> %d\n", __func__, rc);
-+
-+	if (!rc) {
-+		smi->cur_msg = msg;
-+		spin_unlock_irqrestore(&smi->msg_lock, flags);
-+		return;
-+	}
-+
-+	comp = IPMI_ERR_UNSPECIFIED;
-+err_unlock:
-+	spin_unlock_irqrestore(&smi->msg_lock, flags);
-+err:
-+	send_error_reply(smi, msg, comp);
-+}
-+
-+static int ipmi_powernv_recv(struct ipmi_smi_powernv *smi)
-+{
-+	struct opal_ipmi_msg *opal_msg;
-+	struct ipmi_smi_msg *msg;
-+	unsigned long flags;
-+	uint64_t size;
-+	int rc;
-+
-+	pr_devel("%s: opal_ipmi_recv(%llx, msg, sz)\n", __func__,
-+			smi->interface_id);
-+
-+	spin_lock_irqsave(&smi->msg_lock, flags);
-+
-+	if (!smi->cur_msg) {
-+		pr_warn("no current message?\n");
-+		return 0;
-+	}
-+
-+	msg = smi->cur_msg;
-+	opal_msg = smi->opal_msg;
-+
-+	size = cpu_to_be64(sizeof(*opal_msg) + IPMI_MAX_MSG_LENGTH);
-+
-+	rc = opal_ipmi_recv(smi->interface_id,
-+			opal_msg,
-+			&size);
-+	size = be64_to_cpu(size);
-+	pr_devel("%s:   -> %d (size %lld)\n", __func__,
-+			rc, rc == 0 ? size : 0);
-+	if (rc) {
-+		spin_unlock_irqrestore(&smi->msg_lock, flags);
-+		ipmi_free_smi_msg(msg);
-+		return 0;
-+	}
-+
-+	if (size < sizeof(*opal_msg)) {
-+		spin_unlock_irqrestore(&smi->msg_lock, flags);
-+		pr_warn("unexpected IPMI message size %lld\n", size);
-+		return 0;
-+	}
-+
-+	if (opal_msg->version != OPAL_IPMI_MSG_FORMAT_VERSION_1) {
-+		spin_unlock_irqrestore(&smi->msg_lock, flags);
-+		pr_warn("unexpected IPMI message format (version %d)\n",
-+				opal_msg->version);
-+		return 0;
-+	}
-+
-+	msg->rsp[0] = opal_msg->netfn;
-+	msg->rsp[1] = opal_msg->cmd;
-+	if (size > sizeof(*opal_msg))
-+		memcpy(&msg->rsp[2], opal_msg->data, size - sizeof(*opal_msg));
-+	msg->rsp_size = 2 + size - sizeof(*opal_msg);
-+
-+	smi->cur_msg = NULL;
-+	spin_unlock_irqrestore(&smi->msg_lock, flags);
-+	ipmi_smi_msg_received(smi->intf, msg);
-+	return 0;
-+}
-+
-+static void ipmi_powernv_request_events(void *send_info)
-+{
-+}
-+
-+static void ipmi_powernv_set_run_to_completion(void *send_info,
-+		bool run_to_completion)
-+{
-+}
-+
-+static void ipmi_powernv_poll(void *send_info)
-+{
-+	struct ipmi_smi_powernv *smi = send_info;
-+	ipmi_powernv_recv(smi);
-+}
-+
-+static struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
-+	.owner			= THIS_MODULE,
-+	.start_processing	= ipmi_powernv_start_processing,
-+	.sender			= ipmi_powernv_send,
-+	.request_events		= ipmi_powernv_request_events,
-+	.set_run_to_completion	= ipmi_powernv_set_run_to_completion,
-+	.poll			= ipmi_powernv_poll,
-+};
-+
-+static int ipmi_opal_event(struct notifier_block *nb,
-+			  unsigned long events, void *change)
-+{
-+	struct ipmi_smi_powernv *smi = container_of(nb,
-+					struct ipmi_smi_powernv, event_nb);
-+
-+	if (events & smi->event)
-+		ipmi_powernv_recv(smi);
-+	return 0;
-+}
-+
-+static int ipmi_powernv_probe(struct platform_device *pdev)
-+{
-+	struct ipmi_smi_powernv *ipmi;
-+	struct device *dev;
-+	u32 prop;
-+	int rc;
-+
-+	if (!pdev || !pdev->dev.of_node)
-+		return -ENODEV;
-+
-+	dev = &pdev->dev;
-+
-+	ipmi = devm_kzalloc(dev, sizeof(*ipmi), GFP_KERNEL);
-+	if (!ipmi)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&ipmi->msg_lock);
-+
-+	rc = of_property_read_u32(dev->of_node, "ibm,ipmi-interface-id",
-+			&prop);
-+	if (rc) {
-+		dev_warn(dev, "No interface ID property\n");
-+		goto err_free;
-+	}
-+	ipmi->interface_id = prop;
-+
-+	rc = of_property_read_u32(dev->of_node, "interrupts", &prop);
-+	if (rc) {
-+		dev_warn(dev, "No interrupts property\n");
-+		goto err_free;
-+	}
-+
-+	ipmi->event = 1ull << prop;
-+	ipmi->event_nb.notifier_call = ipmi_opal_event;
-+
-+	rc = opal_notifier_register(&ipmi->event_nb);
-+	if (rc) {
-+		dev_warn(dev, "OPAL notifier registration failed (%d)\n", rc);
-+		goto err_free;
-+	}
-+
-+	ipmi->opal_msg = devm_kmalloc(dev,
-+			sizeof(*ipmi->opal_msg) + IPMI_MAX_MSG_LENGTH,
-+			GFP_KERNEL);
-+	if (!ipmi->opal_msg) {
-+		rc = -ENOMEM;
-+		goto err_unregister;
-+	}
-+
-+	/* todo: query actual ipmi_device_id */
-+	rc = ipmi_register_smi(&ipmi_powernv_smi_handlers, ipmi,
-+			&ipmi->ipmi_id, dev, "powernv", 0);
-+	if (rc) {
-+		dev_warn(dev, "IPMI SMI registration failed (%d)\n", rc);
-+		goto err_free_msg;
-+	}
-+
-+	dev_set_drvdata(dev, ipmi);
-+	return 0;
-+
-+err_free_msg:
-+	devm_kfree(dev, ipmi->opal_msg);
-+err_unregister:
-+	opal_notifier_unregister(&ipmi->event_nb);
-+err_free:
-+	devm_kfree(dev, ipmi);
-+	return rc;
-+}
-+
-+static int ipmi_powernv_remove(struct platform_device *pdev)
-+{
-+	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
-+	ipmi_unregister_smi(smi->intf);
-+	opal_notifier_unregister(&smi->event_nb);
-+	return 0;
-+}
-+
-+static const struct of_device_id ipmi_powernv_match[] = {
-+	{ .compatible = "ibm,opal-ipmi" },
-+	{ },
-+};
-+
-+
-+static struct platform_driver powernv_ipmi_driver = {
-+	.driver = {
-+		.name		= "ipmi-powernv",
-+		.owner		= THIS_MODULE,
-+		.of_match_table	= ipmi_powernv_match,
-+	},
-+	.probe	= ipmi_powernv_probe,
-+	.remove	= ipmi_powernv_remove,
-+};
-+
-+
-+module_platform_driver(powernv_ipmi_driver);
-+
-+MODULE_DEVICE_TABLE(of, ipmi_powernv_match);
-+MODULE_DESCRIPTION("powernv IPMI driver");
-+MODULE_AUTHOR("Jeremy Kerr <jk@ozlabs.org>");
-+MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index d110e28..8bf4fc2 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -412,6 +412,22 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			PPC_ANDI(r_A, r_A, PKT_TYPE_MAX);
+ 			PPC_SRWI(r_A, r_A, 5);
+ 			break;
++		case BPF_ANC | SKF_AD_HATYPE:
++			BUILD_BUG_ON(FIELD_SIZEOF(struct net_device, type) != 2);
++			PPC_LD_OFFS(r_scratch1, r_skb, offsetof(struct sk_buff,
++								dev));
++			PPC_CMPDI(r_scratch1, 0);
++			if (ctx->pc_ret0 != -1) {
++				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
++			} else {
++				/* Exit, returning 0; first pass hits here. */
++				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
++				PPC_LI(r_ret, 0);
++				PPC_JMP(exit_addr);
++			}
++			PPC_LHZ_OFFS(r_A, r_scratch1,
++				     offsetof(struct net_device, type));
++			break;
+ 		case BPF_ANC | SKF_AD_CPU:
+ #ifdef CONFIG_SMP
+ 			/*
+-- 
+2.1.0
