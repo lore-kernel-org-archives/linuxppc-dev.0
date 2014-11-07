@@ -1,35 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <davem@davemloft.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E3AF1A042E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2014 03:50:07 +1100 (AEDT)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0105.outbound.protection.outlook.com [65.55.169.105])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AAC091400B6
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2014 03:50:06 +1100 (AEDT)
-Message-ID: <1415378994.3805.5.camel@snotra.buserror.net>
-Subject: Re: [PATCH v3 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
-From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Fri, 7 Nov 2014 10:49:54 -0600
-In-Reply-To: <545C9302.50703@Freescale.com>
-References: <1415200734-6978-1-git-send-email-Emilian.Medve@Freescale.com>
- <1415200734-6978-2-git-send-email-Emilian.Medve@Freescale.com>
- <1415310579.23458.402.camel@snotra.buserror.net>
- <545C754C.9080700@Freescale.com>
- <1415345665.23458.428.camel@snotra.buserror.net>
- <545C7F77.90200@Freescale.com>
- <1415348363.23458.432.camel@snotra.buserror.net>
- <545C9302.50703@Freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
- ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
- linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
- galak@codeaurora.org, grant.likely@linaro.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C59001A02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2014 06:50:33 +1100 (AEDT)
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id 3EF421400F1
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2014 06:50:32 +1100 (AEDT)
+Date: Fri, 07 Nov 2014 14:50:26 -0500 (EST)
+Message-Id: <20141107.145026.945264099310112541.davem@davemloft.net>
+To: kda@linux-powerpc.org
+Subject: Re: [PATCH net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE instruction
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1415253755-4001-1-git-send-email-kda@linux-powerpc.org>
+References: <1415253755-4001-1-git-send-email-kda@linux-powerpc.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: felix@linux.vnet.ibm.com, netdev@vger.kernel.org, dborkman@redhat.com,
+ alexei.starovoitov@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,66 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-11-07 at 03:38 -0600, Emil Medve wrote:
-> Hello Scott,
-> 
-> 
-> On 11/07/2014 02:19 AM, Scott Wood wrote:
-> > On Fri, 2014-11-07 at 02:14 -0600, Emil Medve wrote:
-> >> Hello Scott,
-> >>
-> >>
-> >> On 11/07/2014 01:34 AM, Scott Wood wrote:
-> >>> On Fri, 2014-11-07 at 01:31 -0600, Emil Medve wrote:
-> >>>> Hello Scott,
-> >>>>
-> >>>>
-> >>>> On 11/06/2014 03:49 PM, Scott Wood wrote:
-> >>>>> On Wed, 2014-11-05 at 09:18 -0600, Emil Medve wrote:
-> >>>>>> +Devices connected to a BMan instance via Direct Connect Portals (DCP) must link
-> >>>>>> +to the respective BMan instance
-> >>>>>> +
-> >>>>>> +- fsl,bman
-> >>>>>> +	Usage:		Required
-> >>>>>> +	Value type:	<prop-encoded-array>
-> >>>>>> +	Description:	List of phandle and DCP index pairs, to the BMan instance
-> >>>>>> +			to which this device is connected via the DCP
-> >>>>>
-> >>>>> Does software need the DCP index (though for QMan there do seem to be a
-> >>>>> few registers associated with each DCP)?  Where can I find that info in
-> >>>>> the manual?
-> >>>>
-> >>>> The DCP index helps describe the topology of the devices connected to
-> >>>> the B/QMan. One might be tempted to use some address to reference said
-> >>>> DCP, unfortunately the pertinent registers/bits for said DCP(s) are not
-> >>>> into a compact region. Look at the CCSR memory map for B/QMan
-> >>>>
-> >>>> In the QMan case things are marginally better. For each hardware portal
-> >>>> there are a handful of (vaguely named *DCx*, *DCPx* or *DCP*) registers
-> >>>> (configuration, performance monitoring and debugging). However, still
-> >>>> registers and bits spread here and there
-> >>>>
-> >>>> In the BMan case things are a bit worse as the registers names are less
-> >>>> friendly and still spread around
-> >>>>
-> >>>> Do you need specific names/offsets?
-> >>>
-> >>> My question about the manual wasn't rhetorical -- I tried to find this
-> >>> information and couldn't.
-> >>
-> >> I get that. As I said, the registers/bits are spread around in the CCSR
-> >> space of each block and not named excessively friendly. As such I hinted
-> >> for some search patterns to make it easier to find them. In order to
-> >> progress the review I'm willing to prepare a list. Just let me know
-> > 
-> > Could you point me to the section of the manual where this information
-> > is -- friendly or otherwise?  I saw the QMan direct connect portal
-> > registers.  I didn't see how to tell which <i> in DCPi_xxx goes with
-> > which device.
-> 
-> For QMan look into section '6.3.10 Direct Connect Portals (DCPs)'. The
-> BMan DCP assignment is the same
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Thu,  6 Nov 2014 09:02:35 +0300
 
-Thanks, I'm not sure how I missed that.
+> Add BPF extension SKF_AD_HATYPE to ppc JIT to check
+> the hw type of the interface
+> 
+> JIT off:
+> [   69.106783] test_bpf: #20 LD_HATYPE 48 48 PASS
+> JIT on:
+> [   64.721757] test_bpf: #20 LD_HATYPE 7 6 PASS
+> 
+> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
+> CC: Daniel Borkmann<dborkman@redhat.com>
+> CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
--Scott
+Can I get some reviews please?
+
+Thanks.
