@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0115.outbound.protection.outlook.com [207.46.100.115])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D2141A00B8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 14:01:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3FA711A00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 14:38:00 +1100 (AEDT)
+Date: Thu, 6 Nov 2014 21:37:45 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl: Update fman dt binding with clock name and qbman
- link
-Date: Thu, 6 Nov 2014 21:01:34 -0600
-Message-ID: <1415329294-22011-1-git-send-email-scottwood@freescale.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: [v4,17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
+Message-ID: <20141107033745.GA23796@home.buserror.net>
+References: <20140919083609.A92871AB040@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Igal Liberman <Igal.Liberman@freescale.com>,
- Emil Medve <Emilian.Medve@Freescale.com>, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140919083609.A92871AB040@localhost.localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The clock name "fmanclk" was given in the example, but not specified
-in the binding itself.  Made clock-names mandatory as otherwise there's
-not much point having it.
+On Fri, Sep 19, 2014 at 10:36:09AM +0200, LEROY Christophe wrote:
+> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+> Changes in v2:
+> - None
+> 
+> Changes in v3:
+> - Removed PPC405 related macro from PPC8xx specific code
+> - PTE_NONE_MASK doesn't need PAGE_ACCESSED in Linux 2.6
+> 
+> Changes in v4:
+> - None
+> 
+>  arch/powerpc/include/asm/pgtable-ppc32.h | 20 ++++++++++++++++++++
+>  arch/powerpc/include/asm/pte-8xx.h       |  7 +++++--
+>  arch/powerpc/kernel/head_8xx.S           | 10 ++--------
+>  3 files changed, 27 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+> index 47edde8..35a9b44 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -172,6 +172,25 @@ static inline unsigned long pte_update(pte_t *p,
+>  #ifdef PTE_ATOMIC_UPDATES
+>  	unsigned long old, tmp;
+>  
+> +#ifdef CONFIG_PPC_8xx
+> +	unsigned long tmp2;
+> +
+> +	__asm__ __volatile__("\
+> +1:	lwarx	%0,0,%4\n\
+> +	andc	%1,%0,%5\n\
+> +	or	%1,%1,%6\n\
+> +	/* 0x200 == Extended encoding, bit 22 */ \
+> +	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
+> +	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
+> +	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
+> +	or	%1,%3,%1\n\
+> +	xori	%1,%1,0x200\n"
+> +"	stwcx.	%1,0,%4\n\
+> +	bne-	1b"
 
-Added a reference to the fsl,qman and fsl,bman properties proposed
-in http://patchwork.ozlabs.org/patch/407034/ and
-http://patchwork.ozlabs.org/patch/407035/
+Why do you need this...
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-This patch is on top of http://patchwork.ozlabs.org/patch/390351/
+> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
+> index d44826e..daa4616 100644
+> --- a/arch/powerpc/include/asm/pte-8xx.h
+> +++ b/arch/powerpc/include/asm/pte-8xx.h
+> @@ -48,19 +48,22 @@
+>   */
+>  #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
+>  #define _PAGE_USER	0x0800	/* msb PP bits */
+> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
+> +#define _PAGE_KNLRO	0x0200
+>  
+>  #define _PMD_PRESENT	0x0001
+>  #define _PMD_BAD	0x0ff0
+>  #define _PMD_PAGE_MASK	0x000c
+>  #define _PMD_PAGE_8M	0x000c
+>  
+> -#define _PTE_NONE_MASK _PAGE_ACCESSED
+> +#define _PTE_NONE_MASK _PAGE_KNLRO
+>  
+>  /* Until my rework is finished, 8xx still needs atomic PTE updates */
+>  #define PTE_ATOMIC_UPDATES	1
+>  
+>  /* We need to add _PAGE_SHARED to kernel pages */
+> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
+> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
+> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
+>  #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
 
- Documentation/devicetree/bindings/powerpc/fsl/fman.txt | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+...if 0x200 is already being set in the PTE here?
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-index da8e5f2..edeea16 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-@@ -79,12 +79,12 @@ PROPERTIES
- - clocks
- 		Usage: required
- 		Value type: <prop-encoded-array>
--		Definition: phandle for fman clock.
-+		Definition: phandle for the fman input clock.
- 
- - clock-names
--		usage: optional
-+		usage: required
- 		Value type: <stringlist>
--		Definition: A standard property
-+		Definition: "fmanclk" for the fman input clock.
- 
- - interrupts
- 		Usage: required
-@@ -104,6 +104,11 @@ PROPERTIES
- 		"Work Queue (WQ) Channel Assignments in the QMan" section
- 		in DPAA Reference Manual.
- 
-+- fsl,qman
-+- fsl,bman
-+		Usage: required
-+		Definition: See soc/fsl/qman.txt and soc/fsl/bman.txt
-+
- =============================================================================
- FMan MURAM Node
- 
--- 
-1.9.1
+-Scott
