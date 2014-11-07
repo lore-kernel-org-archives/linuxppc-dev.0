@@ -1,19 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 9C6211A02B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 19:00:42 +1100 (AEDT)
-Message-ID: <545C7C2E.3060109@c-s.fr>
-Date: Fri, 07 Nov 2014 09:00:46 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 81DF41A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 19:14:52 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D38F614013F
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2014 19:14:50 +1100 (AEDT)
+Message-ID: <545C7F77.90200@Freescale.com>
+Date: Fri, 7 Nov 2014 02:14:47 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [v4,17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
-References: <20140919083609.A92871AB040@localhost.localdomain>
- <20141107033745.GA23796@home.buserror.net>
-In-Reply-To: <20141107033745.GA23796@home.buserror.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH v3 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+References: <1415200734-6978-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1415200734-6978-2-git-send-email-Emilian.Medve@Freescale.com>
+ <1415310579.23458.402.camel@snotra.buserror.net>
+ <545C754C.9080700@Freescale.com>
+ <1415345665.23458.428.camel@snotra.buserror.net>
+In-Reply-To: <1415345665.23458.428.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
+ ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
+ linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
+ galak@codeaurora.org, grant.likely@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello Scott,
 
-Le 07/11/2014 04:37, Scott Wood a écrit :
-> On Fri, Sep 19, 2014 at 10:36:09AM +0200, LEROY Christophe wrote:
->> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> Changes in v2:
->> - None
->>
->> Changes in v3:
->> - Removed PPC405 related macro from PPC8xx specific code
->> - PTE_NONE_MASK doesn't need PAGE_ACCESSED in Linux 2.6
->>
->> Changes in v4:
->> - None
->>
->>   arch/powerpc/include/asm/pgtable-ppc32.h | 20 ++++++++++++++++++++
->>   arch/powerpc/include/asm/pte-8xx.h       |  7 +++++--
->>   arch/powerpc/kernel/head_8xx.S           | 10 ++--------
->>   3 files changed, 27 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
->> index 47edde8..35a9b44 100644
->> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
->> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
->> @@ -172,6 +172,25 @@ static inline unsigned long pte_update(pte_t *p,
->>   #ifdef PTE_ATOMIC_UPDATES
->>   	unsigned long old, tmp;
->>   
->> +#ifdef CONFIG_PPC_8xx
->> +	unsigned long tmp2;
->> +
->> +	__asm__ __volatile__("\
->> +1:	lwarx	%0,0,%4\n\
->> +	andc	%1,%0,%5\n\
->> +	or	%1,%1,%6\n\
->> +	/* 0x200 == Extended encoding, bit 22 */ \
->> +	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
->> +	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
->> +	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
->> +	or	%1,%3,%1\n\
->> +	xori	%1,%1,0x200\n"
->> +"	stwcx.	%1,0,%4\n\
->> +	bne-	1b"
-> Why do you need this...
->
->> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
->> index d44826e..daa4616 100644
->> --- a/arch/powerpc/include/asm/pte-8xx.h
->> +++ b/arch/powerpc/include/asm/pte-8xx.h
->> @@ -48,19 +48,22 @@
->>    */
->>   #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
->>   #define _PAGE_USER	0x0800	/* msb PP bits */
->> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
->> +#define _PAGE_KNLRO	0x0200
->>   
->>   #define _PMD_PRESENT	0x0001
->>   #define _PMD_BAD	0x0ff0
->>   #define _PMD_PAGE_MASK	0x000c
->>   #define _PMD_PAGE_8M	0x000c
->>   
->> -#define _PTE_NONE_MASK _PAGE_ACCESSED
->> +#define _PTE_NONE_MASK _PAGE_KNLRO
->>   
->>   /* Until my rework is finished, 8xx still needs atomic PTE updates */
->>   #define PTE_ATOMIC_UPDATES	1
->>   
->>   /* We need to add _PAGE_SHARED to kernel pages */
->> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
->> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
->> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
->>   #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-> ...if 0x200 is already being set in the PTE here?
->
-If I understand well the way it works, those defines are used for 
-setting the PTE the first time.
-Then, pte_update() is used to modify the pte settings on an existing pte
 
-0x200 must be set when and only when the page is a RO kernel page. If 
-later on pte_update() is called for instance to set the page to RW, the 
-0x200 has to be removed. Same, if pte_update() is called to remove 
-_PAGE_RW (ptep_set_wrprotect() does this), 0x200 must be set back.
+On 11/07/2014 01:34 AM, Scott Wood wrote:
+> On Fri, 2014-11-07 at 01:31 -0600, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> On 11/06/2014 03:49 PM, Scott Wood wrote:
+>>> On Wed, 2014-11-05 at 09:18 -0600, Emil Medve wrote:
+>>>> +Devices connected to a BMan instance via Direct Connect Portals (DCP) must link
+>>>> +to the respective BMan instance
+>>>> +
+>>>> +- fsl,bman
+>>>> +	Usage:		Required
+>>>> +	Value type:	<prop-encoded-array>
+>>>> +	Description:	List of phandle and DCP index pairs, to the BMan instance
+>>>> +			to which this device is connected via the DCP
+>>>
+>>> Does software need the DCP index (though for QMan there do seem to be a
+>>> few registers associated with each DCP)?  Where can I find that info in
+>>> the manual?
+>>
+>> The DCP index helps describe the topology of the devices connected to
+>> the B/QMan. One might be tempted to use some address to reference said
+>> DCP, unfortunately the pertinent registers/bits for said DCP(s) are not
+>> into a compact region. Look at the CCSR memory map for B/QMan
+>>
+>> In the QMan case things are marginally better. For each hardware portal
+>> there are a handful of (vaguely named *DCx*, *DCPx* or *DCP*) registers
+>> (configuration, performance monitoring and debugging). However, still
+>> registers and bits spread here and there
+>>
+>> In the BMan case things are a bit worse as the registers names are less
+>> friendly and still spread around
+>>
+>> Do you need specific names/offsets?
+> 
+> My question about the manual wasn't rhetorical -- I tried to find this
+> information and couldn't.
 
-Christophe
+I get that. As I said, the registers/bits are spread around in the CCSR
+space of each block and not named excessively friendly. As such I hinted
+for some search patterns to make it easier to find them. In order to
+progress the review I'm willing to prepare a list. Just let me know
+
+
+Cheers,
