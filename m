@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
+ (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FA711A00BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 14:38:00 +1100 (AEDT)
-Date: Thu, 6 Nov 2014 21:37:45 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9705F1A0634
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 14:50:24 +1100 (AEDT)
+Date: Thu, 6 Nov 2014 21:50:08 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: [v4,17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
-Message-ID: <20141107033745.GA23796@home.buserror.net>
-References: <20140919083609.A92871AB040@localhost.localdomain>
+To: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: powerpc/8xx: Remove Kconfig symbol FADS
+Message-ID: <20141107035008.GA25204@home.buserror.net>
+References: <1411545979.19525.5.camel@x220>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140919083609.A92871AB040@localhost.localdomain>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+In-Reply-To: <1411545979.19525.5.camel@x220>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2014 at 10:36:09AM +0200, LEROY Christophe wrote:
-> No need to re-set this bit at each TLB miss. Let's set it in the PTE.
+On Wed, Sep 24, 2014 at 10:06:19AM +0200, Paul Bolle wrote:
+> Commit 39eb56da2b53 ("pcmcia: Remove m8xx_pcmcia driver") removed the
+> only driver that used CONFIG_FADS. Setting the Kconfig symbol FADS is
+> pointless since that commit. Remove it.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 > ---
-> Changes in v2:
-> - None
+> Done on top of next-20140923. Tested with "git grep" only.
 > 
-> Changes in v3:
-> - Removed PPC405 related macro from PPC8xx specific code
-> - PTE_NONE_MASK doesn't need PAGE_ACCESSED in Linux 2.6
-> 
-> Changes in v4:
-> - None
-> 
->  arch/powerpc/include/asm/pgtable-ppc32.h | 20 ++++++++++++++++++++
->  arch/powerpc/include/asm/pte-8xx.h       |  7 +++++--
->  arch/powerpc/kernel/head_8xx.S           | 10 ++--------
->  3 files changed, 27 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-> index 47edde8..35a9b44 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> @@ -172,6 +172,25 @@ static inline unsigned long pte_update(pte_t *p,
->  #ifdef PTE_ATOMIC_UPDATES
->  	unsigned long old, tmp;
->  
-> +#ifdef CONFIG_PPC_8xx
-> +	unsigned long tmp2;
-> +
-> +	__asm__ __volatile__("\
-> +1:	lwarx	%0,0,%4\n\
-> +	andc	%1,%0,%5\n\
-> +	or	%1,%1,%6\n\
-> +	/* 0x200 == Extended encoding, bit 22 */ \
-> +	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
-> +	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
-> +	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
-> +	or	%1,%3,%1\n\
-> +	xori	%1,%1,0x200\n"
-> +"	stwcx.	%1,0,%4\n\
-> +	bne-	1b"
+> Another cleanup might be to remove MPC8XXFADS (or "FADS") from the "8xx
+> Machine Type" choice. Is there any reason left to pick "FADS" as a
+> machine type?
 
-Why do you need this...
-
-> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-> index d44826e..daa4616 100644
-> --- a/arch/powerpc/include/asm/pte-8xx.h
-> +++ b/arch/powerpc/include/asm/pte-8xx.h
-> @@ -48,19 +48,22 @@
->   */
->  #define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
->  #define _PAGE_USER	0x0800	/* msb PP bits */
-> +/* set when neither _PAGE_USER nor _PAGE_RW are set */
-> +#define _PAGE_KNLRO	0x0200
->  
->  #define _PMD_PRESENT	0x0001
->  #define _PMD_BAD	0x0ff0
->  #define _PMD_PAGE_MASK	0x000c
->  #define _PMD_PAGE_8M	0x000c
->  
-> -#define _PTE_NONE_MASK _PAGE_ACCESSED
-> +#define _PTE_NONE_MASK _PAGE_KNLRO
->  
->  /* Until my rework is finished, 8xx still needs atomic PTE updates */
->  #define PTE_ATOMIC_UPDATES	1
->  
->  /* We need to add _PAGE_SHARED to kernel pages */
-> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
-> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
-> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
->  #define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-
-...if 0x200 is already being set in the PTE here?
+Nothing references MPC8XXFADS, so yes, it can be removed.
 
 -Scott
