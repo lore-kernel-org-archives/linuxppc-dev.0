@@ -1,21 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9705F1A0634
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 14:50:24 +1100 (AEDT)
-Date: Thu, 6 Nov 2014 21:50:08 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 533F91A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 15:08:03 +1100 (AEDT)
+Message-ID: <1415333263.23458.417.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 0/3] fix a kernel panic on fsl corenet board when
+ CONFIG_CLK_PPC_CORENET is enabled
 From: Scott Wood <scottwood@freescale.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: powerpc/8xx: Remove Kconfig symbol FADS
-Message-ID: <20141107035008.GA25204@home.buserror.net>
-References: <1411545979.19525.5.camel@x220>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Thu, 6 Nov 2014 22:07:43 -0600
+In-Reply-To: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
+References: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1411545979.19525.5.camel@x220>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
+ Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2014 at 10:06:19AM +0200, Paul Bolle wrote:
-> Commit 39eb56da2b53 ("pcmcia: Remove m8xx_pcmcia driver") removed the
-> only driver that used CONFIG_FADS. Setting the Kconfig symbol FADS is
-> pointless since that commit. Remove it.
+On Sun, 2014-10-19 at 14:11 +0800, Kevin Hao wrote:
+> Hi,
 > 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> ---
-> Done on top of next-20140923. Tested with "git grep" only.
+> I have done a boot test on p2014rdb and t4240qds boards. I don't have an access
+> to mpc512x board, so only build test for that.
 > 
-> Another cleanup might be to remove MPC8XXFADS (or "FADS") from the "8xx
-> Machine Type" choice. Is there any reason left to pick "FADS" as a
-> machine type?
+> v2:
+>  - Revert the commit da788acb2838 first.
+>  - Invoke of_clk_init() from a common place.
+> 
+> v1
+> This tries to fix a kernel panic introduced by commit da788acb2838
+> ("clk: ppc-corenet: Fix Section mismatch warning").
+> 
+> Kevin Hao (3):
+>   Revert "clk: ppc-corenet: Fix Section mismatch warning"
+>   powerpc: call of_clk_init() from time_init()
+>   clk: ppc-corenet: fix section mismatch warning
+> 
+>  arch/powerpc/kernel/time.c                    |  5 ++++
+>  arch/powerpc/platforms/512x/clock-commonclk.c | 11 ++++---
+>  drivers/clk/clk-ppc-corenet.c                 | 43 ++++-----------------------
+>  3 files changed, 16 insertions(+), 43 deletions(-)
+> 
 
-Nothing references MPC8XXFADS, so yes, it can be removed.
+Acked-by: Scott Wood <scottwood@freescale.com>
+
+Whose tree should this go through?
 
 -Scott
