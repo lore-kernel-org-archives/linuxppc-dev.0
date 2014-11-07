@@ -1,22 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2DB01A0622
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 18:31:42 +1100 (AEDT)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0129.outbound.protection.outlook.com [65.55.169.129])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 533F91A00B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2014 15:08:03 +1100 (AEDT)
-Message-ID: <1415333263.23458.417.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 0/3] fix a kernel panic on fsl corenet board when
- CONFIG_CLK_PPC_CORENET is enabled
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 6 Nov 2014 22:07:43 -0600
-In-Reply-To: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
-References: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 1CFA714012E
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2014 18:31:41 +1100 (AEDT)
+Message-ID: <545C754C.9080700@Freescale.com>
+Date: Fri, 7 Nov 2014 01:31:24 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
- Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH v3 1/4] dt/bindings: Introduce the FSL QorIQ DPAA BMan
+References: <1415200734-6978-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1415200734-6978-2-git-send-email-Emilian.Medve@Freescale.com>
+ <1415310579.23458.402.camel@snotra.buserror.net>
+In-Reply-To: <1415310579.23458.402.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, pawel.moll@arm.com,
+ ijc+devicetree@hellion.org.uk, Geoff.Thorpe@Freescale.com, corbet@lwn.net,
+ linux-doc@vger.kernel.org, linuxppc-dev@ozlabs.org, robh+dt@kernel.org,
+ galak@codeaurora.org, grant.likely@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2014-10-19 at 14:11 +0800, Kevin Hao wrote:
-> Hi,
-> 
-> I have done a boot test on p2014rdb and t4240qds boards. I don't have an access
-> to mpc512x board, so only build test for that.
-> 
-> v2:
->  - Revert the commit da788acb2838 first.
->  - Invoke of_clk_init() from a common place.
-> 
-> v1
-> This tries to fix a kernel panic introduced by commit da788acb2838
-> ("clk: ppc-corenet: Fix Section mismatch warning").
-> 
-> Kevin Hao (3):
->   Revert "clk: ppc-corenet: Fix Section mismatch warning"
->   powerpc: call of_clk_init() from time_init()
->   clk: ppc-corenet: fix section mismatch warning
-> 
->  arch/powerpc/kernel/time.c                    |  5 ++++
->  arch/powerpc/platforms/512x/clock-commonclk.c | 11 ++++---
->  drivers/clk/clk-ppc-corenet.c                 | 43 ++++-----------------------
->  3 files changed, 16 insertions(+), 43 deletions(-)
-> 
+Hello Scott,
 
-Acked-by: Scott Wood <scottwood@freescale.com>
 
-Whose tree should this go through?
+On 11/06/2014 03:49 PM, Scott Wood wrote:
+> On Wed, 2014-11-05 at 09:18 -0600, Emil Medve wrote:
+>> +Devices connected to a BMan instance via Direct Connect Portals (DCP) must link
+>> +to the respective BMan instance
+>> +
+>> +- fsl,bman
+>> +	Usage:		Required
+>> +	Value type:	<prop-encoded-array>
+>> +	Description:	List of phandle and DCP index pairs, to the BMan instance
+>> +			to which this device is connected via the DCP
+> 
+> Does software need the DCP index (though for QMan there do seem to be a
+> few registers associated with each DCP)?  Where can I find that info in
+> the manual?
 
--Scott
+The DCP index helps describe the topology of the devices connected to
+the B/QMan. One might be tempted to use some address to reference said
+DCP, unfortunately the pertinent registers/bits for said DCP(s) are not
+into a compact region. Look at the CCSR memory map for B/QMan
+
+In the QMan case things are marginally better. For each hardware portal
+there are a handful of (vaguely named *DCx*, *DCPx* or *DCP*) registers
+(configuration, performance monitoring and debugging). However, still
+registers and bits spread here and there
+
+In the BMan case things are a bit worse as the registers names are less
+friendly and still spread around
+
+Do you need specific names/offsets?
+
+
+Cheers,
