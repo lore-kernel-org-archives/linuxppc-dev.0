@@ -1,29 +1,33 @@
-Return-Path: <alexei.starovoitov@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5061E1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Nov 2014 04:59:59 +1100 (AEDT)
-Received: from mail-qg0-x22d.google.com (mail-qg0-x22d.google.com
- [IPv6:2607:f8b0:400d:c04::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C3C19140082
- for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2014 04:59:58 +1100 (AEDT)
-Received: by mail-qg0-f45.google.com with SMTP id z107so3827439qgd.18
- for <linuxppc-dev@ozlabs.org>; Sat, 08 Nov 2014 09:59:55 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1415253755-4001-1-git-send-email-kda@linux-powerpc.org>
-References: <1415253755-4001-1-git-send-email-kda@linux-powerpc.org>
-Date: Sat, 8 Nov 2014 09:59:55 -0800
-Message-ID: <CAADnVQJZxVvzPFKG1E0jQkpv3GB4iJejyPknb-PnkcKfP4Nf1Q@mail.gmail.com>
-Subject: Re: [PATCH net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE instruction
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Daniel Borkmann <dborkman@redhat.com>, linuxppc-dev@ozlabs.org
+Return-Path: <jiang.liu@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 55FAD1A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 02:19:26 +1100 (AEDT)
+From: Jiang Liu <jiang.liu@linux.intel.com>
+To: Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Grant Likely <grant.likely@linaro.org>,
+ Marc Zyngier <marc.zyngier@arm.com>,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, x86@kernel.org,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Alexander Gordeev <agordeev@redhat.com>, Anton Blanchard <anton@samba.org>,
+ Jiang Liu <jiang.liu@linux.intel.com>, Yijing Wang <wangyijing@huawei.com>
+Subject: [RFC Part4 v1 11/17] PCI,
+ MSI: Rename __read_msi_msg() as __pci_read_msi_msg()
+Date: Sun,  9 Nov 2014 23:10:33 +0800
+Message-Id: <1415545839-28263-12-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <1415545839-28263-1-git-send-email-jiang.liu@linux.intel.com>
+References: <1415545839-28263-1-git-send-email-jiang.liu@linux.intel.com>
+Cc: Tony Luck <tony.luck@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Joerg Roedel <joro@8bytes.org>, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+ xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 5, 2014 at 10:02 PM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> Add BPF extension SKF_AD_HATYPE to ppc JIT to check
-> the hw type of the interface
->
-> JIT off:
-> [   69.106783] test_bpf: #20 LD_HATYPE 48 48 PASS
-> JIT on:
-> [   64.721757] test_bpf: #20 LD_HATYPE 7 6 PASS
->
-> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
-> CC: Daniel Borkmann<dborkman@redhat.com>
-> CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> ---
->  arch/powerpc/net/bpf_jit_comp.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index d110e28..8bf4fc2 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -412,6 +412,22 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
->                         PPC_ANDI(r_A, r_A, PKT_TYPE_MAX);
->                         PPC_SRWI(r_A, r_A, 5);
->                         break;
-> +               case BPF_ANC | SKF_AD_HATYPE:
-> +                       BUILD_BUG_ON(FIELD_SIZEOF(struct net_device, type) != 2);
-> +                       PPC_LD_OFFS(r_scratch1, r_skb, offsetof(struct sk_buff,
-> +                                                               dev));
-> +                       PPC_CMPDI(r_scratch1, 0);
-> +                       if (ctx->pc_ret0 != -1) {
-> +                               PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
-> +                       } else {
-> +                               /* Exit, returning 0; first pass hits here. */
-> +                               PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
+Rename __read_msi_msg() as __pci_read_msi_msg() and kill unused
+read_msi_msg(). It's a preparation to separate generic MSI code
+from PCI core.
 
-please use canonical formatting ctx->idx * 4 + 12
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
+ arch/x86/pci/xen.c                   |    2 +-
+ drivers/pci/msi.c                    |    9 +--------
+ include/linux/msi.h                  |    3 +--
+ 4 files changed, 4 insertions(+), 12 deletions(-)
 
-> +                               PPC_LI(r_ret, 0);
-> +                               PPC_JMP(exit_addr);
-> +                       }
-> +                       PPC_LHZ_OFFS(r_A, r_scratch1,
-> +                                    offsetof(struct net_device, type));
-
-the whole thing looks like copy paste from 'case ifindex'.
-Would be nice to handle them together to reduce
-duplicated code, sine only last load is different.
-
-Also in commit log please do _both_ runs with JIT on.
-You should see a difference before/after applying this patch.
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 8ab5add4ac82..90f756d0f58f 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -476,7 +476,7 @@ again:
+ 		irq_set_msi_desc(virq, entry);
+ 
+ 		/* Read config space back so we can restore after reset */
+-		__read_msi_msg(entry, &msg);
++		__pci_read_msi_msg(entry, &msg);
+ 		entry->msg = msg;
+ 	}
+ 
+diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+index 093f5f4272d3..a48ca2f8b93e 100644
+--- a/arch/x86/pci/xen.c
++++ b/arch/x86/pci/xen.c
+@@ -229,7 +229,7 @@ static int xen_hvm_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 		return 1;
+ 
+ 	list_for_each_entry(msidesc, &dev->msi_list, list) {
+-		__read_msi_msg(msidesc, &msg);
++		__pci_read_msi_msg(msidesc, &msg);
+ 		pirq = MSI_ADDR_EXT_DEST_ID(msg.address_hi) |
+ 			((msg.address_lo >> MSI_ADDR_DEST_ID_SHIFT) & 0xff);
+ 		if (msg.data != XEN_PIRQ_MSI_DATA ||
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index e1814f4be4b9..6011dfb475a1 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -243,7 +243,7 @@ void default_restore_msi_irqs(struct pci_dev *dev)
+ 		default_restore_msi_irq(dev, entry->irq);
+ }
+ 
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
++void __pci_read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	BUG_ON(entry->dev->current_state != PCI_D0);
+ 
+@@ -273,13 +273,6 @@ void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ 	}
+ }
+ 
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+-{
+-	struct msi_desc *entry = irq_get_msi_desc(irq);
+-
+-	__read_msi_msg(entry, msg);
+-}
+-
+ void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg)
+ {
+ 	if (entry->dev->current_state != PCI_D0) {
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 19502186a64d..4b0d070ff481 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -61,9 +61,8 @@ void msi_domain_deactivate(struct irq_domain *domain,
+ 
+ #ifdef CONFIG_PCI_MSI
+ /* Helper functions */
+-void __read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
++void __pci_read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void __write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+-void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+ void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+ 
+ /*
+-- 
+1.7.10.4
