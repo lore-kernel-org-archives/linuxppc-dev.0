@@ -2,30 +2,24 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402D41A00C9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 12:44:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B73E21A1EE3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 12:45:54 +1100 (AEDT)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xne2A-000VyS-SU
- for linuxppc-dev@lists.ozlabs.org; Mon, 10 Nov 2014 01:44:47 +0000
+ (envelope-from <linux@roeck-us.net>) id 1Xne3F-000YDH-82
+ for linuxppc-dev@lists.ozlabs.org; Mon, 10 Nov 2014 01:45:53 +0000
 From: Guenter Roeck <linux@roeck-us.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v6 08/48] kernel: Move pm_power_off to common code
-Date: Sun,  9 Nov 2014 17:42:25 -0800
-Message-Id: <1415583785-6980-9-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v6 41/48] powerpc: Register with kernel power-off handler
+Date: Sun,  9 Nov 2014 17:42:58 -0800
+Message-Id: <1415583785-6980-42-git-send-email-linux@roeck-us.net>
 In-Reply-To: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
 References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux@lists.openrisc.net, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>,
- linux-xtensa@linux-xtensa.org, user-mode-linux-devel@lists.sourceforge.net,
- linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, user-mode-linux-user@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-alpha@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-pm@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
+ Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
+ Alistair Popple <alistair@popple.id.au>, Scott Wood <scottwood@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,911 +29,432 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pm_power_off is defined for all architectures. Move it to common code.
+Register with kernel power-off handler instead of setting pm_power_off
+directly.
 
-Have all architectures call do_kernel_power_off instead of pm_power_off.
-Some architectures point pm_power_off to machine_power_off. For those,
-call do_kernel_power_off from machine_power_off instead.
+If there is an indication that there can be more than one power-off handler,
+use register_power_off_handler, otherwise use register_power_off_handler_simple
+to register the power-off handler.
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
-Acked-by: James Hogan <james.hogan@imgtec.com>
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-Acked-by: Richard Weinberger <richard@nod.at>
-Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+If the power-off handler only resets or stops the system, select the fallback
+priority to indicate that the power-off handler is one of last resort.
+If the power-off handler powers off the system, select the default priority,
+unless the power-off handler installation code suggests that there can be
+more than one power-off handler and the new handler is only installed
+conditionally. In this case, install the handler with low priority.
+
+Cc: Alexander Graf <agraf@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v6:
-- No change.
+- This patch: No change.
+  Global: Replaced priority defines with enum.
 v5:
-- Rebase to v3.18-rc3
-- Update powerpc code to reflect merged power-off handler changes
-v4:
-- No change
-v3:
-- Replace poweroff in all newly introduced variables and in text
-  with power_off or power-off as appropriate
-v2:
-- do_kernel_poweroff -> do_kernel_power_off
-- have_kernel_poweroff -> have_kernel_power_off
+- New patch
 
- arch/alpha/kernel/process.c        |  9 +++------
- arch/arc/kernel/reset.c            |  5 +----
- arch/arm/kernel/process.c          |  5 +----
- arch/arm64/kernel/process.c        |  5 +----
- arch/avr32/kernel/process.c        |  6 +-----
- arch/blackfin/kernel/process.c     |  3 ---
- arch/blackfin/kernel/reboot.c      |  2 ++
- arch/c6x/kernel/process.c          |  9 +--------
- arch/cris/kernel/process.c         |  4 +---
- arch/frv/kernel/process.c          |  5 ++---
- arch/hexagon/kernel/reset.c        |  5 ++---
- arch/ia64/kernel/process.c         |  5 +----
- arch/m32r/kernel/process.c         |  8 ++++----
- arch/m68k/kernel/process.c         |  6 +-----
- arch/metag/kernel/process.c        |  6 +-----
- arch/microblaze/kernel/process.c   |  3 ---
- arch/microblaze/kernel/reset.c     |  1 +
- arch/mips/kernel/reset.c           |  6 +-----
- arch/mn10300/kernel/process.c      |  8 ++------
- arch/openrisc/kernel/process.c     |  8 +++++---
- arch/parisc/kernel/process.c       |  8 ++++----
- arch/powerpc/kernel/setup-common.c |  6 +-----
- arch/powerpc/xmon/xmon.c           |  3 +--
- arch/s390/kernel/setup.c           |  8 ++------
- arch/score/kernel/process.c        |  8 ++++----
- arch/sh/kernel/reboot.c            |  6 +-----
- arch/sparc/kernel/process_32.c     | 10 ++--------
- arch/sparc/kernel/reboot.c         |  8 ++------
- arch/tile/kernel/reboot.c          |  7 +++----
- arch/um/kernel/reboot.c            |  2 --
- arch/unicore32/kernel/process.c    |  9 +--------
- arch/x86/kernel/reboot.c           | 11 +++--------
- arch/x86/xen/enlighten.c           |  3 +--
- arch/xtensa/kernel/process.c       |  4 ----
- drivers/parisc/power.c             |  3 +--
- kernel/power/power_off_handler.c   |  9 +++++++++
- kernel/reboot.c                    |  4 ++--
- 37 files changed, 68 insertions(+), 150 deletions(-)
+ arch/powerpc/platforms/44x/ppc476.c              |  3 ++-
+ arch/powerpc/platforms/52xx/efika.c              |  3 ++-
+ arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c   | 30 ++++++++++++++++--------
+ arch/powerpc/platforms/85xx/corenet_generic.c    |  3 ++-
+ arch/powerpc/platforms/85xx/sgy_cts1000.c        | 16 +++++++++++--
+ arch/powerpc/platforms/cell/celleb_setup.c       |  6 +++--
+ arch/powerpc/platforms/cell/qpace_setup.c        |  3 ++-
+ arch/powerpc/platforms/cell/setup.c              |  3 ++-
+ arch/powerpc/platforms/chrp/setup.c              |  3 ++-
+ arch/powerpc/platforms/embedded6xx/gamecube.c    |  3 ++-
+ arch/powerpc/platforms/embedded6xx/linkstation.c |  3 ++-
+ arch/powerpc/platforms/embedded6xx/wii.c         |  3 ++-
+ arch/powerpc/platforms/maple/setup.c             |  6 +++--
+ arch/powerpc/platforms/powermac/setup.c          |  3 ++-
+ arch/powerpc/platforms/powernv/setup.c           |  6 +++--
+ arch/powerpc/platforms/ps3/setup.c               |  3 ++-
+ arch/powerpc/platforms/pseries/setup.c           |  3 ++-
+ arch/powerpc/sysdev/fsl_soc.c                    |  6 ++---
+ 18 files changed, 73 insertions(+), 33 deletions(-)
 
-diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
-index 1941a07..81c43f8 100644
---- a/arch/alpha/kernel/process.c
-+++ b/arch/alpha/kernel/process.c
-@@ -24,6 +24,7 @@
- #include <linux/vt.h>
- #include <linux/mman.h>
- #include <linux/elfcore.h>
+diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+index c11ce65..590d31f 100644
+--- a/arch/powerpc/platforms/44x/ppc476.c
++++ b/arch/powerpc/platforms/44x/ppc476.c
+@@ -94,7 +94,8 @@ static int avr_probe(struct i2c_client *client,
+ {
+ 	avr_i2c_client = client;
+ 	ppc_md.restart = avr_reset_system;
+-	pm_power_off = avr_power_off_system;
++	register_power_off_handler_simple(avr_power_off_system,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
+index 6af651e..321a7a7 100644
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -212,7 +212,8 @@ static int __init efika_probe(void)
+ 	DMA_MODE_READ = 0x44;
+ 	DMA_MODE_WRITE = 0x48;
+ 
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+index 15e8021..1bf6b0e 100644
+--- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
++++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+@@ -19,6 +19,7 @@
+ #include <linux/gpio.h>
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
 +#include <linux/pm.h>
- #include <linux/reboot.h>
- #include <linux/tty.h>
- #include <linux/console.h>
-@@ -40,12 +41,6 @@
- #include "proto.h"
- #include "pci_impl.h"
- 
--/*
-- * Power off function, if any
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- #ifdef CONFIG_ALPHA_WTINT
- /*
-  * Sleep the CPU.
-@@ -184,6 +179,8 @@ machine_halt(void)
- void
- machine_power_off(void)
- {
-+	do_kernel_power_off();
-+
- 	common_shutdown(LINUX_REBOOT_CMD_POWER_OFF, NULL);
- }
- 
-diff --git a/arch/arc/kernel/reset.c b/arch/arc/kernel/reset.c
-index 2768fa1..0758d9d 100644
---- a/arch/arc/kernel/reset.c
-+++ b/arch/arc/kernel/reset.c
-@@ -26,9 +26,6 @@ void machine_restart(char *__unused)
- 
- void machine_power_off(void)
- {
--	/* FIXME ::  power off ??? */
-+	do_kernel_power_off();
- 	machine_halt();
- }
--
--void (*pm_power_off) (void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index fe972a2..aa3f656 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -117,8 +117,6 @@ void soft_restart(unsigned long addr)
- /*
-  * Function pointers to optional machine specific functions
-  */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
- 
- void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
- 
-@@ -205,8 +203,7 @@ void machine_power_off(void)
- 	local_irq_disable();
- 	smp_send_stop();
- 
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-index fde9923..6f623a0 100644
---- a/arch/arm64/kernel/process.c
-+++ b/arch/arm64/kernel/process.c
-@@ -68,8 +68,6 @@ void soft_restart(unsigned long addr)
- /*
-  * Function pointers to optional machine specific functions
-  */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL_GPL(pm_power_off);
- 
- void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
- 
-@@ -129,8 +127,7 @@ void machine_power_off(void)
- {
- 	local_irq_disable();
- 	smp_send_stop();
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/avr32/kernel/process.c b/arch/avr32/kernel/process.c
-index 42a53e74..529c1f6 100644
---- a/arch/avr32/kernel/process.c
-+++ b/arch/avr32/kernel/process.c
-@@ -23,9 +23,6 @@
- 
- #include <mach/pm.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * This file handles the architecture-dependent parts of process handling..
-  */
-@@ -48,8 +45,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- void machine_restart(char *cmd)
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 4aa5545..812dd83 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -39,9 +39,6 @@ int nr_l1stack_tasks;
- void *l1_stack_base;
- unsigned long l1_stack_len;
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * The idle loop on BFIN
-  */
-diff --git a/arch/blackfin/kernel/reboot.c b/arch/blackfin/kernel/reboot.c
-index c4f50a3..387d610 100644
---- a/arch/blackfin/kernel/reboot.c
-+++ b/arch/blackfin/kernel/reboot.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/interrupt.h>
-+#include <linux/pm.h>
- #include <asm/bfin-global.h>
- #include <asm/reboot.h>
- #include <asm/bfrom.h>
-@@ -106,6 +107,7 @@ void machine_halt(void)
- __attribute__((weak))
- void native_machine_power_off(void)
- {
-+	do_kernel_power_off();
- 	idle_with_irq_disabled();
- }
- 
-diff --git a/arch/c6x/kernel/process.c b/arch/c6x/kernel/process.c
-index 57d2ea8..edf7e5a 100644
---- a/arch/c6x/kernel/process.c
-+++ b/arch/c6x/kernel/process.c
-@@ -27,12 +27,6 @@ void	(*c6x_halt)(void);
- extern asmlinkage void ret_from_fork(void);
- extern asmlinkage void ret_from_kernel_thread(void);
- 
--/*
-- * power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void arch_cpu_idle(void)
- {
- 	unsigned long tmp;
-@@ -73,8 +67,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	halt_loop();
- }
- 
-diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
-index b78498e..9ebd76b 100644
---- a/arch/cris/kernel/process.c
-+++ b/arch/cris/kernel/process.c
-@@ -31,9 +31,6 @@
- 
- extern void default_idle(void);
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void arch_cpu_idle(void)
- {
- 	default_idle();
-@@ -60,6 +57,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
-+	do_kernel_power_off();
- }
- 
- /*
-diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
-index 5d40aeb77..502dabb 100644
---- a/arch/frv/kernel/process.c
-+++ b/arch/frv/kernel/process.c
-@@ -42,9 +42,6 @@ asmlinkage void ret_from_kernel_thread(void);
- 
- #include <asm/pgalloc.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- static void core_sleep_idle(void)
- {
- #ifdef LED_DEBUG_SLEEP
-@@ -107,6 +104,8 @@ void machine_power_off(void)
- 	gdbstub_exit(0);
- #endif
- 
-+	do_kernel_power_off();
-+
- 	for (;;);
- }
- 
-diff --git a/arch/hexagon/kernel/reset.c b/arch/hexagon/kernel/reset.c
-index 76483c1..6f607b6 100644
---- a/arch/hexagon/kernel/reset.c
-+++ b/arch/hexagon/kernel/reset.c
-@@ -16,11 +16,13 @@
-  * 02110-1301, USA.
-  */
- 
-+#include <linux/pm.h>
- #include <linux/smp.h>
- #include <asm/hexagon_vm.h>
- 
- void machine_power_off(void)
- {
-+	do_kernel_power_off();
- 	smp_send_stop();
- 	__vmstop();
- }
-@@ -32,6 +34,3 @@ void machine_halt(void)
- void machine_restart(char *cmd)
- {
- }
--
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
-index b515149..88121a2 100644
---- a/arch/ia64/kernel/process.c
-+++ b/arch/ia64/kernel/process.c
-@@ -57,8 +57,6 @@ void (*ia64_mark_idle)(int);
- 
- unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
- EXPORT_SYMBOL(boot_option_idle_override);
--void (*pm_power_off) (void);
--EXPORT_SYMBOL(pm_power_off);
- 
- void
- ia64_do_show_stack (struct unw_frame_info *info, void *arg)
-@@ -675,8 +673,7 @@ machine_halt (void)
- void
- machine_power_off (void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	machine_halt();
- }
- 
-diff --git a/arch/m32r/kernel/process.c b/arch/m32r/kernel/process.c
-index e69221d..65a037e 100644
---- a/arch/m32r/kernel/process.c
-+++ b/arch/m32r/kernel/process.c
-@@ -23,6 +23,7 @@
- #include <linux/fs.h>
  #include <linux/slab.h>
- #include <linux/module.h>
-+#include <linux/pm.h>
- #include <linux/ptrace.h>
- #include <linux/unistd.h>
- #include <linux/hardirq.h>
-@@ -44,9 +45,6 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- 	return tsk->thread.lr;
- }
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_restart(char *__unused)
- {
- #if defined(CONFIG_PLAT_MAPPI3)
-@@ -67,7 +65,9 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	/* M32R_FIXME */
-+	do_kernel_power_off();
-+	for (;;)
-+		;
- }
- 
- void show_regs(struct pt_regs * regs)
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index afe3d6e..bbc0a63 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -78,14 +78,10 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	for (;;);
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- void show_regs(struct pt_regs * regs)
- {
- 	printk("\n");
-diff --git a/arch/metag/kernel/process.c b/arch/metag/kernel/process.c
-index 483dff9..8d95773 100644
---- a/arch/metag/kernel/process.c
-+++ b/arch/metag/kernel/process.c
-@@ -67,9 +67,6 @@ void arch_cpu_idle_dead(void)
- }
- #endif
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- void (*soc_restart)(char *cmd);
- void (*soc_halt)(void);
- 
-@@ -90,8 +87,7 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	smp_send_stop();
- 	hard_processor_halt(HALT_OK);
- }
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-index b2dd371..0ebca36 100644
---- a/arch/microblaze/kernel/process.c
-+++ b/arch/microblaze/kernel/process.c
-@@ -44,9 +44,6 @@ void show_regs(struct pt_regs *regs)
- 				regs->msr, regs->ear, regs->esr, regs->fsr);
- }
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void flush_thread(void)
- {
- }
-diff --git a/arch/microblaze/kernel/reset.c b/arch/microblaze/kernel/reset.c
-index fbe58c6..2c6b32c 100644
---- a/arch/microblaze/kernel/reset.c
-+++ b/arch/microblaze/kernel/reset.c
-@@ -103,6 +103,7 @@ void machine_halt(void)
- void machine_power_off(void)
- {
- 	pr_notice("Machine power off...\n");
-+	do_kernel_power_off();
- 	while (1)
- 		;
- }
-diff --git a/arch/mips/kernel/reset.c b/arch/mips/kernel/reset.c
-index 07fc524..09e74d2 100644
---- a/arch/mips/kernel/reset.c
-+++ b/arch/mips/kernel/reset.c
-@@ -21,9 +21,6 @@
-  */
- void (*_machine_restart)(char *command);
- void (*_machine_halt)(void);
--void (*pm_power_off)(void);
--
--EXPORT_SYMBOL(pm_power_off);
- 
- void machine_restart(char *command)
- {
-@@ -39,6 +36,5 @@ void machine_halt(void)
- 
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
-diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
-index 3707da5..c78b2eb 100644
---- a/arch/mn10300/kernel/process.c
-+++ b/arch/mn10300/kernel/process.c
-@@ -20,6 +20,7 @@
- #include <linux/user.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/pm.h>
+ #include <linux/kthread.h>
  #include <linux/reboot.h>
- #include <linux/percpu.h>
- #include <linux/err.h>
-@@ -45,12 +46,6 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
+@@ -86,7 +87,7 @@ static ssize_t show_status(struct device *d,
  }
+ static DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
  
- /*
-- * power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
--/*
-  * On SMP it's slightly faster (but much more power-consuming!)
-  * to poll the ->work.need_resched flag instead of waiting for the
-  * cross-CPU IPI to arrive. Use this option with caution.
-@@ -93,6 +88,7 @@ void machine_power_off(void)
- #ifdef CONFIG_KERNEL_DEBUGGER
- 	gdbstub_exit(0);
- #endif
-+	do_kernel_power_off();
- }
- 
- void show_regs(struct pt_regs *regs)
-diff --git a/arch/openrisc/kernel/process.c b/arch/openrisc/kernel/process.c
-index 386af25..494afd2 100644
---- a/arch/openrisc/kernel/process.c
-+++ b/arch/openrisc/kernel/process.c
-@@ -25,6 +25,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mm.h>
-+#include <linux/pm.h>
- #include <linux/stddef.h>
- #include <linux/unistd.h>
- #include <linux/ptrace.h>
-@@ -51,7 +52,7 @@
-  */
- struct thread_info *current_thread_info_set[NR_CPUS] = { &init_thread_info, };
- 
--void machine_restart(void)
-+void machine_restart(char *cmd)
+-static void mcu_power_off(void)
++static void mcu_power_off(struct power_off_handler_block *this)
  {
- 	printk(KERN_INFO "*** MACHINE RESTART ***\n");
- 	__asm__("l.nop 1");
-@@ -72,11 +73,12 @@ void machine_halt(void)
- void machine_power_off(void)
- {
- 	printk(KERN_INFO "*** MACHINE POWER OFF ***\n");
-+
-+	do_kernel_power_off();
-+
- 	__asm__("l.nop 1");
+ 	struct mcu *mcu = glob_mcu;
+ 
+@@ -97,6 +98,11 @@ static void mcu_power_off(void)
+ 	mutex_unlock(&mcu->lock);
  }
  
--void (*pm_power_off) (void) = machine_power_off;
--
- /*
-  * When a process does an "exec", machine state like FPU and debug
-  * registers need to be reset.  This is a hook function for that.
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index 0bbbf0d..3f5d14a 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -41,6 +41,7 @@
- #include <linux/fs.h>
- #include <linux/module.h>
- #include <linux/personality.h>
-+#include <linux/pm.h>
- #include <linux/ptrace.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-@@ -133,7 +134,9 @@ void machine_power_off(void)
- 	pdc_soft_power_button(0);
- 	
- 	pdc_chassis_send_status(PDC_CHASSIS_DIRECT_SHUTDOWN);
--		
++static struct power_off_handler_block mcu_power_off_hb = {
++	.handler = mcu_power_off,
++	.priority = POWER_OFF_PRIORITY_LOW,
++};
 +
-+	do_kernel_power_off();
-+
- 	/* It seems we have no way to power the system off via
- 	 * software. The user has to press the button himself. */
- 
-@@ -141,9 +144,6 @@ void machine_power_off(void)
- 	       "Please power this system off now.");
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * Free current thread data structures etc..
-  */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 44c8d03..a2efce7 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -139,8 +139,7 @@ void machine_restart(char *cmd)
- void machine_power_off(void)
+ static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
  {
- 	machine_shutdown();
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
+ 	struct mcu *mcu = container_of(gc, struct mcu, gc);
+@@ -167,13 +173,15 @@ static int mcu_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	if (ret)
+ 		goto err;
+ 
+-	/* XXX: this is potentially racy, but there is no lock for pm_power_off */
+-	if (!pm_power_off) {
+-		glob_mcu = mcu;
+-		pm_power_off = mcu_power_off;
+-		dev_info(&client->dev, "will provide power-off service\n");
++	glob_mcu = mcu;
++	ret = register_power_off_handler(&mcu_power_off_hb);
++	if (ret) {
++		dev_err(&client->dev, "Failed to register power-off handler\n");
++		goto err_handler;
+ 	}
+ 
++	dev_info(&client->dev, "will provide power-off service\n");
++
+ 	if (device_create_file(&client->dev, &dev_attr_status))
+ 		dev_err(&client->dev,
+ 			"couldn't create device file for status\n");
+@@ -182,6 +190,10 @@ static int mcu_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 				      "mcu-i2c-shdn");
+ 
+ 	return 0;
++
++err_handler:
++	mcu_gpiochip_remove(mcu);
++	glob_mcu = NULL;
+ err:
+ 	kfree(mcu);
+ 	return ret;
+@@ -196,10 +208,8 @@ static int mcu_remove(struct i2c_client *client)
+ 
+ 	device_remove_file(&client->dev, &dev_attr_status);
+ 
+-	if (glob_mcu == mcu) {
+-		pm_power_off = NULL;
+-		glob_mcu = NULL;
+-	}
++	unregister_power_off_handler(&mcu_power_off_hb);
++	glob_mcu = NULL;
+ 
+ 	ret = mcu_gpiochip_remove(mcu);
+ 	if (ret)
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 1f309cc..f0c4b51 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -170,7 +170,8 @@ static int __init corenet_generic_probe(void)
+ 
+ 			ppc_md.get_irq = ehv_pic_get_irq;
+ 			ppc_md.restart = fsl_hv_restart;
+-			pm_power_off = fsl_hv_halt;
++			register_power_off_handler_simple(fsl_hv_halt,
++						POWER_OFF_PRIORITY_DEFAULT);
+ 			ppc_md.halt = fsl_hv_halt;
  #ifdef CONFIG_SMP
- 	smp_send_stop();
- #endif
-@@ -151,9 +150,6 @@ void machine_power_off(void)
- /* Used by the G5 thermal driver */
- EXPORT_SYMBOL_GPL(machine_power_off);
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL_GPL(pm_power_off);
--
- void machine_halt(void)
- {
- 	machine_shutdown();
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 506d256..8780178 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -981,8 +981,7 @@ static void bootcmds(void)
- 	else if (cmd == 'h')
- 		ppc_md.halt();
- 	else if (cmd == 'p')
--		if (pm_power_off)
--			pm_power_off();
-+		do_kernel_power_off();
+ 			/*
+diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+index e149c9e..d849e8f 100644
+--- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
++++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/of_gpio.h>
+ #include <linux/of_irq.h>
++#include <linux/pm.h>
+ #include <linux/workqueue.h>
+ #include <linux/reboot.h>
+ #include <linux/interrupt.h>
+@@ -59,6 +60,16 @@ static void gpio_halt_cb(void)
+ 	gpio_set_value(gpio, trigger);
  }
  
- static int cpu_cmd(void)
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index e80d9ff..267e025 100644
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -263,13 +263,9 @@ void machine_power_off(void)
- 		 */
- 		console_unblank();
- 	_machine_power_off();
--}
- 
--/*
-- * Dummy power off function.
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL_GPL(pm_power_off);
-+	do_kernel_power_off();
-+}
- 
- static int __init early_parse_mem(char *p)
- {
-diff --git a/arch/score/kernel/process.c b/arch/score/kernel/process.c
-index a1519ad3..b76ea67 100644
---- a/arch/score/kernel/process.c
-+++ b/arch/score/kernel/process.c
-@@ -29,9 +29,6 @@
- #include <linux/pm.h>
- #include <linux/rcupdate.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- /* If or when software machine-restart is implemented, add code here. */
- void machine_restart(char *command) {}
- 
-@@ -39,7 +36,10 @@ void machine_restart(char *command) {}
- void machine_halt(void) {}
- 
- /* If or when software machine-power-off is implemented, add code here. */
--void machine_power_off(void) {}
-+void machine_power_off(void)
++static void gpio_power_off_cb(struct power_off_handler_block *this)
 +{
-+	do_kernel_power_off();
++	gpio_halt_cb();
 +}
- 
- void ret_from_fork(void);
- void ret_from_kernel_thread(void);
-diff --git a/arch/sh/kernel/reboot.c b/arch/sh/kernel/reboot.c
-index 04afe5b..065de12 100644
---- a/arch/sh/kernel/reboot.c
-+++ b/arch/sh/kernel/reboot.c
-@@ -11,9 +11,6 @@
- #include <asm/tlbflush.h>
- #include <asm/traps.h>
- 
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- #ifdef CONFIG_SUPERH32
- static void watchdog_trigger_immediate(void)
- {
-@@ -51,8 +48,7 @@ static void native_machine_shutdown(void)
- 
- static void native_machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- }
- 
- static void native_machine_halt(void)
-diff --git a/arch/sparc/kernel/process_32.c b/arch/sparc/kernel/process_32.c
-index 50e7b62..cb8148a 100644
---- a/arch/sparc/kernel/process_32.c
-+++ b/arch/sparc/kernel/process_32.c
-@@ -48,14 +48,6 @@
-  */
- void (*sparc_idle)(void);
- 
--/* 
-- * Power-off handler instantiation for pm.h compliance
-- * This is done via auxio, but could be used as a fallback
-- * handler when auxio is not present-- unused for now...
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- /*
-  * sysctl - toggle power-off restriction for serial console 
-  * systems in machine_power_off()
-@@ -112,6 +104,8 @@ void machine_power_off(void)
- 		sbus_writeb(power_register, auxio_power_register);
- 	}
- 
-+	do_kernel_power_off();
 +
- 	machine_halt();
- }
- 
-diff --git a/arch/sparc/kernel/reboot.c b/arch/sparc/kernel/reboot.c
-index eba7d91..3c0bb03 100644
---- a/arch/sparc/kernel/reboot.c
-+++ b/arch/sparc/kernel/reboot.c
-@@ -16,17 +16,13 @@
-  */
- int scons_pwroff = 1;
- 
--/* This isn't actually used, it exists merely to satisfy the
-- * reference in kernel/sys.c
-- */
--void (*pm_power_off)(void) = machine_power_off;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_power_off(void)
- {
- 	if (strcmp(of_console_device->type, "serial") || scons_pwroff)
- 		prom_halt_power_off();
- 
-+	do_kernel_power_off();
++static struct power_off_handler_block gpio_power_off_hb = {
++	.handler = gpio_power_off_cb,
++	.priority = POWER_OFF_PRIORITY_DEFAULT,
++};
 +
- 	prom_halt();
+ /* This IRQ means someone pressed the power button and it is waiting for us
+  * to handle the shutdown/poweroff. */
+ static irqreturn_t gpio_halt_irq(int irq, void *__data)
+@@ -120,7 +131,8 @@ static int gpio_halt_probe(struct platform_device *pdev)
+ 
+ 	/* Register our halt function */
+ 	ppc_md.halt = gpio_halt_cb;
+-	pm_power_off = gpio_halt_cb;
++	if (register_power_off_handler(&gpio_power_off_hb))
++		pr_warn("gpio-halt: Failed to register power-off handler\n");
+ 
+ 	printk(KERN_INFO "gpio-halt: registered GPIO %d (%d trigger, %d"
+ 	       " irq).\n", gpio, trigger, irq);
+@@ -137,7 +149,7 @@ static int gpio_halt_remove(struct platform_device *pdev)
+ 		free_irq(irq, halt_node);
+ 
+ 		ppc_md.halt = NULL;
+-		pm_power_off = NULL;
++		unregister_power_off_handler(&gpio_power_off_hb);
+ 
+ 		gpio_free(gpio);
+ 
+diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
+index 90be8ec..e301b1a 100644
+--- a/arch/powerpc/platforms/cell/celleb_setup.c
++++ b/arch/powerpc/platforms/cell/celleb_setup.c
+@@ -142,7 +142,8 @@ static int __init celleb_probe_beat(void)
+ 	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS
+ 		| FW_FEATURE_BEAT | FW_FEATURE_LPAR;
+ 	hpte_init_beat_v3();
+-	pm_power_off = beat_power_off;
++	register_power_off_handler_simple(beat_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
+@@ -191,7 +192,8 @@ static int __init celleb_probe_native(void)
  
-diff --git a/arch/tile/kernel/reboot.c b/arch/tile/kernel/reboot.c
-index 6c5d2c0..8ff4a7f 100644
---- a/arch/tile/kernel/reboot.c
-+++ b/arch/tile/kernel/reboot.c
-@@ -36,6 +36,9 @@ void machine_power_off(void)
- {
- 	arch_local_irq_disable_all();
- 	smp_send_stop();
-+
-+	do_kernel_power_off();
-+
- 	hv_power_off();
+ 	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS;
+ 	hpte_init_native();
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
+diff --git a/arch/powerpc/platforms/cell/qpace_setup.c b/arch/powerpc/platforms/cell/qpace_setup.c
+index d328140..223d40a 100644
+--- a/arch/powerpc/platforms/cell/qpace_setup.c
++++ b/arch/powerpc/platforms/cell/qpace_setup.c
+@@ -127,7 +127,8 @@ static int __init qpace_probe(void)
+ 		return 0;
  
-@@ -45,7 +48,3 @@ void machine_restart(char *cmd)
- 	smp_send_stop();
- 	hv_restart((HV_VirtAddr) "vmlinux", (HV_VirtAddr) cmd);
+ 	hpte_init_native();
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
--
--/* No interesting distinction to be made here. */
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
-diff --git a/arch/um/kernel/reboot.c b/arch/um/kernel/reboot.c
-index ced8903..a82ef28 100644
---- a/arch/um/kernel/reboot.c
-+++ b/arch/um/kernel/reboot.c
-@@ -11,8 +11,6 @@
- #include <os.h>
- #include <skas.h>
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index d62aa98..ea5460c 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -259,7 +259,8 @@ static int __init cell_probe(void)
+ 		return 0;
  
--void (*pm_power_off)(void);
--
- static void kill_off_processes(void)
- {
- 	if (proc_mm)
-diff --git a/arch/unicore32/kernel/process.c b/arch/unicore32/kernel/process.c
-index b008e99..9490dd5 100644
---- a/arch/unicore32/kernel/process.c
-+++ b/arch/unicore32/kernel/process.c
-@@ -56,16 +56,9 @@ void machine_halt(void)
- 	gpio_set_value(GPO_SOFT_OFF, 0);
+ 	hpte_init_native();
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 860a59e..0c0288e 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -585,7 +585,8 @@ static int __init chrp_probe(void)
+ 	DMA_MODE_READ = 0x44;
+ 	DMA_MODE_WRITE = 0x48;
  
--/*
-- * Function pointers to optional machine specific functions
-- */
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
- void machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	machine_halt();
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
+diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
+index fe0ed6e..af40f0f 100644
+--- a/arch/powerpc/platforms/embedded6xx/gamecube.c
++++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
+@@ -67,7 +67,8 @@ static int __init gamecube_probe(void)
+ 	if (!of_flat_dt_is_compatible(dt_root, "nintendo,gamecube"))
+ 		return 0;
  
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 17962e6..5c09e28 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -30,12 +30,6 @@
- #include <asm/x86_init.h>
- #include <asm/efi.h>
+-	pm_power_off = gamecube_power_off;
++	register_power_off_handler_simple(gamecube_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
  
--/*
-- * Power off function, if any
-- */
--void (*pm_power_off)(void);
--EXPORT_SYMBOL(pm_power_off);
--
- static const struct desc_ptr no_idt = {};
- 
- /*
-@@ -647,11 +641,12 @@ static void native_machine_halt(void)
- 
- static void native_machine_power_off(void)
- {
--	if (pm_power_off) {
-+	if (have_kernel_power_off()) {
- 		if (!reboot_force)
- 			machine_shutdown();
--		pm_power_off();
-+		do_kernel_power_off();
- 	}
-+
- 	/* A fallback in case there is no PM info available */
- 	tboot_shutdown(TB_SHUTDOWN_HALT);
+ 	return 1;
  }
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index fac5e4f..bc08998 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1320,8 +1320,7 @@ static void xen_machine_halt(void)
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index 540eeb5..0c4dcf8 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -148,7 +148,8 @@ static int __init linkstation_probe(void)
+ 	if (!of_flat_dt_is_compatible(root, "linkstation"))
+ 		return 0;
  
- static void xen_machine_power_off(void)
- {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 	xen_reboot(SHUTDOWN_poweroff);
+-	pm_power_off = linkstation_power_off;
++	register_power_off_handler_simple(linkstation_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
  }
+diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
+index 352592d..eea8824 100644
+--- a/arch/powerpc/platforms/embedded6xx/wii.c
++++ b/arch/powerpc/platforms/embedded6xx/wii.c
+@@ -211,7 +211,8 @@ static int __init wii_probe(void)
+ 	if (!of_flat_dt_is_compatible(dt_root, "nintendo,wii"))
+ 		return 0;
  
-diff --git a/arch/xtensa/kernel/process.c b/arch/xtensa/kernel/process.c
-index 1c85323..c487296 100644
---- a/arch/xtensa/kernel/process.c
-+++ b/arch/xtensa/kernel/process.c
-@@ -49,10 +49,6 @@ extern void ret_from_kernel_thread(void);
+-	pm_power_off = wii_power_off;
++	register_power_off_handler_simple(wii_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
  
- struct task_struct *current_set[NR_CPUS] = {&init_task, };
- 
--void (*pm_power_off)(void) = NULL;
--EXPORT_SYMBOL(pm_power_off);
--
--
- #if XTENSA_HAVE_COPROCESSORS
- 
- void coprocessor_release_all(struct thread_info *ti)
-diff --git a/drivers/parisc/power.c b/drivers/parisc/power.c
-index ef31b77..f10cf92 100644
---- a/drivers/parisc/power.c
-+++ b/drivers/parisc/power.c
-@@ -95,8 +95,7 @@ static void process_shutdown(void)
- 		/* send kill signal */
- 		if (kill_cad_pid(SIGINT, 1)) {
- 			/* just in case killing init process failed */
--			if (pm_power_off)
--				pm_power_off();
-+			kernel_power_off();
- 		}
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index 56b85cd..73c3988 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -169,7 +169,8 @@ static void __init maple_use_rtas_reboot_and_halt_if_present(void)
+ 	if (rtas_service_present("system-reboot") &&
+ 	    rtas_service_present("power-off")) {
+ 		ppc_md.restart = rtas_restart;
+-		pm_power_off = rtas_power_off;
++		register_power_off_handler_simple(rtas_power_off,
++						  POWER_OFF_PRIORITY_DEFAULT);
+ 		ppc_md.halt = rtas_halt;
  	}
  }
-diff --git a/kernel/power/power_off_handler.c b/kernel/power/power_off_handler.c
-index c19e72b..d80a337 100644
---- a/kernel/power/power_off_handler.c
-+++ b/kernel/power/power_off_handler.c
-@@ -23,6 +23,12 @@
- #include <linux/types.h>
+@@ -312,7 +313,8 @@ static int __init maple_probe(void)
+ 	alloc_dart_table();
  
+ 	hpte_init_native();
+-	pm_power_off = maple_power_off;
++	register_power_off_handler_simple(maple_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 713d36d..6496ae4 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -632,7 +632,8 @@ static int __init pmac_probe(void)
+ 	smu_cmdbuf_abs = memblock_alloc_base(4096, 4096, 0x80000000UL);
+ #endif /* CONFIG_PMAC_SMU */
+ 
+-	pm_power_off = pmac_power_off;
++	register_power_off_handler_simple(pmac_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 941831d..a03c41b 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -268,7 +268,8 @@ static void __init pnv_setup_machdep_opal(void)
+ 	ppc_md.get_rtc_time = opal_get_rtc_time;
+ 	ppc_md.set_rtc_time = opal_set_rtc_time;
+ 	ppc_md.restart = pnv_restart;
+-	pm_power_off = pnv_power_off;
++	register_power_off_handler_simple(pnv_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 	ppc_md.halt = pnv_halt;
+ 	ppc_md.machine_check_exception = opal_machine_check;
+ 	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+@@ -285,7 +286,8 @@ static void __init pnv_setup_machdep_rtas(void)
+ 		ppc_md.set_rtc_time = rtas_set_rtc_time;
+ 	}
+ 	ppc_md.restart = rtas_restart;
+-	pm_power_off = rtas_power_off;
++	register_power_off_handler_simple(rtas_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 	ppc_md.halt = rtas_halt;
+ }
+ #endif /* CONFIG_PPC_POWERNV_RTAS */
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index 009a200..77e0dea 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -248,7 +248,8 @@ static int __init ps3_probe(void)
+ 	ps3_mm_init();
+ 	ps3_mm_vas_create(&htab_size);
+ 	ps3_hpte_init(htab_size);
+-	pm_power_off = ps3_power_off;
++	register_power_off_handler_simple(ps3_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+ 	return 1;
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index db0fc0c..b3c85bb 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -769,7 +769,8 @@ static int __init pSeries_probe(void)
+ 	else
+ 		hpte_init_native();
+ 
+-	pm_power_off = pseries_power_off;
++	register_power_off_handler_simple(pseries_power_off,
++					  POWER_OFF_PRIORITY_DEFAULT);
+ 
+ 	pr_debug("Machine is%s LPAR !\n",
+ 	         (powerpc_firmware_features & FW_FEATURE_LPAR) ? "" : " not");
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 1e04568..eeb075f 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -238,9 +238,9 @@ void fsl_hv_restart(char *cmd)
  /*
-+ * If set, calling this function will power off the system immediately.
-+ */
-+void (*pm_power_off)(void);
-+EXPORT_SYMBOL(pm_power_off);
-+
-+/*
-  * List of handlers for kernel code which wants to be called
-  * to power off the system.
+  * Halt the current partition
+  *
+- * This function should be assigned to the pm_power_off and ppc_md.halt
+- * function pointers, to shut down the partition when we're running under
+- * the Freescale hypervisor.
++ * This function should be registered as power-off handler and be assigned
++ * to the ppc_md.halt function pointer, to shut down the partition when
++ * we're running under the Freescale hypervisor.
   */
-@@ -291,6 +297,9 @@ void do_kernel_power_off(void)
- 	 * that risk.
- 	 */
- 
-+	if (pm_power_off)
-+		pm_power_off();
-+
- 	p = rcu_dereference_raw(power_off_handler_list);
- 	while (p) {
- 		next_p = rcu_dereference_raw(p->next);
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 5925f5a..d87d921 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -306,9 +306,9 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 		return ret;
- 
- 	/* Instead of trying to make the power_off code look like
--	 * halt when pm_power_off is not set do it the easy way.
-+	 * halt when no power-off handler exists do it the easy way.
- 	 */
--	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
-+	if (cmd == LINUX_REBOOT_CMD_POWER_OFF && !have_kernel_power_off())
- 		cmd = LINUX_REBOOT_CMD_HALT;
- 
- 	mutex_lock(&reboot_mutex);
+ void fsl_hv_halt(void)
+ {
 -- 
 1.9.1
