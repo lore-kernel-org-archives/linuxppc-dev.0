@@ -1,22 +1,30 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alexei.starovoitov@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 702481A012C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 21:53:01 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: "shh.xie@gmail.com" <shh.xie@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] DT: add MDIO node for FMan node
-Date: Mon, 10 Nov 2014 10:19:16 +0000
-Message-ID: <715df09ebc3a444bb9da853c942348c1@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
-In-Reply-To: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id AF1F21A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 05:26:45 +1100 (AEDT)
+Received: from mail-qg0-x232.google.com (mail-qg0-x232.google.com
+ [IPv6:2607:f8b0:400d:c04::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2ACBE14011B
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 05:26:45 +1100 (AEDT)
+Received: by mail-qg0-f50.google.com with SMTP id a108so5801833qge.23
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2014 10:26:43 -0800 (PST)
 MIME-Version: 1.0
-Cc: Emilian Medve <Emilian.Medve@freescale.com>
+In-Reply-To: <1415599183-3883-1-git-send-email-kda@linux-powerpc.org>
+References: <1415599183-3883-1-git-send-email-kda@linux-powerpc.org>
+Date: Mon, 10 Nov 2014 10:26:41 -0800
+Message-ID: <CAADnVQ+rSDi9rwfXzp-N12tc=+WdvP50WLJCRTJqo+z8nz53jw@mail.gmail.com>
+Subject: Re: [PATCH v2 net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE
+ instruction
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Daniel Borkmann <dborkman@redhat.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,136 +34,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping.
-
-Best Regards,=20
-Shaohui Xie
-
-> -----Original Message-----
-> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
-> Sent: Tuesday, November 04, 2014 7:57 PM
-> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood
-> Scott-B07421
-> Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
-> Subject: [PATCH] DT: add MDIO node for FMan node
->=20
-> From: Shaohui Xie <Shaohui.Xie@freescale.com>
->=20
-> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
->=20
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+On Sun, Nov 9, 2014 at 9:59 PM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> Add BPF extension SKF_AD_HATYPE to ppc JIT to check
+> the hw type of the interface
+>
+> Before:
+> [   57.723666] test_bpf: #20 LD_HATYPE
+> [   57.723675] BPF filter opcode 0020 (@0) unsupported
+> [   57.724168] 48 48 PASS
+>
+> After:
+> [  103.053184] test_bpf: #20 LD_HATYPE 7 6 PASS
+>
+> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
+> CC: Daniel Borkmann<dborkman@redhat.com>
+> CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+>
+> v2: address Alexei's comments
 > ---
-> based on http://patchwork.ozlabs.org/patch/390351/
-> for 'next' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
->=20
->  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69
-> ++++++++++++++++++++++
->  1 file changed, 69 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> index da8e5f2..83c2f14 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> @@ -7,6 +7,7 @@ CONTENTS
->    - FMan MURAM Node
->    - FMan dTSEC/XGEC/mEMAC Node
->    - FMan IEEE 1588 Node
-> +  - FMan MDIO Node
->    - Example
->=20
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D
-> @@ -352,6 +353,67 @@ ptp-timer@fe000 {
->  };
->=20
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D
-> +FMan MDIO Node
-> +
-> +DESCRIPTION
-> +
-> +The MDIO is a bus to which the PHY devices are connected.
-> +
-> +PROPERTIES
-> +
-> +- compatible
-> +		Usage: required
-> +		Value type: <stringlist>
-> +		Definition: A standard property.
-> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-> +		FMan v3.
-> +
-> +- reg
-> +		Usage: required
-> +		Value type: <prop-encoded-array>
-> +		Definition: A standard property.
-> +
-> +- bus-frequency
-> +		Usage: optional
-> +		Value type: <u32>
-> +		Definition: Default MDIO bus clock speed.
-> +
-> +- interrupts
-> +		Usage: optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: MDIO controller event interrupts.
-> +
-> +- type
-> +		Usage: required for FMan v3
-> +		Value type: <stringlist>
-> +		Definition: A standard property.
-> +		FMan v3 has internal MDIO for internal PCS(Physical Coding
-> +		Sublayer) PHYs and external MDIO for external PHYs.
-> +		The settings and programming routines for internal/external
-> +		MDIO are different. Must include "internal" for internal MDIO,
-> +		must include "external" for external MDIO.
-> +
-> +EXAMPLE
-> +
-> +Example for FMan v2:
-> +
-> +mdio@f1000 {
-> +	compatible =3D "fsl,fman-xmdio";
-> +	reg =3D <0xf1000 0x1000>;
-> +};
-> +
-> +Example for FMan v3:
-> +
-> +mdio@fd000 {
-> +	compatible =3D "fsl,fman-memac-mdio";
-> +	reg =3D <0xfd000 0x1000>;
-> +	bus-frequency =3D <2500000>;
-> +	type =3D "external";
-> +};
-> +
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D=3D
->  Example
->=20
->  fman@400000 {
-> @@ -526,4 +588,11 @@ fman@400000 {
->  		compatible =3D "fsl,fman-ptp-timer";
->  		reg =3D <0xfe000 0x1000>;
->  	};
-> +
-> +	mdio@fd000 {
-> +		compatible =3D "fsl,fman-memac-mdio";
-> +		reg =3D <0xfd000 0x1000>;
-> +		bus-frequency =3D <2500000>;
-> +		type =3D "external";
-> +	};
->  };
-> --
-> 1.8.4.1
+>  arch/powerpc/net/bpf_jit_comp.c | 17 +++++++++++++----
+>  1 file changed, 13 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index d110e28..d3fa80d 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -361,6 +361,11 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+>                                                             protocol));
+>                         break;
+>                 case BPF_ANC | SKF_AD_IFINDEX:
+> +               case BPF_ANC | SKF_AD_HATYPE:
+> +                       BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
+> +                                               ifindex) != 4);
+> +                       BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
+> +                                               type) != 2);
+>                         PPC_LD_OFFS(r_scratch1, r_skb, offsetof(struct sk_buff,
+>                                                                 dev));
+>                         PPC_CMPDI(r_scratch1, 0);
+> @@ -368,14 +373,18 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+>                                 PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
+>                         } else {
+>                                 /* Exit, returning 0; first pass hits here. */
+> -                               PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
+> +                               PPC_BCC_SHORT(COND_NE, ctx->idx * 4 + 12);
+>                                 PPC_LI(r_ret, 0);
+>                                 PPC_JMP(exit_addr);
+>                         }
+> -                       BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
+> -                                                 ifindex) != 4);
+> -                       PPC_LWZ_OFFS(r_A, r_scratch1,
+> +                       if (code == (BPF_ANC | SKF_AD_IFINDEX)) {
+> +                               PPC_LWZ_OFFS(r_A, r_scratch1,
+>                                      offsetof(struct net_device, ifindex));
+> +                       } else {
+> +                               PPC_LHZ_OFFS(r_A, r_scratch1,
+> +                                    offsetof(struct net_device, type));
+
+formatting is a bit off here, but that's minor.
+Acked-by: Alexei Starovoitov <ast@plumgrid.com>
