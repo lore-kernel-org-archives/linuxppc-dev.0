@@ -1,25 +1,22 @@
-Return-Path: <kda@linux-powerpc.org>
+Return-Path: <jk@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A1A31A0179
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 17:27:35 +1100 (AEDT)
-Received: from mail-la0-f48.google.com (mail-la0-f48.google.com
- [209.85.215.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB20814012A
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2014 17:27:33 +1100 (AEDT)
-Received: by mail-la0-f48.google.com with SMTP id gq15so7244135lab.35
- for <linuxppc-dev@ozlabs.org>; Sun, 09 Nov 2014 22:27:30 -0800 (PST)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: netdev@vger.kernel.org
-Subject: [PATCH v2 net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE instruction
-Date: Mon, 10 Nov 2014 08:59:43 +0300
-Message-Id: <1415599183-3883-1-git-send-email-kda@linux-powerpc.org>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- Denis Kirjanov <kda@linux-powerpc.org>, Daniel Borkmann <dborkman@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 940CA1A015A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 17:41:05 +1100 (AEDT)
+Message-ID: <54605E00.1050704@ozlabs.org>
+Date: Mon, 10 Nov 2014 14:41:04 +0800
+From: Jeremy Kerr <jk@ozlabs.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/2] Add IPMI support for powernv powerpc machines
+References: <1415245107.292153.444216242273.0.gpush@pablo>	
+ <545B826F.7050501@acm.org> <5460307C.9060502@ozlabs.org>
+ <1415598090.5769.15.camel@kernel.crashing.org>
+In-Reply-To: <1415598090.5769.15.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ minyard@acm.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add BPF extension SKF_AD_HATYPE to ppc JIT to check
-the hw type of the interface
+Hi Ben,
 
-Before:
-[   57.723666] test_bpf: #20 LD_HATYPE
-[   57.723675] BPF filter opcode 0020 (@0) unsupported
-[   57.724168] 48 48 PASS
+> Our OPAL interface can only do one at a time ? Because our underlying
+> FW driver already has a queue ..
 
-After:
-[  103.053184] test_bpf: #20 LD_HATYPE 7 6 PASS
+The Linux driver needs to match responses to their requests, so the
+driver needs to keep a reference to the requests that we've sent. The
+current implementation is very simple: we just keep one pointer, and
+require that there's only one outstanding request.
 
-CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
-CC: Daniel Borkmann<dborkman@redhat.com>
-CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+To have multiple outstanding requests, our options here are that we either:
 
-v2: address Alexei's comments
----
- arch/powerpc/net/bpf_jit_comp.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+1) duplicate the si_intf's queuing code in the powernv driver; or
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index d110e28..d3fa80d 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -361,6 +361,11 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 							    protocol));
- 			break;
- 		case BPF_ANC | SKF_AD_IFINDEX:
-+		case BPF_ANC | SKF_AD_HATYPE:
-+			BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
-+						ifindex) != 4);
-+			BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
-+						type) != 2);
- 			PPC_LD_OFFS(r_scratch1, r_skb, offsetof(struct sk_buff,
- 								dev));
- 			PPC_CMPDI(r_scratch1, 0);
-@@ -368,14 +373,18 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
- 			} else {
- 				/* Exit, returning 0; first pass hits here. */
--				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
-+				PPC_BCC_SHORT(COND_NE, ctx->idx * 4 + 12);
- 				PPC_LI(r_ret, 0);
- 				PPC_JMP(exit_addr);
- 			}
--			BUILD_BUG_ON(FIELD_SIZEOF(struct net_device,
--						  ifindex) != 4);
--			PPC_LWZ_OFFS(r_A, r_scratch1,
-+			if (code == (BPF_ANC | SKF_AD_IFINDEX)) {
-+				PPC_LWZ_OFFS(r_A, r_scratch1,
- 				     offsetof(struct net_device, ifindex));
-+			} else {
-+				PPC_LHZ_OFFS(r_A, r_scratch1,
-+				     offsetof(struct net_device, type));
-+			}
-+
- 			break;
- 		case BPF_ANC | SKF_AD_MARK:
- 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, mark) != 4);
--- 
-2.1.0
+2) move the queuing code from the si_intf component to the generic
+   IPMI msghander, and use that (so all drivers can assume a single
+   outstanding request)
+
+Corey has suggested the latter, which will only require a minimal change
+to the powerpv IPMI driver.
+
+Cheers,
+
+
+Jeremy
