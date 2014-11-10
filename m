@@ -1,39 +1,22 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59D4E1A012C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 21:50:06 +1100 (AEDT)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 10 Nov 2014 03:50:04 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id EAFC419D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 03:38:42 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAA8jWor65077292
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 09:45:32 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAAAmueH021543
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 03:48:57 -0700
-Message-ID: <54609804.9070006@linux.vnet.ibm.com>
-Date: Mon, 10 Nov 2014 16:18:36 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 702481A012C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2014 21:53:01 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: "shh.xie@gmail.com" <shh.xie@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] DT: add MDIO node for FMan node
+Date: Mon, 10 Nov 2014 10:19:16 +0000
+Message-ID: <715df09ebc3a444bb9da853c942348c1@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
+In-Reply-To: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: mpe@ellerman.id.au, mikey@neuling.org, joel.stanley@au1.ibm.com,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>
-Subject: Re: [PATCH] cpuidle/powernv: Fix return value of idle index in
- fastsleep
-References: <20141027132618.9085.97044.stgit@preeti.in.ibm.com>
-In-Reply-To: <20141027132618.9085.97044.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: rjw@rjwysocki.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,60 +26,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben, Mikey,
+Ping.
 
-Can you please take a look at this patch?  I feel the commit dcb1869 was
-just a plug-in solution. Shouldn't we take a look at this again?
+Best Regards,=20
+Shaohui Xie
 
-Ideally we should not need this check. With the cpuidle redesign on
-PowerNV going in, we can enable fastsleep at bootup itself and without
-checks on any debug parameters such as powersave_nap .We will then only
-need to check for powersave_nap == 0 and return only if that is the
-case. This check is still required since the user can disable all deep
-idle states by setting powersave_nap to 0.
-
-Regards
-Preeti U Murthy
-
-On 10/27/2014 06:56 PM, Preeti U Murthy wrote:
-> Commit dcb18694 : Fix ipi on Palmeto added a workaround to disable
-> going into fastsleep on Palmeto boards which was reported to fail
-> to boot when fastsleep was enabled. However it missed returning
-> an idle index. Fix this.
-> 
-> There is probably no harm in returning the index of fastsleep
-> although the cpu did not enter this state. The governor will notice
-> the difference in the residency time in the idle state and the
-> target residency of the idle state and prevent cpus from entering
-> fastsleep from that point on. Hence the usage and time statistics
-> logged for fastsleep will not be out of sync with reality except
-> for the first entry.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> -----Original Message-----
+> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
+> Sent: Tuesday, November 04, 2014 7:57 PM
+> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood
+> Scott-B07421
+> Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
+> Subject: [PATCH] DT: add MDIO node for FMan node
+>=20
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+>=20
+> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 > ---
-> Do we still need this workaround? Or can we get rid of the check
-> on powersave_nap altogether?
-> ---
-> 
->  drivers/cpuidle/cpuidle-powernv.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index fa79392..c18da24 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -70,7 +70,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
->  	unsigned long new_lpcr;
->  
->  	if (powersave_nap < 2)
-> -		return;
-> +		return index;
->  	if (unlikely(system_state < SYSTEM_RUNNING))
->  		return index;
->  
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> based on http://patchwork.ozlabs.org/patch/390351/
+> for 'next' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+>=20
+>  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69
+> ++++++++++++++++++++++
+>  1 file changed, 69 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> index da8e5f2..83c2f14 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> @@ -7,6 +7,7 @@ CONTENTS
+>    - FMan MURAM Node
+>    - FMan dTSEC/XGEC/mEMAC Node
+>    - FMan IEEE 1588 Node
+> +  - FMan MDIO Node
+>    - Example
+>=20
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D
+> @@ -352,6 +353,67 @@ ptp-timer@fe000 {
+>  };
+>=20
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D
+> +FMan MDIO Node
+> +
+> +DESCRIPTION
+> +
+> +The MDIO is a bus to which the PHY devices are connected.
+> +
+> +PROPERTIES
+> +
+> +- compatible
+> +		Usage: required
+> +		Value type: <stringlist>
+> +		Definition: A standard property.
+> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
+> +		FMan v3.
+> +
+> +- reg
+> +		Usage: required
+> +		Value type: <prop-encoded-array>
+> +		Definition: A standard property.
+> +
+> +- bus-frequency
+> +		Usage: optional
+> +		Value type: <u32>
+> +		Definition: Default MDIO bus clock speed.
+> +
+> +- interrupts
+> +		Usage: optional
+> +		Value type: <prop-encoded-array>
+> +		Definition: MDIO controller event interrupts.
+> +
+> +- type
+> +		Usage: required for FMan v3
+> +		Value type: <stringlist>
+> +		Definition: A standard property.
+> +		FMan v3 has internal MDIO for internal PCS(Physical Coding
+> +		Sublayer) PHYs and external MDIO for external PHYs.
+> +		The settings and programming routines for internal/external
+> +		MDIO are different. Must include "internal" for internal MDIO,
+> +		must include "external" for external MDIO.
+> +
+> +EXAMPLE
+> +
+> +Example for FMan v2:
+> +
+> +mdio@f1000 {
+> +	compatible =3D "fsl,fman-xmdio";
+> +	reg =3D <0xf1000 0x1000>;
+> +};
+> +
+> +Example for FMan v3:
+> +
+> +mdio@fd000 {
+> +	compatible =3D "fsl,fman-memac-mdio";
+> +	reg =3D <0xfd000 0x1000>;
+> +	bus-frequency =3D <2500000>;
+> +	type =3D "external";
+> +};
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D=3D
+>  Example
+>=20
+>  fman@400000 {
+> @@ -526,4 +588,11 @@ fman@400000 {
+>  		compatible =3D "fsl,fman-ptp-timer";
+>  		reg =3D <0xfe000 0x1000>;
+>  	};
+> +
+> +	mdio@fd000 {
+> +		compatible =3D "fsl,fman-memac-mdio";
+> +		reg =3D <0xfd000 0x1000>;
+> +		bus-frequency =3D <2500000>;
+> +		type =3D "external";
+> +	};
+>  };
+> --
+> 1.8.4.1
