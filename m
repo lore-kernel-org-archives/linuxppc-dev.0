@@ -2,34 +2,35 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21F181A1E6A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 16:27:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 504921A1EB7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 16:27:12 +1100 (AEDT)
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9EC3214017E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:06 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 11C09140179
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:12 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 11 Nov 2014 15:27:05 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1D4942CE8066
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:26:56 +1100 (EST)
+ Tue, 11 Nov 2014 15:27:11 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D3C322CE8069
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:07 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAB5SqW219071102
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:28:52 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAB5Qr0Z37814426
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:26:53 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAB5Qr0P030149
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:26:55 +1100
+ sAB5R5KF030474
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:07 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V4 1/8] elf: Add new PowerPC specifc core note sections
-Date: Tue, 11 Nov 2014 10:56:30 +0530
-Message-Id: <1415683597-22819-2-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 4/8] powerpc,
+ ptrace: Enable fpr_(get/set) for transactional memory
+Date: Tue, 11 Nov 2014 10:56:33 +0530
+Message-Id: <1415683597-22819-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
@@ -46,31 +47,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds four new core note sections for PowerPC transactional
-memory and one core note section for general miscellaneous debug registers.
-These addition of new elf core note sections extends the existing elf ABI
-without affecting it in any manner.
+This patch enables the fpr_get which gets the running value of all
+the FPR registers and the fpr_set which sets the running value of
+of all the FPR registers to accommodate in transaction ptrace
+interface based requests.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- include/uapi/linux/elf.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/ptrace.c | 103 ++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 97 insertions(+), 6 deletions(-)
 
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index ea9bf25..2260fc0 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -379,6 +379,11 @@ typedef struct elf64_shdr {
- #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
- #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
- #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
-+#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
-+#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
-+#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
-+#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
-+#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
- #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
- #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
- #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index f21897b..fd36b32 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -357,6 +357,33 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
+ 	return ret;
+ }
+ 
++
++/*
++ * fpr_get
++ *
++ * When the transaction is active, 'transact_fp' holds the current running
++ * value of all FPR registers and 'fp_state' holds the last checkpointed
++ * value of all FPR registers for the current transaction. When transaction
++ * is not active 'fp_state' holds the current running state of all the FPR
++ * registers. So this function which returns the current running values of
++ * all the FPR registers, needs to know whether any transaction is active
++ * or not.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	u64	fpr[32];
++ *	u64	fpscr;
++ * };
++ *
++ * There are two config options CONFIG_VSX and CONFIG_PPC_TRANSACTIONAL_MEM
++ * which determines the final code in this function. All the combinations of
++ * these two config options are possible except the one below as transactional
++ * memory config pulls in CONFIG_VSX automatically.
++ *
++ *	!defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
++ *
++ */
+ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+ 		   unsigned int pos, unsigned int count,
+ 		   void *kbuf, void __user *ubuf)
+@@ -367,22 +394,64 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
+ #endif
+ 	flush_fp_to_thread(target);
+ 
+-#ifdef CONFIG_VSX
++#if defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
++	/* copy to local buffer then write that out */
++	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
++		flush_altivec_to_thread(target);
++		flush_tmregs_to_thread(target);
++		for (i = 0; i < 32 ; i++)
++			buf[i] = target->thread.TS_TRANS_FPR(i);
++		buf[32] = target->thread.transact_fp.fpscr;
++	} else {
++		for (i = 0; i < 32 ; i++)
++			buf[i] = target->thread.TS_FPR(i);
++		buf[32] = target->thread.fp_state.fpscr;
++	}
++	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
++#endif
++
++#if defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+ 	/* copy to local buffer then write that out */
+ 	for (i = 0; i < 32 ; i++)
+ 		buf[i] = target->thread.TS_FPR(i);
+ 	buf[32] = target->thread.fp_state.fpscr;
+ 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
++#endif
+ 
+-#else
++
++#if !defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+ 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+ 		     offsetof(struct thread_fp_state, fpr[32][0]));
+-
+ 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+ 				   &target->thread.fp_state, 0, -1);
+ #endif
+ }
+ 
++/*
++ * fpr_set
++ *
++ * When the transaction is active, 'transact_fp' holds the current running
++ * value of all FPR registers and 'fp_state' holds the last checkpointed
++ * value of all FPR registers for the current transaction. When transaction
++ * is not active 'fp_state' holds the current running state of all the FPR
++ * registers. So this function which setss the current running values of
++ * all the FPR registers, needs to know whether any transaction is active
++ * or not.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	u64	fpr[32];
++ *	u64	fpscr;
++ * };
++ *
++ * There are two config options CONFIG_VSX and CONFIG_PPC_TRANSACTIONAL_MEM
++ * which determines the final code in this function. All the combinations of
++ * these two config options are possible except the one below as transactional
++ * memory config pulls in CONFIG_VSX automatically.
++ *
++ *	!defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
++ */
+ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
+ 		   unsigned int pos, unsigned int count,
+ 		   const void *kbuf, const void __user *ubuf)
+@@ -393,7 +462,27 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
+ #endif
+ 	flush_fp_to_thread(target);
+ 
+-#ifdef CONFIG_VSX
++#if defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
++	/* copy to local buffer then write that out */
++	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
++	if (i)
++		return i;
++
++	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
++		flush_altivec_to_thread(target);
++		flush_tmregs_to_thread(target);
++		for (i = 0; i < 32 ; i++)
++			target->thread.TS_TRANS_FPR(i) = buf[i];
++		target->thread.transact_fp.fpscr = buf[32];
++	} else {
++		for (i = 0; i < 32 ; i++)
++			target->thread.TS_FPR(i) = buf[i];
++		target->thread.fp_state.fpscr = buf[32];
++	}
++	return 0;
++#endif
++
++#if defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+ 	/* copy to local buffer then write that out */
+ 	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+ 	if (i)
+@@ -402,12 +491,14 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
+ 		target->thread.TS_FPR(i) = buf[i];
+ 	target->thread.fp_state.fpscr = buf[32];
+ 	return 0;
+-#else
++#endif
++
++#if !defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
+ 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
+ 		     offsetof(struct thread_fp_state, fpr[32][0]));
+-
+ 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+ 				  &target->thread.fp_state, 0, -1);
++
+ #endif
+ }
+ 
 -- 
 1.9.3
