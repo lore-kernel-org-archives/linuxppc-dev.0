@@ -1,30 +1,24 @@
-Return-Path: <linux@roeck-us.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2FDD01A00B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 21:42:29 +1100 (AEDT)
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 99247140170
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 21:42:28 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Xo8u1-003RoR-Hl
- for linuxppc-dev@ozlabs.org; Tue, 11 Nov 2014 10:42:25 +0000
-Message-ID: <5461E80D.4010307@roeck-us.net>
-Date: Tue, 11 Nov 2014 02:42:21 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A72831A00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 22:04:13 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "Igal.Liberman@freescale.com"
+ <Igal.Liberman@freescale.com>
+Subject: RE: [PATCH] DT: add MDIO node for FMan node
+Date: Tue, 11 Nov 2014 10:32:11 +0000
+Message-ID: <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
+ <1415665384.15957.16.camel@freescale.com>
+In-Reply-To: <1415665384.15957.16.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v6 41/48] powerpc: Register with kernel power-off handler
-References: <1415583785-6980-1-git-send-email-linux@roeck-us.net>	
- <1415583785-6980-42-git-send-email-linux@roeck-us.net>
- <1415691766.9757.1.camel@concordia>
-In-Reply-To: <1415691766.9757.1.camel@concordia>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Alexander Graf <agraf@suse.de>,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +28,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/10/2014 11:42 PM, Michael Ellerman wrote:
-> On Sun, 2014-11-09 at 17:42 -0800, Guenter Roeck wrote:
->> Register with kernel power-off handler instead of setting pm_power_off
->> directly.
->>
->> If there is an indication that there can be more than one power-off handler,
->> use register_power_off_handler, otherwise use register_power_off_handler_simple
->> to register the power-off handler.
->>
->> If the power-off handler only resets or stops the system, select the fallback
->> priority to indicate that the power-off handler is one of last resort.
->> If the power-off handler powers off the system, select the default priority,
->> unless the power-off handler installation code suggests that there can be
->> more than one power-off handler and the new handler is only installed
->> conditionally. In this case, install the handler with low priority.
->>
->> Cc: Alexander Graf <agraf@suse.de>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->
-> Can you fold in the patch below. I know pm.h is included by device.h, so most
-> things will already have it, but I'd rather be explicit.
->
-> With that you can add my:
->
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->
-
-Done.
-
-Thanks,
-Guenter
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBUdWVzZGF5LCBOb3ZlbWJlciAxMSwgMjAxNCA4OjIzIEFNDQo+IFRvOiBzaGgueGll
+QGdtYWlsLmNvbQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRy
+ZWVAdmdlci5rZXJuZWwub3JnOyBNZWR2ZQ0KPiBFbWlsaWFuLUVNTUVEVkUxOyBYaWUgU2hhb2h1
+aS1CMjE5ODkNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gRFQ6IGFkZCBNRElPIG5vZGUgZm9yIEZN
+YW4gbm9kZQ0KPiANCj4gT24gVHVlLCAyMDE0LTExLTA0IGF0IDE5OjU2ICswODAwLCBzaGgueGll
+QGdtYWlsLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJl
+ZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoaXMgYmluZGluZyBpcyBmb3IgRk1hbiBNRElPLCBpdCBj
+b3ZlcnMgRk1hbiB2MiAmIEZNYW4gdjMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVp
+IFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiBiYXNlZCBvbiBo
+dHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMzkwMzUxLw0KPiA+IGZvciAnbmV4dCcg
+b2YNCj4gPiBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2Nv
+dHR3b29kL2xpbnV4LmdpdA0KPiANCj4gQXJlIHRoZXJlIGFueSBvdGhlciBGTWFuIHBpZWNlcyB0
+aGF0IGFyZSBtaXNzaW5nIGZyb20gdGhlIGFib3ZlIHBhdGNoPw0KW1MuSF0gSSdtIGFkZGluZyBJ
+Z2FsIGZvciB0aGlzIGNvbW1lbnQuDQoNCj4gDQo+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L3Bvd2VycGMvZnNsL2ZtYW4udHh0ICAgICAgIHwgNjkNCj4gKysrKysrKysrKysrKysrKysrKysr
+Kw0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgNjkgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAt
+LWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9mbWFu
+LnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNs
+L2ZtYW4udHh0DQo+ID4gaW5kZXggZGE4ZTVmMi4uODNjMmYxNCAxMDA2NDQNCj4gPiAtLS0gYS9E
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvZm1hbi50eHQNCj4g
+PiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvZm1h
+bi50eHQNCj4gPiBAQCAtNyw2ICs3LDcgQEAgQ09OVEVOVFMNCj4gPiAgICAtIEZNYW4gTVVSQU0g
+Tm9kZQ0KPiA+ICAgIC0gRk1hbiBkVFNFQy9YR0VDL21FTUFDIE5vZGUNCj4gPiAgICAtIEZNYW4g
+SUVFRSAxNTg4IE5vZGUNCj4gPiArICAtIEZNYW4gTURJTyBOb2RlDQo+ID4gICAgLSBFeGFtcGxl
+DQo+ID4NCj4gPg0KPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCj4gPiA9PT09PT09IEBAIC0zNTIsNiArMzUz
+LDY3IEBAIHB0cC10aW1lckBmZTAwMCB7ICB9Ow0KPiA+DQo+ID4NCj4gPiA9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+DQo+ID4gPT09PT09PQ0KPiA+ICtGTWFuIE1ESU8gTm9kZQ0KPiA+ICsNCj4gPiArREVTQ1JJUFRJ
+T04NCj4gPiArDQo+ID4gK1RoZSBNRElPIGlzIGEgYnVzIHRvIHdoaWNoIHRoZSBQSFkgZGV2aWNl
+cyBhcmUgY29ubmVjdGVkLg0KPiA+ICsNCj4gPiArUFJPUEVSVElFUw0KPiA+ICsNCj4gPiArLSBj
+b21wYXRpYmxlDQo+ID4gKwkJVXNhZ2U6IHJlcXVpcmVkDQo+ID4gKwkJVmFsdWUgdHlwZTogPHN0
+cmluZ2xpc3Q+DQo+ID4gKwkJRGVmaW5pdGlvbjogQSBzdGFuZGFyZCBwcm9wZXJ0eS4NCj4gPiAr
+CQlNdXN0IGluY2x1ZGUgImZzbCxmbWFuLW1kaW8iIGZvciAxIEdiL3MgTURJTyBmcm9tIEZNYW4g
+djIuDQo+ID4gKwkJTXVzdCBpbmNsdWRlICJmc2wsZm1hbi14bWRpbyIgZm9yIDEwIEdiL3MgTURJ
+TyBmcm9tIEZNYW4gdjIuDQo+ID4gKwkJTXVzdCBpbmNsdWRlICJmc2wsZm1hbi1tZW1hYy1tZGlv
+IiBmb3IgMS8xMCBHYi9zIE1ESU8gZnJvbQ0KPiA+ICsJCUZNYW4gdjMuDQo+ID4gKw0KPiA+ICst
+IHJlZw0KPiA+ICsJCVVzYWdlOiByZXF1aXJlZA0KPiA+ICsJCVZhbHVlIHR5cGU6IDxwcm9wLWVu
+Y29kZWQtYXJyYXk+DQo+ID4gKwkJRGVmaW5pdGlvbjogQSBzdGFuZGFyZCBwcm9wZXJ0eS4NCj4g
+PiArDQo+ID4gKy0gYnVzLWZyZXF1ZW5jeQ0KPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0KPiA+ICsJ
+CVZhbHVlIHR5cGU6IDx1MzI+DQo+ID4gKwkJRGVmaW5pdGlvbjogRGVmYXVsdCBNRElPIGJ1cyBj
+bG9jayBzcGVlZC4NCj4gDQo+IFVzZSBjbG9ja3MvY2xvY2stbmFtZXMNCltTLkhdIFRoZSBNRElP
+IHVzZXMgRm1hbiBjbG9jayBhbmQgZGl2aWRlcyBpdCB0byBhIHByb3BlciB2YWx1ZSB3aGljaCBp
+cyBzcGVjaWZpZWQgYnkgdGhpcyBwcm9wZXJ0eS4NCg0KPiANCj4gPiArLSBpbnRlcnJ1cHRzDQo+
+ID4gKwkJVXNhZ2U6IG9wdGlvbmFsDQo+ID4gKwkJVmFsdWUgdHlwZTogPHByb3AtZW5jb2RlZC1h
+cnJheT4NCj4gPiArCQlEZWZpbml0aW9uOiBNRElPIGNvbnRyb2xsZXIgZXZlbnQgaW50ZXJydXB0
+cy4NCj4gDQo+IE9uZSBpbnRlcnJ1cHQgb3IgbXVsdGlwbGU/DQpbUy5IXSBPbmUgZm9yIDEgR2Iv
+cywgb25lIGZvciAxMCBHYi9zLg0KDQo+IA0KPiA+ICsNCj4gPiArLSB0eXBlDQo+ID4gKwkJVXNh
+Z2U6IHJlcXVpcmVkIGZvciBGTWFuIHYzDQo+ID4gKwkJVmFsdWUgdHlwZTogPHN0cmluZ2xpc3Q+
+DQo+ID4gKwkJRGVmaW5pdGlvbjogQSBzdGFuZGFyZCBwcm9wZXJ0eS4NCj4gDQo+IFdoYXQgc3Rh
+bmRhcmQgaXMgInR5cGUiIGRlZmluZWQgaW4/DQpbUy5IXSBJdCdzIHRvIGRpZmZlcmVudGlhdGUg
+YmV0d2VlbiB0aGUgaW50ZXJuYWwgYW5kIGV4dGVybmFsIE1ESU8sIEknbSBub3QgcXVpdGUgc3Vy
+ZSBhYm91dCBuYW1pbmcgaXQsIG9yIHdoYXQgY291bGQgYmUgYmV0dGVyIHdheSB0byBkaWZmZXJl
+bnRpYXRlIHRoZSBNRElPcz8NCg0KPiANCj4gPiArCQlGTWFuIHYzIGhhcyBpbnRlcm5hbCBNRElP
+IGZvciBpbnRlcm5hbCBQQ1MoUGh5c2ljYWwgQ29kaW5nDQo+ID4gKwkJU3VibGF5ZXIpIFBIWXMg
+YW5kIGV4dGVybmFsIE1ESU8gZm9yIGV4dGVybmFsIFBIWXMuDQo+ID4gKwkJVGhlIHNldHRpbmdz
+IGFuZCBwcm9ncmFtbWluZyByb3V0aW5lcyBmb3IgaW50ZXJuYWwvZXh0ZXJuYWwNCj4gPiArCQlN
+RElPIGFyZSBkaWZmZXJlbnQuIE11c3QgaW5jbHVkZSAiaW50ZXJuYWwiIGZvciBpbnRlcm5hbCBN
+RElPLA0KPiA+ICsJCW11c3QgaW5jbHVkZSAiZXh0ZXJuYWwiIGZvciBleHRlcm5hbCBNRElPLg0K
+PiANCj4gSSBhc3N1bWUgZm1hbiB2MiBpcyBhbHdheXMgaW50ZXJuYWw/ICBIb3cgYWJvdXQgYSBi
+b29sZWFuICJmc2wsZm1hbi0NCj4gaW50ZXJuYWwtcGh5IiBwcm9wZXJ0eSBpbnN0ZWFkPw0KW1Mu
+SF0gQm90aCBGbWFuIHYyICYgdjMgaGF2ZSBpbnRlcm5hbC9leHRlcm5hbCBNRElPLCBGbWFuIHYy
+IHVzZXMgaW50ZXJuYWwgTURJTyBmb3IgVEJJIG9wZXJhdGlvbnMgdG8gc2V0IHRoZSBTR01JSSBQ
+SFksIA0KVGhlIFRCSSBpbXBsZW1lbnRzIHRyYW5zbWl0L3JlY2VpdmUgcG9ydGlvbnMgb2YgUENT
+LCBpdCdzIG5vdCB1c2VkIGluIExpbnV4LiBUaGUgUENTIG9uIEZtYW4gVjMgYXJlIG5vdCBqdXN0
+IGZvciBTR01JSSwgaXQgaGFzIG1vcmUgaW1wbGVtZW50YXRpb25zLCBpdCdzIHVzZWQgaW4gTGlu
+dXguDQoNCj4gDQo+ID4gKw0KPiA+ICtFWEFNUExFDQo+ID4gKw0KPiA+ICtFeGFtcGxlIGZvciBG
+TWFuIHYyOg0KPiA+ICsNCj4gPiArbWRpb0BmMTAwMCB7DQo+ID4gKwljb21wYXRpYmxlID0gImZz
+bCxmbWFuLXhtZGlvIjsNCj4gPiArCXJlZyA9IDwweGYxMDAwIDB4MTAwMD47DQo+ID4gK307DQo+
+ID4gKw0KPiA+ICtFeGFtcGxlIGZvciBGTWFuIHYzOg0KPiA+ICsNCj4gPiArbWRpb0BmZDAwMCB7
+DQo+ID4gKwljb21wYXRpYmxlID0gImZzbCxmbWFuLW1lbWFjLW1kaW8iOw0KPiA+ICsJcmVnID0g
+PDB4ZmQwMDAgMHgxMDAwPjsNCj4gPiArCWJ1cy1mcmVxdWVuY3kgPSA8MjUwMDAwMD47DQo+ID4g
+Kwl0eXBlID0gImV4dGVybmFsIjsNCj4gPiArfTsNCj4gPiArDQo+ID4gKz09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0K
+PiA+ICs9PT09PT09PQ0KPiA+ICBFeGFtcGxlDQo+ID4NCj4gPiAgZm1hbkA0MDAwMDAgew0KPiA+
+IEBAIC01MjYsNCArNTg4LDExIEBAIGZtYW5ANDAwMDAwIHsNCj4gPiAgCQljb21wYXRpYmxlID0g
+ImZzbCxmbWFuLXB0cC10aW1lciI7DQo+ID4gIAkJcmVnID0gPDB4ZmUwMDAgMHgxMDAwPjsNCj4g
+PiAgCX07DQo+ID4gKw0KPiA+ICsJbWRpb0BmZDAwMCB7DQo+ID4gKwkJY29tcGF0aWJsZSA9ICJm
+c2wsZm1hbi1tZW1hYy1tZGlvIjsNCj4gPiArCQlyZWcgPSA8MHhmZDAwMCAweDEwMDA+Ow0KPiA+
+ICsJCWJ1cy1mcmVxdWVuY3kgPSA8MjUwMDAwMD47DQo+ID4gKwkJdHlwZSA9ICJleHRlcm5hbCI7
+DQo+ID4gKwl9Ow0KPiA+ICB9Ow0KPiANCj4gVGhlIHJlc3Qgb2YgdGhlIGV4YW1wbGUgaXMgZm1h
+biB2MjsgZG9uJ3QgbWl4IGFuIGZtYW4gdjMgbm9kZSBpbiB3aXRoDQo+IHRoYXQuDQpbUy5IXSBP
+Sy4gV2lsbCBmaXggaXQuDQoNClRoYW5rcyENClNoYW9odWkNCiANCg0K
