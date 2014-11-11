@@ -1,25 +1,32 @@
-Return-Path: <davem@davemloft.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7FF231A0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 05:40:08 +1100 (AEDT)
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 4484414010F
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 05:40:07 +1100 (AEDT)
-Date: Tue, 11 Nov 2014 13:40:02 -0500 (EST)
-Message-Id: <20141111.134002.8147781185003778.davem@davemloft.net>
-To: kda@linux-powerpc.org
-Subject: Re: [PATCH v2 net-next] PPC: bpf_jit_comp: add SKF_AD_HATYPE
- instruction
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1415599183-3883-1-git-send-email-kda@linux-powerpc.org>
-References: <1415599183-3883-1-git-send-email-kda@linux-powerpc.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: felix@linux.vnet.ibm.com, netdev@vger.kernel.org, dborkman@redhat.com,
- alexei.starovoitov@gmail.com, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D4C851A0185
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 06:09:53 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0134.outbound.protection.outlook.com [207.46.100.134])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EEF1B14010F
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 06:09:52 +1100 (AEDT)
+Message-ID: <1415732980.15957.33.camel@freescale.com>
+Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
+ platforms
+From: Scott Wood <scottwood@freescale.com>
+To: Yuantian Tang <Yuantian.Tang@freescale.com>
+Date: Tue, 11 Nov 2014 13:09:40 -0600
+In-Reply-To: <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
+ <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
+ <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux
+ Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Mon, 10 Nov 2014 08:59:43 +0300
+On Tue, 2014-10-21 at 08:59 +0000, Yuantian Tang wrote:
+> > > -config PPC_CORENET_CPUFREQ
+> > > -       tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
+> > > -       depends on PPC_E500MC && OF && COMMON_CLK
+> > > +config QORIQ_CPUFREQ
+> > > +       tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> > > +       depends on OF && COMMON_CLK
+> > >         select CLK_PPC_CORENET
+> > >         help
+> > > -         This adds the CPUFreq driver support for Freescale e500mc,
+> > > -         e5500 and e6500 series SoCs which are capable of changing
+> > > -         the CPU's frequency dynamically.
+> > > +         This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> > > +         which are capable of changing the CPU's frequency dynamically.
+> > >
+> > >  config CPU_FREQ_PMAC
+> > >         bool "Support for Apple PowerBooks"
+> > 
+> > Don't need this duplication at all. Just move this to Kconfig instead of .arm and
+> > ppc.
+> > 
+> If I do so, menuconfig will display like this(on PPC):
+> 	PowerPC CPU frequency scaling drivers  ----  
+>     QorIQ CPU Frequency scaling  --->    
+>   		<*> CPU frequency scaling driver for Freescale QorIQ SoCs
+> On ARM, there should be a similar problem.
+> Isn't weird?
 
-> Add BPF extension SKF_AD_HATYPE to ppc JIT to check
-> the hw type of the interface
-> 
-> Before:
-> [   57.723666] test_bpf: #20 LD_HATYPE
-> [   57.723675] BPF filter opcode 0020 (@0) unsupported
-> [   57.724168] 48 48 PASS
-> 
-> After:
-> [  103.053184] test_bpf: #20 LD_HATYPE 7 6 PASS
-> 
-> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
-> CC: Daniel Borkmann<dborkman@redhat.com>
-> CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> 
-> v2: address Alexei's comments
+What purpose do those "<arch> CPU frequency scaling drivers" submenus
+serve, versus just including the options in the main cpufreq menu?  It's
+not as if more than one arch would be visible at once (and when a
+situation with multiple visible menus popped up, it was considered a
+bug).
 
-Applied, thanks.
+-Scott
