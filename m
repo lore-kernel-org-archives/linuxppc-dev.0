@@ -1,43 +1,33 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 042381A0243
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 16:33:46 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <boqun.feng@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CEA9D1400F1
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:33:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C8E51A00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 15:50:34 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 11 Nov 2014 15:33:45 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 302BD3578066
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:04 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAB5QoO533947662
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:26:50 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAB5R1ZG030376
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 16:27:03 +1100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V4 3/8] powerpc,
- process: Merge functions __switch_to_tm and tm_reclaim_task
-Date: Tue, 11 Nov 2014 10:56:32 +0530
-Message-Id: <1415683597-22819-4-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
- oleg@redhat.com, davem@davemloft.net, dhowells@redhat.com, davej@redhat.com,
- akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com, tglx@linutronix.de,
- sam.bobroff@au1.ibm.com
+ for <linuxppc-dev@lists.ozlabs.org> from <boqun.feng@linux.vnet.ibm.com>;
+ Tue, 11 Nov 2014 10:20:31 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 282EF3940049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 10:20:28 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAB4owVS46661836
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 10:20:59 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAB4oOSa023950
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 10:20:25 +0530
+From: Boqun Feng <boqun.feng@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix comment typos in
+ arch/powerpc/include/asm/bitops.h
+Date: Tue, 11 Nov 2014 12:50:22 +0800
+Message-Id: <1415681422-3683-1-git-send-email-boqun.feng@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,78 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function tm_reclaim_task is only called from the function
- __switch_to_tm. This patch merges these two functions to make
-it more readable without changing the functionality in any way.
+In arch/powerpc/include/asm/bitops.h, the comments about bit numbers in
+large (> 1 word) bitmaps have two typos:
+- On ppc64 system, the LSB of the 4th word should be bit 192 rather than
+  196, because if it's bit 196, bit 192-195 will be missing in the
+  bitmap.
+- On ppc32 system, the LSB of the second word should be bit 32 rather
+  than 31, because bit 31 is already in the first word.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+This patch fixes these typos.
+
+Signed-off-by: Boqun Feng <boqun.feng@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/process.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+ arch/powerpc/include/asm/bitops.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c36477b..99b41ed 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -585,6 +585,10 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 	 */
- 	struct thread_struct *thr = &tsk->thread;
- 
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return;
-+	tm_enable();
-+
- 	if (!thr->regs)
- 		return;
- 
-@@ -696,14 +700,6 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
- 		 new->pid, mfmsr());
- }
- 
--static inline void __switch_to_tm(struct task_struct *prev)
--{
--	if (cpu_has_feature(CPU_FTR_TM)) {
--		tm_enable();
--		tm_reclaim_task(prev);
--	}
--}
--
- /*
-  * This is called if we are on the way out to userspace and the
-  * TIF_RESTORE_TM flag is set.  It checks if we need to reload
-@@ -742,13 +738,13 @@ void restore_tm_state(struct pt_regs *regs)
- 
- #else
- #define tm_recheckpoint_new_task(new)
--#define __switch_to_tm(prev)
-+#define tm_reclaim_task(prev)
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- /*
-  * flush_tm_state
+diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
+index bd3bd57..a39ab08 100644
+--- a/arch/powerpc/include/asm/bitops.h
++++ b/arch/powerpc/include/asm/bitops.h
+@@ -14,9 +14,9 @@
   *
-- * Flush TM state out so we can copy it.  __switch_to_tm() does this
-+ * Flush TM state out so we can copy it.  tm_reclaim_task() does this
-  * flush but it removes the checkpointed state from the current CPU and
-  * transitions the CPU out of TM mode.  Hence we need to call
-  * tm_recheckpoint_new_task() (on the same task) to restore the
-@@ -756,7 +752,7 @@ void restore_tm_state(struct pt_regs *regs)
-  */
- static void flush_tm_state(struct task_struct *src)
- {
--	__switch_to_tm(src);
-+	tm_reclaim_task(src);
- 	tm_recheckpoint_new_task(src);
- }
- 
-@@ -805,7 +801,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	 */
- 	save_early_sprs(&prev->thread);
- 
--	__switch_to_tm(prev);
-+	tm_reclaim_task(prev);
- 
- #ifdef CONFIG_SMP
- 	/* avoid complexity of lazy save/restore of fpu
+  * The bitop functions are defined to work on unsigned longs, so for a
+  * ppc64 system the bits end up numbered:
+- *   |63..............0|127............64|191...........128|255...........196|
++ *   |63..............0|127............64|191...........128|255...........192|
+  * and on ppc32:
+- *   |31.....0|63....31|95....64|127...96|159..128|191..160|223..192|255..224|
++ *   |31.....0|63....32|95....64|127...96|159..128|191..160|223..192|255..224|
+  *
+  * There are a few little-endian macros used mostly for filesystem
+  * bitmaps, these work on similar bit arrays layouts, but
 -- 
-1.9.3
+2.1.3
