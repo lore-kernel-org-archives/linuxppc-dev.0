@@ -1,32 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tcminyard@gmail.com>
+Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
+ [IPv6:2607:f8b0:4003:c06::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4C851A0185
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 06:09:53 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0134.outbound.protection.outlook.com [207.46.100.134])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EEF1B14010F
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 06:09:52 +1100 (AEDT)
-Message-ID: <1415732980.15957.33.camel@freescale.com>
-Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
- platforms
-From: Scott Wood <scottwood@freescale.com>
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Date: Tue, 11 Nov 2014 13:09:40 -0600
-In-Reply-To: <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
- <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
- <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 696C21A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 08:07:29 +1100 (AEDT)
+Received: by mail-oi0-f48.google.com with SMTP id x69so7619718oia.35
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2014 13:07:27 -0800 (PST)
+Sender: Corey Minyard <tcminyard@gmail.com>
+Message-ID: <54627A8C.20400@acm.org>
+Date: Tue, 11 Nov 2014 15:07:24 -0600
+From: Corey Minyard <minyard@acm.org>
+Reply-To: minyard@acm.org
 MIME-Version: 1.0
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux
- Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Jeremy Kerr <jk@ozlabs.org>,
+ openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] Add IPMI support for powernv powerpc machines
+References: <1415245107.292153.444216242273.0.gpush@pablo>
+ <545B826F.7050501@acm.org> <5460307C.9060502@ozlabs.org>
+In-Reply-To: <5460307C.9060502@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-10-21 at 08:59 +0000, Yuantian Tang wrote:
-> > > -config PPC_CORENET_CPUFREQ
-> > > -       tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-> > > -       depends on PPC_E500MC && OF && COMMON_CLK
-> > > +config QORIQ_CPUFREQ
-> > > +       tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> > > +       depends on OF && COMMON_CLK
-> > >         select CLK_PPC_CORENET
-> > >         help
-> > > -         This adds the CPUFreq driver support for Freescale e500mc,
-> > > -         e5500 and e6500 series SoCs which are capable of changing
-> > > -         the CPU's frequency dynamically.
-> > > +         This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> > > +         which are capable of changing the CPU's frequency dynamically.
-> > >
-> > >  config CPU_FREQ_PMAC
-> > >         bool "Support for Apple PowerBooks"
-> > 
-> > Don't need this duplication at all. Just move this to Kconfig instead of .arm and
-> > ppc.
-> > 
-> If I do so, menuconfig will display like this(on PPC):
-> 	PowerPC CPU frequency scaling drivers  ----  
->     QorIQ CPU Frequency scaling  --->    
->   		<*> CPU frequency scaling driver for Freescale QorIQ SoCs
-> On ARM, there should be a similar problem.
-> Isn't weird?
+On 11/09/2014 09:26 PM, Jeremy Kerr wrote:
+> Hi Corey,
+>
+> Thanks for the review.
+>
+>>> IPMI folks: the IPMI driver could do with a little review, as it's
+>>> not a conventional BT/KCS/SMI SI, in that the low-level send/recv
+>>> interface will handle the entire message at once.
+>> Handling the entire message at once should be fine, as that's what
+>> this driver level is designed to do for the message handler.  That
+>> part all looks correct.  The code itself looks good, but I have a
+>> couple of high-level comments.
+>>
+>> The driver at this level can receive more than one message to handle
+>> at a time, so it needs some sort of queue.  This is to allow multiple
+>> users and to allow the message handler to send its own commands while
+>> other commands are going on.  You might argue that the queuing should
+>> be done in ipmi_msghandler, and you would probably be right.
+> Ah, that's what I'd been assuming was being done - I missed the
+> xmit_list in the si_intf code. It'd be great if this could be in the
+> generic msghandler code, otherwise I'd just be duplicating the si_intf
+> logic.
+>
+>> I'll look at doing that.  If that is the case, then your NULL check
+>> for current message should probably be a BUG_ON().
+> OK, I'll update this when the msghandler bit is implemented.
 
-What purpose do those "<arch> CPU frequency scaling drivers" submenus
-serve, versus just including the options in the main cpufreq menu?  It's
-not as if more than one arch would be visible at once (and when a
-situation with multiple visible menus popped up, it was considered a
-bug).
+I've finally finished that, you can get it at:
 
--Scott
+git://git.code.sf.net/p/openipmi/linux-ipmi
+
+using the for-next branch.  This is what goes into linux-next.
+
+>> Do you need to handle any BMC flags?  Particularly incoming events?
+> Not at this stage - we may in future though.
+
+Ok.  That will complicate things a bit when they are added, but not very
+much.
+
+Thanks,
+
+-corey
