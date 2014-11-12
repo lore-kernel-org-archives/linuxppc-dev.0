@@ -1,25 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 340821A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:23:40 +1100 (AEDT)
-Message-ID: <1415759019.10731.1.camel@concordia>
-Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 12 Nov 2014 13:23:39 +1100
-In-Reply-To: <20141111211248.GI28161@google.com>
-References: <1412656696.30859.122.camel@pasglop>
- <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
- <1412746096.30859.229.camel@pasglop> <20141015221914.GD15225@google.com>
- <1413413732.11213.27.camel@pasglop> <20141111211248.GI28161@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Brian King <brking@linux.vnet.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- Takashi Iwai <tiwai@suse.de>, Linux PCI <linux-pci@vger.kernel.org>,
- Yijing Wang <wangyijing@huawei.com>, Alex Deucher <alexdeucher@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9B761A003C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:29:37 +1100 (AEDT)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2561914017B
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:29:36 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 12 Nov 2014 07:59:34 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7DE99E004C
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 07:59:41 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAC2U5Al54460466
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 08:00:05 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAC2TVRD024802
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 07:59:31 +0530
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: Use PAGE_FACTOR
+Date: Wed, 12 Nov 2014 13:29:28 +1100
+Message-Id: <1415759368-23747-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,19 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-11-11 at 14:12 -0700, Bjorn Helgaas wrote:
-> On Thu, Oct 16, 2014 at 09:55:32AM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2014-10-15 at 16:19 -0600, Bjorn Helgaas wrote:
-> > >   PCI/MSI: Add device flag indicating that 64-bit MSIs don't work
-> 
-> I'm still assuming you're going to merge this series, but I don't see it in
-> your tree (https://git.kernel.org/cgit/linux/kernel/git/benh/powerpc.git/)
-> yet.  Do you want me to do anything with it?
+PAGE_FACTOR was defined to reflect the difference between configured
+page size and fixed 4KB page size. Replace (PAGE_SHIFT - HW_PAGE_SHIFT)
+with PAGE_FACTOR.
 
-I'm doing the powerpc tree this cycle, so it'd be in my tree, but it's not:
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/hash_low_64.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/
-
-Ben if you want me to take it let me know.
-
-cheers
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 057cbbb..5094f32 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -514,7 +514,7 @@ htab_insert_pte:
+ 	andis.	r0,r31,_PAGE_4K_PFN@h
+ 	srdi	r5,r31,PTE_RPN_SHIFT
+ 	bne-	htab_special_pfn
+-	sldi	r5,r5,PAGE_SHIFT-HW_PAGE_SHIFT
++	sldi	r5,r5,PAGE_FACTOR
+ 	add	r5,r5,r25
+ htab_special_pfn:
+ 	sldi	r5,r5,HW_PAGE_SHIFT
+@@ -544,7 +544,7 @@ htab_call_hpte_insert1:
+ 	andis.	r0,r31,_PAGE_4K_PFN@h
+ 	srdi	r5,r31,PTE_RPN_SHIFT
+ 	bne-	3f
+-	sldi	r5,r5,PAGE_SHIFT-HW_PAGE_SHIFT
++	sldi	r5,r5,PAGE_FACTOR
+ 	add	r5,r5,r25
+ 3:	sldi	r5,r5,HW_PAGE_SHIFT
+ 
+-- 
+1.8.3.2
