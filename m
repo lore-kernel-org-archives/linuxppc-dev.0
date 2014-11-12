@@ -1,24 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 1AEAD1A015A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 09:34:09 +1100 (AEDT)
-In-Reply-To: <1415727479.15957.29.camel@freescale.com>
-References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
- <1415665384.15957.16.camel@freescale.com>
- <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415727479.15957.29.camel@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH] DT: add MDIO node for FMan node
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <OF15DE84DA.A166DEAF-ONC1257D8D.007B1CCE-C1257D8D.007B6562@transmode.se>
-Date: Tue, 11 Nov 2014 23:27:47 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <Shaohui.Xie@freescale.com>,
- Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
- Liberman Igal-B31950 <Igal.Liberman@freescale.com>
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73A121A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:44:06 +1100 (AEDT)
+Message-ID: <1415753046.5175.22.camel@neuling.org>
+Subject: Re: [PATCH V2] powerpc/TM: Disable/Enable TM looking at the ibm,
+ pa-features device tree entry
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 12 Nov 2014 11:44:06 +1100
+In-Reply-To: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> > The TBI implements transmit/receive portions of PCS, it's not used in
-> > Linux. The PCS on Fman V3 are not just for SGMII, it has more
-> > implementations, it's used in Linux.
+On Sun, 2014-11-02 at 20:02 +0530, Aneesh Kumar K.V wrote:
+> Runtime disable transactional memory feature looking at pa-features
+> device tree entry. We need to do this so that we can run a kernel
+> built with TM config in PR mode.=20
 
-It is used for PHY less mode(aka fixed PHY) and needs to be exposed to
-linux so it is possible to select SGMII/1000BASE-X, AutoNeg etc.
+I'm happy to turn this off but why do we need to do this in PR mode?
+Can you explain this in the commit message.
 
-> 
-> The device tree is about the hardware, not what's used in Linux.
-> 
-> -Scott
+> For PR guest we provide a device
+> tree entry with TM feature disabled in pa-features
+
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+> Changes from V1:
+> * rebase to latest linus
+>=20
+>  arch/powerpc/kernel/prom.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 099f27e6d1b0..3e22930f15d1 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -160,6 +160,11 @@ static struct ibm_pa_feature {
+>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
+>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
+>  	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+> +	/*
+> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
+> +	 * enabled via device tree
+> +	 */
+> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
+>  };
+> =20
+>  static void __init scan_features(unsigned long node, const unsigned char=
+ *ftrs,
