@@ -1,35 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA2711A0250
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:36:29 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by lists.ozlabs.org (Postfix) with ESMTPS id A06191A1E86
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:36:31 +1100 (AEDT)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7A15714017E
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:29 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 00395140139
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:30 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 12 Nov 2014 12:36:28 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 202692CE8064
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:27 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAC2aD5g40829132
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:13 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAC2aQXO025385
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:26 +1100
+ Wed, 12 Nov 2014 08:06:29 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id DAB20E003F
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 08:06:34 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAC2aB0E56426732
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 08:06:11 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAC2aPbZ025639
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 08:06:25 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/8] powerpc/powernv: Bail upon invalid master PE
-Date: Wed, 12 Nov 2014 13:36:10 +1100
-Message-Id: <1415759771-11359-8-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/8] powerpc/powernv: Check PHB type in advance
+Date: Wed, 12 Nov 2014 13:36:04 +1100
+Message-Id: <1415759771-11359-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1415759771-11359-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1415759771-11359-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -42,30 +42,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When freezing compound PEs in pnv_ioda_freeze_pe(), we should bail
-upon illegal master PE. We needn't freeze slave PE because it should
-have been put into frozen state by hardware.
+The patch checks PHB type a bit early to save a bit cycles
+for P7 because we don't support M64 for P7IOC no matter what
+OPAL firmware we have.
 
-Reported-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 762ca14..d035035 100644
+index 468a0f2..7ab1dd7 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -373,7 +373,9 @@ static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
- 	/* Fetch master PE */
- 	if (pe->flags & PNV_IODA_PE_SLAVE) {
- 		pe = pe->master;
--		WARN_ON(!pe || !(pe->flags & PNV_IODA_PE_MASTER));
-+		if (WARN_ON(!pe || !(pe->flags & PNV_IODA_PE_MASTER)))
-+			return;
+@@ -313,6 +313,12 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	const u32 *r;
+ 	u64 pci_addr;
+ 
++	/* FIXME: Support M64 for P7IOC */
++	if (phb->type != PNV_PHB_IODA2) {
++		pr_info("  Not support M64 window\n");
++		return;
++	}
 +
- 		pe_no = pe->pe_number;
+ 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		pr_info("  Firmware too old to support M64 window\n");
+ 		return;
+@@ -325,12 +331,6 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 		return;
  	}
  
+-	/* FIXME: Support M64 for P7IOC */
+-	if (phb->type != PNV_PHB_IODA2) {
+-		pr_info("  Not support M64 window\n");
+-		return;
+-	}
+-
+ 	res = &hose->mem_resources[1];
+ 	res->start = of_translate_address(dn, r + 2);
+ 	res->end = res->start + of_read_number(r + 4, 2) - 1;
 -- 
 1.8.3.2
