@@ -1,26 +1,30 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39F0E1A0053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 00:41:21 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] DT: add MDIO node for FMan node
-Date: Wed, 12 Nov 2014 13:40:56 +0000
-Message-ID: <c4dd11a97a684be8b799c2f639e600ca@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
- <1415665384.15957.16.camel@freescale.com>
- <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415727479.15957.29.camel@freescale.com>
-In-Reply-To: <1415727479.15957.29.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE0E31A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 01:39:57 +1100 (AEDT)
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 22ED71400B6
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 01:39:57 +1100 (AEDT)
+Received: by mail-la0-f51.google.com with SMTP id q1so11491324lam.38
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 06:39:52 -0800 (PST)
 MIME-Version: 1.0
-Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+In-Reply-To: <1415771461.5124.33.camel@kernel.crashing.org>
+References: <1415771461.5124.33.camel@kernel.crashing.org>
+From: Rob Herring <robherring2@gmail.com>
+Date: Wed, 12 Nov 2014 08:39:32 -0600
+Message-ID: <CAL_JsqKfBGdpFV_XuE4DEhFrkhN33kOMkiZE_TOnAZDm2qjwMw@mail.gmail.com>
+Subject: Re: [PATCH] of/base: Fix PowerPC address parsing hack
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Grant Likely <grant.likely@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,62 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBXZWRuZXNkYXksIE5vdmVtYmVyIDEyLCAyMDE0IDE6MzggQU0NCj4gVG86IFhpZSBT
-aGFvaHVpLUIyMTk4OQ0KPiBDYzogTGliZXJtYW4gSWdhbC1CMzE5NTA7IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTWVkdmUgRW1p
-bGlhbi1FTU1FRFZFMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBm
-b3IgRk1hbiBub2RlDQo+IA0KPiBPbiBUdWUsIDIwMTQtMTEtMTEgYXQgMDQ6MzIgLTA2MDAsIFhp
-ZSBTaGFvaHVpLUIyMTk4OSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
-DQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2RheSwgTm92
-ZW1iZXIgMTEsIDIwMTQgODoyMyBBTQ0KPiA+ID4gVG86IHNoaC54aWVAZ21haWwuY29tDQo+ID4g
-PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJu
-ZWwub3JnOyBNZWR2ZQ0KPiA+ID4gRW1pbGlhbi1FTU1FRFZFMTsgWGllIFNoYW9odWktQjIxOTg5
-DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBmb3IgRk1hbiBu
-b2RlDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE0LTExLTA0IGF0IDE5OjU2ICswODAwLCBzaGgu
-eGllQGdtYWlsLmNvbSB3cm90ZToNCj4gPiA+ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNoYW9odWku
-WGllQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+ID4gPiA+IFRoaXMgYmluZGluZyBpcyBmb3Ig
-Rk1hbiBNRElPLCBpdCBjb3ZlcnMgRk1hbiB2MiAmIEZNYW4gdjMuDQo+ID4gPiA+DQo+ID4gPiA+
-IFNpZ25lZC1vZmYtYnk6IFNoYW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0K
-PiA+ID4gPiAtLS0NCj4gPiA+ID4gYmFzZWQgb24gaHR0cDovL3BhdGNod29yay5vemxhYnMub3Jn
-L3BhdGNoLzM5MDM1MS8NCj4gPiA+ID4gZm9yICduZXh0JyBvZg0KPiA+ID4gPiBnaXQ6Ly9naXQu
-a2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2NvdHR3b29kL2xpbnV4LmdpdA0K
-PiA+ID4NCj4gPiA+IEFyZSB0aGVyZSBhbnkgb3RoZXIgRk1hbiBwaWVjZXMgdGhhdCBhcmUgbWlz
-c2luZyBmcm9tIHRoZSBhYm92ZSBwYXRjaD8NCj4gPiBbUy5IXSBJJ20gYWRkaW5nIElnYWwgZm9y
-IHRoaXMgY29tbWVudC4NCj4gPg0KPiA+ID4NCj4gPiA+ID4gKy0gYnVzLWZyZXF1ZW5jeQ0KPiA+
-ID4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiA+ID4gKwkJVmFsdWUgdHlwZTogPHUzMj4NCj4g
-PiA+ID4gKwkJRGVmaW5pdGlvbjogRGVmYXVsdCBNRElPIGJ1cyBjbG9jayBzcGVlZC4NCj4gPiA+
-DQo+ID4gPiBVc2UgY2xvY2tzL2Nsb2NrLW5hbWVzDQo+ID4gW1MuSF0gVGhlIE1ESU8gdXNlcyBG
-bWFuIGNsb2NrIGFuZCBkaXZpZGVzIGl0IHRvIGEgcHJvcGVyIHZhbHVlIHdoaWNoDQo+IGlzIHNw
-ZWNpZmllZCBieSB0aGlzIHByb3BlcnR5Lg0KPiANCj4gVXNlIGNsb2Nrcy9jbG9jay1uYW1lcyB0
-byBkZXNjcmliZSB0aGF0IHJlbGF0aW9uc2hpcC4NCj4gDQpbUy5IXSBUaGUgTURJTyBub2RlIGlz
-IHN1Yi1ub2RlIGFuZCBlbWJlZGRlZCBpbiBGbWFuIG5vZGUsIHRoZSBjbG9ja3MvY2xvY2stbmFt
-ZXMgaXMgcHJvdmlkZWQgYnkgRm1hbiBub2RlLCBzaG91bGQgcmVwZWF0IHRoZW0gaW4gTURJTyBu
-b2RlPyBGb3IgdGhlIGRlZmF1bHQgTURJTyBidXMgY2xvY2sgc3BlZWQsIG1heWJlICJjbG9jay1y
-YW5nZXMiIHNob3VsZCBiZSB1c2VkPw0KDQo+ID4gPg0KPiA+ID4gPiArLSBpbnRlcnJ1cHRzDQo+
-ID4gPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0KPiA+ID4gPiArCQlWYWx1ZSB0eXBlOiA8cHJvcC1l
-bmNvZGVkLWFycmF5Pg0KPiA+ID4gPiArCQlEZWZpbml0aW9uOiBNRElPIGNvbnRyb2xsZXIgZXZl
-bnQgaW50ZXJydXB0cy4NCj4gPiA+DQo+ID4gPiBPbmUgaW50ZXJydXB0IG9yIG11bHRpcGxlPw0K
-PiA+IFtTLkhdIE9uZSBmb3IgMSBHYi9zLCBvbmUgZm9yIDEwIEdiL3MuDQo+IA0KPiBUaGVuIHRo
-ZSBiaW5kaW5nIG5lZWRzIHRvIHNheSB0aGF0IHRoZXJlIGFyZSB0d28gKGV4Y2VwdCBmb3IgImZz
-bCxmbWFuLQ0KPiBtZGlvIiwgcmlnaHQ/KSBhbmQgd2hpY2ggaXMgd2hpY2guDQo+IA0KW1MuSF0g
-T0suDQoNCj4gPiA+DQo+ID4gPiA+ICsNCj4gPiA+ID4gKy0gdHlwZQ0KPiA+ID4gPiArCQlVc2Fn
-ZTogcmVxdWlyZWQgZm9yIEZNYW4gdjMNCj4gPiA+ID4gKwkJVmFsdWUgdHlwZTogPHN0cmluZ2xp
-c3Q+DQo+ID4gPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHkuDQo+ID4gPg0K
-PiA+ID4gV2hhdCBzdGFuZGFyZCBpcyAidHlwZSIgZGVmaW5lZCBpbj8NCj4gPg0KPiA+IFtTLkhd
-IEl0J3MgdG8gZGlmZmVyZW50aWF0ZSBiZXR3ZWVuIHRoZSBpbnRlcm5hbCBhbmQgZXh0ZXJuYWwg
-TURJTywNCj4gPiBJJ20gbm90IHF1aXRlIHN1cmUgYWJvdXQgbmFtaW5nIGl0LCBvciB3aGF0IGNv
-dWxkIGJlIGJldHRlciB3YXkgdG8NCj4gPiBkaWZmZXJlbnRpYXRlIHRoZSBNRElPcz8NCj4gDQo+
-IEknbSBub3QgcXVlc3Rpb25pbmcgdGhlIG5lZWQgdG8gY29udmV5IHRoaXMgaW5mb3JtYXRpb24u
-ICBJJ20gc2F5aW5nIGl0J3MNCj4gbm90ICJBIHN0YW5kYXJkIHByb3BlcnR5Ii4gIEknZCBhbHNv
-IGxpa2UgdG8gc2VlIGEgYmV0dGVyIG5hbWUuDQo+IA0KW1MuSF0gc2luY2UgRm1hbiBWMiAmIFYz
-IGNhbiBiZSBkaWZmZXJlbnRpYXRlZCBieSBjb21wYXRpYmxlLCBhIGJvb2xlYW4gcHJvcGVydHkg
-ImZzbCxmbWFuLWludGVybmFsLW1kaW8iIHNlZW1zIGJldHRlciwgaWYgZGVmaW5lZCwgaXQgaW5k
-aWNhdGVzIGFuIGludGVybmFsIE1ESU8uIEl0IGxvb2tzIGxpa2UgYmVsb3c6DQoNCmZzbCxmbWFu
-LWludGVybmFsLW1kaW8NCgkJVXNhZ2U6IHJlcXVpcmVkIGZvciBpbnRlcm5hbCBNRElPDQoJCVZh
-bHVlIHR5cGU6IEJvb2xlYW4NCgkJRGVmaW5pdGlvbjogRm1hbiBoYXMgaW50ZXJuYWwgTURJTyBm
-b3IgaW50ZXJuYWwgUENTKFBoeXNpY2FsDQoJCUNvZGluZyBTdWJsYXllcikgUEhZcyBhbmQgZXh0
-ZXJuYWwgTURJTyBmb3IgZXh0ZXJuYWwgUEhZcy4NCgkJVGhlIHNldHRpbmdzIGFuZCBwcm9ncmFt
-bWluZyByb3V0aW5lcyBmb3IgaW50ZXJuYWwvZXh0ZXJuYWwNCgkJTURJTyBhcmUgZGlmZmVyZW50
-LiBNdXN0IGJlIGluY2x1ZGVkIGZvciBpbnRlcm5hbCBNRElPLg0KDQpIb3cgYWJvdXQgdGhpcz8N
-Cg0KVGhhbmtzIQ0KU2hhb2h1aQ0KIA0K
+On Tue, Nov 11, 2014 at 11:51 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> We have a historical hack that treats missing ranges properties as the
+> equivalent of an empty one. This is needed for ancient PowerMac "bad"
+> device-trees, and shouldn't be enabled for any other PowerPC platform,
+> otherwise we get some nasty layout of devices in sysfs or even
+> duplication when a set of otherwise identically named devices is
+> created multiple times under a different parent node with no ranges
+> property.
+>
+> This fix is needed for the PowerNV i2c busses to be exposed properly
+> and will fix a number of other embedded cases.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: <stable@vger.kernel.org>
+> ---
+>
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> index e371825..e37f017 100644
+> --- a/drivers/of/address.c
+> +++ b/drivers/of/address.c
+> @@ -7,6 +7,10 @@
+>  #include <linux/pci_regs.h>
+>  #include <linux/string.h>
+>
+> +#ifdef CONFIG_PPC
+> +#include <asm/machdep.h>
+> +#endif
+> +
+>  /* Max address size we deal with */
+>  #define OF_MAX_ADDR_CELLS      4
+>  #define OF_CHECK_ADDR_COUNT(na)        ((na) > 0 && (na) <= OF_MAX_ADDR_CELLS)
+> @@ -428,12 +432,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+>          * This code is only enabled on powerpc. --gcl
+>          */
+>         ranges = of_get_property(parent, rprop, &rlen);
+> -#if !defined(CONFIG_PPC)
+> +#if defined(CONFIG_PPC)
+> +       if (!machine_is(powermac))
+
+Can we use a machine compatible here or something not PPC specific?
+Then we can use IS_ENABLED(CONFIG_PPC) instead of ifdefs.
+
+Rob
+
+> +#endif /* defined(CONFIG_PPC) */
+>         if (ranges == NULL) {
+> -               pr_err("OF: no ranges; cannot translate\n");
+> +               pr_debug("OF: no ranges; cannot translate\n");
+>                 return 1;
+>         }
+> -#endif /* !defined(CONFIG_PPC) */
+>         if (ranges == NULL || rlen == 0) {
+>                 offset = of_read_number(addr, na);
+>                 memset(addr, 0, pna * 4);
+>
