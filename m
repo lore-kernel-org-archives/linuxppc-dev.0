@@ -1,20 +1,25 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73A121A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:44:06 +1100 (AEDT)
-Message-ID: <1415753046.5175.22.camel@neuling.org>
-Subject: Re: [PATCH V2] powerpc/TM: Disable/Enable TM looking at the ibm,
- pa-features device tree entry
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 12 Nov 2014 11:44:06 +1100
-In-Reply-To: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 340821A00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:23:40 +1100 (AEDT)
+Message-ID: <1415759019.10731.1.camel@concordia>
+Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 12 Nov 2014 13:23:39 +1100
+In-Reply-To: <20141111211248.GI28161@google.com>
+References: <1412656696.30859.122.camel@pasglop>
+ <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
+ <1412746096.30859.229.camel@pasglop> <20141015221914.GD15225@google.com>
+ <1413413732.11213.27.camel@pasglop> <20141111211248.GI28161@google.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
+ Brian King <brking@linux.vnet.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ Takashi Iwai <tiwai@suse.de>, Linux PCI <linux-pci@vger.kernel.org>,
+ Yijing Wang <wangyijing@huawei.com>, Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2014-11-02 at 20:02 +0530, Aneesh Kumar K.V wrote:
-> Runtime disable transactional memory feature looking at pa-features
-> device tree entry. We need to do this so that we can run a kernel
-> built with TM config in PR mode.=20
+On Tue, 2014-11-11 at 14:12 -0700, Bjorn Helgaas wrote:
+> On Thu, Oct 16, 2014 at 09:55:32AM +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2014-10-15 at 16:19 -0600, Bjorn Helgaas wrote:
+> > >   PCI/MSI: Add device flag indicating that 64-bit MSIs don't work
+> 
+> I'm still assuming you're going to merge this series, but I don't see it in
+> your tree (https://git.kernel.org/cgit/linux/kernel/git/benh/powerpc.git/)
+> yet.  Do you want me to do anything with it?
 
-I'm happy to turn this off but why do we need to do this in PR mode?
-Can you explain this in the commit message.
+I'm doing the powerpc tree this cycle, so it'd be in my tree, but it's not:
 
-> For PR guest we provide a device
-> tree entry with TM feature disabled in pa-features
+  https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/
 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> Changes from V1:
-> * rebase to latest linus
->=20
->  arch/powerpc/kernel/prom.c | 5 +++++
->  1 file changed, 5 insertions(+)
->=20
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 099f27e6d1b0..3e22930f15d1 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -160,6 +160,11 @@ static struct ibm_pa_feature {
->  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
->  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
->  	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
-> +	/*
-> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
-> +	 * enabled via device tree
-> +	 */
-> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
->  };
-> =20
->  static void __init scan_features(unsigned long node, const unsigned char=
- *ftrs,
+Ben if you want me to take it let me know.
+
+cheers
