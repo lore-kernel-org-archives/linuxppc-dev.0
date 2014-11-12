@@ -1,38 +1,39 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EB0E1A1EE5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 19:39:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEAEC1A0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 20:22:44 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 12 Nov 2014 08:38:58 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 708942190043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 08:38:29 +0000 (GMT)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAC8ctNQ66977986
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 08:38:55 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAC8cslI019889
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 01:38:55 -0700
-Subject: [PATCH 3/3] powerpc/vphn: move endianness fixing to
- vphn_unpack_associativity()
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 12 Nov 2014 09:38:53 +0100
-Message-ID: <20141112083853.6896.45789.stgit@bahia.local>
-In-Reply-To: <20141112083123.6492.22889.stgit@bahia.local>
-References: <20141112083123.6492.22889.stgit@bahia.local>
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 12 Nov 2014 19:22:40 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E2A622BB0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 20:22:37 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAC9OWKx14745718
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 20:24:34 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAC9MZKk000537
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 20:22:36 +1100
+Date: Wed, 12 Nov 2014 14:52:24 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: kernelfans@gmail.com
+Subject: Re: [RFC 01/11] sched: introduce sys_cpumask in tsk to adapt
+ asymmetric system
+Message-ID: <20141112092224.GA16566@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
+ <1413487800-7162-2-git-send-email-kernelfans@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1413487800-7162-2-git-send-email-kernelfans@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,96 +43,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first argument to vphn_unpack_associativity() is a const long *, but the
-parsing code expects __be64 values actually. This is inconsistent. We should
-either pass a const __be64 * or change vphn_unpack_associativity() so that
-it fixes endianness by itself.
+* kernelfans@gmail.com <kernelfans@gmail.com> [2014-10-16 15:29:50]:
 
-This patch does the latter, since the caller doesn't need to know about
-endianness and this allows to fix significant 64-bit values only. Please
-note that the previous code was able to cope with 32-bit fields being split
-accross two consecutives 64-bit values. Since PAPR+ doesn't say this cannot
-happen, the behaviour was kept. It requires extra checking to know when fixing
-is needed though.
+> Some system such as powerpc, some tsk (vcpu thread) can only run on
+> the dedicated cpu. Since we adapt some asymmetric method to monitor the
+> whole physical cpu. (powerKVM only allows the primary hwthread to
+> set up runtime env for the secondary when entering guest).
+> 
+> Nowadays, powerKVM run with all the secondary hwthread offline to ensure
+> the vcpu threads only run on the primary thread. But we plan to keep all
+> cpus online when running powerKVM to give more power when switching back
+> to host, so introduce sys_allowed cpumask to reflect the cpuset which
+> the vcpu thread can run on.
+> 
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> ---
+>  include/linux/init_task.h |  1 +
+>  include/linux/sched.h     |  6 ++++++
+>  kernel/sched/core.c       | 10 ++++++++--
+>  3 files changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+> index 2bb4c4f3..c56f69e 100644
+> --- a/include/linux/init_task.h
+> +++ b/include/linux/init_task.h
+> @@ -172,6 +172,7 @@ extern struct task_group root_task_group;
+>  	.normal_prio	= MAX_PRIO-20,					\
+>  	.policy		= SCHED_NORMAL,					\
+>  	.cpus_allowed	= CPU_MASK_ALL,					\
+> +	.sys_allowed = CPU_MASK_ALL,			\
 
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |   42 +++++++++++++++++++++++++++++-------------
- 1 file changed, 29 insertions(+), 13 deletions(-)
+Do we really need another mask, cant we just use cpus_allowed itself.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index e30c469..903ef27 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1417,30 +1417,49 @@ static int update_cpu_associativity_changes_mask(void)
-  */
- static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
- {
--	int i;
--	const __be16 *field = (const __be16 *) packed;
-+	int i, j, k;
-+	union {
-+		__be64 packed[VPHN_REGISTER_COUNT];
-+		__be16 field[VPHN_REGISTER_COUNT * 4];
-+	} fixed;
- 
- #define VPHN_FIELD_UNUSED	(0xffff)
- #define VPHN_FIELD_MSB		(0x8000)
- #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
- 
--	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
--		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED)
-+	for (i = 1, j = 0, k = 0; i < VPHN_ASSOC_BUFSIZE;) {
-+		u16 field;
-+
-+		if (j % 4 == 0) {
-+			fixed.packed[k] = cpu_to_be64(packed[k]);
-+			k++;
-+		}
-+
-+		field = be16_to_cpu(fixed.field[j]);
-+
-+		if (field == VPHN_FIELD_UNUSED)
- 			/* All significant fields processed.
- 			 */
- 			break;
- 
--		if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-+		if (field & VPHN_FIELD_MSB) {
- 			/* Data is in the lower 15 bits of this field */
--			unpacked[i] = cpu_to_be32(
--				be16_to_cpup(field) & VPHN_FIELD_MASK);
--			field++;
-+			unpacked[i++] = cpu_to_be32(field & VPHN_FIELD_MASK);
-+			j++;
- 		} else {
- 			/* Data is in the lower 15 bits of this field
- 			 * concatenated with the next 16 bit field
- 			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
-+			if (unlikely(j % 4 == 3)) {
-+				/* The next field is to be copied from the next
-+				 * 64-bit input value. We must fix it now.
-+				 */
-+				fixed.packed[k] = cpu_to_be64(packed[k]);
-+				k++;
-+			}
-+
-+			unpacked[i++] = *((__be32 *)&fixed.field[j]);
-+			j += 2;
- 		}
- 	}
- 
-@@ -1460,11 +1479,8 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
- 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
- 	u64 flags = 1;
- 	int hwcpu = get_hard_smp_processor_id(cpu);
--	int i;
- 
- 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
--	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
--		retbuf[i] = cpu_to_be64(retbuf[i]);
- 	vphn_unpack_associativity(retbuf, associativity);
- 
- 	return rc;
+>  	.nr_cpus_allowed= NR_CPUS,					\
+>  	.mm		= NULL,						\
+>  	.active_mm	= &init_mm,					\
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 5c2c885..ce429f3 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1260,7 +1260,10 @@ struct task_struct {
+>  
+>  	unsigned int policy;
+>  	int nr_cpus_allowed;
+> +	/* Anded user and sys_allowed */
+>  	cpumask_t cpus_allowed;
+> +	/* due to the feature of asymmetric, some tsk can only run on such cpu */
+> +	cpumask_t sys_allowed;
+>  
+>  #ifdef CONFIG_PREEMPT_RCU
+>  	int rcu_read_lock_nesting;
+> @@ -2030,6 +2033,9 @@ static inline void tsk_restore_flags(struct task_struct *task,
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> +extern void set_cpus_sys_allowed(struct task_struct *p,
+> +			const struct cpumask *new_mask);
+> +
+>  extern void do_set_cpus_allowed(struct task_struct *p,
+>  			       const struct cpumask *new_mask);
+>  
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index ec1a286..2cd1ae3 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -4596,13 +4596,19 @@ void init_idle(struct task_struct *idle, int cpu)
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> +void set_cpus_sys_allowed(struct task_struct *p,
+> +	const struct cpumask *new_mask)
+> +{
+> +	cpumask_copy(&p->sys_allowed, new_mask);
+> +}
+> +
+
+This function doesnt seem to be used anywhere... Not sure why it is
+introduced
+
+>  void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
+>  {
+>  	if (p->sched_class && p->sched_class->set_cpus_allowed)
+>  		p->sched_class->set_cpus_allowed(p, new_mask);
+>  
+> -	cpumask_copy(&p->cpus_allowed, new_mask);
+> -	p->nr_cpus_allowed = cpumask_weight(new_mask);
+> +	cpumask_and(&p->cpus_allowed, &p->sys_allowed, new_mask);
+> +	p->nr_cpus_allowed = cpumask_weight(&p->cpus_allowed);
+>  }
+>  
+>  /*
+> -- 
+> 1.8.3.1
+> 
+> 
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
