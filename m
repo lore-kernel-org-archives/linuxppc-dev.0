@@ -1,35 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B90A1A0250
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADC751A0B48
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 13:36:29 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EF8D514017B
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:28 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7B6AB140183
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:29 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 12 Nov 2014 12:36:28 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 56E2E357805C
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:26 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAC2cKAn27984112
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:38:20 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAC2aPnd021608
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:25 +1100
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5BE202CE8065
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:27 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAC2aD6C41418826
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:13 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAC2aQLc025393
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 13:36:27 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/8] powerpc/powernv: Rename alloc_m64_pe() to reserve_m64_pe()
-Date: Wed, 12 Nov 2014 13:36:06 +1100
-Message-Id: <1415759771-11359-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 8/8] powerpc/powernv: Fix potential zero devisor
+Date: Wed, 12 Nov 2014 13:36:11 +1100
+Message-Id: <1415759771-11359-9-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1415759771-11359-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1415759771-11359-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -42,62 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch renames alloc_m64_pe() to reserve_m64_pe() to reflect
-its real usage: We reserve PE numbers for M64 segments in advance
-and then pick up the reserved PE numbers when building the mapping
-between PE numbers and M64 segments.
+If there're no PHBs under P5IOC2 HUB device tree node, we should
+bail early to avoid zero devisor and allocating TCE tables.
 
+Reported-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++----
- arch/powerpc/platforms/powernv/pci.h      | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 7aa0404..cf90cce 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -172,7 +172,7 @@ fail:
- 	return -EIO;
- }
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 94ce348..3336fcb 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -196,6 +196,22 @@ void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+ 	hub_id = be64_to_cpup(prop64);
+ 	pr_info(" HUB-ID : 0x%016llx\n", hub_id);
  
--static void pnv_ioda2_alloc_m64_pe(struct pnv_phb *phb)
-+static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
- {
- 	resource_size_t sgsz = phb->ioda.m64_segsize;
- 	struct pci_dev *pdev;
-@@ -345,7 +345,7 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
- 	/* Use last M64 BAR to cover M64 window */
- 	phb->ioda.m64_bar_idx = 15;
- 	phb->init_m64 = pnv_ioda2_init_m64;
--	phb->alloc_m64_pe = pnv_ioda2_alloc_m64_pe;
-+	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
- 	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
- }
- 
-@@ -837,8 +837,8 @@ static void pnv_pci_ioda_setup_PEs(void)
- 		phb = hose->private_data;
- 
- 		/* M64 layout might affect PE allocation */
--		if (phb->alloc_m64_pe)
--			phb->alloc_m64_pe(phb);
-+		if (phb->reserve_m64_pe)
-+			phb->reserve_m64_pe(phb);
- 
- 		pnv_ioda_setup_PEs(hose->bus);
++	/* Count child PHBs and calculate TCE space per PHB */
++	for_each_child_of_node(np, phbn) {
++		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
++		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex"))
++			phb_count++;
++	}
++
++	if (phb_count <= 0) {
++		pr_info(" No PHBs for Hub %s\n", np->full_name);
++		return;
++	}
++
++	tce_per_phb = __rounddown_pow_of_two(P5IOC2_TCE_MEMORY / phb_count);
++	pr_info(" Allocating %lld MB of TCE memory per PHB\n",
++		tce_per_phb >> 20);
++
+ 	/* Currently allocate 16M of TCE memory for every Hub
+ 	 *
+ 	 * XXX TODO: Make it chip local if possible
+@@ -215,18 +231,6 @@ void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+ 		return;
  	}
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 34d29eb..6c02ff8 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -130,7 +130,7 @@ struct pnv_phb {
- 	u32 (*bdfn_to_pe)(struct pnv_phb *phb, struct pci_bus *bus, u32 devfn);
- 	void (*shutdown)(struct pnv_phb *phb);
- 	int (*init_m64)(struct pnv_phb *phb);
--	void (*alloc_m64_pe)(struct pnv_phb *phb);
-+	void (*reserve_m64_pe)(struct pnv_phb *phb);
- 	int (*pick_m64_pe)(struct pnv_phb *phb, struct pci_bus *bus, int all);
- 	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
- 	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
+ 
+-	/* Count child PHBs */
+-	for_each_child_of_node(np, phbn) {
+-		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
+-		    of_device_is_compatible(phbn, "ibm,p5ioc2-pciex"))
+-			phb_count++;
+-	}
+-
+-	/* Calculate how much TCE space we can give per PHB */
+-	tce_per_phb = __rounddown_pow_of_two(P5IOC2_TCE_MEMORY / phb_count);
+-	pr_info(" Allocating %lld MB of TCE memory per PHB\n",
+-		tce_per_phb >> 20);
+-
+ 	/* Initialize PHBs */
+ 	for_each_child_of_node(np, phbn) {
+ 		if (of_device_is_compatible(phbn, "ibm,p5ioc2-pcix") ||
 -- 
 1.8.3.2
