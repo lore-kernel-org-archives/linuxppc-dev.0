@@ -1,37 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 038331A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 16:51:36 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0FA01A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 16:39:42 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 12 Nov 2014 11:09:39 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id CD27A1258056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:09:38 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAC5fl2Q1311134
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:11:47 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAC5dZaO025603
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:09:35 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH V2] powerpc/TM: Disable/Enable TM looking at the ibm,
- pa-features device tree entry
-In-Reply-To: <1415753046.5175.22.camel@neuling.org>
-References: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1415753046.5175.22.camel@neuling.org>
-Date: Wed, 12 Nov 2014 11:09:33 +0530
-Message-ID: <87d28tasfe.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+ by ozlabs.org (Postfix) with ESMTPS id 50E98140170
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 16:51:34 +1100 (AEDT)
+Message-ID: <1415771461.5124.33.camel@kernel.crashing.org>
+Subject: [PATCH]  of/base: Fix PowerPC address parsing hack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>
+Date: Wed, 12 Nov 2014 16:51:01 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+We have a historical hack that treats missing ranges properties as the
+equivalent of an empty one. This is needed for ancient PowerMac "bad"
+device-trees, and shouldn't be enabled for any other PowerPC platform,
+otherwise we get some nasty layout of devices in sysfs or even
+duplication when a set of otherwise identically named devices is
+created multiple times under a different parent node with no ranges
+property.
 
-> On Sun, 2014-11-02 at 20:02 +0530, Aneesh Kumar K.V wrote:
->> Runtime disable transactional memory feature looking at pa-features
->> device tree entry. We need to do this so that we can run a kernel
->> built with TM config in PR mode. 
->
-> I'm happy to turn this off but why do we need to do this in PR mode?
-> Can you explain this in the commit message.
+This fix is needed for the PowerNV i2c busses to be exposed properly
+and will fix a number of other embedded cases.
 
-Hmm, that commit message needs an update. I initially did the patch for
-P8 PR support and wanted a mechanism to disable TM. Alex added basic TM
-support for PR mode after that. So we can drop the PR part of the
-commit message.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: <stable@vger.kernel.org>
+--- 
 
-Michael Ellerman,
-
-Let me know if you want me to send an updated version with the those
-part of the commit message dropped
-
->
->> For PR guest we provide a device
->> tree entry with TM feature disabled in pa-features
->
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->> Changes from V1:
->> * rebase to latest linus
->> 
->>  arch/powerpc/kernel/prom.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->> 
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index 099f27e6d1b0..3e22930f15d1 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -160,6 +160,11 @@ static struct ibm_pa_feature {
->>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
->>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
->>  	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
->> +	/*
->> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
->> +	 * enabled via device tree
->> +	 */
->> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
->>  };
->>  
->>  static void __init scan_features(unsigned long node, const unsigned char *ftrs,
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index e371825..e37f017 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -7,6 +7,10 @@
+ #include <linux/pci_regs.h>
+ #include <linux/string.h>
+ 
++#ifdef CONFIG_PPC
++#include <asm/machdep.h>
++#endif
++
+ /* Max address size we deal with */
+ #define OF_MAX_ADDR_CELLS	4
+ #define OF_CHECK_ADDR_COUNT(na)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS)
+@@ -428,12 +432,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 	 * This code is only enabled on powerpc. --gcl
+ 	 */
+ 	ranges = of_get_property(parent, rprop, &rlen);
+-#if !defined(CONFIG_PPC)
++#if defined(CONFIG_PPC)
++	if (!machine_is(powermac))
++#endif /* defined(CONFIG_PPC) */
+ 	if (ranges == NULL) {
+-		pr_err("OF: no ranges; cannot translate\n");
++		pr_debug("OF: no ranges; cannot translate\n");
+ 		return 1;
+ 	}
+-#endif /* !defined(CONFIG_PPC) */
+ 	if (ranges == NULL || rlen == 0) {
+ 		offset = of_read_number(addr, na);
+ 		memset(addr, 0, pna * 4);
