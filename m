@@ -1,35 +1,32 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D37461A028E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 14:42:01 +1100 (AEDT)
-Received: from mail-ob0-f172.google.com (mail-ob0-f172.google.com
- [209.85.214.172])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 088F61A0292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 15:08:22 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4154214012F
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 14:42:01 +1100 (AEDT)
-Received: by mail-ob0-f172.google.com with SMTP id wp4so8506079obc.17
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 19:41:58 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1415732980.15957.33.camel@freescale.com>
-References: <1413515616-15874-1-git-send-email-B29983@freescale.com>
- <CAKohpokotKSvQ13uU4MnCer+qzBUUbGVTd19y7xswCAEKk3nGQ@mail.gmail.com>
- <6aaa50ef5f234fe2896f1c66eb646dfb@DM2PR03MB574.namprd03.prod.outlook.com>
- <1415732980.15957.33.camel@freescale.com>
-Date: Wed, 12 Nov 2014 09:11:58 +0530
-Message-ID: <CAKohpomEZXOJBvYwMYvcxxjPnKd4X378Nhh7TNypmL3rvd7SnA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: qoriq: Make the driver usable on all QorIQ
- platforms
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Yuantian Tang <Yuantian.Tang@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id B10A914012B
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 15:08:20 +1100 (AEDT)
+Message-ID: <1415765215.5124.30.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 12 Nov 2014 15:06:55 +1100
+In-Reply-To: <1415759019.10731.1.camel@concordia>
+References: <1412656696.30859.122.camel@pasglop>
+ <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
+ <1412746096.30859.229.camel@pasglop> <20141015221914.GD15225@google.com>
+ <1413413732.11213.27.camel@pasglop> <20141111211248.GI28161@google.com>
+ <1415759019.10731.1.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Dave Airlie <airlied@linux.ie>, Linux PCI <linux-pci@vger.kernel.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@ozlabs.org, Yijing Wang <wangyijing@huawei.com>,
+ Takashi Iwai <tiwai@suse.de>, Bjorn Helgaas <bhelgaas@google.com>,
+ Alex Deucher <alexdeucher@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,115 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12 November 2014 00:39, Scott Wood <scottwood@freescale.com> wrote:
-> What purpose do those "<arch> CPU frequency scaling drivers" submenus
-> serve, versus just including the options in the main cpufreq menu?  It's
-> not as if more than one arch would be visible at once (and when a
-> situation with multiple visible menus popped up, it was considered a
-> bug).
+On Wed, 2014-11-12 at 13:23 +1100, Michael Ellerman wrote:
+> On Tue, 2014-11-11 at 14:12 -0700, Bjorn Helgaas wrote:
+> > On Thu, Oct 16, 2014 at 09:55:32AM +1100, Benjamin Herrenschmidt wrote:
+> > > On Wed, 2014-10-15 at 16:19 -0600, Bjorn Helgaas wrote:
+> > > >   PCI/MSI: Add device flag indicating that 64-bit MSIs don't work
+> > 
+> > I'm still assuming you're going to merge this series, but I don't see it in
+> > your tree (https://git.kernel.org/cgit/linux/kernel/git/benh/powerpc.git/)
+> > yet.  Do you want me to do anything with it?
+> 
+> I'm doing the powerpc tree this cycle, so it'd be in my tree, but it's not:
+> 
+>   https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/
+> 
+> Ben if you want me to take it let me know.
 
-Oh, that really looks fine to me. I will send it formally as well:
+Hrm, I might have dropped the ball accidentally here. Bjorn did you
+actually Ack the core changes ? In that case we should probably pick it
+up.
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 3489f8f..a24d678 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -196,19 +196,19 @@ config CPUFREQ_DT
-
-          If in doubt, say N.
-
--menu "x86 CPU frequency scaling drivers"
--depends on X86
-+if X86
- source "drivers/cpufreq/Kconfig.x86"
--endmenu
-+endif
-
--menu "ARM CPU frequency scaling drivers"
--depends on ARM || ARM64
-+if ARM || ARM64
- source "drivers/cpufreq/Kconfig.arm"
--endmenu
-+endif
-
--menu "AVR32 CPU frequency scaling drivers"
--depends on AVR32
-+if PPC32 || PPC64
-+source "drivers/cpufreq/Kconfig.powerpc"
-+endif
-
-+if AVR32
- config AVR32_AT32AP_CPUFREQ
-        bool "CPU frequency driver for AT32AP"
-        depends on PLATFORM_AT32AP
-@@ -216,12 +216,9 @@ config AVR32_AT32AP_CPUFREQ
-        help
-          This enables the CPU frequency driver for AT32AP processors.
-          If in doubt, say N.
-+endif
-
--endmenu
--
--menu "CPUFreq processor drivers"
--depends on IA64
--
-+if IA64
- config IA64_ACPI_CPUFREQ
-        tristate "ACPI Processor P-States driver"
-        depends on ACPI_PROCESSOR
-@@ -232,12 +229,9 @@ config IA64_ACPI_CPUFREQ
-        For details, take a look at <file:Documentation/cpu-freq/>.
-
-        If in doubt, say N.
-+endif
-
--endmenu
--
--menu "MIPS CPUFreq processor drivers"
--depends on MIPS
--
-+if MIPS
- config LOONGSON2_CPUFREQ
-        tristate "Loongson2 CPUFreq Driver"
-        help
-@@ -249,16 +243,9 @@ config LOONGSON2_CPUFREQ
-          For details, take a look at <file:Documentation/cpu-freq/>.
-
-          If in doubt, say N.
-+endif
-
--endmenu
--
--menu "PowerPC CPU frequency scaling drivers"
--depends on PPC32 || PPC64
--source "drivers/cpufreq/Kconfig.powerpc"
--endmenu
--
--menu "SPARC CPU frequency scaling drivers"
--depends on SPARC64
-+if SPARC64
- config SPARC_US3_CPUFREQ
-        tristate "UltraSPARC-III CPU Frequency driver"
-        help
-@@ -276,10 +263,9 @@ config SPARC_US2E_CPUFREQ
-          For details, take a look at <file:Documentation/cpu-freq>.
-
-          If in doubt, say N.
--endmenu
-+endif
-
--menu "SH CPU Frequency scaling"
--depends on SUPERH
-+if SUPERH
- config SH_CPU_FREQ
-        tristate "SuperH CPU Frequency driver"
-        help
-@@ -293,7 +279,7 @@ config SH_CPU_FREQ
-          For details, take a look at <file:Documentation/cpu-freq>.
-
-          If unsure, say N.
--endmenu
-+endif
-
- endif
- endmenu
+Cheers,
+Ben.
