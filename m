@@ -1,35 +1,37 @@
-Return-Path: <bhelgaas@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BA9F1A01EE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 15:10:06 +1100 (AEDT)
-Received: from mail-qg0-x22f.google.com (mail-qg0-x22f.google.com
- [IPv6:2607:f8b0:400d:c04::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 739A014012F
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2014 15:10:05 +1100 (AEDT)
-Received: by mail-qg0-f47.google.com with SMTP id j107so8350998qga.34
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2014 20:10:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0FA01A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 16:39:42 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 12 Nov 2014 11:09:39 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CD27A1258056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:09:38 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAC5fl2Q1311134
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:11:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAC5dZaO025603
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 11:09:35 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V2] powerpc/TM: Disable/Enable TM looking at the ibm,
+ pa-features device tree entry
+In-Reply-To: <1415753046.5175.22.camel@neuling.org>
+References: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1415753046.5175.22.camel@neuling.org>
+Date: Wed, 12 Nov 2014 11:09:33 +0530
+Message-ID: <87d28tasfe.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1415765215.5124.30.camel@kernel.crashing.org>
-References: <1412656696.30859.122.camel@pasglop>
- <CADnq5_NFt8neiOAg896d3-DbAn0rnrE7iXaTFmkNGSg-J9oSkA@mail.gmail.com>
- <1412746096.30859.229.camel@pasglop> <20141015221914.GD15225@google.com>
- <1413413732.11213.27.camel@pasglop> <20141111211248.GI28161@google.com>
- <1415759019.10731.1.camel@concordia>
- <1415765215.5124.30.camel@kernel.crashing.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 11 Nov 2014 21:09:42 -0700
-Message-ID: <CAErSpo5yDtsFTMOuYzgF-HzKOVX2Q3cv2-63rk6yH=PSYJkg7Q@mail.gmail.com>
-Subject: Re: [PATCH v3 4/7] sound/radeon: Add quirk for broken 64-bit MSI
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@linux.ie>,
- Brian King <brking@linux.vnet.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- Takashi Iwai <tiwai@suse.de>, Linux PCI <linux-pci@vger.kernel.org>,
- Yijing Wang <wangyijing@huawei.com>, Alex Deucher <alexdeucher@gmail.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,28 +41,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 11, 2014 at 9:06 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2014-11-12 at 13:23 +1100, Michael Ellerman wrote:
->> On Tue, 2014-11-11 at 14:12 -0700, Bjorn Helgaas wrote:
->> > On Thu, Oct 16, 2014 at 09:55:32AM +1100, Benjamin Herrenschmidt wrote:
->> > > On Wed, 2014-10-15 at 16:19 -0600, Bjorn Helgaas wrote:
->> > > >   PCI/MSI: Add device flag indicating that 64-bit MSIs don't work
->> >
->> > I'm still assuming you're going to merge this series, but I don't see it in
->> > your tree (https://git.kernel.org/cgit/linux/kernel/git/benh/powerpc.git/)
->> > yet.  Do you want me to do anything with it?
->>
->> I'm doing the powerpc tree this cycle, so it'd be in my tree, but it's not:
->>
->>   https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/
->>
->> Ben if you want me to take it let me know.
+Michael Neuling <mikey@neuling.org> writes:
+
+> On Sun, 2014-11-02 at 20:02 +0530, Aneesh Kumar K.V wrote:
+>> Runtime disable transactional memory feature looking at pa-features
+>> device tree entry. We need to do this so that we can run a kernel
+>> built with TM config in PR mode. 
 >
-> Hrm, I might have dropped the ball accidentally here. Bjorn did you
-> actually Ack the core changes ? In that case we should probably pick it
-> up.
+> I'm happy to turn this off but why do we need to do this in PR mode?
+> Can you explain this in the commit message.
 
-Yep, I acked it earlier in this thread (Oct 15).
+Hmm, that commit message needs an update. I initially did the patch for
+P8 PR support and wanted a mechanism to disable TM. Alex added basic TM
+support for PR mode after that. So we can drop the PR part of the
+commit message.
 
-Bjorn
+Michael Ellerman,
+
+Let me know if you want me to send an updated version with the those
+part of the commit message dropped
+
+>
+>> For PR guest we provide a device
+>> tree entry with TM feature disabled in pa-features
+>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>> Changes from V1:
+>> * rebase to latest linus
+>> 
+>>  arch/powerpc/kernel/prom.c | 5 +++++
+>>  1 file changed, 5 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index 099f27e6d1b0..3e22930f15d1 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -160,6 +160,11 @@ static struct ibm_pa_feature {
+>>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
+>>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
+>>  	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+>> +	/*
+>> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
+>> +	 * enabled via device tree
+>> +	 */
+>> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
+>>  };
+>>  
+>>  static void __init scan_features(unsigned long node, const unsigned char *ftrs,
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
