@@ -1,23 +1,28 @@
-Return-Path: <geoff@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 190811A018C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 06:30:08 +1100 (AEDT)
-Message-ID: <1415820588.15847.6.camel@smoke>
-Subject: [PATCH V3] kexec: Add IND_FLAGS macro
-From: Geoff Levand <geoff@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 12 Nov 2014 11:29:48 -0800
-In-Reply-To: <20141007175248.GG27464@redhat.com>
-References: <cover.1412640584.git.geoff@infradead.org>
- <adf97d602657c72f6ee59aefe5d51149159a3e99.1412640584.git.geoff@infradead.org>
- <20141007175248.GG27464@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4677B1A01A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 06:55:32 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 91D461400EA
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 06:55:31 +1100 (AEDT)
+Message-ID: <1415822107.5124.45.camel@kernel.crashing.org>
+Subject: Re: [PATCH] of/base: Fix PowerPC address parsing hack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Herring <robherring2@gmail.com>
+Date: Thu, 13 Nov 2014 06:55:07 +1100
+In-Reply-To: <CAL_JsqKfBGdpFV_XuE4DEhFrkhN33kOMkiZE_TOnAZDm2qjwMw@mail.gmail.com>
+References: <1415771461.5124.33.camel@kernel.crashing.org>
+ <CAL_JsqKfBGdpFV_XuE4DEhFrkhN33kOMkiZE_TOnAZDm2qjwMw@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Eric Biederman <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>,
- linux-kernel@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Grant Likely <grant.likely@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
-all the possible kexec IND_ kimage_entry indirection flags.  Having this
-macro allows for simplified code in the processing of the kexec
-kimage_entry items.  Also, remove the local powerpc definition and use
-the generic one.
+On Wed, 2014-11-12 at 08:39 -0600, Rob Herring wrote:
+> On Tue, Nov 11, 2014 at 11:51 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > We have a historical hack that treats missing ranges properties as the
+> > equivalent of an empty one. This is needed for ancient PowerMac "bad"
+> > device-trees, and shouldn't be enabled for any other PowerPC platform,
+> > otherwise we get some nasty layout of devices in sysfs or even
+> > duplication when a set of otherwise identically named devices is
+> > created multiple times under a different parent node with no ranges
+> > property.
+> >
+> > This fix is needed for the PowerNV i2c busses to be exposed properly
+> > and will fix a number of other embedded cases.
+> >
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > CC: <stable@vger.kernel.org>
+> > ---
+> >
+> > diff --git a/drivers/of/address.c b/drivers/of/address.c
+> > index e371825..e37f017 100644
+> > --- a/drivers/of/address.c
+> > +++ b/drivers/of/address.c
+> > @@ -7,6 +7,10 @@
+> >  #include <linux/pci_regs.h>
+> >  #include <linux/string.h>
+> >
+> > +#ifdef CONFIG_PPC
+> > +#include <asm/machdep.h>
+> > +#endif
+> > +
+> >  /* Max address size we deal with */
+> >  #define OF_MAX_ADDR_CELLS      4
+> >  #define OF_CHECK_ADDR_COUNT(na)        ((na) > 0 && (na) <= OF_MAX_ADDR_CELLS)
+> > @@ -428,12 +432,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+> >          * This code is only enabled on powerpc. --gcl
+> >          */
+> >         ranges = of_get_property(parent, rprop, &rlen);
+> > -#if !defined(CONFIG_PPC)
+> > +#if defined(CONFIG_PPC)
+> > +       if (!machine_is(powermac))
+> 
+> Can we use a machine compatible here or something not PPC specific?
+> Then we can use IS_ENABLED(CONFIG_PPC) instead of ifdefs.
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
----
-Hi Ben,
+We could, we'd have to use a pair of machine compatible, I'll spin a new
+patch later today.
 
-Could you give your ack on this, then I'll try to get it
-merged with my other kexec patches.
-
-Thanks.
-
--Geoff
-
- arch/powerpc/kernel/machine_kexec_64.c | 2 --
- include/linux/kexec.h                  | 1 +
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 879b3aa..75652a32 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -96,8 +96,6 @@ int default_machine_kexec_prepare(struct kimage *image)
- 	return 0;
- }
+Ben.
  
--#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
--
- static void copy_segments(unsigned long ind)
- {
- 	unsigned long entry;
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 25e039c..b23412c 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -10,6 +10,7 @@
- #define IND_INDIRECTION  (1 << IND_INDIRECTION_BIT)
- #define IND_DONE         (1 << IND_DONE_BIT)
- #define IND_SOURCE       (1 << IND_SOURCE_BIT)
-+#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
- 
- #if !defined(__ASSEMBLY__)
- 
--- 
-1.9.1
+> Rob
+> 
+> > +#endif /* defined(CONFIG_PPC) */
+> >         if (ranges == NULL) {
+> > -               pr_err("OF: no ranges; cannot translate\n");
+> > +               pr_debug("OF: no ranges; cannot translate\n");
+> >                 return 1;
+> >         }
+> > -#endif /* !defined(CONFIG_PPC) */
+> >         if (ranges == NULL || rlen == 0) {
+> >                 offset = of_read_number(addr, na);
+> >                 memset(addr, 0, pna * 4);
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
