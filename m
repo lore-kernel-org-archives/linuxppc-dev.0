@@ -1,22 +1,39 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 696001A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 21:02:19 +1100 (AEDT)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- sACA2Hvx013691
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 10:02:17 GMT
-Date: Wed, 12 Nov 2014 13:02:03 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: anton@samba.org
-Subject: re: powerpc: Remove bootmem allocator
-Message-ID: <20141112100203.GA14571@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95F0E1A0155
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 21:19:09 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 12 Nov 2014 15:49:02 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9E2FC125805A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 15:49:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sACALAaY57671716
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 15:51:11 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sACAHg3Y007541
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 15:47:43 +0530
+Date: Wed, 12 Nov 2014 15:47:41 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: kernelfans@gmail.com
+Subject: Re: [RFC 02/11] powerpc: kvm: ensure vcpu-thread run only on primary
+ hwthread
+Message-ID: <20141112101741.GB16566@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
+ <1413487800-7162-3-git-send-email-kernelfans@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1413487800-7162-3-git-send-email-kernelfans@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Anton Blanchard,
+* kernelfans@gmail.com <kernelfans@gmail.com> [2014-10-16 15:29:51]:
 
-The patch 10239733ee86: "powerpc: Remove bootmem allocator" from Sep
-17, 2014, leads to the following static checker warning:
+> When vcpu thread runs at the first time, it will ensure to stick
+> to the primary thread.
+> 
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kvm_host.h |  3 +++
+>  arch/powerpc/kvm/book3s_hv.c        | 17 +++++++++++++++++
+>  2 files changed, 20 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 98d9dd5..9a3355e 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -666,6 +666,9 @@ struct kvm_vcpu_arch {
+>  	spinlock_t tbacct_lock;
+>  	u64 busy_stolen;
+>  	u64 busy_preempt;
+> +#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
+> +	bool cpu_selected;
+> +#endif
+>  #endif
+>  };
+>  
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 27cced9..ba258c8 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1909,6 +1909,23 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
+>  {
+>  	int r;
+>  	int srcu_idx;
+> +#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
+> +	int cpu = smp_processor_id();
+> +	int target_cpu;
+> +	unsigned int cpu;
 
-	arch/powerpc/mm/pgtable_32.c:108 pte_alloc_one_kernel()
-	warn: 'pte' can't be NULL.
+2 variables with same name... cpu
 
-arch/powerpc/mm/pgtable_32.c
-    99  __init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-   100  {
-   101          pte_t *pte;
-   102          extern int mem_init_done;
-   103  
-   104          if (mem_init_done) {
-   105                  pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
-   106          } else {
-   107                  pte = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
-   108                  if (pte)
+> +	struct task_struct *p = current;
+> +
+> +	if (unlikely(!vcpu->arch.cpu_selected)) {
+> +		vcpu->arch.cpu_selected = true;
 
-It's complaining because we need to check the return from
-memblock_alloc() instead of the return from __va().
+Nit: something like cpumask_set seems to be better than cpu_selected
 
-   109                          clear_page(pte);
-   110          }
-   111          return pte;
-   112  }
+> +		for (cpu = 0; cpu < NR_CPUS; cpu+=threads_per_core) {
+> +			cpumask_set_cpu(cpu, &p->sys_allowed);
+		Dont we need to reset the cpumask first before we set
+		the cpumask here?
 
-regards,
-dan carpenter
+> +		}
+> +		if (cpu%threads_per_core != 0) {
+
+At this time, cpu should be NR_CPUS and most times it should be a
+multiple of threads_per_core. Unfortunately there wont be a cpu with
+cpu number NR_CPUS.
+
+> +			target_cpu = cpu/threads_per_core*threads_per_core;
+
+Its probably better of to have parenthesis here. 
+
+> +			migrate_task_to(current, target_cpu);
+We are probably migrating to a non-existant cpu.
+Also dont you need to check if the target_cpu is part of the cpumask?
+
+> +		}
+> +	}
+> +#endif
+>  
+>  	if (!vcpu->arch.sane) {
+>  		run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
+> -- 
+> 1.8.3.1
+> 
+> 
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
