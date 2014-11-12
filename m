@@ -1,28 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rennolaj@gmail.com>
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4677B1A01A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 06:55:32 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91D461400EA
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 06:55:31 +1100 (AEDT)
-Message-ID: <1415822107.5124.45.camel@kernel.crashing.org>
-Subject: Re: [PATCH] of/base: Fix PowerPC address parsing hack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robherring2@gmail.com>
-Date: Thu, 13 Nov 2014 06:55:07 +1100
-In-Reply-To: <CAL_JsqKfBGdpFV_XuE4DEhFrkhN33kOMkiZE_TOnAZDm2qjwMw@mail.gmail.com>
-References: <1415771461.5124.33.camel@kernel.crashing.org>
- <CAL_JsqKfBGdpFV_XuE4DEhFrkhN33kOMkiZE_TOnAZDm2qjwMw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Olof Johansson <olof@lixom.net>, Grant Likely <grant.likely@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 061D91A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 02:04:33 +1100 (AEDT)
+Received: by mail-pa0-f42.google.com with SMTP id bj1so13088087pad.15
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 07:04:29 -0800 (PST)
+MIME-Version: 1.0
+Date: Wed, 12 Nov 2014 10:34:29 -0430
+Message-ID: <CAHJ9A4QG2qfhfuU1Vc3jL5YOFmFgH4Twqx8DDosxV7jF=ZQwpg@mail.gmail.com>
+Subject: powerpc-405
+From: Javier Ignacio Rennola Mata <rennolaj@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=e89a8fb208e86a64520507aab689
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,70 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-11-12 at 08:39 -0600, Rob Herring wrote:
-> On Tue, Nov 11, 2014 at 11:51 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > We have a historical hack that treats missing ranges properties as the
-> > equivalent of an empty one. This is needed for ancient PowerMac "bad"
-> > device-trees, and shouldn't be enabled for any other PowerPC platform,
-> > otherwise we get some nasty layout of devices in sysfs or even
-> > duplication when a set of otherwise identically named devices is
-> > created multiple times under a different parent node with no ranges
-> > property.
-> >
-> > This fix is needed for the PowerNV i2c busses to be exposed properly
-> > and will fix a number of other embedded cases.
-> >
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > CC: <stable@vger.kernel.org>
-> > ---
-> >
-> > diff --git a/drivers/of/address.c b/drivers/of/address.c
-> > index e371825..e37f017 100644
-> > --- a/drivers/of/address.c
-> > +++ b/drivers/of/address.c
-> > @@ -7,6 +7,10 @@
-> >  #include <linux/pci_regs.h>
-> >  #include <linux/string.h>
-> >
-> > +#ifdef CONFIG_PPC
-> > +#include <asm/machdep.h>
-> > +#endif
-> > +
-> >  /* Max address size we deal with */
-> >  #define OF_MAX_ADDR_CELLS      4
-> >  #define OF_CHECK_ADDR_COUNT(na)        ((na) > 0 && (na) <= OF_MAX_ADDR_CELLS)
-> > @@ -428,12 +432,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-> >          * This code is only enabled on powerpc. --gcl
-> >          */
-> >         ranges = of_get_property(parent, rprop, &rlen);
-> > -#if !defined(CONFIG_PPC)
-> > +#if defined(CONFIG_PPC)
-> > +       if (!machine_is(powermac))
-> 
-> Can we use a machine compatible here or something not PPC specific?
-> Then we can use IS_ENABLED(CONFIG_PPC) instead of ifdefs.
+--e89a8fb208e86a64520507aab689
+Content-Type: text/plain; charset=UTF-8
 
-We could, we'd have to use a pair of machine compatible, I'll spin a new
-patch later today.
+Hi guys
 
-Ben.
- 
-> Rob
-> 
-> > +#endif /* defined(CONFIG_PPC) */
-> >         if (ranges == NULL) {
-> > -               pr_err("OF: no ranges; cannot translate\n");
-> > +               pr_debug("OF: no ranges; cannot translate\n");
-> >                 return 1;
-> >         }
-> > -#endif /* !defined(CONFIG_PPC) */
-> >         if (ranges == NULL || rlen == 0) {
-> >                 offset = of_read_number(addr, na);
-> >                 memset(addr, 0, pna * 4);
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I was following a tutorial to compile my own tools for my powerpc 405
+,(Virtex II Pro Processor), I tried it by using crosstool but when Im going
+to compile busybox I get some errors so I decided to take this path ,
+although I need the patch for powerpc for any of these kernel version
+
+linux.2.6.32.63
+linux.3.7.2
+
+found both of them on
+
+https://www.kernel.org/
+
+Thanks
+
+--e89a8fb208e86a64520507aab689
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div>Hi guys<br><br></div>I was following a tutorial =
+to compile my own tools for my powerpc 405 ,(Virtex II Pro Processor), I tr=
+ied it by using crosstool but when Im going to compile busybox I get some e=
+rrors so I decided to take this path , although I need the patch for powerp=
+c for any of these kernel version<br><br></div><div>linux.2.6.32.63<br></di=
+v><div>linux.3.7.2<br><br></div><div>found both of them on <br><br><a href=
+=3D"https://www.kernel.org/">https://www.kernel.org/</a><br><br></div><div>=
+Thanks <br></div></div>
+
+--e89a8fb208e86a64520507aab689--
