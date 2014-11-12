@@ -1,39 +1,26 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6BCB1A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 00:01:51 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 12 Nov 2014 18:31:43 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3D82A3940053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 18:31:39 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sACD3nbJ52887798
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 18:33:50 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sACD1ZWL014669
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2014 18:31:37 +0530
-Date: Wed, 12 Nov 2014 18:31:35 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: kernelfans@gmail.com
-Subject: Re: [RFC 03/11] powerpc: kvm: add interface to control kvm function
- on a core
-Message-ID: <20141112130134.GC16566@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
- <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 39F0E1A0053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 00:41:21 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] DT: add MDIO node for FMan node
+Date: Wed, 12 Nov 2014 13:40:56 +0000
+Message-ID: <c4dd11a97a684be8b799c2f639e600ca@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
+ <1415665384.15957.16.camel@freescale.com>
+ <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1415727479.15957.29.camel@freescale.com>
+In-Reply-To: <1415727479.15957.29.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
+Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,60 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* kernelfans@gmail.com <kernelfans@gmail.com> [2014-10-16 15:29:52]:
-
-> When kvm is enabled on a core, we migrate all external irq to primary
-> thread. Since currently, the kvmirq logic is handled by the primary
-> hwthread.
-> 
-> Todo: this patch lacks re-enable of irqbalance when kvm is disable on
-> the core
-> 
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/sysfs.c            | 39 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/sysdev/xics/xics-common.c | 12 +++++++++++
->  2 files changed, 51 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 67fd2fd..a2595dd 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -552,6 +552,45 @@ static void sysfs_create_dscr_default(void)
->  	if (cpu_has_feature(CPU_FTR_DSCR))
->  		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
->  }
-> +
-> +#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
-> +#define NR_CORES	(CONFIG_NR_CPUS/threads_per_core)
-> +static DECLARE_BITMAP(kvm_on_core, NR_CORES) __read_mostly
-> +
-> +static ssize_t show_kvm_enable(struct device *dev,
-> +		struct device_attribute *attr, char *buf)
-> +{
-> +}
-> +
-> +static ssize_t __used store_kvm_enable(struct device *dev,
-> +		struct device_attribute *attr, const char *buf,
-> +		size_t count)
-> +{
-> +	struct cpumask stop_cpus;
-> +	unsigned long core, thr;
-> +
-> +	sscanf(buf, "%lx", &core);
-> +	if (core > NR_CORES)
-> +		return -1;
-> +	if (!test_bit(core, &kvm_on_core))
-> +		for (thr = 1; thr< threads_per_core; thr++)
-> +			if (cpu_online(thr * threads_per_core + thr))
-> +				cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
-
-Shouldnt this be 
-			if (cpu_online(core * threads_per_core + thr))
-				cpumask_set_cpu(core * threads_per_core + thr, &stop_cpus);
-?
-
-
--- 
-Thanks and Regards
-Srikar Dronamraju
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBXZWRuZXNkYXksIE5vdmVtYmVyIDEyLCAyMDE0IDE6MzggQU0NCj4gVG86IFhpZSBT
+aGFvaHVpLUIyMTk4OQ0KPiBDYzogTGliZXJtYW4gSWdhbC1CMzE5NTA7IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTWVkdmUgRW1p
+bGlhbi1FTU1FRFZFMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBm
+b3IgRk1hbiBub2RlDQo+IA0KPiBPbiBUdWUsIDIwMTQtMTEtMTEgYXQgMDQ6MzIgLTA2MDAsIFhp
+ZSBTaGFvaHVpLUIyMTk4OSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
+DQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2RheSwgTm92
+ZW1iZXIgMTEsIDIwMTQgODoyMyBBTQ0KPiA+ID4gVG86IHNoaC54aWVAZ21haWwuY29tDQo+ID4g
+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJu
+ZWwub3JnOyBNZWR2ZQ0KPiA+ID4gRW1pbGlhbi1FTU1FRFZFMTsgWGllIFNoYW9odWktQjIxOTg5
+DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBmb3IgRk1hbiBu
+b2RlDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE0LTExLTA0IGF0IDE5OjU2ICswODAwLCBzaGgu
+eGllQGdtYWlsLmNvbSB3cm90ZToNCj4gPiA+ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNoYW9odWku
+WGllQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+ID4gPiA+IFRoaXMgYmluZGluZyBpcyBmb3Ig
+Rk1hbiBNRElPLCBpdCBjb3ZlcnMgRk1hbiB2MiAmIEZNYW4gdjMuDQo+ID4gPiA+DQo+ID4gPiA+
+IFNpZ25lZC1vZmYtYnk6IFNoYW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0K
+PiA+ID4gPiAtLS0NCj4gPiA+ID4gYmFzZWQgb24gaHR0cDovL3BhdGNod29yay5vemxhYnMub3Jn
+L3BhdGNoLzM5MDM1MS8NCj4gPiA+ID4gZm9yICduZXh0JyBvZg0KPiA+ID4gPiBnaXQ6Ly9naXQu
+a2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2NvdHR3b29kL2xpbnV4LmdpdA0K
+PiA+ID4NCj4gPiA+IEFyZSB0aGVyZSBhbnkgb3RoZXIgRk1hbiBwaWVjZXMgdGhhdCBhcmUgbWlz
+c2luZyBmcm9tIHRoZSBhYm92ZSBwYXRjaD8NCj4gPiBbUy5IXSBJJ20gYWRkaW5nIElnYWwgZm9y
+IHRoaXMgY29tbWVudC4NCj4gPg0KPiA+ID4NCj4gPiA+ID4gKy0gYnVzLWZyZXF1ZW5jeQ0KPiA+
+ID4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiA+ID4gKwkJVmFsdWUgdHlwZTogPHUzMj4NCj4g
+PiA+ID4gKwkJRGVmaW5pdGlvbjogRGVmYXVsdCBNRElPIGJ1cyBjbG9jayBzcGVlZC4NCj4gPiA+
+DQo+ID4gPiBVc2UgY2xvY2tzL2Nsb2NrLW5hbWVzDQo+ID4gW1MuSF0gVGhlIE1ESU8gdXNlcyBG
+bWFuIGNsb2NrIGFuZCBkaXZpZGVzIGl0IHRvIGEgcHJvcGVyIHZhbHVlIHdoaWNoDQo+IGlzIHNw
+ZWNpZmllZCBieSB0aGlzIHByb3BlcnR5Lg0KPiANCj4gVXNlIGNsb2Nrcy9jbG9jay1uYW1lcyB0
+byBkZXNjcmliZSB0aGF0IHJlbGF0aW9uc2hpcC4NCj4gDQpbUy5IXSBUaGUgTURJTyBub2RlIGlz
+IHN1Yi1ub2RlIGFuZCBlbWJlZGRlZCBpbiBGbWFuIG5vZGUsIHRoZSBjbG9ja3MvY2xvY2stbmFt
+ZXMgaXMgcHJvdmlkZWQgYnkgRm1hbiBub2RlLCBzaG91bGQgcmVwZWF0IHRoZW0gaW4gTURJTyBu
+b2RlPyBGb3IgdGhlIGRlZmF1bHQgTURJTyBidXMgY2xvY2sgc3BlZWQsIG1heWJlICJjbG9jay1y
+YW5nZXMiIHNob3VsZCBiZSB1c2VkPw0KDQo+ID4gPg0KPiA+ID4gPiArLSBpbnRlcnJ1cHRzDQo+
+ID4gPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0KPiA+ID4gPiArCQlWYWx1ZSB0eXBlOiA8cHJvcC1l
+bmNvZGVkLWFycmF5Pg0KPiA+ID4gPiArCQlEZWZpbml0aW9uOiBNRElPIGNvbnRyb2xsZXIgZXZl
+bnQgaW50ZXJydXB0cy4NCj4gPiA+DQo+ID4gPiBPbmUgaW50ZXJydXB0IG9yIG11bHRpcGxlPw0K
+PiA+IFtTLkhdIE9uZSBmb3IgMSBHYi9zLCBvbmUgZm9yIDEwIEdiL3MuDQo+IA0KPiBUaGVuIHRo
+ZSBiaW5kaW5nIG5lZWRzIHRvIHNheSB0aGF0IHRoZXJlIGFyZSB0d28gKGV4Y2VwdCBmb3IgImZz
+bCxmbWFuLQ0KPiBtZGlvIiwgcmlnaHQ/KSBhbmQgd2hpY2ggaXMgd2hpY2guDQo+IA0KW1MuSF0g
+T0suDQoNCj4gPiA+DQo+ID4gPiA+ICsNCj4gPiA+ID4gKy0gdHlwZQ0KPiA+ID4gPiArCQlVc2Fn
+ZTogcmVxdWlyZWQgZm9yIEZNYW4gdjMNCj4gPiA+ID4gKwkJVmFsdWUgdHlwZTogPHN0cmluZ2xp
+c3Q+DQo+ID4gPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHkuDQo+ID4gPg0K
+PiA+ID4gV2hhdCBzdGFuZGFyZCBpcyAidHlwZSIgZGVmaW5lZCBpbj8NCj4gPg0KPiA+IFtTLkhd
+IEl0J3MgdG8gZGlmZmVyZW50aWF0ZSBiZXR3ZWVuIHRoZSBpbnRlcm5hbCBhbmQgZXh0ZXJuYWwg
+TURJTywNCj4gPiBJJ20gbm90IHF1aXRlIHN1cmUgYWJvdXQgbmFtaW5nIGl0LCBvciB3aGF0IGNv
+dWxkIGJlIGJldHRlciB3YXkgdG8NCj4gPiBkaWZmZXJlbnRpYXRlIHRoZSBNRElPcz8NCj4gDQo+
+IEknbSBub3QgcXVlc3Rpb25pbmcgdGhlIG5lZWQgdG8gY29udmV5IHRoaXMgaW5mb3JtYXRpb24u
+ICBJJ20gc2F5aW5nIGl0J3MNCj4gbm90ICJBIHN0YW5kYXJkIHByb3BlcnR5Ii4gIEknZCBhbHNv
+IGxpa2UgdG8gc2VlIGEgYmV0dGVyIG5hbWUuDQo+IA0KW1MuSF0gc2luY2UgRm1hbiBWMiAmIFYz
+IGNhbiBiZSBkaWZmZXJlbnRpYXRlZCBieSBjb21wYXRpYmxlLCBhIGJvb2xlYW4gcHJvcGVydHkg
+ImZzbCxmbWFuLWludGVybmFsLW1kaW8iIHNlZW1zIGJldHRlciwgaWYgZGVmaW5lZCwgaXQgaW5k
+aWNhdGVzIGFuIGludGVybmFsIE1ESU8uIEl0IGxvb2tzIGxpa2UgYmVsb3c6DQoNCmZzbCxmbWFu
+LWludGVybmFsLW1kaW8NCgkJVXNhZ2U6IHJlcXVpcmVkIGZvciBpbnRlcm5hbCBNRElPDQoJCVZh
+bHVlIHR5cGU6IEJvb2xlYW4NCgkJRGVmaW5pdGlvbjogRm1hbiBoYXMgaW50ZXJuYWwgTURJTyBm
+b3IgaW50ZXJuYWwgUENTKFBoeXNpY2FsDQoJCUNvZGluZyBTdWJsYXllcikgUEhZcyBhbmQgZXh0
+ZXJuYWwgTURJTyBmb3IgZXh0ZXJuYWwgUEhZcy4NCgkJVGhlIHNldHRpbmdzIGFuZCBwcm9ncmFt
+bWluZyByb3V0aW5lcyBmb3IgaW50ZXJuYWwvZXh0ZXJuYWwNCgkJTURJTyBhcmUgZGlmZmVyZW50
+LiBNdXN0IGJlIGluY2x1ZGVkIGZvciBpbnRlcm5hbCBNRElPLg0KDQpIb3cgYWJvdXQgdGhpcz8N
+Cg0KVGhhbmtzIQ0KU2hhb2h1aQ0KIA0K
