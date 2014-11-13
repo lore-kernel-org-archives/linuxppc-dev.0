@@ -1,33 +1,24 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F13D1A1E83
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 20:27:07 +1100 (AEDT)
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
+ (mail-bn1bon0117.outbound.protection.outlook.com [157.56.111.117])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 033D61A1EA2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 19:29:21 +1100 (AEDT)
-Message-ID: <1415867347.15957.60.camel@freescale.com>
-Subject: Re: [PATCH] DT: add MDIO node for FMan node
-From: Scott Wood <scottwood@freescale.com>
-To: Xie Shaohui-B21989 <Shaohui.Xie@freescale.com>
-Date: Thu, 13 Nov 2014 02:29:07 -0600
-In-Reply-To: <b7e76a785be4439bb1f69dc611703e1d@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
- <1415665384.15957.16.camel@freescale.com>
- <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415727479.15957.29.camel@freescale.com>
- <c4dd11a97a684be8b799c2f639e600ca@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415859399.15957.48.camel@freescale.com>
- <59c6a8b7ad1d477aad9edd2152d02f8e@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415862913.15957.56.camel@freescale.com>
- <489ad06fda99436eb3307d613b1f8293@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415865867.15957.58.camel@freescale.com>
- <b7e76a785be4439bb1f69dc611703e1d@DM2PR0301MB0864.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 216471400B6
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 20:27:05 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <scottwood@Freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc/mpc85xx: Create dts components for DPAA Q/BMan
+Date: Thu, 13 Nov 2014 03:17:23 -0600
+Message-ID: <1415870244-10541-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: Liberman Igal-B31950 <Igal.Liberman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Medve
- Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain
+Cc: Geoff Thorpe <Geoff.Thorpe@Freescale.com>,
+ Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,142 +28,376 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-11-13 at 02:27 -0600, Xie Shaohui-B21989 wrote:
-> 
-> 
-> Best Regards, 
-> Shaohui Xie
-> 
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, November 13, 2014 4:04 PM
-> > To: Xie Shaohui-B21989
-> > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
-> > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
-> > Subject: Re: [PATCH] DT: add MDIO node for FMan node
-> > 
-> > On Thu, 2014-11-13 at 02:02 -0600, Xie Shaohui-B21989 wrote:
-> > >
-> > >
-> > > Best Regards,
-> > > Shaohui Xie
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Thursday, November 13, 2014 3:15 PM
-> > > > To: Xie Shaohui-B21989
-> > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
-> > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
-> > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
-> > > >
-> > > > On Thu, 2014-11-13 at 01:11 -0600, Xie Shaohui-B21989 wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Thursday, November 13, 2014 2:17 PM
-> > > > > > To: Xie Shaohui-B21989
-> > > > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
-> > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
-> > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
-> > > > > >
-> > > > > > On Wed, 2014-11-12 at 07:40 -0600, Xie Shaohui-B21989 wrote:
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Wood Scott-B07421
-> > > > > > > > Sent: Wednesday, November 12, 2014 1:38 AM
-> > > > > > > > To: Xie Shaohui-B21989
-> > > > > > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
-> > > > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
-> > > > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
-> > > > > > > >
-> > > > > > > > On Tue, 2014-11-11 at 04:32 -0600, Xie Shaohui-B21989 wrote:
-> > > > > > > > > > -----Original Message-----
-> > > > > > > > > > From: Wood Scott-B07421
-> > > > > > > > > > Sent: Tuesday, November 11, 2014 8:23 AM
-> > > > > > > > > > To: shh.xie@gmail.com
-> > > > > > > > > > Cc: linuxppc-dev@lists.ozlabs.org;
-> > > > > > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1; Xie
-> > > > > > > > > > Shaohui-B21989
-> > > > > > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
-> > > > > > > > > >
-> > > > > > > > > > On Tue, 2014-11-04 at 19:56 +0800, shh.xie@gmail.com
-> > wrote:
-> > > > > > > > > > > From: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > > > > > > > > > >
-> > > > > > > > > > > This binding is for FMan MDIO, it covers FMan v2 & FMan
-> > v3.
-> > > > > > > > > > >
-> > > > > > > > > > > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > > > > > > > > > > ---
-> > > > > > > > > > > based on http://patchwork.ozlabs.org/patch/390351/
-> > > > > > > > > > > for 'next' of
-> > > > > > > > > > >
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.
-> > > > > > > > > > > git
-> > > > > > > > > >
-> > > > > > > > > > Are there any other FMan pieces that are missing from
-> > > > > > > > > > the above
-> > > > > > patch?
-> > > > > > > > > [S.H] I'm adding Igal for this comment.
-> > > > > > > > >
-> > > > > > > > > >
-> > > > > > > > > > > +- bus-frequency
-> > > > > > > > > > > +		Usage: optional
-> > > > > > > > > > > +		Value type: <u32>
-> > > > > > > > > > > +		Definition: Default MDIO bus clock speed.
-> > > > > > > > > >
-> > > > > > > > > > Use clocks/clock-names
-> > > > > > > > > [S.H] The MDIO uses Fman clock and divides it to a proper
-> > > > > > > > > value which
-> > > > > > > > is specified by this property.
-> > > > > > > >
-> > > > > > > > Use clocks/clock-names to describe that relationship.
-> > > > > > > >
-> > > > > > >
-> > > > > > > [S.H] The MDIO node is sub-node and embedded in Fman node, the
-> > > > > > > clocks/clock-names is provided by Fman node, should repeat
-> > > > > > > them in MDIO node? For the default MDIO bus clock speed, maybe
-> > > > > > > "clock-
-> > > > ranges"
-> > > > > > > should be used?
-> > > > > >
-> > > > > > It's a different clock.  You wouldn't be repeating.  If it's
-> > > > > > derived from the FMan clock, then maybe you don't need anything
-> > > > > > here (does the driver know what the divider is, or would that
-> > > > > > need to be specified in the device tree?), but no more
-> > > > > > clock-frequency/bus-
-> > > > frequency properties.
-> > > > > >
-> > > > > [S.H] The purpose here is to get a specific clock frequency,
-> > > > > driver to
-> > > > use it to calculate the divider.
-> > > > > Then the Fman clock can be divided to the frequency.
-> > > >
-> > > > Oh, so this is stating a desired frequency and not something that
-> > > > already exists?  What determines this frequency?  Is it based on
-> > > > board design, or just on the MDIO standard, etc?  I'm wondering if
-> > > > the device tree is the right place for it.
-> > > [S.H] Yes, a desired frequency which is different with MDIO standard.
-> > 
-> > I'm not sure what you mean by "different with".  Do you mean "different
-> > from"?  What does the standard say about frequency?
-> [S.H] The standard MDIO frequency is 2.5MHz.  But a different one is desired.
+From: Kumar Gala <galak@kernel.crashing.org>
 
-Why is a different frequency desired?
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Change-Id: I16e63db731e55a3d60d4e147573c1af8718082d3
+---
 
-> > 
-> > > The Fman clock and the divider determines this frequency.
-> > > Since Fman clock is different on different SoCs, so specify the
-> > > desired frequency, then to get the proper divider.
-> > 
-> > Why does the fman clock being different mean the mdio clock should be
-> > different?
-> [S.H] The mdio clock should be same, a different divider should be used 
-> to match the Fman clock to make sure the mdio clock kept same. So to specify
-> The desired mdio frequency, then to get proper divider.
+Based on:
+	http://patchwork.ozlabs.org/patch/407034
+	http://patchwork.ozlabs.org/patch/407037
+	http://patchwork.ozlabs.org/patch/407035
+	http://patchwork.ozlabs.org/patch/407036
 
-What I'm trying to determine is why the MDIO frequency wouldn't always
-be the same, and thus could be hardcoded in the driver rather than in
-the device tree.
+ arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi |  90 ++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi         |  41 +++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi | 101 +++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi         |  41 +++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi         |  41 +++++++++
+ 5 files changed, 314 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi
 
--Scott
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi
+new file mode 100644
+index 0000000..5022432
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi
+@@ -0,0 +1,90 @@
++/*
++ * QorIQ BMan Portal device tree stub for 10 portals
++ *
++ * Copyright 2011 - 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&bportals {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "simple-bus";
++
++	bman-portal@0 {
++		compatible = "fsl,bman-portal";
++		reg = <0x0 0x4000>, <0x100000 0x1000>;
++		interrupts = <105 2 0 0>;
++	};
++	bman-portal@4000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x4000 0x4000>, <0x101000 0x1000>;
++		interrupts = <107 2 0 0>;
++	};
++	bman-portal@8000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x8000 0x4000>, <0x102000 0x1000>;
++		interrupts = <109 2 0 0>;
++	};
++	bman-portal@c000 {
++		compatible = "fsl,bman-portal";
++		reg = <0xc000 0x4000>, <0x103000 0x1000>;
++		interrupts = <111 2 0 0>;
++	};
++	bman-portal@10000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x10000 0x4000>, <0x104000 0x1000>;
++		interrupts = <113 2 0 0>;
++	};
++	bman-portal@14000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x14000 0x4000>, <0x105000 0x1000>;
++		interrupts = <115 2 0 0>;
++	};
++	bman-portal@18000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x18000 0x4000>, <0x106000 0x1000>;
++		interrupts = <117 2 0 0>;
++	};
++	bman-portal@1c000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x1c000 0x4000>, <0x107000 0x1000>;
++		interrupts = <119 2 0 0>;
++	};
++	bman-portal@20000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x20000 0x4000>, <0x108000 0x1000>;
++		interrupts = <121 2 0 0>;
++	};
++	bman-portal@24000 {
++		compatible = "fsl,bman-portal";
++		reg = <0x24000 0x4000>, <0x109000 0x1000>;
++		interrupts = <123 2 0 0>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi
+new file mode 100644
+index 0000000..1adc09f
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * QorIQ BMan device tree stub [ controller @ offset 0x31a000 ]
++ *
++ * Copyright 2011 - 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++bman: bman@31a000 {
++	compatible = "fsl,bman";
++	reg = <0x31a000 0x1000>;
++	interrupts = <16 2 1 2>;
++	fsl,bman-portals = &bportals;
++	memory-region = <&bman_fbpr>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
+new file mode 100644
+index 0000000..05d51ac
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
+@@ -0,0 +1,101 @@
++/*
++ * QorIQ QMan Portal device tree stub for 10 portals & 15 pool channels
++ *
++ * Copyright 2011 - 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&qportals {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "simple-bus";
++
++	qportal0: qman-portal@0 {
++		compatible = "fsl,qman-portal";
++		reg = <0x0 0x4000>, <0x100000 0x1000>;
++		interrupts = <104 2 0 0>;
++		fsl,qman-channel-id = <0x0>;
++	};
++	qportal1: qman-portal@4000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x4000 0x4000>, <0x101000 0x1000>;
++		interrupts = <106 2 0 0>;
++		fsl,qman-channel-id = <1>;
++	};
++	qportal2: qman-portal@8000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x8000 0x4000>, <0x102000 0x1000>;
++		interrupts = <108 2 0 0>;
++		fsl,qman-channel-id = <2>;
++	};
++	qportal3: qman-portal@c000 {
++		compatible = "fsl,qman-portal";
++		reg = <0xc000 0x4000>, <0x103000 0x1000>;
++		interrupts = <110 2 0 0>;
++		fsl,qman-channel-id = <3>;
++	};
++	qportal4: qman-portal@10000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x10000 0x4000>, <0x104000 0x1000>;
++		interrupts = <112 2 0 0>;
++		fsl,qman-channel-id = <4>;
++	};
++	qportal5: qman-portal@14000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x14000 0x4000>, <0x105000 0x1000>;
++		interrupts = <114 2 0 0>;
++		fsl,qman-channel-id = <5>;
++	};
++	qportal6: qman-portal@18000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x18000 0x4000>, <0x106000 0x1000>;
++		interrupts = <116 2 0 0>;
++		fsl,qman-channel-id = <6>;
++	};
++
++	qportal7: qman-portal@1c000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x1c000 0x4000>, <0x107000 0x1000>;
++		interrupts = <118 2 0 0>;
++		fsl,qman-channel-id = <7>;
++	};
++	qportal8: qman-portal@20000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x20000 0x4000>, <0x108000 0x1000>;
++		interrupts = <120 2 0 0>;
++		fsl,qman-channel-id = <8>;
++	};
++	qportal9: qman-portal@24000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x24000 0x4000>, <0x109000 0x1000>;
++		interrupts = <122 2 0 0>;
++		fsl,qman-channel-id = <9>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi
+new file mode 100644
+index 0000000..5c63b76
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * QorIQ QMan device tree stub [ controller @ offset 0x318000 ]
++ *
++ * Copyright 2011 - 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++qman: qman@318000 {
++	compatible = "fsl,qman";
++	reg = <0x318000 0x1000>;
++	interrupts = <16 2 1 3>;
++	fsl,qman-portals = &qportals;
++	memory-region = <&qman_fqd &qman_pfdr>;
++};
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi
+new file mode 100644
+index 0000000..f3f57c6
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * QorIQ QMan rev3 device tree stub [ controller @ offset 0x318000 ]
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++qman: qman@318000 {
++	compatible = "fsl,qman";
++	reg = <0x318000 0x2000>;
++	interrupts = <16 2 1 3>;
++	fsl,qman-portals = &qportals;
++	memory-region = <&qman_fqd &qman_pfdr>;
++};
+-- 
+2.1.3
