@@ -1,22 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E6131A0021
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 16:36:29 +1100 (AEDT)
-Message-ID: <1415856988.28703.7.camel@concordia>
-Subject: Re: [PATCH] i2c: Driver to expose PowerNV platform i2c busses
+ by lists.ozlabs.org (Postfix) with ESMTPS id E97201A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 16:42:27 +1100 (AEDT)
+Message-ID: <1415857347.28703.8.camel@concordia>
+Subject: Re: [PATCH V2] powerpc/TM: Disable/Enable TM looking at the ibm,
+ pa-features device tree entry
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 13 Nov 2014 16:36:28 +1100
-In-Reply-To: <1415772441.5124.39.camel@kernel.crashing.org>
-References: <20141110060424.9407.2498.stgit@localhost.localdomain>
- <1415772441.5124.39.camel@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 13 Nov 2014 16:42:27 +1100
+In-Reply-To: <87d28tasfe.fsf@linux.vnet.ibm.com>
+References: <1414938762-20126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1415753046.5175.22.camel@neuling.org> <87d28tasfe.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- wsa@the-dreams.de, linux-i2c@vger.kernel.org,
- Jeremy Kerr <jeremy.kerr@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-11-12 at 17:07 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-11-10 at 11:35 +0530, Neelesh Gupta wrote:
-> > The patch exposes the available i2c busses on the PowerNV platform
-> > to the kernel and implements the bus driver to support i2c and
-> > smbus commands.
-> > The driver uses the platform device infrastructure to probe the busses
-> > on the platform and registers them with the i2c driver framework.
-> > 
-> > Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Wed, 2014-11-12 at 11:09 +0530, Aneesh Kumar K.V wrote:
+> Michael Neuling <mikey@neuling.org> writes:
 > 
-> This version slightly modified removes the unrelated gunk in opal.c
-> (but needs to apply on top of some other patches in the powerpc tree)
+> > On Sun, 2014-11-02 at 20:02 +0530, Aneesh Kumar K.V wrote:
+> >> Runtime disable transactional memory feature looking at pa-features
+> >> device tree entry. We need to do this so that we can run a kernel
+> >> built with TM config in PR mode. 
+> >
+> > I'm happy to turn this off but why do we need to do this in PR mode?
+> > Can you explain this in the commit message.
 > 
-> The driver is the same, it's only the
-> arch/powerpc/platform/powernv/opal.c init bits that get cleaned up and
-> simplified.
+> Hmm, that commit message needs an update. I initially did the patch for
+> P8 PR support and wanted a mechanism to disable TM. Alex added basic TM
+> support for PR mode after that. So we can drop the PR part of the
+> commit message.
 > 
-> From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> Date: Fri, 7 Nov 2014 16:20:07 +1100
-> Subject: [PATCH v2] i2c: Driver to expose PowerNV platform i2c busses
+> Michael Ellerman,
 > 
-> The patch exposes the available i2c busses on the PowerNV platform
-> to the kernel and implements the bus driver to support i2c and
-> smbus commands.
-> 
-> If the devices are found on the device tree for a given bus/adapter,
-> the platform init code registers them to the core and binds them
-> a static bus/adapter number, otherwise the driver registers the
-> adapter to get the adapter number dynamically.
+> Let me know if you want me to send an updated version with the those
+> part of the commit message dropped
 
-So the driver part depends on the arch/powerpc changes.
+How about:
 
-I added Wolfram the i2c maintainer to CC. Wolfram are you happy if we take this
-through the powerpc tree with your ack, or I can do a topic branch?
+  powerpc: Disable CPU_FTR_TM if TM is disabled by firmware
+  
+  Firmware is allowed to communicate to us via the "ibm,pa-features" property
+  that TM (Transactional Memory) support is disabled.
+  
+  Currently this doesn't happen on any platform we're aware of, but we should
+  honor it anyway.
+
 
 cheers
