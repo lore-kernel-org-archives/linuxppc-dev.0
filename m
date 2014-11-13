@@ -1,15 +1,16 @@
-Return-Path: <Shaohui.Xie@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0104.outbound.protection.outlook.com [157.56.110.104])
+ (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4957A1A011E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 19:27:24 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] DT: add MDIO node for FMan node
-Date: Thu, 13 Nov 2014 08:27:16 +0000
-Message-ID: <b7e76a785be4439bb1f69dc611703e1d@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 033D61A1EA2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 19:29:21 +1100 (AEDT)
+Message-ID: <1415867347.15957.60.camel@freescale.com>
+Subject: Re: [PATCH] DT: add MDIO node for FMan node
+From: Scott Wood <scottwood@freescale.com>
+To: Xie Shaohui-B21989 <Shaohui.Xie@freescale.com>
+Date: Thu, 13 Nov 2014 02:29:07 -0600
+In-Reply-To: <b7e76a785be4439bb1f69dc611703e1d@DM2PR0301MB0864.namprd03.prod.outlook.com>
 References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
  <1415665384.15957.16.camel@freescale.com>
  <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
@@ -20,12 +21,12 @@ References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
  <1415862913.15957.56.camel@freescale.com>
  <489ad06fda99436eb3307d613b1f8293@DM2PR0301MB0864.namprd03.prod.outlook.com>
  <1415865867.15957.58.camel@freescale.com>
-In-Reply-To: <1415865867.15957.58.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <b7e76a785be4439bb1f69dc611703e1d@DM2PR0301MB0864.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
+Cc: Liberman Igal-B31950 <Igal.Liberman@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Medve
+ Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,100 +37,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCkJlc3QgUmVnYXJkcywgDQpTaGFvaHVpIFhpZQ0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVGh1cnNkYXksIE5v
-dmVtYmVyIDEzLCAyMDE0IDQ6MDQgUE0NCj4gVG86IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiBDYzog
-TGliZXJtYW4gSWdhbC1CMzE5NTA7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBk
-ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTWVkdmUgRW1pbGlhbi1FTU1FRFZFMQ0KPiBTdWJq
-ZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBmb3IgRk1hbiBub2RlDQo+IA0KPiBP
-biBUaHUsIDIwMTQtMTEtMTMgYXQgMDI6MDIgLTA2MDAsIFhpZSBTaGFvaHVpLUIyMTk4OSB3cm90
-ZToNCj4gPg0KPiA+DQo+ID4gQmVzdCBSZWdhcmRzLA0KPiA+IFNoYW9odWkgWGllDQo+ID4NCj4g
-Pg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2Nv
-dHQtQjA3NDIxDQo+ID4gPiBTZW50OiBUaHVyc2RheSwgTm92ZW1iZXIgMTMsIDIwMTQgMzoxNSBQ
-TQ0KPiA+ID4gVG86IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiA+ID4gQ2M6IExpYmVybWFuIElnYWwt
-QjMxOTUwOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gPiA+IGRldmljZXRyZWVA
-dmdlci5rZXJuZWwub3JnOyBNZWR2ZSBFbWlsaWFuLUVNTUVEVkUxDQo+ID4gPiBTdWJqZWN0OiBS
-ZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9kZSBmb3IgRk1hbiBub2RlDQo+ID4gPg0KPiA+ID4g
-T24gVGh1LCAyMDE0LTExLTEzIGF0IDAxOjExIC0wNjAwLCBYaWUgU2hhb2h1aS1CMjE5ODkgd3Jv
-dGU6DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9t
-OiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBOb3ZlbWJlciAx
-MywgMjAxNCAyOjE3IFBNDQo+ID4gPiA+ID4gVG86IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiA+ID4g
-PiA+IENjOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MDsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc7DQo+ID4gPiA+ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IE1lZHZlIEVtaWxpYW4t
-RU1NRURWRTENCj4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBEVDogYWRkIE1ESU8gbm9k
-ZSBmb3IgRk1hbiBub2RlDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBPbiBXZWQsIDIwMTQtMTEtMTIg
-YXQgMDc6NDAgLTA2MDAsIFhpZSBTaGFvaHVpLUIyMTk4OSB3cm90ZToNCj4gPiA+ID4gPiA+ID4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gRnJvbTogV29vZCBTY290
-dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAxMiwgMjAx
-NCAxOjM4IEFNDQo+ID4gPiA+ID4gPiA+IFRvOiBYaWUgU2hhb2h1aS1CMjE5ODkNCj4gPiA+ID4g
-PiA+ID4gQ2M6IExpYmVybWFuIElnYWwtQjMxOTUwOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZzsNCj4gPiA+ID4gPiA+ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IE1lZHZlIEVt
-aWxpYW4tRU1NRURWRTENCj4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gRFQ6IGFk
-ZCBNRElPIG5vZGUgZm9yIEZNYW4gbm9kZQ0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBP
-biBUdWUsIDIwMTQtMTEtMTEgYXQgMDQ6MzIgLTA2MDAsIFhpZSBTaGFvaHVpLUIyMTk4OSB3cm90
-ZToNCj4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+
-ID4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+ID4gU2Vu
-dDogVHVlc2RheSwgTm92ZW1iZXIgMTEsIDIwMTQgODoyMyBBTQ0KPiA+ID4gPiA+ID4gPiA+ID4g
-VG86IHNoaC54aWVAZ21haWwuY29tDQo+ID4gPiA+ID4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gPiA+ID4gPiBkZXZpY2V0cmVlQHZnZXIua2Vy
-bmVsLm9yZzsgTWVkdmUgRW1pbGlhbi1FTU1FRFZFMTsgWGllDQo+ID4gPiA+ID4gPiA+ID4gPiBT
-aGFvaHVpLUIyMTk4OQ0KPiA+ID4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gRFQ6
-IGFkZCBNRElPIG5vZGUgZm9yIEZNYW4gbm9kZQ0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4g
-PiA+ID4gPiA+IE9uIFR1ZSwgMjAxNC0xMS0wNCBhdCAxOTo1NiArMDgwMCwgc2hoLnhpZUBnbWFp
-bC5jb20NCj4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4gPiA+IEZyb206IFNoYW9odWkgWGllIDxT
-aGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gPiA+ID4gPiBUaGlzIGJpbmRpbmcgaXMgZm9yIEZNYW4gTURJTywgaXQgY292ZXJzIEZNYW4g
-djIgJiBGTWFuDQo+IHYzLg0KPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4N
-Cj4gPiA+ID4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGJhc2VkIG9uIGh0
-dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8zOTAzNTEvDQo+ID4gPiA+ID4gPiA+ID4g
-PiA+IGZvciAnbmV4dCcgb2YNCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+IGdpdDovL2dpdC5r
-ZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9zY290dHdvb2QvbGludXguDQo+ID4g
-PiA+ID4gPiA+ID4gPiA+IGdpdA0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+
-IEFyZSB0aGVyZSBhbnkgb3RoZXIgRk1hbiBwaWVjZXMgdGhhdCBhcmUgbWlzc2luZyBmcm9tDQo+
-ID4gPiA+ID4gPiA+ID4gPiB0aGUgYWJvdmUNCj4gPiA+ID4gPiBwYXRjaD8NCj4gPiA+ID4gPiA+
-ID4gPiBbUy5IXSBJJ20gYWRkaW5nIElnYWwgZm9yIHRoaXMgY29tbWVudC4NCj4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gKy0gYnVzLWZyZXF1
-ZW5jeQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gKwkJVmFsdWUgdHlwZTogPHUzMj4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJRGVm
-aW5pdGlvbjogRGVmYXVsdCBNRElPIGJ1cyBjbG9jayBzcGVlZC4NCj4gPiA+ID4gPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gPiA+ID4gPiBVc2UgY2xvY2tzL2Nsb2NrLW5hbWVzDQo+ID4gPiA+ID4gPiA+
-ID4gW1MuSF0gVGhlIE1ESU8gdXNlcyBGbWFuIGNsb2NrIGFuZCBkaXZpZGVzIGl0IHRvIGEgcHJv
-cGVyDQo+ID4gPiA+ID4gPiA+ID4gdmFsdWUgd2hpY2gNCj4gPiA+ID4gPiA+ID4gaXMgc3BlY2lm
-aWVkIGJ5IHRoaXMgcHJvcGVydHkuDQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFVzZSBj
-bG9ja3MvY2xvY2stbmFtZXMgdG8gZGVzY3JpYmUgdGhhdCByZWxhdGlvbnNoaXAuDQo+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gW1MuSF0gVGhlIE1ESU8gbm9kZSBpcyBz
-dWItbm9kZSBhbmQgZW1iZWRkZWQgaW4gRm1hbiBub2RlLCB0aGUNCj4gPiA+ID4gPiA+IGNsb2Nr
-cy9jbG9jay1uYW1lcyBpcyBwcm92aWRlZCBieSBGbWFuIG5vZGUsIHNob3VsZCByZXBlYXQNCj4g
-PiA+ID4gPiA+IHRoZW0gaW4gTURJTyBub2RlPyBGb3IgdGhlIGRlZmF1bHQgTURJTyBidXMgY2xv
-Y2sgc3BlZWQsIG1heWJlDQo+ID4gPiA+ID4gPiAiY2xvY2stDQo+ID4gPiByYW5nZXMiDQo+ID4g
-PiA+ID4gPiBzaG91bGQgYmUgdXNlZD8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEl0J3MgYSBkaWZm
-ZXJlbnQgY2xvY2suICBZb3Ugd291bGRuJ3QgYmUgcmVwZWF0aW5nLiAgSWYgaXQncw0KPiA+ID4g
-PiA+IGRlcml2ZWQgZnJvbSB0aGUgRk1hbiBjbG9jaywgdGhlbiBtYXliZSB5b3UgZG9uJ3QgbmVl
-ZCBhbnl0aGluZw0KPiA+ID4gPiA+IGhlcmUgKGRvZXMgdGhlIGRyaXZlciBrbm93IHdoYXQgdGhl
-IGRpdmlkZXIgaXMsIG9yIHdvdWxkIHRoYXQNCj4gPiA+ID4gPiBuZWVkIHRvIGJlIHNwZWNpZmll
-ZCBpbiB0aGUgZGV2aWNlIHRyZWU/KSwgYnV0IG5vIG1vcmUNCj4gPiA+ID4gPiBjbG9jay1mcmVx
-dWVuY3kvYnVzLQ0KPiA+ID4gZnJlcXVlbmN5IHByb3BlcnRpZXMuDQo+ID4gPiA+ID4NCj4gPiA+
-ID4gW1MuSF0gVGhlIHB1cnBvc2UgaGVyZSBpcyB0byBnZXQgYSBzcGVjaWZpYyBjbG9jayBmcmVx
-dWVuY3ksDQo+ID4gPiA+IGRyaXZlciB0bw0KPiA+ID4gdXNlIGl0IHRvIGNhbGN1bGF0ZSB0aGUg
-ZGl2aWRlci4NCj4gPiA+ID4gVGhlbiB0aGUgRm1hbiBjbG9jayBjYW4gYmUgZGl2aWRlZCB0byB0
-aGUgZnJlcXVlbmN5Lg0KPiA+ID4NCj4gPiA+IE9oLCBzbyB0aGlzIGlzIHN0YXRpbmcgYSBkZXNp
-cmVkIGZyZXF1ZW5jeSBhbmQgbm90IHNvbWV0aGluZyB0aGF0DQo+ID4gPiBhbHJlYWR5IGV4aXN0
-cz8gIFdoYXQgZGV0ZXJtaW5lcyB0aGlzIGZyZXF1ZW5jeT8gIElzIGl0IGJhc2VkIG9uDQo+ID4g
-PiBib2FyZCBkZXNpZ24sIG9yIGp1c3Qgb24gdGhlIE1ESU8gc3RhbmRhcmQsIGV0Yz8gIEknbSB3
-b25kZXJpbmcgaWYNCj4gPiA+IHRoZSBkZXZpY2UgdHJlZSBpcyB0aGUgcmlnaHQgcGxhY2UgZm9y
-IGl0Lg0KPiA+IFtTLkhdIFllcywgYSBkZXNpcmVkIGZyZXF1ZW5jeSB3aGljaCBpcyBkaWZmZXJl
-bnQgd2l0aCBNRElPIHN0YW5kYXJkLg0KPiANCj4gSSdtIG5vdCBzdXJlIHdoYXQgeW91IG1lYW4g
-YnkgImRpZmZlcmVudCB3aXRoIi4gIERvIHlvdSBtZWFuICJkaWZmZXJlbnQNCj4gZnJvbSI/ICBX
-aGF0IGRvZXMgdGhlIHN0YW5kYXJkIHNheSBhYm91dCBmcmVxdWVuY3k/DQpbUy5IXSBUaGUgc3Rh
-bmRhcmQgTURJTyBmcmVxdWVuY3kgaXMgMi41TUh6LiAgQnV0IGEgZGlmZmVyZW50IG9uZSBpcyBk
-ZXNpcmVkLg0KDQo+IA0KPiA+IFRoZSBGbWFuIGNsb2NrIGFuZCB0aGUgZGl2aWRlciBkZXRlcm1p
-bmVzIHRoaXMgZnJlcXVlbmN5Lg0KPiA+IFNpbmNlIEZtYW4gY2xvY2sgaXMgZGlmZmVyZW50IG9u
-IGRpZmZlcmVudCBTb0NzLCBzbyBzcGVjaWZ5IHRoZQ0KPiA+IGRlc2lyZWQgZnJlcXVlbmN5LCB0
-aGVuIHRvIGdldCB0aGUgcHJvcGVyIGRpdmlkZXIuDQo+IA0KPiBXaHkgZG9lcyB0aGUgZm1hbiBj
-bG9jayBiZWluZyBkaWZmZXJlbnQgbWVhbiB0aGUgbWRpbyBjbG9jayBzaG91bGQgYmUNCj4gZGlm
-ZmVyZW50Pw0KW1MuSF0gVGhlIG1kaW8gY2xvY2sgc2hvdWxkIGJlIHNhbWUsIGEgZGlmZmVyZW50
-IGRpdmlkZXIgc2hvdWxkIGJlIHVzZWQgDQp0byBtYXRjaCB0aGUgRm1hbiBjbG9jayB0byBtYWtl
-IHN1cmUgdGhlIG1kaW8gY2xvY2sga2VwdCBzYW1lLiBTbyB0byBzcGVjaWZ5DQpUaGUgZGVzaXJl
-ZCBtZGlvIGZyZXF1ZW5jeSwgdGhlbiB0byBnZXQgcHJvcGVyIGRpdmlkZXIuDQoNClRoYW5rcy4N
-ClNoYW9odWkNCg==
+On Thu, 2014-11-13 at 02:27 -0600, Xie Shaohui-B21989 wrote:
+> 
+> 
+> Best Regards, 
+> Shaohui Xie
+> 
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, November 13, 2014 4:04 PM
+> > To: Xie Shaohui-B21989
+> > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
+> > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
+> > Subject: Re: [PATCH] DT: add MDIO node for FMan node
+> > 
+> > On Thu, 2014-11-13 at 02:02 -0600, Xie Shaohui-B21989 wrote:
+> > >
+> > >
+> > > Best Regards,
+> > > Shaohui Xie
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Thursday, November 13, 2014 3:15 PM
+> > > > To: Xie Shaohui-B21989
+> > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
+> > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
+> > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
+> > > >
+> > > > On Thu, 2014-11-13 at 01:11 -0600, Xie Shaohui-B21989 wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: Wood Scott-B07421
+> > > > > > Sent: Thursday, November 13, 2014 2:17 PM
+> > > > > > To: Xie Shaohui-B21989
+> > > > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
+> > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
+> > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
+> > > > > >
+> > > > > > On Wed, 2014-11-12 at 07:40 -0600, Xie Shaohui-B21989 wrote:
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Wood Scott-B07421
+> > > > > > > > Sent: Wednesday, November 12, 2014 1:38 AM
+> > > > > > > > To: Xie Shaohui-B21989
+> > > > > > > > Cc: Liberman Igal-B31950; linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1
+> > > > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
+> > > > > > > >
+> > > > > > > > On Tue, 2014-11-11 at 04:32 -0600, Xie Shaohui-B21989 wrote:
+> > > > > > > > > > -----Original Message-----
+> > > > > > > > > > From: Wood Scott-B07421
+> > > > > > > > > > Sent: Tuesday, November 11, 2014 8:23 AM
+> > > > > > > > > > To: shh.xie@gmail.com
+> > > > > > > > > > Cc: linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > > > devicetree@vger.kernel.org; Medve Emilian-EMMEDVE1; Xie
+> > > > > > > > > > Shaohui-B21989
+> > > > > > > > > > Subject: Re: [PATCH] DT: add MDIO node for FMan node
+> > > > > > > > > >
+> > > > > > > > > > On Tue, 2014-11-04 at 19:56 +0800, shh.xie@gmail.com
+> > wrote:
+> > > > > > > > > > > From: Shaohui Xie <Shaohui.Xie@freescale.com>
+> > > > > > > > > > >
+> > > > > > > > > > > This binding is for FMan MDIO, it covers FMan v2 & FMan
+> > v3.
+> > > > > > > > > > >
+> > > > > > > > > > > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> > > > > > > > > > > ---
+> > > > > > > > > > > based on http://patchwork.ozlabs.org/patch/390351/
+> > > > > > > > > > > for 'next' of
+> > > > > > > > > > >
+> > > > git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.
+> > > > > > > > > > > git
+> > > > > > > > > >
+> > > > > > > > > > Are there any other FMan pieces that are missing from
+> > > > > > > > > > the above
+> > > > > > patch?
+> > > > > > > > > [S.H] I'm adding Igal for this comment.
+> > > > > > > > >
+> > > > > > > > > >
+> > > > > > > > > > > +- bus-frequency
+> > > > > > > > > > > +		Usage: optional
+> > > > > > > > > > > +		Value type: <u32>
+> > > > > > > > > > > +		Definition: Default MDIO bus clock speed.
+> > > > > > > > > >
+> > > > > > > > > > Use clocks/clock-names
+> > > > > > > > > [S.H] The MDIO uses Fman clock and divides it to a proper
+> > > > > > > > > value which
+> > > > > > > > is specified by this property.
+> > > > > > > >
+> > > > > > > > Use clocks/clock-names to describe that relationship.
+> > > > > > > >
+> > > > > > >
+> > > > > > > [S.H] The MDIO node is sub-node and embedded in Fman node, the
+> > > > > > > clocks/clock-names is provided by Fman node, should repeat
+> > > > > > > them in MDIO node? For the default MDIO bus clock speed, maybe
+> > > > > > > "clock-
+> > > > ranges"
+> > > > > > > should be used?
+> > > > > >
+> > > > > > It's a different clock.  You wouldn't be repeating.  If it's
+> > > > > > derived from the FMan clock, then maybe you don't need anything
+> > > > > > here (does the driver know what the divider is, or would that
+> > > > > > need to be specified in the device tree?), but no more
+> > > > > > clock-frequency/bus-
+> > > > frequency properties.
+> > > > > >
+> > > > > [S.H] The purpose here is to get a specific clock frequency,
+> > > > > driver to
+> > > > use it to calculate the divider.
+> > > > > Then the Fman clock can be divided to the frequency.
+> > > >
+> > > > Oh, so this is stating a desired frequency and not something that
+> > > > already exists?  What determines this frequency?  Is it based on
+> > > > board design, or just on the MDIO standard, etc?  I'm wondering if
+> > > > the device tree is the right place for it.
+> > > [S.H] Yes, a desired frequency which is different with MDIO standard.
+> > 
+> > I'm not sure what you mean by "different with".  Do you mean "different
+> > from"?  What does the standard say about frequency?
+> [S.H] The standard MDIO frequency is 2.5MHz.  But a different one is desired.
+
+Why is a different frequency desired?
+
+> > 
+> > > The Fman clock and the divider determines this frequency.
+> > > Since Fman clock is different on different SoCs, so specify the
+> > > desired frequency, then to get the proper divider.
+> > 
+> > Why does the fman clock being different mean the mdio clock should be
+> > different?
+> [S.H] The mdio clock should be same, a different divider should be used 
+> to match the Fman clock to make sure the mdio clock kept same. So to specify
+> The desired mdio frequency, then to get proper divider.
+
+What I'm trying to determine is why the MDIO frequency wouldn't always
+be the same, and thus could be hardcoded in the driver rather than in
+the device tree.
+
+-Scott
