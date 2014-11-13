@@ -1,29 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B59AE1A0060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 10:09:13 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 164F7140082
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 10:09:12 +1100 (AEDT)
-Message-ID: <1415833725.5124.53.camel@kernel.crashing.org>
-Subject: Re: [PATCH]  of/base: Fix PowerPC address parsing hack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 13 Nov 2014 10:08:45 +1100
-In-Reply-To: <20141113091036.4e9ec43d@canb.auug.org.au>
-References: <1415771461.5124.33.camel@kernel.crashing.org>
- <20141113091036.4e9ec43d@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Olof Johansson <olof@lixom.net>, Rob Herring <robherring2@gmail.com>,
- Grant Likely <grant.likely@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E27E51A1E98
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 11:19:49 +1100 (AEDT)
+Message-Id: <100b0720dcbf9746070e1f9a9ec2a95b6f8694a8.1415837218.git.geoff@infradead.org>
+In-Reply-To: <cover.1415837218.git.geoff@infradead.org>
+References: <cover.1415837218.git.geoff@infradead.org>
+From: Geoff Levand <geoff@infradead.org>
+Subject: [PATCH V3 3/4] kexec: Add bit definitions for kimage entry flags
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 13 Nov 2014 00:19:32 +0000
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ Eric Biederman <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,58 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-11-13 at 09:10 +1100, Stephen Rothwell wrote:
-> Hi Ben,
-> 
-> Urk!  :-)
-> 
-> How about:
-> 
-> On Wed, 12 Nov 2014 16:51:01 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > diff --git a/drivers/of/address.c b/drivers/of/address.c
-> > index e371825..e37f017 100644
-> > --- a/drivers/of/address.c
-> > +++ b/drivers/of/address.c
-> > @@ -7,6 +7,10 @@
-> >  #include <linux/pci_regs.h>
-> >  #include <linux/string.h>
-> >  
-> > +#ifdef CONFIG_PPC
-> > +#include <asm/machdep.h>
-> 
-> #define IS_PMAC	machine_is(pmac)
-> #else
-> #define IS_PMAC	(0)
+Define new kexec preprocessor macros IND_*_BIT that define the bit position of
+the kimage entry flags.  Change the existing IND_* flag macros to be defined as
+bit shifts of the corresponding IND_*_BIT macros.  Also wrap all C language code
+in kexec.h with #if !defined(__ASSEMBLY__) so assembly files can include kexec.h
+to get the IND_* and IND_*_BIT macros.
 
-I'll just do an of machine compatible check instead, so there's no ifdef
-at all, I'll send a new patch later today.
+Some CPU instruction sets have tests for bit position which are convenient in
+implementing routines that operate on the kimage entry list.  The addition of
+these bit position macros in a common location will avoid duplicate definitions
+and the chance that changes to the IND_* flags will not be propagated to
+assembly files.
 
-> > +#endif
-> > +
-> >  /* Max address size we deal with */
-> >  #define OF_MAX_ADDR_CELLS	4
-> >  #define OF_CHECK_ADDR_COUNT(na)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS)
-> > @@ -428,12 +432,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-> >  	 * This code is only enabled on powerpc. --gcl
-> >  	 */
-> >  	ranges = of_get_property(parent, rprop, &rlen);
-> > -#if !defined(CONFIG_PPC)
-> > +#if defined(CONFIG_PPC)
-> > +	if (!machine_is(powermac))
-> > +#endif /* defined(CONFIG_PPC) */
-> >  	if (ranges == NULL) {
-> 
-> if ((!IS_PMAC) && (ranges == NULL)) {
-> 
-> > -		pr_err("OF: no ranges; cannot translate\n");
-> > +		pr_debug("OF: no ranges; cannot translate\n");
-> >  		return 1;
-> >  	}
-> > -#endif /* !defined(CONFIG_PPC) */
-> >  	if (ranges == NULL || rlen == 0) {
-> >  		offset = of_read_number(addr, na);
-> >  		memset(addr, 0, pna * 4);
-> 
-> There might be a better identifier than IS_PMAC ...
-> 
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ include/linux/kexec.h | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 9d957b7..25e039c 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -1,6 +1,18 @@
+ #ifndef LINUX_KEXEC_H
+ #define LINUX_KEXEC_H
+ 
++#define IND_DESTINATION_BIT 0
++#define IND_INDIRECTION_BIT 1
++#define IND_DONE_BIT        2
++#define IND_SOURCE_BIT      3
++
++#define IND_DESTINATION  (1 << IND_DESTINATION_BIT)
++#define IND_INDIRECTION  (1 << IND_INDIRECTION_BIT)
++#define IND_DONE         (1 << IND_DONE_BIT)
++#define IND_SOURCE       (1 << IND_SOURCE_BIT)
++
++#if !defined(__ASSEMBLY__)
++
+ #include <uapi/linux/kexec.h>
+ 
+ #ifdef CONFIG_KEXEC
+@@ -64,10 +76,6 @@
+  */
+ 
+ typedef unsigned long kimage_entry_t;
+-#define IND_DESTINATION  0x1
+-#define IND_INDIRECTION  0x2
+-#define IND_DONE         0x4
+-#define IND_SOURCE       0x8
+ 
+ struct kexec_segment {
+ 	/*
+@@ -313,4 +321,7 @@ struct task_struct;
+ static inline void crash_kexec(struct pt_regs *regs) { }
+ static inline int kexec_should_crash(struct task_struct *p) { return 0; }
+ #endif /* CONFIG_KEXEC */
++
++#endif /* !defined(__ASSEBMLY__) */
++
+ #endif /* LINUX_KEXEC_H */
+-- 
+1.9.1
