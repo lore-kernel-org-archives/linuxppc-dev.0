@@ -2,13 +2,13 @@ Return-Path: <geoff@infradead.org>
 Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E14201A1702
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1E0F1A18F0
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 11:19:49 +1100 (AEDT)
-Message-Id: <cover.1415837218.git.geoff@infradead.org>
-In-Reply-To: <cover.1408731991.git.geoff@infradead.org>
-References: <cover.1408731991.git.geoff@infradead.org
+Message-Id: <16c283c151e746dc4f8ae6755eac5afb27d53647.1415837218.git.geoff@infradead.org>
+In-Reply-To: <cover.1415837218.git.geoff@infradead.org>
+References: <cover.1415837218.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH V3 0/4] kexec: minor fixups and enhancements
+Subject: [PATCH V3 2/4] kexec: Simplify conditional
 To: Andrew Morton <akpm@linux-foundation.org>
 Date: Thu, 13 Nov 2014 00:19:32 +0000
 Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
@@ -23,42 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+Simplify the code around one of the conditionals in the kexec_load
+syscall routine.
 
-This is essentially a resend of my patch set from October with the exception
-of folding the last two patches of that series into the final patch here.
+The original code was confusing with a redundant check on KEXEC_ON_CRASH
+and comments outside of the conditional block.  This change switches the
+order of the conditional check, and cleans up the comments for the
+conditional.  There is no functional change to the code.
 
-The patches here have been in review since first posted in August, and have
-been acked by one or two kexec developers.  Could you merge them through your
-mm tree?  Thanks.
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ kernel/kexec.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
--Geoff
-
-
-The following changes since commit 206c5f60a3d902bc4b56dab2de3e88de5eb06108:
-
-  Linux 3.18-rc4 (2014-11-09 14:55:29 -0800)
-
-are available in the git repository at:
-
-  git://git.linaro.org/people/geoff.levand/linux-kexec.git for-kexec
-
-for you to fetch changes up to 916ef4b8abaa4202ea43731b9cd3f8e0ea95f05b:
-
-  kexec: Add IND_FLAGS macro (2014-11-12 15:27:54 -0800)
-
-----------------------------------------------------------------
-Geoff Levand (4):
-      kexec: Fix make headers_check
-      kexec: Simplify conditional
-      kexec: Add bit definitions for kimage entry flags
-      kexec: Add IND_FLAGS macro
-
- arch/powerpc/kernel/machine_kexec_64.c |  2 --
- include/linux/kexec.h                  | 20 ++++++++++++++++----
- include/uapi/linux/kexec.h             |  6 ------
- kernel/kexec.c                         | 17 ++++++++++-------
- 4 files changed, 26 insertions(+), 19 deletions(-)
-
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 2abf9f6..650fcba 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1288,19 +1288,22 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
+ 	if (nr_segments > 0) {
+ 		unsigned long i;
+ 
+-		/* Loading another kernel to reboot into */
+-		if ((flags & KEXEC_ON_CRASH) == 0)
+-			result = kimage_alloc_init(&image, entry, nr_segments,
+-						   segments, flags);
+-		/* Loading another kernel to switch to if this one crashes */
+-		else if (flags & KEXEC_ON_CRASH) {
+-			/* Free any current crash dump kernel before
++		if (flags & KEXEC_ON_CRASH) {
++			/*
++			 * Loading another kernel to switch to if this one
++			 * crashes.  Free any current crash dump kernel before
+ 			 * we corrupt it.
+ 			 */
++
+ 			kimage_free(xchg(&kexec_crash_image, NULL));
+ 			result = kimage_alloc_init(&image, entry, nr_segments,
+ 						   segments, flags);
+ 			crash_map_reserved_pages();
++		} else {
++			/* Loading another kernel to reboot into. */
++
++			result = kimage_alloc_init(&image, entry, nr_segments,
++						   segments, flags);
+ 		}
+ 		if (result)
+ 			goto out;
 -- 
 1.9.1
