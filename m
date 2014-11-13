@@ -1,41 +1,43 @@
-Return-Path: <pc@us.ibm.com>
+Return-Path: <neelegup@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A54A1A017A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 04:00:02 +1100 (AEDT)
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC3D01A010D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 05:10:08 +1100 (AEDT)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 666DE1400D2
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 04:00:00 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 257CF1400AB
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 05:10:07 +1100 (AEDT)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <pc@us.ibm.com>;
- Thu, 13 Nov 2014 09:59:58 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6523619D8026
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 09:48:36 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sADGxs4w45088986
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 17:59:55 +0100
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sADGxqXm025564
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 09:59:53 -0700
-Message-ID: <5464E388.6060507@us.ibm.com>
-Date: Thu, 13 Nov 2014 10:59:52 -0600
-From: Paul Clarke <pc@us.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Thu, 13 Nov 2014 23:40:05 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 47A59E0053
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 23:40:13 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sADIAYO551642406
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 23:40:35 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sADIA1oK030143
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 23:40:01 +0530
+Message-ID: <5464F39C.8020700@linux.vnet.ibm.com>
+Date: Thu, 13 Nov 2014 23:38:28 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Support OPAL requested heartbeat
-References: <1415772194.5124.37.camel@kernel.crashing.org>
-In-Reply-To: <1415772194.5124.37.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH] i2c: Driver to expose PowerNV platform i2c busses
+References: <20141110060424.9407.2498.stgit@localhost.localdomain>
+ <20141113075817.GA1288@katana> <1415876169.666.2.camel@kernel.crashing.org>
+ <1415882455.666.4.camel@kernel.crashing.org>
+In-Reply-To: <1415882455.666.4.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,20 +47,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/2014 12:03 AM, Benjamin Herrenschmidt wrote:
-> If OPAL requests it, call it back via opal_poll_events() at a
-> regular interval. Some versions of OPAL on some machines require
-> this to operate some internal timeouts properly.
 
-I don't see any reason why not, but wanted to ask to make sure: this 
-daemon can be bound to a core, correct?  At least manually by taskset or 
-similar?
+On 11/13/2014 06:10 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-11-13 at 21:56 +1100, Benjamin Herrenschmidt wrote:
+>> No, there is no timeout, if that fails something went quite wrong, it
+>> could almost be a BUG_ON (basically we passed a wrong token or a NULL
+>> msg).
+>>
+>>>> +   }
+>>>> +
+>>>> +   rc = be64_to_cpu(msg.params[1]);
+>>>> +   if (rc != OPAL_SUCCESS) {
+>>>> +           rc = -EIO;
+>>>> +           goto exit;
+>>>> +   }
+>>>> +
+> Actually, to correct myself, there are a number of error conditions
+> including timeouts inside the FW layer, but they are returned here, not
+> from opal_async_wait_response(). So indeed, we could do some error code
+> conversion at that point.
+>
+> Neelesh, can you do that on top of your patch that adds the detailed
+> error codes ? We can merge it fw side tomorrow if you have a new spin,
+> worst case if the FW is old and only returns OPAL_HARDWARE we return
+> -EIO and if the FW is newer we'll have more precise error codes in Linux
+> too.
 
-It sounds a lot like the RTAS thread, which I was happy to see go away 
-when running directly on OPAL, and don't want something else to take its 
-place.  It was not bindable, but ran periodically on EVERY core, err 
-hardware thread.
+Yes, nice to have more precise error codes so I'm adding them in firmware
+and rolling out new version of the FW. Please look at it.
 
-(Just looking to avoid latency blips.)
+Thanks,
+Neelesh
 
-PC
+>
+> Cheers,
+> Ben.
+>
+>
