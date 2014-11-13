@@ -1,41 +1,27 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C006B1A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 07:35:53 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by lists.ozlabs.org (Postfix) with ESMTPS id C41C21A01E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 07:53:57 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8F6F2140079
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 07:35:53 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Fri, 14 Nov 2014 06:35:50 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8B9282CE8057
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 07:35:49 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sADKbiXh39387322
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 07:37:45 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sADKZlVF005321
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 07:35:48 +1100
-Message-ID: <1415910941.666.15.camel@au1.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Support OPAL requested heartbeat
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Paul Clarke <pc@us.ibm.com>
-Date: Fri, 14 Nov 2014 07:35:41 +1100
-In-Reply-To: <5464E388.6060507@us.ibm.com>
-References: <1415772194.5124.37.camel@kernel.crashing.org>
- <5464E388.6060507@us.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id D1AFC1400D2
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 07:53:56 +1100 (AEDT)
+Message-ID: <1415912020.666.17.camel@kernel.crashing.org>
+Subject: Re: [PATCH] i2c: Driver to expose PowerNV platform i2c busses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Date: Fri, 14 Nov 2014 07:53:40 +1100
+In-Reply-To: <20141113131014.GA8025@katana>
+References: <20141110060424.9407.2498.stgit@localhost.localdomain>
+ <20141113075817.GA1288@katana> <1415876169.666.2.camel@kernel.crashing.org>
+ <20141113131014.GA8025@katana>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jeremy.kerr@au1.ibm.com>
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,38 +31,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-11-13 at 10:59 -0600, Paul Clarke wrote:
-> On 11/12/2014 12:03 AM, Benjamin Herrenschmidt wrote:
-> > If OPAL requests it, call it back via opal_poll_events() at a
-> > regular interval. Some versions of OPAL on some machines require
-> > this to operate some internal timeouts properly.
+On Thu, 2014-11-13 at 14:10 +0100, Wolfram Sang wrote:
+> > > Please sort the includes.
+> > 
+> > Ugh ? Since when do we do that ? :-)
 > 
-> I don't see any reason why not, but wanted to ask to make sure: this 
-> daemon can be bound to a core, correct?  At least manually by taskset or 
-> similar?
+> Since I realised it is more readable and reduces likeliness of
+> duplicated includes.
 
-I think so... it's a kernel thread, but I haven't tried. It should be
-akin to the existing khvcd.
+Ok, I assume alphabetical rather than Ingo's aesthetic "tree" ?
 
-> It sounds a lot like the RTAS thread, which I was happy to see go away 
-> when running directly on OPAL, and don't want something else to take its 
-> place.  It was not bindable, but ran periodically on EVERY core, err 
-> hardware thread.
+> > > > +	rc = opal_i2c_request(token, bus_id, req);
+> > > > +	if (rc != OPAL_ASYNC_COMPLETION) {
+> > > > +		rc = -EIO;
+> > > > +		goto exit;
+> > > > +	}
+> > > > +
+> > > > +	rc = opal_async_wait_response(token, &msg);
+> > > > +	if (rc) {
+> > > > +		rc = -EIO;
+> > > > +		goto exit;
+> > > 
+> > > Is it really -EIO? Maybe -ETIMEDOUT?
+> > 
+> > No, there is no timeout, if that fails something went quite wrong, it
+> > could almost be a BUG_ON (basically we passed a wrong token or a NULL
+> > msg).
 > 
-> (Just looking to avoid latency blips.)
+> OK. I'd think it at least makes sense to use error codes which
+> distinguish I2C bus errors from OPAL interface errors. Always using -EIO
+> seems very generic :)
 
-Right, I know where you come from. But you'll get those blips whether I
-use a thread or an interrupt. Basically, I'm trying to get the HW guys
-to give me a modified SLW engine image that I can use to request time by
-setting up a delayed interrupt.
+Ok, any suggestion ? We don't have a -EINTERNAL :) In any case, I'm not
+too worried, the above basically cannot happen.
 
-I'm trying to reduce the work done in there, and in fact I'm hoping to
-only schedule my internal timers that rely on this (or the SLW
-interrupt) for cases where we have a pending i2c or IPMI command, and
-possibly only on machines without a functional external interrupt (so
-lab bringup) or when accessing Centaur i2c (very very rarely).
+> > > I don't think you should offer I2C_FUNC_I2C with those limitations. Is
+> > > there a case you really needs this?
+> > 
+> > Yes there is, and it's pretty common :-) I actually added this to
+> > Neelesh original driver, it's the "smbus" style but with 2 bytes offset.
+> > Typically what we need for driver such as at24. They use normal raw i2c
+> > writes for writes but need the 2-bytes write + read combo without stop
+> > for reads.
+> 
+> Understood. So, basically something like I2C_SMBUS_WORD_I2C_BLOCK_DATA
+> is missing where the 'command' argument is not u8 but u16? Brainstorming
+> here, not relevant for this driver now.
 
-But I do need that source of time...
+Yes, or a generic "N bytes command". My FW driver supports up to 4 bytes
+in fact at the moment.
+
+> > > > +	adapter = kzalloc(sizeof(struct i2c_adapter), GFP_KERNEL);
+> > > 
+> > > devm_kzalloc?
+> > 
+> > Ah, I never got the knack of using the new devm stuff, Neelesh, can you
+> > take care of this ?
+> 
+> New? :D This would be a dead simple exercise to learn about it ;)
+
+Oh I *know* about it, it's just a habit I didn't catch ... yet :-) I'm
+probably getting old and set in my ways ..... :-)
+
+> > > > +	adapter->dev.parent = &pdev->dev;
+> > > > +	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
+> > > > +	pname = of_get_property(pdev->dev.of_node, "port-name", NULL);
+> > > 
+> > > I have never seen this binding before, it looks fishy. Where is it documented?
+> > 
+> > We made it up, like pretty every SoC vendor out there. What's fishy
+> > about it ? It's a very good way to get fixed i2c port names on the
+> > system, the firmware defines them.
+> 
+> But the SoC vendors prefix it with their company name and add
+> documentation for the binding.
+
+Why do we need to prefix arbitrary props for a very specific device ?
+When adding things to an existing more/less generic device it makes some
+sense but here I don't see much point. I can whip up a "binding"
+document for this adapter and make "port-name" be part of it if you
+want :) In fact a better name for the property might be "bus-id"...
+
+> Furthermore, this is just wrong, too. The adapter name is the name of
+> the IP core or chip or whatever which does the I2C bus. It is not the
+> functional name of the bus. It should be plain "Opal I2C" or similar.
+
+But that really makes no sense. On one hand we have a way to get
+something decent and useful out of i2c-detect -l, and on the other hand,
+we get a list of N (N = 3*number of P8 chips at least) identical names
+and have to go through hoops figuring out which is which ...
+
+I don't see why we can't use the name for that... the name scheme I use
+does convey both bits of information btw, I use something like:
+
+	p8_xxxxxxxx_eypz (ex: p8_00000000_e0p0)
+
+Where p8 means power 8 (centaur's, our memory buffers, will have
+something else there), xxxxxxxx is the chip ID (identify a processor or
+centaur chip uniquely in the system), y the engine number on the chip
+and z the port number on the engine.
 
 Cheers,
 Ben.
+
+> Regards,
+> 
+>    Wolfram
