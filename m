@@ -1,28 +1,42 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jeremy.kerr@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474781A0185
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 18:11:49 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] DT: add MDIO node for FMan node
-Date: Thu, 13 Nov 2014 07:11:41 +0000
-Message-ID: <59c6a8b7ad1d477aad9edd2152d02f8e@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415102196-9238-1-git-send-email-shh.xie@gmail.com>
- <1415665384.15957.16.camel@freescale.com>
- <fb6dc6131da04e89bfc31bd8278030a0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415727479.15957.29.camel@freescale.com>
- <c4dd11a97a684be8b799c2f639e600ca@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1415859399.15957.48.camel@freescale.com>
-In-Reply-To: <1415859399.15957.48.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F29601A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 17:47:07 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D0AEA1400B6
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 17:47:07 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <jeremy.kerr@au1.ibm.com>;
+ Thu, 13 Nov 2014 16:47:06 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 946FE2CE8064
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 17:47:03 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAD6keMk41943040
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 17:46:48 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAD6kU7K003661
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2014 17:46:31 +1100
+Message-ID: <546453AD.5080909@au1.ibm.com>
+Date: Thu, 13 Nov 2014 14:46:05 +0800
+From: Jeremy Kerr <jeremy.kerr@au1.ibm.com>
 MIME-Version: 1.0
-Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/powernv: Support OPAL requested heartbeat
+References: <20141113052937.17DFF1400D2@ozlabs.org>
+ <1415860935.666.0.camel@kernel.crashing.org>
+In-Reply-To: <1415860935.666.0.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +46,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBUaHVyc2RheSwgTm92ZW1iZXIgMTMsIDIwMTQgMjoxNyBQTQ0KPiBUbzogWGllIFNo
-YW9odWktQjIxOTg5DQo+IENjOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MDsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBNZWR2ZSBFbWls
-aWFuLUVNTUVEVkUxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIERUOiBhZGQgTURJTyBub2RlIGZv
-ciBGTWFuIG5vZGUNCj4gDQo+IE9uIFdlZCwgMjAxNC0xMS0xMiBhdCAwNzo0MCAtMDYwMCwgWGll
-IFNoYW9odWktQjIxOTg5IHdyb3RlOg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-Cj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBXZWRuZXNkYXksIE5v
-dmVtYmVyIDEyLCAyMDE0IDE6MzggQU0NCj4gPiA+IFRvOiBYaWUgU2hhb2h1aS1CMjE5ODkNCj4g
-PiA+IENjOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MDsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc7DQo+ID4gPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTWVkdmUgRW1pbGlhbi1FTU1F
-RFZFMQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gRFQ6IGFkZCBNRElPIG5vZGUgZm9yIEZN
-YW4gbm9kZQ0KPiA+ID4NCj4gPiA+IE9uIFR1ZSwgMjAxNC0xMS0xMSBhdCAwNDozMiAtMDYwMCwg
-WGllIFNoYW9odWktQjIxOTg5IHdyb3RlOg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50
-OiBUdWVzZGF5LCBOb3ZlbWJlciAxMSwgMjAxNCA4OjIzIEFNDQo+ID4gPiA+ID4gVG86IHNoaC54
-aWVAZ21haWwuY29tDQo+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiBNZWR2ZSBFbWlsaWFuLUVN
-TUVEVkUxOyBYaWUgU2hhb2h1aS1CMjE5ODkNCj4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENI
-XSBEVDogYWRkIE1ESU8gbm9kZSBmb3IgRk1hbiBub2RlDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBP
-biBUdWUsIDIwMTQtMTEtMDQgYXQgMTk6NTYgKzA4MDAsIHNoaC54aWVAZ21haWwuY29tIHdyb3Rl
-Og0KPiA+ID4gPiA+ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNoYW9odWkuWGllQGZyZWVzY2FsZS5j
-b20+DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gVGhpcyBiaW5kaW5nIGlzIGZvciBGTWFuIE1E
-SU8sIGl0IGNvdmVycyBGTWFuIHYyICYgRk1hbiB2My4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4N
-Cj4gPiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gYmFzZWQgb24gaHR0cDovL3BhdGNod29yay5v
-emxhYnMub3JnL3BhdGNoLzM5MDM1MS8NCj4gPiA+ID4gPiA+IGZvciAnbmV4dCcgb2YNCj4gPiA+
-ID4gPiA+IGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9zY290
-dHdvb2QvbGludXguDQo+ID4gPiA+ID4gPiBnaXQNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEFyZSB0
-aGVyZSBhbnkgb3RoZXIgRk1hbiBwaWVjZXMgdGhhdCBhcmUgbWlzc2luZyBmcm9tIHRoZSBhYm92
-ZQ0KPiBwYXRjaD8NCj4gPiA+ID4gW1MuSF0gSSdtIGFkZGluZyBJZ2FsIGZvciB0aGlzIGNvbW1l
-bnQuDQo+ID4gPiA+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ICstIGJ1cy1mcmVxdWVuY3kNCj4g
-PiA+ID4gPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0KPiA+ID4gPiA+ID4gKwkJVmFsdWUgdHlwZTog
-PHUzMj4NCj4gPiA+ID4gPiA+ICsJCURlZmluaXRpb246IERlZmF1bHQgTURJTyBidXMgY2xvY2sg
-c3BlZWQuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBVc2UgY2xvY2tzL2Nsb2NrLW5hbWVzDQo+ID4g
-PiA+IFtTLkhdIFRoZSBNRElPIHVzZXMgRm1hbiBjbG9jayBhbmQgZGl2aWRlcyBpdCB0byBhIHBy
-b3BlciB2YWx1ZQ0KPiA+ID4gPiB3aGljaA0KPiA+ID4gaXMgc3BlY2lmaWVkIGJ5IHRoaXMgcHJv
-cGVydHkuDQo+ID4gPg0KPiA+ID4gVXNlIGNsb2Nrcy9jbG9jay1uYW1lcyB0byBkZXNjcmliZSB0
-aGF0IHJlbGF0aW9uc2hpcC4NCj4gPiA+DQo+ID4NCj4gPiBbUy5IXSBUaGUgTURJTyBub2RlIGlz
-IHN1Yi1ub2RlIGFuZCBlbWJlZGRlZCBpbiBGbWFuIG5vZGUsIHRoZQ0KPiA+IGNsb2Nrcy9jbG9j
-ay1uYW1lcyBpcyBwcm92aWRlZCBieSBGbWFuIG5vZGUsIHNob3VsZCByZXBlYXQgdGhlbSBpbg0K
-PiA+IE1ESU8gbm9kZT8gRm9yIHRoZSBkZWZhdWx0IE1ESU8gYnVzIGNsb2NrIHNwZWVkLCBtYXli
-ZSAiY2xvY2stcmFuZ2VzIg0KPiA+IHNob3VsZCBiZSB1c2VkPw0KPiANCj4gSXQncyBhIGRpZmZl
-cmVudCBjbG9jay4gIFlvdSB3b3VsZG4ndCBiZSByZXBlYXRpbmcuICBJZiBpdCdzIGRlcml2ZWQg
-ZnJvbQ0KPiB0aGUgRk1hbiBjbG9jaywgdGhlbiBtYXliZSB5b3UgZG9uJ3QgbmVlZCBhbnl0aGlu
-ZyBoZXJlIChkb2VzIHRoZSBkcml2ZXINCj4ga25vdyB3aGF0IHRoZSBkaXZpZGVyIGlzLCBvciB3
-b3VsZCB0aGF0IG5lZWQgdG8gYmUgc3BlY2lmaWVkIGluIHRoZQ0KPiBkZXZpY2UgdHJlZT8pLCBi
-dXQgbm8gbW9yZSBjbG9jay1mcmVxdWVuY3kvYnVzLWZyZXF1ZW5jeSBwcm9wZXJ0aWVzLg0KPiAN
-CltTLkhdIFRoZSBwdXJwb3NlIGhlcmUgaXMgdG8gZ2V0IGEgc3BlY2lmaWMgY2xvY2sgZnJlcXVl
-bmN5LCBkcml2ZXIgdG8gdXNlIGl0IHRvIGNhbGN1bGF0ZSB0aGUgZGl2aWRlci4NClRoZW4gdGhl
-IEZtYW4gY2xvY2sgY2FuIGJlIGRpdmlkZWQgdG8gdGhlIGZyZXF1ZW5jeS4NCg0KPiA+IFtTLkhd
-IHNpbmNlIEZtYW4gVjIgJiBWMyBjYW4gYmUgZGlmZmVyZW50aWF0ZWQgYnkgY29tcGF0aWJsZSwg
-YQ0KPiA+IGJvb2xlYW4gcHJvcGVydHkgImZzbCxmbWFuLWludGVybmFsLW1kaW8iIHNlZW1zIGJl
-dHRlciwgaWYgZGVmaW5lZCwgaXQNCj4gPiBpbmRpY2F0ZXMgYW4gaW50ZXJuYWwgTURJTy4gSXQg
-bG9va3MgbGlrZSBiZWxvdzoNCj4gPg0KPiA+IGZzbCxmbWFuLWludGVybmFsLW1kaW8NCj4gPiAJ
-CVVzYWdlOiByZXF1aXJlZCBmb3IgaW50ZXJuYWwgTURJTw0KPiA+IAkJVmFsdWUgdHlwZTogQm9v
-bGVhbg0KPiA+IAkJRGVmaW5pdGlvbjogRm1hbiBoYXMgaW50ZXJuYWwgTURJTyBmb3IgaW50ZXJu
-YWwgUENTKFBoeXNpY2FsDQo+ID4gCQlDb2RpbmcgU3VibGF5ZXIpIFBIWXMgYW5kIGV4dGVybmFs
-IE1ESU8gZm9yIGV4dGVybmFsIFBIWXMuDQo+ID4gCQlUaGUgc2V0dGluZ3MgYW5kIHByb2dyYW1t
-aW5nIHJvdXRpbmVzIGZvciBpbnRlcm5hbC9leHRlcm5hbA0KPiA+IAkJTURJTyBhcmUgZGlmZmVy
-ZW50LiBNdXN0IGJlIGluY2x1ZGVkIGZvciBpbnRlcm5hbCBNRElPLg0KPiA+DQo+ID4gSG93IGFi
-b3V0IHRoaXM/DQo+IA0KPiBUaGlzIGxvb2tzIGJldHRlciwgdGhhbmtzLg0KPiANCj4gVGhpcyB3
-b3VsZCBiZSBzZXQgb24gZm1hbiB2MiBUQkkgbWRpbyBub2RlcyBhcyB3ZWxsLCByaWdodD8NCltT
-LkhdIFllcy4gQnV0IGl0J3Mgbm90IHVzZWQgYnkgZHJpdmVyLiAoSSBrbm93IEkgc2hvdWxkIG5v
-dCBzYXkgdGhpcyA6KSApDQoNClRoYW5rcy4NClNoYW9odWkNCg0K
+Hi Ben,
+
+>> I'd assume "freq" with no units is in HZ, but looks like it's
+>> milliseconds. I guess it's too late to rename it.
+> 
+> We still can, we haven't cut an official build with that fw, jk ?
+
+Not yet. You got in by a matter of minutes :)
+
+Can you send me an updated skiboot patch too then?
+
+Cheers,
+
+
+Jeremy
