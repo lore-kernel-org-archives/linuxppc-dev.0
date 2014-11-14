@@ -1,28 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vvijayan@mvista.com>
+Received: from mail-ie0-f173.google.com (mail-ie0-f173.google.com
+ [209.85.223.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD6CE1A0109
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 16:17:29 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 18B3D140079
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 16:17:28 +1100 (AEDT)
-Message-ID: <1415942239.666.37.camel@kernel.crashing.org>
-Subject: Re: [PATCH] i2c: Driver to expose PowerNV platform i2c busses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfram Sang <wsa@the-dreams.de>
-Date: Fri, 14 Nov 2014 16:17:19 +1100
-In-Reply-To: <1415912020.666.17.camel@kernel.crashing.org>
-References: <20141110060424.9407.2498.stgit@localhost.localdomain>
- <20141113075817.GA1288@katana> <1415876169.666.2.camel@kernel.crashing.org>
- <20141113131014.GA8025@katana>
- <1415912020.666.17.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-i2c@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 52EF81A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 16:33:52 +1100 (AEDT)
+Received: by mail-ie0-f173.google.com with SMTP id y20so415361ier.18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2014 21:33:50 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CAOpNGcsgX0wVOgMN77+RuKVsb_iHQ7XQk8U_05-up__wC6zuZQ@mail.gmail.com>
+References: <1412919926-13123-1-git-send-email-vvijayan@mvista.com>
+ <20141015020811.7904E14011B@ozlabs.org>
+ <CAOpNGcsgX0wVOgMN77+RuKVsb_iHQ7XQk8U_05-up__wC6zuZQ@mail.gmail.com>
+From: Vineeth Vijayan <vvijayan@mvista.com>
+Date: Fri, 14 Nov 2014 11:03:30 +0530
+Message-ID: <CAOpNGcsQX1d4=MpHKKKnBotBb11dq55_kQp4PG8OA++U6peqKg@mail.gmail.com>
+Subject: Re: powerpc: Fix Text randomization
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-11-14 at 07:53 +1100, Benjamin Herrenschmidt wrote:
-> > > > > +       adapter->dev.parent = &pdev->dev;
-> > > > > +       adapter->dev.of_node = of_node_get(pdev->dev.of_node);
-> > > > > +       pname = of_get_property(pdev->dev.of_node, "port-name", NULL);
-> > > > 
-> > > > I have never seen this binding before, it looks fishy. Where is it documented?
-> > > 
-> > > We made it up, like pretty every SoC vendor out there. What's fishy
-> > > about it ? It's a very good way to get fixed i2c port names on the
-> > > system, the firmware defines them.
-> > 
-> > But the SoC vendors prefix it with their company name and add
-> > documentation for the binding.
-> 
-> Why do we need to prefix arbitrary props for a very specific device ?
-> When adding things to an existing more/less generic device it makes some
-> sense but here I don't see much point. I can whip up a "binding"
-> document for this adapter and make "port-name" be part of it if you
-> want :) In fact a better name for the property might be "bus-id"...
+ping !
 
-Note: We've slipped in a last minute update to the FW which isn't
-deployed yet to turn that into ibm,port-name and change the compatible
-match to the more generic "ibm,opal-i2c" since the underlying HW
-implementation doesn't have to be P8 (and in fact we'll soon also expose
-the i2c bus off the Centaur memory buffer chips that goes to the DIMMs).
+any update on this ? As i understand, only powerpc and s390 uses the
+randomize_et_dyn call; for all other architecture this is an obsolete
+function call.
 
-This is the only parts of the "binding" linux cares about. The actual
-DT representation for that device is a bit more complete, there's a
-parent node for the i2c master engine and a node per port, but clients
-like Linux only care about the ports. The clock frequencies are in
-standard properties but here too, only the FW use them for its own
-internal use, this is an abstract FW API (server world ....)
+this call for another patch where randomize_et_dyn is removed.
 
-Cheers,
-Ben.
+On Wed, Oct 15, 2014 at 12:08 PM, Vineeth Vijayan <vvijayan@mvista.com> wro=
+te:
+> On Wed, Oct 15, 2014 at 7:38 AM, Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>> On Fri, 2014-10-10 at 05:45:26 UTC, Vineeth Vijayan wrote:
+>>> Right now there is no way to disable TEXT randomization on a PPC32
+>>> machine. text randomization happens even in the case of "echo 0 >
+>>> /proc/sys/kernel/randomize_va_space"
+>>
+>> Yeah it seems to happen on ppc64 too.
+>>
+>>> This happens due to the incorrect definition of ELF_ET_DYN_BASE at
+>>> arch/powerpc/include/asm/elf.h
+>>
+>> What is incorrect about it? We are not the only arch that does that.
+>>
+>
+> I think we are one of the arch which does it.
+> The same has been tested on x86 and arm, where ELF_ET_DYN_BASE doesn=E2=
+=80=99t
+> use randomize_et_dyn call, and it works properly as per the user-space
+> definition of randomization;
+>
+> (i.e when at "echo 0 > /proc/sys/kernel/randomize_va_space", TEXT
+> randomization should not happen.)
+>
+>> I'm not clear on what has changed to break this?
+>>
+>> cheers
