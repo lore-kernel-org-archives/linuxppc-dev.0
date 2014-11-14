@@ -1,35 +1,20 @@
-Return-Path: <kirjanov@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shh.xie@gmail.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0097.outbound.protection.outlook.com [157.56.111.97])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5B7D1A0061
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 21:00:08 +1100 (AEDT)
-Received: from mail-vc0-x22e.google.com (mail-vc0-x22e.google.com
- [IPv6:2607:f8b0:400c:c03::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 03A23140079
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 21:00:08 +1100 (AEDT)
-Received: by mail-vc0-f174.google.com with SMTP id la4so4800849vcb.33
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 02:00:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC2211A0057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 21:54:21 +1100 (AEDT)
+From: <shh.xie@gmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+Date: Fri, 14 Nov 2014 17:53:20 +0800
+Message-ID: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <54647DA7.1070000@linux.vnet.ibm.com>
-References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1415683597-22819-8-git-send-email-khandual@linux.vnet.ibm.com>
- <54647DA7.1070000@linux.vnet.ibm.com>
-Date: Fri, 14 Nov 2014 14:00:05 +0400
-Message-ID: <CAHj3AVna2H1VZvP0=Xjw9pqS+gRKR7_KH9FNhX3vUBFh7OU2wA@mail.gmail.com>
-Subject: Re: [PATCH V4 7/8] powerpc, ptrace: Enable support for miscellaneous
- debug registers
-From: Denis Kirjanov <kirjanov@gmail.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
- palves@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
- dhowells@redhat.com, linuxppc-dev@ozlabs.org, davej@redhat.com,
- tglx@linutronix.de, sukadev@linux.vnet.ibm.com, akpm@linux-foundation.org,
- sam.bobroff@au1.ibm.com
+Content-Type: text/plain
+Cc: Igal.Liberman@freescale.com, Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,139 +24,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/13/14, Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> On 11/11/2014 10:56 AM, Anshuman Khandual wrote:
->> This patch enables get and set of miscellaneous debug registers through
->> ptrace PTRACE_GETREGSET-PTRACE_SETREGSET interface by implementing new
->> powerpc specific register set REGSET_MISC support corresponding to the
->> new ELF core note NT_PPC_MISC added previously in this regard.
->
-> Right now this one does not compile for "ppc64e_defconfig" and
-> "pmac32_defconfig" config options. The patch below will fix it
-> and would be part of next revision.
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
 
-It would be great to have a test tool for that under
-tools/testing/selftests/ptrace/
+This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
 
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 61a2581..be566eb 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1326,6 +1326,7 @@ static int tm_cvmx_set(struct task_struct *target,
->  }
->  #endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
->
-> +#ifdef CONFIG_PPC64
->  /*
->   * get_misc_dbg
->   *
-> @@ -1339,6 +1340,9 @@ static int tm_cvmx_set(struct task_struct *target,
->   *	unsigned long ppr;
->   *	unsigned long tar;
->   * };
-> + *
-> + * The data element 'tar' will be valid only if the
-> + * kernel has CONFIG_PPC_BOOK3S_64 config option enabled.
->   */
->  static int get_misc_dbg(struct task_struct *target,
->  			const struct user_regset *regset, unsigned int pos,
-> @@ -1348,7 +1352,10 @@ static int get_misc_dbg(struct task_struct *target,
->
->  	/* Build test */
->  	BUILD_BUG_ON(TSO(dscr) + 2 * sizeof(unsigned long) != TSO(ppr));
-> +
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  	BUILD_BUG_ON(TSO(ppr) + sizeof(unsigned long) != TSO(tar));
-> +#endif
->
->  	/* DSCR register */
->  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> @@ -1362,12 +1369,14 @@ static int get_misc_dbg(struct task_struct *target,
->  						sizeof(unsigned long),
->  						2 * sizeof(unsigned long));
->
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  	/* TAR register */
->  	if (!ret)
->  		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
->  						&target->thread.tar,
->  						2 * sizeof(unsigned long),
->  						3 * sizeof(unsigned long));
-> +#endif
->  	return ret;
->  }
->
-> @@ -1384,6 +1393,9 @@ static int get_misc_dbg(struct task_struct *target,
->   *	unsigned long ppr;
->   *	unsigned long tar;
->   * };
-> + *
-> + * The data element 'tar' will be valid only if the
-> + * kernel has CONFIG_PPC_BOOK3S_64 config option enabled.
->   */
->  static int set_misc_dbg(struct task_struct *target,
->  			const struct user_regset *regset, unsigned int pos,
-> @@ -1394,7 +1406,10 @@ static int set_misc_dbg(struct task_struct *target,
->
->  	/* Build test */
->  	BUILD_BUG_ON(TSO(dscr) + 2 * sizeof(unsigned long) != TSO(ppr));
-> +
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  	BUILD_BUG_ON(TSO(ppr) + sizeof(unsigned long) != TSO(tar));
-> +#endif
->
->  	/* DSCR register */
->  	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-> @@ -1407,15 +1422,17 @@ static int set_misc_dbg(struct task_struct *target,
->  						&target->thread.ppr,
->  						sizeof(unsigned long),
->  						2 * sizeof(unsigned long));
-> -
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  	/* TAR register */
->  	if (!ret)
->  		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
->  						&target->thread.tar,
->  						2 * sizeof(unsigned long),
->  						3 * sizeof(unsigned long));
-> +#endif
->  	return ret;
->  }
-> +#endif /* CONFIG_PPC64 */
->
->  /*
->   * These are our native regset flavors.
-> @@ -1438,7 +1455,9 @@ enum powerpc_regset {
->  	REGSET_TM_CFPR,		/* TM checkpointed FPR registers */
->  	REGSET_TM_CVMX,		/* TM checkpointed VMX registers */
->  #endif
-> +#ifdef CONFIG_PPC64
->  	REGSET_MISC		/* Miscellaneous debug registers */
-> +#endif
->  };
->
->  static const struct user_regset native_regsets[] = {
-> @@ -1495,11 +1514,13 @@ static const struct user_regset native_regsets[] = {
->  		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
->  	},
->  #endif
-> +#ifdef CONFIG_PPC64
->  	[REGSET_MISC] = {
->  		.core_note_type = NT_PPC_MISC, .n = ELF_NMISCREG,
->  		.size = sizeof(u64), .align = sizeof(u64),
->  		.get = get_misc_dbg, .set = set_misc_dbg
->  	},
-> +#endif
->  };
->
->  static const struct user_regset_view user_ppc_native_view = {
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+changes in V2:
+addressed comments from Scott in V1.
 
+ .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
+ 1 file changed, 69 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+index edeea16..1523a87 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+@@ -7,6 +7,7 @@ CONTENTS
+   - FMan MURAM Node
+   - FMan dTSEC/XGEC/mEMAC Node
+   - FMan IEEE 1588 Node
++  - FMan MDIO Node
+   - Example
+ 
+ =============================================================================
+@@ -357,6 +358,68 @@ ptp-timer@fe000 {
+ };
+ 
+ =============================================================================
++FMan MDIO Node
++
++DESCRIPTION
++
++The MDIO is a bus to which the PHY devices are connected.
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: A standard property.
++		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
++		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
++		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
++		FMan v3.
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property.
++
++- bus-frequency
++		Usage: optional
++		Value type: <u32>
++		Definition: Specifies external MDIO bus clock speed which is
++		different from MDIO standard 2.5MHz. Should be defined for SoCs
++		on which the standard one cannot work.
++
++- interrupts
++		Usage: optional
++		Value type: <prop-encoded-array>
++		Definition: Event interrupt of external MDIO controller.
++		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
++
++- fsl,fman-internal-mdio
++		Usage: required for internal MDIO
++		Value type: boolean
++		Definition: Fman has internal MDIO for internal PCS(Physical
++		Coding Sublayer) PHYs and external MDIO for external PHYs.
++		The settings and programming routines for internal/external
++		MDIO are different. Must be included for internal MDIO.
++
++EXAMPLE
++
++Example for FMan v2 external MDIO:
++
++mdio@f1000 {
++	compatible = "fsl,fman-xmdio";
++	reg = <0xf1000 0x1000>;
++	bus-frequency = <20000>;
++};
++
++Example for FMan v3 internal MDIO:
++
++mdio@f1000 {
++	compatible = "fsl,fman-memac-mdio";
++	reg = <0xf1000 0x1000>;
++	fsl,fman-internal-mdio;
++};
++
++=============================================================================
+ Example
+ 
+ fman@400000 {
+@@ -531,4 +594,10 @@ fman@400000 {
+ 		compatible = "fsl,fman-ptp-timer";
+ 		reg = <0xfe000 0x1000>;
+ 	};
++
++	mdio@f1000 {
++		compatible = "fsl,fman-xmdio";
++		reg = <0xf1000 0x1000>;
++		bus-frequency = <20000>;
++	};
+ };
 -- 
-Regards,
-Denis
+1.8.4.1
