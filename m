@@ -1,26 +1,19 @@
 Return-Path: <vvijayan@mvista.com>
-Received: from mail-ig0-f181.google.com (mail-ig0-f181.google.com
- [209.85.213.181])
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 753681A0288
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 19:48:28 +1100 (AEDT)
-Received: by mail-ig0-f181.google.com with SMTP id l13so1247215iga.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 00:48:26 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1415946050.26378.3.camel@concordia>
-References: <1412919926-13123-1-git-send-email-vvijayan@mvista.com>
- <20141015020811.7904E14011B@ozlabs.org>
- <CAOpNGcsgX0wVOgMN77+RuKVsb_iHQ7XQk8U_05-up__wC6zuZQ@mail.gmail.com>
- <CAOpNGcsQX1d4=MpHKKKnBotBb11dq55_kQp4PG8OA++U6peqKg@mail.gmail.com>
- <1415946050.26378.3.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F6291A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 20:12:25 +1100 (AEDT)
+Received: by mail-pa0-f51.google.com with SMTP id ey11so329876pad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 01:12:23 -0800 (PST)
 From: Vineeth Vijayan <vvijayan@mvista.com>
-Date: Fri, 14 Nov 2014 14:18:06 +0530
-Message-ID: <CAOpNGcu5UDP93FSoKSKJZJYBL_dK7i3KHn3OGzORR67odGjgzA@mail.gmail.com>
-Subject: Re: powerpc: Fix Text randomization
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [powerpc] Fix Text randomization
+Date: Fri, 14 Nov 2014 14:42:05 +0530
+Message-Id: <1415956325-10124-1-git-send-email-vvijayan@mvista.com>
+Cc: Vineeth Vijayan <vvijayan@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 14, 2014 at 11:50 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Fri, 2014-11-14 at 11:03 +0530, Vineeth Vijayan wrote:
->> ping !
->>
->> any update on this ? As i understand, only powerpc and s390 uses the
->> randomize_et_dyn call; for all other architecture this is an obsolete
->> function call.
->
-> I asked:
->
->> >> I'm not clear on what has changed to break this?
->
+Now there is no way to disable TEXT randomization on a PPC32/PPC64
+machine. Text randomization happens even in the case of "echo 0 >
+/proc/sys/kernel/randomize_va_space"
 
-Disabling PIE randomization was added in the commit
-a3defbe5c337dbc6da911f8cc49ae3cc3b49b453
-(binfmt_elf: fix PIE execution with randomization disabled). The
-randomization is decided as
-per the randomize_va_space sysctl flag.
+This happens due to the incorrect definition of ELF_ET_DYN_BASE
+at arch/powerpc/include/asm/elf.h
 
-As i understand, the randomization of the base address is implemented
-at elf_map and not from the
-arch/<>/include/asm/elf.h
+The function randomize_et_dyn is redundant and is removed.
 
-Now, for powerpc, there's no support to disable the PIE randomization,
-even after we disable the
-same form randomize_va_space sysctl.This patch gives the support to
-disable PIE randomization in
-case it is disabled from this sysctl.
+Signed-off-by: Vineeth Vijayan <vvijayan@mvista.com>
+---
+ arch/powerpc/Kconfig           |    1 +
+ arch/powerpc/include/asm/elf.h |    3 +--
+ arch/powerpc/kernel/process.c  |    9 ---------
+ 3 files changed, 2 insertions(+), 11 deletions(-)
 
-> And you didn't tell me.
->
->> this call for another patch where randomize_et_dyn is removed.
->
-> Patches welcome :)
->
-
-i will follow up with the patch.
-
-> cheers
->
->
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 88eace4..868a3c4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -88,6 +88,7 @@ config PPC
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select BINFMT_ELF
++	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select OF
+ 	select OF_EARLY_FLATTREE
+ 	select OF_RESERVED_MEM
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 888d8f3..3793675 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -28,8 +28,7 @@
+    the loader.  We need to make sure that it is out of the way of the program
+    that it will "exec", and that there is sufficient room for the brk.  */
+ 
+-extern unsigned long randomize_et_dyn(unsigned long base);
+-#define ELF_ET_DYN_BASE		(randomize_et_dyn(0x20000000))
++#define ELF_ET_DYN_BASE		(0x20000000)
+ 
+ #define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
+ 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 923cd2d..e50467e 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1665,12 +1665,3 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
+ 	return ret;
+ }
+ 
+-unsigned long randomize_et_dyn(unsigned long base)
+-{
+-	unsigned long ret = PAGE_ALIGN(base + brk_rnd());
+-
+-	if (ret < base)
+-		return base;
+-
+-	return ret;
+-}
+-- 
+1.7.9.5
