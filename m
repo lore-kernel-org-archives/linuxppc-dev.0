@@ -1,30 +1,33 @@
-Return-Path: <imunsie@au1.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 699151A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 17:39:08 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0CB71A017A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2014 17:55:37 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3F43C1400E7
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 17:39:08 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Fri, 14 Nov 2014 16:39:07 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH] CXL: Return error to PSL if IRQ demultiplexing fails & print
- clearer warning
-Date: Fri, 14 Nov 2014 17:37:50 +1100
-Message-Id: <1415947070-5232-1-git-send-email-imunsie@au.ibm.com>
-Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
- arnd <arnd@arndb.de>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- greg <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
- imunsie <imunsie@au1.ibm.com>, jk <jk@ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 3F6281400AB
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2014 17:55:37 +1100 (AEDT)
+Message-ID: <1415948103.666.47.camel@kernel.crashing.org>
+Subject: [PATCH v3] of/base: Fix PowerPC address parsing hack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@linaro.org>
+Date: Fri, 14 Nov 2014 17:55:03 +1100
+In-Reply-To: <1415883227.666.6.camel@kernel.crashing.org>
+References: <1415771461.5124.33.camel@kernel.crashing.org>
+ <20141113091036.4e9ec43d@canb.auug.org.au>
+ <1415833725.5124.53.camel@kernel.crashing.org>
+ <1415839522.5124.58.camel@kernel.crashing.org>
+ <CACxGe6s0CXL2oRKCLhzzycOKWJStxdZsc1pn_X8fLuAqCguBMA@mail.gmail.com>
+ <1415883227.666.6.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Rob Herring <robherring2@gmail.com>,
+ Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,178 +37,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+We have a historical hack that treats missing ranges properties as the
+equivalent of an empty one. This is needed for ancient PowerMac "bad"
+device-trees, and shouldn't be enabled for any other PowerPC platform,
+otherwise we get some nasty layout of devices in sysfs or even
+duplication when a set of otherwise identically named devices is
+created multiple times under a different parent node with no ranges
+property.
 
-If an AFU has a hardware bug that causes it to acknowledge a context
-terminate or remove while that context has outstanding transactions, it
-is possible for the kernel to receive an interrupt for that context
-after we have removed it from the context list.
+This fix is needed for the PowerNV i2c busses to be exposed properly
+and will fix a number of other embedded cases.
 
-The kernel will not be able to demultiplex the interrupt (or worse - if
-we have already reallocated the process handle we could mis-attribute it
-to the new context), and printed a big scary warning.
-
-It did not acknowledge the interrupt, which would effectively halt
-further translation fault processing on the PSL.
-
-This patch makes the warning clearer about the likely cause of the issue
-(i.e. hardware bug) to make it obvious to future AFU designers of what
-needs to be fixed. It also prints out the process handle which can then
-be matched up with hardware and software traces for debugging.
-
-It also acknowledges the interrupt to the PSL with either an address
-error or acknowledge, so that the PSL can continue with other
-translations.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: <stable@vger.kernel.org>
 ---
- drivers/misc/cxl/cxl.h    |  2 +-
- drivers/misc/cxl/irq.c    | 46 +++++++++++++++++++++++++++++-----------------
- drivers/misc/cxl/native.c | 14 +++++++-------
- 3 files changed, 37 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 3a8dd05..fe07b6f 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -620,7 +620,7 @@ int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
- 			    u64 amr);
- int cxl_detach_process(struct cxl_context *ctx);
- 
--int cxl_get_irq(struct cxl_context *ctx, struct cxl_irq_info *info);
-+int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info);
- int cxl_ack_irq(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
- 
- int cxl_check_error(struct cxl_afu *afu);
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index c239272..2858151 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -92,20 +92,13 @@ static irqreturn_t schedule_cxl_fault(struct cxl_context *ctx, u64 dsisr, u64 da
- 	return IRQ_HANDLED;
+V2: Make it less horrendously ugly
+
+V3: use IS_ENABLED()
+
+ drivers/of/address.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index e371825..42e416a 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -403,6 +403,21 @@ static struct of_bus *of_match_bus(struct device_node *np)
+ 	return NULL;
  }
  
--static irqreturn_t cxl_irq(int irq, void *data)
-+static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- {
- 	struct cxl_context *ctx = data;
--	struct cxl_irq_info irq_info;
- 	u64 dsisr, dar;
--	int result;
- 
--	if ((result = cxl_get_irq(ctx, &irq_info))) {
--		WARN(1, "Unable to get CXL IRQ Info: %i\n", result);
--		return IRQ_HANDLED;
--	}
--
--	dsisr = irq_info.dsisr;
--	dar = irq_info.dar;
-+	dsisr = irq_info->dsisr;
-+	dar = irq_info->dar;
- 
- 	pr_devel("CXL interrupt %i for afu pe: %i DSISR: %#llx DAR: %#llx\n", irq, ctx->pe, dsisr, dar);
- 
-@@ -149,9 +142,9 @@ static irqreturn_t cxl_irq(int irq, void *data)
- 	if (dsisr & CXL_PSL_DSISR_An_UR)
- 		pr_devel("CXL interrupt: AURP PTE not found\n");
- 	if (dsisr & CXL_PSL_DSISR_An_PE)
--		return handle_psl_slice_error(ctx, dsisr, irq_info.errstat);
-+		return handle_psl_slice_error(ctx, dsisr, irq_info->errstat);
- 	if (dsisr & CXL_PSL_DSISR_An_AE) {
--		pr_devel("CXL interrupt: AFU Error %.llx\n", irq_info.afu_err);
-+		pr_devel("CXL interrupt: AFU Error %.llx\n", irq_info->afu_err);
- 
- 		if (ctx->pending_afu_err) {
- 			/*
-@@ -163,10 +156,10 @@ static irqreturn_t cxl_irq(int irq, void *data)
- 			 */
- 			dev_err_ratelimited(&ctx->afu->dev, "CXL AFU Error "
- 					    "undelivered to pe %i: %.llx\n",
--					    ctx->pe, irq_info.afu_err);
-+					    ctx->pe, irq_info->afu_err);
- 		} else {
- 			spin_lock(&ctx->lock);
--			ctx->afu_err = irq_info.afu_err;
-+			ctx->afu_err = irq_info->afu_err;
- 			ctx->pending_afu_err = 1;
- 			spin_unlock(&ctx->lock);
- 
-@@ -182,24 +175,43 @@ static irqreturn_t cxl_irq(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
++static int of_empty_ranges_quirk(void)
 +{
-+	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
-+		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
-+	else
-+		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
++	if (IS_ENABLED(CONFIG_PPC)) {
++		/* To save cycles, we cache the result */
++		static int quirk_state = -1;
 +
-+	return IRQ_HANDLED;
++		if (quirk_state < 0)
++			quirk_state =
++				of_machine_is_compatible("Power Macintosh") ||
++				of_machine_is_compatible("MacRISC");
++		return quirk_state;
++	}
++	return false;
 +}
 +
- static irqreturn_t cxl_irq_multiplexed(int irq, void *data)
- {
- 	struct cxl_afu *afu = data;
- 	struct cxl_context *ctx;
-+	struct cxl_irq_info irq_info;
- 	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
- 	int ret;
- 
-+	if ((ret = cxl_get_irq(afu, &irq_info))) {
-+		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
-+		return fail_psl_irq(afu, &irq_info);
-+	}
-+
- 	rcu_read_lock();
- 	ctx = idr_find(&afu->contexts_idr, ph);
- 	if (ctx) {
--		ret = cxl_irq(irq, ctx);
-+		ret = cxl_irq(irq, ctx, &irq_info);
- 		rcu_read_unlock();
- 		return ret;
+ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 			    struct of_bus *pbus, __be32 *addr,
+ 			    int na, int ns, int pna, const char *rprop)
+@@ -428,12 +443,10 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 	 * This code is only enabled on powerpc. --gcl
+ 	 */
+ 	ranges = of_get_property(parent, rprop, &rlen);
+-#if !defined(CONFIG_PPC)
+-	if (ranges == NULL) {
++	if (ranges == NULL && !of_empty_ranges_quirk()) {
+ 		pr_err("OF: no ranges; cannot translate\n");
+ 		return 1;
  	}
- 	rcu_read_unlock();
- 
--	WARN(1, "Unable to demultiplex CXL PSL IRQ\n");
--	return IRQ_HANDLED;
-+	WARN(1, "Unable to demultiplex CXL PSL IRQ for PE %i DSISR %.16llx DAR"
-+		" %.16llx\n(Possible AFU HW issue - was a term/remove acked"
-+		" with outstanding transactions?)\n", ph, irq_info.dsisr,
-+		irq_info.dar);
-+	return fail_psl_irq(afu, &irq_info);
- }
- 
- static irqreturn_t cxl_irq_afu(int irq, void *data)
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index d47532e..9a5a442 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -637,18 +637,18 @@ int cxl_detach_process(struct cxl_context *ctx)
- 	return detach_process_native_afu_directed(ctx);
- }
- 
--int cxl_get_irq(struct cxl_context *ctx, struct cxl_irq_info *info)
-+int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
- {
- 	u64 pidtid;
- 
--	info->dsisr = cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An);
--	info->dar = cxl_p2n_read(ctx->afu, CXL_PSL_DAR_An);
--	info->dsr = cxl_p2n_read(ctx->afu, CXL_PSL_DSR_An);
--	pidtid = cxl_p2n_read(ctx->afu, CXL_PSL_PID_TID_An);
-+	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
-+	info->dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
-+	info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
-+	pidtid = cxl_p2n_read(afu, CXL_PSL_PID_TID_An);
- 	info->pid = pidtid >> 32;
- 	info->tid = pidtid & 0xffffffff;
--	info->afu_err = cxl_p2n_read(ctx->afu, CXL_AFU_ERR_An);
--	info->errstat = cxl_p2n_read(ctx->afu, CXL_PSL_ErrStat_An);
-+	info->afu_err = cxl_p2n_read(afu, CXL_AFU_ERR_An);
-+	info->errstat = cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
- 
- 	return 0;
- }
--- 
-2.1.1
+-#endif /* !defined(CONFIG_PPC) */
+ 	if (ranges == NULL || rlen == 0) {
+ 		offset = of_read_number(addr, na);
+ 		memset(addr, 0, pna * 4);
