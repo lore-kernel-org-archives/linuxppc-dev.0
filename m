@@ -1,26 +1,33 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB1841A01A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 07:35:47 +1100 (AEDT)
-Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
- [209.85.215.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BB3B414011B
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2014 07:35:46 +1100 (AEDT)
-Received: by mail-la0-f53.google.com with SMTP id pn19so2047799lab.26
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2014 12:35:43 -0800 (PST)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: netdev@vger.kernel.org
-Subject: [PATCH net-next] PPC: bpf_jit_comp: Unify BPF_MOD | BPF_X and BPF_DIV
- | BPF_X
-Date: Mon, 17 Nov 2014 23:07:41 +0300
-Message-Id: <1416254861-3879-1-git-send-email-kda@linux-powerpc.org>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- Denis Kirjanov <kda@linux-powerpc.org>, Daniel Borkmann <dborkman@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E824E1A010D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 08:44:08 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 17 Nov 2014 14:44:06 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 125611FF0027
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 14:32:49 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAHLi4lt44040194
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 22:44:04 +0100
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAHLi3BC002308
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 14:44:04 -0700
+Message-ID: <546A6C23.1080800@linux.vnet.ibm.com>
+Date: Mon, 17 Nov 2014 15:44:03 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 0/6] pseries: Move memory hotplug to the kernel
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,68 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reduce duplicated code by unifying
-BPF_ALU | BPF_MOD | BPF_X and BPF_ALU | BPF_DIV | BPF_X
+In order to better support device hotplug (cpu, memory, and pci) in the
+PowerVM and PowerKVM environments, the handling of device hotplug
+could be updated so that the act of hotplugging a device occurs entirely
+in the kernel. This patch set begins to address this by moving
+memory hotplug to the kernel. Patches to follow will do the same
+for cpu and pci devices.
 
-CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
-CC: Daniel Borkmann<dborkman@redhat.com>
-CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
----
- arch/powerpc/net/bpf_jit_comp.c | 27 ++++++++-------------------
- 1 file changed, 8 insertions(+), 19 deletions(-)
+To provide background, the current handling of memory hotplug is
+handled by the drmgr command. This command is invoked when memory
+add/remove requests are made at the HMC and conveyed to a partition
+through the RSCT framework. The drmgr command then performs parts
+of the hotplug in user-space and makes requests to the kernel to perform
+other pieces. This is not really ideal, we can do everything in the
+kernel and do it faster.
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index d3fa80d..1ca125b 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -181,6 +181,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 			}
- 			break;
- 		case BPF_ALU | BPF_MOD | BPF_X: /* A %= X; */
-+		case BPF_ALU | BPF_DIV | BPF_X: /* A /= X; */
- 			ctx->seen |= SEEN_XREG;
- 			PPC_CMPWI(r_X, 0);
- 			if (ctx->pc_ret0 != -1) {
-@@ -190,9 +191,13 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 				PPC_LI(r_ret, 0);
- 				PPC_JMP(exit_addr);
- 			}
--			PPC_DIVWU(r_scratch1, r_A, r_X);
--			PPC_MUL(r_scratch1, r_X, r_scratch1);
--			PPC_SUB(r_A, r_A, r_scratch1);
-+			if (code == (BPF_ALU | BPF_MOD | BPF_X)) {
-+				PPC_DIVWU(r_scratch1, r_A, r_X);
-+				PPC_MUL(r_scratch1, r_X, r_scratch1);
-+				PPC_SUB(r_A, r_A, r_scratch1);
-+			} else {
-+				PPC_DIVWU(r_A, r_A, r_X);
-+			}
- 			break;
- 		case BPF_ALU | BPF_MOD | BPF_K: /* A %= K; */
- 			PPC_LI32(r_scratch2, K);
-@@ -200,22 +205,6 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
- 			PPC_SUB(r_A, r_A, r_scratch1);
- 			break;
--		case BPF_ALU | BPF_DIV | BPF_X: /* A /= X; */
--			ctx->seen |= SEEN_XREG;
--			PPC_CMPWI(r_X, 0);
--			if (ctx->pc_ret0 != -1) {
--				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
--			} else {
--				/*
--				 * Exit, returning 0; first pass hits here
--				 * (longer worst-case code size).
--				 */
--				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
--				PPC_LI(r_ret, 0);
--				PPC_JMP(exit_addr);
--			}
--			PPC_DIVWU(r_A, r_A, r_X);
--			break;
- 		case BPF_ALU | BPF_DIV | BPF_K: /* A /= K */
- 			if (K == 1)
- 				break;
--- 
-2.1.0
+In this patchset, hotplug events will now be communicated to the kernel
+in the form of rtas hotplug events. For PowerKVM systems this is done
+by qemu using the ras epow interrupt. For PowerVM systems the drmgr
+command will be updated to create a rtas hotplug event and send it to
+the kernel via a new /sys/kernel/dlpar interface. Both of these
+entry points for hotplug rtas events then call a common routine
+for handling rtas hotplug events.
+
+-Nathan
+
+Patch 1/6
+- Add definition of hotplug rtas event sections.
+
+Patch 2/6
+- Update struct of_drconf_cell to use __be64/__be32
+ 
+Patch 3/6
+- Export the dlpar_[acquire|release]drc() routines.
+
+Patch 4/6
+- Create the new /sys/kernel/dlpar interface
+
+Patch 5/6
+- Implement memory hotplug add in the kernel.
+
+Patch 6/6
+- Implement memory hotplug remove in the kernel.
+
+ include/asm/prom.h                 |   10 
+ include/asm/rtas.h                 |   26 ++
+ platforms/pseries/dlpar.c          |   72 +++++
+ platforms/pseries/hotplug-memory.c |  469 ++++++++++++++++++++++++++++++++++++-
+ platforms/pseries/pseries.h        |   12 
+ 5 files changed, 576 insertions(+), 13 deletions(-)
