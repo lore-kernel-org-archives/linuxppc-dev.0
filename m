@@ -1,25 +1,32 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0DB1A010D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 01:13:46 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-Date: Mon, 17 Nov 2014 15:13:16 +0100
-Message-ID: <1463511.o4kE8TX3Bd@wuerfel>
-In-Reply-To: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <lorenzo.pieralisi@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id E753D1A01E2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 02:03:47 +1100 (AEDT)
+Date: Mon, 17 Nov 2014 15:03:38 +0000
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [RFC PATCH 09/16] PCI: Associate .get_msi_ctrl() with
+ pci_host_bridge
+Message-ID: <20141117150338.GA22515@e102568-lin.cambridge.arm.com>
 References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-10-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1416219710-26088-10-git-send-email-wangyijing@huawei.com>
+Content-Type: text/plain; charset=WINDOWS-1252
 Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
- Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
- linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org
+ Russell King <linux@arm.linux.org.uk>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "huxinwei@huawei.com" <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Yijing Wang <wangyijing0307@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 17 November 2014 18:21:34 Yijing Wang wrote:
-> This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
-> arm PCI domain cleanup patches, link: 
-> https://patchwork.ozlabs.org/patch/407585/
-> 
-> Current pci scan interfaces like pci_scan_root_bus() and directly
-> call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
-> Some platform infos like PCI domain and msi_chip have to be
-> associated to PCI bus by some arch specific function.
-> We want to make a generic pci_host_bridge, and make it hold
-> the platform infos or hook. Then we could eliminate the lots
-> of arch pci_domain_nr, also we could associate some platform 
-> ops something like pci_get_msi_chip(struct pci_dev *dev)
-> with pci_host_bridge to avoid introduce arch weak functions.
-> 
-> This RFC version not for all platforms, just applied the new
-> scan interface in x86/arm/powerpc/ia64, I will refresh other
-> platforms after the core pci scan interfaces are ok.
+On Mon, Nov 17, 2014 at 10:21:43AM +0000, Yijing Wang wrote:
+> From: Yijing Wang <wangyijing0307@gmail.com>
+>=20
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+> ---
+>  drivers/pci/host-bridge.c |    1 +
+>  include/linux/pci.h       |    2 ++
+>  2 files changed, 3 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+> index 49b6c21..872cae1 100644
+> --- a/drivers/pci/host-bridge.c
+> +++ b/drivers/pci/host-bridge.c
+> @@ -58,6 +58,7 @@ struct pci_host_bridge *pci_create_host_bridge(
+>  =09host->dev.parent =3D parent;
+>  =09INIT_LIST_HEAD(&host->windows);
+>  =09host->dev.release =3D pci_release_host_bridge_dev;
+> +=09host->get_msi_ctrl =3D info->get_msi_ctrl;
+> =20
+>  =09/* this is hack, just for build, will be removed later*/
+>  =09b =3D kzalloc(sizeof(*b), GFP_KERNEL);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index a51f5f5..af1ee86 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -408,6 +408,7 @@ struct pci_host_bridge {
+>  =09int domain;
+>  =09void *sysdata;
+>  =09struct pci_ops *ops;
+> +=09struct msi_controller *(*get_msi_ctrl)(struct pci_dev *pdev);
+>  =09void (*release_fn)(struct pci_host_bridge *);
+>  =09void *release_data;
+>  };
+> @@ -416,6 +417,7 @@ struct pci_host_info {
+>  =09u8 res_type;
+>  =09void *arg;
+>  =09struct list_head *resources; /*just for build, will clean up later */
+> +=09struct msi_controller *(*get_msi_ctrl)(struct pci_dev *pdev);
+>  =09int (*init_res)(struct pci_host_bridge *host,=20
+>  =09=09=09struct pci_host_info *info);
+>  };
 
-I think overall this is a good direction to take, in particular
-moving more things into struct pci_host_bridge so we can
-slim down the architecture specific code.
+Where would you use the get_msi_ctrl pointer then ? Wasn't it better
+to wait for this patchset to take shape before adding more churn to
+the ARM (and other archs) pci_sys_data structure and consequently add
+another pcibios call to achieve what the get_msi_ctrl pointer is there to
+achieve (ie making msi_controller retrieval arch independent ?)
 
-I don't particularly like the way you use the 'pci_host_info'
-to pass callback pointers and some of the generic information.
-This duplicates some of the issues we are currently trying
-to untangle in the arm32 code to make drivers easier to share
-between architectures.
+I just do not see what the pci_sys_data intermediate step buys you if
+we consider the approach taken in this patch as the proper solution.
 
-As a general approach, I'd rather see generic helper functions
-being exported by the PCI core that a driver may or may not
-call. 
-The way you split the interface between things that happen
-before scanning the buses (pci_create_host_bridge) and
-the actual scanning (__pci_create_root_bus, pci_scan_child_bus)
-seems very helpful and I think we can expand that concept further:
-
-- The normal pci_create_host_bridge() function can contain
-  all of the DT scanning functions (finding bus/mem/io resources, 
-  finding the msi-parent), while drivers that don't depend on DT
-  for this information can call the same function and fill the
-  same things after they have the pci_host_bridge pointer.
-
-- If a driver needs to set up mapping windows, it can do that after
-  calling pci_create_host_bridge(). E.g. all the dw_pcie glue drivers
-  can call a dw_pcie_setup_windows() function that takes the resources
-  out of the pci_host_bridge pointer before the bus is scanned.
-
-- The ACPI code can have a completely different way of creating
-  a struct pci_host_bridge, which is also passed into the same
-  bus scanning functions, but doesn't have to come from
-  pci_create_host_bridge.
-
-- The PowerPC of_scan_bus function can take the same pci_host_bridge
-  pointer that comes from pci_create_host_bridge(), but we'd call
-  either pci_create_root_bus or of_scan_bus instead of calling
-  of_scan_bus through an indirect pointer from pci_create_root_bus.
-
-	Arnd
+Thanks,
+Lorenzo
