@@ -2,14 +2,14 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20AB91A01C8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 20:41:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1CF31A1EA6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 20:41:03 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 06/16] PCI: Use u32 type to combine PCI domain and bus
- number
-Date: Mon, 17 Nov 2014 18:21:40 +0800
-Message-ID: <1416219710-26088-7-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 11/16] x86/PCI: Use pci_scan_host_bridge() instead of
+ pci_create_root_bus()
+Date: Mon, 17 Nov 2014 18:21:45 +0800
+Message-ID: <1416219710-26088-12-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
 References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -30,105 +30,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, we use int type for bus number in
-pci_create_root_bus() and pci_scan_root_bus().
-Because bus number is <= 255, so we could
-change the bus number argument type to u32,
-and combine PCI domain and bus number, we will
-save the domain number in pci_host_bridge in
-later patch, and eliminate the arch specific
-pci_domain_nr().
+Now we could use pci_scan_host_bridge() to refactor
+pci_acpi_scan_root().
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/pci/probe.c      |   11 ++++++-----
- include/linux/pci.h      |    4 ++--
- include/uapi/linux/pci.h |    3 +++
- 3 files changed, 11 insertions(+), 7 deletions(-)
+ arch/x86/pci/acpi.c   |   65 ++++++++++++++++++++++++++++++-------------------
+ arch/x86/pci/common.c |   23 ++++++++++++-----
+ 2 files changed, 56 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 623bfff..adf4d09 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1895,7 +1895,7 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
- {
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index cfd1b13..528fca3 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -13,6 +13,7 @@ struct pci_root_info {
+ 	unsigned int res_num;
+ 	struct resource *res;
+ 	resource_size_t *res_offset;
++	struct acpi_pci_root *root;
+ 	struct pci_sysdata sd;
+ #ifdef	CONFIG_PCI_MMCONFIG
+ 	bool mcfg_added;
+@@ -467,16 +468,40 @@ static void probe_pci_root_info(struct pci_root_info *info,
+ 				info);
  }
  
--struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
-+struct pci_bus *pci_create_root_bus(struct device *parent, u32 db,
- 		struct pci_ops *ops, void *sysdata, struct list_head *resources)
++static int pci_acpi_init_res(struct pci_host_bridge *host,
++		struct pci_host_info *arg)
++{
++	struct pci_sysdata *sd = arg->arg;
++	struct pci_root_info *info = container_of(sd,
++			struct pci_root_info, sd);
++
++	/* insert busn res at first */
++	pci_add_resource(&host->windows,  &info->root->secondary);
++	/*
++	 * _CRS with no apertures is normal, so only fall back to
++	 * defaults or native bridge info if we're ignoring _CRS.
++	 */
++	if (pci_use_crs)
++		add_resources(info, &host->windows);
++	else {
++		free_pci_root_info_res(info);
++		x86_pci_root_bus_resources(host->busnum, &host->windows);
++	}
++	
++	return 0;
++}
++
+ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
  {
- 	int error;
-@@ -1906,6 +1906,7 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
- 	resource_size_t offset;
- 	char bus_addr[64];
- 	char *fmt;
-+	u8	bus = PCI_BUSNUM(db);
+ 	struct acpi_device *device = root->device;
+ 	struct pci_root_info *info;
+ 	int domain = root->segment;
+ 	int busnum = root->secondary.start;
+-	LIST_HEAD(resources);
+ 	struct pci_bus *bus;
+ 	struct pci_sysdata *sd;
+ 	int node;
++	struct pci_host_info arg;
++	struct pci_host_bridge *host;
  
- 	b = pci_alloc_bus(NULL);
- 	if (!b)
-@@ -2063,7 +2064,7 @@ void pci_bus_release_busn_res(struct pci_bus *b)
- 			res, ret ? "can not be" : "is");
- }
- 
--struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
-+struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
- 		struct pci_ops *ops, void *sysdata, struct list_head *resources)
- {
- 	struct pci_host_bridge_window *window;
-@@ -2084,7 +2085,7 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
- 			}
- 	}
- 
--	b = pci_create_root_bus(parent, bus, ops, sysdata, 
-+	b = pci_create_root_bus(parent, db, ops, sysdata, 
- 			resources ? resources : &default_res);
- 	if (!b)
+ 	if (pci_ignore_seg)
+ 		domain = 0;
+@@ -506,10 +531,14 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
  		return NULL;
-@@ -2092,8 +2093,8 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
- 	if (!found) {
- 		dev_info(&b->dev,
- 		 "No busn resource found for root bus, will use [bus %02x-ff]\n",
--			bus);
--		pci_bus_insert_busn_res(b, bus, 255);
-+			PCI_BUSNUM(db));
-+		pci_bus_insert_busn_res(b, PCI_BUSNUM(db), 255);
  	}
  
- 	max = pci_scan_child_bus(b);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 4daef65..8b11b38 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -767,13 +767,13 @@ void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
- void pcibios_scan_specific_bus(int busn);
- struct pci_bus *pci_find_bus(int domain, int busnr);
- void pci_bus_add_devices(const struct pci_bus *bus);
--struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
-+struct pci_bus *pci_create_root_bus(struct device *parent, u32 bus,
- 				    struct pci_ops *ops, void *sysdata,
- 				    struct list_head *resources);
- int pci_bus_insert_busn_res(struct pci_bus *b, int bus, int busmax);
- int pci_bus_update_busn_res_end(struct pci_bus *b, int busmax);
- void pci_bus_release_busn_res(struct pci_bus *b);
--struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
-+struct pci_bus *pci_scan_root_bus(struct device *parent, u32 bus,
- 					     struct pci_ops *ops, void *sysdata,
- 					     struct list_head *resources);
- struct pci_bus *pci_add_new_bus(struct pci_bus *parent, struct pci_dev *dev,
-diff --git a/include/uapi/linux/pci.h b/include/uapi/linux/pci.h
-index 3c292bc..89c6f15 100644
---- a/include/uapi/linux/pci.h
-+++ b/include/uapi/linux/pci.h
-@@ -30,6 +30,9 @@
- #define PCI_DEVFN(slot, func)	((((slot) & 0x1f) << 3) | ((func) & 0x07))
- #define PCI_SLOT(devfn)		(((devfn) >> 3) & 0x1f)
- #define PCI_FUNC(devfn)		((devfn) & 0x07)
-+#define PCI_DOMAIN(db)		((db) >> 16)
-+#define PCI_BUSNUM(db)		((db) & 0xffff)
-+#define PCI_DOMBUS(domain, bus)		(((domain) << 16) | (bus))
++	info->root = root;
+ 	sd = &info->sd;
+ 	sd->domain = domain;
+ 	sd->node = node;
+ 	sd->companion = device;
++	init_pci_host_info(&arg);
++	arg.arg = sd;
++	arg.init_res = pci_acpi_init_res;
  
- /* Ioctls for /proc/bus/pci/X/Y nodes. */
- #define PCIIOC_BASE		('P' << 24 | 'C' << 16 | 'I' << 8)
+ 	bus = pci_find_bus(domain, busnum);
+ 	if (bus) {
+@@ -522,33 +551,19 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ 	} else {
+ 		probe_pci_root_info(info, device, busnum, domain);
+ 
+-		/* insert busn res at first */
+-		pci_add_resource(&resources,  &root->secondary);
+-		/*
+-		 * _CRS with no apertures is normal, so only fall back to
+-		 * defaults or native bridge info if we're ignoring _CRS.
+-		 */
+-		if (pci_use_crs)
+-			add_resources(info, &resources);
+-		else {
+-			free_pci_root_info_res(info);
+-			x86_pci_root_bus_resources(busnum, &resources);
++		if (!setup_mcfg_map(info, domain, (u8)root->secondary.start,
++				    (u8)root->secondary.end, root->mcfg_addr)) {
++			host = pci_scan_host_bridge(NULL, PCI_DOMBUS(domain, busnum), 
++					&pci_root_ops, &arg);
++			bus = host->bus;
+ 		}
+ 
+-		if (!setup_mcfg_map(info, domain, (u8)root->secondary.start,
+-				    (u8)root->secondary.end, root->mcfg_addr))
+-			bus = pci_create_root_bus(NULL, busnum, &pci_root_ops,
+-						  sd, &resources);
+-
+-		if (bus) {
+-			pci_scan_child_bus(bus);
+-			pci_set_host_bridge_release(
+-				to_pci_host_bridge(bus->bridge),
++		if (bus) 
++			pci_set_host_bridge_release(host,
+ 				release_pci_root_info, info);
+-		} else {
+-			pci_free_resource_list(&resources);
++		else 
+ 			__release_pci_root_info(info);
+-		}
++		
+ 	}
+ 
+ 	/* After the PCI-E bus has been walked and all devices discovered,
+@@ -568,7 +583,7 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ 
+ int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	struct pci_sysdata *sd = bridge->bus->sysdata;
++	struct pci_sysdata *sd = bridge->sysdata;
+ 
+ 	ACPI_COMPANION_SET(&bridge->dev, sd->companion);
+ 	return 0;
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index b16632b..0032065 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -456,11 +456,18 @@ void __init dmi_check_pciprobe(void)
+ 	dmi_check_system(pciprobe_dmi_table);
+ }
+ 
++static int pcibios_init_res(struct pci_host_bridge *host,
++		struct pci_host_info *info)
++{
++	x86_pci_root_bus_resources(host->busnum, &host->windows);
++	return 0;
++}
++
+ void pcibios_scan_root(int busnum)
+ {
+-	struct pci_bus *bus;
+ 	struct pci_sysdata *sd;
+-	LIST_HEAD(resources);
++	struct pci_host_info info;
++	struct pci_host_bridge *host;
+ 
+ 	sd = kzalloc(sizeof(*sd), GFP_KERNEL);
+ 	if (!sd) {
+@@ -468,14 +475,16 @@ void pcibios_scan_root(int busnum)
+ 		return;
+ 	}
+ 	sd->node = x86_pci_root_bus_node(busnum);
+-	x86_pci_root_bus_resources(busnum, &resources);
++	init_pci_host_info(&info);
++	info.init_res = pcibios_init_res;
++	info.arg = sd;
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x)\n", busnum);
+-	bus = pci_scan_root_bus(NULL, busnum, &pci_root_ops, sd, &resources);
+-	if (bus) {
+-		pci_bus_add_devices(bus);
++	host = pci_scan_host_bridge(NULL, PCI_DOMBUS(0, busnum),
++		   	&pci_root_ops, &info);
++	if (host) {
++		pci_bus_add_devices(host->bus);
+ 		return;
+ 	} 
+-	pci_free_resource_list(&resources);
+ 	kfree(sd);
+ }
+ 
 -- 
 1.7.1
