@@ -1,29 +1,27 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 160BF1A1FC7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:31:36 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EB06E1400F1
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2014 21:31:34 +1100 (AEDT)
-Message-ID: <5469CE79.7090406@Freescale.com>
-Date: Mon, 17 Nov 2014 04:31:21 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1AD221A0407
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:57:49 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out of
+ pci_create_root_bus()
+Date: Mon, 17 Nov 2014 11:56:36 +0100
+Message-ID: <2507218.mHliopJb05@wuerfel>
+In-Reply-To: <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@Freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/mpc85xx: Add DPAA Q/BMan support to device
- tree(s)
-References: <1415870513-10632-1-git-send-email-Emilian.Medve@Freescale.com>
- <1415914923.15957.64.camel@freescale.com>
-In-Reply-To: <1415914923.15957.64.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, Geoff Thorpe <Geoff.Thorpe@Freescale.com>,
- Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
- Chunhe Lan <Chunhe.Lan@Freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
+ linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Wuyun <wuyun.wu@huawei.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,154 +31,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
-
-
-On 11/13/2014 03:42 PM, Scott Wood wrote:
-> On Thu, 2014-11-13 at 03:21 -0600, Emil Medve wrote:
->> From: Kumar Gala <galak@kernel.crashing.org>
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
->> Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
->> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
->> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
->> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
->> Change-Id: If643fa5ba0a903aef8f5056a2c90ebecc995b760
+On Monday 17 November 2014 18:21:41 Yijing Wang wrote:
+> There are some common PCI infos like domain, msi_controller, these
+> infos are saved in arch PCI sysdata, and lots arch specific functions
+> like pci_domain_nr() and pcibios_msi_controller() required.
+> We could separate pci_host_bridge creation out of pci_create_root_bus(),
+> then we could put the common infos in, then we could eliminate
+> the arch specifc functions.
 > 
-> I suspect these patches are changed quite a bit from Kumar's version...
-
-Across SDK releases I've been trying retain the authors names and the
-'Signed-off-by' list is the only place that can accommodate them all.
-Kumar is the first author, and besides this exercise the most significant
-
-> It's good to note changes after the listed author has stopped being
-> involved, so they don't get the blame for anything they wouldn't have
-> put in there.
-
-Bah. Most of the sordid history is lost
-
-> Why is the devicetree list not CCed?
-
-For no good reason. Will add it for the next version
-
->> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
->> index 6188583..48c3fb4 100644
->> --- a/arch/powerpc/boot/dts/b4qds.dtsi
->> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
->> @@ -1,7 +1,7 @@
->>  /*
->>   * B4420DS Device Tree Source
->>   *
->> - * Copyright 2012 Freescale Semiconductor, Inc.
->> + * Copyright 2012 - 2014 Freescale Semiconductor, Inc.
->>   *
->>   * Redistribution and use in source and binary forms, with or without
->>   * modification, are permitted provided that the following conditions are met:
->> @@ -38,6 +38,7 @@
->>  	#address-cells = <2>;
->>  	#size-cells = <2>;
->>  	interrupt-parent = <&mpic>;
->> +	reserved-ranges;
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+> ---
+>  drivers/pci/host-bridge.c |   99 +++++++++++++++++++++++++++++++++
+>  drivers/pci/probe.c       |  134 ++++++++++++++++----------------------------
+>  include/linux/pci.h       |   11 +++-
+>  3 files changed, 158 insertions(+), 86 deletions(-)
 > 
-> I don't see reserved-ranges documented anywhere,
+> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+> index 0e5f3c9..e31604f 100644
+> --- a/drivers/pci/host-bridge.c
+> +++ b/drivers/pci/host-bridge.c
+> @@ -8,6 +8,105 @@
+>  
+>  #include "pci.h"
+>  
+> +LIST_HEAD(pci_host_bridge_list);
+> +DECLARE_RWSEM(pci_host_bridge_sem);
 
-Some digging through the git log will add some context to it
+Unless the pci_host_bridge_sem is accessed thousands of times per second,
+it's normally better to use a simple mutex instead.
 
-> and from the code in arch/powerpc I don't see how it has any effect
-> when empty.
+> +static struct resource busn_resource = {
+> +	.name	= "PCI busn",
+> +	.start	= 0,
+> +	.end	= 255,
+> +	.flags	= IORESOURCE_BUS,
+> +};
 
-When I first wrote these nodes there was a bug that got fixed since
-here: 'edba274 powerpc: fix skipping call to
-early_init_fdt_scan_reserved_mem'. I'll remove the property in the next
-version of the patch
+I think it would be better to require callers to pass the bus resource
+down to the function.
 
->> +	reserved-memory {
->> +		#address-cells = <2>;
->> +		#size-cells = <2>;
->> +		ranges;
->> +
->> +		bman_fbpr: bman-fbpr {
->> +			compatible = "fsl,bman-fbpr";
->> +			alloc-ranges = <0 0 0xffff 0xffffffff>;
->> +			size = <0 0x1000000>;
->> +			alignment = <0 0x1000000>;
->> +			no-map;
->> +			reusable;
->> +		};
->> +		qman_fqd: qman-fqd {
->> +			compatible = "fsl,qman-fqd";
->> +			alloc-ranges = <0 0 0xffff 0xffffffff>;
->> +			size = <0 0x400000>;
->> +			alignment = <0 0x400000>;
->> +			no-map;
->> +			reusable;
->> +		};
->> +		qman_pfdr: qman-pfdr {
->> +			compatible = "fsl,qman-pfdr";
->> +			alloc-ranges = <0 0 0xffff 0xffffffff>;
->> +			size = <0 0x2000000>;
->> +			alignment = <0 0x2000000>;
->> +			no-map;
->> +			reusable;
->> +		};
->> +	};
-> 
-> no-map and reusable don't make sense together.  How can the OS reuse the
-> memory if it can't map it?
+> +struct pci_host_bridge *pci_create_host_bridge(
+> +		struct device *parent, u32 db, 
+> +		struct pci_ops *ops, void *sysdata, 
+> +		struct list_head *resources)
+> +{
 
-Perhaps I've been reading/speculating(?) too much about it. Now granted
-the code is still young (?), but in between "under the control of the
-device driver using the region" and "the device driver(s) owning the
-region need to be able to reclaim it back" it sort of made sense
+Do we still need to pass the 'sysdata' in here? If we are guaranteed to
+have a device pointer, we should always be able to get the driver
+private data from dev_get_drvdata(host->dev->parent).
 
-> no-map is burdensome (and I believe not yet implemented) on mpc85xx,
-> where we want to use huge TLB entries to cover all of (low) memory.  Is
-> it really needed?
+> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
+> +	if (!host)
+> +		return NULL;
 
-I'm thinking no-map would be part of having/making this reserved memory
-into a different coherency domain then the... everything else
+devm_kzalloc maybe?
 
-> What do we gain from specifying reusable here?
+> +	if (!resources) {
+> +		/* Use default IO/MEM/BUS resources*/
+> +		pci_add_resource(&host->windows, &ioport_resource);
+> +		pci_add_resource(&host->windows, &iomem_resource);
+> +		pci_add_resource(&host->windows, &busn_resource);
+> +	} else {
+> +		list_for_each_entry_safe(window, n, resources, list)
+> +			list_move_tail(&window->list, &host->windows);
+> +	}
 
-I guess the obvious of having this memory usable for something else when
-the B/QMan drivers don't use it
+I think we should assume that the correct resources are passed. You
+could add a wrapper around this function to convert old platforms
+though.
 
-> How is it actually supposed to work?
+> +EXPORT_SYMBOL(pci_create_host_bridge);
 
-You mean how should one implement 'reusable'?
+EXPORT_SYMBOL_GPL() maybe?
 
->> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
->> index 86161ae..0f56263 100644
->> --- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
->> @@ -1,7 +1,7 @@
->>  /*
->>   * B4420 Silicon/SoC Device Tree Source (post include)
->>   *
->> - * Copyright 2012 Freescale Semiconductor, Inc.
->> + * Copyright 2012 - 2014 Freescale Semiconductor, Inc.
->>   *
->>   * Redistribution and use in source and binary forms, with or without
->>   * modification, are permitted provided that the following conditions are met:
->> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
->> index 338af7e..f392949 100644
->> --- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
->> @@ -1,7 +1,7 @@
->>  /*
->>   * B4420 Silicon/SoC Device Tree Source (pre include)
->>   *
->> - * Copyright 2012 Freescale Semiconductor, Inc.
->> + * Copyright 2012 - 2014 Freescale Semiconductor, Inc.
->>   *
->>   * Redistribution and use in source and binary forms, with or without
->>   * modification, are permitted provided that the following conditions are met:
-> 
-> Why are you updating the copyright year on files you didn't change?
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 8b11b38..daa7f40 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
+>  struct pci_host_bridge {
+>  	struct device dev;
+>  	struct pci_bus *bus;		/* root bus */
+> +	struct list_head list;
+>  	struct list_head windows;	/* pci_host_bridge_windows */
+> +	int busnum;
 
-This leaked in here as I was splitting patches. I'll remove it here and
-elsewhere
+The busnum should already be implied through the bus resource.
 
-
-Cheers,
+	Arnd
