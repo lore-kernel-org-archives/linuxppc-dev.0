@@ -1,27 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1AD221A0407
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:57:49 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out of
- pci_create_root_bus()
-Date: Mon, 17 Nov 2014 11:56:36 +0100
-Message-ID: <2507218.mHliopJb05@wuerfel>
-In-Reply-To: <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+Return-Path: <lorenzo.pieralisi@arm.com>
+Received: from service88.mimecast.com (service88.mimecast.com [195.130.217.12])
+ by lists.ozlabs.org (Postfix) with ESMTP id 711F11A0297
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 23:10:00 +1100 (AEDT)
+Date: Mon, 17 Nov 2014 12:08:39 +0000
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [RFC PATCH 14/16] arm/PCI: Introduce pci_get_domain_nr()
+Message-ID: <20141117120839.GA22241@e102568-lin.cambridge.arm.com>
 References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-15-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1416219710-26088-15-git-send-email-wangyijing@huawei.com>
+Content-Type: text/plain; charset=WINDOWS-1252
 Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
- Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
- linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Wuyun <wuyun.wu@huawei.com>, linux-arm-kernel@lists.infradead.org
+ Russell King <linux@arm.linux.org.uk>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "huxinwei@huawei.com" <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,91 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 17 November 2014 18:21:41 Yijing Wang wrote:
-> There are some common PCI infos like domain, msi_controller, these
-> infos are saved in arch PCI sysdata, and lots arch specific functions
-> like pci_domain_nr() and pcibios_msi_controller() required.
-> We could separate pci_host_bridge creation out of pci_create_root_bus(),
-> then we could put the common infos in, then we could eliminate
-> the arch specifc functions.
-> 
+On Mon, Nov 17, 2014 at 10:21:48AM +0000, Yijing Wang wrote:
 > Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 > ---
->  drivers/pci/host-bridge.c |   99 +++++++++++++++++++++++++++++++++
->  drivers/pci/probe.c       |  134 ++++++++++++++++----------------------------
->  include/linux/pci.h       |   11 +++-
->  3 files changed, 158 insertions(+), 86 deletions(-)
-> 
-> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
-> index 0e5f3c9..e31604f 100644
-> --- a/drivers/pci/host-bridge.c
-> +++ b/drivers/pci/host-bridge.c
-> @@ -8,6 +8,105 @@
->  
->  #include "pci.h"
->  
-> +LIST_HEAD(pci_host_bridge_list);
-> +DECLARE_RWSEM(pci_host_bridge_sem);
-
-Unless the pci_host_bridge_sem is accessed thousands of times per second,
-it's normally better to use a simple mutex instead.
-
-> +static struct resource busn_resource = {
-> +	.name	= "PCI busn",
-> +	.start	= 0,
-> +	.end	= 255,
-> +	.flags	= IORESOURCE_BUS,
-> +};
-
-I think it would be better to require callers to pass the bus resource
-down to the function.
-
-> +struct pci_host_bridge *pci_create_host_bridge(
-> +		struct device *parent, u32 db, 
-> +		struct pci_ops *ops, void *sysdata, 
-> +		struct list_head *resources)
+>  arch/arm/include/asm/mach/pci.h |    9 +++++++++
+>  arch/arm/kernel/bios32.c        |    8 ++++++--
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/arm/include/asm/mach/pci.h b/arch/arm/include/asm/mach/=
+pci.h
+> index f19f627..370b3bd 100644
+> --- a/arch/arm/include/asm/mach/pci.h
+> +++ b/arch/arm/include/asm/mach/pci.h
+> @@ -90,6 +90,15 @@ extern void pci_map_io_early(unsigned long pfn);
+>  static inline void pci_map_io_early(unsigned long pfn) {}
+>  #endif
+> =20
+> +#ifdef CONFIG_PCI_DOMAINS_GENERIC
+> +int pci_get_domain_nr(struct device *parent)
+> +#else
+> +static inline int pci_get_domain_nr(struct device *parent)
 > +{
+> +=09return 0;
+> +}
+> +#endif
+> +
+>  /*
+>   * PCI controllers
+>   */
+> diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
+> index d8c2b4e..3fe56f1 100644
+> --- a/arch/arm/kernel/bios32.c
+> +++ b/arch/arm/kernel/bios32.c
+> @@ -513,7 +513,7 @@ static void pcibios_init_hw(struct device *parent, st=
+ruct hw_pci *hw,
+>  #ifdef CONFIG_PCI_DOMAINS_GENERIC
+>  static bool dt_domain_found;
+> =20
+> -void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent=
+)
+> +int pci_get_domain_nr(struct device *parent)
+>  {
+>  =09int domain =3D of_get_pci_domain_nr(parent->of_node);
+> =20
+> @@ -526,8 +526,12 @@ void pci_bus_assign_domain_nr(struct pci_bus *bus, s=
+truct device *parent)
+>  =09} else {
+>  =09=09domain =3D pci_get_new_domain_nr();
+>  =09}
+> +=09return domain;
+> +}
+> =20
+> -=09bus->domain_nr =3D domain;
+> +void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent=
+)
+> +{
+> +=09bus->domain_nr =3D pci_get_domain_nr(parent);
+>  }
+>  #endif
 
-Do we still need to pass the 'sysdata' in here? If we are guaranteed to
-have a device pointer, we should always be able to get the driver
-private data from dev_get_drvdata(host->dev->parent).
+This code is superseded by the last patches I sent to move the domain
+assignment to PCI core code.
 
-> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
-> +	if (!host)
-> +		return NULL;
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/301220.=
+html
 
-devm_kzalloc maybe?
-
-> +	if (!resources) {
-> +		/* Use default IO/MEM/BUS resources*/
-> +		pci_add_resource(&host->windows, &ioport_resource);
-> +		pci_add_resource(&host->windows, &iomem_resource);
-> +		pci_add_resource(&host->windows, &busn_resource);
-> +	} else {
-> +		list_for_each_entry_safe(window, n, resources, list)
-> +			list_move_tail(&window->list, &host->windows);
-> +	}
-
-I think we should assume that the correct resources are passed. You
-could add a wrapper around this function to convert old platforms
-though.
-
-> +EXPORT_SYMBOL(pci_create_host_bridge);
-
-EXPORT_SYMBOL_GPL() maybe?
-
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 8b11b38..daa7f40 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
->  struct pci_host_bridge {
->  	struct device dev;
->  	struct pci_bus *bus;		/* root bus */
-> +	struct list_head list;
->  	struct list_head windows;	/* pci_host_bridge_windows */
-> +	int busnum;
-
-The busnum should already be implied through the bus resource.
-
-	Arnd
+Lorenzo
