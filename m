@@ -1,30 +1,25 @@
-Return-Path: <lorenzo.pieralisi@arm.com>
-Received: from service88.mimecast.com (service88.mimecast.com [195.130.217.12])
- by lists.ozlabs.org (Postfix) with ESMTP id 711F11A0297
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 23:10:00 +1100 (AEDT)
-Date: Mon, 17 Nov 2014 12:08:39 +0000
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [RFC PATCH 14/16] arm/PCI: Introduce pci_get_domain_nr()
-Message-ID: <20141117120839.GA22241@e102568-lin.cambridge.arm.com>
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0DB1A010D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 01:13:46 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
+Date: Mon, 17 Nov 2014 15:13:16 +0100
+Message-ID: <1463511.o4kE8TX3Bd@wuerfel>
+In-Reply-To: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
 References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-15-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <1416219710-26088-15-git-send-email-wangyijing@huawei.com>
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Type: text/plain; charset="us-ascii"
 Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "huxinwei@huawei.com" <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
+ linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,69 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 17, 2014 at 10:21:48AM +0000, Yijing Wang wrote:
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> ---
->  arch/arm/include/asm/mach/pci.h |    9 +++++++++
->  arch/arm/kernel/bios32.c        |    8 ++++++--
->  2 files changed, 15 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/arm/include/asm/mach/pci.h b/arch/arm/include/asm/mach/=
-pci.h
-> index f19f627..370b3bd 100644
-> --- a/arch/arm/include/asm/mach/pci.h
-> +++ b/arch/arm/include/asm/mach/pci.h
-> @@ -90,6 +90,15 @@ extern void pci_map_io_early(unsigned long pfn);
->  static inline void pci_map_io_early(unsigned long pfn) {}
->  #endif
-> =20
-> +#ifdef CONFIG_PCI_DOMAINS_GENERIC
-> +int pci_get_domain_nr(struct device *parent)
-> +#else
-> +static inline int pci_get_domain_nr(struct device *parent)
-> +{
-> +=09return 0;
-> +}
-> +#endif
-> +
->  /*
->   * PCI controllers
->   */
-> diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-> index d8c2b4e..3fe56f1 100644
-> --- a/arch/arm/kernel/bios32.c
-> +++ b/arch/arm/kernel/bios32.c
-> @@ -513,7 +513,7 @@ static void pcibios_init_hw(struct device *parent, st=
-ruct hw_pci *hw,
->  #ifdef CONFIG_PCI_DOMAINS_GENERIC
->  static bool dt_domain_found;
-> =20
-> -void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent=
-)
-> +int pci_get_domain_nr(struct device *parent)
->  {
->  =09int domain =3D of_get_pci_domain_nr(parent->of_node);
-> =20
-> @@ -526,8 +526,12 @@ void pci_bus_assign_domain_nr(struct pci_bus *bus, s=
-truct device *parent)
->  =09} else {
->  =09=09domain =3D pci_get_new_domain_nr();
->  =09}
-> +=09return domain;
-> +}
-> =20
-> -=09bus->domain_nr =3D domain;
-> +void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent=
-)
-> +{
-> +=09bus->domain_nr =3D pci_get_domain_nr(parent);
->  }
->  #endif
+On Monday 17 November 2014 18:21:34 Yijing Wang wrote:
+> This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
+> arm PCI domain cleanup patches, link: 
+> https://patchwork.ozlabs.org/patch/407585/
+> 
+> Current pci scan interfaces like pci_scan_root_bus() and directly
+> call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
+> Some platform infos like PCI domain and msi_chip have to be
+> associated to PCI bus by some arch specific function.
+> We want to make a generic pci_host_bridge, and make it hold
+> the platform infos or hook. Then we could eliminate the lots
+> of arch pci_domain_nr, also we could associate some platform 
+> ops something like pci_get_msi_chip(struct pci_dev *dev)
+> with pci_host_bridge to avoid introduce arch weak functions.
+> 
+> This RFC version not for all platforms, just applied the new
+> scan interface in x86/arm/powerpc/ia64, I will refresh other
+> platforms after the core pci scan interfaces are ok.
 
-This code is superseded by the last patches I sent to move the domain
-assignment to PCI core code.
+I think overall this is a good direction to take, in particular
+moving more things into struct pci_host_bridge so we can
+slim down the architecture specific code.
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/301220.=
-html
+I don't particularly like the way you use the 'pci_host_info'
+to pass callback pointers and some of the generic information.
+This duplicates some of the issues we are currently trying
+to untangle in the arm32 code to make drivers easier to share
+between architectures.
 
-Lorenzo
+As a general approach, I'd rather see generic helper functions
+being exported by the PCI core that a driver may or may not
+call. 
+The way you split the interface between things that happen
+before scanning the buses (pci_create_host_bridge) and
+the actual scanning (__pci_create_root_bus, pci_scan_child_bus)
+seems very helpful and I think we can expand that concept further:
+
+- The normal pci_create_host_bridge() function can contain
+  all of the DT scanning functions (finding bus/mem/io resources, 
+  finding the msi-parent), while drivers that don't depend on DT
+  for this information can call the same function and fill the
+  same things after they have the pci_host_bridge pointer.
+
+- If a driver needs to set up mapping windows, it can do that after
+  calling pci_create_host_bridge(). E.g. all the dw_pcie glue drivers
+  can call a dw_pcie_setup_windows() function that takes the resources
+  out of the pci_host_bridge pointer before the bus is scanned.
+
+- The ACPI code can have a completely different way of creating
+  a struct pci_host_bridge, which is also passed into the same
+  bus scanning functions, but doesn't have to come from
+  pci_create_host_bridge.
+
+- The PowerPC of_scan_bus function can take the same pci_host_bridge
+  pointer that comes from pci_create_host_bridge(), but we'd call
+  either pci_create_root_bus or of_scan_bus instead of calling
+  of_scan_bus through an indirect pointer from pci_create_root_bus.
+
+	Arnd
