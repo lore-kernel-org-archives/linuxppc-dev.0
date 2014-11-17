@@ -1,38 +1,39 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8CDF61A01D7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 16:49:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D2491A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 17:04:21 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 17 Nov 2014 15:49:57 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DE2C53578068
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 16:49:53 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAH5nWfx25952276
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 16:49:32 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAH5nrYb020177
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 16:49:53 +1100
-Message-ID: <54698C78.9050005@linux.vnet.ibm.com>
-Date: Mon, 17 Nov 2014 11:19:44 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Mon, 17 Nov 2014 11:34:18 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5B0DA1258053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:34:21 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAH66PSk721232
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:36:25 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAH64DkG031478
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:34:14 +0530
+Message-ID: <54698F7E.6090300@linux.vnet.ibm.com>
+Date: Mon, 17 Nov 2014 11:32:38 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] powernv: cpuidle: Redesign idle states management
-References: <1415030910-5799-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1415030910-5799-4-git-send-email-shreyas@linux.vnet.ibm.com>
- <54630362.7050007@linux.vnet.ibm.com>
-In-Reply-To: <54630362.7050007@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: devicetree@vger.kernel.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com,
+ a.zummo@towertech.it
+Subject: Re: [PATCH v3] rtc/tpo: Driver to support rtc and wakeup on PowerNV
+ platform
+References: <20141014083447.7505.89771.stgit@localhost.localdomain>
+ <54476F4B.8050108@linux.vnet.ibm.com>
+In-Reply-To: <54476F4B.8050108@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: benh@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,175 +43,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Preeti,
 
-On Wednesday 12 November 2014 12:21 PM, Preeti U Murthy wrote:
-> Hi Shreyas,
-> 
-> On 11/03/2014 09:38 PM, Shreyas B. Prabhu wrote:
->> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
->> index 283c603..df11acb 100644
->> --- a/arch/powerpc/kernel/idle_power7.S
->> +++ b/arch/powerpc/kernel/idle_power7.S
->>  _GLOBAL(power7_idle)
->>  	/* Now check if user or arch enabled NAP mode */
->> @@ -141,49 +192,16 @@ _GLOBAL(power7_idle)
->>  
->>  _GLOBAL(power7_nap)
->>  	mr	r4,r3
->> -	li	r3,0
->> +	li	r3,1
-> 
-> The comment at the top of this file states 0 for nap and 1 for sleep.
-> You will need to change that. As an alternative I would suggest using
-> the macros that you have already defined:PNV_THREAD_NAP and
-> PNV_THREAD_SLEEP to write to r3 above and remove the lines that say 0
-> for nap and 1 for sleep in the comments.
+On 10/22/2014 02:18 PM, Neelesh Gupta wrote:
+>
+> On 10/14/2014 02:08 PM, Neelesh Gupta wrote:
+>> The patch implements the OPAL rtc driver that binds with the rtc
+>> driver subsystem. The driver uses the platform device infrastructure
+>> to probe the rtc device and register it to rtc class framework. The
+>> 'wakeup' is supported depending upon the property 'has-tpo' present
+>> in the OF node. It provides a way to load the generic rtc driver in
+>> in the absence of an OPAL driver.
+>>
+>> The patch also moves the existing OPAL rtc get/set time interfaces to 
+>> the
+>> new driver and exposes the necessary OPAL calls using EXPORT_SYMBOL_GPL.
+>
+> Hi Alessandro,
+>
+> Awaiting Ack from your side, so that we can take this through the 
+> powerpc tree.
 
-My bad, I had changed the comment in the next commit. I'll make the change.
-> 
->>  	b	power7_powersave_common
->>  	/* No return */
->>  
-> 
-> <snip>
-> 
->> @@ -210,12 +226,91 @@ _GLOBAL(power7_wakeup_tb_loss)
->>  BEGIN_FTR_SECTION
->>  	CHECK_HMI_INTERRUPT
->>  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->> +
->> +	li	r7,1
->> +	mfspr	r8,SPRN_PIR
->> +	/*
->> +	 * The last 3 bits of PIR represents the thread id of a cpu
->> +	 * in power8. This will need adjusting for power7.
->> +	 */
->> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
->> +	rotld	r7,r7,r8
->> +	/* r7 now has 'thread_id'th bit set */
->> +
->> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
->> +lwarx_loop2:
->> +	lwarx	r15,0,r14
->> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	/*
->> +	 * Lock bit is set in one of the 2 cases-
->> +	 * a. In the sleep/winkle enter path, the last thread is executing
->> +	 * fastsleep workaround code.
->> +	 * b. In the wake up path, another thread is executing fastsleep
->> +	 * workaround undo code or resyncing timebase or restoring context
->> +	 * In either case loop until the lock bit is cleared.
->> +	 */
->> +	bne	lwarx_loop2
->> +
->> +	cmpwi	cr2,r15,0
->> +	or	r15,r15,r7		/* Set thread bit */
->> +
->> +	beq	cr2,first_thread
->> +
->> +	/* Not first thread in core to wake up */
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop2
->> +	b	common_exit
->> +
->> +first_thread:
->> +	/* First thread in core to wakeup */
->> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop2
->> +
->> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
->> +	lbz	r3,0(r3)
->> +	cmpwi	r3,1
->> +	/*  skip fastsleep workaround if its not needed */
->> +	bne	timebase_resync
->> +
->> +	/* Undo fast sleep workaround */
->> +	mfcr	r16	/* Backup CR into a non-volatile register */
-> 
-> Don't you want to do this ^^ before calling opal_call_realmode for
-> timebase resync below also?
-> 
-I am not using any of the CR registers after the timebase resync OPAL
-call. Though in the next commit where I do use the CRs, I restore them
-after the OPAL call.
+Hi Alessandro,
 
->> +	li	r3,1
->> +	li	r4,0
->> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
->> +	bl	opal_call_realmode
->> +	mtcr	r16	/* Restore CR */
->> +
->> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
->> +	 * set in exceptions-64s.S */
->> +	ble	cr1,clear_lock
->> +
->> +timebase_resync:
->>  	/* Time base re-sync */
->> -	li	r3,OPAL_RESYNC_TIMEBASE
->> +	li	r0,OPAL_RESYNC_TIMEBASE
->>  	bl	opal_call_realmode;
->> -
->> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
->> index 34c6665..980c964 100644
->> --- a/arch/powerpc/platforms/powernv/setup.c
->> +++ b/arch/powerpc/platforms/powernv/setup.c
->> @@ -36,6 +36,8 @@
->>  #include <asm/opal.h>
->>  #include <asm/kexec.h>
->>  #include <asm/smp.h>
->> +#include <asm/cputhreads.h>
->> +#include <asm/cpuidle.h>
->>  
->>  #include "powernv.h"
->>  
->> @@ -292,11 +294,55 @@ static void __init pnv_setup_machdep_rtas(void)
->>  
->>  static u32 supported_cpuidle_states;
->>  
->> +static void pnv_alloc_idle_core_states(void)
->> +{
->> +	int i, j;
->> +	int nr_cores = cpu_nr_cores();
->> +	u32 *core_idle_state;
->> +
->> +	/*
->> +	 * Deep idle states like sleep and winkle are per core idle states.
->> +	 * A core enters these states only when all the threads enter either
->> +	 * the particular idle state or a deeper one. There are tasks like
->> +	 * fastsleep hardware bug workaround and hypervisor core state save
->> +	 * which have to be done only by the last thread of the core entering
->> +	 * deep idle state and similarly tasks like timebase resync, hypervisor
->> +	 * core register restore that have to be done only by the first thread
->> +	 * waking up from these states. Introducing core_idle_state, a per core
->> +	 * structure which will keep track threads entering idle states deeper
->> +	 * than sleep.
-> 
-> Since you already have explained ^^ in the changelog, you do not need to
-> elaborate it here.
-> 
->> +	 * core_idle_state - First 8 bits track the idle state of each thread
->> +	 * of the core. The 8th bit is the lock bit. Initially all thread bits
->> +	 * are set. They are cleared when the thread enters deep idle state
->> +	 * like sleep and winkle. Initially the lock bit is cleared.
-> 
-> you can simply have the comment about the bits of core_idle_state
-> without having to mention about when they are cleared etc..
-Okay. Will make the change.
-> 
->> +	 * The lock bit has 2 purposes
->> +	 * a. While the first thread is restoring core state, it prevents
->> +	 * from other threads in the core from switching to prcoess context.
->> +	 * b. While the last thread in the core is saving the core state, it
->> +	 * prevent a different thread from waking up.
-> 
-> The above two points are useful. As far as I see besides explaining the
-> bits of core_idle_state structure and the purpose of lock bit the rest
-> of the comments is redundant. A git-blame will let people know why all
-> this is needed. The comment section should not be used up for this
-> purpose IMO.
-> 
-> Regards
-> Preeti U Murthy
-> 
+Please acknowledge..
+
+- Neelesh
+
+>
+> Regards,
+> Neelesh
+>
+>>
+>> Test results:
+>> -------------
+>> Host:
+>> [root@tul169p1 ~]# ls -l /sys/class/rtc/
+>> total 0
+>> lrwxrwxrwx 1 root root 0 Oct 14 03:07 rtc0 -> 
+>> ../../devices/opal-rtc/rtc/rtc0
+>> [root@tul169p1 ~]# cat /sys/devices/opal-rtc/rtc/rtc0/time
+>> 08:10:07
+>> [root@tul169p1 ~]# echo `date '+%s' -d '+ 2 minutes'` > 
+>> /sys/class/rtc/rtc0/wakealarm
+>> [root@tul169p1 ~]# cat /sys/class/rtc/rtc0/wakealarm
+>> 1413274345
+>> [root@tul169p1 ~]#
+>>
+>> FSP:
+>> $ smgr mfgState
+>> standby
+>> $ rtim timeofday
+>>
+>> System time is valid: 2014/10/14 08:12:04.225115
+>>
+>> $ smgr mfgState
+>> ipling
+>> $
+>>
+>> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+>> ---
+>>
+>> Changes in v3
+>> =============
+>> - Rebased to the latest tree.
+>>
+>> Changes in v2
+>> =============
+>> - Added Documentation/devicetree/bindings/rtc/rtc-opal.txt
+>> - Explicitly turn off RTC_UIE mode by setting 'rtc->uie_unsupported'
+>>
+>>   Documentation/devicetree/bindings/rtc/rtc-opal.txt |   16 +
+>>   arch/powerpc/include/asm/opal.h                    |    7 -
+>>   arch/powerpc/kernel/time.c                         |    1
+>>   arch/powerpc/platforms/powernv/opal-async.c        |    3
+>>   arch/powerpc/platforms/powernv/opal-rtc.c          |   65 +----
+>>   arch/powerpc/platforms/powernv/opal-wrappers.S     |    2
+>>   arch/powerpc/platforms/powernv/opal.c              |    6
+>>   arch/powerpc/platforms/powernv/setup.c             |    2
+>>   drivers/rtc/Kconfig                                |   11 +
+>>   drivers/rtc/Makefile                               |    1
+>>   drivers/rtc/rtc-opal.c                             |  261 
+>> ++++++++++++++++++++
+>>   11 files changed, 325 insertions(+), 50 deletions(-)
+>>   create mode 100644 Documentation/devicetree/bindings/rtc/rtc-opal.txt
+>>   create mode 100644 drivers/rtc/rtc-opal.c
+>>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
