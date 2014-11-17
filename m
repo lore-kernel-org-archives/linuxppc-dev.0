@@ -1,38 +1,40 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C684D1A1F31
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 04:42:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C4F241A0200
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 06:18:53 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Mon, 17 Nov 2014 17:42:50 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2EB5A1B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 17:42:59 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAHHglav50790588
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 17:42:47 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAHHglB7012381
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 10:42:47 -0700
-Subject: [PATCH REPOST 3/3] powerpc/vphn: move endianness fixing to
- vphn_unpack_associativity()
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 17 Nov 2014 18:42:45 +0100
-Message-ID: <20141117174244.7717.83028.stgit@bahia.local>
-In-Reply-To: <20141117174216.7717.10926.stgit@bahia.local>
-References: <20141117174216.7717.10926.stgit@bahia.local>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 17 Nov 2014 12:18:48 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6BF203E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 12:17:54 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAHJIje453805094
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 20:18:45 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ sAHJNb35004418
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 12:23:37 -0700
+Date: Mon, 17 Nov 2014 11:18:42 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: mitigate impact of decrementer reset
+Message-ID: <20141117191842.GA5050@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
+ <54343B54.4060500@us.ibm.com>
+ <1415614083.5769.18.camel@kernel.crashing.org>
+ <546126DC.6090909@us.ibm.com> <1415846532.28703.3.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1415846532.28703.3.camel@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Clarke <pc@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,96 +44,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first argument to vphn_unpack_associativity() is a const long *, but the
-parsing code expects __be64 values actually. This is inconsistent. We should
-either pass a const __be64 * or change vphn_unpack_associativity() so that
-it fixes endianness by itself.
+On Thu, Nov 13, 2014 at 01:42:12PM +1100, Michael Ellerman wrote:
+> On Mon, 2014-11-10 at 14:58 -0600, Paul Clarke wrote:
+> > On 11/10/2014 04:08 AM, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2014-10-07 at 14:13 -0500, Paul Clarke wrote:
+> > >> This patch short-circuits the reset of the decrementer, exiting after
+> > >> the decrementer reset, but before the housekeeping tasks if the only
+> > >> need for the interrupt is simply to reset it.  After this patch,
+> > >> the latency spike was measured at about 150 nanoseconds.
+> > >
+> > > Doesn't this break the irq_work stuff ? We trigger it with a set_dec(1);
+> > > and your patch will probably cause it to be skipped...
+> > 
+> > You're right.
+> 
+> Yeah, thanks Ben, that would have been bad.
+> 
+> So we'll need to come up with a different approach.
+> 
+> > I'm confused by the division between timer_interrupt() and 
+> > __timer_interrupt().  The former is called with interrupts disabled (and 
+> > enables them), but also calls irq_enter()/irq_exit().  Why are those 
+> > calls not in __timer_interrupt()?  (If they were, the short-circuit 
+> > logic might be a bit easier to put directly in __timer_interrupt(), 
+> > which would eliminate any duplicate code.)
+> > 
+> > It looks like __timer_interrupt is only called directly by the broadcast 
+> > timer IPI handler.  (Why is __timer_interrupt not static?)  Does this 
+> > path not need irq_enter/irq_exit?
+> 
+> I think I answered most of this in the other mail I just sent, but let me know
+> if not.
+> 
+> And __timer_interrupt() is static, if you have a new enough kernel :)
 
-This patch does the latter, since the caller doesn't need to know about
-endianness and this allows to fix significant 64-bit values only. Please
-note that the previous code was able to cope with 32-bit fields being split
-accross two consecutives 64-bit values. Since PAPR+ doesn't say this cannot
-happen, the behaviour was kept. It requires extra checking to know when fixing
-is needed though.
+If I am understanding this correctly, it underscores the need for more
+bits in the decrementer register.  :-/
 
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |   42 +++++++++++++++++++++++++++++-------------
- 1 file changed, 29 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index e30c469..903ef27 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1417,30 +1417,49 @@ static int update_cpu_associativity_changes_mask(void)
-  */
- static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
- {
--	int i;
--	const __be16 *field = (const __be16 *) packed;
-+	int i, j, k;
-+	union {
-+		__be64 packed[VPHN_REGISTER_COUNT];
-+		__be16 field[VPHN_REGISTER_COUNT * 4];
-+	} fixed;
- 
- #define VPHN_FIELD_UNUSED	(0xffff)
- #define VPHN_FIELD_MSB		(0x8000)
- #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
- 
--	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
--		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED)
-+	for (i = 1, j = 0, k = 0; i < VPHN_ASSOC_BUFSIZE;) {
-+		u16 field;
-+
-+		if (j % 4 == 0) {
-+			fixed.packed[k] = cpu_to_be64(packed[k]);
-+			k++;
-+		}
-+
-+		field = be16_to_cpu(fixed.field[j]);
-+
-+		if (field == VPHN_FIELD_UNUSED)
- 			/* All significant fields processed.
- 			 */
- 			break;
- 
--		if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-+		if (field & VPHN_FIELD_MSB) {
- 			/* Data is in the lower 15 bits of this field */
--			unpacked[i] = cpu_to_be32(
--				be16_to_cpup(field) & VPHN_FIELD_MASK);
--			field++;
-+			unpacked[i++] = cpu_to_be32(field & VPHN_FIELD_MASK);
-+			j++;
- 		} else {
- 			/* Data is in the lower 15 bits of this field
- 			 * concatenated with the next 16 bit field
- 			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
-+			if (unlikely(j % 4 == 3)) {
-+				/* The next field is to be copied from the next
-+				 * 64-bit input value. We must fix it now.
-+				 */
-+				fixed.packed[k] = cpu_to_be64(packed[k]);
-+				k++;
-+			}
-+
-+			unpacked[i++] = *((__be32 *)&fixed.field[j]);
-+			j += 2;
- 		}
- 	}
- 
-@@ -1460,11 +1479,8 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
- 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
- 	u64 flags = 1;
- 	int hwcpu = get_hard_smp_processor_id(cpu);
--	int i;
- 
- 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
--	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
--		retbuf[i] = cpu_to_be64(retbuf[i]);
- 	vphn_unpack_associativity(retbuf, associativity);
- 
- 	return rc;
+							Thanx, Paul
