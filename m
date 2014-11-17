@@ -1,14 +1,17 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 617ED1A0BB4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 20:41:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 191FE1A012E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 20:41:13 +1100 (AEDT)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-Date: Mon, 17 Nov 2014 18:21:34 +0800
-Message-ID: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+Subject: [RFC PATCH 13/16] ia64/PCI: Use pci_scan_host_bridge() to refactor
+ pci_acpi_scan_root()
+Date: Mon, 17 Nov 2014 18:21:47 +0800
+Message-ID: <1416219710-26088-14-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
@@ -27,86 +30,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
-arm PCI domain cleanup patches, link: 
-https://patchwork.ozlabs.org/patch/407585/
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/ia64/pci/pci.c |   84 +++++++++++++++++++++++---------------------------
+ 1 files changed, 39 insertions(+), 45 deletions(-)
 
-Current pci scan interfaces like pci_scan_root_bus() and directly
-call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
-Some platform infos like PCI domain and msi_chip have to be
-associated to PCI bus by some arch specific function.
-We want to make a generic pci_host_bridge, and make it hold
-the platform infos or hook. Then we could eliminate the lots
-of arch pci_domain_nr, also we could associate some platform 
-ops something like pci_get_msi_chip(struct pci_dev *dev)
-with pci_host_bridge to avoid introduce arch weak functions.
-
-This RFC version not for all platforms, just applied the new
-scan interface in x86/arm/powerpc/ia64, I will refresh other
-platforms after the core pci scan interfaces are ok.
-
-Only test in x86.
-
-Thanks!
-Yijing.
-
-Yijing Wang (16):
-  PCI: Enhance pci_scan_root_bus() to support default IO/MEM resources
-  PCI: Use pci_scan_root_bus() instead of pci_scan_bus()
-  PCI: Clean up pci_scan_bus()
-  PCI: Rip out pci_bus_add_devices() from pci_scan_root_bus()
-  PCI: Use pci_scan_root_bus() instead of pci_scan_bus_parented()
-  PCI: Use u32 type to combine PCI domain and bus number
-  PCI: Separate pci_host_bridge creation out of pci_create_root_bus()
-  PCI: Introduce pci_scan_host_bridge() and pci_host_info
-  PCI: Associate .get_msi_ctrl() with pci_host_bridge
-  PCI: Add of_scan_bus() to pci_host_info
-  x86/PCI: Use pci_scan_host_bridge() instead of pci_create_root_bus()
-  ia64/PCI: Remove the redundant bus variable
-  ia64/PCI: Use pci_scan_host_bridge() to refactor pci_acpi_scan_root()
-  arm/PCI: Introduce pci_get_domain_nr()
-  arm/PCI: Use pci_scan_host_bridge() instead of pci_scan_root_bus()
-  powerpc/PCI: Use pci_scan_host_bridge() to scan PCI bus
-
- arch/alpha/include/asm/pci.h      |    2 +-
- arch/alpha/kernel/pci.c           |    1 +
- arch/alpha/kernel/sys_nautilus.c  |    3 +-
- arch/arm/include/asm/mach/pci.h   |   10 ++
- arch/arm/kernel/bios32.c          |   60 +++++++----
- arch/cris/include/asm/pci.h       |    2 +-
- arch/frv/mb93090-mb00/pci-vdk.c   |    8 +-
- arch/ia64/include/asm/pci.h       |    2 +-
- arch/ia64/pci/pci.c               |   85 +++++++--------
- arch/ia64/sn/kernel/io_init.c     |    2 +
- arch/m68k/coldfire/pci.c          |    3 +-
- arch/microblaze/pci/pci-common.c  |    2 +-
- arch/mips/include/asm/pci.h       |    2 +-
- arch/mips/pci/pci.c               |    1 +
- arch/mn10300/include/asm/pci.h    |    2 +-
- arch/mn10300/unit-asb2305/pci.c   |    7 +-
- arch/powerpc/kernel/pci-common.c  |   81 ++++++++------
- arch/s390/pci/pci.c               |    2 +-
- arch/sh/drivers/pci/pci.c         |    1 +
- arch/sh/include/asm/pci.h         |    2 +-
- arch/sparc/include/asm/pci_32.h   |    2 +-
- arch/sparc/include/asm/pci_64.h   |    2 +-
- arch/sparc/kernel/leon_pci.c      |    1 +
- arch/sparc/kernel/pcic.c          |    5 +-
- arch/tile/kernel/pci.c            |    3 +-
- arch/tile/kernel/pci_gx.c         |    3 +-
- arch/unicore32/kernel/pci.c       |    4 +-
- arch/x86/include/asm/pci.h        |    2 +-
- arch/x86/pci/acpi.c               |   65 +++++++-----
- arch/x86/pci/amd_bus.c            |    2 +-
- arch/x86/pci/common.c             |   27 ++++--
- arch/xtensa/include/asm/pci.h     |    2 +-
- arch/xtensa/kernel/pci.c          |    1 +
- drivers/parisc/dino.c             |    4 +-
- drivers/pci/host-bridge.c         |  104 ++++++++++++++++++
- drivers/pci/host/pci-xgene.c      |    2 +-
- drivers/pci/hotplug/ibmphp_core.c |    6 +-
- drivers/pci/probe.c               |  214 +++++++++++++++++++------------------
- drivers/pci/xen-pcifront.c        |    6 +-
- include/linux/pci.h               |   41 ++++++-
- include/uapi/linux/pci.h          |    3 +
- 41 files changed, 497 insertions(+), 280 deletions(-)
+diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
+index aac3220..c7d97ae 100644
+--- a/arch/ia64/pci/pci.c
++++ b/arch/ia64/pci/pci.c
+@@ -115,23 +115,10 @@ struct pci_ops pci_root_ops = {
+ 	.write = pci_write,
+ };
+ 
+-/* Called by ACPI when it finds a new root bus.  */
+-
+-static struct pci_controller *alloc_pci_controller(int seg)
+-{
+-	struct pci_controller *controller;
+-
+-	controller = kzalloc(sizeof(*controller), GFP_KERNEL);
+-	if (!controller)
+-		return NULL;
+-
+-	controller->segment = seg;
+-	return controller;
+-}
+-
+ struct pci_root_info {
+ 	struct acpi_device *bridge;
+-	struct pci_controller *controller;
++	struct pci_controller controller;
++	struct acpi_pci_root *root;
+ 	struct list_head resources;
+ 	struct resource *res;
+ 	resource_size_t *res_offset;
+@@ -340,8 +327,6 @@ static void free_pci_root_info_res(struct pci_root_info *info)
+ 	kfree(info->res_offset);
+ 	info->res_offset = NULL;
+ 	info->res_num = 0;
+-	kfree(info->controller);
+-	info->controller = NULL;
+ }
+ 
+ static void __release_pci_root_info(struct pci_root_info *info)
+@@ -395,7 +380,7 @@ probe_pci_root_info(struct pci_root_info *info, struct acpi_device *device,
+ 	if (info->res_num) {
+ 		info->res =
+ 			kzalloc_node(sizeof(*info->res) * info->res_num,
+-				     GFP_KERNEL, info->controller->node);
++				     GFP_KERNEL, info->controller.node);
+ 		if (!info->res) {
+ 			kfree(name);
+ 			return -ENOMEM;
+@@ -403,7 +388,7 @@ probe_pci_root_info(struct pci_root_info *info, struct acpi_device *device,
+ 
+ 		info->res_offset =
+ 			kzalloc_node(sizeof(*info->res_offset) * info->res_num,
+-					GFP_KERNEL, info->controller->node);
++					GFP_KERNEL, info->controller.node);
+ 		if (!info->res_offset) {
+ 			kfree(name);
+ 			kfree(info->res);
+@@ -420,6 +405,27 @@ probe_pci_root_info(struct pci_root_info *info, struct acpi_device *device,
+ 	return 0;
+ }
+ 
++static int pci_acpi_init_res(struct pci_host_bridge *host,
++		struct pci_host_info *info)
++{
++	int ret;
++	struct pci_host_bridge_window *window, *n;
++	struct pci_controller *ctrl = info->arg;
++	struct pci_root_info *arg = container_of(ctrl,
++			struct pci_root_info, controller);
++
++	ret = probe_pci_root_info(arg, arg->root->device, 
++			host->busnum, host->domain);
++	if (ret) 
++		return -1;
++	list_for_each_entry_safe(window, n, &arg->resources,
++			list)
++		list_move_tail(&window->list, &host->windows);
++	/* insert busn resource at first */
++	pci_add_resource(&host->windows, &arg->root->secondary);
++	return 0;
++}
++
+ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ {
+ 	struct acpi_device *device = root->device;
+@@ -427,55 +433,43 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ 	struct pci_controller *controller;
+ 	struct pci_root_info *info = NULL;
+ 	int busnum = root->secondary.start;
+-	struct pci_bus *pbus;
+-	int ret;
+-
+-	controller = alloc_pci_controller(domain);
+-	if (!controller)
+-		return NULL;
+-
+-	controller->companion = device;
+-	controller->node = acpi_get_node(device->handle);
++	struct pci_host_bridge *host;
++	struct pci_host_info arg;
+ 
+ 	info = kzalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info) {
+ 		dev_err(&device->dev,
+ 				"pci_bus %04x:%02x: ignored (out of memory)\n",
+ 				domain, busnum);
+-		kfree(controller);
+ 		return NULL;
+ 	}
+ 
+-	info->controller = controller;
++	controller = &info->controller;
++	controller->segment = domain;
++	controller->companion = device;
++	controller->node = acpi_get_node(device->handle);
+ 	INIT_LIST_HEAD(&info->io_resources);
+ 	INIT_LIST_HEAD(&info->resources);
++	init_pci_host_info(&arg);
++	arg.arg = controller;
++	arg.init_res = pci_acpi_init_res;
+ 
+-	ret = probe_pci_root_info(info, device, busnum, domain);
+-	if (ret) {
+-		kfree(info->controller);
+-		kfree(info);
+-		return NULL;
+-	}
+-	/* insert busn resource at first */
+-	pci_add_resource(&info->resources, &root->secondary);
+ 	/*
+ 	 * See arch/x86/pci/acpi.c.
+ 	 * The desired pci bus might already be scanned in a quirk. We
+ 	 * should handle the case here, but it appears that IA64 hasn't
+ 	 * such quirk. So we just ignore the case now.
+ 	 */
+-	pbus = pci_create_root_bus(NULL, busnum, &pci_root_ops, controller,
+-				   &info->resources);
+-	if (!pbus) {
+-		pci_free_resource_list(&info->resources);
++	host = pci_scan_host_bridge(NULL, PCI_DOMBUS(domain, busnum), 
++			&pci_root_ops, &arg);
++	if (!host) {
+ 		__release_pci_root_info(info);
+ 		return NULL;
+ 	}
+ 
+-	pci_set_host_bridge_release(to_pci_host_bridge(pbus->bridge),
++	pci_set_host_bridge_release(host,
+ 			release_pci_root_info, info);
+-	pci_scan_child_bus(pbus);
+-	return pbus;
++	return host->bus;
+ }
+ 
+ int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+-- 
+1.7.1
