@@ -1,39 +1,20 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D2491A0174
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 17:04:21 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Mon, 17 Nov 2014 11:34:18 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5B0DA1258053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:34:21 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAH66PSk721232
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:36:25 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAH64DkG031478
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 11:34:14 +0530
-Message-ID: <54698F7E.6090300@linux.vnet.ibm.com>
-Date: Mon, 17 Nov 2014 11:32:38 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: devicetree@vger.kernel.org, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, rtc-linux@googlegroups.com,
- a.zummo@towertech.it
-Subject: Re: [PATCH v3] rtc/tpo: Driver to support rtc and wakeup on PowerNV
- platform
-References: <20141014083447.7505.89771.stgit@localhost.localdomain>
- <54476F4B.8050108@linux.vnet.ibm.com>
-In-Reply-To: <54476F4B.8050108@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: benh@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 208E51A00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 17:53:36 +1100 (AEDT)
+Message-ID: <1416207214.2826.3.camel@concordia>
+Subject: Re: [PATCH] [powerpc] Fix Text randomization
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vineeth Vijayan <vvijayan@mvista.com>
+Date: Mon, 17 Nov 2014 17:53:34 +1100
+In-Reply-To: <1415956325-10124-1-git-send-email-vvijayan@mvista.com>
+References: <1415956325-10124-1-git-send-email-vvijayan@mvista.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,93 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2014-11-14 at 14:42 +0530, Vineeth Vijayan wrote:
+> Now there is no way to disable TEXT randomization on a PPC32/PPC64
+> machine. Text randomization happens even in the case of "echo 0 >
+> /proc/sys/kernel/randomize_va_space"
+> 
+> This happens due to the incorrect definition of ELF_ET_DYN_BASE
+> at arch/powerpc/include/asm/elf.h
+> 
+> The function randomize_et_dyn is redundant and is removed.
 
-On 10/22/2014 02:18 PM, Neelesh Gupta wrote:
->
-> On 10/14/2014 02:08 PM, Neelesh Gupta wrote:
->> The patch implements the OPAL rtc driver that binds with the rtc
->> driver subsystem. The driver uses the platform device infrastructure
->> to probe the rtc device and register it to rtc class framework. The
->> 'wakeup' is supported depending upon the property 'has-tpo' present
->> in the OF node. It provides a way to load the generic rtc driver in
->> in the absence of an OPAL driver.
->>
->> The patch also moves the existing OPAL rtc get/set time interfaces to 
->> the
->> new driver and exposes the necessary OPAL calls using EXPORT_SYMBOL_GPL.
->
-> Hi Alessandro,
->
-> Awaiting Ack from your side, so that we can take this through the 
-> powerpc tree.
+The patch looks OK, but for the change log I was thinking something more like
+this:
 
-Hi Alessandro,
 
-Please acknowledge..
+powerpc: Use generic PIE randomization
 
-- Neelesh
+Back in 2009 we merged 501cb16d3cfd "Randomise PIEs", which added support for
+randomizing PIE (Position Independent Executable) binaries.
 
->
-> Regards,
-> Neelesh
->
->>
->> Test results:
->> -------------
->> Host:
->> [root@tul169p1 ~]# ls -l /sys/class/rtc/
->> total 0
->> lrwxrwxrwx 1 root root 0 Oct 14 03:07 rtc0 -> 
->> ../../devices/opal-rtc/rtc/rtc0
->> [root@tul169p1 ~]# cat /sys/devices/opal-rtc/rtc/rtc0/time
->> 08:10:07
->> [root@tul169p1 ~]# echo `date '+%s' -d '+ 2 minutes'` > 
->> /sys/class/rtc/rtc0/wakealarm
->> [root@tul169p1 ~]# cat /sys/class/rtc/rtc0/wakealarm
->> 1413274345
->> [root@tul169p1 ~]#
->>
->> FSP:
->> $ smgr mfgState
->> standby
->> $ rtim timeofday
->>
->> System time is valid: 2014/10/14 08:12:04.225115
->>
->> $ smgr mfgState
->> ipling
->> $
->>
->> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
->> ---
->>
->> Changes in v3
->> =============
->> - Rebased to the latest tree.
->>
->> Changes in v2
->> =============
->> - Added Documentation/devicetree/bindings/rtc/rtc-opal.txt
->> - Explicitly turn off RTC_UIE mode by setting 'rtc->uie_unsupported'
->>
->>   Documentation/devicetree/bindings/rtc/rtc-opal.txt |   16 +
->>   arch/powerpc/include/asm/opal.h                    |    7 -
->>   arch/powerpc/kernel/time.c                         |    1
->>   arch/powerpc/platforms/powernv/opal-async.c        |    3
->>   arch/powerpc/platforms/powernv/opal-rtc.c          |   65 +----
->>   arch/powerpc/platforms/powernv/opal-wrappers.S     |    2
->>   arch/powerpc/platforms/powernv/opal.c              |    6
->>   arch/powerpc/platforms/powernv/setup.c             |    2
->>   drivers/rtc/Kconfig                                |   11 +
->>   drivers/rtc/Makefile                               |    1
->>   drivers/rtc/rtc-opal.c                             |  261 
->> ++++++++++++++++++++
->>   11 files changed, 325 insertions(+), 50 deletions(-)
->>   create mode 100644 Documentation/devicetree/bindings/rtc/rtc-opal.txt
->>   create mode 100644 drivers/rtc/rtc-opal.c
->>
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+That commit added randomize_et_dyn(), which correctly randomized the addresses,
+but failed to honor PF_RANDOMIZE. That means it was not possible to disable PIE
+randomization via the personality flag, or /proc/sys/kernel/randomize_va_space.
+
+Since then there has been generic support for PIE randomization added to
+binfmt_elf.c, selectable via ARCH_BINFMT_ELF_RANDOMIZE_PIE.
+
+Enabling that allows us to drop randomize_et_dyn(), which means we start
+honoring PF_RANDOMIZE correctly.
+
+It also causes a fairly major change to how we layout PIE binaries.
+
+Currently we will place the binary at 512MB-520MB for 32 bit binaries, or
+512MB-1.5GB for 64 bit binaries, eg:
+
+    $ cat /proc/$$/maps
+    4e550000-4e580000 r-xp 00000000 08:02 129813       /bin/dash
+    4e580000-4e590000 rw-p 00020000 08:02 129813       /bin/dash
+    10014110000-10014140000 rw-p 00000000 00:00 0      [heap]
+    3fffaa3f0000-3fffaa5a0000 r-xp 00000000 08:02 921  /lib/powerpc64le-linux-gnu/libc-2.19.so
+    3fffaa5a0000-3fffaa5b0000 rw-p 001a0000 08:02 921  /lib/powerpc64le-linux-gnu/libc-2.19.so
+    3fffaa5c0000-3fffaa5d0000 rw-p 00000000 00:00 0 
+    3fffaa5d0000-3fffaa5f0000 r-xp 00000000 00:00 0    [vdso]
+    3fffaa5f0000-3fffaa620000 r-xp 00000000 08:02 1246 /lib/powerpc64le-linux-gnu/ld-2.19.so
+    3fffaa620000-3fffaa630000 rw-p 00020000 08:02 1246 /lib/powerpc64le-linux-gnu/ld-2.19.so
+    3ffffc340000-3ffffc370000 rw-p 00000000 00:00 0    [stack]
+
+With this commit applied we don't do any special randomisation for the binary,
+and instead rely on mmap randomisation. This means the binary ends up at high
+addresses, eg:
+
+    $ cat /proc/$$/maps
+    3fff99820000-3fff999d0000 r-xp 00000000 08:02 921    /lib/powerpc64le-linux-gnu/libc-2.19.so
+    3fff999d0000-3fff999e0000 rw-p 001a0000 08:02 921    /lib/powerpc64le-linux-gnu/libc-2.19.so
+    3fff999f0000-3fff99a00000 rw-p 00000000 00:00 0 
+    3fff99a00000-3fff99a20000 r-xp 00000000 00:00 0      [vdso]
+    3fff99a20000-3fff99a50000 r-xp 00000000 08:02 1246   /lib/powerpc64le-linux-gnu/ld-2.19.so
+    3fff99a50000-3fff99a60000 rw-p 00020000 08:02 1246   /lib/powerpc64le-linux-gnu/ld-2.19.so
+    3fff99a60000-3fff99a90000 r-xp 00000000 08:02 129813 /bin/dash
+    3fff99a90000-3fff99aa0000 rw-p 00020000 08:02 129813 /bin/dash
+    3fffc3de0000-3fffc3e10000 rw-p 00000000 00:00 0      [stack]
+    3fffc55e0000-3fffc5610000 rw-p 00000000 00:00 0      [heap]
+
+Although this should be OK, it's possible it might break badly written
+binaries that make assumptions about the address space layout.
+
+
+cheers
