@@ -1,26 +1,38 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yk0-x232.google.com (mail-yk0-x232.google.com
- [IPv6:2607:f8b0:4002:c07::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21D991A07D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 16:47:43 +1100 (AEDT)
-Received: by mail-yk0-f178.google.com with SMTP id 20so3620074yks.37
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:47:41 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <544DE9B0.2050500@linux.vnet.ibm.com>
-References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
- <1413487800-7162-12-git-send-email-kernelfans@gmail.com>
- <544DE9B0.2050500@linux.vnet.ibm.com>
-Date: Tue, 18 Nov 2014 13:47:41 +0800
-Message-ID: <CAFgQCTt6NDtsmmw4p3EigjzcpWQdZCxx9qZqQwin32fTF0pKaA@mail.gmail.com>
-Subject: Re: [RFC 11/11] powerpc: kvm: Kconfig add an option for enabling
- secondary hwthread
-From: Liu ping fan <kernelfans@gmail.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A9881A062A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 17:17:23 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 18 Nov 2014 06:17:19 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 728AD1B08049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 06:17:28 +0000 (GMT)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAI6HGXY56688718
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 06:17:17 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAI6HGrQ025162
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 23:17:16 -0700
+Message-ID: <1416291158.2327.11.camel@TP420>
+Subject: Re: [powerpc] init nvram_pstore_info's buf_lock
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 18 Nov 2014 14:12:38 +0800
+In-Reply-To: <20141118043314.4517C14011D@ozlabs.org>
+References: <20141118043314.4517C14011D@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 27, 2014 at 2:44 PM, Preeti U Murthy
-<preeti@linux.vnet.ibm.com> wrote:
-> On 10/17/2014 01:00 AM, kernelfans@gmail.com wrote:
->> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kvm/Kconfig | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
->> index 602eb51..de38566 100644
->> --- a/arch/powerpc/kvm/Kconfig
->> +++ b/arch/powerpc/kvm/Kconfig
->> @@ -93,6 +93,10 @@ config KVM_BOOK3S_64_HV
->>
->>         If unsure, say N.
->>
->> +config KVMPPC_ENABLE_SECONDARY
->> +     tristate "KVM support for running on secondary hwthread in host"
->> +     depends on KVM_BOOK3S_64_HV
->
-> This patch is required ontop of all the rest :) The top patches won't
-> compile without this one. Every patch in the patchset should be able to
-> compile successfully without the aid of the patches that come after it.
->
-I think here is a conflict. If we do so, then we should make effort to
-prevent the independent patch to take effect before the whole patchset
-is applied.
+On 二, 2014-11-18 at 15:33 +1100, Michael Ellerman wrote:
+> On Mon, 2014-17-11 at 02:52:30 UTC, Li Zhong wrote:
+> > It seems nvram_pstore_info's buf_lock is not initialized before
+> > registering, which causes some strange behavior when trying to obtain
+> > the lock during kdump process.
+> 
+> What kind of strange behaviour? Does it still work and just print a warning?
+> 
+> It's static, so I'd expect it to be unlocked by default.
 
-Thx,
-Fan
+Yes, you are right. It still works. 
 
-> Regards
-> Preeti U Murthy
->
+I saw it on a UP configuration, noticed the console stopped for a couple
+of seconds, then "lockup suspected" warning printed out, but then it
+continued to run. 
+
+After some further checking, it seems working as designed for the UP
+spinlock debug, from the comments in spinlock_up.h
+
+ * In the debug case, 1 means unlocked, 0 means locked. (the values
+ * are inverted, to catch initialization bugs)
+
+So try lock fails, and lockup reported, but then arch_spin_lock()
+passes. 
+
+Thanks, Zhong
+
+> 
+> cheers
+> 
