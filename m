@@ -1,26 +1,26 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-f181.google.com (mail-wi0-f181.google.com
+ [209.85.212.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444F81A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 03:01:20 +1100 (AEDT)
-Date: Tue, 18 Nov 2014 16:01:12 +0000
-From: Mel Gorman <mgorman@suse.de>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/7] Replace _PAGE_NUMA with PAGE_NONE protections
-Message-ID: <20141118160112.GC2725@suse.de>
-References: <1415971986-16143-1-git-send-email-mgorman@suse.de>
- <877fyugrmc.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <877fyugrmc.fsf@linux.vnet.ibm.com>
-Cc: Rik van Riel <riel@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Hugh Dickins <hughd@google.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Kirill Shutemov <kirill.shutemov@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97FE01A04EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 03:10:47 +1100 (AEDT)
+Received: by mail-wi0-f181.google.com with SMTP id r20so6732692wiv.14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 08:10:41 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] of/platform: Move platform devices
+ =?iso-8859-1?Q?under=0D?= /sys/devices/platform
+To: Andrzej Hajda <a.hajda@samsung.com>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <546B2123.7060406@samsung.com>
+References: <1415097920-30014-1-git-send-email-grant.likely@linaro.org>
+ <546B2123.7060406@samsung.com>
+Date: Tue, 18 Nov 2014 16:10:38 +0000
+Message-Id: <20141118161038.192B7C40966@trevor.secretlab.ca>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,128 +30,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 17, 2014 at 01:56:19PM +0530, Aneesh Kumar K.V wrote:
-> Mel Gorman <mgorman@suse.de> writes:
+On Tue, 18 Nov 2014 11:36:19 +0100
+, Andrzej Hajda <a.hajda@samsung.com>
+ wrote:
+> On 11/04/2014 11:45 AM, Grant Likely wrote:
+> > Currently the devices created by drivers/of/platform.c get created at
+> > the root of /sys/devices. This goes against the typical pattern for
+> > sysfs where the top level /sys/devices structure contains categories of
+> > devices, and the structure of devices is placed below that. To fix this,
+> > make the code in drivers/of/platform.c follow the drivers/base/platform.c
+> > behaviour, and use &platform_bus as the default parent for all new
+> > platform_devices and amba_devices.
+> > 
+> > This change has been discussed for a long time, but nobody has actually
+> > acted on it. Userspace code that expects to find devices under a fixed
+> > /sys/devices/... path will be affected. It isn't /supposed/ to do that,
+> > but if anyone complains then I'll add a default-off workaround option to
+> > put them back into the root.
 > 
-> > This is follow up from the "pipe/page fault oddness" thread.
-> >
-> > Automatic NUMA balancing depends on being able to protect PTEs to trap a
-> > fault and gather reference locality information. Very broadly speaking it
-> > would mark PTEs as not present and use another bit to distinguish between
-> > NUMA hinting faults and other types of faults. It was universally loved
-> > by everybody and caused no problems whatsoever. That last sentence might
-> > be a lie.
-> >
-> > This series is very heavily based on patches from Linus and Aneesh to
-> > replace the existing PTE/PMD NUMA helper functions with normal change
-> > protections. I did alter and add parts of it but I consider them relatively
-> > minor contributions. Note that the signed-offs here need addressing. I
-> > couldn't use "From" or Signed-off-by from the original authors as the
-> > patches had to be broken up and they were never signed off. I expect the
-> > two people involved will just stick their signed-off-by on it.
+> One of side effects of this change is that platform drivers registering
+> other platform drivers or devices in their probe callback can deadlock
+> due to double device_lock on platform device. This is for example case
+> of exynos_drm driver[1]. I guess it could/should be fixed in exynos_drm.
+> Anyway it can affect other drivers as well. At least grep shows few
+> possible candidates:
+
+What on earth is that driver doing registering additional drivers in the
+probe hook?!? That's madness, and should be treated as a bug.
+
+g.
+
+> 
+> $ git grep -p platform_driver_register | grep -A1 -P '_probe\(struct
+> platform_device'
+> 
+> drivers/gpu/drm/exynos/exynos_drm_drv.c=static int
+> exynos_drm_platform_probe(struct platform_device *pdev)
+> drivers/gpu/drm/exynos/exynos_drm_drv.c:	ret =
+> platform_driver_register(&fimd_driver);
+> --
+> drivers/gpu/drm/sti/sti_drm_drv.c=static int
+> sti_drm_platform_probe(struct platform_device *pdev)
+> drivers/gpu/drm/sti/sti_drm_drv.c:
+> platform_driver_register(&sti_drm_master_driver);
+> --
+> drivers/mtd/nand/atmel_nand.c=static int atmel_nand_probe(struct
+> platform_device *pdev)
+> drivers/mtd/nand/atmel_nand.c:	res =
+> platform_driver_register(&atmel_nand_nfc_driver);
 > 
 > 
-> How about the additional change listed below for ppc64 ? One part of the
-> patch is to make sure that we don't hit the WARN_ON in set_pte and set_pmd
-> because we find the _PAGE_PRESENT bit set in case of numa fault. I
-> ended up relaxing the check there.
+> [1]: http://permalink.gmane.org/gmane.comp.video.dri.devel/117727
 > 
-
-I folded the set_pte_at and set_pmd_at changes into the patch "mm: Convert
-p[te|md]_numa users to p[te|md]_protnone_numa" with one change -- both
-set_pte_at and set_pmd_at checks are under CONFIG_DEBUG_VM for consistency.
-
-> Second part of the change is to add a WARN_ON to make sure we are
-> not depending on DSISR_PROTFAULT for anything else. We ideally should not
-> get a DSISR_PROTFAULT for PROT_NONE or NUMA fault. hash_page_mm do check
-> whether the access is allowed by pte before inserting a pte into hash
-> page table. Hence we will never find a PROT_NONE or PROT_NONE_NUMA ptes
-> in hash page table. But it is good to run with VM_WARN_ON ?
+> Regards
+> Andrzej
 > 
-
-Due to the nature of the check and when they are hit, I converted it to
-a WARN_ON_ONCE. Due to the exceptional circumstance the overhead should
-be non-existant and shouldn't need to be hidden below VM_WARN_ON. I also
-noted that with the patch the kernel  potentially no longer recovers
-from this exceptional cirsumstance and instead falls through. To avoid
-this, I preserved the "goto out_unlock".
-
-Is this still ok?
-
----8<---
-ppc64: Add paranoid warnings for unexpected DSISR_PROTFAULT
-
-ppc64 should not be depending on DSISR_PROTFAULT and it's unexpected
-if they are triggered. This patch adds warnings just in case they
-are being accidentally depended upon.
-
-Requires-signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Mel Gorman <mgorman@suse.de>
----
- arch/powerpc/mm/copro_fault.c |  7 ++++++-
- arch/powerpc/mm/fault.c       | 20 +++++++++-----------
- 2 files changed, 15 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index 5a236f0..46152aa 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -64,7 +64,12 @@ int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
- 		if (!(vma->vm_flags & VM_WRITE))
- 			goto out_unlock;
- 	} else {
--		if (dsisr & DSISR_PROTFAULT)
-+		/*
-+		 * protfault should only happen due to us
-+		 * mapping a region readonly temporarily. PROT_NONE
-+		 * is also covered by the VMA check above.
-+		 */
-+		if (WARN_ON_ONCE(dsisr & DSISR_PROTFAULT))
- 			goto out_unlock;
- 		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
- 			goto out_unlock;
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 5007497..9d6e0b3 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -396,17 +396,6 @@ good_area:
- #endif /* CONFIG_8xx */
- 
- 	if (is_exec) {
--#ifdef CONFIG_PPC_STD_MMU
--		/* Protection fault on exec go straight to failure on
--		 * Hash based MMUs as they either don't support per-page
--		 * execute permission, or if they do, it's handled already
--		 * at the hash level. This test would probably have to
--		 * be removed if we change the way this works to make hash
--		 * processors use the same I/D cache coherency mechanism
--		 * as embedded.
--		 */
--#endif /* CONFIG_PPC_STD_MMU */
--
- 		/*
- 		 * Allow execution from readable areas if the MMU does not
- 		 * provide separate controls over reading and executing.
-@@ -421,6 +410,14 @@ good_area:
- 		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
- 		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
- 			goto bad_area;
-+#ifdef CONFIG_PPC_STD_MMU
-+		/*
-+		 * protfault should only happen due to us
-+		 * mapping a region readonly temporarily. PROT_NONE
-+		 * is also covered by the VMA check above.
-+		 */
-+		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
-+#endif /* CONFIG_PPC_STD_MMU */
- 	/* a write */
- 	} else if (is_write) {
- 		if (!(vma->vm_flags & VM_WRITE))
-@@ -430,6 +427,7 @@ good_area:
- 	} else {
- 		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
- 			goto bad_area;
-+		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
- 	}
- 
- 	/*
+> 
+> > 
+> > Signed-off-by: Grant Likely <grant.likely@linaro.org>
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: Arnd Bergmann <arnd@arndb.de>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> >  drivers/of/platform.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> > index 3b64d0bf5bba..7c6771986c06 100644
+> > --- a/drivers/of/platform.c
+> > +++ b/drivers/of/platform.c
+> > @@ -138,7 +138,7 @@ struct platform_device *of_device_alloc(struct device_node *np,
+> >  	}
+> >  
+> >  	dev->dev.of_node = of_node_get(np);
+> > -	dev->dev.parent = parent;
+> > +	dev->dev.parent = parent ? : &platform_bus;
+> >  
+> >  	if (bus_id)
+> >  		dev_set_name(&dev->dev, "%s", bus_id);
+> > @@ -291,7 +291,7 @@ static struct amba_device *of_amba_device_create(struct device_node *node,
+> >  
+> >  	/* setup generic device info */
+> >  	dev->dev.of_node = of_node_get(node);
+> > -	dev->dev.parent = parent;
+> > +	dev->dev.parent = parent ? : &platform_bus;
+> >  	dev->dev.platform_data = platform_data;
+> >  	if (bus_id)
+> >  		dev_set_name(&dev->dev, "%s", bus_id);
+> > 
+> 
