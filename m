@@ -1,42 +1,36 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9824C1A0809
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 03:33:43 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Nov 2014 22:03:40 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 764F4E005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 22:03:52 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAIGX8FO20054138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 22:03:09 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAIGXUoj004424
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 22:03:31 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mel Gorman <mgorman@suse.de>
-Subject: Re: [RFC PATCH 0/7] Replace _PAGE_NUMA with PAGE_NONE protections
-In-Reply-To: <20141118160112.GC2725@suse.de>
-References: <1415971986-16143-1-git-send-email-mgorman@suse.de>
- <877fyugrmc.fsf@linux.vnet.ibm.com> <20141118160112.GC2725@suse.de>
-Date: Tue, 18 Nov 2014 22:03:30 +0530
-Message-ID: <87y4r879k5.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Rik van Riel <riel@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Hugh Dickins <hughd@google.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Kirill Shutemov <kirill.shutemov@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 514BE1A05F3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 03:52:46 +1100 (AEDT)
+Received: from mail-wi0-f170.google.com (mail-wi0-f170.google.com
+ [209.85.212.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 95790140174
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2014 03:52:45 +1100 (AEDT)
+Received: by mail-wi0-f170.google.com with SMTP id bs8so6900455wib.5
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2014 08:52:42 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v3] of/base: Fix PowerPC address parsing hack
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1415948103.666.47.camel@kernel.crashing.org>
+References: <1415771461.5124.33.camel@kernel.crashing.org>
+ <20141113091036.4e9ec43d@canb.auug.org.au>
+ <1415833725.5124.53.camel@kernel.crashing.org>
+ <1415839522.5124.58.camel@kernel.crashing.org>
+ <CACxGe6s0CXL2oRKCLhzzycOKWJStxdZsc1pn_X8fLuAqCguBMA@mail.gmail.com>
+ <1415883227.666.6.camel@kernel.crashing.org>
+ <1415948103.666.47.camel@kernel.crashing.org>
+Date: Tue, 18 Nov 2014 16:52:38 +0000
+Message-Id: <20141118165238.3C4FEC40966@trevor.secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Rob Herring <robherring2@gmail.com>,
+ Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,144 +40,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mel Gorman <mgorman@suse.de> writes:
+On Fri, 14 Nov 2014 17:55:03 +1100
+, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ wrote:
+> We have a historical hack that treats missing ranges properties as the
+> equivalent of an empty one. This is needed for ancient PowerMac "bad"
+> device-trees, and shouldn't be enabled for any other PowerPC platform,
+> otherwise we get some nasty layout of devices in sysfs or even
+> duplication when a set of otherwise identically named devices is
+> created multiple times under a different parent node with no ranges
+> property.
+> 
+> This fix is needed for the PowerNV i2c busses to be exposed properly
+> and will fix a number of other embedded cases.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: <stable@vger.kernel.org>
 
-> On Mon, Nov 17, 2014 at 01:56:19PM +0530, Aneesh Kumar K.V wrote:
->> Mel Gorman <mgorman@suse.de> writes:
->> 
->> > This is follow up from the "pipe/page fault oddness" thread.
->> >
->> > Automatic NUMA balancing depends on being able to protect PTEs to trap a
->> > fault and gather reference locality information. Very broadly speaking it
->> > would mark PTEs as not present and use another bit to distinguish between
->> > NUMA hinting faults and other types of faults. It was universally loved
->> > by everybody and caused no problems whatsoever. That last sentence might
->> > be a lie.
->> >
->> > This series is very heavily based on patches from Linus and Aneesh to
->> > replace the existing PTE/PMD NUMA helper functions with normal change
->> > protections. I did alter and add parts of it but I consider them relatively
->> > minor contributions. Note that the signed-offs here need addressing. I
->> > couldn't use "From" or Signed-off-by from the original authors as the
->> > patches had to be broken up and they were never signed off. I expect the
->> > two people involved will just stick their signed-off-by on it.
->> 
->> 
->> How about the additional change listed below for ppc64 ? One part of the
->> patch is to make sure that we don't hit the WARN_ON in set_pte and set_pmd
->> because we find the _PAGE_PRESENT bit set in case of numa fault. I
->> ended up relaxing the check there.
->> 
->
-> I folded the set_pte_at and set_pmd_at changes into the patch "mm: Convert
-> p[te|md]_numa users to p[te|md]_protnone_numa" with one change -- both
-> set_pte_at and set_pmd_at checks are under CONFIG_DEBUG_VM for consistency.
->
->> Second part of the change is to add a WARN_ON to make sure we are
->> not depending on DSISR_PROTFAULT for anything else. We ideally should not
->> get a DSISR_PROTFAULT for PROT_NONE or NUMA fault. hash_page_mm do check
->> whether the access is allowed by pte before inserting a pte into hash
->> page table. Hence we will never find a PROT_NONE or PROT_NONE_NUMA ptes
->> in hash page table. But it is good to run with VM_WARN_ON ?
->> 
->
-> Due to the nature of the check and when they are hit, I converted it to
-> a WARN_ON_ONCE. Due to the exceptional circumstance the overhead should
-> be non-existant and shouldn't need to be hidden below VM_WARN_ON. I also
-> noted that with the patch the kernel  potentially no longer recovers
-> from this exceptional cirsumstance and instead falls through. To avoid
-> this, I preserved the "goto out_unlock".
->
-> Is this still ok?
->
-> ---8<---
-> ppc64: Add paranoid warnings for unexpected DSISR_PROTFAULT
->
-> ppc64 should not be depending on DSISR_PROTFAULT and it's unexpected
-> if they are triggered. This patch adds warnings just in case they
-> are being accidentally depended upon.
->
-> Requires-signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Mel Gorman <mgorman@suse.de>
+Acked-by: Grant Likely <grant.likely@linaro.org>
+
+Rob will pick up this patch and send it to Linus in his fixups tree for
+v3.18
+
+g.
+
 > ---
->  arch/powerpc/mm/copro_fault.c |  7 ++++++-
->  arch/powerpc/mm/fault.c       | 20 +++++++++-----------
->  2 files changed, 15 insertions(+), 12 deletions(-)
->
-> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-> index 5a236f0..46152aa 100644
-> --- a/arch/powerpc/mm/copro_fault.c
-> +++ b/arch/powerpc/mm/copro_fault.c
-> @@ -64,7 +64,12 @@ int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
->  		if (!(vma->vm_flags & VM_WRITE))
->  			goto out_unlock;
->  	} else {
-> -		if (dsisr & DSISR_PROTFAULT)
-> +		/*
-> +		 * protfault should only happen due to us
-> +		 * mapping a region readonly temporarily. PROT_NONE
-> +		 * is also covered by the VMA check above.
-> +		 */
-> +		if (WARN_ON_ONCE(dsisr & DSISR_PROTFAULT))
->  			goto out_unlock;
->  		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
->  			goto out_unlock;
-
-
-we should do that DSISR_PROTFAILT check after vma->vm_flags. It is not
-that we will not hit DSISR_PROTFAULT, what we want to ensure here is that
-we get a prot fault only for cases convered by that vma check. So
-everything should be taking the if (!(vma->vm_flags & (VM_READ |
-VM_EXEC))) branch if it is a protfault. If not we would like to know
-about that. And hence the idea of not using WARN_ON_ONCE. I was also not
-sure whether we want to enable that always. The reason for keeping that
-within CONFIG_DEBUG_VM is to make sure that nobody ends up depending on
-PROTFAULT outside the vma check convered. So expectations is that
-developers working on feature will run with DEBUG_VM enable and finds
-this warning. We don't expect to hit this otherwise.
-
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 5007497..9d6e0b3 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -396,17 +396,6 @@ good_area:
->  #endif /* CONFIG_8xx */
->
->  	if (is_exec) {
-> -#ifdef CONFIG_PPC_STD_MMU
-> -		/* Protection fault on exec go straight to failure on
-> -		 * Hash based MMUs as they either don't support per-page
-> -		 * execute permission, or if they do, it's handled already
-> -		 * at the hash level. This test would probably have to
-> -		 * be removed if we change the way this works to make hash
-> -		 * processors use the same I/D cache coherency mechanism
-> -		 * as embedded.
-> -		 */
-> -#endif /* CONFIG_PPC_STD_MMU */
-> -
->  		/*
->  		 * Allow execution from readable areas if the MMU does not
->  		 * provide separate controls over reading and executing.
-> @@ -421,6 +410,14 @@ good_area:
->  		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
->  		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
->  			goto bad_area;
-> +#ifdef CONFIG_PPC_STD_MMU
-> +		/*
-> +		 * protfault should only happen due to us
-> +		 * mapping a region readonly temporarily. PROT_NONE
-> +		 * is also covered by the VMA check above.
-> +		 */
-> +		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
-> +#endif /* CONFIG_PPC_STD_MMU */
->  	/* a write */
->  	} else if (is_write) {
->  		if (!(vma->vm_flags & VM_WRITE))
-> @@ -430,6 +427,7 @@ good_area:
->  	} else {
->  		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
->  			goto bad_area;
-> +		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
+> 
+> V2: Make it less horrendously ugly
+> 
+> V3: use IS_ENABLED()
+> 
+>  drivers/of/address.c | 19 ++++++++++++++++---
+>  1 file changed, 16 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> index e371825..42e416a 100644
+> --- a/drivers/of/address.c
+> +++ b/drivers/of/address.c
+> @@ -403,6 +403,21 @@ static struct of_bus *of_match_bus(struct device_node *np)
+>  	return NULL;
+>  }
+>  
+> +static int of_empty_ranges_quirk(void)
+> +{
+> +	if (IS_ENABLED(CONFIG_PPC)) {
+> +		/* To save cycles, we cache the result */
+> +		static int quirk_state = -1;
+> +
+> +		if (quirk_state < 0)
+> +			quirk_state =
+> +				of_machine_is_compatible("Power Macintosh") ||
+> +				of_machine_is_compatible("MacRISC");
+> +		return quirk_state;
+> +	}
+> +	return false;
+> +}
+> +
+>  static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+>  			    struct of_bus *pbus, __be32 *addr,
+>  			    int na, int ns, int pna, const char *rprop)
+> @@ -428,12 +443,10 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+>  	 * This code is only enabled on powerpc. --gcl
+>  	 */
+>  	ranges = of_get_property(parent, rprop, &rlen);
+> -#if !defined(CONFIG_PPC)
+> -	if (ranges == NULL) {
+> +	if (ranges == NULL && !of_empty_ranges_quirk()) {
+>  		pr_err("OF: no ranges; cannot translate\n");
+>  		return 1;
 >  	}
->
->  	/*
+> -#endif /* !defined(CONFIG_PPC) */
+>  	if (ranges == NULL || rlen == 0) {
+>  		offset = of_read_number(addr, na);
+>  		memset(addr, 0, pna * 4);
+> 
+> 
+> 
