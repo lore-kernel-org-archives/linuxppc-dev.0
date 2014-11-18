@@ -1,24 +1,28 @@
-Return-Path: <vvijayan@mvista.com>
-Received: from mail-ie0-f177.google.com (mail-ie0-f177.google.com
- [209.85.223.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1FAB1A08F5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 18:10:41 +1100 (AEDT)
-Received: by mail-ie0-f177.google.com with SMTP id tr6so4502993ieb.22
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 23:10:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D8831A08C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 19:34:02 +1100 (AEDT)
+Message-ID: <546B041A.4060403@huawei.com>
+Date: Tue, 18 Nov 2014 16:32:26 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <1416207214.2826.3.camel@concordia>
-References: <1415956325-10124-1-git-send-email-vvijayan@mvista.com>
- <1416207214.2826.3.camel@concordia>
-From: Vineeth Vijayan <vvijayan@mvista.com>
-Date: Tue, 18 Nov 2014 12:40:19 +0530
-Message-ID: <CAOpNGctfy1uE4zLaNH5D1r_Hsj60FE+RkKR7UawvUSecbdcVUw@mail.gmail.com>
-Subject: Re: [PATCH] [powerpc] Fix Text randomization
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: multipart/alternative; boundary=047d7bdc9daee4d8b405081ccadc
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out
+ of pci_create_root_bus()
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+ <2507218.mHliopJb05@wuerfel>
+In-Reply-To: <2507218.mHliopJb05@wuerfel>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Suravee.Suthikulpanit@amd.com,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-ia64@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7bdc9daee4d8b405081ccadc
-Content-Type: text/plain; charset=UTF-8
 
-On Mon, Nov 17, 2014 at 12:23 PM, Michael Ellerman <mpe@ellerman.id.au>
-wrote:
+>> +LIST_HEAD(pci_host_bridge_list);
+>> +DECLARE_RWSEM(pci_host_bridge_sem);
+> 
+> Unless the pci_host_bridge_sem is accessed thousands of times per second,
+> it's normally better to use a simple mutex instead.
 
-> On Fri, 2014-11-14 at 14:42 +0530, Vineeth Vijayan wrote:
-> > Now there is no way to disable TEXT randomization on a PPC32/PPC64
-> > machine. Text randomization happens even in the case of "echo 0 >
-> > /proc/sys/kernel/randomize_va_space"
-> >
-> > This happens due to the incorrect definition of ELF_ET_DYN_BASE
-> > at arch/powerpc/include/asm/elf.h
-> >
-> > The function randomize_et_dyn is redundant and is removed.
->
-> The patch looks OK, but for the change log I was thinking something more
-> like
-> this:
->
->
-> powerpc: Use generic PIE randomization
->
-> Do you want me to send a new patch with updated change log as mentioned ?
+OK, I will use simple mutex instead.
 
---047d7bdc9daee4d8b405081ccadc
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> 
+>> +static struct resource busn_resource = {
+>> +	.name	= "PCI busn",
+>> +	.start	= 0,
+>> +	.end	= 255,
+>> +	.flags	= IORESOURCE_BUS,
+>> +};
+> 
+> I think it would be better to require callers to pass the bus resource
+> down to the function.
 
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On Mon, Nov 17, 2014 at 12:23 PM, Michael Ellerman <span dir=3D"ltr">&l=
-t;<a href=3D"mailto:mpe@ellerman.id.au" target=3D"_blank">mpe@ellerman.id.a=
-u</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margi=
-n:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><span class=3D"">=
-On Fri, 2014-11-14 at 14:42 +0530, Vineeth Vijayan wrote:<br>
-&gt; Now there is no way to disable TEXT randomization on a PPC32/PPC64<br>
-&gt; machine. Text randomization happens even in the case of &quot;echo 0 &=
-gt;<br>
-&gt; /proc/sys/kernel/randomize_va_space&quot;<br>
-&gt;<br>
-&gt; This happens due to the incorrect definition of ELF_ET_DYN_BASE<br>
-&gt; at arch/powerpc/include/asm/elf.h<br>
-&gt;<br>
-&gt; The function randomize_et_dyn is redundant and is removed.<br>
-<br>
-</span>The patch looks OK, but for the change log I was thinking something =
-more like<br>
-this:<br>
-<br>
-<br>
-powerpc: Use generic PIE randomization<br>
-<br></blockquote><div>Do you want me to send a new patch with updated chang=
-e log as mentioned ?<br></div></div></div></div>
+Hmm, I think most of caller will provide the bus resource, but some others
+will not give any bus resource, extremely, no any resources :(. But we still
+need properly configure their resources for compatibility.
 
---047d7bdc9daee4d8b405081ccadc--
+> 
+>> +struct pci_host_bridge *pci_create_host_bridge(
+>> +		struct device *parent, u32 db, 
+>> +		struct pci_ops *ops, void *sysdata, 
+>> +		struct list_head *resources)
+>> +{
+> 
+> Do we still need to pass the 'sysdata' in here? If we are guaranteed to
+> have a device pointer, we should always be able to get the driver
+> private data from dev_get_drvdata(host->dev->parent).
+
+We need, some platforms pass NULL pointer as host bridge parent.
+
+> 
+>> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
+>> +	if (!host)
+>> +		return NULL;
+> 
+> devm_kzalloc maybe?
+
+I don't know much detail about devm_kzalloc(), but we have no pci host driver
+here, and I found no devm_kzalloc() uses in core PCI code before.
+
+> 
+>> +	if (!resources) {
+>> +		/* Use default IO/MEM/BUS resources*/
+>> +		pci_add_resource(&host->windows, &ioport_resource);
+>> +		pci_add_resource(&host->windows, &iomem_resource);
+>> +		pci_add_resource(&host->windows, &busn_resource);
+>> +	} else {
+>> +		list_for_each_entry_safe(window, n, resources, list)
+>> +			list_move_tail(&window->list, &host->windows);
+>> +	}
+> 
+> I think we should assume that the correct resources are passed. You
+> could add a wrapper around this function to convert old platforms
+> though.
+
+OK, I will move these code out of pci_create_host_bridge, and add a wrapper
+to setup the default resources.
+
+> 
+>> +EXPORT_SYMBOL(pci_create_host_bridge);
+> 
+> EXPORT_SYMBOL_GPL() maybe?
+
+OK, will update it.
+
+> 
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 8b11b38..daa7f40 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
+>>  struct pci_host_bridge {
+>>  	struct device dev;
+>>  	struct pci_bus *bus;		/* root bus */
+>> +	struct list_head list;
+>>  	struct list_head windows;	/* pci_host_bridge_windows */
+>> +	int busnum;
+> 
+> The busnum should already be implied through the bus resource.
+
+Yes, I will consider remove it and introduce a helper function to get the root bus number, thanks!
+
+Thanks!
+Yijing.
+
+> 
+> 	Arnd
+> 
+> .
+> 
+
+
+-- 
+Thanks!
+Yijing
