@@ -1,26 +1,18 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yk0-x232.google.com (mail-yk0-x232.google.com
- [IPv6:2607:f8b0:4002:c07::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E18E71A065E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 16:17:20 +1100 (AEDT)
-Received: by mail-yk0-f178.google.com with SMTP id 20so3635371yks.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:17:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B331A065E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 16:20:37 +1100 (AEDT)
+Date: Mon, 17 Nov 2014 23:20:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Pull request: scottwood/linux.git next
+Message-ID: <20141118052023.GA10687@home.buserror.net>
 MIME-Version: 1.0
-In-Reply-To: <544DC46A.4050906@linux.vnet.ibm.com>
-References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
- <1413487800-7162-4-git-send-email-kernelfans@gmail.com>
- <544DC46A.4050906@linux.vnet.ibm.com>
-Date: Tue, 18 Nov 2014 13:17:17 +0800
-Message-ID: <CAFgQCTvPw0NRG2k5F4pGXC=LP0rC-FJfL46F71JSh4EZJ3zFRQ@mail.gmail.com>
-Subject: Re: [RFC 03/11] powerpc: kvm: add interface to control kvm function
- on a core
-From: Liu ping fan <kernelfans@gmail.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,130 +22,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 27, 2014 at 12:04 PM, Preeti U Murthy
-<preeti@linux.vnet.ibm.com> wrote:
-> Hi Liu,
->
-> On 10/17/2014 12:59 AM, kernelfans@gmail.com wrote:
->> When kvm is enabled on a core, we migrate all external irq to primary
->> thread. Since currently, the kvmirq logic is handled by the primary
->> hwthread.
->>
->> Todo: this patch lacks re-enable of irqbalance when kvm is disable on
->> the core
->
-> Why is a sysfs file introduced to trigger irq migration? Why is it not
-> done during kvm module insert ? And similarly spread interrupts when the
-> module is removed? Isn't this a saner way ?
+Highlights include a bunch of 8xx optimizations, device tree bindings for
+Freescale BMan, QMan, and FMan datapath components, misc device tree
+updates, and inbound rio window support.
 
-Consider the scene: coreA and coreB, we want to enable KVM on coreA,
-while keeping coreB unchanged.
-In fact, I try to acheive something un-symmetric on the platform. Do
-you think it is an justification?
->>
->> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/sysfs.c            | 39 ++++++++++++++++++++++++++++++++++
->>  arch/powerpc/sysdev/xics/xics-common.c | 12 +++++++++++
->>  2 files changed, 51 insertions(+)
->>
->> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
->> index 67fd2fd..a2595dd 100644
->> --- a/arch/powerpc/kernel/sysfs.c
->> +++ b/arch/powerpc/kernel/sysfs.c
->> @@ -552,6 +552,45 @@ static void sysfs_create_dscr_default(void)
->>       if (cpu_has_feature(CPU_FTR_DSCR))
->>               err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
->>  }
->> +
->> +#ifdef CONFIG_KVMPPC_ENABLE_SECONDARY
->> +#define NR_CORES     (CONFIG_NR_CPUS/threads_per_core)
->> +static DECLARE_BITMAP(kvm_on_core, NR_CORES) __read_mostly
->> +
->> +static ssize_t show_kvm_enable(struct device *dev,
->> +             struct device_attribute *attr, char *buf)
->> +{
->> +}
->> +
->> +static ssize_t __used store_kvm_enable(struct device *dev,
->> +             struct device_attribute *attr, const char *buf,
->> +             size_t count)
->> +{
->> +     struct cpumask stop_cpus;
->> +     unsigned long core, thr;
->> +
->> +     sscanf(buf, "%lx", &core);
->> +     if (core > NR_CORES)
->> +             return -1;
->> +     if (!test_bit(core, &kvm_on_core))
->> +             for (thr = 1; thr< threads_per_core; thr++)
->> +                     if (cpu_online(thr * threads_per_core + thr))
->> +                             cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
->
-> What is the above logic trying to do? Did you mean
-> cpu_online(threads_per_core * core + thr) ?
->
-Yeah. My mistake, should be cpumask_set_cpu(core * threads_per_core +
-thr, &stop_cpus)
+The following changes since commit 0df1f2487d2f0d04703f142813d53615d62a1da4:
 
->> +
->> +     stop_machine(xics_migrate_irqs_away_secondary, NULL, &stop_cpus);
->> +     set_bit(core, &kvm_on_core);
->> +     return count;
->> +}
->> +
->> +static DEVICE_ATTR(kvm_enable, 0600,
->> +     show_kvm_enable, store_kvm_enable);
->> +
->> +static void sysfs_create_kvm_enable(void)
->> +{
->> +     device_create_file(cpu_subsys.dev_root, &dev_attr_kvm_enable);
->> +}
->> +#endif
->> +
->>  #endif /* CONFIG_PPC64 */
->>
->>  #ifdef HAS_PPC_PMC_PA6T
->> diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
->> index fe0cca4..68b33d8 100644
->> --- a/arch/powerpc/sysdev/xics/xics-common.c
->> +++ b/arch/powerpc/sysdev/xics/xics-common.c
->> @@ -258,6 +258,18 @@ unlock:
->>               raw_spin_unlock_irqrestore(&desc->lock, flags);
->>       }
->>  }
->> +
->> +int xics_migrate_irqs_away_secondary(void *data)
->> +{
->> +     int cpu = smp_processor_id();
->> +     if(cpu%thread_per_core != 0) {
->> +             WARN(condition, format...);
->> +             return 0;
->> +     }
->> +     /* In fact, if we can migrate the primary, it will be more fine */
->> +     ();
->
-> Isn't the aim of the patch to migrate irqs away from the secondary onto
-> the primary? But from above it looks like we are returning when we find
-> out that we are secondary threads, isn't it?
->
-Yes, will fix in next version.
+  Linux 3.18-rc3 (2014-11-02 15:01:51 -0800)
 
->> +     return 0;
->> +}
->>  #endif /* CONFIG_HOTPLUG_CPU */
->
-> Note that xics_migrate_irqs_away() is defined under CONFIG_CPU_HOTPLUG.
-> But we will need this option on PowerKVM even when hotplug is not
-> configured in.
->
-Yes, will fix the dependency in next version
+are available in the git repository at:
 
-Thx,
-Fan
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 
-> Regards
-> Preeti U Murthy
->>  #ifdef CONFIG_SMP
->>
->
+for you to fetch changes up to 76f3e2929bb6b476fb02b519ad953e2e29ee7bd5:
+
+  powerpc/config: Enable memory driver (2014-11-17 19:36:42 -0600)
+
+----------------------------------------------------------------
+Ashish Kumar (1):
+      powerpc/mpc85xx: Remove SPI and NAND partition from bsc9131rdb.dtsi
+
+Emil Medve (7):
+      powerpc/dts: Factorize the clock control node
+      dt/bindings: qoriq-clock: Add binding for the platform PLL
+      powerpc/dts: Add node(s) for the platform PLL
+      dt/bindings: Introduce the FSL QorIQ DPAA BMan
+      dt/bindings: Introduce the FSL QorIQ DPAA BMan portal(s)
+      dt/bindings: Introduce the FSL QorIQ DPAA QMan
+      dt/bindings: Introduce the FSL QorIQ DPAA QMan portal(s)
+
+Hongtao Jia (2):
+      powerpc: Add ADT7461 to device tree for supported boards
+      powerpc: Add INA220 to device tree for supported boards
+
+Igal Liberman (2):
+      powerpc/fsl: Added rcw registers to global utility registers
+      powerpc/fsl: Frame Manager Device Tree binding document
+
+LEROY Christophe (14):
+      powerpc/8xx: exception InstructionAccess does not exist on MPC8xx
+      powerpc/8xx: DataAccess exception not generated by MPC8xx
+      powerpc/8xx: No need to restore registers and save them again.
+      powerpc/8xx: Use M_TW instead of M_TWB
+      powerpc/8xx: Don't use MD_TWC for walk
+      powerpc/8xx: Use PAGE size related consts
+      powerpc/8xx: Const for TLB RPN forced value
+      powerpc/8xx: Implement 16k pages
+      powerpc/8xx: Better readibility of ERRATA CPU6 handling
+      powerpc/8xx: set PTE bit 22 off TLBmiss
+      powerpc/8xx: _PMD_PRESENT already set in level 1 entries
+      powerpc/8xx: Don't restore regs to save them again.
+      powerpc/8xx: Use DAR to save r3 for CPU6 ERRATA
+      powerpc/8xx: Invalidate non present TLB as early as possible
+
+Martijn de Gouw (1):
+      powerpc/fsl-rio: add support for mapping inbound windows
+
+Paul Bolle (1):
+      powerpc/8xx: Remove Kconfig symbol FADS
+
+Prabhakar Kushwaha (1):
+      powerpc/config: Enable memory driver
+
+Scott Wood (1):
+      powerpc/fsl: Update fman dt binding with clock name and qbman link
+
+ .../devicetree/bindings/clock/qoriq-clock.txt      |  14 +-
+ .../devicetree/bindings/powerpc/fsl/fman.txt       | 534 +++++++++++++++++++++
+ .../devicetree/bindings/soc/fsl/bman-portals.txt   |  56 +++
+ Documentation/devicetree/bindings/soc/fsl/bman.txt | 125 +++++
+ .../devicetree/bindings/soc/fsl/qman-portals.txt   | 154 ++++++
+ Documentation/devicetree/bindings/soc/fsl/qman.txt | 165 +++++++
+ arch/powerpc/Kconfig                               |   2 +-
+ arch/powerpc/boot/dts/b4860emu.dts                 |   4 +-
+ arch/powerpc/boot/dts/b4qds.dtsi                   |  23 +
+ arch/powerpc/boot/dts/bsc9131rdb.dtsi              |  50 --
+ arch/powerpc/boot/dts/fsl/b4420si-post.dtsi        |  28 +-
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        |  28 +-
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |  48 +-
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |  48 +-
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |  48 +-
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |  48 +-
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |  48 +-
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi     |  85 ++++
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi     |  68 +++
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  30 +-
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        |  29 +-
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |  29 +-
+ arch/powerpc/boot/dts/p3041ds.dts                  |  20 +
+ arch/powerpc/boot/dts/p5020ds.dts                  |  20 +
+ arch/powerpc/boot/dts/p5040ds.dts                  |  20 +
+ arch/powerpc/boot/dts/t104xrdb.dtsi                |   7 +
+ arch/powerpc/boot/dts/t208xqds.dtsi                |  11 +
+ arch/powerpc/boot/dts/t4240emu.dts                 |   4 +-
+ arch/powerpc/configs/corenet32_smp_defconfig       |   1 +
+ arch/powerpc/configs/corenet64_smp_defconfig       |   1 +
+ arch/powerpc/configs/mpc85xx_defconfig             |   1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 +
+ arch/powerpc/include/asm/fsl_guts.h                |   5 +-
+ arch/powerpc/include/asm/mmu-8xx.h                 |   2 +
+ arch/powerpc/include/asm/pgtable-ppc32.h           |  20 +
+ arch/powerpc/include/asm/pte-8xx.h                 |   7 +-
+ arch/powerpc/kernel/head_8xx.S                     | 230 ++++-----
+ arch/powerpc/mm/fault.c                            |   7 -
+ arch/powerpc/platforms/8xx/Kconfig                 |   4 -
+ arch/powerpc/sysdev/fsl_rio.c                      | 104 ++++
+ arch/powerpc/sysdev/fsl_rio.h                      |  13 +
+ 41 files changed, 1599 insertions(+), 543 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/bman-portals.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/bman.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/qman.txt
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
