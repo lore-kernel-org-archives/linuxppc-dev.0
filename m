@@ -1,27 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0143.outbound.protection.outlook.com [157.56.111.143])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7FB4E1A0108
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 12:28:21 +1100 (AEDT)
-Message-ID: <1416274083.15957.96.camel@freescale.com>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Date: Mon, 17 Nov 2014 19:28:03 -0600
-In-Reply-To: <20141114082832.GA2180@katana>
-References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
- <1414537731.23458.120.camel@snotra.buserror.net>
- <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
- <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C0B501A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 12:46:57 +1100 (AEDT)
+Message-ID: <1416275216.1107.2.camel@concordia>
+Subject: Re: [PATCH] powerpc: mitigate impact of decrementer reset
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: paulmck@linux.vnet.ibm.com
+Date: Tue, 18 Nov 2014 12:46:56 +1100
+In-Reply-To: <20141117191842.GA5050@linux.vnet.ibm.com>
+References: <1412708517-84726-1-git-send-email-pc@us.ibm.com>
+ <54343B54.4060500@us.ibm.com>
+ <1415614083.5769.18.camel@kernel.crashing.org>
+ <546126DC.6090909@us.ibm.com> <1415846532.28703.3.camel@concordia>
+ <20141117191842.GA5050@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
- Linux device trees <devicetree@vger.kernel.org>, "Boschung,
- Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Clarke <pc@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
+On Mon, 2014-11-17 at 11:18 -0800, Paul E. McKenney wrote:
+> On Thu, Nov 13, 2014 at 01:42:12PM +1100, Michael Ellerman wrote:
+> > On Mon, 2014-11-10 at 14:58 -0600, Paul Clarke wrote:
+> > > On 11/10/2014 04:08 AM, Benjamin Herrenschmidt wrote:
+> > > > On Tue, 2014-10-07 at 14:13 -0500, Paul Clarke wrote:
+> > > >> This patch short-circuits the reset of the decrementer, exiting after
+> > > >> the decrementer reset, but before the housekeeping tasks if the only
+> > > >> need for the interrupt is simply to reset it.  After this patch,
+> > > >> the latency spike was measured at about 150 nanoseconds.
+> > > >
+> > > > Doesn't this break the irq_work stuff ? We trigger it with a set_dec(1);
+> > > > and your patch will probably cause it to be skipped...
 > > > 
-> > > If we're going to change the device tree I'd rather just add a property
-> > > to say what the prescaler is.
+> > > You're right.
 > > 
-> >  We would however, leave the boards' device trees that use things like
-> > "fsl,mpc8543-i2c" as is and introduce the prescaler for the others requiring it.
+> > Yeah, thanks Ben, that would have been bad.
 > > 
-> > 
-> > Now the drawback is that the driver would require a change, to parse this
-> > prescaler new prescaler property. Would this be OK from your point of view
-> > Wolfram ? If yes, I will send the patches for it.
+> > So we'll need to come up with a different approach.
 > 
-> I don't think it is OK.
+> If I am understanding this correctly, it underscores the need for more
+> bits in the decrementer register.  :-/
 
-Why?
+Yes that is the root cause of the problem :)
 
->  I'd think it can be deduced from the compatible property.
-
-For almost all existing device trees it cannot be.
-
-If you want something that will work without changing device trees,
-you'll need to use SVR to identify the SoC.
-
--Scott
+cheers
