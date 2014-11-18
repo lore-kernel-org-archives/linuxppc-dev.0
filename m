@@ -1,22 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 919F71A0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 23:28:08 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-Date: Tue, 18 Nov 2014 13:27:45 +0100
-Message-ID: <1534030.bkpIToWlHq@wuerfel>
-In-Reply-To: <546B38F5.6050708@huawei.com>
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <20535707.3sA6NjSINh@wuerfel> <546B38F5.6050708@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AF0C1A0745
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 23:43:01 +1100 (AEDT)
+Message-ID: <546B3E7D.4030800@huawei.com>
+Date: Tue, 18 Nov 2014 20:41:33 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out
+ of pci_create_root_bus()
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1936415.emTbbPeHqx@wuerfel> <546B3124.7070206@huawei.com>
+ <2911754.xsk2IUfQFO@wuerfel>
+In-Reply-To: <2911754.xsk2IUfQFO@wuerfel>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>, Russell
+ King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
  Thierry Reding <thierry.reding@gmail.com>, Suravee.Suthikulpanit@amd.com,
  Bjorn Helgaas <bhelgaas@google.com>, linux-ia64@vger.kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
@@ -30,34 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 18 November 2014 20:17:57 Yijing Wang wrote:
+>>>> We need, some platforms pass NULL pointer as host bridge parent.
+>>>
+>>> But those don't have to use the new pci_create_host_bridge() function,
+>>> right?
+>>
+>> As I mentioned in another reply, I hope all pci host drivers could use
+>> pci_create_host_bridge(), keep different PCI scan interfaces in PCI core
+>> make things become complex.
 > 
-> >>
-> >> I hope platforms with ACPI or DT could both use pci_create_host_bridge().
-> >> Why we need to use two different ways to process it ?
-> > 
-> > These are completely different use cases:
-> > 
-> > a) For DT, we want loadable device drivers that start by probing a host
-> >    bridge device which was added through the DT platform code. The
-> >    driver is self-contained, and eventually we want to be able to unload
-> >    it. We have lots of different per-soc drivers that require different
-> >    quirks
-> > 
-> > b) For ACPI, the interface is defined in the ACPI spec across architectures
-> >    and SoCs, we don't have host bridge drivers and the code that initializes
-> >    the PCI is required early during boot and called from architecture
-> >    code. There is no parent device, as ACPI sees PCI as a fundamental building
-> >    block by itself, and there are no drivers because the firmware does
-> >    the initial hardware setup, so we only have to access the config space.
+> Doing this for all platforms that have PCI support would be a lot of
+> work though, I think it's better to focus on having a the best interface
+> for the majority of users.
+
+Yes.
+
 > 
-> Hmmm, I'm a little confused, so why you think ACPI host driver should not use
-> pci_create_host_bridge(), because ACPI PCI driver has no parent device ?
+> 	Arnd
+> 
+> .
+> 
 
-It's one of the difference. Having a parent device can certainly make your
-life simpler, since you have devm_kzalloc(), dev_info(), etc. Coming from
-the other end, I think ACPI needs PCI to be available during early boot,
-at a time where we might not want pci_create_host_bridge() to do the
-right thing.
 
-	Arnd
+-- 
+Thanks!
+Yijing
