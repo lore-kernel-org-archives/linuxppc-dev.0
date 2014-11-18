@@ -1,18 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-yk0-x22e.google.com (mail-yk0-x22e.google.com
+ [IPv6:2607:f8b0:4002:c07::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B331A065E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 16:20:37 +1100 (AEDT)
-Date: Mon, 17 Nov 2014 23:20:23 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Pull request: scottwood/linux.git next
-Message-ID: <20141118052023.GA10687@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FFB51A017A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 16:24:44 +1100 (AEDT)
+Received: by mail-yk0-f174.google.com with SMTP id 10so1837376ykt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 21:24:42 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <544DCDD0.2080508@linux.vnet.ibm.com>
+References: <1413487800-7162-1-git-send-email-kernelfans@gmail.com>
+ <1413487800-7162-5-git-send-email-kernelfans@gmail.com>
+ <544DCDD0.2080508@linux.vnet.ibm.com>
+Date: Tue, 18 Nov 2014 13:24:41 +0800
+Message-ID: <CAFgQCTvvVZ-thFVvr1P0AYMpqRyEXZebpcrc7_kviY7eLx9niQ@mail.gmail.com>
+Subject: Re: [RFC 04/11] powerpc: kvm: introduce a kthread on primary thread
+ to anti tickless
+From: Liu ping fan <kernelfans@gmail.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,117 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Highlights include a bunch of 8xx optimizations, device tree bindings for
-Freescale BMan, QMan, and FMan datapath components, misc device tree
-updates, and inbound rio window support.
+On Mon, Oct 27, 2014 at 12:45 PM, Preeti U Murthy
+<preeti@linux.vnet.ibm.com> wrote:
+> On 10/17/2014 12:59 AM, kernelfans@gmail.com wrote:
+>> (This patch is a place holder.)
+>>
+>> If there is only one vcpu thread is ready(the other vcpu thread can
+>> wait for it to execute), the primary thread can enter tickless mode,
+>
+> We do not configure NOHZ_FULL to y by default. Hence no thread would
+> enter tickless mode.
+>
+But NOHZ_FULL can be chosen by user, and we should survive from it :)
 
-The following changes since commit 0df1f2487d2f0d04703f142813d53615d62a1da4:
+>> which causes the primary keeps running, so the secondary has no
+>> opportunity to exit to host, even they have other tsk on them.
+>
+> The secondary threads can still get scheduling ticks. The decrementer of
+> the secondary threads is still active. So as long as secondary threads
+> are busy, scheduling ticks will fire and try to schedule a new task on them.
+>
+No. As my original thought, after enable KVM on core, the HDEC on
+secondary is disabled, otherwise the host exit will be too frequent.
+Any suggestion?
 
-  Linux 3.18-rc3 (2014-11-02 15:01:51 -0800)
+Thx,
+Fan
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-
-for you to fetch changes up to 76f3e2929bb6b476fb02b519ad953e2e29ee7bd5:
-
-  powerpc/config: Enable memory driver (2014-11-17 19:36:42 -0600)
-
-----------------------------------------------------------------
-Ashish Kumar (1):
-      powerpc/mpc85xx: Remove SPI and NAND partition from bsc9131rdb.dtsi
-
-Emil Medve (7):
-      powerpc/dts: Factorize the clock control node
-      dt/bindings: qoriq-clock: Add binding for the platform PLL
-      powerpc/dts: Add node(s) for the platform PLL
-      dt/bindings: Introduce the FSL QorIQ DPAA BMan
-      dt/bindings: Introduce the FSL QorIQ DPAA BMan portal(s)
-      dt/bindings: Introduce the FSL QorIQ DPAA QMan
-      dt/bindings: Introduce the FSL QorIQ DPAA QMan portal(s)
-
-Hongtao Jia (2):
-      powerpc: Add ADT7461 to device tree for supported boards
-      powerpc: Add INA220 to device tree for supported boards
-
-Igal Liberman (2):
-      powerpc/fsl: Added rcw registers to global utility registers
-      powerpc/fsl: Frame Manager Device Tree binding document
-
-LEROY Christophe (14):
-      powerpc/8xx: exception InstructionAccess does not exist on MPC8xx
-      powerpc/8xx: DataAccess exception not generated by MPC8xx
-      powerpc/8xx: No need to restore registers and save them again.
-      powerpc/8xx: Use M_TW instead of M_TWB
-      powerpc/8xx: Don't use MD_TWC for walk
-      powerpc/8xx: Use PAGE size related consts
-      powerpc/8xx: Const for TLB RPN forced value
-      powerpc/8xx: Implement 16k pages
-      powerpc/8xx: Better readibility of ERRATA CPU6 handling
-      powerpc/8xx: set PTE bit 22 off TLBmiss
-      powerpc/8xx: _PMD_PRESENT already set in level 1 entries
-      powerpc/8xx: Don't restore regs to save them again.
-      powerpc/8xx: Use DAR to save r3 for CPU6 ERRATA
-      powerpc/8xx: Invalidate non present TLB as early as possible
-
-Martijn de Gouw (1):
-      powerpc/fsl-rio: add support for mapping inbound windows
-
-Paul Bolle (1):
-      powerpc/8xx: Remove Kconfig symbol FADS
-
-Prabhakar Kushwaha (1):
-      powerpc/config: Enable memory driver
-
-Scott Wood (1):
-      powerpc/fsl: Update fman dt binding with clock name and qbman link
-
- .../devicetree/bindings/clock/qoriq-clock.txt      |  14 +-
- .../devicetree/bindings/powerpc/fsl/fman.txt       | 534 +++++++++++++++++++++
- .../devicetree/bindings/soc/fsl/bman-portals.txt   |  56 +++
- Documentation/devicetree/bindings/soc/fsl/bman.txt | 125 +++++
- .../devicetree/bindings/soc/fsl/qman-portals.txt   | 154 ++++++
- Documentation/devicetree/bindings/soc/fsl/qman.txt | 165 +++++++
- arch/powerpc/Kconfig                               |   2 +-
- arch/powerpc/boot/dts/b4860emu.dts                 |   4 +-
- arch/powerpc/boot/dts/b4qds.dtsi                   |  23 +
- arch/powerpc/boot/dts/bsc9131rdb.dtsi              |  50 --
- arch/powerpc/boot/dts/fsl/b4420si-post.dtsi        |  28 +-
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        |  28 +-
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |  48 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |  48 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |  48 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |  48 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |  48 +-
- arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi     |  85 ++++
- arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi     |  68 +++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  30 +-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        |  29 +-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |  29 +-
- arch/powerpc/boot/dts/p3041ds.dts                  |  20 +
- arch/powerpc/boot/dts/p5020ds.dts                  |  20 +
- arch/powerpc/boot/dts/p5040ds.dts                  |  20 +
- arch/powerpc/boot/dts/t104xrdb.dtsi                |   7 +
- arch/powerpc/boot/dts/t208xqds.dtsi                |  11 +
- arch/powerpc/boot/dts/t4240emu.dts                 |   4 +-
- arch/powerpc/configs/corenet32_smp_defconfig       |   1 +
- arch/powerpc/configs/corenet64_smp_defconfig       |   1 +
- arch/powerpc/configs/mpc85xx_defconfig             |   1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 +
- arch/powerpc/include/asm/fsl_guts.h                |   5 +-
- arch/powerpc/include/asm/mmu-8xx.h                 |   2 +
- arch/powerpc/include/asm/pgtable-ppc32.h           |  20 +
- arch/powerpc/include/asm/pte-8xx.h                 |   7 +-
- arch/powerpc/kernel/head_8xx.S                     | 230 ++++-----
- arch/powerpc/mm/fault.c                            |   7 -
- arch/powerpc/platforms/8xx/Kconfig                 |   4 -
- arch/powerpc/sysdev/fsl_rio.c                      | 104 ++++
- arch/powerpc/sysdev/fsl_rio.h                      |  13 +
- 41 files changed, 1599 insertions(+), 543 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/fman.txt
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/bman-portals.txt
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/bman.txt
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/qman.txt
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+> Regards
+> Preeti U Murthy
+>>
+>> Introduce a kthread (anti_tickless) on primary, so when there is only
+>> one vcpu thread on primary, the secondary can resort to anti_tickless
+>> to keep the primary out of tickless mode.
+>> (I thought that anti_tickless thread can goto NAP, so we can let the
+>> secondary run).
+>>
+>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/sysfs.c | 4 +++-
+>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+>> index a2595dd..f0b110e 100644
+>> --- a/arch/powerpc/kernel/sysfs.c
+>> +++ b/arch/powerpc/kernel/sysfs.c
+>> @@ -575,9 +575,11 @@ static ssize_t __used store_kvm_enable(struct device *dev,
+>>       if (!test_bit(core, &kvm_on_core))
+>>               for (thr = 1; thr< threads_per_core; thr++)
+>>                       if (cpu_online(thr * threads_per_core + thr))
+>> -                             cpumask_set_cpu(thr * threads_per_core + thr, &stop_cpus);
+>> +                             cpumask_set_cpu(core * threads_per_core + thr, &stop_cpus);
+>>
+>>       stop_machine(xics_migrate_irqs_away_secondary, NULL, &stop_cpus);
+>> +     /* fixme, create a kthread on primary hwthread to handle tickless mode */
+>> +     //kthread_create_on_cpu(prevent_tickless, NULL, core * threads_per_core, "ppckvm_prevent_tickless");
+>>       set_bit(core, &kvm_on_core);
+>>       return count;
+>>  }
+>>
+>
