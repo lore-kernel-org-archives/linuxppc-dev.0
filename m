@@ -1,28 +1,24 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <vvijayan@mvista.com>
+Received: from mail-ie0-f177.google.com (mail-ie0-f177.google.com
+ [209.85.223.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC2921A069B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 18:45:03 +1100 (AEDT)
-Message-ID: <546AF8D7.9010103@huawei.com>
-Date: Tue, 18 Nov 2014 15:44:23 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1FAB1A08F5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 18:10:41 +1100 (AEDT)
+Received: by mail-ie0-f177.google.com with SMTP id tr6so4502993ieb.22
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2014 23:10:39 -0800 (PST)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>, <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [RFC PATCH 01/16] PCI: Enhance pci_scan_root_bus() to support
- default IO/MEM resources
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-2-git-send-email-wangyijing@huawei.com>
- <2732970.7HG94QvVBv@wuerfel>
-In-Reply-To: <2732970.7HG94QvVBv@wuerfel>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>, Suravee.Suthikulpanit@amd.com,
- Bjorn Helgaas <bhelgaas@google.com>, linux-ia64@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, Yijing Wang <wangyijing0307@gmail.com>
+In-Reply-To: <1416207214.2826.3.camel@concordia>
+References: <1415956325-10124-1-git-send-email-vvijayan@mvista.com>
+ <1416207214.2826.3.camel@concordia>
+From: Vineeth Vijayan <vvijayan@mvista.com>
+Date: Tue, 18 Nov 2014 12:40:19 +0530
+Message-ID: <CAOpNGctfy1uE4zLaNH5D1r_Hsj60FE+RkKR7UawvUSecbdcVUw@mail.gmail.com>
+Subject: Re: [PATCH] [powerpc] Fix Text randomization
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: multipart/alternative; boundary=047d7bdc9daee4d8b405081ccadc
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,41 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/11/17 18:08, Arnd Bergmann wrote:
-> On Monday 17 November 2014 18:21:35 Yijing Wang wrote:
->> -       list_for_each_entry(window, resources, list)
->> -               if (window->res->flags & IORESOURCE_BUS) {
->> -                       found = true;
->> -                       break;
->> -               }
->> +       if (!resources) {
->> +               pci_add_resource(&default_res, &ioport_resource);
->> +               pci_add_resource(&default_res, &iomem_resource);
->> +               pci_add_resource(&default_res, &busn_resource);
->> +       } else {
->>
-> 
-> Isn't it almost always wrong to do this? You are adding all of the
-> I/O ports and memory to the host bridge, which will prevent you from
-> adding another host bridge, and the iomem_resource normally
-> includes a lot of addresses that are not accessible by the PCI host.
+--047d7bdc9daee4d8b405081ccadc
+Content-Type: text/plain; charset=UTF-8
 
-Hi Arnd, pci host bridge windows are the ranges allow child devices to setup
-from. Add all of IO/MEM here just a limit to child devices, no request for these
-resources, so it won't hurt another host bridge. Some platforms have no dts or ACPI
-report host bridge resources, in this case, we directly assign ioport/iomem_resources
-as the root resources of PCI devices.
+On Mon, Nov 17, 2014 at 12:23 PM, Michael Ellerman <mpe@ellerman.id.au>
+wrote:
 
-Thanks!
-Yijing.
+> On Fri, 2014-11-14 at 14:42 +0530, Vineeth Vijayan wrote:
+> > Now there is no way to disable TEXT randomization on a PPC32/PPC64
+> > machine. Text randomization happens even in the case of "echo 0 >
+> > /proc/sys/kernel/randomize_va_space"
+> >
+> > This happens due to the incorrect definition of ELF_ET_DYN_BASE
+> > at arch/powerpc/include/asm/elf.h
+> >
+> > The function randomize_et_dyn is redundant and is removed.
+>
+> The patch looks OK, but for the change log I was thinking something more
+> like
+> this:
+>
+>
+> powerpc: Use generic PIE randomization
+>
+> Do you want me to send a new patch with updated change log as mentioned ?
 
-> 
-> 	Arnd
-> 
-> .
-> 
+--047d7bdc9daee4d8b405081ccadc
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On Mon, Nov 17, 2014 at 12:23 PM, Michael Ellerman <span dir=3D"ltr">&l=
+t;<a href=3D"mailto:mpe@ellerman.id.au" target=3D"_blank">mpe@ellerman.id.a=
+u</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margi=
+n:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><span class=3D"">=
+On Fri, 2014-11-14 at 14:42 +0530, Vineeth Vijayan wrote:<br>
+&gt; Now there is no way to disable TEXT randomization on a PPC32/PPC64<br>
+&gt; machine. Text randomization happens even in the case of &quot;echo 0 &=
+gt;<br>
+&gt; /proc/sys/kernel/randomize_va_space&quot;<br>
+&gt;<br>
+&gt; This happens due to the incorrect definition of ELF_ET_DYN_BASE<br>
+&gt; at arch/powerpc/include/asm/elf.h<br>
+&gt;<br>
+&gt; The function randomize_et_dyn is redundant and is removed.<br>
+<br>
+</span>The patch looks OK, but for the change log I was thinking something =
+more like<br>
+this:<br>
+<br>
+<br>
+powerpc: Use generic PIE randomization<br>
+<br></blockquote><div>Do you want me to send a new patch with updated chang=
+e log as mentioned ?<br></div></div></div></div>
 
--- 
-Thanks!
-Yijing
+--047d7bdc9daee4d8b405081ccadc--
