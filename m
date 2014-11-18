@@ -1,35 +1,31 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F8C41A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 17:56:22 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 18 Nov 2014 01:56:19 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8CE2738C803B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 01:55:08 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAI6uIiY14876836
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 06:56:18 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAI6uG2w005501
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 01:56:17 -0500
-Subject: [PATCH] cpuidle/powernv: Re-enable fastsleep at boot time
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, mikey@neuling.org, joel.stanley@au1.ibm.com
-Date: Tue, 18 Nov 2014 12:26:03 +0530
-Message-ID: <20141118065603.22544.88816.stgit@preeti.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 862041A00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 17:58:24 +1100 (AEDT)
+Received: from mail-yk0-f169.google.com (mail-yk0-f169.google.com
+ [209.85.160.169])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EF24614011D
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2014 17:58:23 +1100 (AEDT)
+Received: by mail-yk0-f169.google.com with SMTP id 79so3094002ykr.28
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2014 22:58:21 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- rjw@rjwysocki.net
+In-Reply-To: <1416275444.1107.4.camel@concordia>
+References: <1416254861-3879-1-git-send-email-kda@linux-powerpc.org>
+ <1416275444.1107.4.camel@concordia>
+Date: Tue, 18 Nov 2014 10:58:20 +0400
+Message-ID: <CAOJe8K0_u51QkKmVoVmFuGaDtKfcHP6tSWx_fgJM_erRRoQfUA@mail.gmail.com>
+Subject: Re: [PATCH net-next] PPC: bpf_jit_comp: Unify BPF_MOD | BPF_X and
+ BPF_DIV | BPF_X
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+ Daniel Borkmann <dborkman@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit dcb18694 "Fix ipi on palmeto" disabled fastsleep at boot time.
-Revert this commit since we no longer need this fix. However we can
-continue to use powersave_nap parameter to control entry into deep
-idle states beyond snooze.
+Hi Michael,
 
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
----
+This patch added no new functionality so I haven't put the test
+results (of course I ran the test suite to check the patch).
 
- drivers/cpuidle/cpuidle-powernv.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+The output :
+[  650.198958] test_bpf: Summary: 60 PASSED, 0 FAILED
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index b57681d..b430e76 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -69,8 +69,9 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 	unsigned long old_lpcr = mfspr(SPRN_LPCR);
- 	unsigned long new_lpcr;
- 
--	if (powersave_nap < 2)
--		return;
-+	if (!(powersave_nap > 0))
-+		return index;
-+
- 	if (unlikely(system_state < SYSTEM_RUNNING))
- 		return index;
- 
+On 11/18/14, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Mon, 2014-11-17 at 23:07 +0300, Denis Kirjanov wrote:
+>> Reduce duplicated code by unifying
+>> BPF_ALU | BPF_MOD | BPF_X and BPF_ALU | BPF_DIV | BPF_X
+>>
+>> CC: Alexei Starovoitov<alexei.starovoitov@gmail.com>
+>> CC: Daniel Borkmann<dborkman@redhat.com>
+>> CC: Philippe Bergheaud<felix@linux.vnet.ibm.com>
+>> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+>
+> Please include the output of the test suite.
+>
+> Assuming that's OK I'm happy for it to go in.
+>
+> cheers
+>
+>
+>
+>
