@@ -1,26 +1,26 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-qg0-x234.google.com (mail-qg0-x234.google.com
- [IPv6:2607:f8b0:400d:c04::234])
+Received: from mail-ie0-x229.google.com (mail-ie0-x229.google.com
+ [IPv6:2607:f8b0:4001:c03::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 197811A08F5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 10:41:07 +1100 (AEDT)
-Received: by mail-qg0-f52.google.com with SMTP id a108so6528263qge.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 15:41:03 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20141118231124.GA6212@shangw>
-References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141118231124.GA6212@shangw>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A63BC1A0808
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 12:12:50 +1100 (AEDT)
+Received: by mail-ie0-f169.google.com with SMTP id y20so8527159ier.14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2014 17:12:47 -0800 (PST)
+Date: Tue, 18 Nov 2014 18:12:43 -0700
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 18 Nov 2014 16:40:43 -0700
-Message-ID: <CAErSpo6HPUR+6KmmO0u97ik_Nk4qavOSwPOZL8fKtTzEe_tuGA@mail.gmail.com>
-Subject: Re: [PATCH V9 00/18] Enable SRIOV on PowerNV
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V9 03/18] PCI: Add weak pcibios_iov_resource_size()
+ interface
+Message-ID: <20141119011243.GA23467@google.com>
+References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1414942894-17034-4-git-send-email-weiyang@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1414942894-17034-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com, Donald Dutile <ddutile@redhat.com>,
+ Myron Stowe <myron.stowe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,197 +30,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 18, 2014 at 4:11 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> On Sun, Nov 02, 2014 at 11:41:16PM +0800, Wei Yang wrote:
->
-> Hello Bjorn,
->
-> Did you have available bandwidth to review it? :-)
+[+cc Don, Myron]
 
-I'm working on it right now :)
+Hi Wei,
 
->>This patchset enables the SRIOV on POWER8.
->>
->>The gerneral idea is put each VF into one individual PE and allocate required
->>resources like MMIO/DMA/MSI. The major difficulty comes from the MMIO
->>allocation and adjustment for PF's IOV BAR.
->>
->>On P8, we use M64BT to cover a PF's IOV BAR, which could make an individual VF
->>sit in its own PE. This gives more flexiblity, while at the mean time it
->>brings on some restrictions on the PF's IOV BAR size and alignment.
->>
->>To achieve this effect, we need to do some hack on pci devices's resources.
->>1. Expand the IOV BAR properly.
->>   Done by pnv_pci_ioda_fixup_iov_resources().
->>2. Shift the IOV BAR properly.
->>   Done by pnv_pci_vf_resource_shift().
->>3. IOV BAR alignment is calculated by arch dependent function instead of an
->>   individual VF BAR size.
->>   Done by pnv_pcibios_sriov_resource_alignment().
->>4. Take the IOV BAR alignment into consideration in the sizing and assigning.
->>   This is achieved by commit: "PCI: Take additional IOV BAR alignment in
->>   sizing and assigning"
->>
->>Test Environment:
->>       The SRIOV device tested is Emulex Lancer(10df:e220) and
->>       Mellanox ConnectX-3(15b3:1003) on POWER8.
->>
->>Examples on pass through a VF to guest through vfio:
->>       1. unbind the original driver and bind to vfio-pci driver
->>          echo 0000:06:0d.0 > /sys/bus/pci/devices/0000:06:0d.0/driver/unbind
->>          echo  1102 0002 > /sys/bus/pci/drivers/vfio-pci/new_id
->>          Note: this should be done for each device in the same iommu_group
->>       2. Start qemu and pass device through vfio
->>          /home/ywywyang/git/qemu-impreza/ppc64-softmmu/qemu-system-ppc64 \
->>                  -M pseries -m 2048 -enable-kvm -nographic \
->>                  -drive file=/home/ywywyang/kvm/fc19.img \
->>                  -monitor telnet:localhost:5435,server,nowait -boot cd \
->>                  -device "spapr-pci-vfio-host-bridge,id=CXGB3,iommu=26,index=6"
->>
->>Verify this is the exact VF response:
->>       1. ping from a machine in the same subnet(the broadcast domain)
->>       2. run arp -n on this machine
->>          9.115.251.20             ether   00:00:c9:df:ed:bf   C eth0
->>       3. ifconfig in the guest
->>          # ifconfig eth1
->>          eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
->>               inet 9.115.251.20  netmask 255.255.255.0  broadcast 9.115.251.255
->>               inet6 fe80::200:c9ff:fedf:edbf  prefixlen 64  scopeid 0x20<link>
->>               ether 00:00:c9:df:ed:bf  txqueuelen 1000 (Ethernet)
->>               RX packets 175  bytes 13278 (12.9 KiB)
->>               RX errors 0  dropped 0  overruns 0  frame 0
->>               TX packets 58  bytes 9276 (9.0 KiB)
->>               TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
->>       4. They have the same MAC address
->>
->>       Note: make sure you shutdown other network interfaces in guest.
->>
->>---
->>v9:
->>   * make the change log consistent in the terminology
->>     PF's IOV BAR -> the SRIOV BAR in PF
->>     VF's BAR -> the normal BAR in VF's view
->>   * rename all newly introduced function from _sriov_ to _iov_
->>   * rename the document to Documentation/powerpc/pci_iov_resource_on_powernv.txt
->>   * add the vendor id and device id of the tested devices
->>   * change return value from EINVAL to ENOSYS for pci_iov_virtfn_bus() and
->>     pci_iov_virtfn_devfn() when it is called on PF or SRIOV is not configured
->>   * rebase on 3.18-rc2 and tested
->>v8:
->>   * use weak funcion pcibios_sriov_resource_size() instead of some flag to
->>     retrieve the IOV BAR size.
->>   * add a document Documentation/powerpc/pci_resource.txt to explain the
->>     design.
->>   * make pci_iov_virtfn_bus()/pci_iov_virtfn_devfn() not inline.
->>   * extract a function res_to_dev_res(), so that it is more general to get
->>     additional size and alignment
->>   * fix one contention which is introduced in "powrepc/pci: Refactor pci_dn".
->>     the root cause is pci_get_slot() takes pci_bus_sem and leads to dead
->>     lock.
->>v7:
->>   * add IORESOURCE_ARCH flag for IOV BAR on powernv platform.
->>   * when IOV BAR has IORESOURCE_ARCH flag, the size is retrieved from
->>     hardware directly. If not, calculate as usual.
->>   * reorder the patch set, group them by subsystem:
->>     PCI, powerpc, powernv
->>   * rebase it on 3.16-rc6
->>v6:
->>   * remove pcibios_enable_sriov()/pcibios_disable_sriov() weak function
->>     similar function is moved to
->>     pnv_pci_enable_device_hook()/pnv_pci_disable_device_hook(). When PF is
->>     enabled, platform will try best to allocate resources for VFs.
->>   * remove pcibios_sriov_resource_size weak function
->>   * VF BAR size is retrieved from hardware directly in virtfn_add()
->>v5:
->>   * merge those SRIOV related platform functions in machdep_calls
->>     wrap them in one CONFIG_PCI_IOV marco
->>   * define IODA_INVALID_M64 to replace (-1)
->>     use this value to represent the m64_wins is not used
->>   * rename pnv_pci_release_dev_dma() to pnv_pci_ioda2_release_dma_pe()
->>     this function is a conterpart to pnv_pci_ioda2_setup_dma_pe()
->>   * change dev_info() to dev_dgb() in pnv_pci_ioda_fixup_iov_resources()
->>     reduce some log in kernel
->>   * release M64 window in pnv_pci_ioda2_release_dma_pe()
->>v4:
->>   * code format fix, eg. not exceed 80 chars
->>   * in commit "ppc/pnv: Add function to deconfig a PE"
->>     check the bus has a bridge before print the name
->>     remove a PE from its own PELTV
->>   * change the function name for sriov resource size/alignment
->>   * rebase on 3.16-rc3
->>   * VFs will not rely on device node
->>     As Grant Likely's comments, kernel should have the ability to handle the
->>     lack of device_node gracefully. Gavin restructure the pci_dn, which
->>     makes the VF will have pci_dn even when VF's device_node is not provided
->>     by firmware.
->>   * clean all the patch title to make them comply with one style
->>   * fix return value for pci_iov_virtfn_bus/pci_iov_virtfn_devfn
->>v3:
->>   * change the return type of virtfn_bus/virtfn_devfn to int
->>     change the name of these two functions to pci_iov_virtfn_bus/pci_iov_virtfn_devfn
->>   * reduce the second parameter or pcibios_sriov_disable()
->>   * use data instead of pe in "ppc/pnv: allocate pe->iommu_table dynamically"
->>   * rename __pci_sriov_resource_size to pcibios_sriov_resource_size
->>   * rename __pci_sriov_resource_alignment to pcibios_sriov_resource_alignment
->>v2:
->>   * change the return value of virtfn_bus/virtfn_devfn to 0
->>   * move some TCE related marco definition to
->>     arch/powerpc/platforms/powernv/pci.h
->>   * fix the __pci_sriov_resource_alignment on powernv platform
->>     During the sizing stage, the IOV BAR is truncated to 0, which will
->>     effect the order of allocation. Fix this, so that make sure BAR will be
->>     allocated ordered by their alignment.
->>v1:
->>   * improve the change log for
->>     "PCI: Add weak __pci_sriov_resource_size() interface"
->>     "PCI: Add weak __pci_sriov_resource_alignment() interface"
->>     "PCI: take additional IOV BAR alignment in sizing and assigning"
->>   * wrap VF PE code in CONFIG_PCI_IOV
->>   * did regression test on P7.
->>
->>Gavin Shan (1):
->>  powrepc/pci: Refactor pci_dn
->>
->>Wei Yang (17):
->>  PCI/IOV: Export interface for retrieve VF's BDF
->>  PCI: Add weak pcibios_iov_resource_alignment() interface
->>  PCI: Add weak pcibios_iov_resource_size() interface
->>  PCI: Take additional PF's IOV BAR alignment in sizing and assigning
->>  powerpc/pci: Add PCI resource alignment documentation
->>  powerpc/pci: Don't unset pci resources for VFs
->>  powerpc/pci: Define pcibios_disable_device() on powerpc
->>  powerpc/pci: remove pci_dn->pcidev field
->>  powerpc/powernv: Use pci_dn in PCI config accessor
->>  powerpc/powernv: Allocate pe->iommu_table dynamically
->>  powerpc/powernv: Expand VF resources according to the number of
->>    total_pe
->>  powerpc/powernv: Implement pcibios_iov_resource_alignment() on
->>    powernv
->>  powerpc/powernv: Implement pcibios_iov_resource_size() on powernv
->>  powerpc/powernv: Shift VF resource with an offset
->>  powerpc/powernv: Allocate VF PE
->>  powerpc/powernv: Expanding IOV BAR, with m64_per_iov supported
->>  powerpc/powernv: Group VF PE when IOV BAR is big on PHB3
->>
->> .../powerpc/pci_iov_resource_on_powernv.txt        |   75 ++
->> arch/powerpc/include/asm/device.h                  |    3 +
->> arch/powerpc/include/asm/iommu.h                   |    3 +
->> arch/powerpc/include/asm/machdep.h                 |   13 +-
->> arch/powerpc/include/asm/pci-bridge.h              |   24 +-
->> arch/powerpc/kernel/pci-common.c                   |   39 +
->> arch/powerpc/kernel/pci-hotplug.c                  |    3 +
->> arch/powerpc/kernel/pci_dn.c                       |  257 ++++++-
->> arch/powerpc/platforms/powernv/eeh-powernv.c       |   14 +-
->> arch/powerpc/platforms/powernv/pci-ioda.c          |  744 +++++++++++++++++++-
->> arch/powerpc/platforms/powernv/pci.c               |   87 +--
->> arch/powerpc/platforms/powernv/pci.h               |   13 +-
->> drivers/pci/iov.c                                  |   60 +-
->> drivers/pci/setup-bus.c                            |   85 ++-
->> include/linux/pci.h                                |   19 +
->> 15 files changed, 1332 insertions(+), 107 deletions(-)
->> create mode 100644 Documentation/powerpc/pci_iov_resource_on_powernv.txt
->>
->>--
->>1.7.9.5
->>
->
+On Sun, Nov 02, 2014 at 11:41:19PM +0800, Wei Yang wrote:
+> When retrieving VF IOV BAR in virtfn_add(), it will divide the total PF's IOV
+> BAR size with the totalVF number. This is true for most cases, while may not
+> be correct on some specific platform.
+> 
+> For example on PowerNV platform, in order to fix PF's IOV BAR into a hardware
+> alignment, the PF's IOV BAR size would be expended. This means the original
+> method couldn't work.
+> 
+> This patch introduces a weak pcibios_iov_resource_size() interface, which
+> gives platform a chance to implement specific method to calculate the VF BAR
+> resource size.
+> 
+> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+> ---
+>  drivers/pci/iov.c   |   27 +++++++++++++++++++++++++--
+>  include/linux/pci.h |    5 +++++
+>  2 files changed, 30 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+> index 4d1685d..6866830 100644
+> --- a/drivers/pci/iov.c
+> +++ b/drivers/pci/iov.c
+> @@ -61,6 +61,30 @@ static void virtfn_remove_bus(struct pci_bus *physbus, struct pci_bus *virtbus)
+>  		pci_remove_bus(virtbus);
+>  }
+>  
+> +resource_size_t __weak pcibios_iov_resource_size(struct pci_dev *dev, int resno)
+> +{
+> +	return 0;
+> +}
+> +
+> +resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
+> +{
+> +	resource_size_t size;
+> +	struct pci_sriov *iov;
+> +
+> +	if (!dev->is_physfn)
+> +		return 0;
+> +
+> +	size = pcibios_iov_resource_size(dev, resno);
+> +	if (size != 0)
+> +		return size;
+> +
+> +	iov = dev->sriov;
+> +	size = resource_size(dev->resource + resno);
+> +	do_div(size, iov->total_VFs);
+> +
+> +	return size;
+> +}
+> +
+>  static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>  {
+>  	int i;
+> @@ -96,8 +120,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>  			continue;
+>  		virtfn->resource[i].name = pci_name(virtfn);
+>  		virtfn->resource[i].flags = res->flags;
+> -		size = resource_size(res);
+> -		do_div(size, iov->total_VFs);
+> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>  		virtfn->resource[i].start = res->start + size * id;
+
+Can you help me understand this?
+
+We have previously called sriov_init() on the PF.  There, we sized the VF
+BARs, which are in the PF's SR-IOV Capability (SR-IOV spec sec 3.3.14).
+The size we discover is the amount of space required by a single VF, so
+sriov_init() adjusts PF->resource[PCI_IOV_RESOURCES + i] by multiplying
+that size by PCI_SRIOV_TOTAL_VF, so this PF resource is now big enough to 
+hold the VF BAR[i] areas for all the possible VFs.
+
+Now we're in virtfn_add(), setting up a new VF.  The usual BARs at config
+space 0x10, etc., are read-only zeroes for a VF, so we don't size them the
+usual way.  Instead, we carve out a slice of the
+PF->resource[PCI_IOV_RESOURCES + i] area.
+
+I thought the starting address of the VF BARn memory aperture was
+prescribed by the spec in sec 2.1.1.1 and shown in figure 2-1:
+
+  BARx VFy starting address = VF BARx + (y - 1) * (VF BARx aperture size)
+
+That's basically what the existing code does.  We don't save the VF BARx
+aperture size, so we recompute it by undoing the multiplication we did in
+sriov_init().
+
+But you're computing the starting address using a different VF BARx
+aperture size.  How does that work?  I assumed this calculation was built
+into the PCI device, but obviously I'm missing something.
+
+To make it concrete, here's a made-up example:
+
+  PF SR-IOV Capability
+    TotalVFs = 4
+    NumVFs = 4
+    System Page Size = 4KB
+    VF BAR0 = [mem 0x00000000-0x00000fff] (4KB at address 0)
+
+  PF  pci_dev->resource[7] = [mem 0x00000000-0x00003fff] (16KB)
+  VF1 pci_dev->resource[0] = [mem 0x00000000-0x00000fff]
+  VF2 pci_dev->resource[0] = [mem 0x00001000-0x00001fff]
+  VF3 pci_dev->resource[0] = [mem 0x00002000-0x00002fff]
+  VF4 pci_dev->resource[0] = [mem 0x00003000-0x00003fff]
+
+You're changing this so we might use 16KB as the VF BAR0 aperture size
+instead of 4KB, which would result in the following:
+
+  VF1 pci_dev->resource[0] = [mem 0x00000000-0x00003fff]
+  VF2 pci_dev->resource[0] = [mem 0x00004000-0x00007fff]
+  VF3 pci_dev->resource[0] = [mem 0x00008000-0x0000bfff]
+  VF4 pci_dev->resource[0] = [mem 0x0000c000-0x0000ffff]
+
+But you didn't change sriov_init(), so the PF resource[7] is only 16KB, not
+the 64KB the VFs need.  And I assume the VF address decoder is wired to
+claim the 4KB regions at 0x0000, 0x1000, 0x2000, 0x3000, not the ones at
+0x0000, 0x4000, 0x8000, 0xc000.
+
+Bjorn
+
+>  		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
+>  		rc = request_resource(res, &virtfn->resource[i]);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index bbf8058..2f5b454 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1162,6 +1162,8 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+>  resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev,
+>  						 int resno,
+>  						 resource_size_t align);
+> +resource_size_t pcibios_iov_resource_size(struct pci_dev *dev,
+> +		                            int resno);
+>  
+>  #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
+>  #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
+> @@ -1666,6 +1668,7 @@ int pci_num_vf(struct pci_dev *dev);
+>  int pci_vfs_assigned(struct pci_dev *dev);
+>  int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+>  int pci_sriov_get_totalvfs(struct pci_dev *dev);
+> +resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno);
+>  #else
+>  static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
+>  {
+> @@ -1685,6 +1688,8 @@ static inline int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs)
+>  { return 0; }
+>  static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
+>  { return 0; }
+> +static inline resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
+> +{ return 0; }
+>  #endif
+>  
+>  #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
+> -- 
+> 1.7.9.5
+> 
