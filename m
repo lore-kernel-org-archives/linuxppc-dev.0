@@ -1,17 +1,37 @@
-Return-Path: <logout128@yahoo.com>
-Received: from nm19-vm10.bullet.mail.gq1.yahoo.com
- (nm19-vm10.bullet.mail.gq1.yahoo.com [98.136.217.215])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 312761A0808
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 23:04:56 +1100 (AEDT)
-Message-ID: <546C8763.6020209@yahoo.com>
-Date: Wed, 19 Nov 2014 13:04:51 +0100
-From: =?UTF-8?B?TWFydGluIEt1a2HEjQ==?= <logout128@yahoo.com>
+Return-Path: <liviu@dudau.co.uk>
+Received: from smtp.dudau.co.uk (dliviu.plus.com [80.229.23.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 932A41A025C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 03:37:23 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by smtp.dudau.co.uk (Postfix) with SMTP id 31FBA100677
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 16:29:21 +0000 (GMT)
+Date: Wed, 19 Nov 2014 16:29:14 +0000
+From: Liviu Dudau <liviu@dudau.co.uk>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out of
+ pci_create_root_bus()
+Message-ID: <20141119162914.GB9162@bart.dudau.co.uk>
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+ <2507218.mHliopJb05@wuerfel> <546B041A.4060403@huawei.com>
+ <20141118144819.GK12037@e106497-lin.cambridge.arm.com>
+ <546BFF74.4030101@huawei.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Fan management PowerMac7,2
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <546BFF74.4030101@huawei.com>
+Cc: Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "huxinwei@huawei.com" <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +41,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Wed, Nov 19, 2014 at 10:24:52AM +0800, Yijing Wang wrote:
+> >> We need, some platforms pass NULL pointer as host bridge parent.
+> > 
+> > Yijing,
+> > 
+> > May I suggest a different approach here? Rather than having to pass an opaque
+> > pointer that gets converted by the host bridge driver back to the private
+> > structure, what about promoting a new style of usage, that is similar to the
+> > way device drivers work? Lets try to promote the embedding of the generic
+> > pci_host_bridge structure in the host bridge specific structure! Then we can
+> > access the private data doing container_of().
+> > 
+> > Something like this:
+> > 
+> > struct pci_controller {
+> > 	struct pci_host_bridge bridge;
+> > 	/* private host bridge data here */
+> > 	.....
+> > };
+> > 
+> > #define PCI_CONTROLLER(bus)	({
+> > 	struct pci_host_bridge *hb = to_pci_host_bridge(bus->bridge); \
+> > 	container_of(hb, struct pci_controller, bridge); })
+> > 
+> > 
+> > Then we can retrieve the host bridge structure from everywhere we have a device.
+> 
+> Hi Liviu, it looks good to me, because this change will involve lots platforms,
+> I would think more about it. Thanks for your suggestion very much! :)
 
-I was directed to this list on #ppc64/freenode IRC channel. I have 
-PowerMac7,2 (AGP, 2xPowerPC 970(2.2) 2GHz) and I wanted to try kernel 
-supporting kvm-pr module, which is not in 3.2.63 kernel provided with 
-Debian Wheezy. I downloaded 3.14.24, compiled it using original config 
-from 3.2.63 and after booting fan management does not work. I tried 
-therm_pm72 (which is deprecated, but works well with Debian kernel) and 
-windfarm_pm72 modules, but neither worked - after about five minutes 
-from boot all fans go to maximum and stay this way no matter the CPU 
-load or frequency.
+Given that I also look at this area maybe we should join forces and divide the problem?
 
-I downloaded vanilla 3.2.64, compiled it the same way and there fans 
-work with therm_p72 well. This kernel does not have kvm-pr, so I 
-reverted to original kernel provided with Wheezy.
+Best regards,
+Liviu
 
-I looked to logs, i tried to search the web whether anyone had already 
-the same problem, but it seems that nobody else described not to say 
-solved this. Can anyone please point me to anything that would help? I 
-can provide whatever log files required.
+> 
+> 
+> Thanks!
+> Yijing.
+> 
+> > 
+> > Best regards,
+> > Liviu
+> > 
+> >>
+> >>>
+> >>>> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
+> >>>> +	if (!host)
+> >>>> +		return NULL;
+> >>>
+> >>> devm_kzalloc maybe?
+> >>
+> >> I don't know much detail about devm_kzalloc(), but we have no pci host driver
+> >> here, and I found no devm_kzalloc() uses in core PCI code before.
+> >>
+> >>>
+> >>>> +	if (!resources) {
+> >>>> +		/* Use default IO/MEM/BUS resources*/
+> >>>> +		pci_add_resource(&host->windows, &ioport_resource);
+> >>>> +		pci_add_resource(&host->windows, &iomem_resource);
+> >>>> +		pci_add_resource(&host->windows, &busn_resource);
+> >>>> +	} else {
+> >>>> +		list_for_each_entry_safe(window, n, resources, list)
+> >>>> +			list_move_tail(&window->list, &host->windows);
+> >>>> +	}
+> >>>
+> >>> I think we should assume that the correct resources are passed. You
+> >>> could add a wrapper around this function to convert old platforms
+> >>> though.
+> >>
+> >> OK, I will move these code out of pci_create_host_bridge, and add a wrapper
+> >> to setup the default resources.
+> >>
+> >>>
+> >>>> +EXPORT_SYMBOL(pci_create_host_bridge);
+> >>>
+> >>> EXPORT_SYMBOL_GPL() maybe?
+> >>
+> >> OK, will update it.
+> >>
+> >>>
+> >>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> >>>> index 8b11b38..daa7f40 100644
+> >>>> --- a/include/linux/pci.h
+> >>>> +++ b/include/linux/pci.h
+> >>>> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
+> >>>>  struct pci_host_bridge {
+> >>>>  	struct device dev;
+> >>>>  	struct pci_bus *bus;		/* root bus */
+> >>>> +	struct list_head list;
+> >>>>  	struct list_head windows;	/* pci_host_bridge_windows */
+> >>>> +	int busnum;
+> >>>
+> >>> The busnum should already be implied through the bus resource.
+> >>
+> >> Yes, I will consider remove it and introduce a helper function to get the root bus number, thanks!
+> >>
+> >> Thanks!
+> >> Yijing.
+> >>
+> >>>
+> >>> 	Arnd
+> >>>
+> >>> .
+> >>>
+> >>
+> >>
+> >> -- 
+> >> Thanks!
+> >> Yijing
+> >>
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >>
+> > 
+> 
+> 
+> -- 
+> Thanks!
+> Yijing
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Thanks,
+-- 
+-------------------
+   .oooO
+   (   )
+    \ (  Oooo.
+     \_) (   )
+          ) /
+         (_/
 
-Martin Kukac
+ One small step
+   for me ...
