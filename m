@@ -1,40 +1,35 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66EC21A088C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:55 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 19 Nov 2014 12:15:37 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 24A223578063
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:34 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAJ2FB3A15466668
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:11 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAJ2FXST017441
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:33 +1100
-Message-ID: <1416363332.5704.18.camel@au1.ibm.com>
-Subject: Re: [PATCH V9 03/18] PCI: Add weak pcibios_iov_resource_size()
- interface
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 19 Nov 2014 13:15:32 +1100
-In-Reply-To: <20141119011243.GA23467@google.com>
-References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1414942894-17034-4-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141119011243.GA23467@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B9AF1A0733
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:26:13 +1100 (AEDT)
+Message-ID: <546BFF74.4030101@huawei.com>
+Date: Wed, 19 Nov 2014 10:24:52 +0800
+From: Yijing Wang <wangyijing@huawei.com>
+MIME-Version: 1.0
+To: Liviu Dudau <Liviu.Dudau@arm.com>
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out
+ of pci_create_root_bus()
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+ <2507218.mHliopJb05@wuerfel> <546B041A.4060403@huawei.com>
+ <20141118144819.GK12037@e106497-lin.cambridge.arm.com>
+In-Reply-To: <20141118144819.GK12037@e106497-lin.cambridge.arm.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
- Donald Dutile <ddutile@redhat.com>, Myron Stowe <myron.stowe@redhat.com>
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "huxinwei@huawei.com" <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,34 +39,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-11-18 at 18:12 -0700, Bjorn Helgaas wrote:
+>> We need, some platforms pass NULL pointer as host bridge parent.
 > 
-> Can you help me understand this?
+> Yijing,
 > 
-> We have previously called sriov_init() on the PF.  There, we sized the VF
-> BARs, which are in the PF's SR-IOV Capability (SR-IOV spec sec 3.3.14).
-> The size we discover is the amount of space required by a single VF, so
-> sriov_init() adjusts PF->resource[PCI_IOV_RESOURCES + i] by multiplying
-> that size by PCI_SRIOV_TOTAL_VF, so this PF resource is now big enough to 
-> hold the VF BAR[i] areas for all the possible VFs.
+> May I suggest a different approach here? Rather than having to pass an opaque
+> pointer that gets converted by the host bridge driver back to the private
+> structure, what about promoting a new style of usage, that is similar to the
+> way device drivers work? Lets try to promote the embedding of the generic
+> pci_host_bridge structure in the host bridge specific structure! Then we can
+> access the private data doing container_of().
+> 
+> Something like this:
+> 
+> struct pci_controller {
+> 	struct pci_host_bridge bridge;
+> 	/* private host bridge data here */
+> 	.....
+> };
+> 
+> #define PCI_CONTROLLER(bus)	({
+> 	struct pci_host_bridge *hb = to_pci_host_bridge(bus->bridge); \
+> 	container_of(hb, struct pci_controller, bridge); })
+> 
+> 
+> Then we can retrieve the host bridge structure from everywhere we have a device.
 
-So I'll let Richard (Wei) answer on the details but I'll just chime in
-about the "big picture". This isn't about changing the spacing between VFs
-which is handled by the system page size.
+Hi Liviu, it looks good to me, because this change will involve lots platforms,
+I would think more about it. Thanks for your suggestion very much! :)
 
-This is about the way we create MMIO windows from the CPU to the VF BARs.
 
-Basically, we have a (limited) set of 64-bit windows we can create that
-are divided in equal sized segments (256 of them), each segment assigned
-in HW to one of our Partitionable Endpoints (aka domain).
+Thanks!
+Yijing.
 
-So even if we only ever create 16 VFs for a device, we need to use an
-entire of these windows, which will use 256*VF_size and thus allocate
-that much space. Also the window has to be naturally aligned.
+> 
+> Best regards,
+> Liviu
+> 
+>>
+>>>
+>>>> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
+>>>> +	if (!host)
+>>>> +		return NULL;
+>>>
+>>> devm_kzalloc maybe?
+>>
+>> I don't know much detail about devm_kzalloc(), but we have no pci host driver
+>> here, and I found no devm_kzalloc() uses in core PCI code before.
+>>
+>>>
+>>>> +	if (!resources) {
+>>>> +		/* Use default IO/MEM/BUS resources*/
+>>>> +		pci_add_resource(&host->windows, &ioport_resource);
+>>>> +		pci_add_resource(&host->windows, &iomem_resource);
+>>>> +		pci_add_resource(&host->windows, &busn_resource);
+>>>> +	} else {
+>>>> +		list_for_each_entry_safe(window, n, resources, list)
+>>>> +			list_move_tail(&window->list, &host->windows);
+>>>> +	}
+>>>
+>>> I think we should assume that the correct resources are passed. You
+>>> could add a wrapper around this function to convert old platforms
+>>> though.
+>>
+>> OK, I will move these code out of pci_create_host_bridge, and add a wrapper
+>> to setup the default resources.
+>>
+>>>
+>>>> +EXPORT_SYMBOL(pci_create_host_bridge);
+>>>
+>>> EXPORT_SYMBOL_GPL() maybe?
+>>
+>> OK, will update it.
+>>
+>>>
+>>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>>>> index 8b11b38..daa7f40 100644
+>>>> --- a/include/linux/pci.h
+>>>> +++ b/include/linux/pci.h
+>>>> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
+>>>>  struct pci_host_bridge {
+>>>>  	struct device dev;
+>>>>  	struct pci_bus *bus;		/* root bus */
+>>>> +	struct list_head list;
+>>>>  	struct list_head windows;	/* pci_host_bridge_windows */
+>>>> +	int busnum;
+>>>
+>>> The busnum should already be implied through the bus resource.
+>>
+>> Yes, I will consider remove it and introduce a helper function to get the root bus number, thanks!
+>>
+>> Thanks!
+>> Yijing.
+>>
+>>>
+>>> 	Arnd
+>>>
+>>> .
+>>>
+>>
+>>
+>> -- 
+>> Thanks!
+>> Yijing
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+> 
 
-We can then assign the VF BAR to a spot inside that window that corresponds
-to the range of PEs that we have assigned to that device (which typically
-isn't going to be the beginning of the window).
 
-Cheers,
-Ben.
+-- 
+Thanks!
+Yijing
