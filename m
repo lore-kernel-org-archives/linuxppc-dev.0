@@ -2,19 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A01051A05F5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 16:22:21 +1100 (AEDT)
-Message-ID: <1416374519.32483.1.camel@concordia>
-Subject: [git pull] Please pull mpe.git for-linus branch (for powerpc)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 865B11A0668
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 16:29:18 +1100 (AEDT)
+Message-ID: <1416374957.32483.3.camel@concordia>
+Subject: Re: [PATCH] powerpc: Remove more traces of bootmem
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 19 Nov 2014 16:21:59 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-cFnBl0cYDCIzAbFpCMPS"
+To: David Laight <David.Laight@ACULAB.COM>
+Date: Wed, 19 Nov 2014 16:29:17 +1100
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9F2964@AcuExch.aculab.com>
+References: <1416293575-1847-1-git-send-email-mpe@ellerman.id.au>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9F2964@AcuExch.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: scottwood@freescale.com, haokexin@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,66 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-11-18 at 10:26 +0000, David Laight wrote:
+> From: Michael Ellerman
+> > Although we are now selecting NO_BOOTMEM, we still have some traces of
+> > bootmem lying around. That is because even with NO_BOOTMEM there is
+> > still a shim that converts bootmem calls into memblock calls, but
+> > ultimately we want to remove all traces of bootmem.
+> > 
+> > Most of the patch is conversions from alloc_bootmem() to
+> > memblock_alloc(). In general a call such as:
+> > 
+> >   p = (struct foo *)alloc_bootmem(x);
+> > 
+> > Becomes:
+> > 
+> >   p = __va(memblock_alloc(x, 0));
+> > 
+> > We need __va() because memblock returns a physical address. We don't
+> > need the cast because __va() returns a void *. The alignment value of
+> > zero tells memblock to use the default alignment, which is
+> > SMP_CACHE_BYTES, the same value alloc_bootmem() uses.
+> 
+> It doesn't seem right to me to replicate __va(memblock_alloc(x, 0))
+> that many times. I can imagine that the required code will change
+> again at to future time, and then all the same places would need changing.
 
---=-cFnBl0cYDCIzAbFpCMPS
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Yeah it's a bit ugly. Actually most of that code has never changed, which is
+the problem, no one has bothered to update it.
 
-Hi Linus,
+> Wouldn't it be better to use:
+> #define alloc_bootmem(x) __va(memblock_alloc(x, 0))
+> possibly with a rename, or as a static inline.
 
-Please pull one fix from Scott, he says:
+Well that's essentially what the existing shim does. So we can't use that name.
 
-  This patch fixes a crash (introduced in v3.18-rc1) in the FSL MSI driver
-  when threaded IRQs are enabled.
+My plan is to add a memblock_alloc_virt() which does the __va() for you. But I
+didn't want the powerpc changes to get backed up behind that.
 
+> If __va() is non-trivial you want a real function.
 
-The following changes since commit 8a97577a5967c1234ccc3bc1b45e4b1a58b39ea8=
-:
+It can't be a function because we use it on void * as well as unsigned long,
+phys_addr_t etc.
 
-  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git=
-/mpe/linux (2014-11-04 11:18:29 -0800)
+phys_to_virt() is the nicer version, though it only takes unsigned long.
 
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git for-linus
-
-for you to fetch changes up to d7ce4377494adfaf8afb15ecf4f07d399bbf13d9:
-
-  powerpc/fsl_msi: mark the msi cascade handler IRQF_NO_THREAD (2014-11-17 =
-22:00:30 -0600)
-
-----------------------------------------------------------------
-Kevin Hao (1):
-      powerpc/fsl_msi: mark the msi cascade handler IRQF_NO_THREAD
-
- arch/powerpc/sysdev/fsl_msi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-
-
-
---=-cFnBl0cYDCIzAbFpCMPS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAABAgAGBQJUbCkLAAoJEFHr6jzI4aWA2SQP/3c7P3oO3zZrc6JmRtkgwn/D
-LwORvTZDbwQgYMEG9xHS3rM4ZESjxGmfpbFX3Tl4Pa0yUVXDFFpqIw4b8LTNtvak
-SbB/w1DeeiJ02BTns2npSt8Te4Q+B6QybDf6Auu+C5HfqcnMiYLOrJy9qOs1pdUz
-+h0UmPt2L8VXlnrBUQhz/O3J2yjvHcqQKD9G1lErC/5RlqmhT6/vALeg4siz0095
-owsE9iMf5U7Ek2wrfIqGvOQSDQvoT+9LYQsG0d2EsFDj6xtMCei/j7jG5OaHiZu8
-uwIihdy/pieEJTz/6UmlhITfgBjO6GiZlylRRruTtUqn6LgK+g7mmPuih3xPSTkh
-H/edOK9FI1bm99NM9F11x+BphXti9OPfnl4/JhZw81F4UkXqqUKntiIUxJ9ls4LI
-7dwWDLS/1us5r3sqIRl1s96g1M7niQ0Rq21G08dps5tiVBkfyrXxehmccMWSO8GV
-9lhZ1ZnRixPkMZ4ae27f8bGuEfbVkAvgWnn5X2EB3Eid6k0QIrgLUZ8fmzW0Hru2
-OQI1OAoc+YO/mgGqQX7bsnf9kellz3KEdNWdvf1lRByzdHgGYPK/gRSXeXRFhEkO
-dr/+J6/eEsH0lSSgsbiOCapZnfF5JWxK1bofBeDgzn7KUEWvFBkzAM/kdfD2jE85
-qu5og4pBwpa+JOacxpNY
-=eEY3
------END PGP SIGNATURE-----
-
---=-cFnBl0cYDCIzAbFpCMPS--
+cheers
