@@ -1,35 +1,40 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA9341A088C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:10:21 +1100 (AEDT)
-Message-ID: <546BFBC8.4030104@huawei.com>
-Date: Wed, 19 Nov 2014 10:09:12 +0800
-From: Yijing Wang <wangyijing@huawei.com>
-MIME-Version: 1.0
-To: Liviu Dudau <Liviu.Dudau@arm.com>
-Subject: Re: [RFC PATCH 08/16] PCI: Introduce pci_scan_host_bridge() and
- pci_host_info
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-9-git-send-email-wangyijing@huawei.com>
- <20141118154243.GM12037@e106497-lin.cambridge.arm.com>
-In-Reply-To: <20141118154243.GM12037@e106497-lin.cambridge.arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 66EC21A088C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:55 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Wed, 19 Nov 2014 12:15:37 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 24A223578063
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:34 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAJ2FB3A15466668
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:11 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAJ2FXST017441
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2014 13:15:33 +1100
+Message-ID: <1416363332.5704.18.camel@au1.ibm.com>
+Subject: Re: [PATCH V9 03/18] PCI: Add weak pcibios_iov_resource_size()
+ interface
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 19 Nov 2014 13:15:32 +1100
+In-Reply-To: <20141119011243.GA23467@google.com>
+References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1414942894-17034-4-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20141119011243.GA23467@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "huxinwei@huawei.com" <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Yijing Wang <wangyijing0307@gmail.com>,
- "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Mime-Version: 1.0
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
+ Donald Dutile <ddutile@redhat.com>, Myron Stowe <myron.stowe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,233 +44,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>  struct pci_host_bridge *pci_create_host_bridge(
->> -		struct device *parent, u32 db, 
->> -		struct pci_ops *ops, void *sysdata, 
->> -		struct list_head *resources)
->> +		struct device *parent, u32 db, struct pci_ops *ops, 
->> +		struct pci_host_info *info)
->>  {
->>  	int error;
->>  	struct pci_bus *b;
->>  	struct pci_host_bridge *host, *h;
->> -	struct pci_host_bridge_window *window, *n;
->>  
->>  	down_read(&pci_host_bridge_sem);
->>  	list_for_each_entry(h, &pci_host_bridge_list, list) {
->> @@ -53,7 +51,7 @@ struct pci_host_bridge *pci_create_host_bridge(
->>  	if (!host)
->>  		return NULL;
->>  
->> -	host->sysdata = sysdata;
->> +	host->sysdata = info->arg;
->>  	host->busnum = PCI_BUSNUM(db);
->>  	host->domain = PCI_DOMAIN(db);
->>  	host->ops = ops;
->> @@ -63,18 +61,23 @@ struct pci_host_bridge *pci_create_host_bridge(
->>  
->>  	/* this is hack, just for build, will be removed later*/
+On Tue, 2014-11-18 at 18:12 -0700, Bjorn Helgaas wrote:
 > 
-> Why do you need this hack? Just for calling pci_domain_nr() ?
-
-Yes, it's temporary code, we need domain number here for pci host bridge register.
-
+> Can you help me understand this?
 > 
->>  	b = kzalloc(sizeof(*b), GFP_KERNEL);
->> -	b->sysdata = sysdata;
->> +	b->sysdata = host->sysdata;
->>  	pci_bus_assign_domain_nr(b, parent);
->>  	host->domain = pci_domain_nr(b);
->> +	kfree(b);
->>  
-...
->> +static int pci_default_init_res(struct pci_host_bridge *host,
->> +		struct pci_host_info *info)
->> +{
->> +	struct pci_host_bridge_window *window, *n;
->> +
->> +	if (info->res_type != PCI_HOST_RES_DEFAULT) 
->> +		list_for_each_entry_safe(window, n, info->resources,
->> +				list)
->> +			list_move_tail(&window->list, &host->windows);
->> +	else
->> +		info->res_type = PCI_HOST_RES_DEFAULT;
-> 
-> I'm confused about this assignment. Isn't this a nop as the else part
-> means info->res_type *is* PCI_HOST_RES_DEFAULT?
+> We have previously called sriov_init() on the PF.  There, we sized the VF
+> BARs, which are in the PF's SR-IOV Capability (SR-IOV spec sec 3.3.14).
+> The size we discover is the amount of space required by a single VF, so
+> sriov_init() adjusts PF->resource[PCI_IOV_RESOURCES + i] by multiplying
+> that size by PCI_SRIOV_TOTAL_VF, so this PF resource is now big enough to 
+> hold the VF BAR[i] areas for all the possible VFs.
 
-No, in this patch, host drivers pass a pci host bridge resources init hook
-in pci_host_info *info, and we call this info->init_res() in pci_create_host_bridge().
+So I'll let Richard (Wei) answer on the details but I'll just chime in
+about the "big picture". This isn't about changing the spacing between VFs
+which is handled by the system page size.
 
-+struct pci_host_info {
-+	u8 res_type;
-+	void *arg;
-+	struct list_head *resources; /*just for build, will clean up later */
-+	int (*init_res)(struct pci_host_bridge *host,
-+			struct pci_host_info *info);
-+};
-+
+This is about the way we create MMIO windows from the CPU to the VF BARs.
 
-> 
->> +
->> +	return 0;
->> +}
-...
->> @@ -2038,8 +2057,13 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
->>  	bool found = false;
->>  	struct pci_host_bridge *host;
->>  	int max;
->> +	struct pci_host_info info;
->> +	
->> +	info.arg = sysdata;
->> +	info.resources = resources;
->> +	info.init_res = pci_default_init_res;
-> 
-> I have mixed feelings about this patch. While it is heading in the right direction
-> of moving pci_host_bridge relevant information towards the right user, I don't think
-> you picked up the right set to move. The resource list is going to be copied into
-> internal pci_host_bridge list anyway, keeping another copy is not helpful *and*
-> you have increased the code size.
-> 
-> I think for now we should aim to get the *missing* data into pci_host_bridge: MSI
-> controllers and PCI domain/segment. Then we can do more cleanup.
+Basically, we have a (limited) set of 64-bit windows we can create that
+are divided in equal sized segments (256 of them), each segment assigned
+in HW to one of our Partitionable Endpoints (aka domain).
 
-Hi Liviu, I agree with you here, the changes to resources stuff seems not a perfect
-solution. In my patch 6, we could pass pci domain nr by u32 PCI_DOMBUS(domain, bus) argument,
-and store it in pci_host_bridge. For msi controller, we couldn't save the msi_controller
-in pci_host_bridge. Before we assume one pci host bridge only had one msi_controller,
-but now something changes, Jiang introduce hierarchy irq domain in x86, and now
-one pci host bridge may has more than one msi_controller. So I prefer to add a
-function to pci_host_bridge something like
+So even if we only ever create 16 VFs for a device, we need to use an
+entire of these windows, which will use 256*VF_size and thus allocate
+that much space. Also the window has to be naturally aligned.
 
-struct msi_controller *pci_get_msi_controller(struct pci_dev *dev)
+We can then assign the VF BAR to a spot inside that window that corresponds
+to the range of PEs that we have assigned to that device (which typically
+isn't going to be the beginning of the window).
 
-> 
->>  
->> -	host = pci_create_host_bridge(parent, db, ops, sysdata, resources);
->> +	host = pci_create_host_bridge(parent, db, ops, &info);
->>  	if (!host)
->>  		return NULL;
->>  
->> @@ -2070,6 +2094,47 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
->>  }
->>  EXPORT_SYMBOL(pci_scan_root_bus);
->>  
->> +struct pci_host_bridge *pci_scan_host_bridge(
->> +		struct device *parent, u32 db, struct pci_ops *ops,
->> +		struct pci_host_info *info)
->> +{
->> +	struct pci_host_bridge_window *window;
->> +	bool found = false;
->> +	struct pci_host_bridge *host;
->> +	int max;
->> +
->> +	host = pci_create_host_bridge(parent, db, ops, info);
->> +	if (!host)
->> +		return NULL;
->> +
->> +	list_for_each_entry(window, &host->windows, list)
->> +		if (window->res->flags & IORESOURCE_BUS) {
->> +			found = true;
->> +			break;
->> +		}
->> +
->> +	host->bus = __pci_create_root_bus(host);
->> +	if (!host->bus) {
->> +		pci_free_host_bridge(host);
->> +		return NULL;
->> +	}
->> +
->> +	if (!found) {
->> +		dev_info(&host->bus->dev,
->> +		 "No busn resource found for root bus, will use [bus %02x-ff]\n",
->> +			host->busnum);
->> +		pci_bus_insert_busn_res(host->bus, host->busnum, 255);
->> +	}
->> +
->> +	max = pci_scan_child_bus(host->bus);
->> +	if (!found)
->> +		pci_bus_update_busn_res_end(host->bus, max);
->> +
->> +	return host;
->> +
->> +}
->> +EXPORT_SYMBOL(pci_scan_host_bridge);
->> +
->>  /**
->>   * pci_rescan_bus_bridge_resize - scan a PCI bus for devices.
->>   * @bridge: PCI bridge for the bus to scan
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index daa7f40..a51f5f5 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -412,6 +412,21 @@ struct pci_host_bridge {
->>  	void *release_data;
->>  };
->>  
->> +struct pci_host_info {
->> +	u8 res_type;
->> +	void *arg;
->> +	struct list_head *resources; /*just for build, will clean up later */
->> +	int (*init_res)(struct pci_host_bridge *host, 
->> +			struct pci_host_info *info);
->> +};
->> +
->> +static inline void init_pci_host_info(struct pci_host_info *info)
->> +{
->> +	memset(info, 0 , sizeof(*info));
->> +}
-> 
-> Where is this used?
-
-Host driver uses it to init pci_host_info.
-
-> 
->> +
->> +#define PCI_HOST_RES_DEFAULT	0x2
->> +
-> 
-> Magic number?
-
-Hmmm, I will rework pci host bridge resources stuff.
-
-> 
-> Best regards,
-> Liviu
-> 
->>  #define	to_pci_host_bridge(n) container_of(n, struct pci_host_bridge, dev)
->>  void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
->>  		     void (*release_fn)(struct pci_host_bridge *),
->> @@ -420,7 +435,7 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
->>  int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
->>  struct pci_host_bridge *pci_create_host_bridge(
->>  		struct device *parent, u32 db, struct pci_ops *ops, 
->> -		void *sys, struct list_head *resources);
->> +		struct pci_host_info *info);
->>  /*
->>   * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
->>   * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
->> @@ -785,6 +800,9 @@ void pci_bus_release_busn_res(struct pci_bus *b);
->>  struct pci_bus *pci_scan_root_bus(struct device *parent, u32 bus,
->>  					     struct pci_ops *ops, void *sysdata,
->>  					     struct list_head *resources);
->> +struct pci_host_bridge *pci_scan_host_bridge(struct device *parent,
->> +		u32 db, struct pci_ops *ops,
->> +		struct pci_host_info *info);
->>  struct pci_bus *pci_add_new_bus(struct pci_bus *parent, struct pci_dev *dev,
->>  				int busnr);
->>  void pcie_update_link_speed(struct pci_bus *bus, u16 link_status);
->> -- 
->> 1.7.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-
-
--- 
-Thanks!
-Yijing
+Cheers,
+Ben.
