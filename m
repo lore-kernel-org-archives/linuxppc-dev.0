@@ -1,30 +1,23 @@
-Return-Path: <tomasz.nowicki@linaro.org>
-Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0138.outbound.protection.outlook.com [157.56.110.138])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBCEC1A0A0B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 23:53:55 +1100 (AEDT)
-Received: by mail-wg0-f45.google.com with SMTP id b13so3662027wgh.18
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 04:53:52 -0800 (PST)
-Message-ID: <546DE45C.6010306@linaro.org>
-Date: Thu, 20 Nov 2014 13:53:48 +0100
-From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3FEC61A0A0B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 00:15:26 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+Date: Thu, 20 Nov 2014 13:00:44 +0000
+Message-ID: <20b19f779c5e45d7ac40964f21866ca3@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+In-Reply-To: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Liviu Dudau <liviu@dudau.co.uk>
-Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1463511.o4kE8TX3Bd@wuerfel> <546DD688.60705@linaro.org>
- <20141120120850.GD9162@bart.dudau.co.uk>
-In-Reply-To: <20141120120850.GD9162@bart.dudau.co.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>, Thierry Reding <thierry.reding@gmail.com>,
- Suravee.Suthikulpanit@amd.com, Bjorn Helgaas <bhelgaas@google.com>,
- linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
+ Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,67 +27,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20.11.2014 13:08, Liviu Dudau wrote:
-> On Thu, Nov 20, 2014 at 12:54:48PM +0100, Tomasz Nowicki wrote:
->> On 17.11.2014 15:13, Arnd Bergmann wrote:
->>> On Monday 17 November 2014 18:21:34 Yijing Wang wrote:
->>>> This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
->>>> arm PCI domain cleanup patches, link:
->>>> https://patchwork.ozlabs.org/patch/407585/
->>>>
->>>> Current pci scan interfaces like pci_scan_root_bus() and directly
->>>> call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
->>>> Some platform infos like PCI domain and msi_chip have to be
->>>> associated to PCI bus by some arch specific function.
->>>> We want to make a generic pci_host_bridge, and make it hold
->>>> the platform infos or hook. Then we could eliminate the lots
->>>> of arch pci_domain_nr, also we could associate some platform
->>>> ops something like pci_get_msi_chip(struct pci_dev *dev)
->>>> with pci_host_bridge to avoid introduce arch weak functions.
->>>>
->>>> This RFC version not for all platforms, just applied the new
->>>> scan interface in x86/arm/powerpc/ia64, I will refresh other
->>>> platforms after the core pci scan interfaces are ok.
->>>
->>> I think overall this is a good direction to take, in particular
->>> moving more things into struct pci_host_bridge so we can
->>> slim down the architecture specific code.
->>>
->>> I don't particularly like the way you use the 'pci_host_info'
->>> to pass callback pointers and some of the generic information.
->>> This duplicates some of the issues we are currently trying
->>> to untangle in the arm32 code to make drivers easier to share
->>> between architectures.
->>>
->>> As a general approach, I'd rather see generic helper functions
->>> being exported by the PCI core that a driver may or may not
->>> call.
->>> The way you split the interface between things that happen
->>> before scanning the buses (pci_create_host_bridge) and
->>> the actual scanning (__pci_create_root_bus, pci_scan_child_bus)
->>> seems very helpful and I think we can expand that concept further:
->>>
->>> - The normal pci_create_host_bridge() function can contain
->>>    all of the DT scanning functions (finding bus/mem/io resources,
->>>    finding the msi-parent), while drivers that don't depend on DT
->>>    for this information can call the same function and fill the
->>>    same things after they have the pci_host_bridge pointer.
->>
->> How about finding PCI domain number (in the DT way) within
->> pci_create_host_bridge() too ?
->
-> It is an idea worth pursuing for the 99% of the cases. I would like
-> to understand the 1% of the time when we want a domain number to be
-> shared between two host bridges or the time when we want more than
-> one domain per bridge.
-Even though we have shared domain, this should be resolved via DT calls, 
-do I miss something ?
+Ping.
 
->
-> Is that possible? Is it useful? Is it already in practice?
-This is good question... IMO:
-1. Two host bridges can shared domain number if they are children of the 
-same parent host bridge.
-2. But I can not find good explanation for more than one domain per bridge.
+Best Regards,=20
+Shaohui Xie
 
-Tomasz
+> -----Original Message-----
+> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
+> Sent: Friday, November 14, 2014 5:53 PM
+> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood
+> Scott-B07421
+> Cc: Medve Emilian-EMMEDVE1; Liberman Igal-B31950; Xie Shaohui-B21989
+> Subject: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+>=20
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+>=20
+> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+> changes in V2:
+> addressed comments from Scott in V1.
+>=20
+>  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69
+> ++++++++++++++++++++++
+>  1 file changed, 69 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> index edeea16..1523a87 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> @@ -7,6 +7,7 @@ CONTENTS
+>    - FMan MURAM Node
+>    - FMan dTSEC/XGEC/mEMAC Node
+>    - FMan IEEE 1588 Node
+> +  - FMan MDIO Node
+>    - Example
+>=20
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D
+> @@ -357,6 +358,68 @@ ptp-timer@fe000 {
+>  };
+>=20
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D
+> +FMan MDIO Node
+> +
+> +DESCRIPTION
+> +
+> +The MDIO is a bus to which the PHY devices are connected.
+> +
+> +PROPERTIES
+> +
+> +- compatible
+> +		Usage: required
+> +		Value type: <stringlist>
+> +		Definition: A standard property.
+> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
+> +		FMan v3.
+> +
+> +- reg
+> +		Usage: required
+> +		Value type: <prop-encoded-array>
+> +		Definition: A standard property.
+> +
+> +- bus-frequency
+> +		Usage: optional
+> +		Value type: <u32>
+> +		Definition: Specifies external MDIO bus clock speed which is
+> +		different from MDIO standard 2.5MHz. Should be defined for
+> SoCs
+> +		on which the standard one cannot work.
+> +
+> +- interrupts
+> +		Usage: optional
+> +		Value type: <prop-encoded-array>
+> +		Definition: Event interrupt of external MDIO controller.
+> +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
+> +
+> +- fsl,fman-internal-mdio
+> +		Usage: required for internal MDIO
+> +		Value type: boolean
+> +		Definition: Fman has internal MDIO for internal PCS(Physical
+> +		Coding Sublayer) PHYs and external MDIO for external PHYs.
+> +		The settings and programming routines for internal/external
+> +		MDIO are different. Must be included for internal MDIO.
+> +
+> +EXAMPLE
+> +
+> +Example for FMan v2 external MDIO:
+> +
+> +mdio@f1000 {
+> +	compatible =3D "fsl,fman-xmdio";
+> +	reg =3D <0xf1000 0x1000>;
+> +	bus-frequency =3D <20000>;
+> +};
+> +
+> +Example for FMan v3 internal MDIO:
+> +
+> +mdio@f1000 {
+> +	compatible =3D "fsl,fman-memac-mdio";
+> +	reg =3D <0xf1000 0x1000>;
+> +	fsl,fman-internal-mdio;
+> +};
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> =3D=3D=3D=3D=3D
+>  Example
+>=20
+>  fman@400000 {
+> @@ -531,4 +594,10 @@ fman@400000 {
+>  		compatible =3D "fsl,fman-ptp-timer";
+>  		reg =3D <0xfe000 0x1000>;
+>  	};
+> +
+> +	mdio@f1000 {
+> +		compatible =3D "fsl,fman-xmdio";
+> +		reg =3D <0xf1000 0x1000>;
+> +		bus-frequency =3D <20000>;
+> +	};
+>  };
+> --
+> 1.8.4.1
