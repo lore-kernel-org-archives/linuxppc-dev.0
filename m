@@ -1,36 +1,20 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <tony@bakeyournoodle.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 835F61A0733
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 13:02:16 +1100 (AEDT)
-Message-ID: <546D4B49.6020408@huawei.com>
-Date: Thu, 20 Nov 2014 10:00:41 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C7981A078F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 13:33:23 +1100 (AEDT)
+Date: Thu, 20 Nov 2014 13:33:19 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc: Remove more traces of bootmem
+Message-ID: <20141120023319.GA71013@thor.bakeyournoodle.com>
+References: <1416442058-19544-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-To: Liviu Dudau <liviu@dudau.co.uk>
-Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out
- of pci_create_root_bus()
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
- <2507218.mHliopJb05@wuerfel> <546B041A.4060403@huawei.com>
- <20141118144819.GK12037@e106497-lin.cambridge.arm.com>
- <546BFF74.4030101@huawei.com> <20141119162914.GB9162@bart.dudau.co.uk>
-In-Reply-To: <20141119162914.GB9162@bart.dudau.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "huxinwei@huawei.com" <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>, Bjorn
- Helgaas <bhelgaas@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+In-Reply-To: <1416442058-19544-1-git-send-email-mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, David.Laight@ACULAB.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,129 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Something like this:
->>>
->>> struct pci_controller {
->>> 	struct pci_host_bridge bridge;
->>> 	/* private host bridge data here */
->>> 	.....
->>> };
->>>
->>> #define PCI_CONTROLLER(bus)	({
->>> 	struct pci_host_bridge *hb = to_pci_host_bridge(bus->bridge); \
->>> 	container_of(hb, struct pci_controller, bridge); })
->>>
->>>
->>> Then we can retrieve the host bridge structure from everywhere we have a device.
->>
->> Hi Liviu, it looks good to me, because this change will involve lots platforms,
->> I would think more about it. Thanks for your suggestion very much! :)
-> 
-> Given that I also look at this area maybe we should join forces and divide the problem?
 
-That's better, we could cooperate to do this. :)
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Best regards,
-> Liviu
-> 
->>
->>
->> Thanks!
->> Yijing.
->>
->>>
->>> Best regards,
->>> Liviu
->>>
->>>>
->>>>>
->>>>>> +	host = kzalloc(sizeof(*host), GFP_KERNEL);
->>>>>> +	if (!host)
->>>>>> +		return NULL;
->>>>>
->>>>> devm_kzalloc maybe?
->>>>
->>>> I don't know much detail about devm_kzalloc(), but we have no pci host driver
->>>> here, and I found no devm_kzalloc() uses in core PCI code before.
->>>>
->>>>>
->>>>>> +	if (!resources) {
->>>>>> +		/* Use default IO/MEM/BUS resources*/
->>>>>> +		pci_add_resource(&host->windows, &ioport_resource);
->>>>>> +		pci_add_resource(&host->windows, &iomem_resource);
->>>>>> +		pci_add_resource(&host->windows, &busn_resource);
->>>>>> +	} else {
->>>>>> +		list_for_each_entry_safe(window, n, resources, list)
->>>>>> +			list_move_tail(&window->list, &host->windows);
->>>>>> +	}
->>>>>
->>>>> I think we should assume that the correct resources are passed. You
->>>>> could add a wrapper around this function to convert old platforms
->>>>> though.
->>>>
->>>> OK, I will move these code out of pci_create_host_bridge, and add a wrapper
->>>> to setup the default resources.
->>>>
->>>>>
->>>>>> +EXPORT_SYMBOL(pci_create_host_bridge);
->>>>>
->>>>> EXPORT_SYMBOL_GPL() maybe?
->>>>
->>>> OK, will update it.
->>>>
->>>>>
->>>>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
->>>>>> index 8b11b38..daa7f40 100644
->>>>>> --- a/include/linux/pci.h
->>>>>> +++ b/include/linux/pci.h
->>>>>> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
->>>>>>  struct pci_host_bridge {
->>>>>>  	struct device dev;
->>>>>>  	struct pci_bus *bus;		/* root bus */
->>>>>> +	struct list_head list;
->>>>>>  	struct list_head windows;	/* pci_host_bridge_windows */
->>>>>> +	int busnum;
->>>>>
->>>>> The busnum should already be implied through the bus resource.
->>>>
->>>> Yes, I will consider remove it and introduce a helper function to get the root bus number, thanks!
->>>>
->>>> Thanks!
->>>> Yijing.
->>>>
->>>>>
->>>>> 	Arnd
->>>>>
->>>>> .
->>>>>
->>>>
->>>>
->>>> -- 
->>>> Thanks!
->>>> Yijing
->>>>
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>
->>>
->>
->>
->> -- 
->> Thanks!
->> Yijing
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
+On Thu, Nov 20, 2014 at 11:07:38AM +1100, Michael Ellerman wrote:
+> Although we are now selecting NO_BOOTMEM, we still have some traces of
+> bootmem lying around. That is because even with NO_BOOTMEM there is
+> still a shim that converts bootmem calls into memblock calls, but
+> ultimately we want to remove all traces of bootmem.
+>=20
+> Most of the patch is conversions from alloc_bootmem() to
+> memblock_virt_alloc(). In general a call such as:
+>=20
+>   p =3D (struct foo *)alloc_bootmem(x);
+>=20
+> Becomes:
+>=20
+>   p =3D memblock_virt_alloc(x, 0);
+>=20
+> We don't need the cast because memblock_virt_alloc() returns a void *.
+> The alignment value of zero tells memblock to use the default alignment,
+> which is SMP_CACHE_BYTES, the same value alloc_bootmem() uses.
+>=20
+> We remove a number of NULL checks on the result of
+> memblock_virt_alloc(). That is because memblock_virt_alloc() will panic
+> if it can't allocate, in exactly the same way as alloc_bootmem(), so the
+> NULL checks are and always have been redundant.
+>=20
+> The memory returned by memblock_virt_alloc() is already zeroed, so we
+> remove several memsets of the result of memblock_virt_alloc().
+>=20
+> Finally we convert a few uses of __alloc_bootmem(x, y, MAX_DMA_ADDRESS)
+> to just plain memblock_virt_alloc(). We don't use memblock_alloc_base()
+> because MAX_DMA_ADDRESS is ~0ul on powerpc, so limiting the allocation
+> to that is pointless, 16XB ought to be enough for anyone.
+>=20
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
 
+<snip>
 
--- 
-Thanks!
-Yijing
+> --- a/arch/powerpc/lib/alloc.c
+> +++ b/arch/powerpc/lib/alloc.c
+> @@ -13,9 +13,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, g=
+fp_t mask)
+>  	if (mem_init_done)
+>  		p =3D kzalloc(size, mask);
+>  	else {
+> -		p =3D alloc_bootmem(size);
+> -		if (p)
+> -			memset(p, 0, size);
+> +		p =3D memblock_virt_alloc(size, 0);
+>  	}
+
+You knew someone would ask but ...
+Do you want to remove the {} form the else clause so that the style matches=
+ the  if()
+
+Yours Tony.
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJUbVLuAAoJEPvNNsFAAoTB4XsQAOpkcqMTG+Y3bolstLyJDAiY
+vO4LjUiBRjyKwClL5qVuxLvj128sLZk5+Z4ID3ilsu4n1NESvqAuYTvdXpTLJwn9
+Ch2YanRVOsz7ZTDHjBxprOHWf9ptso0HOgeM345vWwx+HHiFLvErrdg+WYUYxZwP
+2udpnZbkywXV1ph7YZfXgWV8/2A3PGL31/ZW1qxi0Y6/Dm7hn2ZWH5NUuexm7fG6
+6Zl+gd7eMFgZSDVpoQ+tb+SKE9oJsadITU9kl0bAedfoRNnCTfpXGNxAs3JeAcpx
+8Rg9++4rSZvfDek7qrGLY++0kiv41IFO4ZYHEZmlvT047yTWFwCfECbdYDOQs8Fe
+ztkwiJ9Vp02SFzkkvxiF309djBvKHF9PCRdk0FY3QTvGMhiXFUH46tDgfsEVBter
+HrYfAjW6cInGZyez6EhFcl959OtTIn3wPu/f56Ec5Az+lmkntoaHvOH8bGCAGgyj
+I5wJsI6kOphByEfq+j9FDXSEZMKSeFxrX57wNwg4gCx3fITYkIg3M1qx6OvRGJf9
+645C7N4ds+ziG4GCe4ZRK6caNc552ZPP1RnTvNzkT6LPD+LfQoEMNxb8veGSh9Gl
+7iiCQcxYQ2xB5TyfokYlKGDhsZI9/mYJZYop40M+8HaIBcqIxNGl3KIgbeBqyTi1
+BxzHItjcCuDpjYUq66qF
+=z7I5
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
