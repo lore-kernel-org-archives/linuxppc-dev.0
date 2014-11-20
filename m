@@ -1,30 +1,30 @@
 Return-Path: <tomasz.nowicki@linaro.org>
-Received: from mail-wi0-f178.google.com (mail-wi0-f178.google.com
- [209.85.212.178])
+Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 557E11A0A00
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 23:01:16 +1100 (AEDT)
-Received: by mail-wi0-f178.google.com with SMTP id hi2so5067773wib.17
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 04:01:12 -0800 (PST)
-Message-ID: <546DD804.4010105@linaro.org>
-Date: Thu, 20 Nov 2014 13:01:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBCEC1A0A0B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 23:53:55 +1100 (AEDT)
+Received: by mail-wg0-f45.google.com with SMTP id b13so3662027wgh.18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 04:53:52 -0800 (PST)
+Message-ID: <546DE45C.6010306@linaro.org>
+Date: Thu, 20 Nov 2014 13:53:48 +0100
 From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>, Yijing Wang <wangyijing@huawei.com>
+To: Liviu Dudau <liviu@dudau.co.uk>
 Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
 References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <20535707.3sA6NjSINh@wuerfel> <546B38F5.6050708@huawei.com>
- <1534030.bkpIToWlHq@wuerfel>
-In-Reply-To: <1534030.bkpIToWlHq@wuerfel>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>, Suravee.Suthikulpanit@amd.com,
- Bjorn Helgaas <bhelgaas@google.com>, linux-ia64@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ <1463511.o4kE8TX3Bd@wuerfel> <546DD688.60705@linaro.org>
+ <20141120120850.GD9162@bart.dudau.co.uk>
+In-Reply-To: <20141120120850.GD9162@bart.dudau.co.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
+ Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
+ Yijing Wang <wangyijing@huawei.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Suravee.Suthikulpanit@amd.com, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Wuyun <wuyun.wu@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +34,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18.11.2014 13:27, Arnd Bergmann wrote:
-> On Tuesday 18 November 2014 20:17:57 Yijing Wang wrote:
->>
+On 20.11.2014 13:08, Liviu Dudau wrote:
+> On Thu, Nov 20, 2014 at 12:54:48PM +0100, Tomasz Nowicki wrote:
+>> On 17.11.2014 15:13, Arnd Bergmann wrote:
+>>> On Monday 17 November 2014 18:21:34 Yijing Wang wrote:
+>>>> This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
+>>>> arm PCI domain cleanup patches, link:
+>>>> https://patchwork.ozlabs.org/patch/407585/
 >>>>
->>>> I hope platforms with ACPI or DT could both use pci_create_host_bridge().
->>>> Why we need to use two different ways to process it ?
+>>>> Current pci scan interfaces like pci_scan_root_bus() and directly
+>>>> call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
+>>>> Some platform infos like PCI domain and msi_chip have to be
+>>>> associated to PCI bus by some arch specific function.
+>>>> We want to make a generic pci_host_bridge, and make it hold
+>>>> the platform infos or hook. Then we could eliminate the lots
+>>>> of arch pci_domain_nr, also we could associate some platform
+>>>> ops something like pci_get_msi_chip(struct pci_dev *dev)
+>>>> with pci_host_bridge to avoid introduce arch weak functions.
+>>>>
+>>>> This RFC version not for all platforms, just applied the new
+>>>> scan interface in x86/arm/powerpc/ia64, I will refresh other
+>>>> platforms after the core pci scan interfaces are ok.
 >>>
->>> These are completely different use cases:
+>>> I think overall this is a good direction to take, in particular
+>>> moving more things into struct pci_host_bridge so we can
+>>> slim down the architecture specific code.
 >>>
->>> a) For DT, we want loadable device drivers that start by probing a host
->>>     bridge device which was added through the DT platform code. The
->>>     driver is self-contained, and eventually we want to be able to unload
->>>     it. We have lots of different per-soc drivers that require different
->>>     quirks
+>>> I don't particularly like the way you use the 'pci_host_info'
+>>> to pass callback pointers and some of the generic information.
+>>> This duplicates some of the issues we are currently trying
+>>> to untangle in the arm32 code to make drivers easier to share
+>>> between architectures.
 >>>
->>> b) For ACPI, the interface is defined in the ACPI spec across architectures
->>>     and SoCs, we don't have host bridge drivers and the code that initializes
->>>     the PCI is required early during boot and called from architecture
->>>     code. There is no parent device, as ACPI sees PCI as a fundamental building
->>>     block by itself, and there are no drivers because the firmware does
->>>     the initial hardware setup, so we only have to access the config space.
+>>> As a general approach, I'd rather see generic helper functions
+>>> being exported by the PCI core that a driver may or may not
+>>> call.
+>>> The way you split the interface between things that happen
+>>> before scanning the buses (pci_create_host_bridge) and
+>>> the actual scanning (__pci_create_root_bus, pci_scan_child_bus)
+>>> seems very helpful and I think we can expand that concept further:
+>>>
+>>> - The normal pci_create_host_bridge() function can contain
+>>>    all of the DT scanning functions (finding bus/mem/io resources,
+>>>    finding the msi-parent), while drivers that don't depend on DT
+>>>    for this information can call the same function and fill the
+>>>    same things after they have the pci_host_bridge pointer.
 >>
->> Hmmm, I'm a little confused, so why you think ACPI host driver should not use
->> pci_create_host_bridge(), because ACPI PCI driver has no parent device ?
+>> How about finding PCI domain number (in the DT way) within
+>> pci_create_host_bridge() too ?
 >
-> It's one of the difference. Having a parent device can certainly make your
-> life simpler, since you have devm_kzalloc(), dev_info(), etc. Coming from
-> the other end, I think ACPI needs PCI to be available during early boot,
-> at a time where we might not want pci_create_host_bridge() to do the
-> right thing.
+> It is an idea worth pursuing for the 99% of the cases. I would like
+> to understand the 1% of the time when we want a domain number to be
+> shared between two host bridges or the time when we want more than
+> one domain per bridge.
+Even though we have shared domain, this should be resolved via DT calls, 
+do I miss something ?
 
-Device pointer is not required for ACPI, struct acpi_device is all we 
-need to get all that info. If pci_create_host_bridge() would be DT 
-specific, it would be nice to have sth similar for ACPI but that is out 
-of this patch set scope.
+>
+> Is that possible? Is it useful? Is it already in practice?
+This is good question... IMO:
+1. Two host bridges can shared domain number if they are children of the 
+same parent host bridge.
+2. But I can not find good explanation for more than one domain per bridge.
 
 Tomasz
