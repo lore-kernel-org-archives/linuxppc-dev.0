@@ -1,37 +1,39 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 880731A0976
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 13:54:41 +1100 (AEDT)
-Message-ID: <546D57D8.4060708@huawei.com>
-Date: Thu, 20 Nov 2014 10:54:16 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4A761A09C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 15:14:44 +1100 (AEDT)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 02003140139
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2014 15:14:43 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 20 Nov 2014 09:44:40 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8FE271258044
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2014 09:44:45 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAK4FC8g52297836
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2014 09:45:12 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAK4Eaa6023405
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2014 09:44:36 +0530
+Subject: [PATCH] powerpc/powernv: Fix the hmi event version check.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 20 Nov 2014 09:44:36 +0530
+Message-ID: <20141120041345.3339.6873.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-To: Liviu Dudau <Liviu.Dudau@arm.com>
-Subject: Re: [RFC PATCH 08/16] PCI: Introduce pci_scan_host_bridge() and
- pci_host_info
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1416219710-26088-9-git-send-email-wangyijing@huawei.com>
- <20141118154243.GM12037@e106497-lin.cambridge.arm.com>
- <546BFBC8.4030104@huawei.com>
- <20141119164128.GX12037@e106497-lin.cambridge.arm.com>
-In-Reply-To: <20141119164128.GX12037@e106497-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "huxinwei@huawei.com" <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Yijing Wang <wangyijing0307@gmail.com>,
- "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,217 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> No, in this patch, host drivers pass a pci host bridge resources init hook
->> in pci_host_info *info, and we call this info->init_res() in pci_create_host_bridge().
->>
->> +struct pci_host_info {
->> +	u8 res_type;
->> +	void *arg;
->> +	struct list_head *resources; /*just for build, will clean up later */
->> +	int (*init_res)(struct pci_host_bridge *host,
->> +			struct pci_host_info *info);
->> +};
->> +
-> 
-> That's not what I've asked! Your code does:
-> 
-> 	if (info->res_type != PCI_HOST_RES_DEFAULT)
-> 		....
-> 	else /* info->res_type == PCI_HOST_RES_DEFAULT)
-> 		info->res_type = PCI_HOST_RES_DEFAULT;
-> 
-> info->res_type is already == PCI_HOST_RES_DEFAULT in the else side, assignment is a NOP?
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Hmmm, I wanted pci_create_host_bridge() to process the default res later(add default res),
-It's ugly code, I will rework it.
+The current HMI event structure is an ABI and carries a version field to
+accommodate future changes without affecting/rearranging current structure
+members that are valid for previous versions. The current version check
+"if (hmi_evt->version != OpalHMIEvt_V1)" seems to consider that version
+will always be V1 which may not be true in future. If we start supporting
+HMI event > V1, this check would fail without printing anything on older
+kernels. This patch fixes this issue.
 
-> 
-> 
->>
->>>
->>>> +
->>>> +	return 0;
->>>> +}
->> ...
->>>> @@ -2038,8 +2057,13 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
->>>>  	bool found = false;
->>>>  	struct pci_host_bridge *host;
->>>>  	int max;
->>>> +	struct pci_host_info info;
->>>> +	
->>>> +	info.arg = sysdata;
->>>> +	info.resources = resources;
->>>> +	info.init_res = pci_default_init_res;
->>>
->>> I have mixed feelings about this patch. While it is heading in the right direction
->>> of moving pci_host_bridge relevant information towards the right user, I don't think
->>> you picked up the right set to move. The resource list is going to be copied into
->>> internal pci_host_bridge list anyway, keeping another copy is not helpful *and*
->>> you have increased the code size.
->>>
->>> I think for now we should aim to get the *missing* data into pci_host_bridge: MSI
->>> controllers and PCI domain/segment. Then we can do more cleanup.
->>
->> Hi Liviu, I agree with you here, the changes to resources stuff seems not a perfect
->> solution. In my patch 6, we could pass pci domain nr by u32 PCI_DOMBUS(domain, bus) argument,
->> and store it in pci_host_bridge. For msi controller, we couldn't save the msi_controller
->> in pci_host_bridge. Before we assume one pci host bridge only had one msi_controller,
->> but now something changes, Jiang introduce hierarchy irq domain in x86, and now
->> one pci host bridge may has more than one msi_controller. So I prefer to add a
->> function to pci_host_bridge something like
->>
->> struct msi_controller *pci_get_msi_controller(struct pci_dev *dev)
-> 
-> Yes, good idea.
-> 
->>
->>>
->>>>  
->>>> -	host = pci_create_host_bridge(parent, db, ops, sysdata, resources);
->>>> +	host = pci_create_host_bridge(parent, db, ops, &info);
->>>>  	if (!host)
->>>>  		return NULL;
->>>>  
->>>> @@ -2070,6 +2094,47 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
->>>>  }
->>>>  EXPORT_SYMBOL(pci_scan_root_bus);
->>>>  
->>>> +struct pci_host_bridge *pci_scan_host_bridge(
->>>> +		struct device *parent, u32 db, struct pci_ops *ops,
->>>> +		struct pci_host_info *info)
->>>> +{
->>>> +	struct pci_host_bridge_window *window;
->>>> +	bool found = false;
->>>> +	struct pci_host_bridge *host;
->>>> +	int max;
->>>> +
->>>> +	host = pci_create_host_bridge(parent, db, ops, info);
->>>> +	if (!host)
->>>> +		return NULL;
->>>> +
->>>> +	list_for_each_entry(window, &host->windows, list)
->>>> +		if (window->res->flags & IORESOURCE_BUS) {
->>>> +			found = true;
->>>> +			break;
->>>> +		}
->>>> +
->>>> +	host->bus = __pci_create_root_bus(host);
->>>> +	if (!host->bus) {
->>>> +		pci_free_host_bridge(host);
->>>> +		return NULL;
->>>> +	}
->>>> +
->>>> +	if (!found) {
->>>> +		dev_info(&host->bus->dev,
->>>> +		 "No busn resource found for root bus, will use [bus %02x-ff]\n",
->>>> +			host->busnum);
->>>> +		pci_bus_insert_busn_res(host->bus, host->busnum, 255);
->>>> +	}
->>>> +
->>>> +	max = pci_scan_child_bus(host->bus);
->>>> +	if (!found)
->>>> +		pci_bus_update_busn_res_end(host->bus, max);
->>>> +
->>>> +	return host;
->>>> +
->>>> +}
->>>> +EXPORT_SYMBOL(pci_scan_host_bridge);
->>>> +
->>>>  /**
->>>>   * pci_rescan_bus_bridge_resize - scan a PCI bus for devices.
->>>>   * @bridge: PCI bridge for the bus to scan
->>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
->>>> index daa7f40..a51f5f5 100644
->>>> --- a/include/linux/pci.h
->>>> +++ b/include/linux/pci.h
->>>> @@ -412,6 +412,21 @@ struct pci_host_bridge {
->>>>  	void *release_data;
->>>>  };
->>>>  
->>>> +struct pci_host_info {
->>>> +	u8 res_type;
->>>> +	void *arg;
->>>> +	struct list_head *resources; /*just for build, will clean up later */
->>>> +	int (*init_res)(struct pci_host_bridge *host, 
->>>> +			struct pci_host_info *info);
->>>> +};
->>>> +
->>>> +static inline void init_pci_host_info(struct pci_host_info *info)
->>>> +{
->>>> +	memset(info, 0 , sizeof(*info));
->>>> +}
->>>
->>> Where is this used?
->>
->> Host driver uses it to init pci_host_info.
-> 
-> Might be worth adding it that patch rather than here.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-hmi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-OK
-
-> 
-> Best regards,
-> Liviu
-> 
->>
->>>
->>>> +
->>>> +#define PCI_HOST_RES_DEFAULT	0x2
->>>> +
->>>
->>> Magic number?
->>
->> Hmmm, I will rework pci host bridge resources stuff.
->>
->>>
->>> Best regards,
->>> Liviu
->>>
->>>>  #define	to_pci_host_bridge(n) container_of(n, struct pci_host_bridge, dev)
->>>>  void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
->>>>  		     void (*release_fn)(struct pci_host_bridge *),
->>>> @@ -420,7 +435,7 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
->>>>  int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
->>>>  struct pci_host_bridge *pci_create_host_bridge(
->>>>  		struct device *parent, u32 db, struct pci_ops *ops, 
->>>> -		void *sys, struct list_head *resources);
->>>> +		struct pci_host_info *info);
->>>>  /*
->>>>   * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
->>>>   * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
->>>> @@ -785,6 +800,9 @@ void pci_bus_release_busn_res(struct pci_bus *b);
->>>>  struct pci_bus *pci_scan_root_bus(struct device *parent, u32 bus,
->>>>  					     struct pci_ops *ops, void *sysdata,
->>>>  					     struct list_head *resources);
->>>> +struct pci_host_bridge *pci_scan_host_bridge(struct device *parent,
->>>> +		u32 db, struct pci_ops *ops,
->>>> +		struct pci_host_info *info);
->>>>  struct pci_bus *pci_add_new_bus(struct pci_bus *parent, struct pci_dev *dev,
->>>>  				int busnr);
->>>>  void pcie_update_link_speed(struct pci_bus *bus, u16 link_status);
->>>> -- 
->>>> 1.7.1
->>>>
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>
->>>
->>
->>
->> -- 
->> Thanks!
->> Yijing
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-
-
--- 
-Thanks!
-Yijing
+diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
+index 5e1ed15..b322bfb 100644
+--- a/arch/powerpc/platforms/powernv/opal-hmi.c
++++ b/arch/powerpc/platforms/powernv/opal-hmi.c
+@@ -57,7 +57,7 @@ static void print_hmi_event_info(struct OpalHMIEvent *hmi_evt)
+ 	};
+ 
+ 	/* Print things out */
+-	if (hmi_evt->version != OpalHMIEvt_V1) {
++	if (hmi_evt->version < OpalHMIEvt_V1) {
+ 		pr_err("HMI Interrupt, Unknown event version %d !\n",
+ 			hmi_evt->version);
+ 		return;
