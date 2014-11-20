@@ -1,23 +1,27 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0138.outbound.protection.outlook.com [157.56.110.138])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FEC61A0A0B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 00:15:26 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-Date: Thu, 20 Nov 2014 13:00:44 +0000
-Message-ID: <20b19f779c5e45d7ac40964f21866ca3@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
-In-Reply-To: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43B521A0A0E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 00:16:16 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
+Date: Thu, 20 Nov 2014 14:15:19 +0100
+Message-ID: <2756150.eOnxg6jMdK@wuerfel>
+In-Reply-To: <546DD804.4010105@linaro.org>
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1534030.bkpIToWlHq@wuerfel> <546DD804.4010105@linaro.org>
 MIME-Version: 1.0
-Cc: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
- Emilian Medve <Emilian.Medve@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ Tomasz Nowicki <tomasz.nowicki@linaro.org>, Xinwei Hu <huxinwei@huawei.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
+ linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Wuyun <wuyun.wu@huawei.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,136 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping.
+On Thursday 20 November 2014 13:01:08 Tomasz Nowicki wrote:
+> On 18.11.2014 13:27, Arnd Bergmann wrote:
+> > On Tuesday 18 November 2014 20:17:57 Yijing Wang wrote:
+> >>
+> >>>>
+> >>>> I hope platforms with ACPI or DT could both use pci_create_host_bridge().
+> >>>> Why we need to use two different ways to process it ?
+> >>>
+> >>> These are completely different use cases:
+> >>>
+> >>> a) For DT, we want loadable device drivers that start by probing a host
+> >>>     bridge device which was added through the DT platform code. The
+> >>>     driver is self-contained, and eventually we want to be able to unload
+> >>>     it. We have lots of different per-soc drivers that require different
+> >>>     quirks
+> >>>
+> >>> b) For ACPI, the interface is defined in the ACPI spec across architectures
+> >>>     and SoCs, we don't have host bridge drivers and the code that initializes
+> >>>     the PCI is required early during boot and called from architecture
+> >>>     code. There is no parent device, as ACPI sees PCI as a fundamental building
+> >>>     block by itself, and there are no drivers because the firmware does
+> >>>     the initial hardware setup, so we only have to access the config space.
+> >>
+> >> Hmmm, I'm a little confused, so why you think ACPI host driver should not use
+> >> pci_create_host_bridge(), because ACPI PCI driver has no parent device ?
+> >
+> > It's one of the difference. Having a parent device can certainly make your
+> > life simpler, since you have devm_kzalloc(), dev_info(), etc. Coming from
+> > the other end, I think ACPI needs PCI to be available during early boot,
+> > at a time where we might not want pci_create_host_bridge() to do the
+> > right thing.
+> 
+> Device pointer is not required for ACPI, struct acpi_device is all we 
+> need to get all that info. If pci_create_host_bridge() would be DT 
+> specific, it would be nice to have sth similar for ACPI but that is out 
+> of this patch set scope.
 
-Best Regards,=20
-Shaohui Xie
+My point was more that we don't need to have something like it for ACPI,
+since we don't get random drivers that need to be probed that way,
+just one common implementation that calls into the PCI core. We should
+of course share the common bits with pci_create_host_bridge() in some
+form, but that can be done by moving the x86 pci_acpi_scan_root
+function and/or acpi_pci_root_add() to a common place in drivers/pci
+and then refactoring the internals.
 
-> -----Original Message-----
-> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
-> Sent: Friday, November 14, 2014 5:53 PM
-> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood
-> Scott-B07421
-> Cc: Medve Emilian-EMMEDVE1; Liberman Igal-B31950; Xie Shaohui-B21989
-> Subject: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
->=20
-> From: Shaohui Xie <Shaohui.Xie@freescale.com>
->=20
-> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
->=20
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> ---
-> changes in V2:
-> addressed comments from Scott in V1.
->=20
->  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69
-> ++++++++++++++++++++++
->  1 file changed, 69 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> index edeea16..1523a87 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> @@ -7,6 +7,7 @@ CONTENTS
->    - FMan MURAM Node
->    - FMan dTSEC/XGEC/mEMAC Node
->    - FMan IEEE 1588 Node
-> +  - FMan MDIO Node
->    - Example
->=20
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D
-> @@ -357,6 +358,68 @@ ptp-timer@fe000 {
->  };
->=20
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D
-> +FMan MDIO Node
-> +
-> +DESCRIPTION
-> +
-> +The MDIO is a bus to which the PHY devices are connected.
-> +
-> +PROPERTIES
-> +
-> +- compatible
-> +		Usage: required
-> +		Value type: <stringlist>
-> +		Definition: A standard property.
-> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-> +		FMan v3.
-> +
-> +- reg
-> +		Usage: required
-> +		Value type: <prop-encoded-array>
-> +		Definition: A standard property.
-> +
-> +- bus-frequency
-> +		Usage: optional
-> +		Value type: <u32>
-> +		Definition: Specifies external MDIO bus clock speed which is
-> +		different from MDIO standard 2.5MHz. Should be defined for
-> SoCs
-> +		on which the standard one cannot work.
-> +
-> +- interrupts
-> +		Usage: optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: Event interrupt of external MDIO controller.
-> +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
-> +
-> +- fsl,fman-internal-mdio
-> +		Usage: required for internal MDIO
-> +		Value type: boolean
-> +		Definition: Fman has internal MDIO for internal PCS(Physical
-> +		Coding Sublayer) PHYs and external MDIO for external PHYs.
-> +		The settings and programming routines for internal/external
-> +		MDIO are different. Must be included for internal MDIO.
-> +
-> +EXAMPLE
-> +
-> +Example for FMan v2 external MDIO:
-> +
-> +mdio@f1000 {
-> +	compatible =3D "fsl,fman-xmdio";
-> +	reg =3D <0xf1000 0x1000>;
-> +	bus-frequency =3D <20000>;
-> +};
-> +
-> +Example for FMan v3 internal MDIO:
-> +
-> +mdio@f1000 {
-> +	compatible =3D "fsl,fman-memac-mdio";
-> +	reg =3D <0xf1000 0x1000>;
-> +	fsl,fman-internal-mdio;
-> +};
-> +
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> =3D=3D=3D=3D=3D
->  Example
->=20
->  fman@400000 {
-> @@ -531,4 +594,10 @@ fman@400000 {
->  		compatible =3D "fsl,fman-ptp-timer";
->  		reg =3D <0xfe000 0x1000>;
->  	};
-> +
-> +	mdio@f1000 {
-> +		compatible =3D "fsl,fman-xmdio";
-> +		reg =3D <0xf1000 0x1000>;
-> +		bus-frequency =3D <20000>;
-> +	};
->  };
-> --
-> 1.8.4.1
+	Arnd
