@@ -1,27 +1,39 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43B521A0A0E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 00:16:16 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-Date: Thu, 20 Nov 2014 14:15:19 +0100
-Message-ID: <2756150.eOnxg6jMdK@wuerfel>
-In-Reply-To: <546DD804.4010105@linaro.org>
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1534030.bkpIToWlHq@wuerfel> <546DD804.4010105@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 81A5F1A09F8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 01:23:51 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4FE4E140142
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 01:23:50 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Fri, 21 Nov 2014 00:23:48 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6CD733578048
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 01:23:45 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAKENJH533423522
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 01:23:20 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAKENiA4003523
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 01:23:44 +1100
+Message-ID: <546DF910.4060802@linux.vnet.ibm.com>
+Date: Thu, 20 Nov 2014 19:52:08 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- Russell King <linux@arm.linux.org.uk>, linux-pci@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org,
- Tomasz Nowicki <tomasz.nowicki@linaro.org>, Xinwei Hu <huxinwei@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thierry Reding <thierry.reding@gmail.com>,
- Suravee.Suthikulpanit@amd.com, Yijing Wang <wangyijing@huawei.com>,
- linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Wuyun <wuyun.wu@huawei.com>, linux-arm-kernel@lists.infradead.org
+To: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org, wsa@the-dreams.de
+Subject: Re: [PATCH v2] i2c: Driver to expose PowerNV platform i2c busses
+References: <20141116171605.4750.17472.stgit@localhost.localdomain>
+In-Reply-To: <20141116171605.4750.17472.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 20 November 2014 13:01:08 Tomasz Nowicki wrote:
-> On 18.11.2014 13:27, Arnd Bergmann wrote:
-> > On Tuesday 18 November 2014 20:17:57 Yijing Wang wrote:
-> >>
-> >>>>
-> >>>> I hope platforms with ACPI or DT could both use pci_create_host_bridge().
-> >>>> Why we need to use two different ways to process it ?
-> >>>
-> >>> These are completely different use cases:
-> >>>
-> >>> a) For DT, we want loadable device drivers that start by probing a host
-> >>>     bridge device which was added through the DT platform code. The
-> >>>     driver is self-contained, and eventually we want to be able to unload
-> >>>     it. We have lots of different per-soc drivers that require different
-> >>>     quirks
-> >>>
-> >>> b) For ACPI, the interface is defined in the ACPI spec across architectures
-> >>>     and SoCs, we don't have host bridge drivers and the code that initializes
-> >>>     the PCI is required early during boot and called from architecture
-> >>>     code. There is no parent device, as ACPI sees PCI as a fundamental building
-> >>>     block by itself, and there are no drivers because the firmware does
-> >>>     the initial hardware setup, so we only have to access the config space.
-> >>
-> >> Hmmm, I'm a little confused, so why you think ACPI host driver should not use
-> >> pci_create_host_bridge(), because ACPI PCI driver has no parent device ?
-> >
-> > It's one of the difference. Having a parent device can certainly make your
-> > life simpler, since you have devm_kzalloc(), dev_info(), etc. Coming from
-> > the other end, I think ACPI needs PCI to be available during early boot,
-> > at a time where we might not want pci_create_host_bridge() to do the
-> > right thing.
-> 
-> Device pointer is not required for ACPI, struct acpi_device is all we 
-> need to get all that info. If pci_create_host_bridge() would be DT 
-> specific, it would be nice to have sth similar for ACPI but that is out 
-> of this patch set scope.
 
-My point was more that we don't need to have something like it for ACPI,
-since we don't get random drivers that need to be probed that way,
-just one common implementation that calls into the PCI core. We should
-of course share the common bits with pci_create_host_bridge() in some
-form, but that can be done by moving the x86 pci_acpi_scan_root
-function and/or acpi_pci_root_add() to a common place in drivers/pci
-and then refactoring the internals.
+On 11/16/2014 10:47 PM, Neelesh Gupta wrote:
+> The patch exposes the available i2c busses on the PowerNV platform
+> to the kernel and implements the bus driver to support i2c and
+> smbus commands.
+> The driver uses the platform device infrastructure to probe the busses
+> on the platform and registers them with the i2c driver framework.
+>
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 
-	Arnd
+Hi Wolfram,
+
+Did you get the chance to look at it?
+The patch addresses the comments and discussions on v1.
+
+Thanks,
+Neelesh
+
+>   arch/powerpc/include/asm/opal.h                |   29 ++
+>   arch/powerpc/platforms/powernv/opal-wrappers.S |    1
+>   arch/powerpc/platforms/powernv/opal.c          |   11 +
+>   drivers/i2c/busses/Kconfig                     |   11 +
+>   drivers/i2c/busses/Makefile                    |    1
+>   drivers/i2c/busses/i2c-opal.c                  |  295 ++++++++++++++++++++++++
+>   6 files changed, 348 insertions(+)
+>   create mode 100644 drivers/i2c/busses/i2c-opal.c
+>
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 9124b0e..537807b 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+>
