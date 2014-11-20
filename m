@@ -1,29 +1,28 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-qg0-x22a.google.com (mail-qg0-x22a.google.com
- [IPv6:2607:f8b0:400d:c04::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <sasha.levin@oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494671A09DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 06:54:09 +1100 (AEDT)
-Received: by mail-qg0-f42.google.com with SMTP id z107so1112989qgd.15
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 11:54:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 770131A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 09:00:08 +1100 (AEDT)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ sAKLofKs008737
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 21:50:41 GMT
+Message-ID: <546E6221.5000409@oracle.com>
+Date: Thu, 20 Nov 2014 16:50:25 -0500
+From: Sasha Levin <sasha.levin@oracle.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <1416478790-27522-3-git-send-email-mgorman@suse.de>
+To: Mel Gorman <mgorman@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/10] Replace _PAGE_NUMA with PAGE_NONE protections v2
 References: <1416478790-27522-1-git-send-email-mgorman@suse.de>
- <1416478790-27522-3-git-send-email-mgorman@suse.de>
-Date: Thu, 20 Nov 2014 11:54:06 -0800
-Message-ID: <CA+55aFwV80r66w4RmtY-MAUGkwmfBJe+C5KFD3ZnNgYb_KbBpQ@mail.gmail.com>
-Subject: Re: [PATCH 02/10] mm: Add p[te|md] protnone helpers for use by NUMA
- balancing
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mel Gorman <mgorman@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hughd@google.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+In-Reply-To: <1416478790-27522-1-git-send-email-mgorman@suse.de>
+Content-Type: text/plain; charset=windows-1252
+Cc: Rik van Riel <riel@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Hugh Dickins <hughd@google.com>, Linux-MM <linux-mm@kvack.org>,
  Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>, Dave Jones <davej@redhat.com>,
  LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
  Kirill Shutemov <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,35 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 20, 2014 at 2:19 AM, Mel Gorman <mgorman@suse.de> wrote:
-> This is a preparatory patch that introduces protnone helpers for automatic
-> NUMA balancing.
+On 11/20/2014 05:19 AM, Mel Gorman wrote:
+> V1 failed while running under kvm-tools very quickly and a second report
+> indicated that it happens on bare metal as well. This version survived
+> an overnight run of trinity running under kvm-tools here but verification
+> from Sasha would be appreciated.
 
-Oh, I hadn't noticed that you had renamed these things. It was
-probably already true in your V1 version.
+Hi Mel,
 
-I do *not* think that "pte_protnone_numa()" makes sense as a name. It
-only confuses people to think that there is still/again something
-NUMA-special about the PTE. The whole point of the protnone changes
-was to make it really very very clear that from a hardware standpoint,
-this is *exactly* about protnone, and nothing else.
+I tried giving it a spin, but it won't apply at all on the latest -mm
+tree:
 
-The fact that we then use protnone PTE's for numa faults is a VM
-internal issue, it should *not* show up in the architecture page table
-helpers.
+$ git am -3 numa/*
+Applying: mm: numa: Do not dereference pmd outside of the lock during NUMA hinting fault
+Applying: mm: Add p[te|md] protnone helpers for use by NUMA balancing
+Applying: mm: Convert p[te|md]_numa users to p[te|md]_protnone_numa
+fatal: sha1 information is lacking or useless (mm/huge_memory.c).
+Repository lacks necessary blobs to fall back on 3-way merge.
+Cannot fall back to three-way merge.
 
-I'm not NAK'ing this name, but I really think it's a very important
-part of the whole patch series - to stop the stupid confusion about
-NUMA entries. As far as the page tables are concerned, this has
-absolutely _zero_ to do with NUMA.
+Did I miss a prerequisite?
 
-We made that mistake once. We're fixing it. Let the naming *show* that
-it's fixed, and this is "pte_protnone()".
 
-The places that use this for NUMA handling might have a comment or
-something. But they'll be in the VM where this matters, not in the
-architecture page table description files. The comment would be
-something like "if the vma is accessible, but the PTE is marked
-protnone, this is a autonuma entry".
-
-                    Linus
+Thanks,
+Sasha
