@@ -1,28 +1,21 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <Lu.Jiang@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B5D1A0446
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 13:58:59 +1100 (AEDT)
-Message-ID: <546EAA50.8000601@huawei.com>
-Date: Fri, 21 Nov 2014 10:58:24 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D45B31A0A0E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 15:00:04 +1100 (AEDT)
+Received: from ALA-HCA.corp.ad.wrs.com (ala-hca.corp.ad.wrs.com
+ [147.11.189.40])
+ by mail.windriver.com (8.14.9/8.14.5) with ESMTP id sAL3NH7G000731
+ (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 19:23:17 -0800 (PST)
+From: Jiang Lu <lu.jiang@windriver.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <lu.jiang@windriver.com>
+Subject: [PATCH] Powerpc/Oprofile:Disable pagefaults during user stack read
+Date: Fri, 21 Nov 2014 11:23:19 +0800
+Message-ID: <1416540199-13097-1-git-send-email-lu.jiang@windriver.com>
 MIME-Version: 1.0
-To: Liviu Dudau <liviu@dudau.co.uk>, Tomasz Nowicki <tomasz.nowicki@linaro.org>
-Subject: Re: [RFC PATCH 00/16] Refine PCI host bridge scan interfaces
-References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
- <1463511.o4kE8TX3Bd@wuerfel> <546DD688.60705@linaro.org>
- <20141120120850.GD9162@bart.dudau.co.uk> <546DE45C.6010306@linaro.org>
- <20141120163918.GE9162@bart.dudau.co.uk>
-In-Reply-To: <20141120163918.GE9162@bart.dudau.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, Xinwei Hu <huxinwei@huawei.com>,
- Thierry Reding <thierry.reding@gmail.com>, Suravee.Suthikulpanit@amd.com,
- Bjorn Helgaas <bhelgaas@google.com>, linux-ia64@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,90 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/11/21 0:39, Liviu Dudau wrote:
-> On Thu, Nov 20, 2014 at 01:53:48PM +0100, Tomasz Nowicki wrote:
->> On 20.11.2014 13:08, Liviu Dudau wrote:
->>> On Thu, Nov 20, 2014 at 12:54:48PM +0100, Tomasz Nowicki wrote:
->>>> On 17.11.2014 15:13, Arnd Bergmann wrote:
->>>>> On Monday 17 November 2014 18:21:34 Yijing Wang wrote:
->>>>>> This series is based Linux 3.18-rc1 and Lorenzo Pieralisi's
->>>>>> arm PCI domain cleanup patches, link:
->>>>>> https://patchwork.ozlabs.org/patch/407585/
->>>>>>
->>>>>> Current pci scan interfaces like pci_scan_root_bus() and directly
->>>>>> call pci_create_root_bus()/pci_scan_child_bus() lack flexiblity.
->>>>>> Some platform infos like PCI domain and msi_chip have to be
->>>>>> associated to PCI bus by some arch specific function.
->>>>>> We want to make a generic pci_host_bridge, and make it hold
->>>>>> the platform infos or hook. Then we could eliminate the lots
->>>>>> of arch pci_domain_nr, also we could associate some platform
->>>>>> ops something like pci_get_msi_chip(struct pci_dev *dev)
->>>>>> with pci_host_bridge to avoid introduce arch weak functions.
->>>>>>
->>>>>> This RFC version not for all platforms, just applied the new
->>>>>> scan interface in x86/arm/powerpc/ia64, I will refresh other
->>>>>> platforms after the core pci scan interfaces are ok.
->>>>>
->>>>> I think overall this is a good direction to take, in particular
->>>>> moving more things into struct pci_host_bridge so we can
->>>>> slim down the architecture specific code.
->>>>>
->>>>> I don't particularly like the way you use the 'pci_host_info'
->>>>> to pass callback pointers and some of the generic information.
->>>>> This duplicates some of the issues we are currently trying
->>>>> to untangle in the arm32 code to make drivers easier to share
->>>>> between architectures.
->>>>>
->>>>> As a general approach, I'd rather see generic helper functions
->>>>> being exported by the PCI core that a driver may or may not
->>>>> call.
->>>>> The way you split the interface between things that happen
->>>>> before scanning the buses (pci_create_host_bridge) and
->>>>> the actual scanning (__pci_create_root_bus, pci_scan_child_bus)
->>>>> seems very helpful and I think we can expand that concept further:
->>>>>
->>>>> - The normal pci_create_host_bridge() function can contain
->>>>>   all of the DT scanning functions (finding bus/mem/io resources,
->>>>>   finding the msi-parent), while drivers that don't depend on DT
->>>>>   for this information can call the same function and fill the
->>>>>   same things after they have the pci_host_bridge pointer.
->>>>
->>>> How about finding PCI domain number (in the DT way) within
->>>> pci_create_host_bridge() too ?
->>>
->>> It is an idea worth pursuing for the 99% of the cases. I would like
->>> to understand the 1% of the time when we want a domain number to be
->>> shared between two host bridges or the time when we want more than
->>> one domain per bridge.
->> Even though we have shared domain, this should be resolved via DT calls, do
->> I miss something ?
-> 
-> If we only going to hold one domain number per host bridge, then no, you're
-> not missing anything.
-> 
->>
->>>
->>> Is that possible? Is it useful? Is it already in practice?
->> This is good question... IMO:
->> 1. Two host bridges can shared domain number if they are children of the
->> same parent host bridge.
->> 2. But I can not find good explanation for more than one domain per bridge.
-> 
-> Splitting a root bus into two or more "segments" ?
+A page fault occurred during reading user stack in oprofile backtrace
+would lead following calltrace:
 
-It seems impossible.
+WARNING: at linux/kernel/smp.c:210
+Modules linked in:
+CPU: 5 PID: 736 Comm: sh Tainted: G W 3.14.23-WR7.0.0.0_standard #1 
+task: c0000000f6208bc0 ti: c00000007c72c000 task.ti: c00000007c72c000 
+NIP: c0000000000ed6e4 LR: c0000000000ed5b8 CTR: 0000000000000000 
+REGS: c00000007c72f050 TRAP: 0700 Tainted: G W (3.14.23-WR7.0.0 
+tandard) 
+MSR: 0000000080021000 <CE,ME> CR: 48222482 XER: 00000000 
+SOFTE: 0 
+GPR00: c0000000000ed5b8 c00000007c72f2d0 c0000000010aa048 0000000000000005 
+GPR04: c000000000fdb820 c00000007c72f410 0000000000000001 0000000000000005 
+GPR08: c0000000010b5768 c000000000f8a048 0000000000000001 0000000000000000 
+GPR12: 0000000048222482 c00000000fffe580 0000000022222222 0000000010129664 
+GPR16: 0000000010143cc0 0000000000000000 0000000044444444 0000000000000000 
+GPR20: c00000007c7221d8 c0000000f638e3c8 000003f15a20120d 0000000000000001 
+GPR24: 000000005a20120d c00000007c722000 c00000007cdedda8 00003fffef23b160 
+GPR28: 0000000000000001 c00000007c72f410 c000000000fdb820 0000000000000006 
+NIP [c0000000000ed6e4] .smp_call_function_single+0x18c/0x248 
+LR [c0000000000ed5b8] .smp_call_function_single+0x60/0x248 
+Call Trace: 
+[c00000007c72f2d0] [c0000000000ed5b8] .smp_call_function_single+0x60/0x248 (unreliable) 
+[c00000007c72f3a0] [c000000000030810] .__flush_tlb_page+0x164/0x1b0 
+[c00000007c72f460] [c00000000002e054] .ptep_set_access_flags+0xb8/0x168 
+[c00000007c72f500] [c0000000001ad3d8] .handle_mm_fault+0x4a8/0xbac 
+[c00000007c72f5e0] [c000000000bb3238] .do_page_fault+0x3b8/0x868 
+[c00000007c72f810] [c00000000001e1d0] storage_fault_common+0x20/0x44 
+ Exception: 301 at .__copy_tofrom_user_base+0x54/0x5b0 
+    LR = .op_powerpc_backtrace+0x190/0x20c 
+[c00000007c72fb00] [c000000000a2ec34] .op_powerpc_backtrace+0x204/0x20c (unreliable) 
+[c00000007c72fbc0] [c000000000a2b5fc] .oprofile_add_ext_sample+0xe8/0x118 
+[c00000007c72fc70] [c000000000a2eee0] .fsl_emb_handle_interrupt+0x20c/0x27c 
+[c00000007c72fd30] [c000000000a2e440] .op_handle_interrupt+0x44/0x58 
+[c00000007c72fdb0] [c000000000016d68] .performance_monitor_exception+0x74/0x90 
+[c00000007c72fe30] [c00000000001d8b4] exc_0x260_common+0xfc/0x100 
 
-> 
-> Best regards,
-> Liviu
-> 
->>
->> Tomasz
->>
->>
-> 
+performance_monitor_exception() is executed in a context with interrupt
+disabled and preemption enabled. When there is a user space page fault
+happened, do_page_fault() invoke in_atomic() to decide whether kernel
+should handle such page fault. in_atomic() only check preempt_count.
+So need call pagefault_disable() to disable preemption before reading
+user stack.
 
+Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
+---
+ arch/powerpc/oprofile/backtrace.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/oprofile/backtrace.c b/arch/powerpc/oprofile/backtrace.c
+index f75301f..cae8ee7 100644
+--- a/arch/powerpc/oprofile/backtrace.c
++++ b/arch/powerpc/oprofile/backtrace.c
+@@ -10,7 +10,7 @@
+ #include <linux/oprofile.h>
+ #include <linux/sched.h>
+ #include <asm/processor.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
+ #include <asm/compat.h>
+ 
+ #define STACK_SP(STACK)		*(STACK)
+@@ -104,6 +104,7 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
+ 			first_frame = 0;
+ 		}
+ 	} else {
++		pagefault_disable();
+ #ifdef CONFIG_PPC64
+ 		if (!is_32bit_task()) {
+ 			while (depth--) {
+@@ -112,7 +113,7 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
+ 					break;
+ 				first_frame = 0;
+ 			}
+-
++			pagefault_enable();
+ 			return;
+ 		}
+ #endif
+@@ -123,5 +124,6 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
+ 				break;
+ 			first_frame = 0;
+ 		}
++		pagefault_enable();
+ 	}
+ }
 -- 
-Thanks!
-Yijing
+1.9.1
