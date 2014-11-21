@@ -1,40 +1,38 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C946D1A0A24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:06 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 21 Nov 2014 11:46:05 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4C7E0357805A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:03 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAL1jbbF36110538
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:45:37 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAL1k1t8030187
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:02 +1100
-Date: Fri, 21 Nov 2014 09:46:00 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH V9 08/18] powrepc/pci: Refactor pci_dn
-Message-ID: <20141121014600.GA10736@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1414942894-17034-9-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141119233024.GF23467@google.com> <20141120072057.GC8562@richard>
- <20141120190541.GA5110@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87C071A0A0E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 13:56:03 +1100 (AEDT)
+Message-ID: <546EA90D.3040304@huawei.com>
+Date: Fri, 21 Nov 2014 10:53:01 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141120190541.GA5110@google.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+To: Liviu Dudau <Liviu.Dudau@arm.com>
+Subject: Re: [RFC PATCH 07/16] PCI: Separate pci_host_bridge creation out
+ of pci_create_root_bus()
+References: <1416219710-26088-1-git-send-email-wangyijing@huawei.com>
+ <1416219710-26088-8-git-send-email-wangyijing@huawei.com>
+ <20141118153020.GL12037@e106497-lin.cambridge.arm.com>
+ <546BF59C.8060203@huawei.com>
+ <20141119163726.GW12037@e106497-lin.cambridge.arm.com>
+ <546D5647.8030401@huawei.com>
+ <20141120094741.GA17214@e106497-lin.cambridge.arm.com>
+In-Reply-To: <20141120094741.GA17214@e106497-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "huxinwei@huawei.com" <huxinwei@huawei.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wuyun <wuyun.wu@huawei.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,247 +42,337 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 20, 2014 at 12:05:41PM -0700, Bjorn Helgaas wrote:
->On Thu, Nov 20, 2014 at 03:20:57PM +0800, Wei Yang wrote:
->> On Wed, Nov 19, 2014 at 04:30:24PM -0700, Bjorn Helgaas wrote:
->> >On Sun, Nov 02, 2014 at 11:41:24PM +0800, Wei Yang wrote:
->> >> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> >> 
->> >> pci_dn is the extension of PCI device node and it's created from
->> >> device node. Unfortunately, VFs that are enabled dynamically by
->> >> PF's driver and they don't have corresponding device nodes, and
->> >> pci_dn. The patch refactors pci_dn to support VFs:
->> >> 
->> >>    * pci_dn is organized as a hierarchy tree. VF's pci_dn is put
->> >>      to the child list of pci_dn of PF's bridge. pci_dn of other
->> >>      device put to the child list of pci_dn of its upstream bridge.
->> >> 
->> >>    * VF's pci_dn is expected to be created dynamically when applying
->> >>      final fixup to PF. VF's pci_dn will be destroyed when releasing
->> >>      PF's pci_dev instance. pci_dn of other device is still created
->> >>      from device node as before.
->> >> 
->> >>    * For one particular PCI device (VF or not), its pci_dn can be
->> >>      found from pdev->dev.archdata.firmware_data, PCI_DN(devnode),
->> >>      or parent's list. The fast path (fetching pci_dn through PCI
->> >>      device instance) is populated during early fixup time.
->> >> 
->> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> >> ---
->> >> ...
->> >
->> >> +struct pci_dn *add_dev_pci_info(struct pci_dev *pdev)
->> >> +{
->> >> +#ifdef CONFIG_PCI_IOV
->> >> +	struct pci_dn *parent, *pdn;
->> >> +	int i;
->> >> +
->> >> +	/* Only support IOV for now */
->> >> +	if (!pdev->is_physfn)
->> >> +		return pci_get_pdn(pdev);
->> >> +
->> >> +	/* Check if VFs have been populated */
->> >> +	pdn = pci_get_pdn(pdev);
->> >> +	if (!pdn || (pdn->flags & PCI_DN_FLAG_IOV_VF))
->> >> +		return NULL;
->> >> +
->> >> +	pdn->flags |= PCI_DN_FLAG_IOV_VF;
->> >> +	parent = pci_bus_to_pdn(pdev->bus);
->> >> +	if (!parent)
->> >> +		return NULL;
->> >> +
->> >> +	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
->> >> +		pdn = add_one_dev_pci_info(parent, NULL,
->> >> +					   pci_iov_virtfn_bus(pdev, i),
->> >> +					   pci_iov_virtfn_devfn(pdev, i));
->> >
->> >I'm not sure this makes sense, but I certainly don't know this code, so
->> >maybe I'm missing something.
->> >
->> >pci_iov_virtfn_bus() and pci_iov_virtfn_devfn() depend on
->> >pdev->sriov->stride and pdev->sriov->offset.  These are read from VF Stride
->> >and First VF Offset in the SR-IOV capability by sriov_init(), which is
->> >called before add_dev_pci_info():
->> >
->> >  pci_scan_child_bus
->> >    pci_scan_slot
->> >      pci_scan_single_device
->> >	pci_device_add
->> >	  pci_init_capabilities
->> >	    pci_iov_init(PF)
->> >	      sriov_init(PF, pos)
->> >		pci_write_config_word(dev, pos + PCI_SRIOV_NUM_VF, 0)
->> >		pci_read_config_word(dev, pos + PCI_SRIOV_VF_OFFSET, &offset)
->> >		pci_read_config_word(dev, pos + PCI_SRIOV_VF_STRIDE, &stride)
->> >		iov->offset = offset
->> >		iov->stride = stride
->> >
->> >  pci_bus_add_devices
->> >    pci_bus_add_device
->> >      pci_fixup_device(pci_fixup_final)
->> >	add_dev_pci_info
->> >	  pci_iov_virtfn_bus
->> >	    return ... + sriov->offset + (sriov->stride * id) ...
->> >
->> >But both First VF Offset and VF Stride change when ARI Capable Hierarchy or
->> >NumVFs changes (SR-IOV spec sec 3.3.9, 3.3.10).  We set NumVFs to zero in
->> >sriov_init() above.  We will change NumVFs to something different when a
->> >driver calls pci_enable_sriov():
->> >
->> >  pci_enable_sriov
->> >    sriov_enable
->> >      pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, nr_virtfn)
->> >
->> >Now First VF Offset and VF Stride have changed from what they were when we
->> >called pci_iov_virtfn_bus() above.
->> >
->> 
->> Oops, I see the ARI would affect those value, while missed the NumVFs also
->> would.
->> 
->> Let's look at the problem one by one.
->> 
->> 1. The ARI capability.
->> ===============================================================================
->> The kernel initialize the capability like this:
->> 
->> pci_init_capabilities()
->> 	pci_configure_ari()
->> 	pci_iov_init()
->> 		iov->offset = offset
->> 		iov->stride = stride
->> 
->> When offset/stride is retrieved at this point, the ARI capability is taken
->> into consideration.
->
->PCI_SRIOV_CTRL_ARI is currently only changed at the time we enumerate the
->PF, so I don't think this is really a problem.
->
->> 2. The PF's NumVFs field
->> ===============================================================================
->> 2.1 Potential problem in current code
->> ===============================================================================
->> First, is current pci code has some potential problem?
->> 
->> sriov_enable()
->> 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_OFFSET, &offset);
->> 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_STRIDE, &stride);
->> 	iov->offset = offset;
->> 	iov->stride = stride;
->> 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, nr_virtfn);
->> 	virtfn_add()
->> 		...
->> 		virtfn->devfn = pci_iov_virtfn_devfn(dev, id);
->> 
->> The sriov_enable() retrieve the offset/stride then write the NumVFs. According
->> to the SPEC, at this moment the offset/stride may change. While I don't see
->> some code to retrieve and store those value again. And these fields will be
->> used in virtfn_add().
->> 
->> If my understanding is correct, I suggest to move the retrieve and store
->> operation after NumVFs is written.
->
->Yep, it looks like the existing code has similar problems.  We might want
->to add a simple function that writes PCI_SRIOV_NUM_VF, then reads
->PCI_SRIOV_VF_OFFSET and PCI_SRIOV_VF_STRIDE and refreshes the cached values
->in dev->sriov.
->
->Then we'd at least know that virtfn_bus() and virtfn_devfn() return values
->that are correct until the next NumVFs change.
->
+>>> pci_create_host_bridge() can get pci_host_bridge ops while pci_create_root_bus() gets
+>>> the bus ops. For find out the MSI controller, the domain number and any other HB
+>>> specific stuff, you use the HB ops. For config R/W acceses you use bus ops.
+>>>
+>>
+>> I want to unexport pci_create_root_bus() if we have pci_create_host_bridge().
+> 
+> That's fine, but the function signature doesn't change, right? And I think we should keep
+> pci_scan_root_bus() with the current signature as well (except change sysdata into a
+> struct pci_host_bridge *). We create the host bridge in one step, stuff it with all the
+> data that we need for scanning the root and associated busses, and then call pci_scan_root_bus().
+> pci_host_bridge has the ops from pci_create_host_bridge() and the root bus from pci_scan_root_bus().
 
-Ok, I will write a function to wrap it.
+Liviu, could you have some draft patches about replace sysdata with pci_host_bridge, so we could
+discuss the details base it. :)
 
->> 2.2 The IOV bus range may not be correct in pci_scan_child_bus()?
->> ===============================================================================
->> In current pci core, when enumerating the pci tree, we do like this:
->> 
->> pci_scan_child_bus()
->> 	pci_scan_slot()
->> 		pci_scan_single_device()
->> 			pci_device_add()
->> 				pci_init_capabilities()
->> 					pci_iov_init()
->> 	max += pci_iov_bus_range(bus);
->> 		busnr = pci_iov_virtfn_bus(dev, dev->sriov->total_VFs - 1);
->> 	max = pci_scan_bridge(bus, dev, max, pass);
->> 
->> From this point, we see pci core reserve some bus range for VFs. This
->> calculation is based on the offset/stride at this moment. And do the
->> enumeration with the new bus number.
->> 
->> sriov_enable() could be called several times from driver to enable SRIOV, and
->> with different nr_virtfn. If each time the NumVFs written, the offset/stride
->> will change. This means we may try to address an extra bus we didn't reserve?
->> Or this means it is out of control?
->
->This looks like a problem, too.  I don't have a good suggestion for fixing
->it.
+> 
+> Hope this makes sense.
+> 
+>>
+>>
+>>>>>> -struct pci_bus *pci_create_root_bus(struct device *parent, u32 db,
+>>>>>> -               struct pci_ops *ops, void *sysdata, struct list_head *resources)
+>>>>>> +struct pci_bus *__pci_create_root_bus(struct pci_host_bridge *bridge)
+>>>>>>  {
+>>>>>>         int error;
+>>>>>> -       struct pci_host_bridge *bridge;
+>>>>>>         struct pci_bus *b, *b2;
+>>>>>> -       struct pci_host_bridge_window *window, *n;
+>>>>>> +       struct pci_host_bridge_window *window;
+>>>>>>         struct resource *res;
+>>>>>>         resource_size_t offset;
+>>>>>>         char bus_addr[64];
+>>>>>>         char *fmt;
+>>>>>> -       u8      bus = PCI_BUSNUM(db);
+>>>>>> +       struct device *parent = bridge->dev.parent;
+>>>>>>
+>>>>>>         b = pci_alloc_bus(NULL);
+>>>>>>         if (!b)
+>>>>>>                 return NULL;
+>>>>>>
+>>>>>> -       b->sysdata = sysdata;
+>>>>>> -       b->ops = ops;
+>>>>>> -       b->number = b->busn_res.start = bus;
+>>>>>> +       b->sysdata = bridge->sysdata;
+>>>>>
+>>>>> I think bridge should be the b->sysdata here.
+>>>>
+>>>> ? what's the meaning?
+>>>
+>>> Currently, bus->sysdata holds a pointer to the arch/driver host bridge structure, as passed
+>>> in pci_create_root_bus(). If you agree with my idea of wrapping the host bridge driver
+>>> structure around the pci_host_bridge, then we will always have a way of retrieving that
+>>> information; but for backwards compatibility we could set bus->sysdata to be the bridge.
+>>> Then existing macros that convert sysdata to pci_controller can be reused after being
+>>> updated.
+>>
+>> I think wrapping the host bridge driver structure around the pci_host_bridge could help
+>> us to find the private pci_controller, but in this case, pci_host_bridge is not a pointer
+>> so we put all pci_host_bridge init stuff in host drivers ? 
+> 
+> Of course we put pci_host_bridge init *calls* in the host drivers because we need to do host
+> driver specific initialisation there anyway. 
+> 
+>> And if we still use arch spec
+>> macros convert ssydata to pci_controller, so what's the greatest advantage ?
+> 
+> Agree, the macro is not useful unless we have a common pci_controller structure. Sorry about
+> the noise.
+> 
+>>
+>> If we move domain and msi_chip out of sysdata, what's other things in sysdata still need us
+>> to convert in PCI core ?
+> 
+> I've never said we need to keep sysdata. From my discussion with Bjorn a year ago the idea was
+> to put the sysdata members into pci_host_bridge structure and remove sysdata member from pci_bus.
+> pci_scan_root_bus() can still get a parameter called sysdata if we want, but it will be a
+> struct pci_host_bridge * type.
 
-How about enumerating all possible NumVFs and select the maximum?
+Fine.
 
-I am not sure what will happen if the FW sets a different number? So FW should
-listen to kernel, right?
+> 
+> Best regards,
+> Liviu
+> 
+>>
+>>
+>>
+>>>
+>>> Best regards,
+>>> Liviu
+>>>
+>>>>
+>>>>>
+>>>>>> +       b->ops = bridge->ops;
+>>>>>
+>>>>> See comment above why I don't think this is necessary.
+>>>>>
+>>>>>> +       b->number = b->busn_res.start = bridge->busnum;
+>>>>>>         pci_bus_assign_domain_nr(b, parent);
+>>>>>> -       b2 = pci_find_bus(pci_domain_nr(b), bus);
+>>>>>> +       bridge->domain = pci_domain_nr(b);
+>>>>>
+>>>>> Do you really want to overwrite the bridge's domain with the one from a bus that
+>>>>> could possibly be rejected a couple of lines further down?
+>>>>>
+>>>>> As an asside: if we are doing the split of pci_host_bridge from root bus creation
+>>>>> it is worth in my opinion to move the domain setup in pci_create_host_bridge()
+>>>>> and stop fiddling with it here.
+>>>>
+>>>>
+>>>> Hi Liviu, these lines just temporary, I will remove it after all host drivers
+>>>> save its domain in pci_host_bridge.
+>>>>
+>>>>
+>>>>>
+>>>>> Otherwise it looks to me like you are heading in the right direction.
+>>>>
+>>>> Thanks!
+>>>> Yijing.
+>>>>
+>>>>>
+>>>>> Best regards,
+>>>>> Liviu
+>>>>>
+>>>>>> +       b2 = pci_find_bus(pci_domain_nr(b), bridge->busnum);
+>>>>>>         if (b2) {
+>>>>>>                 /* If we already got to this bus through a different bridge, ignore it */
+>>>>>>                 dev_dbg(&b2->dev, "bus already known\n");
+>>>>>>                 goto err_out;
+>>>>>>         }
+>>>>>>
+>>>>>> -       bridge = pci_alloc_host_bridge(b);
+>>>>>> -       if (!bridge)
+>>>>>> -               goto err_out;
+>>>>>> -
+>>>>>> -       bridge->dev.parent = parent;
+>>>>>> -       bridge->dev.release = pci_release_host_bridge_dev;
+>>>>>> -       dev_set_name(&bridge->dev, "pci%04x:%02x", pci_domain_nr(b), bus);
+>>>>>> -       error = pcibios_root_bridge_prepare(bridge);
+>>>>>> -       if (error) {
+>>>>>> -               kfree(bridge);
+>>>>>> -               goto err_out;
+>>>>>> -       }
+>>>>>> -
+>>>>>> -       error = device_register(&bridge->dev);
+>>>>>> -       if (error) {
+>>>>>> -               put_device(&bridge->dev);
+>>>>>> -               goto err_out;
+>>>>>> -       }
+>>>>>>         b->bridge = get_device(&bridge->dev);
+>>>>>>         device_enable_async_suspend(b->bridge);
+>>>>>>         pci_set_bus_of_node(b);
+>>>>>> @@ -1950,7 +1899,7 @@ struct pci_bus *pci_create_root_bus(struct device *parent, u32 db,
+>>>>>>
+>>>>>>         b->dev.class = &pcibus_class;
+>>>>>>         b->dev.parent = b->bridge;
+>>>>>> -       dev_set_name(&b->dev, "%04x:%02x", pci_domain_nr(b), bus);
+>>>>>> +       dev_set_name(&b->dev, "%04x:%02x", pci_domain_nr(b), b->number);
+>>>>>>         error = device_register(&b->dev);
+>>>>>>         if (error)
+>>>>>>                 goto class_dev_reg_err;
+>>>>>> @@ -1966,12 +1915,11 @@ struct pci_bus *pci_create_root_bus(struct device *parent, u32 db,
+>>>>>>                 printk(KERN_INFO "PCI host bridge to bus %s\n", dev_name(&b->dev));
+>>>>>>
+>>>>>>         /* Add initial resources to the bus */
+>>>>>> -       list_for_each_entry_safe(window, n, resources, list) {
+>>>>>> -               list_move_tail(&window->list, &bridge->windows);
+>>>>>> +       list_for_each_entry(window, &bridge->windows, list) {
+>>>>>>                 res = window->res;
+>>>>>>                 offset = window->offset;
+>>>>>>                 if (res->flags & IORESOURCE_BUS)
+>>>>>> -                       pci_bus_insert_busn_res(b, bus, res->end);
+>>>>>> +                       pci_bus_insert_busn_res(b, b->number, res->end);
+>>>>>>                 else
+>>>>>>                         pci_bus_add_resource(b, res, 0);
+>>>>>>                 if (offset) {
+>>>>>> @@ -2001,6 +1949,25 @@ err_out:
+>>>>>>         return NULL;
+>>>>>>  }
+>>>>>>
+>>>>>> +struct pci_bus *pci_create_root_bus(struct device *parent, u32 bus,
+>>>>>> +               struct pci_ops *ops, void *sysdata, struct list_head *resources)
+>>>>>> +{
+>>>>>> +       struct pci_host_bridge *host;
+>>>>>> +
+>>>>>> +       host = pci_create_host_bridge(parent, bus, ops,
+>>>>>> +                       sysdata ,resources);
+>>>>>> +       if (!host)
+>>>>>> +               return NULL;
+>>>>>> +
+>>>>>> +       host->bus = __pci_create_root_bus(host);
+>>>>>> +       if (!host->bus) {
+>>>>>> +               pci_free_host_bridge(host);
+>>>>>> +               return NULL;
+>>>>>> +       }
+>>>>>> +
+>>>>>> +       return host->bus;
+>>>>>> +}
+>>>>>> +
+>>>>>>  int pci_bus_insert_busn_res(struct pci_bus *b, int bus, int bus_max)
+>>>>>>  {
+>>>>>>         struct resource *res = &b->busn_res;
+>>>>>> @@ -2069,40 +2036,37 @@ struct pci_bus *pci_scan_root_bus(struct device *parent, u32 db,
+>>>>>>  {
+>>>>>>         struct pci_host_bridge_window *window;
+>>>>>>         bool found = false;
+>>>>>> -       struct pci_bus *b;
+>>>>>> -       LIST_HEAD(default_res);
+>>>>>> +       struct pci_host_bridge *host;
+>>>>>>         int max;
+>>>>>>
+>>>>>> -       if (!resources) {
+>>>>>> -               pci_add_resource(&default_res, &ioport_resource);
+>>>>>> -               pci_add_resource(&default_res, &iomem_resource);
+>>>>>> -               pci_add_resource(&default_res, &busn_resource);
+>>>>>> -       } else {
+>>>>>> -               list_for_each_entry(window, resources, list)
+>>>>>> -                       if (window->res->flags & IORESOURCE_BUS) {
+>>>>>> -                               found = true;
+>>>>>> -                               break;
+>>>>>> -                       }
+>>>>>> -       }
+>>>>>> +       host = pci_create_host_bridge(parent, db, ops, sysdata, resources);
+>>>>>> +       if (!host)
+>>>>>> +               return NULL;
+>>>>>>
+>>>>>> -       b = pci_create_root_bus(parent, db, ops, sysdata,
+>>>>>> -                       resources ? resources : &default_res);
+>>>>>> -       if (!b)
+>>>>>> +       list_for_each_entry(window, &host->windows, list)
+>>>>>> +               if (window->res->flags & IORESOURCE_BUS) {
+>>>>>> +                       found = true;
+>>>>>> +                       break;
+>>>>>> +               }
+>>>>>> +
+>>>>>> +       host->bus = __pci_create_root_bus(host);
+>>>>>> +       if (!host->bus) {
+>>>>>> +               pci_free_host_bridge(host);
+>>>>>>                 return NULL;
+>>>>>> +       }
+>>>>>>
+>>>>>>         if (!found) {
+>>>>>> -               dev_info(&b->dev,
+>>>>>> +               dev_info(&host->bus->dev,
+>>>>>>                  "No busn resource found for root bus, will use [bus %02x-ff]\n",
+>>>>>>                         PCI_BUSNUM(db));
+>>>>>> -               pci_bus_insert_busn_res(b, PCI_BUSNUM(db), 255);
+>>>>>> +               pci_bus_insert_busn_res(host->bus, PCI_BUSNUM(db), 255);
+>>>>>>         }
+>>>>>>
+>>>>>> -       max = pci_scan_child_bus(b);
+>>>>>> -
+>>>>>> +       max = pci_scan_child_bus(host->bus);
+>>>>>>         if (!found)
+>>>>>> -               pci_bus_update_busn_res_end(b, max);
+>>>>>> +               pci_bus_update_busn_res_end(host->bus, max);
+>>>>>>
+>>>>>> -       return b;
+>>>>>> +       return host->bus;
+>>>>>>  }
+>>>>>>  EXPORT_SYMBOL(pci_scan_root_bus);
+>>>>>>
+>>>>>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>>>>>> index 8b11b38..daa7f40 100644
+>>>>>> --- a/include/linux/pci.h
+>>>>>> +++ b/include/linux/pci.h
+>>>>>> @@ -402,7 +402,12 @@ struct pci_host_bridge_window {
+>>>>>>  struct pci_host_bridge {
+>>>>>>         struct device dev;
+>>>>>>         struct pci_bus *bus;            /* root bus */
+>>>>>> +       struct list_head list;
+>>>>>>         struct list_head windows;       /* pci_host_bridge_windows */
+>>>>>> +       int busnum;
+>>>>>> +       int domain;
+>>>>>> +       void *sysdata;
+>>>>>> +       struct pci_ops *ops;
+>>>>>>         void (*release_fn)(struct pci_host_bridge *);
+>>>>>>         void *release_data;
+>>>>>>  };
+>>>>>> @@ -413,7 +418,9 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+>>>>>>                      void *release_data);
+>>>>>>
+>>>>>>  int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
+>>>>>> -
+>>>>>> +struct pci_host_bridge *pci_create_host_bridge(
+>>>>>> +               struct device *parent, u32 db, struct pci_ops *ops,
+>>>>>> +               void *sys, struct list_head *resources);
+>>>>>>  /*
+>>>>>>   * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
+>>>>>>   * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
+>>>>>> @@ -770,6 +777,8 @@ void pci_bus_add_devices(const struct pci_bus *bus);
+>>>>>>  struct pci_bus *pci_create_root_bus(struct device *parent, u32 bus,
+>>>>>>                                     struct pci_ops *ops, void *sysdata,
+>>>>>>                                     struct list_head *resources);
+>>>>>> +struct pci_bus *__pci_create_root_bus(struct pci_host_bridge *host);
+>>>>>> +void pci_free_host_bridge(struct pci_host_bridge *host);
+>>>>>>  int pci_bus_insert_busn_res(struct pci_bus *b, int bus, int busmax);
+>>>>>>  int pci_bus_update_busn_res_end(struct pci_bus *b, int busmax);
+>>>>>>  void pci_bus_release_busn_res(struct pci_bus *b);
+>>>>>> --
+>>>>>> 1.7.1
+>>>>>>
+>>>>>> --
+>>>>>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>>>>>> the body of a message to majordomo@vger.kernel.org
+>>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>>>
+>>>>>
+>>>>
+>>>>
+>>>> --
+>>>> Thanks!
+>>>> Yijing
+>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>
+>>>
+>>
+>>
+>> --
+>> Thanks!
+>> Yijing
+>>
+>>
+> 
 
-I could write a code with this logic and test, while I am afraid this will
-break some platfrom in some case.
-
->
->> 2.3 How can I reserve bus range in FW?
->> ===============================================================================
->> This question comes from the previous one.
->> 
->> Based on my understanding, current pci core will rely on the bus number in HW
->> if pcibios_assign_all_busses() is not set. If we want to support those VFs
->> sits on different bus with PF, we need to reserve bus range and write the
->> correct secondary/subordinate in bridge. Otherwise, those VFs on different bus
->> may not be addressed.
->> 
->> Currently I am writing the code in FW to reserve the range with the same
->> mechanism in pci core. While as you mentioned the offset/stride may change
->> after sriov_enable(), I am confused whether this is the correct way.
->
->If your firmware knows something about the device and can compute the
->number of buses it will likely need, it can set up bridges with appropriate
->bus number ranges, and Linux will generally leave those alone.
->
-
-Yep, this is what I am trying to do.
-
->I don't know the best way to figure out the number of buses, though.  It
->seems like you almost need to experimentally set NumVFs and read the
->resulting offset/stride, because I think it's really up to the device to
->decide how to number the VFs.  Maybe pci_iov_bus_range() needs to do
->something similar.
-
-Got it, I will add this logic.
-
->
->> 2.4 The potential problem for [Patch 08/18]
->> ===============================================================================
->> According to the SPEC, the offset/stride will change after each
->> sriov_enable(). This means the bus/devfn will change after each
->> sriov_enable().
->> 
->> My current thought is to fix it up in virtfn_add(). If the total VF number
->> will not change, we could create those pci_dn at the beginning and fix the
->> bus/devfn at each time the VF is truely created.
->
->By "fix it up," I assume you mean call an arch function that does the
->pci_pdn setup you need.
->
->It sounds reasonable to do this either in virtfn_add()/virtfn_remove() or
->at the points where we write PCI_SRIOV_CTRL_VFE, i.e., in sriov_init(),
->sriov_enable(), sriov_disable(), and sriov_restore_state().  From a
->hardware point of view, the VFs exist whenever PCI_SRIOV_CTRL_VFE is set,
->so it might be nice to have this setup connected to that.
-
-If my understanding is correct, we could wrap up the configuration write/read
-on PCI_SRIOV_CTRL and when it involves PCI_SRIOV_CTRL_VFE, do the fix up?
-
->
->Bjorn
 
 -- 
-Richard Yang
-Help you, Help me
+Thanks!
+Yijing
