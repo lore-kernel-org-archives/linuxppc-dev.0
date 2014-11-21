@@ -1,31 +1,31 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E82A1A09F8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 11:05:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C946D1A0A24
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:06 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 21 Nov 2014 10:05:11 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B12632CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 11:05:08 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAL04Zmb36831232
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 11:04:43 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAL04Zm4009714
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 11:04:36 +1100
-Date: Fri, 21 Nov 2014 11:04:11 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 21 Nov 2014 11:46:05 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4C7E0357805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:03 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAL1jbbF36110538
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:45:37 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAL1k1t8030187
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 12:46:02 +1100
+Date: Fri, 21 Nov 2014 09:46:00 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Subject: Re: [PATCH V9 08/18] powrepc/pci: Refactor pci_dn
-Message-ID: <20141121000411.GA19858@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Message-ID: <20141121014600.GA10736@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <1414942894-17034-1-git-send-email-weiyang@linux.vnet.ibm.com>
  <1414942894-17034-9-git-send-email-weiyang@linux.vnet.ibm.com>
  <20141119233024.GF23467@google.com> <20141120072057.GC8562@richard>
@@ -192,6 +192,9 @@ On Thu, Nov 20, 2014 at 12:05:41PM -0700, Bjorn Helgaas wrote:
 >Then we'd at least know that virtfn_bus() and virtfn_devfn() return values
 >that are correct until the next NumVFs change.
 >
+
+Ok, I will write a function to wrap it.
+
 >> 2.2 The IOV bus range may not be correct in pci_scan_child_bus()?
 >> ===============================================================================
 >> In current pci core, when enumerating the pci tree, we do like this:
@@ -217,6 +220,15 @@ On Thu, Nov 20, 2014 at 12:05:41PM -0700, Bjorn Helgaas wrote:
 >
 >This looks like a problem, too.  I don't have a good suggestion for fixing
 >it.
+
+How about enumerating all possible NumVFs and select the maximum?
+
+I am not sure what will happen if the FW sets a different number? So FW should
+listen to kernel, right?
+
+I could write a code with this logic and test, while I am afraid this will
+break some platfrom in some case.
+
 >
 >> 2.3 How can I reserve bus range in FW?
 >> ===============================================================================
@@ -236,17 +248,18 @@ On Thu, Nov 20, 2014 at 12:05:41PM -0700, Bjorn Helgaas wrote:
 >number of buses it will likely need, it can set up bridges with appropriate
 >bus number ranges, and Linux will generally leave those alone.
 >
+
+Yep, this is what I am trying to do.
+
 >I don't know the best way to figure out the number of buses, though.  It
 >seems like you almost need to experimentally set NumVFs and read the
 >resulting offset/stride, because I think it's really up to the device to
 >decide how to number the VFs.  Maybe pci_iov_bus_range() needs to do
 >something similar.
+
+Got it, I will add this logic.
+
 >
-
-Yep, it's the reasonable way to probe maximal number of buses for the
-upstream bridge of PF. I guess Richard need implement similar thing in
-firmware.
-
 >> 2.4 The potential problem for [Patch 08/18]
 >> ===============================================================================
 >> According to the SPEC, the offset/stride will change after each
@@ -265,24 +278,13 @@ firmware.
 >sriov_enable(), sriov_disable(), and sriov_restore_state().  From a
 >hardware point of view, the VFs exist whenever PCI_SRIOV_CTRL_VFE is set,
 >so it might be nice to have this setup connected to that.
+
+If my understanding is correct, we could wrap up the configuration write/read
+on PCI_SRIOV_CTRL and when it involves PCI_SRIOV_CTRL_VFE, do the fix up?
+
 >
-
-Yes, Both ways can fix the issue. For couple reasons, I want add weak
-pcibios_virtfn_add(), which is called in virtfn_add() if you agree.
-
-- PCI_SRIOV_CTRL_VFE might be set somewhere except the functions you pointed.
-  Set/clear PCI_SRIOV_CTRL_VFE will invoke background work to check pci_dn
-  and add/remove accordingly. It would be overhead which we can avoid.
-- We plan to support EEH for VFs in future. virtfn_add() way matches with
-  current EEH implementation better. EEH device and PE are created based
-  on (struct pci_dev), and EEH devices and PE can be destroied in time in
-  pcibios_release_device(), which is invoked by virtfn_remove(). So we only
-  need one weak function. In contrast, we have to create EEH device and PE
-  for VFs a bit early before any VFs are instantiated, and destroy them a
-  bit late after all VFs are offline.
-
-Thanks,
-Gavin
-
 >Bjorn
->
+
+-- 
+Richard Yang
+Help you, Help me
