@@ -1,27 +1,31 @@
-Return-Path: <Yuantian.Tang@freescale.com>
+Return-Path: <viresh.kumar@linaro.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA98C1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 20:20:03 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA17E1A1284
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 20:22:07 +1100 (AEDT)
+Received: from mail-oi0-f41.google.com (mail-oi0-f41.google.com
+ [209.85.218.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4C0EC140187
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 20:20:03 +1100 (AEDT)
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
-To: <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>
-Subject: [PATCH v2 2/2] cpufreq: qoriq: rename the driver
-Date: Fri, 21 Nov 2014 17:18:38 +0800
-Message-ID: <1416561518-24835-2-git-send-email-Yuantian.Tang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 57226140186
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 20:22:07 +1100 (AEDT)
+Received: by mail-oi0-f41.google.com with SMTP id a3so3438475oib.0
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 01:22:05 -0800 (PST)
+MIME-Version: 1.0
 In-Reply-To: <1416561518-24835-1-git-send-email-Yuantian.Tang@freescale.com>
 References: <1416561518-24835-1-git-send-email-Yuantian.Tang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: r64188@freescale.com, linuxppc-dev@ozlabs.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
+Date: Fri, 21 Nov 2014 14:52:05 +0530
+Message-ID: <CAKohpokKJQV3-b-hqUz7pKgM+SVRBqW=tq54sxpkeAU=Pg73pQ@mail.gmail.com>
+Subject: Re: [PATCH v3 1/2] cpufreq: qoriq: Make the driver usable on all
+ QorIQ platforms
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Tang Yuantian <Yuantian.Tang@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: r64188@freescale.com, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver works on all QorIQ platforms which include
-ARM-based cores and PPC-based cores.
-Rename it in order to represent better.
+On 21 November 2014 14:48, Tang Yuantian <Yuantian.Tang@freescale.com> wrote:
+> Freescale introduced new ARM core-based SoCs which support dynamic
+> frequency switch feature. DFS on new SoCs are compatible with current
+> PowerPC CoreNet platforms. In order to support those new platforms,
+> this driver needs to be updated. The main changes include:
+>
+> 1. Changed the names of functions in driver.
+> 2. Added two new functions get_cpu_physical_id() and get_bus_freq().
+> 3. Used a new way to get the CPU mask which share clock wire.
+>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> ---
+> v3:
+>         - put the menu entries into Kconfig
+> v2:
+>         - split the name change into a separete patch
+>         - use policy->driver_data instead of per_cpu variable
+>
+>  drivers/cpufreq/Kconfig               |   8 ++
+>  drivers/cpufreq/Kconfig.powerpc       |   9 --
+>  drivers/cpufreq/ppc-corenet-cpufreq.c | 160 +++++++++++++++++++++-------------
+>  3 files changed, 107 insertions(+), 70 deletions(-)
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
-v2:
-	- use -C -M options when format-patch
+For both patches:
 
- drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
- rename drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} (100%)
-
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-similarity index 100%
-rename from drivers/cpufreq/ppc-corenet-cpufreq.c
-rename to drivers/cpufreq/qoriq-cpufreq.c
--- 
-2.1.0.27.g96db324
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
