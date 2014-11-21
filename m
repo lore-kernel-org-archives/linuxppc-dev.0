@@ -1,22 +1,30 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496E21A127A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Nov 2014 05:14:30 +1100 (AEDT)
-Date: Fri, 21 Nov 2014 18:12:53 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <20141121181253.GX3815@sirena.org.uk>
-References: <20141120162418.04FAC1A9BFC@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="RyRVxeT1fPSLkipE"
-In-Reply-To: <20141120162418.04FAC1A9BFC@localhost.localdomain>
-Subject: Re: [PATCH] spi: fsl-spi: Don't use cpm_command on CPM1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-spi@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 595E61A129E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Nov 2014 10:43:15 +1100 (AEDT)
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EE622140158
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 10:43:14 +1100 (AEDT)
+Date: Fri, 21 Nov 2014 15:43:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4 1/8] elf: Add new PowerPC specifc core note sections
+Message-Id: <20141121154310.489097fb4403d664f2156043@linux-foundation.org>
+In-Reply-To: <1415683597-22819-2-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1415683597-22819-2-git-send-email-khandual@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
+ linux-kernel@vger.kernel.org, oleg@redhat.com, dhowells@redhat.com,
+ linuxppc-dev@ozlabs.org, davej@redhat.com, tglx@linutronix.de,
+ sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 11 Nov 2014 10:56:30 +0530 Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
---RyRVxeT1fPSLkipE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This patch adds four new core note sections for PowerPC transactional
+> memory and one core note section for general miscellaneous debug registers.
+> These addition of new elf core note sections extends the existing elf ABI
+> without affecting it in any manner.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  include/uapi/linux/elf.h | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+> index ea9bf25..2260fc0 100644
+> --- a/include/uapi/linux/elf.h
+> +++ b/include/uapi/linux/elf.h
+> @@ -379,6 +379,11 @@ typedef struct elf64_shdr {
+>  #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
+>  #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
+>  #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
+> +#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
+> +#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
+> +#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
+> +#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
+> +#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
+>  #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
+>  #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
+>  #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
 
-On Thu, Nov 20, 2014 at 05:24:17PM +0100, Christophe Leroy wrote:
-> On CPM1, when the SPI parameter RAM is relocated to somewhere else than t=
-he
-> default location, in accordance with freescale documentation
-> (refer micropatch SPI application note EB662), init RX/TX params command =
-shall
-> not be used because it doesn't take into account the new location, and
-> overwrites data that is in original location of SPI param ram at addresse=
-s=20
-> SCC2 param base +  (u32*)0x88 (u16*)0x90 (u32*)0x98 (u16*)0xA0, hence bre=
-aking
-> activity on SCC2 if SCC2 is used in a mode like QMC for instance.
+ack from me, if that was at all expected.
 
-Applied, thanks.
-
---RyRVxeT1fPSLkipE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUb4CkAAoJECTWi3JdVIfQzEIIAIBpGFtzX4a+MGQh8q+sJtEs
-AwPTpoaGY/EzbgYSx39srYrjQD17FK5uogXnDRYcg62BEIbvix2PQrNgADXK0xLi
-wF6VY2ApnMnyoBZQKx+yT0d1esADAswtX8pfkD2yL2WroIwIfCtC1six4uXZB2WC
-UEantw8K25PTJfNLT3N82Cb21qclcuA1vUYe/Q+8dtQKJzz+kt+v4Q8dZCKqoiWf
-lvA43RWlFLXfjjQnCfpb4v4Cm1sNglJkuMsJS+opiKMvjq9b1NkPL3rs3ysb5NyG
-9haY99ntFjTYydZEmsQT1YBAsjfR01rCuaJnee6jWJZWMx46t5oLG1OGaymWQf8=
-=uMc0
------END PGP SIGNATURE-----
-
---RyRVxeT1fPSLkipE--
+Please cc Shuah Khan <shuah.kh@samsung.com> on the tools/testing/selftests
+changes.
