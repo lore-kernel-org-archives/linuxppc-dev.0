@@ -1,21 +1,43 @@
-Return-Path: <Lu.Jiang@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D45B31A0A0E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 15:00:04 +1100 (AEDT)
-Received: from ALA-HCA.corp.ad.wrs.com (ala-hca.corp.ad.wrs.com
- [147.11.189.40])
- by mail.windriver.com (8.14.9/8.14.5) with ESMTP id sAL3NH7G000731
- (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Nov 2014 19:23:17 -0800 (PST)
-From: Jiang Lu <lu.jiang@windriver.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <lu.jiang@windriver.com>
-Subject: [PATCH] Powerpc/Oprofile:Disable pagefaults during user stack read
-Date: Fri, 21 Nov 2014 11:23:19 +0800
-Message-ID: <1416540199-13097-1-git-send-email-lu.jiang@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BCF91A126E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 16:28:54 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 21 Nov 2014 15:28:53 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5F900357805E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 16:28:47 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAL5UcHC30343188
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 16:30:39 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAL5SjBi013790
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 16:28:46 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Mel Gorman <mgorman@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/10] mm: Convert p[te|md]_numa users to
+ p[te|md]_protnone_numa
+In-Reply-To: <1416478790-27522-4-git-send-email-mgorman@suse.de>
+References: <1416478790-27522-1-git-send-email-mgorman@suse.de>
+ <1416478790-27522-4-git-send-email-mgorman@suse.de>
+Date: Fri, 21 Nov 2014 10:58:34 +0530
+Message-ID: <87lhn56s1p.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+Cc: Rik van Riel <riel@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Hugh Dickins <hughd@google.com>, Linux-MM <linux-mm@kvack.org>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, Sasha Levin <sasha.levin@oracle.com>,
+ Dave Jones <davej@redhat.com>, LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kirill Shutemov <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,92 +47,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A page fault occurred during reading user stack in oprofile backtrace
-would lead following calltrace:
+Mel Gorman <mgorman@suse.de> writes:
 
-WARNING: at linux/kernel/smp.c:210
-Modules linked in:
-CPU: 5 PID: 736 Comm: sh Tainted: G W 3.14.23-WR7.0.0.0_standard #1 
-task: c0000000f6208bc0 ti: c00000007c72c000 task.ti: c00000007c72c000 
-NIP: c0000000000ed6e4 LR: c0000000000ed5b8 CTR: 0000000000000000 
-REGS: c00000007c72f050 TRAP: 0700 Tainted: G W (3.14.23-WR7.0.0 
-tandard) 
-MSR: 0000000080021000 <CE,ME> CR: 48222482 XER: 00000000 
-SOFTE: 0 
-GPR00: c0000000000ed5b8 c00000007c72f2d0 c0000000010aa048 0000000000000005 
-GPR04: c000000000fdb820 c00000007c72f410 0000000000000001 0000000000000005 
-GPR08: c0000000010b5768 c000000000f8a048 0000000000000001 0000000000000000 
-GPR12: 0000000048222482 c00000000fffe580 0000000022222222 0000000010129664 
-GPR16: 0000000010143cc0 0000000000000000 0000000044444444 0000000000000000 
-GPR20: c00000007c7221d8 c0000000f638e3c8 000003f15a20120d 0000000000000001 
-GPR24: 000000005a20120d c00000007c722000 c00000007cdedda8 00003fffef23b160 
-GPR28: 0000000000000001 c00000007c72f410 c000000000fdb820 0000000000000006 
-NIP [c0000000000ed6e4] .smp_call_function_single+0x18c/0x248 
-LR [c0000000000ed5b8] .smp_call_function_single+0x60/0x248 
-Call Trace: 
-[c00000007c72f2d0] [c0000000000ed5b8] .smp_call_function_single+0x60/0x248 (unreliable) 
-[c00000007c72f3a0] [c000000000030810] .__flush_tlb_page+0x164/0x1b0 
-[c00000007c72f460] [c00000000002e054] .ptep_set_access_flags+0xb8/0x168 
-[c00000007c72f500] [c0000000001ad3d8] .handle_mm_fault+0x4a8/0xbac 
-[c00000007c72f5e0] [c000000000bb3238] .do_page_fault+0x3b8/0x868 
-[c00000007c72f810] [c00000000001e1d0] storage_fault_common+0x20/0x44 
- Exception: 301 at .__copy_tofrom_user_base+0x54/0x5b0 
-    LR = .op_powerpc_backtrace+0x190/0x20c 
-[c00000007c72fb00] [c000000000a2ec34] .op_powerpc_backtrace+0x204/0x20c (unreliable) 
-[c00000007c72fbc0] [c000000000a2b5fc] .oprofile_add_ext_sample+0xe8/0x118 
-[c00000007c72fc70] [c000000000a2eee0] .fsl_emb_handle_interrupt+0x20c/0x27c 
-[c00000007c72fd30] [c000000000a2e440] .op_handle_interrupt+0x44/0x58 
-[c00000007c72fdb0] [c000000000016d68] .performance_monitor_exception+0x74/0x90 
-[c00000007c72fe30] [c00000000001d8b4] exc_0x260_common+0xfc/0x100 
+> Convert existing users of pte_numa and friends to the new helper. Note
+> that the kernel is broken after this patch is applied until the other
+> page table modifiers are also altered. This patch layout is to make
+> review easier.
+>
 
-performance_monitor_exception() is executed in a context with interrupt
-disabled and preemption enabled. When there is a user space page fault
-happened, do_page_fault() invoke in_atomic() to decide whether kernel
-should handle such page fault. in_atomic() only check preempt_count.
-So need call pagefault_disable() to disable preemption before reading
-user stack.
+.....
 
-Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
----
- arch/powerpc/oprofile/backtrace.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index c90e602..b5d58d3 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -173,7 +173,13 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>  		pte_t pte)
+>  {
+>  #ifdef CONFIG_DEBUG_VM
+> -	WARN_ON(pte_val(*ptep) & _PAGE_PRESENT);
+> +	/*
+> +	 * When handling numa faults, we already have the pte marked
+> +	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
+> +	 * Hence we can use set_pte_at for them.
+> +	 */
+> +	WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
+> +		(_PAGE_PRESENT | _PAGE_USER));
+>  #endif
 
-diff --git a/arch/powerpc/oprofile/backtrace.c b/arch/powerpc/oprofile/backtrace.c
-index f75301f..cae8ee7 100644
---- a/arch/powerpc/oprofile/backtrace.c
-+++ b/arch/powerpc/oprofile/backtrace.c
-@@ -10,7 +10,7 @@
- #include <linux/oprofile.h>
- #include <linux/sched.h>
- #include <asm/processor.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- #include <asm/compat.h>
- 
- #define STACK_SP(STACK)		*(STACK)
-@@ -104,6 +104,7 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
- 			first_frame = 0;
- 		}
- 	} else {
-+		pagefault_disable();
- #ifdef CONFIG_PPC64
- 		if (!is_32bit_task()) {
- 			while (depth--) {
-@@ -112,7 +113,7 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
- 					break;
- 				first_frame = 0;
- 			}
--
-+			pagefault_enable();
- 			return;
- 		}
- #endif
-@@ -123,5 +124,6 @@ void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth)
- 				break;
- 			first_frame = 0;
- 		}
-+		pagefault_enable();
- 	}
- }
--- 
-1.9.1
+
+This can be VM_WARN_ON with #ifdef removed.
+
+>  	/* Note: mm->context.id might not yet have been assigned as
+>  	 * this context might not have been activated yet when this
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+
+-aneesh
