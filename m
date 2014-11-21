@@ -1,49 +1,38 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9E931A09F1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 21:27:05 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7863E140187
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 21:27:04 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 21 Nov 2014 20:27:04 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 627AE2BB0066
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 21:27:01 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sALAR1xm30343402
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 21:27:01 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sALAQxab007994
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2014 21:27:01 +1100
-Message-ID: <546F1367.4060301@linux.vnet.ibm.com>
-Date: Fri, 21 Nov 2014 15:56:47 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A5871A0185
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2014 22:51:33 +1100 (AEDT)
+Message-ID: <546F25EE.5090601@users.sourceforge.net>
+Date: Fri, 21 Nov 2014 12:45:50 +0100
+From: SF Markus Elfring <elfring@users.sourceforge.net>
 MIME-Version: 1.0
-To: Denis Kirjanov <kirjanov@gmail.com>
-Subject: Re: [PATCH V4 7/8] powerpc, ptrace: Enable support for miscellaneous
- debug registers
-References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1415683597-22819-8-git-send-email-khandual@linux.vnet.ibm.com>
- <54647DA7.1070000@linux.vnet.ibm.com>
- <CAHj3AVna2H1VZvP0=Xjw9pqS+gRKR7_KH9FNhX3vUBFh7OU2wA@mail.gmail.com>
-In-Reply-To: <CAHj3AVna2H1VZvP0=Xjw9pqS+gRKR7_KH9FNhX3vUBFh7OU2wA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
- palves@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
- dhowells@redhat.com, linuxppc-dev@ozlabs.org, davej@redhat.com,
- tglx@linutronix.de, sukadev@linux.vnet.ibm.com, akpm@linux-foundation.org,
- sam.bobroff@au1.ibm.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.cz>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] tty-hvsi_lib: Deletion of an unnecessary check before
+ the function call "tty_kref_put"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,25 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/14/2014 03:30 PM, Denis Kirjanov wrote:
-> On 11/13/14, Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
->> > On 11/11/2014 10:56 AM, Anshuman Khandual wrote:
->>> >> This patch enables get and set of miscellaneous debug registers through
->>> >> ptrace PTRACE_GETREGSET-PTRACE_SETREGSET interface by implementing new
->>> >> powerpc specific register set REGSET_MISC support corresponding to the
->>> >> new ELF core note NT_PPC_MISC added previously in this regard.
->> >
->> > Right now this one does not compile for "ppc64e_defconfig" and
->> > "pmac32_defconfig" config options. The patch below will fix it
->> > and would be part of next revision.
-> It would be great to have a test tool for that under
-> tools/testing/selftests/ptrace/
-> 
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 21 Nov 2014 12:40:32 +0100
 
-Hey Denis,
+The tty_kref_put() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
-I have already added one test case under selftests/powerpc/tm/ which
-will test all the newly added ELF core note based ptrace requests on
-powerpc. This test case is added as part of the next patch 8/8 in
-the series. Please let me know if the test case does not cover something
-you are looking for.  
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/tty/hvc/hvsi_lib.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
+index 7ae6c29..a270f04 100644
+--- a/drivers/tty/hvc/hvsi_lib.c
++++ b/drivers/tty/hvc/hvsi_lib.c
+@@ -405,8 +405,7 @@ void hvsilib_close(struct hvsi_priv *pv, struct hvc_struct *hp)
+ 		hvsi_send_close(pv);
+ 	}
+ 
+-	if (pv->tty)
+-		tty_kref_put(pv->tty);
++	tty_kref_put(pv->tty);
+ 	pv->tty = NULL;
+ }
+ 
+-- 
+2.1.3
