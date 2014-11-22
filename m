@@ -1,30 +1,36 @@
-Return-Path: <akpm@linux-foundation.org>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 595E61A129E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Nov 2014 10:43:15 +1100 (AEDT)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7AE991A09FA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Nov 2014 21:58:19 +1100 (AEDT)
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EE622140158
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 10:43:14 +1100 (AEDT)
-Date: Fri, 21 Nov 2014 15:43:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 1/8] elf: Add new PowerPC specifc core note sections
-Message-Id: <20141121154310.489097fb4403d664f2156043@linux-foundation.org>
-In-Reply-To: <1415683597-22819-2-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1415683597-22819-2-git-send-email-khandual@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
- linux-kernel@vger.kernel.org, oleg@redhat.com, dhowells@redhat.com,
- linuxppc-dev@ozlabs.org, davej@redhat.com, tglx@linutronix.de,
- sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id D29C4140179
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 21:58:18 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sat, 22 Nov 2014 16:28:16 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7F8ED3940024
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:13 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAMAwmo85570986
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:48 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAMAwCDG022783
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:12 +0530
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/eeh: Dump PHB diag-data early
+Date: Sat, 22 Nov 2014 21:58:09 +1100
+Message-Id: <1416653889-5093-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +40,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Nov 2014 10:56:30 +0530 Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
+On PowerNV platform, PHB diag-data is dumped after stopping device
+drivers. In case of recursive EEH errors, the kernel is usually
+crashed before dumping PHB diag-data for the second EEH error. It's
+hard to locate the root cause of the second EEH error without PHB
+diag-data.
 
-> This patch adds four new core note sections for PowerPC transactional
-> memory and one core note section for general miscellaneous debug registers.
-> These addition of new elf core note sections extends the existing elf ABI
-> without affecting it in any manner.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
->  include/uapi/linux/elf.h | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-> index ea9bf25..2260fc0 100644
-> --- a/include/uapi/linux/elf.h
-> +++ b/include/uapi/linux/elf.h
-> @@ -379,6 +379,11 @@ typedef struct elf64_shdr {
->  #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
->  #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
->  #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
-> +#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
-> +#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
-> +#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
-> +#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
-> +#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
->  #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
->  #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
->  #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
+The patch adds one more EEH option "eeh=early_log", which helps
+dumping PHB diag-data immediately once frozen PE is detected, in
+order to get the PHB diag-data for the second EEH error.
 
-ack from me, if that was at all expected.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h            |  1 +
+ arch/powerpc/kernel/eeh.c                 |  2 ++
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 13 ++++++++++++-
+ 3 files changed, 15 insertions(+), 1 deletion(-)
 
-Please cc Shuah Khan <shuah.kh@samsung.com> on the tools/testing/selftests
-changes.
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 2e633b4..0652ebe 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -39,6 +39,7 @@ struct device_node;
+ #define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
+ #define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
+ #define EEH_ENABLE_IO_FOR_LOG	0x10	/* Enable IO for log	*/
++#define EEH_EARLY_DUMP_LOG	0x20	/* Dump log immediately	*/
+ 
+ /*
+  * Delay for PE reset, all in ms
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index f1c6b11..05be77d 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -143,6 +143,8 @@ static int __init eeh_setup(char *str)
+ {
+ 	if (!strcmp(str, "off"))
+ 		eeh_add_flag(EEH_FORCE_DISABLED);
++	else if (!strcmp(str, "early_log"))
++		eeh_add_flag(EEH_EARLY_DUMP_LOG);
+ 
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 426814a..43aba2d 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -354,6 +354,9 @@ static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
+ 	} else if (!(pe->state & EEH_PE_ISOLATED)) {
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+ 		ioda_eeh_phb_diag(pe);
++
++		if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
++			pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
+ 	}
+ 
+ 	return result;
+@@ -452,6 +455,9 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
+ 
+ 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+ 		ioda_eeh_phb_diag(pe);
++
++		if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
++			pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
+ 	}
+ 
+ 	return result;
+@@ -731,7 +737,8 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ static int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
+ 			    char *drv_log, unsigned long len)
+ {
+-	pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
++	if (!eeh_has_flag(EEH_EARLY_DUMP_LOG))
++		pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
+ 
+ 	return 0;
+ }
+@@ -1087,6 +1094,10 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 		    !((*pe)->state & EEH_PE_ISOLATED)) {
+ 			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
+ 			ioda_eeh_phb_diag(*pe);
++
++			if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
++				pnv_pci_dump_phb_diag_data((*pe)->phb,
++							   (*pe)->data);
+ 		}
+ 
+ 		/*
+-- 
+1.8.3.2
