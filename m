@@ -1,36 +1,40 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7AE991A09FA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Nov 2014 21:58:19 +1100 (AEDT)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D29C4140179
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 21:58:18 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sat, 22 Nov 2014 16:28:16 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7F8ED3940024
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:13 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAMAwmo85570986
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:48 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAMAwCDG022783
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2014 16:28:12 +0530
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/eeh: Dump PHB diag-data early
-Date: Sat, 22 Nov 2014 21:58:09 +1100
-Message-Id: <1416653889-5093-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BC1A1A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Nov 2014 02:32:48 +1100 (AEDT)
+Message-ID: <5470AB2D.705@users.sourceforge.net>
+Date: Sat, 22 Nov 2014 16:26:37 +0100
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Kumar Gala <galak@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] PowerPC-83xx: Deletion of an unnecessary check before
+ the function call "of_node_put"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,92 +44,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerNV platform, PHB diag-data is dumped after stopping device
-drivers. In case of recursive EEH errors, the kernel is usually
-crashed before dumping PHB diag-data for the second EEH error. It's
-hard to locate the root cause of the second EEH error without PHB
-diag-data.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 22 Nov 2014 16:18:20 +0100
 
-The patch adds one more EEH option "eeh=early_log", which helps
-dumping PHB diag-data immediately once frozen PE is detected, in
-order to get the PHB diag-data for the second EEH error.
+The of_node_put() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/include/asm/eeh.h            |  1 +
- arch/powerpc/kernel/eeh.c                 |  2 ++
- arch/powerpc/platforms/powernv/eeh-ioda.c | 13 ++++++++++++-
- 3 files changed, 15 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/83xx/usb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 2e633b4..0652ebe 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -39,6 +39,7 @@ struct device_node;
- #define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
- #define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
- #define EEH_ENABLE_IO_FOR_LOG	0x10	/* Enable IO for log	*/
-+#define EEH_EARLY_DUMP_LOG	0x20	/* Dump log immediately	*/
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 1ad748b..5c31d82 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -162,8 +162,7 @@ int mpc831x_usb_cfg(void)
  
- /*
-  * Delay for PE reset, all in ms
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index f1c6b11..05be77d 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -143,6 +143,8 @@ static int __init eeh_setup(char *str)
- {
- 	if (!strcmp(str, "off"))
- 		eeh_add_flag(EEH_FORCE_DISABLED);
-+	else if (!strcmp(str, "early_log"))
-+		eeh_add_flag(EEH_EARLY_DUMP_LOG);
+ 	iounmap(immap);
  
- 	return 1;
- }
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 426814a..43aba2d 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -354,6 +354,9 @@ static int ioda_eeh_get_phb_state(struct eeh_pe *pe)
- 	} else if (!(pe->state & EEH_PE_ISOLATED)) {
- 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
- 		ioda_eeh_phb_diag(pe);
-+
-+		if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
-+			pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
- 	}
+-	if (immr_node)
+-		of_node_put(immr_node);
++	of_node_put(immr_node);
  
- 	return result;
-@@ -452,6 +455,9 @@ static int ioda_eeh_get_pe_state(struct eeh_pe *pe)
- 
- 		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
- 		ioda_eeh_phb_diag(pe);
-+
-+		if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
-+			pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
- 	}
- 
- 	return result;
-@@ -731,7 +737,8 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- static int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
- 			    char *drv_log, unsigned long len)
- {
--	pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
-+	if (!eeh_has_flag(EEH_EARLY_DUMP_LOG))
-+		pnv_pci_dump_phb_diag_data(pe->phb, pe->data);
- 
- 	return 0;
- }
-@@ -1087,6 +1094,10 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		    !((*pe)->state & EEH_PE_ISOLATED)) {
- 			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
- 			ioda_eeh_phb_diag(*pe);
-+
-+			if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
-+				pnv_pci_dump_phb_diag_data((*pe)->phb,
-+							   (*pe)->data);
- 		}
- 
- 		/*
+ 	/* Map USB SOC space */
+ 	ret = of_address_to_resource(np, 0, &res);
 -- 
-1.8.3.2
+2.1.3
