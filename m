@@ -1,38 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA6571A04ED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:39:00 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 54B27140185
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 09:39:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 941C01A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:49:31 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 25 Nov 2014 08:38:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0902B2CE802D
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 09:38:57 +1100 (EST)
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 25 Nov 2014 08:49:30 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 77CBF2CE806A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:49:28 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAOMcsjN27066468
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 09:38:54 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAOMnSgX33030390
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:49:28 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAOMcr2V015291
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 09:38:53 +1100
+ sAOMnRCT025606
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:49:27 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] powerpc/powernv: Issue fundamental reset if required
-Date: Tue, 25 Nov 2014 09:38:46 +1100
-Message-Id: <1416868727-5814-5-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1416868727-5814-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1416868727-5814-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linux-pci@vger.kernel.org
+Subject: [PATCH 7/8] PCI/hotplug/rpa: Hierarchial slots
+Date: Tue, 25 Nov 2014 09:49:24 +1100
+Message-Id: <1416869365-7671-8-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1416869365-7671-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1416869365-7671-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,64 +37,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_pci_reset_secondary_bus() is the backend for resetting the
-secondary bus for the specified PCI bridge. We always issue hot
-reset, which isn't enough for some devices who requires fundamental
-reset explicitly. The patch switches to fundamental reset if the
-devices ask for that.
+The direct or indirect parent of hotpluggable slot has possibility
+to be hotpluggable. Unfortunately, current implementation doesn't
+cover it. The patch fixes the issue:
+
+   * When adding slots based on the given device node, the child
+     device nodes are scanned to see if they're hotpluggable and
+     add slots for them if applicable.
+   * When unregistering slot, its children slots will be removed
+     automatically.
+   * Parent slot is added prior to child slots in addition path,
+     while child slots should be removed before parent slot in
+     removal path.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 34 +++++++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 9 deletions(-)
+ drivers/pci/hotplug/rpadlpar_core.c |   6 +--
+ drivers/pci/hotplug/rpaphp.h        |  22 ++++----
+ drivers/pci/hotplug/rpaphp_core.c   | 105 ++++++++++++++++++++++++------------
+ 3 files changed, 85 insertions(+), 48 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index d02a696..4bf2fb5 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -650,18 +650,34 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index a36d2c9..f375e92 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -119,11 +119,9 @@ static struct device_node *find_dlpar_node(char *drc_name, int *node_type)
+  */
+ static struct rpa_php_slot *find_php_slot(struct device_node *dn)
+ {
+-	struct list_head *tmp, *n;
+-	struct rpa_php_slot *slot;
++	struct rpa_php_slot *slot, *tmp;
+ 
+-	list_for_each_safe(tmp, n, &rpaphp_slot_head) {
+-		slot = list_entry(tmp, struct rpa_php_slot, rpaphp_slot_list);
++	list_for_each_entry_safe(slot, tmp, &rpaphp_slot_head, link) {
+ 		if (slot->dn == dn)
+ 			return slot;
+ 	}
+diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
+index 09dd516..0354572 100644
+--- a/drivers/pci/hotplug/rpaphp.h
++++ b/drivers/pci/hotplug/rpaphp.h
+@@ -57,19 +57,21 @@ extern bool rpaphp_debug;
+ #define RPA_PHP_SLOT_PRESENT	1	/* Presented     */
+ 
+ struct rpa_php_slot {
+-	struct list_head rpaphp_slot_list;
+-	int state;
++	char			*name;
++	int			state;
+ #define RPA_PHP_SLOT_NOT_CONFIGURED	0
+ #define RPA_PHP_SLOT_CONFIGURED		1
+ #define RPA_PHP_SLOT_NOT_VALID		2
+-	u32 index;
+-	u32 type;
+-	u32 power_domain;
+-	char *name;
+-	struct device_node *dn;
+-	struct pci_bus *bus;
+-	struct list_head *pci_devs;
+-	struct hotplug_slot *hotplug_slot;
++	u32			index;
++	u32			type;
++	u32			power_domain;
++	struct device_node	*dn;
++	struct pci_bus		*bus;
++	struct list_head	*pci_devs;
++	struct hotplug_slot	*hotplug_slot;
++	struct list_head	link;
++	struct list_head	list;
++	struct list_head	children;
+ };
+ 
+ extern struct list_head rpaphp_slot_head;
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 91eff8f..ba28212 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -25,6 +25,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/list.h>
+ #include <linux/pci.h>
+ #include <linux/pci_hotplug.h>
+ #include <linux/smp.h>
+@@ -87,6 +88,9 @@ struct rpa_php_slot *alloc_slot_struct(struct device_node *dn,
+ 	slot->power_domain = power_domain;
+ 	slot->hotplug_slot->private = slot;
+ 	slot->hotplug_slot->release = &rpaphp_release_slot;
++	INIT_LIST_HEAD(&slot->link);
++	INIT_LIST_HEAD(&slot->list);
++	INIT_LIST_HEAD(&slot->children);
+ 
+ 	slot->hotplug_slot->info->power_status = RPA_PHP_SLOT_POWER_ON;
+ 	slot->hotplug_slot->info->attention_status = RPA_PHP_SLOT_ATTEN_OFF;
+@@ -107,16 +111,17 @@ error_nomem:
+ 
+ int rpaphp_register_slot(struct rpa_php_slot *slot)
+ {
++	struct device_node *dn;
+ 	struct hotplug_slot *php_slot = slot->hotplug_slot;
+-	struct rpa_php_slot *tmp;
+-	int slotno, retval;
++	struct rpa_php_slot *parent, *tmp;
++	int slotno, ret;
+ 
+ 	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 	    __func__, slot->dn->full_name, slot->index, slot->name,
+ 	    slot->power_domain, slot->type);
+ 
+ 	/* Should not try to register the same slot twice */
+-	list_for_each_entry(tmp, &rpaphp_slot_head, rpaphp_slot_list) {
++	list_for_each_entry(tmp, &rpaphp_slot_head, link) {
+ 		if (!strcmp(tmp->name, slot->name)) {
+ 			err("%s: Slot[%s] is already registered\n",
+ 			    __func__, slot->name);
+@@ -127,34 +132,62 @@ int rpaphp_register_slot(struct rpa_php_slot *slot)
+ 		slotno = PCI_SLOT(PCI_DN(slot->dn->child)->devfn);
+ 	else
+ 		slotno = -1;
+-	retval = pci_hp_register(php_slot, slot->bus, slotno, slot->name);
+-	if (retval) {
+-		err("pci_hp_register failed with error %d\n", retval);
+-		return retval;
++	ret = pci_hp_register(php_slot, slot->bus, slotno, slot->name);
++	if (ret) {
++		err("pci_hp_register failed with error %d\n", ret);
++		return ret;
++	}
++
++	/* Search parent slot */
++	parent = NULL;
++	dn = slot->dn;
++	while (!parent && (dn = of_get_parent(dn))) {
++		if (!PCI_DN(dn)) {
++			of_node_put(dn);
++			break;
++		}
++
++		list_for_each_entry(tmp, &rpaphp_slot_head, link) {
++			if (tmp->dn != dn) {
++				parent = tmp;
++				break;
++			}
++		}
+ 	}
+ 
+-	/* add slot to our internal list */
+-	list_add(&slot->rpaphp_slot_list, &rpaphp_slot_head);
++	/* Add slot to parent list */
++	if (parent)
++		list_add(&slot->list, &parent->children);
++
++	/* Add slot to global list */
++	list_add(&slot->link, &rpaphp_slot_head);
+ 	info("Slot [%s] registered\n", slot->name);
  	return 0;
  }
  
-+static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
-+{
-+	int *freset = data;
-+
-+	/*
-+	 * Stop the iteration immediately if any one
-+	 * PCI device requires fundamental reset
-+	 */
-+	*freset |= pdev->needs_freset;
-+	return *freset;
-+}
-+
-+/*
-+ * When the function is called, there should have
-+ * valid bridge. We don't need cover root bus here
-+ */
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ int rpaphp_deregister_slot(struct rpa_php_slot *slot)
  {
--	struct pci_controller *hose;
-+	int option = EEH_RESET_HOT;
-+	int freset = 0;
++	struct rpa_php_slot *child, *tmp;
+ 	struct hotplug_slot *php_slot = slot->hotplug_slot;
+-	int retval = 0;
++	int ret;
  
--	if (pci_is_root_bus(dev->bus)) {
--		hose = pci_bus_to_host(dev->bus);
--		ioda_eeh_phb_reset(hose, EEH_RESET_HOT);
--		ioda_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
--	} else {
--		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT);
--		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
--	}
-+	/* Need fundamental reset ? */
-+	pci_walk_bus(dev->subordinate, pnv_pci_dev_reset_type, &freset);
-+	if (freset)
-+		option = EEH_RESET_FUNDAMENTAL;
-+
-+	ioda_eeh_bridge_reset(dev, option);
-+	ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+-	dbg("%s - Entry: deregistering slot=%s\n",
+-	    __func__, slot->name);
++	/* Unregister children firstly */
++	list_for_each_entry_safe(child, tmp, &slot->children, list) {
++		ret = rpaphp_deregister_slot(child);
++		if (ret)
++			return ret;
++	}
+ 
+-	list_del(&slot->rpaphp_slot_list);
++	/* Remove from the parent and global lists */
++	list_del(&slot->list);
++	list_del(&slot->link);
+ 
+-	retval = pci_hp_deregister(php_slot);
+-	if (retval)
+-		err("Problem unregistering a slot %s\n", slot->name);
++	ret = pci_hp_deregister(php_slot);
++	if (ret)
++		err("%s: Error %d unregistering slot[%s]\n",
++		    __func__, ret, slot->name);
+ 
+-	dbg("%s - Exit: rc[%d]\n", __func__, retval);
+-	return retval;
++	return ret;
  }
+ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
  
- /**
+@@ -176,24 +209,31 @@ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
+  */
+ int rpaphp_add_slot(struct device_node *dn)
+ {
++	struct device_node *child;
+ 	struct rpa_php_slot *slot = NULL;
+ 	int ret;
+ 
+ 	/* Create slot */
+ 	if (machine_is(pseries))
+ 		slot = rpaphp_rtas_add_slot(dn);
+-	if (!slot)
+-		return -EIO;
+ 
+-	/* Enable slot */
+-	ret = slot->hotplug_slot->ops->enable_slot(slot->hotplug_slot);
+-	if (ret)
+-		goto fail;
++	if (slot) {
++		/* Enable slot */
++		ret = slot->hotplug_slot->ops->enable_slot(slot->hotplug_slot);
++		if (ret)
++			goto fail;
+ 
+-	/* Register slot */
+-	ret = rpaphp_register_slot(slot);
+-	if (ret)
+-		goto fail;
++		/* Register slot */
++		ret = rpaphp_register_slot(slot);
++		if (ret)
++			goto fail;
++	}
++
++	for_each_child_of_node(dn, child) {
++		ret = rpaphp_add_slot(child);
++		if (ret)
++			return ret;
++	}
+ 
+ 	return 0;
+ fail:
+@@ -204,18 +244,15 @@ EXPORT_SYMBOL_GPL(rpaphp_add_slot);
+ 
+ static void __exit cleanup_slots(void)
+ {
+-	struct list_head *tmp, *n;
+-	struct rpa_php_slot *slot;
++	struct rpa_php_slot *slot, *tmp;
+ 
+ 	/*
+ 	 * Unregister all of our slots with the pci_hotplug subsystem,
+ 	 * and free up all memory that we had allocated.
+ 	 * memory will be freed in release_slot callback.
+ 	 */
+-
+-	list_for_each_safe(tmp, n, &rpaphp_slot_head) {
+-		slot = list_entry(tmp, struct rpa_php_slot, rpaphp_slot_list);
+-		list_del(&slot->rpaphp_slot_list);
++	list_for_each_entry_safe(slot, tmp, &rpaphp_slot_head, link) {
++		list_del(&slot->link);
+ 		pci_hp_deregister(slot->hotplug_slot);
+ 	}
+ }
 -- 
 1.8.3.2
