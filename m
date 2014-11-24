@@ -1,37 +1,37 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 061451A0287
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 01:45:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D57AF1A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 01:56:43 +1100 (AEDT)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 24 Nov 2014 07:45:31 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 96B4119D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:34:09 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAOEkEJ441353376
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:46:14 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAOEjSLY016334
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:45:28 -0700
-Message-ID: <54734486.8030905@linux.vnet.ibm.com>
-Date: Mon, 24 Nov 2014 08:45:26 -0600
+ Mon, 24 Nov 2014 07:56:41 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3D1821FF0027
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:45:24 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAOEv9Gf18874498
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:57:09 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAOEudjZ014625
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:56:39 -0700
+Message-ID: <54734726.5070006@linux.vnet.ibm.com>
+Date: Mon, 24 Nov 2014 08:56:38 -0600
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Cyril Bur <cyril.bur@au1.ibm.com>
-Subject: Re: [PATCH v2 3/6] pseries: Create new device hotplug entry point
+Subject: Re: [PATCH v2 5/6] pseries: Implement memory hotplug add in the kernel
 References: <546A6C23.1080800@linux.vnet.ibm.com>
- <546A6DEE.8080708@linux.vnet.ibm.com> <1416556173.2855.67.camel@cyril>
-In-Reply-To: <1416556173.2855.67.camel@cyril>
+ <546A6EA7.3030806@linux.vnet.ibm.com> <1416556176.2855.68.camel@cyril>
+In-Reply-To: <1416556176.2855.68.camel@cyril>
 Content-Type: text/plain; charset=utf-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,339 +43,386 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 11/21/2014 01:49 AM, Cyril Bur wrote:
 > 
-> On Mon, 2014-11-17 at 15:51 -0600, Nathan Fontenot wrote:
->> Create a new entry point for device hotplug on pseries that will
->> work for both PowerVM and PowerKVM systems.
+> On Mon, 2014-11-17 at 15:54 -0600, Nathan Fontenot wrote:
+>> Move handling of memory hotplug add on pseries completely into the kernel.
 >>
->> The current process to hotplug (or dlpar) devices (generally the same
->> process for memory, cpu, and pci devices) on PowerVM systems is initiated
->> from the HMC, which communicates the request to the partitions through
->> the RSCT framework. The RSCT framework then invokes the drmgr command.
->> The drmgr command performs the hotplug operation by doing some pieces,
->> such as most of the rtas calls and device tree parsing, in userspace
->> and make requests to the kernel to online/offline the device, update the
->> device tree and add/remove the device.
+>> The current memory hotplug add path involves the drmgr command doing part
+>> of this work in userspace and requesting the kernel to do additional pieces.
+>> This patch allows us to handle the act completely in the kernel via rtas
+>> hotplug events. This allows us to perform the operation faster and provide
+>> a common memory hotplug add path for PowerVM and PowerKVM systems.
 >>
->> For PowerKVM the approach for device hotplug is to follow what is currently
->> being done for pci hotplug. A hotplug request is initiated from the host,
->> QEMU then generates an EPOW interrupt to the guest which causes the guest
->> to make the rtas,check-exception call. In QEMU, the rtas,check-exception call
->> returns a rtas hotplug event to the guest.
-> 
-> Please forgive my ignorance of the exact details of how this all works.
-> I've been trying to wrap my head around how it works in a little more
-> detail than your high level overview. Correct me where I go wrong.
->
-> So the EPOW interrupt comes in and QEMU receives the
-> rtas,check-exception call and returns the rtas hotplug event. As you
-> state below, the connection of the arrival of the rtas hotplug event to
-> the hotplug code will be made in a subsequent patch.
-> 
-
-Correct. This should be a fairly straightforward patch once we're ready to
-enable this.
-
-> Here is my understanding of what happens when a hotplug event gets
-> processed.
-> An LMB is selected
-> from /ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory in the
-> device tree which is populated at boot time (although it's possible that
-> it can updated once the guest is running?) either because it matches a
-> specific drc-index or simply because it is in the list and we are to
-> hotplug 'count' LMBs. So there's a maximum amount of memory that can be
-> hotplugged (without device tree updates...)?
-
-I don't think you could update the ibm,dynamic-memory property to add/remove
-LMB's to it after booting. The property should contain all of the possible
-LMB's that the system could use.
-
-> 
-> Once selected the kernel informs the hypervisor that it is going to use
-> that LMB with two RTAS calls, 'get-sensor-state' and 'set-indicator'
-> which first checks the actual state of that LMB with the hypervisor and
-> then marks it as 'in use' (in dlpar_acquire_drc).
-> 
-> After that, find the (NUMA?) node id of the memory and inform the
-> generic kernel about this new memory.
-> 
-> For some reason memblock needs to be informed separately (does it need
-> to be informed exactly?), which as you pointed out in the previous
-> version of this patchset you're not sure why it isn't done in
-> add_memory, and you still do it because it's what currently happens? I'd
-> very much like to know why this sequence of events but I suspect the
-> explanation might get quite involved.
->
-
-Why it is like this, I don't know.
-
-It's possible the call to memblock_add|remove could be moved to the
-arch_add|remove_memory routines in powerpc/mm/mem.c but this would
-take some investigation and is probably beyond the scope of
-these patches.
- 
-> Finally mark the LMB as assigned in its device tree node. This is
-> bookkeeping right?
-
-Correct.
-
-> 
-> This process is repeated for each LMB that should be added.
-> 
-> In the event a failure a best effort rollback is done, as you mentioned
-> in the previous version, it may not always be possible but at least it's
-> attempted.
-> 
-> Once all this succeeds update the device tree.
-> 
-> Basically the exact reverse of this process happens for unplug.
-> 
-> I do have questions about this process: What is the most likely part to
-> fail? I have no idea how feasible it would be but perhaps trying to do
-> the likely failure on all the LBMs might help unwinding and perhaps
-> provide a guarantee that it can be completely rolled back. I'm really
-> not sure but by the looks of things are going to be pretty reversible up
-> until device_online.
->
-
-The most likely failure is when trying to roll back after a failure when
-adding memory. The failure I see most often when trying to remove memory
-is failing to offline the memory of an LMB. This usually occurs due to
-some portion of the pages not being able to be migrated elsewhere (such
-as being pinned). Once the lmb is made available we have the potential
-hit this scenario where a previously added LMB cannot be removed.
- 
- 
-> I can't help but notice the duplication with memory_probe_store
-> (although that doesn't do any rollback). Probably unavoidable and its
-> really not much code.
->
-
-There is some duplication. The memory_probe_store routine is used for
-the current method of memory hotplug add. Once the framework is in place
-for using rtas hotplug events I hope to deprecate the old method and
-remove this code.
- 
-> Thanks in advance for the clarifications,
-> 
-> Cyril
->>
->> Please note that the current pci hotplug path for PowerKVM involves the
->> kernel receiving the rtas hotplug event, passing it to rtas_errd in
->> userspace, and having rtas_errd invoke drmgr. The drmgr command then
->> handles the request as described above for PowerVM systems. This is to
->> be updated to perform pci completely in the kernel in a later patch set.
->>
->> There is no need for this circuitous route, we should handle the entire
->> hotplug of devices in the kernel. What I am planning is to enable this
->> by moving the code to handle device hotplug from drmgr into the kernel to
->> provide a single path for both PowerVM and PowerKVM systems. This patch
->> provides the common entry point. For PowerKVM a future update to the kernel
->> rtas code will recognize rtas hotplug events returned from
->> rtas,check-exception calls and use the common entry point to handle device
->> hotplug entirely in the kernel.
->>
->> For PowerVM systems, this patch creates the /sys/kernel/dlpar file that rtas
->> hotplug events can be written to by drmgr and passed to the common entry point.
->> There is no chance of updating how we receive hotplug requests on PowerVM
->> systems.
+>> The patch does introduce a static rtas_hp_event variable that is set to
+>> true when updating the device tree during memory hotplug initiated from
+>> a rtas hotplug event. This is needed because we do not need to do the
+>> work in the of notifier, this work is already performed in handling the
+>> hotplug request. At a later time we can remove this when we deprecate the
+>> previous method of memory hotplug.
 >>
 >> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 >> ---
->>  arch/powerpc/platforms/pseries/dlpar.c          |   72 ++++++++++++++++++++++-
->>  arch/powerpc/platforms/pseries/hotplug-memory.c |   19 ++++++
->>  arch/powerpc/platforms/pseries/pseries.h        |   10 +++
->>  3 files changed, 99 insertions(+), 2 deletions(-)
+>>  arch/powerpc/platforms/pseries/hotplug-memory.c |  244 +++++++++++++++++++++++
+>>  1 file changed, 243 insertions(+), 1 deletion(-)
 >>
->> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
->> index c22bb1b..ec825d3 100644
->> --- a/arch/powerpc/platforms/pseries/dlpar.c
->> +++ b/arch/powerpc/platforms/pseries/dlpar.c
->> @@ -10,6 +10,8 @@
->>   * 2 as published by the Free Software Foundation.
->>   */
->>  
->> +#define pr_fmt(fmt)	"dlpar: " fmt
->> +
->>  #include <linux/kernel.h>
->>  #include <linux/notifier.h>
->>  #include <linux/spinlock.h>
->> @@ -535,13 +537,79 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->>  	return count;
->>  }
->>  
->> +#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
->> +
->> +static int handle_dlpar_errorlog(struct rtas_error_log *error_log)
->> +{
->> +	struct pseries_errorlog *pseries_log;
->> +	struct pseries_hp_errorlog *hp_elog;
->> +	int rc;
->> +
->> +	pseries_log = get_pseries_errorlog(error_log,
->> +					   PSERIES_ELOG_SECT_ID_HOTPLUG);
-> 
->> +	if (!pseries_log || (pseries_log->length == 0))
->> +		return -EINVAL;
->> +
->> +	hp_elog = (struct pseries_hp_errorlog *)pseries_log->data;
-> Maybe rather than doing this here it might be worth having a function
-> that returns you a pseries_hp_errorlog from a pseries_errorlog but also
-> with everything in CPU endian which will make 5/6 and 6/6 look nicer.
-
-I've thought about this, but I need to have parts of the errorlog, namely
-the drc_index when used, in BE format when comparing to the device tree
-property values and in cpu format when used directly.
-
-I'll look over the patches again and see if I can do some pre-conversion.
-
->> +
->> +	/* Go ahead and convert the hotplug type to the correct endianness
->> +	 * to avoid converting it everywhere we use it.
->> +	 */
->> +	switch (hp_elog->id_type) {
->> +	case PSERIES_HP_ELOG_ID_DRC_COUNT:
->> +		hp_elog->_drc_u.drc_count =
->> +					be32_to_cpu(hp_elog->_drc_u.drc_count);
->> +	case PSERIES_HP_ELOG_ID_DRC_INDEX:
->> +		hp_elog->_drc_u.drc_index =
->> +					be32_to_cpu(hp_elog->_drc_u.drc_index);
->> +	}
-> You're converting __be32 to CPU endian but storing them back into a
-> __be32? This will upset sparse.
-
-Hmm... good point. This also makes doing the pre-conversion mentioned above a
-bit harder.
-
-> Should this not also have a default case?
-
-Yep, to be fixed.
-
--Nathan
-
-> 
->> +
->> +	switch (hp_elog->resource) {
->> +	case PSERIES_HP_ELOG_RESOURCE_MEM:
->> +		rc = dlpar_memory(hp_elog);
->> +		break;
->> +	default:
->> +		pr_warn_ratelimited("Invalid resource (%d) specified\n",
->> +				    hp_elog->resource);
->> +		rc = -EINVAL;
->> +		break;
->> +	}
->> +
->> +	return rc;
->> +}
->> +
->> +static ssize_t dlpar_store(struct file *filp, struct kobject *kobj,
->> +			   struct bin_attribute *bin_attr, char *buf,
->> +			   loff_t pos, size_t count)
->> +{
->> +	struct rtas_error_log *error_log;
->> +	int rc;
->> +
->> +	error_log = kmalloc(count, GFP_KERNEL);
->> +	if (!error_log)
->> +		return -ENOMEM;
->> +
->> +	memcpy(error_log, buf, count);
->> +
->> +	rc = handle_dlpar_errorlog(error_log);
->> +	kfree(error_log);
->> +	return rc ? rc : count;
->> +}
->> +
->> +static BIN_ATTR(dlpar, S_IWUSR, NULL, dlpar_store, 0);
->> +
->>  static int __init pseries_dlpar_init(void)
->>  {
->> +	int rc;
->> +
->> +#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
->>  	ppc_md.cpu_probe = dlpar_cpu_probe;
->>  	ppc_md.cpu_release = dlpar_cpu_release;
->> +#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
->>  
->> -	return 0;
->> +	rc = sysfs_create_bin_file(kernel_kobj, &bin_attr_dlpar);
->> +
->> +	return rc;
->>  }
->>  machine_device_initcall(pseries, pseries_dlpar_init);
->>  
->> -#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 >> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> index 3cb256c..69d178b 100644
+>> index 69d178b..b57d42b 100644
 >> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
 >> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> @@ -9,6 +9,8 @@
->>   *      2 of the License, or (at your option) any later version.
->>   */
->>  
->> +#define pr_fmt(fmt)	"pseries-hotplug-mem: " fmt
->> +
->>  #include <linux/of.h>
->>  #include <linux/of_address.h>
+>> @@ -16,6 +16,7 @@
 >>  #include <linux/memblock.h>
->> @@ -134,6 +136,23 @@ static inline int pseries_remove_mem_node(struct device_node *np)
+>>  #include <linux/memory.h>
+>>  #include <linux/memory_hotplug.h>
+>> +#include <linux/slab.h>
+>>  
+>>  #include <asm/firmware.h>
+>>  #include <asm/machdep.h>
+>> @@ -23,6 +24,8 @@
+>>  #include <asm/sparsemem.h>
+>>  #include "pseries.h"
+>>  
+>> +static bool rtas_hp_event;
+>> +
+>>  unsigned long pseries_memory_block_size(void)
+>>  {
+>>  	struct device_node *np;
+>> @@ -66,6 +69,52 @@ unsigned long pseries_memory_block_size(void)
+>>  	return memblock_size;
+>>  }
+>>  
+>> +static void dlpar_free_drconf_property(struct property *prop)
+>> +{
+>> +	kfree(prop->name);
+>> +	kfree(prop->value);
+>> +	kfree(prop);
+>> +}
+>> +
+>> +static struct property *dlpar_clone_drconf_property(struct device_node *dn)
+>> +{
+>> +	struct property *prop, *new_prop;
+>> +
+>> +	prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
+>> +	if (!prop)
+>> +		return NULL;
+>> +
+>> +	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
+>> +	if (!new_prop)
+>> +		return NULL;
+>> +
+>> +	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
+>> +	new_prop->value = kmalloc(prop->length, GFP_KERNEL);
+>> +	if (!new_prop->name || !new_prop->value) {
+>> +		dlpar_free_drconf_property(new_prop);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	memcpy(new_prop->value, prop->value, prop->length);
+>> +	new_prop->length = prop->length;
+>> +
+>> +	return new_prop;
+>> +}
+>> +
+>> +static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
+>> +{
+>> +	unsigned long section_nr;
+>> +	struct mem_section *mem_sect;
+>> +	struct memory_block *mem_block;
+>> +	u64 phys_addr = be64_to_cpu(lmb->base_addr);
+>> +
+>> +	section_nr = pfn_to_section_nr(PFN_DOWN(phys_addr));
+>> +	mem_sect = __nr_to_section(section_nr);
+>> +
+>> +	mem_block = find_memory_block(mem_sect);
+>> +	return mem_block;
+>> +}
+>> +
+>>  #ifdef CONFIG_MEMORY_HOTREMOVE
+>>  static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+>>  {
+>> @@ -136,19 +185,209 @@ static inline int pseries_remove_mem_node(struct device_node *np)
 >>  }
 >>  #endif /* CONFIG_MEMORY_HOTREMOVE */
 >>  
->> +int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>> +static int dlpar_add_lmb(struct of_drconf_cell *lmb)
 >> +{
->> +	int rc = 0;
+>> +	struct memory_block *mem_block;
+>> +	u64 phys_addr;
+>> +	uint32_t drc_index;
+> I started commenting this and it turns out you've used uint32_t almost
+> everywhere for values you've pulled from the device tree or the elog.
+> These should be u32.
+
+ok, that should be an easy fix.
+
+>> +	unsigned long pages_per_block;
+>> +	unsigned long block_sz;
+>> +	int nid, sections_per_block;
+>> +	int rc;
 >> +
->> +	lock_device_hotplug();
+>> +	if (be32_to_cpu(lmb->flags) & DRCONF_MEM_ASSIGNED)
+>> +		return -EINVAL;
 >> +
->> +	switch (hp_elog->action) {
->> +	default:
->> +		pr_err("Invalid action (%d) specified\n", hp_elog->action);
->> +		rc = -EINVAL;
->> +		break;
+>> +	phys_addr = be64_to_cpu(lmb->base_addr);
+>> +	drc_index = be32_to_cpu(lmb->drc_index);
+>> +	block_sz = memory_block_size_bytes();
+>> +	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+>> +	pages_per_block = PAGES_PER_SECTION * sections_per_block;
+>> +
+> Perhaps I'm being a bit slow here but it isn't exactly clear what you're
+> getting with all those variables and could you explain what that
+> statement below is checking for?
+> 
+>> +	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
+>> +		return -EINVAL;
+
+We could probably get rid of this check, The values were are validating
+come from the device tree and if it's wrong we have more serious problems
+than a failure in mem hotplug.
+
+This would also remove the need for the pages_per_block and sections_per_block
+variables.
+
+>> +
+>> +	rc = dlpar_acquire_drc(drc_index);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	/* Find the node id for this address */
+>> +	nid = memory_add_physaddr_to_nid(phys_addr);
+>> +
+>> +	/* Add the memory */
+>> +	rc = add_memory(nid, phys_addr, block_sz);
+>> +	if (rc) {
+>> +		dlpar_release_drc(drc_index);
+>> +		return rc;
 >> +	}
 >> +
->> +	unlock_device_hotplug();
+>> +	/* Register this block of memory */
+>> +	rc = memblock_add(phys_addr, block_sz);
+>> +	if (rc) {
+>> +		remove_memory(nid, phys_addr, block_sz);
+>> +		dlpar_release_drc(drc_index);
+>> +		return rc;
+>> +	}
+>> +
+>> +	mem_block = lmb_to_memblock(lmb);
+>> +	if (!mem_block) {
+>> +		remove_memory(nid, phys_addr, block_sz);
+>> +		dlpar_release_drc(drc_index);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	rc = device_online(&mem_block->dev);
+>> +	put_device(&mem_block->dev);
+>> +	if (rc) {
+>> +		remove_memory(nid, phys_addr, block_sz);
+>> +		dlpar_release_drc(drc_index);
+>> +		return rc;
+>> +	}
+>> +
+>> +	lmb->flags |= cpu_to_be32(DRCONF_MEM_ASSIGNED);
+>> +	return 0;
+>> +}
+>> +
+>> +static int dlpar_memory_add_by_count(struct pseries_hp_errorlog *hp_elog,
+>> +				     struct property *prop)
+>> +{
+>> +	struct of_drconf_cell *lmbs;
+>> +	uint32_t num_lmbs;
+>> +	__be32 *p;
+>> +	int i, lmbs_to_add;
+>> +	int lmbs_available = 0;
+>> +	int lmbs_added = 0;
+>> +	int rc;
+>> +
+>> +	lmbs_to_add = be32_to_cpu(hp_elog->_drc_u.drc_count);
+
+> Didn't you already do the endian conversion back in
+> handle_dlpar_errorlog?
+
+Yep, already fixed in the next patchset.
+
+>> +	pr_info("Attempting to hot-add %d LMB(s)\n", lmbs_to_add);
+>> +
+>> +	if (lmbs_to_add == 0)
+>> +		return -EINVAL;
+>> +
+>> +	p = prop->value;
+>> +	num_lmbs = be32_to_cpu(*p++);
+>> +	lmbs = (struct of_drconf_cell *)p;
+>> +
+>> +	/* Validate that there are enough LMBs to satisfy the request */
+>> +	for (i = 0; i < num_lmbs; i++) {
+>> +		if (!(be32_to_cpu(lmbs[i].flags) & DRCONF_MEM_ASSIGNED))
+>> +			lmbs_available++;
+>> +	}
+>> +
+>> +	if (lmbs_available < lmbs_to_add)
+>> +		return -EINVAL;
+>> +
+> I'm wondering why the next 3 lines when the if could be incorporated
+> into the for condition
+> for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
+> (or lmbs_to_add < lmbs_added)...
+
+It could. I tend to put less in the for() statement. Just my preference on
+readability.
+
+>> +	for (i = 0; i < num_lmbs; i++) {
+>> +		if (lmbs_to_add == lmbs_added)
+>> +			break;
+>> +
+>> +		rc = dlpar_add_lmb(&lmbs[i]);
+>> +		if (rc)
+>> +			continue;
+>> +
+>> +		lmbs_added++;
+>> +		pr_info("Memory at %llx (drc index %x) has been hot-added\n",
+>> +			be64_to_cpu(lmbs[i].base_addr),
+>> +			be32_to_cpu(lmbs[i].drc_index));
+
+> This message feels a tad premature, you're going to roll back if the
+> requested amount couldn't be added which is good but then there's going
+> to be a confusing mix of 'hot-added' followed by 'hot-removed'. Could
+> this message be moved to when you clear the reserved fields?
+
+Ahh... good point. I will do that.
+
+>> +
+>> +		/* Mark this lmb so we can remove it later if all of the
+>> +		 * requested LMBs cannot be added.
+>> +		 */
+>> +		lmbs[i].reserved = 1;
+> Writing 1 like that into a __be variable will upset sparse. 
+> 
+> As a more general comment that it might be worth not passing around __be
+> structures and convert them all into CPU endian in one place so that all
+> these functions can do away with the endian conversion calls.
+
+This may be possible. I will have to look at how the struct is passed around
+what is used in it. It would be nice to have fewer conversion calls.
+
+>> +	}
+>> +
+>> +	if (lmbs_added != lmbs_to_add) {
+>> +		/* TODO: remove added lmbs */
+>> +		rc = -EINVAL;
+>> +	}
+>> +
+>> +	/* Clear the reserved fields */
+>> +	for (i = 0; i < num_lmbs; i++)
+>> +		lmbs[i].reserved = 0;
+>> +
 >> +	return rc;
 >> +}
 >> +
->>  static int pseries_add_mem_node(struct device_node *np)
->>  {
->>  	const char *type;
->> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
->> index 239bee5..40e0339 100644
->> --- a/arch/powerpc/platforms/pseries/pseries.h
->> +++ b/arch/powerpc/platforms/pseries/pseries.h
->> @@ -11,6 +11,7 @@
->>  #define _PSERIES_PSERIES_H
->>  
->>  #include <linux/interrupt.h>
->> +#include <asm/rtas.h>
->>  
->>  struct device_node;
->>  
->> @@ -63,6 +64,15 @@ extern int dlpar_detach_node(struct device_node *);
->>  int dlpar_acquire_drc(u32 drc_index);
->>  int dlpar_release_drc(u32 drc_index);
->>  
->> +#ifdef CONFIG_MEMORY_HOTPLUG
->> +int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
->> +#else
->> +static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>> +static int dlpar_memory_add_by_index(struct pseries_hp_errorlog *hp_elog,
+>> +				     struct property *prop)
 >> +{
->> +	return -EOPNOTSUPP;
->> +}
->> +#endif
+>> +	struct of_drconf_cell *lmbs;
+>> +	uint32_t num_lmbs, drc_index;
+>> +	__be32 *p;
+>> +	int i, lmb_found;
+>> +	int rc;
 >> +
->>  /* PCI root bridge prepare function override for pseries */
->>  struct pci_host_bridge;
->>  int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
+>> +	drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+> Didn't you already do the endian conversion back in
+> handle_dlpar_errorlog?
+>> +	pr_info("Attempting to hot-add LMB, drc index %x\n", drc_index);
+>> +
+>> +	p = prop->value;
+>> +	num_lmbs = be32_to_cpu(*p++);
+>> +	lmbs = (struct of_drconf_cell *)p;
+>> +
+>> +	lmb_found = 0;
+>> +	for (i = 0; i < num_lmbs; i++) {
+>> +		if (lmbs[i].drc_index == hp_elog->_drc_u.drc_index) {
+> Probably wanted to use your local variable drc_index here also
+> lmbs[i].drc_index is __be and I don't think you've converted it but the
+> other side of the condition has been...
+
+Yep.
+
+-Nathan
+
+>> +			lmb_found = 1;
+>> +			rc = dlpar_add_lmb(&lmbs[i]);
+>> +			break;
+>> +		}
+>> +	}
+>> +
+>> +	if (!lmb_found)
+>> +		rc = -EINVAL;
+>> +
+>> +	if (rc)
+>> +		pr_info("Failed to hot-add memory, drc index %x\n", drc_index);
+>> +	else
+>> +		pr_info("Memory at %llx (drc index %x) has been hot-added\n",
+>> +			be64_to_cpu(lmbs[i].base_addr), drc_index);
+>> +
+>> +	return rc;
+>> +}
+>> +
+>>  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>>  {
+>> -	int rc = 0;
+>> +	struct device_node *dn;
+>> +	struct property *prop;
+>> +	int rc;
+>>  
+>>  	lock_device_hotplug();
+>>  
+>> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+>> +	if (!dn)
+>> +		return -EINVAL;
+>> +
+>> +	prop = dlpar_clone_drconf_property(dn);
+>> +	if (!prop) {
+>> +		of_node_put(dn);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>>  	switch (hp_elog->action) {
+>> +	case PSERIES_HP_ELOG_ACTION_ADD:
+>> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+>> +			rc = dlpar_memory_add_by_count(hp_elog, prop);
+>> +		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+>> +			rc = dlpar_memory_add_by_index(hp_elog, prop);
+>> +		else
+>> +			rc = -EINVAL;
+>> +		break;
+>>  	default:
+>>  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+>>  		rc = -EINVAL;
+>>  		break;
+>>  	}
+>>  
+>> +	if (rc)
+>> +		dlpar_free_drconf_property(prop);
+>> +	else {
+>> +		rtas_hp_event = true;
+>> +		of_update_property(dn, prop);
+>> +		rtas_hp_event = false;
+>> +	}
+>> +
+>> +	of_node_put(dn);
+>>  	unlock_device_hotplug();
+>>  	return rc;
+>>  }
+>> @@ -193,6 +432,9 @@ static int pseries_update_drconf_memory(struct of_prop_reconfig *pr)
+>>  	__be32 *p;
+>>  	int i, rc = -EINVAL;
+>>  
+>> +	if (rtas_hp_event)
+>> +		return 0;
+>> +
+>>  	memblock_size = pseries_memory_block_size();
+>>  	if (!memblock_size)
+>>  		return -EINVAL;
 >>
 >> _______________________________________________
 >> Linuxppc-dev mailing list
 >> Linuxppc-dev@lists.ozlabs.org
 >> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
 > 
 > 
 > 
