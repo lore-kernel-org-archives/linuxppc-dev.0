@@ -1,38 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-f176.google.com (mail-wi0-f176.google.com
+ [209.85.212.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9186C1A028E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:27:08 +1100 (AEDT)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C79801400DE
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 09:27:07 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 25 Nov 2014 03:57:05 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id DAD13E0059
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 03:57:24 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAOMRcLl60948618
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 03:57:38 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAOMR2MW009792
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 03:57:03 +0530
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc/eeh: Fix missed PE#0 on P7IOC
-Date: Tue, 25 Nov 2014 09:27:00 +1100
-Message-Id: <1416868020-4129-3-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1416868020-4129-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1416868020-4129-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CB95C1A020A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 09:34:15 +1100 (AEDT)
+Received: by mail-wi0-f176.google.com with SMTP id ex7so7250625wid.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 14:34:11 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+Subject: [PATCH v2 07/14] of/reconfig: Always use the same structure for
+ notifiers
+Date: Mon, 24 Nov 2014 22:33:35 +0000
+Message-Id: <1416868422-22103-8-git-send-email-grant.likely@linaro.org>
+In-Reply-To: <1416868422-22103-1-git-send-email-grant.likely@linaro.org>
+References: <1416868422-22103-1-git-send-email-grant.likely@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Rob Herring <robh+dt@kernel.org>,
+ Mark Brown <broonie@kernel.org>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,97 +29,354 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PE#0 should be regarded as valid for P7IOC, while it's invalid for
-PHB3. The patch adds flag EEH_VALID_PE_ZERO to differentiate those
-two cases. Without the patch, we possibly see frozen PE#0 state is
-cleared without EEH recovery taken on P7IOC as following kernel logs
-indicate:
+The OF_RECONFIG notifier callback uses a different structure depending
+on whether it is a node change or a property change. This is silly, and
+not very safe. Rework the code to use the same data structure regardless
+of the type of notifier.
 
-[root@ltcfbl8eb ~]# dmesg
-       :
-pci 0000:00     : [PE# 000] Secondary bus 0 associated with PE#0
-pci 0000:01     : [PE# 001] Secondary bus 1 associated with PE#1
-pci 0001:00     : [PE# 000] Secondary bus 0 associated with PE#0
-pci 0001:01     : [PE# 001] Secondary bus 1 associated with PE#1
-pci 0002:00     : [PE# 000] Secondary bus 0 associated with PE#0
-pci 0002:01     : [PE# 001] Secondary bus 1 associated with PE#1
-pci 0003:00     : [PE# 000] Secondary bus 0 associated with PE#0
-pci 0003:01     : [PE# 001] Secondary bus 1 associated with PE#1
-pci 0003:20     : [PE# 002] Secondary bus 32..63 associated with PE#2
-       :
-EEH: Clear non-existing PHB#3-PE#0
-EEH: PHB location: U78AE.001.WZS00M9-P1-002
-
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Grant Likely <grant.likely@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
 ---
- arch/powerpc/include/asm/eeh.h               |  5 +++--
- arch/powerpc/kernel/eeh_pe.c                 | 14 +++++++++++---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 11 +++++++++++
- 3 files changed, 25 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/numa.c                          |  3 +-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |  7 +++--
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 15 +++++----
+ arch/powerpc/platforms/pseries/iommu.c          |  5 +--
+ arch/powerpc/platforms/pseries/setup.c          |  5 +--
+ drivers/crypto/nx/nx-842.c                      |  4 +--
+ drivers/of/dynamic.c                            | 41 +++++++++++++------------
+ include/linux/of.h                              | 23 ++++++++------
+ 8 files changed, 54 insertions(+), 49 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 0652ebe..9c11d1e 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -38,8 +38,9 @@ struct device_node;
- #define EEH_FORCE_DISABLED	0x02	/* EEH disabled		*/
- #define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
- #define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
--#define EEH_ENABLE_IO_FOR_LOG	0x10	/* Enable IO for log	*/
--#define EEH_EARLY_DUMP_LOG	0x20	/* Dump log immediately	*/
-+#define EEH_VALID_PE_ZERO	0x10	/* PE#0 is valid	*/
-+#define EEH_ENABLE_IO_FOR_LOG	0x20	/* Enable IO for log	*/
-+#define EEH_EARLY_DUMP_LOG	0x40	/* Dump log immediately	*/
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index b9d1dfdbe5bb..9fe6002c1d5a 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1711,12 +1711,11 @@ static void stage_topology_update(int core_id)
+ static int dt_update_callback(struct notifier_block *nb,
+ 				unsigned long action, void *data)
+ {
+-	struct of_prop_reconfig *update;
++	struct of_reconfig_data *update = data;
+ 	int rc = NOTIFY_DONE;
  
- /*
-  * Delay for PE reset, all in ms
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 5a63e2b..fa950fb 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -239,10 +239,18 @@ static void *__eeh_pe_get(void *data, void *flag)
- 	if (pe->type & EEH_PE_PHB)
- 		return NULL;
+ 	switch (action) {
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+-		update = (struct of_prop_reconfig *)data;
+ 		if (!of_prop_cmp(update->dn->type, "cpu") &&
+ 		    !of_prop_cmp(update->prop->name, "ibm,associativity")) {
+ 			u32 core_id;
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 5c375f93c669..f30cf4d136a4 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -340,16 +340,17 @@ static void pseries_remove_processor(struct device_node *np)
+ }
  
--	/* We prefer PE address */
--	if (edev->pe_config_addr &&
--	   (edev->pe_config_addr == pe->addr))
-+	/*
-+	 * We prefer PE address. For most cases, we should
-+	 * have non-zero PE address
-+	 */
-+	if (eeh_has_flag(EEH_VALID_PE_ZERO)) {
-+		if (edev->pe_config_addr == pe->addr)
-+			return pe;
-+	} else {
-+		if (edev->pe_config_addr &&
-+		    (edev->pe_config_addr == pe->addr))
- 		return pe;
-+	}
+ static int pseries_smp_notifier(struct notifier_block *nb,
+-				unsigned long action, void *node)
++				unsigned long action, void *data)
+ {
++	struct of_reconfig_data *rd = data;
+ 	int err = 0;
  
- 	/* Try BDF address */
- 	if (edev->config_addr &&
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 1d19e79..e261869 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -68,6 +68,17 @@ static int powernv_eeh_init(void)
- 
- 		if (phb->model == PNV_PHB_MODEL_P7IOC)
- 			eeh_add_flag(EEH_ENABLE_IO_FOR_LOG);
-+
-+		/*
-+		 * PE#0 should be regarded as valid by EEH core
-+		 * if it's not the reserved one. Currently, we
-+		 * have the reserved PE#0 and PE#127 for PHB3
-+		 * and P7IOC separately. So we should regard
-+		 * PE#0 as valid for P7IOC.
-+		 */
-+		if (phb->ioda.reserved_pe != 0)
-+			eeh_add_flag(EEH_VALID_PE_ZERO);
-+
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+-		err = pseries_add_processor(node);
++		err = pseries_add_processor(rd->dn);
+ 		break;
+ 	case OF_RECONFIG_DETACH_NODE:
+-		pseries_remove_processor(node);
++		pseries_remove_processor(rd->dn);
  		break;
  	}
+ 	return notifier_from_errno(err);
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 3c4c0dcd90d3..1bbb78fab530 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -183,7 +183,7 @@ static int pseries_add_mem_node(struct device_node *np)
+ 	return (ret < 0) ? -EINVAL : 0;
+ }
  
+-static int pseries_update_drconf_memory(struct of_prop_reconfig *pr)
++static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+ {
+ 	struct of_drconf_cell *new_drmem, *old_drmem;
+ 	unsigned long memblock_size;
+@@ -232,22 +232,21 @@ static int pseries_update_drconf_memory(struct of_prop_reconfig *pr)
+ }
+ 
+ static int pseries_memory_notifier(struct notifier_block *nb,
+-				   unsigned long action, void *node)
++				   unsigned long action, void *data)
+ {
+-	struct of_prop_reconfig *pr;
++	struct of_reconfig_data *rd = data;
+ 	int err = 0;
+ 
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+-		err = pseries_add_mem_node(node);
++		err = pseries_add_mem_node(rd->dn);
+ 		break;
+ 	case OF_RECONFIG_DETACH_NODE:
+-		err = pseries_remove_mem_node(node);
++		err = pseries_remove_mem_node(rd->dn);
+ 		break;
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+-		pr = (struct of_prop_reconfig *)node;
+-		if (!strcmp(pr->prop->name, "ibm,dynamic-memory"))
+-			err = pseries_update_drconf_memory(pr);
++		if (!strcmp(rd->prop->name, "ibm,dynamic-memory"))
++			err = pseries_update_drconf_memory(rd);
+ 		break;
+ 	}
+ 	return notifier_from_errno(err);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index e32e00976a94..3e5bfdafee63 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1251,10 +1251,11 @@ static struct notifier_block iommu_mem_nb = {
+ 	.notifier_call = iommu_mem_notifier,
+ };
+ 
+-static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
++static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *data)
+ {
+ 	int err = NOTIFY_OK;
+-	struct device_node *np = node;
++	struct of_reconfig_data *rd = data;
++	struct device_node *np = rd->dn;
+ 	struct pci_dn *pci = PCI_DN(np);
+ 	struct direct_window *window;
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 125c589eeef5..ed8a90022a3d 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -251,9 +251,10 @@ static void __init pseries_discover_pic(void)
+ 	       " interrupt-controller\n");
+ }
+ 
+-static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
++static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *data)
+ {
+-	struct device_node *np = node;
++	struct of_reconfig_data *rd = data;
++	struct device_node *np = rd->dn;
+ 	struct pci_dn *pci = NULL;
+ 	int err = NOTIFY_OK;
+ 
+diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+index 061407d59520..887196e9b50c 100644
+--- a/drivers/crypto/nx/nx-842.c
++++ b/drivers/crypto/nx/nx-842.c
+@@ -1009,9 +1009,9 @@ error_out:
+  *		notifier_to_errno() to decode this value
+  */
+ static int nx842_OF_notifier(struct notifier_block *np, unsigned long action,
+-			     void *update)
++			     void *data)
+ {
+-	struct of_prop_reconfig *upd = update;
++	struct of_reconfig_data *upd = data;
+ 	struct nx842_devdata *local_devdata;
+ 	struct device_node *node = NULL;
+ 
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index cc106529dca8..3351ef408125 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -87,18 +87,17 @@ const char *action_names[] = {
+ };
+ #endif
+ 
+-int of_reconfig_notify(unsigned long action, void *p)
++int of_reconfig_notify(unsigned long action, struct of_reconfig_data *p)
+ {
+ 	int rc;
+ #ifdef DEBUG
+-	struct device_node *dn = p;
+-	struct of_prop_reconfig *pr = p;
++	struct of_reconfig_data *pr = p;
+ 
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 	case OF_RECONFIG_DETACH_NODE:
+ 		pr_debug("of/notify %-15s %s\n", action_names[action],
+-			dn->full_name);
++			pr->dn->full_name);
+ 		break;
+ 	case OF_RECONFIG_ADD_PROPERTY:
+ 	case OF_RECONFIG_REMOVE_PROPERTY:
+@@ -122,31 +121,22 @@ int of_reconfig_notify(unsigned long action, void *p)
+  * Returns 0 on device going from enabled to disabled, 1 on device
+  * going from disabled to enabled and -1 on no change.
+  */
+-int of_reconfig_get_state_change(unsigned long action, void *arg)
++int of_reconfig_get_state_change(unsigned long action, struct of_reconfig_data *pr)
+ {
+-	struct device_node *dn;
+-	struct property *prop, *old_prop;
+-	struct of_prop_reconfig *pr;
++	struct property *prop, *old_prop = NULL;
+ 	int is_status, status_state, old_status_state, prev_state, new_state;
+ 
+ 	/* figure out if a device should be created or destroyed */
+-	dn = NULL;
+-	prop = old_prop = NULL;
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 	case OF_RECONFIG_DETACH_NODE:
+-		dn = arg;
+-		prop = of_find_property(dn, "status", NULL);
++		prop = of_find_property(pr->dn, "status", NULL);
+ 		break;
+ 	case OF_RECONFIG_ADD_PROPERTY:
+ 	case OF_RECONFIG_REMOVE_PROPERTY:
+-		pr = arg;
+-		dn = pr->dn;
+ 		prop = pr->prop;
+ 		break;
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+-		pr = arg;
+-		dn = pr->dn;
+ 		prop = pr->prop;
+ 		old_prop = pr->old_prop;
+ 		break;
+@@ -212,7 +202,7 @@ EXPORT_SYMBOL_GPL(of_reconfig_get_state_change);
+ int of_property_notify(int action, struct device_node *np,
+ 		       struct property *prop, struct property *oldprop)
+ {
+-	struct of_prop_reconfig pr;
++	struct of_reconfig_data pr;
+ 
+ 	/* only call notifiers if the node is attached */
+ 	if (!of_node_is_attached(np))
+@@ -250,8 +240,12 @@ void __of_attach_node(struct device_node *np)
+  */
+ int of_attach_node(struct device_node *np)
+ {
++	struct of_reconfig_data rd;
+ 	unsigned long flags;
+ 
++	memset(&rd, 0, sizeof(rd));
++	rd.dn = np;
++
+ 	mutex_lock(&of_mutex);
+ 	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	__of_attach_node(np);
+@@ -260,7 +254,7 @@ int of_attach_node(struct device_node *np)
+ 	__of_attach_node_sysfs(np);
+ 	mutex_unlock(&of_mutex);
+ 
+-	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, np);
++	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
+ 
+ 	return 0;
+ }
+@@ -298,9 +292,13 @@ void __of_detach_node(struct device_node *np)
+  */
+ int of_detach_node(struct device_node *np)
+ {
++	struct of_reconfig_data rd;
+ 	unsigned long flags;
+ 	int rc = 0;
+ 
++	memset(&rd, 0, sizeof(rd));
++	rd.dn = np;
++
+ 	mutex_lock(&of_mutex);
+ 	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 	__of_detach_node(np);
+@@ -309,7 +307,7 @@ int of_detach_node(struct device_node *np)
+ 	__of_detach_node_sysfs(np);
+ 	mutex_unlock(&of_mutex);
+ 
+-	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, np);
++	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
+ 
+ 	return rc;
+ }
+@@ -505,6 +503,7 @@ static void __of_changeset_entry_invert(struct of_changeset_entry *ce,
+ 
+ static void __of_changeset_entry_notify(struct of_changeset_entry *ce, bool revert)
+ {
++	struct of_reconfig_data rd;
+ 	struct of_changeset_entry ce_inverted;
+ 	int ret;
+ 
+@@ -516,7 +515,9 @@ static void __of_changeset_entry_notify(struct of_changeset_entry *ce, bool reve
+ 	switch (ce->action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 	case OF_RECONFIG_DETACH_NODE:
+-		ret = of_reconfig_notify(ce->action, ce->np);
++		memset(&rd, 0, sizeof(rd));
++		rd.dn = ce->np;
++		ret = of_reconfig_notify(ce->action, &rd);
+ 		break;
+ 	case OF_RECONFIG_ADD_PROPERTY:
+ 	case OF_RECONFIG_REMOVE_PROPERTY:
+diff --git a/include/linux/of.h b/include/linux/of.h
+index b59ee21933a4..fe1dec87fd68 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -73,6 +73,12 @@ struct of_phandle_args {
+ 	uint32_t args[MAX_PHANDLE_ARGS];
+ };
+ 
++struct of_reconfig_data {
++	struct device_node	*dn;
++	struct property		*prop;
++	struct property		*old_prop;
++};
++
+ /* initialize a node */
+ extern struct kobj_type of_node_ktype;
+ static inline void of_node_init(struct device_node *node)
+@@ -318,12 +324,6 @@ extern int of_update_property(struct device_node *np, struct property *newprop);
+ #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
+ #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
+ 
+-struct of_prop_reconfig {
+-	struct device_node	*dn;
+-	struct property		*prop;
+-	struct property		*old_prop;
+-};
+-
+ extern int of_attach_node(struct device_node *);
+ extern int of_detach_node(struct device_node *);
+ 
+@@ -892,8 +892,9 @@ enum of_reconfig_change {
+ #ifdef CONFIG_OF_DYNAMIC
+ extern int of_reconfig_notifier_register(struct notifier_block *);
+ extern int of_reconfig_notifier_unregister(struct notifier_block *);
+-extern int of_reconfig_notify(unsigned long, void *);
+-extern int of_reconfig_get_state_change(unsigned long action, void *arg);
++extern int of_reconfig_notify(unsigned long, struct of_reconfig_data *rd);
++extern int of_reconfig_get_state_change(unsigned long action,
++					struct of_reconfig_data *arg);
+ 
+ extern void of_changeset_init(struct of_changeset *ocs);
+ extern void of_changeset_destroy(struct of_changeset *ocs);
+@@ -941,11 +942,13 @@ static inline int of_reconfig_notifier_unregister(struct notifier_block *nb)
+ {
+ 	return -EINVAL;
+ }
+-static inline int of_reconfig_notify(unsigned long action, void *arg)
++static inline int of_reconfig_notify(unsigned long action,
++				     struct of_reconfig_data *arg)
+ {
+ 	return -EINVAL;
+ }
+-static inline int of_reconfig_get_state_change(unsigned long action, void *arg)
++static inline int of_reconfig_get_state_change(unsigned long action,
++						struct of_reconfig_data *arg)
+ {
+ 	return -EINVAL;
+ }
 -- 
-1.8.3.2
+1.9.1
