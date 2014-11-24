@@ -1,37 +1,33 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B7C11A0281
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 01:04:43 +1100 (AEDT)
-Received: from mail-yh0-f45.google.com (mail-yh0-f45.google.com
- [209.85.213.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7D604140180
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 01:04:42 +1100 (AEDT)
-Received: by mail-yh0-f45.google.com with SMTP id f10so4274024yha.32
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Nov 2014 06:04:40 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <546F1367.4060301@linux.vnet.ibm.com>
-References: <1415683597-22819-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1415683597-22819-8-git-send-email-khandual@linux.vnet.ibm.com>
- <54647DA7.1070000@linux.vnet.ibm.com>
- <CAHj3AVna2H1VZvP0=Xjw9pqS+gRKR7_KH9FNhX3vUBFh7OU2wA@mail.gmail.com>
- <546F1367.4060301@linux.vnet.ibm.com>
-Date: Mon, 24 Nov 2014 18:04:40 +0400
-Message-ID: <CAOJe8K2ti=X4_C7GuNnoMAqPTut4GLkcvyBv3yT6w5Nbw9dczw@mail.gmail.com>
-Subject: Re: [PATCH V4 7/8] powerpc, ptrace: Enable support for miscellaneous
- debug registers
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
- linux-kernel@vger.kernel.org, akpm@linux-foundation.org, oleg@redhat.com,
- dhowells@redhat.com, linuxppc-dev@ozlabs.org,
- Denis Kirjanov <kirjanov@gmail.com>, davej@redhat.com, tglx@linutronix.de,
- sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id C11811A0283
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 01:08:12 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 24 Nov 2014 14:08:08 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6359517D8047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 14:08:21 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAOE86mH10158396
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 14:08:06 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAOE83Eh010299
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2014 07:08:05 -0700
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pseries/le: Fix endiannes issue in RTAS call from xmon
+Date: Mon, 24 Nov 2014 15:07:53 +0100
+Message-Id: <1416838073-16642-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,39 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/21/14, Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> On 11/14/2014 03:30 PM, Denis Kirjanov wrote:
->> On 11/13/14, Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
->>> > On 11/11/2014 10:56 AM, Anshuman Khandual wrote:
->>>> >> This patch enables get and set of miscellaneous debug registers
->>>> >> through
->>>> >> ptrace PTRACE_GETREGSET-PTRACE_SETREGSET interface by implementing
->>>> >> new
->>>> >> powerpc specific register set REGSET_MISC support corresponding to
->>>> >> the
->>>> >> new ELF core note NT_PPC_MISC added previously in this regard.
->>> >
->>> > Right now this one does not compile for "ppc64e_defconfig" and
->>> > "pmac32_defconfig" config options. The patch below will fix it
->>> > and would be part of next revision.
->> It would be great to have a test tool for that under
->> tools/testing/selftests/ptrace/
->>
->
-> Hey Denis,
->
-> I have already added one test case under selftests/powerpc/tm/ which
-> will test all the newly added ELF core note based ptrace requests on
-> powerpc. This test case is added as part of the next patch 8/8 in
-> the series. Please let me know if the test case does not cover something
-> you are looking for.
+On pseries system (LPAR) xmon failed to enter when running in LE mode, system
+is hunging. Inititating xmon will lead to such an output on the console:
 
-Oh, I've missed this one. Anyway, I'll wait the second version to test.
+SysRq : Entering xmon
+cpu 0x15: Vector: 0  at [c0000003f39ffb10]
+    pc: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
+    lr: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
+    sp: c0000003f39ffc70
+   msr: 8000000000009033
+  current = 0xc0000003fafa7180
+  paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
+    pid   = 14617, comm = bash
+Bad kernel stack pointer fafb4b0 at eca7cc4
+cpu 0x15: Vector: 300 (Data Access) at [c000000007f07d40]
+    pc: 000000000eca7cc4
+    lr: 000000000eca7c44
+    sp: fafb4b0
+   msr: 8000000000001000
+   dar: 10000000
+ dsisr: 42000000
+  current = 0xc0000003fafa7180
+  paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
+    pid   = 14617, comm = bash
+cpu 0x15: Exception 300 (Data Access) in xmon, returning to main loop
+xmon: WARNING: bad recursive fault on cpu 0x15
 
-Thanks.
+The root cause is that xmon is calling RTAS to turn off the surveillance
+when entering xmon, and RTAS is requiring big endian parameters.
 
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+This patch is byte swapping the RTAS arguments when running in LE mode.
+
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/xmon/xmon.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index b988b5addf86..c8efbb37d6e0 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -293,10 +293,10 @@ static inline void disable_surveillance(void)
+ 	args.token = rtas_token("set-indicator");
+ 	if (args.token == RTAS_UNKNOWN_SERVICE)
+ 		return;
+-	args.nargs = 3;
+-	args.nret = 1;
++	args.nargs = cpu_to_be32(3);
++	args.nret = cpu_to_be32(1);
+ 	args.rets = &args.args[3];
+-	args.args[0] = SURVEILLANCE_TOKEN;
++	args.args[0] = cpu_to_be32(SURVEILLANCE_TOKEN);
+ 	args.args[1] = 0;
+ 	args.args[2] = 0;
+ 	enter_rtas(__pa(&args));
+-- 
+1.9.1
