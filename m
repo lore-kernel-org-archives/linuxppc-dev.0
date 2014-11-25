@@ -1,35 +1,35 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 36DF41A04B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 19:05:58 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C0761A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 19:06:07 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 692571401AC
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:57 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id EE7C01401B5
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:06:06 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 25 Nov 2014 18:05:56 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CE5F2BB005B
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100 (EST)
+ Tue, 25 Nov 2014 18:06:06 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A0D582CE8062
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:06:03 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAP85s8m41484428
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAP863kE22085830
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:06:03 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAP85qcK002222
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100
+ sAP8610A002498
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:06:03 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [V5 2/7] powerpc, process: Add the function flush_tmregs_to_thread
-Date: Tue, 25 Nov 2014 13:35:26 +0530
-Message-Id: <1416902731-22446-3-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [V5 4/7] powerpc, ptrace: Enable vr_(get/set) for transactional memory
+Date: Tue, 25 Nov 2014 13:35:28 +0530
+Message-Id: <1416902731-22446-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1416902731-22446-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1416902731-22446-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -46,66 +46,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch creates a function flush_tmregs_to_thread which
-will then be used by subsequent patches in this series. The
-function checks for self tracing ptrace interface attempts
-while in the TM context and logs appropriate warning message.
+This patch enables the vr_get which gets the running value of all
+the VMX registers and the vr_set which sets the running value of
+of all the VMX registers to accommodate in transaction ptrace
+interface based requests.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  8 ++++++++
- arch/powerpc/kernel/process.c        | 20 ++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ arch/powerpc/kernel/ptrace.c | 94 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 91 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 58abeda..23752a9 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -82,6 +82,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index fd36b32..2bbbd10 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -523,10 +523,30 @@ static int vr_active(struct task_struct *target,
+ 	return target->thread.used_vr ? regset->n : 0;
  }
- #endif
+ 
++/*
++ * vr_get
++ *
++ * When the transaction is active, 'transact_vr' holds the current running
++ * value of all the VMX registers and 'vr_state' holds the last checkpointed
++ * value of all the VMX registers for the current transaction to fall back
++ * on in case it aborts. When transaction is not active 'vr_state' holds
++ * the current running state of all the VMX registers. So this function which
++ * gets the current running values of all the VMX registers, needs to know
++ * whether any transaction is active or not.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
++ * };
++ */
+ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+ 		  unsigned int pos, unsigned int count,
+ 		  void *kbuf, void __user *ubuf)
+ {
++	struct thread_vr_state *addr;
+ 	int ret;
+ 
+ 	flush_altivec_to_thread(target);
+@@ -534,8 +554,19 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+ 	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+ 		     offsetof(struct thread_vr_state, vr[32]));
  
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+extern void flush_tmregs_to_thread(struct task_struct *);
++	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
++		flush_fp_to_thread(target);
++		flush_tmregs_to_thread(target);
++		addr = &target->thread.transact_vr;
++	} else {
++		addr = &target->thread.vr_state;
++	}
 +#else
-+static inline void flush_tmregs_to_thread(struct task_struct *t)
-+{
-+}
++	addr = &target->thread.vr_state;
++#endif
+ 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				  &target->thread.vr_state, 0,
++				  addr, 0,
+ 				  33 * sizeof(vector128));
+ 	if (!ret) {
+ 		/*
+@@ -546,7 +577,16 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+ 			u32 word;
+ 		} vrsave;
+ 		memset(&vrsave, 0, sizeof(vrsave));
++
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++		if (MSR_TM_ACTIVE(target->thread.regs->msr))
++			vrsave.word = target->thread.transact_vrsave;
++		else
++			vrsave.word = target->thread.vrsave;
++#else
+ 		vrsave.word = target->thread.vrsave;
 +#endif
 +
- static inline void clear_task_ebb(struct task_struct *t)
+ 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
+ 					  33 * sizeof(vector128), -1);
+ 	}
+@@ -554,10 +594,30 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
+ 	return ret;
+ }
+ 
++/*
++ * vr_set
++ *
++ * When the transaction is active, 'transact_vr' holds the current running
++ * value of all the VMX registers and 'vr_state' holds the last checkpointed
++ * value of all the VMX registers for the current transaction to fall back
++ * on in case it aborts. When transaction is not active 'vr_state' holds
++ * the current running state of all the VMX registers. So this function which
++ * sets the current running values of all the VMX registers, needs to know
++ * whether any transaction is active or not.
++ *
++ * Userspace interface buffer layout:
++ *
++ * struct data {
++ *	vector128	vr[32];
++ *	vector128	vscr;
++ *	vector128	vrsave;
++ * };
++ */
+ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+ 		  unsigned int pos, unsigned int count,
+ 		  const void *kbuf, const void __user *ubuf)
  {
- #ifdef CONFIG_PPC_BOOK3S_64
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 923cd2d..0013f24 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -745,6 +745,26 @@ void restore_tm_state(struct pt_regs *regs)
- #define __switch_to_tm(prev)
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
++	struct thread_vr_state *addr;
+ 	int ret;
+ 
+ 	flush_altivec_to_thread(target);
+@@ -565,8 +625,19 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+ 	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
+ 		     offsetof(struct thread_vr_state, vr[32]));
  
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+void flush_tmregs_to_thread(struct task_struct *tsk)
-+{
-+	/*
-+	 * Process self tracing is not yet supported through
-+	 * ptrace interface. Ptrace generic code should have
-+	 * prevented this from happening in the first place.
-+	 * Warn once here with the message, if some how it
-+	 * is attempted.
-+	 */
-+	WARN_ONCE(tsk == current,
-+		"Not expecting ptrace on self: TM regs may be incorrect\n");
-+
-+	/*
-+	 * If task is not current, it should have been flushed
-+	 * already to it's thread_struct during __switch_to().
-+	 */
-+}
++	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
++		flush_fp_to_thread(target);
++		flush_tmregs_to_thread(target);
++		addr = &target->thread.transact_vr;
++	} else {
++		addr = &target->thread.vr_state;
++	}
++#else
++	addr = &target->thread.vr_state;
 +#endif
+ 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				 &target->thread.vr_state, 0,
++				 addr, 0,
+ 				 33 * sizeof(vector128));
+ 	if (!ret && count > 0) {
+ 		/*
+@@ -577,11 +648,28 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
+ 			u32 word;
+ 		} vrsave;
+ 		memset(&vrsave, 0, sizeof(vrsave));
 +
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++		if (MSR_TM_ACTIVE(target->thread.regs->msr))
++			vrsave.word = target->thread.transact_vrsave;
++		else
++			vrsave.word = target->thread.vrsave;
++#else
+ 		vrsave.word = target->thread.vrsave;
++#endif
+ 		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
+ 					 33 * sizeof(vector128), -1);
+-		if (!ret)
++		if (!ret) {
++
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++			if (MSR_TM_ACTIVE(target->thread.regs->msr))
++				target->thread.transact_vrsave = vrsave.word;
++			else
++				target->thread.vrsave = vrsave.word;
++#else
+ 			target->thread.vrsave = vrsave.word;
++#endif
++		}
+ 	}
+ 
+ 	return ret;
 -- 
 1.9.3
