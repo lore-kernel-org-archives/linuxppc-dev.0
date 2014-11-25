@@ -1,20 +1,28 @@
 Return-Path: <wsa@the-dreams.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 149E21A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 04:51:51 +1100 (AEDT)
-Date: Tue, 25 Nov 2014 18:53:16 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 529FF1A00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 05:12:23 +1100 (AEDT)
+Date: Tue, 25 Nov 2014 19:13:47 +0100
 From: Wolfram Sang <wsa@the-dreams.de>
-To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] i2c: Driver to expose PowerNV platform i2c busses
-Message-ID: <20141125175316.GB9716@katana>
-References: <20141116171605.4750.17472.stgit@localhost.localdomain>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
+Message-ID: <20141125181347.GC9716@katana>
+References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
+ <1414537731.23458.120.camel@snotra.buserror.net>
+ <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
+ <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
+ <1416274083.15957.96.camel@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="0ntfKIWw70PvrIHh"
-In-Reply-To: <20141116171605.4750.17472.stgit@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+ protocol="application/pgp-signature"; boundary="MnLPg7ZWsaic7Fhd"
+In-Reply-To: <1416274083.15957.96.camel@freescale.com>
+Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ Linux device trees <devicetree@vger.kernel.org>, "Boschung,
+ Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
+ Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
+ Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,126 +33,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---0ntfKIWw70PvrIHh
+--MnLPg7ZWsaic7Fhd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 16, 2014 at 10:47:46PM +0530, Neelesh Gupta wrote:
-> The patch exposes the available i2c busses on the PowerNV platform
-> to the kernel and implements the bus driver to support i2c and
-> smbus commands.
-> The driver uses the platform device infrastructure to probe the busses
-> on the platform and registers them with the i2c driver framework.
+On Mon, Nov 17, 2014 at 07:28:03PM -0600, Scott Wood wrote:
+> On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
+> > > >=20
+> > > > If we're going to change the device tree I'd rather just add a prop=
+erty
+> > > > to say what the prescaler is.
+> > >=20
+> > >  We would however, leave the boards' device trees that use things like
+> > > "fsl,mpc8543-i2c" as is and introduce the prescaler for the others re=
+quiring it.
+> > >=20
+> > >=20
+> > > Now the drawback is that the driver would require a change, to parse =
+this
+> > > prescaler new prescaler property. Would this be OK from your point of=
+ view
+> > > Wolfram ? If yes, I will send the patches for it.
+> >=20
+> > I don't think it is OK.
 >=20
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Why?
 
-=2E..
+Because I thought it could be deduced. Then, a seperate property would
+not be OK.
 
-> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-> index 917c358..71ad6e1 100644
-> --- a/drivers/i2c/busses/Kconfig
-> +++ b/drivers/i2c/busses/Kconfig
-> @@ -1044,4 +1044,15 @@ config SCx200_ACB
->  	  This support is also available as a module.  If so, the module
->  	  will be called scx200_acb.
-> =20
-> +config I2C_OPAL
-> +	tristate "IBM OPAL I2C driver"
-> +	depends on PPC_POWERNV
-> +	default y
-> +	help
-> +	  This exposes the PowerNV platform i2c busses to the linux i2c layer,
-> +	  the driver is based on the OPAL interfaces.
-> +
-> +	  This driver can also be built as a module. If so, the module will be
-> +	  called as i2c-opal.
-> +
->  endmenu
-> diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-> index 78d56c5..350aa86 100644
-> --- a/drivers/i2c/busses/Makefile
-> +++ b/drivers/i2c/busses/Makefile
-> @@ -102,5 +102,6 @@ obj-$(CONFIG_I2C_ELEKTOR)	+=3D i2c-elektor.o
->  obj-$(CONFIG_I2C_PCA_ISA)	+=3D i2c-pca-isa.o
->  obj-$(CONFIG_I2C_SIBYTE)	+=3D i2c-sibyte.o
->  obj-$(CONFIG_SCx200_ACB)	+=3D scx200_acb.o
-> +obj-$(CONFIG_I2C_OPAL)		+=3D i2c-opal.o
+> >  I'd think it can be deduced from the compatible property.
+>=20
+> For almost all existing device trees it cannot be.
 
-Please keep it proprly sorted.
+Pity :( If we do introduce a new property, it should probably be
+"clock-div". Grepping through binding documentation, that seems
+accepted. We should ask DT maintainers, too, to be safe.
 
-> +	rc =3D of_property_read_u32(pdev->dev.of_node, "ibm,opal-id", &opal_id);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "Missing ibm,opal-id property !\n");
-> +		return -EIO;
-> +	}
+> If you want something that will work without changing device trees,
+> you'll need to use SVR to identify the SoC.
 
-You introduce new bindings which need to be documented in
-Docuemntation/devicetree/bindings/i2c.
-
-They should be posted as a seperate patch with
-devicetree@vger.kernel.org CCed, so they can comment on it. This is
-required these days and especially important..
-
-> +	adapter =3D devm_kzalloc(&pdev->dev, sizeof(*adapter), GFP_KERNEL);
-> +	if (!adapter)
-> +		return -ENOMEM;
-> +
-> +	adapter->algo =3D &i2c_opal_algo;
-> +	adapter->algo_data =3D (void *)(unsigned long)opal_id;
-> +	adapter->dev.parent =3D &pdev->dev;
-> +	adapter->dev.of_node =3D of_node_get(pdev->dev.of_node);
-> +	pname =3D of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
-> +	if (pname)
-> +		strlcpy(adapter->name, pname, sizeof(adapter->name));
-> +	else
-> +		strlcpy(adapter->name, "opal", sizeof(adapter->name));
-
-=2E.. because I'd like to get an ack from them because of this binding. I
-don't know if we can just say "this comes from firmware, so we must
-support it" (although you wrote the firmware IIUC) or if we have to
-judge if this is a HW description which should go into DT? I am open
-meanwhile that the adapter name does not need to be static anymore.
-However, I don't know much about server world and FW, so maybe they can
-assist.
-
-An example binding in that document would also be very helpful.
+The driver is doing that already, see mpc_i2c_get_sec_cfg_8xxx(). Dunno
+if it makes sense to add to it for consistency reasons?
 
 
-> +static struct platform_driver i2c_opal_driver =3D {
-> +	.probe	=3D i2c_opal_probe,
-> +	.remove	=3D i2c_opal_remove,
-> +	.driver	=3D {
-> +		.name		=3D "i2c-opal",
-> +		.owner		=3D THIS_MODULE,
-
-owner not needed.
-
-Thanks,
-
-   Wolfram
-
---0ntfKIWw70PvrIHh
+--MnLPg7ZWsaic7Fhd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUdMIMAAoJEBQN5MwUoCm21x0QAIbGIMv3dKaqWySbuWkCiFvI
-Bmh0G9Lpfz1PesH07zDiZezNZTZMwYVmwuTKgMCPl4YQ4M037PEjulJFWB3CUvgw
-E+vKiCNRfrYsUqywhutVDr06OfuJnHROGeyTGgGL26ioeTYjEjxYEySThPyoS44+
-Xq5XRS70UCqFANC4yuttKf3FmazIUEzujkbm51vynhc+Uxi6is1MLxM74ptRTyLw
-p/96jQnYh3vwjQX/rdhYDmjfi4DrrD33xkRoauZpAyuLluULjChsIjByM4md7RvA
-mOeqSguSVilRQszqu7ND8gf25tO93XHO4o9Vb1zYQTBGP4+p47xAVIdGvbX4RkAI
-ox00SRSGeB3aB5vKA5UgCPXsfjGQXUj8Y+TsUxs75aTApCwu5mboyJsM+ZNVlS5e
-fMNjx433YL2idFTUVoorMKq6UXPKJ+d8Cx00C9WjU3bnf/258RfaQnPS2J/VNtrk
-3po8QerVdOJWP5ukXniZ6JDBAVALmIKxPBeqIRFnmn63zAPavEv8bQE4qB1Q50up
-N0jnFiU/m/jsCnJwuWDthSl++9weg7d9Tm5ZkdgNdr1Y/QtmiJYyOSkfUucQ8eyX
-KP+APQi2G47TV+pbEs/g70DCa0pHK7IIo44kzRFmQ2YA37MUvb6LYp1YyqGFnbYU
-v6eoXbG5ZcfgR/FVBUY0
-=C2yK
+iQIcBAEBAgAGBQJUdMbbAAoJEBQN5MwUoCm2BIsQAJ+N/XUWx2AclSWuY0H6ZtQD
+i5oOPHCbuu3GNjIqJlWjRRHYpMQb0wkl+u9Xbo8yzKULEeQ8cxb4FLOv70ylem/E
+kFkyecWGFdkRnLwTSk8FvywYayTmlb0ktNBeg83XJcx58ibN+Otwc0WzWNM0cLFX
+kKWhlNpKrz2LyNCJP4oFB7vhu5TClAo6VTdYBrN5bGY0BlEuhuRB7vx2RKTWvAWf
+VTIoMIBDVJAHbIYfMo1mFUgu0yK1j69/IAT8N1UZXttKlG0ZCbpeTXYrLds+n7ss
+DRChWvK9FH46gzzLmPbIAA/oUDAuetIcgyBwlwCt6xrW2MdncEML8YymhUjCF18p
+g739ZFA7Ukvn9J5NK/3+JfCy4Z5/aY1yiCHazwHVFK8wv7Asr994fl27HenDGjSq
+vupdCCv7cswoauVV4mydc0eZVovjFOijaVEwsFZLX6aXDLkw5OzEpA4xvh4lc9cm
+B/vr3iDYHn0+EuVpYUovh3Ob3vW+TGOObY2QV+Wh2R4jvBqZQ9sVNBomg4r0W/Nc
+61CQzvM5TpmwOVXnI6cXz++P079js300Qy4oAG/q6luchyPWBUk1vujCnXP3iRh4
+PvkUjdU0H7SbYYAd/LEFpwqv29go9dz6BLEoAB1P33XdOfAdXPGmtqQv3oFzXs91
+5vfrkJBSvxVChwOphWJf
+=A8Vc
 -----END PGP SIGNATURE-----
 
---0ntfKIWw70PvrIHh--
+--MnLPg7ZWsaic7Fhd--
