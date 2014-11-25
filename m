@@ -1,29 +1,36 @@
-Return-Path: <shuahkh@osg.samsung.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D07CF1A0157
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 04:06:54 +1100 (AEDT)
-Received: from lists.s-osg.org (lists.s-osg.org [54.187.51.154])
- by ozlabs.org (Postfix) with ESMTP id 882F6140188
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2014 04:06:53 +1100 (AEDT)
-Message-ID: <5474B72A.7040403@osg.samsung.com>
-Date: Tue, 25 Nov 2014 10:06:50 -0700
-From: Shuah Khan <shuahkh@osg.samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 835981A0200
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 09:28:53 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 26 Nov 2014 08:28:51 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CCE6E2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 09:28:47 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAPMSlVZ22544614
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 09:28:47 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAPMSlEe005374
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 09:28:47 +1100
+Date: Wed, 26 Nov 2014 09:28:47 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: drop useless warning in eeh_init()
+Message-ID: <20141125222846.GA7662@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20141125161006.1995.31789.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [V5 7/7] selftests, powerpc: Add test case for TM related ptrace
- interface
-References: <1416902731-22446-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1416902731-22446-8-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1416902731-22446-8-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
- oleg@redhat.com, davem@davemloft.net, dhowells@redhat.com, kirjanov@gmail.com,
- davej@redhat.com, akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com,
- tglx@linutronix.de, sam.bobroff@au1.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141125161006.1995.31789.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2014 01:05 AM, Anshuman Khandual wrote:
-> This patch adds one more test case called 'tm-ptrace' targeting TM
-> related ptrace interface. This test creates one child process to
-> run some basic TM transactions and the parent process attaches the
-> child to do some ptrace probing using the recently added regset
-> interfaces. The parent process then compares the received values
-> against the expected values to verify whether it has passed the
-> given test or not.
+On Tue, Nov 25, 2014 at 05:10:06PM +0100, Greg Kurz wrote:
+>This is what we get in dmesg when booting a pseries guest and
+>the hypervisor doesn't provide EEH support.
+>
+>[    0.166655] EEH functionality not supported
+>[    0.166778] eeh_init: Failed to call platform init function (-22)
+>
+>Since both powernv_eeh_init() and pseries_eeh_init() already complain when
+>hitting an error, it is not needed to print more (especially such an
+>uninformative message).
+>
+>Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+Thanks,
+Gavin
+
+>---
+> arch/powerpc/kernel/eeh.c |    5 +----
+> 1 file changed, 1 insertion(+), 4 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 2248a19..7d62018 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -920,11 +920,8 @@ int eeh_init(void)
+> 		pr_warn("%s: Platform EEH operation not found\n",
+> 			__func__);
+> 		return -EEXIST;
+>-	} else if ((ret = eeh_ops->init())) {
+>-		pr_warn("%s: Failed to call platform init function (%d)\n",
+>-			__func__, ret);
+>+	} else if ((ret = eeh_ops->init()))
+> 		return ret;
+>-	}
 > 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
->  tools/testing/selftests/powerpc/tm/Makefile    |   2 +-
->  tools/testing/selftests/powerpc/tm/tm-ptrace.c | 542 +++++++++++++++++++++++++
->  2 files changed, 543 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/tm/tm-ptrace.c
-> 
-> diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-> index 2cede23..71d400a 100644
-> --- a/tools/testing/selftests/powerpc/tm/Makefile
-> +++ b/tools/testing/selftests/powerpc/tm/Makefile
-> @@ -1,4 +1,4 @@
-> -PROGS := tm-resched-dscr
-> +PROGS := tm-resched-dscr tm-ptrace
->  
-
-Could you please add .gitignore for the binaries in this directory
-to avoid git status including the binaries it in its output.
-
-thanks,
--- Shuah
-
--- 
-Shuah Khan
-Sr. Linux Kernel Developer
-Samsung Research America (Silicon Valley)
-shuahkh@osg.samsung.com | (970) 217-8978
+> 	/* Initialize EEH event */
+> 	ret = eeh_event_init();
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
