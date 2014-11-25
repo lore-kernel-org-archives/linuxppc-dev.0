@@ -2,28 +2,19 @@ Return-Path: <wsa@the-dreams.de>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F284D1A0287
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 04:12:44 +1100 (AEDT)
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53F8514017A
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2014 04:12:43 +1100 (AEDT)
-Date: Tue, 25 Nov 2014 18:14:03 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 149E21A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 04:51:51 +1100 (AEDT)
+Date: Tue, 25 Nov 2014 18:53:16 +0100
 From: Wolfram Sang <wsa@the-dreams.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 Subject: Re: [PATCH v2] i2c: Driver to expose PowerNV platform i2c busses
-Message-ID: <20141125171403.GA9716@katana>
+Message-ID: <20141125175316.GB9716@katana>
 References: <20141116171605.4750.17472.stgit@localhost.localdomain>
- <546DF910.4060802@linux.vnet.ibm.com>
- <20141124121803.GH3733@katana>
- <1416889937.4998.54.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
-In-Reply-To: <1416889937.4998.54.camel@kernel.crashing.org>
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-i2c@vger.kernel.org
+ protocol="application/pgp-signature"; boundary="0ntfKIWw70PvrIHh"
+In-Reply-To: <20141116171605.4750.17472.stgit@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,75 +25,126 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---+HP7ph2BbKc20aGI
+--0ntfKIWw70PvrIHh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 25, 2014 at 03:32:17PM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-11-24 at 13:18 +0100, Wolfram Sang wrote:
-> >=20
-> > I think there are now 3 drivers in my queue which are not fully I2C
-> > compatible but more supporting the very minimum to, say, read an
-> > eeprom.
-> > I am not feeling well to allow them to use I2C_FUNC_I2C. So, I want to
-> > think about ways how to communicate deficiencies like "only 255 byte"
-> > or
-> > "only WRRD messages" to users of that I2C controller. This is most
-> > likely not happening before 3.19. But assistance is very welcome.
+On Sun, Nov 16, 2014 at 10:47:46PM +0530, Neelesh Gupta wrote:
+> The patch exposes the available i2c busses on the PowerNV platform
+> to the kernel and implements the bus driver to support i2c and
+> smbus commands.
+> The driver uses the platform device infrastructure to probe the busses
+> on the platform and registers them with the i2c driver framework.
 >=20
-> There are drivers doing that already, this is afaik common practice.
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Well, there are drivers doing it, but to me this is somewhere between a
-hack and a workaround. Somehow like using subsys_initcall() to overcome
-probe ordering issues. That has never been nice and I still don't have a
-solution how to convert those drivers back to module_init() + deferred
-probe without causing regressions. As a result, people still want to
-copy that behaviour.
+=2E..
 
-> Please don't gate the merging process to some hypothetical rework that
-> will imply reworking also a number of user space tools and in-kernel i2c
-> device drivers. Basically that would mean "your platform won't be
-> supported upstream for the next year and btw, rewrite all userspace".
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index 917c358..71ad6e1 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -1044,4 +1044,15 @@ config SCx200_ACB
+>  	  This support is also available as a module.  If so, the module
+>  	  will be called scx200_acb.
+> =20
+> +config I2C_OPAL
+> +	tristate "IBM OPAL I2C driver"
+> +	depends on PPC_POWERNV
+> +	default y
+> +	help
+> +	  This exposes the PowerNV platform i2c busses to the linux i2c layer,
+> +	  the driver is based on the OPAL interfaces.
+> +
+> +	  This driver can also be built as a module. If so, the module will be
+> +	  called as i2c-opal.
+> +
+>  endmenu
+> diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+> index 78d56c5..350aa86 100644
+> --- a/drivers/i2c/busses/Makefile
+> +++ b/drivers/i2c/busses/Makefile
+> @@ -102,5 +102,6 @@ obj-$(CONFIG_I2C_ELEKTOR)	+=3D i2c-elektor.o
+>  obj-$(CONFIG_I2C_PCA_ISA)	+=3D i2c-pca-isa.o
+>  obj-$(CONFIG_I2C_SIBYTE)	+=3D i2c-sibyte.o
+>  obj-$(CONFIG_SCx200_ACB)	+=3D scx200_acb.o
+> +obj-$(CONFIG_I2C_OPAL)		+=3D i2c-opal.o
 
-Call me naive but I don't think we need to rewrite all userspace. That
-is what I am at least aiming for.
+Please keep it proprly sorted.
 
-> By all means let's create new "smbus" APIs for >1 bytes offset but let's
-> not make it a gate to merging drivers using the existing way of doing
-> things that has been so far perfectly functional.
+> +	rc =3D of_property_read_u32(pdev->dev.of_node, "ibm,opal-id", &opal_id);
+> +	if (rc) {
+> +		dev_err(&pdev->dev, "Missing ibm,opal-id property !\n");
+> +		return -EIO;
+> +	}
 
-You say "let's", yet my experience is that once I accept a patch like
-yours, people are off with their support leaving me alone with the
-topic. Not because they are evil, but because they also have tons of
-other stuff to do. I perfectly understand I know this myself. And then,
-more and more people will come asking for the same as you and the
-situation gets harder and harder to fix.
+You introduce new bindings which need to be documented in
+Docuemntation/devicetree/bindings/i2c.
 
-That all being said, the driver has other issues which I will mention in
-a seperate thread.
+They should be posted as a seperate patch with
+devicetree@vger.kernel.org CCed, so they can comment on it. This is
+required these days and especially important..
+
+> +	adapter =3D devm_kzalloc(&pdev->dev, sizeof(*adapter), GFP_KERNEL);
+> +	if (!adapter)
+> +		return -ENOMEM;
+> +
+> +	adapter->algo =3D &i2c_opal_algo;
+> +	adapter->algo_data =3D (void *)(unsigned long)opal_id;
+> +	adapter->dev.parent =3D &pdev->dev;
+> +	adapter->dev.of_node =3D of_node_get(pdev->dev.of_node);
+> +	pname =3D of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
+> +	if (pname)
+> +		strlcpy(adapter->name, pname, sizeof(adapter->name));
+> +	else
+> +		strlcpy(adapter->name, "opal", sizeof(adapter->name));
+
+=2E.. because I'd like to get an ack from them because of this binding. I
+don't know if we can just say "this comes from firmware, so we must
+support it" (although you wrote the firmware IIUC) or if we have to
+judge if this is a HW description which should go into DT? I am open
+meanwhile that the adapter name does not need to be static anymore.
+However, I don't know much about server world and FW, so maybe they can
+assist.
+
+An example binding in that document would also be very helpful.
 
 
---+HP7ph2BbKc20aGI
+> +static struct platform_driver i2c_opal_driver =3D {
+> +	.probe	=3D i2c_opal_probe,
+> +	.remove	=3D i2c_opal_remove,
+> +	.driver	=3D {
+> +		.name		=3D "i2c-opal",
+> +		.owner		=3D THIS_MODULE,
+
+owner not needed.
+
+Thanks,
+
+   Wolfram
+
+--0ntfKIWw70PvrIHh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUdLjbAAoJEBQN5MwUoCm2+zcP/jAGYhr6Z9OBzKhW/jykUZCZ
-S4CGz/IxsIAyMr58DzkpiRALnjbdvqQ5I0QWSSpgN+UBWj+RP4vvFzT304TYfdy5
-3H32qWV1V71DfWySMlxElHGOE/4Ma4gsPL6gOJc0vqfZn7zawqSVV4SMSzLi8rHP
-UBbw4kIFInT1RGEgN/iQQWp+pKJop0hffudI6rSAluXzTZgzNIvf4uOsUuotMpZ9
-sbhNWvKgC0VK/Eg8bsck+tFCT7HZS8RFwU0u9BelBdVfcNzOAqMdNlSfp42a+ywD
-QaoXwosJD9TOq3iF1kbbpzR8/RXqgtUIyVZOlZkeqYNxLmWuSmytPhrRZz5DPPWw
-2D3pbvrzTpP9wJI4ESbA5EiHuGYdHYLqmWlu0xKf796cTbVd02/9IVRt8U2XIksP
-pw5svyrq3hd56eg01VPJNKkTjj80cm456OeMwd3/8dKYI1I82A08qXUTMR3SlJoU
-cshfgbA94TDcrhw4MTdOY6256kWkX6e06FAE7dHlTXOKLIGW2y/sdnmoTv/cB8pB
-BYn0oRaDVeqiXOPF8chMPOEl19tY0HEPE6htf4FYBPZwdyt0N0l25j+dwNV8hQ3E
-Asa1yXn8urfiQJ0zjvl+4Q3EoMt648W6hA7LzHIZmdScMbYcj+bhSvUiugzHFT8x
-k48K1mp1U6ZbbSFt/3Sd
-=IVEC
+iQIcBAEBAgAGBQJUdMIMAAoJEBQN5MwUoCm21x0QAIbGIMv3dKaqWySbuWkCiFvI
+Bmh0G9Lpfz1PesH07zDiZezNZTZMwYVmwuTKgMCPl4YQ4M037PEjulJFWB3CUvgw
+E+vKiCNRfrYsUqywhutVDr06OfuJnHROGeyTGgGL26ioeTYjEjxYEySThPyoS44+
+Xq5XRS70UCqFANC4yuttKf3FmazIUEzujkbm51vynhc+Uxi6is1MLxM74ptRTyLw
+p/96jQnYh3vwjQX/rdhYDmjfi4DrrD33xkRoauZpAyuLluULjChsIjByM4md7RvA
+mOeqSguSVilRQszqu7ND8gf25tO93XHO4o9Vb1zYQTBGP4+p47xAVIdGvbX4RkAI
+ox00SRSGeB3aB5vKA5UgCPXsfjGQXUj8Y+TsUxs75aTApCwu5mboyJsM+ZNVlS5e
+fMNjx433YL2idFTUVoorMKq6UXPKJ+d8Cx00C9WjU3bnf/258RfaQnPS2J/VNtrk
+3po8QerVdOJWP5ukXniZ6JDBAVALmIKxPBeqIRFnmn63zAPavEv8bQE4qB1Q50up
+N0jnFiU/m/jsCnJwuWDthSl++9weg7d9Tm5ZkdgNdr1Y/QtmiJYyOSkfUucQ8eyX
+KP+APQi2G47TV+pbEs/g70DCa0pHK7IIo44kzRFmQ2YA37MUvb6LYp1YyqGFnbYU
+v6eoXbG5ZcfgR/FVBUY0
+=C2yK
 -----END PGP SIGNATURE-----
 
---+HP7ph2BbKc20aGI--
+--0ntfKIWw70PvrIHh--
