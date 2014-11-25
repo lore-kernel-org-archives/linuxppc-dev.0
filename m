@@ -2,34 +2,34 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 283D91A0620
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 19:05:55 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36DF41A04B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 19:05:58 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DEFD5140188
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 692571401AC
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:57 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 25 Nov 2014 18:05:53 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id A59ED2BB0059
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:50 +1100 (EST)
+ Tue, 25 Nov 2014 18:05:56 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CE5F2BB005B
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAP85ogV39583824
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:50 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAP85s8m41484428
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAP85mmp002128
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:49 +1100
+ sAP85qcK002222
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2014 19:05:54 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [V5 1/7] elf: Add new powerpc specifc core note sections
-Date: Tue, 25 Nov 2014 13:35:25 +0530
-Message-Id: <1416902731-22446-2-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [V5 2/7] powerpc, process: Add the function flush_tmregs_to_thread
+Date: Tue, 25 Nov 2014 13:35:26 +0530
+Message-Id: <1416902731-22446-3-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1416902731-22446-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1416902731-22446-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -46,33 +46,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds four new ELF core note sections for powerpc
-transactional memory and one new ELF core note section for
-powerpc general miscellaneous debug registers. These addition
-of new ELF core note sections extends the existing ELF ABI
-without affecting it in any manner.
+This patch creates a function flush_tmregs_to_thread which
+will then be used by subsequent patches in this series. The
+function checks for self tracing ptrace interface attempts
+while in the TM context and logs appropriate warning message.
 
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- include/uapi/linux/elf.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/include/asm/switch_to.h |  8 ++++++++
+ arch/powerpc/kernel/process.c        | 20 ++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index ea9bf25..2260fc0 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -379,6 +379,11 @@ typedef struct elf64_shdr {
- #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
- #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
- #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
-+#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
-+#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
-+#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
-+#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
-+#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
- #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
- #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
- #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 58abeda..23752a9 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -82,6 +82,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
+ }
+ #endif
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++extern void flush_tmregs_to_thread(struct task_struct *);
++#else
++static inline void flush_tmregs_to_thread(struct task_struct *t)
++{
++}
++#endif
++
+ static inline void clear_task_ebb(struct task_struct *t)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 923cd2d..0013f24 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -745,6 +745,26 @@ void restore_tm_state(struct pt_regs *regs)
+ #define __switch_to_tm(prev)
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++void flush_tmregs_to_thread(struct task_struct *tsk)
++{
++	/*
++	 * Process self tracing is not yet supported through
++	 * ptrace interface. Ptrace generic code should have
++	 * prevented this from happening in the first place.
++	 * Warn once here with the message, if some how it
++	 * is attempted.
++	 */
++	WARN_ONCE(tsk == current,
++		"Not expecting ptrace on self: TM regs may be incorrect\n");
++
++	/*
++	 * If task is not current, it should have been flushed
++	 * already to it's thread_struct during __switch_to().
++	 */
++}
++#endif
++
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
 -- 
 1.9.3
