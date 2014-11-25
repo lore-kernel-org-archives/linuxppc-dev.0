@@ -2,17 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 583F31A04BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 10:00:47 +1100 (AEDT)
-Message-ID: <1416956433.5089.7.camel@kernel.crashing.org>
-Subject: Re: [PATCH 3/8] powerpc/powernv: Export functions to retrieve slot
- status
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D47B1A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 10:02:45 +1100 (AEDT)
+Message-ID: <1416956551.5089.8.camel@kernel.crashing.org>
+Subject: Re: [PATCH 4/8] PCI/hotplug/rpa: Code cleanup
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 26 Nov 2014 10:00:33 +1100
-In-Reply-To: <1416869365-7671-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Wed, 26 Nov 2014 10:02:31 +1100
+In-Reply-To: <1416869365-7671-5-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1416869365-7671-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1416869365-7671-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1416869365-7671-5-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -26,200 +25,437 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2014-11-25 at 09:49 +1100, Gavin Shan wrote:
-> The patch exports two functions, which base on corresponding OPAL
-> APIs to retrieve PCI slot status:
+> The patch applies code cleanup to RPA modules to address following
+> issues and it shouldn't affect the logic:
 > 
->    pnv_pci_get_power_status()     opal_pci_get_power_status()
->    pnv_pci_get_presence_status()  opal_pci_get_presence_status()
+>    * Coding style issue: removed unnecessary "break" for default case
+>      in switch statement and added default case; removed unnecessary
+>      braces or parenthese for if or return statements; removed
+>      unecessary return statements
+>    * Refactor rpaphp_get_sensor_state() and find_php_slot_pci_node()
+>      to avoid nested if statements
+>    * Drop is_registered(), is_php_type(), is_dlpar_capable()
+
+Why dropping those helpers ? Make them inline if you want to avoid
+polluting the namespace but I don't see what you gain in code
+readability by making the functions bigger...
+
+Ben.
+
 > 
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/opal.h                |  6 +++-
->  arch/powerpc/include/asm/pnv-pci.h             |  3 ++
->  arch/powerpc/platforms/powernv/eeh-ioda.c      | 34 ++---------------------
->  arch/powerpc/platforms/powernv/opal-wrappers.S |  2 ++
->  arch/powerpc/platforms/powernv/pci.c           | 38 ++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/pci.h           |  1 +
->  6 files changed, 51 insertions(+), 33 deletions(-)
+>  drivers/pci/hotplug/rpadlpar_core.c | 90 +++++++++++++++++++------------------
+>  drivers/pci/hotplug/rpaphp_core.c   | 57 ++++++++++-------------
+>  drivers/pci/hotplug/rpaphp_pci.c    | 43 +++++++++---------
+>  drivers/pci/hotplug/rpaphp_slot.c   | 25 ++++-------
+>  4 files changed, 101 insertions(+), 114 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index b59811f..b75be1c 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -153,6 +153,8 @@ struct opal_sg_list {
->  #define OPAL_HANDLE_HMI				98
->  #define OPAL_REGISTER_DUMP_REGION		101
->  #define OPAL_UNREGISTER_DUMP_REGION		102
-> +#define OPAL_PCI_GET_POWER_STATUS		110
-> +#define OPAL_PCI_GET_PRESENCE_STATUS		111
+> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+> index 7660232..35da3b3 100644
+> --- a/drivers/pci/hotplug/rpadlpar_core.c
+> +++ b/drivers/pci/hotplug/rpadlpar_core.c
+> @@ -52,30 +52,35 @@ static struct device_node *find_vio_slot_node(char *drc_name)
 >  
->  #ifndef __ASSEMBLY__
->  
-> @@ -905,7 +907,7 @@ int64_t opal_get_epow_status(__be64 *status);
->  int64_t opal_set_system_attention_led(uint8_t led_action);
->  int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
->  			    __be16 *pci_error_type, __be16 *severity);
-> -int64_t opal_pci_poll(uint64_t id);
-> +int64_t opal_pci_poll(uint64_t id, uint8_t *val);
->  int64_t opal_return_cpu(void);
->  int64_t opal_check_token(uint64_t token);
->  int64_t opal_reinit_cpus(uint64_t flags);
-> @@ -946,6 +948,8 @@ int64_t opal_handle_hmi(void);
->  int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
->  int64_t opal_unregister_dump_region(uint32_t id);
->  int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
-> +int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
-> +int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
->  
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-> diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-> index f09a22f..527d97a 100644
-> --- a/arch/powerpc/include/asm/pnv-pci.h
-> +++ b/arch/powerpc/include/asm/pnv-pci.h
-> @@ -13,6 +13,9 @@
->  #include <linux/pci.h>
->  #include <misc/cxl.h>
->  
-> +extern int pnv_pci_get_power_status(unsigned int index, unsigned char *status);
-> +extern int pnv_pci_get_presence_status(unsigned int index, unsigned char *status);
+>  	while ((dn = of_get_next_child(parent, dn))) {
+>  		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
+> -		if ((rc == 0) && (!strcmp(drc_name, name)))
+> -			break;
+> +		if (rc)
+> +			continue;
 > +
->  int pnv_phb_to_cxl(struct pci_dev *dev);
->  int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
->  			   unsigned int virq);
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index 4bf2fb5..fb66c74 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -490,24 +490,6 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
->  	return ioda_eeh_get_pe_state(pe);
+> +		if (!strcmp(drc_name, name))
+> +			return dn;
+>  	}
+>  
+> -	return dn;
+> +	return NULL;
 >  }
 >  
-> -static s64 ioda_eeh_phb_poll(uint64_t id)
-> -{
-> -	s64 rc = OPAL_HARDWARE;
-> -
-> -	while (1) {
-> -		rc = opal_pci_poll(id);
-> -		if (rc <= 0)
-> -			break;
-> -
-> -		if (system_state < SYSTEM_RUNNING)
-> -			udelay(1000 * rc);
-> -		else
-> -			msleep(rc);
+>  /* Find dlpar-capable pci node that contains the specified name and type */
+>  static struct device_node *find_php_slot_pci_node(char *drc_name,
+>  						  char *drc_type)
+>  {
+> -	struct device_node *np = NULL;
+> +	struct device_node *dn = NULL;
+>  	char *name;
+>  	char *type;
+>  	int rc;
+>  
+> -	while ((np = of_find_node_by_name(np, "pci"))) {
+> -		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
+> -		if (rc == 0)
+> -			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
+> -				break;
+> +	while ((dn = of_find_node_by_name(dn, "pci"))) {
+> +		rc = rpaphp_get_drc_props(dn, NULL, &name, &type, NULL);
+> +		if (rc)
+> +			continue;
+> +
+> +		if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
+> +			return dn;
+>  	}
+>  
+> -	return np;
+> +	return NULL;
+>  }
+>  
+>  static struct device_node *find_dlpar_node(char *drc_name, int *node_type)
+> @@ -239,10 +244,9 @@ static int dlpar_add_phb(char *drc_name, struct device_node *dn)
+>  {
+>  	struct pci_controller *phb;
+>  
+> -	if (PCI_DN(dn) && PCI_DN(dn)->phb) {
+> -		/* PHB already exists */
+> +	/* PHB already exists */
+> +	if (PCI_DN(dn) && PCI_DN(dn)->phb)
+>  		return -EINVAL;
 > -	}
+>  
+>  	phb = init_phb_dynamic(dn);
+>  	if (!phb)
+> @@ -299,15 +303,18 @@ int dlpar_add_slot(char *drc_name)
+>  	}
+>  
+>  	switch (node_type) {
+> -		case NODE_TYPE_VIO:
+> -			rc = dlpar_add_vio_slot(drc_name, dn);
+> -			break;
+> -		case NODE_TYPE_SLOT:
+> -			rc = dlpar_add_pci_slot(drc_name, dn);
+> -			break;
+> -		case NODE_TYPE_PHB:
+> -			rc = dlpar_add_phb(drc_name, dn);
+> -			break;
+> +	case NODE_TYPE_VIO:
+> +		rc = dlpar_add_vio_slot(drc_name, dn);
+> +		break;
+> +	case NODE_TYPE_SLOT:
+> +		rc = dlpar_add_pci_slot(drc_name, dn);
+> +		break;
+> +	case NODE_TYPE_PHB:
+> +		rc = dlpar_add_phb(drc_name, dn);
+> +		break;
+> +	default:
+> +		rc = -EINVAL;
+> +		goto exit;
+>  	}
+>  
+>  	printk(KERN_INFO "%s: slot %s added\n", DLPAR_MODULE_NAME, drc_name);
+> @@ -429,15 +436,18 @@ int dlpar_remove_slot(char *drc_name)
+>  	}
+>  
+>  	switch (node_type) {
+> -		case NODE_TYPE_VIO:
+> -			rc = dlpar_remove_vio_slot(drc_name, dn);
+> -			break;
+> -		case NODE_TYPE_PHB:
+> -			rc = dlpar_remove_phb(drc_name, dn);
+> -			break;
+> -		case NODE_TYPE_SLOT:
+> -			rc = dlpar_remove_pci_slot(drc_name, dn);
+> -			break;
+> +	case NODE_TYPE_VIO:
+> +		rc = dlpar_remove_vio_slot(drc_name, dn);
+> +		break;
+> +	case NODE_TYPE_PHB:
+> +		rc = dlpar_remove_phb(drc_name, dn);
+> +		break;
+> +	case NODE_TYPE_SLOT:
+> +		rc = dlpar_remove_pci_slot(drc_name, dn);
+> +		break;
+> +	default:
+> +		rc = -EINVAL;
+> +		goto exit;
+>  	}
+>  	vm_unmap_aliases();
+>  
+> @@ -447,20 +457,15 @@ exit:
+>  	return rc;
+>  }
+>  
+> -static inline int is_dlpar_capable(void)
+> -{
+> -	int rc = rtas_token("ibm,configure-connector");
 > -
-> -	return rc;
+> -	return (int) (rc != RTAS_UNKNOWN_SERVICE);
 > -}
 > -
->  int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
+> -int __init rpadlpar_io_init(void)
+> +static int __init rpadlpar_io_init(void)
 >  {
->  	struct pnv_phb *phb = hose->private_data;
-> @@ -542,13 +524,7 @@ int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
->  	 * need the PCI bus settlement delay.
->  	 */
->  	rc = opal_pci_reset(phb->opal_id, reset_scope);
-> -	if (rc > 0)
-> -		rc = ioda_eeh_phb_poll(phb->opal_id);
-> -
-> -	if (rc != OPAL_SUCCESS)
-> -		return -EIO;
-> -
-> -	return 0;
-> +	return pnv_pci_poll(phb->opal_id, rc, NULL);
->  }
-
-Patch does too mutch, the factoring out of pnv_pci_poll should be a
-separate patch.
-
->  static int __ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
-> @@ -641,13 +617,7 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
->  	phb = hose->private_data;
->  	id |= ((phb->opal_id << 16) | (dev->bus->number << 8) | (dev->devfn));
->  	rc = opal_pci_reset(id, reset_scope);
-> -	if (rc > 0)
-> -		rc = ioda_eeh_phb_poll(id);
-> -
-> -	if (rc != OPAL_SUCCESS)
-> -		return -EIO;
-> -
-> -	return 0;
-> +	return pnv_pci_poll(id, rc, NULL);
+>  	int rc = 0;
+>  
+> -	if (!is_dlpar_capable()) {
+> +	/* Check if we have DLPAR capability */
+> +	rc = rtas_token("ibm,configure-connector");
+> +	if (rc == RTAS_UNKNOWN_SERVICE) {
+>  		printk(KERN_WARNING "%s: partition not DLPAR capable\n",
+> -			__func__);
+> +		       __func__);
+>  		return -EPERM;
+>  	}
+>  
+> @@ -468,10 +473,9 @@ int __init rpadlpar_io_init(void)
+>  	return rc;
 >  }
 >  
->  static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index b6474a1..b2c15ff 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -249,3 +249,5 @@ OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
->  OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
->  OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
->  OPAL_CALL(opal_pci_set_phb_cxl_mode,		OPAL_PCI_SET_PHB_CXL_MODE);
-> +OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
-> +OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index b2187d0..f5bae4f 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -45,6 +45,44 @@
->  #define cfg_dbg(fmt...)	do { } while(0)
->  //#define cfg_dbg(fmt...)	printk(fmt)
+> -void rpadlpar_io_exit(void)
+> +static void __exit rpadlpar_io_exit(void)
+>  {
+>  	dlpar_sysfs_exit();
+> -	return;
+>  }
 >  
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
-> +{
-> +	while (rval > 0) {
-> +		rval = opal_pci_poll(id, pval);
-> +		if (rval <= 0)
-> +			break;
+>  module_init(rpadlpar_io_init);
+> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+> index f2945fa..ff800df 100644
+> --- a/drivers/pci/hotplug/rpaphp_core.c
+> +++ b/drivers/pci/hotplug/rpaphp_core.c
+> @@ -74,7 +74,6 @@ static int set_attention_status(struct hotplug_slot *hotplug_slot, u8 value)
+>  		break;
+>  	default:
+>  		value = 1;
+> -		break;
+>  	}
+>  
+>  	rc = rtas_set_indicator(DR_INDICATOR, slot->index, value);
+> @@ -94,7 +93,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+>  	int retval, level;
+>  	struct slot *slot = (struct slot *)hotplug_slot->private;
+>  
+> -	retval = rtas_get_power_level (slot->power_domain, &level);
+> +	retval = rtas_get_power_level(slot->power_domain, &level);
+>  	if (!retval)
+>  		*value = level;
+>  	return retval;
+> @@ -161,7 +160,6 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
+>  		break;
+>  	default:
+>  		speed = PCI_SPEED_UNKNOWN;
+> -		break;
+>  	}
+>  
+>  	return speed;
+> @@ -178,17 +176,17 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
+>  	types = of_get_property(dn, "ibm,drc-types", NULL);
+>  	domains = of_get_property(dn, "ibm,drc-power-domains", NULL);
+>  
+> -	if (!indexes || !names || !types || !domains) {
+> -		/* Slot does not have dynamically-removable children */
+> +	/* Slot does not have dynamically-removable children */
+> +	if (!indexes || !names || !types || !domains)
+>  		return -EINVAL;
+> -	}
 > +
-> +		if (system_state < SYSTEM_RUNNING)
-> +			udelay(1000 * rval);
-> +		else
-> +			msleep(rval);
+>  	if (drc_indexes)
+>  		*drc_indexes = indexes;
+> +	/* &drc_names[1] contains NULL terminated slot names */
+>  	if (drc_names)
+> -		/* &drc_names[1] contains NULL terminated slot names */
+>  		*drc_names = names;
+> +	/* &drc_types[1] contains NULL terminated slot types */
+>  	if (drc_types)
+> -		/* &drc_types[1] contains NULL terminated slot types */
+>  		*drc_types = types;
+>  	if (drc_power_domains)
+>  		*drc_power_domains = domains;
+> @@ -210,15 +208,13 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+>  	int i, rc;
+>  
+>  	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
+> -	if (!my_index) {
+> -		/* Node isn't DLPAR/hotplug capable */
+> +	/* Node isn't DLPAR/hotplug capable */
+> +	if (!my_index)
+>  		return -EINVAL;
+> -	}
+>  
+>  	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
+> -	if (rc < 0) {
+> +	if (rc < 0)
+>  		return -EINVAL;
+> -	}
+>  
+>  	name_tmp = (char *) &names[1];
+>  	type_tmp = (char *) &types[1];
+> @@ -244,21 +240,8 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+>  }
+>  EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
+>  
+> -static int is_php_type(char *drc_type)
+> -{
+> -	unsigned long value;
+> -	char *endptr;
+> -
+> -	/* PCI Hotplug nodes have an integer for drc_type */
+> -	value = simple_strtoul(drc_type, &endptr, 10);
+> -	if (endptr == drc_type)
+> -		return 0;
+> -
+> -	return 1;
+> -}
+> -
+>  /**
+> - * is_php_dn() - return 1 if this is a hotpluggable pci slot, else 0
+> + * is_php_dn() - return true if this is a hotpluggable pci slot, else false
+>   * @dn: target &device_node
+>   * @indexes: passed to get_children_props()
+>   * @names: passed to get_children_props()
+> @@ -270,21 +253,28 @@ static int is_php_type(char *drc_type)
+>   * for built-in pci slots (even when the built-in slots are
+>   * dlparable.)
+>   */
+> -static int is_php_dn(struct device_node *dn, const int **indexes,
+> -		const int **names, const int **types, const int **power_domains)
+> +static bool is_php_dn(struct device_node *dn,
+> +		      const int **indexes, const int **names,
+> +		      const int **types, const int **power_domains)
+>  {
+>  	const int *drc_types;
+> +	const char *drc_type_str;
+> +	char *endptr;
+> +	unsigned long val;
+>  	int rc;
+>  
+>  	rc = get_children_props(dn, indexes, names, &drc_types, power_domains);
+>  	if (rc < 0)
+> -		return 0;
+> +		return false;
+>  
+> -	if (!is_php_type((char *) &drc_types[1]))
+> -		return 0;
+> +	/* PCI Hotplug nodes have an integer for drc_type */
+> +	drc_type_str = (char *)&drc_types[1];
+> +	val = simple_strtoul(drc_type_str, &endptr, 10);
+> +	if (endptr == drc_type_str)
+> +		return false;
+>  
+>  	*types = drc_types;
+> -	return 1;
+> +	return true;
+>  }
+>  
+>  /**
+> @@ -370,7 +360,6 @@ static void __exit cleanup_slots(void)
+>  		list_del(&slot->rpaphp_slot_list);
+>  		pci_hp_deregister(slot->hotplug_slot);
+>  	}
+> -	return;
+>  }
+>  
+>  static int __init rpaphp_init(void)
+> diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
+> index 9243f3e7..a4aa65c 100644
+> --- a/drivers/pci/hotplug/rpaphp_pci.c
+> +++ b/drivers/pci/hotplug/rpaphp_pci.c
+> @@ -38,30 +38,31 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state)
+>  	int setlevel;
+>  
+>  	rc = rtas_get_sensor(DR_ENTITY_SENSE, slot->index, state);
+> +	if (rc >= 0)
+> +		return rc;
+> +	if (rc != -EFAULT && rc != -EEXIST) {
+> +		err("%s: Failure %d getting sensor state on slot[%s]\n",
+> +		    __func__, rc, slot->name);
+> +		return rc;
 > +	}
-> +
-> +	return rval ? -EIO : 0;
-> +}
-
-Do we need the udelay case still nowadays ? When do we call this early
-enough that msleep won't work ?
-
-> +int pnv_pci_get_power_status(unsigned int index, unsigned char *status)
-> +{
-> +	uint64_t id = (0x1ul << 63);
-> +	long rc;
-> +
-> +	id |= index;
-> +	rc = opal_pci_get_power_status(id, status);
-> +	return pnv_pci_poll(id, rc, status);
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
-> +
-> +int pnv_pci_get_presence_status(unsigned int index, unsigned char *status)
-> +{
-> +	uint64_t id = (0x1ul << 63);
-> +	long rc;
-> +
-> +	id |= index;
-> +	rc = opal_pci_get_presence_status(id, status);
-> +	return pnv_pci_poll(id, rc, status);
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
-> +
->  #ifdef CONFIG_PCI_MSI
->  static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
->  {
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 6c02ff8..396fe02 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -217,6 +217,7 @@ extern struct pci_ops pnv_pci_ops;
->  extern struct pnv_eeh_ops ioda_eeh_ops;
->  #endif
 >  
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval);
->  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->  				unsigned char *log_buff);
->  int pnv_pci_cfg_read(struct device_node *dn,
+> +
+> +	/*
+> +	 * Some slots have to be powered up before
+> +	 * get-sensor will succeed
+> +	 */
+> +	dbg("%s: Slot[%s] must be power up to get sensor-state\n",
+> +	    __func__, slot->name);
+> +	rc = rtas_set_power_level(slot->power_domain, POWER_ON,
+> +				  &setlevel);
+>  	if (rc < 0) {
+> -		if (rc == -EFAULT || rc == -EEXIST) {
+> -			dbg("%s: slot must be power up to get sensor-state\n",
+> -			    __func__);
+> -
+> -			/* some slots have to be powered up
+> -			 * before get-sensor will succeed.
+> -			 */
+> -			rc = rtas_set_power_level(slot->power_domain, POWER_ON,
+> -						  &setlevel);
+> -			if (rc < 0) {
+> -				dbg("%s: power on slot[%s] failed rc=%d.\n",
+> -				    __func__, slot->name, rc);
+> -			} else {
+> -				rc = rtas_get_sensor(DR_ENTITY_SENSE,
+> -						     slot->index, state);
+> -			}
+> -		} else if (rc == -ENODEV)
+> -			info("%s: slot is unusable\n", __func__);
+> -		else
+> -			err("%s failed to get sensor state\n", __func__);
+> +		dbg("%s: Failure %d powerng on slot[%s]\n",
+> +		    __func__, rc, slot->name);
+> +		return rc;
+>  	}
+> -	return rc;
+> +
+> +	return rtas_get_sensor(DR_ENTITY_SENSE,
+> +			       slot->index, state);
+>  }
+>  
+>  /**
+> diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+> index a6082cc..be48e69 100644
+> --- a/drivers/pci/hotplug/rpaphp_slot.c
+> +++ b/drivers/pci/hotplug/rpaphp_slot.c
+> @@ -72,7 +72,7 @@ struct slot *alloc_slot_struct(struct device_node *dn,
+>  	slot->hotplug_slot->ops = &rpaphp_hotplug_slot_ops;
+>  	slot->hotplug_slot->release = &rpaphp_release_slot;
+>  
+> -	return (slot);
+> +	return slot;
+>  
+>  error_info:
+>  	kfree(slot->hotplug_slot->info);
+> @@ -84,17 +84,6 @@ error_nomem:
+>  	return NULL;
+>  }
+>  
+> -static int is_registered(struct slot *slot)
+> -{
+> -	struct slot *tmp_slot;
+> -
+> -	list_for_each_entry(tmp_slot, &rpaphp_slot_head, rpaphp_slot_list) {
+> -		if (!strcmp(tmp_slot->name, slot->name))
+> -			return 1;
+> -	}
+> -	return 0;
+> -}
+> -
+>  int rpaphp_deregister_slot(struct slot *slot)
+>  {
+>  	int retval = 0;
+> @@ -117,6 +106,7 @@ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
+>  int rpaphp_register_slot(struct slot *slot)
+>  {
+>  	struct hotplug_slot *php_slot = slot->hotplug_slot;
+> +	struct slot *tmp;
+>  	int retval;
+>  	int slotno;
+>  
+> @@ -124,10 +114,13 @@ int rpaphp_register_slot(struct slot *slot)
+>  		__func__, slot->dn->full_name, slot->index, slot->name,
+>  		slot->power_domain, slot->type);
+>  
+> -	/* should not try to register the same slot twice */
+> -	if (is_registered(slot)) {
+> -		err("rpaphp_register_slot: slot[%s] is already registered\n", slot->name);
+> -		return -EAGAIN;
+> +	/* Should not try to register the same slot twice */
+> +	list_for_each_entry(tmp, &rpaphp_slot_head, rpaphp_slot_list) {
+> +		if (!strcmp(tmp->name, slot->name)) {
+> +			err("%s: Slot[%s] is already registered\n",
+> +			    __func__, slot->name);
+> +			return -EAGAIN;
+> +		}
+>  	}
+>  
+>  	if (slot->dn->child)
