@@ -2,32 +2,35 @@ Return-Path: <dahi@linux.vnet.ibm.com>
 Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B91A31A0287
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5BEB1A0297
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 22:43:46 +1100 (AEDT)
 Received: from /spool/local
  by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
  Tue, 25 Nov 2014 11:43:43 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7FCC51B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 11:43:49 +0000 (GMT)
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id E244617D8043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 11:43:51 +0000 (GMT)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAPBhYua62455858
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 11:43:34 GMT
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAPBhaD85570846
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 11:43:36 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAPBhYJ3005671
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 04:43:34 -0700
+ sAPBhZCu005736
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 04:43:36 -0700
 From: David Hildenbrand <dahi@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [RFC 0/2] Reenable might_sleep() checks for might_fault() when atomic
-Date: Tue, 25 Nov 2014 12:43:24 +0100
-Message-Id: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+Subject: [RFC 2/2] mm,
+ sched: trigger might_sleep() in might_fault() when atomic
+Date: Tue, 25 Nov 2014 12:43:26 +0100
+Message-Id: <1416915806-24757-3-git-send-email-dahi@linux.vnet.ibm.com>
+In-Reply-To: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
 Cc: borntraeger@de.ibm.com, heiko.carstens@de.ibm.com, dahi@linux.vnet.ibm.com,
  paulus@samba.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,80 +42,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I recently discovered that commit 662bbcb2747c2422cf98d3d97619509379eee466
-removed/skipped all might_sleep checks for might_fault() calls when in atomic.
+Commit 662bbcb2747c2422cf98d3d97619509379eee466 disabled in atomic checks
+for all user access code (that uses might_fault()).
 
-Reason was to allow calling copy_(to|from)_user while in pagefault_disabled(),
-because otherwise, CONFIG_DEBUG_ATOMIC_SLEEP would find false positives. However
-we have the inatomic variants of these function for this purpose.
+That change basically disabled CONFIG_DEBUG_ATOMIC_SLEEP for all user access
+functions. However, this is a mighty debugging aid that we want.
 
-The result of this change was that all guest access (that correctly uses
-might_fault()) doesn't perform atomic checks when CONFIG_DEBUG_ATOMIC_SLEEP is
-enabled. We lost a mighty debugging feature for user access.
+If user memory is to be accessed while pagefault_disabled() is set, the atomic
+variants of copy_(to|from)_user can be used.
 
-As I wasn't able to come up with any other reason why this should be
-necessary, I suggest turning the might_sleep() checks on again in the
-might_fault() code.
+This patch reverts commit 662bbcb2747c2422cf98d3d97619509379eee466 taking care
+of the !MMU optimization.
 
-pagefault_disable/pagefault_enable seems to be used mainly for futex, perf event
-and kmap.
+Signed-off-by: David Hildenbrand <dahi@linux.vnet.ibm.com>
+---
+ include/linux/kernel.h |  8 ++++++--
+ mm/memory.c            | 11 ++++-------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
 
-Going over all changes since that commit, it seems like most code already uses the
-inatomic variants of copy_(to|from)_user. Code relying on (get|put)_user during
-pagefault_disable() don't make use of any might_fault() in their (get|put)_user
-implementation. Examples:
-- arch/m68k/include/asm/futex.h
-- arch/parisc/include/asm/futex.h
-- arch/sh/include/asm/futex-irq.h
-- arch/tile/include/asm/futex.h
-So changing might_fault() back to trigger might_sleep() won't change a thing for
-them. Hope I haven't missed anything.
-
-I only identified one might_fault() that would get triggered by get_user() on
-powerpc and fixed it by using the inatomic variant (not tested). I am not sure
-if we need some non-sleeping access_ok() prior to __get_user_inatomic().
-
-By looking at the code I was wondering where the correct place for might_fault()
-calls is? Doesn't seem to be very consistent. Examples:
-
-                   | asm-generic | arm | arm64 | frv | m32r | x86 and s390
----------------------------------------------------------------------------
-get_user()         |   Yes       | Yes | Yes   | No  | Yes  |     Yes
-__get_user()       |   No        | Yes | No    | No  | Yes  |     No
-put_user()         |   Yes       | Yes | Yes   | No  | Yes  |     Yes
-__put_user()       |   No        | Yes | No    | No  | Yes  |     No
-copy_to_user()     |   Yes       | No  | No    | Yes | Yes  |     Yes
-__copy_to_user()   |   No        | No  | No    | Yes | No   |     No
-copy_from_user()   |   Yes       | No  | No    | Yes | Yes  |     Yes
-__copy_from_user() |   No        | No  | No    | Yes | No   |     No
-
-So I would have assume that the way asm-generic, x86 and s390 (+ propably
-others) do this is the right way?
-So we can speed up multiple calls to e.g. copy_to_user() by doing the access
-check manually (and also the might_fault() if relevant), then calling
-__copy_to_user().
-
-So in general, I conclude that the concept is:
-1. __.* variants perform no checking and don't call might_fault()
-2. [a-z].* variants perform access checking (access_ok() if implemented)
-3. [a-z].* variants call might_fault()
-4. .*_inatomic variants usually don't perform access checks
-5. .*_inatomic variants don't call might_fault()
-6. If common code uses the __.* variants, it has to trigger access_ok() and
-   call might_fault()
-7. For pagefault_disable(), the inatomic variants are to be used
-
-Comments? Opinions?
-
-
-David Hildenbrand (2):
-  powerpc/fsl-pci: atomic get_user when pagefault_disabled
-  mm, sched: trigger might_sleep() in might_fault() when atomic
-
- arch/powerpc/sysdev/fsl_pci.c |  2 +-
- include/linux/kernel.h        |  8 ++++++--
- mm/memory.c                   | 11 ++++-------
- 3 files changed, 11 insertions(+), 10 deletions(-)
-
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 3d770f55..1d3397c 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -225,9 +225,13 @@ static inline u32 reciprocal_scale(u32 val, u32 ep_ro)
+ 	return (u32)(((u64) val * ep_ro) >> 32);
+ }
+ 
+-#if defined(CONFIG_MMU) && \
+-	(defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP))
++#if defined(CONFIG_MMU) && defined(CONFIG_PROVE_LOCKING)
+ void might_fault(void);
++#elif defined(CONFIG_MMU) && defined(CONFIG_DEBUG_ATOMIC_SLEEP)
++static inline void might_fault(void)
++{
++	__might_sleep(__FILE__, __LINE__, 0);
++}
+ #else
+ static inline void might_fault(void) { }
+ #endif
+diff --git a/mm/memory.c b/mm/memory.c
+index 3e50383..fe0c815 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3699,7 +3699,7 @@ void print_vma_addr(char *prefix, unsigned long ip)
+ 	up_read(&mm->mmap_sem);
+ }
+ 
+-#if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP)
++#ifdef CONFIG_PROVE_LOCKING
+ void might_fault(void)
+ {
+ 	/*
+@@ -3711,17 +3711,14 @@ void might_fault(void)
+ 	if (segment_eq(get_fs(), KERNEL_DS))
+ 		return;
+ 
++	__might_sleep(__FILE__, __LINE__, 0);
++
+ 	/*
+ 	 * it would be nicer only to annotate paths which are not under
+ 	 * pagefault_disable, however that requires a larger audit and
+ 	 * providing helpers like get_user_atomic.
+ 	 */
+-	if (in_atomic())
+-		return;
+-
+-	__might_sleep(__FILE__, __LINE__, 0);
+-
+-	if (current->mm)
++	if (!in_atomic() && current->mm)
+ 		might_lock_read(&current->mm->mmap_sem);
+ }
+ EXPORT_SYMBOL(might_fault);
 -- 
 1.8.5.5
