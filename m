@@ -1,28 +1,26 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 529FF1A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 05:12:23 +1100 (AEDT)
-Date: Tue, 25 Nov 2014 19:13:47 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-Message-ID: <20141125181347.GC9716@katana>
-References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
- <1414537731.23458.120.camel@snotra.buserror.net>
- <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
- <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
- <1416274083.15957.96.camel@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="MnLPg7ZWsaic7Fhd"
-In-Reply-To: <1416274083.15957.96.camel@freescale.com>
-Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
- Linux device trees <devicetree@vger.kernel.org>, "Boschung,
- Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A6351A045F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 07:36:20 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 59B811401DA
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2014 07:36:19 +1100 (AEDT)
+Message-ID: <1416947765.4998.69.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2] i2c: Driver to expose PowerNV platform i2c busses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Date: Wed, 26 Nov 2014 07:36:05 +1100
+In-Reply-To: <20141125175316.GB9716@katana>
+References: <20141116171605.4750.17472.stgit@localhost.localdomain>
+ <20141125175316.GB9716@katana>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,72 +30,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-11-25 at 18:53 +0100, Wolfram Sang wrote:
+> On Sun, Nov 16, 2014 at 10:47:46PM +0530, Neelesh Gupta wrote:
+> > The patch exposes the available i2c busses on the PowerNV platform
+> > to the kernel and implements the bus driver to support i2c and
+> > smbus commands.
+> > The driver uses the platform device infrastructure to probe the busses
+> > on the platform and registers them with the i2c driver framework.
+> > 
+> > Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> ...
+> 
+> > diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> > index 917c358..71ad6e1 100644
+> > --- a/drivers/i2c/busses/Kconfig
+> > +++ b/drivers/i2c/busses/Kconfig
+> > @@ -1044,4 +1044,15 @@ config SCx200_ACB
+> >  	  This support is also available as a module.  If so, the module
+> >  	  will be called scx200_acb.
+> >  
+> > +config I2C_OPAL
+> > +	tristate "IBM OPAL I2C driver"
+> > +	depends on PPC_POWERNV
+> > +	default y
+> > +	help
+> > +	  This exposes the PowerNV platform i2c busses to the linux i2c layer,
+> > +	  the driver is based on the OPAL interfaces.
+> > +
+> > +	  This driver can also be built as a module. If so, the module will be
+> > +	  called as i2c-opal.
+> > +
+> >  endmenu
+> > diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+> > index 78d56c5..350aa86 100644
+> > --- a/drivers/i2c/busses/Makefile
+> > +++ b/drivers/i2c/busses/Makefile
+> > @@ -102,5 +102,6 @@ obj-$(CONFIG_I2C_ELEKTOR)	+= i2c-elektor.o
+> >  obj-$(CONFIG_I2C_PCA_ISA)	+= i2c-pca-isa.o
+> >  obj-$(CONFIG_I2C_SIBYTE)	+= i2c-sibyte.o
+> >  obj-$(CONFIG_SCx200_ACB)	+= scx200_acb.o
+> > +obj-$(CONFIG_I2C_OPAL)		+= i2c-opal.o
+> 
+> Please keep it proprly sorted.
+> 
+> > +	rc = of_property_read_u32(pdev->dev.of_node, "ibm,opal-id", &opal_id);
+> > +	if (rc) {
+> > +		dev_err(&pdev->dev, "Missing ibm,opal-id property !\n");
+> > +		return -EIO;
+> > +	}
+> 
+> You introduce new bindings which need to be documented in
+> Docuemntation/devicetree/bindings/i2c.
 
---MnLPg7ZWsaic7Fhd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ugh ... thanks god the powerpc maintainer (me) didn't request binding
+document for everything that went into the device-tree on those
+platforms or we would still be writing them....
 
-On Mon, Nov 17, 2014 at 07:28:03PM -0600, Scott Wood wrote:
-> On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
-> > > >=20
-> > > > If we're going to change the device tree I'd rather just add a prop=
-erty
-> > > > to say what the prescaler is.
-> > >=20
-> > >  We would however, leave the boards' device trees that use things like
-> > > "fsl,mpc8543-i2c" as is and introduce the prescaler for the others re=
-quiring it.
-> > >=20
-> > >=20
-> > > Now the drawback is that the driver would require a change, to parse =
-this
-> > > prescaler new prescaler property. Would this be OK from your point of=
- view
-> > > Wolfram ? If yes, I will send the patches for it.
-> >=20
-> > I don't think it is OK.
->=20
-> Why?
+> They should be posted as a seperate patch with
+> devicetree@vger.kernel.org CCed, so they can comment on it. This is
+> required these days and especially important..
 
-Because I thought it could be deduced. Then, a seperate property would
-not be OK.
+Suuure, let's create more process and committees, and make sure nothing
+gets done in any reasonable amount of time. Have we gone completely
+insane ?
 
-> >  I'd think it can be deduced from the compatible property.
->=20
-> For almost all existing device trees it cannot be.
+This is completely useless as an exercise. It's not like I'm going to
+change the firmware interfaces anymore anyway so the "comments" are
+going to be at best bike shed painting.
 
-Pity :( If we do introduce a new property, it should probably be
-"clock-div". Grepping through binding documentation, that seems
-accepted. We should ask DT maintainers, too, to be safe.
+I'm getting close to just put that driver in powerpc.git ...
+ 
+The point of publicly discussing bindings in the ARM world was in part
+because we attacked a community with no understanding of the DT, but in
+LARGE part because we had to define them for components and SoC that
+would potentially be re-used in different platforms etc..
 
-> If you want something that will work without changing device trees,
-> you'll need to use SVR to identify the SoC.
+Here we are talking about a representation specific to a given FW
+interface on PowerPC only which isn't going to be used by any other
+platform that PowerNV (since the OPAL fw is what makes PowerNV) by the
+people who invented the frigging flat device tree in the first place, so
+give me a break.
 
-The driver is doing that already, see mpc_i2c_get_sec_cfg_8xxx(). Dunno
-if it makes sense to add to it for consistency reasons?
+It's getting quite tempting to just throw that driver into powerpc.git
 
+> > +	adapter = devm_kzalloc(&pdev->dev, sizeof(*adapter), GFP_KERNEL);
+> > +	if (!adapter)
+> > +		return -ENOMEM;
+> > +
+> > +	adapter->algo = &i2c_opal_algo;
+> > +	adapter->algo_data = (void *)(unsigned long)opal_id;
+> > +	adapter->dev.parent = &pdev->dev;
+> > +	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
+> > +	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
+> > +	if (pname)
+> > +		strlcpy(adapter->name, pname, sizeof(adapter->name));
+> > +	else
+> > +		strlcpy(adapter->name, "opal", sizeof(adapter->name));
+> 
+> ... because I'd like to get an ack from them because of this binding.
 
---MnLPg7ZWsaic7Fhd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+And I don't give a flying crap about what random ARM SOC vendor thinks
+of my powerpc FW interface for a powerpc unique FW interface.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+>  I
+> don't know if we can just say "this comes from firmware, so we must
+> support it" (although you wrote the firmware IIUC) or if we have to
+> judge if this is a HW description which should go into DT? I am open
+> meanwhile that the adapter name does not need to be static anymore.
+> However, I don't know much about server world and FW, so maybe they can
+> assist.
 
-iQIcBAEBAgAGBQJUdMbbAAoJEBQN5MwUoCm2BIsQAJ+N/XUWx2AclSWuY0H6ZtQD
-i5oOPHCbuu3GNjIqJlWjRRHYpMQb0wkl+u9Xbo8yzKULEeQ8cxb4FLOv70ylem/E
-kFkyecWGFdkRnLwTSk8FvywYayTmlb0ktNBeg83XJcx58ibN+Otwc0WzWNM0cLFX
-kKWhlNpKrz2LyNCJP4oFB7vhu5TClAo6VTdYBrN5bGY0BlEuhuRB7vx2RKTWvAWf
-VTIoMIBDVJAHbIYfMo1mFUgu0yK1j69/IAT8N1UZXttKlG0ZCbpeTXYrLds+n7ss
-DRChWvK9FH46gzzLmPbIAA/oUDAuetIcgyBwlwCt6xrW2MdncEML8YymhUjCF18p
-g739ZFA7Ukvn9J5NK/3+JfCy4Z5/aY1yiCHazwHVFK8wv7Asr994fl27HenDGjSq
-vupdCCv7cswoauVV4mydc0eZVovjFOijaVEwsFZLX6aXDLkw5OzEpA4xvh4lc9cm
-B/vr3iDYHn0+EuVpYUovh3Ob3vW+TGOObY2QV+Wh2R4jvBqZQ9sVNBomg4r0W/Nc
-61CQzvM5TpmwOVXnI6cXz++P079js300Qy4oAG/q6luchyPWBUk1vujCnXP3iRh4
-PvkUjdU0H7SbYYAd/LEFpwqv29go9dz6BLEoAB1P33XdOfAdXPGmtqQv3oFzXs91
-5vfrkJBSvxVChwOphWJf
-=A8Vc
------END PGP SIGNATURE-----
+I doubt it, all we're going to do is waste a few more monthes and make
+it more painful for us to get our support into distros in time with 0
+benefit whatsoever.
 
---MnLPg7ZWsaic7Fhd--
+> An example binding in that document would also be very helpful.
+> 
+> 
+> > +static struct platform_driver i2c_opal_driver = {
+> > +	.probe	= i2c_opal_probe,
+> > +	.remove	= i2c_opal_remove,
+> > +	.driver	= {
+> > +		.name		= "i2c-opal",
+> > +		.owner		= THIS_MODULE,
+> 
+> owner not needed.
+> 
+> Thanks,
+> 
+>    Wolfram
