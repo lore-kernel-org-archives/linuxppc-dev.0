@@ -1,39 +1,23 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 159B01A0035
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 16:15:30 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 25 Nov 2014 22:15:29 -0700
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5134CC90041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 00:07:29 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAQ5FPK326542156
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 05:15:25 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAQ5FOPF014783
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 00:15:25 -0500
-Message-ID: <547561D7.1050605@linux.vnet.ibm.com>
-Date: Wed, 26 Nov 2014 10:45:03 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B0F81A062A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 18:03:15 +1100 (AEDT)
+Date: Wed, 26 Nov 2014 09:02:58 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: David Hildenbrand <dahi@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
+ atomic
+Message-ID: <20141126070258.GA25523@redhat.com>
+References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/4] powernv: cpuidle: Redesign idle states management
-References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, borntraeger@de.ibm.com, paulus@samba.org,
+ schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,110 +27,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Nov 25, 2014 at 12:43:24PM +0100, David Hildenbrand wrote:
+> I recently discovered that commit 662bbcb2747c2422cf98d3d97619509379eee466
+> removed/skipped all might_sleep checks for might_fault() calls when in atomic.
 
-I ran hackbench to evaluate this patchset and found good improvements in
-the results.
+Yes.  You can add e.g. might_sleep in your code if, for some reason, it is
+illegal to call it in an atomic context.
+But faults are legal in atomic if you handle the possible
+errors, and faults do not necessary cause caller to sleep, so might_fault
+should not call might_sleep.
 
-I modified hackbench to take in a 'loops' parameter along with
-num_groups which ensures that the test runs long enough to observe and
-debug issues. The idea was to find out how latency sensitive workloads
-can get affected by modification in cpuidle heuristics since it is easy
-to measure the impact on these workloads.
+> Reason was to allow calling copy_(to|from)_user while in pagefault_disabled(),
+> because otherwise, CONFIG_DEBUG_ATOMIC_SLEEP would find false positives.
 
-The experiment was conducted on a Power8 system with 1 socket and 6
-cores on it.
+That wasn't the only reason BTW.
+Andi Kleen also showed that compiler did a terrible job optimizing
+get/put user when might_sleep was called.
+See e.g. this thread:
+https://lkml.org/lkml/2013/8/14/652
+There was even an lwn.net article about it, that I don't seem to be
+able to locate.
+So might_sleep is not appropriate for lightweight operations like __get_user,
+which people literally expect to be a single instruction.
 
-The first experiment was carried out by pinning hackbench to the first
-thread in each core while the rest of the smt threads were idle and
-below are the results. This would ensure the core entered deep idle
-states more often.
 
-num_grps     %improvement with patchset
-3                    3.6
-6                   10.6
-12                   5.0
-24                   5.0
+I also have a project going which handles very short packets by copying
+them into guest memory directly without waking up a thread.
+I do it by calling recvmsg on a socket, then switching to
+a thread if I get back EFAULT.
+Not yet clean enough to upstream but it does seem to cut
+the latency down quite a bit, so I'd like to have the option.
 
-The second experiment was carried out by allowing hackbench to run on
-the smt threads of two cores and % improvement with the patchset was in
-range of 4-7%.
 
-I ran the experiments on the vanilla kernel. This means the performance
-improvements is primarily due to avoiding having to do a timebase sync
-by every thread in the core. The power numbers have very little
-variation between the runs with and without the patchset.
+Generally, a caller that does something like this under a spinlock:
+        preempt_disable
+        pagefault_disable
+        error = copy_to_user
+        pagefault_enable
+        preempt_enable_no_resched
 
-Thanks
+is not doing anything wrong and should not get a warning,
+as long as error is handled correctly later.
 
-Regards
-Preeti U Murthy
+You can also find the discussion around the patches
+educational:
+http://article.gmane.org/gmane.comp.emulators.kvm.devel/109928
 
-On 11/25/2014 04:47 PM, Shreyas B. Prabhu wrote:
-> Deep idle states like sleep and winkle are per core idle states. A core
-> enters these states only when all the threads enter either the particular
-> idle state or a deeper one. There are tasks like fastsleep hardware bug
-> workaround and hypervisor core state save which have to be done only by
-> the last thread of the core entering deep idle state and similarly tasks
-> like timebase resync, hypervisor core register restore that have to be
-> done only by the first thread waking up from these states. 
+> However
+> we have the inatomic variants of these function for this purpose.
+
+Does inatomic install fixups now?
+
+Last I checked, it didn't so it did not satisfy this purpose.
+See this comment from x86:
+
+ * Copy data from kernel space to user space.  Caller must check
+ * the specified block with access_ok() before calling this function.
+ * The caller should also make sure he pins the user space address
+ * so that we don't result in page fault and sleep.
+
+
+Also - switching to inatomic would scatter if (atomic) all
+over code. It's much better to simply call the same
+function (e.g. recvmsg) and have it fail gracefully:
+after all, we have code to handle get/put user errors
+anyway.
+
+> The result of this change was that all guest access (that correctly uses
+> might_fault()) doesn't perform atomic checks when CONFIG_DEBUG_ATOMIC_SLEEP is
+> enabled. We lost a mighty debugging feature for user access.
+
+What's the path you are trying to debug?
+
+If your code can faults, then it's safe to call
+from atomic context.
+If it can't, it must pin the page.  You can not do access_ok checks and
+then assume access won't fault.
+
+> As I wasn't able to come up with any other reason why this should be
+> necessary, I suggest turning the might_sleep() checks on again in the
+> might_fault() code.
+
+Faults triggered with pagefault_disabled do not cause
+caller to sleep, merely to fail and get an error,
+so might_sleep is simply wrong.
+
 > 
-> The current idle state management does not have a way to distinguish the
-> first/last thread of the core waking/entering idle states. Tasks like
-> timebase resync are done for all the threads. This is not only is suboptimal,
-> but can cause functionality issues when subcores are involved.
+> pagefault_disable/pagefault_enable seems to be used mainly for futex, perf event
+> and kmap.
 > 
-> Winkle is deeper idle state compared to fastsleep. In this state the power
-> supply to the chiplet, i.e core, private L2 and private L3 is turned off.
-> This results in a total hypervisor state loss. This patch set adds support
-> for winkle and provides a way to track the idle states of the threads of the
-> core and use it for idle state management of idle states sleep and winkle.
+> Going over all changes since that commit, it seems like most code already uses the
+> inatomic variants of copy_(to|from)_user. Code relying on (get|put)_user during
+> pagefault_disable() don't make use of any might_fault() in their (get|put)_user
+> implementation. Examples:
+> - arch/m68k/include/asm/futex.h
+> - arch/parisc/include/asm/futex.h
+> - arch/sh/include/asm/futex-irq.h
+> - arch/tile/include/asm/futex.h
+> So changing might_fault() back to trigger might_sleep() won't change a thing for
+> them. Hope I haven't missed anything.
+
+Did you check the generated code?
+On x86 it seems to me this patchset is definitely going to
+slow things down, in fact putting back in a performance regression
+that Andi found.
+
+
+> I only identified one might_fault() that would get triggered by get_user() on
+> powerpc and fixed it by using the inatomic variant (not tested). I am not sure
+> if we need some non-sleeping access_ok() prior to __get_user_inatomic().
 > 
+> By looking at the code I was wondering where the correct place for might_fault()
+> calls is? Doesn't seem to be very consistent. Examples:
 > 
-> Changes in v2:
-> --------------
-> -Using PNV_THREAD_NAP/SLEEP defines while calling power7_powersave_common
-> -Comment changes based on review
-> -Rebased on top of 3.18-rc6
+>                    | asm-generic | arm | arm64 | frv | m32r | x86 and s390
+> ---------------------------------------------------------------------------
+> get_user()         |   Yes       | Yes | Yes   | No  | Yes  |     Yes
+> __get_user()       |   No        | Yes | No    | No  | Yes  |     No
+> put_user()         |   Yes       | Yes | Yes   | No  | Yes  |     Yes
+> __put_user()       |   No        | Yes | No    | No  | Yes  |     No
+> copy_to_user()     |   Yes       | No  | No    | Yes | Yes  |     Yes
+> __copy_to_user()   |   No        | No  | No    | Yes | No   |     No
+> copy_from_user()   |   Yes       | No  | No    | Yes | Yes  |     Yes
+> __copy_from_user() |   No        | No  | No    | Yes | No   |     No
 > 
+
+I think it would be a mistake to make this change.
+
+Most call-sites handle faults in atomic just fine by
+returning error to caller.
+
+> So I would have assume that the way asm-generic, x86 and s390 (+ propably
+> others) do this is the right way?
+> So we can speed up multiple calls to e.g. copy_to_user() by doing the access
+> check manually (and also the might_fault() if relevant), then calling
+> __copy_to_user().
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> So in general, I conclude that the concept is:
+> 1. __.* variants perform no checking and don't call might_fault()
+> 2. [a-z].* variants perform access checking (access_ok() if implemented)
+> 3. [a-z].* variants call might_fault()
+> 4. .*_inatomic variants usually don't perform access checks
+> 5. .*_inatomic variants don't call might_fault()
+> 6. If common code uses the __.* variants, it has to trigger access_ok() and
+>    call might_fault()
+> 7. For pagefault_disable(), the inatomic variants are to be used
+
+inatomic variants don't seem to handle faults, so you
+must pin any memory you pass to them.
+
+
+> Comments? Opinions?
 > 
-> Paul Mackerras (1):
->   powerpc: powernv: Switch off MMU before entering nap/sleep/rvwinkle
->     mode
+
+If the same address is accessed multiple times, access_ok + __
+variant can be used to speed access up a bit.
+This is rarely the case, but this is the case for e.g. vhost.
+But access_ok does not guarantee that no fault will trigger:
+there's really no way to do that ATM except pinning the page.
+
+
+> David Hildenbrand (2):
+>   powerpc/fsl-pci: atomic get_user when pagefault_disabled
+>   mm, sched: trigger might_sleep() in might_fault() when atomic
 > 
-> Preeti U. Murthy (1):
->   powerpc/powernv: Enable Offline CPUs to enter deep idle states
+>  arch/powerpc/sysdev/fsl_pci.c |  2 +-
+>  include/linux/kernel.h        |  8 ++++++--
+>  mm/memory.c                   | 11 ++++-------
+>  3 files changed, 11 insertions(+), 10 deletions(-)
 > 
-> Shreyas B. Prabhu (2):
->   powernv: cpuidle: Redesign idle states management
->   powernv: powerpc: Add winkle support for offline cpus
-> 
->  arch/powerpc/include/asm/cpuidle.h             |  14 ++
->  arch/powerpc/include/asm/opal.h                |  13 +
->  arch/powerpc/include/asm/paca.h                |   6 +
->  arch/powerpc/include/asm/ppc-opcode.h          |   2 +
->  arch/powerpc/include/asm/processor.h           |   1 +
->  arch/powerpc/include/asm/reg.h                 |   4 +
->  arch/powerpc/kernel/asm-offsets.c              |   6 +
->  arch/powerpc/kernel/cpu_setup_power.S          |   4 +
->  arch/powerpc/kernel/exceptions-64s.S           |  30 ++-
->  arch/powerpc/kernel/idle_power7.S              | 332 +++++++++++++++++++++----
->  arch/powerpc/platforms/powernv/opal-wrappers.S |  39 +++
->  arch/powerpc/platforms/powernv/powernv.h       |   2 +
->  arch/powerpc/platforms/powernv/setup.c         | 160 ++++++++++++
->  arch/powerpc/platforms/powernv/smp.c           |  10 +-
->  arch/powerpc/platforms/powernv/subcore.c       |  34 +++
->  arch/powerpc/platforms/powernv/subcore.h       |   1 +
->  drivers/cpuidle/cpuidle-powernv.c              |  10 +-
->  17 files changed, 608 insertions(+), 60 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/cpuidle.h
-> 
+> -- 
+> 1.8.5.5
