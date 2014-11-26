@@ -1,29 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-wi0-f171.google.com (mail-wi0-f171.google.com
- [209.85.212.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 125DF1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 00:16:42 +1100 (AEDT)
-Received: by mail-wi0-f171.google.com with SMTP id bs8so12467793wib.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 05:16:37 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v2 07/14] of/reconfig: Always use the same structure
- =?iso-8859-1?Q?for=0D?= notifiers
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-In-Reply-To: <547544FE.5020706@linux.vnet.ibm.com>
-References: <1416868422-22103-1-git-send-email-grant.likely@linaro.org>
- <1416868422-22103-8-git-send-email-grant.likely@linaro.org>
- <1416956874.5089.13.camel@kernel.crashing.org>
- <547544FE.5020706@linux.vnet.ibm.com>
-Date: Wed, 26 Nov 2014 13:16:34 +0000
-Message-Id: <20141126131634.63DB7C4099B@trevor.secretlab.ca>
-Cc: devicetree@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E74631A01DE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 02:17:54 +1100 (AEDT)
+Date: Wed, 26 Nov 2014 17:17:29 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: David Hildenbrand <dahi@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
+ atomic
+Message-ID: <20141126151729.GB9612@redhat.com>
+References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+ <20141126070258.GA25523@redhat.com>
+ <20141126110504.511b733a@thinkpad-w530>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141126110504.511b733a@thinkpad-w530>
+Cc: linux-arch@vger.kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, borntraeger@de.ibm.com, paulus@samba.org,
+ schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 25 Nov 2014 21:11:58 -0600
-, Nathan Fontenot <nfont@linux.vnet.ibm.com>
- wrote:
-> On 11/25/2014 05:07 PM, Benjamin Herrenschmidt wrote:
-> > On Mon, 2014-11-24 at 22:33 +0000, Grant Likely wrote:
-> >> The OF_RECONFIG notifier callback uses a different structure depending
-> >> on whether it is a node change or a property change. This is silly, and
-> >> not very safe. Rework the code to use the same data structure regardless
-> >> of the type of notifier.
-> > 
-> > I fell pretty good about this one except...
-> > 
-> >> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> >> index b9d1dfdbe5bb..9fe6002c1d5a 100644
-> >> --- a/arch/powerpc/mm/numa.c
-> >> +++ b/arch/powerpc/mm/numa.c
-> >> @@ -1711,12 +1711,11 @@ static void stage_topology_update(int core_id)
-> >>  static int dt_update_callback(struct notifier_block *nb,
-> >>  				unsigned long action, void *data)
-> >>  {
-> >> -	struct of_prop_reconfig *update;
-> >> +	struct of_reconfig_data *update = data;
-> >>  	int rc = NOTIFY_DONE;
-> >>  
-> >>  	switch (action) {
-> >>  	case OF_RECONFIG_UPDATE_PROPERTY:
-> >> -		update = (struct of_prop_reconfig *)data;
-> > 
-> > Should we assert/bug on !update->dn / update->prop ?
-> > 
-> > (Same for the rest of the patch)
-> > 
-> > Or do you reckon it's pointless ?
-> > 
+On Wed, Nov 26, 2014 at 11:05:04AM +0100, David Hildenbrand wrote:
+> > What's the path you are trying to debug?
 > 
-> I'm not sure it's worth it, if those are NULL pointers the drivers/of
-> code would have tried to use them before invoking the notifier chain.
-> We won't make it this far if they're NULL.
+> Well, we had a problem where we held a spin_lock and called
+> copy_(from|to)_user(). We experienced very random deadlocks that took some guy
+> almost a week to debug. The simple might_sleep() check would have showed this
+> error immediately.
 
-Agreed. I'm going to merge it as-is.
-
-g.
+This must have been a very old kernel.
+A modern kernel will return an error from copy_to_user.
+Which is really the point of the patch you are trying to revert.
