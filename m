@@ -1,20 +1,29 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-f171.google.com (mail-wi0-f171.google.com
+ [209.85.212.171])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C4AE1A050C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 22:49:53 +1100 (AEDT)
-Received: by mail-lb0-f179.google.com with SMTP id z11so2273446lbi.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 03:49:49 -0800 (PST)
-Message-ID: <5475BE5A.4090503@linux.com>
-Date: Wed, 26 Nov 2014 14:49:46 +0300
-From: Alexander Popov <alex.popov@linux.com>
-Reply-To: alex.popov@linux.com
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Disabled LocalPlus Controller (LPC) clock on MPC512x
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 125DF1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 00:16:42 +1100 (AEDT)
+Received: by mail-wi0-f171.google.com with SMTP id bs8so12467793wib.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 05:16:37 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2 07/14] of/reconfig: Always use the same structure
+ =?iso-8859-1?Q?for=0D?= notifiers
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+In-Reply-To: <547544FE.5020706@linux.vnet.ibm.com>
+References: <1416868422-22103-1-git-send-email-grant.likely@linaro.org>
+ <1416868422-22103-8-git-send-email-grant.likely@linaro.org>
+ <1416956874.5089.13.camel@kernel.crashing.org>
+ <547544FE.5020706@linux.vnet.ibm.com>
+Date: Wed, 26 Nov 2014 13:16:34 +0000
+Message-Id: <20141126131634.63DB7C4099B@trevor.secretlab.ca>
+Cc: devicetree@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Tue, 25 Nov 2014 21:11:58 -0600
+, Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ wrote:
+> On 11/25/2014 05:07 PM, Benjamin Herrenschmidt wrote:
+> > On Mon, 2014-11-24 at 22:33 +0000, Grant Likely wrote:
+> >> The OF_RECONFIG notifier callback uses a different structure depending
+> >> on whether it is a node change or a property change. This is silly, and
+> >> not very safe. Rework the code to use the same data structure regardless
+> >> of the type of notifier.
+> > 
+> > I fell pretty good about this one except...
+> > 
+> >> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> >> index b9d1dfdbe5bb..9fe6002c1d5a 100644
+> >> --- a/arch/powerpc/mm/numa.c
+> >> +++ b/arch/powerpc/mm/numa.c
+> >> @@ -1711,12 +1711,11 @@ static void stage_topology_update(int core_id)
+> >>  static int dt_update_callback(struct notifier_block *nb,
+> >>  				unsigned long action, void *data)
+> >>  {
+> >> -	struct of_prop_reconfig *update;
+> >> +	struct of_reconfig_data *update = data;
+> >>  	int rc = NOTIFY_DONE;
+> >>  
+> >>  	switch (action) {
+> >>  	case OF_RECONFIG_UPDATE_PROPERTY:
+> >> -		update = (struct of_prop_reconfig *)data;
+> > 
+> > Should we assert/bug on !update->dn / update->prop ?
+> > 
+> > (Same for the rest of the patch)
+> > 
+> > Or do you reckon it's pointless ?
+> > 
+> 
+> I'm not sure it's worth it, if those are NULL pointers the drivers/of
+> code would have tried to use them before invoking the notifier chain.
+> We won't make it this far if they're NULL.
 
-My Freescale TWR-MPC5125 board instantly reboots if I touch
-any physical address on the LocalPlus Bus (LPB) for the first time
-when Linux has already booted.
+Agreed. I'm going to merge it as-is.
 
-This effect is reproduced by using /dev/mem or loading a kernel module
-which works with any peripherals on LPB.
-
-It took me some time to find out that such crash is caused by
-clk_disable_unused() in drivers/clk/clk.c, which disables
-LocalPlus Controller (LPC) clock if I don't touch LPB addresses in the
-previous initcalls. So starting Linux with clk_ignore_unused bootparam
-or inserting dummy LPB reading to some initcall is a temporary fix.
-
-Is it correct to gate LPC clock? If yes, how to avoid the mentioned
-crashes properly?
-
-There's a piece of code in arch/powerpc/platforms/512x/clock-commonclk.c
-which is doubtful for me:
-
-/*
-  * pre-enable those "internal" clock items which never get
-  * claimed by any peripheral driver, to not have the clock
-  * subsystem disable them late at startup
-  */
-clk_prepare_enable(clks[MPC512x_CLK_DUMMY]);
-clk_prepare_enable(clks[MPC512x_CLK_E300]);    /* PowerPC CPU */
-clk_prepare_enable(clks[MPC512x_CLK_DDR]);    /* DRAM */
-clk_prepare_enable(clks[MPC512x_CLK_MEM]);    /* SRAM */
-clk_prepare_enable(clks[MPC512x_CLK_IPS]);    /* SoC periph */
-clk_prepare_enable(clks[MPC512x_CLK_LPC]);    /* boot media */
-
-Does it mean that these clocks should be registered with
-CLK_IGNORE_UNUSED flag?
-
-Thanks a lot.
-Best regards,
-Alexander
+g.
