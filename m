@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ECA871A056E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 12:58:33 +1100 (AEDT)
-Message-ID: <1416967101.15957.174.camel@freescale.com>
-Subject: Re: [v4,17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
-From: Scott Wood <scottwood@freescale.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Date: Tue, 25 Nov 2014 19:58:21 -0600
-In-Reply-To: <546BA6F3.2070106@c-s.fr>
-References: <20140919083609.A92871AB040@localhost.localdomain>
- <20141107033745.GA23796@home.buserror.net> <545C7C2E.3060109@c-s.fr>
- <1415405305.3805.45.camel@snotra.buserror.net> <546BA6F3.2070106@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6D611A0569
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 13:26:04 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+Date: Wed, 26 Nov 2014 02:10:43 +0000
+Message-ID: <DM2PR0301MB0864D9EFC1F03FCBD7B7108FE2700@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+In-Reply-To: <1416966592.15957.172.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>,
+ "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-11-18 at 21:07 +0100, christophe leroy wrote:
-> Le 08/11/2014 01:08, Scott Wood a écrit :
-> >
-> > OK, so the _PAGE_KERNEL_RO(X) stuff is because initially setting the PTE
-> > doesn't go through pte_update().
-> >
-> > I'll apply this, though it'd be cleaner to just have 8xx versions of the
-> > relevant PTE accessor functions to maintain the PTE the way the hardware
-> > wants (this would also eliminate the _PAGE_RW inversion that's still in
-> > the TLB miss handler).
-> >
-> >
-> 
-> Yes, I've been looking at a simple way to also eliminate the _PAGE_RW 
-> inversion, but i've not been able to find an easy solution up to now.
-> 
-> It seems that we have two functions that set PTE: set_pte_at() and 
-> pte_update()
-> I could perform the bit 22 (0x200) stuff and the _PAGE_RW invertion in 
-> both functions, but then there are functions that read the PTE to make 
-> decision based on PAGE_RW for instance.
-
-Where?  The only relevant use of _PAGE_RW outside accessors that I see
-is in gup_pte_range(), which shouldn't be too hard to fix up.
-
--Scott
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBXZWRuZXNkYXksIE5vdmVtYmVyIDI2LCAyMDE0IDk6NTAgQU0NCj4gVG86IHNoaC54
+aWVAZ21haWwuY29tDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNl
+dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IE1lZHZlDQo+IEVtaWxpYW4tRU1NRURWRTE7IExpYmVybWFu
+IElnYWwtQjMxOTUwOyBYaWUgU2hhb2h1aS1CMjE5ODkNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0g
+W3YyXSBwb3dlci9mc2w6IGFkZCBNRElPIGR0IGJpbmRpbmcgZm9yIEZNYW4NCj4gDQo+IE9uIEZy
+aSwgMjAxNC0xMS0xNCBhdCAxNzo1MyArMDgwMCwgc2hoLnhpZUBnbWFpbC5jb20gd3JvdGU6DQo+
+ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNoYW9odWkuWGllQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4g
+PiBUaGlzIGJpbmRpbmcgaXMgZm9yIEZNYW4gTURJTywgaXQgY292ZXJzIEZNYW4gdjIgJiBGTWFu
+IHYzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBYaWUgPFNoYW9odWkuWGllQGZy
+ZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gY2hhbmdlcyBpbiBWMjoNCj4gPiBhZGRyZXNzZWQg
+Y29tbWVudHMgZnJvbSBTY290dCBpbiBWMS4NCj4gPg0KPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5k
+aW5ncy9wb3dlcnBjL2ZzbC9mbWFuLnR4dCAgICAgICB8IDY5DQo+ICsrKysrKysrKysrKysrKysr
+KysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDY5IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRp
+ZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wv
+Zm1hbi50eHQNCj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBj
+L2ZzbC9mbWFuLnR4dA0KPiA+IGluZGV4IGVkZWVhMTYuLjE1MjNhODcgMTAwNjQ0DQo+ID4gLS0t
+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2ZtYW4udHh0
+DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNs
+L2ZtYW4udHh0DQo+ID4gQEAgLTcsNiArNyw3IEBAIENPTlRFTlRTDQo+ID4gICAgLSBGTWFuIE1V
+UkFNIE5vZGUNCj4gPiAgICAtIEZNYW4gZFRTRUMvWEdFQy9tRU1BQyBOb2RlDQo+ID4gICAgLSBG
+TWFuIElFRUUgMTU4OCBOb2RlDQo+ID4gKyAgLSBGTWFuIE1ESU8gTm9kZQ0KPiA+ICAgIC0gRXhh
+bXBsZQ0KPiA+DQo+ID4NCj4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+ID4gPT09PT09PSBAQCAtMzU3LDYg
+KzM1OCw2OCBAQCBwdHAtdGltZXJAZmUwMDAgeyAgfTsNCj4gPg0KPiA+DQo+ID4gPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PQ0KPiA+ID09PT09PT0NCj4gPiArRk1hbiBNRElPIE5vZGUNCj4gPiArDQo+ID4gK0RFU0NS
+SVBUSU9ODQo+ID4gKw0KPiA+ICtUaGUgTURJTyBpcyBhIGJ1cyB0byB3aGljaCB0aGUgUEhZIGRl
+dmljZXMgYXJlIGNvbm5lY3RlZC4NCj4gPiArDQo+ID4gK1BST1BFUlRJRVMNCj4gPiArDQo+ID4g
+Ky0gY29tcGF0aWJsZQ0KPiA+ICsJCVVzYWdlOiByZXF1aXJlZA0KPiA+ICsJCVZhbHVlIHR5cGU6
+IDxzdHJpbmdsaXN0Pg0KPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHkuDQo+
+ID4gKwkJTXVzdCBpbmNsdWRlICJmc2wsZm1hbi1tZGlvIiBmb3IgMSBHYi9zIE1ESU8gZnJvbSBG
+TWFuIHYyLg0KPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4teG1kaW8iIGZvciAxMCBHYi9z
+IE1ESU8gZnJvbSBGTWFuIHYyLg0KPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4tbWVtYWMt
+bWRpbyIgZm9yIDEvMTAgR2IvcyBNRElPIGZyb20NCj4gPiArCQlGTWFuIHYzLg0KPiA+ICsNCj4g
+PiArLSByZWcNCj4gPiArCQlVc2FnZTogcmVxdWlyZWQNCj4gPiArCQlWYWx1ZSB0eXBlOiA8cHJv
+cC1lbmNvZGVkLWFycmF5Pg0KPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHku
+DQo+ID4gKw0KPiA+ICstIGJ1cy1mcmVxdWVuY3kNCj4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4g
+PiArCQlWYWx1ZSB0eXBlOiA8dTMyPg0KPiA+ICsJCURlZmluaXRpb246IFNwZWNpZmllcyBleHRl
+cm5hbCBNRElPIGJ1cyBjbG9jayBzcGVlZCB3aGljaCBpcw0KPiA+ICsJCWRpZmZlcmVudCBmcm9t
+IE1ESU8gc3RhbmRhcmQgMi41TUh6LiBTaG91bGQgYmUgZGVmaW5lZCBmb3INCj4gU29Dcw0KPiA+
+ICsJCW9uIHdoaWNoIHRoZSBzdGFuZGFyZCBvbmUgY2Fubm90IHdvcmsuDQo+ID4gKw0KPiA+ICst
+IGludGVycnVwdHMNCj4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiArCQlWYWx1ZSB0eXBlOiA8
+cHJvcC1lbmNvZGVkLWFycmF5Pg0KPiA+ICsJCURlZmluaXRpb246IEV2ZW50IGludGVycnVwdCBv
+ZiBleHRlcm5hbCBNRElPIGNvbnRyb2xsZXIuDQo+ID4gKwkJMSBHYi9zIE1ESU8gYW5kIDEwIEdi
+L3MgTURJTyBoYXMgb25lIGludGVycnVwdCByZXNwZWN0aXZlbHkuDQo+ID4gKw0KPiA+ICstIGZz
+bCxmbWFuLWludGVybmFsLW1kaW8NCj4gPiArCQlVc2FnZTogcmVxdWlyZWQgZm9yIGludGVybmFs
+IE1ESU8NCj4gPiArCQlWYWx1ZSB0eXBlOiBib29sZWFuDQo+ID4gKwkJRGVmaW5pdGlvbjogRm1h
+biBoYXMgaW50ZXJuYWwgTURJTyBmb3IgaW50ZXJuYWwgUENTKFBoeXNpY2FsDQo+ID4gKwkJQ29k
+aW5nIFN1YmxheWVyKSBQSFlzIGFuZCBleHRlcm5hbCBNRElPIGZvciBleHRlcm5hbCBQSFlzLg0K
+PiA+ICsJCVRoZSBzZXR0aW5ncyBhbmQgcHJvZ3JhbW1pbmcgcm91dGluZXMgZm9yIGludGVybmFs
+L2V4dGVybmFsDQo+ID4gKwkJTURJTyBhcmUgZGlmZmVyZW50LiBNdXN0IGJlIGluY2x1ZGVkIGZv
+ciBpbnRlcm5hbCBNRElPLg0KPiA+ICsNCj4gPiArRVhBTVBMRQ0KPiA+ICsNCj4gPiArRXhhbXBs
+ZSBmb3IgRk1hbiB2MiBleHRlcm5hbCBNRElPOg0KPiA+ICsNCj4gPiArbWRpb0BmMTAwMCB7DQo+
+ID4gKwljb21wYXRpYmxlID0gImZzbCxmbWFuLXhtZGlvIjsNCj4gPiArCXJlZyA9IDwweGYxMDAw
+IDB4MTAwMD47DQo+ID4gKwlidXMtZnJlcXVlbmN5ID0gPDIwMDAwPjsNCj4gPiArfTsNCj4gDQo+
+IFNvIHRoZSBidXMgZnJlcXVlbmN5IGlzIG9ubHkgMjAgS0h6PyAgT3IgaXMgdGhlIHVuaXQgc3Vw
+cG9zZWQgdG8gYmUNCj4gc29tZXRoaW5nIG90aGVyIHRoYW4gSHo/DQpbUy5IXSBpdCdzIG9ubHkg
+YW4gZXhhbXBsZSwgaXQgY291bGQgYmUgZGlmZmVyZW50IG9uIHJlYWwgU29DcywgYnV0IHRoZXkg
+YWx3YXlzIGxvd2VyIHRoYW4gdGhlIHN0YW5kYXJkIG9uZSwNClRoZSBzdGFuZGFyZCBvbmUgaXMg
+Mi41TUh6LCBJIGhhdmUgdG8gdXNlIEh6IGZvciBpdC4NCg0KVGhhbmtzIQ0KU2hhb2h1aQ0K
