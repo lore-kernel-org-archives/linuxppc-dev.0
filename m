@@ -1,38 +1,28 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0131.outbound.protection.outlook.com [157.56.110.131])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFEAA1A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 11:19:33 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 26 Nov 2014 10:19:33 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9CB253578054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 11:19:29 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAQ0JTSv30277698
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 11:19:29 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAQ0JS6f001679
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 11:19:28 +1100
-Message-ID: <1416961167.5089.41.camel@au1.ibm.com>
-Subject: Re: [PATCH 1/8] powerpc/pci: Move pcibios_find_pci_bus() around
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 26 Nov 2014 11:19:27 +1100
-In-Reply-To: <20141126000830.GA21766@shangw>
-References: <1416869365-7671-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1416869365-7671-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <1416956310.5089.5.camel@kernel.crashing.org>
- <20141126000830.GA21766@shangw>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 263FC1A017A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 12:41:52 +1100 (AEDT)
+Message-ID: <1416966097.15957.171.camel@freescale.com>
+Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
+From: Scott Wood <scottwood@freescale.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Date: Tue, 25 Nov 2014 19:41:37 -0600
+In-Reply-To: <20141125181347.GC9716@katana>
+References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
+ <1414537731.23458.120.camel@snotra.buserror.net>
+ <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
+ <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
+ <1416274083.15957.96.camel@freescale.com> <20141125181347.GC9716@katana>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ Linux device trees <devicetree@vger.kernel.org>, "Boschung,
+ Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
+ Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
+ Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,123 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-11-26 at 11:08 +1100, Gavin Shan wrote:
-> On Wed, Nov 26, 2014 at 09:58:30AM +1100, Benjamin Herrenschmidt wrote:
-> >On Tue, 2014-11-25 at 09:49 +1100, Gavin Shan wrote:
-> >> The patch moves pcibios_find_pci_bus() to PPC kerenl directory so
-> >> that it can be reused by hotplug code for pSeries and PowerNV
-> >> platform at the same time.
-> >> 
-> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >
-> >Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >
+On Tue, 2014-11-25 at 19:13 +0100, Wolfram Sang wrote:
+> On Mon, Nov 17, 2014 at 07:28:03PM -0600, Scott Wood wrote:
+> > On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
+> > > > > 
+> > > > > If we're going to change the device tree I'd rather just add a property
+> > > > > to say what the prescaler is.
+> > > > 
+> > > >  We would however, leave the boards' device trees that use things like
+> > > > "fsl,mpc8543-i2c" as is and introduce the prescaler for the others requiring it.
+> > > > 
+> > > > 
+> > > > Now the drawback is that the driver would require a change, to parse this
+> > > > prescaler new prescaler property. Would this be OK from your point of view
+> > > > Wolfram ? If yes, I will send the patches for it.
+> > > 
+> > > I don't think it is OK.
+> > 
+> > Why?
 > 
-> Thanks, Ben. But Michael needn't pick it up and merge it as the left
-> patches need reworks to some extent...
-
-Sure but you can keep that ack around for that specific patch :P)
-
-Cheers,
-Ben.
-
-> Thanks,
-> Gavin
+> Because I thought it could be deduced. Then, a seperate property would
+> not be OK.
 > 
-> >> ---
-> >>  arch/powerpc/kernel/pci-hotplug.c          | 36 ++++++++++++++++++++++++++++++
-> >>  arch/powerpc/platforms/pseries/pci_dlpar.c | 32 --------------------------
-> >>  2 files changed, 36 insertions(+), 32 deletions(-)
-> >> 
-> >> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-> >> index 5b78917..6e2b4e3 100644
-> >> --- a/arch/powerpc/kernel/pci-hotplug.c
-> >> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> >> @@ -21,6 +21,42 @@
-> >>  #include <asm/firmware.h>
-> >>  #include <asm/eeh.h>
-> >>  
-> >> +static struct pci_bus *find_pci_bus(struct pci_bus *bus,
-> >> +				    struct device_node *dn)
-> >> +{
-> >> +	struct pci_bus *tmp, *child = NULL;
-> >> +	struct device_node *busdn;
-> >> +
-> >> +	busdn = pci_bus_to_OF_node(bus);
-> >> +	if (busdn == dn)
-> >> +		return bus;
-> >> +
-> >> +	list_for_each_entry(tmp, &bus->children, node) {
-> >> +		child = find_pci_bus(tmp, dn);
-> >> +		if (child)
-> >> +			break;
-> >> +	}
-> >> +
-> >> +	return child;
-> >> +}
-> >> +
-> >> +/**
-> >> + * pcibios_find_pci_bus - find PCI bus according to the given device node
-> >> + * @dn: Device node
-> >> + *
-> >> + * Find the corresponding PCI bus according to the given device node.
-> >> + */
-> >> +struct pci_bus *pcibios_find_pci_bus(struct device_node *dn)
-> >> +{
-> >> +	struct pci_dn *pdn = PCI_DN(dn);
-> >> +
-> >> +	if (!pdn  || !pdn->phb || !pdn->phb->bus)
-> >> +		return NULL;
-> >> +
-> >> +	return find_pci_bus(pdn->phb->bus, dn);
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
-> >> +
-> >>  /**
-> >>   * pcibios_release_device - release PCI device
-> >>   * @dev: PCI device
-> >> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> >> index 89e2381..98c50bc 100644
-> >> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-> >> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> >> @@ -32,38 +32,6 @@
-> >>  #include <asm/firmware.h>
-> >>  #include <asm/eeh.h>
-> >>  
-> >> -static struct pci_bus *
-> >> -find_bus_among_children(struct pci_bus *bus,
-> >> -                        struct device_node *dn)
-> >> -{
-> >> -	struct pci_bus *child = NULL;
-> >> -	struct pci_bus *tmp;
-> >> -	struct device_node *busdn;
-> >> -
-> >> -	busdn = pci_bus_to_OF_node(bus);
-> >> -	if (busdn == dn)
-> >> -		return bus;
-> >> -
-> >> -	list_for_each_entry(tmp, &bus->children, node) {
-> >> -		child = find_bus_among_children(tmp, dn);
-> >> -		if (child)
-> >> -			break;
-> >> -	};
-> >> -	return child;
-> >> -}
-> >> -
-> >> -struct pci_bus *
-> >> -pcibios_find_pci_bus(struct device_node *dn)
-> >> -{
-> >> -	struct pci_dn *pdn = dn->data;
-> >> -
-> >> -	if (!pdn  || !pdn->phb || !pdn->phb->bus)
-> >> -		return NULL;
-> >> -
-> >> -	return find_bus_among_children(pdn->phb->bus, dn);
-> >> -}
-> >> -EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
-> >> -
-> >>  struct pci_controller *init_phb_dynamic(struct device_node *dn)
-> >>  {
-> >>  	struct pci_controller *phb;
-> >
-> >
+> > >  I'd think it can be deduced from the compatible property.
+> > 
+> > For almost all existing device trees it cannot be.
+> 
+> Pity :( If we do introduce a new property, it should probably be
+> "clock-div". Grepping through binding documentation, that seems
+> accepted. We should ask DT maintainers, too, to be safe.
+> 
+> > If you want something that will work without changing device trees,
+> > you'll need to use SVR to identify the SoC.
+> 
+> The driver is doing that already, see mpc_i2c_get_sec_cfg_8xxx(). Dunno
+> if it makes sense to add to it for consistency reasons?
+
+That's not SVR, but sure.  Better to avoid messing with existing device
+trees.
+
+-Scott
