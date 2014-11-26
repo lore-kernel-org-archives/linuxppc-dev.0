@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B12FD1A0064
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 14:31:36 +1100 (AEDT)
-In-Reply-To: <1416838073-16642-1-git-send-email-ldufour@linux.vnet.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 30E8E1A0515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 14:44:19 +1100 (AEDT)
+In-Reply-To: <20141120041345.3339.6873.stgit@mars.in.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: pseries/le: Fix endiannes issue in RTAS call from xmon
-Message-Id: <20141126033136.977771401AC@ozlabs.org>
-Date: Wed, 26 Nov 2014 14:31:36 +1100 (AEDT)
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulus@samba.org
+Subject: Re: powerpc/powernv: Fix the hmi event version check.
+Message-Id: <20141126034419.0917A1401B1@ozlabs.org>
+Date: Wed, 26 Nov 2014 14:44:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,14 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-24-11 at 14:07:53 UTC, Laurent Dufour wrote:
-> On pseries system (LPAR) xmon failed to enter when running in LE mode, system
-> is hunging. Inititating xmon will lead to such an output on the console:
+On Thu, 2014-20-11 at 04:14:36 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> The current HMI event structure is an ABI and carries a version field to
+> accommodate future changes without affecting/rearranging current structure
+> members that are valid for previous versions. The current version check
+> "if (hmi_evt->version != OpalHMIEvt_V1)" seems to consider that version
+> will always be V1 which may not be true in future. If we start supporting
+> HMI event > V1, this check would fail without printing anything on older
+> kernels. This patch fixes this issue.
 
-OK. You say "LPAR", by which you mean "under phyp" I think. I haven't seen this
-under KVM, and it looks like KVM doesn't implement "set-indicator" so that
-would explain that.
+It's not clear what you mean when you say "this check would fail without
+printing anything". The check will fail, and it will print something, ie. the
+error message.
 
-I'll take this as a bug fix and CC it to stable.
+What you mean is "the check will fail, and the HMI info will not be printed".
+
+I'll CC this to stable unless you disagree.
 
 cheers
