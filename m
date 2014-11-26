@@ -1,24 +1,43 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A6D611A0569
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 13:26:04 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-Date: Wed, 26 Nov 2014 02:10:43 +0000
-Message-ID: <DM2PR0301MB0864D9EFC1F03FCBD7B7108FE2700@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
-In-Reply-To: <1416966592.15957.172.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A84F1A01DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 14:12:07 +1100 (AEDT)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 25 Nov 2014 20:12:05 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CCB541FF003D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 20:00:46 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAQ3C2gB53739538
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 20:12:02 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAQ3C1lN019877
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Nov 2014 20:12:02 -0700
+Message-ID: <547544FE.5020706@linux.vnet.ibm.com>
+Date: Tue, 25 Nov 2014 21:11:58 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2 07/14] of/reconfig: Always use the same structure for
+ notifiers
+References: <1416868422-22103-1-git-send-email-grant.likely@linaro.org>
+ <1416868422-22103-8-git-send-email-grant.likely@linaro.org>
+ <1416956874.5089.13.camel@kernel.crashing.org>
+In-Reply-To: <1416956874.5089.13.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: devicetree@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +47,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBXZWRuZXNkYXksIE5vdmVtYmVyIDI2LCAyMDE0IDk6NTAgQU0NCj4gVG86IHNoaC54
-aWVAZ21haWwuY29tDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IE1lZHZlDQo+IEVtaWxpYW4tRU1NRURWRTE7IExpYmVybWFu
-IElnYWwtQjMxOTUwOyBYaWUgU2hhb2h1aS1CMjE5ODkNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0g
-W3YyXSBwb3dlci9mc2w6IGFkZCBNRElPIGR0IGJpbmRpbmcgZm9yIEZNYW4NCj4gDQo+IE9uIEZy
-aSwgMjAxNC0xMS0xNCBhdCAxNzo1MyArMDgwMCwgc2hoLnhpZUBnbWFpbC5jb20gd3JvdGU6DQo+
-ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNoYW9odWkuWGllQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4g
-PiBUaGlzIGJpbmRpbmcgaXMgZm9yIEZNYW4gTURJTywgaXQgY292ZXJzIEZNYW4gdjIgJiBGTWFu
-IHYzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBYaWUgPFNoYW9odWkuWGllQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gY2hhbmdlcyBpbiBWMjoNCj4gPiBhZGRyZXNzZWQg
-Y29tbWVudHMgZnJvbSBTY290dCBpbiBWMS4NCj4gPg0KPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5k
-aW5ncy9wb3dlcnBjL2ZzbC9mbWFuLnR4dCAgICAgICB8IDY5DQo+ICsrKysrKysrKysrKysrKysr
-KysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDY5IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRp
-ZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wv
-Zm1hbi50eHQNCj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBj
-L2ZzbC9mbWFuLnR4dA0KPiA+IGluZGV4IGVkZWVhMTYuLjE1MjNhODcgMTAwNjQ0DQo+ID4gLS0t
-IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2ZtYW4udHh0
-DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNs
-L2ZtYW4udHh0DQo+ID4gQEAgLTcsNiArNyw3IEBAIENPTlRFTlRTDQo+ID4gICAgLSBGTWFuIE1V
-UkFNIE5vZGUNCj4gPiAgICAtIEZNYW4gZFRTRUMvWEdFQy9tRU1BQyBOb2RlDQo+ID4gICAgLSBG
-TWFuIElFRUUgMTU4OCBOb2RlDQo+ID4gKyAgLSBGTWFuIE1ESU8gTm9kZQ0KPiA+ICAgIC0gRXhh
-bXBsZQ0KPiA+DQo+ID4NCj4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+ID4gPT09PT09PSBAQCAtMzU3LDYg
-KzM1OCw2OCBAQCBwdHAtdGltZXJAZmUwMDAgeyAgfTsNCj4gPg0KPiA+DQo+ID4gPT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQ0KPiA+ID09PT09PT0NCj4gPiArRk1hbiBNRElPIE5vZGUNCj4gPiArDQo+ID4gK0RFU0NS
-SVBUSU9ODQo+ID4gKw0KPiA+ICtUaGUgTURJTyBpcyBhIGJ1cyB0byB3aGljaCB0aGUgUEhZIGRl
-dmljZXMgYXJlIGNvbm5lY3RlZC4NCj4gPiArDQo+ID4gK1BST1BFUlRJRVMNCj4gPiArDQo+ID4g
-Ky0gY29tcGF0aWJsZQ0KPiA+ICsJCVVzYWdlOiByZXF1aXJlZA0KPiA+ICsJCVZhbHVlIHR5cGU6
-IDxzdHJpbmdsaXN0Pg0KPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHkuDQo+
-ID4gKwkJTXVzdCBpbmNsdWRlICJmc2wsZm1hbi1tZGlvIiBmb3IgMSBHYi9zIE1ESU8gZnJvbSBG
-TWFuIHYyLg0KPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4teG1kaW8iIGZvciAxMCBHYi9z
-IE1ESU8gZnJvbSBGTWFuIHYyLg0KPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4tbWVtYWMt
-bWRpbyIgZm9yIDEvMTAgR2IvcyBNRElPIGZyb20NCj4gPiArCQlGTWFuIHYzLg0KPiA+ICsNCj4g
-PiArLSByZWcNCj4gPiArCQlVc2FnZTogcmVxdWlyZWQNCj4gPiArCQlWYWx1ZSB0eXBlOiA8cHJv
-cC1lbmNvZGVkLWFycmF5Pg0KPiA+ICsJCURlZmluaXRpb246IEEgc3RhbmRhcmQgcHJvcGVydHku
-DQo+ID4gKw0KPiA+ICstIGJ1cy1mcmVxdWVuY3kNCj4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4g
-PiArCQlWYWx1ZSB0eXBlOiA8dTMyPg0KPiA+ICsJCURlZmluaXRpb246IFNwZWNpZmllcyBleHRl
-cm5hbCBNRElPIGJ1cyBjbG9jayBzcGVlZCB3aGljaCBpcw0KPiA+ICsJCWRpZmZlcmVudCBmcm9t
-IE1ESU8gc3RhbmRhcmQgMi41TUh6LiBTaG91bGQgYmUgZGVmaW5lZCBmb3INCj4gU29Dcw0KPiA+
-ICsJCW9uIHdoaWNoIHRoZSBzdGFuZGFyZCBvbmUgY2Fubm90IHdvcmsuDQo+ID4gKw0KPiA+ICst
-IGludGVycnVwdHMNCj4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiArCQlWYWx1ZSB0eXBlOiA8
-cHJvcC1lbmNvZGVkLWFycmF5Pg0KPiA+ICsJCURlZmluaXRpb246IEV2ZW50IGludGVycnVwdCBv
-ZiBleHRlcm5hbCBNRElPIGNvbnRyb2xsZXIuDQo+ID4gKwkJMSBHYi9zIE1ESU8gYW5kIDEwIEdi
-L3MgTURJTyBoYXMgb25lIGludGVycnVwdCByZXNwZWN0aXZlbHkuDQo+ID4gKw0KPiA+ICstIGZz
-bCxmbWFuLWludGVybmFsLW1kaW8NCj4gPiArCQlVc2FnZTogcmVxdWlyZWQgZm9yIGludGVybmFs
-IE1ESU8NCj4gPiArCQlWYWx1ZSB0eXBlOiBib29sZWFuDQo+ID4gKwkJRGVmaW5pdGlvbjogRm1h
-biBoYXMgaW50ZXJuYWwgTURJTyBmb3IgaW50ZXJuYWwgUENTKFBoeXNpY2FsDQo+ID4gKwkJQ29k
-aW5nIFN1YmxheWVyKSBQSFlzIGFuZCBleHRlcm5hbCBNRElPIGZvciBleHRlcm5hbCBQSFlzLg0K
-PiA+ICsJCVRoZSBzZXR0aW5ncyBhbmQgcHJvZ3JhbW1pbmcgcm91dGluZXMgZm9yIGludGVybmFs
-L2V4dGVybmFsDQo+ID4gKwkJTURJTyBhcmUgZGlmZmVyZW50LiBNdXN0IGJlIGluY2x1ZGVkIGZv
-ciBpbnRlcm5hbCBNRElPLg0KPiA+ICsNCj4gPiArRVhBTVBMRQ0KPiA+ICsNCj4gPiArRXhhbXBs
-ZSBmb3IgRk1hbiB2MiBleHRlcm5hbCBNRElPOg0KPiA+ICsNCj4gPiArbWRpb0BmMTAwMCB7DQo+
-ID4gKwljb21wYXRpYmxlID0gImZzbCxmbWFuLXhtZGlvIjsNCj4gPiArCXJlZyA9IDwweGYxMDAw
-IDB4MTAwMD47DQo+ID4gKwlidXMtZnJlcXVlbmN5ID0gPDIwMDAwPjsNCj4gPiArfTsNCj4gDQo+
-IFNvIHRoZSBidXMgZnJlcXVlbmN5IGlzIG9ubHkgMjAgS0h6PyAgT3IgaXMgdGhlIHVuaXQgc3Vw
-cG9zZWQgdG8gYmUNCj4gc29tZXRoaW5nIG90aGVyIHRoYW4gSHo/DQpbUy5IXSBpdCdzIG9ubHkg
-YW4gZXhhbXBsZSwgaXQgY291bGQgYmUgZGlmZmVyZW50IG9uIHJlYWwgU29DcywgYnV0IHRoZXkg
-YWx3YXlzIGxvd2VyIHRoYW4gdGhlIHN0YW5kYXJkIG9uZSwNClRoZSBzdGFuZGFyZCBvbmUgaXMg
-Mi41TUh6LCBJIGhhdmUgdG8gdXNlIEh6IGZvciBpdC4NCg0KVGhhbmtzIQ0KU2hhb2h1aQ0K
+On 11/25/2014 05:07 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2014-11-24 at 22:33 +0000, Grant Likely wrote:
+>> The OF_RECONFIG notifier callback uses a different structure depending
+>> on whether it is a node change or a property change. This is silly, and
+>> not very safe. Rework the code to use the same data structure regardless
+>> of the type of notifier.
+> 
+> I fell pretty good about this one except...
+> 
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index b9d1dfdbe5bb..9fe6002c1d5a 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -1711,12 +1711,11 @@ static void stage_topology_update(int core_id)
+>>  static int dt_update_callback(struct notifier_block *nb,
+>>  				unsigned long action, void *data)
+>>  {
+>> -	struct of_prop_reconfig *update;
+>> +	struct of_reconfig_data *update = data;
+>>  	int rc = NOTIFY_DONE;
+>>  
+>>  	switch (action) {
+>>  	case OF_RECONFIG_UPDATE_PROPERTY:
+>> -		update = (struct of_prop_reconfig *)data;
+> 
+> Should we assert/bug on !update->dn / update->prop ?
+> 
+> (Same for the rest of the patch)
+> 
+> Or do you reckon it's pointless ?
+> 
+
+I'm not sure it's worth it, if those are NULL pointers the drivers/of
+code would have tried to use them before invoking the notifier chain.
+We won't make it this far if they're NULL.
+
+Otherwise the patch looks good to me,
+
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+-Nathan
