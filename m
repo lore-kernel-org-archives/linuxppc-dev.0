@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 30E8E1A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 14:44:19 +1100 (AEDT)
-In-Reply-To: <20141120041345.3339.6873.stgit@mars.in.ibm.com>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5060B1A0198
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 15:07:51 +1100 (AEDT)
+In-Reply-To: <1416868020-4129-2-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/powernv: Fix the hmi event version check.
-Message-Id: <20141126034419.0917A1401B1@ozlabs.org>
-Date: Wed, 26 Nov 2014 14:44:18 +1100 (AEDT)
+Subject: Re: [2/3] powerpc/powernv: Replace OPAL_DEASSERT_RESET with
+ EEH_RESET_DEACTIVATE
+Message-Id: <20141126040751.3649B14017B@ozlabs.org>
+Date: Wed, 26 Nov 2014 15:07:51 +1100 (AEDT)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-20-11 at 04:14:36 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Mon, 2014-24-11 at 22:26:59 UTC, Gavin Shan wrote:
+> The flag passed to ioda_eeh_phb_reset() should be EEH_RESET_DEACTIVATE,
+> which is translated to OPAL_DEASSERT_RESET or something else by the
+> EEH backend accordingly.
 > 
-> The current HMI event structure is an ABI and carries a version field to
-> accommodate future changes without affecting/rearranging current structure
-> members that are valid for previous versions. The current version check
-> "if (hmi_evt->version != OpalHMIEvt_V1)" seems to consider that version
-> will always be V1 which may not be true in future. If we start supporting
-> HMI event > V1, this check would fail without printing anything on older
-> kernels. This patch fixes this issue.
+> The patch replaces OPAL_DEASSERT_RESET with EEH_RESET_DEACTIVATE for
+> ioda_eeh_phb_reset().
 
-It's not clear what you mean when you say "this check would fail without
-printing anything". The check will fail, and it will print something, ie. the
-error message.
+What is the symptom? Does it not work at all or is it just a cosmetic issue?
+ie. should I send this to Linus ASAP or can it wait for the next release.
 
-What you mean is "the check will fail, and the HMI info will not be printed".
-
-I'll CC this to stable unless you disagree.
+Looks like this went in as 361f2a2a1536 ("powrpc/powernv: Reset PHB in kdump
+kernel") in 3.16. Should it go to stable?
 
 cheers
