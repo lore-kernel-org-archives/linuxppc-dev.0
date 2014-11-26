@@ -1,22 +1,23 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BA3D1A0287
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 12:50:14 +1100 (AEDT)
-Message-ID: <1416966592.15957.172.camel@freescale.com>
-Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECA871A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Nov 2014 12:58:33 +1100 (AEDT)
+Message-ID: <1416967101.15957.174.camel@freescale.com>
+Subject: Re: [v4,17/21] powerpc/8xx: set PTE bit 22 off TLBmiss
 From: Scott Wood <scottwood@freescale.com>
-To: <shh.xie@gmail.com>
-Date: Tue, 25 Nov 2014 19:49:52 -0600
-In-Reply-To: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Date: Tue, 25 Nov 2014 19:58:21 -0600
+In-Reply-To: <546BA6F3.2070106@c-s.fr>
+References: <20140919083609.A92871AB040@localhost.localdomain>
+ <20141107033745.GA23796@home.buserror.net> <545C7C2E.3060109@c-s.fr>
+ <1415405305.3805.45.camel@snotra.buserror.net> <546BA6F3.2070106@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Shaohui Xie <Shaohui.Xie@freescale.com>, Emilian.Medve@freescale.com,
- Igal.Liberman@freescale.com
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,89 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-11-14 at 17:53 +0800, shh.xie@gmail.com wrote:
-> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+On Tue, 2014-11-18 at 21:07 +0100, christophe leroy wrote:
+> Le 08/11/2014 01:08, Scott Wood a écrit :
+> >
+> > OK, so the _PAGE_KERNEL_RO(X) stuff is because initially setting the PTE
+> > doesn't go through pte_update().
+> >
+> > I'll apply this, though it'd be cleaner to just have 8xx versions of the
+> > relevant PTE accessor functions to maintain the PTE the way the hardware
+> > wants (this would also eliminate the _PAGE_RW inversion that's still in
+> > the TLB miss handler).
+> >
+> >
 > 
-> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+> Yes, I've been looking at a simple way to also eliminate the _PAGE_RW 
+> inversion, but i've not been able to find an easy solution up to now.
 > 
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> ---
-> changes in V2:
-> addressed comments from Scott in V1.
-> 
->  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
->  1 file changed, 69 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> index edeea16..1523a87 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> @@ -7,6 +7,7 @@ CONTENTS
->    - FMan MURAM Node
->    - FMan dTSEC/XGEC/mEMAC Node
->    - FMan IEEE 1588 Node
-> +  - FMan MDIO Node
->    - Example
->  
->  =============================================================================
-> @@ -357,6 +358,68 @@ ptp-timer@fe000 {
->  };
->  
->  =============================================================================
-> +FMan MDIO Node
-> +
-> +DESCRIPTION
-> +
-> +The MDIO is a bus to which the PHY devices are connected.
-> +
-> +PROPERTIES
-> +
-> +- compatible
-> +		Usage: required
-> +		Value type: <stringlist>
-> +		Definition: A standard property.
-> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-> +		FMan v3.
-> +
-> +- reg
-> +		Usage: required
-> +		Value type: <prop-encoded-array>
-> +		Definition: A standard property.
-> +
-> +- bus-frequency
-> +		Usage: optional
-> +		Value type: <u32>
-> +		Definition: Specifies external MDIO bus clock speed which is
-> +		different from MDIO standard 2.5MHz. Should be defined for SoCs
-> +		on which the standard one cannot work.
-> +
-> +- interrupts
-> +		Usage: optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: Event interrupt of external MDIO controller.
-> +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
-> +
-> +- fsl,fman-internal-mdio
-> +		Usage: required for internal MDIO
-> +		Value type: boolean
-> +		Definition: Fman has internal MDIO for internal PCS(Physical
-> +		Coding Sublayer) PHYs and external MDIO for external PHYs.
-> +		The settings and programming routines for internal/external
-> +		MDIO are different. Must be included for internal MDIO.
-> +
-> +EXAMPLE
-> +
-> +Example for FMan v2 external MDIO:
-> +
-> +mdio@f1000 {
-> +	compatible = "fsl,fman-xmdio";
-> +	reg = <0xf1000 0x1000>;
-> +	bus-frequency = <20000>;
-> +};
+> It seems that we have two functions that set PTE: set_pte_at() and 
+> pte_update()
+> I could perform the bit 22 (0x200) stuff and the _PAGE_RW invertion in 
+> both functions, but then there are functions that read the PTE to make 
+> decision based on PAGE_RW for instance.
 
-So the bus frequency is only 20 KHz?  Or is the unit supposed to be
-something other than Hz?
+Where?  The only relevant use of _PAGE_RW outside accessors that I see
+is in gup_pte_range(), which shouldn't be too hard to fix up.
 
 -Scott
