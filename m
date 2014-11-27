@@ -1,28 +1,24 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11B551A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 05:27:35 +1100 (AEDT)
-Date: Thu, 27 Nov 2014 20:27:10 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: David Hildenbrand <dahi@linux.vnet.ibm.com>
-Subject: Re: [PATCH RFC 2/2] mm, sched: trigger might_sleep() in
- might_fault() when pagefaults are disabled
-Message-ID: <20141127182710.GA30735@redhat.com>
-References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
- <1417108217-42687-1-git-send-email-dahi@linux.vnet.ibm.com>
- <1417108217-42687-3-git-send-email-dahi@linux.vnet.ibm.com>
- <20141127172449.GA30380@redhat.com>
- <20141127173218.GA30419@redhat.com>
- <20141127190842.75a9cce3@thinkpad-w530>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 357CD1A0C78
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 05:28:06 +1100 (AEDT)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: 32 bit getcpu VDSO function uses 64 bit
+ instructions
+References: <1417036288-22079-1-git-send-email-anton@samba.org>
+ <1417041497.12952.2.camel@concordia> <1417045827.16862.32.camel@otta>
+ <20141127160829.GA26139@gate.crashing.org>
+Date: Thu, 27 Nov 2014 19:20:53 +0100
+In-Reply-To: <20141127160829.GA26139@gate.crashing.org> (Segher Boessenkool's
+ message of "Thu, 27 Nov 2014 10:08:29 -0600")
+Message-ID: <87oarstshm.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141127190842.75a9cce3@thinkpad-w530>
-Cc: linux-arch@vger.kernel.org, heiko.carstens@de.ibm.com,
- linux-kernel@vger.kernel.org, borntraeger@de.ibm.com, David.Laight@ACULAB.COM,
- paulus@samba.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 27, 2014 at 07:08:42PM +0100, David Hildenbrand wrote:
-> > > > -
-> > > > -	__might_sleep(__FILE__, __LINE__, 0);
-> > > > +	if (unlikely(!pagefault_disabled()))
-> > > > +		__might_sleep(__FILE__, __LINE__, 0);
-> > > >    
-> > 
-> > Same here: so maybe make might_fault a wrapper
-> > around __might_fault as well.
-> 
-> Yes, I also noticed that. It was part of the original code.
-> For now I kept this revert as close as possible to
-> the original patch.
-> 
-> Better fix this in an add-on patch? Or directly in this commit?
+Segher Boessenkool <segher@kernel.crashing.org> writes:
 
-IMHO it's up to you really.
+> On Wed, Nov 26, 2014 at 05:50:27PM -0600, Peter Bergner wrote:
+>> On Thu, 2014-11-27 at 09:38 +1100, Michael Ellerman wrote:
+>> > On Thu, 2014-11-27 at 08:11 +1100, Anton Blanchard wrote:
+>> > > I used some 64 bit instructions when adding the 32 bit getcpu VDSO
+>> > > function. Fix it.
+>> > 
+>> > Ouch. The symptom is a SIGILL I presume?
+>> 
+>> Nope, you don't get a SIGILL when executing 64-bit instructions in
+>> 32-bit mode, so it'll happily just execute the instruction, doing
+>> a full 64-bit compare.  I'm guessing that the upper 32-bits of both
+>> r3 and r4 contain zeros, so we're probably just getting lucky.
+>
+> You will get a SIGILL if you run on 32-bit hardware.
 
-> At least for
-> the in-header function it is easy to fix in this patch.
-> 
-> Thanks!
+Not on the 7447A, fwiw.
 
-Right.
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
