@@ -1,23 +1,32 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E64851A0B92
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 07:50:26 +1100 (AEDT)
-Date: Thu, 27 Nov 2014 14:50:15 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Bergner <bergner@vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: 32 bit getcpu VDSO function uses 64 bit
- instructions
-Message-ID: <20141127205015.GA10073@gate.crashing.org>
-References: <1417036288-22079-1-git-send-email-anton@samba.org>
- <1417041497.12952.2.camel@concordia> <1417045827.16862.32.camel@otta>
- <20141127160829.GA26139@gate.crashing.org> <1417110100.16862.36.camel@otta>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417110100.16862.36.camel@otta>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F0AA1A09F3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 08:52:20 +1100 (AEDT)
+Date: Thu, 27 Nov 2014 22:52:08 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Hildenbrand <dahi@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
+ atomic
+In-Reply-To: <20141127161905.7c6220ee@thinkpad-w530>
+Message-ID: <alpine.DEB.2.11.1411272246110.3961@nanos>
+References: <20141126151729.GB9612@redhat.com>
+ <20141126152334.GA9648@redhat.com> <20141126163207.63810fcb@thinkpad-w530>
+ <20141126154717.GB10568@redhat.com> <5475FAB1.1000802@de.ibm.com>
+ <20141126163216.GB10850@redhat.com> <547604FC.4030300@de.ibm.com>
+ <20141126170447.GC11202@redhat.com> <20141127070919.GA4390@osiris>
+ <20141127090301.3ddc3077@thinkpad-w530> <20141127120441.GB4390@osiris>
+ <alpine.DEB.2.11.1411271602320.3961@nanos>
+ <20141127161905.7c6220ee@thinkpad-w530>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>, paulus@samba.org,
+ schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 27, 2014 at 11:41:40AM -0600, Peter Bergner wrote:
-> On Thu, 2014-11-27 at 10:08 -0600, Segher Boessenkool wrote:
-> > On Wed, Nov 26, 2014 at 05:50:27PM -0600, Peter Bergner wrote:
-> > > Nope, you don't get a SIGILL when executing 64-bit instructions in
-> > > 32-bit mode, so it'll happily just execute the instruction, doing
-> > > a full 64-bit compare.  I'm guessing that the upper 32-bits of both
-> > > r3 and r4 contain zeros, so we're probably just getting lucky.
+On Thu, 27 Nov 2014, David Hildenbrand wrote:
+> > OTOH, there is no reason why we need to disable preemption over that
+> > page_fault_disabled() region. There are code pathes which really do
+> > not require to disable preemption for that.
 > > 
-> > You will get a SIGILL if you run on 32-bit hardware.
+> > We have that seperated in preempt-rt for obvious reasons and IIRC
+> > Peter Zijlstra tried to distangle it in mainline some time ago. I
+> > forgot why that never got merged.
+> > 
 > 
-> Ha, I completely forgot about 32-bit hardware.  Anyway, I looked
-> at the ISA, and cmpdi and cmpwi are just extended mnemonics for
-> cmpi, with cmpdi setting the L field to 1.  Probably on 32-bit
-> hardware, the hardware is just ignoring the L bit being set and
-> doing a cmpwi for us???
+> Of course, we can completely separate that in our page fault code by doing
+> pagefault_disabled() checks instead of in_atomic() checks (even in add on
+> patches later).
+> 
+> > We tie way too much stuff on the preemption count already, which is a
+> > mightmare because we have no clear distinction of protection
+> > scopes. 
+> 
+> Although it might not be optimal, but keeping a separate counter for
+> pagefault_disable() as part of the preemption counter seems to be the only
+> doable thing right now.
 
-Huh.  Yes, maybe some implementations do that.
+It needs to be seperate, if it should be useful. Otherwise we just
+have a extra accounting in preempt_count() which does exactly the same
+thing as we have now: disabling preemption.
 
-The good news is that those then compute the correct thing ;-)
+Now you might say, that we could mask out that part when checking
+preempt_count, but that wont work on x86 as x86 has the preempt
+counter as a per cpu variable and not as a per thread one.
 
-Can QEMU help catch such bugs more reliably?
+But if you want to distangle pagefault disable from preempt disable
+then you must move it to the thread, because it is a property of the
+thread. preempt count is very much a per cpu counter as you can only
+go through schedule when it becomes 0.
 
+Btw, I find the x86 representation way more clear, because it
+documents that preempt count is a per cpu BKL and not a magic thread
+property. And sadly that is how preempt count is used ...
 
-Segher
+> I am not sure if a completely separated counter is even possible,
+> increasing the size of thread_info.
+
+And adding a ulong to thread_info is going to create exactly which
+problem?
+
+Thanks,
+
+	tglx
