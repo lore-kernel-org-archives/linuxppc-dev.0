@@ -1,60 +1,21 @@
-Return-Path: <dahi@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 754D81A0969
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 03:49:53 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
- Thu, 27 Nov 2014 16:49:49 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id AEB261B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 16:50:01 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sARGnkcq17367088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 16:49:46 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sARGnXU2025038
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 09:49:44 -0700
-Date: Thu, 27 Nov 2014 17:49:25 +0100
-From: David Hildenbrand <dahi@linux.vnet.ibm.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
- atomic
-Message-ID: <20141127174925.53e9d7a6@thinkpad-w530>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9FDDD6@AcuExch.aculab.com>
-References: <20141126151729.GB9612@redhat.com>
- <20141126152334.GA9648@redhat.com>
- <20141126163207.63810fcb@thinkpad-w530>
- <20141126154717.GB10568@redhat.com> <5475FAB1.1000802@de.ibm.com>
- <20141126163216.GB10850@redhat.com> <547604FC.4030300@de.ibm.com>
- <20141126170447.GC11202@redhat.com> <20141127070919.GA4390@osiris>
- <20141127090301.3ddc3077@thinkpad-w530>
- <20141127120441.GB4390@osiris>
- <alpine.DEB.2.11.1411271602320.3961@nanos>
- <20141127161905.7c6220ee@thinkpad-w530>
- <063D6719AE5E284EB5DD2968C1650D6D1C9FDD6A@AcuExch.aculab.com>
- <20141127164555.4bcebfe8@thinkpad-w530>
- <063D6719AE5E284EB5DD2968C1650D6D1C9FDDD6@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, Heiko
- Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mingo@kernel.org" <mingo@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "paulus@samba.org" <paulus@samba.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E6BAE1A09C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 03:57:13 +1100 (AEDT)
+Date: Thu, 27 Nov 2014 10:56:50 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 1/2]powerpc: foundation code to handle CR5 for local_t
+Message-ID: <20141127165650.GA28278@gate.crashing.org>
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: rusty@rustcorp.com.au, paulus@samba.org, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,61 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: David Hildenbrand [mailto:dahi@linux.vnet.ibm.com]
-> > > From: David Hildenbrand
-> > > ...
-> > > > Although it might not be optimal, but keeping a separate counter for
-> > > > pagefault_disable() as part of the preemption counter seems to be the only
-> > > > doable thing right now. I am not sure if a completely separated counter is even
-> > > > possible, increasing the size of thread_info.
-> > >
-> > > What about adding (say) 0x10000 for the more restrictive test?
-> > >
-> > > 	David
-> > >
-> > 
-> > You mean as part of the preempt counter?
-> > 
-> > The current layout (on my branch) is
-> > 
-> >  * PREEMPT_MASK:        0x000000ff
-> >  * SOFTIRQ_MASK:        0x0000ff00
-> >  * HARDIRQ_MASK:        0x000f0000
-> >  *     NMI_MASK:        0x00100000
-> >  * PREEMPT_ACTIVE:      0x00200000
-> > 
-> > I would have added
-> >  * PAGEFAULT_MASK:      0x03C00000
-> 
-> I'm not sure where you'd need to add the bits.
-> 
-> I think the above works because disabling 'HARDIRQ' implicitly
-> disables 'SOFTIRQ' and 'PREEMPT' (etc), so if 256+ threads
-> disable PREEMPT everything still works.
+On Thu, Nov 27, 2014 at 05:48:40PM +0530, Madhavan Srinivasan wrote:
+> Here is the design of this patch. Since local_* operations 
+> are only need to be atomic to interrupts (IIUC), patch uses 
+> one of the Condition Register (CR) fields as a flag variable. When 
+> entering the local_*, specific bit in the CR5 field is set
+> and on exit, bit is cleared. CR bit checking is done in the
+> interrupt return path. If CR5[EQ] bit set and if we return 
+> to kernel, we reset to start of local_* operation.
 
-AFAIK 256+ levels of preempt will break the system :)
+Have you tested this with (upcoming) GCC 5.0?  GCC now uses CR5,
+and it likes to use it very much, it might be more convenient to
+use e.g. CR1 (which is allocated almost last, only before CR0).
 
-Therefore with CONFIG_DEBUG_PREEMPT we verify that we don't have any
-over/underflows.
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -306,7 +306,26 @@ do_kvm_##n:								\
+>  	std	r10,0(r1);		/* make stack chain pointer	*/ \
+>  	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
+>  	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
+> -	beq	4f;			/* if from kernel mode		*/ \
+> +BEGIN_FTR_SECTION;							   \
+> +	lis	r9,4096;		/* Create a mask with HV and PR */ \
+> +	rldicr	r9,r9,32,31;		/* bits, AND with the MSR       */ \
+> +	mr	r10,r9;			/* to check for Hyp state       */ \
+> +	ori	r9,r9,16384;						   \
+> +	and	r9,r12,r9;						   \
+> +	cmpd	cr3,r10,r9;							   \
+> +	beq	cr3,66f;		/* Jump if we come from Hyp mode*/ \
+> +	mtcrf	0x04,r10;		/* Clear CR5 if coming from usr */ \
 
-But such bugs can only be found with CONFIG_DEBUG_PREEMPT enabled.
+Wow, such nastiness, only to avoid using dot insns (since you need to keep
+the current CR0 value for the following beq 4f).  And CR0 already holds the
+PR bit, so you need only to check the HV bit anyway?  Some restructuring
+would make this a lot simpler and clearer.
 
-> 
-> So if disabling pagefaults implies that pre-emption is disabled
-> (but SOFTIRQ is still allowed) then you need to insert your bit(s)
-> between 0xff00 and 0x00ff.
-> OTOH if disabling pre-emption implies that pagefaults are disabled
-> then you'd need to use the lsb and change all the above values.
-> 
-> Which makes me think that 'PREEMPT_ACTIVE' isn't right at all.
-> Two threads disabling NMIs (or 32  disabling HARDIRQ) won't DTRT.
+> +	/*
+> +	 * Now that we are about to exit from interrupt, lets check for
+> +	 * cr5 eq bit. If it is set, then we may be in the middle of
+> +	 * local_t update. In this case, we should rewind the NIP
+> +	 * accordingly.
+> +	 */
+> +	mfcr	r3
+> +	andi.	r4,r3,0x200
+> +	beq	63f
 
-With threads you mean levels? This is a per thread information.
+This is just   bne cr5,63f   isn't it?
 
-> 
-> OTOH I'm only guessing at how this is used.
-> 
-> 	David
-> 
-> 
-> 
+> index 72e783e..edb75a9 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -637,7 +637,7 @@ masked_##_H##interrupt:					\
+>  	rldicl	r10,r10,48,1; /* clear MSR_EE */	\
+>  	rotldi	r10,r10,16;				\
+>  	mtspr	SPRN_##_H##SRR1,r10;			\
+> -2:	mtcrf	0x80,r9;				\
+> +2:	mtcrf	0x90,r9;				\
+>  	ld	r9,PACA_EXGEN+EX_R9(r13);		\
+>  	ld	r10,PACA_EXGEN+EX_R10(r13);		\
+>  	ld	r11,PACA_EXGEN+EX_R11(r13);		\
+
+What does this do?
+
+
+Segher
