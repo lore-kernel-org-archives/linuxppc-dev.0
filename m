@@ -1,40 +1,45 @@
-Return-Path: <bergner@vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <dahi@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEAC41A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 04:41:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEC411A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 05:08:54 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bergner@vnet.ibm.com>;
- Thu, 27 Nov 2014 10:41:44 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BED9219D8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 10:30:23 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sARHgBOq41746668
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 10:42:11 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sARHfg6J022919
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 10:41:42 -0700
-Subject: Re: [PATCH] powerpc: 32 bit getcpu VDSO function uses 64 bit
- instructions
-From: Peter Bergner <bergner@vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <20141127160829.GA26139@gate.crashing.org>
-References: <1417036288-22079-1-git-send-email-anton@samba.org>
- <1417041497.12952.2.camel@concordia> <1417045827.16862.32.camel@otta>
- <20141127160829.GA26139@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 27 Nov 2014 11:41:40 -0600
-Message-ID: <1417110100.16862.36.camel@otta>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- paulus@samba.org
+ for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
+ Thu, 27 Nov 2014 18:08:50 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id F37CB1B08049
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 18:09:02 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sARI8l0k16908524
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 18:08:47 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sARI8jmv030015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 11:08:47 -0700
+Date: Thu, 27 Nov 2014 19:08:42 +0100
+From: David Hildenbrand <dahi@linux.vnet.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH RFC 2/2] mm, sched: trigger might_sleep() in
+ might_fault() when pagefaults are disabled
+Message-ID: <20141127190842.75a9cce3@thinkpad-w530>
+In-Reply-To: <20141127173218.GA30419@redhat.com>
+References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+ <1417108217-42687-1-git-send-email-dahi@linux.vnet.ibm.com>
+ <1417108217-42687-3-git-send-email-dahi@linux.vnet.ibm.com>
+ <20141127172449.GA30380@redhat.com>
+ <20141127173218.GA30419@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, borntraeger@de.ibm.com, David.Laight@ACULAB.COM,
+ paulus@samba.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +49,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-11-27 at 10:08 -0600, Segher Boessenkool wrote:
-> On Wed, Nov 26, 2014 at 05:50:27PM -0600, Peter Bergner wrote:
-> > Nope, you don't get a SIGILL when executing 64-bit instructions in
-> > 32-bit mode, so it'll happily just execute the instruction, doing
-> > a full 64-bit compare.  I'm guessing that the upper 32-bits of both
-> > r3 and r4 contain zeros, so we're probably just getting lucky.
+> > > -
+> > > -	__might_sleep(__FILE__, __LINE__, 0);
+> > > +	if (unlikely(!pagefault_disabled()))
+> > > +		__might_sleep(__FILE__, __LINE__, 0);
+> > >    
 > 
-> You will get a SIGILL if you run on 32-bit hardware.
+> Same here: so maybe make might_fault a wrapper
+> around __might_fault as well.
 
-Ha, I completely forgot about 32-bit hardware.  Anyway, I looked
-at the ISA, and cmpdi and cmpwi are just extended mnemonics for
-cmpi, with cmpdi setting the L field to 1.  Probably on 32-bit
-hardware, the hardware is just ignoring the L bit being set and
-doing a cmpwi for us???
+Yes, I also noticed that. It was part of the original code.
+For now I kept this revert as close as possible to
+the original patch.
 
-Peter
+Better fix this in an add-on patch? Or directly in this commit? At least for
+the in-header function it is easy to fix in this patch.
+
+Thanks!
