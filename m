@@ -1,22 +1,21 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 357CD1A0C78
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 05:28:06 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E64851A0B92
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 07:50:26 +1100 (AEDT)
+Date: Thu, 27 Nov 2014 14:50:15 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Peter Bergner <bergner@vnet.ibm.com>
 Subject: Re: [PATCH] powerpc: 32 bit getcpu VDSO function uses 64 bit
  instructions
+Message-ID: <20141127205015.GA10073@gate.crashing.org>
 References: <1417036288-22079-1-git-send-email-anton@samba.org>
  <1417041497.12952.2.camel@concordia> <1417045827.16862.32.camel@otta>
- <20141127160829.GA26139@gate.crashing.org>
-Date: Thu, 27 Nov 2014 19:20:53 +0100
-In-Reply-To: <20141127160829.GA26139@gate.crashing.org> (Segher Boessenkool's
- message of "Thu, 27 Nov 2014 10:08:29 -0600")
-Message-ID: <87oarstshm.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <20141127160829.GA26139@gate.crashing.org> <1417110100.16862.36.camel@otta>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417110100.16862.36.camel@otta>
 Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
  paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,28 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+On Thu, Nov 27, 2014 at 11:41:40AM -0600, Peter Bergner wrote:
+> On Thu, 2014-11-27 at 10:08 -0600, Segher Boessenkool wrote:
+> > On Wed, Nov 26, 2014 at 05:50:27PM -0600, Peter Bergner wrote:
+> > > Nope, you don't get a SIGILL when executing 64-bit instructions in
+> > > 32-bit mode, so it'll happily just execute the instruction, doing
+> > > a full 64-bit compare.  I'm guessing that the upper 32-bits of both
+> > > r3 and r4 contain zeros, so we're probably just getting lucky.
+> > 
+> > You will get a SIGILL if you run on 32-bit hardware.
+> 
+> Ha, I completely forgot about 32-bit hardware.  Anyway, I looked
+> at the ISA, and cmpdi and cmpwi are just extended mnemonics for
+> cmpi, with cmpdi setting the L field to 1.  Probably on 32-bit
+> hardware, the hardware is just ignoring the L bit being set and
+> doing a cmpwi for us???
 
-> On Wed, Nov 26, 2014 at 05:50:27PM -0600, Peter Bergner wrote:
->> On Thu, 2014-11-27 at 09:38 +1100, Michael Ellerman wrote:
->> > On Thu, 2014-11-27 at 08:11 +1100, Anton Blanchard wrote:
->> > > I used some 64 bit instructions when adding the 32 bit getcpu VDSO
->> > > function. Fix it.
->> > 
->> > Ouch. The symptom is a SIGILL I presume?
->> 
->> Nope, you don't get a SIGILL when executing 64-bit instructions in
->> 32-bit mode, so it'll happily just execute the instruction, doing
->> a full 64-bit compare.  I'm guessing that the upper 32-bits of both
->> r3 and r4 contain zeros, so we're probably just getting lucky.
->
-> You will get a SIGILL if you run on 32-bit hardware.
+Huh.  Yes, maybe some implementations do that.
 
-Not on the 7447A, fwiw.
+The good news is that those then compute the correct thing ;-)
 
-Andreas.
+Can QEMU help catch such bugs more reliably?
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+Segher
