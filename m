@@ -1,21 +1,40 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dahi@linux.vnet.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6BAE1A09C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 03:57:13 +1100 (AEDT)
-Date: Thu, 27 Nov 2014 10:56:50 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 1/2]powerpc: foundation code to handle CR5 for local_t
-Message-ID: <20141127165650.GA28278@gate.crashing.org>
-References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: rusty@rustcorp.com.au, paulus@samba.org, anton@samba.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id F18341A04F6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 04:10:29 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
+ Thu, 27 Nov 2014 17:10:25 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id DD5C21B0806B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 17:10:38 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sARHANAG11993130
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 17:10:23 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sARHAJdl026140
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Nov 2014 10:10:22 -0700
+From: David Hildenbrand <dahi@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH RFC 1/2] preempt: track pagefault_disable() calls in the
+ preempt counter
+Date: Thu, 27 Nov 2014 18:10:16 +0100
+Message-Id: <1417108217-42687-2-git-send-email-dahi@linux.vnet.ibm.com>
+In-Reply-To: <1417108217-42687-1-git-send-email-dahi@linux.vnet.ibm.com>
+References: <1416915806-24757-1-git-send-email-dahi@linux.vnet.ibm.com>
+ <1417108217-42687-1-git-send-email-dahi@linux.vnet.ibm.com>
+Cc: borntraeger@de.ibm.com, mst@redhat.com, heiko.carstens@de.ibm.com,
+ dahi@linux.vnet.ibm.com, David.Laight@ACULAB.COM, paulus@samba.org,
+ schwidefsky@de.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +44,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 27, 2014 at 05:48:40PM +0530, Madhavan Srinivasan wrote:
-> Here is the design of this patch. Since local_* operations 
-> are only need to be atomic to interrupts (IIUC), patch uses 
-> one of the Condition Register (CR) fields as a flag variable. When 
-> entering the local_*, specific bit in the CR5 field is set
-> and on exit, bit is cleared. CR bit checking is done in the
-> interrupt return path. If CR5[EQ] bit set and if we return 
-> to kernel, we reset to start of local_* operation.
+Let's track the levels of pagefault_disable() calls in a separate part of the
+preempt counter. Also update the regular preempt counter to keep the existing
+pagefault infrastructure working (can be demangeled and cleaned up later).
 
-Have you tested this with (upcoming) GCC 5.0?  GCC now uses CR5,
-and it likes to use it very much, it might be more convenient to
-use e.g. CR1 (which is allocated almost last, only before CR0).
+This change is needed to detect whether we are running in a simple atomic
+context or in pagefault_disable() context.
 
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -306,7 +306,26 @@ do_kvm_##n:								\
->  	std	r10,0(r1);		/* make stack chain pointer	*/ \
->  	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
->  	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
-> -	beq	4f;			/* if from kernel mode		*/ \
-> +BEGIN_FTR_SECTION;							   \
-> +	lis	r9,4096;		/* Create a mask with HV and PR */ \
-> +	rldicr	r9,r9,32,31;		/* bits, AND with the MSR       */ \
-> +	mr	r10,r9;			/* to check for Hyp state       */ \
-> +	ori	r9,r9,16384;						   \
-> +	and	r9,r12,r9;						   \
-> +	cmpd	cr3,r10,r9;							   \
-> +	beq	cr3,66f;		/* Jump if we come from Hyp mode*/ \
-> +	mtcrf	0x04,r10;		/* Clear CR5 if coming from usr */ \
+Cleanup the PREEMPT_ACTIVE defines and fix the preempt count documentation on
+the way.
 
-Wow, such nastiness, only to avoid using dot insns (since you need to keep
-the current CR0 value for the following beq 4f).  And CR0 already holds the
-PR bit, so you need only to check the HV bit anyway?  Some restructuring
-would make this a lot simpler and clearer.
+Signed-off-by: David Hildenbrand <dahi@linux.vnet.ibm.com>
+---
+ include/linux/preempt_mask.h | 24 +++++++++++++++++++-----
+ include/linux/uaccess.h      | 21 ++++++++++++++-------
+ 2 files changed, 33 insertions(+), 12 deletions(-)
 
-> +	/*
-> +	 * Now that we are about to exit from interrupt, lets check for
-> +	 * cr5 eq bit. If it is set, then we may be in the middle of
-> +	 * local_t update. In this case, we should rewind the NIP
-> +	 * accordingly.
-> +	 */
-> +	mfcr	r3
-> +	andi.	r4,r3,0x200
-> +	beq	63f
-
-This is just   bne cr5,63f   isn't it?
-
-> index 72e783e..edb75a9 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -637,7 +637,7 @@ masked_##_H##interrupt:					\
->  	rldicl	r10,r10,48,1; /* clear MSR_EE */	\
->  	rotldi	r10,r10,16;				\
->  	mtspr	SPRN_##_H##SRR1,r10;			\
-> -2:	mtcrf	0x80,r9;				\
-> +2:	mtcrf	0x90,r9;				\
->  	ld	r9,PACA_EXGEN+EX_R9(r13);		\
->  	ld	r10,PACA_EXGEN+EX_R10(r13);		\
->  	ld	r11,PACA_EXGEN+EX_R11(r13);		\
-
-What does this do?
-
-
-Segher
+diff --git a/include/linux/preempt_mask.h b/include/linux/preempt_mask.h
+index dbeec4d..9d6e7f7 100644
+--- a/include/linux/preempt_mask.h
++++ b/include/linux/preempt_mask.h
+@@ -4,11 +4,15 @@
+ #include <linux/preempt.h>
+ 
+ /*
+- * We put the hardirq and softirq counter into the preemption
++ * We put the hardirq, softirq and pagefault_disable counter into the preemption
+  * counter. The bitmask has the following meaning:
+  *
+  * - bits 0-7 are the preemption count (max preemption depth: 256)
+  * - bits 8-15 are the softirq count (max # of softirqs: 256)
++ * - bits 16-19 are the hardirq count (max # of hardirqs: 16)
++ * - bit 20 is the nmi flag
++ * - bit 21 is the preempt_active flag
++ * - bits 22-25 are the pagefault count (max pagefault disable depth: 16)
+  *
+  * The hardirq count could in theory be the same as the number of
+  * interrupts in the system, but we run all interrupt handlers with
+@@ -21,16 +25,21 @@
+  * HARDIRQ_MASK:	0x000f0000
+  *     NMI_MASK:	0x00100000
+  * PREEMPT_ACTIVE:	0x00200000
++ * PAGEFAULT_MASK:	0x03C00000
+  */
+ #define PREEMPT_BITS	8
+ #define SOFTIRQ_BITS	8
+ #define HARDIRQ_BITS	4
+ #define NMI_BITS	1
++#define PREEMPT_ACTIVE_BITS	1
++#define PAGEFAULT_BITS	4
+ 
+ #define PREEMPT_SHIFT	0
+ #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
+ #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
+ #define NMI_SHIFT	(HARDIRQ_SHIFT + HARDIRQ_BITS)
++#define PREEMPT_ACTIVE_SHIFT	(NMI_SHIFT + NMI_BITS)
++#define PAGEFAULT_SHIFT	(PREEMPT_ACTIVE_SHIFT + PREEMPT_ACTIVE_BITS)
+ 
+ #define __IRQ_MASK(x)	((1UL << (x))-1)
+ 
+@@ -38,18 +47,17 @@
+ #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
+ #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
+ #define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
++#define PREEMPT_ACTIVE	(__IRQ_MASK(PREEMPT_ACTIVE_BITS) << PREEMPT_ACTIVE_SHIFT)
++#define PAGEFAULT_MASK	(__IRQ_MASK(PAGEFAULT_BITS) << PAGEFAULT_SHIFT)
+ 
+ #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
+ #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
+ #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
+ #define NMI_OFFSET	(1UL << NMI_SHIFT)
++#define PAGEFAULT_OFFSET (1UL << PAGEFAULT_SHIFT)
+ 
+ #define SOFTIRQ_DISABLE_OFFSET	(2 * SOFTIRQ_OFFSET)
+ 
+-#define PREEMPT_ACTIVE_BITS	1
+-#define PREEMPT_ACTIVE_SHIFT	(NMI_SHIFT + NMI_BITS)
+-#define PREEMPT_ACTIVE	(__IRQ_MASK(PREEMPT_ACTIVE_BITS) << PREEMPT_ACTIVE_SHIFT)
+-
+ #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+ #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+ #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
+@@ -71,6 +79,12 @@
+  */
+ #define in_nmi()	(preempt_count() & NMI_MASK)
+ 
++/*
++ * Are we in pagefault_disable context?
++ */
++#define pagefault_disabled()	(preempt_count() & PAGEFAULT_MASK)
++
++
+ #if defined(CONFIG_PREEMPT_COUNT)
+ # define PREEMPT_CHECK_OFFSET 1
+ #else
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index ecd3319..a2ba6e6 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -4,18 +4,24 @@
+ #include <linux/preempt.h>
+ #include <asm/uaccess.h>
+ 
++#define __pagefault_count_inc() preempt_count_add(PAGEFAULT_OFFSET)
++#define __pagefault_count_dec() preempt_count_sub(PAGEFAULT_OFFSET)
++
+ /*
+- * These routines enable/disable the pagefault handler in that
+- * it will not take any locks and go straight to the fixup table.
++ * These routines enable/disable the pagefault handler. If disabled, it will
++ * not take any locks and go straight to the fixup table.
++ *
++ * We increase the preempt and the pagefault count, to be able to distinguish
++ * whether we run in simple atomic context or in a real pagefault_disable context.
++ *
++ * For now, after pagefault_disabled() has been called, we run in atomic
++ * context. User access methods will not sleep.
+  *
+- * They have great resemblance to the preempt_disable/enable calls
+- * and in fact they are identical; this is because currently there is
+- * no other way to make the pagefault handlers do this. So we do
+- * disable preemption but we don't necessarily care about that.
+  */
+ static inline void pagefault_disable(void)
+ {
+ 	preempt_count_inc();
++	__pagefault_count_inc();
+ 	/*
+ 	 * make sure to have issued the store before a pagefault
+ 	 * can hit.
+@@ -25,12 +31,13 @@ static inline void pagefault_disable(void)
+ 
+ static inline void pagefault_enable(void)
+ {
+-#ifndef CONFIG_PREEMPT
+ 	/*
+ 	 * make sure to issue those last loads/stores before enabling
+ 	 * the pagefault handler again.
+ 	 */
+ 	barrier();
++	__pagefault_count_dec();
++#ifndef CONFIG_PREEMPT
+ 	preempt_count_dec();
+ #else
+ 	preempt_enable();
+-- 
+1.8.5.5
