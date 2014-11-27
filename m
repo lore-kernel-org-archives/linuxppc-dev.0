@@ -1,32 +1,21 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F0AA1A09F3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 08:52:20 +1100 (AEDT)
-Date: Thu, 27 Nov 2014 22:52:08 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Hildenbrand <dahi@linux.vnet.ibm.com>
-Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
- atomic
-In-Reply-To: <20141127161905.7c6220ee@thinkpad-w530>
-Message-ID: <alpine.DEB.2.11.1411272246110.3961@nanos>
-References: <20141126151729.GB9612@redhat.com>
- <20141126152334.GA9648@redhat.com> <20141126163207.63810fcb@thinkpad-w530>
- <20141126154717.GB10568@redhat.com> <5475FAB1.1000802@de.ibm.com>
- <20141126163216.GB10850@redhat.com> <547604FC.4030300@de.ibm.com>
- <20141126170447.GC11202@redhat.com> <20141127070919.GA4390@osiris>
- <20141127090301.3ddc3077@thinkpad-w530> <20141127120441.GB4390@osiris>
- <alpine.DEB.2.11.1411271602320.3961@nanos>
- <20141127161905.7c6220ee@thinkpad-w530>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FD571A0B98
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 10:50:43 +1100 (AEDT)
+Date: Fri, 28 Nov 2014 10:50:36 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/4] powernv: cpuidle: Redesign idle states management
+Message-ID: <20141127235035.GC12871@iris.ozlabs.ibm.com>
+References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, paulus@samba.org,
- schwidefsky@de.ibm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +25,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 27 Nov 2014, David Hildenbrand wrote:
-> > OTOH, there is no reason why we need to disable preemption over that
-> > page_fault_disabled() region. There are code pathes which really do
-> > not require to disable preemption for that.
-> > 
-> > We have that seperated in preempt-rt for obvious reasons and IIRC
-> > Peter Zijlstra tried to distangle it in mainline some time ago. I
-> > forgot why that never got merged.
-> > 
-> 
-> Of course, we can completely separate that in our page fault code by doing
-> pagefault_disabled() checks instead of in_atomic() checks (even in add on
-> patches later).
-> 
-> > We tie way too much stuff on the preemption count already, which is a
-> > mightmare because we have no clear distinction of protection
-> > scopes. 
-> 
-> Although it might not be optimal, but keeping a separate counter for
-> pagefault_disable() as part of the preemption counter seems to be the only
-> doable thing right now.
+On Tue, Nov 25, 2014 at 04:47:58PM +0530, Shreyas B. Prabhu wrote:
+[snip]
+> +2:
+> +	/* Sleep or winkle */
+> +	li	r7,1
+> +	mfspr	r8,SPRN_PIR
+> +	/*
+> +	 * The last 3 bits of PIR represents the thread id of a cpu
+> +	 * in power8. This will need adjusting for power7.
+> +	 */
+> +	andi.	r8,r8,0x07			/* Get thread id into r8 */
+> +	rotld	r7,r7,r8
 
-It needs to be seperate, if it should be useful. Otherwise we just
-have a extra accounting in preempt_count() which does exactly the same
-thing as we have now: disabling preemption.
+I would suggest adding another u8 field to the paca to store our
+thread bit, and initialize it to 1 << (cpu_id % threads_per_core)
+early on.  That will handle the POWER7 case correctly and reduce these
+four instructions to one.
 
-Now you might say, that we could mask out that part when checking
-preempt_count, but that wont work on x86 as x86 has the preempt
-counter as a per cpu variable and not as a per thread one.
+> +
+> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
+> +lwarx_loop1:
+> +	lwarx	r15,0,r14
+> +	andc	r15,r15,r7			/* Clear thread bit */
+> +
+> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
+> +	beq	last_thread
+> +
+> +	/* Not the last thread to goto sleep */
+> +	stwcx.	r15,0,r14
+> +	bne-	lwarx_loop1
+> +	b	common_enter
+> +
+> +last_thread:
+> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
+> +	lbz	r3,0(r3)
+> +	cmpwi	r3,1
+> +	bne	common_enter
+> +	/*
+> +	 * Last thread of the core entering sleep. Last thread needs to execute
+> +	 * the hardware bug workaround code. Before that, set the lock bit to
+> +	 * avoid the race of other threads waking up and undoing workaround
+> +	 * before workaround is applied.
+> +	 */
+> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
+> +	stwcx.	r15,0,r14
+> +	bne-	lwarx_loop1
+> +
+> +	/* Fast sleep workaround */
+> +	li	r3,1
+> +	li	r4,1
+> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
+> +	bl	opal_call_realmode
+> +
+> +	/* Clear Lock bit */
+> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
+> +	stw	r15,0(r14)
 
-But if you want to distangle pagefault disable from preempt disable
-then you must move it to the thread, because it is a property of the
-thread. preempt count is very much a per cpu counter as you can only
-go through schedule when it becomes 0.
+In this case we know the result of the andi. will be 0, so this could
+be just li r0,0; stw r0,0(r14).
 
-Btw, I find the x86 representation way more clear, because it
-documents that preempt count is a per cpu BKL and not a magic thread
-property. And sadly that is how preempt count is used ...
+> +
+> +common_enter: /* common code for all the threads entering sleep */
+> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+>  
+>  _GLOBAL(power7_idle)
+>  	/* Now check if user or arch enabled NAP mode */
+> @@ -141,49 +191,16 @@ _GLOBAL(power7_idle)
+>  
+>  _GLOBAL(power7_nap)
+>  	mr	r4,r3
+> -	li	r3,0
+> +	li	r3,PNV_THREAD_NAP
+>  	b	power7_powersave_common
+>  	/* No return */
+>  
+>  _GLOBAL(power7_sleep)
+> -	li	r3,1
+> +	li	r3,PNV_THREAD_SLEEP
+>  	li	r4,1
+>  	b	power7_powersave_common
+>  	/* No return */
+>  
+> -/*
+> - * Make opal call in realmode. This is a generic function to be called
+> - * from realmode from reset vector. It handles endianess.
+> - *
+> - * r13 - paca pointer
+> - * r1  - stack pointer
+> - * r3  - opal token
+> - */
+> -opal_call_realmode:
+> -	mflr	r12
+> -	std	r12,_LINK(r1)
+> -	ld	r2,PACATOC(r13)
+> -	/* Set opal return address */
+> -	LOAD_REG_ADDR(r0,return_from_opal_call)
+> -	mtlr	r0
+> -	/* Handle endian-ness */
+> -	li	r0,MSR_LE
+> -	mfmsr	r12
+> -	andc	r12,r12,r0
+> -	mtspr	SPRN_HSRR1,r12
+> -	mr	r0,r3			/* Move opal token to r0 */
+> -	LOAD_REG_ADDR(r11,opal)
+> -	ld	r12,8(r11)
+> -	ld	r2,0(r11)
+> -	mtspr	SPRN_HSRR0,r12
+> -	hrfid
+> -
+> -return_from_opal_call:
+> -	FIXUP_ENDIAN
+> -	ld	r0,_LINK(r1)
+> -	mtlr	r0
+> -	blr
+> -
+>  #define CHECK_HMI_INTERRUPT						\
+>  	mfspr	r0,SPRN_SRR1;						\
+>  BEGIN_FTR_SECTION_NESTED(66);						\
+> @@ -196,10 +213,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>  	/* Invoke opal call to handle hmi */				\
+>  	ld	r2,PACATOC(r13);					\
+>  	ld	r1,PACAR1(r13);						\
+> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
+> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
+> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
+>  	bl	opal_call_realmode;					\
+> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
+>  20:	nop;
+>  
+>  
+> @@ -210,12 +225,91 @@ _GLOBAL(power7_wakeup_tb_loss)
+>  BEGIN_FTR_SECTION
+>  	CHECK_HMI_INTERRUPT
+>  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+> +
+> +	li	r7,1
+> +	mfspr	r8,SPRN_PIR
+> +	/*
+> +	 * The last 3 bits of PIR represents the thread id of a cpu
+> +	 * in power8. This will need adjusting for power7.
+> +	 */
+> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
+> +	rotld	r7,r7,r8
+> +	/* r7 now has 'thread_id'th bit set */
+> +
+> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
+> +lwarx_loop2:
+> +	lwarx	r15,0,r14
+> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
+> +	/*
+> +	 * Lock bit is set in one of the 2 cases-
+> +	 * a. In the sleep/winkle enter path, the last thread is executing
+> +	 * fastsleep workaround code.
+> +	 * b. In the wake up path, another thread is executing fastsleep
+> +	 * workaround undo code or resyncing timebase or restoring context
+> +	 * In either case loop until the lock bit is cleared.
+> +	 */
+> +	bne	lwarx_loop2
+> +
+> +	cmpwi	cr2,r15,0
+> +	or	r15,r15,r7		/* Set thread bit */
+> +
+> +	beq	cr2,first_thread
+> +
+> +	/* Not first thread in core to wake up */
+> +	stwcx.	r15,0,r14
+> +	bne-	lwarx_loop2
+> +	b	common_exit
+> +
+> +first_thread:
+> +	/* First thread in core to wakeup */
+> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
+> +	stwcx.	r15,0,r14
+> +	bne-	lwarx_loop2
+> +
+> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
+> +	lbz	r3,0(r3)
+> +	cmpwi	r3,1
+> +	/*  skip fastsleep workaround if its not needed */
+> +	bne	timebase_resync
+> +
+> +	/* Undo fast sleep workaround */
+> +	mfcr	r16	/* Backup CR into a non-volatile register */
+> +	li	r3,1
+> +	li	r4,0
+> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
+> +	bl	opal_call_realmode
+> +	mtcr	r16	/* Restore CR */
+> +
+> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
+> +	 * set in exceptions-64s.S */
+> +	ble	cr1,clear_lock
+> +
+> +timebase_resync:
+>  	/* Time base re-sync */
+> -	li	r3,OPAL_RESYNC_TIMEBASE
+> +	li	r0,OPAL_RESYNC_TIMEBASE
+>  	bl	opal_call_realmode;
 
-> I am not sure if a completely separated counter is even possible,
-> increasing the size of thread_info.
+So if pnv_need_fastsleep_workaround is zero, we always do the timebase
+resync, but if pnv_need_fastsleep_workaround is one, we only do the
+timebase resync if we had a loss of state.  Is that really what you
+meant?
 
-And adding a ulong to thread_info is going to create exactly which
-problem?
+> -
+>  	/* TODO: Check r3 for failure */
+>  
+> +clear_lock:
+> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
+> +	stw	r15,0(r14)
+> +
+> +common_exit:
+> +	li	r5,PNV_THREAD_RUNNING
+> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
+> +
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +	li      r0,KVM_HWTHREAD_IN_KERNEL
+> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
+> +	/* Order setting hwthread_state vs. testing hwthread_req */
+> +	sync
+> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
+> +	cmpwi   r0,0
+> +	beq     6f
+> +	b       kvm_start_guest
+> +6:
+> +#endif
 
-Thanks,
+I'd prefer not to duplicate this code.  Could you instead branch back
+to the code in exceptions-64s.S?  Or call this code via a bl and get
+back to exceptions-64s.S via a blr.
 
-	tglx
+> +
+>  	REST_NVGPRS(r1)
+>  	REST_GPR(2, r1)
+>  	ld	r3,_CCR(r1)
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index feb549a..b2aa93b 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -158,6 +158,43 @@ opal_tracepoint_return:
+>  	blr
+>  #endif
+>  
+> +/*
+> + * Make opal call in realmode. This is a generic function to be called
+> + * from realmode. It handles endianness.
+> + *
+> + * r13 - paca pointer
+> + * r1  - stack pointer
+> + * r0  - opal token
+> + */
+> +_GLOBAL(opal_call_realmode)
+> +	mflr	r12
+> +	std	r12,_LINK(r1)
+
+This is a bug waiting to happen.  Using _LINK(r1) was OK in this
+code's previous location, since there we know there is a
+INT_FRAME_SIZE-sized stack frame and the _LINK field is basically
+unused.  Now that you're making this available to call from anywhere,
+you can't trash the caller's stack frame like this.  You need to use
+PPC_LR_STKOFF(r1) instead.
+
+> +	ld	r2,PACATOC(r13)
+> +	/* Set opal return address */
+> +	LOAD_REG_ADDR(r12,return_from_opal_call)
+> +	mtlr	r12
+> +
+> +	mfmsr	r12
+> +#ifdef __LITTLE_ENDIAN__
+> +	/* Handle endian-ness */
+> +	li	r11,MSR_LE
+> +	andc	r12,r12,r11
+> +#endif
+> +	mtspr	SPRN_HSRR1,r12
+> +	LOAD_REG_ADDR(r11,opal)
+> +	ld	r12,8(r11)
+> +	ld	r2,0(r11)
+> +	mtspr	SPRN_HSRR0,r12
+> +	hrfid
+> +
+> +return_from_opal_call:
+> +#ifdef __LITTLE_ENDIAN__
+> +	FIXUP_ENDIAN
+> +#endif
+> +	ld	r12,_LINK(r1)
+> +	mtlr	r12
+> +	blr
+
+Paul.
