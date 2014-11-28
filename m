@@ -1,52 +1,40 @@
-Return-Path: <dahi@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A0A91A0BC5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 18:35:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 331CE1A0130
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 19:27:22 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
- Fri, 28 Nov 2014 07:35:00 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id D1C3217D8056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 07:35:15 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAS7YxDS17825960
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 07:34:59 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAS7YuVx024003
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 00:34:58 -0700
-Date: Fri, 28 Nov 2014 08:34:54 +0100
-From: David Hildenbrand <dahi@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC 0/2] Reenable might_sleep() checks for might_fault() when
- atomic
-Message-ID: <20141128083454.403d5620@thinkpad-w530>
-In-Reply-To: <alpine.DEB.2.11.1411272246110.3961@nanos>
-References: <20141126151729.GB9612@redhat.com>
- <20141126152334.GA9648@redhat.com>
- <20141126163207.63810fcb@thinkpad-w530>
- <20141126154717.GB10568@redhat.com> <5475FAB1.1000802@de.ibm.com>
- <20141126163216.GB10850@redhat.com> <547604FC.4030300@de.ibm.com>
- <20141126170447.GC11202@redhat.com> <20141127070919.GA4390@osiris>
- <20141127090301.3ddc3077@thinkpad-w530>
- <20141127120441.GB4390@osiris>
- <alpine.DEB.2.11.1411271602320.3961@nanos>
- <20141127161905.7c6220ee@thinkpad-w530>
- <alpine.DEB.2.11.1411272246110.3961@nanos>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 28 Nov 2014 18:27:19 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BCAC2CE8067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 19:27:15 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sAS8RExR29229272
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 19:27:15 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sAS8RETg004940
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 19:27:14 +1100
+Message-ID: <547831DC.6000703@linux.vnet.ibm.com>
+Date: Fri, 28 Nov 2014 13:57:08 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, paulus@samba.org,
- schwidefsky@de.ibm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+To: David Laight <David.Laight@ACULAB.COM>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 0/2] powerpc: CR based local atomic operation
+ implementation
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+ "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,69 +44,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Thu, 27 Nov 2014, David Hildenbrand wrote:
-> > > OTOH, there is no reason why we need to disable preemption over that
-> > > page_fault_disabled() region. There are code pathes which really do
-> > > not require to disable preemption for that.
-> > > 
-> > > We have that seperated in preempt-rt for obvious reasons and IIRC
-> > > Peter Zijlstra tried to distangle it in mainline some time ago. I
-> > > forgot why that never got merged.
-> > > 
-> > 
-> > Of course, we can completely separate that in our page fault code by doing
-> > pagefault_disabled() checks instead of in_atomic() checks (even in add on
-> > patches later).
-> > 
-> > > We tie way too much stuff on the preemption count already, which is a
-> > > mightmare because we have no clear distinction of protection
-> > > scopes. 
-> > 
-> > Although it might not be optimal, but keeping a separate counter for
-> > pagefault_disable() as part of the preemption counter seems to be the only
-> > doable thing right now.
+On Thursday 27 November 2014 07:35 PM, David Laight wrote:
+> From: Madhavan Srinivasan
+>> This patchset create the infrastructure to handle the CR based
+>> local_* atomic operations. Local atomic operations are fast
+>> and highly reentrant per CPU counters.  Used for percpu
+>> variable updates. Local atomic operations only guarantee
+>> variable modification atomicity wrt the CPU which owns the
+>> data and these needs to be executed in a preemption safe way.
 > 
-> It needs to be seperate, if it should be useful. Otherwise we just
-> have a extra accounting in preempt_count() which does exactly the same
-> thing as we have now: disabling preemption.
+> These are usually called 'restartable atomic sequences (RAS)'.
 > 
-> Now you might say, that we could mask out that part when checking
-> preempt_count, but that wont work on x86 as x86 has the preempt
-> counter as a per cpu variable and not as a per thread one.
-
-Ah right, it's per cpu on x86. So it really belongs to a thread if we want to
-demangle preemption and pagefault_disable.
-
-Would work for now, but for x86 not on the long run.
-
+>> Here is the design of the first patch. Since local_* operations
+>> are only need to be atomic to interrupts (IIUC), patch uses
+>> one of the Condition Register (CR) fields as a flag variable. When
+>> entering the local_*, specific bit in the CR5 field is set
+>> and on exit, bit is cleared. CR bit checking is done in the
+>> interrupt return path. If CR5[EQ] bit set and if we return
+>> to kernel, we reset to start of local_* operation.
 > 
-> But if you want to distangle pagefault disable from preempt disable
-> then you must move it to the thread, because it is a property of the
-> thread. preempt count is very much a per cpu counter as you can only
-> go through schedule when it becomes 0.
+> I don't claim to be able to read ppc assembler.
+> But I can't see the code that clears CR5[EQ] for the duration
+> of the ISR.
+I use crclr instruction at the end of the code block to clear the bit.
 
-Thinking about it, this makes perfect sense!
+> Without it a nested interrupt will go through unwanted paths.
+> 
+> There are also a lot of 'magic' constants in that assembly code.
+> 
+All these constants are define in asm/ppc-opcode.h
 
+> I also wonder if it is possible to inspect the interrupted
+> code to determine the start/end of the RAS block.
+> (Easiest if you assume that there is a single 'write' instruction
+> as the last entry in the block.)
 > 
-> Btw, I find the x86 representation way more clear, because it
-> documents that preempt count is a per cpu BKL and not a magic thread
-> property. And sadly that is how preempt count is used ...
-> 
-> > I am not sure if a completely separated counter is even possible,
-> > increasing the size of thread_info.
-> 
-> And adding a ulong to thread_info is going to create exactly which
-> problem?
+So each local_* function also have code in the __ex_table section. IIUC,
+__ex_table contains two address. So if the return address found in the
+first column of the _ex_table, use the corresponding address in the
+second column to continue from.
 
-If we're allowed to increase the size of thread_info - absolutely fine with me!
-(I am not sure if some archs have special constraints on the size)
-
-Will see what I can come up with.
-
-Thanks!
-
+> Also, how expensive is it to disable all interrupts?
 > 
-> Thanks,
+In the patch 1/2, posted the numbers for that too.
+
+> 	David
 > 
-> 	tglx
-> 
+
+Regards
+Maddy
