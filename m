@@ -1,21 +1,15 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mmarek@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAE6E1A0B92
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 21:24:54 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@freescale.com>
-To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <netdev@vger.kernel.org>
-Subject: [PATCH] Documentation: bindings: net: DPAA corenet binding document
-Date: Fri, 28 Nov 2014 12:10:26 +0200
-Message-ID: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
-Reply-To: <madalin.bucur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Igal.Liberman@freescale.com,
- Emilian.Medve@freescale.com, Madalin Bucur <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F39781A0BDD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 23:42:58 +1100 (AEDT)
+From: Michal Marek <mmarek@suse.cz>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH] kbuild: Fix make help-XXX on powerpc
+Date: Fri, 28 Nov 2014 13:42:43 +0100
+Message-Id: <1417178563-28001-1-git-send-email-mmarek@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the device tree binding document for the DPAA corenet node
-and DPAA Ethernet nodes.
+make ARCH=powerpc help-<board series> should not require a cofigured
+source tree. Also, sort the boards in the output.
 
-Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+Signed-off-by: Michal Marek <mmarek@suse.cz>
 ---
- Documentation/devicetree/bindings/net/fsl-dpaa.txt | 31 ++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/net/fsl-dpaa.txt
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/fsl-dpaa.txt b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-new file mode 100644
-index 0000000..822c668
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-@@ -0,0 +1,31 @@
-+*DPAA corenet
-+
-+The corenet bus containing all DPAA Ethernet nodes.
-+
-+Required property
-+ - compatible: string property.  Must include "fsl,dpaa". Can include
-+   also "fsl,<SoC>-dpaa".
-+
-+Example:
-+
-+fsl,dpaa {
-+        compatible = "fsl,p4080-dpaa", "fsl,dpaa";
-+};
-+
-+*DPAA Ethernet
-+
-+DPAA Ethernet implements an Ethernet interface on top of the functionality
-+offered by the DPAA accelerators: QMan, BMan, FMan. It contains a reference
-+to the FMan MAC node used (dTSEC, TGEC, MEMAC). This construct is used by
-+u-boot for the boot-time device tree fix-up.
-+
-+Required properties
-+ - compatible: standard string property. Must include "fsl,dpa-ethernet".
-+ - fsl,fman-mac: phandle that references a node describing the used DPAA MAC.
-+
-+Example:
-+
-+ethernet0 {
-+        compatible = "fsl,dpa-ethernet";
-+        fsl,fman-mac = <&enet0>;
-+};
+diff --git a/Makefile b/Makefile
+index 88b7fa5..0cd4e14 100644
+--- a/Makefile
++++ b/Makefile
+@@ -482,7 +482,7 @@ asm-generic:
+ version_h := include/generated/uapi/linux/version.h
+ 
+ no-dot-config-targets := clean mrproper distclean \
+-			 cscope gtags TAGS tags help %docs check% coccicheck \
++			 cscope gtags TAGS tags help% %docs check% coccicheck \
+ 			 $(version_h) headers_% archheaders archscripts \
+ 			 kernelversion %src-pkg
+ 
+@@ -1323,7 +1323,7 @@ help-board-dirs := $(addprefix help-,$(board-dirs))
+ 
+ help-boards: $(help-board-dirs)
+ 
+-boards-per-dir = $(notdir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/$*/*_defconfig))
++boards-per-dir = $(sort $(notdir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/$*/*_defconfig)))
+ 
+ $(help-board-dirs): help-%:
+ 	@echo  'Architecture specific targets ($(SRCARCH) $*):'
 -- 
-1.7.11.7
+2.1.2
