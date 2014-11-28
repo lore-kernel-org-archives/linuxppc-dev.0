@@ -1,42 +1,27 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB0F71A09BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 19:39:30 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Fri, 28 Nov 2014 08:39:26 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 06EAA2190061
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 08:38:57 +0000 (GMT)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sAS8dOOX20447294
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 08:39:24 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sAS8dOGI030671
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 01:39:24 -0700
-Date: Fri, 28 Nov 2014 09:39:19 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH REPOST 3/3] powerpc/vphn: move endianness fixing to
- vphn_unpack_associativity()
-Message-ID: <20141128093919.700f1874@bahia.local>
-In-Reply-To: <1417139348.2852.17.camel@kernel.crashing.org>
-References: <20141117174216.7717.10926.stgit@bahia.local>
- <20141117174244.7717.83028.stgit@bahia.local>
- <1417045163.5089.67.camel@kernel.crashing.org>
- <20141127102812.7d1e625b@bahia.local>
- <1417139348.2852.17.camel@kernel.crashing.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id B9F611A0BD1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 21:10:54 +1100 (AEDT)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 29751-10 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri, 28 Nov 2014 10:10:44 +0000 (GMT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Madhavan Srinivasan' <maddy@linux.vnet.ibm.com>, "mpe@ellerman.id.au"
+ <mpe@ellerman.id.au>
+Subject: RE: [RFC PATCH 0/2] powerpc: CR based local atomic operation
+ implementation
+Date: Fri, 28 Nov 2014 10:09:35 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1C9FE4A9@AcuExch.aculab.com>
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
+ <547831DC.6000703@linux.vnet.ibm.com>
+In-Reply-To: <547831DC.6000703@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+ "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,175 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 28 Nov 2014 12:49:08 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Thu, 2014-11-27 at 10:28 +0100, Greg Kurz wrote:
-> > On Thu, 27 Nov 2014 10:39:23 +1100
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > On Mon, 2014-11-17 at 18:42 +0100, Greg Kurz wrote:
-> > > > The first argument to vphn_unpack_associativity() is a const long *, but the
-> > > > parsing code expects __be64 values actually. This is inconsistent. We should
-> > > > either pass a const __be64 * or change vphn_unpack_associativity() so that
-> > > > it fixes endianness by itself.
-> > > > 
-> > > > This patch does the latter, since the caller doesn't need to know about
-> > > > endianness and this allows to fix significant 64-bit values only. Please
-> > > > note that the previous code was able to cope with 32-bit fields being split
-> > > > accross two consecutives 64-bit values. Since PAPR+ doesn't say this cannot
-> > > > happen, the behaviour was kept. It requires extra checking to know when fixing
-> > > > is needed though.
-> > > 
-> > > While I agree with moving the endian fixing down, the patch makes me
-> > > nervous. Note that I don't fully understand the format of what we are
-> > > parsing here so I might be wrong but ...
-> > > 
-> > 
-> > My understanding of PAPR+ is that H_HOME_NODE_ASSOCIATIVITY returns a sequence of
-> > numbers in registers R4 to R9 (that is 64 * 6 = 384 bits). The numbers are either
-> > 16-bit long (if high order bit is 1) or 32-bit long. The remaining unused bits are
-> > set to 1. 
-> 
-> Ok, that's the bit I was missing. What we get is thus not a memory array
-> but a register one, which we "incorrectly" swap when writing to memory
-> inside plpar_hcall9().
-> 
-
-Yes.
-
-> Now, I'm not sure that replacing:
-> 
-> -	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
-> -		retbuf[i] = cpu_to_be64(retbuf[i]);
-> 
-> With:
-> 
-> +		if (j % 4 == 0) {
-> +			fixed.packed[k] = cpu_to_be64(packed[k]);
-> +			k++;
-> +		}
-> 
-> Brings any benefit in term of readability. It makes sense to have a
-> "first pass" that undoes the helper swapping to re-create the original
-> "byte stream".
-> 
-
-I was myself no quite satisfied by this change and looking for some tips :)
-
-> In a second pass, we parse that stream, one 16-bytes at a time, and
-> we could do so with a simple loop of be16_to_cpup(foo++). I wouldn't
-> bother with the cast to 32-bit etc... if you encounter a 32-bit case,
-> you just fetch another 16-bit and do value = (old << 16) | new
-> 
-> I think that should lead to something more readable, no ?
-> 
-
-Of course ! This is THE way to go. Thanks Ben ! :)
-
-An while we're here, I have a question about VPHN_ASSOC_BUFSIZE. The
-H_HOME_NODE_ASSOCIATIVITY spec says that the stream:
-- is at most 64 * 6 = 384 bits long
-- may contain 16-bit numbers
-- is padded with "all ones"
-
-The stream could theoretically contain up to 384 / 16 = 24 domain numbers.
-
-The current code expects no more than 12 domain numbers... and strangely
-seems to correlate the size of the output array to the size of the input
-one as noted in the comment:
-
- "6 64-bit registers unpacked into 12 32-bit associativity values"
-
-My understanding is that the resulting array is be32 only because it is
-supposed to look like the ibm,associativity property from the DT... and
-I could find no clue that this property is limited to 12 values. Have I
-missed something ?
-
-> > Of course, in a LE guest, plpar_hcall9() stores flipped values to memory.
-> > 
-> > > >  
-> > > >  #define VPHN_FIELD_UNUSED	(0xffff)
-> > > >  #define VPHN_FIELD_MSB		(0x8000)
-> > > >  #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
-> > > >  
-> > > > -	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
-> > > > -		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED)
-> > > > +	for (i = 1, j = 0, k = 0; i < VPHN_ASSOC_BUFSIZE;) {
-> > > > +		u16 field;
-> > > > +
-> > > > +		if (j % 4 == 0) {
-> > > > +			fixed.packed[k] = cpu_to_be64(packed[k]);
-> > > > +			k++;
-> > > > +		}
-> > > 
-> > > So we have essentially a bunch of 16-bit fields ... the above loads and
-> > > swap a whole 4 of them at once. However that means not only we byteswap
-> > > them individually, but we also flip the order of the fields. This is
-> > > ok ?
-> > > 
-> > 
-> > Yes. FWIW, it is exactly what the current code does.
-> > 
-> > > > +		field = be16_to_cpu(fixed.field[j]);
-> > > > +
-> > > > +		if (field == VPHN_FIELD_UNUSED)
-> > > >  			/* All significant fields processed.
-> > > >  			 */
-> > > >  			break;
-> > > 
-> > > For example, we might have USED,USED,USED,UNUSED ... after the swap, we
-> > > now have UNUSED,USED,USED,USED ... and we stop parsing in the above
-> > > line on the first one. Or am I missing something ? 
-> > > 
-> > 
-> > If we get USED,USED,USED,UNUSED from memory, that means the hypervisor
-> > has returned UNUSED,USED,USED,USED. My point is that it cannot happen:
-> > why would the hypervisor care to pack a sequence of useful numbers with
-> > holes in it ? 
-> > FWIW, I could never observe such a thing in a PowerVM guest... All ones always
-> > come after the payload.
-> > 
-> > > > -		if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-> > > > +		if (field & VPHN_FIELD_MSB) {
-> > > >  			/* Data is in the lower 15 bits of this field */
-> > > > -			unpacked[i] = cpu_to_be32(
-> > > > -				be16_to_cpup(field) & VPHN_FIELD_MASK);
-> > > > -			field++;
-> > > > +			unpacked[i++] = cpu_to_be32(field & VPHN_FIELD_MASK);
-> > > > +			j++;
-> > > >  		} else {
-> > > >  			/* Data is in the lower 15 bits of this field
-> > > >  			 * concatenated with the next 16 bit field
-> > > >  			 */
-> > > > -			unpacked[i] = *((__be32 *)field);
-> > > > -			field += 2;
-> > > > +			if (unlikely(j % 4 == 3)) {
-> > > > +				/* The next field is to be copied from the next
-> > > > +				 * 64-bit input value. We must fix it now.
-> > > > +				 */
-> > > > +				fixed.packed[k] = cpu_to_be64(packed[k]);
-> > > > +				k++;
-> > > > +			}
-> > > > +
-> > > > +			unpacked[i++] = *((__be32 *)&fixed.field[j]);
-> > > > +			j += 2;
-> > > >  		}
-> > > >  	}
-> > > >  
-> > > > @@ -1460,11 +1479,8 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
-> > > >  	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
-> > > >  	u64 flags = 1;
-> > > >  	int hwcpu = get_hard_smp_processor_id(cpu);
-> > > > -	int i;
-> > > >  
-> > > >  	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
-> > > > -	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
-> > > > -		retbuf[i] = cpu_to_be64(retbuf[i]);
-> > > >  	vphn_unpack_associativity(retbuf, associativity);
-> > > >  
-> > > >  	return rc;
-> > > 
-> > > 
-> 
-> 
+RnJvbTogTWFkaGF2YW4gU3Jpbml2YXNhbg0KPiBPbiBUaHVyc2RheSAyNyBOb3ZlbWJlciAyMDE0
+IDA3OjM1IFBNLCBEYXZpZCBMYWlnaHQgd3JvdGU6DQo+ID4gRnJvbTogTWFkaGF2YW4gU3Jpbml2
+YXNhbg0KPiA+PiBUaGlzIHBhdGNoc2V0IGNyZWF0ZSB0aGUgaW5mcmFzdHJ1Y3R1cmUgdG8gaGFu
+ZGxlIHRoZSBDUiBiYXNlZA0KPiA+PiBsb2NhbF8qIGF0b21pYyBvcGVyYXRpb25zLiBMb2NhbCBh
+dG9taWMgb3BlcmF0aW9ucyBhcmUgZmFzdA0KPiA+PiBhbmQgaGlnaGx5IHJlZW50cmFudCBwZXIg
+Q1BVIGNvdW50ZXJzLiAgVXNlZCBmb3IgcGVyY3B1DQo+ID4+IHZhcmlhYmxlIHVwZGF0ZXMuIExv
+Y2FsIGF0b21pYyBvcGVyYXRpb25zIG9ubHkgZ3VhcmFudGVlDQo+ID4+IHZhcmlhYmxlIG1vZGlm
+aWNhdGlvbiBhdG9taWNpdHkgd3J0IHRoZSBDUFUgd2hpY2ggb3ducyB0aGUNCj4gPj4gZGF0YSBh
+bmQgdGhlc2UgbmVlZHMgdG8gYmUgZXhlY3V0ZWQgaW4gYSBwcmVlbXB0aW9uIHNhZmUgd2F5Lg0K
+PiA+DQo+ID4gVGhlc2UgYXJlIHVzdWFsbHkgY2FsbGVkICdyZXN0YXJ0YWJsZSBhdG9taWMgc2Vx
+dWVuY2VzIChSQVMpJy4NCj4gPg0KPiA+PiBIZXJlIGlzIHRoZSBkZXNpZ24gb2YgdGhlIGZpcnN0
+IHBhdGNoLiBTaW5jZSBsb2NhbF8qIG9wZXJhdGlvbnMNCj4gPj4gYXJlIG9ubHkgbmVlZCB0byBi
+ZSBhdG9taWMgdG8gaW50ZXJydXB0cyAoSUlVQyksIHBhdGNoIHVzZXMNCj4gPj4gb25lIG9mIHRo
+ZSBDb25kaXRpb24gUmVnaXN0ZXIgKENSKSBmaWVsZHMgYXMgYSBmbGFnIHZhcmlhYmxlLiBXaGVu
+DQo+ID4+IGVudGVyaW5nIHRoZSBsb2NhbF8qLCBzcGVjaWZpYyBiaXQgaW4gdGhlIENSNSBmaWVs
+ZCBpcyBzZXQNCj4gPj4gYW5kIG9uIGV4aXQsIGJpdCBpcyBjbGVhcmVkLiBDUiBiaXQgY2hlY2tp
+bmcgaXMgZG9uZSBpbiB0aGUNCj4gPj4gaW50ZXJydXB0IHJldHVybiBwYXRoLiBJZiBDUjVbRVFd
+IGJpdCBzZXQgYW5kIGlmIHdlIHJldHVybg0KPiA+PiB0byBrZXJuZWwsIHdlIHJlc2V0IHRvIHN0
+YXJ0IG9mIGxvY2FsXyogb3BlcmF0aW9uLg0KPiA+DQo+ID4gSSBkb24ndCBjbGFpbSB0byBiZSBh
+YmxlIHRvIHJlYWQgcHBjIGFzc2VtYmxlci4NCj4gPiBCdXQgSSBjYW4ndCBzZWUgdGhlIGNvZGUg
+dGhhdCBjbGVhcnMgQ1I1W0VRXSBmb3IgdGhlIGR1cmF0aW9uDQo+ID4gb2YgdGhlIElTUi4NCj4g
+SSB1c2UgY3JjbHIgaW5zdHJ1Y3Rpb24gYXQgdGhlIGVuZCBvZiB0aGUgY29kZSBibG9jayB0byBj
+bGVhciB0aGUgYml0Lg0KPiANCj4gPiBXaXRob3V0IGl0IGEgbmVzdGVkIGludGVycnVwdCB3aWxs
+IGdvIHRocm91Z2ggdW53YW50ZWQgcGF0aHMuDQoNClRoYXQgY3JjbHIgbG9va3MgdG8gYmUgaW4g
+dGhlIElTUiBleGl0IHBhdGgsIHlvdSBuZWVkIG9uZSBpbiB0aGUNCmlzciBlbnRyeSBwYXRoLg0K
+DQo+ID4NCj4gPiBUaGVyZSBhcmUgYWxzbyBhIGxvdCBvZiAnbWFnaWMnIGNvbnN0YW50cyBpbiB0
+aGF0IGFzc2VtYmx5IGNvZGUuDQo+ID4NCj4gQWxsIHRoZXNlIGNvbnN0YW50cyBhcmUgZGVmaW5l
+IGluIGFzbS9wcGMtb3Bjb2RlLmgNCg0KSSB3YXMgdGhpbmtpbmcgb2YgdGhlIGxpbmVzIGxpa2U6
+DQorCW9yaQlyMyxyMywxNjM4NA0KVGhpcyBvbmUgcHJvYmFibHkgZGVzZXJ2ZXMgYSBjb21tZW50
+IC0gb3Igc29tZXRoaW5nDQorIjM6IglQUEM0MDVfRVJSNzcoMCwlMikNCg0KPiA+IEkgYWxzbyB3
+b25kZXIgaWYgaXQgaXMgcG9zc2libGUgdG8gaW5zcGVjdCB0aGUgaW50ZXJydXB0ZWQNCj4gPiBj
+b2RlIHRvIGRldGVybWluZSB0aGUgc3RhcnQvZW5kIG9mIHRoZSBSQVMgYmxvY2suDQo+ID4gKEVh
+c2llc3QgaWYgeW91IGFzc3VtZSB0aGF0IHRoZXJlIGlzIGEgc2luZ2xlICd3cml0ZScgaW5zdHJ1
+Y3Rpb24NCj4gPiBhcyB0aGUgbGFzdCBlbnRyeSBpbiB0aGUgYmxvY2suKQ0KPiA+DQo+IFNvIGVh
+Y2ggbG9jYWxfKiBmdW5jdGlvbiBhbHNvIGhhdmUgY29kZSBpbiB0aGUgX19leF90YWJsZSBzZWN0
+aW9uLiBJSVVDLA0KPiBfX2V4X3RhYmxlIGNvbnRhaW5zIHR3byBhZGRyZXNzLiBTbyBpZiB0aGUg
+cmV0dXJuIGFkZHJlc3MgZm91bmQgaW4gdGhlDQo+IGZpcnN0IGNvbHVtbiBvZiB0aGUgX2V4X3Rh
+YmxlLCB1c2UgdGhlIGNvcnJlc3BvbmRpbmcgYWRkcmVzcyBpbiB0aGUNCj4gc2Vjb25kIGNvbHVt
+biB0byBjb250aW51ZSBmcm9tLg0KDQpUaGF0IHJlYWxseSBkb2Vzbid0IHNjYWxlLg0KSSBkb24n
+dCBrbm93IGhvdyBtYW55IDEwMDAgYWRkcmVzcyBwYWlycyB5b3UgdGFibGUgd2lsbCBoYXZlIChh
+bmQgdGhlDQpvbmVzIGluIGVhY2ggbG9hZGFibGUgbW9kdWxlKSwgYnV0IHRoZSBzZWFyY2ggaXNu
+J3QgZ29pbmcgdG8gYmUgY2hlYXAuDQoNCklmIHRoZXNlIHNlcXVlbmNlcyBhcmUgcmVzdGFydGFi
+bGUgdGhlbiB0aGV5IGNhbiBvbmx5IGhhdmUgb25lIHdyaXRlDQp0byBtZW1vcnkuDQoNCkdpdmVu
+IHlvdXI6DQo+IFRoaXMgcGF0Y2ggcmUtd3JpdGUgdGhlIGN1cnJlbnQgbG9jYWxfKiBmdW5jdGlv
+bnMgdG8gQ1I1IGJhc2VkIG9uZS4NCj4gQmFzZSBmbG93IGZvciBlYWNoIGZ1bmN0aW9uIGlzIA0K
+PiANCj4gew0KPiAJc2V0IGNyNShlcSkNCj4gCWxvYWQNCj4gCS4uDQo+IAlzdG9yZQ0KPiAJY2xl
+YXIgY3I1KGVxKQ0KPiB9DQoNCk9uIElTUiBlbnRyeToNCklmIGFuIElTUiBkZXRlY3RzIGNyNShl
+cSkgc2V0IHRoZW4gbG9vayBhdCB0aGUgcmV0dXJuZWQgdG8gaW5zdHJ1Y3Rpb24uDQpJZiBpdCBp
+cyAnY2xlYXIgY3I1KGVxKScgZG8gbm90aGluZy4NCk90aGVyd2lzZSByZWFkIGJhY2t3YXJkcyB0
+aHJvdWdoIHRoZSBjb2RlIChmb3IgYSBtYXggb2YgKHNheSkgMTYgaW5zdHJ1Y3Rpb25zKQ0Kc2Vh
+cmNoaW5nIGZvciB0aGUgJ3NldCBjcjUoZXEpJyBhbmQgY2hhbmdlIHRoZSByZXR1cm4gYWRkcmVz
+cyB0byBiZSB0aGF0DQpvZiB0aGUgaW5zdHJ1Y3Rpb24gZm9sbG93aW5nIHRoZSAnc2V0IGNyNShl
+cSknLg0KSW4gYWxsIGNhc2VzIGNsZWFyIGNyNShlcSkgZm9yIHRoZSBJU1IgaXRzZWxmIChsZWF2
+ZSB0aGUgc2F2ZWQgdmFsdWUgdW5jaGFuZ2VkKS4NCg0KVGhlIHlvdSBkb24ndCBuZWVkIGEgdGFi
+bGUgb2YgZmF1bHQgbG9jYXRpb25zLg0KDQoJRGF2aWQNCg0K
