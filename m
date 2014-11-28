@@ -1,21 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5FD571A0B98
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 10:50:43 +1100 (AEDT)
-Date: Fri, 28 Nov 2014 10:50:36 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/4] powernv: cpuidle: Redesign idle states management
-Message-ID: <20141127235035.GC12871@iris.ozlabs.ibm.com>
-References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B5BA1A0130
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Nov 2014 11:11:32 +1100 (AEDT)
+In-Reply-To: <1416975004.5089.48.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+ Rusty Russell <rusty@rustcorp.com.au>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/powernv: Add debugfs file to grab opalv3 trace data
+Message-Id: <20141128001131.F199414019D@ozlabs.org>
+Date: Fri, 28 Nov 2014 11:11:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,292 +20,372 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 25, 2014 at 04:47:58PM +0530, Shreyas B. Prabhu wrote:
-[snip]
-> +2:
-> +	/* Sleep or winkle */
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07			/* Get thread id into r8 */
-> +	rotld	r7,r7,r8
+On Wed, 2014-26-11 at 04:10:04 UTC, Benjamin Herrenschmidt wrote:
+> This adds files in debugfs that can be used to retrieve the
+> OPALv3 firmware "live binary traces" which can then be parsed
+> using a userspace tool.
+> 
+> Mostly from Rusty with some updates by myself (BenH)
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I would suggest adding another u8 field to the paca to store our
-thread bit, and initialize it to 1 << (cpu_id % threads_per_core)
-early on.  That will handle the POWER7 case correctly and reduce these
-four instructions to one.
+Conspicuous review of patch from maintainer follows ...
 
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +lwarx_loop1:
-> +	lwarx	r15,0,r14
-> +	andc	r15,r15,r7			/* Clear thread bit */
-> +
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	beq	last_thread
-> +
-> +	/* Not the last thread to goto sleep */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +	b	common_enter
-> +
-> +last_thread:
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-> +	bne	common_enter
-> +	/*
-> +	 * Last thread of the core entering sleep. Last thread needs to execute
-> +	 * the hardware bug workaround code. Before that, set the lock bit to
-> +	 * avoid the race of other threads waking up and undoing workaround
-> +	 * before workaround is applied.
-> +	 */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop1
-> +
-> +	/* Fast sleep workaround */
-> +	li	r3,1
-> +	li	r4,1
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +
-> +	/* Clear Lock bit */
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
+Meta-comment: given we need a userspace tool to read the trace anyway, could we
+make this a lot simpler by just letting userspace mmap the trace buffers?
+ 
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index f241acc..315a825 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -1,7 +1,7 @@
+>  obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
+>  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+>  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+> -obj-y			+= opal-msglog.o opal-hmi.o
+> +obj-y			+= opal-msglog.o opal-hmi.o opal-trace.o
 
-In this case we know the result of the andi. will be 0, so this could
-be just li r0,0; stw r0,0(r14).
+Should depend on CONFIG_DEBUG_FS at least no?
 
-> +
-> +common_enter: /* common code for all the threads entering sleep */
-> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->  
->  _GLOBAL(power7_idle)
->  	/* Now check if user or arch enabled NAP mode */
-> @@ -141,49 +191,16 @@ _GLOBAL(power7_idle)
->  
->  _GLOBAL(power7_nap)
->  	mr	r4,r3
-> -	li	r3,0
-> +	li	r3,PNV_THREAD_NAP
->  	b	power7_powersave_common
->  	/* No return */
->  
->  _GLOBAL(power7_sleep)
-> -	li	r3,1
-> +	li	r3,PNV_THREAD_SLEEP
->  	li	r4,1
->  	b	power7_powersave_common
->  	/* No return */
->  
-> -/*
-> - * Make opal call in realmode. This is a generic function to be called
-> - * from realmode from reset vector. It handles endianess.
-> - *
-> - * r13 - paca pointer
-> - * r1  - stack pointer
-> - * r3  - opal token
-> - */
-> -opal_call_realmode:
-> -	mflr	r12
-> -	std	r12,_LINK(r1)
-> -	ld	r2,PACATOC(r13)
-> -	/* Set opal return address */
-> -	LOAD_REG_ADDR(r0,return_from_opal_call)
-> -	mtlr	r0
-> -	/* Handle endian-ness */
-> -	li	r0,MSR_LE
-> -	mfmsr	r12
-> -	andc	r12,r12,r0
-> -	mtspr	SPRN_HSRR1,r12
-> -	mr	r0,r3			/* Move opal token to r0 */
-> -	LOAD_REG_ADDR(r11,opal)
-> -	ld	r12,8(r11)
-> -	ld	r2,0(r11)
-> -	mtspr	SPRN_HSRR0,r12
-> -	hrfid
-> -
-> -return_from_opal_call:
-> -	FIXUP_ENDIAN
-> -	ld	r0,_LINK(r1)
-> -	mtlr	r0
-> -	blr
-> -
->  #define CHECK_HMI_INTERRUPT						\
->  	mfspr	r0,SPRN_SRR1;						\
->  BEGIN_FTR_SECTION_NESTED(66);						\
-> @@ -196,10 +213,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->  	/* Invoke opal call to handle hmi */				\
->  	ld	r2,PACATOC(r13);					\
->  	ld	r1,PACAR1(r13);						\
-> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
-> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
-> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->  	bl	opal_call_realmode;					\
-> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->  20:	nop;
->  
->  
-> @@ -210,12 +225,91 @@ _GLOBAL(power7_wakeup_tb_loss)
->  BEGIN_FTR_SECTION
->  	CHECK_HMI_INTERRUPT
->  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> +
-> +	li	r7,1
-> +	mfspr	r8,SPRN_PIR
-> +	/*
-> +	 * The last 3 bits of PIR represents the thread id of a cpu
-> +	 * in power8. This will need adjusting for power7.
-> +	 */
-> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
-> +	rotld	r7,r7,r8
-> +	/* r7 now has 'thread_id'th bit set */
-> +
-> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +lwarx_loop2:
-> +	lwarx	r15,0,r14
-> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	/*
-> +	 * Lock bit is set in one of the 2 cases-
-> +	 * a. In the sleep/winkle enter path, the last thread is executing
-> +	 * fastsleep workaround code.
-> +	 * b. In the wake up path, another thread is executing fastsleep
-> +	 * workaround undo code or resyncing timebase or restoring context
-> +	 * In either case loop until the lock bit is cleared.
-> +	 */
-> +	bne	lwarx_loop2
-> +
-> +	cmpwi	cr2,r15,0
-> +	or	r15,r15,r7		/* Set thread bit */
-> +
-> +	beq	cr2,first_thread
-> +
-> +	/* Not first thread in core to wake up */
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +	b	common_exit
-> +
-> +first_thread:
-> +	/* First thread in core to wakeup */
-> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	stwcx.	r15,0,r14
-> +	bne-	lwarx_loop2
-> +
-> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
-> +	lbz	r3,0(r3)
-> +	cmpwi	r3,1
-> +	/*  skip fastsleep workaround if its not needed */
-> +	bne	timebase_resync
-> +
-> +	/* Undo fast sleep workaround */
-> +	mfcr	r16	/* Backup CR into a non-volatile register */
-> +	li	r3,1
-> +	li	r4,0
-> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
-> +	bl	opal_call_realmode
-> +	mtcr	r16	/* Restore CR */
-> +
-> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
-> +	 * set in exceptions-64s.S */
-> +	ble	cr1,clear_lock
-> +
-> +timebase_resync:
->  	/* Time base re-sync */
-> -	li	r3,OPAL_RESYNC_TIMEBASE
-> +	li	r0,OPAL_RESYNC_TIMEBASE
->  	bl	opal_call_realmode;
+> diff --git a/arch/powerpc/platforms/powernv/opal-trace-types.h b/arch/powerpc/platforms/powernv/opal-trace-types.h
+> new file mode 100644
+> index 0000000..3bd8ac2
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-trace-types.h
+> @@ -0,0 +1,58 @@
+> +/* API for kernel to read trace buffer. */
 
-So if pnv_need_fastsleep_workaround is zero, we always do the timebase
-resync, but if pnv_need_fastsleep_workaround is one, we only do the
-timebase resync if we had a loss of state.  Is that really what you
-meant?
+Copyright/GPL header ?
 
-> -
->  	/* TODO: Check r3 for failure */
->  
-> +clear_lock:
-> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
-> +	stw	r15,0(r14)
-> +
-> +common_exit:
-> +	li	r5,PNV_THREAD_RUNNING
-> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
-> +
-> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> +	li      r0,KVM_HWTHREAD_IN_KERNEL
-> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
-> +	/* Order setting hwthread_state vs. testing hwthread_req */
-> +	sync
-> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
-> +	cmpwi   r0,0
-> +	beq     6f
-> +	b       kvm_start_guest
-> +6:
-> +#endif
+/*
+ * Copyright 201x, Purple Monkey Dishwasher, IBM Corporation.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version
+ * 2 of the License, or (at your option) any later version.
+ */
 
-I'd prefer not to duplicate this code.  Could you instead branch back
-to the code in exceptions-64s.S?  Or call this code via a bl and get
-back to exceptions-64s.S via a blr.
+> +#ifndef __OPAL_TRACE_TYPES_H
+> +#define __OPAL_TRACE_TYPES_H
 
+We usually do __POWERNV_FOO_H for these. But they're all a bit of a mess.
+
+> +#define TRACE_REPEAT 1
+> +#define TRACE_OVERFLOW 2
+> +#define TRACE_OPAL 3
+> +#define TRACE_FSP 4
+
+Linux tracepoints defines a bunch of TRACE_FOO macros, obviously REPEAT is the
+only one that's likely to clash. But still might be worth namespacing.
+
+> +/* One per cpu, plus one for NMIs */
+> +struct tracebuf {
+> +	/* Mask to apply to get buffer offset. */
+> +	__be64 mask;
+> +	/* This where the buffer starts. */
+> +	__be64 start;
+> +	/* This is where writer has written to. */
+> +	__be64 end;
+> +	/* This is where the writer wrote to previously. */
+> +	__be64 last;
+> +	/* This is where the reader is up to. */
+> +	__be64 rpos;
+> +	/* If the last one we read was a repeat, this shows how many. */
+> +	__be32 last_repeat;
+
+So I think start/end/last/rpos/last_repeat are all full virtual addresses right?
+
+> +	/* Maximum possible size of a record. */
+> +	__be32 max_size;
 > +
->  	REST_NVGPRS(r1)
->  	REST_GPR(2, r1)
->  	ld	r3,_CCR(r1)
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index feb549a..b2aa93b 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -158,6 +158,43 @@ opal_tracepoint_return:
->  	blr
->  #endif
->  
+> +	char buf[/* TBUF_SZ + max_size */];
+
+We don't have TBUF_SZ.
+
+> +};
+> +
+> +/* Common header for all trace entries. */
+> +struct trace_hdr {
+> +	__be64 timestamp;
+> +	u8 type;
+> +	u8 len_div_8;
+> +	__be16 cpu;
+> +	u8 unused[4];
+> +};
+> +
+
+The comment below is attached to trace_repeat, but it seems like it should go
+with hdr no ?
+
+> +/* Note: all other entries must be at least as large as this! */
+> +struct trace_repeat {
+> +	__be64 timestamp; /* Last repeat happened at this timestamp */
+> +	u8 type; /* == TRACE_REPEAT */
+> +	u8 len_div_8;
+> +	__be16 cpu;
+> +	__be16 prev_len;
+> +	__be16 num; /* Starts at 1, ie. 1 repeat, or two traces. */
+> +	/* Note that the count can be one short, if read races a repeat. */
+> +};
+> +
+> +struct trace_overflow {
+> +	__be64 unused64; /* Timestamp is unused */
+> +	u8 type; /* == TRACE_OVERFLOW */
+> +	u8 len_div_8;
+> +	u8 unused[6]; /* ie. hdr.cpu is indeterminate */
+> +	__be64 bytes_missed;
+> +};
+
+Some lining up of comments would help readability of those.
+
+> diff --git a/arch/powerpc/platforms/powernv/opal-trace.c b/arch/powerpc/platforms/powernv/opal-trace.c
+> new file mode 100644
+> index 0000000..6529756
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-trace.c
+> @@ -0,0 +1,202 @@
 > +/*
-> + * Make opal call in realmode. This is a generic function to be called
-> + * from realmode. It handles endianness.
+> + * Copyright (C) 2013 Rusty Russell, IBM Corporation
 > + *
-> + * r13 - paca pointer
-> + * r1  - stack pointer
-> + * r0  - opal token
+
+GPL ?
+
+> + * Simple debugfs file firmware_trace to read out OPALv3 trace
+                          ^
+			  now called opal-trace
+> + * ringbuffers.
 > + */
-> +_GLOBAL(opal_call_realmode)
-> +	mflr	r12
-> +	std	r12,_LINK(r1)
 
-This is a bug waiting to happen.  Using _LINK(r1) was OK in this
-code's previous location, since there we know there is a
-INT_FRAME_SIZE-sized stack frame and the _LINK field is basically
-unused.  Now that you're making this available to call from anywhere,
-you can't trash the caller's stack frame like this.  You need to use
-PPC_LR_STKOFF(r1) instead.
+<blank>
 
-> +	ld	r2,PACATOC(r13)
-> +	/* Set opal return address */
-> +	LOAD_REG_ADDR(r12,return_from_opal_call)
-> +	mtlr	r12
+> +#include <linux/mutex.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/of.h>
+> +#include <linux/slab.h>
+> +#include <asm/debug.h>
+> +#include <asm/opal.h>
 > +
-> +	mfmsr	r12
-> +#ifdef __LITTLE_ENDIAN__
-> +	/* Handle endian-ness */
-> +	li	r11,MSR_LE
-> +	andc	r12,r12,r11
-> +#endif
-> +	mtspr	SPRN_HSRR1,r12
-> +	LOAD_REG_ADDR(r11,opal)
-> +	ld	r12,8(r11)
-> +	ld	r2,0(r11)
-> +	mtspr	SPRN_HSRR0,r12
-> +	hrfid
+> +#include "opal-trace-types.h"
 > +
-> +return_from_opal_call:
-> +#ifdef __LITTLE_ENDIAN__
-> +	FIXUP_ENDIAN
-> +#endif
-> +	ld	r12,_LINK(r1)
-> +	mtlr	r12
-> +	blr
+> +static DEFINE_MUTEX(tracelock);
+> +static struct tracebuf **opal_tb;
+> +static size_t opal_num_tb;
+> +static __be64 *opal_tmask_p;
 
-Paul.
+_p ? pointer, or phys?
+
+> +
+> +/* Maximum possible size of record (since len is 8 bits). */
+> +union max_trace {
+> +	struct trace_hdr hdr;
+> +	struct trace_overflow overflow;
+> +	struct trace_repeat repeat;
+> +	char buf[255 * 8];
+> +};
+> +static union max_trace trace;
+
+I *think* this is only used in opal_trace_read(), so it'd be nice if it was in
+there.
+
+> +static bool trace_empty(const struct tracebuf *tb)
+> +{
+> +	const struct trace_repeat *rep;
+> +
+> +	if (tb->rpos == tb->end)
+> +		return true;
+> +
+> +	/*
+> +	 * If we have a single element only, and it's a repeat buffer
+> +	 * we've already seen every repeat for (yet which may be
+> +	 * incremented in future), we're also empty.
+> +	 */
+> +	rep = (void *)tb->buf + (be64_to_cpu(tb->rpos & tb->mask));
+> +	if (be64_to_cpu(tb->end) != be64_to_cpu(tb->rpos) + sizeof(*rep))
+> +		return false;
+> +
+> +	if (rep->type != TRACE_REPEAT)
+> +		return false;
+> +
+> +	if (be16_to_cpu(rep->num) != be32_to_cpu(tb->last_repeat))
+> +		return false;
+> +
+> +	return true;
+> +}
+> +
+> +/* You can't read in parallel, so some locking required in caller. */
+> +static bool trace_get(union max_trace *t, struct tracebuf *tb)
+> +{
+> +	u64 start, rpos;
+> +
+> +	if (trace_empty(tb))
+> +		return false;
+> +
+> +again:
+> +	/*
+> +	 * The actual buffer is slightly larger than tbsize, so this
+> +	 * memcpy is always valid.
+
+We don't seem to have tbsize anymore?
+
+> +	 */
+> +	memcpy(t, tb->buf + be64_to_cpu(tb->rpos & tb->mask),
+> +	       be32_to_cpu(tb->max_size));
+> +
+> +	rmb(); /* read barrier, so we read tb->start after copying record. */
+> +
+> +	start = be64_to_cpu(tb->start);
+> +	rpos = be64_to_cpu(tb->rpos);
+> +
+> +	/* Now, was that overwritten? */
+> +	if (rpos < start) {
+> +		/* Create overflow record. */
+> +		t->overflow.unused64 = 0;
+> +		t->overflow.type = TRACE_OVERFLOW;
+> +		t->overflow.len_div_8 = sizeof(t->overflow) / 8;
+> +		t->overflow.bytes_missed = cpu_to_be64(start - rpos);
+> +		tb->rpos = cpu_to_be64(start);
+> +		return true;
+> +	}
+> +
+> +	/* Repeat entries need special handling */
+> +	if (t->hdr.type == TRACE_REPEAT) {
+> +		u32 num = be16_to_cpu(t->repeat.num);
+> +
+> +		/* In case we've read some already... */
+> +		t->repeat.num = cpu_to_be16(num - be32_to_cpu(tb->last_repeat));
+> +
+> +		/* Record how many repeats we saw this time. */
+> +		tb->last_repeat = cpu_to_be32(num);
+> +
+> +		/* Don't report an empty repeat buffer. */
+> +		if (t->repeat.num == 0) {
+> +			/*
+> +			 * This can't be the last buffer, otherwise
+> +			 * trace_empty would have returned true.
+> +			 */
+> +			BUG_ON(be64_to_cpu(tb->end) <= rpos + t->hdr.len_div_8 * 8);
+
+Can we just WARN_ON() and bail, seeing as this is for debug. I'd hate to panic
+a customer system by dumping the trace buffer.
+
+> +			/* Skip to next entry. */
+> +			tb->rpos = cpu_to_be64(rpos + t->hdr.len_div_8 * 8);
+> +			goto again;
+> +		}
+> +	} else {
+> +		tb->last_repeat = 0;
+> +		tb->rpos = cpu_to_be64(rpos + t->hdr.len_div_8 * 8);
+> +	}
+> +
+> +	return true;
+> +}
+> +
+> +/* Horrible polling interface, designed for dumping. */
+> +static ssize_t opal_trace_read(struct file *file, char __user *ubuf,
+> +			       size_t count, loff_t *ppos)
+> +{
+> +	ssize_t err;
+> +	unsigned int i;
+> +
+> +	err = mutex_lock_interruptible(&tracelock);
+> +	if (err)
+> +		return err;
+> +
+> +	for (i = 0; i < opal_num_tb; i++) {
+
+OK so I understand this now. You have multiple trace buffers, but you don't
+care about maintaining that separation. You just merge all the streams here
+into a single output stream.
+
+> +		if (trace_get(&trace, opal_tb[i])) {
+> +			size_t len = trace.hdr.len_div_8 * 8;
+> +			if (len > count)
+> +				len = count;
+> +			if (copy_to_user(ubuf, &trace, len) != 0)
+> +				err = -EFAULT;
+> +			else
+> +				err = len;
+> +			break;
+> +		}
+> +	}
+> +
+> +	mutex_unlock(&tracelock);
+> +	return err;
+> +}
+> +
+> +static const struct file_operations opal_trace_fops = {
+> +	.read =		opal_trace_read,
+> +	.open =		simple_open,
+> +	.llseek =	noop_llseek,
+> +};
+> +
+> +static int opal_tmask_set(void *data, u64 val)
+> +{
+> +	*(__be64 *)data = cpu_to_be64(val);
+> +	return 0;
+> +}
+> +static int opal_tmask_get(void *data, u64 *val)
+> +{
+> +	*val = be64_to_cpup((__be64 *)data);
+> +	return 0;
+> +}
+> +DEFINE_SIMPLE_ATTRIBUTE(opal_tmask, opal_tmask_get, opal_tmask_set, "%llx\n");
+
+What is a tmask ?
+
+I assume it's some mask of things we want traced?
+
+> +static int opal_trace_init(void)
+> +{
+> +	const __be64 *traces;
+> +	int len, i, rc;
+> +	u64 tmask_phys;
+> +
+> +	if (!opal_node)
+> +		return -ENODEV;
+> +
+> +	traces = of_get_property(opal_node, "ibm,opal-traces", &len);
+> +	if (!traces) {
+> +		pr_warning("%s: OPAL node property \"ibm,opal-traces\""
+> +			   " not found\n", __func__);
+> +		return -ENODEV;
+> +	}
+> +
+> +	opal_num_tb = len / (sizeof(__be64) * 2);
+
+So I won't say the "b" word, but it'd be nice to have at least a comment on
+what the device tree property contains.
+
+> +	if (!opal_num_tb) {
+> +		pr_warning("%s: OPAL traces property has invalid length %i\n",
+> +			   __func__, len);
+> +		return -EINVAL;
+> +	}
+> +	opal_tb = kmalloc(sizeof(*opal_tb) * opal_num_tb, GFP_KERNEL);
+> +	for (i = 0; i < opal_num_tb; i++)
+> +		opal_tb[i] = __va(be64_to_cpu(traces[i*2]));
+
+Just __va() ? ie. it's already in the linear mapping somewhere?
+
+> +	debugfs_create_file("opal-trace", S_IRUSR, powerpc_debugfs_root,
+> +			    NULL, &opal_trace_fops);
+> +	rc = of_property_read_u64(opal_node, "ibm,opal-trace-mask",
+> +				  &tmask_phys);
+> +	if (!rc)
+> +		opal_tmask_p = __va(tmask_phys);
+> +	if (opal_tmask_p)
+
+If tmask_phys was 0, opal_tmask_p is now 0xc00..00, so is that what we want to check?
+
+> +		debugfs_create_file("opal-trace-mask", S_IRUSR | S_IWUSR,
+> +				    powerpc_debugfs_root, opal_tmask_p,
+> +				    &opal_tmask);
+> +	return 0;
+> +}
+> +module_init(opal_trace_init);
+> +
+
+cheers
