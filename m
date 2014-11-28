@@ -1,19 +1,24 @@
-Return-Path: <mmarek@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B7991A0BDC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Nov 2014 02:40:28 +1100 (AEDT)
-Message-ID: <54789767.1080803@suse.cz>
-Date: Fri, 28 Nov 2014 16:40:23 +0100
-From: Michal Marek <mmarek@suse.cz>
-MIME-Version: 1.0
-To: linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] kbuild: Fix make help-<board series> on powerpc
-References: <1417179145-30789-1-git-send-email-mmarek@suse.cz>
-In-Reply-To: <1417179145-30789-1-git-send-email-mmarek@suse.cz>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A82C11A01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Nov 2014 02:57:44 +1100 (AEDT)
+Date: Fri, 28 Nov 2014 09:57:20 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH 1/2]powerpc: foundation code to handle CR5 for local_t
+Message-ID: <20141128155720.GA28943@gate.crashing.org>
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <20141127165650.GA28278@gate.crashing.org>
+ <1417139935.2852.19.camel@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417139935.2852.19.camel@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, rusty@rustcorp.com.au,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,10 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014-11-28 13:52, Michal Marek wrote:
-> make ARCH=powerpc help-<board series> should not require a cofigured
-> source tree. Also, sort the boards in the output.
+On Fri, Nov 28, 2014 at 12:58:55PM +1100, Benjamin Herrenschmidt wrote:
+> > Have you tested this with (upcoming) GCC 5.0?  GCC now uses CR5,
+> > and it likes to use it very much, it might be more convenient to
+> > use e.g. CR1 (which is allocated almost last, only before CR0).
+> 
+> We use CR1 all over the place in your asm code. Any other suggestion ?
+> 
+> What's the damage of -ffixed-cr5 on gcc5 ? won't it just use CR4 or 6
+> instead ?
 
-I added this to kbuild.git#kbuild.
+Oh, it will work fine.  Not using CR5 would be more convenient so that
+the register allocation for most code would not change when you use or
+not use -ffixed-cr5, making code easier to read.  But your point about
+asm code already using the other CR fields makes CR5 a better choice
+actually, because people avoided it (because the compiler did) :-)
 
-Michal
+
+Segher
