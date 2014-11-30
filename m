@@ -1,19 +1,21 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail3-relais-sop.national.inria.fr
+ (mail3-relais-sop.national.inria.fr [192.134.164.104])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47F381A0868
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Nov 2014 21:39:51 +1100 (AEDT)
-Date: Sun, 30 Nov 2014 21:39:48 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>, Paul Mackerras
- <paulus@au1.ibm.com>, Alexey Kardashevskiy <aik@au1.ibm.com>, Alexander
- Graf <agraf@suse.de>
-Subject: KVM XICS bug
-Message-ID: <20141130213948.572e2579@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D786F1A0668
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 04:05:28 +1100 (AEDT)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 0/8] replace memset by memzero_explicit
+Date: Sun, 30 Nov 2014 17:59:26 +0100
+Message-Id: <1417366774-32412-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: linux-cifs@vger.kernel.org, herbert@gondor.apana.org.au,
+ samba-technical@lists.samba.org, linux-usb@vger.kernel.org,
+ kernel-janitors@vger.kernel.org, dm-devel@redhat.com,
+ linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, dborkman@redhat.com,
+ linux-crypto@vger.kernel.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +25,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Memset on a local variable may be removed when it is called just before the
+variable goes out of scope.  Using memzero_explicit defeats this
+optimization.  The complete semantic patch that makes this change is as
+follows: (http://coccinelle.lip6.fr/)
 
-I've been seeing intermittent hangs when booting a KVM guest on a busy box.
-Both host and guest are mainline (3.18-rc6). The backtrace looks like:
+// <smpl>
+@@
+identifier x;
+local idexpression e;
+type T,T1;
+@@
 
-INFO: rcu_sched self-detected stall on CPU { 7}  (t=8404 jiffies g=-299 c=-300 q=79)
-Task dump for CPU 7:
-swapper/7       R  running task    11840     0      1 0x00000804
-Call Trace:
-[c0000007fa5434a0] [c0000000000cd684] sched_show_task+0xe4/0x160 (unreliable)
-[c0000007fa543510] [c0000000000fa568] rcu_dump_cpu_stacks+0xe8/0x160
-[c0000007fa543560] [c0000000000fe75c] rcu_check_callbacks+0x59c/0x8b0
-[c0000007fa543680] [c000000000104a68] update_process_times+0x58/0xb0
-[c0000007fa5436c0] [c000000000114e14] tick_periodic+0x44/0x110
-[c0000007fa5436f0] [c000000000115208] tick_handle_periodic+0x38/0xc0
-[c0000007fa543730] [c00000000001c7cc] __timer_interrupt+0x8c/0x240
-[c0000007fa543780] [c00000000001ce90] timer_interrupt+0xa0/0xe0
-[c0000007fa5437b0] [c0000000000099f4] restore_check_irq_replay+0x54/0x70
---- interrupt: 901 at arch_local_irq_restore+0x74/0x90
-    LR = arch_local_irq_restore+0x74/0x90
-[c0000007fa543aa0] [c0000000000d1874] vtime_common_account_irq_enter+0x54/0x70 (unreliable)
-[c0000007fa543ac0] [c00000000009c3d8] __do_softirq+0xd8/0x3a0
-[c0000007fa543bb0] [c00000000009c9f8] irq_exit+0xc8/0x110
-[c0000007fa543be0] [c00000000001ce94] timer_interrupt+0xa4/0xe0
-[c0000007fa543c10] [c0000000000099f4] restore_check_irq_replay+0x54/0x70
---- interrupt: 901 at arch_local_irq_restore+0x5c/0x90
-    LR = arch_local_irq_restore+0x40/0x90
-[c0000007fa543f00] [c000000000097864] cpu_notify+0x34/0x80 (unreliable)
-[c0000007fa543f20] [c00000000003afa0] start_secondary+0x330/0x360
-[c0000007fa543f90] [c000000000008b6c] start_secondary_prolog+0x10/0x14
+{
+... when any
+T x[...];
+... when any
+    when exists
+(
+e = (T1)x
+|
+e = (T1)&x[0]
+)
+... when any
+    when exists
+- memset
++ memzero_explicit
+  (x,
+-0,
+  ...)
+... when != x
+    when != e
+    when strict
+}
 
-XICS in kernel emulation is disabled (I really need to update the defconfig).
+@@
+identifier i,x;
+local idexpression e;
+type T;
+@@
 
-It looks like we are looping in restore_check_irq_replay, replaying 0x500
-exceptions. When we call H_XIRR to ask for the IRQ, QEMU tells us it's a
-spurious IRQ.
+{
+... when any
+struct i x;
+... when any
+    when exists
+e = (T)&x
+... when any
+    when exists
+- memset
++ memzero_explicit
+  (&x,
+-0,
+  ...)
+... when != x
+    when != e
+    when strict
+}
 
-Thinking up other ways to create similar stress, I ran a big SMP guest
-on one core (with taskset). With no root filesystem this will just
-panic and reboot until it hits the bug:
+// ------------------------------------------------------------------------
 
-taskset -c 0 ~/qemu/ppc64-softmmu/qemu-system-ppc64 -enable-kvm -smp cores=16,threads=8 -m 4G -M pseries -nographic -vga none -kernel vmlinux
+@@
+identifier x;
+type T,T1;
+expression e;
+@@
 
-It usually hits in under 5 minutes.
+{
+... when any
+T x[...];
+... when any
+    when exists
+    when != e = (T1)x
+    when != e = (T1)&x[0]
+- memset
++ memzero_explicit
+  (x,
+-0,
+  ...)
+... when != x
+    when strict
+}
 
-I took a QEMU trace (I added a tracepoint to power7_set_irq) and we can
-see QEMU is trying to cancel the exception:
+@@
+identifier i,x;
+expression e;
+type T;
+@@
 
-xics_icp_accept 0.322 pid=71614 old_xirr=0xff000000 new_xirr=0xff000000
-power7_set_irq 2.232 pid=71614 pin=0x0 level=0x0
-xics_icp_accept 0.285 pid=71614 old_xirr=0xff000000 new_xirr=0xff000000
-power7_set_irq 21.809 pid=71614 pin=0x0 level=0x0
-xics_icp_accept 0.311 pid=71614 old_xirr=0xff000000 new_xirr=0xff000000
-power7_set_irq 2.230 pid=71614 pin=0x0 level=0x0
-
-To me it looks like the KVM and the QEMU view of the 0x500 exception
-state has got out of sync. The patch below fixes the issue for me, but
-we might want to dig further to understand why the state has got out of
-sync. Any ideas?
-
-Anton
---
-
-diff --git a/hw/ppc/ppc.c b/hw/ppc/ppc.c
-index bec82cd..cb0911f 100644
---- a/hw/ppc/ppc.c
-+++ b/hw/ppc/ppc.c
-@@ -60,7 +60,6 @@ void ppc_set_irq(PowerPCCPU *cpu, int n_IRQ, int level)
- {
-     CPUState *cs = CPU(cpu);
-     CPUPPCState *env = &cpu->env;
--    unsigned int old_pending = env->pending_interrupts;
- 
-     if (level) {
-         env->pending_interrupts |= 1 << n_IRQ;
-@@ -72,11 +71,9 @@ void ppc_set_irq(PowerPCCPU *cpu, int n_IRQ, int level)
-         }
-     }
- 
--    if (old_pending != env->pending_interrupts) {
- #ifdef CONFIG_KVM
--        kvmppc_set_interrupt(cpu, n_IRQ, level);
-+    kvmppc_set_interrupt(cpu, n_IRQ, level);
- #endif
--    }
- 
-     LOG_IRQ("%s: %p n_IRQ %d level %d => pending %08" PRIx32
-                 "req %08x\n", __func__, env, n_IRQ, level,
+{
+... when any
+struct i x;
+... when any
+    when exists
+    when != e = (T)&x
+- memset
++ memzero_explicit
+  (&x,
+-0,
+  ...)
+... when != x
+    when strict
+}
+// </smpl>
