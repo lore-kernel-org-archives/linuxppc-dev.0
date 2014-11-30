@@ -1,20 +1,16 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6924C1A08B6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 04:09:25 +1100 (AEDT)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH 6/8 v2] crypto: replace memset by memzero_explicit
-Date: Sun, 30 Nov 2014 18:03:47 +0100
-Message-Id: <1417367029-32762-7-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1417367029-32762-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1417367029-32762-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7401F1A09B4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 06:46:24 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ agraf@suse.de
+Subject: [PATCH] KVM: PPC: Enable in kernel XICS emulation by default
+Date: Mon,  1 Dec 2014 06:46:22 +1100
+Message-Id: <1417376782-18632-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+The in kernel XICS emulation is faster than doing it all in QEMU
+and it has got a lot of testing, so enable it by default
 
-Memset on a local variable may be removed when it is called just before the
-variable goes out of scope.  Using memzero_explicit defeats this
-optimization.  A simplified version of the semantic patch that makes this
-change is as follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-identifier x;
-type T;
-@@
-
-{
-... when any
-T x[...];
-... when any
-    when exists
-- memset
-+ memzero_explicit
-  (x,
--0,
-  ...)
-... when != x
-    when strict
-}
-// </smpl>
-
-This change was suggested by Daniel Borkmann <dborkman@redhat.com>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
-Daniel Borkmann suggested that these patches could go through Herbert Xu's
-cryptodev tree.
+ arch/powerpc/kvm/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-v2: fixed email address
-
- arch/powerpc/crypto/sha1.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/crypto/sha1.c b/arch/powerpc/crypto/sha1.c
-index 0f88c7b..d3feba5 100644
---- a/arch/powerpc/crypto/sha1.c
-+++ b/arch/powerpc/crypto/sha1.c
-@@ -66,7 +66,7 @@ static int sha1_update(struct shash_desc *desc, const u8 *data,
- 			src = data + done;
- 		} while (done + 63 < len);
- 
--		memset(temp, 0, sizeof(temp));
-+		memzero_explicit(temp, sizeof(temp));
- 		partial = 0;
- 	}
- 	memcpy(sctx->buffer + partial, src, len - done);
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 602eb51..f5769f1 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -172,6 +172,7 @@ config KVM_XICS
+ 	depends on KVM_BOOK3S_64 && !KVM_MPIC
+ 	select HAVE_KVM_IRQCHIP
+ 	select HAVE_KVM_IRQFD
++	default y
+ 	---help---
+ 	  Include support for the XICS (eXternal Interrupt Controller
+ 	  Specification) interrupt controller architecture used on
+-- 
+2.1.0
