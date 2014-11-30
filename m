@@ -1,20 +1,33 @@
 Return-Path: <danielle.costantino@gmail.com>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
+Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c05::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A2B81A0A74
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Nov 2014 08:58:46 +1100 (AEDT)
-Received: by mail-pa0-f49.google.com with SMTP id eu11so8638616pac.36
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Nov 2014 13:58:43 -0800 (PST)
-Message-ID: <547A4192.30102@gmail.com>
-Date: Sat, 29 Nov 2014 13:58:42 -0800
-From: Danielle Costantino <danielle.costantino@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DAE1A090F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Nov 2014 15:30:58 +1100 (AEDT)
+Received: by mail-ig0-f172.google.com with SMTP id hl2so11471678igb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Nov 2014 20:30:54 -0800 (PST)
 MIME-Version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: [PATCH] i2c: mpc: add register documentation to Freescale I2C driver
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org
+In-Reply-To: <1416966097.15957.171.camel@freescale.com>
+References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>
+ <1414537731.23458.120.camel@snotra.buserror.net>
+ <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
+ <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
+ <1416274083.15957.96.camel@freescale.com>
+ <20141125181347.GC9716@katana>
+ <1416966097.15957.171.camel@freescale.com>
+Date: Sat, 29 Nov 2014 20:30:54 -0800
+Message-ID: <CAAVjN7fJyOh64p5UGRmv-UTnF47cERDfbHyHTuzQmQj8xTDEOQ@mail.gmail.com>
+Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
+From: Danielle Costantino <danielle.costantino@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ Linux device trees <devicetree@vger.kernel.org>,
+ Wolfram Sang <wsa@the-dreams.de>, "Boschung,
+ Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
+ Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
+ Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,98 +37,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-i2c: mpc: add register documentation to Freescale I2C driver
+I saw that this patch was marked as not applicable, but on most qoriq
+devices the pre-scaler is 2 especially for p2020/p2010 devices
+arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
 
-return -ETIMEDOUT for all time-out error conditions and warn on 
-arbitration lost.
+from the P2020 RM: p. 477
+"Frequency divider ratio. Used to prescale the clock for bit rate
+selection. The serial bit clock frequency of
+SCL is equal to one half the platform ( CCB ) clock divided by the
+designated divider ."
 
-Signed-off-by: Danielle Costantino <danielle.costantino@gmail.com>
+This means that the current dts for these devices are providing false
+clock settings. I have a p2020 board and can take some scope
+measurements next week to prove this. I think something should be
+modified to address this.
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 4c5d7d9..28d9245 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -36,26 +36,31 @@
-  #define MPC_I2C_CLOCK_LEGACY   0
-  #define MPC_I2C_CLOCK_PRESERVE (~0U)
 
--#define MPC_I2C_FDR   0x04
--#define MPC_I2C_CR    0x08
--#define MPC_I2C_SR    0x0c
--#define MPC_I2C_DR    0x10
--#define MPC_I2C_DFSRR 0x14
-+#define    MPC_I2C_ADR        0x00    /* I2C address register */
-+#define    MPC_I2C_FDR        0x04    /* I2C frequency divider register */
-+#define    MPC_I2C_CR        0x08    /* I2C control register */
-+#define    MPC_I2C_SR        0x0C    /* I2C status register */
-+#define    MPC_I2C_DR        0x10    /* I2C data register */
-+#define    MPC_I2C_DFSRR    0x14    /* I2C digital filter sampling rate 
-register */
+On Tue, Nov 25, 2014 at 5:41 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, 2014-11-25 at 19:13 +0100, Wolfram Sang wrote:
+>> On Mon, Nov 17, 2014 at 07:28:03PM -0600, Scott Wood wrote:
+>> > On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
+>> > > > >
+>> > > > > If we're going to change the device tree I'd rather just add a property
+>> > > > > to say what the prescaler is.
+>> > > >
+>> > > >  We would however, leave the boards' device trees that use things like
+>> > > > "fsl,mpc8543-i2c" as is and introduce the prescaler for the others requiring it.
+>> > > >
+>> > > >
+>> > > > Now the drawback is that the driver would require a change, to parse this
+>> > > > prescaler new prescaler property. Would this be OK from your point of view
+>> > > > Wolfram ? If yes, I will send the patches for it.
+>> > >
+>> > > I don't think it is OK.
+>> >
+>> > Why?
+>>
+>> Because I thought it could be deduced. Then, a seperate property would
+>> not be OK.
+>>
+>> > >  I'd think it can be deduced from the compatible property.
+>> >
+>> > For almost all existing device trees it cannot be.
+>>
+>> Pity :( If we do introduce a new property, it should probably be
+>> "clock-div". Grepping through binding documentation, that seems
+>> accepted. We should ask DT maintainers, too, to be safe.
+>>
+>> > If you want something that will work without changing device trees,
+>> > you'll need to use SVR to identify the SoC.
+>>
+>> The driver is doing that already, see mpc_i2c_get_sec_cfg_8xxx(). Dunno
+>> if it makes sense to add to it for consistency reasons?
+>
+> That's not SVR, but sure.  Better to avoid messing with existing device
+> trees.
+>
+> -Scott
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--#define CCR_MEN  0x80
--#define CCR_MIEN 0x40
--#define CCR_MSTA 0x20
--#define CCR_MTX  0x10
--#define CCR_TXAK 0x08
--#define CCR_RSTA 0x04
-+/* I2C Control Register (MPC_I2C_CR): */
-+#define CCR_MEN  0x80    /* Module enable */
-+#define CCR_MIEN 0x40    /* Module interrupt enable */
-+#define CCR_MSTA 0x20    /* Master/slave mode START */
-+#define CCR_MTX  0x10    /* Transmit/receive mode select */
-+#define CCR_TXAK 0x08    /* Transfer acknowledge */
-+#define CCR_RSTA 0x04    /* Repeated START */
-+#define CCR_BCST 0x01    /* Broadcast */
 
--#define CSR_MCF  0x80
--#define CSR_MAAS 0x40
--#define CSR_MBB  0x20
--#define CSR_MAL  0x10
--#define CSR_SRW  0x04
--#define CSR_MIF  0x02
--#define CSR_RXAK 0x01
-+/* I2C Status Register (MPC_I2C_SR): */
-+#define CSR_MCF  0x80    /* Data transfer */
-+#define CSR_MAAS 0x40    /* Addressed as a slave */
-+#define CSR_MBB  0x20    /* Bus busy */
-+#define CSR_MAL  0x10    /* Arbitration lost */
-+#define CSR_BCSTM 0x08    /* Broadcast match */
-+#define CSR_SRW  0x04    /* Slave read/write */
-+#define CSR_MIF  0x02    /* Module interrupt */
-+#define CSR_RXAK 0x01    /* Received acknowledge */
 
-  struct mpc_i2c {
-      struct device *dev;
-@@ -158,12 +163,12 @@
-          return result;
-
-      if (!(cmd_err & CSR_MCF)) {
--        dev_dbg(i2c->dev, "unfinished\n");
-+        dev_warn(i2c->dev, "unfinished\n");
-          return -EIO;
-      }
-
-      if (cmd_err & CSR_MAL) {
--        dev_dbg(i2c->dev, "MAL\n");
-+        dev_err(i2c->dev, "Arbitration lost\n");
-          return -EAGAIN;
-      }
-
-@@ -554,7 +559,7 @@
-                         i2c->base + MPC_I2C_SR);
-                  mpc_i2c_fixup(i2c);
-              }
--            return -EIO;
-+            return -ETIMEDOUT;
-          }
-          schedule();
-      }
-@@ -590,7 +595,7 @@
-                         i2c->base + MPC_I2C_SR);
-                  mpc_i2c_fixup(i2c);
-              }
--            return -EIO;
-+            return -ETIMEDOUT;
-          }
-          cond_resched();
-      }
+-- 
+- Danielle Costantino
