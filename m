@@ -2,23 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4AE671A05DA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 19:52:22 +1100 (AEDT)
-Message-ID: <1417423941.25107.2.camel@concordia>
-Subject: Re: [PATCH v2] slab: Fix nodeid bounds check for non-contiguous
- node IDs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1288A1A02E8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 20:17:31 +1100 (AEDT)
+Message-ID: <1417425450.25107.3.camel@concordia>
+Subject: Re: [PATCH REPOST 3/3] powerpc/vphn: move endianness fixing to
+ vphn_unpack_associativity()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Date: Mon, 01 Dec 2014 19:52:21 +1100
-In-Reply-To: <20141201052448.GC11234@drongo>
-References: <20141201042844.GB11234@drongo>
- <1417410134.16178.2.camel@concordia> <20141201052448.GC11234@drongo>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Date: Mon, 01 Dec 2014 20:17:30 +1100
+In-Reply-To: <20141128093919.700f1874@bahia.local>
+References: <20141117174216.7717.10926.stgit@bahia.local>
+ <20141117174244.7717.83028.stgit@bahia.local>
+ <1417045163.5089.67.camel@kernel.crashing.org>
+ <20141127102812.7d1e625b@bahia.local>
+ <1417139348.2852.17.camel@kernel.crashing.org>
+ <20141128093919.700f1874@bahia.local>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>, Christoph Lameter <cl@linux.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-01 at 16:24 +1100, Paul Mackerras wrote:
-> On Mon, Dec 01, 2014 at 04:02:14PM +1100, Michael Ellerman wrote:
-> > On Mon, 2014-12-01 at 15:28 +1100, Paul Mackerras wrote:
-> > > The bounds check for nodeid in ____cache_alloc_node gives false
-> > > positives on machines where the node IDs are not contiguous, leading
-> > > to a panic at boot time.  For example, on a POWER8 machine the node
-> > > IDs are typically 0, 1, 16 and 17.  This means that num_online_nodes()
-> > > returns 4, so when ____cache_alloc_node is called with nodeid = 16 the
-> > > VM_BUG_ON triggers, like this:
-> > ...
-> > > 
-> > > To fix this, we instead compare the nodeid with MAX_NUMNODES, and
-> > > additionally make sure it isn't negative (since nodeid is an int).
-> > > The check is there mainly to protect the array dereference in the
-> > > get_node() call in the next line, and the array being dereferenced is
-> > > of size MAX_NUMNODES.  If the nodeid is in range but invalid (for
-> > > example if the node is off-line), the BUG_ON in the next line will
-> > > catch that.
+On Fri, 2014-11-28 at 09:39 +0100, Greg Kurz wrote:
+> On Fri, 28 Nov 2014 12:49:08 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > In a second pass, we parse that stream, one 16-bytes at a time, and
+> > we could do so with a simple loop of be16_to_cpup(foo++). I wouldn't
+> > bother with the cast to 32-bit etc... if you encounter a 32-bit case,
+> > you just fetch another 16-bit and do value = (old << 16) | new
 > > 
-> > When did this break? How come we only just noticed?
+> > I think that should lead to something more readable, no ?
 > 
-> Commit 14e50c6a9bc2, which went into 3.10-rc1.
-
-OK. So a Fixes tag is nice:
-
-Fixes: 14e50c6a9bc2 ("mm: slab: Verify the nodeid passed to ____cache_alloc_node")
-
-> You'll only notice if you have CONFIG_SLAB=y and CONFIG_DEBUG_VM=y
-> and you're running on a machine with discontiguous node IDs.
-
-Right. And we have SLUB=y for all the defconfigs that are likely to hit that.
-
-> > Also needs:
-> > 
-> > Cc: stable@vger.kernel.org
+> Of course ! This is THE way to go. Thanks Ben ! :)
 > 
-> It does.  I remembered that a minute after I sent the patch.
+> An while we're here, I have a question about VPHN_ASSOC_BUFSIZE. The
+> H_HOME_NODE_ASSOCIATIVITY spec says that the stream:
+> - is at most 64 * 6 = 384 bits long
 
-OK. Hopefully one of the slab maintainers will be happy to add it for us when
-they merge this?
+That's from "Each of the registers R4-R9 ..."
+
+> - may contain 16-bit numbers
+
+"... is divided into 4 fields each 2 bytes long."
+
+> - is padded with "all ones"
+> 
+> The stream could theoretically contain up to 384 / 16 = 24 domain numbers.
+
+Yes I think that's right, based on:
+
+"The high order bit of each 2 byte field is a length specifier:
+
+1: The associativity domain number is contained in the low order 15 bits of the field,"
+
+But then there's also:
+
+"0: The associativity domain number is contained in the low order 15 bits of
+the current field concatenated with the 16 bits of the next sequential field)"
+
+> The current code expects no more than 12 domain numbers... and strangely
+> seems to correlate the size of the output array to the size of the input
+> one as noted in the comment:
+> 
+>  "6 64-bit registers unpacked into 12 32-bit associativity values"
+> 
+> My understanding is that the resulting array is be32 only because it is
+> supposed to look like the ibm,associativity property from the DT... and
+> I could find no clue that this property is limited to 12 values. Have I
+> missed something ?
+
+I don't know for sure, but I strongly suspect it's just confused about the two
+options above. Probably when it was tested they only ever saw 12 32-bit values,
+and so that assumption was allowed to stay in the code.
+
+I'd be quite happy if you wanted to pull the parsing logic out into a separate
+file, so we could write some userspace tests of it.
 
 cheers
