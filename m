@@ -1,42 +1,29 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 247C21A0191
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 02:41:18 +1100 (AEDT)
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1275C14017F
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2014 02:41:16 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 1 Dec 2014 10:41:14 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9131438C805E
- for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2014 10:41:07 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB1Ff61e23462094
- for <linuxppc-dev@ozlabs.org>; Mon, 1 Dec 2014 15:41:06 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB1Ff5aj018834
- for <linuxppc-dev@ozlabs.org>; Mon, 1 Dec 2014 10:41:06 -0500
-Message-ID: <547C8C0F.5070701@linux.vnet.ibm.com>
-Date: Mon, 01 Dec 2014 09:41:03 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 239AC1A0567
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 02:53:56 +1100 (AEDT)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 02764-09 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon,  1 Dec 2014 15:53:44 +0000 (GMT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Madhavan Srinivasan' <maddy@linux.vnet.ibm.com>, "mpe@ellerman.id.au"
+ <mpe@ellerman.id.au>
+Subject: RE: [RFC PATCH 0/2] powerpc: CR based local atomic operation
+ implementation
+Date: Mon, 1 Dec 2014 15:53:25 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1C9FFB90@AcuExch.aculab.com>
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
+ <547831DC.6000703@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FE4A9@AcuExch.aculab.com>
+ <547C8ADD.1050905@linux.vnet.ibm.com>
+In-Reply-To: <547C8ADD.1050905@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: Right location in sysfs for dlpar file
-References: <1417057941.5089.81.camel@kernel.crashing.org>
-In-Reply-To: <1417057941.5089.81.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+ "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,36 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/26/2014 09:12 PM, Benjamin Herrenschmidt wrote:
-> Hi Greg,
-> 
-> So Nathan is working on a patch series to cleanup and improve our
-> "DLPAR" infrastructure which is basically our hotplug mechanism when
-> running under the PowerVM (aka pHyp) and KVM hypervisors.
-
-The cleanup to the dlpar infrastructure will move the entire operation
-of hotplugging a device to the kernel instead of doing it partially in
-userspace and partially in the kernel as is currently done.
-
-> 
-> I'll let Nathan give you a bit more details/background and answer
-> subsequent question you might have as this is really his area of
-> expertise.
-> 
-> To cut a long story short, we need a sysfs file that allows our
-> userspace tools to notify the kernel of hotplug events coming from
-> the management console (which talks to userspace daemons using a
-> proprietary protocol) to "initiate" the hotplug operations, which in
-> turn get dispatched internally in the kernel to the right subsystem
-> (memory, cpu, pci, ...) based on the resource type.
-> 
-> On IRC, Greg suggested /sys/firmware and /sys/hypervisor which both
-> look like a reasonable option to me, probably better than dlpar...
-
-For PowerVM systems we need this sysfs file to deliver what is
-essentially a binary blob (specifically a rtas error log) to the
-kernel. The current patch set is creating /sys/kernel/dlpar. As Ben
-mentioned we would like your input on what would be the proper place
-to create this file.
-
--Nathan
+RnJvbTogTWFkaGF2YW4gU3Jpbml2YXNhbiBbbWFpbHRvOm1hZGR5QGxpbnV4LnZuZXQuaWJtLmNv
+bV0NCi4uLg0KPiA+Pj4gSSBhbHNvIHdvbmRlciBpZiBpdCBpcyBwb3NzaWJsZSB0byBpbnNwZWN0
+IHRoZSBpbnRlcnJ1cHRlZA0KPiA+Pj4gY29kZSB0byBkZXRlcm1pbmUgdGhlIHN0YXJ0L2VuZCBv
+ZiB0aGUgUkFTIGJsb2NrLg0KPiA+Pj4gKEVhc2llc3QgaWYgeW91IGFzc3VtZSB0aGF0IHRoZXJl
+IGlzIGEgc2luZ2xlICd3cml0ZScgaW5zdHJ1Y3Rpb24NCj4gPj4+IGFzIHRoZSBsYXN0IGVudHJ5
+IGluIHRoZSBibG9jay4pDQo+ID4+Pg0KPiA+PiBTbyBlYWNoIGxvY2FsXyogZnVuY3Rpb24gYWxz
+byBoYXZlIGNvZGUgaW4gdGhlIF9fZXhfdGFibGUgc2VjdGlvbi4gSUlVQywNCj4gPj4gX19leF90
+YWJsZSBjb250YWlucyB0d28gYWRkcmVzcy4gU28gaWYgdGhlIHJldHVybiBhZGRyZXNzIGZvdW5k
+IGluIHRoZQ0KPiA+PiBmaXJzdCBjb2x1bW4gb2YgdGhlIF9leF90YWJsZSwgdXNlIHRoZSBjb3Jy
+ZXNwb25kaW5nIGFkZHJlc3MgaW4gdGhlDQo+ID4+IHNlY29uZCBjb2x1bW4gdG8gY29udGludWUg
+ZnJvbS4NCj4gPg0KPiA+IFRoYXQgcmVhbGx5IGRvZXNuJ3Qgc2NhbGUuDQo+ID4gSSBkb24ndCBr
+bm93IGhvdyBtYW55IDEwMDAgYWRkcmVzcyBwYWlycyB5b3UgdGFibGUgd2lsbCBoYXZlIChhbmQg
+dGhlDQo+ID4gb25lcyBpbiBlYWNoIGxvYWRhYmxlIG1vZHVsZSksIGJ1dCB0aGUgc2VhcmNoIGlz
+bid0IGdvaW5nIHRvIGJlIGNoZWFwLg0KPiA+DQo+ID4gSWYgdGhlc2Ugc2VxdWVuY2VzIGFyZSBy
+ZXN0YXJ0YWJsZSB0aGVuIHRoZXkgY2FuIG9ubHkgaGF2ZSBvbmUgd3JpdGUNCj4gPiB0byBtZW1v
+cnkuDQo+ID4NCj4gDQo+IE1heSBiZSwgYnV0IGkgc2VlIHRoZXNlIGlzc3VlcyBpbmNhc2Ugb2Yg
+aW5zdHMgZGVjb2RlIHBhdGgsDQo+IA0KPiAxKSBEZWNvZGluZyBpbnN0cnVjdGlvbiBtYXkgYWxz
+byBjYXVzZSBhIGZhdWx0IChpbiBjYXNlIG9mIG1vZHVsZSkgYW5kDQo+IGhhbmRsaW5nIGEgZmF1
+bHQgYXQgdGhpcyBzdGFnZSB0b3dhcmQgdGhlIGV4aXQgcGF0aCBvZiBpbnRlcnJ1cHQgZXhpdA0K
+PiBtYWtlcyBtZSBuZXJ2b3VzDQoNCkl0IHNob3VsZG4ndCBiZSBwb3NzaWJsZSB0byB1bmxvYWQg
+YSBtb2R1bGUgdGhhdCBpcyBpbnRlcnJ1cHRlZCBieQ0KYSBoYXJkd2FyZSBpbnRlcnJ1cHQuDQpB
+biAnaW52YWxpZCcgbG9hZGFibGUgbW9kdWxlIGNhbiBjYXVzZSBhbiBvb3BzL3BhbmljIGFueXdh
+eS4NCg0KPiAyKSByZXN1bHRpbmcgY29kZSB3aXRoIGxvdCBvZiBjb25kaXRpb24gYW5kIGJyYW5j
+aCAoZm9yIG9wY29kZSBkZWNvZGUpDQo+IHdpbGwgYmUgbG90IG1lc3N5IGFuZCBtYXkgYmUgYW4g
+aXNzdWUgaW5jYXNlIG9mIG1haW50ZW5hbmNlLA0KDQpZb3UgZG9uJ3QgbmVlZCB0byBkZWNvZGUg
+dGhlIGluc3RydWN0aW9ucy4NCkp1c3QgbG9vayBmb3IgdGhlIHR3byBzcGVjaWZpYyBpbnN0cnVj
+dGlvbnMgdXNlZCBhcyBtYXJrZXJzLg0KVGhpcyBpcyBvbmx5IHJlYWxseSBwb3NzaWJsZSB3aXRo
+IGZpeGVkLXNpemUgaW5zdHJ1Y3Rpb25zLg0KDQpJdCBtaWdodCBhbHNvIGJlIHRoYXQgdGhlICdp
+bnRlcnJ1cHQgZW50cnknIHBhdGggaXMgZWFzaWVyIHRvDQptb2RpZnkgdGhhbiB0aGUgJ2ludGVy
+cnVwdCBleGl0JyBvbmUgKGZld2VyIGNvZGUgcGF0aHMpIGFuZA0KeW91IGp1c3QgbmVlZCB0byBt
+b2RpZnkgdGhlICdwYycgaW4gdGhlIHN0YWNrIGZyYW1lLg0KWW91IGFyZSBvbmx5IGludGVyZXN0
+ZWQgaW4gaW50ZXJydXB0cyBmcm9tIGtlcm5lbCBzcGFjZS4NCg0KCURhdmlkDQoNCg0K
