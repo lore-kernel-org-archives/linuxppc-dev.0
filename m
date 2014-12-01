@@ -1,24 +1,28 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-249.synserver.de (smtp-out-249.synserver.de
- [212.40.185.249])
- by lists.ozlabs.org (Postfix) with ESMTP id B77041A02F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 06:39:46 +1100 (AEDT)
-Message-ID: <547CC407.30308@metafoo.de>
-Date: Mon, 01 Dec 2014 20:39:51 +0100
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D07DD1A04CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 06:42:20 +1100 (AEDT)
+Date: Mon, 1 Dec 2014 19:41:47 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Message-ID: <20141201194147.GP7712@sirena.org.uk>
+References: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
+ <20141201065046.GB27289@pengutronix.de>
+ <547C9C34.9080602@metafoo.de> <547CB817.10806@tabi.org>
+ <547CC407.30308@metafoo.de>
 MIME-Version: 1.0
-To: Timur Tabi <timur@tabi.org>, Markus Pargmann <mpa@pengutronix.de>,
- Jiada Wang <jiada_wang@mentor.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="A4pi7p1avD4z6Uqy"
+In-Reply-To: <547CC407.30308@metafoo.de>
 Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_ssi: free irq before
  irq_dispose_mapping()
-References: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
- <20141201065046.GB27289@pengutronix.de> <547C9C34.9080602@metafoo.de>
- <547CB817.10806@tabi.org>
-In-Reply-To: <547CB817.10806@tabi.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: alsa-devel@alsa-project.org, tiwai@suse.de, broonie@kernel.org,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
- Li.Xiubo@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, Jiada Wang <jiada_wang@mentor.com>,
+ linux-kernel@vger.kernel.org, Timur Tabi <timur@tabi.org>, lgirdwood@gmail.com,
+ nicoleotsuka@gmail.com, tiwai@suse.de, Li.Xiubo@freescale.com,
+ Markus Pargmann <mpa@pengutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2014 07:48 PM, Timur Tabi wrote:
-> On 12/01/2014 10:49 AM, Lars-Peter Clausen wrote:
->> The driver creates the mapping by calling irq_of_parse_and_map(), so it
->> also has to dispose the mapping.
->
-> I agree with Markus, this does seem weird.  It sounds like you're saying
-> that irq_of_parse_and_map() and devm_request_irq() are incompatible.
 
-They probably are. You have to create the mapping before you request the IRQ 
-and if devm_request_irq() is used the IRQ is only freed again after the 
-remove function of the driver been called. Yet if a driver creates a mapping 
-in its probe function it should also dispose it in its remove function. So 
-you are stuck with either freeing the mapping before freeing the IRQ or 
-leaking the mapping.
+--A4pi7p1avD4z6Uqy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-My opinion on this is that devices should not create mappings and should 
-leave that to the core. This quite easily solves the dilemma.
+On Mon, Dec 01, 2014 at 08:39:51PM +0100, Lars-Peter Clausen wrote:
+> On 12/01/2014 07:48 PM, Timur Tabi wrote:
 
-> A quick grep shows the following drivers that call both functions:
->
+> >A quick grep shows the following drivers that call both functions:
 
-Most of these drivers will probably work fine without irq_of_parse_and_map().
+> Most of these drivers will probably work fine without irq_of_parse_and_map().
 
-> ata/pata_mpc52xx.c
-> built-in.o
-> cpufreq/exynos5440-cpufreq.c
-> crypto/omap-sham.c
-> dma/moxart-dma.c
-> edac/mpc85xx_edac.c
-> hsi/clients/nokia-modem.c
-> i2c/busses/i2c-wmt.c
-> input/serio/apbps2.c
-> mmc/host/omap_hsmmc.c
-> mmc/host/moxart-mmc.c
-> mtd/nand/mpc5121_nfc.c
-> net/ethernet/arc/emac_main.c
-> net/ethernet/moxa/moxart_ether.c
-> pci/host/pcie-rcar.c
-> pinctrl/samsung/pinctrl-exynos5440.c
-> pinctrl/samsung/pinctrl-exynos.c
-> pinctrl/pinctrl-bcm2835.c
-> spi/spi-bcm2835.c
-> spi/spi-mpc512x-psc.c
-> staging/xillybus/xillybus_of.c
-> thermal/samsung/exynos_tmu.c
->
+I'd also note that quite a few of these drivers look pretty legacy - a
+very large proportion are for old PowerPC hardware, though by no means
+all.
+
+--A4pi7p1avD4z6Uqy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUfMR7AAoJECTWi3JdVIfQxC4H/Rw91cGM/GoVnm+lMlkCjMT8
+b0OZH4hfeGQfs5roSNkjab0foHUwXfKEmOcUnh4eHUiO3OJdAuLA2s4LWWKwf7Tp
+I8+oYR268oi/uf4bhiREBOzrbj3+I8gqZmE7C9lXi3VVqjJm+/CgsoK+C+ntcf0N
+LSJMaOMPQtu5CAAQNlSJCsaGbCdAdhEKOBTRyxaPHrR9HVnBI3nwXqthtqhntZDw
+JMIlHh/v5rJsFW4oWuX6ym/g0VHQ2jvdmJJ9doJrrHdODdJrW16CYAU8ATY9iIY1
+D+MMxQqoPYYfATRC7i6IkD+pKXxRm9PEg6efhPR89m0sndwXDTrCvzNBQRvdbgs=
+=DYcS
+-----END PGP SIGNATURE-----
+
+--A4pi7p1avD4z6Uqy--
