@@ -1,38 +1,24 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F75B1A09B2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 17:27:37 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 1 Dec 2014 11:57:32 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4B8873940045
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 11:57:28 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB16S2Qx328136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Dec 2014 11:58:03 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB16RQhO023753
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Dec 2014 11:57:26 +0530
-Message-ID: <547C0A4D.4050804@linux.vnet.ibm.com>
-Date: Mon, 01 Dec 2014 11:57:25 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E4D81A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Dec 2014 18:10:03 +1100 (AEDT)
+Date: Mon, 1 Dec 2014 07:50:46 +0100
+From: Markus Pargmann <mpa@pengutronix.de>
+To: Jiada Wang <jiada_wang@mentor.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: free irq before irq_dispose_mapping()
+Message-ID: <20141201065046.GB27289@pengutronix.de>
+References: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 3/4] powernv: cpuidle: Redesign idle states management
-References: <1416914279-30384-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1416914279-30384-4-git-send-email-shreyas@linux.vnet.ibm.com>
- <20141127235035.GC12871@iris.ozlabs.ibm.com>
-In-Reply-To: <20141127235035.GC12871@iris.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
+In-Reply-To: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ Li.Xiubo@freescale.com, timur@tabi.org, perex@perex.cz, nicoleotsuka@gmail.com,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,313 +29,128 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--A6N2fC+uXW/VQSAv
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 28 November 2014 05:20 AM, Paul Mackerras wrote:
-> On Tue, Nov 25, 2014 at 04:47:58PM +0530, Shreyas B. Prabhu wrote:
-> [snip]
->> +2:
->> +	/* Sleep or winkle */
->> +	li	r7,1
->> +	mfspr	r8,SPRN_PIR
->> +	/*
->> +	 * The last 3 bits of PIR represents the thread id of a cpu
->> +	 * in power8. This will need adjusting for power7.
->> +	 */
->> +	andi.	r8,r8,0x07			/* Get thread id into r8 */
->> +	rotld	r7,r7,r8
-> 
-> I would suggest adding another u8 field to the paca to store our
-> thread bit, and initialize it to 1 << (cpu_id % threads_per_core)
-> early on.  That will handle the POWER7 case correctly and reduce these
-> four instructions to one.
-> 
-Okay. I'll make the change. 
->> +
->> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
->> +lwarx_loop1:
->> +	lwarx	r15,0,r14
->> +	andc	r15,r15,r7			/* Clear thread bit */
->> +
->> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
->> +	beq	last_thread
->> +
->> +	/* Not the last thread to goto sleep */
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop1
->> +	b	common_enter
->> +
->> +last_thread:
->> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
->> +	lbz	r3,0(r3)
->> +	cmpwi	r3,1
->> +	bne	common_enter
->> +	/*
->> +	 * Last thread of the core entering sleep. Last thread needs to execute
->> +	 * the hardware bug workaround code. Before that, set the lock bit to
->> +	 * avoid the race of other threads waking up and undoing workaround
->> +	 * before workaround is applied.
->> +	 */
->> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop1
->> +
->> +	/* Fast sleep workaround */
->> +	li	r3,1
->> +	li	r4,1
->> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
->> +	bl	opal_call_realmode
->> +
->> +	/* Clear Lock bit */
->> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
->> +	stw	r15,0(r14)
-> 
-> In this case we know the result of the andi. will be 0, so this could
-> be just li r0,0; stw r0,0(r14).
-> 
+Hi,
 
-Yes. I'll make the change.
->> +
->> +common_enter: /* common code for all the threads entering sleep */
->> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->>  
->>  _GLOBAL(power7_idle)
->>  	/* Now check if user or arch enabled NAP mode */
->> @@ -141,49 +191,16 @@ _GLOBAL(power7_idle)
->>  
->>  _GLOBAL(power7_nap)
->>  	mr	r4,r3
->> -	li	r3,0
->> +	li	r3,PNV_THREAD_NAP
->>  	b	power7_powersave_common
->>  	/* No return */
->>  
->>  _GLOBAL(power7_sleep)
->> -	li	r3,1
->> +	li	r3,PNV_THREAD_SLEEP
->>  	li	r4,1
->>  	b	power7_powersave_common
->>  	/* No return */
->>  
->> -/*
->> - * Make opal call in realmode. This is a generic function to be called
->> - * from realmode from reset vector. It handles endianess.
->> - *
->> - * r13 - paca pointer
->> - * r1  - stack pointer
->> - * r3  - opal token
->> - */
->> -opal_call_realmode:
->> -	mflr	r12
->> -	std	r12,_LINK(r1)
->> -	ld	r2,PACATOC(r13)
->> -	/* Set opal return address */
->> -	LOAD_REG_ADDR(r0,return_from_opal_call)
->> -	mtlr	r0
->> -	/* Handle endian-ness */
->> -	li	r0,MSR_LE
->> -	mfmsr	r12
->> -	andc	r12,r12,r0
->> -	mtspr	SPRN_HSRR1,r12
->> -	mr	r0,r3			/* Move opal token to r0 */
->> -	LOAD_REG_ADDR(r11,opal)
->> -	ld	r12,8(r11)
->> -	ld	r2,0(r11)
->> -	mtspr	SPRN_HSRR0,r12
->> -	hrfid
->> -
->> -return_from_opal_call:
->> -	FIXUP_ENDIAN
->> -	ld	r0,_LINK(r1)
->> -	mtlr	r0
->> -	blr
->> -
->>  #define CHECK_HMI_INTERRUPT						\
->>  	mfspr	r0,SPRN_SRR1;						\
->>  BEGIN_FTR_SECTION_NESTED(66);						\
->> @@ -196,10 +213,8 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->>  	/* Invoke opal call to handle hmi */				\
->>  	ld	r2,PACATOC(r13);					\
->>  	ld	r1,PACAR1(r13);						\
->> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
->> -	li	r3,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->>  	bl	opal_call_realmode;					\
->> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->>  20:	nop;
->>  
->>  
->> @@ -210,12 +225,91 @@ _GLOBAL(power7_wakeup_tb_loss)
->>  BEGIN_FTR_SECTION
->>  	CHECK_HMI_INTERRUPT
->>  END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->> +
->> +	li	r7,1
->> +	mfspr	r8,SPRN_PIR
->> +	/*
->> +	 * The last 3 bits of PIR represents the thread id of a cpu
->> +	 * in power8. This will need adjusting for power7.
->> +	 */
->> +	andi.	r8,r8,0x07		/* Get thread id into r8 */
->> +	rotld	r7,r7,r8
->> +	/* r7 now has 'thread_id'th bit set */
->> +
->> +	ld	r14,PACA_CORE_IDLE_STATE_PTR(r13)
->> +lwarx_loop2:
->> +	lwarx	r15,0,r14
->> +	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	/*
->> +	 * Lock bit is set in one of the 2 cases-
->> +	 * a. In the sleep/winkle enter path, the last thread is executing
->> +	 * fastsleep workaround code.
->> +	 * b. In the wake up path, another thread is executing fastsleep
->> +	 * workaround undo code or resyncing timebase or restoring context
->> +	 * In either case loop until the lock bit is cleared.
->> +	 */
->> +	bne	lwarx_loop2
->> +
->> +	cmpwi	cr2,r15,0
->> +	or	r15,r15,r7		/* Set thread bit */
->> +
->> +	beq	cr2,first_thread
->> +
->> +	/* Not first thread in core to wake up */
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop2
->> +	b	common_exit
->> +
->> +first_thread:
->> +	/* First thread in core to wakeup */
->> +	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
->> +	stwcx.	r15,0,r14
->> +	bne-	lwarx_loop2
->> +
->> +	LOAD_REG_ADDR(r3, pnv_need_fastsleep_workaround)
->> +	lbz	r3,0(r3)
->> +	cmpwi	r3,1
->> +	/*  skip fastsleep workaround if its not needed */
->> +	bne	timebase_resync
->> +
->> +	/* Undo fast sleep workaround */
->> +	mfcr	r16	/* Backup CR into a non-volatile register */
->> +	li	r3,1
->> +	li	r4,0
->> +	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
->> +	bl	opal_call_realmode
->> +	mtcr	r16	/* Restore CR */
->> +
->> +	/* Do timebase resync if we are waking up from sleep. Use cr1 value
->> +	 * set in exceptions-64s.S */
->> +	ble	cr1,clear_lock
->> +
->> +timebase_resync:
->>  	/* Time base re-sync */
->> -	li	r3,OPAL_RESYNC_TIMEBASE
->> +	li	r0,OPAL_RESYNC_TIMEBASE
->>  	bl	opal_call_realmode;
-> 
-> So if pnv_need_fastsleep_workaround is zero, we always do the timebase
-> resync, but if pnv_need_fastsleep_workaround is one, we only do the
-> timebase resync if we had a loss of state.  Is that really what you
-> meant?
-> 
-Timebase resync is needed only if we have a loss of state, irrespective of
-pnv_need_fastsleep_workaround. 
-But I see here in pnv_need_fastsleep_workaround = 0 path, I am doing timebase
-resync unconditionally. I'll fix that.
+On Mon, Dec 01, 2014 at 11:50:51AM +0900, Jiada Wang wrote:
+> irq_dispose_mapping() in turns calls unregister_irq_proc(),
+> which will remove irq proc entry, if IRQ is not freed
+> before calling of irq_dispose_mapping(), then it will cause
+> kernel warning.
+>=20
+> By free IRQ before irq_dispose_mapping(), this patch fix
+> the following kernel warning found when remove of fsl_ssi driver:
+>=20
+> [   31.515336] ------------[ cut here ]------------
+> [   31.520091] WARNING: CPU: 2 PID: 434 at fs/proc/generic.c:521 remove_p=
+roc_entry+0x14c/0x16c()
+> [   31.528708] remove_proc_entry: removing non-empty directory 'irq/79', =
+leaking at least '202c000.ss'
+> [   31.537911] Modules linked in: snd_soc_wm8962 snd_soc_imx_wm8962 snd_s=
+oc_fsl_ssi(-) evbug
+> [   31.546249] CPU: 2 PID: 434 Comm: rmmod Not tainted 3.18.0-rc6-00028-g=
+3314bf6-dirty #1
+> [   31.554235] Backtrace:
+> [   31.556816] [<80011ea8>] (dump_backtrace) from [<80012044>] (show_stac=
+k+0x18/0x1c)
+> [   31.564416]  r6:80142c88 r5:00000000 r4:00000000 r3:00000000
+> [   31.570267] [<8001202c>] (show_stack) from [<806980ec>] (dump_stack+0x=
+88/0xa4)
+> [   31.577588] [<80698064>] (dump_stack) from [<80029d78>] (warn_slowpath=
+_common+0x70/0x94)
+> [   31.585711]  r5:00000009 r4:bb61fd90
+> [   31.589423] [<80029d08>] (warn_slowpath_common) from [<80029e40>] (war=
+n_slowpath_fmt+0x38/0x40)
+> [   31.598187]  r8:bb61fdfe r7:be05d76d r6:be05d9a8 r5:00000002 r4:be05d7=
+00
+> [   31.605054] [<80029e0c>] (warn_slowpath_fmt) from [<80142c88>] (remove=
+_proc_entry+0x14c/0x16c)
+> [   31.613709]  r3:806a79c0 r2:808229a0
+> [   31.617371] [<80142b3c>] (remove_proc_entry) from [<80070380>] (unregi=
+ster_irq_proc+0x94/0xb8)
+> [   31.625989]  r10:00000000 r8:8000ede4 r7:80955f2c r6:0000004f r5:8118e=
+738 r4:be00af00
+> [   31.633952] [<800702ec>] (unregister_irq_proc) from [<80069dac>] (free=
+_desc+0x2c/0x64)
+> [   31.641898]  r6:0000004f r5:80955f38 r4:be00af00
+> [   31.646604] [<80069d80>] (free_desc) from [<80069e68>] (irq_free_descs=
++0x4c/0x8c)
+> [   31.654092]  r7:00000081 r6:00000001 r5:0000004f r4:00000001
+> [   31.659863] [<80069e1c>] (irq_free_descs) from [<8006fc3c>] (irq_dispo=
+se_mapping+0x40/0x5c)
+> [   31.668247]  r6:be17b844 r5:be17b800 r4:0000004f r3:802c5ec0
+> [   31.673998] [<8006fbfc>] (irq_dispose_mapping) from [<7f004ea4>] (fsl_=
+ssi_remove+0x58/0x70 [snd_so)
+> [   31.683948]  r4:bb5bba10 r3:00000001
+> [   31.687618] [<7f004e4c>] (fsl_ssi_remove [snd_soc_fsl_ssi]) from [<803=
+720a0>] (platform_drv_remove)
+> [   31.697564]  r5:7f0064f8 r4:be17b810
+> [   31.701195] [<80372080>] (platform_drv_remove) from [<80370494>] (__de=
+vice_release_driver+0x78/0xc)
+> [   31.710361]  r5:7f0064f8 r4:be17b810
+> [   31.713987] [<8037041c>] (__device_release_driver) from [<80370d20>] (=
+driver_detach+0xbc/0xc0)
+> [   31.722631]  r5:7f0064f8 r4:be17b810
+> [   31.726259] [<80370c64>] (driver_detach) from [<80370304>] (bus_remove=
+_driver+0x54/0x98)
+> [   31.734382]  r6:00000800 r5:00000000 r4:7f0064f8 r3:bb67f500
+> [   31.740149] [<803702b0>] (bus_remove_driver) from [<80371398>] (driver=
+_unregister+0x30/0x50)
+> [   31.748617]  r4:7f0064f8 r3:bd9f7080
+> [   31.752245] [<80371368>] (driver_unregister) from [<80371f3c>] (platfo=
+rm_driver_unregister+0x14/0x)
+> [   31.761498]  r4:7f00655c r3:7f005a70
+> [   31.765130] [<80371f28>] (platform_driver_unregister) from [<7f005a84>=
+] (fsl_ssi_driver_exit+0x14/)
+> [   31.776147] [<7f005a70>] (fsl_ssi_driver_exit [snd_soc_fsl_ssi]) from =
+[<8008ed80>] (SyS_delete_mod)
+> [   31.786553] [<8008ec64>] (SyS_delete_module) from [<8000ec20>] (ret_fa=
+st_syscall+0x0/0x48)
+> [   31.794824]  r6:00c46d18 r5:00000800 r4:00c46d18
+> [   31.799530] ---[ end trace 954e8a3a15379e52 ]---
+>=20
+> Moreover replace devm_request_irq() with request_irq() since there is
+> no need to use it as now driver always frees IRQ manually.
 
-The correct flow is, if its the first thread in the core waking up from sleep
-- call OPAL_CONFIG_CPU_IDLE_STATE if pnv_need_fastsleep_workaround = 1
-- If we had a state loss, call OPAL_RESYNC_TIMEBASE to resync timebase.
->> -
->>  	/* TODO: Check r3 for failure */
->>  
->> +clear_lock:
->> +	andi.	r15,r15,PNV_CORE_IDLE_THREAD_BITS
->> +	stw	r15,0(r14)
->> +
->> +common_exit:
->> +	li	r5,PNV_THREAD_RUNNING
->> +	stb     r5,PACA_THREAD_IDLE_STATE(r13)
->> +
->> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> +	li      r0,KVM_HWTHREAD_IN_KERNEL
->> +	stb     r0,HSTATE_HWTHREAD_STATE(r13)
->> +	/* Order setting hwthread_state vs. testing hwthread_req */
->> +	sync
->> +	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
->> +	cmpwi   r0,0
->> +	beq     6f
->> +	b       kvm_start_guest
->> +6:
->> +#endif
-> 
-> I'd prefer not to duplicate this code.  Could you instead branch back
-> to the code in exceptions-64s.S?  Or call this code via a bl and get
-> back to exceptions-64s.S via a blr.
-> 
+devm_request_irq() is used by other drivers too, this should not be a
+problem. Looking at the code it seems that irq_dispose_mapping may not
+be necessary with devm_request_irq(). So I think it would be better to
+remove irq_dispose_mapping() instead.
 
-Okay.
->> +
->>  	REST_NVGPRS(r1)
->>  	REST_GPR(2, r1)
->>  	ld	r3,_CCR(r1)
->> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
->> index feb549a..b2aa93b 100644
->> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
->> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
->> @@ -158,6 +158,43 @@ opal_tracepoint_return:
->>  	blr
->>  #endif
->>  
->> +/*
->> + * Make opal call in realmode. This is a generic function to be called
->> + * from realmode. It handles endianness.
->> + *
->> + * r13 - paca pointer
->> + * r1  - stack pointer
->> + * r0  - opal token
->> + */
->> +_GLOBAL(opal_call_realmode)
->> +	mflr	r12
->> +	std	r12,_LINK(r1)
-> 
-> This is a bug waiting to happen.  Using _LINK(r1) was OK in this
-> code's previous location, since there we know there is a
-> INT_FRAME_SIZE-sized stack frame and the _LINK field is basically
-> unused.  Now that you're making this available to call from anywhere,
-> you can't trash the caller's stack frame like this.  You need to use
-> PPC_LR_STKOFF(r1) instead.
->
- 
-Okay.
->> +	ld	r2,PACATOC(r13)
->> +	/* Set opal return address */
->> +	LOAD_REG_ADDR(r12,return_from_opal_call)
->> +	mtlr	r12
->> +
->> +	mfmsr	r12
->> +#ifdef __LITTLE_ENDIAN__
->> +	/* Handle endian-ness */
->> +	li	r11,MSR_LE
->> +	andc	r12,r12,r11
->> +#endif
->> +	mtspr	SPRN_HSRR1,r12
->> +	LOAD_REG_ADDR(r11,opal)
->> +	ld	r12,8(r11)
->> +	ld	r2,0(r11)
->> +	mtspr	SPRN_HSRR0,r12
->> +	hrfid
->> +
->> +return_from_opal_call:
->> +#ifdef __LITTLE_ENDIAN__
->> +	FIXUP_ENDIAN
->> +#endif
->> +	ld	r12,_LINK(r1)
->> +	mtlr	r12
->> +	blr
-> 
-> Paul.
-> 
+Best Regards,
 
-Thanks,
-Shreyas
+Markus Pargmann
+
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+--A6N2fC+uXW/VQSAv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJUfA/GAAoJEEpcgKtcEGQQRKcP/RsPlz4tOriNjE4I5Zto1Hp3
+w1aymMN1g+k8VEpOT/ihLsfQ5F9AfTGulgnJUu5pcbvAzEiSBAejfS9T5H7gMhaX
+I+PkdqMQzdVayM0jYKCTr25oPjKlSMN1iLuD3IiO37H7QdJI7kcVCJciatGT2fq2
+bFMd0AY3iobX5BK51YGWVCXutLnosJZ9uI3EbcFr44ncJU2576bdCkINTUgYqTAl
+EFLAwlVB0CsAZVF6Gv+EjtR6OLJLMwUffr1ragl+oC5FTsVsMgaYNY4rxSiitxh3
+1pUihmVp7ruNRWktVTPfPKTe2vNTFxiIa4sygYvzx0GkYbwos016/DCDAcJ6h1An
+3Pd4srtsdXDX8YUTDex4ZQqMq+Aq3Xsa0PN0Dth6cxCgQQWjadIG1sBz0qpeOpKa
+48cIyVoRb8L4YCzSUzn1VyI51ET+hDvmnoUUnVu01lOfn06oxZiqvrtsXefBTex0
+zX4ShYDGZAzxezRotCibYtBms/s6TINFT6ErCnedeNZGRLRtAQPVIo68CK1NdE5K
+Bj3QEU0Q/2aZmoWwlkR+tu0UypsB91uY657Z7/VkZuDIRrpI7agwpuj0gKDJ/YTe
+i4VqCo2jKn9pAmxmq73EeHh2CkOCIaRWjgzoLk7Ny4xWRdhyRgXXwv+LmJwZQH94
+5onip2QeDXCJ0NH81MYS
+=4KXQ
+-----END PGP SIGNATURE-----
+
+--A6N2fC+uXW/VQSAv--
