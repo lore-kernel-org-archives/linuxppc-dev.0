@@ -1,24 +1,27 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25F591A09EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 05:48:59 +1100 (AEDT)
-Message-ID: <547CB817.10806@tabi.org>
-Date: Mon, 01 Dec 2014 12:48:55 -0600
-From: Timur Tabi <timur@tabi.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95B7C1A09BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 06:24:48 +1100 (AEDT)
+Date: Mon, 1 Dec 2014 19:24:22 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Message-ID: <20141201192422.GL7712@sirena.org.uk>
+References: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
+ <20141201065046.GB27289@pengutronix.de>
+ <547C9C34.9080602@metafoo.de>
 MIME-Version: 1.0
-To: Lars-Peter Clausen <lars@metafoo.de>,
- Markus Pargmann <mpa@pengutronix.de>, Jiada Wang <jiada_wang@mentor.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="YsbR7IM8mFrcghHU"
+In-Reply-To: <547C9C34.9080602@metafoo.de>
 Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_ssi: free irq before
  irq_dispose_mapping()
-References: <1417402251-6596-1-git-send-email-jiada_wang@mentor.com>
- <20141201065046.GB27289@pengutronix.de> <547C9C34.9080602@metafoo.de>
-In-Reply-To: <547C9C34.9080602@metafoo.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: alsa-devel@alsa-project.org, tiwai@suse.de, broonie@kernel.org,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
- Li.Xiubo@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, Jiada Wang <jiada_wang@mentor.com>,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, timur@tabi.org,
+ nicoleotsuka@gmail.com, tiwai@suse.de, Li.Xiubo@freescale.com,
+ Markus Pargmann <mpa@pengutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2014 10:49 AM, Lars-Peter Clausen wrote:
-> The driver creates the mapping by calling irq_of_parse_and_map(), so it
-> also has to dispose the mapping.
 
-I agree with Markus, this does seem weird.  It sounds like you're saying 
-that irq_of_parse_and_map() and devm_request_irq() are incompatible.  A 
-quick grep shows the following drivers that call both functions:
+--YsbR7IM8mFrcghHU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-ata/pata_mpc52xx.c
-built-in.o
-cpufreq/exynos5440-cpufreq.c
-crypto/omap-sham.c
-dma/moxart-dma.c
-edac/mpc85xx_edac.c
-hsi/clients/nokia-modem.c
-i2c/busses/i2c-wmt.c
-input/serio/apbps2.c
-mmc/host/omap_hsmmc.c
-mmc/host/moxart-mmc.c
-mtd/nand/mpc5121_nfc.c
-net/ethernet/arc/emac_main.c
-net/ethernet/moxa/moxart_ether.c
-pci/host/pcie-rcar.c
-pinctrl/samsung/pinctrl-exynos5440.c
-pinctrl/samsung/pinctrl-exynos.c
-pinctrl/pinctrl-bcm2835.c
-spi/spi-bcm2835.c
-spi/spi-mpc512x-psc.c
-staging/xillybus/xillybus_of.c
-thermal/samsung/exynos_tmu.c
+On Mon, Dec 01, 2014 at 05:49:56PM +0100, Lars-Peter Clausen wrote:
+> On 12/01/2014 07:50 AM, Markus Pargmann wrote:
+
+> >devm_request_irq() is used by other drivers too, this should not be a
+> >problem. Looking at the code it seems that irq_dispose_mapping may not
+> >be necessary with devm_request_irq(). So I think it would be better to
+> >remove irq_dispose_mapping() instead.
+
+> The driver creates the mapping by calling irq_of_parse_and_map(), so it also
+> has to dispose the mapping. But the easy way out is to simply use
+> platform_get_irq() instead of irq_of_parse_map(). In this case the mapping
+> is not managed by the device but by the of core, so the device has not to
+> dispose the mapping.
+
+It also has the advantage of not being DT specific so providing some
+chance that future firmware interfaces can be supported without driver
+modification.
+
+--YsbR7IM8mFrcghHU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUfMBmAAoJECTWi3JdVIfQQQIH/iCp85C3j3tZK021HeqxyEwY
+1QWrbS+5j6rW3D+UcSC/BYqRF+ClS/1ZOeFgH5b6hP4Jp1ng00iYKOaCkv3EdqRh
+DULbFmlBPkEnV8Zrq4yZ64Lmjdfg1JcSZ+iwsqkIU4RuI67BmFLKlcOtapojKSby
+SCCjRe1LJBGlb1IgO/5Rnv1Clesu5OBblyL0xMDAp54QWVD2fGtVwhxk3KjC3G0o
+oqbhdZ77Y0P97IH8RYBj4xZU5AN32KgE65PvQTYRvwmcknG09gMoELs45XLzcP0w
+5fqwPGZvRLGxqkBbHxITRPVYqTD7QmmB1mn7HsamDycHOwMFjdFHmwCcVb0gyn8=
+=hd9f
+-----END PGP SIGNATURE-----
+
+--YsbR7IM8mFrcghHU--
