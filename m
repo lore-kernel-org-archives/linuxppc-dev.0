@@ -2,16 +2,14 @@ Return-Path: <Jiada_Wang@mentor.com>
 Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C6C31A03D1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D1011A0483
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 16:55:15 +1100 (AEDT)
 From: Jiada Wang <jiada_wang@mentor.com>
 To: <timur@tabi.org>, <festevam@gmail.com>, <lars@metafoo.de>,
  <arnd@arndb.de>, <broonie@kernel.org>, <mpa@pengutronix.de>
-Subject: [PATCH v2 1/2] ASoC: fsl_ssi: fix error path in probe
-Date: Tue, 2 Dec 2014 14:55:06 +0900
-Message-ID: <1417499707-3125-2-git-send-email-jiada_wang@mentor.com>
-In-Reply-To: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
-References: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
+Subject: [PATCH v2 0/2] fsl_ssi misc fix
+Date: Tue, 2 Dec 2014 14:55:05 +0900
+Message-ID: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: alsa-devel@alsa-project.org, tiwai@suse.de, linux-kernel@vger.kernel.org,
@@ -26,29 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SSI component isn't unregistered if fsl_ssi_debugfs_create() fails
-in probe phase.
+Hi,
 
-To fix it, this commit replaces label error_asoc_register with
-error_irq.
+Changes in v2:
+	- fix error path in probe
+	- replace irq_of_parse_and_map with platform_get_irq
 
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
----
- sound/soc/fsl/fsl_ssi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v1:
+	- free IRQ before irq_dispose_mapping
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index e695517..e19ed39 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -1412,7 +1412,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 
- 	ret = fsl_ssi_debugfs_create(&ssi_private->dbg_stats, &pdev->dev);
- 	if (ret)
--		goto error_asoc_register;
-+		goto error_irq;
- 
- 	/*
- 	 * If codec-handle property is missing from SSI node, we assume
+Jiada Wang (2):
+  ASoC: fsl_ssi: fix error path in probe
+  ASoC: fsl_ssi: use platform_get_irq instead of irq_of_parse_and_map
+
+ sound/soc/fsl/fsl_ssi.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
+
 -- 
 1.9.3
