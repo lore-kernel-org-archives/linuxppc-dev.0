@@ -1,30 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rgb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9AC71A0166
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 07:13:29 +1100 (AEDT)
-Message-ID: <1417551190.27448.8.camel@kernel.crashing.org>
-Subject: Re: [PATCH 03/10] mm: Convert p[te|md]_numa users to
- p[te|md]_protnone_numa
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 03 Dec 2014 07:13:10 +1100
-In-Reply-To: <87h9xeh5im.fsf@linux.vnet.ibm.com>
-References: <1416578268-19597-1-git-send-email-mgorman@suse.de>
- <1416578268-19597-4-git-send-email-mgorman@suse.de>
- <1417473849.7182.9.camel@kernel.crashing.org>
- <87h9xeh5im.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Rik van Riel <riel@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
- Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Kirill Shutemov <kirill.shutemov@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B9CF1A0568
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 08:28:14 +1100 (AEDT)
+From: Richard Guy Briggs <rgb@redhat.com>
+To: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
+Subject: [PATCH] powerpc: add little endian flag to syscall_get_arch()
+Date: Tue,  2 Dec 2014 16:27:33 -0500
+Message-Id: <fbe03529d720e75aa8663f8b521af5b11b33d52f.1417553967.git.rgb@redhat.com>
+Cc: Richard Guy Briggs <rgb@redhat.com>, eparis@parisplace.org,
+ sgrubb@redhat.com, pmoore@redhat.com, tonyj@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-02 at 13:01 +0530, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Fri, 2014-11-21 at 13:57 +0000, Mel Gorman wrote:
-> >> void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-> >>                 pte_t pte)
-> >>  {
-> >> -#ifdef CONFIG_DEBUG_VM
-> >> -       WARN_ON(pte_val(*ptep) & _PAGE_PRESENT);
-> >> -#endif
-> >> +       /*
-> >> +        * When handling numa faults, we already have the pte marked
-> >> +        * _PAGE_PRESENT, but we can be sure that it is not in hpte.
-> >> +        * Hence we can use set_pte_at for them.
-> >> +        */
-> >> +       VM_WARN_ON((pte_val(*ptep) & (_PAGE_PRESENT | _PAGE_USER)) ==
-> >> +               (_PAGE_PRESENT | _PAGE_USER));
-> >> +
-> >
-> > His is that going to fare with set_pte_at() called for kernel pages ?
-> >
-> 
-> Yes, we won't capture those errors now. But is there any other debug
-> check i could use to capture the wrong usage of set_pte_at ?
+Since both ppc and ppc64 have LE variants which are now reported by uname, add
+that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add AUDIT_ARCH_PPC*LE
+variants.
 
-Actually the above is fine, for some reason I mis-read the test as
-blowing on kernel pages, it doesn't.
+Without this,  perf trace and auditctl fail.
 
-We probably do need to make sure however that protnone isn't used for
-kernel pages.
+Mainline kernel reports ppc64le (per a058801) but there is no matching
+AUDIT_ARCH_PPC64LE.
 
-Cheers,
-Ben.
+See:
+	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
+	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
 
-> -aneesh
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+---
+ arch/powerpc/include/asm/syscall.h |    6 +++++-
+ include/uapi/linux/audit.h         |    2 ++
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index 6fa2708..a58acab 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -90,6 +90,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
+ 
+ static inline int syscall_get_arch(void)
+ {
+-	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
++	int arch = is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
++#ifdef __LITTLE_ENDIAN__
++	arch |= __AUDIT_ARCH_LE
++#endif
++	return arch;
+ }
+ #endif	/* _ASM_SYSCALL_H */
+diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
+index 4d100c8..fe29a99 100644
+--- a/include/uapi/linux/audit.h
++++ b/include/uapi/linux/audit.h
+@@ -364,7 +364,9 @@ enum {
+ #define AUDIT_ARCH_PARISC	(EM_PARISC)
+ #define AUDIT_ARCH_PARISC64	(EM_PARISC|__AUDIT_ARCH_64BIT)
+ #define AUDIT_ARCH_PPC		(EM_PPC)
++#define AUDIT_ARCH_PPCLE	(EM_PPC|__AUDIT_ARCH_LE)
+ #define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
++#define AUDIT_ARCH_PPC64LE	(EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
+ #define AUDIT_ARCH_S390		(EM_S390)
+ #define AUDIT_ARCH_S390X	(EM_S390|__AUDIT_ARCH_64BIT)
+ #define AUDIT_ARCH_SH		(EM_SH)
+-- 
+1.7.1
