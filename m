@@ -1,25 +1,27 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from mx.vmgattei.com (mx.vmgattei.com [77.223.18.35])
- by lists.ozlabs.org (Postfix) with ESMTP id 33CB91A061F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 21:53:41 +1100 (AEDT)
-Received: from localhost (mx.vmgattei.com [127.0.0.1])
- by mx.vmgattei.com (Postfix) with ESMTP id 9F25122705
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 11:48:07 +0100 (CET)
-Received: from mx.vmgattei.com ([127.0.0.1])
- by localhost (mx.vmgattei.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oAh9mmKE2-Sn for <linuxppc-dev@lists.ozlabs.org>;
- Tue,  2 Dec 2014 11:48:06 +0100 (CET)
-Message-ID: <547D98DF.9000708@sirius-es.it>
-Date: Tue, 02 Dec 2014 11:47:59 +0100
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 531D51A0597
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 23:28:00 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] Documentation: bindings: net: DPAA corenet binding
+ document
+Date: Tue, 2 Dec 2014 12:12:47 +0000
+Message-ID: <BL2PR03MB545CC342CA6A408D2FD5CF6E67A0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
+ <1417495189.15957.209.camel@freescale.com>
+In-Reply-To: <1417495189.15957.209.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: alex.popov@linux.com
-Subject: Re: Disabled LocalPlus Controller (LPC) clock on MPC512x
-References: <5475BE5A.4090503@linux.com>
-In-Reply-To: <5475BE5A.4090503@linux.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>,
+ "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/11/2014 12:49, Alexander Popov wrote:
-> Hello.
->
-Hi.
-
-> My Freescale TWR-MPC5125 board instantly reboots if I touch
-> any physical address on the LocalPlus Bus (LPB) for the first time
-> when Linux has already booted.
->
-> This effect is reproduced by using /dev/mem or loading a kernel module
-> which works with any peripherals on LPB.
->
-> It took me some time to find out that such crash is caused by
-> clk_disable_unused() in drivers/clk/clk.c, which disables
-> LocalPlus Controller (LPC) clock if I don't touch LPB addresses in the
-> previous initcalls. So starting Linux with clk_ignore_unused bootparam
-> or inserting dummy LPB reading to some initcall is a temporary fix.
->
-> Is it correct to gate LPC clock?
-For me yes, because it's physically present on SoC and could not be muxed.
-
-> If yes, how to avoid the mentioned
-> crashes properly?
->
-> There's a piece of code in arch/powerpc/platforms/512x/clock-commonclk.c
-> which is doubtful for me:
->
-> /*
->  * pre-enable those "internal" clock items which never get
->  * claimed by any peripheral driver, to not have the clock
->  * subsystem disable them late at startup
->  */
-> clk_prepare_enable(clks[MPC512x_CLK_DUMMY]);
-> clk_prepare_enable(clks[MPC512x_CLK_E300]);    /* PowerPC CPU */
-> clk_prepare_enable(clks[MPC512x_CLK_DDR]);    /* DRAM */
-> clk_prepare_enable(clks[MPC512x_CLK_MEM]);    /* SRAM */
-> clk_prepare_enable(clks[MPC512x_CLK_IPS]);    /* SoC periph */
-> clk_prepare_enable(clks[MPC512x_CLK_LPC]);    /* boot media */
->
-> Does it mean that these clocks should be registered with
-> CLK_IGNORE_UNUSED flag?
->
-Yes, in my opinion this groups of clocks may be considered as "always on",
-but I don't think that MPC512x_CLK_LPC is an "internal" clock and then 
-It could be enable if really used only.
-In detail:
-   - may be good to enable MPC512x_CLK_LPC only when localbus is enabled 
-by the dts
-   - if enabled, MPC512x_CLK_LPC have to setup with CLK_IGNORE_UNUSED 
-flag because never get claimed by any driver.
-
-I put in CC "Gerhard Sittig" also beacuse it might be interesting to 
-know his point of view as the author of mpc512x common clock driver.
-
-Regards,
-Matteo
-
-> Thanks a lot.
-> Best regards,
-> Alexander
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBUdWVzZGF5LCBEZWNlbWJlciAwMiwgMjAxNCA2OjQwIEFNDQo+IE9uIEZyaSwgMjAx
+NC0xMS0yOCBhdCAxMjoxMCArMDIwMCwgTWFkYWxpbiBCdWN1ciB3cm90ZToNCj4gPiBBZGQgdGhl
+IGRldmljZSB0cmVlIGJpbmRpbmcgZG9jdW1lbnQgZm9yIHRoZSBEUEFBIGNvcmVuZXQgbm9kZQ0K
+PiA+IGFuZCBEUEFBIEV0aGVybmV0IG5vZGVzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWFk
+YWxpbiBCdWN1ciA8bWFkYWxpbi5idWN1ckBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFhLnR4dCB8IDMxDQo+
+ICsrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDMxIGluc2VydGlv
+bnMoKykNCj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9uZXQvZnNsLWRwYWEudHh0DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9mc2wtZHBhYS50eHQNCj4gYi9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFhLnR4dA0KPiA+IG5ldyBmaWxlIG1v
+ZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uODIyYzY2OA0KPiA+IC0tLSAvZGV2L251bGwN
+Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFh
+LnR4dA0KPiA+IEBAIC0wLDAgKzEsMzEgQEANCj4gPiArKkRQQUEgY29yZW5ldA0KPiA+ICsNCj4g
+PiArVGhlIGNvcmVuZXQgYnVzIGNvbnRhaW5pbmcgYWxsIERQQUEgRXRoZXJuZXQgbm9kZXMuDQo+
+IA0KPiBXaGF0IGRvZXMgdGhpcyBoYXZlIHRvIGRvIHdpdGggY29yZW5ldD8NCj4gDQpUaGUgY29y
+ZW5ldC1nZW5lcmljIHBsYXRmb3JtIGNvZGUgdXNlcyB0aGlzIGNvbXBhdGlibGUuIEhlcmUgYXJl
+IHNvbWUgZXhjZXJwdHMNCmZyb20gdGhlIHBsYXRmb3JtIGNvZGUgZm91bmQgaW4gU0RLIGFyY2gv
+cG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9jb3JlbmV0X2dlbmVyaWMuYw0KLi4uDQogKiBDb3JlbmV0
+IGJhc2VkIFNvQyBEUyBTZXR1cA0KICoNCiAqIE1haW50YWluZWQgYnkgS3VtYXIgR2FsYSAoc2Vl
+IE1BSU5UQUlORVJTIGZvciBjb250YWN0IGluZm9ybWF0aW9uKQ0KICoNCiAqIENvcHlyaWdodCAy
+MDA5LTIwMTEgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0KLi4uDQpzdGF0aWMgY29uc3Qg
+c3RydWN0IG9mX2RldmljZV9pZCBvZl9kZXZpY2VfaWRzW10gPSB7DQogICAgICAgIHsNCiAgICAg
+ICAgICAgICAgICAuY29tcGF0aWJsZSAgICAgPSAic2ltcGxlLWJ1cyINCiAgICAgICAgfSwNCiAg
+ICAgICAgew0KICAgICAgICAgICAgICAgIC5jb21wYXRpYmxlICAgICA9ICJmc2wsZHBhYSINCiAg
+ICAgICAgfSwNCi4uLg0KaW50IF9faW5pdCBjb3JlbmV0X2dlbl9wdWJsaXNoX2RldmljZXModm9p
+ZCkNCnsNCiAgICAgICAgcmV0dXJuIG9mX3BsYXRmb3JtX2J1c19wcm9iZShOVUxMLCBvZl9kZXZp
+Y2VfaWRzLCBOVUxMKTsNCn0NCi4uLg0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0eQ0KPiA+ICsgLSBj
+b21wYXRpYmxlOiBzdHJpbmcgcHJvcGVydHkuICBNdXN0IGluY2x1ZGUgImZzbCxkcGFhIi4gQ2Fu
+IGluY2x1ZGUNCj4gPiArICAgYWxzbyAiZnNsLDxTb0M+LWRwYWEiLg0KPiANCj4gTm8gbmVlZCBm
+b3IgdGhlIDxTb0M+IHBhcnQuICBBcyB3ZSBwcmV2aW91c2x5IGRpc2N1c3NlZCwgdGhlIG9ubHkN
+Cj4gcHVycG9zZSBvZiB0aGlzIG5vZGUgaXMgYmFja3dhcmRzIGNvbXBhdGliaWxpdHkgd2l0aCB0
+aGUgVS1Cb290IE1BQw0KPiBhZGRyZXNzIGZpeHVwIC0tIGlmIFUtQm9vdCBkb2Vzbid0IGxvb2sg
+Zm9yIHRoZSA8U29DPiB2ZXJzaW9uLCB0aGVuDQo+IGRvbid0IGNvbXBsaWNhdGUgdGhpbmdzLg0K
+PiANCj4gVGhvdWdoLCBJIGNhbid0IGZpbmQgd2hlcmUgVS1Cb290IHJlZmVyZW5jZXMgdGhpcyBu
+b2RlLiAgQXJlIHlvdSBzdXJlDQo+IGl0J3Mgbm90IHVzaW5nIHRoZSBldGhlcm5ldCVkIGFsaWFz
+ZXMgbGlrZSBldmVyeXRoaW5nIGVsc2UsIGluIHdoaWNoDQo+IGNhc2Ugd2h5IGRvIHdlIG5lZWQg
+dGhpcyBub2RlIGF0IGFsbD8NCj4gDQo+IC1TY290dA0KPiANCg0KVGhlIGluaXRpYWwgKEZyZWVz
+Y2FsZSBTREspIGJpbmRpbmcgZG9jdW1lbnQgY29udGFpbmVkIHRob3NlIGNvbXBhdGlibGVzLA0K
+bm90IHN1cmUgd2hhdCB0aGUgaW5pdGlhbCBpbnRlbnQgd2FzIGZvciB0aGUgPFNvQz4gdmFyaWFu
+dHMuDQoNClRoZSAiZnNsLGRwYWEiIG5vZGUgaXMgb2YgaW50ZXJlc3QgdG8gdGhlIERQQUEgRXRo
+ZXJuZXQgYmVjYXVzZSBpdCBpcw0KdGhlIHBhcmVudCBvZiB0aGUgImZzbCxkcGEtZXRoZXJuZXQi
+IG5vZGVzLg0KDQpNYWRhbGluDQo=
