@@ -1,26 +1,25 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
- [209.85.215.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 860091A025B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 09:08:49 +1100 (AEDT)
-Received: by mail-la0-f53.google.com with SMTP id gm9so11692796lab.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Dec 2014 14:08:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31DCF1A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 09:47:14 +1100 (AEDT)
+Message-ID: <1417560413.15957.217.camel@freescale.com>
+Subject: Re: [RFC PATCH v1 1/1] powerpc/85xx: Add support for
+ Emerson/Artesyn MVME2500.
+From: Scott Wood <scottwood@freescale.com>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Date: Tue, 2 Dec 2014 16:46:53 -0600
+In-Reply-To: <CAPk1OjE7pAdLucb3+54MnONsNiBgzjvxsA_o-jOdXk9W2CVJAw@mail.gmail.com>
+References: <1417011468-13485-1-git-send-email-alessio.bogani@elettra.eu>
+ <1417040495.15957.176.camel@freescale.com>
+ <CAPk1OjGGnF6jxxXOOqK4dB9-g2=CyT7DsS8U+KgW3-g2PooXdQ@mail.gmail.com>
+ <1417496585.15957.210.camel@freescale.com>
+ <CAPk1OjE7pAdLucb3+54MnONsNiBgzjvxsA_o-jOdXk9W2CVJAw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <fbe03529d720e75aa8663f8b521af5b11b33d52f.1417553967.git.rgb@redhat.com>
-References: <fbe03529d720e75aa8663f8b521af5b11b33d52f.1417553967.git.rgb@redhat.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Tue, 2 Dec 2014 14:08:24 -0800
-Message-ID: <CALCETrX_9zg_ZYZCSpB5Fu6xrC8vtHdSAs=2afZ=jeoek8dz6A@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: add little endian flag to syscall_get_arch()
-To: Richard Guy Briggs <rgb@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Tony Jones <tonyj@suse.de>, Linux API <linux-api@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Moore <pmoore@redhat.com>, linux-audit@redhat.com,
- Eric Paris <eparis@parisplace.org>, Steve Grubb <sgrubb@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +29,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 2, 2014 at 1:27 PM, Richard Guy Briggs <rgb@redhat.com> wrote:
-> Since both ppc and ppc64 have LE variants which are now reported by uname, add
-> that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add AUDIT_ARCH_PPC*LE
-> variants.
->
-> Without this,  perf trace and auditctl fail.
->
-> Mainline kernel reports ppc64le (per a058801) but there is no matching
-> AUDIT_ARCH_PPC64LE.
->
+On Tue, 2014-12-02 at 15:55 +0100, Alessio Igor Bogani wrote:
+> Hi Scott,
+> 
+> On 2 December 2014 at 06:03, Scott Wood <scottwood@freescale.com> wrote:
+> [...]
+> >> The pq3-gpio-0.dtsi defines an gpio controller in this way:
+> >>
+> >> gpio-controller@f000 {
+> >>      reg = <0xf000 0x100>;
+> >>      [...]
+> >>
+> >> But MVME2500 board requires a slightly different definition:
+> >>
+> >>      reg = <0xfc00 0x100>;
+> >
+> > The GPIO CCSR registers on a P2010 don't change based on what board you
+> > put it on.  It looks like pq3-gpio-0.dtsi is just wrong, for all chips
+> > that use it.  It should be fixed there.
+> 
+> I have to admit that I'm not using GPIO at the moment so a typo into
+> board's manufacturer manual is more probable.
 
-There's no seccomp filter support for powerpc, so there's no risk that
-this breaks it.
+The various chip manuals also say that the registers start at offset
+0xc00 in the gpio block.  Testing suggests that the registers actually
+repeat every 0x100 bytes within the 4K page, but it would be good to fix
+the device tree to match the documented location.
 
---Andy
+> >> > Better still would be if we could have address map tweaks be kconfig
+> >> > fragments that get mixed in by the user, with merge_config.sh.
+> >>
+> >> Personally I would prefer see something more simple like this:
+> >>
+> >> %_defconfig: scripts/kconfig/conf
+> >>    # Grab the platform generic config file (for a SoC family)
+> >>    $(Q)$< --defconfig=arch/$(SRCARCH)/configs/mpc$(shell dirname
+> >> $@)_defconfig Kconfig
+> >
+> > What is the dirname here trying to do?
+> 
+> Extract string "85xx" from "make 85xx/mvme2500_defconfig" command.
+> 
+> So the above mentioned Makefile snip grabs
+> arch/powerpc/configs/mpc85xx_defconfig and applies (using
+> merge_config.sh) options present in
+> arch/powerpc/configs/85xx/mvme2500_defconfig.
 
-> See:
->         https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
->         https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
->
-> Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
-> ---
->  arch/powerpc/include/asm/syscall.h |    6 +++++-
->  include/uapi/linux/audit.h         |    2 ++
->  2 files changed, 7 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index 6fa2708..a58acab 100644
-> --- a/arch/powerpc/include/asm/syscall.h
-> +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -90,6 +90,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
->
->  static inline int syscall_get_arch(void)
->  {
-> -       return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
-> +       int arch = is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
-> +#ifdef __LITTLE_ENDIAN__
-> +       arch |= __AUDIT_ARCH_LE
-> +#endif
-> +       return arch;
->  }
->  #endif /* _ASM_SYSCALL_H */
-> diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
-> index 4d100c8..fe29a99 100644
-> --- a/include/uapi/linux/audit.h
-> +++ b/include/uapi/linux/audit.h
-> @@ -364,7 +364,9 @@ enum {
->  #define AUDIT_ARCH_PARISC      (EM_PARISC)
->  #define AUDIT_ARCH_PARISC64    (EM_PARISC|__AUDIT_ARCH_64BIT)
->  #define AUDIT_ARCH_PPC         (EM_PPC)
-> +#define AUDIT_ARCH_PPCLE       (EM_PPC|__AUDIT_ARCH_LE)
->  #define AUDIT_ARCH_PPC64       (EM_PPC64|__AUDIT_ARCH_64BIT)
-> +#define AUDIT_ARCH_PPC64LE     (EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
->  #define AUDIT_ARCH_S390                (EM_S390)
->  #define AUDIT_ARCH_S390X       (EM_S390|__AUDIT_ARCH_64BIT)
->  #define AUDIT_ARCH_SH          (EM_SH)
-> --
-> 1.7.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-api" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+But mpc85xx_defconfig isn't a suitable base for all 85xx (SMP, corenet,
+etc).  Plus, hardcoding "mpc" in front of it in generic infrastructure
+would not be appropriate (even on PPC you have the 40x and 44x
+directories).
 
+The right way to do this would be to have a metaconfig file that lists
+the base config and a set of fragments to apply, which the user can use
+like an ordinary defconfig.
 
+> It should reduces the size of the board specific defconfig without
+> using any other fragments and without change anything in user habits.
+> 
+> In my humble opinion that hardware is so rigid that flexibility given
+> by config fragments don't seem very useful.
 
--- 
-Andy Lutomirski
-AMA Capital Management, LLC
+Which hardware?  The MVME2500?  It looked like you were proposing a more
+general solution.  Note that many config options have nothing to do with
+the hardware (filesystems, debug options, network protocols,
+virtualization, etc).
+
+In any case, we don't want a defconfig for every board.  We want a small
+set of defconfigs that provide wide build coverage and the ability to
+run on a wide variety of boards.  Nothing stops users or board vendors
+from maintaining more targeted configs out of tree.
+
+> >> > I gues the point here is to avoid using highmem just for the last 256
+> >> > MiB?
+> >>
+> >> Yes. Can you suggest me a better solution, please?
+> >
+> > Not if the performance benefit from getting rid of highmem is worth
+> > carrying this around...  But it would still be good if the board support
+> > were build in the standard defconfig as well.  It's unlikely to get much
+> > build coverage (by people who don't use this board) in a board-specific
+> > defconfig.
+> 
+> Ok I changed mpc85xx_defconfig and it works with few addiction. So we
+> have two possibilities: use mpc85xx_defconfig (but without VME_USER
+> and Highmem tweak) or add mvme2500_defconfig: Which do you prefer? I
+> would prefer the mvme2500_defconfig but I think that my vote doesn't
+> count (rightly).
+
+If it were just the highmem tweak I'd say that falls into the realm of
+user config -- it's no different from any other board with 1 GiB of RAM.
+I don't want to turn on staging drivers in the main defconfigs (unless
+it's for something needed by most boards covered by the defconfig),
+since it makes it easier for users to enable other staging drivers
+without realizing it.
+
+So, put everything but VME and the highmem tweak in mpc85xx_defconfig.
+If you want, add an 85xx/mvme2500.config fragment that adds VME and the
+highmem tweak (separate config fragments for each would be better, but
+without a metaconfig mechanism it's less friendly to users who won't
+know what the best starting point is for this board).
+
+> What do you think about move board setup code from
+> platform/85xx/mvme2500.c to platform/platforms/85xx/mpc85xx_ds.c?
+
+It's not a DS board, but it'd be good to have a
+platforms/85xx/mpc85xx_generic.c (similar to
+platforms/85xx/corenet_generic.c) for platforms that don't need anything
+special in the board file.
+
+-Scott
