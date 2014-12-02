@@ -1,23 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0145.outbound.protection.outlook.com [157.56.111.145])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D3C1B1A048E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 15:40:03 +1100 (AEDT)
-Message-ID: <1417495189.15957.209.camel@freescale.com>
-Subject: Re: [PATCH] Documentation: bindings: net: DPAA corenet binding
- document
-From: Scott Wood <scottwood@freescale.com>
-To: <madalin.bucur@freescale.com>
-Date: Mon, 1 Dec 2014 22:39:49 -0600
-In-Reply-To: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
-References: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D271C1A00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 16:01:52 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 2 Dec 2014 10:31:49 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id DE4C43940048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 10:31:45 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB252Mpr66650116
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 10:32:22 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB251imf030977
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 10:31:45 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc/mm: don't do tlbie for updatepp request with
+ NO HPTE fault
+In-Reply-To: <1417489766.27448.0.camel@kernel.crashing.org>
+References: <1415026295-25965-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1415026295-25965-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1417489766.27448.0.camel@kernel.crashing.org>
+Date: Tue, 02 Dec 2014 10:31:44 +0530
+Message-ID: <87sigyhcg7.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Igal.Liberman@freescale.com, Emilian.Medve@freescale.com,
- netdev@vger.kernel.org
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-11-28 at 12:10 +0200, Madalin Bucur wrote:
-> Add the device tree binding document for the DPAA corenet node
-> and DPAA Ethernet nodes.
-> 
-> Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
-> ---
->  Documentation/devicetree/bindings/net/fsl-dpaa.txt | 31 ++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/net/fsl-dpaa.txt b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> new file mode 100644
-> index 0000000..822c668
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> @@ -0,0 +1,31 @@
-> +*DPAA corenet
-> +
-> +The corenet bus containing all DPAA Ethernet nodes.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-What does this have to do with corenet?
+> On Mon, 2014-11-03 at 20:21 +0530, Aneesh Kumar K.V wrote:
+>> upatepp get called for a nohpte fault, when we find from the linux
+>> page table that the translation was hashed before. In that case
+>> we are sure that there is no existing translation, hence we could
+>> avoid doing tlbie.
+>
+> You need to test your own stuff together :-)
+>
+> /home/benh/linux-powerpc-test/arch/powerpc/mm/hugepage-hash64.c: In function '__hash_page_thp':
+> /home/benh/linux-powerpc-test/arch/powerpc/mm/hugepage-hash64.c:98:17: error: 'local' undeclared (first use in this function)
+> /home/benh/linux-powerpc-test/arch/powerpc/mm/hugepage-hash64.c:98:17: note: each undeclared identifier is reported only once for each function it appears in
+>
 
-> +Required property
-> + - compatible: string property.  Must include "fsl,dpaa". Can include
-> +   also "fsl,<SoC>-dpaa".
+I will redo that patch. I was not sure which of these patches get pulled
+in which sequences. So all of that was done on top of master. Hence the
+conflict. What i will do is I will respin this on top of what you pushed
+to next and send only this patch again.
 
-No need for the <SoC> part.  As we previously discussed, the only
-purpose of this node is backwards compatibility with the U-Boot MAC
-address fixup -- if U-Boot doesn't look for the <SoC> version, then
-don't complicate things.
 
-Though, I can't find where U-Boot references this node.  Are you sure
-it's not using the ethernet%d aliases like everything else, in which
-case why do we need this node at all?
-
--Scott
+Thanks
+-aneesh
