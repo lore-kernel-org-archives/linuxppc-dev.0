@@ -1,26 +1,23 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0145.outbound.protection.outlook.com [157.56.111.145])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D99D61A02F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 15:27:52 +1100 (AEDT)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 80A57140174
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2014 15:27:51 +1100 (AEDT)
-Date: Mon, 1 Dec 2014 20:26:26 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: Right location in sysfs for dlpar file
-Message-ID: <20141202042626.GC9271@kroah.com>
-References: <1417057941.5089.81.camel@kernel.crashing.org>
- <547C8C0F.5070701@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3C1B1A048E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 15:40:03 +1100 (AEDT)
+Message-ID: <1417495189.15957.209.camel@freescale.com>
+Subject: Re: [PATCH] Documentation: bindings: net: DPAA corenet binding
+ document
+From: Scott Wood <scottwood@freescale.com>
+To: <madalin.bucur@freescale.com>
+Date: Mon, 1 Dec 2014 22:39:49 -0600
+In-Reply-To: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
+References: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <547C8C0F.5070701@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Igal.Liberman@freescale.com, Emilian.Medve@freescale.com,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 01, 2014 at 09:41:03AM -0600, Nathan Fontenot wrote:
-> On 11/26/2014 09:12 PM, Benjamin Herrenschmidt wrote:
-> > Hi Greg,
-> > 
-> > So Nathan is working on a patch series to cleanup and improve our
-> > "DLPAR" infrastructure which is basically our hotplug mechanism when
-> > running under the PowerVM (aka pHyp) and KVM hypervisors.
+On Fri, 2014-11-28 at 12:10 +0200, Madalin Bucur wrote:
+> Add the device tree binding document for the DPAA corenet node
+> and DPAA Ethernet nodes.
 > 
-> The cleanup to the dlpar infrastructure will move the entire operation
-> of hotplugging a device to the kernel instead of doing it partially in
-> userspace and partially in the kernel as is currently done.
+> Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+> ---
+>  Documentation/devicetree/bindings/net/fsl-dpaa.txt | 31 ++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/net/fsl-dpaa.txt
 > 
-> > 
-> > I'll let Nathan give you a bit more details/background and answer
-> > subsequent question you might have as this is really his area of
-> > expertise.
-> > 
-> > To cut a long story short, we need a sysfs file that allows our
-> > userspace tools to notify the kernel of hotplug events coming from
-> > the management console (which talks to userspace daemons using a
-> > proprietary protocol) to "initiate" the hotplug operations, which in
-> > turn get dispatched internally in the kernel to the right subsystem
-> > (memory, cpu, pci, ...) based on the resource type.
-> > 
-> > On IRC, Greg suggested /sys/firmware and /sys/hypervisor which both
-> > look like a reasonable option to me, probably better than dlpar...
-> 
-> For PowerVM systems we need this sysfs file to deliver what is
-> essentially a binary blob (specifically a rtas error log) to the
-> kernel. The current patch set is creating /sys/kernel/dlpar. As Ben
-> mentioned we would like your input on what would be the proper place
-> to create this file.
+> diff --git a/Documentation/devicetree/bindings/net/fsl-dpaa.txt b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
+> new file mode 100644
+> index 0000000..822c668
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
+> @@ -0,0 +1,31 @@
+> +*DPAA corenet
+> +
+> +The corenet bus containing all DPAA Ethernet nodes.
 
-And what is the kernel supposed to do with such a binary blob?  Parse
-it?  Or pass it to something else?
+What does this have to do with corenet?
 
-Anyway, let's see the patches before I guess anything else, that will
-determine how things work out best.
+> +Required property
+> + - compatible: string property.  Must include "fsl,dpaa". Can include
+> +   also "fsl,<SoC>-dpaa".
 
-thanks,
+No need for the <SoC> part.  As we previously discussed, the only
+purpose of this node is backwards compatibility with the U-Boot MAC
+address fixup -- if U-Boot doesn't look for the <SoC> version, then
+don't complicate things.
 
-greg k-h
+Though, I can't find where U-Boot references this node.  Are you sure
+it's not using the ethernet%d aliases like everything else, in which
+case why do we need this node at all?
+
+-Scott
