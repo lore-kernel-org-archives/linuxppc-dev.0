@@ -1,38 +1,45 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 946711A0094
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 17:55:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D5CC51A013C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 18:27:18 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 2 Dec 2014 12:25:13 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 612CE1258056
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 12:25:28 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB26tlKh53674042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 12:25:47 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB26t9lY017756
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 12:25:10 +0530
+ Tue, 2 Dec 2014 12:57:13 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 733551258056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 12:57:28 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB27RjoV66781430
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 12:57:46 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB27R876029494
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 12:57:09 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/mm: don't do tlbie for updatepp request with
- NO HPTE fault
-In-Reply-To: <1417480795.31336.4.camel@concordia>
-References: <1415026295-25965-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1415026295-25965-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1417480795.31336.4.camel@concordia>
-Date: Tue, 02 Dec 2014 12:25:02 +0530
-Message-ID: <87mw76h77d.fsf@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH 03/10] mm: Convert p[te|md]_numa users to
+ p[te|md]_protnone_numa
+In-Reply-To: <1417473762.7182.8.camel@kernel.crashing.org>
+References: <1416578268-19597-1-git-send-email-mgorman@suse.de>
+ <1416578268-19597-4-git-send-email-mgorman@suse.de>
+ <1417473762.7182.8.camel@kernel.crashing.org>
+Date: Tue, 02 Dec 2014 12:57:00 +0530
+Message-ID: <87k32ah5q3.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rik van Riel <riel@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Hugh Dickins <hughd@google.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+ Linux-MM <linux-mm@kvack.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Sasha Levin <sasha.levin@oracle.com>,
+ Dave Jones <davej@redhat.com>, LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kirill Shutemov <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,52 +49,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Mon, 2014-11-03 at 20:21 +0530, Aneesh Kumar K.V wrote:
->> upatepp get called for a nohpte fault, when we find from the linux
->> page table that the translation was hashed before. In that case
->> we are sure that there is no existing translation, hence we could
->> avoid doing tlbie.
+> On Fri, 2014-11-21 at 13:57 +0000, Mel Gorman wrote:
+>> Convert existing users of pte_numa and friends to the new helper. Note
+>> that the kernel is broken after this patch is applied until the other
+>> page table modifiers are also altered. This patch layout is to make
+>> review easier.
 >
-> We are sure there *was* no existing translation. It's possible that since the
-> nohpte fault occurred the translation has been loaded into the tlb.
+> Aneesh, the removal of the DSISR_PROTFAULT checks, I wonder if we might
+> break something here ... (I know, I asked for them to be removed :-)
 >
-> Ben says that's OK, because updatepp is only ever relaxing permissions. But
-> please add some explanation of that to the changelog - it's not obvious.
->
->> @@ -322,8 +322,15 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
->>  		}
->>  		native_unlock_hpte(hptep);
->>  	}
->> -	/* Ensure it is out of the tlb too. */
->> -	tlbie(vpn, bpsize, apsize, ssize, local);
->> +
->> +	if (flags & HPTE_LOCAL_UPDATE)
->> +		local = 1;
->> +	/*
->> +	 * Ensure it is out of the tlb too if it is not a nohpte fault
->> +	 */
->> +	if (!(flags & HPTE_NOHPTE_UPDATE))
->> +		tlbie(vpn, bpsize, apsize, ssize, local);
->> +
->>  	return ret;
->>  }
->
-> The context preceeding this hunk includes this comment:
->
-> 	/*
-> 	 * We need to invalidate the TLB always because hpte_remove doesn't do
-> 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
-> 	 * random entry from it. When we do that we don't invalidate the TLB
-> 	 * (hpte_remove) because we assume the old translation is still
-> 	 * technically "valid".
-> 	 */
->
-> Which seems out of sync with the code now.
 
-The comment is still valid. What it explain is the part that, even if we
-didn't find hash pte matching we still need to do a tlbie. We don't look
-at the nohpte fault details in the comment.
+That is the reason I converted that to a WARN_ON in later patch. 
+
+> IE, we basically bounce all protection checks to the "normal" VMA
+> protection checking, so far so good...
+>
+> But what about the subpage protection stuff ? Will that still work ?
+>
+
+I did look at that before. So if we had subpage access limitted, when we
+take a fault for that subpage, we bail out early in hash_page_mm. (with
+rc = 2). low_hash_fault handle that case directly. We will not end up
+calling do_page_fault.
+
+Now, hash_preload can possibly insert an hpte in hash page table even if
+the access is not allowed by the pte permissions. But i guess even that
+is ok. because we will fault again, end-up calling hash_page_mm where we
+handle that part correctly.
 
 -aneesh
