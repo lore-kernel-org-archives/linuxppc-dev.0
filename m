@@ -1,27 +1,36 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 531D51A0597
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 23:28:00 +1100 (AEDT)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] Documentation: bindings: net: DPAA corenet binding
- document
-Date: Tue, 2 Dec 2014 12:12:47 +0000
-Message-ID: <BL2PR03MB545CC342CA6A408D2FD5CF6E67A0@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
- <1417495189.15957.209.camel@freescale.com>
-In-Reply-To: <1417495189.15957.209.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C13561A06ED
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 01:55:13 +1100 (AEDT)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id C24CE440E58_47DD2CCB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 14:55:08 +0000 (GMT)
+Received: from mail-wi0-f178.google.com (mail-wi0-f178.google.com
+ [209.85.212.178]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 81D1843E069_47DD2CBF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 14:55:07 +0000 (GMT)
+Received: by mail-wi0-f178.google.com with SMTP id em10so1771359wid.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Dec 2014 06:55:06 -0800 (PST)
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
- "galak@codeaurora.org" <galak@codeaurora.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1417496585.15957.210.camel@freescale.com>
+References: <1417011468-13485-1-git-send-email-alessio.bogani@elettra.eu>
+ <1417040495.15957.176.camel@freescale.com>
+ <CAPk1OjGGnF6jxxXOOqK4dB9-g2=CyT7DsS8U+KgW3-g2PooXdQ@mail.gmail.com>
+ <1417496585.15957.210.camel@freescale.com>
+Date: Tue, 2 Dec 2014 15:55:05 +0100
+Message-ID: <CAPk1OjE7pAdLucb3+54MnONsNiBgzjvxsA_o-jOdXk9W2CVJAw@mail.gmail.com>
+Subject: Re: [RFC PATCH v1 1/1] powerpc/85xx: Add support for Emerson/Artesyn
+ MVME2500.
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +40,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBUdWVzZGF5LCBEZWNlbWJlciAwMiwgMjAxNCA2OjQwIEFNDQo+IE9uIEZyaSwgMjAx
-NC0xMS0yOCBhdCAxMjoxMCArMDIwMCwgTWFkYWxpbiBCdWN1ciB3cm90ZToNCj4gPiBBZGQgdGhl
-IGRldmljZSB0cmVlIGJpbmRpbmcgZG9jdW1lbnQgZm9yIHRoZSBEUEFBIGNvcmVuZXQgbm9kZQ0K
-PiA+IGFuZCBEUEFBIEV0aGVybmV0IG5vZGVzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWFk
-YWxpbiBCdWN1ciA8bWFkYWxpbi5idWN1ckBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBE
-b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFhLnR4dCB8IDMxDQo+
-ICsrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDMxIGluc2VydGlv
-bnMoKykNCj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9uZXQvZnNsLWRwYWEudHh0DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRh
-dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL25ldC9mc2wtZHBhYS50eHQNCj4gYi9Eb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFhLnR4dA0KPiA+IG5ldyBmaWxlIG1v
-ZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uODIyYzY2OA0KPiA+IC0tLSAvZGV2L251bGwN
-Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1kcGFh
-LnR4dA0KPiA+IEBAIC0wLDAgKzEsMzEgQEANCj4gPiArKkRQQUEgY29yZW5ldA0KPiA+ICsNCj4g
-PiArVGhlIGNvcmVuZXQgYnVzIGNvbnRhaW5pbmcgYWxsIERQQUEgRXRoZXJuZXQgbm9kZXMuDQo+
-IA0KPiBXaGF0IGRvZXMgdGhpcyBoYXZlIHRvIGRvIHdpdGggY29yZW5ldD8NCj4gDQpUaGUgY29y
-ZW5ldC1nZW5lcmljIHBsYXRmb3JtIGNvZGUgdXNlcyB0aGlzIGNvbXBhdGlibGUuIEhlcmUgYXJl
-IHNvbWUgZXhjZXJwdHMNCmZyb20gdGhlIHBsYXRmb3JtIGNvZGUgZm91bmQgaW4gU0RLIGFyY2gv
-cG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9jb3JlbmV0X2dlbmVyaWMuYw0KLi4uDQogKiBDb3JlbmV0
-IGJhc2VkIFNvQyBEUyBTZXR1cA0KICoNCiAqIE1haW50YWluZWQgYnkgS3VtYXIgR2FsYSAoc2Vl
-IE1BSU5UQUlORVJTIGZvciBjb250YWN0IGluZm9ybWF0aW9uKQ0KICoNCiAqIENvcHlyaWdodCAy
-MDA5LTIwMTEgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0KLi4uDQpzdGF0aWMgY29uc3Qg
-c3RydWN0IG9mX2RldmljZV9pZCBvZl9kZXZpY2VfaWRzW10gPSB7DQogICAgICAgIHsNCiAgICAg
-ICAgICAgICAgICAuY29tcGF0aWJsZSAgICAgPSAic2ltcGxlLWJ1cyINCiAgICAgICAgfSwNCiAg
-ICAgICAgew0KICAgICAgICAgICAgICAgIC5jb21wYXRpYmxlICAgICA9ICJmc2wsZHBhYSINCiAg
-ICAgICAgfSwNCi4uLg0KaW50IF9faW5pdCBjb3JlbmV0X2dlbl9wdWJsaXNoX2RldmljZXModm9p
-ZCkNCnsNCiAgICAgICAgcmV0dXJuIG9mX3BsYXRmb3JtX2J1c19wcm9iZShOVUxMLCBvZl9kZXZp
-Y2VfaWRzLCBOVUxMKTsNCn0NCi4uLg0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0eQ0KPiA+ICsgLSBj
-b21wYXRpYmxlOiBzdHJpbmcgcHJvcGVydHkuICBNdXN0IGluY2x1ZGUgImZzbCxkcGFhIi4gQ2Fu
-IGluY2x1ZGUNCj4gPiArICAgYWxzbyAiZnNsLDxTb0M+LWRwYWEiLg0KPiANCj4gTm8gbmVlZCBm
-b3IgdGhlIDxTb0M+IHBhcnQuICBBcyB3ZSBwcmV2aW91c2x5IGRpc2N1c3NlZCwgdGhlIG9ubHkN
-Cj4gcHVycG9zZSBvZiB0aGlzIG5vZGUgaXMgYmFja3dhcmRzIGNvbXBhdGliaWxpdHkgd2l0aCB0
-aGUgVS1Cb290IE1BQw0KPiBhZGRyZXNzIGZpeHVwIC0tIGlmIFUtQm9vdCBkb2Vzbid0IGxvb2sg
-Zm9yIHRoZSA8U29DPiB2ZXJzaW9uLCB0aGVuDQo+IGRvbid0IGNvbXBsaWNhdGUgdGhpbmdzLg0K
-PiANCj4gVGhvdWdoLCBJIGNhbid0IGZpbmQgd2hlcmUgVS1Cb290IHJlZmVyZW5jZXMgdGhpcyBu
-b2RlLiAgQXJlIHlvdSBzdXJlDQo+IGl0J3Mgbm90IHVzaW5nIHRoZSBldGhlcm5ldCVkIGFsaWFz
-ZXMgbGlrZSBldmVyeXRoaW5nIGVsc2UsIGluIHdoaWNoDQo+IGNhc2Ugd2h5IGRvIHdlIG5lZWQg
-dGhpcyBub2RlIGF0IGFsbD8NCj4gDQo+IC1TY290dA0KPiANCg0KVGhlIGluaXRpYWwgKEZyZWVz
-Y2FsZSBTREspIGJpbmRpbmcgZG9jdW1lbnQgY29udGFpbmVkIHRob3NlIGNvbXBhdGlibGVzLA0K
-bm90IHN1cmUgd2hhdCB0aGUgaW5pdGlhbCBpbnRlbnQgd2FzIGZvciB0aGUgPFNvQz4gdmFyaWFu
-dHMuDQoNClRoZSAiZnNsLGRwYWEiIG5vZGUgaXMgb2YgaW50ZXJlc3QgdG8gdGhlIERQQUEgRXRo
-ZXJuZXQgYmVjYXVzZSBpdCBpcw0KdGhlIHBhcmVudCBvZiB0aGUgImZzbCxkcGEtZXRoZXJuZXQi
-IG5vZGVzLg0KDQpNYWRhbGluDQo=
+Hi Scott,
+
+On 2 December 2014 at 06:03, Scott Wood <scottwood@freescale.com> wrote:
+[...]
+> I was referring to the final ranges entry:
+>
+>> +                         0x5 0x0 0x0 0xffdf0000 0x00001000>;
+>
+> The localbus ranges should reflect what was programmed into BRn/ORn.
+> The smallest size that can be programmed into ORn is 32 KiB.
+
+Sorry I'll use 0x8000 instead of 0x1000.
+
+>> The pq3-gpio-0.dtsi defines an gpio controller in this way:
+>>
+>> gpio-controller@f000 {
+>>      reg = <0xf000 0x100>;
+>>      [...]
+>>
+>> But MVME2500 board requires a slightly different definition:
+>>
+>>      reg = <0xfc00 0x100>;
+>
+> The GPIO CCSR registers on a P2010 don't change based on what board you
+> put it on.  It looks like pq3-gpio-0.dtsi is just wrong, for all chips
+> that use it.  It should be fixed there.
+
+I have to admit that I'm not using GPIO at the moment so a typo into
+board's manufacturer manual is more probable.
+
+>> > Better still would be if we could have address map tweaks be kconfig
+>> > fragments that get mixed in by the user, with merge_config.sh.
+>>
+>> Personally I would prefer see something more simple like this:
+>>
+>> %_defconfig: scripts/kconfig/conf
+>>    # Grab the platform generic config file (for a SoC family)
+>>    $(Q)$< --defconfig=arch/$(SRCARCH)/configs/mpc$(shell dirname
+>> $@)_defconfig Kconfig
+>
+> What is the dirname here trying to do?
+
+Extract string "85xx" from "make 85xx/mvme2500_defconfig" command.
+
+So the above mentioned Makefile snip grabs
+arch/powerpc/configs/mpc85xx_defconfig and applies (using
+merge_config.sh) options present in
+arch/powerpc/configs/85xx/mvme2500_defconfig.
+
+It should reduces the size of the board specific defconfig without
+using any other fragments and without change anything in user habits.
+
+In my humble opinion that hardware is so rigid that flexibility given
+by config fragments don't seem very useful.
+
+Using this approach the mvme2500_defconfig file could looks like this:
+
+CONFIG_MVME2500=y
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCIEAER=y
+# CONFIG_PCIEASPM is not set
+CONFIG_SERIAL_8250_NR_UARTS=6
+CONFIG_SERIAL_8250_RUNTIME_UARTS=6
+CONFIG_BROADCOM_PHY=y
+CONFIG_MTD_SPI_NOR=y
+CONFIG_MTD_M25P80=y
+CONFIG_HWMON=m
+CONFIG_SENSORS_LM90=m
+CONFIG_EDAC_MPC85XX=y
+CONFIG_ADVANCED_OPTIONS=y
+CONFIG_LOWMEM_SIZE_BOOL=y
+CONFIG_LOWMEM_SIZE=0x40000000
+CONFIG_PAGE_OFFSET_BOOL=y
+CONFIG_PAGE_OFFSET=0x80000000
+CONFIG_KERNEL_START_BOOL=y
+CONFIG_TASK_SIZE_BOOL=y
+CONFIG_TASK_SIZE=0x80000000
+CONFIG_STAGING=y
+CONFIG_VME_BUS=y
+CONFIG_VME_TSI148=y
+CONFIG_VME_USER=y
+
+I know it is a very stupid idea so feel free to ignore me on this point :)
+
+>> > I gues the point here is to avoid using highmem just for the last 256
+>> > MiB?
+>>
+>> Yes. Can you suggest me a better solution, please?
+>
+> Not if the performance benefit from getting rid of highmem is worth
+> carrying this around...  But it would still be good if the board support
+> were build in the standard defconfig as well.  It's unlikely to get much
+> build coverage (by people who don't use this board) in a board-specific
+> defconfig.
+
+Ok I changed mpc85xx_defconfig and it works with few addiction. So we
+have two possibilities: use mpc85xx_defconfig (but without VME_USER
+and Highmem tweak) or add mvme2500_defconfig: Which do you prefer? I
+would prefer the mvme2500_defconfig but I think that my vote doesn't
+count (rightly).
+
+What do you think about move board setup code from
+platform/85xx/mvme2500.c to platform/platforms/85xx/mpc85xx_ds.c?
+
+Thank you very much.
+
+Ciao,
+Alessio
