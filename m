@@ -1,40 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A21FA1A00A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 16:05:35 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 826A61402AC
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2014 16:05:35 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 2 Dec 2014 15:05:34 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9960E2CE805B
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2014 16:05:31 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB255VZb5636248
- for <linuxppc-dev@ozlabs.org>; Tue, 2 Dec 2014 16:05:31 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB255UUJ018392
- for <linuxppc-dev@ozlabs.org>; Tue, 2 Dec 2014 16:05:31 +1100
-Message-ID: <547D488E.6080606@linux.vnet.ibm.com>
-Date: Tue, 02 Dec 2014 10:35:18 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [V4] powerpc, xmon: Enable HW instruction breakpoint on POWER8
-References: <20141201054020.2E47A140160@ozlabs.org>
-In-Reply-To: <20141201054020.2E47A140160@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 762701A0118
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 16:09:24 +1100 (AEDT)
+Message-ID: <1417496963.31336.6.camel@concordia>
+Subject: Re: Right location in sysfs for dlpar file
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 02 Dec 2014 16:09:23 +1100
+In-Reply-To: <547C8C0F.5070701@linux.vnet.ibm.com>
+References: <1417057941.5089.81.camel@kernel.crashing.org>
+ <547C8C0F.5070701@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,27 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2014 11:10 AM, Michael Ellerman wrote:
-> On Fri, 2014-28-11 at 04:36:42 UTC, Anshuman Khandual wrote:
->> This patch enables support for hardware instruction breakpoint in
->> xmon on POWER8 platform with the help of a new register called the
->> CIABR (Completed Instruction Address Breakpoint Register). With this
->> patch, a single hardware instruction breakpoint can be added and
->> cleared during any active xmon debug session. The hardware based
->> instruction breakpoint mechanism works correctly with the existing
->> TRAP based instruction breakpoint available on xmon.
->>
->> There are no powerpc CPU with CPU_FTR_IABR feature any more. This
->> patch has re-purposed all the existing IABR related code to work
->> with CIABR register based HW instruction breakpoint.
+On Mon, 2014-12-01 at 09:41 -0600, Nathan Fontenot wrote:
+> On 11/26/2014 09:12 PM, Benjamin Herrenschmidt wrote:
+> > Hi Greg,
+> > 
+> > So Nathan is working on a patch series to cleanup and improve our
+> > "DLPAR" infrastructure which is basically our hotplug mechanism when
+> > running under the PowerVM (aka pHyp) and KVM hypervisors.
 > 
-> OK I think I'm happy with this, I am going to add this to the changelog though:
+> The cleanup to the dlpar infrastructure will move the entire operation
+> of hotplugging a device to the kernel instead of doing it partially in
+> userspace and partially in the kernel as is currently done.
 > 
->     This has one odd feature, which is that when we hit a breakpoint xmon
->     doesn't tell us we have hit the breakpoint. This is because xmon is
->     expecting bp->address == regs->nip. Because CIABR fires on completition
->     regs->nip points to the instruction after the breakpoint. We could fix
->     that, but it would then confuse other parts of the xmon code which think
->     we need to emulate the instruction. [mpe]
+...
+> 
+> For PowerVM systems we need this sysfs file to deliver what is
+> essentially a binary blob (specifically a rtas error log) to the
+> kernel.
 
-Sounds good. Thanks Michael.
+Those two statements don't really agree with each other. ie. "move the entire
+operation .. to the kernel", but then we need a sysfs file so userspace can
+deliver us a blob?
+
+I think what you mean is that all the actual logic will move into the kernel,
+and the only thing userspace will do (on PowerVM) is write the blog to kick off
+the process.
+
+On PowerKVM the entire process will be handled in the kernel (after some
+additional patches to hook up the rtas event to the hotplug).
+
+
+As ugly as it is, we already have /proc/rtas, which includes a bunch of files,
+including error_log, which is where you can *read* the RTAS error logs from.
+
+So maybe we just extend that, either a new file, or just by making error_log
+writable?
+
+It'd be nice to drop all that rtas gunk and move to something cleaner in /sys,
+but I don't think we can realistically do that any time soon anyway?
+
+cheers
