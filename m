@@ -1,28 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BB961A01E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 10:03:55 +1100 (AEDT)
-Message-ID: <1417561420.15957.221.camel@freescale.com>
-Subject: Re: [PATCH] Documentation: bindings: net: DPAA corenet binding
- document
-From: Scott Wood <scottwood@freescale.com>
-To: Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
-Date: Tue, 2 Dec 2014 17:03:40 -0600
-In-Reply-To: <BL2PR03MB545CC342CA6A408D2FD5CF6E67A0@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1417169426-11823-1-git-send-email-madalin.bucur@freescale.com>
- <1417495189.15957.209.camel@freescale.com>
- <BL2PR03MB545CC342CA6A408D2FD5CF6E67A0@BL2PR03MB545.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49DD11A0588
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 10:43:10 +1100 (AEDT)
+Message-ID: <1417563789.16722.1.camel@concordia>
+Subject: Re: [PATCH v2] powerpc: Remove more traces of bootmem
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Date: Wed, 03 Dec 2014 10:43:09 +1100
+In-Reply-To: <20141120023319.GA71013@thor.bakeyournoodle.com>
+References: <1416442058-19544-1-git-send-email-mpe@ellerman.id.au>
+ <20141120023319.GA71013@thor.bakeyournoodle.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>,
- Liberman Igal-B31950 <Igal.Liberman@freescale.com>,
- "galak@codeaurora.org" <galak@codeaurora.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David.Laight@ACULAB.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-02 at 06:12 -0600, Bucur Madalin-Cristian-B32716 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, December 02, 2014 6:40 AM
-> > On Fri, 2014-11-28 at 12:10 +0200, Madalin Bucur wrote:
-> > > Add the device tree binding document for the DPAA corenet node
-> > > and DPAA Ethernet nodes.
-> > >
-> > > Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
-> > > ---
-> > >  Documentation/devicetree/bindings/net/fsl-dpaa.txt | 31
-> > ++++++++++++++++++++++
-> > >  1 file changed, 31 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> > b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> > > new file mode 100644
-> > > index 0000000..822c668
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/net/fsl-dpaa.txt
-> > > @@ -0,0 +1,31 @@
-> > > +*DPAA corenet
-> > > +
-> > > +The corenet bus containing all DPAA Ethernet nodes.
-> > 
-> > What does this have to do with corenet?
-> > 
-> The corenet-generic platform code uses this compatible.
 
-That doesn't make it a "corenet bus".  It's not a bus at all.
-
-> > > +Required property
-> > > + - compatible: string property.  Must include "fsl,dpaa". Can include
-> > > +   also "fsl,<SoC>-dpaa".
-> > 
-> > No need for the <SoC> part.  As we previously discussed, the only
-> > purpose of this node is backwards compatibility with the U-Boot MAC
-> > address fixup -- if U-Boot doesn't look for the <SoC> version, then
-> > don't complicate things.
-> > 
-> > Though, I can't find where U-Boot references this node.  Are you sure
-> > it's not using the ethernet%d aliases like everything else, in which
-> > case why do we need this node at all?
-> > 
-> > -Scott
-> > 
+On Thu, 2014-11-20 at 13:33 +1100, Tony Breeds wrote:
+> On Thu, Nov 20, 2014 at 11:07:38AM +1100, Michael Ellerman wrote:
+> > --- a/arch/powerpc/lib/alloc.c
+> > +++ b/arch/powerpc/lib/alloc.c
+> > @@ -13,9 +13,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
+> >  	if (mem_init_done)
+> >  		p = kzalloc(size, mask);
+> >  	else {
+> > -		p = alloc_bootmem(size);
+> > -		if (p)
+> > -			memset(p, 0, size);
+> > +		p = memblock_virt_alloc(size, 0);
+> >  	}
 > 
-> The initial (Freescale SDK) binding document contained those compatibles,
-> not sure what the initial intent was for the <SoC> variants.
-> 
-> The "fsl,dpaa" node is of interest to the DPAA Ethernet because it is
-> the parent of the "fsl,dpa-ethernet" nodes.
+> You knew someone would ask but ...
+> Do you want to remove the {} form the else clause so that the style matches the  if()
 
-I'm not interested in what the SDK binding says, or what the SDK kernel
-does.  I'm interested in whether there's a U-Boot compatibility issue,
-as was previously alleged.  If there isn't, then there's no need for
-fsl,dpaa *or* fsl,dpa-ethernet.
+Actually I was going to do a follow-up that just returns directly without p at
+all, thanks for the reminder :)
 
--Scott
+cheers
