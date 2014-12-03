@@ -1,19 +1,41 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mahesh@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE5CC1A01F3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 14:48:44 +1100 (AEDT)
-Date: Wed, 3 Dec 2014 14:48:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: powernv: Return to cpu offline loop when finished
- in KVM guest
-Message-ID: <20141203034840.GA612@iris.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49C571A04C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 15:26:54 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2253114019D
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 15:26:54 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Wed, 3 Dec 2014 14:26:53 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 22901357804C
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 15:26:49 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB34Qmf827590656
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Dec 2014 15:26:49 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB34Qmis012751
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Dec 2014 15:26:48 +1100
+Subject: [PATCH v2] powerpc/book3s: Fix flush_tlb cpu_spec hook to take a
+ generic argument.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 03 Dec 2014 09:56:35 +0530
+Message-ID: <20141203042524.19030.84417.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,243 +45,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a secondary hardware thread has finished running a KVM guest, we
-currently put that thread into nap mode using a nap instruction in
-the KVM code.  This changes the code so that instead of doing a nap
-instruction directly, we instead cause the call to power7_nap() that
-put the thread into nap mode to return.  The reason for doing this is
-to avoid having the KVM code having to know what low-power mode to
-put the thread into.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-In the case of a secondary thread used to run a KVM guest, the thread
-will be offline from the point of view of the host kernel, and the
-relevant power7_nap() call is the one in pnv_smp_cpu_disable().
-In this case we don't want to clear pending IPIs in the offline loop
-in that function, since that might cause us to miss the wakeup for
-the next time the thread needs to run a guest.  To tell whether or
-not to clear the interrupt, we use the SRR1 value returned from
-power7_nap(), and check if it indicates an external interrupt.  We
-arrange that the return from power7_nap() when we have finished running
-a guest returns 0, so pending interrupts don't get flushed in that
-case.
+The flush_tlb hook in cpu_spec was introduced as a generic function hook
+to invalidate TLBs. But the current implementation of flush_tlb hook
+takes IS (invalidation selector) as an argument which is architecture
+dependent. Hence, It is not right to have a generic routine where caller
+has to pass non-generic argument.
 
-Note that it is important a secondary thread that has finished
-executing in the guest, or that didn't have a guest to run, should
-not return to power7_nap's caller while the kvm_hstate.hwthread_req
-flag in the PACA is non-zero, because the return from power7_nap
-will reenable the MMU, and the MMU might still be in guest context.
-In this situation we spin at low priority in real mode waiting for
-hwthread_req to become zero.
+This patch fixes this and makes flush_tlb hook as high level API.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+The existing MCE code calls flush_tlb hook with IS=0 (single page) resulting
+partial invalidation of TLBs which is not right. This rework now makes
+sure that whole TLB is invalidated to be able to successfully recover from
+TLB and ERAT errors.
+
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-I think this would be best going through the powerpc tree.  Alex,
-if you can give me an acked-by for this that would be appreciated.
+Changes in V2:
+- Moved TLB flush action #defines to cputable.h
+- Added missing ptesyncs to before and after TLB flush.
+- Moved switch case to flush_tlb_206() function as suggested by
+  Michael Ellerman.
 
- arch/powerpc/include/asm/processor.h    |  2 +-
- arch/powerpc/kernel/exceptions-64s.S    |  2 ++
- arch/powerpc/kernel/idle_power7.S       | 12 ++++++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 54 ++++++++++++++++++++++-----------
- arch/powerpc/platforms/powernv/smp.c    | 23 +++++++++++---
- 5 files changed, 68 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/cputable.h   |    6 +++-
+ arch/powerpc/include/asm/mmu-hash64.h |    1 +
+ arch/powerpc/kernel/cpu_setup_power.S |   10 +-----
+ arch/powerpc/kernel/cputable.c        |    4 +-
+ arch/powerpc/kernel/mce_power.c       |   53 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_hv_ras.c      |    4 +-
+ 6 files changed, 63 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index dda7ac4..29c3798 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -451,7 +451,7 @@ extern unsigned long cpuidle_disable;
- enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
- 
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
--extern void power7_nap(int check_irq);
-+extern unsigned long power7_nap(int check_irq);
- extern void power7_sleep(void);
- extern void flush_instruction_cache(void);
- extern void hard_reset_now(void);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a1d45c1..7f29c5f 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -131,6 +131,8 @@ BEGIN_FTR_SECTION
- 1:
- #endif
- 
-+	/* Return SRR1 from power7_nap() */
-+	mfspr	r3,SPRN_SRR1
- 	beq	cr1,2f
- 	b	power7_wakeup_noloss
- 2:	b	power7_wakeup_loss
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index c0754bb..18c0687 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -212,6 +212,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	mtspr	SPRN_SRR0,r5
- 	rfid
- 
-+/*
-+ * R3 here contains the value that will be returned to the caller
-+ * of power7_nap.
-+ */
- _GLOBAL(power7_wakeup_loss)
- 	ld	r1,PACAR1(r13)
- BEGIN_FTR_SECTION
-@@ -219,15 +223,19 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	REST_NVGPRS(r1)
- 	REST_GPR(2, r1)
--	ld	r3,_CCR(r1)
-+	ld	r6,_CCR(r1)
- 	ld	r4,_MSR(r1)
- 	ld	r5,_NIP(r1)
- 	addi	r1,r1,INT_FRAME_SIZE
--	mtcr	r3
-+	mtcr	r6
- 	mtspr	SPRN_SRR1,r4
- 	mtspr	SPRN_SRR0,r5
- 	rfid
- 
-+/*
-+ * R3 here contains the value that will be returned to the caller
-+ * of power7_nap.
-+ */
- _GLOBAL(power7_wakeup_noloss)
- 	lbz	r0,PACA_NAPSTATELOST(r13)
- 	cmpwi	r0,0
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index edb2ccd..65c105b 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -201,8 +201,6 @@ kvmppc_primary_no_guest:
- 	bge	kvm_novcpu_exit	/* another thread already exiting */
- 	li	r3, NAPPING_NOVCPU
- 	stb	r3, HSTATE_NAPPING(r13)
--	li	r3, 1
--	stb	r3, HSTATE_HWTHREAD_REQ(r13)
- 
- 	b	kvm_do_nap
- 
-@@ -293,6 +291,8 @@ kvm_start_guest:
- 	/* if we have no vcpu to run, go back to sleep */
- 	beq	kvm_no_guest
- 
-+kvm_secondary_got_guest:
-+
- 	/* Set HSTATE_DSCR(r13) to something sensible */
- 	ld	r6, PACA_DSCR(r13)
- 	std	r6, HSTATE_DSCR(r13)
-@@ -318,27 +318,46 @@ kvm_start_guest:
- 	stwcx.	r3, 0, r4
- 	bne	51b
- 
-+/*
-+ * At this point we have finished executing in the guest.
-+ * We need to wait for hwthread_req to become zero, since
-+ * we may not turn on the MMU while hwthread_req is non-zero.
-+ * While waiting we also need to check if we get given a vcpu to run.
-+ */
- kvm_no_guest:
--	li	r0, KVM_HWTHREAD_IN_NAP
-+	lbz	r3, HSTATE_HWTHREAD_REQ(r13)
-+	cmpwi	r3, 0
-+	bne	53f
-+	HMT_MEDIUM
-+	li	r0, KVM_HWTHREAD_IN_KERNEL
- 	stb	r0, HSTATE_HWTHREAD_STATE(r13)
--kvm_do_nap:
--	/* Clear the runlatch bit before napping */
--	mfspr	r2, SPRN_CTRLF
--	clrrdi	r2, r2, 1
--	mtspr	SPRN_CTRLT, r2
--
-+	/* need to recheck hwthread_req after a barrier, to avoid race */
-+	sync
-+	lbz	r3, HSTATE_HWTHREAD_REQ(r13)
-+	cmpwi	r3, 0
-+	bne	54f
-+/*
-+ * We jump to power7_wakeup_loss, which will return to the caller
-+ * of power7_nap in the powernv cpu offline loop.  The value we
-+ * put in r3 becomes the return value for power7_nap.
-+ */
- 	li	r3, LPCR_PECE0
- 	mfspr	r4, SPRN_LPCR
- 	rlwimi	r4, r3, 0, LPCR_PECE0 | LPCR_PECE1
- 	mtspr	SPRN_LPCR, r4
--	isync
--	std	r0, HSTATE_SCRATCH0(r13)
--	ptesync
--	ld	r0, HSTATE_SCRATCH0(r13)
--1:	cmpd	r0, r0
--	bne	1b
--	nap
--	b	.
-+	li	r3, 0
-+	b	power7_wakeup_loss
-+
-+53:	HMT_LOW
-+	ld	r4, HSTATE_KVM_VCPU(r13)
-+	cmpdi	r4, 0
-+	beq	kvm_no_guest
-+	HMT_MEDIUM
-+	b	kvm_secondary_got_guest
-+
-+54:	li	r0, KVM_HWTHREAD_IN_KVM
-+	stb	r0, HSTATE_HWTHREAD_STATE(r13)
-+	b	kvm_no_guest
- 
- /******************************************************************************
-  *                                                                            *
-@@ -2172,6 +2191,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_206)
- 	 * occurs, with PECE1, PECE0 and PECEDP set in LPCR. Also clear the
- 	 * runlatch bit before napping.
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index daa5af9..d053301 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -100,7 +100,7 @@ struct cpu_spec {
+ 	/*
+ 	 * Processor specific routine to flush tlbs.
  	 */
-+kvm_do_nap:
- 	mfspr	r2, SPRN_CTRLF
- 	clrrdi	r2, r2, 1
- 	mtspr	SPRN_CTRLT, r2
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 4753958..b716f66 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -149,6 +149,7 @@ static int pnv_smp_cpu_disable(void)
- static void pnv_smp_cpu_kill_self(void)
+-	void		(*flush_tlb)(unsigned long inval_selector);
++	void		(*flush_tlb)(unsigned int action);
+ 
+ };
+ 
+@@ -114,6 +114,10 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 
+ extern const char *powerpc_base_platform;
+ 
++/* TLB flush actions. Used as argument to cpu_spec.flush_tlb() hook */
++#define FLUSH_TLB_ALL		0	/* invalidate all TLBs */
++#define FLUSH_TLB_LPID		1	/* invalidate TLBs for current LPID */
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /* CPU kernel features */
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index aeebc94..4f50db7 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -112,6 +112,7 @@
+ #define TLBIEL_INVAL_SET_SHIFT	12
+ 
+ #define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
++#define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
+ 
+ #ifndef __ASSEMBLY__
+ 
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 4673353..9c9b741 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -137,15 +137,11 @@ __init_HFSCR:
+ /*
+  * Clear the TLB using the specified IS form of tlbiel instruction
+  * (invalidate by congruence class). P7 has 128 CCs., P8 has 512.
+- *
+- * r3 = IS field
+  */
+ __init_tlb_power7:
+-	li	r3,0xc00	/* IS field = 0b11 */
+-_GLOBAL(__flush_tlb_power7)
+ 	li	r6,128
+ 	mtctr	r6
+-	mr	r7,r3		/* IS field */
++	li	r7,0xc00	/* IS field = 0b11 */
+ 	ptesync
+ 2:	tlbiel	r7
+ 	addi	r7,r7,0x1000
+@@ -154,11 +150,9 @@ _GLOBAL(__flush_tlb_power7)
+ 1:	blr
+ 
+ __init_tlb_power8:
+-	li	r3,0xc00	/* IS field = 0b11 */
+-_GLOBAL(__flush_tlb_power8)
+ 	li	r6,512
+ 	mtctr	r6
+-	mr	r7,r3		/* IS field */
++	li	r7,0xc00	/* IS field = 0b11 */
+ 	ptesync
+ 2:	tlbiel	r7
+ 	addi	r7,r7,0x1000
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 8084059..81c1ba5 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -71,8 +71,8 @@ extern void __restore_cpu_power7(void);
+ extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_power8(void);
+ extern void __restore_cpu_a2(void);
+-extern void __flush_tlb_power7(unsigned long inval_selector);
+-extern void __flush_tlb_power8(unsigned long inval_selector);
++extern void __flush_tlb_power7(unsigned int action);
++extern void __flush_tlb_power8(unsigned int action);
+ extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
+ extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+ #endif /* CONFIG_PPC64 */
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index aa9aff3..65f6043 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -28,6 +28,55 @@
+ #include <asm/mce.h>
+ #include <asm/machdep.h>
+ 
++static void flush_tlb_206(unsigned int num_sets, unsigned int action)
++{
++	unsigned long rb;
++	unsigned int i;
++
++	switch (action) {
++	case FLUSH_TLB_ALL:
++		rb = TLBIEL_INVAL_SET;
++		break;
++	case FLUSH_TLB_LPID:
++		rb = TLBIEL_INVAL_SET_LPID;
++		break;
++	default:
++		BUG();
++		break;
++	}
++
++	asm volatile("ptesync" : : : "memory");
++	for (i = 0; i < num_sets; i++) {
++		asm volatile("tlbiel %0" : : "r" (rb));
++		rb += 1 << TLBIEL_INVAL_SET_SHIFT;
++	}
++	asm volatile("ptesync" : : : "memory");
++}
++
++/*
++ * Generic routine to flush TLB on power7. This routine is used as
++ * flush_tlb hook in cpu_spec for Power7 processor.
++ *
++ * action => FLUSH_TLB_ALL:  Invalidate all TLBs.
++ *	     FLUSH_TLB_LPID: Invalidate TLB for current LPID.
++ */
++void __flush_tlb_power7(unsigned int action)
++{
++	flush_tlb_206(POWER7_TLB_SETS, action);
++}
++
++/*
++ * Generic routine to flush TLB on power8. This routine is used as
++ * flush_tlb hook in cpu_spec for power8 processor.
++ *
++ * action => FLUSH_TLB_ALL:  Invalidate all TLBs.
++ *	     FLUSH_TLB_LPID: Invalidate TLB for current LPID.
++ */
++void __flush_tlb_power8(unsigned int action)
++{
++	flush_tlb_206(POWER8_TLB_SETS, action);
++}
++
+ /* flush SLBs and reload */
+ static void flush_and_reload_slb(void)
  {
- 	unsigned int cpu;
-+	unsigned long srr1;
- 
- 	/* Standard hot unplug procedure */
- 	local_irq_disable();
-@@ -165,13 +166,25 @@ static void pnv_smp_cpu_kill_self(void)
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
--		power7_nap(1);
-+		srr1 = power7_nap(1);
- 		ppc64_runlatch_on();
- 
--		/* Clear the IPI that woke us up */
--		icp_native_flush_interrupt();
--		local_paca->irq_happened &= PACA_IRQ_HARD_DIS;
--		mb();
-+		/*
-+		 * If the SRR1 value indicates that we woke up due to
-+		 * an external interrupt, then clear the interrupt.
-+		 * We clear the interrupt before checking for the
-+		 * reason, so as to avoid a race where we wake up for
-+		 * some other reason, find nothing and clear the interrupt
-+		 * just as some other cpu is sending us an interrupt.
-+		 * If we returned from power7_nap as a result of
-+		 * having finished executing in a KVM guest, then srr1
-+		 * contains 0.
-+		 */
-+		if ((srr1 & SRR1_WAKEMASK) == SRR1_WAKEEE) {
-+			icp_native_flush_interrupt();
-+			local_paca->irq_happened &= PACA_IRQ_HARD_DIS;
-+			smp_mb();
-+		}
- 
- 		if (cpu_core_split_required())
- 			continue;
--- 
-2.1.3
+@@ -79,7 +128,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
+ 	}
+ 	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
+ 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
+-			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
++			cur_cpu_spec->flush_tlb(FLUSH_TLB_ALL);
+ 		/* reset error bits */
+ 		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
+ 	}
+@@ -110,7 +159,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
+ 		break;
+ 	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
+ 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
+-			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
++			cur_cpu_spec->flush_tlb(FLUSH_TLB_ALL);
+ 			handled = 1;
+ 		}
+ 		break;
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index d562c8e..8246090 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -84,7 +84,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
+ 		}
+ 		if (dsisr & DSISR_MC_TLB_MULTI) {
+ 			if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
+-				cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
++				cur_cpu_spec->flush_tlb(FLUSH_TLB_LPID);
+ 			dsisr &= ~DSISR_MC_TLB_MULTI;
+ 		}
+ 		/* Any other errors we don't understand? */
+@@ -102,7 +102,7 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
+ 		break;
+ 	case SRR1_MC_IFETCH_TLBMULTI:
+ 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
+-			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
++			cur_cpu_spec->flush_tlb(FLUSH_TLB_LPID);
+ 		break;
+ 	default:
+ 		handled = 0;
