@@ -2,21 +2,22 @@ Return-Path: <Emilian.Medve@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BACC1A09E6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4453F1A09E8
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 21:13:36 +1100 (AEDT)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0145.outbound.protection.outlook.com [65.55.169.145])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6BA1A1400E7
+ by ozlabs.org (Postfix) with ESMTPS id 6B9F51400DD
  for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 21:13:34 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <scottwood@Freescale.com>, <linuxppc-dev@ozlabs.org>,
  <devicetree@vger.kernel.org>
-Subject: [PATCH v4 0/6] powerpc/mpc85xx: Add FSL QorIQ DPAA B/QMan support to
- device tree(s)
-Date: Wed, 3 Dec 2014 04:02:38 -0600
-Message-ID: <1417600964-24647-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH v4 1/6] dt/bindings: bman: Add phandle to the portals
+Date: Wed, 3 Dec 2014 04:02:39 -0600
+Message-ID: <1417600964-24647-2-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1417600964-24647-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1417600964-24647-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Emil Medve <Emilian.Medve@Freescale.com>
@@ -29,65 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v4:	Add binding for the portals phandle
-	Fix portals phandle
+This supports SoC(s) with multiple BMan instances
 
-v3:	Remove no-map
-	Adjust alloc-ranges for the 32-/36-bit SoC(s)
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
+ Documentation/devicetree/bindings/soc/fsl/bman.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-v2:	Remove some reserved-memory properties
-	Split the patchset per IP block
-	Refined patch assignment
-
-Emil Medve (2):
-  dt/bindings: bman: Add phandle to the portals
-  dt/bindings: qman: Add phandle to the portals
-
-Kumar Gala (4):
-  powerpc/mpc85xx: Create dts components for the FSL QorIQ DPAA BMan
-  powerpc/mpc85xx: Create dts components for the FSL QorIQ DPAA QMan
-  powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support to device tree(s)
-  powerpc/mpc85xx: Add FSL QorIQ DPAA QMan support to device tree(s)
-
- Documentation/devicetree/bindings/soc/fsl/bman.txt |  10 +
- Documentation/devicetree/bindings/soc/fsl/qman.txt |  10 +
- arch/powerpc/boot/dts/b4qds.dtsi                   |  35 +-
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        | 129 ++++-
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi           | 180 ++++++-
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi        |  61 ++-
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   9 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   9 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   9 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |   9 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   9 +-
- arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi |  90 ++++
- arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi         |  41 ++
- arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi | 101 ++++
- arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi         |  41 ++
- arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi         |  41 ++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        | 128 ++++-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        | 216 +++++++-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        | 568 ++++++++++++++++++++-
- arch/powerpc/boot/dts/kmcoge4.dts                  |  33 ++
- arch/powerpc/boot/dts/oca4080.dts                  |  33 ++
- arch/powerpc/boot/dts/p1023rdb.dts                 |  36 +-
- arch/powerpc/boot/dts/p2041rdb.dts                 |  35 +-
- arch/powerpc/boot/dts/p3041ds.dts                  |  35 +-
- arch/powerpc/boot/dts/p4080ds.dts                  |  35 +-
- arch/powerpc/boot/dts/p5020ds.dts                  |  35 +-
- arch/powerpc/boot/dts/p5040ds.dts                  |  35 +-
- arch/powerpc/boot/dts/t104xqds.dtsi                |  35 +-
- arch/powerpc/boot/dts/t104xrdb.dtsi                |  32 ++
- arch/powerpc/boot/dts/t208xqds.dtsi                |  35 +-
- arch/powerpc/boot/dts/t208xrdb.dtsi                |  33 ++
- arch/powerpc/boot/dts/t4240qds.dts                 |  35 +-
- arch/powerpc/boot/dts/t4240rdb.dts                 |  33 ++
- 33 files changed, 2154 insertions(+), 22 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi
-
+diff --git a/Documentation/devicetree/bindings/soc/fsl/bman.txt b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+index 9f80bf8..4fc4a6e 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/bman.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+@@ -36,6 +36,11 @@ are located at offsets 0xbf8 and 0xbfc
+ 	Value type:	<prop-encoded-array>
+ 	Definition:	Standard property. The error interrupt
+ 
++- fsl,bman-portals
++	Usage:		Required
++	Value type:	<phandle>
++	Definition:	Phandle to this BMan's instance portals
++
+ - fsl,liodn
+ 	Usage:		See pamu.txt
+ 	Value type:	<prop-encoded-array>
+@@ -104,6 +109,10 @@ The example below shows a BMan FBPR dynamic allocation memory node
+ 
+ The example below shows a (P4080) BMan CCSR-space node
+ 
++	bportals: bman-portals@ff4000000 {
++		...
++	};
++
+ 	crypto@300000 {
+ 		...
+ 		fsl,bman = <&bman, 2>;
+@@ -115,6 +124,7 @@ The example below shows a (P4080) BMan CCSR-space node
+ 		reg = <0x31a000 0x1000>;
+ 		interrupts = <16 2 1 2>;
+ 		fsl,liodn = <0x17>;
++		fsl,bman-portals = <&bportals>;
+ 		memory-region = <&bman_fbpr>;
+ 	};
+ 
 -- 
 2.2.0
