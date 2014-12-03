@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49DD11A0588
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 10:43:10 +1100 (AEDT)
-Message-ID: <1417563789.16722.1.camel@concordia>
-Subject: Re: [PATCH v2] powerpc: Remove more traces of bootmem
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Date: Wed, 03 Dec 2014 10:43:09 +1100
-In-Reply-To: <20141120023319.GA71013@thor.bakeyournoodle.com>
-References: <1416442058-19544-1-git-send-email-mpe@ellerman.id.au>
- <20141120023319.GA71013@thor.bakeyournoodle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB7A51A0612
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 11:28:58 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0126.outbound.protection.outlook.com [207.46.100.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 45C5C14014D
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 11:28:57 +1100 (AEDT)
+Message-ID: <1417566527.15957.225.camel@freescale.com>
+Subject: Re: [PATCH v3 1/4] powerpc/mpc85xx: Create dts components for the
+ FSL QorIQ DPAA BMan
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Tue, 2 Dec 2014 18:28:47 -0600
+In-Reply-To: <1417428135-12895-2-git-send-email-Emilian.Medve@Freescale.com>
+References: <1417428135-12895-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1417428135-12895-2-git-send-email-Emilian.Medve@Freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David.Laight@ACULAB.COM
+MIME-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Geoff Thorpe <Geoff.Thorpe@Freescale.com>,
+ devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2014-12-01 at 04:02 -0600, Emil Medve wrote:
+> +bman: bman@31a000 {
+> +	compatible = "fsl,bman";
+> +	reg = <0x31a000 0x1000>;
+> +	interrupts = <16 2 1 2>;
+> +	fsl,bman-portals = &bportals;
+> +	memory-region = <&bman_fbpr>;
 
-On Thu, 2014-11-20 at 13:33 +1100, Tony Breeds wrote:
-> On Thu, Nov 20, 2014 at 11:07:38AM +1100, Michael Ellerman wrote:
-> > --- a/arch/powerpc/lib/alloc.c
-> > +++ b/arch/powerpc/lib/alloc.c
-> > @@ -13,9 +13,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
-> >  	if (mem_init_done)
-> >  		p = kzalloc(size, mask);
-> >  	else {
-> > -		p = alloc_bootmem(size);
-> > -		if (p)
-> > -			memset(p, 0, size);
-> > +		p = memblock_virt_alloc(size, 0);
-> >  	}
-> 
-> You knew someone would ask but ...
-> Do you want to remove the {} form the else clause so that the style matches the  if()
+Shouldn't it be <&bportals>?
 
-Actually I was going to do a follow-up that just returns directly without p at
-all, thanks for the reminder :)
+And I don't see fsl,bman-portals in the binding...
 
-cheers
+-Scott
