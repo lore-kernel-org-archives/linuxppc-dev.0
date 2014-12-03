@@ -1,24 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 692251A0251
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 17:18:54 +1100 (AEDT)
-Message-ID: <1417587532.16722.12.camel@concordia>
-Subject: Re: [PATCH v5 1/6] perf: provide sysfs_show for struct
- perf_pmu_events_attr
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 03 Dec 2014 17:18:52 +1100
-In-Reply-To: <1417572235-8197-2-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1417572235-8197-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1417572235-8197-2-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- Jiri Olsa <jolsa@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D7BE1A0287
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 17:23:34 +1100 (AEDT)
+Received: by mail-pd0-f176.google.com with SMTP id y10so14753502pdj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Dec 2014 22:23:32 -0800 (PST)
+Date: Wed, 3 Dec 2014 14:23:22 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 0/3] fix a kernel panic on fsl corenet board when
+ CONFIG_CLK_PPC_CORENET is enabled
+Message-ID: <20141203062322.GC13972@pek-khao-d1.corp.ad.wrs.com>
+References: <1413699099-25743-1-git-send-email-haokexin@gmail.com>
+ <1415333263.23458.417.camel@snotra.buserror.net>
+ <DM2PR03MB574DB4A270F85EB73EB76CDFA710@DM2PR03MB574.namprd03.prod.outlook.com>
+ <1417567137.15957.229.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ALfTUftag+2gvp1h"
+In-Reply-To: <1417567137.15957.229.camel@freescale.com>
+Cc: Tang Yuantian-B29983 <Yuantian.Tang@freescale.com>,
+ Gerhard Sittig <gsi@denx.de>, Mike Turquette <mturquette@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Lu Jingchang-B35083 <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-02 at 18:03 -0800, Sukadev Bhattiprolu wrote:
-> From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> 
-> (struct perf_pmu_events_attr) is defined in include/linux/perf_event.h,
-> but the only "show" for it is in x86 and contains x86 specific stuff.
-> 
-> Make a generic one for those of us who are just using the event_str.
-> 
-> CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> CC: Haren Myneni <hbabu@us.ibm.com>
-> CC: Cody P Schafer <dev@codyps.com>
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> ---
->  include/linux/perf_event.h | 3 +++
->  kernel/events/core.c       | 8 ++++++++
->  2 files changed, 11 insertions(+)
 
-Acme/Peterz, are you happy for us to take this series through the powerpc tree?
-Do you want to give us an ack for patches 1 & 2?
+--ALfTUftag+2gvp1h
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-cheers
+On Tue, Dec 02, 2014 at 06:38:57PM -0600, Scott Wood wrote:
+> If the current code panics as of commit da788acb2838, then the revert
+> (but not the other patches) should go to stable as well.
+
+OK, I will make a respin to cc stable and add yours and Michael's ack.
+
+Thanks,
+Kevin
+
+--ALfTUftag+2gvp1h
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUfqxaAAoJEJNY7TDerrFxQV8H+gLfiIorkce4VHmIj5JVNyOB
+vZT8eJjTRb8ySUUpCvCyvDZ+iXcBEoDXE8vq0vNQ4MkeAUC+riOO53gkjUQVxO+x
+m5AR2u4mKnPqKaoupIy2C6ya1dBYJbRHhGsl35NmVe6LLj3Z0M9y4zDv07DqQNiV
+i8u+lqOcJutHzti0/tVYjxfdt9zUBWHmcLEVPvzY6DTQ16CGkzd0k869blNYXUWl
+v1RL3TvwxfXBaiRoqAUAEbI6Xio/iSfdSNR269zY62chsD96TQlReyROUHpFsn7z
+ZSLONi6jnmBLGhOg2tBsqezKwCOJ5BhrNPxfurnvBPIb4lVVYjA9UpIx2XQ2MpY=
+=YfX2
+-----END PGP SIGNATURE-----
+
+--ALfTUftag+2gvp1h--
