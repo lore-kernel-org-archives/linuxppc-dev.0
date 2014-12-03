@@ -1,38 +1,22 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <pmoore@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2BB41A0A2C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 09:14:27 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 4 Dec 2014 08:14:26 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 814892CE805C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 09:14:23 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB3MEN2B36307154
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 09:14:23 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB3MENHW014914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 09:14:23 +1100
-Date: Thu, 4 Dec 2014 09:14:22 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: drop useless warning in eeh_init()
-Message-ID: <20141203221422.GA4927@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20141125161006.1995.31789.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141125222846.GA7662@shangw>
- <20141203152046.5c109d1f@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F02771A0B66
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 08:59:59 +1100 (AEDT)
+From: Paul Moore <pmoore@redhat.com>
+To: Tony Jones <tonyj@suse.de>
+Subject: Re: [PATCH] powerpc: add little endian flag to syscall_get_arch()
+Date: Wed, 03 Dec 2014 16:59:55 -0500
+Message-ID: <1687038.iUVICprQqD@sifl>
+In-Reply-To: <547E3508.2080500@suse.de>
+References: <fbe03529d720e75aa8663f8b521af5b11b33d52f.1417553967.git.rgb@redhat.com>
+ <547E3508.2080500@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141203152046.5c109d1f@bahia.local>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: Richard Guy Briggs <rgb@redhat.com>, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-audit@redhat.com, eparis@parisplace.org,
+ sgrubb@redhat.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,73 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 03, 2014 at 03:20:46PM +0100, Greg Kurz wrote:
->On Wed, 26 Nov 2014 09:28:47 +1100
->Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> On Tue, Nov 25, 2014 at 05:10:06PM +0100, Greg Kurz wrote:
->> >This is what we get in dmesg when booting a pseries guest and
->> >the hypervisor doesn't provide EEH support.
->> >
->> >[    0.166655] EEH functionality not supported
->> >[    0.166778] eeh_init: Failed to call platform init function (-22)
->> >
->> >Since both powernv_eeh_init() and pseries_eeh_init() already complain when
->> >hitting an error, it is not needed to print more (especially such an
->> >uninformative message).
->> >
->> >Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
->> 
->> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> 
->> Thanks,
->> Gavin
->> 
->
->Ping ?
->
+On Tuesday, December 02, 2014 01:54:16 PM Tony Jones wrote:
+> On 12/02/2014 01:27 PM, Richard Guy Briggs wrote:
+> > Since both ppc and ppc64 have LE variants which are now reported by uname,
+> > add that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add
+> > AUDIT_ARCH_PPC*LE variants.
+> > 
+> > Without this,  perf trace and auditctl fail.
+> > 
+> > Mainline kernel reports ppc64le (per a058801) but there is no matching
+> > AUDIT_ARCH_PPC64LE.
+> > 
+> > See:
+> > 	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
+> > 	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
+> > 
+> > Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+> > ---
+> > 
+> >  arch/powerpc/include/asm/syscall.h |    6 +++++-
+> >  include/uapi/linux/audit.h         |    2 ++
+> >  2 files changed, 7 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/syscall.h
+> > b/arch/powerpc/include/asm/syscall.h index 6fa2708..a58acab 100644
+> > --- a/arch/powerpc/include/asm/syscall.h
+> > +++ b/arch/powerpc/include/asm/syscall.h
+> > @@ -90,6 +90,10 @@ static inline void syscall_set_arguments(struct
+> > task_struct *task,> 
+> >  static inline int syscall_get_arch(void)
+> >  {
+> > 
+> > -	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
+> > +	int arch = is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
+> > +#ifdef __LITTLE_ENDIAN__
+> > +	arch |= __AUDIT_ARCH_LE
+> > +#endif
+> > +	return arch;
+> > 
+> >  }
+> >  #endif	/* _ASM_SYSCALL_H */
+> > 
+> > diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
+> > index 4d100c8..fe29a99 100644
+> > --- a/include/uapi/linux/audit.h
+> > +++ b/include/uapi/linux/audit.h
+> > @@ -364,7 +364,9 @@ enum {
+> > 
+> >  #define AUDIT_ARCH_PARISC	(EM_PARISC)
+> >  #define AUDIT_ARCH_PARISC64	(EM_PARISC|__AUDIT_ARCH_64BIT)
+> >  #define AUDIT_ARCH_PPC		(EM_PPC)
+> > 
+> > +#define AUDIT_ARCH_PPCLE	(EM_PPC|__AUDIT_ARCH_LE)
+> > 
+> >  #define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
+> > 
+> > +#define AUDIT_ARCH_PPC64LE	(EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
+> > 
+> >  #define AUDIT_ARCH_S390		(EM_S390)
+> >  #define AUDIT_ARCH_S390X	(EM_S390|__AUDIT_ARCH_64BIT)
+> >  #define AUDIT_ARCH_SH		(EM_SH)
+> 
+> IBM would know for certain but I wasn't aware there was a PPCLE (32bit
+> compat).
 
-It's already in Michael's git tree.
+FWIW, I've heard the same thing from IBM folks off-list.
 
-shangw@shangw:~/sandbox/linux.ppc$ git remote -v
-origin	git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git (fetch)
-origin	git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git (push)
-shangw@shangw:~/sandbox/linux.ppc$ git branch 
-  master
-* next
-shangw@shangw:~/sandbox/linux.ppc$ git log --author="Greg Kurz" --oneline
-      1 221195f powerpc: Drop useless warning in eeh_init()
-
-Thanks,
-Gavin
-
->> >---
->> > arch/powerpc/kernel/eeh.c |    5 +----
->> > 1 file changed, 1 insertion(+), 4 deletions(-)
->> >
->> >diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->> >index 2248a19..7d62018 100644
->> >--- a/arch/powerpc/kernel/eeh.c
->> >+++ b/arch/powerpc/kernel/eeh.c
->> >@@ -920,11 +920,8 @@ int eeh_init(void)
->> > 		pr_warn("%s: Platform EEH operation not found\n",
->> > 			__func__);
->> > 		return -EEXIST;
->> >-	} else if ((ret = eeh_ops->init())) {
->> >-		pr_warn("%s: Failed to call platform init function (%d)\n",
->> >-			__func__, ret);
->> >+	} else if ((ret = eeh_ops->init()))
->> > 		return ret;
->> >-	}
->> > 
->> > 	/* Initialize EEH event */
->> > 	ret = eeh_event_init();
->> >
->> >_______________________________________________
->> >Linuxppc-dev mailing list
->> >Linuxppc-dev@lists.ozlabs.org
->> >https://lists.ozlabs.org/listinfo/linuxppc-dev
->> 
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-- 
+paul moore
+security and virtualization @ redhat
