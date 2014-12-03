@@ -1,28 +1,29 @@
 Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB7A51A0612
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 11:28:58 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0126.outbound.protection.outlook.com [207.46.100.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D7F41A0627
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 11:33:08 +1100 (AEDT)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0113.outbound.protection.outlook.com [65.55.169.113])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 45C5C14014D
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 11:28:57 +1100 (AEDT)
-Message-ID: <1417566527.15957.225.camel@freescale.com>
-Subject: Re: [PATCH v3 1/4] powerpc/mpc85xx: Create dts components for the
- FSL QorIQ DPAA BMan
+ by ozlabs.org (Postfix) with ESMTPS id 9B5CF1400E7
+ for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 11:33:07 +1100 (AEDT)
+Message-ID: <1417566777.15957.227.camel@freescale.com>
+Subject: Re: [PATCH v3 3/4] powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support
+ to device tree(s)
 From: Scott Wood <scottwood@freescale.com>
 To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Tue, 2 Dec 2014 18:28:47 -0600
-In-Reply-To: <1417428135-12895-2-git-send-email-Emilian.Medve@Freescale.com>
+Date: Tue, 2 Dec 2014 18:32:57 -0600
+In-Reply-To: <1417428135-12895-4-git-send-email-Emilian.Medve@Freescale.com>
 References: <1417428135-12895-1-git-send-email-Emilian.Medve@Freescale.com>
- <1417428135-12895-2-git-send-email-Emilian.Medve@Freescale.com>
+ <1417428135-12895-4-git-send-email-Emilian.Medve@Freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Geoff Thorpe <Geoff.Thorpe@Freescale.com>,
- devicetree@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
+ Geoff Thorpe <Geoff.Thorpe@Freescale.com>, linuxppc-dev@ozlabs.org,
+ Chunhe Lan <Chunhe.Lan@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +34,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2014-12-01 at 04:02 -0600, Emil Medve wrote:
-> +bman: bman@31a000 {
-> +	compatible = "fsl,bman";
-> +	reg = <0x31a000 0x1000>;
-> +	interrupts = <16 2 1 2>;
-> +	fsl,bman-portals = &bportals;
-> +	memory-region = <&bman_fbpr>;
+> diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
+> index 53761d4..431bf4e 100644
+> --- a/arch/powerpc/boot/dts/t4240rdb.dts
+> +++ b/arch/powerpc/boot/dts/t4240rdb.dts
+> @@ -69,10 +69,27 @@
+>  		device_type = "memory";
+>  	};
+>  
+> +	reserved-memory {
+> +		#address-cells = <2>;
+> +		#size-cells = <2>;
+> +		ranges;
+> +
+> +		bman_fbpr: bman-fbpr {
+> +			compatible = "fsl,bman-fbpr";
+> +			alloc-ranges = <0 0 0xffff 0xffffffff>;
+> +			size = <0 0x1000000>;
+> +			alignment = <0 0x1000000>;
+> +		};
+> +	};
 
-Shouldn't it be <&bportals>?
-
-And I don't see fsl,bman-portals in the binding...
+Can't this be done at the SoC level rather than board level?
 
 -Scott
