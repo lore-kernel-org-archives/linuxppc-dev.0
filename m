@@ -1,38 +1,37 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B0F41A09FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 01:20:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E24141A030E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 01:30:00 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 3 Dec 2014 14:20:53 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0E1B11B08051
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 14:21:09 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB3EKp6918939986
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 14:20:51 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB3EKovi007448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 07:20:50 -0700
-Date: Wed, 3 Dec 2014 15:20:46 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: drop useless warning in eeh_init()
-Message-ID: <20141203152046.5c109d1f@bahia.local>
-In-Reply-To: <20141125222846.GA7662@shangw>
-References: <20141125161006.1995.31789.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141125222846.GA7662@shangw>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 3 Dec 2014 19:59:57 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DDA761258023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 20:00:12 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB3EUTs7131474
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 20:00:29 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB3ETrx0026484
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 19:59:53 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V2] powerpc/mm: don't do tlbie for updatepp request with
+ NO HPTE fault
+In-Reply-To: <1417577863.16722.10.camel@concordia>
+References: <1417503002-22086-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1417577863.16722.10.camel@concordia>
+Date: Wed, 03 Dec 2014 19:59:52 +0530
+Message-ID: <87oarkbycf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,57 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Nov 2014 09:28:47 +1100
-Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> On Tue, Nov 25, 2014 at 05:10:06PM +0100, Greg Kurz wrote:
-> >This is what we get in dmesg when booting a pseries guest and
-> >the hypervisor doesn't provide EEH support.
-> >
-> >[    0.166655] EEH functionality not supported
-> >[    0.166778] eeh_init: Failed to call platform init function (-22)
-> >
-> >Since both powernv_eeh_init() and pseries_eeh_init() already complain when
-> >hitting an error, it is not needed to print more (especially such an
-> >uninformative message).
-> >
-> >Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
-> 
-> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> 
-> Thanks,
-> Gavin
-> 
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Ping ?
+> On Tue, 2014-12-02 at 12:20 +0530, Aneesh Kumar K.V wrote:
+>> upatepp get called for a nohpte fault, when we find from the linux
+>> page table that the translation was hashed before. In that case
+>> we are sure that there is no existing translation, hence we could
+>> avoid doing tlbie.
+>
+> Same comments as last time.
+>
+> http://patchwork.ozlabs.org/patch/406219/
 
-> >---
-> > arch/powerpc/kernel/eeh.c |    5 +----
-> > 1 file changed, 1 insertion(+), 4 deletions(-)
-> >
-> >diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> >index 2248a19..7d62018 100644
-> >--- a/arch/powerpc/kernel/eeh.c
-> >+++ b/arch/powerpc/kernel/eeh.c
-> >@@ -920,11 +920,8 @@ int eeh_init(void)
-> > 		pr_warn("%s: Platform EEH operation not found\n",
-> > 			__func__);
-> > 		return -EEXIST;
-> >-	} else if ((ret = eeh_ops->init())) {
-> >-		pr_warn("%s: Failed to call platform init function (%d)\n",
-> >-			__func__, ret);
-> >+	} else if ((ret = eeh_ops->init()))
-> > 		return ret;
-> >-	}
-> > 
-> > 	/* Initialize EEH event */
-> > 	ret = eeh_event_init();
-> >
-> >_______________________________________________
-> >Linuxppc-dev mailing list
-> >Linuxppc-dev@lists.ozlabs.org
-> >https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I replied to that review feedback right ? 
+
+   > We are sure there *was* no existing translation. It's possible that since the
+   > nohpte fault occurred the translation has been loaded into the tlb.
+   >
+   > Ben says that's OK, because updatepp is only ever relaxing permissions. But
+   > please add some explanation of that to the changelog - it's not obvious.
+
+I am not sure what we need to document. We look at pte bits to determine
+the access bits in hpte, so even if we race and miss the tlbie, we
+should have the right permissions. Or are you suggesting that we capture
+in commit message that, even if we have parrallel fault, we should be
+ok if we skip the tlbie ? Or do you want to capture the fact that
+mprotect won't call updatepp, because that involve a
+ptep_modify_prot_start which cause a hpte invalidate and not updatepp ?
+
+
+   > The context preceeding this hunk includes this comment:
+   >
+   > 	/*
+   > 	 * We need to invalidate the TLB always because hpte_remove doesn't do
+   > 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
+   > 	 * random entry from it. When we do that we don't invalidate the TLB
+   > 	 * (hpte_remove) because we assume the old translation is still
+   > 	 * technically "valid".
+   > 	 */
+   >
+   > Which seems out of sync with the code now.
+
+The comment is still valid. What it explain is the part that, even if we
+didn't find hash pte matching we still need to do a tlbie. We don't look
+at the nohpte fault details in the comment.
+
+-aneesh
