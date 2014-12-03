@@ -1,30 +1,22 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BA981A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 18:54:19 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7F0651400DE
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2014 18:54:17 +1100 (AEDT)
-Message-ID: <547EC183.2070005@Freescale.com>
-Date: Wed, 3 Dec 2014 01:53:39 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@Freescale.com>
-Subject: Re: [PATCH v3 3/4] powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support
- to device tree(s)
-References: <1417428135-12895-1-git-send-email-Emilian.Medve@Freescale.com>
- <1417428135-12895-4-git-send-email-Emilian.Medve@Freescale.com>
- <1417566777.15957.227.camel@freescale.com>
-In-Reply-To: <1417566777.15957.227.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-Cc: devicetree@vger.kernel.org, Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
- Geoff Thorpe <Geoff.Thorpe@Freescale.com>, linuxppc-dev@ozlabs.org,
- Chunhe Lan <Chunhe.Lan@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A2DA1A09DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 19:56:02 +1100 (AEDT)
+Received: by mail-pa0-f43.google.com with SMTP id kx10so15415785pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Dec 2014 00:55:59 -0800 (PST)
+From: Kevin Hao <haokexin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/3] fix a kernel panic on fsl corenet board when
+ CONFIG_CLK_PPC_CORENET is enabled
+Date: Wed,  3 Dec 2014 16:53:50 +0800
+Message-Id: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
+Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
+ Yuantian Tang <Yuantian.Tang@freescale.com>,
+ Jingchang Lu <jingchang.lu@freescale.com>,
+ Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
+I have done a boot test on p5040ds and mpc5121eads board.
+
+v3:
+  - Rebase on next.
+  - CC stable for patch 1.
+  - Add Scott and Michael's ack.
+
+v2:
+ - Revert the commit da788acb2838 first.
+ - Invoke of_clk_init() from a common place.
+
+v1
+This tries to fix a kernel panic introduced by commit da788acb2838
+("clk: ppc-corenet: Fix Section mismatch warning").
 
 
-On 12/02/2014 06:32 PM, Scott Wood wrote:
-> On Mon, 2014-12-01 at 04:02 -0600, Emil Medve wrote:
->> diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
->> index 53761d4..431bf4e 100644
->> --- a/arch/powerpc/boot/dts/t4240rdb.dts
->> +++ b/arch/powerpc/boot/dts/t4240rdb.dts
->> @@ -69,10 +69,27 @@
->>  		device_type = "memory";
->>  	};
->>  
->> +	reserved-memory {
->> +		#address-cells = <2>;
->> +		#size-cells = <2>;
->> +		ranges;
->> +
->> +		bman_fbpr: bman-fbpr {
->> +			compatible = "fsl,bman-fbpr";
->> +			alloc-ranges = <0 0 0xffff 0xffffffff>;
->> +			size = <0 0x1000000>;
->> +			alignment = <0 0x1000000>;
->> +		};
->> +	};
-> 
-> Can't this be done at the SoC level rather than board level?
+Kevin Hao (3):
+  Revert "clk: ppc-corenet: Fix Section mismatch warning"
+  powerpc: call of_clk_init() from time_init()
+  clk: ppc-corenet: fix section mismatch warning
 
-The size of the memory is not SoC specific. Among other things is
-determined by the number of MACs that are pinned-out on the board
+ arch/powerpc/kernel/time.c                    |  5 ++++
+ arch/powerpc/platforms/512x/clock-commonclk.c | 11 ++++---
+ drivers/clk/clk-ppc-corenet.c                 | 43 ++++-----------------------
+ 3 files changed, 16 insertions(+), 43 deletions(-)
 
-
-Cheers,
+-- 
+1.9.3
