@@ -1,37 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E24141A030E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 01:30:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 995791A09D5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 01:50:03 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 3 Dec 2014 19:59:57 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id DDA761258023
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 20:00:12 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB3EUTs7131474
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 20:00:29 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB3ETrx0026484
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 19:59:53 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH V2] powerpc/mm: don't do tlbie for updatepp request with
- NO HPTE fault
-In-Reply-To: <1417577863.16722.10.camel@concordia>
-References: <1417503002-22086-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1417577863.16722.10.camel@concordia>
-Date: Wed, 03 Dec 2014 19:59:52 +0530
-Message-ID: <87oarkbycf.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 4 Dec 2014 00:50:03 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E7C1D2BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 01:50:00 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB3Eo0jG31850656
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 01:50:00 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB3Enxeq003201
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 01:50:00 +1100
+Message-ID: <547F230A.3030303@linux.vnet.ibm.com>
+Date: Wed, 03 Dec 2014 20:19:46 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC PATCH 1/2]powerpc: foundation code to handle CR5 for local_t
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1417090721-25298-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <1417485890.15957.205.camel@freescale.com>
+In-Reply-To: <1417485890.15957.205.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8
+Cc: rusty@rustcorp.com.au, paulus@samba.org, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +42,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On Tuesday 02 December 2014 07:34 AM, Scott Wood wrote:
+> On Thu, 2014-11-27 at 17:48 +0530, Madhavan Srinivasan wrote:
+>> - I really appreciate feedback on the patchset.
+>> - Kindly comment if I should try with any other benchmark or
+>>     workload to check the numbers.
+>> - Also, kindly recommand any know stress test for CR
+>>
+>>  Makefile                                 |   6 ++
+>>  arch/powerpc/include/asm/exception-64s.h |  21 +++++-
+>>  arch/powerpc/kernel/entry_64.S           | 106 ++++++++++++++++++++++++++++++-
+>>  arch/powerpc/kernel/exceptions-64s.S     |   2 +-
+>>  arch/powerpc/kernel/head_64.S            |   8 +++
+>>  5 files changed, 138 insertions(+), 5 deletions(-)
+> 
+> Patch 2/2 enables this for all PPC64, not just book3s -- so please don't
+> forget about the book3e exception paths (also MSR[GS] for KVM, but
+> aren't most if not all the places you're checking for HV mode after KVM
+> would have taken control?  Or am I missing something about how book3s
+> KVM works?).
+> 
+> Or, if you don't want to do that, change patch 2/2 to be book3s only and
+> ifdef-protect the changes to common exception code.
+> 
 
-> On Tue, 2014-12-02 at 12:20 +0530, Aneesh Kumar K.V wrote:
->> upatepp get called for a nohpte fault, when we find from the linux
->> page table that the translation was hashed before. In that case
->> we are sure that there is no existing translation, hence we could
->> avoid doing tlbie.
->
-> Same comments as last time.
->
-> http://patchwork.ozlabs.org/patch/406219/
+Still learning the interrupt path and various configs. Was assuming
+PPC64 is for server side. My bad. Will change the it to book3s and also
+to common code.
 
-I replied to that review feedback right ? 
+>> @@ -224,8 +243,26 @@ syscall_exit:
+>>  BEGIN_FTR_SECTION
+>>  	stdcx.	r0,0,r1			/* to clear the reservation */
+>>  END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+>> +BEGIN_FTR_SECTION
+>> +	lis	r4,4096
+>> +	rldicr	r4,r4,32,31
+>> +	mr	r6,r4
+>> +	ori	r4,r4,16384
+>> +	and	r4,r8,r4
+>> +	cmpd	cr3,r6,r4
+>> +	beq	cr3,65f
+>> +	mtcr	r5
+>> +FTR_SECTION_ELSE
+>>  	andi.	r6,r8,MSR_PR
+>> -	ld	r4,_LINK(r1)
+>> +	beq	65f
+>> +	mtcr	r5
+>> +	nop
+>> +	nop
+>> +	nop
+>> +	nop
+>> +	nop
+>> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+>> +65:	ld	r4,_LINK(r1)
+>>  
+>>  	beq-	1f
+>>  	ACCOUNT_CPU_USER_EXIT(r11, r12)
+>> @@ -234,7 +271,11 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+>>  1:	ld	r2,GPR2(r1)
+>>  	ld	r1,GPR1(r1)
+>>  	mtlr	r4
+>> +#ifdef	CONFIG_PPC64
+>> +	mtcrf	0xFB,r5
+>> +#else
+>>  	mtcr	r5
+>> +#endif
+> 
+> mtcrf with more than one CRn being updated is expensive on Freescale
+> chips (and this isn't a book3s-only code path).  Why do you need to do
+> it twice?  I don't see where either r5 or cr5 are messed with between
+> the two places...
+> 
+Incase of returning to userspace, will be updating it twice. Which can
+be avoid. Will redo this.
 
-   > We are sure there *was* no existing translation. It's possible that since the
-   > nohpte fault occurred the translation has been loaded into the tlb.
-   >
-   > Ben says that's OK, because updatepp is only ever relaxing permissions. But
-   > please add some explanation of that to the changelog - it's not obvious.
+Regards
+Maddy
 
-I am not sure what we need to document. We look at pte bits to determine
-the access bits in hpte, so even if we race and miss the tlbie, we
-should have the right permissions. Or are you suggesting that we capture
-in commit message that, even if we have parrallel fault, we should be
-ok if we skip the tlbie ? Or do you want to capture the fact that
-mprotect won't call updatepp, because that involve a
-ptep_modify_prot_start which cause a hpte invalidate and not updatepp ?
-
-
-   > The context preceeding this hunk includes this comment:
-   >
-   > 	/*
-   > 	 * We need to invalidate the TLB always because hpte_remove doesn't do
-   > 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
-   > 	 * random entry from it. When we do that we don't invalidate the TLB
-   > 	 * (hpte_remove) because we assume the old translation is still
-   > 	 * technically "valid".
-   > 	 */
-   >
-   > Which seems out of sync with the code now.
-
-The comment is still valid. What it explain is the part that, even if we
-didn't find hash pte matching we still need to do a tlbie. We don't look
-at the nohpte fault details in the comment.
-
--aneesh
+> -Scott
+> 
+> 
