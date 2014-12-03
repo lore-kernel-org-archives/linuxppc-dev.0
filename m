@@ -1,36 +1,20 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6443E1A0E40
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 13:10:08 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 2 Dec 2014 21:10:05 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 7F5A638C8062
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Dec 2014 21:10:01 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB32A11D20512770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Dec 2014 02:10:01 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB32A0Pv004181
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Dec 2014 21:10:01 -0500
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v5 4/4] tools/perf: Document parameterized and symbolic events
-Date: Tue,  2 Dec 2014 18:09:38 -0800
-Message-Id: <1417572578-9051-5-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, dev@codyps.com,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 117C21A0185
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Dec 2014 14:37:44 +1100 (AEDT)
+Message-ID: <1417577863.16722.10.camel@concordia>
+Subject: Re: [PATCH V2] powerpc/mm: don't do tlbie for updatepp request with
+ NO HPTE fault
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 03 Dec 2014 14:37:43 +1100
+In-Reply-To: <1417503002-22086-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1417503002-22086-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,99 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+On Tue, 2014-12-02 at 12:20 +0530, Aneesh Kumar K.V wrote:
+> upatepp get called for a nohpte fault, when we find from the linux
+> page table that the translation was hashed before. In that case
+> we are sure that there is no existing translation, hence we could
+> avoid doing tlbie.
 
-Changelog[v6]:
-	- [Sukadev Bhattiprolu]: Update documentation of perf-list and
-	  perf-record; Added documentation for perf-stat.
+Same comments as last time.
 
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/Documentation/perf-list.txt   | 13 +++++++++++++
- tools/perf/Documentation/perf-record.txt | 12 ++++++++++++
- tools/perf/Documentation/perf-stat.txt   | 20 ++++++++++++++++----
- 3 files changed, 41 insertions(+), 4 deletions(-)
+http://patchwork.ozlabs.org/patch/406219/
 
-diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
-index cbb4f74..8e9a1121 100644
---- a/tools/perf/Documentation/perf-list.txt
-+++ b/tools/perf/Documentation/perf-list.txt
-@@ -89,6 +89,19 @@ raw encoding of 0x1A8 can be used:
- You should refer to the processor specific documentation for getting these
- details. Some of them are referenced in the SEE ALSO section below.
- 
-+PARAMETERIZED EVENTS
-+--------------------
-+
-+Some pmu events listed by 'perf-list' will be displayed with '$x' in them. For
-+example:
-+
-+  hv_gpci/dtbp_ptitc,starting_index=$core/
-+
-+This means that when provided as an event, a value for '$core' must
-+also be supplied. For example:
-+
-+  perf stat -C 0 -e 'hv_gpci/dtbp_ptitc,starting_index=0x2/' ...
-+
- OPTIONS
- -------
- 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index af9a54e..acdcf3b 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -33,6 +33,18 @@ OPTIONS
-         - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
- 	  hexadecimal event descriptor.
- 
-+	- a symbolically formed PMU event like 'pmu/param1=0x3,param2/' where
-+	  'param1', 'param2', etc are defined as formats for the PMU in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*.
-+
-+	- a symbolically formed event like 'pmu/config=M,config1=N,config3=K/'
-+
-+          where M, N, K are numbers (in decimal, hex, octal format). Acceptable
-+          values for each of 'config', 'config1' and 'config2' are defined by
-+          corresponding entries in /sys/bus/event_sources/devices/<pmu>/format/*
-+          param1 and param2 are defined as formats for the PMU in:
-+	  /sys/bus/event_sources/devices/<pmu>/format/*
-+
-         - a hardware breakpoint event in the form of '\mem:addr[:access]'
-           where addr is the address in memory you want to break in.
-           Access is the memory access type (read, write, execute) it can
-diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
-index 29ee857..04e150d 100644
---- a/tools/perf/Documentation/perf-stat.txt
-+++ b/tools/perf/Documentation/perf-stat.txt
-@@ -25,10 +25,22 @@ OPTIONS
- 
- -e::
- --event=::
--	Select the PMU event. Selection can be a symbolic event name
--	(use 'perf list' to list all events) or a raw PMU
--	event (eventsel+umask) in the form of rNNN where NNN is a
--	 hexadecimal event descriptor.
-+	Select the PMU event. Selection can be:
-+
-+	- a symbolic event name (use 'perf list' to list all events)
-+
-+	- a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
-+	  hexadecimal event descriptor.
-+
-+	- a symbolically formed event like 'pmu/param1=0x3,param2/' where
-+	  param1 and param2 are defined as formats for the PMU in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*
-+
-+	- a symbolically formed event like 'pmu/config=M,config1=N,config2=K/'
-+	  where M, N, K are numbers (in decimal, hex, octal format).
-+	  Acceptable values for each of 'config', 'config1' and 'config2'
-+	  parameters are defined by corresponding entries in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*
- 
- -i::
- --no-inherit::
--- 
-1.8.3.1
+cheers
