@@ -1,26 +1,26 @@
 Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F9371A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 15:51:25 +1100 (AEDT)
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0128.outbound.protection.outlook.com [65.55.169.128])
+ (mail-bl2on0111.outbound.protection.outlook.com [65.55.169.111])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49D761A0150
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 15:46:37 +1100 (AEDT)
-Message-ID: <1417668384.15957.240.camel@freescale.com>
-Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
- warning"
+ by ozlabs.org (Postfix) with ESMTPS id A88061400E2
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2014 15:51:24 +1100 (AEDT)
+Message-ID: <1417668674.15957.243.camel@freescale.com>
+Subject: Re: [PATCH v4 1/6] dt/bindings: bman: Add phandle to the portals
 From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Wed, 3 Dec 2014 22:46:24 -0600
-In-Reply-To: <20141204043816.GB14597@pek-khao-d1.corp.ad.wrs.com>
-References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
- <1417596833-31456-2-git-send-email-haokexin@gmail.com>
- <1417665891.15957.238.camel@freescale.com>
- <20141204043816.GB14597@pek-khao-d1.corp.ad.wrs.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Wed, 3 Dec 2014 22:51:14 -0600
+In-Reply-To: <1417600964-24647-2-git-send-email-Emilian.Medve@Freescale.com>
+References: <1417600964-24647-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1417600964-24647-2-git-send-email-Emilian.Medve@Freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
- Yuantian Tang <Yuantian.Tang@freescale.com>,
- Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-12-04 at 12:38 +0800, Kevin Hao wrote:
-> On Wed, Dec 03, 2014 at 10:04:51PM -0600, Scott Wood wrote:
-> > On Wed, 2014-12-03 at 16:53 +0800, Kevin Hao wrote:
-> > > This reverts commit da788acb28386aa896224e784954bb73c99ff26c.
-> > > 
-> > > That commit tried to fix the section mismatch warning by moving the
-> > > ppc_corenet_clk_driver struct to init section. This is definitely wrong
-> > > because the kernel would free the memories occupied by this struct
-> > > after boot while this driver is still registered in the driver core.
-> > > The kernel would panic when accessing this driver struct.
-> > > 
-> > > Cc: stable@vger.kernel.org # 3.17
-> > 
-> > I don't see stable@vger.kernel.org in the actual CC list.
+On Wed, 2014-12-03 at 04:02 -0600, Emil Medve wrote:
+> This supports SoC(s) with multiple BMan instances
 > 
-> With the above cc tag, Won't this get automatically included in the stable
-> tree once it is merged into mainline? As I know, we only need to explicitly
-> send the patch to stable@vger.kernel.org only when that patch was already
-> merged into mainline without the corresponding cc stable tag and we also want
-> the stable tree include it. Did I miss something?
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+>  Documentation/devicetree/bindings/soc/fsl/bman.txt | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/bman.txt b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> index 9f80bf8..4fc4a6e 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> +++ b/Documentation/devicetree/bindings/soc/fsl/bman.txt
+> @@ -36,6 +36,11 @@ are located at offsets 0xbf8 and 0xbfc
+>  	Value type:	<prop-encoded-array>
+>  	Definition:	Standard property. The error interrupt
+>  
+> +- fsl,bman-portals
+> +	Usage:		Required
+> +	Value type:	<phandle>
+> +	Definition:	Phandle to this BMan's instance portals
 
-I reread stable_kernel_rules.txt and it looks like you're right, though
-usually it ends up on the real CC list anyway due to how git send-email
-works.
+s/BMan's instance/BMan instance's/
 
-Since only this first patch is a critical bugfix, and there's no
-arch/powerpc content in that patch, I think it should go via Mike's tree
-if it's to go in for 3.18 (if it's not already too late).  Or, to keep
-things simple given the dependency of the following patches, we could
-batch them all together for -next and add a # 3.18 stable request.
+Likewise for QMan
 
 -Scott
