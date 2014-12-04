@@ -2,18 +2,18 @@ Return-Path: <wsa@the-dreams.de>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D6C21A0588
+ by lists.ozlabs.org (Postfix) with ESMTPS id 268B41A0282
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 03:42:20 +1100 (AEDT)
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4F10C1400E9
+ by ozlabs.org (Postfix) with ESMTPS id 4EDD51400E2
  for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 03:42:18 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 2/2] sound: ppc: keywest: drop using attach adapter
-Date: Thu,  4 Dec 2014 17:41:53 +0100
-Message-Id: <1417711313-7257-3-git-send-email-wsa@the-dreams.de>
+Subject: [RFC 1/2] macintosh: therm_windtunnel: drop using attach adapter
+Date: Thu,  4 Dec 2014 17:41:52 +0100
+Message-Id: <1417711313-7257-2-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1417711313-7257-1-git-send-email-wsa@the-dreams.de>
 References: <1417711313-7257-1-git-send-email-wsa@the-dreams.de>
 Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
@@ -32,63 +32,51 @@ finally get rid of the legacy interface from the i2c core.
 
 Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
- sound/ppc/keywest.c | 21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+ drivers/macintosh/therm_windtunnel.c | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
-index 0d1c27e911b8..a957f32368fa 100644
---- a/sound/ppc/keywest.c
-+++ b/sound/ppc/keywest.c
-@@ -52,7 +52,7 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
- 		return -EINVAL;
- 
- 	if (strncmp(adapter->name, "mac-io", 6))
--		return 0; /* ignored */
-+		return -EINVAL; /* ignored */
- 
- 	memset(&info, 0, sizeof(struct i2c_board_info));
- 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
-@@ -100,7 +100,6 @@ static struct i2c_driver keywest_driver = {
+diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+index 3b4a157714b1..9de83cdd0bca 100644
+--- a/drivers/macintosh/therm_windtunnel.c
++++ b/drivers/macintosh/therm_windtunnel.c
+@@ -431,7 +431,6 @@ static struct i2c_driver g4fan_driver = {
  	.driver = {
- 		.name = "PMac Keywest Audio",
+ 		.name	= "therm_windtunnel",
  	},
--	.attach_adapter = keywest_attach_adapter,
- 	.probe = keywest_probe,
- 	.remove = keywest_remove,
- 	.id_table = keywest_i2c_id,
-@@ -132,16 +131,32 @@ int snd_pmac_tumbler_post_init(void)
- /* exported */
- int snd_pmac_keywest_init(struct pmac_keywest *i2c)
+-	.attach_adapter = do_attach,
+ 	.probe		= do_probe,
+ 	.remove		= do_remove,
+ 	.id_table	= therm_windtunnel_id,
+@@ -444,7 +443,29 @@ static struct i2c_driver g4fan_driver = {
+ 
+ static int therm_of_probe(struct platform_device *dev)
  {
--	int err;
+-	return i2c_add_driver( &g4fan_driver );
 +	struct i2c_adapter *adap;
-+	int err, i = 0;
- 
- 	if (keywest_ctx)
- 		return -EBUSY;
- 
++	int ret, i = 0;
++
 +	adap = i2c_get_adapter(0);
 +	if (!adap)
 +		return -EPROBE_DEFER;
 +
- 	keywest_ctx = i2c;
- 
- 	if ((err = i2c_add_driver(&keywest_driver))) {
- 		snd_printk(KERN_ERR "cannot register keywest i2c driver\n");
++	ret = i2c_add_driver(&g4fan_driver);
++	if (ret) {
 +		i2c_put_adapter(adap);
- 		return err;
- 	}
++		return ret;
++	}
 +
 +	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
 +	while (adap) {
-+		err = keywest_attach_adapter(adap);
-+		if (!err)
++		do_attach(adap);
++		if (x.running)
 +			break;
 +		i2c_put_adapter(adap);
 +		adap = i2c_get_adapter(++i);
 +	}
 +
- 	return 0;
++	return 0;
  }
+ 
+ static int
 -- 
 2.1.3
