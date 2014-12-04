@@ -1,37 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F8671A0B76
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 16:51:05 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C4521A0B9B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 16:51:10 +1100 (AEDT)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3109D1400E2
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2014 16:51:05 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5F0C514010B
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2014 16:51:09 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 4 Dec 2014 15:51:04 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6D3A1357805D
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2014 16:51:02 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB45p2LT30539962
- for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2014 16:51:02 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB45p1dc010523
- for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2014 16:51:01 +1100
+ Thu, 4 Dec 2014 11:21:07 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id EC54C3940057
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2014 11:21:04 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB45peW127984024
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2014 11:21:41 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB45p3ea001355
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2014 11:21:03 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc/powernv: Issue fundamental reset if required
-Date: Thu,  4 Dec 2014 16:50:53 +1100
-Message-Id: <1417672253-26692-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1417672253-26692-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1417672253-26692-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/3] powerpc/pci: PCI slot unified reset
+Date: Thu,  4 Dec 2014 16:50:50 +1100
+Message-Id: <1417672253-26692-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,70 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function pnv_pci_reset_secondary_bus() is used to reset specified
-PCI bus, which is leaded by root complex or PCI bridge. That means
-the function shouldn't be called on PCI root bus and the patch
-removes the logic for the case.
+The patchset corresponds to skiboot changes, which manages PCI slots
+in a unified way: OPAL APIs used to do slot reset, power management,
+presence status retrival. The patchset shouldn't be merged before
+the OPAL firmware counterpart is merged.
 
-Also, some adapters may require fundamental reset to reload their
-firmwares. Otherwise, they will fail to load their firmwares and
-those adapters can't work properly after reset, as being reported
-in VFIO pass-through scenario. The patch checks the reset type
-required by the child adapters of the PCI bus and issue fundamental
-reset if necessary.
+The kernel changes have been split into 2 parts: (A) Use the unified
+PCI slot reset OPAL API - this patchset; (B) powernv-php driver to
+support PCI hotplug for PowerNV platform, which will be sent separately.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-ioda.c | 34 +++++++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 9 deletions(-)
+This patchset affects EEH, PCI reset logics, which is used mainly by
+VFIO. A couple of cases have been tested out on P7/P8 boxes and looks
+good: EEH on PowerNV, EEH support for guest, PCI passthrou.
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 78d94df..cf38781 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -636,18 +636,34 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
- }
- 
--void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
-+static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
- {
--	struct pci_controller *hose;
-+	int *freset = data;
- 
--	if (pci_is_root_bus(dev->bus)) {
--		hose = pci_bus_to_host(dev->bus);
--		ioda_eeh_phb_reset(hose, EEH_RESET_HOT);
--		ioda_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
--	} else {
--		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT);
--		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
-+	/*
-+	 * Stop the iteration immediately if any one PCI
-+	 * device requires fundamental reset
-+	 */
-+	*freset |= pdev->needs_freset;
-+	return *freset;
-+}
-+
-+void pnv_pci_reset_secondary_bus(struct pci_dev *pdev)
-+{
-+	int option = EEH_RESET_HOT;
-+	int freset = 0;
-+
-+	/* Check if we need issue fundamental reset */
-+	if (pdev->subordinate) {
-+		pci_walk_bus(pdev->subordinate,
-+			     pnv_pci_dev_reset_type, &freset);
-+		if (freset)
-+			option = EEH_RESET_FUNDAMENTAL;
- 	}
-+
-+	/* Issue required reset type */
-+	ioda_eeh_bridge_reset(pdev, option);
-+	ioda_eeh_bridge_reset(pdev, EEH_RESET_DEACTIVATE);
- }
- 
- /**
--- 
-1.8.3.2
+Changelog
+=========
+v1 -> v2
+        * Keep opal_pci_reinit(). In case the slot is resetted by kernel,
+          instead of skiboot, this API should be called to restore states
+          for those affected devices.
+        * Reworked slot ID scheme so that old/new kernel can work with
+          skiboot with or without unified PCI slot management support.
+        * Code cleanup here and there.
+
+Gavin Shan (3):
+  powerpc/powernv: Use PCI slot reset infrastructure
+  powerpc/powernv: Refactor ioda_eeh_reset()
+  powerpc/powernv: Issue fundamental reset if required
+
+ arch/powerpc/include/asm/eeh.h            |   1 +
+ arch/powerpc/include/asm/opal.h           |   9 +-
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 240 ++++++++++++++++--------------
+ 3 files changed, 132 insertions(+), 118 deletions(-)
+
+Thanks,
+Gavin
