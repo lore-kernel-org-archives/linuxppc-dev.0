@@ -1,21 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D53B11A0C38
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 20:35:54 +1100 (AEDT)
-Message-ID: <1417685753.31400.1.camel@concordia>
-Subject: Re: powerpc/book3s: Fix flush_tlb cpu_spec hook to take a generic
- argument.
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 04 Dec 2014 20:35:53 +1100
-In-Reply-To: <547D7FF2.3010901@linux.vnet.ibm.com>
-References: <20141128223838.B21E51401B1@ozlabs.org>
- <547D7FF2.3010901@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32FF11A0C00
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 22:15:58 +1100 (AEDT)
+Date: Thu, 4 Dec 2014 11:15:46 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] mm: Convert p[te|md]_numa users to
+ p[te|md]_protnone_numa
+Message-ID: <20141204111546.GK6043@suse.de>
+References: <1416578268-19597-1-git-send-email-mgorman@suse.de>
+ <1416578268-19597-4-git-send-email-mgorman@suse.de>
+ <1417473762.7182.8.camel@kernel.crashing.org>
+ <87k32ah5q3.fsf@linux.vnet.ibm.com>
+ <1417551115.27448.7.camel@kernel.crashing.org>
+ <87lhmobvuu.fsf@linux.vnet.ibm.com> <20141203155242.GE6043@suse.de>
+ <1417640517.4741.14.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1417640517.4741.14.camel@kernel.crashing.org>
+Cc: Rik van Riel <riel@redhat.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Hugh Dickins <hughd@google.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+ Linux-MM <linux-mm@kvack.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kirill Shutemov <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-02 at 14:31 +0530, Mahesh Jagannath Salgaonkar wrote:
-> On 11/29/2014 04:08 AM, Michael Ellerman wrote:
-> > On Tue, 2014-23-09 at 03:53:54 UTC, Mahesh Salgaonkar wrote:
-> >> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> >>
-> >> The flush_tlb hook in cpu_spec was introduced as a generic function hook
-> >> to invalidate TLBs. But the current implementation of flush_tlb hook
-> >> takes IS (invalidation selector) as an argument which is architecture
-> >> dependent. Hence, It is not right to have a generic routine where caller
-> >> has to pass non-generic argument.
-> >>
-> >> This patch fixes this and makes flush_tlb hook as high level API.
-> >>
-> >> The old code used to call flush_tlb hook with IS=0 (single page) resulting
-> >> partial invalidation of TLBs which is not right. This fix now makes
-> >> sure that whole TLB is invalidated to be able to successfully recover from
-> >> TLB and ERAT errors.
+On Thu, Dec 04, 2014 at 08:01:57AM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-12-03 at 15:52 +0000, Mel Gorman wrote:
 > > 
-> > Which old code? You mean the MCE code I think. That's a bug fix, so it should
-> > be a separate patch.
+> > It's implied but can I assume it passed? If so, Ben and Paul, can I
+> > consider the series to be acked by you other than the minor comment
+> > updates?
 > 
-> Yes. MCE code. Since this patch re-factors the code that takes IS as
-> direct argument, having a separate fix patch does not make any sense and
-> would get overwritten by this patch anyway.
+> Yes. Assuming it passed :-)
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
 
-That's irrelevant.
+Sweet, thanks.
 
-The fix will go to stable, the refactor will not.
-
-Please do the MCE fix as a separate, preceeding patch.
-
-cheers
+-- 
+Mel Gorman
+SUSE Labs
