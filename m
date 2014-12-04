@@ -1,38 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0A291A0C8B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:19 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 5 Dec 2014 08:48:18 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 486162BB003F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:15 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB4MmEMx36831384
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 09:48:15 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB4MmD0k029020
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 09:48:14 +1100
-Date: Fri, 5 Dec 2014 09:48:13 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: powerpc/pci: remove pci device on a bus in reverse order
-Message-ID: <20141204224813.GA8008@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1417663477-9124-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141204054035.C3DAC1400E9@ozlabs.org>
- <20141204072117.GA9978@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 631EB1A0D0A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:34 +1100 (AEDT)
+Date: Thu, 4 Dec 2014 22:48:10 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Jiada Wang <jiada_wang@mentor.com>
+Message-ID: <20141204224810.GI11764@sirena.org.uk>
+References: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
+ <1417499707-3125-2-git-send-email-jiada_wang@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141204072117.GA9978@richard>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="y96v7rNg6HAoELs5"
+In-Reply-To: <1417499707-3125-2-git-send-email-jiada_wang@mentor.com>
+Subject: Re: [PATCH v2 1/2] ASoC: fsl_ssi: fix error path in probe
+Cc: alsa-devel@alsa-project.org, lars@metafoo.de, arnd@arndb.de,
+ lgirdwood@gmail.com, tiwai@suse.de, linuxppc-dev@lists.ozlabs.org,
+ timur@tabi.org, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
+ Li.Xiubo@freescale.com, mpa@pengutronix.de, festevam@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2014 at 03:21:18PM +0800, Wei Yang wrote:
->On Thu, Dec 04, 2014 at 04:40:35PM +1100, Michael Ellerman wrote:
->>On Thu, 2014-04-12 at 03:24:37 UTC, Wei Yang wrote:
->>> As in commit ac205b7b (PCI: make sriov work with hotplug remove) indicates,
->>> when removing pci devices on a bus which has VFs, we need to remove them in
->>> the reverse order.
->>> 
->>> This patch applies this pattern on the hotplug remove path on powerpc arch.
->>
->>So is this is a bug fix?
->
->It hasn't trigger a bug yet. I found this issue during the code reading. When
->VFs are enabled and try to remove a bus with VFs, it will face a problem. So I
->port the change in commit ac205b7b here.
->
->>
->>Where/how have you tested this?
->
->I have tested after change on Power8, the EEH hotplug path works fine for PFs
->now. Will test this when EEH for VFs are ready.
->
->Suggest me to keep it untill EEH for VFs are ready?
->
 
-Please keep it and resend it (with typo fixed as I pointed) after SRIOV patchset
-gets merged. If SRIOV isn't enabled, we don't need the code change.
+--y96v7rNg6HAoELs5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-By the way, it's something related to EEH for PFs. When PF and its VFs seat on
-same PCI bus, we should remove VFs before putting PF offline in the reversed
-order as you did in your code change. Otherwise, PF is put into offline and
-its driver disables VFs. We try redoing the removal for VFs in hotplug path,
-which would cause race condition. If VFs aren't existing, until your SRIOV
-patchset is merged, we don't have this problem. Please correct me if I
-understood things wrongly.
+On Tue, Dec 02, 2014 at 02:55:06PM +0900, Jiada Wang wrote:
+> SSI component isn't unregistered if fsl_ssi_debugfs_create() fails
+> in probe phase.
 
-Thanks,
-Gavin
+applied, thanks.
+
+--y96v7rNg6HAoELs5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUgOSqAAoJECTWi3JdVIfQmD0H/2cab5BQ49PiKU7DBqR4h0b/
+3ieozrSYda0JOR2zNNCKB2LSzHI2heenBcd7cvCCM8rMIhHAsaGdBx/Df/CGMmmF
+BQLuEzpzpbMVXrBO4fhdT6gJhZ80/eBwmCIVQQwvN+6mbr8yNm6nW/9j3wZaxDiX
+iJSKtcqwjMXxTtBvZWKAFNXIPoIOu3loJpXkKyaz09eGm4tunpwzLzUysAZWViLE
+0Uel8ypnGkGrvk54k2csKDrOOrEpveWDtmP+vEX9KOQ+8zgRb5rBJWXC+UTSDrUD
+LMQ/RmMrfCl3Epzuor14zl1uf2iMlxmP0TmhsNW8v+crzkTOioa20NKELmrqZjs=
+=iPDz
+-----END PGP SIGNATURE-----
+
+--y96v7rNg6HAoELs5--
