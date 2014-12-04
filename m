@@ -1,17 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 682521A02E8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 17:03:23 +1100 (AEDT)
-In-Reply-To: <20141203135812.4126.85795.stgit@bahia.local>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc: remove the smt-enabled kernel parameter
-Message-Id: <20141204060323.52E291400EA@ozlabs.org>
-Date: Thu,  4 Dec 2014 17:03:23 +1100 (AEDT)
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CD031A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 17:07:02 +1100 (AEDT)
+Received: by mail-pd0-f172.google.com with SMTP id y13so17006350pdi.17
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Dec 2014 22:07:00 -0800 (PST)
+Date: Thu, 4 Dec 2014 14:06:52 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
+ warning"
+Message-ID: <20141204060652.GC14597@pek-khao-d1.corp.ad.wrs.com>
+References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
+ <1417596833-31456-2-git-send-email-haokexin@gmail.com>
+ <1417665891.15957.238.camel@freescale.com>
+ <20141204043816.GB14597@pek-khao-d1.corp.ad.wrs.com>
+ <1417668384.15957.240.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="V88s5gaDVPzZ0KCq"
+In-Reply-To: <1417668384.15957.240.camel@freescale.com>
+Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
+ Yuantian Tang <Yuantian.Tang@freescale.com>,
+ Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-12 at 13:58:13 UTC, Greg Kurz wrote:
-> This parameter basically leaves unwanted cpus executing in firmware or
-> wherever they happen to be. This is a hack that shoudn't be used in a
-> production environment.
-> 
-> It also has an evil side effect on the split-core feature for powernv. The
-> code needs all the cpus to participate to the split mode update: it relies
-> on smp_send_reschedule() to get offline ones to do so. This doesn't work with
-> cpus that haven't come up... The consequence is a kernel hang at boot time
-> on powernv when smt-enabled is used to limit the number of threads.
-> 
-> This patch simply removes the smt-enabled kernel parameter for all platforms.
-> >From now on, SMT mode should be set by userspace.
-> 
-> I see there also is a ibm,smt-enabled property but I could not find any
-> piece of information about it. Since it does the very same thing as the
-> kernel parameter, it is tempting to drop it alike... This would possibly
-> allow more simplification like killing the cpu_bootable hook.
-> 
-> Please give advice anyone.
 
-Hi Greg,
+--V88s5gaDVPzZ0KCq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks for doing this.
+On Wed, Dec 03, 2014 at 10:46:24PM -0600, Scott Wood wrote:
+> Since only this first patch is a critical bugfix, and there's no
+> arch/powerpc content in that patch, I think it should go via Mike's tree
+> if it's to go in for 3.18 (if it's not already too late).  Or, to keep
+> things simple given the dependency of the following patches, we could
+> batch them all together for -next and add a # 3.18 stable request.
 
-I discussed this on irc and Benh & Anton both agree we should drop it.
+We don't need to explicitly add a #3.18 stable request in this case. As I know,
+we only need to indicate the first version which is affected by the bug fixed by
+this commit in the cc tag. This would imply that the applicable stable kernel
+version rang should be from 3.17 to the previous version of the kernel which
+finally merge this commit.
 
-Please send a v2 which also drops the support for ibm,smt-enabled.
+Thanks,
+Kevin
 
-Our reasoning is 1) it doesn't work correctly in the same way as the command
-line option, 2) no one is aware of anything that still uses it, 3) there are
-better ways for firmware to disable SMT.
+--V88s5gaDVPzZ0KCq
+Content-Type: application/pgp-signature
 
-Can you then send a 2nd patch which removes the cpu_bootable hook.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-cheers
+iQEcBAEBAgAGBQJUf/n8AAoJEJNY7TDerrFxiL4IAJ/Lm2e5cnp6EKqtMkuuV5PE
+5iEsC6ZUTpf8ZFnIJZrjJ3GiLPowooFIX3C8qM7p7hVQOEdpAoEPkfomDNVswmHY
+89NO1xVPNXbAtOjl4b8857PpG1vN8ddF2EYvyCzqrQWozwq1Jdn5KxARjqy5i0ey
+bRlBi7QM/N8uMFOO457dPXjF8BznZ4nRS4s7NGg+WnnoXJLwRAiVfLhu0JTj+cFZ
+NfKjDTtzej+fUHy37TvtpYEoxZ/IaNztYQ5c7DQB/p3uPTZ7FkFyUXDX0cOjKWJp
+FrM04ofle8LW29d+1ixjhILEZP2Imf14bpjV7Qml5iPsErSebSIFMZGVXhzSecg=
+=dJG6
+-----END PGP SIGNATURE-----
+
+--V88s5gaDVPzZ0KCq--
