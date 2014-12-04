@@ -1,17 +1,23 @@
-Return-Path: <dborkman@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B11751A0064
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 00:41:49 +1100 (AEDT)
-Message-ID: <54806490.6080303@redhat.com>
-Date: Thu, 04 Dec 2014 14:41:36 +0100
-From: Daniel Borkmann <dborkman@redhat.com>
-MIME-Version: 1.0
-To: Caz.Yokoyama@intel.com
-Subject: ppc64 and Documentation/mic/mpssd/mpssd.c issues
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D6C21A0588
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 03:42:20 +1100 (AEDT)
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4F10C1400E9
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 03:42:18 +1100 (AEDT)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC 2/2] sound: ppc: keywest: drop using attach adapter
+Date: Thu,  4 Dec 2014 17:41:53 +0100
+Message-Id: <1417711313-7257-3-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1417711313-7257-1-git-send-email-wsa@the-dreams.de>
+References: <1417711313-7257-1-git-send-email-wsa@the-dreams.de>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ Wolfram Sang <wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Caz,
+As we now have deferred probing, we can use a custom mechanism and
+finally get rid of the legacy interface from the i2c core.
 
-I think commit ...
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+ sound/ppc/keywest.c | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
-commit 8d49751580db804a02caf6a5b7cebe2ff26c0d7e
-Author: Caz Yokoyama <Caz.Yokoyama@intel.com>
-Date:   Thu Sep 5 16:42:39 2013 -0700
-
-     Sample Implementation of Intel MIC User Space Daemon.
-
-... actually triggers a build error on my default config
-ppc64 (I'm using net-next tree):
-
-   HOSTCC  Documentation/mic/mpssd/mpssd.o
-Documentation/mic/mpssd/mpssd.c:93: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:96: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:113: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:116: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:119: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:146: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:149: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:151: error: braced-group within expression allowed only inside a function
-Documentation/mic/mpssd/mpssd.c:152: error: braced-group within expression allowed only inside a function
-make[3]: *** [Documentation/mic/mpssd/mpssd.o] Error 1
-make[2]: *** [Documentation/mic/mpssd] Error 2
-make[1]: *** [Documentation/mic] Error 2
-make: *** [vmlinux] Error 2
-
-gcc --version
-gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-11)
-
-Cheers,
-Daniel
+diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+index 0d1c27e911b8..a957f32368fa 100644
+--- a/sound/ppc/keywest.c
++++ b/sound/ppc/keywest.c
+@@ -52,7 +52,7 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
+ 		return -EINVAL;
+ 
+ 	if (strncmp(adapter->name, "mac-io", 6))
+-		return 0; /* ignored */
++		return -EINVAL; /* ignored */
+ 
+ 	memset(&info, 0, sizeof(struct i2c_board_info));
+ 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
+@@ -100,7 +100,6 @@ static struct i2c_driver keywest_driver = {
+ 	.driver = {
+ 		.name = "PMac Keywest Audio",
+ 	},
+-	.attach_adapter = keywest_attach_adapter,
+ 	.probe = keywest_probe,
+ 	.remove = keywest_remove,
+ 	.id_table = keywest_i2c_id,
+@@ -132,16 +131,32 @@ int snd_pmac_tumbler_post_init(void)
+ /* exported */
+ int snd_pmac_keywest_init(struct pmac_keywest *i2c)
+ {
+-	int err;
++	struct i2c_adapter *adap;
++	int err, i = 0;
+ 
+ 	if (keywest_ctx)
+ 		return -EBUSY;
+ 
++	adap = i2c_get_adapter(0);
++	if (!adap)
++		return -EPROBE_DEFER;
++
+ 	keywest_ctx = i2c;
+ 
+ 	if ((err = i2c_add_driver(&keywest_driver))) {
+ 		snd_printk(KERN_ERR "cannot register keywest i2c driver\n");
++		i2c_put_adapter(adap);
+ 		return err;
+ 	}
++
++	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
++	while (adap) {
++		err = keywest_attach_adapter(adap);
++		if (!err)
++			break;
++		i2c_put_adapter(adap);
++		adap = i2c_get_adapter(++i);
++	}
++
+ 	return 0;
+ }
+-- 
+2.1.3
