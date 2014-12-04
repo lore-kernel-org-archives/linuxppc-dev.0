@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE1781A0CC7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 07:29:22 +1100 (AEDT)
-Message-ID: <1417724947.4741.31.camel@kernel.crashing.org>
-Subject: Re: ppc64 and Documentation/mic/mpssd/mpssd.c issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Yokoyama, Caz" <caz.yokoyama@intel.com>
-Date: Fri, 05 Dec 2014 07:29:07 +1100
+Return-Path: <sudeep.dutt@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by lists.ozlabs.org (Postfix) with ESMTP id A97B11A0BFD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 03:58:25 +1100 (AEDT)
+Subject: RE: ppc64 and Documentation/mic/mpssd/mpssd.c issues
+From: Sudeep Dutt <sudeep.dutt@intel.com>
+To: "Yokoyama, Caz" <caz.yokoyama@intel.com>,
+ Peter Foley <pefoley2@pefoley.com>
 In-Reply-To: <45C67EF7794AF747A87A45C9E1CC1B97926A6AFD@ORSMSX105.amr.corp.intel.com>
 References: <54806490.6080303@redhat.com>
  <45C67EF7794AF747A87A45C9E1CC1B97926A6AFD@ORSMSX105.amr.corp.intel.com>
 Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Dec 2014 08:57:52 -0800
+Message-ID: <1417712272.88385.4.camel@localhost>
 Mime-Version: 1.0
 Cc: "Dixit, Ashutosh" <ashutosh.dixit@intel.com>,
  Daniel Borkmann <dborkman@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Dutt,
- Sudeep" <sudeep.dutt@intel.com>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Sudeep Dutt <sudeep.dutt@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-12-04 at 16:48 +0000, Yokoyama, Caz wrote:
+On Thu, 2014-12-04 at 08:48 -0800, Yokoyama, Caz wrote:
 > Thank you for the report.
 > Have you tried to compile on x86_64? Which rhel do you use? Rhel6.X?
 > MIC card is expected to work with x86_64 host, not with ppc64. We have never compiled on ppc host while our primary development platform was rhel6.X.
 > 
+
+I am adding Peter Foley since he enabled the mpssd build by default
+recently with commit adb19fb. Peter, is there a way to enable the mpssd
+build only for x86_64?
+
+Thanks,
+Sudeep Dutt
+
 > Line 92 is the first use of htole16 and MIC_VRING_ENTRIES. Is there any change on them?
-
-Then you should make sure your Kconfig/Makefile stanza only compiles it
-on x86_64 instead of breaking all other architectures...
-
-Ben.
-
+> 
 > Thank you.
 > -caz, Caz.Yokoyama@intel.com, yokoyama@member.fsf.org
 > 
