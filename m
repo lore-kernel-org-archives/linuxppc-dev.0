@@ -1,26 +1,23 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1417E1A0CA8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 22:24:53 +1100 (AEDT)
-From: Mel Gorman <mgorman@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 10/10] mm: numa: Avoid unnecessary TLB flushes when setting
- NUMA hinting entries
-Date: Thu,  4 Dec 2014 11:24:33 +0000
-Message-Id: <1417692273-27170-11-git-send-email-mgorman@suse.de>
-In-Reply-To: <1417692273-27170-1-git-send-email-mgorman@suse.de>
-References: <1417692273-27170-1-git-send-email-mgorman@suse.de>
-Cc: Rik van Riel <riel@redhat.com>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, Hugh Dickins <hughd@google.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Sasha Levin <sasha.levin@oracle.com>, Dave Jones <davej@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Kirill Shutemov <kirill.shutemov@linux.intel.com>,
- Mel Gorman <mgorman@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E9051A0C86
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 23:45:01 +1100 (AEDT)
+Date: Thu, 4 Dec 2014 13:44:22 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 1/4] tools/perf: support parsing parameterized events
+Message-ID: <20141204124422.GA4195@krava.brq.redhat.com>
+References: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1417572578-9051-2-git-send-email-sukadev@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417572578-9051-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ dev@codyps.com, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a PTE or PMD is already marked NUMA when scanning to mark entries
-for NUMA hinting then it is not necessary to update the entry and
-incur a TLB flush penalty. Avoid the avoidhead where possible.
+On Tue, Dec 02, 2014 at 06:09:35PM -0800, Sukadev Bhattiprolu wrote:
+> From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> 
+> Enable event specification like:
+> 
+> 	pmu/event_name,param1=0x1,param2=0x4/
+> 
+> Assuming that
+> 
+> 	/sys/bus/event_source/devices/pmu/events/event_name
+> 
+> Contains something like
+> 
+> 	param2=$foo,bar=1,param1=$baz
 
-Signed-off-by: Mel Gorman <mgorman@suse.de>
----
- mm/huge_memory.c | 14 ++++++++------
- mm/mprotect.c    |  4 ++++
- 2 files changed, 12 insertions(+), 6 deletions(-)
+oops.. sorry to be PITA on this one.. I might have missed something
+in the previous discussion but I guess I might have finally some
+opinion on this ;-)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 8546654..f2bf521 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1524,12 +1524,14 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 			return 0;
- 		}
- 
--		ret = 1;
--		entry = pmdp_get_and_clear_notify(mm, addr, pmd);
--		entry = pmd_modify(entry, newprot);
--		ret = HPAGE_PMD_NR;
--		set_pmd_at(mm, addr, pmd, entry);
--		BUG_ON(pmd_write(entry));
-+		if (!prot_numa || !pmd_protnone(*pmd)) {
-+			ret = 1;
-+			entry = pmdp_get_and_clear_notify(mm, addr, pmd);
-+			entry = pmd_modify(entry, newprot);
-+			ret = HPAGE_PMD_NR;
-+			set_pmd_at(mm, addr, pmd, entry);
-+			BUG_ON(pmd_write(entry));
-+		}
- 		spin_unlock(ptl);
- 	}
- 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 33dfafb..109e7aa 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -86,6 +86,10 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
- 				page = vm_normal_page(vma, addr, oldpte);
- 				if (!page || PageKsm(page))
- 					continue;
-+
-+				/* Avoid TLB flush if possible */
-+				if (pte_protnone(oldpte))
-+					continue;
- 			}
- 
- 			ptent = ptep_modify_prot_start(mm, addr, pte);
--- 
-2.1.2
+here's how I think your patchset works:
+
+in /sys/bus/event_source/devices/pmu/events/event_name you can actually have:
+
+   param2=foo,bar=1,param1=baz
+
+notice no '$', thats what you add later in 'perf list' output, right?
+
+Moreover it actually does not matter whats in value 'param2=HERE',
+because it's not used in the config code at all apart from the
+'perf list' display processing.
+
+So when we discussed the '$' name way, I thought it'd be like:
+
+in /sys/bus/event_source/devices/pmu/events/event_name you have:
+  param2=$foo,bar=1,param1=$baz
+
+and on command line you'd use:
+  pmu/event_name,foo=0x1,bar=0x4/
+
+to assign directly to the $var, which would justify the $var
+syntax I think..
+
+anyway we could assign directly to the param term name as you do,
+but I think we just need to mark the term as parametrized, like:
+
+in /sys/bus/event_source/devices/pmu/events/event_name you have:
+  param2=?,bar=1,param1=?
+
+and on command line you'd use:
+  pmu/event_name,param2=0x1,param1=0x4/
+
+while the config code would check that the param substitution is
+done only for terms with '?' in value, like 'param2=?' and not
+for all PARSE_EVENTS__TERM_TYPE_STR type terms (as of now)
+
+thanks,
+jirka
