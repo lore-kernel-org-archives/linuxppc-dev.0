@@ -1,30 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D2B551A0CC1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 16:54:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BFF71A114C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 16:55:52 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 4 Dec 2014 11:24:56 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4C679E0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 11:25:22 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB45t4fb58982494
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 11:25:04 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB45soEK004660
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 11:24:51 +0530
+ Thu, 4 Dec 2014 15:55:51 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C9D692CE8076
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 16:55:47 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB45tW3M35979404
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 16:55:40 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB45tEwL014827
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 16:55:15 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linux-pci@vger.kernel.org
-Subject: [PATCH v2 0/5] PCI Hotplug Driver for PowerPC PowerNV
-Date: Thu,  4 Dec 2014 16:54:43 +1100
-Message-Id: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 4/5] powerpc/powernv: Functions to retrieve PCI slot status
+Date: Thu,  4 Dec 2014 16:54:47 +1100
+Message-Id: <1417672488-27341-5-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,117 +37,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches depends on the OPAL firmware changes. If the firmware
-doesn't have the changes, PCI hotplug slots won't be populated properly.
-Other than that, no more problems found.
+The patch exports two functions, which base on corresponding OPAL
+APIs to retrieve PCI slot status. Those functions are going to be
+used by PCI hotplug module in subsequent patches:
 
-A new driver "powernv-php.ko" is introduced by the patchset to support
-PCI hotplug for PowerNV platform. The device tree is scanned when the
-driver is loaded. If any PCI device node is equipped with property "ibm,
-slot-pluggable" and "ibm,reset-by-firmware", it's regarded as hotpluggable
-slot and the driver creates/registers slot for it. After that, the sysfs
-entries can be used to operate the slot.
+   pnv_pci_get_power_status()     opal_pci_get_power_status()
+   pnv_pci_get_presence_status()  opal_pci_get_presence_status()
 
-PATCH[1-4]: Necessary code changes to PPC PCI subsystem in order to
-            support PCI slots for PPC PowerNV platform.
-PATCH[5]  : powernv-php driver to support PCI hotplug for PowerNV
-            platform.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h                |  4 ++++
+ arch/powerpc/include/asm/pnv-pci.h             |  3 +++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  2 ++
+ arch/powerpc/platforms/powernv/pci.c           | 24 ++++++++++++++++++++++++
+ 4 files changed, 33 insertions(+)
 
-Testing
-=======
-# cat /proc/cpuinfo | grep -i powernv
-platform        : PowerNV
-machine         : PowerNV 8286-41A
-
-# pwd
-/sys/bus/pci/slots
-# ls
-C10  C11  C12  C14  C15  C6  C7  C8  C9
-
-# lspci -s 0003::.
-0003:00:00.0 PCI bridge: IBM Device 03dc
-0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
-0003:09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.2 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.3 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
-# pwd
-/sys/bus/pci/slots/C10
-# cat address
-0003:09:00
-# cat cur_bus_speed
-5.0 GT/s PCIe
-# cat max_bus_speed
-8.0 GT/s PCIe
-# cat power
-1
-# echo 0 > power
-# lspci -s 0003::.
-0003:00:00.0 PCI bridge: IBM Device 03dc
-0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
-0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
-# echo 1 > power
-# lspci -s 0003::.
-0003:00:00.0 PCI bridge: IBM Device 03dc
-0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
-0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
-0003:09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.2 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:09:00.3 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
-0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
-
-Changelog
-=========
-v1 -> v2:
-        * Separate powernv-php driver to support PCI hotplug for
-	  PowerNV platform.
-	* Check if the OPAL API supported by firmware before calling
-          into it, which is necessary for back-compability.
-        * Separate patch for factoring pnv_pci_poll().
-
-Gavin Shan (5):
-  powerpc/pci: Move pcibios_find_pci_bus() around
-  powerpc/pci: Don't scan empty slot
-  powerpc/powernv: Introduce pnv_pci_poll()
-  powerpc/powernv: Functions to retrieve PCI slot status
-  PCI/hotplug: PowerPC PowerNV PCI hotplug driver
-
- arch/powerpc/include/asm/opal.h                |   4 +
- arch/powerpc/include/asm/pnv-pci.h             |   3 +
- arch/powerpc/kernel/pci-hotplug.c              |  39 ++-
- arch/powerpc/platforms/powernv/eeh-ioda.c      |  28 +-
- arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
- arch/powerpc/platforms/powernv/pci.c           |  43 +++
- arch/powerpc/platforms/powernv/pci.h           |   1 +
- arch/powerpc/platforms/pseries/pci_dlpar.c     |  32 ---
- drivers/pci/hotplug/Kconfig                    |  12 +
- drivers/pci/hotplug/Makefile                   |   4 +
- drivers/pci/hotplug/powernv_php.c              | 126 ++++++++
- drivers/pci/hotplug/powernv_php.h              |  70 +++++
- drivers/pci/hotplug/powernv_php_slot.c         | 382 +++++++++++++++++++++++++
- 13 files changed, 687 insertions(+), 59 deletions(-)
- create mode 100644 drivers/pci/hotplug/powernv_php.c
- create mode 100644 drivers/pci/hotplug/powernv_php.h
- create mode 100644 drivers/pci/hotplug/powernv_php_slot.c
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index edd1993..c17fe80 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -154,6 +154,8 @@ struct opal_sg_list {
+ #define OPAL_HANDLE_HMI				98
+ #define OPAL_REGISTER_DUMP_REGION		101
+ #define OPAL_UNREGISTER_DUMP_REGION		102
++#define OPAL_PCI_GET_POWER_STATUS		110
++#define OPAL_PCI_GET_PRESENCE_STATUS		111
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -958,6 +960,8 @@ int64_t opal_handle_hmi(void);
+ int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
+ int64_t opal_unregister_dump_region(uint32_t id);
+ int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
++int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
++int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index f09a22f..fc73f72 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -13,6 +13,9 @@
+ #include <linux/pci.h>
+ #include <misc/cxl.h>
+ 
++extern int pnv_pci_get_power_status(uint64_t id, uint8_t *status);
++extern int pnv_pci_get_presence_status(uint64_t id, uint8_t *status);
++
+ int pnv_phb_to_cxl(struct pci_dev *dev);
+ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 			   unsigned int virq);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index feb549a..bc5be98 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -250,3 +250,5 @@ OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
+ OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
+ OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
+ OPAL_CALL(opal_pci_set_phb_cxl_mode,		OPAL_PCI_SET_PHB_CXL_MODE);
++OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
++OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 6dc8ea9..d3af9e5 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -64,6 +64,30 @@ int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
+ 	return rval ? -EIO : 0;
+ }
+ 
++int pnv_pci_get_power_status(uint64_t id, uint8_t *status)
++{
++	long rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_POWER_STATUS))
++		return -ENXIO;
++
++	rc = opal_pci_get_power_status(id, status);
++	return pnv_pci_poll(id, rc, status);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
++
++int pnv_pci_get_presence_status(uint64_t id, uint8_t *status)
++{
++	long rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_PRESENCE_STATUS))
++		return -ENXIO;
++
++	rc = opal_pci_get_presence_status(id, status);
++	return pnv_pci_poll(id, rc, status);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
++
+ #ifdef CONFIG_PCI_MSI
+ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
+-- 
+1.8.3.2
