@@ -3,19 +3,20 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 631EB1A0D0A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:34 +1100 (AEDT)
-Date: Thu, 4 Dec 2014 22:48:10 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 967B81A0D9D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:46 +1100 (AEDT)
+Date: Thu, 4 Dec 2014 22:48:29 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Jiada Wang <jiada_wang@mentor.com>
-Message-ID: <20141204224810.GI11764@sirena.org.uk>
+Message-ID: <20141204224829.GJ11764@sirena.org.uk>
 References: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
- <1417499707-3125-2-git-send-email-jiada_wang@mentor.com>
+ <1417499707-3125-3-git-send-email-jiada_wang@mentor.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="y96v7rNg6HAoELs5"
-In-Reply-To: <1417499707-3125-2-git-send-email-jiada_wang@mentor.com>
-Subject: Re: [PATCH v2 1/2] ASoC: fsl_ssi: fix error path in probe
+ protocol="application/pgp-signature"; boundary="MzdA25v054BPvyZa"
+In-Reply-To: <1417499707-3125-3-git-send-email-jiada_wang@mentor.com>
+Subject: Re: [PATCH v2 2/2] ASoC: fsl_ssi: use platform_get_irq instead of
+ irq_of_parse_and_map
 Cc: alsa-devel@alsa-project.org, lars@metafoo.de, arnd@arndb.de,
  lgirdwood@gmail.com, tiwai@suse.de, linuxppc-dev@lists.ozlabs.org,
  timur@tabi.org, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
@@ -30,30 +31,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---y96v7rNg6HAoELs5
+--MzdA25v054BPvyZa
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tue, Dec 02, 2014 at 02:55:06PM +0900, Jiada Wang wrote:
-> SSI component isn't unregistered if fsl_ssi_debugfs_create() fails
-> in probe phase.
+On Tue, Dec 02, 2014 at 02:55:07PM +0900, Jiada Wang wrote:
+> Use platform_get_irq as no mapping needs to be done.
+> By using platform_get_irq, driver can avoid to free IRQ manually
+> when SSI driver exits.
 
-applied, thanks.
+Fabio sent a version of this before yours so I applied his, I think the
+code is the same.
 
---y96v7rNg6HAoELs5
+--MzdA25v054BPvyZa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUgOSqAAoJECTWi3JdVIfQmD0H/2cab5BQ49PiKU7DBqR4h0b/
-3ieozrSYda0JOR2zNNCKB2LSzHI2heenBcd7cvCCM8rMIhHAsaGdBx/Df/CGMmmF
-BQLuEzpzpbMVXrBO4fhdT6gJhZ80/eBwmCIVQQwvN+6mbr8yNm6nW/9j3wZaxDiX
-iJSKtcqwjMXxTtBvZWKAFNXIPoIOu3loJpXkKyaz09eGm4tunpwzLzUysAZWViLE
-0Uel8ypnGkGrvk54k2csKDrOOrEpveWDtmP+vEX9KOQ+8zgRb5rBJWXC+UTSDrUD
-LMQ/RmMrfCl3Epzuor14zl1uf2iMlxmP0TmhsNW8v+crzkTOioa20NKELmrqZjs=
-=iPDz
+iQEcBAEBAgAGBQJUgOS8AAoJECTWi3JdVIfQ3M8H+wSnaBd8ZqS5scwBA4+nuvOt
+Nav08xc13F8K+uyfeIXk0a765aXfhLaMsJXesj8hotgxVb3SEoXOc/EMjvYEA8ol
+/+ZGTQISUibE1IA5c5N+eN7duVGEC0H5hM5DwL5VSfM9tNHFKWz1B0yrJwYOj7i0
+9wy9oZhymbTYb5jTtlIeRfkg0CUUM/LS8Um7PTjvsfxZEWodYDnZdSeGaWfimHV7
+2HeR1XqXTWx/2zTCnZx4pPWlyDNPkEjim7sN31jOMazUDzkxJ3XfhiCPARuDivnF
+Lskgc1qbUSnJm93S3rbgA8yZhCn8EQ+ybQu3Krk5Ix60fxWuJVG4N8a0yZa+Iyw=
+=a+Pl
 -----END PGP SIGNATURE-----
 
---y96v7rNg6HAoELs5--
+--MzdA25v054BPvyZa--
