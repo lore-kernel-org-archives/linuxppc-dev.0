@@ -1,23 +1,29 @@
-Return-Path: <dborkman@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E7921A0BFD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 04:03:10 +1100 (AEDT)
-Message-ID: <548093C2.9070909@redhat.com>
-Date: Thu, 04 Dec 2014 18:02:58 +0100
-From: Daniel Borkmann <dborkman@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BB601A01BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 04:46:47 +1100 (AEDT)
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DF21B1400E7
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 04:46:46 +1100 (AEDT)
+Date: Thu, 4 Dec 2014 18:46:42 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [RFC 2/2] sound: ppc: keywest: drop using attach
+ adapter
+Message-ID: <20141204174642.GA7944@katana>
+References: <1417711313-7257-1-git-send-email-wsa@the-dreams.de>
+ <1417711313-7257-3-git-send-email-wsa@the-dreams.de>
+ <s5hiohrpd0w.wl-tiwai@suse.de>
 MIME-Version: 1.0
-To: Sudeep Dutt <sudeep.dutt@intel.com>
-Subject: Re: ppc64 and Documentation/mic/mpssd/mpssd.c issues
-References: <54806490.6080303@redhat.com>
- <45C67EF7794AF747A87A45C9E1CC1B97926A6AFD@ORSMSX105.amr.corp.intel.com>
- <1417712272.88385.4.camel@localhost>
-In-Reply-To: <1417712272.88385.4.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "Dixit, Ashutosh" <ashutosh.dixit@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Yokoyama,
- Caz" <caz.yokoyama@intel.com>, Peter Foley <pefoley2@pefoley.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
+In-Reply-To: <s5hiohrpd0w.wl-tiwai@suse.de>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +33,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/04/2014 05:57 PM, Sudeep Dutt wrote:
-> On Thu, 2014-12-04 at 08:48 -0800, Yokoyama, Caz wrote:
->> Thank you for the report.
->> Have you tried to compile on x86_64? Which rhel do you use? Rhel6.X?
->> MIC card is expected to work with x86_64 host, not with ppc64. We have never compiled on ppc host while our primary development platform was rhel6.X.
 
-Yep, I was using RHEL6 on ppc64 by chance to build an upstream kernel.
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You might want to fix the Kconfig entry then to limit this to x86_64 only. ;)
 
-Thanks,
-Daniel
+> > +
+> > +	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
+> > +	while (adap) {
+> > +		err =3D keywest_attach_adapter(adap);
+> > +		if (!err)
+> > +			break;
+> > +		i2c_put_adapter(adap);
+> > +		adap =3D i2c_get_adapter(++i);
+> > +	}
+> > +
+> >  	return 0;
+>=20
+> What if adap is NULL in the last while loop?  Isn't it supposed to
+> return an error?
 
-> I am adding Peter Foley since he enabled the mpssd build by default
-> recently with commit adb19fb. Peter, is there a way to enable the mpssd
-> build only for x86_64?
->
-> Thanks,
-> Sudeep Dutt
->
->> Line 92 is the first use of htole16 and MIC_VRING_ENTRIES. Is there any change on them?
->>
->> Thank you.
->> -caz, Caz.Yokoyama@intel.com, yokoyama@member.fsf.org
->>
->>
->> -----Original Message-----
->> From: Daniel Borkmann [mailto:dborkman@redhat.com]
->> Sent: Thursday, December 04, 2014 5:42 AM
->> To: Yokoyama, Caz
->> Cc: benh@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org
->> Subject: ppc64 and Documentation/mic/mpssd/mpssd.c issues
->>
->> Hi Caz,
->>
->> I think commit ...
->>
->> commit 8d49751580db804a02caf6a5b7cebe2ff26c0d7e
->> Author: Caz Yokoyama <Caz.Yokoyama@intel.com>
->> Date:   Thu Sep 5 16:42:39 2013 -0700
->>
->>       Sample Implementation of Intel MIC User Space Daemon.
->>
->> ... actually triggers a build error on my default config
->> ppc64 (I'm using net-next tree):
->>
->>     HOSTCC  Documentation/mic/mpssd/mpssd.o
->> Documentation/mic/mpssd/mpssd.c:93: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:96: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:113: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:116: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:119: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:146: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:149: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:151: error: braced-group within expression allowed only inside a function
->> Documentation/mic/mpssd/mpssd.c:152: error: braced-group within expression allowed only inside a function
->> make[3]: *** [Documentation/mic/mpssd/mpssd.o] Error 1
->> make[2]: *** [Documentation/mic/mpssd] Error 2
->> make[1]: *** [Documentation/mic] Error 2
->> make: *** [vmlinux] Error 2
->>
->> gcc --version
->> gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-11)
->>
->> Cheers,
->> Daniel
->
->
+True, we probably should have something like
+
+	return adap ? 0 : -ENODEV;
+
+Thanks!
+
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUgJ4BAAoJEBQN5MwUoCm2DcYP/iXD/LXZnNZdGJK9LJLFk46C
+9o07m4srk91m4GeJJw7pmiF8y8BhEHtwNZfEFokXuOhLHczMHslyzspOJH/rGjFA
+MVPIUX1/apojiAjUj2rxxqtfDUorOQ3WR0pwlZatTwQYV7xRnH1jqC5o+PXYOyfL
+RtAhmEmqUHYLgJSDtRoeqBPYEC8rvWl1ylGZmzURQ7Pwe6Em+lqDk1rFwfSYiOCK
+Wi7dOP9Ra+aVKWWrHQ1yyD2c0cliOEV33s4UMLjYA7ZtvbldtqwR7neUkpBJhbQY
+axCjuK+/AvZvKplnSEHUrnkFM1pWqEmP9SSI1b3EXK+DUKwe+DpghjuDjF36tXRy
+jKfJnocFzFhgBzKEspWZ9CA5nd+nmB/StoC5XHSrh2QiZgB/SFs/tITEs5BsEccC
+Ae1qypm2YlO/646kXvkeMmceobIai+t6KlhVPoLUgomjwhVVwkZlg806Ma6Z1GZw
+QrbdLRk6rxeNoxgrpYoQmz0bbfu+eGPdtwEPdmF/kXiNhvdPJ+Ll04Yl6HJIF/Qo
+D6Q4j7WDpTjjO6ay6uBocPJlZTM2izMwNP7ikmWSp/behold/BnFVB6CvrOmZPEX
+eRA2nItjKCBItIMmPsxhXJTJ0f3ZGqpFb53yWH1LnLicK5RyN3/1gW4nzHHCVgzn
+/w1YkBdn3r/uu0+nIZPS
+=Fcnn
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--
