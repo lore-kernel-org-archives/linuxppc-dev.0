@@ -1,30 +1,38 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CD031A011D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 17:07:02 +1100 (AEDT)
-Received: by mail-pd0-f172.google.com with SMTP id y13so17006350pdi.17
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Dec 2014 22:07:00 -0800 (PST)
-Date: Thu, 4 Dec 2014 14:06:52 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
- warning"
-Message-ID: <20141204060652.GC14597@pek-khao-d1.corp.ad.wrs.com>
-References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
- <1417596833-31456-2-git-send-email-haokexin@gmail.com>
- <1417665891.15957.238.camel@freescale.com>
- <20141204043816.GB14597@pek-khao-d1.corp.ad.wrs.com>
- <1417668384.15957.240.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C6BB1A0001
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 18:21:25 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 4 Dec 2014 17:21:24 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A43623578072
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Dec 2014 18:21:21 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB47LKVl35127514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 18:21:21 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB47LKWP023700
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Dec 2014 18:21:20 +1100
+Date: Thu, 4 Dec 2014 15:21:18 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/pci: remove pci device on a bus in reverse order
+Message-ID: <20141204072117.GA9978@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1417663477-9124-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20141204054035.C3DAC1400E9@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="V88s5gaDVPzZ0KCq"
-In-Reply-To: <1417668384.15957.240.camel@freescale.com>
-Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
- Yuantian Tang <Yuantian.Tang@freescale.com>,
- Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141204054035.C3DAC1400E9@ozlabs.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Dec 04, 2014 at 04:40:35PM +1100, Michael Ellerman wrote:
+>On Thu, 2014-04-12 at 03:24:37 UTC, Wei Yang wrote:
+>> As in commit ac205b7b (PCI: make sriov work with hotplug remove) indicates,
+>> when removing pci devices on a bus which has VFs, we need to remove them in
+>> the reverse order.
+>> 
+>> This patch applies this pattern on the hotplug remove path on powerpc arch.
+>
+>So is this is a bug fix?
 
---V88s5gaDVPzZ0KCq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It hasn't trigger a bug yet. I found this issue during the code reading. When
+VFs are enabled and try to remove a bus with VFs, it will face a problem. So I
+port the change in commit ac205b7b here.
 
-On Wed, Dec 03, 2014 at 10:46:24PM -0600, Scott Wood wrote:
-> Since only this first patch is a critical bugfix, and there's no
-> arch/powerpc content in that patch, I think it should go via Mike's tree
-> if it's to go in for 3.18 (if it's not already too late).  Or, to keep
-> things simple given the dependency of the following patches, we could
-> batch them all together for -next and add a # 3.18 stable request.
+>
+>Where/how have you tested this?
 
-We don't need to explicitly add a #3.18 stable request in this case. As I know,
-we only need to indicate the first version which is affected by the bug fixed by
-this commit in the cc tag. This would imply that the applicable stable kernel
-version rang should be from 3.17 to the previous version of the kernel which
-finally merge this commit.
+I have tested after change on Power8, the EEH hotplug path works fine for PFs
+now. Will test this when EEH for VFs are ready.
 
-Thanks,
-Kevin
+Suggest me to keep it untill EEH for VFs are ready?
 
---V88s5gaDVPzZ0KCq
-Content-Type: application/pgp-signature
+>
+>cheers
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUf/n8AAoJEJNY7TDerrFxiL4IAJ/Lm2e5cnp6EKqtMkuuV5PE
-5iEsC6ZUTpf8ZFnIJZrjJ3GiLPowooFIX3C8qM7p7hVQOEdpAoEPkfomDNVswmHY
-89NO1xVPNXbAtOjl4b8857PpG1vN8ddF2EYvyCzqrQWozwq1Jdn5KxARjqy5i0ey
-bRlBi7QM/N8uMFOO457dPXjF8BznZ4nRS4s7NGg+WnnoXJLwRAiVfLhu0JTj+cFZ
-NfKjDTtzej+fUHy37TvtpYEoxZ/IaNztYQ5c7DQB/p3uPTZ7FkFyUXDX0cOjKWJp
-FrM04ofle8LW29d+1ixjhILEZP2Imf14bpjV7Qml5iPsErSebSIFMZGVXhzSecg=
-=dJG6
------END PGP SIGNATURE-----
-
---V88s5gaDVPzZ0KCq--
+-- 
+Richard Yang
+Help you, Help me
