@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 8B4D31A0BBF
+ by lists.ozlabs.org (Postfix) with ESMTP id 8F4121A0BC3
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 22:20:28 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH] powerpc32: fix warning from include/linux/mm.h
-Message-Id: <20141205112020.640FA1A5D4F@localhost.localdomain>
-Date: Fri,  5 Dec 2014 12:20:20 +0100 (CET)
+Subject: [PATCH] powerpc32: fix warning from include/asm-generic/termios-base.h
+Message-Id: <20141205112025.330971A5D4F@localhost.localdomain>
+Date: Fri,  5 Dec 2014 12:20:25 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,29 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-include/linux/mm.h: In function 'is_vmalloc_addr':
-include/linux/mm.h:367:14: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
-  return addr >= VMALLOC_START && addr < VMALLOC_END;
-              ^
+When size is equal to 1, the test is always true so lets eliminate both 0 and 1
+at first.
+
+include/asm-generic/termios-base.h: In function 'user_termio_to_kernel_termios':
+include/asm-generic/termios-base.h:35:2: warning: comparison of unsigned expression >= 0 is always true [-Wtype-limits]
+  if (get_user(termios->c_line, &termio->c_line) < 0)
+  ^
+include/asm-generic/termios-base.h: In function 'kernel_termios_to_user_termio':
+include/asm-generic/termios-base.h:57:6: warning: comparison of unsigned expression >= 0 is always true [-Wtype-limits]
+      put_user(termios->c_line,  &termio->c_line) < 0 ||
+      ^
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/include/asm/pgtable-ppc32.h | 2 +-
+ arch/powerpc/include/asm/uaccess.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index 234e07c..543bb8e 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -92,7 +92,7 @@ extern int icache_44x_need_flush;
-  * system.  This really does become a problem for machines with good amounts
-  * of RAM.  -- Cort
-  */
--#define VMALLOC_OFFSET (0x1000000) /* 16M */
-+#define VMALLOC_OFFSET (0x1000000U) /* 16M */
- #ifdef PPC_PIN_SIZE
- #define VMALLOC_START (((_ALIGN((long)high_memory, PPC_PIN_SIZE) + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
- #else
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 9485b43..f3028d2 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -54,7 +54,7 @@
+ 
+ #define __access_ok(addr, size, segment)	\
+ 	(((addr) <= (segment).seg) &&		\
+-	 (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
++	 (((size) <= 1) || (((size) - 1) <= ((segment).seg - (addr)))))
+ 
+ #endif
+ 
 -- 
 2.1.0
