@@ -1,36 +1,28 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
- [IPv6:2607:f8b0:4001:c05::230])
+Return-Path: <dev@codyps.com>
+Received: from mail-lb0-x235.google.com (mail-lb0-x235.google.com
+ [IPv6:2a00:1450:4010:c04::235])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3216C1A0BCC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 06:54:03 +1100 (AEDT)
-Received: by mail-ig0-f176.google.com with SMTP id l13so1475086iga.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2014 11:54:01 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CA5A1A0C46
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 10:05:32 +1100 (AEDT)
+Received: by mail-lb0-f181.google.com with SMTP id l4so1359882lbv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2014 15:05:26 -0800 (PST)
 MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <m3iohq7yem.fsf@adixit-yct.ra.intel.com>
-References: <25c04eb72c621fc9bdf0aae25782ff5bad5a4b97.1417728278.git.ashutosh.dixit@intel.com>
- <CALZtONBUDyN7OOMV9ziDXMhFN9+bOcsYvJ0an_7T0VV0Hz+8WQ@mail.gmail.com>
- <m3iohq7yem.fsf@adixit-yct.ra.intel.com>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Fri, 5 Dec 2014 14:53:40 -0500
-Message-ID: <CALZtONA2uk7ZN=f5S-DnmcOwhqtzLXmppk48YqfgjwA+vQuhtw@mail.gmail.com>
-Subject: Re: [PATCH linux-next] Documentation: Build mic/mpssd only for x86_64
-To: Ashutosh Dixit <ashutosh.dixit@intel.com>
+In-Reply-To: <20141204124422.GA4195@krava.brq.redhat.com>
+References: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1417572578-9051-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20141204124422.GA4195@krava.brq.redhat.com>
+Date: Fri, 5 Dec 2014 18:05:26 -0500
+Message-ID: <CAPoQQ-1m9oRQ7wLfRHFNNZyw7fvCoMa_DX7msP2QsY_i2QyHug@mail.gmail.com>
+Subject: Re: [PATCH v5 1/4] tools/perf: support parsing parameterized events
+From: Cody P Schafer <dev@codyps.com>
+To: Jiri Olsa <jolsa@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: Jonathan Corbet <corbet@lwn.net>, Peter Foley <pefoley2@pefoley.com>,
- Siva Yerramreddy <yshivakrishna@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
- Randy Dunlap <rdunlap@infradead.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "Dutt,
- Sudeep" <sudeep.dutt@intel.com>, "Yokoyama, Caz" <caz.yokoyama@intel.com>,
- Daniel Borkmann <dborkman@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rao,
- Nikhil" <nikhil.rao@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jennings <sjennings@variantweb.net>,
- linux-kernel <linux-kernel@vger.kernel.org>, "Chandramouli,
- Dasaratharaman" <dasaratharaman.chandramouli@intel.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 5, 2014 at 1:18 PM, Ashutosh Dixit <ashutosh.dixit@intel.com> wrote:
-> On Thu, Dec 04 2014 at 07:27:06 PM, Dan Streetman <ddstreet@ieee.org> wrote:
->> On Thu, Dec 4, 2014 at 4:27 PM, Ashutosh Dixit <ashutosh.dixit@intel.com> wrote:
->>> mic/mpssd along with MIC drivers are currently only usable on
->>> x86_64. So build mic/mpssd only for x86_64 to avoid build breaks on
->>> big-endian systems.
+On Thu, Dec 4, 2014 at 7:44 AM, Jiri Olsa <jolsa@redhat.com> wrote:
+> On Tue, Dec 02, 2014 at 06:09:35PM -0800, Sukadev Bhattiprolu wrote:
+>> From: Cody P Schafer <cody@linux.vnet.ibm.com>
 >>
->> Only building for x86_64 is fine, but in that case what's the point of
->> leaving the htole16() et. al. functions in mpssd.c?  Shouldn't they be
->> removed?
+>> Enable event specification like:
+>>
+>>       pmu/event_name,param1=0x1,param2=0x4/
+>>
+>> Assuming that
+>>
+>>       /sys/bus/event_source/devices/pmu/events/event_name
+>>
+>> Contains something like
+>>
+>>       param2=$foo,bar=1,param1=$baz
 >
-> I am hoping that once glibc is fixed we can remove this limitation on
-> building only for x86_64, so I'd rather htole16() et. al. stayed.
+> oops.. sorry to be PITA on this one.. I might have missed something
+> in the previous discussion but I guess I might have finally some
+> opinion on this ;-)
+>
+> here's how I think your patchset works:
+>
+> in /sys/bus/event_source/devices/pmu/events/event_name you can actually have:
+>
+>    param2=foo,bar=1,param1=baz
+>
+> notice no '$', thats what you add later in 'perf list' output, right?
+>
+> Moreover it actually does not matter whats in value 'param2=HERE',
+> because it's not used in the config code at all apart from the
+> 'perf list' display processing.
+>
+> So when we discussed the '$' name way, I thought it'd be like:
+>
+> in /sys/bus/event_source/devices/pmu/events/event_name you have:
+>   param2=$foo,bar=1,param1=$baz
+>
+> and on command line you'd use:
+>   pmu/event_name,foo=0x1,bar=0x4/
+>
+> to assign directly to the $var, which would justify the $var
+> syntax I think..
+>
 
-FYI, the bug I opened with glibc:
-https://sourceware.org/bugzilla/show_bug.cgi?id=17679
+Agreed, what you've described above sounds like a good idea.
 
-was rejected because Andreas states "C does not allow function calls
-in file scope."  The suggestion was made to try to fix gcc, but
-honestly I don't have the time (or energy) to push for a gcc change
-just for this. :-)
+Compared to monopolizing all strings (which is what I did when
+initialy writing this), using a '$' prefix would allow less pain when
+some events suddenly need non-integer parameters.
 
-I do think it's too bad that glibc hto* functions don't work in file
-scope (i.e. with static/global var initialization) for constant values
-(using them with variables is different, which is why
-__bswap_constant_* works in file scope but __bswap_* doesn't), since
-it's simply a 2-step process that's entirely doable by the
-preprocessor and/or compiler; just check if target endianness matches
-desired endianness, and if not the compiler does a simple byte swap of
-the constant value.
+> anyway we could assign directly to the param term name as you do,
+> but I think we just need to mark the term as parametrized, like:
+>
+> in /sys/bus/event_source/devices/pmu/events/event_name you have:
+>   param2=?,bar=1,param1=?
+>
+> and on command line you'd use:
+>   pmu/event_name,param2=0x1,param1=0x4/
+>
+> while the config code would check that the param substitution is
+> done only for terms with '?' in value, like 'param2=?' and not
+> for all PARSE_EVENTS__TERM_TYPE_STR type terms (as of now)
 
-Anyway, I doubt glibc and/or gcc will be updated anytime soon to allow this.
+I prefer the `foo=0x1` as mentioned previously: it makes the user
+interface much less painful as we can have event-specific names for
+register/hcall fields.
 
->  As I
-> said earlier, I'm fine with your patch too, but restricting the build
-> for x86_64 seems to be the smallest patch which provides an acceptable
-> solution.
+I'm pretty sure the code used to do this, not sure when it was removed
+(haven't been following this patchset closely).
 
-Fine with me too.  It'll get big-endian building again.
+That said: I haven't fiddled with this code in a while (it's Suka's at
+this point), and there might be arguments the other way on both of
+those.
