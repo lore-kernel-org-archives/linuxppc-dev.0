@@ -1,26 +1,28 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0141.outbound.protection.outlook.com [65.55.169.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 967B81A0D9D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 09:48:46 +1100 (AEDT)
-Date: Thu, 4 Dec 2014 22:48:29 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Jiada Wang <jiada_wang@mentor.com>
-Message-ID: <20141204224829.GJ11764@sirena.org.uk>
-References: <1417499707-3125-1-git-send-email-jiada_wang@mentor.com>
- <1417499707-3125-3-git-send-email-jiada_wang@mentor.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DD031A0C90
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 12:10:32 +1100 (AEDT)
+Message-ID: <1417741817.334.7.camel@freescale.com>
+Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
+ warning"
+From: Scott Wood <scottwood@freescale.com>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Thu, 4 Dec 2014 19:10:17 -0600
+In-Reply-To: <20141204060652.GC14597@pek-khao-d1.corp.ad.wrs.com>
+References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
+ <1417596833-31456-2-git-send-email-haokexin@gmail.com>
+ <1417665891.15957.238.camel@freescale.com>
+ <20141204043816.GB14597@pek-khao-d1.corp.ad.wrs.com>
+ <1417668384.15957.240.camel@freescale.com>
+ <20141204060652.GC14597@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="MzdA25v054BPvyZa"
-In-Reply-To: <1417499707-3125-3-git-send-email-jiada_wang@mentor.com>
-Subject: Re: [PATCH v2 2/2] ASoC: fsl_ssi: use platform_get_irq instead of
- irq_of_parse_and_map
-Cc: alsa-devel@alsa-project.org, lars@metafoo.de, arnd@arndb.de,
- lgirdwood@gmail.com, tiwai@suse.de, linuxppc-dev@lists.ozlabs.org,
- timur@tabi.org, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
- Li.Xiubo@freescale.com, mpa@pengutronix.de, festevam@gmail.com
+Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
+ Yuantian Tang <Yuantian.Tang@freescale.com>,
+ Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,33 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2014-12-04 at 14:06 +0800, Kevin Hao wrote:
+> On Wed, Dec 03, 2014 at 10:46:24PM -0600, Scott Wood wrote:
+> > Since only this first patch is a critical bugfix, and there's no
+> > arch/powerpc content in that patch, I think it should go via Mike's tree
+> > if it's to go in for 3.18 (if it's not already too late).  Or, to keep
+> > things simple given the dependency of the following patches, we could
+> > batch them all together for -next and add a # 3.18 stable request.
+> 
+> We don't need to explicitly add a #3.18 stable request in this case. As I know,
+> we only need to indicate the first version which is affected by the bug fixed by
+> this commit in the cc tag. This would imply that the applicable stable kernel
+> version rang should be from 3.17 to the previous version of the kernel which
+> finally merge this commit.
 
---MzdA25v054BPvyZa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+OK.
 
-On Tue, Dec 02, 2014 at 02:55:07PM +0900, Jiada Wang wrote:
-> Use platform_get_irq as no mapping needs to be done.
-> By using platform_get_irq, driver can avoid to free IRQ manually
-> when SSI driver exits.
-
-Fabio sent a version of this before yours so I applied his, I think the
-code is the same.
-
---MzdA25v054BPvyZa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUgOS8AAoJECTWi3JdVIfQ3M8H+wSnaBd8ZqS5scwBA4+nuvOt
-Nav08xc13F8K+uyfeIXk0a765aXfhLaMsJXesj8hotgxVb3SEoXOc/EMjvYEA8ol
-/+ZGTQISUibE1IA5c5N+eN7duVGEC0H5hM5DwL5VSfM9tNHFKWz1B0yrJwYOj7i0
-9wy9oZhymbTYb5jTtlIeRfkg0CUUM/LS8Um7PTjvsfxZEWodYDnZdSeGaWfimHV7
-2HeR1XqXTWx/2zTCnZx4pPWlyDNPkEjim7sN31jOMazUDzkxJ3XfhiCPARuDivnF
-Lskgc1qbUSnJm93S3rbgA8yZhCn8EQ+ybQu3Krk5Ix60fxWuJVG4N8a0yZa+Iyw=
-=a+Pl
------END PGP SIGNATURE-----
-
---MzdA25v054BPvyZa--
+-Scott
