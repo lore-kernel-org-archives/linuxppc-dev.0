@@ -1,24 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5B061A0264
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 14:52:15 +1100 (AEDT)
-Message-ID: <1417751519.334.9.camel@freescale.com>
-Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
- warning"
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 4 Dec 2014 21:51:59 -0600
-In-Reply-To: <1417596833-31456-2-git-send-email-haokexin@gmail.com>
-References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
- <1417596833-31456-2-git-send-email-haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE3961A00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 15:26:30 +1100 (AEDT)
+Message-ID: <1417753577.4741.52.camel@kernel.crashing.org>
+Subject: [PATCH v2] powerpc/powernv: Expose OPAL firmware symbol map
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Date: Fri, 05 Dec 2014 15:26:17 +1100
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Mike Turquette <mturquette@linaro.org>, Gerhard Sittig <gsi@denx.de>,
- Yuantian Tang <Yuantian.Tang@freescale.com>,
- Jingchang Lu <jingchang.lu@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ Anton Blanchard <anton@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,48 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-12-03 at 16:53 +0800, Kevin Hao wrote:
-> This reverts commit da788acb28386aa896224e784954bb73c99ff26c.
-> 
-> That commit tried to fix the section mismatch warning by moving the
-> ppc_corenet_clk_driver struct to init section. This is definitely wrong
-> because the kernel would free the memories occupied by this struct
-> after boot while this driver is still registered in the driver core.
-> The kernel would panic when accessing this driver struct.
-> 
-> Cc: stable@vger.kernel.org # 3.17
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> Acked-by: Michael Turquette <mturquette@linaro.org>
-> ---
-> v3: Cc stable and add ack.
-> 
-> v2: A new patch in v2.
-> 
->  drivers/clk/clk-ppc-corenet.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-> index b6e6c85507a5..0a47d6f49cd6 100644
-> --- a/drivers/clk/clk-ppc-corenet.c
-> +++ b/drivers/clk/clk-ppc-corenet.c
-> @@ -291,7 +291,7 @@ static const struct of_device_id ppc_clk_ids[] __initconst = {
->  	{}
->  };
->  
-> -static struct platform_driver ppc_corenet_clk_driver __initdata = {
-> +static struct platform_driver ppc_corenet_clk_driver = {
->  	.driver = {
->  		.name = "ppc_corenet_clock",
->  		.of_match_table = ppc_clk_ids,
+Newer versions of OPAL will provide this, so let's expose it to user
+space so tools like perf can use it to properly decode samples in
+firmware space.
 
-This patch is going to conflict with commit a4ae8f3b0f7ac6ab3 "clk: drop
-owner assignment from platform_drivers" in linux-next -- or rather,
-you've based this on that patch, but it's not in mpe's next branch, so I
-get a merge conflict and there'd be another merge conflict later on to
-get back to the newer base.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I really think this should go via the clock tree.  That's where the
-breakage was introduced in the first place...
+v2. Use memory_read_from_buffer()
 
--Scott
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 06d9076..98f50e8 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(opal_notifier_lock);
+ static uint64_t last_notified_mask = 0x0ul;
+ static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ static uint32_t opal_heartbeat;
++static void *opal_symmap;
++static uint64_t opal_symmap_size;
+ 
+ static void opal_reinit_cores(void)
+ {
+@@ -608,6 +610,40 @@ static int opal_sysfs_init(void)
+ 	return 0;
+ }
+ 
++static ssize_t symbol_map_read(struct file *fp, struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
++{
++	return memory_read_from_buffer(buf, count, &off,
++				       opal_symmap, opal_symmap_size);
++}
++
++static BIN_ATTR_RO(symbol_map, 0);
++
++static void opal_export_symmap(void)
++{
++	const __be64 *syms;
++	unsigned int size;
++	struct device_node *fw;
++	int rc;
++
++	fw = of_find_node_by_path("/ibm,opal/firmware");
++	if (!fw)
++		return;
++	syms = of_get_property(fw, "symbol-map", &size);
++	if (!syms || size != 2 * sizeof(__be64))
++		return;
++
++	opal_symmap = __va(be64_to_cpu(syms[0]));
++	opal_symmap_size = be64_to_cpu(syms[1]);
++
++	/* Setup attributes */
++	bin_attr_symbol_map.size = opal_symmap_size;
++	rc = sysfs_create_bin_file(opal_kobj, &bin_attr_symbol_map);
++	if (rc)
++		pr_warn("Error %d creating OPAL symbols file\n", rc);
++}
++
+ static void __init opal_dump_region_init(void)
+ {
+ 	void *addr;
+@@ -738,6 +774,8 @@ static int __init opal_init(void)
+ 	/* Create "opal" kobject under /sys/firmware */
+ 	rc = opal_sysfs_init();
+ 	if (rc == 0) {
++		/* Export symbol map to userspace */
++		opal_export_symmap();
+ 		/* Setup dump region interface */
+ 		opal_dump_region_init();
+ 		/* Setup error log interface */
