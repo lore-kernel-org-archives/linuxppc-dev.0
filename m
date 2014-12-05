@@ -1,38 +1,18 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C0F71A0CD0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 12:40:41 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 5 Dec 2014 11:40:39 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8E1732BB0072
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 12:40:36 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB51eah842467366
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 12:40:36 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB51eZRU015774
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 12:40:35 +1100
-Date: Fri, 5 Dec 2014 09:40:34 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/pci: remove pci device on a bus in reverse order
-Message-ID: <20141205014033.GA8408@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1417663477-9124-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141204054035.C3DAC1400E9@ozlabs.org>
- <20141204072117.GA9978@richard> <20141204224813.GA8008@shangw>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141204224813.GA8008@shangw>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC6DD1A05BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 13:36:50 +1100 (AEDT)
+Message-ID: <1417746997.4741.46.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/powernv: Expose OPAL firmware symbol map
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Date: Fri, 05 Dec 2014 13:36:37 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ Anton Blanchard <anton@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,49 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 05, 2014 at 09:48:13AM +1100, Gavin Shan wrote:
->On Thu, Dec 04, 2014 at 03:21:18PM +0800, Wei Yang wrote:
->>On Thu, Dec 04, 2014 at 04:40:35PM +1100, Michael Ellerman wrote:
->>>On Thu, 2014-04-12 at 03:24:37 UTC, Wei Yang wrote:
->>>> As in commit ac205b7b (PCI: make sriov work with hotplug remove) indicates,
->>>> when removing pci devices on a bus which has VFs, we need to remove them in
->>>> the reverse order.
->>>> 
->>>> This patch applies this pattern on the hotplug remove path on powerpc arch.
->>>
->>>So is this is a bug fix?
->>
->>It hasn't trigger a bug yet. I found this issue during the code reading. When
->>VFs are enabled and try to remove a bus with VFs, it will face a problem. So I
->>port the change in commit ac205b7b here.
->>
->>>
->>>Where/how have you tested this?
->>
->>I have tested after change on Power8, the EEH hotplug path works fine for PFs
->>now. Will test this when EEH for VFs are ready.
->>
->>Suggest me to keep it untill EEH for VFs are ready?
->>
->
->Please keep it and resend it (with typo fixed as I pointed) after SRIOV patchset
->gets merged. If SRIOV isn't enabled, we don't need the code change.
->
->By the way, it's something related to EEH for PFs. When PF and its VFs seat on
->same PCI bus, we should remove VFs before putting PF offline in the reversed
->order as you did in your code change. Otherwise, PF is put into offline and
->its driver disables VFs. We try redoing the removal for VFs in hotplug path,
->which would cause race condition. If VFs aren't existing, until your SRIOV
->patchset is merged, we don't have this problem. Please correct me if I
->understood things wrongly.
->
+Newer versions of OPAL will provide this, so let's expose it to user
+space so tools like perf can use it to properly decode samples in
+firmware space.
 
-Current code is fine until VF is introduced. Yes, your understanding is
-correct.
-
->Thanks,
->Gavin
-
--- 
-Richard Yang
-Help you, Help me
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 06d9076..6427959 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(opal_notifier_lock);
+ static uint64_t last_notified_mask = 0x0ul;
+ static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ static uint32_t opal_heartbeat;
++static void *opal_symmap;
++static uint64_t opal_symmap_size;
+ 
+ static void opal_reinit_cores(void)
+ {
+@@ -604,10 +606,49 @@ static int opal_sysfs_init(void)
+ 		pr_warn("kobject_create_and_add opal failed\n");
+ 		return -ENOMEM;
+ 	}
+-
+ 	return 0;
+ }
+ 
++static ssize_t symbol_map_read(struct file *fp, struct kobject *kobj,
++			       struct bin_attribute *bin_attr,
++			       char *buf, loff_t off, size_t count)
++{
++	ssize_t chunk;
++
++	if (off >= opal_symmap_size)
++		return 0;
++	chunk = min_t(ssize_t, opal_symmap_size - off, count);
++	memcpy(buf, opal_symmap + off, chunk);
++
++	return chunk;
++}
++
++static BIN_ATTR_RO(symbol_map, 0);
++
++static void opal_export_symmap(void)
++{
++	const __be64 *syms;
++	unsigned int size;
++	struct device_node *fw;
++	int rc;
++
++	fw = of_find_node_by_path("/ibm,opal/firmware");
++	if (!fw)
++		return;
++	syms = of_get_property(fw, "symbol-map", &size);
++	if (!syms || size != 2 * sizeof(__be64))
++		return;
++
++	opal_symmap = __va(be64_to_cpu(syms[0]));
++	opal_symmap_size = be64_to_cpu(syms[1]);
++
++	/* Setup attributes */
++	bin_attr_symbol_map.size = opal_symmap_size;
++	rc = sysfs_create_bin_file(opal_kobj, &bin_attr_symbol_map);
++	if (rc)
++		pr_warn("Error %d creating OPAL symbols file\n", rc);
++}
++
+ static void __init opal_dump_region_init(void)
+ {
+ 	void *addr;
+@@ -738,6 +779,8 @@ static int __init opal_init(void)
+ 	/* Create "opal" kobject under /sys/firmware */
+ 	rc = opal_sysfs_init();
+ 	if (rc == 0) {
++		/* Export symbol map to userspace */
++		opal_export_symmap();
+ 		/* Setup dump region interface */
+ 		opal_dump_region_init();
+ 		/* Setup error log interface */
