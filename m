@@ -1,16 +1,16 @@
 Return-Path: <ashutosh.dixit@intel.com>
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 54FCE1A0BCC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 05:09:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id F2AF81A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 05:11:42 +1100 (AEDT)
 From: Ashutosh Dixit <ashutosh.dixit@intel.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Subject: Re: [PATCH linux-next] Documentation: Build mic/mpssd only for x86_64
 References: <25c04eb72c621fc9bdf0aae25782ff5bad5a4b97.1417728278.git.ashutosh.dixit@intel.com>
  <20141205111818.551a870f@lwn.net>
-Date: Fri, 05 Dec 2014 10:26:46 -0800
+Date: Fri, 05 Dec 2014 10:29:35 -0800
 In-Reply-To: <20141205111818.551a870f@lwn.net> (Jonathan Corbet's message of
  "Fri, 5 Dec 2014 09:18:18 -0700")
-Message-ID: <m3egse7y1l.fsf@adixit-yct.ra.intel.com>
+Message-ID: <m3a9327xww.fsf@adixit-yct.ra.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
