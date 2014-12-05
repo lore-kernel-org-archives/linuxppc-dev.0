@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 671E71A0CF0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 20:40:54 +1100 (AEDT)
-In-Reply-To: <1417753577.4741.52.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E7D2C1A011D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 20:42:48 +1100 (AEDT)
+In-Reply-To: <1417767462-11584-1-git-send-email-alessio.bogani@elettra.eu>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ Scott Wood <scottwood@freescale.com>, Kumar Gala <galak@kernel.crashing.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2] powerpc/powernv: Expose OPAL firmware symbol map
-Message-Id: <20141205094054.4536E140120@ozlabs.org>
-Date: Fri,  5 Dec 2014 20:40:54 +1100 (AEDT)
-Cc: Anton Blanchard <anton@au1.ibm.com>
+Subject: Re: powerpc: refresh mpc85xx_defconfig using "make savedefconfig"
+Message-Id: <20141205094248.D5C9914011E@ozlabs.org>
+Date: Fri,  5 Dec 2014 20:42:48 +1100 (AEDT)
+Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-12 at 04:26:17 UTC, Benjamin Herrenschmidt wrote:
-> Newer versions of OPAL will provide this, so let's expose it to user
-> space so tools like perf can use it to properly decode samples in
-> firmware space.
-> 
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 06d9076..98f50e8 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(opal_notifier_lock);
->  static uint64_t last_notified_mask = 0x0ul;
->  static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
->  static uint32_t opal_heartbeat;
-> +static void *opal_symmap;
-> +static uint64_t opal_symmap_size;
+On Fri, 2014-05-12 at 08:17:42 UTC, Alessio Igor Bogani wrote:
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+>  arch/powerpc/configs/mpc85xx_defconfig | 57 +++++++---------------------------
+>  1 file changed, 12 insertions(+), 45 deletions(-)
 
-We shouldn't need these.
+Actually I was planning on doing this in bulk for all the powerpc defconfigs.
 
-The bin_attribute has a size (you set it), you just need to use it in
-symbol_map_read(). 
-
-And the attribute also has a private pointer, which you can use for
-opal_symmap.
-
-> @@ -608,6 +610,40 @@ static int opal_sysfs_init(void)
->  	return 0;
->  }
->  
-> +static ssize_t symbol_map_read(struct file *fp, struct kobject *kobj,
-> +			       struct bin_attribute *bin_attr,
-> +			       char *buf, loff_t off, size_t count)
-> +{
-> +	return memory_read_from_buffer(buf, count, &off,
-> +				       opal_symmap, opal_symmap_size);
-
-So this would be:
-
-	return memory_read_from_buffer(buf, count, &off,
-				       bin_attr->private, bin_attr->size);
-
-> +}
-> +
-> +static BIN_ATTR_RO(symbol_map, 0);
-> +
-> +static void opal_export_symmap(void)
-> +{
-> +	const __be64 *syms;
-> +	unsigned int size;
-> +	struct device_node *fw;
-> +	int rc;
-> +
-> +	fw = of_find_node_by_path("/ibm,opal/firmware");
-> +	if (!fw)
-> +		return;
-> +	syms = of_get_property(fw, "symbol-map", &size);
-> +	if (!syms || size != 2 * sizeof(__be64))
-> +		return;
-> +
-> +	opal_symmap = __va(be64_to_cpu(syms[0]));
-> +	opal_symmap_size = be64_to_cpu(syms[1]);
-
-I was going to tell you to use of_property_read_u64_index(), but it doesn't
-exist - we can add it one day and clean this up then.
-
-> +	/* Setup attributes */
-> +	bin_attr_symbol_map.size = opal_symmap_size;
-> +	rc = sysfs_create_bin_file(opal_kobj, &bin_attr_symbol_map);
-> +	if (rc)
-> +		pr_warn("Error %d creating OPAL symbols file\n", rc);
-
-Can you prefix it please, so:
-	pr_warn("opal: Error .."
-
-Or add to the very top of the file:
-
-#define pr_fmt(fmt)    "opal: " fmt
+Someone remind me to do it late next week once most of next has gone into
+Linus' tree.
 
 cheers
