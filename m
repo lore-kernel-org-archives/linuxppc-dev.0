@@ -1,25 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <hbathini@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C7C531A0447
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 15:52:59 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 088591A0BD2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 16:15:27 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 216A81400E7
- for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 15:52:58 +1100 (AEDT)
-Message-ID: <1417755148.4741.56.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/book3s: Fix partial invalidation of TLBs in MCE
- code.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 05 Dec 2014 15:52:28 +1100
-In-Reply-To: <20141205042616.17216.16015.stgit@mars>
-References: <20141205042616.17216.16015.stgit@mars>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id B5AEC1400E9
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 16:15:26 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 5 Dec 2014 15:15:25 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6B6AD2BB005B
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 16:15:23 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB55FFAf38797394
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Dec 2014 16:15:16 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB55FMpS015317
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Dec 2014 16:15:22 +1100
+Message-ID: <54813F5E.601@linux.vnet.ibm.com>
+Date: Fri, 05 Dec 2014 10:45:10 +0530
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [2/2] pstore: add pstore support on powernv
+References: <20141204053708.E24341400EA@ozlabs.org>
+In-Reply-To: <20141204053708.E24341400EA@ozlabs.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +44,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-12-05 at 10:01 +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> The existing MCE code calls flush_tlb hook with IS=0 (single page) resulting
-> partial invalidation of TLBs which is not right. This patch fixes that
-> by passing IS=0xc00 to invalidate whole TLB for successful recovery from
-> TLB and ERAT errors.
+On 12/04/2014 11:07 AM, Michael Ellerman wrote:
+> On Wed, 2014-03-12 at 11:03:15 UTC, Hari Bathini wrote:
+>> This patch extends pstore, a generic interface to platform dependent
+>> persistent storage, support for powernv  platform to capture certain
+>> useful information, during dying moments. Such support is already in
+>> place for  pseries platform.  This patch while adding pstore support
+>> for  powernv platform,  moves common code for pseries and powernv to
+>> arch/powerpc/kernel/nvram_64.c file.
+> Please move the common code first in a separate patch. Unless there's some
+> reason you absolutely can't do that.
 
-What does "TLBIEL_INVAL_SET" means in that context ? Invalidating a set
-isn't the same thing as invalidating the TLB ... and that makes no sense
-without passing the page address or set # as an argument anyway
+Sure, Michael. Let me make the changes as suggested and
+post the updated patch series.
 
-I still don't understand your flush_tlb() interface... it's arguments
-don't make sense
+Thanks
+Hari
 
-Ben.
-
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
-> Hi Michael,
-> 	This MCE fix patch is for stable.
-> 
->  arch/powerpc/kernel/mce_power.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index aa9aff3..b6f123a 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -79,7 +79,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
->  	}
->  	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
->  		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-> -			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-> +			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET);
->  		/* reset error bits */
->  		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
->  	}
-> @@ -110,7 +110,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
->  		break;
->  	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
->  		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
-> -			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-> +			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET);
->  			handled = 1;
->  		}
->  		break;
+> cheers
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
