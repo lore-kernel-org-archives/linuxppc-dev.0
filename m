@@ -1,18 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE3961A00B7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 15:26:30 +1100 (AEDT)
-Message-ID: <1417753577.4741.52.camel@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/powernv: Expose OPAL firmware symbol map
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
-Date: Fri, 05 Dec 2014 15:26:17 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Anton Blanchard <anton@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E970D1A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 15:31:21 +1100 (AEDT)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2FFFE1400D2
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 15:31:20 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 5 Dec 2014 10:01:18 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7A082125804B
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2014 10:01:35 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB54VSkd64684166
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Dec 2014 10:01:29 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB54VFVA023383
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Dec 2014 10:01:15 +0530
+Subject: [PATCH] powerpc/book3s: Fix partial invalidation of TLBs in MCE code.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 05 Dec 2014 10:01:15 +0530
+Message-ID: <20141205042616.17216.16015.stgit@mars>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Newer versions of OPAL will provide this, so let's expose it to user
-space so tools like perf can use it to properly decode samples in
-firmware space.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The existing MCE code calls flush_tlb hook with IS=0 (single page) resulting
+partial invalidation of TLBs which is not right. This patch fixes that
+by passing IS=0xc00 to invalidate whole TLB for successful recovery from
+TLB and ERAT errors.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
+Hi Michael,
+	This MCE fix patch is for stable.
 
-v2. Use memory_read_from_buffer()
+ arch/powerpc/kernel/mce_power.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 06d9076..98f50e8 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(opal_notifier_lock);
- static uint64_t last_notified_mask = 0x0ul;
- static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
- static uint32_t opal_heartbeat;
-+static void *opal_symmap;
-+static uint64_t opal_symmap_size;
- 
- static void opal_reinit_cores(void)
- {
-@@ -608,6 +610,40 @@ static int opal_sysfs_init(void)
- 	return 0;
- }
- 
-+static ssize_t symbol_map_read(struct file *fp, struct kobject *kobj,
-+			       struct bin_attribute *bin_attr,
-+			       char *buf, loff_t off, size_t count)
-+{
-+	return memory_read_from_buffer(buf, count, &off,
-+				       opal_symmap, opal_symmap_size);
-+}
-+
-+static BIN_ATTR_RO(symbol_map, 0);
-+
-+static void opal_export_symmap(void)
-+{
-+	const __be64 *syms;
-+	unsigned int size;
-+	struct device_node *fw;
-+	int rc;
-+
-+	fw = of_find_node_by_path("/ibm,opal/firmware");
-+	if (!fw)
-+		return;
-+	syms = of_get_property(fw, "symbol-map", &size);
-+	if (!syms || size != 2 * sizeof(__be64))
-+		return;
-+
-+	opal_symmap = __va(be64_to_cpu(syms[0]));
-+	opal_symmap_size = be64_to_cpu(syms[1]);
-+
-+	/* Setup attributes */
-+	bin_attr_symbol_map.size = opal_symmap_size;
-+	rc = sysfs_create_bin_file(opal_kobj, &bin_attr_symbol_map);
-+	if (rc)
-+		pr_warn("Error %d creating OPAL symbols file\n", rc);
-+}
-+
- static void __init opal_dump_region_init(void)
- {
- 	void *addr;
-@@ -738,6 +774,8 @@ static int __init opal_init(void)
- 	/* Create "opal" kobject under /sys/firmware */
- 	rc = opal_sysfs_init();
- 	if (rc == 0) {
-+		/* Export symbol map to userspace */
-+		opal_export_symmap();
- 		/* Setup dump region interface */
- 		opal_dump_region_init();
- 		/* Setup error log interface */
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index aa9aff3..b6f123a 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -79,7 +79,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
+ 	}
+ 	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
+ 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
+-			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
++			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET);
+ 		/* reset error bits */
+ 		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
+ 	}
+@@ -110,7 +110,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
+ 		break;
+ 	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
+ 		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
+-			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
++			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET);
+ 			handled = 1;
+ 		}
+ 		break;
