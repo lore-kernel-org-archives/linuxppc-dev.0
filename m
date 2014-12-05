@@ -1,29 +1,34 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50])
- by lists.ozlabs.org (Postfix) with ESMTP id 1B0511A0C59
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 00:53:46 +1100 (AEDT)
-Date: Fri, 5 Dec 2014 13:39:08 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] tick-broadcast: Register for hrtimer based broadcast as
- the default broadcast mode
-Message-ID: <20141205133908.GA21313@leverpostej>
-References: <20141205124756.25803.4988.stgit@preeti.in.ibm.com>
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F19DC1A0BCA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 02:13:44 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Fri, 5 Dec 2014 15:13:40 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id E3F951B08067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 15:13:56 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB5FDcOn46989380
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 15:13:38 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB5AATI2021852
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Dec 2014 05:10:30 -0500
+Subject: [PATCH 2 0/4] powerpc: don't mess with SMT at boot time
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 05 Dec 2014 16:13:36 +0100
+Message-ID: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141205124756.25803.4988.stgit@preeti.in.ibm.com>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
- Will Deacon <Will.Deacon@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "jingchang.lu@freescale.com" <jingchang.lu@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "fweisbec@gmail.com" <fweisbec@gmail.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,90 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Preeti,
+As requested by mpe, this series now covers both the smt-enabled
+kernel parameter and the ibm,smt-enabled property. The cleanup was
+split into 3 separate patches to ease review, but I guess they
+could be folded into a single patch as well.
 
-Moving this out of the architecture code looks good to me!
+---
 
-I have a couple of minor comments below.
+Greg Kurz (4):
+      powerpc: drop the ability to tweak SMT mode at boot time
+      powerpc: drop smt_enabled_at_boot
+      powerpc: drop smp_generic_cpu_bootable()
+      powerpc: drop the cpu_bootable hook
 
-On Fri, Dec 05, 2014 at 12:47:57PM +0000, Preeti U Murthy wrote:
-> Commit 5d1638acb9f62fa7 added a hrtimer based broadcast mode for those
-> platforms in which local timers stop when CPUs enter deep idle states. The
-> commit expected the platforms to register for this mode explicitly when they
-> lacked a better external device to wake up CPUs in deep idle. Given that
-> more platforms are beginning to use this mode, we can avoid the call to
-> set it up on every platform that requires it, by registering for the hrtimer
-> based broadcast mode in the core code before clock devices begin to get
-> initialized.
-> 
-> So if there exists a better broadcast device, it will overide the hrtimer
-> based one; else there is a backup mechanism when a wakeup device is required.
-> This commit also helps detect cases where the platform fails to register for
-> a broadcast device but invokes the help of one when entering deep idle states.
-> Currently we do not handle this situation at all and invoke the help of the
-> broadcast clock device without checking for its existence. Registering a default
-> broadcast mode will handle such buggy cases properly.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> 
->  arch/arm64/kernel/time.c   |    2 --
->  arch/powerpc/kernel/time.c |    1 -
->  kernel/time/timekeeping.c  |    4 ++++
->  3 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/time.c b/arch/arm64/kernel/time.c
-> index 1a7125c..47baaa8 100644
-> --- a/arch/arm64/kernel/time.c
-> +++ b/arch/arm64/kernel/time.c
-> @@ -70,8 +70,6 @@ void __init time_init(void)
->  	of_clk_init(NULL);
->  	clocksource_of_init();
->  
-> -	tick_setup_hrtimer_broadcast();
-> -
->  	arch_timer_rate = arch_timer_get_rate();
->  	if (!arch_timer_rate)
->  		panic("Unable to initialise architected timer.\n");
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 7505599..51433a8 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -942,7 +942,6 @@ void __init time_init(void)
->  	clocksource_init();
->  
->  	init_decrementer_clockevent();
-> -	tick_setup_hrtimer_broadcast();
->  }
->  
->  
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index ec1791f..6044a51 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -1016,6 +1016,10 @@ void __init timekeeping_init(void)
->  		boot.tv_sec = 0;
->  		boot.tv_nsec = 0;
->  	}
-> +	/* Register for hrtimer based broadcast as the default timekeeping
-> +	 * mode in deep idle states.
-> +	 */
 
-Nit: for code style this should have a newline after the '/*' (and we
-should probably have a newline before that anyway.
+ arch/powerpc/include/asm/smp.h       |    3 --
+ arch/powerpc/kernel/setup_64.c       |   61 +---------------------------------
+ arch/powerpc/kernel/smp.c            |   16 +--------
+ arch/powerpc/platforms/85xx/smp.c    |    1 -
+ arch/powerpc/platforms/cell/smp.c    |    1 -
+ arch/powerpc/platforms/powernv/smp.c |    1 -
+ arch/powerpc/platforms/pseries/smp.c |    1 -
+ 7 files changed, 2 insertions(+), 82 deletions(-)
 
-> +	tick_setup_hrtimer_broadcast();
-
-We register the generic dummy timer via an early_initcall, which keeps
-all the logic in the dummy timer driver. Are we able to do the same of
-the broadcast hrtimer? Or is there some ordering constraint we need to
-meet?
-
-Thanks,
-Mark.
-
->  
->  	raw_spin_lock_irqsave(&timekeeper_lock, flags);
->  	write_seqcount_begin(&tk_core.seq);
-> 
-> 
+--
+Greg
