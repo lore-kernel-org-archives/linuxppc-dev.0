@@ -1,35 +1,15 @@
 Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AEC71A0CE1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 19:11:03 +1100 (AEDT)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 9FF87440DAF_4816891B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 08:10:57 +0000 (GMT)
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 1E7CE43E066_4816891F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 08:10:57 +0000 (GMT)
-Received: by mail-wi0-f179.google.com with SMTP id ex7so544586wid.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2014 00:10:56 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1417724162.334.5.camel@freescale.com>
-References: <1417685009-1640-1-git-send-email-alessio.bogani@elettra.eu>
- <1417724162.334.5.camel@freescale.com>
-Date: Fri, 5 Dec 2014 09:10:56 +0100
-Message-ID: <CAPk1OjGNctTjMcUFtdKL_iOXt_ym11CXqc9eC9BbzywzE3VxQQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 1/1] powerpc/85xx: Add support for Emerson/Artesyn
- MVME2500.
+Received: from elettra.eu (m2.elettra.trieste.it [140.105.206.202])
+ by lists.ozlabs.org (Postfix) with ESMTP id 45F621A0C7D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Dec 2014 19:17:57 +1100 (AEDT)
 From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc: refresh mpc85xx_defconfig using "make savedefconfig"
+Date: Fri,  5 Dec 2014 09:17:42 +0100
+Message-Id: <1417767462-11584-1-git-send-email-alessio.bogani@elettra.eu>
+Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,51 +19,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+ arch/powerpc/configs/mpc85xx_defconfig | 57 +++++++---------------------------
+ 1 file changed, 12 insertions(+), 45 deletions(-)
 
-On 4 December 2014 at 21:16, Scott Wood <scottwood@freescale.com> wrote:
-> On Thu, 2014-12-04 at 10:23 +0100, Alessio Igor Bogani wrote:
->> +/include/ "fsl/pq3-mpic-message-B.dtsi"
->
-> The MPIC message include should be done in the SoC file -- it's not
-> board-specific.
->
-> For some reason I don't see this dtsi being included by anything
-> currently.
-
-For the moment I'll remove it.
-
->> @@ -80,33 +82,21 @@ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
->>  CONFIG_DEVTMPFS=y
->>  CONFIG_DEVTMPFS_MOUNT=y
->>  CONFIG_MTD=y
->> -CONFIG_MTD_OF_PARTS=y
->>  CONFIG_MTD_CMDLINE_PARTS=y
->> -CONFIG_MTD_CHAR=y
->> -CONFIG_MTD_BLKDEVS=y
->>  CONFIG_MTD_BLOCK=y
->>  CONFIG_FTL=y
->>  CONFIG_MTD_CFI=y
->> -CONFIG_MTD_GEN_PROBE=y
->> -CONFIG_MTD_MAP_BANK_WIDTH_1=y
->> -CONFIG_MTD_MAP_BANK_WIDTH_2=y
->> -CONFIG_MTD_MAP_BANK_WIDTH_4=y
->> -CONFIG_MTD_CFI_I1=y
->> -CONFIG_MTD_CFI_I2=y
->
-> Are these removals due to make savedefconfig?
-
-Yes
-
-> Please have a separate
-> patch that just runs make savedefconfig first, so that we can see what
-> actual changes are being made.
-
-Sure!
-
-> Otherwise, looks good.
-
-Thanks!
-
-Ciao,
-Alessio
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index d2c4154..cfae862 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -20,6 +20,7 @@ CONFIG_MODVERSIONS=y
+ # CONFIG_BLK_DEV_BSG is not set
+ CONFIG_PARTITION_ADVANCED=y
+ CONFIG_MAC_PARTITION=y
++CONFIG_C293_PCIE=y
+ CONFIG_MPC8540_ADS=y
+ CONFIG_MPC8560_ADS=y
+ CONFIG_MPC85xx_CDS=y
+@@ -27,7 +28,6 @@ CONFIG_MPC85xx_MDS=y
+ CONFIG_MPC8536_DS=y
+ CONFIG_MPC85xx_DS=y
+ CONFIG_MPC85xx_RDB=y
+-CONFIG_C293_PCIE=y
+ CONFIG_P1010_RDB=y
+ CONFIG_P1022_DS=y
+ CONFIG_P1022_RDK=y
+@@ -70,7 +70,6 @@ CONFIG_NET_IPIP=y
+ CONFIG_IP_MROUTE=y
+ CONFIG_IP_PIMSM_V1=y
+ CONFIG_IP_PIMSM_V2=y
+-CONFIG_ARPD=y
+ CONFIG_INET_ESP=y
+ # CONFIG_INET_XFRM_MODE_BEET is not set
+ # CONFIG_INET_LRO is not set
+@@ -80,33 +79,17 @@ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+-CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+-CONFIG_MTD_BLKDEVS=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_FTL=y
+ CONFIG_MTD_CFI=y
+-CONFIG_MTD_GEN_PROBE=y
+-CONFIG_MTD_MAP_BANK_WIDTH_1=y
+-CONFIG_MTD_MAP_BANK_WIDTH_2=y
+-CONFIG_MTD_MAP_BANK_WIDTH_4=y
+-CONFIG_MTD_CFI_I1=y
+-CONFIG_MTD_CFI_I2=y
+ CONFIG_MTD_CFI_INTELEXT=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_M25P80=y
+-CONFIG_MTD_CFI_UTIL=y
+-CONFIG_MTD_NAND_ECC=y
+ CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_IDS=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
+ CONFIG_MTD_UBI=y
+-CONFIG_MTD_UBI_WL_THRESHOLD=4096
+-CONFIG_MTD_UBI_BEB_RESERVE=1
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=y
+ CONFIG_BLK_DEV_RAM=y
+@@ -117,7 +100,6 @@ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+ CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_LOGGING=y
+ CONFIG_ATA=y
+ CONFIG_SATA_AHCI=y
+@@ -133,11 +115,11 @@ CONFIG_GIANFAR=y
+ CONFIG_E1000=y
+ CONFIG_E1000E=y
+ CONFIG_IGB=y
++CONFIG_AT803X_PHY=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_CICADA_PHY=y
+ CONFIG_VITESSE_PHY=y
+-CONFIG_AT803X_PHY=y
+ CONFIG_FIXED_PHY=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+@@ -161,14 +143,10 @@ CONFIG_SPI_FSL_SPI=y
+ CONFIG_SPI_FSL_ESPI=y
+ CONFIG_GPIO_MPC8XXX=y
+ # CONFIG_HWMON is not set
+-CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_FB=y
+ CONFIG_FB_FSL_DIU=y
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+-CONFIG_FONTS=y
+-CONFIG_FONT_8x8=y
+-CONFIG_FONT_8x16=y
+ CONFIG_SOUND=y
+ CONFIG_SND=y
+ # CONFIG_SND_SUPPORT_OLD_API is not set
+@@ -192,7 +170,6 @@ CONFIG_HID_MONTEREY=y
+ CONFIG_HID_PANTHERLORD=y
+ CONFIG_HID_PETALYNX=y
+ CONFIG_HID_SAMSUNG=y
+-CONFIG_HID_SONY=y
+ CONFIG_HID_SUNPLUS=y
+ CONFIG_USB=y
+ CONFIG_USB_MON=y
+@@ -215,7 +192,6 @@ CONFIG_RTC_DRV_DS3232=y
+ CONFIG_RTC_DRV_CMOS=y
+ CONFIG_DMADEVICES=y
+ CONFIG_FSL_DMA=y
+-# CONFIG_NET_DMA is not set
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+@@ -226,21 +202,9 @@ CONFIG_UDF_FS=m
+ CONFIG_MSDOS_FS=m
+ CONFIG_VFAT_FS=y
+ CONFIG_NTFS_FS=y
+-CONFIG_NLS_CODEPAGE_437=y
+-CONFIG_NLS_CODEPAGE_850=y
+-CONFIG_NLS_ISO8859_1=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_HUGETLBFS=y
+-CONFIG_JFFS2_FS=y
+-CONFIG_JFFS2_FS_DEBUG=1
+-CONFIG_JFFS2_FS_WRITEBUFFER=y
+-CONFIG_JFFS2_ZLIB=y
+-CONFIG_JFFS2_RTIME=y
+-CONFIG_UBIFS_FS=y
+-CONFIG_UBIFS_FS_XATTR=y
+-CONFIG_UBIFS_FS_LZO=y
+-CONFIG_UBIFS_FS_ZLIB=y
+ CONFIG_ADFS_FS=m
+ CONFIG_AFFS_FS=m
+ CONFIG_HFS_FS=m
+@@ -248,6 +212,9 @@ CONFIG_HFSPLUS_FS=m
+ CONFIG_BEFS_FS=m
+ CONFIG_BFS_FS=m
+ CONFIG_EFS_FS=m
++CONFIG_JFFS2_FS=y
++CONFIG_JFFS2_FS_DEBUG=1
++CONFIG_UBIFS_FS=y
+ CONFIG_CRAMFS=y
+ CONFIG_VXFS_FS=m
+ CONFIG_HPFS_FS=m
+@@ -258,16 +225,16 @@ CONFIG_NFS_FS=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_850=y
++CONFIG_NLS_ISO8859_1=y
+ CONFIG_CRC_T10DIF=y
+-CONFIG_CRC16=y
+-CONFIG_ZLIB_DEFLATE=y
+-CONFIG_LZO_COMPRESS=y
+-CONFIG_LZO_DECOMPRESS=y
+-CONFIG_CRYPTO_DEFLATE=y
+-CONFIG_CRYPTO_LZO=y
++CONFIG_FONTS=y
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
++CONFIG_DEBUG_INFO=y
+ CONFIG_DEBUG_FS=y
+ CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_DEBUG_INFO=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_SHA512=y
+-- 
+2.1.3
