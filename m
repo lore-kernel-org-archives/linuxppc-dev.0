@@ -1,23 +1,20 @@
-Return-Path: <richard@nod.at>
-Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0724D1A0CFA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 10:15:13 +1100 (AEDT)
-Message-ID: <5484DF7C.7060600@nod.at>
-Date: Mon, 08 Dec 2014 00:15:08 +0100
-From: Richard Weinberger <richard@nod.at>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C0A41A05FC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 12:09:05 +1100 (AEDT)
+Date: Mon, 8 Dec 2014 09:16:22 +1100
+From: Paul Mackerras <paulus@samba.org>
 To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Subject: Re: [PATCH] arch: powerpc: kernel: signal_32.c: Remove unused function
-References: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <5484D240.30506@nod.at>
- <CAFo99gYvkzCTi6FZXfPOCqafNYn6y4H4hx62KqJjex60KV70_A@mail.gmail.com>
-In-Reply-To: <CAFo99gYvkzCTi6FZXfPOCqafNYn6y4H4hx62KqJjex60KV70_A@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Michael Neuling <mikey@neuling.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] arch: powerpc: kernel: sys_ppc32.c:  Remove unused
+ function
+Message-ID: <20141207221622.GA11372@iris.ozlabs.ibm.com>
+References: <1417975014-13883-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417975014-13883-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 08.12.2014 um 00:11 schrieb Rickard Strandqvist:
-> Hi
-> 
-> Ok, sorry :-(
-> 
-> But I really do not. I've hacked together a script that will scan all
-> the code for the function, and test builds with some different config
-> options turned on.
+On Sun, Dec 07, 2014 at 06:56:54PM +0100, Rickard Strandqvist wrote:
+> Remove the function compat_sys_mmap2() that is not used anywhere.
 
-Looks like you did not build a powerpc32 kernel. :-)
+It's referenced in 64-bit kernels from arch/powerpc/kernel/systbl.S,
+via the SYS32ONLY(mmap2) line in arch/powerpc/include/asm/systbl.h.
 
-FWIW, this is the reference to the function:
-arch/powerpc/include/asm/systbl.h:OLDSYS(debug_setcontext)
-
-Thanks,
-//richard
+Paul.
