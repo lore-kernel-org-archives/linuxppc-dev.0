@@ -1,22 +1,24 @@
-Return-Path: <richard@nod.at>
-Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rickard_strandqvist@spectrumdigital.se>
+Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com
+ [209.85.212.174])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B2A2F1A09D5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:25:31 +1100 (AEDT)
-Message-ID: <5484D240.30506@nod.at>
-Date: Sun, 07 Dec 2014 23:18:40 +0100
-From: Richard Weinberger <richard@nod.at>
-MIME-Version: 1.0
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] arch: powerpc: kernel: signal_32.c: Remove unused function
-References: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Content-Type: text/plain; charset=iso-8859-15
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A66B21A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:26:38 +1100 (AEDT)
+Received: by mail-wi0-f174.google.com with SMTP id h11so3171033wiw.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 14:26:35 -0800 (PST)
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+To: Alexander Graf <agraf@suse.de>,
+	Gleb Natapov <gleb@kernel.org>
+Subject: [PATCH] arch: powerpc: kvm: book3s_paired_singles.c: Remove unused
+ function
+Date: Sun,  7 Dec 2014 23:29:14 +0100
+Message-Id: <1417991354-19932-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: kvm@vger.kernel.org,
+ Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 07.12.2014 um 23:07 schrieb Rickard Strandqvist:
-> Remove the function sys_debug_setcontext() that is not used anywhere.
-> 
-> This was partially found by using a static code analysis program called cppcheck.
+Remove the function inst_set_field() that is not used anywhere.
 
-Please don't blindly trust code analysis tools.
-The function you're removing *is* in use.
+This was partially found by using a static code analysis program called cppcheck.
 
-  LD      init/built-in.o
-arch/powerpc/kernel/built-in.o: In function `sys_call_table':
-(.rodata+0x744): undefined reference to `sys_debug_setcontext'
-make: *** [vmlinux] Error 1
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ arch/powerpc/kvm/book3s_paired_singles.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
-Thanks,
-//richard
+diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
+index bfb8035..bd6ab16 100644
+--- a/arch/powerpc/kvm/book3s_paired_singles.c
++++ b/arch/powerpc/kvm/book3s_paired_singles.c
+@@ -352,14 +352,6 @@ static inline u32 inst_get_field(u32 inst, int msb, int lsb)
+ 	return kvmppc_get_field(inst, msb + 32, lsb + 32);
+ }
+ 
+-/*
+- * Replaces inst bits with ordering according to spec.
+- */
+-static inline u32 inst_set_field(u32 inst, int msb, int lsb, int value)
+-{
+-	return kvmppc_set_field(inst, msb + 32, lsb + 32, value);
+-}
+-
+ bool kvmppc_inst_is_paired_single(struct kvm_vcpu *vcpu, u32 inst)
+ {
+ 	if (!(vcpu->arch.hflags & BOOK3S_HFLAG_PAIRED_SINGLE))
+-- 
+1.7.10.4
