@@ -1,26 +1,41 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 94EB71A0BAD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Dec 2014 23:20:57 +1100 (AEDT)
-Date: Sat, 6 Dec 2014 13:20:16 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Cody P Schafer <dev@codyps.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B6F71A04B2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Dec 2014 18:37:56 +1100 (AEDT)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Sun, 7 Dec 2014 02:37:51 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id EFA56C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Dec 2014 02:29:47 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB77bi1b23986286
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Dec 2014 07:37:44 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB77bhlC018265
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Dec 2014 02:37:43 -0500
+Date: Sat, 6 Dec 2014 23:37:24 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Jiri Olsa <jolsa@redhat.com>
 Subject: Re: [PATCH v5 1/4] tools/perf: support parsing parameterized events
-Message-ID: <20141206122016.GB1250@krava.brq.redhat.com>
+Message-ID: <20141207073724.GA32721@us.ibm.com>
 References: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
  <1417572578-9051-2-git-send-email-sukadev@linux.vnet.ibm.com>
  <20141204124422.GA4195@krava.brq.redhat.com>
- <CAPoQQ-1m9oRQ7wLfRHFNNZyw7fvCoMa_DX7msP2QsY_i2QyHug@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPoQQ-1m9oRQ7wLfRHFNNZyw7fvCoMa_DX7msP2QsY_i2QyHug@mail.gmail.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20141204124422.GA4195@krava.brq.redhat.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ dev@codyps.com, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,86 +45,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 05, 2014 at 06:05:26PM -0500, Cody P Schafer wrote:
-> On Thu, Dec 4, 2014 at 7:44 AM, Jiri Olsa <jolsa@redhat.com> wrote:
-> > On Tue, Dec 02, 2014 at 06:09:35PM -0800, Sukadev Bhattiprolu wrote:
-> >> From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> >>
-> >> Enable event specification like:
-> >>
-> >>       pmu/event_name,param1=0x1,param2=0x4/
-> >>
-> >> Assuming that
-> >>
-> >>       /sys/bus/event_source/devices/pmu/events/event_name
-> >>
-> >> Contains something like
-> >>
-> >>       param2=$foo,bar=1,param1=$baz
-> >
-> > oops.. sorry to be PITA on this one.. I might have missed something
-> > in the previous discussion but I guess I might have finally some
-> > opinion on this ;-)
-> >
-> > here's how I think your patchset works:
-> >
-> > in /sys/bus/event_source/devices/pmu/events/event_name you can actually have:
-> >
-> >    param2=foo,bar=1,param1=baz
-> >
-> > notice no '$', thats what you add later in 'perf list' output, right?
-> >
-> > Moreover it actually does not matter whats in value 'param2=HERE',
-> > because it's not used in the config code at all apart from the
-> > 'perf list' display processing.
-> >
-> > So when we discussed the '$' name way, I thought it'd be like:
-> >
-> > in /sys/bus/event_source/devices/pmu/events/event_name you have:
-> >   param2=$foo,bar=1,param1=$baz
-> >
-> > and on command line you'd use:
-> >   pmu/event_name,foo=0x1,bar=0x4/
-> >
-> > to assign directly to the $var, which would justify the $var
-> > syntax I think..
-> >
-> 
-> Agreed, what you've described above sounds like a good idea.
-> 
-> Compared to monopolizing all strings (which is what I did when
-> initialy writing this), using a '$' prefix would allow less pain when
-> some events suddenly need non-integer parameters.
-> 
-> > anyway we could assign directly to the param term name as you do,
-> > but I think we just need to mark the term as parametrized, like:
-> >
-> > in /sys/bus/event_source/devices/pmu/events/event_name you have:
-> >   param2=?,bar=1,param1=?
-> >
-> > and on command line you'd use:
-> >   pmu/event_name,param2=0x1,param1=0x4/
-> >
-> > while the config code would check that the param substitution is
-> > done only for terms with '?' in value, like 'param2=?' and not
-> > for all PARSE_EVENTS__TERM_TYPE_STR type terms (as of now)
-> 
-> I prefer the `foo=0x1` as mentioned previously: it makes the user
-> interface much less painful as we can have event-specific names for
-> register/hcall fields.
-> 
-> I'm pretty sure the code used to do this, not sure when it was removed
-> (haven't been following this patchset closely).
+Jiri Olsa [jolsa@redhat.com] wrote:
 
-right, I recall seeing the 2 indirect assignments earlier,
-but it was without the '$' marks
+| anyway we could assign directly to the param term name as you do,
+| but I think we just need to mark the term as parametrized, like:
+| 
+| in /sys/bus/event_source/devices/pmu/events/event_name you have:
+|   param2=?,bar=1,param1=?
 
-> 
-> That said: I haven't fiddled with this code in a while (it's Suka's at
-> this point), and there might be arguments the other way on both of
-> those.
+I like the idea of just using a single ? for required parameters, but
+the problem I had with this approach can be seen with these two sysfs
+entries:
 
-I guess I'm ok with both ways, maybe slightly inclined to
-the '$' variable style one ;-)
+        $ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE
+        domain=0x2,offset=0xe0,starting_index=core,lpar=0x0
 
-jirka
+        $ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE
+        domain=0x3,offset=0xe0,starting_index=vcpu,lpar=sibling_guest_id
+
+The parameter 'starting_index' refers to a core in one event and vcpu in
+another event. We were trying to give a hint as to what it refers to.
+
+Given that, 'starting_index' is not very intuitive, how about discarding
+starting_index and replacing with what it really means for the event and,
+use a simple '?' to indicate required parameter).
+
+        $ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE
+        domain=0x2,offset=0xe0,core=?,lpar=0x0
+
+        $ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE
+        domain=0x3,offset=0xe0,vcpu=?,lpar=?
+
+perf list shows these as:
+
+	hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=?/ 
+	hv_24x7/HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CHIP,vcpu=?,lpar=?/
+
+command line would be
+
+	-e hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=2/ 
+
+	or
+
+	-e hv_24x7/HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CHIP,vcpu=2,lpar=7/
+
+and would fail if a required parameter is missing.
+
+This would eliminate the need for new strings like 'sibling_guest_id' (or
+as Cody calls it monopolizing strings...)
+
+Following quick patch on top of the patchset shows the changes:
+
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 73d5bfc..a82bc64 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -27,6 +27,8 @@
+ #include "hv-24x7-catalog.h"
+ #include "hv-common.h"
+ 
++
++#if 0
+ static const char *domain_to_index_string(unsigned domain)
+ {
+ 	switch (domain) {
+@@ -40,6 +42,7 @@ static const char *domain_to_index_string(unsigned domain)
+ 		return "UNKNOWN_DOMAIN_INDEX_STRING";
+ 	}
+ }
++#endif
+ 
+ static const char *event_domain_suffix(unsigned domain)
+ {
+@@ -114,7 +117,8 @@ static bool catalog_entry_domain_is_valid(unsigned domain)
+ /* u3 0-6, one of HV_24X7_PERF_DOMAIN */
+ EVENT_DEFINE_RANGE_FORMAT(domain, config, 0, 3);
+ /* u16 */
+-EVENT_DEFINE_RANGE_FORMAT(starting_index, config, 16, 31);
++EVENT_DEFINE_RANGE_FORMAT(core, config, 16, 31);
++EVENT_DEFINE_RANGE_FORMAT(vcpu, config, 16, 31);
+ /* u32, see "data_offset" */
+ EVENT_DEFINE_RANGE_FORMAT(offset, config, 32, 63);
+ /* u16 */
+@@ -127,7 +131,8 @@ EVENT_DEFINE_RANGE(reserved3, config2,  0, 63);
+ static struct attribute *format_attrs[] = {
+ 	&format_attr_domain.attr,
+ 	&format_attr_offset.attr,
+-	&format_attr_starting_index.attr,
++	&format_attr_core.attr,
++	&format_attr_vcpu.attr,
+ 	&format_attr_lpar.attr,
+ 	NULL,
+ };
+@@ -280,19 +285,23 @@ static unsigned core_domains[] = {
+ 
+ static char *event_fmt(struct hv_24x7_event_data *event, unsigned domain)
+ {
++	const char *sindex;
+ 	const char *lpar;
+ 
+-	if (is_physical_domain(domain))
++	if (is_physical_domain(domain)) {
+ 		lpar = "0x0";
+-	else
+-		lpar = "$sibling_guest_id";
++		sindex = "core";
++	} else {
++		lpar = "?";
++		sindex = "vcpu";
++	}
+ 
+ 	return kasprintf(GFP_KERNEL,
+-			"domain=0x%x,offset=0x%x,starting_index=%s,lpar=%s",
++			"domain=0x%x,offset=0x%x,%s=?,lpar=%s",
+ 			domain,
+ 			be16_to_cpu(event->event_counter_offs) +
+ 				be16_to_cpu(event->event_group_record_offs),
+-			domain_to_index_string(domain),
++			sindex,
+ 			lpar);
+ }
+ 
+@@ -1061,9 +1070,17 @@ out:
+ static unsigned long event_24x7_request(struct perf_event *event, u64 *res,
+ 		bool success_expected)
+ {
++	u16 idx;
++	unsigned domain = event_get_domain(event);
++
++	if (is_physical_domain(domain))
++		idx = event_get_core(event);
++	else
++		idx = event_get_vcpu(event);
++
+ 	return single_24x7_request(event_get_domain(event),
+ 				event_get_offset(event),
+-				event_get_starting_index(event),
++				idx,
+ 				event_get_lpar(event),
+ 				res,
+ 				success_expected);
+diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+index f8674c1..d208fef 100644
+--- a/tools/perf/util/pmu.c
++++ b/tools/perf/util/pmu.c
+@@ -826,7 +826,7 @@ static char *format_alias(char *buf, int len, struct perf_pmu *pmu,
+ 	list_for_each_entry(term, &alias->terms, list)
+ 		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
+ 			used += snprintf(buf + used, sub_non_neg(len, used),
+-					",%s=$%s", term->config,
++					",%s=%s", term->config,
+ 					term->val.str);
+ 
+ 	if (sub_non_neg(len, used) > 0) {
