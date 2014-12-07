@@ -3,21 +3,20 @@ Received: from mail-wi0-f169.google.com (mail-wi0-f169.google.com
  [209.85.212.169])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5ED2E1A09D3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 07:04:43 +1100 (AEDT)
-Received: by mail-wi0-f169.google.com with SMTP id r20so5514527wiv.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 12:04:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 209771A017C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:04:25 +1100 (AEDT)
+Received: by mail-wi0-f169.google.com with SMTP id r20so5648324wiv.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 14:04:21 -0800 (PST)
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: kernel: traps.c:  Remove unused function
-Date: Sun,  7 Dec 2014 21:07:18 +0100
-Message-Id: <1417982838-15588-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Subject: [PATCH] arch: powerpc: kernel: signal_32.c:  Remove unused function
+Date: Sun,  7 Dec 2014 23:07:01 +0100
+Message-Id: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Cc: Michael Neuling <mikey@neuling.org>,
  Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, Richard Weinberger <richard@nod.at>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +26,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the function vsx_assist_exception() that is not used anywhere.
+Remove the function sys_debug_setcontext() that is not used anywhere.
 
 This was partially found by using a static code analysis program called cppcheck.
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/powerpc/kernel/traps.c |   15 ---------------
- 1 file changed, 15 deletions(-)
+ arch/powerpc/kernel/signal_32.c |  107 ---------------------------------------
+ 1 file changed, 107 deletions(-)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 0dc43f9..857e5f7 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1707,21 +1707,6 @@ void altivec_assist_exception(struct pt_regs *regs)
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index b171001..a571614 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -1297,113 +1297,6 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
+ 	return 0;
  }
- #endif /* CONFIG_ALTIVEC */
  
--#ifdef CONFIG_VSX
--void vsx_assist_exception(struct pt_regs *regs)
+-#ifdef CONFIG_PPC32
+-int sys_debug_setcontext(struct ucontext __user *ctx,
+-			 int ndbg, struct sig_dbg_op __user *dbg,
+-			 int r6, int r7, int r8,
+-			 struct pt_regs *regs)
 -{
--	if (!user_mode(regs)) {
--		printk(KERN_EMERG "VSX assist exception in kernel mode"
--		       " at %lx\n", regs->nip);
--		die("Kernel VSX assist exception", regs, SIGILL);
+-	struct sig_dbg_op op;
+-	int i;
+-	unsigned char tmp;
+-	unsigned long new_msr = regs->msr;
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-	unsigned long new_dbcr0 = current->thread.debug.dbcr0;
+-#endif
+-
+-	for (i=0; i<ndbg; i++) {
+-		if (copy_from_user(&op, dbg + i, sizeof(op)))
+-			return -EFAULT;
+-		switch (op.dbg_type) {
+-		case SIG_DBG_SINGLE_STEPPING:
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-			if (op.dbg_value) {
+-				new_msr |= MSR_DE;
+-				new_dbcr0 |= (DBCR0_IDM | DBCR0_IC);
+-			} else {
+-				new_dbcr0 &= ~DBCR0_IC;
+-				if (!DBCR_ACTIVE_EVENTS(new_dbcr0,
+-						current->thread.debug.dbcr1)) {
+-					new_msr &= ~MSR_DE;
+-					new_dbcr0 &= ~DBCR0_IDM;
+-				}
+-			}
+-#else
+-			if (op.dbg_value)
+-				new_msr |= MSR_SE;
+-			else
+-				new_msr &= ~MSR_SE;
+-#endif
+-			break;
+-		case SIG_DBG_BRANCH_TRACING:
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-			return -EINVAL;
+-#else
+-			if (op.dbg_value)
+-				new_msr |= MSR_BE;
+-			else
+-				new_msr &= ~MSR_BE;
+-#endif
+-			break;
+-
+-		default:
+-			return -EINVAL;
+-		}
 -	}
 -
--	flush_vsx_to_thread(current);
--	printk(KERN_INFO "VSX assist not supported at %lx\n", regs->nip);
--	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
--}
--#endif /* CONFIG_VSX */
+-	/* We wait until here to actually install the values in the
+-	   registers so if we fail in the above loop, it will not
+-	   affect the contents of these registers.  After this point,
+-	   failure is a problem, anyway, and it's very unlikely unless
+-	   the user is really doing something wrong. */
+-	regs->msr = new_msr;
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-	current->thread.debug.dbcr0 = new_dbcr0;
+-#endif
 -
- #ifdef CONFIG_FSL_BOOKE
- void CacheLockingException(struct pt_regs *regs, unsigned long address,
- 			   unsigned long error_code)
+-	if (!access_ok(VERIFY_READ, ctx, sizeof(*ctx))
+-	    || __get_user(tmp, (u8 __user *) ctx)
+-	    || __get_user(tmp, (u8 __user *) (ctx + 1) - 1))
+-		return -EFAULT;
+-
+-	/*
+-	 * If we get a fault copying the context into the kernel's
+-	 * image of the user's registers, we can't just return -EFAULT
+-	 * because the user's registers will be corrupted.  For instance
+-	 * the NIP value may have been updated but not some of the
+-	 * other registers.  Given that we have done the access_ok
+-	 * and successfully read the first and last bytes of the region
+-	 * above, this should only happen in an out-of-memory situation
+-	 * or if another thread unmaps the region containing the context.
+-	 * We kill the task with a SIGSEGV in this situation.
+-	 */
+-	if (do_setcontext(ctx, regs, 1)) {
+-		if (show_unhandled_signals)
+-			printk_ratelimited(KERN_INFO "%s[%d]: bad frame in "
+-					   "sys_debug_setcontext: %p nip %08lx "
+-					   "lr %08lx\n",
+-					   current->comm, current->pid,
+-					   ctx, regs->nip, regs->link);
+-
+-		force_sig(SIGSEGV, current);
+-		goto out;
+-	}
+-
+-	/*
+-	 * It's not clear whether or why it is desirable to save the
+-	 * sigaltstack setting on signal delivery and restore it on
+-	 * signal return.  But other architectures do this and we have
+-	 * always done it up until now so it is probably better not to
+-	 * change it.  -- paulus
+-	 */
+-	restore_altstack(&ctx->uc_stack);
+-
+-	set_thread_flag(TIF_RESTOREALL);
+- out:
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * OK, we're invoking a handler
+  */
 -- 
 1.7.10.4
