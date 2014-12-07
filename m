@@ -1,25 +1,23 @@
 Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-la0-f46.google.com (mail-la0-f46.google.com
- [209.85.215.46])
+Received: from mail-wi0-f180.google.com (mail-wi0-f180.google.com
+ [209.85.212.180])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 398111A09D2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 05:08:11 +1100 (AEDT)
-Received: by mail-la0-f46.google.com with SMTP id q1so2944500lam.19
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 10:08:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A25B71A0A74
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 05:09:11 +1100 (AEDT)
+Received: by mail-wi0-f180.google.com with SMTP id n3so2909698wiv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 10:09:08 -0800 (PST)
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: mm: slice.c:  Remove unused function
-Date: Sun,  7 Dec 2014 19:10:46 +0100
-Message-Id: <1417975847-14153-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: Michael Neuling <mikey@neuling.org>,
- "jmarchan@redhat.com" <jmarchan@redhat.com>,
+To: Alexander Graf <agraf@suse.de>,
+	Gleb Natapov <gleb@kernel.org>
+Subject: [PATCH] arch: powerpc: kvm: book3s_pr.c:  Remove unused function
+Date: Sun,  7 Dec 2014 19:11:48 +0100
+Message-Id: <1417975908-14327-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: kvm@vger.kernel.org,
  Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Anton Blanchard <anton@samba.org>
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the function slice_set_psize() that is not used anywhere.
+Remove the function get_fpr_index() that is not used anywhere.
 
 This was partially found by using a static code analysis program called cppcheck.
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/powerpc/mm/slice.c |   29 -----------------------------
- 1 file changed, 29 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index ded0ea1..0f432a7 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -645,35 +645,6 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
- 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index cf2eb16..f573839 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -644,11 +644,6 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	return r;
  }
  
--void slice_set_psize(struct mm_struct *mm, unsigned long address,
--		     unsigned int psize)
+-static inline int get_fpr_index(int i)
 -{
--	unsigned char *hpsizes;
--	unsigned long i, flags;
--	u64 *lpsizes;
--
--	spin_lock_irqsave(&slice_convert_lock, flags);
--	if (address < SLICE_LOW_TOP) {
--		i = GET_LOW_SLICE_INDEX(address);
--		lpsizes = &mm->context.low_slices_psize;
--		*lpsizes = (*lpsizes & ~(0xful << (i * 4))) |
--			((unsigned long) psize << (i * 4));
--	} else {
--		int index, mask_index;
--		i = GET_HIGH_SLICE_INDEX(address);
--		hpsizes = mm->context.high_slices_psize;
--		mask_index = i & 0x1;
--		index = i >> 1;
--		hpsizes[index] = (hpsizes[index] &
--				  ~(0xf << (mask_index * 4))) |
--			(((unsigned long)psize) << (mask_index * 4));
--	}
--
--	spin_unlock_irqrestore(&slice_convert_lock, flags);
--
--	copro_flush_all_slbs(mm);
+-	return i * TS_FPRWIDTH;
 -}
 -
- void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- 			   unsigned long len, unsigned int psize)
+ /* Give up external provider (FPU, Altivec, VSX) */
+ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
  {
 -- 
 1.7.10.4
