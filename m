@@ -1,22 +1,26 @@
 Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-wi0-f169.google.com (mail-wi0-f169.google.com
- [209.85.212.169])
+Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 209771A017C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:04:25 +1100 (AEDT)
-Received: by mail-wi0-f169.google.com with SMTP id r20so5648324wiv.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 14:04:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B45271A04EB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:09:23 +1100 (AEDT)
+Received: by mail-wg0-f51.google.com with SMTP id k14so4859575wgh.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 14:09:20 -0800 (PST)
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: kernel: signal_32.c:  Remove unused function
-Date: Sun,  7 Dec 2014 23:07:01 +0100
-Message-Id: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: Michael Neuling <mikey@neuling.org>,
+Subject: [PATCH] arch: powerpc: kernel: smp.c:  Remove unused function
+Date: Sun,  7 Dec 2014 23:11:59 +0100
+Message-Id: <1417990319-19019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Cc: devicetree@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
+ Li Zhong <zhong@linux.vnet.ibm.com>,
  Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- linux-kernel@vger.kernel.org, Richard Weinberger <richard@nod.at>,
- linuxppc-dev@lists.ozlabs.org
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>,
+ Anton Blanchard <anton@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,132 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the function sys_debug_setcontext() that is not used anywhere.
+Remove the function generic_mach_cpu_die() that is not used anywhere.
 
 This was partially found by using a static code analysis program called cppcheck.
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/powerpc/kernel/signal_32.c |  107 ---------------------------------------
- 1 file changed, 107 deletions(-)
+ arch/powerpc/include/asm/smp.h |    1 -
+ arch/powerpc/kernel/smp.c      |   14 --------------
+ 2 files changed, 15 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index b171001..a571614 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1297,113 +1297,6 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
- 	return 0;
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 5a6614a..d607df5 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -64,7 +64,6 @@ DECLARE_PER_CPU(unsigned int, cpu_pvr);
+ extern void migrate_irqs(void);
+ int generic_cpu_disable(void);
+ void generic_cpu_die(unsigned int cpu);
+-void generic_mach_cpu_die(void);
+ void generic_set_cpu_dead(unsigned int cpu);
+ void generic_set_cpu_up(unsigned int cpu);
+ int generic_check_cpu_restart(unsigned int cpu);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 71e186d..83d4f3f 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -434,20 +434,6 @@ void generic_cpu_die(unsigned int cpu)
+ 	printk(KERN_ERR "CPU%d didn't die...\n", cpu);
  }
  
--#ifdef CONFIG_PPC32
--int sys_debug_setcontext(struct ucontext __user *ctx,
--			 int ndbg, struct sig_dbg_op __user *dbg,
--			 int r6, int r7, int r8,
--			 struct pt_regs *regs)
+-void generic_mach_cpu_die(void)
 -{
--	struct sig_dbg_op op;
--	int i;
--	unsigned char tmp;
--	unsigned long new_msr = regs->msr;
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--	unsigned long new_dbcr0 = current->thread.debug.dbcr0;
--#endif
+-	unsigned int cpu;
 -
--	for (i=0; i<ndbg; i++) {
--		if (copy_from_user(&op, dbg + i, sizeof(op)))
--			return -EFAULT;
--		switch (op.dbg_type) {
--		case SIG_DBG_SINGLE_STEPPING:
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--			if (op.dbg_value) {
--				new_msr |= MSR_DE;
--				new_dbcr0 |= (DBCR0_IDM | DBCR0_IC);
--			} else {
--				new_dbcr0 &= ~DBCR0_IC;
--				if (!DBCR_ACTIVE_EVENTS(new_dbcr0,
--						current->thread.debug.dbcr1)) {
--					new_msr &= ~MSR_DE;
--					new_dbcr0 &= ~DBCR0_IDM;
--				}
--			}
--#else
--			if (op.dbg_value)
--				new_msr |= MSR_SE;
--			else
--				new_msr &= ~MSR_SE;
--#endif
--			break;
--		case SIG_DBG_BRANCH_TRACING:
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--			return -EINVAL;
--#else
--			if (op.dbg_value)
--				new_msr |= MSR_BE;
--			else
--				new_msr &= ~MSR_BE;
--#endif
--			break;
--
--		default:
--			return -EINVAL;
--		}
--	}
--
--	/* We wait until here to actually install the values in the
--	   registers so if we fail in the above loop, it will not
--	   affect the contents of these registers.  After this point,
--	   failure is a problem, anyway, and it's very unlikely unless
--	   the user is really doing something wrong. */
--	regs->msr = new_msr;
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--	current->thread.debug.dbcr0 = new_dbcr0;
--#endif
--
--	if (!access_ok(VERIFY_READ, ctx, sizeof(*ctx))
--	    || __get_user(tmp, (u8 __user *) ctx)
--	    || __get_user(tmp, (u8 __user *) (ctx + 1) - 1))
--		return -EFAULT;
--
--	/*
--	 * If we get a fault copying the context into the kernel's
--	 * image of the user's registers, we can't just return -EFAULT
--	 * because the user's registers will be corrupted.  For instance
--	 * the NIP value may have been updated but not some of the
--	 * other registers.  Given that we have done the access_ok
--	 * and successfully read the first and last bytes of the region
--	 * above, this should only happen in an out-of-memory situation
--	 * or if another thread unmaps the region containing the context.
--	 * We kill the task with a SIGSEGV in this situation.
--	 */
--	if (do_setcontext(ctx, regs, 1)) {
--		if (show_unhandled_signals)
--			printk_ratelimited(KERN_INFO "%s[%d]: bad frame in "
--					   "sys_debug_setcontext: %p nip %08lx "
--					   "lr %08lx\n",
--					   current->comm, current->pid,
--					   ctx, regs->nip, regs->link);
--
--		force_sig(SIGSEGV, current);
--		goto out;
--	}
--
--	/*
--	 * It's not clear whether or why it is desirable to save the
--	 * sigaltstack setting on signal delivery and restore it on
--	 * signal return.  But other architectures do this and we have
--	 * always done it up until now so it is probably better not to
--	 * change it.  -- paulus
--	 */
--	restore_altstack(&ctx->uc_stack);
--
--	set_thread_flag(TIF_RESTOREALL);
-- out:
--	return 0;
+-	local_irq_disable();
+-	idle_task_exit();
+-	cpu = smp_processor_id();
+-	printk(KERN_DEBUG "CPU%d offline\n", cpu);
+-	__get_cpu_var(cpu_state) = CPU_DEAD;
+-	smp_wmb();
+-	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
+-		cpu_relax();
 -}
--#endif
 -
- /*
-  * OK, we're invoking a handler
-  */
+ void generic_set_cpu_dead(unsigned int cpu)
+ {
+ 	per_cpu(cpu_state, cpu) = CPU_DEAD;
 -- 
 1.7.10.4
