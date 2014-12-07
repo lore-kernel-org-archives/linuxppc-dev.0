@@ -1,26 +1,22 @@
-Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <richard@nod.at>
+Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B45271A04EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:09:23 +1100 (AEDT)
-Received: by mail-wg0-f51.google.com with SMTP id k14so4859575wgh.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 14:09:20 -0800 (PST)
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2A2F1A09D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 09:25:31 +1100 (AEDT)
+Message-ID: <5484D240.30506@nod.at>
+Date: Sun, 07 Dec 2014 23:18:40 +0100
+From: Richard Weinberger <richard@nod.at>
+MIME-Version: 1.0
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: kernel: smp.c:  Remove unused function
-Date: Sun,  7 Dec 2014 23:11:59 +0100
-Message-Id: <1417990319-19019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: devicetree@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
- Li Zhong <zhong@linux.vnet.ibm.com>,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>,
- Anton Blanchard <anton@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] arch: powerpc: kernel: signal_32.c: Remove unused function
+References: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1417990021-18696-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Content-Type: text/plain; charset=iso-8859-15
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the function generic_mach_cpu_die() that is not used anywhere.
+Am 07.12.2014 um 23:07 schrieb Rickard Strandqvist:
+> Remove the function sys_debug_setcontext() that is not used anywhere.
+> 
+> This was partially found by using a static code analysis program called cppcheck.
 
-This was partially found by using a static code analysis program called cppcheck.
+Please don't blindly trust code analysis tools.
+The function you're removing *is* in use.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- arch/powerpc/include/asm/smp.h |    1 -
- arch/powerpc/kernel/smp.c      |   14 --------------
- 2 files changed, 15 deletions(-)
+  LD      init/built-in.o
+arch/powerpc/kernel/built-in.o: In function `sys_call_table':
+(.rodata+0x744): undefined reference to `sys_debug_setcontext'
+make: *** [vmlinux] Error 1
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 5a6614a..d607df5 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -64,7 +64,6 @@ DECLARE_PER_CPU(unsigned int, cpu_pvr);
- extern void migrate_irqs(void);
- int generic_cpu_disable(void);
- void generic_cpu_die(unsigned int cpu);
--void generic_mach_cpu_die(void);
- void generic_set_cpu_dead(unsigned int cpu);
- void generic_set_cpu_up(unsigned int cpu);
- int generic_check_cpu_restart(unsigned int cpu);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 71e186d..83d4f3f 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -434,20 +434,6 @@ void generic_cpu_die(unsigned int cpu)
- 	printk(KERN_ERR "CPU%d didn't die...\n", cpu);
- }
- 
--void generic_mach_cpu_die(void)
--{
--	unsigned int cpu;
--
--	local_irq_disable();
--	idle_task_exit();
--	cpu = smp_processor_id();
--	printk(KERN_DEBUG "CPU%d offline\n", cpu);
--	__get_cpu_var(cpu_state) = CPU_DEAD;
--	smp_wmb();
--	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
--		cpu_relax();
--}
--
- void generic_set_cpu_dead(unsigned int cpu)
- {
- 	per_cpu(cpu_state, cpu) = CPU_DEAD;
--- 
-1.7.10.4
+Thanks,
+//richard
