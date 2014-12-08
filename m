@@ -1,29 +1,15 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0069.hostedemail.com
- [216.40.44.69])
- by lists.ozlabs.org (Postfix) with ESMTP id 0C85C1A09DC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 01:03:54 +1100 (AEDT)
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
- [10.5.19.251])
- by smtpgrave02.hostedemail.com (Postfix) with ESMTP id B34FE493F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 13:54:22 +0000 (UTC)
-Date: Mon, 8 Dec 2014 08:54:05 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] kthread: kthread_bind fails to enforce CPU affinity
- (fixes kernel BUG at kernel/smpboot.c:134!)
-Message-ID: <20141208085405.730577a3@gandalf.local.home>
-In-Reply-To: <1418009221-12719-1-git-send-email-anton@samba.org>
-References: <1418009221-12719-1-git-send-email-anton@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: yuyang.du@intel.com, computersforpeace@gmail.com, peterz@infradead.org,
- lkp@01.org, rafael.j.wysocki@intel.com, yuanhan.liu@linux.intel.com,
- linux-kernel@vger.kernel.org, bsegall@google.com,
- linuxppc-dev@lists.ozlabs.org, mingo@redhat.com, sp@datera.io,
- daniel@numascale.com, tj@kernel.org, subbaram@codeaurora.org,
- akpm@linux-foundation.org, fengguang.wu@intel.com,
- torvalds@linux-foundation.org, tglx@linutronix.de, pjt@google.com
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8CD171A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 01:16:48 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH] powerpc32: missing accessors to pgprot_t objects
+Message-Id: <20141208141629.912861A5D5B@localhost.localdomain>
+Date: Mon,  8 Dec 2014 15:16:29 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,67 +19,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  8 Dec 2014 14:27:01 +1100
-Anton Blanchard <anton@samba.org> wrote:
+Compilation with #define STRICT_MM_TYPECHECKS in arch/powerpc/include/asm/page.h
+fails due to missing use of pgprot_val() when using pgprot_t objects.
 
-> I have a busy ppc64le KVM box where guests sometimes hit the infamous
-> "kernel BUG at kernel/smpboot.c:134!" issue during boot:
-> 
-> BUG_ON(td->cpu != smp_processor_id());
-> 
-> Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
-> output confirms it:
-> 
-> CPU: 0
-> Comm: watchdog/130
-> 
-> The issue is in kthread_bind where we set the cpus_allowed mask, but do
-> not touch task_thread_info(p)->cpu. The scheduler assumes the previously
-> scheduled CPU is in the cpus_allowed mask, but in this case we are
-> moving a thread to another CPU so it is not.
-> 
+arch/powerpc/mm/pgtable_32.c: In function '__ioremap_caller':
+arch/powerpc/mm/pgtable_32.c:185:9: error: invalid operands to binary | (have 'long unsigned int' and 'pgprot_t')
+   flags |= PAGE_KERNEL;
+         ^
+arch/powerpc/mm/pgtable_32.c: In function '__mapin_ram_chunk':
+arch/powerpc/mm/pgtable_32.c:320:5: error: incompatible types when assigning to type 'long unsigned int' from type 'pgprot_t'
+   f = ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL;
+     ^
+arch/powerpc/mm/ppc_mmu_32.c:95:2: error: incompatible type for argument 5 of 'setbat'
+  setbat(2, PAGE_OFFSET, 0, bl, PAGE_KERNEL_X);
+  ^
+In file included from arch/powerpc/mm/ppc_mmu_32.c:35:0:
+arch/powerpc/mm/mmu_decl.h:98:13: note: expected 'int' but argument is of type 'pgprot_t'
+ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
+             ^
+arch/powerpc/mm/ppc_mmu_32.c:103:3: error: incompatible type for argument 5 of 'setbat'
+   setbat(3, PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
+   ^
+In file included from arch/powerpc/mm/ppc_mmu_32.c:35:0:
+arch/powerpc/mm/mmu_decl.h:98:13: note: expected 'int' but argument is of type 'pgprot_t'
+ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
+             ^
 
-Does this happen always on boot up, and always with the watchdog thread?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-I followed the logic that starts the watchdog threads.
+---
+ arch/powerpc/mm/dma-noncoherent.c | 2 +-
+ arch/powerpc/mm/pgtable_32.c      | 4 ++--
+ arch/powerpc/mm/ppc_mmu_32.c      | 5 +++--
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
-watchdog_enable_all_cpus()
-  smpboot_register_percpu-thread() {
-
-    for_each_online_cpu(cpu) { ... }
-
-Where watchdog_enable_all_cpus() can be called by
-lockup_detector_init() before SMP is started, but also by
-proc_dowatchdog() which is called by the sysctl commands (after SMP is
-up and running).
-
-I noticed there's no "get_online_cpus()" anywhere, although the
-unregister_percpu_thread() has it. Is it possible that we created a
-thread on a CPU that wasn't fully online yet?
-
-Perhaps the following patch is needed? Even if this isn't the solution
-to this bug, it is probably needed as watchdog_enable_all_cpus() can be
-called after boot up too.
-
--- Steve
-
-diff --git a/kernel/smpboot.c b/kernel/smpboot.c
-index eb89e1807408..60d35ac5d3f1 100644
---- a/kernel/smpboot.c
-+++ b/kernel/smpboot.c
-@@ -279,6 +279,7 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
- 	unsigned int cpu;
- 	int ret = 0;
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index d85e86a..169aba4 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -228,7 +228,7 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
+ 		do {
+ 			SetPageReserved(page);
+ 			map_page(vaddr, page_to_phys(page),
+-				 pgprot_noncached(PAGE_KERNEL));
++				 pgprot_val(pgprot_noncached(PAGE_KERNEL)));
+ 			page++;
+ 			vaddr += PAGE_SIZE;
+ 		} while (size -= PAGE_SIZE);
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index cf11342..a349089 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -182,7 +182,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
  
-+	get_online_cpus();
- 	mutex_lock(&smpboot_threads_lock);
- 	for_each_online_cpu(cpu) {
- 		ret = __smpboot_create_thread(plug_thread, cpu);
-@@ -291,6 +292,7 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
- 	list_add(&plug_thread->list, &hotplug_threads);
- out:
- 	mutex_unlock(&smpboot_threads_lock);
-+	put_online_cpus();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(smpboot_register_percpu_thread);
+ 	/* Make sure we have the base flags */
+ 	if ((flags & _PAGE_PRESENT) == 0)
+-		flags |= PAGE_KERNEL;
++		flags |= pgprot_val(PAGE_KERNEL);
+ 
+ 	/* Non-cacheable page cannot be coherent */
+ 	if (flags & _PAGE_NO_CACHE)
+@@ -317,7 +317,7 @@ void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
+ 	p = memstart_addr + s;
+ 	for (; s < top; s += PAGE_SIZE) {
+ 		ktext = ((char *) v >= _stext && (char *) v < etext);
+-		f = ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL;
++		f = pgprot_val(ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
+ 		map_page(v, p, f);
+ #ifdef CONFIG_PPC_STD_MMU_32
+ 		if (ktext)
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 5029dc1..dc710d4 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -92,7 +92,7 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ 			break;
+ 	}
+ 
+-	setbat(2, PAGE_OFFSET, 0, bl, PAGE_KERNEL_X);
++	setbat(2, PAGE_OFFSET, 0, bl, pgprot_val(PAGE_KERNEL_X));
+ 	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
+ 	if ((done < tot) && !bat_addrs[3].limit) {
+ 		/* use BAT3 to cover a bit more */
+@@ -100,7 +100,8 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ 		for (bl = 128<<10; bl < max_size; bl <<= 1)
+ 			if (bl * 2 > tot)
+ 				break;
+-		setbat(3, PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
++		setbat(3, PAGE_OFFSET+done, done, bl,
++		       pgprot_val(PAGE_KERNEL_X));
+ 		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
+ 	}
+ 
+-- 
+2.1.0
