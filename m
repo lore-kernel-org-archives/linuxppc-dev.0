@@ -1,17 +1,28 @@
-Return-Path: <rgb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D7891A0B66
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 05:00:10 +1100 (AEDT)
-From: Richard Guy Briggs <rgb@redhat.com>
-To: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
-Subject: [PATCH V3] powerpc: add little endian flag to syscall_get_arch()
-Date: Mon,  8 Dec 2014 12:59:32 -0500
-Message-Id: <c1adfab2633f57a745f3e2e1b13b5a8f283c888a.1418055157.git.rgb@redhat.com>
-Cc: tonyj@suse.de, Richard Guy Briggs <rgb@redhat.com>, pmoore@redhat.com,
- anton@samba.org, eparis@parisplace.org, sgrubb@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15F4C1A0556
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 07:08:28 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6A4201400A0
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2014 07:08:25 +1100 (AEDT)
+Message-ID: <1418069293.4827.41.camel@kernel.crashing.org>
+Subject: Re: Right location in sysfs for dlpar file
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <gregkh@linuxfoundation.org>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>
+Date: Tue, 09 Dec 2014 07:08:13 +1100
+In-Reply-To: <5485C1F9.9000401@linux.vnet.ibm.com>
+References: <1417057941.5089.81.camel@kernel.crashing.org>
+ <547C8C0F.5070701@linux.vnet.ibm.com> <20141202042626.GC9271@kroah.com>
+ <547FCFEF.8090001@linux.vnet.ibm.com> <20141204043102.GA21724@kroah.com>
+ <5485C1F9.9000401@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,63 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since both ppc and ppc64 have LE variants which are now reported by uname, add
-that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add AUDIT_ARCH_PPC*LE
-variants.
+On Mon, 2014-12-08 at 09:21 -0600, Nathan Fontenot wrote:
+> > Oh I was hoping you would not say that :(
+> 
+> Heh! hint taken. I won't cc you.
+> 
+> > 
+> > Seriously?  Parsing binary blobs from userspace?  Don't do that, you
+> > know better.
+> 
+> Yes, not ideal. One thing to note here is that the code to parse these
+> binary blobs already exists in the kernel for powerpc. The binary blob
+> we need to pass in is the same format as rtas error logs that we can be
+> handed by firmware on powerpc systems.
 
-Without this,  perf trace and auditctl fail.
+We should clarify that it's a small blob, it's an error log entry as defined
+by our firmware interfaces. We already obtain these from the FW and parse them
+(it's really just mapping the right structure based on the type in the header)
+under various circumstances.
 
-Mainline kernel reports ppc64le (per a058801) but there is no matching
-AUDIT_ARCH_PPC64LE.
+What happens is on KVM, we used that existing path to signal the kernel of an
+hotplug event. On PowerVM (aka pHyp), we want to use the same kernel code path
+by passing an equivalent event to the kernel.
 
-Since 32-bit PPC LE is not supported, throw a compiler error rather than return
-a bogus architecture to audit.
+Nathan, if Greg still strongly objects, we could have the sysfs interface be
+something like a simple action + resource ID string, we don't *need* it to
+be encapsulated in an error log, we would just pipe into the same infrastructure
+in the kernel but at a slightly lower level...
 
-See:
-	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
-	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
-
-v2 -> v3:
-	Throw a compiler error on 32-bit LE.
-
-v1 -> v2:
-	Added ";" at the end of the #ifdef-protected line so it actually compiles
-
-Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
----
- arch/powerpc/include/asm/syscall.h |    7 +++++++
- include/uapi/linux/audit.h         |    1 +
- 2 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 6fa2708..cf7fcab 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -90,6 +90,13 @@ static inline void syscall_set_arguments(struct task_struct *task,
- 
- static inline int syscall_get_arch(void)
- {
-+#ifdef __LITTLE_ENDIAN__
-+	return AUDIT_ARCH_PPC64LE;
-+#ifndef CONFIG_64BIT
-+#error PPC 32-bit Little Endian architecture not supported.
-+#endif /* CONFIG_64BIT */
-+#else /* __LITTLE_ENDIAN__ */
- 	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
-+#endif /* __LITTLE_ENDIAN__ */
- }
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
-index 4d100c8..fa2a6af 100644
---- a/include/uapi/linux/audit.h
-+++ b/include/uapi/linux/audit.h
-@@ -365,6 +365,7 @@ enum {
- #define AUDIT_ARCH_PARISC64	(EM_PARISC|__AUDIT_ARCH_64BIT)
- #define AUDIT_ARCH_PPC		(EM_PPC)
- #define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
-+#define AUDIT_ARCH_PPC64LE	(EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
- #define AUDIT_ARCH_S390		(EM_S390)
- #define AUDIT_ARCH_S390X	(EM_S390|__AUDIT_ARCH_64BIT)
- #define AUDIT_ARCH_SH		(EM_SH)
--- 
-1.7.1
+Ben.
