@@ -1,23 +1,25 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x22a.google.com (mail-lb0-x22a.google.com
- [IPv6:2a00:1450:4010:c04::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 728E71A09DC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 21:27:59 +1100 (AEDT)
-Received: by mail-lb0-f170.google.com with SMTP id 10so1957764lbg.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2014 02:27:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9798E1A0A0D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 21:40:31 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A214B1400A0
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2014 21:40:30 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <scottwood@Freescale.com>, <linuxppc-dev@ozlabs.org>,
+ <devicetree@vger.kernel.org>
+Subject: [PATCH v5 0/6] powerpc/mpc85xx: Add FSL QorIQ DPAA B/QMan support to
+ device tree(s)
+Date: Mon, 8 Dec 2014 04:29:15 -0600
+Message-ID: <1418034561-12034-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1418034294-17584-1-git-send-email-geert@linux-m68k.org>
-References: <1418034294-17584-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 8 Dec 2014 11:27:55 +0100
-Message-ID: <CAMuHMdWqusEzKN_s1Uk+Ak=BrRkoTv=qpK1FT94DH_Tno2j2jA@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.18
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 8, 2014 at 11:24 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.18[1]  to v3.18-rc7[3], the summaries are:
->   - build errors: +13/-11
+v5:	Fix the alloc-ranges property
+	Factorize the SoC specific reserved-memory properties
 
-(ignoring non-interesting things)
+v4:	Add binding for the portals phandle
+	Fix portals phandle
 
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_lfd'
-undeclared (first use in this function):  => 1874:29
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_lfs'
-undeclared (first use in this function):  => 1872:29
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_stfd'
-undeclared (first use in this function):  => 1928:30
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_stfs'
-undeclared (first use in this function):  => 1926:30
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: implicit
-declaration of function 'do_fp_load'
-[-Werror=implicit-function-declaration]:  => 1872:4
-  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: implicit
-declaration of function 'do_fp_store'
-[-Werror=implicit-function-declaration]:  => 1926:4
-  + /home/kisskb/slave/src/arch/powerpc/xmon/xmon.c: error: implicit
-declaration of function 'dump_tlb_44x'
-[-Werror=implicit-function-declaration]:  => 912:4
+v3:	Remove no-map
+	Adjust alloc-ranges for the 32-/36-bit SoC(s)
 
-powerpc-randconfig
+v2:	Remove some reserved-memory properties
+	Split the patchset per IP block
+	Refined patch assignment
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/8168/ (262 out of 119 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/8143/ (262 out of 119 configs)
+Emil Medve (2):
+  dt/bindings: b/qman: Fix the alloc-ranges in the example(s)
+  dt/bindings: b/qman: Add phandle to the portals
 
-Gr{oetje,eeting}s,
+Kumar Gala (4):
+  powerpc/mpc85xx: Create dts components for the FSL QorIQ DPAA BMan
+  powerpc/mpc85xx: Create dts components for the FSL QorIQ DPAA QMan
+  powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support to device tree(s)
+  powerpc/mpc85xx: Add FSL QorIQ DPAA QMan support to device tree(s)
 
-                        Geert
+ Documentation/devicetree/bindings/soc/fsl/bman.txt |  12 +-
+ Documentation/devicetree/bindings/soc/fsl/qman.txt |  14 +-
+ arch/powerpc/boot/dts/b4qds.dtsi                   |  29 +-
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        | 129 ++++-
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           | 195 ++++++-
+ arch/powerpc/boot/dts/fsl/p1023si-post.dtsi        |  80 ++-
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |  24 +-
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |  24 +-
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |  24 +-
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |  24 +-
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |  24 +-
+ arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi |  90 ++++
+ arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi         |  41 ++
+ arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi | 101 ++++
+ arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi         |  41 ++
+ arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi         |  41 ++
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        | 143 ++++-
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        | 231 +++++++-
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        | 583 ++++++++++++++++++++-
+ arch/powerpc/boot/dts/kmcoge4.dts                  |  27 +
+ arch/powerpc/boot/dts/oca4080.dts                  |  27 +
+ arch/powerpc/boot/dts/p1023rdb.dts                 |  30 +-
+ arch/powerpc/boot/dts/p2041rdb.dts                 |  29 +-
+ arch/powerpc/boot/dts/p3041ds.dts                  |  29 +-
+ arch/powerpc/boot/dts/p4080ds.dts                  |  29 +-
+ arch/powerpc/boot/dts/p5020ds.dts                  |  29 +-
+ arch/powerpc/boot/dts/p5040ds.dts                  |  29 +-
+ arch/powerpc/boot/dts/t104xqds.dtsi                |  29 +-
+ arch/powerpc/boot/dts/t104xrdb.dtsi                |  26 +
+ arch/powerpc/boot/dts/t208xqds.dtsi                |  29 +-
+ arch/powerpc/boot/dts/t208xrdb.dtsi                |  27 +
+ arch/powerpc/boot/dts/t4240qds.dts                 |  29 +-
+ arch/powerpc/boot/dts/t4240rdb.dts                 |  27 +
+ 33 files changed, 2221 insertions(+), 25 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1-portals.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-bman1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman1.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-qman3.dtsi
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+2.2.0
