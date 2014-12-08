@@ -1,27 +1,38 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E60E41A0DC6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 07:55:34 +1100 (AEDT)
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 632B014010F
- for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2014 07:55:33 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 21:55:20 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3] i2c: Driver to expose PowerNV platform i2c busses
-Message-ID: <20141208205520.GA12715@katana>
-References: <20141208063039.14356.34770.stgit@localhost.localdomain>
- <1418069595.4827.43.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A6A51A018F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 08:54:52 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 9 Dec 2014 07:54:52 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E6FC42CE8068
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 08:54:47 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB8Lsln634799832
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 08:54:47 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB8Lskfw008322
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 08:54:47 +1100
+Message-ID: <54861E1E.1000206@linux.vnet.ibm.com>
+Date: Tue, 09 Dec 2014 03:24:38 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="uAKRQypu60I7Lcqm"
-In-Reply-To: <1418069595.4827.43.camel@kernel.crashing.org>
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-i2c@vger.kernel.org, devicetree@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3 4/4] powernv: powerpc: Add winkle support for offline
+ cpus
+References: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1417678103-32571-5-git-send-email-shreyas@linux.vnet.ibm.com>
+ <20141208055217.GC4437@drongo>
+In-Reply-To: <20141208055217.GC4437@drongo>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,67 +43,208 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---uAKRQypu60I7Lcqm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Dec 09, 2014 at 07:13:15AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-12-08 at 12:06 +0530, Neelesh Gupta wrote:
-> > The patch exposes the available i2c busses on the PowerNV platform
-> > to the kernel and implements the bus driver to support i2c and
-> > smbus commands.
-> > The driver uses the platform device infrastructure to probe the busses
-> > on the platform and registers them with the i2c driver framework.
->=20
-> Wolfram, what are you remaining objections here ? We need that in
-> distros ASAP ...
+On Monday 08 December 2014 11:22 AM, Paul Mackerras wrote:
+> On Thu, Dec 04, 2014 at 12:58:23PM +0530, Shreyas B. Prabhu wrote:
+>> Winkle is a deep idle state supported in power8 chips. A core enters
+>> winkle when all the threads of the core enter winkle. In this state
+>> power supply to the entire chiplet i.e core, private L2 and private L3
+>> is turned off. As a result it gives higher powersavings compared to
+>> sleep.
+>>
+>> But entering winkle results in a total hypervisor state loss. Hence the
+>> hypervisor context has to be preserved before entering winkle and
+>> restored upon wake up.
+>>
+>> Power-on Reset Engine (PORE) is a dedicated engine which is responsible
+>> for powering on the chiplet during wake up. It can be programmed to
+>> restore the register contests of a few specific registers. This patch
+>> uses PORE to restore register state wherever possible and uses stack to
+>> save and restore rest of the necessary registers.
+>>
+>> With hypervisor state restore things fall under three categories-
+>> per-core state, per-subcore state and per-thread state. To manage this,
+>> extend the infrastructure introduced for sleep. Mainly we add a paca
+>> variable subcore_sibling_mask. Using this and the core_idle_state we can
+>> distingush first thread in core and subcore.
+> 
+> Comments below...
+> 
+>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+>> index 7637889..2b9b5fb 100644
+>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> @@ -102,9 +102,7 @@ system_reset_pSeries:
+>>  #ifdef CONFIG_PPC_P7_NAP
+>>  BEGIN_FTR_SECTION
+>>  	/* Running native on arch 2.06 or later, check if we are
+>> -	 * waking up from nap. We only handle no state loss and
+>> -	 * supervisor state loss. We do -not- handle hypervisor
+>> -	 * state loss at this time.
+>> +	 * waking up from nap/sleep/winkle.
+>>  	 */
+>>  	mfspr	r13,SPRN_SRR1
+>>  	rlwinm.	r13,r13,47-31,30,31
+>> @@ -112,7 +110,17 @@ BEGIN_FTR_SECTION
+>>  
+>>  	cmpwi	cr3,r13,2
+>>  
+>> -	GET_PACA(r13)
+>> +	/* Check if last bit of HSPGR0 is set. This indicates whether we are
+>> +	 * waking up from winkle */
+>> +	li	r3,1
+>> +	mfspr	r4,SPRN_HSPRG0
+>> +	and	r5,r4,r3
+>> +	cmpwi	cr4,r5,1	/* Store result in cr4 for later use */
+>> +
+>> +	andc	r4,r4,r3
+>> +	mtspr	SPRN_HSPRG0,r4
+>> +
+>> +	mr	r13,r4
+> 
+> This seems unnecessarily convoluted.  How about:
+> 
+> 	GET_PACA(r13)
+> 	clrldi	r5,r13,63
+> 	clrrdi	r13,r13,1
+> 	cmpwi	cr4,r5,1
+> 	mtspr	SPRN_HSPRG0,r13
+> 
+Yes, makes more sense. I'll use this.
 
-Oh, I thought we agreed that you take it via powerpc. I still think this
-is the best solution.
+>> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+>> index 8c3a1f4..8102075 100644
+>> --- a/arch/powerpc/kernel/idle_power7.S
+>> +++ b/arch/powerpc/kernel/idle_power7.S
+>> @@ -19,8 +19,24 @@
+>>  #include <asm/kvm_book3s_asm.h>
+>>  #include <asm/opal.h>
+>>  #include <asm/cpuidle.h>
+>> +#include <asm/mmu-hash64.h>
+>>  
+>>  #undef DEBUG
+>> +/*
+>> + * Use unused space in the interrupt stack to save and restore
+>> + * registers for winkle support.
+>> + */
+>> +#define _SDR1	GPR3
+>> +#define _RPR	GPR4
+>> +#define _SPURR	GPR5
+>> +#define _PURR	GPR6
+>> +#define _TSCR	GPR7
+>> +#define _DSCR	GPR8
+>> +#define _AMOR	GPR9
+>> +#define _PMC5	GPR10
+>> +#define _PMC6	GPR11
+> 
+> Why only PMC5 and PMC6 out of all the PMU registers?  What about
+> PMC1-PMC4 and the MMCR registers?  I assume they're lost during winkle
+> state also, aren't they?  If we're not saving them, what's the point
+> of saving and restoring PMC5 and PMC6?
+>
+Yes all PMC and MMCR contents are lost. Using __restore_cpu_power8, the
+MMCR registers are initialized to 0. The reasoning behind specifically
+restoring PMC5 and PMC6 was the fact that they are not programmable and
+count cycles/instructions by default. We suspected that there might be a
+userspace program which relied on PMC5/PMC6 always increasing.
+But now on closer look, since these counters are 32 bit and cycles/
+instruction counts are bound to exceed it, I doubt such userspace programs
+exist. I'll drop PMC5 and PMC6 in the next version.
+ 
+>> +#define _WORT	GPR12
+>> +#define _WORC	GPR13
+>>  
+>>  /* Idle state entry routines */
+>>  
+>> @@ -124,8 +140,8 @@ power7_enter_nap_mode:
+>>  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
+>>  #endif
+>>  	stb	r3,PACA_THREAD_IDLE_STATE(r13)
+>> -	cmpwi	cr1,r3,PNV_THREAD_SLEEP
+>> -	bge	cr1,2f
+>> +	cmpwi	cr3,r3,PNV_THREAD_SLEEP
+>> +	bge	cr3,2f
+>>  	IDLE_STATE_ENTER_SEQ(PPC_NAP)
+>>  	/* No return */
+>>  2:
+>> @@ -154,7 +170,8 @@ pnv_fastsleep_workaround_at_entry:
+>>  	isync
+>>  	bne-	lwarx_loop1
+>>  
+>> -common_enter: /* common code for all the threads entering sleep */
+>> +common_enter: /* common code for all the threads entering sleep  or winkle */
+>> +	bgt	cr3,enter_winkle
+>>  	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+>>  
+>>  fastsleep_workaround_at_entry:
+>> @@ -175,6 +192,34 @@ fastsleep_workaround_at_entry:
+>>  	stw	r0,0(r14)
+>>  	b	common_enter
+>>  
+>> +enter_winkle:
+>> +	/*
+>> +	 * Note all register i.e per-core, per-subcore or per-thread is saved
+>> +	 * here since any thread in the core might wake up first
+>> +	 */
+>> +	mfspr	r3,SPRN_SDR1
+>> +	std	r3,_SDR1(r1)
+>> +	mfspr	r3,SPRN_RPR
+>> +	std	r3,_RPR(r1)
+>> +	mfspr	r3,SPRN_SPURR
+>> +	std	r3,_SPURR(r1)
+>> +	mfspr	r3,SPRN_PURR
+>> +	std	r3,_PURR(r1)
+>> +	mfspr	r3,SPRN_TSCR
+>> +	std	r3,_TSCR(r1)
+>> +	mfspr	r3,SPRN_DSCR
+>> +	std	r3,_DSCR(r1)
+>> +	mfspr	r3,SPRN_AMOR
+>> +	std	r3,_AMOR(r1)
+>> +	mfspr	r3,SPRN_PMC5
+>> +	std	r3,_PMC5(r1)
+>> +	mfspr	r3,SPRN_PMC6
+>> +	std	r3,_PMC6(r1)
+>> +	mfspr	r3,SPRN_WORT
+>> +	std	r3,_WORT(r1)
+>> +	mfspr	r3,SPRN_WORC
+>> +	std	r3,_WORC(r1)
+>> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
+>>  
+>>  _GLOBAL(power7_idle)
+>>  	/* Now check if user or arch enabled NAP mode */
+>> @@ -197,6 +242,12 @@ _GLOBAL(power7_sleep)
+>>  	b	power7_powersave_common
+>>  	/* No return */
+>>  
+>> +_GLOBAL(power7_winkle)
+>> +	li	r3,3
+>> +	li	r4,1
+>> +	b	power7_powersave_common
+>> +	/* No return */
+>> +
+>>  #define CHECK_HMI_INTERRUPT						\
+>>  	mfspr	r0,SPRN_SRR1;						\
+>>  BEGIN_FTR_SECTION_NESTED(66);						\
+>> @@ -238,11 +289,23 @@ lwarx_loop2:
+>>  	bne	core_idle_lock_held
+>>  
+>>  	cmpwi	cr2,r15,0
+>> +	lbz	r4,PACA_SUBCORE_SIBLING_MASK(r13)
+>> +	and	r4,r4,r15
+>> +	cmpwi	cr1,r4,0	/* Check if first in subcore */
+>> +
+>> +	/*
+>> +	 * At this stage
+>> +	 * cr1 - 10 if first thread to wakeup in subcore
+>> +	 * cr2 - 10 if first thread to wakeup in core
+>> +	 * cr3-  01 if waking up from sleep or winkle
+>> +	 * cr4 - 10 if waking up from winkle
+>> +	 */
+> 
+> What do "10" and "01" mean in this comment?  (If they were CR field
+> values in binary they would need to be 3 or 4 bits, not 2.)
+> 
+I'll fix this. 
 
-> I still maintain that it's not reasonable to hold driver for the
-> additions of multi-byte smbus offsets. This is a new feature that will
-> require changes to a number of existing bus and device drivers, so a
-> very pervasive change, and which will be visible to user space, which
-> means that drivers will need to continue supporting the "old" way at
-> least for a while anyway...
-
-Yeah, I agree on that. I am still unsure about the port-name binding,
-but well, if it is needed to fit your PowerNV scheme...
-
-> > Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> >=20
-> > v2 -> v3:
-> > - Added the device tree binding documentation for the driver.
-> > - Sorted the ordering of this new driver added in Makefile.
-> > - Removed populating the superfluous .owner field in 'struct driver'.
-
-Thanks for the updates!
-
-
---uAKRQypu60I7Lcqm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUhhA4AAoJEBQN5MwUoCm2EY0P/1iLRsSLPPyFV+mjyWVdGO9z
-D8V5RTzThia+Fvg/y77Ksssps/so+74OTa8ygDtChuOhMWsM5UJtdxOROJ3rYXzN
-Z0FizogQZLFQHidb+w6P6Cj3b0PhjCNQ2QE+ePX8NLuYjb88IkthadJjkRiVf7+/
-tsR4rJnXuDrywkZeTsQEdvkijKTYTuBwtlYnOOGPO8jUij/diUv9BaP0fVTCV63T
-pKNdOIGnwIzLVmj280V0jlrZ3FqF2K4g5ZFTpzFbcnV8GDVdRZhFgcQViWy7TgwS
-uvVq6Pqkpq+nH1fQO74mJOuCSv+zyPB6TRJbwPVd0cT2Du3H7+9aqOa1Kn6K3Ju7
-hnOUEfUruo652Jt0MAoaHSxmgLnSyziucMrN9+FQQpiKFcagOl85kMrGyRXK7xk7
-riqRMHWoK9ghHtUdgIynbLyToSkABSAHtQRdUb++rZ69DO168n7GuBDc1D0i69Rt
-6Hq1xEubUscjDFNwhGMOgpfQso6AJAiBsuUZ/UEz7f9peTvPqqNWOYZGCY5SMvY4
-YqIaYdZUs3fYLs8Ig8dNswKALjJgrmIH7yWR0s3jxQZwFvo9DSCDbTxGN5qUXNEW
-Cl5M/2OOpqlvOCxDxTs3xB1Zuk/t/TkeUP0zeIR+spoFhItI2NKjk6RlP0Hj/3/5
-bhvwA2UDID6U51gkop7R
-=lKq2
------END PGP SIGNATURE-----
-
---uAKRQypu60I7Lcqm--
+Thanks,
+Shreyas
