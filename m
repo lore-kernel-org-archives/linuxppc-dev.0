@@ -1,41 +1,48 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5165E1A026F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 22:35:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B74471A0627
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 23:03:20 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Mon, 8 Dec 2014 11:35:40 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5D03717D8045
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 11:35:59 +0000 (GMT)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB8BZcUa57933984
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 11:35:38 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB8BZarS032144
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 04:35:37 -0700
-Message-ID: <54858D07.2030403@de.ibm.com>
-Date: Mon, 08 Dec 2014 12:35:35 +0100
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 8 Dec 2014 05:03:18 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 7FD7FC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 06:55:18 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB8C3FYO23527432
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 12:03:15 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB8C3DmI011329
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 07:03:14 -0500
+Message-ID: <5485936F.20901@linux.vnet.ibm.com>
+Date: Mon, 08 Dec 2014 17:32:55 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the access_once tree
-References: <20141208222641.40a64946@canb.auug.org.au>
-In-Reply-To: <20141208222641.40a64946@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-next@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH V2] tick-broadcast: Register for hrtimer based broadcast
+ as the fallback broadcast mode
+References: <20141208065513.3075.48721.stgit@preeti.in.ibm.com>
+ <20141208104828.GA21680@leverpostej>
+In-Reply-To: <20141208104828.GA21680@leverpostej>
+Content-Type: text/plain; charset=UTF-8
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "fweisbec@gmail.com" <fweisbec@gmail.com>,
+ "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
+ Will Deacon <Will.Deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "jingchang.lu@freescale.com" <jingchang.lu@freescale.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,46 +52,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 08.12.2014 um 12:26 schrieb Stephen Rothwell:
-> Hi Christian,
+On 12/08/2014 04:18 PM, Mark Rutland wrote:
+> Hi Preeti,
 > 
-> After merging the acess_once tree, today's linux-next build (powerpc
-> allnoconfig) failed like this:
+> On Mon, Dec 08, 2014 at 06:55:43AM +0000, Preeti U Murthy wrote:
+>> Commit 5d1638acb9f6 ('tick: Introduce hrtimer based broadcast') added a
+>> hrtimer based broadcast mode for those platforms in which local timers stop
+>> when CPUs enter deep idle states. The commit expected the platforms to
+>> register for this mode explicitly when they lacked a better external device
+>> to wake up CPUs in deep idle. Given that more platforms are beginning to use
+>> this mode, we can avoid the call to set it up on every platform that requires
+>> it, by registering for the hrtimer based broadcast mode in the core code if
+>> no better broadcast device is available.
+>>
+>> This commit also helps detect cases where the platform fails to register for
+>> a broadcast device but invokes the help of one when entering deep idle states.
+>> Currently we do not handle this situation at all and call the broadcast clock
+>> device without checking for its existence. This patch will handle such buggy
+>> cases properly.
+>>
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 > 
-> arch/powerpc/mm/hugetlbpage.c: In function 'find_linux_pte_or_hugepte':
-> arch/powerpc/mm/hugetlbpage.c:981:3: error: invalid initializer
->    pud  = ACCESS_ONCE(*pudp);
->    ^
-> arch/powerpc/mm/hugetlbpage.c:993:4: error: invalid initializer
->     pmd  = ACCESS_ONCE(*pmdp);
->     ^
+> I've just given this a go on an arm64 platform (Juno) without any
+> system-wide clock_event_devices registered, and everything works well
+> with CPUs entering and exiting idle states where the cpu-local timers
+> lose state. So:
 > 
-> These are preexisting ...
-> 
-> mm/gup.c: In function 'gup_pmd_range':
-> mm/gup.c:929:3: error: invalid initializer
->    pmd_t pmd = ACCESS_ONCE(*pmdp);
->    ^
-> mm/gup.c:929:3: error: (near initialization for 'pmd')
-> 
-> This is from commit f30c59e921f1 ("mm: Update generic gup
-> implementation to handle hugepage directory") from the powerpc-mpe (and
-> powerpc) tree and so will require a merge fix patch (presumable
-> s/ACCESS_ONCE/READ_ONCE/).
-> 
-> I am not sure how many architectures you are trying to cover, but
-> powerpc is one I care about :-)
-> 
-> I have dropped the access_once tree again today, sorry (its too late at
-> night).
+> Tested-by: Mark Rutland <mark.rutland@arm.com>
 
-Yes, we expect that tightening ACCESS_ONCE will trigger these bugs. I tried to cover everything in Linus master, but next is certainly a new game. It will be pretty hard for me to keep this running when hundreds of trees get merged during 3.19-rc. :-(
+Thanks!
 
-Linus, I see two options:
+> 
+> One minor thing I noticed when testing was that
+> /sys/devices/system/clockevents/broadcast/name contained "(null)",
+> because we never set the name field on the clock_event_device. It's
+> always been that way, but now might be a good time to change that to
+> something like "broadcast_hrtimer".
 
-a: Either we go a full round in linux-next and expect all trees to follow the new rules, so we can merge this for 3.20
-b: Only apply READ/ASSIGN_ONCE and the first fixups for 3.19 and put the ACCESS_ONCE change in next after rc1 so it will go in for 3.20 (or later) so that people can adopt. 
+You mean /sys/devices/system/clockevents/broadcast/current_device right?
 
-Any opinions?
+> 
+> [...]
+> 
+>> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+>> index 2e4cb67..91754b0 100644
+>> --- a/include/linux/clockchips.h
+>> +++ b/include/linux/clockchips.h
+>> @@ -187,11 +187,11 @@ extern int tick_receive_broadcast(void);
+>>  #endif
+>>  
+>>  #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
+>> -extern void tick_setup_hrtimer_broadcast(void);
+>> +extern int __init tick_setup_hrtimer_broadcast(void);
+>>  extern int tick_check_broadcast_expired(void);
+>>  #else
+>>  static inline int tick_check_broadcast_expired(void) { return 0; }
+>> -static inline void tick_setup_hrtimer_broadcast(void) {};
+>> +static inline int __init tick_setup_hrtimer_broadcast(void) { return 0; }
+>>  #endif
+>>  
+>>  #ifdef CONFIG_GENERIC_CLOCKEVENTS
+>> @@ -207,7 +207,7 @@ static inline void clockevents_resume(void) {}
+>>  
+>>  static inline int clockevents_notify(unsigned long reason, void *arg) { return 0; }
+>>  static inline int tick_check_broadcast_expired(void) { return 0; }
+>> -static inline void tick_setup_hrtimer_broadcast(void) {};
+>> +static inline int __init tick_setup_hrtimer_broadcast(void) { return 0; }
+> 
+> With the initcall moved to the driver we have no external users of
+> tick_setup_hrtimer_broadcast, so I think we can remove the prototype
+> entirely from clockchips.h...
+> 
+>>  #endif
+>>  
+>> diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
+>> index eb682d5..5c35995 100644
+>> --- a/kernel/time/tick-broadcast-hrtimer.c
+>> +++ b/kernel/time/tick-broadcast-hrtimer.c
+>> @@ -98,9 +98,11 @@ static enum hrtimer_restart bc_handler(struct hrtimer *t)
+>>  	return HRTIMER_RESTART;
+>>  }
+>>  
+>> -void tick_setup_hrtimer_broadcast(void)
+>> +int __init tick_setup_hrtimer_broadcast(void)
+> 
+> ...and make it static here.
 
-Christian
+Yep will do. Sorry I overlooked this.
+
+> 
+>>  {
+>>  	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+>>  	bctimer.function = bc_handler;
+>>  	clockevents_register_device(&ce_broadcast_hrtimer);
+>> +	return 0;
+>>  }
+>> +early_initcall(tick_setup_hrtimer_broadcast);
+> 
+> Otherwise this looks good to me, thanks for putting this together!
+
+Thanks a lot for the review! Will send out the patch with the above
+corrections.
+
+Regards
+Preeti U Murthy
+> 
+> Mark.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
