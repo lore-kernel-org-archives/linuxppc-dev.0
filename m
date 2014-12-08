@@ -1,27 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <anton@samba.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD2361A05EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 09:48:31 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48A651400A0
- for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2014 09:48:29 +1100 (AEDT)
-Message-ID: <1418075026.13358.4.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3] i2c: Driver to expose PowerNV platform i2c busses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfram Sang <wsa@the-dreams.de>
-Date: Tue, 09 Dec 2014 08:43:46 +1100
-In-Reply-To: <20141208205520.GA12715@katana>
-References: <20141208063039.14356.34770.stgit@localhost.localdomain>
- <1418069595.4827.43.camel@kernel.crashing.org>
- <20141208205520.GA12715@katana>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-i2c@vger.kernel.org, devicetree@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 588561A05BF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 10:58:21 +1100 (AEDT)
+Date: Tue, 9 Dec 2014 10:58:19 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH] powerpc: secondary CPUs signal to master before setting
+ active and online (fixes kernel BUG at kernel/smpboot.c:134!)
+Message-ID: <20141209105819.0e847b4b@kryten>
+In-Reply-To: <20141208211859.6e81ec81@kryten>
+References: <1418009221-12719-1-git-send-email-anton@samba.org>
+ <20141208083408.GA8023@gmail.com> <20141208211859.6e81ec81@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: peterz@infradead.org, yuanhan.liu@linux.intel.com, bsegall@google.com,
+ paulus@samba.org, rafael.j.wysocki@intel.com, torvalds@linux-foundation.org,
+ mingo@redhat.com, pjt@google.com, yuyang.du@intel.com, daniel@numascale.com,
+ rostedt@goodmis.org, subbaram@codeaurora.org, tglx@linutronix.de,
+ fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, sp@datera.io, tj@kernel.org,
+ akpm@linux-foundation.org, computersforpeace@gmail.com, lkp@01.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +31,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-08 at 21:55 +0100, Wolfram Sang wrote:
-> On Tue, Dec 09, 2014 at 07:13:15AM +1100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2014-12-08 at 12:06 +0530, Neelesh Gupta wrote:
-> > > The patch exposes the available i2c busses on the PowerNV platform
-> > > to the kernel and implements the bus driver to support i2c and
-> > > smbus commands.
-> > > The driver uses the platform device infrastructure to probe the busses
-> > > on the platform and registers them with the i2c driver framework.
-> > 
-> > Wolfram, what are you remaining objections here ? We need that in
-> > distros ASAP ...
-> 
-> Oh, I thought we agreed that you take it via powerpc. I still think this
-> is the best solution.
+Hi Ingo,
 
-I threatened to do that :-) I don't remember you replying, did I miss
-it ? If you are ok with the driver and are happy for me to take it,
-please send an Ack.
+> At that point I thought the previous task_cpu() was somewhat ingrained
+> in the scheduler and came up with the patch. If not, we could go on a
+> hunt to see what else needs fixing.
 
-> > I still maintain that it's not reasonable to hold driver for the
-> > additions of multi-byte smbus offsets. This is a new feature that will
-> > require changes to a number of existing bus and device drivers, so a
-> > very pervasive change, and which will be visible to user space, which
-> > means that drivers will need to continue supporting the "old" way at
-> > least for a while anyway...
-> 
-> Yeah, I agree on that. I am still unsure about the port-name binding,
-> but well, if it is needed to fit your PowerNV scheme...
+I had another look. The scheduled does indeed make assumptions about the
+previous task_cpu, but we have a hammer to fix it up called
+select_fallback_rq.
 
->From a binding perspective, it's just a piece of additional info that
-the firmware provides for convenience. That we use it as the i2c port
-name in Linux makes sense, it means that when listing the i2c ports,
-it's immediately clear to the user which is which, it's not used
-functionally by any driver or piece of code, but it's handy for people
-doing things like manufacturing of machines, to know what bus to poke to
-program a VPD EEPROM or test if a chip responds for example.
+I annotated select_fallback_rq, and did hit a case where the CPU was
+not active. ppc64 patch below.
 
-Cheers,
-Ben.
+I think x86 have a similar (although harder to hit) issue. While it
+does wait for the cpu_online bit to be set:
+
+        while (!cpu_online(cpu)) {
+                cpu_relax();
+                touch_nmi_watchdog();
+        }
+
+The cpu_active bit is set after the cpu_online bit:
+
+void set_cpu_online(unsigned int cpu, bool online)
+{
+        if (online) {
+                cpumask_set_cpu(cpu, to_cpumask(cpu_online_bits));
+                cpumask_set_cpu(cpu, to_cpumask(cpu_active_bits));
+
+If the CPU got delayed between the two stores (eg a KVM guest had the CPU
+scheduled out), then we'd end up with cpu_active unset and hit the same
+issue in select_fallback_rq.
+
+Anton
+--
+
+I have a busy ppc64le KVM box where guests sometimes hit the infamous
+"kernel BUG at kernel/smpboot.c:134!" issue during boot:
+
+BUG_ON(td->cpu != smp_processor_id());
+
+Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
+output confirms it:
+
+CPU: 0
+Comm: watchdog/130
+
+The problem is that we aren't ensuring the CPU active and online bits are set
+before allowing the master to continue on. The master unparks the secondary
+CPUs kthreads and the scheduler looks for a CPU to run on. It calls
+select_task_rq and realises the suggested CPU is not in the cpus_allowed
+mask. It then ends up in select_fallback_rq, and since the active and
+online bits aren't set we choose some other CPU to run on.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/kernel/smp.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 71e186d..d40e46e 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -700,7 +700,6 @@ void start_secondary(void *unused)
+ 	smp_store_cpu_info(cpu);
+ 	set_dec(tb_ticks_per_jiffy);
+ 	preempt_disable();
+-	cpu_callin_map[cpu] = 1;
+ 
+ 	if (smp_ops->setup_cpu)
+ 		smp_ops->setup_cpu(cpu);
+@@ -739,6 +738,14 @@ void start_secondary(void *unused)
+ 	notify_cpu_starting(cpu);
+ 	set_cpu_online(cpu, true);
+ 
++	/*
++	 * CPU must be marked active and online before we signal back to the
++	 * master, because the scheduler needs to see the cpu_online and
++	 * cpu_active bits set.
++	 */
++	smp_wmb();
++	cpu_callin_map[cpu] = 1;
++
+ 	local_irq_enable();
+ 
+ 	cpu_startup_entry(CPUHP_ONLINE);
+-- 
+2.1.0
