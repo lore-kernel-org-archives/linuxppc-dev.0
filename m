@@ -1,23 +1,35 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-qc0-x231.google.com (mail-qc0-x231.google.com
+ [IPv6:2607:f8b0:400d:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CEB061A04F2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 14:33:58 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 14:33:51 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/4] powerpc/powernv: Enable Offline CPUs to enter
- deep idle states
-Message-ID: <20141208033351.GA4437@drongo>
-References: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1417678103-32571-3-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEFF11A0557
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 15:28:36 +1100 (AEDT)
+Received: by mail-qc0-f177.google.com with SMTP id x3so2962562qcv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Dec 2014 20:28:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417678103-32571-3-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Sender: linus971@gmail.com
+In-Reply-To: <1418009221-12719-1-git-send-email-anton@samba.org>
+References: <1418009221-12719-1-git-send-email-anton@samba.org>
+Date: Sun, 7 Dec 2014 20:28:34 -0800
+Message-ID: <CA+55aFw6gMN5VxONPo9xtJA_+p2iLArSaK-m_4vDL+L07Z6vuA@mail.gmail.com>
+Subject: Re: [PATCH] kthread: kthread_bind fails to enforce CPU affinity
+ (fixes kernel BUG at kernel/smpboot.c:134!)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: yuyang.du@intel.com, Brian Norris <computersforpeace@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Paul Turner <pjt@google.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Yuanhan Liu <yuanhan.liu@linux.intel.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Benjamin Segall <bsegall@google.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@redhat.com>, sp@datera.io,
+ Daniel J Blueman <daniel@numascale.com>, Tejun Heo <tj@kernel.org>,
+ subbaram@codeaurora.org, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>, lkp@01.org,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2014 at 12:58:21PM +0530, Shreyas B. Prabhu wrote:
-> From: "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>
-> 
-> The secondary threads should enter deep idle states so as to gain maximum
-> powersavings when the entire core is offline. To do so the offline path
-> must be made aware of the available deepest idle state. Hence probe the
-> device tree for the possible idle states in powernv core code and
-> expose the deepest idle state through flags.
-> 
-> Since the  device tree is probed by the cpuidle driver as well, move
-> the parameters required to discover the idle states into an appropriate
-> common place to both the driver and the powernv core code.
-> 
-> Another point is that fastsleep idle state may require workarounds in
-> the kernel to function properly. This workaround is introduced in the
-> subsequent patches. However neither the cpuidle driver or the hotplug
-> path need be bothered about this workaround.
-> 
-> They will be taken care of by the core powernv code.
-> 
-> Originally-by: Srivatsa S. Bhat <srivatsa@mit.edu>
-> Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+On Sun, Dec 7, 2014 at 7:27 PM, Anton Blanchard <anton@samba.org> wrote:
+>
+> Since we cannot call set_task_cpu (the task is in a sleeping state),
+> just do an explicit set of task_thread_info(p)->cpu.
 
-Reviewed-by: Paul Mackerras <paulus@samba.org>
+Scheduler people: is this sufficient and ok?
+
+The __set_task_cpu() function does various other things too:
+
+        set_task_rq(p, cpu);
+  #ifdef CONFIG_SMP
+        /*
+         * After ->cpu is set up to a new value, task_rq_lock(p, ...) can be
+         * successfuly executed on another CPU. We must ensure that updates of
+         * per-task data have been completed by this moment.
+         */
+        smp_wmb();
+        task_thread_info(p)->cpu = cpu;
+        p->wake_cpu = cpu;
+  #endif
+
+which makes me worry about just setting the thread_info->cpu value.
+That set_task_rq() initializes various group scheduling things, an
+dthat whole "wake_cpu" thing seems relevant too.
+
+I'm not saying the patch is wrong, I just want confirmation/ack for
+it. Although to be honest, I'd rather see this come in through the
+scheduler tree anyway.
+
+Hmm? This seems to go back to 2.6.33 if that "Fixes" line is accurate,
+so it's been around forever (almost exactly five years). Comments?
+
+                    Linus
