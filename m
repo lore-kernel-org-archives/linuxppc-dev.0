@@ -1,21 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E04381A0344
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 16:52:24 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 16:52:17 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/4] powernv: powerpc: Add winkle support for offline
- cpus
-Message-ID: <20141208055217.GC4437@drongo>
-References: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1417678103-32571-5-git-send-email-shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417678103-32571-5-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3A8FC1A04D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 17:30:30 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 8 Dec 2014 16:30:29 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 591442CE806B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 17:30:26 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB86UQut33357928
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 17:30:26 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB86UP7q028909
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 17:30:26 +1100
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/5] powerpc: Fix handling of DSCR related facility
+ unavailable exception
+Date: Mon,  8 Dec 2014 12:00:08 +0530
+Message-Id: <1418020212-4303-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,192 +36,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2014 at 12:58:23PM +0530, Shreyas B. Prabhu wrote:
-> Winkle is a deep idle state supported in power8 chips. A core enters
-> winkle when all the threads of the core enter winkle. In this state
-> power supply to the entire chiplet i.e core, private L2 and private L3
-> is turned off. As a result it gives higher powersavings compared to
-> sleep.
-> 
-> But entering winkle results in a total hypervisor state loss. Hence the
-> hypervisor context has to be preserved before entering winkle and
-> restored upon wake up.
-> 
-> Power-on Reset Engine (PORE) is a dedicated engine which is responsible
-> for powering on the chiplet during wake up. It can be programmed to
-> restore the register contests of a few specific registers. This patch
-> uses PORE to restore register state wherever possible and uses stack to
-> save and restore rest of the necessary registers.
-> 
-> With hypervisor state restore things fall under three categories-
-> per-core state, per-subcore state and per-thread state. To manage this,
-> extend the infrastructure introduced for sleep. Mainly we add a paca
-> variable subcore_sibling_mask. Using this and the core_idle_state we can
-> distingush first thread in core and subcore.
+Currently DSCR (Data Stream Control Register) can be accessed with
+mfspr or mtspr instructions inside a thread via two different SPR
+numbers. One being the user accessible problem state SPR number 0x03
+and the other being the privilege state SPR number 0x11. All access
+through the privilege state SPR number get emulated through illegal
+instruction exception. Any access through the problem state SPR number
+raises one facility unavailable exception which sets the thread based
+dscr_inherit bit and enables DSCR facility through FSCR register thus
+allowing direct access to DSCR without going through this exception in
+the future. We set the thread.dscr_inherit bit whether the access was
+with mfspr or mtspr instruction which is neither correct nor does it
+match the behaviour through the instruction emulation code path driven
+from privilege state SPR number. User currently observes two different
+kind of behaviour when accessing the DSCR through these two SPR numbers.
+This problem can be observed through these two test cases by replacing
+the privilege state SPR number with the problem state SPR number.
 
-Comments below...
+	(1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+	(2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 7637889..2b9b5fb 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -102,9 +102,7 @@ system_reset_pSeries:
->  #ifdef CONFIG_PPC_P7_NAP
->  BEGIN_FTR_SECTION
->  	/* Running native on arch 2.06 or later, check if we are
-> -	 * waking up from nap. We only handle no state loss and
-> -	 * supervisor state loss. We do -not- handle hypervisor
-> -	 * state loss at this time.
-> +	 * waking up from nap/sleep/winkle.
->  	 */
->  	mfspr	r13,SPRN_SRR1
->  	rlwinm.	r13,r13,47-31,30,31
-> @@ -112,7 +110,17 @@ BEGIN_FTR_SECTION
->  
->  	cmpwi	cr3,r13,2
->  
-> -	GET_PACA(r13)
-> +	/* Check if last bit of HSPGR0 is set. This indicates whether we are
-> +	 * waking up from winkle */
-> +	li	r3,1
-> +	mfspr	r4,SPRN_HSPRG0
-> +	and	r5,r4,r3
-> +	cmpwi	cr4,r5,1	/* Store result in cr4 for later use */
-> +
-> +	andc	r4,r4,r3
-> +	mtspr	SPRN_HSPRG0,r4
-> +
-> +	mr	r13,r4
+This patch fixes the problem by making sure that the behaviour visible
+to the user remains the same irrespective of which SPR number is being
+used. Inside facility unavailable exception, we check whether it was
+cuased by a mfspr or a mtspr isntrucction. In case of mfspr instruction,
+just emulate the instruction. In case of mtspr instruction, set the
+thread based dscr_inherit bit and also enable the facility through FSCR.
+All user SPR based mfspr instruction will be emulated till one user SPR
+based mtspr has been executed.
 
-This seems unnecessarily convoluted.  How about:
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/traps.c | 43 ++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 38 insertions(+), 5 deletions(-)
 
-	GET_PACA(r13)
-	clrldi	r5,r13,63
-	clrrdi	r13,r13,1
-	cmpwi	cr4,r5,1
-	mtspr	SPRN_HSPRG0,r13
-
-> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-> index 8c3a1f4..8102075 100644
-> --- a/arch/powerpc/kernel/idle_power7.S
-> +++ b/arch/powerpc/kernel/idle_power7.S
-> @@ -19,8 +19,24 @@
->  #include <asm/kvm_book3s_asm.h>
->  #include <asm/opal.h>
->  #include <asm/cpuidle.h>
-> +#include <asm/mmu-hash64.h>
->  
->  #undef DEBUG
-> +/*
-> + * Use unused space in the interrupt stack to save and restore
-> + * registers for winkle support.
-> + */
-> +#define _SDR1	GPR3
-> +#define _RPR	GPR4
-> +#define _SPURR	GPR5
-> +#define _PURR	GPR6
-> +#define _TSCR	GPR7
-> +#define _DSCR	GPR8
-> +#define _AMOR	GPR9
-> +#define _PMC5	GPR10
-> +#define _PMC6	GPR11
-
-Why only PMC5 and PMC6 out of all the PMU registers?  What about
-PMC1-PMC4 and the MMCR registers?  I assume they're lost during winkle
-state also, aren't they?  If we're not saving them, what's the point
-of saving and restoring PMC5 and PMC6?
-
-> +#define _WORT	GPR12
-> +#define _WORC	GPR13
->  
->  /* Idle state entry routines */
->  
-> @@ -124,8 +140,8 @@ power7_enter_nap_mode:
->  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
->  #endif
->  	stb	r3,PACA_THREAD_IDLE_STATE(r13)
-> -	cmpwi	cr1,r3,PNV_THREAD_SLEEP
-> -	bge	cr1,2f
-> +	cmpwi	cr3,r3,PNV_THREAD_SLEEP
-> +	bge	cr3,2f
->  	IDLE_STATE_ENTER_SEQ(PPC_NAP)
->  	/* No return */
->  2:
-> @@ -154,7 +170,8 @@ pnv_fastsleep_workaround_at_entry:
->  	isync
->  	bne-	lwarx_loop1
->  
-> -common_enter: /* common code for all the threads entering sleep */
-> +common_enter: /* common code for all the threads entering sleep  or winkle */
-> +	bgt	cr3,enter_winkle
->  	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
->  
->  fastsleep_workaround_at_entry:
-> @@ -175,6 +192,34 @@ fastsleep_workaround_at_entry:
->  	stw	r0,0(r14)
->  	b	common_enter
->  
-> +enter_winkle:
-> +	/*
-> +	 * Note all register i.e per-core, per-subcore or per-thread is saved
-> +	 * here since any thread in the core might wake up first
-> +	 */
-> +	mfspr	r3,SPRN_SDR1
-> +	std	r3,_SDR1(r1)
-> +	mfspr	r3,SPRN_RPR
-> +	std	r3,_RPR(r1)
-> +	mfspr	r3,SPRN_SPURR
-> +	std	r3,_SPURR(r1)
-> +	mfspr	r3,SPRN_PURR
-> +	std	r3,_PURR(r1)
-> +	mfspr	r3,SPRN_TSCR
-> +	std	r3,_TSCR(r1)
-> +	mfspr	r3,SPRN_DSCR
-> +	std	r3,_DSCR(r1)
-> +	mfspr	r3,SPRN_AMOR
-> +	std	r3,_AMOR(r1)
-> +	mfspr	r3,SPRN_PMC5
-> +	std	r3,_PMC5(r1)
-> +	mfspr	r3,SPRN_PMC6
-> +	std	r3,_PMC6(r1)
-> +	mfspr	r3,SPRN_WORT
-> +	std	r3,_WORT(r1)
-> +	mfspr	r3,SPRN_WORC
-> +	std	r3,_WORC(r1)
-> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
->  
->  _GLOBAL(power7_idle)
->  	/* Now check if user or arch enabled NAP mode */
-> @@ -197,6 +242,12 @@ _GLOBAL(power7_sleep)
->  	b	power7_powersave_common
->  	/* No return */
->  
-> +_GLOBAL(power7_winkle)
-> +	li	r3,3
-> +	li	r4,1
-> +	b	power7_powersave_common
-> +	/* No return */
-> +
->  #define CHECK_HMI_INTERRUPT						\
->  	mfspr	r0,SPRN_SRR1;						\
->  BEGIN_FTR_SECTION_NESTED(66);						\
-> @@ -238,11 +289,23 @@ lwarx_loop2:
->  	bne	core_idle_lock_held
->  
->  	cmpwi	cr2,r15,0
-> +	lbz	r4,PACA_SUBCORE_SIBLING_MASK(r13)
-> +	and	r4,r4,r15
-> +	cmpwi	cr1,r4,0	/* Check if first in subcore */
-> +
-> +	/*
-> +	 * At this stage
-> +	 * cr1 - 10 if first thread to wakeup in subcore
-> +	 * cr2 - 10 if first thread to wakeup in core
-> +	 * cr3-  01 if waking up from sleep or winkle
-> +	 * cr4 - 10 if waking up from winkle
-> +	 */
-
-What do "10" and "01" mean in this comment?  (If they were CR field
-values in binary they would need to be 3 or 4 bits, not 2.)
-
-Paul.
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 0dc43f9..d85a3e7 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1377,6 +1377,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 	};
+ 	char *facility = "unknown";
+ 	u64 value;
++	u32 instword;
+ 	u8 status;
+ 	bool hv;
+ 
+@@ -1388,12 +1389,44 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 
+ 	status = value >> 56;
+ 	if (status == FSCR_DSCR_LG) {
+-		/* User is acessing the DSCR.  Set the inherit bit and allow
+-		 * the user to set it directly in future by setting via the
+-		 * FSCR DSCR bit.  We always leave HFSCR DSCR set.
++		/*
++		 * User is accessing the DSCR register using the problem
++		 * state only SPR number (0x03) either through a mfspr or
++		 * a mtspr instruction. If it is a write attempt through
++		 * a mtspr, then we set the inherit bit. This also allows
++		 * the user to write or read the register directly in the
++		 * future by setting via the FSCR DSCR bit. But in case it
++		 * is a read DSCR attempt through a mfspr instruction, we
++		 * just emulate the instruction instead. This code path will
++		 * always emulate all the mfspr instructions till the user
++		 * has attempted atleast one mtspr instruction. This way it
++		 * preserves the same behaviour when the user is accessing
++		 * the DSCR through privilege level only SPR number (0x11)
++		 * which is emulated through illegal instruction exception.
++		 * We always leave HFSCR DSCR set.
+ 		 */
+-		current->thread.dscr_inherit = 1;
+-		mtspr(SPRN_FSCR, value | FSCR_DSCR);
++		if (get_user(instword, (u32 __user *)(regs->nip))) {
++			pr_err("Failed to fetch the user instruction\n");
++			return;
++		}
++
++		/* Write into DSCR (mtspr 0x03, RS) */
++		if ((instword & PPC_INST_MTSPR_DSCR_USER_MASK)
++				== PPC_INST_MTSPR_DSCR_USER) {
++			current->thread.dscr_inherit = 1;
++			mtspr(SPRN_FSCR, value | FSCR_DSCR);
++		}
++
++		/* Read from DSCR (mfspr RT, 0x03) */
++		if ((instword & PPC_INST_MFSPR_DSCR_USER_MASK)
++				== PPC_INST_MFSPR_DSCR_USER) {
++			if (emulate_instruction(regs)) {
++				pr_err("DSCR based mfspr emulation failed\n");
++				return;
++			}
++			regs->nip += 4;
++			emulate_single_step(regs);
++		}
+ 		return;
+ 	}
+ 
+-- 
+1.9.3
