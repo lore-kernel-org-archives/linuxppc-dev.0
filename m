@@ -1,14 +1,22 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from filtteri1.pp.htv.fi (filtteri1.pp.htv.fi [213.243.153.184])
- by lists.ozlabs.org (Postfix) with ESMTP id F02901A08B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 13:04:02 +1100 (AEDT)
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Phil Carmody <pc+lkml@asdf.org>
-Subject: [PATCH RESEND 1/2] powerpc/via-pmu: fix error path in find_via_pmu()
-Date: Mon,  8 Dec 2014 03:57:37 +0200
-Message-Id: <1418003858-870-1-git-send-email-aaro.koskinen@iki.fi>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E6B6F1A025B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 14:27:02 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+ peterz@infradead.org, tglx@linutronix.de, mingo@redhat.com,
+ rostedt@goodmis.org, tj@kernel.org, fengguang.wu@intel.com,
+ rafael.j.wysocki@intel.com, yuyang.du@intel.com, lkp@01.org,
+ yuanhan.liu@linux.intel.com, pjt@google.com, bsegall@google.com,
+ daniel@numascale.com, subbaram@codeaurora.org, computersforpeace@gmail.com,
+ sp@datera.io
+Subject: [PATCH] kthread: kthread_bind fails to enforce CPU affinity (fixes
+ kernel BUG at kernel/smpboot.c:134!)
+Date: Mon,  8 Dec 2014 14:27:01 +1100
+Message-Id: <1418009221-12719-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,71 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Phil Carmody <pc+lkml@asdf.org>
+I have a busy ppc64le KVM box where guests sometimes hit the infamous
+"kernel BUG at kernel/smpboot.c:134!" issue during boot:
 
-Cleanup was not in the reverse order from the set-up, so not all
-the gotos made sense, and also it was being avoided completely upon
-failure of init_pmu().
+BUG_ON(td->cpu != smp_processor_id());
 
-Signed-off-by: Phil Carmody <pc+lkml@asdf.org>
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
+output confirms it:
+
+CPU: 0
+Comm: watchdog/130
+
+The issue is in kthread_bind where we set the cpus_allowed mask, but do
+not touch task_thread_info(p)->cpu. The scheduler assumes the previously
+scheduled CPU is in the cpus_allowed mask, but in this case we are
+moving a thread to another CPU so it is not.
+
+We used to call set_task_cpu which sets task_thread_info(p)->cpu (in fact
+kthread_bind still has a comment suggesting this). That was removed in
+e2912009fb7b ("sched: Ensure set_task_cpu() is never called on blocked
+tasks").
+
+Since we cannot call set_task_cpu (the task is in a sleeping state),
+just do an explicit set of task_thread_info(p)->cpu.
+
+Fixes: e2912009fb7b ("sched: Ensure set_task_cpu() is never called on blocked tasks")
+Cc: stable@vger.kernel.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- drivers/macintosh/via-pmu.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+ kernel/kthread.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index dee88e5..6221235 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -332,7 +332,7 @@ int __init find_via_pmu(void)
- 		}
- 		if (gpio_reg == NULL) {
- 			printk(KERN_ERR "via-pmu: Can't find GPIO reg !\n");
--			goto fail_gpio;
-+			goto fail;
- 		}
- 	} else
- 		pmu_kind = PMU_UNKNOWN;
-@@ -340,7 +340,7 @@ int __init find_via_pmu(void)
- 	via = ioremap(taddr, 0x2000);
- 	if (via == NULL) {
- 		printk(KERN_ERR "via-pmu: Can't map address !\n");
--		goto fail;
-+		goto fail_via_remap;
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 10e489c..e40ab1d 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -327,13 +327,14 @@ EXPORT_SYMBOL(kthread_create_on_node);
+ 
+ static void __kthread_bind(struct task_struct *p, unsigned int cpu, long state)
+ {
+-	/* Must have done schedule() in kthread() before we set_task_cpu */
++	/* Must have done schedule() in kthread() before we change affinity */
+ 	if (!wait_task_inactive(p, state)) {
+ 		WARN_ON(1);
+ 		return;
  	}
- 	
- 	out_8(&via[IER], IER_CLR | 0x7f);	/* disable all intrs */
-@@ -348,10 +348,8 @@ int __init find_via_pmu(void)
- 
- 	pmu_state = idle;
- 
--	if (!init_pmu()) {
--		via = NULL;
--		return 0;
--	}
-+	if (!init_pmu())
-+		goto fail_init;
- 
- 	printk(KERN_INFO "PMU driver v%d initialized for %s, firmware: %02x\n",
- 	       PMU_DRIVER_VERSION, pbook_type[pmu_kind], pmu_version);
-@@ -359,11 +357,15 @@ int __init find_via_pmu(void)
- 	sys_ctrler = SYS_CTRLER_PMU;
- 	
- 	return 1;
-- fail:
--	of_node_put(vias);
-+
-+ fail_init:
-+	iounmap(via);
-+	via = NULL;
-+ fail_via_remap:
- 	iounmap(gpio_reg);
- 	gpio_reg = NULL;
-- fail_gpio:
-+ fail:
-+	of_node_put(vias);
- 	vias = NULL;
- 	return 0;
+ 	/* It's safe because the task is inactive. */
+ 	do_set_cpus_allowed(p, cpumask_of(cpu));
++	task_thread_info(p)->cpu = cpu;
+ 	p->flags |= PF_NO_SETAFFINITY;
  }
+ 
 -- 
-2.2.0
+2.1.0
