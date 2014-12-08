@@ -1,27 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-x22a.google.com (mail-lb0-x22a.google.com
+ [IPv6:2a00:1450:4010:c04::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D3C931A09DC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 21:19:01 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 21:18:59 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] kthread: kthread_bind fails to enforce CPU affinity
- (fixes kernel BUG at kernel/smpboot.c:134!)
-Message-ID: <20141208211859.6e81ec81@kryten>
-In-Reply-To: <20141208083408.GA8023@gmail.com>
-References: <1418009221-12719-1-git-send-email-anton@samba.org>
- <20141208083408.GA8023@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 728E71A09DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 21:27:59 +1100 (AEDT)
+Received: by mail-lb0-f170.google.com with SMTP id 10so1957764lbg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2014 02:27:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: yuyang.du@intel.com, computersforpeace@gmail.com, peterz@infradead.org,
- lkp@01.org, rafael.j.wysocki@intel.com, yuanhan.liu@linux.intel.com,
- rostedt@goodmis.org, linux-kernel@vger.kernel.org, bsegall@google.com,
- linuxppc-dev@lists.ozlabs.org, mingo@redhat.com, sp@datera.io,
- daniel@numascale.com, tj@kernel.org, subbaram@codeaurora.org,
- akpm@linux-foundation.org, fengguang.wu@intel.com,
- torvalds@linux-foundation.org, tglx@linutronix.de, pjt@google.com
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1418034294-17584-1-git-send-email-geert@linux-m68k.org>
+References: <1418034294-17584-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 8 Dec 2014 11:27:55 +0100
+Message-ID: <CAMuHMdWqusEzKN_s1Uk+Ak=BrRkoTv=qpK1FT94DH_Tno2j2jA@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.18
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Dec 8, 2014 at 11:24 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.18[1]  to v3.18-rc7[3], the summaries are:
+>   - build errors: +13/-11
 
-Hi Ingo,
+(ignoring non-interesting things)
 
-> So we cannot call set_task_cpu() because in the normal life time 
-> of a task the ->cpu value gets set on wakeup. So if a task is 
-> blocked right now, and its affinity changes, it ought to get a 
-> correct ->cpu selected on wakeup. The affinity mask and the 
-> current value of ->cpu getting out of sync is thus 'normal'.
-> 
-> (Check for example how set_cpus_allowed_ptr() works: we first set 
-> the new allowed mask, then do we migrate the task away if 
-> necessary.)
-> 
-> In the kthread_bind() case this is explicitly assumed: it only 
-> calls do_set_cpus_allowed().
-> 
-> But obviously the bug triggers in kernel/smpboot.c, and that 
-> assert shows a real bug - and your patch makes the assert go 
-> away, so the question is, how did the kthread get woken up and 
-> put on a runqueue without its ->cpu getting set?
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_lfd'
+undeclared (first use in this function):  => 1874:29
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_lfs'
+undeclared (first use in this function):  => 1872:29
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_stfd'
+undeclared (first use in this function):  => 1928:30
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: 'do_stfs'
+undeclared (first use in this function):  => 1926:30
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: implicit
+declaration of function 'do_fp_load'
+[-Werror=implicit-function-declaration]:  => 1872:4
+  + /home/kisskb/slave/src/arch/powerpc/lib/sstep.c: error: implicit
+declaration of function 'do_fp_store'
+[-Werror=implicit-function-declaration]:  => 1926:4
+  + /home/kisskb/slave/src/arch/powerpc/xmon/xmon.c: error: implicit
+declaration of function 'dump_tlb_44x'
+[-Werror=implicit-function-declaration]:  => 912:4
 
-I started going down this line earlier today, and found things like:
+powerpc-randconfig
 
-select_task_rq_fair:
+> [1] http://kisskb.ellerman.id.au/kisskb/head/8168/ (262 out of 119 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/8143/ (262 out of 119 configs)
 
-        if (p->nr_cpus_allowed == 1)
-                return prev_cpu;
+Gr{oetje,eeting}s,
 
-I tried returning cpumask_first(tsk_cpus_allowed()) instead, and while
-I couldn't hit the BUG I did manage to get a scheduler lockup during
-testing.
+                        Geert
 
-At that point I thought the previous task_cpu() was somewhat ingrained
-in the scheduler and came up with the patch. If not, we could go on a
-hunt to see what else needs fixing.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Anton
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
