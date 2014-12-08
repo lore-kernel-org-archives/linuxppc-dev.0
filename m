@@ -1,48 +1,21 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7298E1A010C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 16:29:50 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sun, 7 Dec 2014 22:29:47 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8941938C804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 00:29:43 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB85Thkp28639462
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 05:29:43 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB85TgMg015122
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 00:29:43 -0500
-Message-ID: <5485373B.302@linux.vnet.ibm.com>
-Date: Mon, 08 Dec 2014 10:59:31 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E04381A0344
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 16:52:24 +1100 (AEDT)
+Date: Mon, 8 Dec 2014 16:52:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/4] powernv: powerpc: Add winkle support for offline
+ cpus
+Message-ID: <20141208055217.GC4437@drongo>
+References: <1417678103-32571-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1417678103-32571-5-git-send-email-shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] tick-broadcast: Register for hrtimer based broadcast
- as the default broadcast mode
-References: <20141205124756.25803.4988.stgit@preeti.in.ibm.com>
- <20141205133908.GA21313@leverpostej>
-In-Reply-To: <20141205133908.GA21313@leverpostej>
-Content-Type: text/plain; charset=UTF-8
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "fweisbec@gmail.com" <fweisbec@gmail.com>,
- "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
- Will Deacon <Will.Deacon@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "jingchang.lu@freescale.com" <jingchang.lu@freescale.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1417678103-32571-5-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,51 +25,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/05/2014 07:09 PM, Mark Rutland wrote:
-> Hi Preeti,
+On Thu, Dec 04, 2014 at 12:58:23PM +0530, Shreyas B. Prabhu wrote:
+> Winkle is a deep idle state supported in power8 chips. A core enters
+> winkle when all the threads of the core enter winkle. In this state
+> power supply to the entire chiplet i.e core, private L2 and private L3
+> is turned off. As a result it gives higher powersavings compared to
+> sleep.
 > 
-> Moving this out of the architecture code looks good to me!
+> But entering winkle results in a total hypervisor state loss. Hence the
+> hypervisor context has to be preserved before entering winkle and
+> restored upon wake up.
 > 
-> I have a couple of minor comments below.
-<snip>
-
->>  
->> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
->> index ec1791f..6044a51 100644
->> --- a/kernel/time/timekeeping.c
->> +++ b/kernel/time/timekeeping.c
->> @@ -1016,6 +1016,10 @@ void __init timekeeping_init(void)
->>  		boot.tv_sec = 0;
->>  		boot.tv_nsec = 0;
->>  	}
->> +	/* Register for hrtimer based broadcast as the default timekeeping
->> +	 * mode in deep idle states.
->> +	 */
+> Power-on Reset Engine (PORE) is a dedicated engine which is responsible
+> for powering on the chiplet during wake up. It can be programmed to
+> restore the register contests of a few specific registers. This patch
+> uses PORE to restore register state wherever possible and uses stack to
+> save and restore rest of the necessary registers.
 > 
-> Nit: for code style this should have a newline after the '/*' (and we
-> should probably have a newline before that anyway.
-> 
->> +	tick_setup_hrtimer_broadcast();
-> 
-> We register the generic dummy timer via an early_initcall, which keeps
-> all the logic in the dummy timer driver. Are we able to do the same of
-> the broadcast hrtimer? Or is there some ordering constraint we need to
-> meet?
+> With hypervisor state restore things fall under three categories-
+> per-core state, per-subcore state and per-thread state. To manage this,
+> extend the infrastructure introduced for sleep. Mainly we add a paca
+> variable subcore_sibling_mask. Using this and the core_idle_state we can
+> distingush first thread in core and subcore.
 
-Yes this is doable. There are no ordering constraints. Placing it in an
-early_initcall() will enable it to run before initializing SMP and
-cpuidle, which is perfect (we do not have any per-cpu initializations
-and we do not want cpus to begin entering idle states before this
-hrtimer is initialized).
+Comments below...
 
-It also runs after the hrtimer/clockevents infrastructure has been
-initialized, which is good since we need them. The broadcast hrtimer
-will thus only get registered as a broadcast device if no other clock
-device has managed to register itself as one.
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 7637889..2b9b5fb 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -102,9 +102,7 @@ system_reset_pSeries:
+>  #ifdef CONFIG_PPC_P7_NAP
+>  BEGIN_FTR_SECTION
+>  	/* Running native on arch 2.06 or later, check if we are
+> -	 * waking up from nap. We only handle no state loss and
+> -	 * supervisor state loss. We do -not- handle hypervisor
+> -	 * state loss at this time.
+> +	 * waking up from nap/sleep/winkle.
+>  	 */
+>  	mfspr	r13,SPRN_SRR1
+>  	rlwinm.	r13,r13,47-31,30,31
+> @@ -112,7 +110,17 @@ BEGIN_FTR_SECTION
+>  
+>  	cmpwi	cr3,r13,2
+>  
+> -	GET_PACA(r13)
+> +	/* Check if last bit of HSPGR0 is set. This indicates whether we are
+> +	 * waking up from winkle */
+> +	li	r3,1
+> +	mfspr	r4,SPRN_HSPRG0
+> +	and	r5,r4,r3
+> +	cmpwi	cr4,r5,1	/* Store result in cr4 for later use */
+> +
+> +	andc	r4,r4,r3
+> +	mtspr	SPRN_HSPRG0,r4
+> +
+> +	mr	r13,r4
 
-Let me send out a V2.
+This seems unnecessarily convoluted.  How about:
 
-Thanks
+	GET_PACA(r13)
+	clrldi	r5,r13,63
+	clrrdi	r13,r13,1
+	cmpwi	cr4,r5,1
+	mtspr	SPRN_HSPRG0,r13
 
-Regards
-Preeti U Murthy
+> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+> index 8c3a1f4..8102075 100644
+> --- a/arch/powerpc/kernel/idle_power7.S
+> +++ b/arch/powerpc/kernel/idle_power7.S
+> @@ -19,8 +19,24 @@
+>  #include <asm/kvm_book3s_asm.h>
+>  #include <asm/opal.h>
+>  #include <asm/cpuidle.h>
+> +#include <asm/mmu-hash64.h>
+>  
+>  #undef DEBUG
+> +/*
+> + * Use unused space in the interrupt stack to save and restore
+> + * registers for winkle support.
+> + */
+> +#define _SDR1	GPR3
+> +#define _RPR	GPR4
+> +#define _SPURR	GPR5
+> +#define _PURR	GPR6
+> +#define _TSCR	GPR7
+> +#define _DSCR	GPR8
+> +#define _AMOR	GPR9
+> +#define _PMC5	GPR10
+> +#define _PMC6	GPR11
+
+Why only PMC5 and PMC6 out of all the PMU registers?  What about
+PMC1-PMC4 and the MMCR registers?  I assume they're lost during winkle
+state also, aren't they?  If we're not saving them, what's the point
+of saving and restoring PMC5 and PMC6?
+
+> +#define _WORT	GPR12
+> +#define _WORC	GPR13
+>  
+>  /* Idle state entry routines */
+>  
+> @@ -124,8 +140,8 @@ power7_enter_nap_mode:
+>  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
+>  #endif
+>  	stb	r3,PACA_THREAD_IDLE_STATE(r13)
+> -	cmpwi	cr1,r3,PNV_THREAD_SLEEP
+> -	bge	cr1,2f
+> +	cmpwi	cr3,r3,PNV_THREAD_SLEEP
+> +	bge	cr3,2f
+>  	IDLE_STATE_ENTER_SEQ(PPC_NAP)
+>  	/* No return */
+>  2:
+> @@ -154,7 +170,8 @@ pnv_fastsleep_workaround_at_entry:
+>  	isync
+>  	bne-	lwarx_loop1
+>  
+> -common_enter: /* common code for all the threads entering sleep */
+> +common_enter: /* common code for all the threads entering sleep  or winkle */
+> +	bgt	cr3,enter_winkle
+>  	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+>  
+>  fastsleep_workaround_at_entry:
+> @@ -175,6 +192,34 @@ fastsleep_workaround_at_entry:
+>  	stw	r0,0(r14)
+>  	b	common_enter
+>  
+> +enter_winkle:
+> +	/*
+> +	 * Note all register i.e per-core, per-subcore or per-thread is saved
+> +	 * here since any thread in the core might wake up first
+> +	 */
+> +	mfspr	r3,SPRN_SDR1
+> +	std	r3,_SDR1(r1)
+> +	mfspr	r3,SPRN_RPR
+> +	std	r3,_RPR(r1)
+> +	mfspr	r3,SPRN_SPURR
+> +	std	r3,_SPURR(r1)
+> +	mfspr	r3,SPRN_PURR
+> +	std	r3,_PURR(r1)
+> +	mfspr	r3,SPRN_TSCR
+> +	std	r3,_TSCR(r1)
+> +	mfspr	r3,SPRN_DSCR
+> +	std	r3,_DSCR(r1)
+> +	mfspr	r3,SPRN_AMOR
+> +	std	r3,_AMOR(r1)
+> +	mfspr	r3,SPRN_PMC5
+> +	std	r3,_PMC5(r1)
+> +	mfspr	r3,SPRN_PMC6
+> +	std	r3,_PMC6(r1)
+> +	mfspr	r3,SPRN_WORT
+> +	std	r3,_WORT(r1)
+> +	mfspr	r3,SPRN_WORC
+> +	std	r3,_WORC(r1)
+> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
+>  
+>  _GLOBAL(power7_idle)
+>  	/* Now check if user or arch enabled NAP mode */
+> @@ -197,6 +242,12 @@ _GLOBAL(power7_sleep)
+>  	b	power7_powersave_common
+>  	/* No return */
+>  
+> +_GLOBAL(power7_winkle)
+> +	li	r3,3
+> +	li	r4,1
+> +	b	power7_powersave_common
+> +	/* No return */
+> +
+>  #define CHECK_HMI_INTERRUPT						\
+>  	mfspr	r0,SPRN_SRR1;						\
+>  BEGIN_FTR_SECTION_NESTED(66);						\
+> @@ -238,11 +289,23 @@ lwarx_loop2:
+>  	bne	core_idle_lock_held
+>  
+>  	cmpwi	cr2,r15,0
+> +	lbz	r4,PACA_SUBCORE_SIBLING_MASK(r13)
+> +	and	r4,r4,r15
+> +	cmpwi	cr1,r4,0	/* Check if first in subcore */
+> +
+> +	/*
+> +	 * At this stage
+> +	 * cr1 - 10 if first thread to wakeup in subcore
+> +	 * cr2 - 10 if first thread to wakeup in core
+> +	 * cr3-  01 if waking up from sleep or winkle
+> +	 * cr4 - 10 if waking up from winkle
+> +	 */
+
+What do "10" and "01" mean in this comment?  (If they were CR field
+values in binary they would need to be 3 or 4 bits, not 2.)
+
+Paul.
