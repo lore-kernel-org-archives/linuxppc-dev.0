@@ -1,24 +1,24 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0C01A09D6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:18:49 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id D716E1A09C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:19:39 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B1F661400E7
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2014 19:18:48 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 52C831400F1
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2014 19:19:39 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 8 Dec 2014 18:18:48 +1000
+ Mon, 8 Dec 2014 18:19:38 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH 6/7] CXL: Disable SPAP register when freeing SPA
-Date: Mon,  8 Dec 2014 19:18:00 +1100
-Message-Id: <1418026681-14787-6-git-send-email-imunsie@au.ibm.com>
+Subject: [PATCH 3/7] CXL: Fix leaking interrupts if attach process fails
+Date: Mon,  8 Dec 2014 19:17:57 +1100
+Message-Id: <1418026681-14787-3-git-send-email-imunsie@au.ibm.com>
 In-Reply-To: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
 References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
 Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
@@ -37,31 +37,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-When we deactivate the AFU directed mode we free the scheduled process
-area, but did not clear the register in the hardware that has a pointer
-to it.
+In this particular error path we have already allocated the AFU
+interrupts, but have not yet set the status to STARTED. The detach
+context code will only attempt to release the interrupts if the context
+is in state STARTED, so in this case the interrupts would remain
+allocated.
 
-This should be fine since we will have already cleared out every context
-and we won't do anything that would cause the hardware to access it
-until after we have allocated a new one, but just to be safe this patch
-clears out the register when we free the page.
+This patch releases the AFU interrupts immediately if the attach call
+fails to prevent them leaking.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/native.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/misc/cxl/file.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index f2b37b4..0f24fa5 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -185,6 +185,7 @@ static int alloc_spa(struct cxl_afu *afu)
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 378b099..2e067a5 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -181,8 +181,10 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	ctx->pid = get_pid(get_task_pid(current, PIDTYPE_PID));
  
- static void release_spa(struct cxl_afu *afu)
- {
-+	cxl_p1n_write(afu, CXL_PSL_SPAP_An, 0);
- 	free_pages((unsigned long) afu->spa, afu->spa_order);
- }
+ 	if ((rc = cxl_attach_process(ctx, false, work.work_element_descriptor,
+-				     amr)))
++				     amr))) {
++		afu_release_irqs(ctx);
+ 		goto out;
++	}
  
+ 	ctx->status = STARTED;
+ 	rc = 0;
 -- 
 2.1.3
