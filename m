@@ -1,40 +1,30 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x231.google.com (mail-wi0-x231.google.com
+ [IPv6:2a00:1450:400c:c05::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E3FB11A0E46
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:23:32 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Mon, 8 Dec 2014 08:23:29 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 76B2F17D8045
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 08:23:46 +0000 (GMT)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB88NPgD57278692
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 08:23:25 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB88NOLt009974
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Dec 2014 01:23:25 -0700
-Date: Mon, 8 Dec 2014 09:23:21 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
- boot time
-Message-ID: <20141208092321.673a0be3@bahia.local>
-In-Reply-To: <1417805565.334.15.camel@freescale.com>
-References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <1417805565.334.15.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87AA41A06AF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:34:17 +1100 (AEDT)
+Received: by mail-wi0-f177.google.com with SMTP id l15so3999169wiw.16
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2014 00:34:12 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 8 Dec 2014 09:34:08 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] kthread: kthread_bind fails to enforce CPU affinity
+ (fixes kernel BUG at kernel/smpboot.c:134!)
+Message-ID: <20141208083408.GA8023@gmail.com>
+References: <1418009221-12719-1-git-send-email-anton@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1418009221-12719-1-git-send-email-anton@samba.org>
+Cc: yuyang.du@intel.com, computersforpeace@gmail.com, peterz@infradead.org,
+ lkp@01.org, rafael.j.wysocki@intel.com, yuanhan.liu@linux.intel.com,
+ rostedt@goodmis.org, linux-kernel@vger.kernel.org, bsegall@google.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@redhat.com, sp@datera.io,
+ daniel@numascale.com, tj@kernel.org, subbaram@codeaurora.org,
+ akpm@linux-foundation.org, fengguang.wu@intel.com,
+ torvalds@linux-foundation.org, tglx@linutronix.de, pjt@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,58 +34,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Dec 2014 12:52:45 -0600
-Scott Wood <scottwood@freescale.com> wrote:
 
-> On Fri, 2014-12-05 at 16:14 +0100, Greg Kurz wrote:
-> > The smt-enabled kernel parameter basically leaves unwanted cpus executing
-> > in firmware or wherever they happen to be. The very same applies to the
-> > ibm,smt-enabled DT property which is no more used by anything known. These
-> > are hacks that shoudn't be used in a production environment.
-> > 
-> > Quoting mpe, "there are better ways for firmware to disable SMT".
+* Anton Blanchard <anton@samba.org> wrote:
+
+> I have a busy ppc64le KVM box where guests sometimes hit the 
+> infamous "kernel BUG at kernel/smpboot.c:134!" issue during 
+> boot:
 > 
-
-Hi Scott,
-
-> Those "better ways" don't apply to Freescale chips, where the OS enables
-> (or not) SMT without any interaction with firmware.  I don't care about
-> the ibm,smt-enabled property, but can we please keep the smt-enabled
-> boot option?
+> BUG_ON(td->cpu != smp_processor_id());
 > 
-
-Fair enough for the firmware side, what about CPU hot(un)plug then ?
-
-> > It also has an evil side effect on the split-core feature for powernv. The
-> > code needs all the cpus to participate to the split mode update: it relies
-> > on smp_send_reschedule() to get offline ones to do so. This doesn't work with
-> > cpus that haven't come up... The consequence is a kernel hang on powernv when
-> > trying to limit the number of hw threads at boot time (e.g. smt-enabled to
-> > anything but 8 on POWER8).
+> Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
+> output confirms it:
 > 
-> In that case could you disable the option only on that hardware?
+> CPU: 0
+> Comm: watchdog/130
 > 
-
-The fact it breaks only powernv doesn't mean it is a powernv only issue.
-The smt-enabled feature is a hack because it leaves some cpus in a undefined
-state from a kernel POV. Moreover it drags about 80 lines of code and sits
-entirely in common ppc64 code. I would reverse the question then ? Why not
-moving smt-enabled code to freescale only ?
-
-> > This patch simply removes both the smt-enabled kernel parameter and the
-> > ibm,smt-enabled property for all platforms. The new default is to start
-> > all hw threads. That leaves /sys the only supported API to change SMT
-> > settings.
+> The issue is in kthread_bind where we set the cpus_allowed 
+> mask, but do not touch task_thread_info(p)->cpu. The scheduler 
+> assumes the previously scheduled CPU is in the cpus_allowed 
+> mask, but in this case we are moving a thread to another CPU so 
+> it is not.
 > 
-> How would you use /sys for this?  Are you talking about CPU hotplug?
+> We used to call set_task_cpu which sets 
+> task_thread_info(p)->cpu (in fact kthread_bind still has a 
+> comment suggesting this). That was removed in e2912009fb7b 
+> ("sched: Ensure set_task_cpu() is never called on blocked 
+> tasks").
 > 
+> Since we cannot call set_task_cpu (the task is in a sleeping 
+> state), just do an explicit set of task_thread_info(p)->cpu.
 
-Yes. This is the safer way to offline cpus.
+So we cannot call set_task_cpu() because in the normal life time 
+of a task the ->cpu value gets set on wakeup. So if a task is 
+blocked right now, and its affinity changes, it ought to get a 
+correct ->cpu selected on wakeup. The affinity mask and the 
+current value of ->cpu getting out of sync is thus 'normal'.
 
-> -Scott
-> 
+(Check for example how set_cpus_allowed_ptr() works: we first set 
+the new allowed mask, then do we migrate the task away if 
+necessary.)
 
-Cheers.
+In the kthread_bind() case this is explicitly assumed: it only 
+calls do_set_cpus_allowed().
 
---
-Greg
+But obviously the bug triggers in kernel/smpboot.c, and that 
+assert shows a real bug - and your patch makes the assert go 
+away, so the question is, how did the kthread get woken up and 
+put on a runqueue without its ->cpu getting set?
+
+One possibility is a generic scheduler bug in ttwu(), resulting 
+in ->cpu not getting set properly. If this was the case then 
+other places would be blowing up as well, and I don't think we 
+are seeing this currently, especially not over such a long 
+timespan.
+
+Another possibility would be that kthread_bind()'s assumption 
+that the task is inactive is false: if the task activates when we 
+think it's blocked and we just hotplug-migrate it away while its 
+running (setting its td->cpu?), the assert could trigger I think 
+- and the patch would make the assert go away.
+
+A third possibility would be, if this is a freshly created 
+thread, some sort of initialization race - either in the kthread 
+or in the scheduler code.
+
+Weird.
+
+Thanks,
+
+	Ingo
