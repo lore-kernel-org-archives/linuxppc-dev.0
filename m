@@ -1,20 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C0A41A05FC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 12:09:05 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 09:16:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Subject: Re: [PATCH] arch: powerpc: kernel: sys_ppc32.c:  Remove unused
- function
-Message-ID: <20141207221622.GA11372@iris.ozlabs.ibm.com>
-References: <1417975014-13883-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417975014-13883-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri1.pp.htv.fi (filtteri1.pp.htv.fi [213.243.153.184])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2F0721A08B1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 13:04:00 +1100 (AEDT)
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Phil Carmody <pc+lkml@asdf.org>
+Subject: [PATCH RESEND 2/2] powerpc/via-pmu: fix OF node leak in Keylargo init
+Date: Mon,  8 Dec 2014 03:57:38 +0200
+Message-Id: <1418003858-870-2-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1418003858-870-1-git-send-email-aaro.koskinen@iki.fi>
+References: <1418003858-870-1-git-send-email-aaro.koskinen@iki.fi>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,10 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 07, 2014 at 06:56:54PM +0100, Rickard Strandqvist wrote:
-> Remove the function compat_sys_mmap2() that is not used anywhere.
+From: Phil Carmody <pc+lkml@asdf.org>
 
-It's referenced in 64-bit kernels from arch/powerpc/kernel/systbl.S,
-via the SYS32ONLY(mmap2) line in arch/powerpc/include/asm/systbl.h.
+If we of_find_node_by_name() then we must of_node_put() too.
 
-Paul.
+Signed-off-by: Phil Carmody <pc+lkml@asdf.org>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/macintosh/via-pmu.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 6221235..aed3cb0 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -329,6 +329,7 @@ int __init find_via_pmu(void)
+ 				gaddr = of_translate_address(gpiop, reg);
+ 			if (gaddr != OF_BAD_ADDR)
+ 				gpio_reg = ioremap(gaddr, 0x10);
++			of_node_put(gpiop);
+ 		}
+ 		if (gpio_reg == NULL) {
+ 			printk(KERN_ERR "via-pmu: Can't find GPIO reg !\n");
+-- 
+2.2.0
