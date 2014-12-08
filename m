@@ -1,24 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D42FB1A05EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 09:39:59 +1100 (AEDT)
-Message-ID: <1418078384.5581.11.camel@freescale.com>
-Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
- boot time
-From: Scott Wood <scottwood@freescale.com>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Date: Mon, 8 Dec 2014 16:39:44 -0600
-In-Reply-To: <20141208092321.673a0be3@bahia.local>
-References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <1417805565.334.15.camel@freescale.com>
- <20141208092321.673a0be3@bahia.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD2361A05EE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 09:48:31 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48A651400A0
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2014 09:48:29 +1100 (AEDT)
+Message-ID: <1418075026.13358.4.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3] i2c: Driver to expose PowerNV platform i2c busses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Date: Tue, 09 Dec 2014 08:43:46 +1100
+In-Reply-To: <20141208205520.GA12715@katana>
+References: <20141208063039.14356.34770.stgit@localhost.localdomain>
+ <1418069595.4827.43.camel@kernel.crashing.org>
+ <20141208205520.GA12715@katana>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-i2c@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-08 at 09:23 +0100, Greg Kurz wrote:
-> On Fri, 5 Dec 2014 12:52:45 -0600
-> Scott Wood <scottwood@freescale.com> wrote:
-> 
-> > On Fri, 2014-12-05 at 16:14 +0100, Greg Kurz wrote:
-> > > The smt-enabled kernel parameter basically leaves unwanted cpus executing
-> > > in firmware or wherever they happen to be. The very same applies to the
-> > > ibm,smt-enabled DT property which is no more used by anything known. These
-> > > are hacks that shoudn't be used in a production environment.
-> > > 
-> > > Quoting mpe, "there are better ways for firmware to disable SMT".
+On Mon, 2014-12-08 at 21:55 +0100, Wolfram Sang wrote:
+> On Tue, Dec 09, 2014 at 07:13:15AM +1100, Benjamin Herrenschmidt wrote:
+> > On Mon, 2014-12-08 at 12:06 +0530, Neelesh Gupta wrote:
+> > > The patch exposes the available i2c busses on the PowerNV platform
+> > > to the kernel and implements the bus driver to support i2c and
+> > > smbus commands.
+> > > The driver uses the platform device infrastructure to probe the busses
+> > > on the platform and registers them with the i2c driver framework.
 > > 
+> > Wolfram, what are you remaining objections here ? We need that in
+> > distros ASAP ...
 > 
-> Hi Scott,
+> Oh, I thought we agreed that you take it via powerpc. I still think this
+> is the best solution.
+
+I threatened to do that :-) I don't remember you replying, did I miss
+it ? If you are ok with the driver and are happy for me to take it,
+please send an Ack.
+
+> > I still maintain that it's not reasonable to hold driver for the
+> > additions of multi-byte smbus offsets. This is a new feature that will
+> > require changes to a number of existing bus and device drivers, so a
+> > very pervasive change, and which will be visible to user space, which
+> > means that drivers will need to continue supporting the "old" way at
+> > least for a while anyway...
 > 
-> > Those "better ways" don't apply to Freescale chips, where the OS enables
-> > (or not) SMT without any interaction with firmware.  I don't care about
-> > the ibm,smt-enabled property, but can we please keep the smt-enabled
-> > boot option?
-> > 
-> 
-> Fair enough for the firmware side, what about CPU hot(un)plug then ?
+> Yeah, I agree on that. I am still unsure about the port-name binding,
+> but well, if it is needed to fit your PowerNV scheme...
 
-Not yet supported in mainline for e6500 (or maybe it works with
-generic_mach_cpu_die which would not be helpful).
+>From a binding perspective, it's just a piece of additional info that
+the firmware provides for convenience. That we use it as the i2c port
+name in Linux makes sense, it means that when listing the i2c ports,
+it's immediately clear to the user which is which, it's not used
+functionally by any driver or piece of code, but it's handy for people
+doing things like manufacturing of machines, to know what bus to poke to
+program a VPD EEPROM or test if a chip responds for example.
 
-Plus, it's more complicated (both to use and how it works internally)
-and doesn't avoid having the secondary thread ever run.  Sometimes it's
-useful to ensure that the second thread has never run when debugging a
-problem.
-
-> > > It also has an evil side effect on the split-core feature for powernv. The
-> > > code needs all the cpus to participate to the split mode update: it relies
-> > > on smp_send_reschedule() to get offline ones to do so. This doesn't work with
-> > > cpus that haven't come up... The consequence is a kernel hang on powernv when
-> > > trying to limit the number of hw threads at boot time (e.g. smt-enabled to
-> > > anything but 8 on POWER8).
-> > 
-> > In that case could you disable the option only on that hardware?
-> > 
-> 
-> The fact it breaks only powernv doesn't mean it is a powernv only issue.
-> The smt-enabled feature is a hack because it leaves some cpus in a undefined
-> state from a kernel POV.
-
-I'm aware of an issue where per-cpu threads get created for these CPUs,
-which seems like a bug if they were never marked online (it's on my todo
-list to investigate further).  Are there other issues?  It seems like
-there ought to be some way to do this right.
-
->  Moreover it drags about 80 lines of code and sits entirely in common
-> ppc64 code. I would reverse the question then ? Why not moving
-> smt-enabled code to freescale only ?
-
-I'm fine with making it Freescale-only.
-
--Scott
+Cheers,
+Ben.
