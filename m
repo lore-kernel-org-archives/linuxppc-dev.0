@@ -1,25 +1,21 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 753711A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 22:00:06 +1100 (AEDT)
-Date: Mon, 8 Dec 2014 11:59:07 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 1/4] tools/perf: support parsing parameterized events
-Message-ID: <20141208105907.GB4796@krava.redhat.com>
-References: <1417572578-9051-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1417572578-9051-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141204124422.GA4195@krava.brq.redhat.com>
- <20141207073724.GA32721@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90F601A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 22:26:49 +1100 (AEDT)
+Date: Mon, 8 Dec 2014 22:26:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christian Borntraeger <borntraeger@de.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>, Michael
+ Ellerman <mpe@ellerman.id.au>
+Subject: linux-next: build failure after merge of the access_once tree
+Message-ID: <20141208222641.40a64946@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141207073724.GA32721@us.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, peterz@infradead.org,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- dev@codyps.com, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/A=bv69.VVArYVLGKVtsDaBW"; protocol="application/pgp-signature"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 06, 2014 at 11:37:24PM -0800, Sukadev Bhattiprolu wrote:
-> Jiri Olsa [jolsa@redhat.com] wrote:
-> 
-> | anyway we could assign directly to the param term name as you do,
-> | but I think we just need to mark the term as parametrized, like:
-> | 
-> | in /sys/bus/event_source/devices/pmu/events/event_name you have:
-> |   param2=?,bar=1,param1=?
-> 
-> I like the idea of just using a single ? for required parameters, but
-> the problem I had with this approach can be seen with these two sysfs
-> entries:
-> 
->         $ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE
->         domain=0x2,offset=0xe0,starting_index=core,lpar=0x0
-> 
->         $ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE
->         domain=0x3,offset=0xe0,starting_index=vcpu,lpar=sibling_guest_id
-> 
-> The parameter 'starting_index' refers to a core in one event and vcpu in
-> another event. We were trying to give a hint as to what it refers to.
-> 
-> Given that, 'starting_index' is not very intuitive, how about discarding
-> starting_index and replacing with what it really means for the event and,
-> use a simple '?' to indicate required parameter).
-> 
->         $ cat HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE
->         domain=0x2,offset=0xe0,core=?,lpar=0x0
-> 
->         $ cat HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CORE
->         domain=0x3,offset=0xe0,vcpu=?,lpar=?
-> 
-> perf list shows these as:
-> 
-> 	hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=?/ 
-> 	hv_24x7/HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CHIP,vcpu=?,lpar=?/
-> 
-> command line would be
-> 
-> 	-e hv_24x7/HPM_0THRD_NON_IDLE_CCYC__PHYS_CORE,core=2/ 
-> 
-> 	or
-> 
-> 	-e hv_24x7/HPM_0THRD_NON_IDLE_CCYC__VCPU_HOME_CHIP,vcpu=2,lpar=7/
-> 
-> and would fail if a required parameter is missing.
+--Sig_/A=bv69.VVArYVLGKVtsDaBW
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-that sounds good to me
+Hi Christian,
 
-jirka
+After merging the acess_once tree, today's linux-next build (powerpc
+allnoconfig) failed like this:
+
+arch/powerpc/mm/hugetlbpage.c: In function 'find_linux_pte_or_hugepte':
+arch/powerpc/mm/hugetlbpage.c:981:3: error: invalid initializer
+   pud  =3D ACCESS_ONCE(*pudp);
+   ^
+arch/powerpc/mm/hugetlbpage.c:993:4: error: invalid initializer
+    pmd  =3D ACCESS_ONCE(*pmdp);
+    ^
+
+These are preexisting ...
+
+mm/gup.c: In function 'gup_pmd_range':
+mm/gup.c:929:3: error: invalid initializer
+   pmd_t pmd =3D ACCESS_ONCE(*pmdp);
+   ^
+mm/gup.c:929:3: error: (near initialization for 'pmd')
+
+This is from commit f30c59e921f1 ("mm: Update generic gup
+implementation to handle hugepage directory") from the powerpc-mpe (and
+powerpc) tree and so will require a merge fix patch (presumable
+s/ACCESS_ONCE/READ_ONCE/).
+
+I am not sure how many architectures you are trying to cover, but
+powerpc is one I care about :-)
+
+I have dropped the access_once tree again today, sorry (its too late at
+night).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/A=bv69.VVArYVLGKVtsDaBW
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJUhYr3AAoJEMDTa8Ir7ZwVaIQP/162dexk3to+Y9RDaXMOwrq0
+fSzrsad3Vv/mV025ZyXpCRyD6ijYRCrRIHJN7eoql2GsknOQX5yTW6nlJWjIjcUy
+6OQx1G3ajRHFBNEkHLzgbG/+A1IiFAJGl9GVHnVl4GEFF+iiv95YeRgoo4hQ3ZaI
+XxQNPTcuGeWGny6RJY6h1UyevmcQu3siU3vQ7tMHJ/wna+/M6n+VG+p4UiYcLkEc
+tm6WvEA5JefOqv++JX9Emw7a/I8EFbjUuKQIc9g+a5j4jc/IFcLZ2+xQyIFzIm/b
+k2l1dtH5gdoGb0RKOoN6NN1/su9osqIN0W0ENNDfqEH7pGfmv/ZKggsu1tr1TzCF
+ZECV+Y9YI0oC5SxRPw0HEJfmAKhpZkQ283sWVqzN1BxiY/xmE0avXNhZZPHBQRl8
+Uvb8ebHtgds4J270NUD0blE12buMRSYymnN9uQB1dMpK19Bq11S9hf0OVoN4idZo
+szXOrQRyyrKeNhRDhNRyieAaBN+PKFl7U2EuZVHq82kFtkbnWzmJILPGbRvdLABH
+jbxNNuidTVR5+/O38B/8qXuGsm3y4a6nXfhIkQCvbjEanqkG8qUG8ICxBSU8Zojp
+T+CZUWOQ5Wxv++AJ8iHgRFVPhAVi1ENLNv28SKrFk+U031Teor/+dJJC0Sv7kc62
+Ho5YS3s3YYMv0XyEkQxf
+=m+Ij
+-----END PGP SIGNATURE-----
+
+--Sig_/A=bv69.VVArYVLGKVtsDaBW--
