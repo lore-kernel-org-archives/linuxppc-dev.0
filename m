@@ -1,24 +1,24 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEC941A0B68
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:18:47 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D0C01A09D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2014 19:18:49 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7FE761400E7
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2014 19:18:47 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id B1F661400E7
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2014 19:18:48 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 8 Dec 2014 18:18:46 +1000
+ Mon, 8 Dec 2014 18:18:48 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH 5/7] CXL: Disable AFU debug flag
-Date: Mon,  8 Dec 2014 19:17:59 +1100
-Message-Id: <1418026681-14787-5-git-send-email-imunsie@au.ibm.com>
+Subject: [PATCH 6/7] CXL: Disable SPAP register when freeing SPA
+Date: Mon,  8 Dec 2014 19:18:00 +1100
+Message-Id: <1418026681-14787-6-git-send-email-imunsie@au.ibm.com>
 In-Reply-To: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
 References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
 Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
@@ -37,60 +37,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-Upon inspection of the implementation specific registers, it was
-discovered that the high bit of the implementation specific RXCTL
-register was enabled, which enables the DEADB00F debug feature.
+When we deactivate the AFU directed mode we free the scheduled process
+area, but did not clear the register in the hardware that has a pointer
+to it.
 
-The debug feature causes MMIO reads to a disabled AFU to respond with
-0xDEADB00F instead of all Fs. In general this should not be visible as
-the kernel will only allow MMIO access to enabled AFUs, but there may be
-some circumstances where an AFU may become disabled while it is use.
-One such case would be an AFU designed to only be used in the dedicated
-process mode and to disable itself after it has completed it's work
-(however even in that case the effects of this debug flag would be
-limited as the userspace application must have completed any required
-MMIO accesses before the AFU disables itself with or without the flag).
-
-This patch removes the debug flag and replaces the magic value
-programmed into this register with a preprocessor define so it is
-clearer what the rest of this initialisation does.
+This should be fine since we will have already cleared out every context
+and we won't do anything that would cause the hardware to access it
+until after we have allocated a new one, but just to be safe this patch
+clears out the register when we free the page.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/cxl.h | 7 +++++++
- drivers/misc/cxl/pci.c | 2 +-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ drivers/misc/cxl/native.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 7c05239..c1f8aa6 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -287,6 +287,13 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_PE_SOFTWARE_STATE_S (1ul << (31 - 30)) /* Suspend */
- #define CXL_PE_SOFTWARE_STATE_T (1ul << (31 - 31)) /* Terminate */
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index f2b37b4..0f24fa5 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -185,6 +185,7 @@ static int alloc_spa(struct cxl_afu *afu)
  
-+/****** CXL_PSL_RXCTL_An (Implementation Specific) **************************
-+ * Controls AFU Hang Pulse, which sets the timeout for the AFU to respond to
-+ * the PSL for any response (except MMIO). Timeouts will occur between 1x to 2x
-+ * of the hang pulse frequency.
-+ */
-+#define CXL_PSL_RXCTL_AFUHP_4S      0x7000000000000000ULL
-+
- /* SPA->sw_command_status */
- #define CXL_SPA_SW_CMD_MASK         0xffff000000000000ULL
- #define CXL_SPA_SW_CMD_TERMINATE    0x0001000000000000ULL
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 0f2cc9f..2ccd0a9 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -348,7 +348,7 @@ static int init_implementation_afu_regs(struct cxl_afu *afu)
- 	cxl_p1n_write(afu, CXL_PSL_COALLOC_A, 0xFF000000FEFEFEFEULL);
- 	/* for debugging with trace arrays */
- 	cxl_p1n_write(afu, CXL_PSL_SLICE_TRACE, 0x0000FFFF00000000ULL);
--	cxl_p1n_write(afu, CXL_PSL_RXCTL_A, 0xF000000000000000ULL);
-+	cxl_p1n_write(afu, CXL_PSL_RXCTL_A, CXL_PSL_RXCTL_AFUHP_4S);
- 
- 	return 0;
+ static void release_spa(struct cxl_afu *afu)
+ {
++	cxl_p1n_write(afu, CXL_PSL_SPAP_An, 0);
+ 	free_pages((unsigned long) afu->spa, afu->spa_order);
  }
+ 
 -- 
 2.1.3
