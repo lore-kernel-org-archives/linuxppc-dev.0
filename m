@@ -1,17 +1,39 @@
-Return-Path: <rgb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c04::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FBEA1A05EE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 07:46:06 +1100 (AEDT)
-From: Richard Guy Briggs <rgb@redhat.com>
-To: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
-Subject: [PATCH V4] powerpc: add little endian flag to syscall_get_arch()
-Date: Tue,  9 Dec 2014 15:37:07 -0500
-Message-Id: <24fcd2ea2c7633152e74a7a92abab1dd1782745d.1418157273.git.rgb@redhat.com>
-Cc: tonyj@suse.de, Richard Guy Briggs <rgb@redhat.com>, pmoore@redhat.com,
- anton@samba.org, eparis@parisplace.org, sgrubb@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id A78C91A05FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 07:54:47 +1100 (AEDT)
+Received: by mail-qg0-f43.google.com with SMTP id i50so1115330qgf.30
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2014 12:54:44 -0800 (PST)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20141209105819.0e847b4b@kryten>
+References: <1418009221-12719-1-git-send-email-anton@samba.org>
+ <20141208083408.GA8023@gmail.com> <20141208211859.6e81ec81@kryten>
+ <20141209105819.0e847b4b@kryten>
+Date: Tue, 9 Dec 2014 12:54:43 -0800
+Message-ID: <CA+55aFyR5PzNkojvEej1NXnpEFOPOYfnxCcPDAjg1rE79tQv7A@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: secondary CPUs signal to master before setting
+ active and online (fixes kernel BUG at kernel/smpboot.c:134!)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Yuanhan Liu <yuanhan.liu@linux.intel.com>,
+ Benjamin Segall <bsegall@google.com>, Paul Mackerras <paulus@samba.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Ingo Molnar <mingo@redhat.com>, Paul Turner <pjt@google.com>,
+ yuyang.du@intel.com, Daniel J Blueman <daniel@numascale.com>,
+ Steven Rostedt <rostedt@goodmis.org>, subbaram@codeaurora.org,
+ Thomas Gleixner <tglx@linutronix.de>, Wu Fengguang <fengguang.wu@intel.com>,
+ lkp@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Slava Pestov <sp@datera.io>, Tejun Heo <tj@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +43,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since both ppc and ppc64 have LE variants which are now reported by uname, add
-that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add AUDIT_ARCH_PPC64LE
-variant.
+On Mon, Dec 8, 2014 at 3:58 PM, Anton Blanchard <anton@samba.org> wrote:
+> Hi Ingo,
+>
+>> At that point I thought the previous task_cpu() was somewhat ingrained
+>> in the scheduler and came up with the patch. If not, we could go on a
+>> hunt to see what else needs fixing.
+>
+> I had another look. The scheduled does indeed make assumptions about the
+> previous task_cpu, but we have a hammer to fix it up called
+> select_fallback_rq.
+>
+> I annotated select_fallback_rq, and did hit a case where the CPU was
+> not active. ppc64 patch below.
 
-Without this,  perf trace and auditctl fail.
+Anton, I'll assume I will get this through the usual powerpc pull requests?
 
-Mainline kernel reports ppc64le (per a058801) but there is no matching
-AUDIT_ARCH_PPC64LE.
+> I think x86 have a similar (although harder to hit) issue.
 
-Since 32-bit PPC LE is not supported by audit, don't advertise it in
-AUDIT_ARCH_PPC* variants.
+Ingo?
 
-See:
-	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
-	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
-
-Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
----
- arch/powerpc/include/asm/syscall.h |    6 +++++-
- include/uapi/linux/audit.h         |    2 ++
- 2 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 6fa2708..d1934e5 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -90,6 +90,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
- 
- static inline int syscall_get_arch(void)
- {
--	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
-+	int arch = is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
-+#ifdef __LITTLE_ENDIAN__
-+	arch |= __AUDIT_ARCH_LE;
-+#endif
-+	return arch;
- }
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
-index 4d100c8..d82beec 100644
---- a/include/uapi/linux/audit.h
-+++ b/include/uapi/linux/audit.h
-@@ -364,7 +364,9 @@ enum {
- #define AUDIT_ARCH_PARISC	(EM_PARISC)
- #define AUDIT_ARCH_PARISC64	(EM_PARISC|__AUDIT_ARCH_64BIT)
- #define AUDIT_ARCH_PPC		(EM_PPC)
-+/* do not define AUDIT_ARCH_PPCLE since it is not supported by audit */
- #define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
-+#define AUDIT_ARCH_PPC64LE	(EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
- #define AUDIT_ARCH_S390		(EM_S390)
- #define AUDIT_ARCH_S390X	(EM_S390|__AUDIT_ARCH_64BIT)
- #define AUDIT_ARCH_SH		(EM_SH)
--- 
-1.7.1
+                         Linus
