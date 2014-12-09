@@ -1,26 +1,22 @@
-Return-Path: <laijs@cn.fujitsu.com>
-Received: from heian.cn.fujitsu.com (unknown [59.151.112.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 4185A1A05CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 13:31:18 +1100 (AEDT)
-Message-ID: <54865D65.8030906@cn.fujitsu.com>
-Date: Tue, 9 Dec 2014 10:24:37 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] kthread: kthread_bind fails to enforce CPU affinity (fixes
- kernel BUG at kernel/smpboot.c:134!)
-References: <1418009221-12719-1-git-send-email-anton@samba.org>
- <20141208085405.730577a3@gandalf.local.home>
-In-Reply-To: <20141208085405.730577a3@gandalf.local.home>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBEC1A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 15:11:03 +1100 (AEDT)
+Message-ID: <1418098262.527.1.camel@concordia>
+Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
+ boot time
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 09 Dec 2014 15:11:02 +1100
+In-Reply-To: <1417805565.334.15.camel@freescale.com>
+References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <1417805565.334.15.camel@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: yuyang.du@intel.com, computersforpeace@gmail.com, peterz@infradead.org,
- lkp@01.org, rafael.j.wysocki@intel.com, yuanhan.liu@linux.intel.com,
- linux-kernel@vger.kernel.org, bsegall@google.com,
- linuxppc-dev@lists.ozlabs.org, mingo@redhat.com,
- Anton Blanchard <anton@samba.org>, sp@datera.io, daniel@numascale.com,
- tj@kernel.org, subbaram@codeaurora.org, akpm@linux-foundation.org,
- fengguang.wu@intel.com, torvalds@linux-foundation.org, tglx@linutronix.de,
- pjt@google.com
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,86 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/08/2014 09:54 PM, Steven Rostedt wrote:
-> On Mon,  8 Dec 2014 14:27:01 +1100
-> Anton Blanchard <anton@samba.org> wrote:
+On Fri, 2014-12-05 at 12:52 -0600, Scott Wood wrote:
+> On Fri, 2014-12-05 at 16:14 +0100, Greg Kurz wrote:
+> > The smt-enabled kernel parameter basically leaves unwanted cpus executing
+> > in firmware or wherever they happen to be. The very same applies to the
+> > ibm,smt-enabled DT property which is no more used by anything known. These
+> > are hacks that shoudn't be used in a production environment.
+> > 
+> > Quoting mpe, "there are better ways for firmware to disable SMT".
 > 
->> I have a busy ppc64le KVM box where guests sometimes hit the infamous
->> "kernel BUG at kernel/smpboot.c:134!" issue during boot:
->>
->> BUG_ON(td->cpu != smp_processor_id());
->>
->> Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
->> output confirms it:
->>
->> CPU: 0
->> Comm: watchdog/130
->>
->> The issue is in kthread_bind where we set the cpus_allowed mask, but do
->> not touch task_thread_info(p)->cpu. The scheduler assumes the previously
->> scheduled CPU is in the cpus_allowed mask, but in this case we are
->> moving a thread to another CPU so it is not.
->>
-> 
-> Does this happen always on boot up, and always with the watchdog thread?
-> 
-> I followed the logic that starts the watchdog threads.
-> 
-> watchdog_enable_all_cpus()
->   smpboot_register_percpu-thread() {
-> 
->     for_each_online_cpu(cpu) { ... }
-> 
-> Where watchdog_enable_all_cpus() can be called by
-> lockup_detector_init() before SMP is started, but also by
-> proc_dowatchdog() which is called by the sysctl commands (after SMP is
-> up and running).
-> 
-> I noticed there's no "get_online_cpus()" anywhere, although the
-> unregister_percpu_thread() has it. Is it possible that we created a
-> thread on a CPU that wasn't fully online yet?
-> 
-> Perhaps the following patch is needed? Even if this isn't the solution
-> to this bug, it is probably needed as watchdog_enable_all_cpus() can be
-> called after boot up too.
-> 
-> -- Steve
+> Those "better ways" don't apply to Freescale chips, where the OS enables
+> (or not) SMT without any interaction with firmware.
 
+But how does it know there even are SMT threads? From the device tree? So
+just don't present the threads in the device tree?
 
-Hi, Steven, tglx
-
-See this https://lkml.org/lkml/2014/7/30/804
-"[PATCH] smpboot: add missing get_online_cpus() when register"
-
-
-Thanks,
-Lai
-
-> 
-> diff --git a/kernel/smpboot.c b/kernel/smpboot.c
-> index eb89e1807408..60d35ac5d3f1 100644
-> --- a/kernel/smpboot.c
-> +++ b/kernel/smpboot.c
-> @@ -279,6 +279,7 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
->  	unsigned int cpu;
->  	int ret = 0;
->  
-> +	get_online_cpus();
->  	mutex_lock(&smpboot_threads_lock);
->  	for_each_online_cpu(cpu) {
->  		ret = __smpboot_create_thread(plug_thread, cpu);
-> @@ -291,6 +292,7 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
->  	list_add(&plug_thread->list, &hotplug_threads);
->  out:
->  	mutex_unlock(&smpboot_threads_lock);
-> +	put_online_cpus();
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(smpboot_register_percpu_thread);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> .
-> 
+cheers
