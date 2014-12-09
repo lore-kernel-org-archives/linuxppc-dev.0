@@ -1,23 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E1AE1A09C8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 08:04:58 +1100 (AEDT)
-Message-ID: <1418159084.5581.32.camel@freescale.com>
-Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
- boot time
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 9 Dec 2014 15:04:44 -0600
-In-Reply-To: <1418098262.527.1.camel@concordia>
-References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <1417805565.334.15.camel@freescale.com> <1418098262.527.1.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.19.201])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8BD5D1A0374
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 08:07:27 +1100 (AEDT)
+Date: Tue, 9 Dec 2014 18:07:17 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 2/8] perf probe powerpc: Fix symbol fixup issues due
+ to ELF type
+Message-ID: <20141209210717.GA8788@kernel.org>
+References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 15:11 +1100, Michael Ellerman wrote:
-> On Fri, 2014-12-05 at 12:52 -0600, Scott Wood wrote:
-> > On Fri, 2014-12-05 at 16:14 +0100, Greg Kurz wrote:
-> > > The smt-enabled kernel parameter basically leaves unwanted cpus executing
-> > > in firmware or wherever they happen to be. The very same applies to the
-> > > ibm,smt-enabled DT property which is no more used by anything known. These
-> > > are hacks that shoudn't be used in a production environment.
-> > > 
-> > > Quoting mpe, "there are better ways for firmware to disable SMT".
-> > 
-> > Those "better ways" don't apply to Freescale chips, where the OS enables
-> > (or not) SMT without any interaction with firmware.
+Em Tue, Dec 09, 2014 at 11:04:00PM +0530, Naveen N. Rao escreveu:
+> If using the symbol table, symbol addresses are not being fixed up
+> properly, resulting in probes being placed at wrong addresses:
 > 
-> But how does it know there even are SMT threads? From the device tree? So
-> just don't present the threads in the device tree?
+>   # perf probe do_fork
+>   Added new event:
+>     probe:do_fork        (on do_fork)
+> 
+>   You can now use it in all perf tools, such as:
+> 
+> 	  perf record -e probe:do_fork -aR sleep 1
+> 
+>   # cat /sys/kernel/debug/tracing/kprobe_events
+>   p:probe/do_fork _text+635952
+>   # printf "%x" 635952
+>   9b430
+>   # grep do_fork /boot/System.map
+>   c0000000000ab430 T .do_fork
+> 
+> Fix by checking for ELF type ET_DYN used by ppc64 kernels.
 
-The device tree is for hardware description, not configuration...
+Are you sure this doesn't need to be enclosed in ifdef PPC64?
 
--Scott
+- Arnaldo
+ 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/symbol-elf.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
+> index 1e23a5b..67e4392 100644
+> --- a/tools/perf/util/symbol-elf.c
+> +++ b/tools/perf/util/symbol-elf.c
+> @@ -629,7 +629,8 @@ int symsrc__init(struct symsrc *ss, struct dso *dso, const char *name,
+>  						     NULL) != NULL);
+>  	} else {
+>  		ss->adjust_symbols = ehdr.e_type == ET_EXEC ||
+> -				     ehdr.e_type == ET_REL;
+> +				     ehdr.e_type == ET_REL ||
+> +				     ehdr.e_type == ET_DYN;
+>  	}
+>  
+>  	ss->name   = strdup(name);
+> -- 
+> 2.1.3
