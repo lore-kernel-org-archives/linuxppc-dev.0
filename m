@@ -1,24 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E833E1A05D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:29:59 +1100 (AEDT)
-Message-ID: <1418102997.527.3.camel@concordia>
-Subject: Re: [PATCH] arch: powerpc: kernel: vio.c:  Remove unused function
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Tue, 09 Dec 2014 16:29:57 +1100
-In-Reply-To: <1417991502-20223-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-References: <1417991502-20223-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: devicetree@vger.kernel.org, Li Zhong <zhong@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Daniel Walter <dwalter@google.com>,
- Alistair Popple <alistair@popple.id.au>,
- Grant Likely <grant.likely@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8117A1A0BA5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:30:45 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 9 Dec 2014 15:30:43 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E7FF72CE806C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:30:41 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB95UfEj36175964
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:30:41 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB95Uftf023562
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:30:41 +1100
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ sB95UfRb023555
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:30:41 +1100
+Received: from localhost (haven.au.ibm.com [9.192.253.15])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 419EEA019A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:30:41 +1100 (AEDT)
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 1/7] CXL: Change contexts_lock to a mutex to fix sleep
+ while atomic bug
+In-reply-to: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
+References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
+Date: Tue, 09 Dec 2014 16:30:41 +1100
+Message-Id: <1418102853-sup-8926@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +47,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2014-12-07 at 23:31 +0100, Rickard Strandqvist wrote:
-> Remove the function cmo_high_show() that is not used anywhere.
-> 
-> This was partially found by using a static code analysis program called cppcheck.
-> 
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-> ---
->  arch/powerpc/kernel/vio.c |    5 -----
->  1 file changed, 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> index 5bfdab9..11657d2 100644
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1032,11 +1032,6 @@ viobus_cmo_pool_rd_attr(reserve, size);
->  viobus_cmo_pool_rd_attr(excess, size);
->  viobus_cmo_pool_rd_attr(excess, free);
->  
-> -static ssize_t cmo_high_show(struct bus_type *bt, char *buf)
-> -{
-> -	return sprintf(buf, "%lu\n", vio_cmo.high);
-> -}
+This patch will definitely need to go to stable - we've run into issues
+a couple of times when something has gone wrong on an AFU and ended up
+taking down the whole system as a result of this bug.
 
-
-from ../arch/powerpc/kernel/vio.c:17:
-../arch/powerpc/kernel/vio.c:1046:20: error: 'cmo_high_show' undeclared here (not in a function)
-static BUS_ATTR_RW(cmo_high);
-^
-../include/linux/sysfs.h:76:10: note: in definition of macro '__ATTR'
-.show = _show,      \
-^
-../include/linux/device.h:53:42: note: in expansion of macro '__ATTR_RW'
-struct bus_attribute bus_attr_##_name = __ATTR_RW(_name)
-^
-../arch/powerpc/kernel/vio.c:1046:8: note: in expansion of macro 'BUS_ATTR_RW'
-static BUS_ATTR_RW(cmo_high);
-^
-
-cheers
+Cheers,
+-Ian
