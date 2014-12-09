@@ -1,27 +1,28 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 588561A05BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 10:58:21 +1100 (AEDT)
-Date: Tue, 9 Dec 2014 10:58:19 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH] powerpc: secondary CPUs signal to master before setting
- active and online (fixes kernel BUG at kernel/smpboot.c:134!)
-Message-ID: <20141209105819.0e847b4b@kryten>
-In-Reply-To: <20141208211859.6e81ec81@kryten>
-References: <1418009221-12719-1-git-send-email-anton@samba.org>
- <20141208083408.GA8023@gmail.com> <20141208211859.6e81ec81@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DB8B1A05EE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 12:34:26 +1100 (AEDT)
+Received: by mail-pa0-f41.google.com with SMTP id rd3so6326364pab.14
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2014 17:34:24 -0800 (PST)
+Date: Tue, 9 Dec 2014 09:34:15 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>,
+ Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
+ warning"
+Message-ID: <20141209013415.GB20874@pek-khao-d1.corp.ad.wrs.com>
+References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
+ <1417596833-31456-2-git-send-email-haokexin@gmail.com>
+ <1417751519.334.9.camel@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: peterz@infradead.org, yuanhan.liu@linux.intel.com, bsegall@google.com,
- paulus@samba.org, rafael.j.wysocki@intel.com, torvalds@linux-foundation.org,
- mingo@redhat.com, pjt@google.com, yuyang.du@intel.com, daniel@numascale.com,
- rostedt@goodmis.org, subbaram@codeaurora.org, tglx@linutronix.de,
- fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, sp@datera.io, tj@kernel.org,
- akpm@linux-foundation.org, computersforpeace@gmail.com, lkp@01.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="xgyAXRrhYN0wYx8y"
+In-Reply-To: <1417751519.334.9.camel@freescale.com>
+Cc: Yuantian Tang <Yuantian.Tang@freescale.com>, Gerhard Sittig <gsi@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,92 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
 
-> At that point I thought the previous task_cpu() was somewhat ingrained
-> in the scheduler and came up with the patch. If not, we could go on a
-> hunt to see what else needs fixing.
+--xgyAXRrhYN0wYx8y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I had another look. The scheduled does indeed make assumptions about the
-previous task_cpu, but we have a hammer to fix it up called
-select_fallback_rq.
+On Thu, Dec 04, 2014 at 09:51:59PM -0600, Scott Wood wrote:
+> This patch is going to conflict with commit a4ae8f3b0f7ac6ab3 "clk: drop
+> owner assignment from platform_drivers" in linux-next -- or rather,
+> you've based this on that patch, but it's not in mpe's next branch, so I
+> get a merge conflict and there'd be another merge conflict later on to
+> get back to the newer base.
+>=20
+> I really think this should go via the clock tree.  That's where the
+> breakage was introduced in the first place...
 
-I annotated select_fallback_rq, and did hit a case where the CPU was
-not active. ppc64 patch below.
+Hi Mike,
 
-I think x86 have a similar (although harder to hit) issue. While it
-does wait for the cpu_online bit to be set:
+Could you pick up these patches?
 
-        while (!cpu_online(cpu)) {
-                cpu_relax();
-                touch_nmi_watchdog();
-        }
+Thanks,
+Kevin
 
-The cpu_active bit is set after the cpu_online bit:
+--xgyAXRrhYN0wYx8y
+Content-Type: application/pgp-signature
 
-void set_cpu_online(unsigned int cpu, bool online)
-{
-        if (online) {
-                cpumask_set_cpu(cpu, to_cpumask(cpu_online_bits));
-                cpumask_set_cpu(cpu, to_cpumask(cpu_active_bits));
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-If the CPU got delayed between the two stores (eg a KVM guest had the CPU
-scheduled out), then we'd end up with cpu_active unset and hit the same
-issue in select_fallback_rq.
+iQEcBAEBAgAGBQJUhlGXAAoJEJNY7TDerrFxXaUIAMOgvQ1ThUesaoVdDa8kpvbH
+TlLzzPH7CLlASQDX7m2SmeBvlwyQ6U21E67453YCf9Z4V10rrEDCGTl/xSTnJvT+
+bxxl6KA4+fj7ZZ3HoZEfUesSDem9FprtG6qVcFFKcOwUGyc7czT+De+ip1pAOnDl
+xg62FTz7YP0d5QLRhUnv5DO8Dbcu/qCMKpy9kBnEAjuieHN97/FW24YHqiY6LFee
+71BcqdlPlWBxSA2lpLv8GsgSvlkdJPVor4bYgxG1asPfF/Zl08GW4hLf3DYglYic
+HLVcqBkxbpPhVMENP7I6sgKDSLRDpYgHQ4OW+NEdfVl3ltafv2iIT4XJsy8+oIA=
+=QYYW
+-----END PGP SIGNATURE-----
 
-Anton
---
-
-I have a busy ppc64le KVM box where guests sometimes hit the infamous
-"kernel BUG at kernel/smpboot.c:134!" issue during boot:
-
-BUG_ON(td->cpu != smp_processor_id());
-
-Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
-output confirms it:
-
-CPU: 0
-Comm: watchdog/130
-
-The problem is that we aren't ensuring the CPU active and online bits are set
-before allowing the master to continue on. The master unparks the secondary
-CPUs kthreads and the scheduler looks for a CPU to run on. It calls
-select_task_rq and realises the suggested CPU is not in the cpus_allowed
-mask. It then ends up in select_fallback_rq, and since the active and
-online bits aren't set we choose some other CPU to run on.
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/smp.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 71e186d..d40e46e 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -700,7 +700,6 @@ void start_secondary(void *unused)
- 	smp_store_cpu_info(cpu);
- 	set_dec(tb_ticks_per_jiffy);
- 	preempt_disable();
--	cpu_callin_map[cpu] = 1;
- 
- 	if (smp_ops->setup_cpu)
- 		smp_ops->setup_cpu(cpu);
-@@ -739,6 +738,14 @@ void start_secondary(void *unused)
- 	notify_cpu_starting(cpu);
- 	set_cpu_online(cpu, true);
- 
-+	/*
-+	 * CPU must be marked active and online before we signal back to the
-+	 * master, because the scheduler needs to see the cpu_online and
-+	 * cpu_active bits set.
-+	 */
-+	smp_wmb();
-+	cpu_callin_map[cpu] = 1;
-+
- 	local_irq_enable();
- 
- 	cpu_startup_entry(CPUHP_ONLINE);
--- 
-2.1.0
+--xgyAXRrhYN0wYx8y--
