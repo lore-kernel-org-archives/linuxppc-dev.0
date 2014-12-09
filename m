@@ -1,36 +1,37 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 12AC61A00BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 05:57:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53E531A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 05:57:23 +1100 (AEDT)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Tue, 9 Dec 2014 13:57:17 -0500
+ Tue, 9 Dec 2014 13:57:21 -0500
 Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
  [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BEA1C38C8046
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 13:57:14 -0500 (EST)
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D8BECC90045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 13:49:21 -0500 (EST)
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB9IvEpf27918444
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 18:57:14 GMT
+ sB9IvIue26214480
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 18:57:18 GMT
 Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB9IvDcq012282
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 13:57:14 -0500
+ sB9IvHZT012666
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 13:57:17 -0500
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/4] powerpc: powernv: Switch off MMU before entering
- nap/sleep/rvwinkle mode
-Date: Wed, 10 Dec 2014 00:26:50 +0530
-Message-Id: <1418151413-6141-2-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v4 2/4] powerpc/powernv: Enable Offline CPUs to enter deep
+ idle states
+Date: Wed, 10 Dec 2014 00:26:51 +0530
+Message-Id: <1418151413-6141-3-git-send-email-shreyas@linux.vnet.ibm.com>
 In-Reply-To: <1418151413-6141-1-git-send-email-shreyas@linux.vnet.ibm.com>
 References: <1418151413-6141-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Mackerras <paulus@samba.org>,
+ "Preeti U. Murthy" <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,75 +41,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
+The secondary threads should enter deep idle states so as to gain maximum
+powersavings when the entire core is offline. To do so the offline path
+must be made aware of the available deepest idle state. Hence probe the
+device tree for the possible idle states in powernv core code and
+expose the deepest idle state through flags.
 
-Currently, when going idle, we set the flag indicating that we are in
-nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
-(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
-for two reasons: (a) the architecture specifies that those instructions
-must be executed with the MMU off, and in fact with only the SF, HV, ME
-and possibly RI bits set, and (b) this introduces a race, because as
-soon as we set the flag, another thread can switch the MMU to a guest
-context.  If the race is lost, this thread will typically start looping
-on relocation-on ISIs at 0xc...4400.
+Since the  device tree is probed by the cpuidle driver as well, move
+the parameters required to discover the idle states into an appropriate
+common place to both the driver and the powernv core code.
 
-This fixes it by setting the MSR as required by the architecture before
-setting the flag or executing the nap/sleep/rvwinkle instruction.
+Another point is that fastsleep idle state may require workarounds in
+the kernel to function properly. This workaround is introduced in the
+subsequent patches. However neither the cpuidle driver or the hotplug
+path need be bothered about this workaround.
 
-[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+They will be taken care of by the core powernv code.
+
+Originally-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
 Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/reg.h    |  2 ++
- arch/powerpc/kernel/idle_power7.S | 18 +++++++++++++++++-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/opal.h          |  8 ++++++
+ arch/powerpc/platforms/powernv/powernv.h |  2 ++
+ arch/powerpc/platforms/powernv/setup.c   | 49 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/smp.c     |  7 ++++-
+ drivers/cpuidle/cpuidle-powernv.c        |  9 ++----
+ 5 files changed, 68 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c998279..a68ee15 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -118,8 +118,10 @@
- #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
- #ifdef __BIG_ENDIAN__
- #define MSR_		__MSR
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
- #else
- #define MSR_		(__MSR | MSR_LE)
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
- #endif
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 18c0687..e5aba6a 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -101,7 +101,23 @@ _GLOBAL(power7_powersave_common)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9124b0e..f8b95c0 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -155,6 +155,14 @@ struct opal_sg_list {
+ #define OPAL_REGISTER_DUMP_REGION		101
+ #define OPAL_UNREGISTER_DUMP_REGION		102
  
--_GLOBAL(power7_enter_nap_mode)
-+	/*
-+	 * Go to real mode to do the nap, as required by the architecture.
-+	 * Also, we need to be in real mode before setting hwthread_state,
-+	 * because as soon as we do that, another thread can switch
-+	 * the MMU context to the guest.
-+	 */
-+	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
-+	li	r6, MSR_RI
-+	andc	r6, r9, r6
-+	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
-+	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
-+	mtspr	SPRN_SRR0, r7
-+	mtspr	SPRN_SRR1, r5
-+	rfid
++/* Device tree flags */
 +
-+	.globl	power7_enter_nap_mode
-+power7_enter_nap_mode:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
++/* Flags set in power-mgmt nodes in device tree if
++ * respective idle states are supported in the platform.
++ */
++#define OPAL_PM_NAP_ENABLED	0x00010000
++#define OPAL_PM_SLEEP_ENABLED	0x00020000
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <linux/notifier.h>
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 6c8e2d1..604c48e 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -29,6 +29,8 @@ static inline u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
+ }
+ #endif
+ 
++extern u32 pnv_get_supported_cpuidle_states(void);
++
+ extern void pnv_lpc_init(void);
+ 
+ bool cpu_core_split_required(void);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 3f9546d..34c6665 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -290,6 +290,55 @@ static void __init pnv_setup_machdep_rtas(void)
+ }
+ #endif /* CONFIG_PPC_POWERNV_RTAS */
+ 
++static u32 supported_cpuidle_states;
++
++u32 pnv_get_supported_cpuidle_states(void)
++{
++	return supported_cpuidle_states;
++}
++
++static int __init pnv_init_idle_states(void)
++{
++	struct device_node *power_mgt;
++	int dt_idle_states;
++	const __be32 *idle_state_flags;
++	u32 len_flags, flags;
++	int i;
++
++	supported_cpuidle_states = 0;
++
++	if (cpuidle_disable != IDLE_NO_OVERRIDE)
++		return 0;
++
++	if (!firmware_has_feature(FW_FEATURE_OPALv3))
++		return 0;
++
++	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
++	if (!power_mgt) {
++		pr_warn("opal: PowerMgmt Node not found\n");
++		return 0;
++	}
++
++	idle_state_flags = of_get_property(power_mgt,
++			"ibm,cpu-idle-state-flags", &len_flags);
++	if (!idle_state_flags) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
++		return 0;
++	}
++
++	dt_idle_states = len_flags / sizeof(u32);
++
++	for (i = 0; i < dt_idle_states; i++) {
++		flags = be32_to_cpu(idle_state_flags[i]);
++		supported_cpuidle_states |= flags;
++	}
++
++	return 0;
++}
++
++subsys_initcall(pnv_init_idle_states);
++
++
+ static int __init pnv_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index b716f66..83299ef 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -150,6 +150,7 @@ static void pnv_smp_cpu_kill_self(void)
+ {
+ 	unsigned int cpu;
+ 	unsigned long srr1;
++	u32 idle_states;
+ 
+ 	/* Standard hot unplug procedure */
+ 	local_irq_disable();
+@@ -160,13 +161,17 @@ static void pnv_smp_cpu_kill_self(void)
+ 	generic_set_cpu_dead(cpu);
+ 	smp_wmb();
+ 
++	idle_states = pnv_get_supported_cpuidle_states();
+ 	/* We don't want to take decrementer interrupts while we are offline,
+ 	 * so clear LPCR:PECE1. We keep PECE2 enabled.
+ 	 */
+ 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
+ 	while (!generic_check_cpu_restart(cpu)) {
+ 		ppc64_runlatch_off();
+-		srr1 = power7_nap(1);
++		if (idle_states & OPAL_PM_SLEEP_ENABLED)
++			srr1 = power7_sleep();
++		else
++			srr1 = power7_nap(1);
+ 		ppc64_runlatch_on();
+ 
+ 		/*
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 7d3a349..0a7d827 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -16,13 +16,10 @@
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
++#include <asm/opal.h>
+ #include <asm/runlatch.h>
+ 
+-/* Flags and constants used in PowerNV platform */
+-
+ #define MAX_POWERNV_IDLE_STATES	8
+-#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
+-#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
+ 
+ struct cpuidle_driver powernv_idle_driver = {
+ 	.name             = "powernv_idle",
+@@ -198,7 +195,7 @@ static int powernv_add_idle_states(void)
+ 		 * target residency to be 10x exit_latency
+ 		 */
+ 		latency_ns = be32_to_cpu(idle_state_latency[i]);
+-		if (flags & IDLE_USE_INST_NAP) {
++		if (flags & OPAL_PM_NAP_ENABLED) {
+ 			/* Add NAP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+@@ -211,7 +208,7 @@ static int powernv_add_idle_states(void)
+ 			nr_idle_states++;
+ 		}
+ 
+-		if (flags & IDLE_USE_INST_SLEEP) {
++		if (flags & OPAL_PM_SLEEP_ENABLED) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
 -- 
 1.9.3
