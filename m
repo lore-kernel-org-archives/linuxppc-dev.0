@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 52E831A0C78
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 04:38:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 672ED1A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 04:44:21 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 9 Dec 2014 23:08:43 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9B5DCE003F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 23:09:14 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB9HdGJv4194686
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 23:09:17 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB9HccEM027044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 23:08:39 +0530
+ Wed, 10 Dec 2014 03:44:21 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 359922CE8058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 04:44:18 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB9HiIDs42926164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 04:44:18 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB9HiHpZ030917
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 04:44:17 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Fix compile errors with STRICT_MM_TYPECHECKS enabled
-Date: Tue,  9 Dec 2014 23:08:36 +0530
-Message-Id: <1418146716-13806-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2] powerpc: Fix compile errors with STRICT_MM_TYPECHECKS
+ enabled
+Date: Tue,  9 Dec 2014 23:14:03 +0530
+Message-Id: <1418147043-15461-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,13 +39,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
+Changes from V1
+   * Don't enable STRICT_MM_TYPECHECK for upstream
+
  arch/powerpc/include/asm/kvm_book3s_64.h | 12 +++++++-----
- arch/powerpc/include/asm/page.h          |  2 +-
  arch/powerpc/include/asm/pgtable.h       |  4 ++--
  arch/powerpc/mm/fsl_booke_mmu.c          |  2 +-
  arch/powerpc/mm/pgtable_64.c             |  2 +-
  arch/powerpc/mm/tlb_hash64.c             |  2 +-
- 6 files changed, 13 insertions(+), 11 deletions(-)
+ 5 files changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
 index 0aa817933e6a..cd0ff37aea9f 100644
@@ -86,19 +89,6 @@ index 0aa817933e6a..cd0ff37aea9f 100644
  	}
  	return new_pte;
  }
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 26fe1ae15212..cc62ab9644b6 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -278,7 +278,7 @@ extern long long virt_phys_offset;
- 
- #ifndef __ASSEMBLY__
- 
--#undef STRICT_MM_TYPECHECKS
-+#define STRICT_MM_TYPECHECKS 1
- 
- #ifdef STRICT_MM_TYPECHECKS
- /* These are used to make use of C type-checking. */
 diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
 index 316f9a5da173..3e290888ed37 100644
 --- a/arch/powerpc/include/asm/pgtable.h
