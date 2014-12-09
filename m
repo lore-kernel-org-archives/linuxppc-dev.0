@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E9D31A0058
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:13:56 +1100 (AEDT)
-Message-ID: <1418119994.13358.43.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92D641A01E2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:18:41 +1100 (AEDT)
+In-Reply-To: <20141208141629.912861A5D5B@localhost.localdomain>
+To: LEROY Christophe <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com,
+ aneesh.kumar@in.ibm.com
+From: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: powerpc32: missing accessors to pgprot_t objects
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 09 Dec 2014 21:13:14 +1100
-In-Reply-To: <20141209100617.630111400EA@ozlabs.org>
-References: <20141209100617.630111400EA@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <20141209101841.7D9241400D2@ozlabs.org>
+Date: Tue,  9 Dec 2014 21:18:41 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 21:06 +1100, Michael Ellerman wrote:
-> On Mon, 2014-08-12 at 14:16:29 UTC, LEROY Christophe wrote:
-> > Compilation with #define STRICT_MM_TYPECHECKS in arch/powerpc/include/asm/page.h
-> > fails due to missing use of pgprot_val() when using pgprot_t objects.
-> 
-> Any idea when this broke? Recently, or has it gone unnoticed for a long time?
+On Mon, 2014-08-12 at 14:16:29 UTC, LEROY Christophe wrote:
+> Compilation with #define STRICT_MM_TYPECHECKS in arch/powerpc/include/asm/page.h
+> fails due to missing use of pgprot_val() when using pgprot_t objects.
 
-Probably a very long time...
+Hmm, looks like 64 bit doesn't build either.
 
-Now the reason we didn't leave STRICT_MM_TYPECHECKS enable back in the
-day is that gcc was doing a terrible job at compiling it resulting in
-bloated inefficient code.
+Aneesh I think you added this, mind fixing it up?
 
-I wouldn't be surprised if that is all fixed...
+In file included from ../arch/powerpc/include/asm/thread_info.h:34:0,
+                 from ../include/linux/thread_info.h:54,
+                 from ../include/asm-generic/preempt.h:4,
+                 from arch/powerpc/include/generated/asm/preempt.h:1,
+                 from ../include/linux/preempt.h:18,
+                 from ../include/linux/spinlock.h:50,
+                 from ../include/linux/mmzone.h:7,
+                 from ../include/linux/gfp.h:5,
+                 from ../include/linux/mm.h:9,
+                 from ../arch/powerpc/mm/tlb_hash64.c:25:
+../arch/powerpc/mm/tlb_hash64.c: In function ‘__flush_hash_table_range’:
+../arch/powerpc/include/asm/page.h:286:24: error: request for member ‘pte’ in something not a structure or union
+ #define pte_val(x) ((x).pte)
+                        ^    
+../arch/powerpc/mm/tlb_hash64.c:219:37: note: in expansion of macro ‘pte_val’
+    trace_hugepage_invalidate(start, pte_val(pte));
+                                     ^    
+make[2]: *** [arch/powerpc/mm/tlb_hash64.o] Error 1
 
-Cheers,
-Ben.
+
+cheers
