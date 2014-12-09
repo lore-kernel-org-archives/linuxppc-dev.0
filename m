@@ -1,43 +1,32 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46BD81A04DD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:42:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FADB1A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 17:14:39 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Tue, 9 Dec 2014 15:42:39 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 621D83578048
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:42:36 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sB95gS1S36831390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:42:36 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sB95g3AK024615
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:42:03 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- sB95g3ut024073
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 16:42:03 +1100
-Received: from localhost (haven.au.ibm.com [9.192.253.15])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 89402A019A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 16:41:39 +1100 (AEDT)
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 7/7] CXL: Unmap MMIO regions when detaching a context
-In-reply-to: <1418026681-14787-7-git-send-email-imunsie@au.ibm.com>
-References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
- <1418026681-14787-7-git-send-email-imunsie@au.ibm.com>
-Date: Tue, 09 Dec 2014 16:41:39 +1100
-Message-Id: <1418103566-sup-1772@delenn.ozlabs.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 9 Dec 2014 11:44:36 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id DB683E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 11:45:08 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sB96F49w54460454
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 11:45:05 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sB96EQdA022738
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 11:44:27 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH] selftest/ppc: Add subpage protection self test.
+Date: Tue,  9 Dec 2014 11:44:07 +0530
+Message-Id: <1418105647-1954-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,112 +36,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This one should go to stable - this was the first bug uncovered after
-fixing the sleep while atomic and force unbinding the driver.
+From: Paul Mackerras <paulus@samba.org>
 
-Cheers,
--Ian
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/powerpc/mm/Makefile       |   2 +-
+ tools/testing/selftests/powerpc/mm/subpage_prot.c | 201 ++++++++++++++++++++++
+ 2 files changed, 202 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/subpage_prot.c
 
-Excerpts from Ian Munsie's message of 2014-12-08 19:18:01 +1100:
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> If we need to force detach a context (e.g. due to EEH or simply force
-> unbinding the driver) we should prevent the userspace contexts from
-> being able to access the Problem State Area MMIO region further, which
-> they may have mapped with mmap().
-> 
-> This patch unmaps any mapped MMIO regions when detaching a userspace
-> context.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
->  drivers/misc/cxl/context.c | 11 ++++++++++-
->  drivers/misc/cxl/cxl.h     |  7 ++++++-
->  drivers/misc/cxl/file.c    |  6 +++++-
->  3 files changed, 21 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-> index 4aa31a3..51fd6b5 100644
-> --- a/drivers/misc/cxl/context.c
-> +++ b/drivers/misc/cxl/context.c
-> @@ -34,7 +34,8 @@ struct cxl_context *cxl_context_alloc(void)
->  /*
->   * Initialises a CXL context.
->   */
-> -int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
-> +int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
-> +             struct address_space *mapping)
->  {
->      int i;
->  
-> @@ -42,6 +43,8 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
->      ctx->afu = afu;
->      ctx->master = master;
->      ctx->pid = NULL; /* Set in start work ioctl */
-> +    mutex_init(&ctx->mapping_lock);
-> +    ctx->mapping = mapping;
->  
->      /*
->       * Allocate the segment table before we put it in the IDR so that we
-> @@ -147,6 +150,12 @@ static void __detach_context(struct cxl_context *ctx)
->      afu_release_irqs(ctx);
->      flush_work(&ctx->fault_work); /* Only needed for dedicated process */
->      wake_up_all(&ctx->wq);
-> +
-> +    /* Release Problem State Area mapping */
-> +    mutex_lock(&ctx->mapping_lock);
-> +    if (ctx->mapping)
-> +        unmap_mapping_range(ctx->mapping, 0, 0, 1);
-> +    mutex_unlock(&ctx->mapping_lock);
->  }
->  
->  /*
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index c1f8aa6..0df0438 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -405,6 +405,10 @@ struct cxl_context {
->      phys_addr_t psn_phys;
->      u64 psn_size;
->  
-> +    /* Used to unmap any mmaps when force detaching */
-> +    struct address_space *mapping;
-> +    struct mutex mapping_lock;
-> +
->      spinlock_t sste_lock; /* Protects segment table entries */
->      struct cxl_sste *sstp;
->      u64 sstp0, sstp1;
-> @@ -606,7 +610,8 @@ int cxl_alloc_sst(struct cxl_context *ctx);
->  void init_cxl_native(void);
->  
->  struct cxl_context *cxl_context_alloc(void);
-> -int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master);
-> +int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
-> +             struct address_space *mapping);
->  void cxl_context_free(struct cxl_context *ctx);
->  int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma);
->  
-> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-> index 2e067a5..b09be44 100644
-> --- a/drivers/misc/cxl/file.c
-> +++ b/drivers/misc/cxl/file.c
-> @@ -77,7 +77,7 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
->          goto err_put_afu;
->      }
->  
-> -    if ((rc = cxl_context_init(ctx, afu, master)))
-> +    if ((rc = cxl_context_init(ctx, afu, master, inode->i_mapping)))
->          goto err_put_afu;
->  
->      pr_devel("afu_open pe: %i\n", ctx->pe);
-> @@ -113,6 +113,10 @@ static int afu_release(struct inode *inode, struct file *file)
->           __func__, ctx->pe);
->      cxl_context_detach(ctx);
->  
-> +    mutex_lock(&ctx->mapping_lock);
-> +    ctx->mapping = NULL;
-> +    mutex_unlock(&ctx->mapping_lock);
-> +
->      put_device(&ctx->afu->dev);
->  
->      /*
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index 357ccbd6bad9..fb00c6f7d675 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -1,7 +1,7 @@
+ noarg:
+ 	$(MAKE) -C ../
+ 
+-PROGS := hugetlb_vs_thp_test
++PROGS := hugetlb_vs_thp_test subpage_prot
+ 
+ all: $(PROGS)
+ 
+diff --git a/tools/testing/selftests/powerpc/mm/subpage_prot.c b/tools/testing/selftests/powerpc/mm/subpage_prot.c
+new file mode 100644
+index 000000000000..62f0db3e3fb2
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/subpage_prot.c
+@@ -0,0 +1,201 @@
++/*
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of version 2.1 of the GNU Lesser General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it would be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <signal.h>
++#include <stdarg.h>
++#include <sys/ptrace.h>
++#include <sys/mman.h>
++#include <errno.h>
++#include <ucontext.h>
++#include <assert.h>
++#include <fcntl.h>
++
++#include "utils.h"
++
++void *mallocblock;
++unsigned long mallocsize;
++char *file_name;
++void *fileblock;
++off_t filesize;
++
++int in_test;
++volatile int faulted;
++volatile void *dar;
++int errors;
++
++static void segv(int signum, siginfo_t *info, void *ctxt_v)
++{
++	ucontext_t *ctxt = (ucontext_t *)ctxt_v;
++	struct pt_regs *regs = ctxt->uc_mcontext.regs;
++
++	if (!in_test) {
++		fprintf(stderr, "Segfault outside of test !\n");
++		exit(1);
++	}
++	faulted = 1;
++	dar = (void *)regs->dar;
++	regs->nip += 4;
++}
++
++static inline void do_read(const volatile void *addr)
++{
++	int ret;
++
++	asm volatile("lwz %0,0(%1); twi 0,%0,0; isync;\n"
++		     : "=r" (ret) : "r" (addr) : "memory");
++}
++
++static inline void do_write(const volatile void *addr)
++{
++	int val = 0x1234567;
++
++	asm volatile("stw %0,0(%1); sync; \n"
++		     : : "r" (val), "r" (addr) : "memory");
++}
++
++static inline void check_faulted(void *addr, long page, long subpage, int write)
++{
++	int want_fault = (subpage == ((page + 3) % 16));
++
++	if (write)
++		want_fault |= (subpage == ((page + 1) % 16));
++
++	if (faulted != want_fault) {
++		printf("Failed at 0x%p (p=%ld,sp=%ld,w=%d), want=%s, got=%s !\n",
++		       addr, page, subpage, write,
++		       want_fault ? "fault" : "pass",
++		       faulted ? "fault" : "pass");
++		++errors;
++	}
++	if (faulted) {
++		if (dar != addr) {
++			printf("Fault expected at 0x%p and happened at 0x%p !\n",
++			       addr, dar);
++		}
++		faulted = 0;
++		asm volatile("sync" : : : "memory");
++	}
++}
++
++static int run_test(void *addr, unsigned long size)
++{
++	unsigned int *map;
++	long i, j, pages, err;
++
++	pages = size / 0x10000;
++	map = malloc(pages * 4);
++	assert(map);
++
++	/* for each page, mark subpage i % 16 read only and subpage
++	 * (i + 3) % 16 inaccessible
++	 */
++	for (i = 0; i < pages; i++)
++		map[i] = (0x40000000 >> (((i + 1) * 2) % 32)) |
++			(0xc0000000 >> (((i + 3) * 2) % 32));
++	err = syscall(310, addr, size, map);
++	if (err) {
++		perror("subpage_perm");
++		return 1;
++	}
++	free(map);
++
++	in_test = 1;
++	errors = 0;
++	for (i = 0; i < pages; i++)
++		for (j = 0; j < 16; j++, addr += 0x1000) {
++			do_read(addr);
++			check_faulted(addr, i, j, 0);
++			do_write(addr);
++			check_faulted(addr, i, j, 1);
++		}
++	in_test = 0;
++	if (errors) {
++		printf("%d errors detected\n", errors);
++		return 1;
++	}
++	return 0;
++}
++
++int test_anon(void)
++{
++	unsigned long align;
++
++	if (getpagesize() != 0x10000) {
++		fprintf(stderr, "Kernel page size must be 64K!\n");
++		return 1;
++	}
++
++	struct sigaction act = {
++		.sa_sigaction = segv,
++		.sa_flags = SA_SIGINFO
++	};
++	sigaction(SIGSEGV, &act, NULL);
++
++	mallocsize = 4*16*1024*1024;
++	posix_memalign(&mallocblock, 64*1024, mallocsize);
++	assert(mallocblock);
++	align = (unsigned long)mallocblock;
++	if (align & 0xffff)
++		align = (align | 0xffff) + 1;
++	mallocblock = (void *)align;
++
++	printf("allocated malloc block of 0x%lx bytes at 0x%p\n",
++	       mallocsize, mallocblock);
++
++	printf("testing malloc block...\n");
++	return run_test(mallocblock, mallocsize);
++}
++
++int test_file(void)
++{
++	struct sigaction act = {
++		.sa_sigaction = segv,
++		.sa_flags = SA_SIGINFO
++	};
++	int fd = open(file_name, O_RDWR);
++
++	if (fd == -1) {
++		perror("failed to open file");
++		return 1;
++	}
++	sigaction(SIGSEGV, &act, NULL);
++
++
++	filesize = lseek(fd, 0, SEEK_END);
++	if (filesize & 0xffff)
++		filesize &= ~0xfffful;
++	fileblock = mmap(NULL, filesize, PROT_READ | PROT_WRITE,
++			 MAP_SHARED, fd, 0);
++	if (fileblock == MAP_FAILED) {
++		perror("failed to map file");
++		return 1;
++	}
++	printf("allocated %s for 0x%lx bytes at 0x%p\n",
++	       file_name, filesize, fileblock);
++
++	printf("testing file map...\n");
++	return run_test(fileblock, filesize);
++}
++
++int main(int argc, char *argv[])
++{
++	test_harness(test_anon, "subpage_prot_anon");
++	if (argc > 1) {
++		file_name = argv[1];
++		test_harness(test_file, "subpage_prot_file");
++	}
++	return 0;
++}
+-- 
+2.1.0
