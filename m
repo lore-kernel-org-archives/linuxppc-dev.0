@@ -1,18 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE6BC1A01E2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:11:17 +1100 (AEDT)
-In-Reply-To: <1418020212-4303-1-git-send-email-khandual@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/5] powerpc: Fix handling of DSCR related facility unavailable
- exception
-Message-Id: <20141209101117.1CEC9140100@ozlabs.org>
-Date: Tue,  9 Dec 2014 21:11:16 +1100 (AEDT)
-Cc: mikey@neuling.org, anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E9D31A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:13:56 +1100 (AEDT)
+Message-ID: <1418119994.13358.43.camel@kernel.crashing.org>
+Subject: Re: powerpc32: missing accessors to pgprot_t objects
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 09 Dec 2014 21:13:14 +1100
+In-Reply-To: <20141209100617.630111400EA@ozlabs.org>
+References: <20141209100617.630111400EA@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-08-12 at 06:30:08 UTC, Anshuman Khandual wrote:
-> Currently DSCR (Data Stream Control Register) can be accessed with
-> mfspr or mtspr instructions inside a thread via two different SPR
-> numbers. One being the user accessible problem state SPR number 0x03
-> and the other being the privilege state SPR number 0x11. All access
-> through the privilege state SPR number get emulated through illegal
-> instruction exception. Any access through the problem state SPR number
-> raises one facility unavailable exception which sets the thread based
-> dscr_inherit bit and enables DSCR facility through FSCR register thus
-> allowing direct access to DSCR without going through this exception in
-> the future. We set the thread.dscr_inherit bit whether the access was
-> with mfspr or mtspr instruction which is neither correct nor does it
-> match the behaviour through the instruction emulation code path driven
-> from privilege state SPR number. User currently observes two different
-> kind of behaviour when accessing the DSCR through these two SPR numbers.
-> This problem can be observed through these two test cases by replacing
-> the privilege state SPR number with the problem state SPR number.
+On Tue, 2014-12-09 at 21:06 +1100, Michael Ellerman wrote:
+> On Mon, 2014-08-12 at 14:16:29 UTC, LEROY Christophe wrote:
+> > Compilation with #define STRICT_MM_TYPECHECKS in arch/powerpc/include/asm/page.h
+> > fails due to missing use of pgprot_val() when using pgprot_t objects.
 > 
-> 	(1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
-> 	(2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+> Any idea when this broke? Recently, or has it gone unnoticed for a long time?
 
-Can you convert those into a selftest please?
+Probably a very long time...
 
-cheers
+Now the reason we didn't leave STRICT_MM_TYPECHECKS enable back in the
+day is that gcc was doing a terrible job at compiling it resulting in
+bloated inefficient code.
+
+I wouldn't be surprised if that is all fixed...
+
+Cheers,
+Ben.
