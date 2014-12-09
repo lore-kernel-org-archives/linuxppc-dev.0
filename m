@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 763A21A0588
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:06:17 +1100 (AEDT)
-In-Reply-To: <20141208141629.912861A5D5B@localhost.localdomain>
-To: LEROY Christophe <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE6BC1A01E2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 21:11:17 +1100 (AEDT)
+In-Reply-To: <1418020212-4303-1-git-send-email-khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc32: missing accessors to pgprot_t objects
-Message-Id: <20141209100617.630111400EA@ozlabs.org>
-Date: Tue,  9 Dec 2014 21:06:17 +1100 (AEDT)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/5] powerpc: Fix handling of DSCR related facility unavailable
+ exception
+Message-Id: <20141209101117.1CEC9140100@ozlabs.org>
+Date: Tue,  9 Dec 2014 21:11:16 +1100 (AEDT)
+Cc: mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,10 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-08-12 at 14:16:29 UTC, LEROY Christophe wrote:
-> Compilation with #define STRICT_MM_TYPECHECKS in arch/powerpc/include/asm/page.h
-> fails due to missing use of pgprot_val() when using pgprot_t objects.
+On Mon, 2014-08-12 at 06:30:08 UTC, Anshuman Khandual wrote:
+> Currently DSCR (Data Stream Control Register) can be accessed with
+> mfspr or mtspr instructions inside a thread via two different SPR
+> numbers. One being the user accessible problem state SPR number 0x03
+> and the other being the privilege state SPR number 0x11. All access
+> through the privilege state SPR number get emulated through illegal
+> instruction exception. Any access through the problem state SPR number
+> raises one facility unavailable exception which sets the thread based
+> dscr_inherit bit and enables DSCR facility through FSCR register thus
+> allowing direct access to DSCR without going through this exception in
+> the future. We set the thread.dscr_inherit bit whether the access was
+> with mfspr or mtspr instruction which is neither correct nor does it
+> match the behaviour through the instruction emulation code path driven
+> from privilege state SPR number. User currently observes two different
+> kind of behaviour when accessing the DSCR through these two SPR numbers.
+> This problem can be observed through these two test cases by replacing
+> the privilege state SPR number with the problem state SPR number.
+> 
+> 	(1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+> 	(2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
 
-Any idea when this broke? Recently, or has it gone unnoticed for a long time?
+Can you convert those into a selftest please?
 
 cheers
