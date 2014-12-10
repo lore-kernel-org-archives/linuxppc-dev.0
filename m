@@ -1,25 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <pmoore@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAD791A026F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 11:14:59 +1100 (AEDT)
-Message-ID: <1418170485.5581.39.camel@freescale.com>
-Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
- boot time
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 9 Dec 2014 18:14:45 -0600
-In-Reply-To: <1418169405.30244.1.camel@concordia>
-References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <1417805565.334.15.camel@freescale.com> <1418098262.527.1.camel@concordia>
- <1418159084.5581.32.camel@freescale.com>
- <1418169405.30244.1.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439681A0512
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 13:11:27 +1100 (AEDT)
+From: Paul Moore <pmoore@redhat.com>
+To: Richard Guy Briggs <rgb@redhat.com>, linux-audit@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V4] powerpc: add little endian flag to syscall_get_arch()
+Date: Tue, 09 Dec 2014 21:11:19 -0500
+Message-ID: <1557787.lOBez6GG22@sifl>
+In-Reply-To: <24fcd2ea2c7633152e74a7a92abab1dd1782745d.1418157273.git.rgb@redhat.com>
+References: <24fcd2ea2c7633152e74a7a92abab1dd1782745d.1418157273.git.rgb@redhat.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: tonyj@suse.de, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anton@samba.org, eparis@parisplace.org, sgrubb@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-12-10 at 10:56 +1100, Michael Ellerman wrote:
-> On Tue, 2014-12-09 at 15:04 -0600, Scott Wood wrote:
-> > On Tue, 2014-12-09 at 15:11 +1100, Michael Ellerman wrote:
-> > > On Fri, 2014-12-05 at 12:52 -0600, Scott Wood wrote:
-> > > > On Fri, 2014-12-05 at 16:14 +0100, Greg Kurz wrote:
-> > > > > The smt-enabled kernel parameter basically leaves unwanted cpus executing
-> > > > > in firmware or wherever they happen to be. The very same applies to the
-> > > > > ibm,smt-enabled DT property which is no more used by anything known. These
-> > > > > are hacks that shoudn't be used in a production environment.
-> > > > > 
-> > > > > Quoting mpe, "there are better ways for firmware to disable SMT".
-> > > > 
-> > > > Those "better ways" don't apply to Freescale chips, where the OS enables
-> > > > (or not) SMT without any interaction with firmware.
-> > > 
-> > > But how does it know there even are SMT threads? From the device tree? So
-> > > just don't present the threads in the device tree?
-> > 
-> > The device tree is for hardware description, not configuration...
+On Tuesday, December 09, 2014 03:37:07 PM Richard Guy Briggs wrote:
+> Since both ppc and ppc64 have LE variants which are now reported by uname,
+> add that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add
+> AUDIT_ARCH_PPC64LE variant.
 > 
-> Oh please, you're quoting device tree scripture to me now?
+> Without this,  perf trace and auditctl fail.
+> 
+> Mainline kernel reports ppc64le (per a058801) but there is no matching
+> AUDIT_ARCH_PPC64LE.
+> 
+> Since 32-bit PPC LE is not supported by audit, don't advertise it in
+> AUDIT_ARCH_PPC* variants.
+> 
+> See:
+> 	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
+> 	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
+> 
+> Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+> ---
+>  arch/powerpc/include/asm/syscall.h |    6 +++++-
+>  include/uapi/linux/audit.h         |    2 ++
+>  2 files changed, 7 insertions(+), 1 deletions(-)
 
-What benefit is there to ignoring "scripture" here?  Going from an easy
-to use command line option to needing to mess around with the dts file
-is not a usability improvement.  If you want to make it Freescale-only,
-fine.  If you want to push me to fix the problems with the
-implementation, fine.
+The audit changes look fine to me, but as I mentioned earlier, this should go 
+in via the ppc tree and not the audit tree.
 
--Scott
+Acked-by: Paul Moore <paul@paul-moore.com>
+
+> diff --git a/arch/powerpc/include/asm/syscall.h
+> b/arch/powerpc/include/asm/syscall.h index 6fa2708..d1934e5 100644
+> --- a/arch/powerpc/include/asm/syscall.h
+> +++ b/arch/powerpc/include/asm/syscall.h
+> @@ -90,6 +90,10 @@ static inline void syscall_set_arguments(struct
+> task_struct *task,
+> 
+>  static inline int syscall_get_arch(void)
+>  {
+> -	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
+> +	int arch = is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
+> +#ifdef __LITTLE_ENDIAN__
+> +	arch |= __AUDIT_ARCH_LE;
+> +#endif
+> +	return arch;
+>  }
+>  #endif	/* _ASM_SYSCALL_H */
+> diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
+> index 4d100c8..d82beec 100644
+> --- a/include/uapi/linux/audit.h
+> +++ b/include/uapi/linux/audit.h
+> @@ -364,7 +364,9 @@ enum {
+>  #define AUDIT_ARCH_PARISC	(EM_PARISC)
+>  #define AUDIT_ARCH_PARISC64	(EM_PARISC|__AUDIT_ARCH_64BIT)
+>  #define AUDIT_ARCH_PPC		(EM_PPC)
+> +/* do not define AUDIT_ARCH_PPCLE since it is not supported by audit */
+>  #define AUDIT_ARCH_PPC64	(EM_PPC64|__AUDIT_ARCH_64BIT)
+> +#define AUDIT_ARCH_PPC64LE	(EM_PPC64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
+>  #define AUDIT_ARCH_S390		(EM_S390)
+>  #define AUDIT_ARCH_S390X	(EM_S390|__AUDIT_ARCH_64BIT)
+>  #define AUDIT_ARCH_SH		(EM_SH)
+
+-- 
+paul moore
+security and virtualization @ redhat
