@@ -1,20 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 753371A0270
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 21:17:21 +1100 (AEDT)
-Message-ID: <1418206640.9279.10.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 7/8] perf probe powerpc: Use DWARF info only if
- necessary
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Date: Wed, 10 Dec 2014 21:17:20 +1100
-In-Reply-To: <50dd0fedb50e3a56ff8f25c44098db3e2a2d6374.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AED991A01EB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 21:27:14 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 10 Dec 2014 15:57:12 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 571113940068
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 15:57:09 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBAATG4N51773676
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 15:59:16 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBAAR7Bk005655
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 15:57:08 +0530
+Date: Wed, 10 Dec 2014 15:56:34 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/8] kprobes: Fix kallsyms lookup across powerpc
+ ABIv1 and ABIv2
+Message-ID: <20141210102634.GA16045@naverao1-tp.in.ibm.com>
 References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <50dd0fedb50e3a56ff8f25c44098db3e2a2d6374.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <7a96a9c262a818112955da93f8ff1ada1bfe5c59.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1418204242.9279.4.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1418204242.9279.4.camel@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  acme@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,32 +43,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 23:04 +0530, Naveen N. Rao wrote:
-> Use symbol table lookups by default if DWARF is not necessary, since
-> powerpc ABIv2 encodes local entry points in the symbol table and the
-> function entry address in DWARF may not be appropriate for kprobes,
-> as described here:
-> https://sourceware.org/bugzilla/show_bug.cgi?id=17638
+On 2014/12/10 08:37PM, Michael Ellerman wrote:
+> On Tue, 2014-12-09 at 23:03 +0530, Naveen N. Rao wrote:
+> > Currently, all non-dot symbols are being treated as function descriptors
+> > in ABIv1. This is incorrect and is resulting in perf probe not working:
+> 
+> I don't understand that first sentence. With ABIv1 non-dot symbols *are*
+> function descriptors?
 
-Needs a better changelog.
+Not always. '_text' is an example of a symbol that is not a function 
+descriptor. However, most functions have a dot variant constituting the 
+actual entry point and a non-dot variant constituting the function 
+descriptor.
 
-> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> index 174c22e..adcdbd2 100644
-> --- a/tools/perf/util/probe-event.c
-> +++ b/tools/perf/util/probe-event.c
-> @@ -2382,6 +2382,14 @@ static int convert_to_probe_trace_events(struct perf_probe_event *pev,
->  		}
->  	}
->  
-> +#if defined(__powerpc64__) && defined(_CALL_ELF) && _CALL_ELF == 2
-> +	if (!perf_probe_event_need_dwarf(pev)) {
-> +		ret = find_probe_trace_events_from_map(pev, tevs, max_tevs, target);
-> +		if (ret > 0)
-> +			return ret;	/* Found in symbol table */
-> +	}
-> +#endif
+> 
+> >   # perf probe do_fork
+> >   Added new event:
+> >   Failed to write event: Invalid argument
+> >     Error: Failed to add events.
+> >   # dmesg | tail -1
+> >   [192268.073063] Could not insert probe at _text+768432: -22
+> > 
+> > _text is being resolved incorrectly and is resulting in the above error.
+> > Fix this by changing how we lookup symbol addresses on ppc64. We first
+> > check for the dot variant of a symbol and look at the non-dot variant
+> > only if that fails. In this manner, we avoid having to look at the
+> > function descriptor.
+> 
+> I'm not clear that ppc_local_function_entry() makes sense. On ABIv2 you return
+> the local entry point, which is fine. But on ABIv1 you just return the
+> unmodified address, which will be the descriptor if you actually passed it a
+> function pointer. I think you're assuming that you're passed the text address,
+> but if that's the case the function is badly named at least.
+> 
+> I also don't understand why we need to ever guess which ABI we're using. We
+> know which ABI we're built with, so there should be no guess work required.
+> 
+> So at the very least this needs much more explanation.
+> 
+> But to be honest I'm not clear why it even needs a kernel change, don't we just
+> need perf to understand dot symbols?
 
-And should be in an arch helper, not a big powerpc wart dropped in the middle
-of the generic code.
+The problem in this case is in the kernel. perf probe is now basing all 
+probe addresses on _text and writes, for example, "p:probe/do_fork 
+_text+768432" to /sys/kernel/debug/tracing/kprobe_events.
 
-cheers
+This ends up in kprobe_lookup_name() for resolving address of _text, 
+which invokes ppc_function_entry(), which ends up thinking _text is a 
+function descriptor.
+
+Even though we know we are compiled for ABIv1, there is no easy way to 
+identify if a given symbol is the actual entry point or if it is a 
+function descriptor. To address this, my approach is to always check for 
+a dot symbol first and if that exists, we know we have the actual 
+function entry. If not, we know this isn't a function descriptor (since 
+there is no related dot symbol).
+
+I agree that the function is named badly though. The real problem is 
+that kprobe_lookup_name is a macro and I can't have a #ifdef to call 
+ppc_function_entry() only for ABIv2.
+
+Thoughts? Suggestions?
+
+Thanks,
+Naveen
