@@ -1,18 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B54B21A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 20:50:55 +1100 (AEDT)
-Message-ID: <1418205050.9279.5.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 2/8] perf probe powerpc: Fix symbol fixup issues due
- to ELF type
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F3F21A0271
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 21:00:07 +1100 (AEDT)
+Message-ID: <1418205606.9279.6.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 3/8] perf probe: Improve detection of file/function
+ name in the probe pattern
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Date: Wed, 10 Dec 2014 20:50:50 +1100
-In-Reply-To: <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Wed, 10 Dec 2014 21:00:06 +1100
+In-Reply-To: <de6c0cd8236de1cabc179e456514c2a399cbc7b5.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <de6c0cd8236de1cabc179e456514c2a399cbc7b5.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -27,28 +27,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2014-12-09 at 23:04 +0530, Naveen N. Rao wrote:
-> If using the symbol table, symbol addresses are not being fixed up
-> properly, resulting in probes being placed at wrong addresses:
+> Currently, perf probe considers patterns including a '.' to be a file.
+> However, this causes problems on powerpc ABIv1 where all functions have
+> a leading '.':
 > 
->   # perf probe do_fork
->   Added new event:
->     probe:do_fork        (on do_fork)
+>   $ perf probe -F | grep schedule_timeout_interruptible
+>   .schedule_timeout_interruptible
+>   $ perf probe .schedule_timeout_interruptible
+>   Semantic error :File always requires line number or lazy pattern.
+>     Error: Command Parse Error.
 > 
->   You can now use it in all perf tools, such as:
+> Fix this by checking the probe pattern in more detail.
 > 
-> 	  perf record -e probe:do_fork -aR sleep 1
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/probe-event.c | 23 ++++++++++++++++++++---
+>  1 file changed, 20 insertions(+), 3 deletions(-)
 > 
->   # cat /sys/kernel/debug/tracing/kprobe_events
->   p:probe/do_fork _text+635952
->   # printf "%x" 635952
->   9b430
->   # grep do_fork /boot/System.map
->   c0000000000ab430 T .do_fork
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index c150ca4..c7e01ef 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -999,6 +999,24 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+>  		arg = tmp;
+>  	}
+>  
+> +	/*
+> +	 * Check arg is function or file name and copy it.
+> +	 *
+> +	 * We consider arg to be a file spec if and only if it satisfies
+> +	 * all of the below criteria::
+> +	 * - it does not include any of "+@%",
+> +	 * - it includes one of ":;", and
+> +	 * - it has a period '.' in the name.
 
-OK, but why is that happening? And why does checking for ET_DYN fix it?
+I don't think we need to be this elaborate.
 
-> Fix by checking for ELF type ET_DYN used by ppc64 kernels.
+AFAIK there are no source files in the kernel that start with '.'
 
-We sometimes produce ET_DYN kernels, but only if CONFIG_RELOCATABLE=y.
+So if the arg starts with '.' it must be a function?
 
 cheers
