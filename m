@@ -1,37 +1,37 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 899D41A01DE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 21:42:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BBBA1A05EE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 21:59:43 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 10 Dec 2014 16:12:02 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E61E1E0062
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:12:34 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBAAfqoZ64618632
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:11:53 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBAAfv6m026084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:11:58 +0530
-Date: Wed, 10 Dec 2014 16:11:24 +0530
+ Wed, 10 Dec 2014 16:29:40 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0415C1258044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:30:00 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBAB0Bhl65994756
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:30:12 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBAAxYQ0009369
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 16:29:34 +0530
+Date: Wed, 10 Dec 2014 16:29:00 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH 2/8] perf probe powerpc: Fix symbol fixup issues due
- to ELF type
-Message-ID: <20141210104124.GB16045@naverao1-tp.in.ibm.com>
+Subject: Re: [RFC PATCH 3/8] perf probe: Improve detection of file/function
+ name in the probe pattern
+Message-ID: <20141210105900.GC16045@naverao1-tp.in.ibm.com>
 References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <1418205050.9279.5.camel@ellerman.id.au>
+ <de6c0cd8236de1cabc179e456514c2a399cbc7b5.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1418205606.9279.6.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1418205050.9279.5.camel@ellerman.id.au>
+In-Reply-To: <1418205606.9279.6.camel@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  acme@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,45 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/12/10 08:50PM, Michael Ellerman wrote:
+On 2014/12/10 09:00PM, Michael Ellerman wrote:
 > On Tue, 2014-12-09 at 23:04 +0530, Naveen N. Rao wrote:
-> > If using the symbol table, symbol addresses are not being fixed up
-> > properly, resulting in probes being placed at wrong addresses:
+> > Currently, perf probe considers patterns including a '.' to be a file.
+> > However, this causes problems on powerpc ABIv1 where all functions have
+> > a leading '.':
 > > 
-> >   # perf probe do_fork
-> >   Added new event:
-> >     probe:do_fork        (on do_fork)
+> >   $ perf probe -F | grep schedule_timeout_interruptible
+> >   .schedule_timeout_interruptible
+> >   $ perf probe .schedule_timeout_interruptible
+> >   Semantic error :File always requires line number or lazy pattern.
+> >     Error: Command Parse Error.
 > > 
-> >   You can now use it in all perf tools, such as:
+> > Fix this by checking the probe pattern in more detail.
 > > 
-> > 	  perf record -e probe:do_fork -aR sleep 1
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  tools/perf/util/probe-event.c | 23 ++++++++++++++++++++---
+> >  1 file changed, 20 insertions(+), 3 deletions(-)
 > > 
-> >   # cat /sys/kernel/debug/tracing/kprobe_events
-> >   p:probe/do_fork _text+635952
-> >   # printf "%x" 635952
-> >   9b430
-> >   # grep do_fork /boot/System.map
-> >   c0000000000ab430 T .do_fork
+> > diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> > index c150ca4..c7e01ef 100644
+> > --- a/tools/perf/util/probe-event.c
+> > +++ b/tools/perf/util/probe-event.c
+> > @@ -999,6 +999,24 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+> >  		arg = tmp;
+> >  	}
+> >  
+> > +	/*
+> > +	 * Check arg is function or file name and copy it.
+> > +	 *
+> > +	 * We consider arg to be a file spec if and only if it satisfies
+> > +	 * all of the below criteria::
+> > +	 * - it does not include any of "+@%",
+> > +	 * - it includes one of ":;", and
+> > +	 * - it has a period '.' in the name.
 > 
-> OK, but why is that happening? And why does checking for ET_DYN fix it?
-
-The section header indicates 0x10000 as the offset:
-
-Section Headers:
-  [Nr] Name              Type             Address           Offset
-       Size              EntSize          Flags  Link  Info  Align
-  [ 0]                   NULL             0000000000000000  00000000
-       0000000000000000  0000000000000000           0     0     0
-  [ 1] .text             PROGBITS         c000000000000000  00010000
-       0000000000806678  0000000000000000  AX       0     0     256
-
-This is used during fixup and perf only expects this to be needed for
-ET_EXEC, though we use ET_DYN on ppc64.
-
-> > Fix by checking for ELF type ET_DYN used by ppc64 kernels.
+> I don't think we need to be this elaborate.
 > 
-> We sometimes produce ET_DYN kernels, but only if CONFIG_RELOCATABLE=y.
+> AFAIK there are no source files in the kernel that start with '.'
+> 
+> So if the arg starts with '.' it must be a function?
 
-Ok.
+Indeed, but this is also used for parsing uprobes. So, I coded this 
+based on the spec for the probe pattern.
 
 - Naveen
