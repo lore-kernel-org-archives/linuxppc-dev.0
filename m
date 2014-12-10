@@ -2,17 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF9101A000B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 20:37:22 +1100 (AEDT)
-Message-ID: <1418204242.9279.4.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/8] kprobes: Fix kallsyms lookup across powerpc
- ABIv1 and ABIv2
+ by lists.ozlabs.org (Postfix) with ESMTPS id B54B21A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 20:50:55 +1100 (AEDT)
+Message-ID: <1418205050.9279.5.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 2/8] perf probe powerpc: Fix symbol fixup issues due
+ to ELF type
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Date: Wed, 10 Dec 2014 20:37:22 +1100
-In-Reply-To: <7a96a9c262a818112955da93f8ff1ada1bfe5c59.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Wed, 10 Dec 2014 20:50:50 +1100
+In-Reply-To: <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <7a96a9c262a818112955da93f8ff1ada1bfe5c59.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <0412a00009a22762f92c208964df6f842796464e.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -26,38 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 23:03 +0530, Naveen N. Rao wrote:
-> Currently, all non-dot symbols are being treated as function descriptors
-> in ABIv1. This is incorrect and is resulting in perf probe not working:
-
-I don't understand that first sentence. With ABIv1 non-dot symbols *are*
-function descriptors?
-
+On Tue, 2014-12-09 at 23:04 +0530, Naveen N. Rao wrote:
+> If using the symbol table, symbol addresses are not being fixed up
+> properly, resulting in probes being placed at wrong addresses:
+> 
 >   # perf probe do_fork
 >   Added new event:
->   Failed to write event: Invalid argument
->     Error: Failed to add events.
->   # dmesg | tail -1
->   [192268.073063] Could not insert probe at _text+768432: -22
+>     probe:do_fork        (on do_fork)
 > 
-> _text is being resolved incorrectly and is resulting in the above error.
-> Fix this by changing how we lookup symbol addresses on ppc64. We first
-> check for the dot variant of a symbol and look at the non-dot variant
-> only if that fails. In this manner, we avoid having to look at the
-> function descriptor.
+>   You can now use it in all perf tools, such as:
+> 
+> 	  perf record -e probe:do_fork -aR sleep 1
+> 
+>   # cat /sys/kernel/debug/tracing/kprobe_events
+>   p:probe/do_fork _text+635952
+>   # printf "%x" 635952
+>   9b430
+>   # grep do_fork /boot/System.map
+>   c0000000000ab430 T .do_fork
 
-I'm not clear that ppc_local_function_entry() makes sense. On ABIv2 you return
-the local entry point, which is fine. But on ABIv1 you just return the
-unmodified address, which will be the descriptor if you actually passed it a
-function pointer. I think you're assuming that you're passed the text address,
-but if that's the case the function is badly named at least.
+OK, but why is that happening? And why does checking for ET_DYN fix it?
 
-I also don't understand why we need to ever guess which ABI we're using. We
-know which ABI we're built with, so there should be no guess work required.
+> Fix by checking for ELF type ET_DYN used by ppc64 kernels.
 
-So at the very least this needs much more explanation.
-
-But to be honest I'm not clear why it even needs a kernel change, don't we just
-need perf to understand dot symbols?
+We sometimes produce ET_DYN kernels, but only if CONFIG_RELOCATABLE=y.
 
 cheers
