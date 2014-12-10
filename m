@@ -1,37 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0117.outbound.protection.outlook.com [65.55.169.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8AAD01A0013
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 10:06:30 +1100 (AEDT)
-Message-ID: <1418252789.26146.0.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: secondary CPUs signal to master before setting
- active and online (fixes kernel BUG at kernel/smpboot.c:134!)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 11 Dec 2014 10:06:29 +1100
-In-Reply-To: <CA+55aFyR5PzNkojvEej1NXnpEFOPOYfnxCcPDAjg1rE79tQv7A@mail.gmail.com>
-References: <1418009221-12719-1-git-send-email-anton@samba.org>
- <20141208083408.GA8023@gmail.com> <20141208211859.6e81ec81@kryten>
- <20141209105819.0e847b4b@kryten>
- <CA+55aFyR5PzNkojvEej1NXnpEFOPOYfnxCcPDAjg1rE79tQv7A@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 665C11A0490
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 10:50:51 +1100 (AEDT)
+Message-ID: <1418255437.5581.45.camel@freescale.com>
+Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
+ boot time
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 10 Dec 2014 17:50:37 -0600
+In-Reply-To: <1418177689.30244.4.camel@concordia>
+References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <1417805565.334.15.camel@freescale.com> <1418098262.527.1.camel@concordia>
+ <1418159084.5581.32.camel@freescale.com>
+ <1418169405.30244.1.camel@concordia>
+ <1418170485.5581.39.camel@freescale.com>
+ <1418177689.30244.4.camel@concordia>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Yuanhan Liu <yuanhan.liu@linux.intel.com>,
- Benjamin Segall <bsegall@google.com>, Paul Mackerras <paulus@samba.org>,
- Ingo Molnar <mingo@kernel.org>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Ingo Molnar <mingo@redhat.com>, Paul Turner <pjt@google.com>,
- yuyang.du@intel.com, Daniel J Blueman <daniel@numascale.com>,
- Steven Rostedt <rostedt@goodmis.org>, Anton Blanchard <anton@samba.org>,
- subbaram@codeaurora.org, Thomas Gleixner <tglx@linutronix.de>,
- Wu Fengguang <fengguang.wu@intel.com>, lkp@01.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Slava Pestov <sp@datera.io>, Tejun Heo <tj@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Brian Norris <computersforpeace@gmail.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 12:54 -0800, Linus Torvalds wrote:
-> On Mon, Dec 8, 2014 at 3:58 PM, Anton Blanchard <anton@samba.org> wrote:
-> > Hi Ingo,
-> >
-> >> At that point I thought the previous task_cpu() was somewhat ingrained
-> >> in the scheduler and came up with the patch. If not, we could go on a
-> >> hunt to see what else needs fixing.
-> >
-> > I had another look. The scheduled does indeed make assumptions about the
-> > previous task_cpu, but we have a hammer to fix it up called
-> > select_fallback_rq.
-> >
-> > I annotated select_fallback_rq, and did hit a case where the CPU was
-> > not active. ppc64 patch below.
+On Wed, 2014-12-10 at 13:14 +1100, Michael Ellerman wrote:
+> On Tue, 2014-12-09 at 18:14 -0600, Scott Wood wrote:
+> > What benefit is there to ignoring "scripture" here?  Going from an easy
+> > to use command line option to needing to mess around with the dts file
+> > is not a usability improvement.  If you want to make it Freescale-only,
+> > fine.  If you want to push me to fix the problems with the
+> > implementation, fine.
 > 
-> Anton, I'll assume I will get this through the usual powerpc pull requests?
+> It's easy to use but it doesn't necessarily work.
+> 
+> You said in your other mail to Greg "Sometimes it's useful to ensure that the
+> second thread has never run when debugging a problem.".
+> 
+> But you don't know that, for all you know your firmware has started the thread
+> and it's busy looping somewhere. Perhaps you guys know that your firmware
+> doesn't do that, but it's still a hack.
 
-Yeah I'll put it in my tree unless Anton objects.
+I know that our firmware doesn't do that, and I can verify by reading
+the relevant register.
 
-cheers
+> We end up with cpus in the present map, but we have no idea where they are or
+> what they are doing.
+
+Can we check smt-enabled a little earlier and refrain from marking the
+secondary threads as present if smt is disabled?
+
+> So as far as I'm concerned it's only useful as a debugging hack, and one that
+> we don't really use anymore. But if you guys think it's useful then we'll keep
+> it.
+> 
+> I'll work out with Greg what the cleanest solution is.
+> 
+> It looks like you only need it on e6500? Which is platforms/85xx I think.
+> Anywhere else?
+
+Yes, just e6500.
+
+-Scott
