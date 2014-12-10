@@ -1,22 +1,41 @@
-Return-Path: <rgb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ananth@in.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF3F01A06EA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 13:43:30 +1100 (AEDT)
-Date: Tue, 9 Dec 2014 21:43:19 -0500
-From: Richard Guy Briggs <rgb@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH V4] powerpc: add little endian flag to syscall_get_arch()
-Message-ID: <20141210024319.GI29175@madcap2.tricolour.ca>
-References: <24fcd2ea2c7633152e74a7a92abab1dd1782745d.1418157273.git.rgb@redhat.com>
- <1557787.lOBez6GG22@sifl> <1418178015.30244.5.camel@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F09A11A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2014 15:08:20 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Tue, 9 Dec 2014 21:08:18 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 67F7F19D8039
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Dec 2014 20:56:55 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBA47Gif20971602
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 21:07:16 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBA48Fk3023341
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Dec 2014 21:08:15 -0700
+Date: Wed, 10 Dec 2014 09:41:45 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Subject: Re: [RFC PATCH 8/8] perf probe powerpc: Fixup function entry if
+ using kallsyms lookup
+Message-ID: <20141210041144.GA13398@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e5bfde8d51546041e50699c4ed3bad8c3c1bf84f.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20141209211400.GB8788@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1418178015.30244.5.camel@concordia>
-Cc: tonyj@suse.de, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Moore <pmoore@redhat.com>, linux-audit@redhat.com, anton@samba.org,
- eparis@parisplace.org, sgrubb@redhat.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20141209211400.GB8788@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +45,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/12/10, Michael Ellerman wrote:
-> On Tue, 2014-12-09 at 21:11 -0500, Paul Moore wrote:
-> > On Tuesday, December 09, 2014 03:37:07 PM Richard Guy Briggs wrote:
-> > > Since both ppc and ppc64 have LE variants which are now reported by uname,
-> > > add that flag (__AUDIT_ARCH_LE) to syscall_get_arch() and add
-> > > AUDIT_ARCH_PPC64LE variant.
-> > > 
-> > > Without this,  perf trace and auditctl fail.
-> > > 
-> > > Mainline kernel reports ppc64le (per a058801) but there is no matching
-> > > AUDIT_ARCH_PPC64LE.
-> > > 
-> > > Since 32-bit PPC LE is not supported by audit, don't advertise it in
-> > > AUDIT_ARCH_PPC* variants.
-> > > 
-> > > See:
-> > > 	https://www.redhat.com/archives/linux-audit/2014-August/msg00082.html
-> > > 	https://www.redhat.com/archives/linux-audit/2014-December/msg00004.html
-> > > 
-> > > Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
-> > > ---
-> > >  arch/powerpc/include/asm/syscall.h |    6 +++++-
-> > >  include/uapi/linux/audit.h         |    2 ++
-> > >  2 files changed, 7 insertions(+), 1 deletions(-)
-> > 
-> > The audit changes look fine to me, but as I mentioned earlier, this should go 
-> > in via the ppc tree and not the audit tree.
-> > 
-> > Acked-by: Paul Moore <paul@paul-moore.com>
+On Tue, Dec 09, 2014 at 06:14:00PM -0300, Arnaldo Carvalho de Melo wrote:
+> Em Tue, Dec 09, 2014 at 11:04:06PM +0530, Naveen N. Rao escreveu:
+> > On powerpc ABIv2, if no debug-info is found and we use kallsyms,
+> > we need to fixup the function entry to point to the local entry point.
+> > Use offset of 8 since current toolchains always generate 2
+> > instructions (8 bytes).
 > 
-> Thanks.
+> Hi Michael and Ananth, may I have your Acked-by or Reviewed-by for these
+> patches?
 > 
-> Yep I'll take it via the powerpc tree, I'll CC stable as well as presumably we
-> want this to work in all versions that had LE support.
+> The ones, like this, that are affects only ppc I'm can assume was tested
+> and applying it won't break other arch users, but having a/rev-by from
+> ppc developers should speed up this process.
 
-Yes, please!
+Hi Arnaldo,
 
-(I was very tempted to change the #error to #warning, but figured the
-placeholder comment in the uapi file was sufficient.)
+Yes, I have reviewed the patches. So, for all patches...
 
-> cheers
-
-- RGB
-
---
-Richard Guy Briggs <rbriggs@redhat.com>
-Senior Software Engineer, Kernel Security, AMER ENG Base Operating Systems, Red Hat
-Remote, Ottawa, Canada
-Voice: +1.647.777.2635, Internal: (81) 32635, Alt: +1.613.693.0684x3545
+Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
