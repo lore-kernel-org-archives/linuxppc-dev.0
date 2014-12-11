@@ -1,17 +1,31 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BF211A0374
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 12:44:15 +1100 (AEDT)
-In-Reply-To: <20141210222912.GA30869@us.ibm.com>
-To: sukadev@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/2] perf/powerpc/hv-24x7: Use per-cpu page buffer
-Message-Id: <20141211014415.4168B1400B7@ozlabs.org>
-Date: Thu, 11 Dec 2014 12:44:15 +1100 (AEDT)
-Cc: linuxppc-dev@ozlabs.org, dev@codyps.com, Jiri Olsa <jolsa@redhat.com>,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B4131A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 14:29:03 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 11 Dec 2014 13:29:02 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DBEC42BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 14:28:59 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBB3SxSG30277786
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 14:28:59 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBB3Swol020710
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Dec 2014 14:28:58 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/eeh: Introduce flag EEH_PE_REMOVED
+Date: Thu, 11 Dec 2014 14:28:55 +1100
+Message-Id: <1418268536-15002-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: grimm@linux.vnet.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,69 +35,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-10-12 at 22:29:13 UTC, sukadev@linux.vnet.ibm.com wrote:
-> Michael Ellerman [mpe@ellerman.id.au] wrote:
-> | On Tue, 2014-12-09 at 23:06 -0800, Sukadev Bhattiprolu wrote:
-> | > From 470c16c8955672103a9529c78dffbb239e9e27b8 Mon Sep 17 00:00:00 2001
-> | > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> | > Date: Tue, 9 Dec 2014 22:17:46 -0500
-> | > Subject: [PATCH 1/2] perf/poweprc/hv-24x7: Use per-cpu page buffer
-> | > 
-> | > diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> | > index dba3408..18e1f49 100644
-> | > --- a/arch/powerpc/perf/hv-24x7.c
-> | > +++ b/arch/powerpc/perf/hv-24x7.c
-> | > @@ -217,11 +217,14 @@ static bool is_physical_domain(int domain)
-> | >  		domain == HV_24X7_PERF_DOMAIN_PHYSICAL_CORE;
-> | >  }
-> | >  
-> | > +DEFINE_PER_CPU(char, hv_24x7_reqb[4096]);
-> | > +DEFINE_PER_CPU(char, hv_24x7_resb[4096]);
-> | 
-> | Do we need it to be 4K aligned also? I would guess so.
-> 
-> Yes, fixed in the patch below.
+The conditions that one specific PE's frozen count exceeds the maximal
+allowed times (EEH_MAX_ALLOWED_FREEZES) and it's in isolated or recovery
+state indicate the PE was removed permanently implicitly. The patch
+introduces flag EEH_PE_REMOVED to indicate that explicitly so that we
+don't depend on the fixed maximal allowed times, which can be varied as
+we do in subsequent patch.
 
-OK.
+Flag EEH_PE_REMOVED is expected to be marked for the PE whose frozen
+count exceeds the maximal allowed times, or just failed from recovery.
 
-> | 
-> | Rather than declaring these as char arrays and then casting below, can you pull
-> | the struct definitions up and then declare the per cpu variables with the
-> | proper type.
-> 
-> Well, the structures, used for communication with HV, have variable length
-> arrays, like:
-> 
-> 	struct hv_24x7_request_buffer {
-> 		...
-> 		struct hv_24x7_request requests[];
-> 	};
-> 
-> i.e the buffer needs to be larger than reported by sizeof(). So we
-> allocate a large buffer and cast it. Not sure if there is a trick to
-> get DEFINE_PER_CPU() to do that.
+Requested-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h   | 1 +
+ arch/powerpc/kernel/eeh_driver.c | 2 +-
+ arch/powerpc/kernel/eeh_pe.c     | 6 ++----
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
-So the array is variable length, but no larger than 4K - at least I hope
-because you're using a 4K buffer :)
-
-The neatest way to handle that is to make it a union, with the struct and a 4K
-char buffer.
-
-But we can do that as a cleanup later.
-
-> | > +	memset(request_buffer, 0, 4096);
-> | > +	memset(result_buffer, 0, 4096);
-> | 
-> | Do we have to memset them? That's not going to speed things up.
-> 
-> I agree about the speed, specially since we have a larger buffer. But we
-> are reusing the buffer for independent events and some fields need to be 0
-> (hence the zalloc in the current code).
-
-Sure, so you could explicitly initialise those fields to zero.
-
-But that also can be another cleanup.
-
-I'll take this as it is.
-
-cheers
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 9c11d1e..3e4dd34 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -78,6 +78,7 @@ struct device_node;
+ 
+ #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
+ #define EEH_PE_CFG_RESTRICTED	(1 << 9)	/* Block config on error */
++#define EEH_PE_REMOVED		(1 << 10)	/* Removed permanently	*/
+ 
+ struct eeh_pe {
+ 	int type;			/* PE type: PHB/Bus/Device	*/
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index b17e793..ac00672 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -806,7 +806,7 @@ perm_error:
+ 	eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
+ 
+ 	/* Mark the PE to be removed permanently */
+-	pe->freeze_count = EEH_MAX_ALLOWED_FREEZES + 1;
++	eeh_pe_state_mark(pe, EEH_PE_REMOVED);
+ 
+ 	/*
+ 	 * Shut down the device drivers for good. We mark
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index fa950fb..1e4946c 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -526,8 +526,7 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
+ 	struct pci_dev *pdev;
+ 
+ 	/* Keep the state of permanently removed PE intact */
+-	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
+-	    (state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
++	if (pe->state & EEH_PE_REMOVED)
+ 		return NULL;
+ 
+ 	pe->state |= state;
+@@ -600,8 +599,7 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
+ 	struct pci_dev *pdev;
+ 
+ 	/* Keep the state of permanently removed PE intact */
+-	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
+-	    (state & EEH_PE_ISOLATED))
++	if (pe->state & EEH_PE_REMOVED)
+ 		return NULL;
+ 
+ 	pe->state &= ~state;
+-- 
+1.8.3.2
