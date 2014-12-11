@@ -1,28 +1,38 @@
-Return-Path: <prvs=042238b4f9=valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 451AF1A0A74
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 00:44:29 +1100 (AEDT)
-Message-ID: <54899FB4.9010207@keymile.com>
-Date: Thu, 11 Dec 2014 14:44:20 +0100
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4545D1A0932
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:45:09 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id BA81914003E
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:07 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 12 Dec 2014 02:45:07 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 27BB22BB0052
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:05 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBBGj4xc26476666
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:05 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBBGj3j7006539
+ for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:04 +1100
+Subject: [PATCH] powerpc/kdump: skip enabling big endian exception during crash
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Thu, 11 Dec 2014 22:14:54 +0530
+Message-ID: <20141211164454.4641.71441.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-References: <1413538026-15739-1-git-send-email-valentin.longchamp@keymile.com>	
- <1414537731.23458.120.camel@snotra.buserror.net>	
- <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>	
- <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>	
- <1416274083.15957.96.camel@freescale.com> <20141125181347.GC9716@katana>
- <1416966097.15957.171.camel@freescale.com>
-In-Reply-To: <1416966097.15957.171.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- danielle.costantino@gmail.com, "Boschung,
- Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +42,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+In LE kernel, we currently have a hack for kexec that resets the exception endian
+before starting a new kernel as the kernel that is loaded could be a big endian
+or a little endian kernel. In kdump case, resetting exception endian fails when
+one or more cpus is disabled. But in case of kdump, we can conveniently ignore
+resetting endianess as crashkernel is always of same endianess as primary kernel.
+This patch adds a new inline function to say if this is kdump path. This function
+is used at places where such a check is needed.
 
-Picking up this issue again.
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kexec.h       |   10 ++++++++++
+ arch/powerpc/kernel/machine_kexec_64.c |    2 +-
+ arch/powerpc/platforms/pseries/lpar.c  |    7 ++++++-
+ 3 files changed, 17 insertions(+), 2 deletions(-)
 
-On 11/26/2014 02:41 AM, Scott Wood wrote:
-> On Tue, 2014-11-25 at 19:13 +0100, Wolfram Sang wrote:
->> On Mon, Nov 17, 2014 at 07:28:03PM -0600, Scott Wood wrote:
->>> On Fri, 2014-11-14 at 09:28 +0100, Wolfram Sang wrote:
->>>>>>
->>>>>> If we're going to change the device tree I'd rather just add a property
->>>>>> to say what the prescaler is.
->>>>>
->>>>>  We would however, leave the boards' device trees that use things like
->>>>> "fsl,mpc8543-i2c" as is and introduce the prescaler for the others requiring it.
->>>>>
->>>>>
->>>>> Now the drawback is that the driver would require a change, to parse this
->>>>> prescaler new prescaler property. Would this be OK from your point of view
->>>>> Wolfram ? If yes, I will send the patches for it.
->>>>
->>>> I don't think it is OK.
->>>
->>> Why?
->>
->> Because I thought it could be deduced. Then, a seperate property would
->> not be OK.
->>
->>>>  I'd think it can be deduced from the compatible property.
->>>
->>> For almost all existing device trees it cannot be.
->>
->> Pity :( If we do introduce a new property, it should probably be
->> "clock-div". Grepping through binding documentation, that seems
->> accepted. We should ask DT maintainers, too, to be safe.
->>
->>> If you want something that will work without changing device trees,
->>> you'll need to use SVR to identify the SoC.
->>
->> The driver is doing that already, see mpc_i2c_get_sec_cfg_8xxx(). Dunno
->> if it makes sense to add to it for consistency reasons?
-> 
-> That's not SVR, but sure.  Better to avoid messing with existing device
-> trees.
-> 
-
-What is then the agreement here ? Add a clock-div to the device trees ? Or do
-something similar to  mpc_i2c_get_sec_cfg_8xxx() ?
-
-I think the clock-div property is better according to Freescale's AN 2919
-section 3.1 Source clock. All the source clocks are fixed (with a clock-div of 2
-in case of mpc8536/43/45/47/48/67/68/72, plus p2020) except for the mpc8533/44
-where it can be 2 or 3, and that's what mpc_i2c_get_sec_cfg_8xxx() determines.
-
-So mpc_i2c_get_sec_cfg_8xxx() should remain the exception and the other
-prescaler values should be derived from an additional clock-div that must be
-added in the respective device trees (at least for the qoriq devices, because
-for instance mpc8543 already has the correct prescaler thanks to
-mpc_i2c_data_8543 from i2c-mpc.c).
-
-Valentin
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 19c36cb..0d96d4d 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -86,6 +86,11 @@ extern int overlaps_crashkernel(unsigned long start, unsigned long size);
+ extern void reserve_crashkernel(void);
+ extern void machine_kexec_mask_interrupts(void);
+ 
++static inline int is_kdump_path(void)
++{
++	return (crashing_cpu >= 0) ? 1 : 0;
++}
++
+ #else /* !CONFIG_KEXEC */
+ static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+ 
+@@ -106,6 +111,11 @@ static inline int crash_shutdown_unregister(crash_shutdown_t handler)
+ 	return 0;
+ }
+ 
++static inline int is_kdump_path(void)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_KEXEC */
+ #endif /* ! __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 879b3aa..b4fe804 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -330,7 +330,7 @@ void default_machine_kexec(struct kimage *image)
+         * using debugger IPI.
+         */
+ 
+-	if (crashing_cpu == -1)
++	if (!is_kdump_path())
+ 		kexec_prepare_cpus();
+ 
+ 	pr_debug("kexec: Starting switchover sequence.\n");
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index f6880d2..be41680 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -43,6 +43,7 @@
+ #include <asm/trace.h>
+ #include <asm/firmware.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/kexec.h>
+ #include <asm/fadump.h>
+ 
+ #include "pseries.h"
+@@ -257,8 +258,12 @@ static void pSeries_lpar_hptab_clear(void)
+ 	 *
+ 	 * This is also called on boot when a fadump happens. In that case we
+ 	 * must not change the exception endian mode.
++	 *
++	 * This is also called during kdump which doesn't need resetting, as the
++	 * the crashkernel is of same endainess as primary kernel.
+ 	 */
+-	if (firmware_has_feature(FW_FEATURE_SET_MODE) && !is_fadump_active()) {
++	if (firmware_has_feature(FW_FEATURE_SET_MODE) && !is_fadump_active() &&
++			!is_kdump_path()) {
+ 		long rc;
+ 
+ 		rc = pseries_big_endian_exceptions();
