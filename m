@@ -1,38 +1,37 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4545D1A0932
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:45:09 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BA81914003E
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EAE531A08EF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 08:58:26 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 12 Dec 2014 02:45:07 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 27BB22BB0052
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:05 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBBGj4xc26476666
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:05 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBBGj3j7006539
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2014 03:45:04 +1100
-Subject: [PATCH] powerpc/kdump: skip enabling big endian exception during crash
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Thu, 11 Dec 2014 22:14:54 +0530
-Message-ID: <20141211164454.4641.71441.stgit@localhost.localdomain>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 12 Dec 2014 03:28:23 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 683F23940024
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:28:21 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBBLwwKS6816052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:28:59 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBBLwKhf010468
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:28:20 +0530
+Date: Fri, 12 Dec 2014 08:58:19 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Print the M64 range information
+Message-ID: <20141211215818.GA6584@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1418221778-12458-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20141210224030.GA13035@shangw> <20141211072901.GA9598@richard>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141211072901.GA9598@richard>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,85 +41,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In LE kernel, we currently have a hack for kexec that resets the exception endian
-before starting a new kernel as the kernel that is loaded could be a big endian
-or a little endian kernel. In kdump case, resetting exception endian fails when
-one or more cpus is disabled. But in case of kdump, we can conveniently ignore
-resetting endianess as crashkernel is always of same endianess as primary kernel.
-This patch adds a new inline function to say if this is kdump path. This function
-is used at places where such a check is needed.
+On Thu, Dec 11, 2014 at 03:29:01PM +0800, Wei Yang wrote:
+>On Thu, Dec 11, 2014 at 09:40:30AM +1100, Gavin Shan wrote:
+>>On Wed, Dec 10, 2014 at 10:29:37PM +0800, Wei Yang wrote:
+>>>The M64 range information is missed, which would be helpful in debug.
+>>>
+>>>This patch print the M64 range information in the same format as M32.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/kexec.h       |   10 ++++++++++
- arch/powerpc/kernel/machine_kexec_64.c |    2 +-
- arch/powerpc/platforms/pseries/lpar.c  |    7 ++++++-
- 3 files changed, 17 insertions(+), 2 deletions(-)
+s/print/prints
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 19c36cb..0d96d4d 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -86,6 +86,11 @@ extern int overlaps_crashkernel(unsigned long start, unsigned long size);
- extern void reserve_crashkernel(void);
- extern void machine_kexec_mask_interrupts(void);
- 
-+static inline int is_kdump_path(void)
-+{
-+	return (crashing_cpu >= 0) ? 1 : 0;
-+}
-+
- #else /* !CONFIG_KEXEC */
- static inline void crash_kexec_secondary(struct pt_regs *regs) { }
- 
-@@ -106,6 +111,11 @@ static inline int crash_shutdown_unregister(crash_shutdown_t handler)
- 	return 0;
- }
- 
-+static inline int is_kdump_path(void)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_KEXEC */
- #endif /* ! __ASSEMBLY__ */
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 879b3aa..b4fe804 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -330,7 +330,7 @@ void default_machine_kexec(struct kimage *image)
-         * using debugger IPI.
-         */
- 
--	if (crashing_cpu == -1)
-+	if (!is_kdump_path())
- 		kexec_prepare_cpus();
- 
- 	pr_debug("kexec: Starting switchover sequence.\n");
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index f6880d2..be41680 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -43,6 +43,7 @@
- #include <asm/trace.h>
- #include <asm/firmware.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/kexec.h>
- #include <asm/fadump.h>
- 
- #include "pseries.h"
-@@ -257,8 +258,12 @@ static void pSeries_lpar_hptab_clear(void)
- 	 *
- 	 * This is also called on boot when a fadump happens. In that case we
- 	 * must not change the exception endian mode.
-+	 *
-+	 * This is also called during kdump which doesn't need resetting, as the
-+	 * the crashkernel is of same endainess as primary kernel.
- 	 */
--	if (firmware_has_feature(FW_FEATURE_SET_MODE) && !is_fadump_active()) {
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE) && !is_fadump_active() &&
-+			!is_kdump_path()) {
- 		long rc;
- 
- 		rc = pseries_big_endian_exceptions();
+>>>
+>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>---
+>>> arch/powerpc/platforms/powernv/pci-ioda.c |    3 +++
+>>> 1 file changed, 3 insertions(+)
+>>>
+>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>index 21c8b4d..34f1a27 100644
+>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>@@ -369,6 +369,9 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>>> 	phb->ioda.m64_segsize = phb->ioda.m64_size / phb->ioda.total_pe;
+>>> 	phb->ioda.m64_base = pci_addr;
+>>>
+>>>+	printk(KERN_INFO " MEM64 0x%016llx..0x%016llx -> 0x%016llx\n",
+>>>+			res->start, res->end, pci_addr);
+>>>+
+>>
+>>Please output segment size if you think it's helpful as well.
+>
+>The M64 segment size is printed in pnv_pci_init_ioda_phb() line 2620.
+>
+
+Yes, it has been printed separately. So the change looks good to me
+after you replace "printk(KERN_INFO ...)" with pr_info. Could you please
+send updated version and include following line if you want:
+
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+Thanks,
+Gavin
