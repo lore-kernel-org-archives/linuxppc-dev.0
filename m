@@ -1,20 +1,20 @@
-Return-Path: <Amit.Tomar@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C6D2D1A04F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 22:50:47 +1100 (AEDT)
-From: Amit Tomar <Amit.Tomar@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [Patch] :Fix ISR return value in i2c-mpc.c 
-Date: Fri, 12 Dec 2014 11:17:15 +0000
-Message-ID: <BL2PR03MB4496E03E1930685FD2A4FD483600@BL2PR03MB449.namprd03.prod.outlook.com>
-References: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 855811A0A52
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 21:50:49 +1100 (AEDT)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+Mime-Version: 1.0 (1.0)
+Subject: Re: [Patch] :Fix ISR return value in i2c-mpc.c 
+From: Alexander Graf <agraf@suse.de>
 In-Reply-To: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "agraf@suse.de" <agraf@suse.de>
+Date: Fri, 12 Dec 2014 11:50:44 +0100
+Message-Id: <D25BFDC2-5014-42D7-886F-5F5F99AF39BC@suse.de>
+References: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
+To: Amit Tomar <Amit.Tomar@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In current scenario, ISR of i2c-mpc.c is returning IRQ_HANDLED for doing no=
-thing which is not right .
 
-With below patch ISR now return IRQ_NONE for doing nothing and IRQ_HANDLED =
-for doing handler work.
+--Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
 
-Signed-off-by: Amit Singh Tomar <amit.tomar@freescale.com>
----
-drivers/i2c/busses/i2c-mpc.c |=A0=A0=A0 3 ++-
-1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 0edf630..7a3136f 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -95,8 +95,9 @@ static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
-=A0=A0=A0=A0=A0=A0=A0 i2c->interrupt =3D readb(i2c->base + MPC_I2C_SR);
-=A0=A0=A0=A0=A0=A0=A0 writeb(0, i2c->base + MPC_I2C_SR);
-=A0=A0=A0=A0=A0=A0=A0 wake_up(&i2c->queue);
-+=A0=A0 =A0=A0  return IRQ_HANDLED;
-=A0=A0=A0 }
--=A0 return IRQ_HANDLED;
-+ =A0return IRQ_NONE;
-}
 
-/* Sometimes 9th clock pulse isn't generated, and slave doesn't release
---=20
-1.7.9.5
+> Am 12.12.2014 um 09:08 schrieb Amit Tomar <Amit.Tomar@freescale.com>:
+> 
+> ISR should return IRQ_HANDLED only in case of handling something.
+>  
+>  
+> Signed-off-by: Amit Singh Tomar <amit.tomar@freescale.com>
+
+Please just send a v2 of your patch with the below fix included :).
+
+Alex
+
+
+--Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body dir="auto"><div><br><br></div><div><br>Am 12.12.2014 um 09:08 schrieb Amit Tomar &lt;<a href="mailto:Amit.Tomar@freescale.com">Amit.Tomar@freescale.com</a>&gt;:<br><br></div><blockquote type="cite"><div>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<meta name="Generator" content="Microsoft Word 12 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext="edit" spidmax="1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext="edit">
+<o:idmap v:ext="edit" data="1" />
+</o:shapelayout></xml><![endif]-->
+
+
+<div class="WordSection1">
+<p class="MsoNormal">ISR should return IRQ_HANDLED only in case of handling something.<o:p></o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal">Signed-off-by: Amit Singh Tomar &lt;<a href="mailto:amit.tomar@freescale.com">amit.tomar@freescale.com</a>&gt;</p></div></div></blockquote><div><br></div><div>Please just send a v2 of your patch with the below fix included :).</div><div><br></div><div>Alex</div><br><blockquote type="cite"><div class="WordSection1"><p class="MsoNormal"><o:p></o:p></p>
+
+</div>
+
+
+</blockquote></body></html>
+--Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195--
