@@ -1,22 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Amit.Tomar@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F2871A0352
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 16:30:49 +1100 (AEDT)
-Message-ID: <1418362248.1465.6.camel@ellerman.id.au>
-Subject: Re: [v3] i2c: Driver to expose PowerNV platform i2c busses
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 12 Dec 2014 16:30:48 +1100
-In-Reply-To: <1418120492.13358.45.camel@kernel.crashing.org>
-References: <20141209094503.100F81400DE@ozlabs.org>
- <1418120492.13358.45.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: devicetree@vger.kernel.org, wsa@the-dreams.de, linuxppc-dev@ozlabs.org,
- linux-i2c@vger.kernel.org, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- Jeremy Kerr <jeremy.kerr@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8CB431A0326
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 19:24:07 +1100 (AEDT)
+From: Amit Tomar <Amit.Tomar@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [Patch] :Fix ISR return value in i2c-mpc.c 
+Date: Fri, 12 Dec 2014 08:08:17 +0000
+Message-ID: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
+Content-Type: multipart/alternative;
+ boundary="_000_BL2PR03MB4495ADAE7D752F82B58B1D783600BL2PR03MB449namprd_"
+MIME-Version: 1.0
+Cc: "agraf@suse.de" <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +23,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-09 at 21:21 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2014-12-09 at 20:45 +1100, Michael Ellerman wrote:
-> > On Mon, 2014-08-12 at 06:36:16 UTC, Neelesh Gupta wrote:
-> > > The patch exposes the available i2c busses on the PowerNV platform
-> > > to the kernel and implements the bus driver to support i2c and
-> > > smbus commands.
-> > > The driver uses the platform device infrastructure to probe the busses
-> > > on the platform and registers them with the i2c driver framework.
-> > 
-> > >  arch/powerpc/include/asm/opal.h                    |   29 ++
-> > >  arch/powerpc/platforms/powernv/opal-wrappers.S     |    1 
-> > >  arch/powerpc/platforms/powernv/opal.c              |   11 +
-> > 
-> > This had major conflicts in the above files.
-> > 
-> > I've fixed it up but please check I did it correctly:
-> > 
-> >   https://github.com/mpe/powerpc-merge/commits/pw/neelesh-i2c
-> > 
-> > It also doesn't build as a module:
-> > 
-> >   $ grep CONFIG_I2C_OPAL .config
-> >   CONFIG_I2C_OPAL=m
-> >   $ make ...
-> >   ...
-> >   ERROR: "opal_i2c_request" [drivers/i2c/busses/i2c-opal.ko] undefined!
-> 
-> Right that needs to be exported, however for those OPAL wrappers to work
-> when exported as modules on an LE kernel with ABI v2 (pfiew !) we need
-> another patch from jk to sort out the external entry to the asm...
-> 
-> Jeremy, is that already in or not yet ?
+--_000_BL2PR03MB4495ADAE7D752F82B58B1D783600BL2PR03MB449namprd_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Yeah it's been in since October.
+ISR should return IRQ_HANDLED only in case of handling something.
 
-Please send a v4 with a fix for this Neelesh.
 
-cheers
+Signed-off-by: Amit Singh Tomar <amit.tomar@freescale.com>
+---
+drivers/i2c/busses/i2c-mpc.c |    3 ++-
+1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 0edf630..7a3136f 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -95,8 +95,9 @@ static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
+        i2c->interrupt =3D readb(i2c->base + MPC_I2C_SR);
+        writeb(0, i2c->base + MPC_I2C_SR);
+        wake_up(&i2c->queue);
++     return IRQ_HANDLED;
+    }
+-   return IRQ_HANDLED;
++  return IRQ_NONE;
+}
+
+/* Sometimes 9th clock pulse isn't generated, and slave doesn't release
+--
+1.7.9.5
+
+
+--_000_BL2PR03MB4495ADAE7D752F82B58B1D783600BL2PR03MB449namprd_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">ISR should return IRQ_HANDLED only in case of handli=
+ng something.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Signed-off-by: Amit Singh Tomar &lt;amit.tomar@frees=
+cale.com&gt;<o:p></o:p></p>
+<p class=3D"MsoNormal">---<o:p></o:p></p>
+<p class=3D"MsoNormal">drivers/i2c/busses/i2c-mpc.c |&nbsp;&nbsp;&nbsp; 3 &=
+#43;&#43;-<o:p></o:p></p>
+<p class=3D"MsoNormal">1 file changed, 2 insertions(&#43;), 1 deletion(-)<o=
+:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/=
+i2c/busses/i2c-mpc.c<o:p></o:p></p>
+<p class=3D"MsoNormal">index 0edf630..7a3136f 100644<o:p></o:p></p>
+<p class=3D"MsoNormal">--- a/drivers/i2c/busses/i2c-mpc.c<o:p></o:p></p>
+<p class=3D"MsoNormal">&#43;&#43;&#43; b/drivers/i2c/busses/i2c-mpc.c<o:p><=
+/o:p></p>
+<p class=3D"MsoNormal">@@ -95,8 &#43;95,9 @@ static irqreturn_t mpc_i2c_isr=
+(int irq, void *dev_id)<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i2c-&gt;i=
+nterrupt =3D readb(i2c-&gt;base &#43; MPC_I2C_SR);<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; writeb(0,=
+ i2c-&gt;base &#43; MPC_I2C_SR);<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; wake_up(&=
+amp;i2c-&gt;queue);<o:p></o:p></p>
+<p class=3D"MsoNormal">&#43;&nbsp;&nbsp; &nbsp;&nbsp;return IRQ_HANDLED;<o:=
+p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp; }<o:p></o:p></p>
+<p class=3D"MsoNormal">-&nbsp;&nbsp; return IRQ_HANDLED;<o:p></o:p></p>
+<p class=3D"MsoNormal">&#43; &nbsp;return IRQ_NONE;<o:p></o:p></p>
+<p class=3D"MsoNormal">}<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">/* Sometimes 9th clock pulse isn't generated, and sl=
+ave doesn't release<o:p></o:p></p>
+<p class=3D"MsoNormal">-- <o:p></o:p></p>
+<p class=3D"MsoNormal">1.7.9.5<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</body>
+</html>
+
+--_000_BL2PR03MB4495ADAE7D752F82B58B1D783600BL2PR03MB449namprd_--
