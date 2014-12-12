@@ -1,33 +1,27 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D1D01A03A6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 15:39:55 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 12 Dec 2014 14:39:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 44F983578062
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 15:39:51 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBC4dpux35127544
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 15:39:51 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBC4dofo012245
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 15:39:50 +1100
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: Print the M64 range information in bootup log
-Date: Fri, 12 Dec 2014 12:39:37 +0800
-Message-Id: <1418359178-3264-1-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <20141211215818.GA6584@shangw>
-References: <20141211215818.GA6584@shangw>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9693D1A09D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 16:19:53 +1100 (AEDT)
+Message-ID: <1418361592.1465.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
+ boot time
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Date: Fri, 12 Dec 2014 16:19:52 +1100
+In-Reply-To: <1418255437.5581.45.camel@freescale.com>
+References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <1417805565.334.15.camel@freescale.com> <1418098262.527.1.camel@concordia>
+ <1418159084.5581.32.camel@freescale.com>
+ <1418169405.30244.1.camel@concordia>
+ <1418170485.5581.39.camel@freescale.com>
+ <1418177689.30244.4.camel@concordia>
+ <1418255437.5581.45.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The M64 range information is missed in dmesg, which would be helpful in debug.
+On Wed, 2014-12-10 at 17:50 -0600, Scott Wood wrote:
+> On Wed, 2014-12-10 at 13:14 +1100, Michael Ellerman wrote:
+> > On Tue, 2014-12-09 at 18:14 -0600, Scott Wood wrote:
+> > > What benefit is there to ignoring "scripture" here?  Going from an easy
+> > > to use command line option to needing to mess around with the dts file
+> > > is not a usability improvement.  If you want to make it Freescale-only,
+> > > fine.  If you want to push me to fix the problems with the
+> > > implementation, fine.
+> > 
+> > It's easy to use but it doesn't necessarily work.
+> > 
+> > You said in your other mail to Greg "Sometimes it's useful to ensure that the
+> > second thread has never run when debugging a problem.".
+> > 
+> > But you don't know that, for all you know your firmware has started the thread
+> > and it's busy looping somewhere. Perhaps you guys know that your firmware
+> > doesn't do that, but it's still a hack.
+> 
+> I know that our firmware doesn't do that, and I can verify by reading
+> the relevant register.
 
-This patch prints the M64 range information in the same format as M32.
+Lucky you :)
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> > We end up with cpus in the present map, but we have no idea where they are or
+> > what they are doing.
+> 
+> Can we check smt-enabled a little earlier and refrain from marking the
+> secondary threads as present if smt is disabled?
 
-V1:
-   * use pr_info() instead of printk(KERN_INFO)
+We could, and that would make the semantics much saner. But it would actually
+be exactly the opposite of what the folks who originally hit this bug want to
+happen.
 
----
- arch/powerpc/platforms/powernv/pci-ioda.c |    3 +++
- 1 file changed, 3 insertions(+)
+They are using it as a shortcut for cpu hotunplug, ie. they want the threads
+asleep in Linux ready to be hotplugged back in.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 21c8b4d..4fbdc7d 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -369,6 +369,9 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
- 	phb->ioda.m64_segsize = phb->ioda.m64_size / phb->ioda.total_pe;
- 	phb->ioda.m64_base = pci_addr;
- 
-+	pr_info(" MEM64 0x%016llx..0x%016llx -> 0x%016llx\n",
-+			res->start, res->end, pci_addr);
-+
- 	/* Use last M64 BAR to cover M64 window */
- 	phb->ioda.m64_bar_idx = 15;
- 	phb->init_m64 = pnv_ioda2_init_m64;
--- 
-1.7.9.5
+This is why I wanted to remove it, because those are both valid expectations of
+what smt-enabled=off should do, but they are mutually exclusive. Not to mention
+that the current code doesn't implement either of those properly.
+
+Anyway for now we should just ignore it on powernv. We can look at doing
+something saner in general in future.
+
+cheers
