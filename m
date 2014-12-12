@@ -1,27 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9693D1A09D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 16:19:53 +1100 (AEDT)
-Message-ID: <1418361592.1465.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 2 1/4] powerpc: drop the ability to tweak SMT mode at
- boot time
+ by lists.ozlabs.org (Postfix) with ESMTPS id 901711A01DC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 16:22:31 +1100 (AEDT)
+Message-ID: <1418361751.1465.3.camel@ellerman.id.au>
+Subject: Re: [PATCH 2 0/4] powerpc: don't mess with SMT at boot time
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Date: Fri, 12 Dec 2014 16:19:52 +1100
-In-Reply-To: <1418255437.5581.45.camel@freescale.com>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Date: Fri, 12 Dec 2014 16:22:31 +1100
+In-Reply-To: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
 References: <20141205150405.11028.27445.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <20141205151341.11028.47570.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
- <1417805565.334.15.camel@freescale.com> <1418098262.527.1.camel@concordia>
- <1418159084.5581.32.camel@freescale.com>
- <1418169405.30244.1.camel@concordia>
- <1418170485.5581.39.camel@freescale.com>
- <1418177689.30244.4.camel@concordia>
- <1418255437.5581.45.camel@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <gkurz@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-12-10 at 17:50 -0600, Scott Wood wrote:
-> On Wed, 2014-12-10 at 13:14 +1100, Michael Ellerman wrote:
-> > On Tue, 2014-12-09 at 18:14 -0600, Scott Wood wrote:
-> > > What benefit is there to ignoring "scripture" here?  Going from an easy
-> > > to use command line option to needing to mess around with the dts file
-> > > is not a usability improvement.  If you want to make it Freescale-only,
-> > > fine.  If you want to push me to fix the problems with the
-> > > implementation, fine.
-> > 
-> > It's easy to use but it doesn't necessarily work.
-> > 
-> > You said in your other mail to Greg "Sometimes it's useful to ensure that the
-> > second thread has never run when debugging a problem.".
-> > 
-> > But you don't know that, for all you know your firmware has started the thread
-> > and it's busy looping somewhere. Perhaps you guys know that your firmware
-> > doesn't do that, but it's still a hack.
-> 
-> I know that our firmware doesn't do that, and I can verify by reading
-> the relevant register.
+On Fri, 2014-12-05 at 16:13 +0100, Greg Kurz wrote:
+> As requested by mpe, this series now covers both the smt-enabled
+> kernel parameter and the ibm,smt-enabled property. The cleanup was
+> split into 3 separate patches to ease review, but I guess they
+> could be folded into a single patch as well.
 
-Lucky you :)
+Sorry to send you down the garden path Greg. It would have been a nice
+cleanup, but seems the FSL folks still see value in smt-enabled.
 
-> > We end up with cpus in the present map, but we have no idea where they are or
-> > what they are doing.
-> 
-> Can we check smt-enabled a little earlier and refrain from marking the
-> secondary threads as present if smt is disabled?
+So can you rework it to just ignore smt-enabled on powernv.
 
-We could, and that would make the semantics much saner. But it would actually
-be exactly the opposite of what the folks who originally hit this bug want to
-happen.
-
-They are using it as a shortcut for cpu hotunplug, ie. they want the threads
-asleep in Linux ready to be hotplugged back in.
-
-This is why I wanted to remove it, because those are both valid expectations of
-what smt-enabled=off should do, but they are mutually exclusive. Not to mention
-that the current code doesn't implement either of those properly.
-
-Anyway for now we should just ignore it on powernv. We can look at doing
-something saner in general in future.
+That should be as simple as implementing a powernv_cpu_bootable() that always
+returns true.
 
 cheers
