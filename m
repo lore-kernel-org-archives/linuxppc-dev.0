@@ -1,35 +1,35 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F8401A0271
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 21:28:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 869A61A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 22:37:52 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Fri, 12 Dec 2014 10:28:21 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 257F92190043
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 10:27:49 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBCASHUP42795162
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 10:28:18 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBCASHIe003494
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 03:28:17 -0700
-Message-ID: <548AC365.3040801@linux.vnet.ibm.com>
-Date: Fri, 12 Dec 2014 11:28:53 +0100
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Fri, 12 Dec 2014 11:37:48 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 29ECE17D8056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 11:38:09 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBCBbkNf61014114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 11:37:46 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBCBbi5M015694
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 04:37:45 -0700
+Subject: [PATCH] powerpc/powernv: force all CPUs to be bootable
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 12 Dec 2014 12:37:40 +0100
+Message-ID: <20141212113627.12778.47915.stgit@bahia.local>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] Update CXL ABI documentation
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+The subcore logic needs all the CPUs declared in the DT to be bootable,
+otherwise the kernel hangs at boot time. Since subcore support starts
+with POWER8, we can keep the current behaviour for older CPUs.
 
-This fixes two typos and explains where shared attributes are stored.
-
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Acked-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
 ---
-  Documentation/ABI/testing/sysfs-class-cxl |   11 ++++++++---
-  1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-index faf9479..3393ee6 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/testing/sysfs-class-cxl
-@@ -1,3 +1,9 @@
-+Note: Attributes that are shared between devices are stored in the directory
-+pointed to by the symlink device/.
-+Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
-+/sys/class/cxl/afu0.0s/device/irqs_max, i.e. /sys/class/cxl/afu0.0/irqs_max.
+Since smt-enabled is still needed by Freescale, the choice was made to fix
+powernv only. I could test that smt-enabled is still honored on POWER7 and
+ignored on POWER8, as expected.
+
+ arch/powerpc/platforms/powernv/smp.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index b716f66..5b6e002 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -198,13 +198,24 @@ static void pnv_smp_cpu_kill_self(void)
+ 
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
++static int pnv_cpu_bootable(unsigned int nr)
++{
++	/* Starting with POWER8, all CPUs need to be booted to avoid hangs
++	 * during subcore init.
++	 */
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		return 1;
 +
++	return smp_generic_cpu_bootable(nr);
++}
 +
-  Slave contexts (eg. /sys/class/cxl/afu0.0s):
-
-  What:           /sys/class/cxl/<afu>/irqs_max
-@@ -67,7 +73,7 @@ Contact:        linuxppc-dev@lists.ozlabs.org
-  Description:    read only
-                  Decimal value of the current version of the kernel/user API.
-
--What:           /sys/class/cxl/<afu>/api_version_com
-+What:           /sys/class/cxl/<afu>/api_version_compatible
-  Date:           September 2014
-  Contact:        linuxppc-dev@lists.ozlabs.org
-  Description:    read only
-@@ -75,7 +81,6 @@ Description:    read only
-                  this this kernel supports.
-
-
--
-  Master contexts (eg. /sys/class/cxl/afu0.0m)
-
-  What:           /sys/class/cxl/<afu>m/mmio_size
-@@ -106,7 +111,7 @@ Contact:        linuxppc-dev@lists.ozlabs.org
-  Description:    read only
-                  Identifies the CAIA Version the card implements.
-
--What:           /sys/class/cxl/<card>/psl_version
-+What:           /sys/class/cxl/<card>/psl_revision
-  Date:           September 2014
-  Contact:        linuxppc-dev@lists.ozlabs.org
-  Description:    read only
--- 
-1.7.2.5
+ static struct smp_ops_t pnv_smp_ops = {
+ 	.message_pass	= smp_muxed_ipi_message_pass,
+ 	.cause_ipi	= NULL,	/* Filled at runtime by xics_smp_probe() */
+ 	.probe		= xics_smp_probe,
+ 	.kick_cpu	= pnv_smp_kick_cpu,
+ 	.setup_cpu	= pnv_smp_setup_cpu,
+-	.cpu_bootable	= smp_generic_cpu_bootable,
++	.cpu_bootable	= pnv_cpu_bootable,
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	.cpu_disable	= pnv_smp_cpu_disable,
+ 	.cpu_die	= generic_cpu_die,
