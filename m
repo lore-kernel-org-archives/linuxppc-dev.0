@@ -2,16 +2,16 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 855811A0A52
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 21:50:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 655821A0A52
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Dec 2014 21:52:42 +1100 (AEDT)
 Content-Type: multipart/alternative;
- boundary=Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+ boundary=Apple-Mail-8A1D5017-02F8-409C-A8B2-BE447648AB89
 Mime-Version: 1.0 (1.0)
 Subject: Re: [Patch] :Fix ISR return value in i2c-mpc.c 
 From: Alexander Graf <agraf@suse.de>
 In-Reply-To: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
-Date: Fri, 12 Dec 2014 11:50:44 +0100
-Message-Id: <D25BFDC2-5014-42D7-886F-5F5F99AF39BC@suse.de>
+Date: Fri, 12 Dec 2014 11:52:39 +0100
+Message-Id: <A4FA3E34-8C65-4700-8CD3-569983F3AF97@suse.de>
 References: <BL2PR03MB4495ADAE7D752F82B58B1D783600@BL2PR03MB449.namprd03.prod.outlook.com>
 To: Amit Tomar <Amit.Tomar@freescale.com>
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -25,32 +25,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+--Apple-Mail-8A1D5017-02F8-409C-A8B2-BE447648AB89
 Content-Type: text/plain;
 	charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-
+Content-Transfer-Encoding: quoted-printable
 
 
 > Am 12.12.2014 um 09:08 schrieb Amit Tomar <Amit.Tomar@freescale.com>:
-> 
+>=20
 > ISR should return IRQ_HANDLED only in case of handling something.
->  
->  
+> =20
+> =20
 > Signed-off-by: Amit Singh Tomar <amit.tomar@freescale.com>
 
-Please just send a v2 of your patch with the below fix included :).
+Oh, this is on the Linux side. Sorry, please ignore my previous email.
+
+Please provide some information on what breakage you're fixing with the patc=
+h in the patch description.
+
 
 Alex
 
 
---Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195
+--Apple-Mail-8A1D5017-02F8-409C-A8B2-BE447648AB89
 Content-Type: text/html;
 	charset=utf-8
 Content-Transfer-Encoding: 7bit
 
-<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body dir="auto"><div><br><br></div><div><br>Am 12.12.2014 um 09:08 schrieb Amit Tomar &lt;<a href="mailto:Amit.Tomar@freescale.com">Amit.Tomar@freescale.com</a>&gt;:<br><br></div><blockquote type="cite"><div>
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"></head><body dir="auto"><div><br></div><div>Am 12.12.2014 um 09:08 schrieb Amit Tomar &lt;<a href="mailto:Amit.Tomar@freescale.com">Amit.Tomar@freescale.com</a>&gt;:<br><br></div><blockquote type="cite"><div>
 
 <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
 <meta name="Generator" content="Microsoft Word 12 (filtered medium)">
@@ -99,10 +101,10 @@ div.WordSection1
 <p class="MsoNormal">ISR should return IRQ_HANDLED only in case of handling something.<o:p></o:p></p>
 <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
 <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class="MsoNormal">Signed-off-by: Amit Singh Tomar &lt;<a href="mailto:amit.tomar@freescale.com">amit.tomar@freescale.com</a>&gt;</p></div></div></blockquote><div><br></div><div>Please just send a v2 of your patch with the below fix included :).</div><div><br></div><div>Alex</div><br><blockquote type="cite"><div class="WordSection1"><p class="MsoNormal"><o:p></o:p></p>
+<p class="MsoNormal">Signed-off-by: Amit Singh Tomar &lt;<a href="mailto:amit.tomar@freescale.com">amit.tomar@freescale.com</a>&gt;</p></div></div></blockquote><div><br></div><div>Oh, this is on the Linux side. Sorry, please ignore my previous email.</div><div><br></div><div>Please provide some information on what breakage you're fixing with the patch in the patch description.</div><div><br></div><div><br></div><div>Alex</div><br><blockquote type="cite"><div class="WordSection1"><p class="MsoNormal"><o:p></o:p></p>
 
 </div>
 
 
 </blockquote></body></html>
---Apple-Mail-E8E93D30-1845-48E1-A010-674F54FC3195--
+--Apple-Mail-8A1D5017-02F8-409C-A8B2-BE447648AB89--
