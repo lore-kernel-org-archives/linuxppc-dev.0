@@ -1,18 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7941A020A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 21:06:00 +1100 (AEDT)
-In-Reply-To: <1418151413-6141-5-git-send-email-shreyas@linux.vnet.ibm.com>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v4,4/4] powernv: powerpc: Add winkle support for offline cpus
-Message-Id: <20141214100600.3446B140119@ozlabs.org>
-Date: Sun, 14 Dec 2014 21:05:59 +1100 (AEDT)
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B6AA1A026B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 21:57:49 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sun, 14 Dec 2014 20:57:46 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B6CEF357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 21:57:44 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBEAvhFU22151256
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 21:57:44 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBEAvhau032600
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 21:57:43 +1100
+Date: Sun, 14 Dec 2014 21:57:42 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/pci: remove the multi-init for pci_dn->phb
+Message-ID: <20141214105742.GA4476@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1418440144-12122-1-git-send-email-weiyang@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1418440144-12122-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-09-12 at 18:56:53 UTC, "Shreyas B. Prabhu" wrote:
-> Winkle is a deep idle state supported in power8 chips. A core enters
-> winkle when all the threads of the core enter winkle. In this state
-> power supply to the entire chiplet i.e core, private L2 and private L3
-> is turned off. As a result it gives higher powersavings compared to
-> sleep.
-...
+On Sat, Dec 13, 2014 at 11:09:04AM +0800, Wei Yang wrote:
+>pci_dn->phb is set to phb in update_dn_pci_info(), if succeed.
+>
+>This patch removes the duplication of pci_dn->phb initialization.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/pci_dn.c |    1 -
+> 1 file changed, 1 deletion(-)
+>
+>diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+>index ddae246..d40b579 100644
+>--- a/arch/powerpc/kernel/pci_dn.c
+>+++ b/arch/powerpc/kernel/pci_dn.c
+>@@ -382,7 +382,6 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+> 	pdn = dn->data;
+> 	if (pdn) {
+> 		pdn->devfn = pdn->busno = -1;
+>-		pdn->phb = phb;
+> 		phb->firmware_data = pdn;
 
-> diff --git a/arch/powerpc/platforms/powernv/subcore.h b/arch/powerpc/platforms/powernv/subcore.h
-> index 148abc9..604eb40 100644
-> --- a/arch/powerpc/platforms/powernv/subcore.h
-> +++ b/arch/powerpc/platforms/powernv/subcore.h
-> @@ -15,4 +15,5 @@
->  
->  #ifndef __ASSEMBLY__
->  void split_core_secondary_loop(u8 *state);
-> +extern void update_subcore_sibling_mask(void);
->  #endif
+It seems the patch bases on unmerged code because "phb->firmware_data"
+isn't existing yet in upstream or ppc.next.
 
-subcore.c isn't built for CONFIG_SMP=n, resulting in:
+Thanks,
+Gavin
 
-  setup.c:(.init.text+0x34b0): undefined reference to `.update_subcore_sibling_mask'
-
-I needed to add:
-
-+#else
-+static inline void update_subcore_sibling_mask(void) { };
-+#endif /* CONFIG_SMP */
-
-
-I also got quite a few conflicts, with this and the previous patch, mainly in
-the paca and asm-offsets. Please check I resolved them correctly:
-
-  https://github.com/mpe/powerpc-merge/commits/test
-
-cheers
+> 	}
+> 
+>-- 
+>1.7.9.5
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
