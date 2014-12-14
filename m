@@ -1,35 +1,20 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C01661A00EE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 22:52:51 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Sun, 14 Dec 2014 17:22:49 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3C41C1258023
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 17:23:13 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBEBqxts60424210
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 17:22:59 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBEBqlqA012805
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2014 17:22:47 +0530
-Message-ID: <548D7A0E.2060107@linux.vnet.ibm.com>
-Date: Sun, 14 Dec 2014 17:22:46 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E68E51A0267
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 03:53:09 +1100 (AEDT)
+Date: Sun, 14 Dec 2014 18:52:51 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 13/18] powerpc/uaccess: fix sparse errors
+Message-ID: <1418575877-21488-14-git-send-email-mst@redhat.com>
+References: <1418575877-21488-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
-Subject: Re: [v4,4/4] powernv: powerpc: Add winkle support for offline cpus
-References: <20141214100600.3446B140119@ozlabs.org>
-In-Reply-To: <20141214100600.3446B140119@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1418575877-21488-1-git-send-email-mst@redhat.com>
+Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+virtio wants to read bitwise types from userspace using get_user.  At the
+moment this triggers sparse errors, since the value is passed through an
+integer.
 
+Fix that up using __force.
 
-On Sunday 14 December 2014 03:35 PM, Michael Ellerman wrote:
-> On Tue, 2014-09-12 at 18:56:53 UTC, "Shreyas B. Prabhu" wrote:
->> Winkle is a deep idle state supported in power8 chips. A core enters
->> winkle when all the threads of the core enter winkle. In this state
->> power supply to the entire chiplet i.e core, private L2 and private L3
->> is turned off. As a result it gives higher powersavings compared to
->> sleep.
-> ...
-> 
->> diff --git a/arch/powerpc/platforms/powernv/subcore.h b/arch/powerpc/platforms/powernv/subcore.h
->> index 148abc9..604eb40 100644
->> --- a/arch/powerpc/platforms/powernv/subcore.h
->> +++ b/arch/powerpc/platforms/powernv/subcore.h
->> @@ -15,4 +15,5 @@
->>  
->>  #ifndef __ASSEMBLY__
->>  void split_core_secondary_loop(u8 *state);
->> +extern void update_subcore_sibling_mask(void);
->>  #endif
-> 
-> subcore.c isn't built for CONFIG_SMP=n, resulting in:
-> 
->   setup.c:(.init.text+0x34b0): undefined reference to `.update_subcore_sibling_mask'
-> 
-> I needed to add:
-> 
-> +#else
-> +static inline void update_subcore_sibling_mask(void) { };
-> +#endif /* CONFIG_SMP */
-> 
-> 
-Sorry I missed that.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ arch/powerpc/include/asm/uaccess.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> I also got quite a few conflicts, with this and the previous patch, mainly in
-> the paca and asm-offsets. Please check I resolved them correctly:
-> 
->   https://github.com/mpe/powerpc-merge/commits/test
->
-This looks fine to me.
-
-Thanks,
-Shreyas
-> cheers
-> 
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 9485b43..a0c071d 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -284,7 +284,7 @@ do {								\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+ 		might_fault();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+-	(x) = (__typeof__(*(ptr)))__gu_val;			\
++	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+ })
+ #endif /* __powerpc64__ */
+@@ -297,7 +297,7 @@ do {								\
+ 	might_fault();							\
+ 	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
+ 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+-	(x) = (__typeof__(*(ptr)))__gu_val;				\
++	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+ 	__gu_err;							\
+ })
+ 
+@@ -308,7 +308,7 @@ do {								\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+-	(x) = (__typeof__(*(ptr)))__gu_val;			\
++	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+ })
+ 
+-- 
+MST
