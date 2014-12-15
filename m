@@ -1,37 +1,34 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 10E701A025E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 14:32:27 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CAA91A023F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 14:15:44 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id D4EFB1400DD
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2014 14:32:26 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 15 Dec 2014 13:15:40 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 03B7F2CE806B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 14:15:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBF3FbQG6815840
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 14:15:37 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBF3FbXK015895
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2014 14:15:37 +1100
-Date: Mon, 15 Dec 2014 14:15:36 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] powerpc/pci: remove the multi-init for pci_dn->phb
-Message-ID: <20141215031536.GA30014@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20141214105742.GA4476@shangw>
- <1418607900-7960-1-git-send-email-weiyang@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1418607900-7960-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 15 Dec 2014 13:32:25 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Subject: Re: [PATCH 7/7] CXL: Unmap MMIO regions when detaching a context
+In-reply-to: <1418026681-14787-7-git-send-email-imunsie@au.ibm.com>
+References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
+ <1418026681-14787-7-git-send-email-imunsie@au.ibm.com>
+Date: Mon, 15 Dec 2014 14:32:18 +1100
+Message-Id: <1418613792-sup-5165@delenn.ozlabs.ibm.com>
+Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, mikey <mikey@neuling.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
+ jk <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 15, 2014 at 09:45:00AM +0800, Wei Yang wrote:
->pci_dn->phb is set to phb in update_dn_pci_info(), if succeed.
->
->This patch removes the duplication of pci_dn->phb initialization.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Excerpts from Ian Munsie's message of 2014-12-08 19:18:01 +1100:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> If we need to force detach a context (e.g. due to EEH or simply force
+> unbinding the driver) we should prevent the userspace contexts from
+> being able to access the Problem State Area MMIO region further, which
+> they may have mapped with mmap().
+> 
+> This patch unmaps any mapped MMIO regions when detaching a userspace
+> context.
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Might want to drop this one for now - Philippe found that it sometimes
+causes an issue when multiple contexts are using the afu. Seems that
+unmap_mapping_range() unmapped a bit more than I expected.
 
-Thanks,
-Gavin
-
->
->V2:
->   * rebase the code on v3.18
->---
-> arch/powerpc/kernel/pci_dn.c |    4 +---
-> 1 file changed, 1 insertion(+), 3 deletions(-)
->
->diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->index 1f61fab..83df307 100644
->--- a/arch/powerpc/kernel/pci_dn.c
->+++ b/arch/powerpc/kernel/pci_dn.c
->@@ -147,10 +147,8 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
-> 	/* PHB nodes themselves must not match */
-> 	update_dn_pci_info(dn, phb);
-> 	pdn = dn->data;
->-	if (pdn) {
->+	if (pdn)
-> 		pdn->devfn = pdn->busno = -1;
->-		pdn->phb = phb;
->-	}
->
-> 	/* Update dn->phb ptrs for new phb and children devices */
-> 	traverse_pci_devices(dn, update_dn_pci_info, phb);
->-- 
->1.7.9.5
->
+Cheers,
+-Ian
