@@ -1,18 +1,17 @@
-Return-Path: <stripath@apm.com>
-Received: from denmail01.apm.com (unknown [192.195.68.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 6EC581A0198
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 04:17:14 +1100 (AEDT)
-From: Suman Tripathi <stripathi@apm.com>
-To: chris@printf.net, anton@enomsg.org, arnd@arndb.de
-Subject: [PATCH 1/2] mmc: host: arasan: Add addition of-arasan quirks and add
- IOMMU support.
-Date: Mon, 15 Dec 2014 22:31:06 +0530
-Message-Id: <1418662867-9210-2-git-send-email-stripathi@apm.com>
-In-Reply-To: <1418662867-9210-1-git-send-email-stripathi@apm.com>
-References: <1418662867-9210-1-git-send-email-stripathi@apm.com>
-Cc: devicetree@vger.kernel.org, Suman Tripathi <stripathi@apm.com>,
- jcm@redhat.com, linux-mmc@vger.kernel.org, patches@apm.com, ddutile@redhat.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <michael.tessier@axiontech.ca>
+Received: from mail.axiontech.ca (unknown [207.164.255.36])
+ by lists.ozlabs.org (Postfix) with ESMTP id B26771A018C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 08:03:45 +1100 (AEDT)
+From: Michael Tessier <michael.tessier@axiontech.ca>
+To: "leoli@freescale.com" <leoli@freescale.com>
+Subject: PROBLEM: USB isochronous urb leak on EHCI driver
+Date: Mon, 15 Dec 2014 20:53:20 +0000
+Message-ID: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
+Content-Type: multipart/mixed;
+ boundary="_002_66A26A9AA227D947AF088537F041526E1FF44FVSVREX10MB1pocate_"
+MIME-Version: 1.0
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,142 +21,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Due to the fact that the existing of-arasan driver works with 32-bit platforms.
-This patch tweaks existing of-arasan driver to work with 64-bit platform using
-IOMMU translation.
+--_002_66A26A9AA227D947AF088537F041526E1FF44FVSVREX10MB1pocate_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-In addition it adds support for more quirks and quirks2 obtained from device tree
-inside the generic sdhci-platform(sdhci-pltfm.c) driver.
+Hi,
 
-Signed-off-by: Suman Tripathi <stripathi@apm.com>
----
- drivers/mmc/host/Kconfig           |  1 +
- drivers/mmc/host/sdhci-of-arasan.c | 54 ++++++++++++++++++++++++++++++++++++++
- drivers/mmc/host/sdhci-pltfm.c     | 12 +++++++++
- 3 files changed, 67 insertions(+)
+I am dealing with a USB EHCI driver bug. Here is the info:
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 4511358..0c6dc47 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -108,6 +108,7 @@ config MMC_SDHCI_OF_ARASAN
- 	tristate "SDHCI OF support for the Arasan SDHCI controllers"
- 	depends on MMC_SDHCI_PLTFM
- 	depends on OF
-+	select MMC_SDHCI_IO_ACCESSORS
- 	help
- 	  This selects the Arasan Secure Digital Host Controller Interface
- 	  (SDHCI). This hardware is found e.g. in Xilinx' Zynq SoC.
-diff --git a/drivers/mmc/host/sdhci-of-arasan.c b/drivers/mmc/host/sdhci-of-arasan.c
-index 5bd1092..c0e0c9b 100644
---- a/drivers/mmc/host/sdhci-of-arasan.c
-+++ b/drivers/mmc/host/sdhci-of-arasan.c
-@@ -20,6 +20,10 @@
-  */
+My configuration:
+-----------------
 
- #include <linux/module.h>
-+#if defined(CONFIG_IOMMU_SUPPORT)
-+#include <linux/amba/bus.h>
-+#include <linux/iommu.h>
-+#endif
- #include "sdhci-pltfm.h"
+Host: Freescale i.MX512 with ARM Cortex A8 (USB 2.0 host controller)
+Linux kernel: 2.6.31, using EHCI USB driver
+Hub: 4-PORT USB 1.1 HUB (Texas Instruments PN: tusb2046b)
+Devices: 4 USB 1.1 audio codecs (Texas Instruments PN: pcm2901)
 
- #define SDHCI_ARASAN_CLK_CTRL_OFFSET	0x2c
-@@ -34,8 +38,46 @@
-  */
- struct sdhci_arasan_data {
- 	struct clk	*clk_ahb;
-+#if defined(CONFIG_IOMMU_SUPPORT)
-+	struct iommu_domain *domain;
-+#endif
- };
+Note: each codec is being used in R/W access, so with 4 codecs, I have
+4 playback and 4 capture streams.
 
-+static void sdhci_arasan_write_l(struct sdhci_host *host, u32 val, int reg)
-+{
-+#if defined(CONFIG_IOMMU_SUPPORT)
-+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-+	struct sdhci_arasan_data *sdhci_arasan = pltfm_host->priv;
-+	/*
-+	 * This allows the arasan IP to integrate with 64-bit platform.
-+	 * As the AHB dma masters generates 32-bit address so it needs
-+	 * IO translation of 32-bit to 42-bit AXI address with help of IOMMU.
-+	 */
-+	if (reg == SDHCI_DMA_ADDRESS) {
-+	        phys_addr_t dma_addr = sg_dma_address(host->data->sg);
-+		sdhci_arasan->domain->ops->map(sdhci_arasan->domain, 0,
-+					       dma_addr, 0, 0);
-+	}
-+#endif
-+	writel(val, host->ioaddr + reg);
-+}
-+
-+static  u32 xgene_sdhci_readl(struct sdhci_host *host, int reg)
-+{
-+#if defined(CONFIG_IOMMU_SUPPORT)
-+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-+	struct sdhci_arasan_data *sdhci_arasan = pltfm_host->priv;
-+
-+	if (reg == SDHCI_INT_STATUS ) {
-+		if ((readl(host->ioaddr + reg) & SDHCI_INT_DATA_MASK) ==
-+		     SDHCI_INT_DMA_END)
-+			sdhci_arasan->domain->ops->unmap(sdhci_arasan->domain,
-+							 0, 0);
-+	}
-+#endif
-+	return readl(host->ioaddr + reg);
-+}
-+
- static unsigned int sdhci_arasan_get_timeout_clock(struct sdhci_host *host)
- {
- 	u32 div;
-@@ -58,6 +100,8 @@ static struct sdhci_ops sdhci_arasan_ops = {
- 	.set_bus_width = sdhci_set_bus_width,
- 	.reset = sdhci_reset,
- 	.set_uhs_signaling = sdhci_set_uhs_signaling,
-+	.write_l = sdhci_arasan_write_l,
-+	.read_l = xgene_sdhci_readl,
- };
+My problem:
+-----------
 
- static struct sdhci_pltfm_data sdhci_arasan_pdata = {
-@@ -162,6 +206,16 @@ static int sdhci_arasan_probe(struct platform_device *pdev)
- 		goto clk_dis_ahb;
- 	}
+I have usb urb leaks when connecting more than 1 codec to the USB 1.1
+Hub. (the result is that some of the audio data is not transferred,
+part of the sound is simply missing) No problem when using only 1
+of the 4 codecs connected to the hub; When I connect a second codec,
+the sound quality starts to degrade. With 3 codecs, we just cannot
+recognize a speach.
 
-+#if defined(CONFIG_IOMMU_SUPPORT)
-+	sdhci_arasan->domain = iommu_domain_alloc(&amba_bustype);
-+	if (!sdhci_arasan->domain) {
-+		dev_err(&pdev->dev, "Unable to allocate iommu domain\n");
-+		return PTR_ERR(sdhci_arasan->domain);
-+	}
-+
-+	iommu_attach_device(sdhci_arasan->domain, &pdev->dev);
-+#endif
-+
- 	host = sdhci_pltfm_init(pdev, &sdhci_arasan_pdata, 0);
- 	if (IS_ERR(host)) {
- 		ret = PTR_ERR(host);
-diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index 7e834fb..08a97dc 100644
---- a/drivers/mmc/host/sdhci-pltfm.c
-+++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -90,6 +90,18 @@ void sdhci_get_of_property(struct platform_device *pdev)
- 		if (of_get_property(np, "broken-cd", NULL))
- 			host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+Tests and observations:
+-----------------------
 
-+		if (of_get_property(np, "delay-after-power", NULL))
-+			host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-+
-+		if (of_get_property(np, "no-hispd", NULL))
-+			host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-+
-+		if (of_get_property(np, "broken-adma", NULL))
-+			host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-+
-+		if (of_get_property(np, "no-cmd23", NULL))
-+			host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
-+
- 		if (of_get_property(np, "no-1-8-v", NULL))
- 			host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
+Since I have 3 usb ports available on the i.MX512, I tried to connect
+3 codecs directly on USB ports: the sound is perfect on each of the
+three ports.
 
---
-1.8.2.1
+I bought a consumer USB 2.0 Hub: no problem when using 3 codecs
+connected to that Hub, however, the audio will completly stop on all
+channels when connecting the 4th codec.
+
+I checked the communication between the Hub (USB 1.1) and the Host
+controller (USB 2.0) with a scope and concluded that the
+communication speed is 1.5 MBytes/s has expected (so the=20
+communication is downgraded to USB 1.1, since codecs and hub are USB
+1.1 devices).
+
+Also, I know that there is physically enough bandwidth to
+transfer the data for two reasons:
+1) I have an older CPU with a USB 1.1 host controller (using the OHCI
+driver), using the same hub and the same codecs: works like a champ,
+using less than 50% of the available bandwidth (observed with a
+scope)
+2) 1 audio stream is 32khz-mono, 16 bits =3D 64 kB/s,
+4 codecs =3D 8 streams(R/W) x 64 kB/s =3D 512 kB/s (out of 1.5MB/s)
+
+I noticed that my sound problem starts happening with only 2 codecs
+(4 streams, 256 kB/s). I first thought that it was a bandwidth
+limitation, so I decided to connect only 1 codec using more bandwidth.
+I configured it to 48khz-stereo (16-bits), using 384 kB/s for both
+read and write streams: no problem. With that configuration, the=20
+scope shows about 30% of total bandwidth usage (300us used out of 1ms
+periods). Then, I added a second codec (48khz-stereo-16bits): very
+strange, now the total bandwidth usage felt down to about 200us, which
+seems to keep the same, whatever the number of codec I add (I also
+tried 3 and 4...). So it looks like the scheduler is not able to
+properly allocate Isochronous time slots when more than one device is
+connected to the hub. However, without the hub, it works perfectly.
+
+Another interresting fact is that at application level, the Read and
+Write operations are returning the good amount of bytes read/written.
+This is not the case at kernel level: I noticed that function
+"usb_submit_urb" (from /drivers/usb/core/urb.c) will only tranfer
+part of the "urbs" when the sound is degraded. I tried to figure out
+where the leak comes from without success. Also, there are no error
+messages from kernel so everything appears to work well, excepted
+that part of the sound is missing!
+
+I can't change my hardware (this is in the hand of customers), so
+the only possible solution for me is to correct the software.
+
+I tried to change my ehci driver with the one from kernel 2.6.39.4
+but did not work, same problem.
+
+Question:
+---------
+
+Before attempting to upgrade to an earlier kernel driver (this is
+a fairly big amount of work), I would really like to know if this
+problem would still be in the 3.x kernels. Has anyone seen that
+issue in 3.x kernels?
+
+I am pretty new to USB driver debugging, so any ideas of where/how
+to find solutions will be appreciated. Thank you very much in advance
+for the support. Also don't hesitate to redirect me if I'm not at the
+right place to ask these questions. I can also provide some code if
+someone need it to help.
+
+Attached is a dump of my "dmesg" after startup.
+
+Michael Tessier
+
+
+
+
+
+
+
+
+--_002_66A26A9AA227D947AF088537F041526E1FF44FVSVREX10MB1pocate_
+Content-Type: text/plain; name="dmesg.txt"
+Content-Description: dmesg.txt
+Content-Disposition: attachment; filename="dmesg.txt"; size=9134;
+	creation-date="Mon, 15 Dec 2014 19:57:36 GMT";
+	modification-date="Mon, 15 Dec 2014 19:57:36 GMT"
+Content-Transfer-Encoding: base64
+
+PDU+TGludXggdmVyc2lvbiAyLjYuMzEtNzcwLWcwZTQ2YjUyLTA4OTcgKG1pY2hhZWwudGVzc2ll
+ckB2c3ZyLWNvbXBpbGUtMDEucG9jYXRlYy5jb20pIChnY2MgdmVyc2lvbiA0LjEuMikgIzEyIFBS
+RUVNUFQgTW9uIE5vdiAyNCAxODozNDoxOSBFU1QgMjAxNAo8ND5DUFU6IEFSTXY3IFByb2Nlc3Nv
+ciBbNDEyZmMwODVdIHJldmlzaW9uIDUgKEFSTXY3KSwgY3I9MTBjNTNjN2YKPDQ+Q1BVOiBWSVBU
+IG5vbmFsaWFzaW5nIGRhdGEgY2FjaGUsIFZJUFQgbm9uYWxpYXNpbmcgaW5zdHJ1Y3Rpb24gY2Fj
+aGUKPDQ+TWFjaGluZTogTVg1MSBYYW50aHVzIEJvYXJkCjw0Pk1lbW9yeSBwb2xpY3k6IEVDQyBk
+aXNhYmxlZCwgRGF0YSBjYWNoZSB3cml0ZWJhY2sKPDc+T24gbm9kZSAwIHRvdGFscGFnZXM6IDY1
+NTM2Cjw3PmZyZWVfYXJlYV9pbml0X25vZGU6IG5vZGUgMCwgcGdkYXQgYzAyZjEzN2MsIG5vZGVf
+bWVtX21hcCBjMDMwNzAwMAo8Nz4gIERNQSB6b25lOiAxMjggcGFnZXMgdXNlZCBmb3IgbWVtbWFw
+Cjw3PiAgRE1BIHpvbmU6IDAgcGFnZXMgcmVzZXJ2ZWQKPDc+ICBETUEgem9uZTogMTYyNTYgcGFn
+ZXMsIExJRk8gYmF0Y2g6Mwo8Nz4gIE5vcm1hbCB6b25lOiAzODQgcGFnZXMgdXNlZCBmb3IgbWVt
+bWFwCjw3PiAgTm9ybWFsIHpvbmU6IDQ4NzY4IHBhZ2VzLCBMSUZPIGJhdGNoOjE1Cjw0PkJ1aWx0
+IDEgem9uZWxpc3RzIGluIFpvbmUgb3JkZXIsIG1vYmlsaXR5IGdyb3VwaW5nIG9uLiAgVG90YWwg
+cGFnZXM6IDY1MDI0Cjw1Pktlcm5lbCBjb21tYW5kIGxpbmU6IGNvbnNvbGU9dHR5bXhjMiwxMTUy
+MDAgQ05GR21hZ2ljPVhBVFMgQ05GR3ZlcnNpb249MS4wLjAuMCB2ZW5kb3JJRD1FWFBUIHBsYXRm
+b3JtSUQ9TElOWCBwcm9kdWN0SUQ9WEFUUyBtYWMxPTAwOjFEOjlFOjAwOjE3OjJlIG1hYzI9MDA6
+MUQ6OUU6MDA6MTc6MmYgWGFudGh1c1BhcnQ9ODEwMDA1MCBYYW50aHVzU2VyaWFsPTUxIFhhbnRo
+dXNSZXZMZXZlbD0tLSBVbml0UGFydD0wIFVuaXRTZXJpYWw9MCBVbml0UmV2TGV2ZWw9MCBpcD0g
+VUJ2ZXJzaW9uPTEuNS4wLjAgZXRoY3B1PWV0aDAgcm9vdD0vZGV2L3JhbSBydyByYW1kaXNrX3Np
+emU9NTUwMDAKPDQ+UElEIGhhc2ggdGFibGUgZW50cmllczogMTAyNCAob3JkZXI6IDEwLCA0MDk2
+IGJ5dGVzKQo8Nj5EZW50cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAzMjc2OCAob3JkZXI6
+IDUsIDEzMTA3MiBieXRlcykKPDY+SW5vZGUtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4
+NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQo8Nj5NZW1vcnk6IDI1Nk1CID0gMjU2TUIgdG90YWwK
+PDU+TWVtb3J5OiAyNTQwMDBLQiBhdmFpbGFibGUgKDI2NjBLIGNvZGUsIDIwOEsgZGF0YSwgMTA0
+SyBpbml0LCAwSyBoaWdobWVtKQo8Nj5TTFVCOiBHZW5zbGFicz0xMSwgSFdhbGlnbj0zMiwgT3Jk
+ZXI9MC0zLCBNaW5PYmplY3RzPTAsIENQVXM9MSwgTm9kZXM9MQo8Nj5OUl9JUlFTOjM2OAo8Nj5N
+WEMgSVJRIGluaXRpYWxpemVkCjw2Pk1YQ19FYXJseSBzZXJpYWwgY29uc29sZSBhdCBNTUlPIDB4
+NzAwMGMwMDAgKG9wdGlvbnMgJzExNTIwMCcpCjw2PmNvbnNvbGUgW3R0eW14YzJdIGVuYWJsZWQK
+PDQ+Q29uc29sZTogY29sb3VyIGR1bW15IGRldmljZSA4MHgzMAo8Nj5DYWxpYnJhdGluZyBkZWxh
+eSBsb29wLi4uIDU3NS4wNyBCb2dvTUlQUyAobHBqPTI4NzUzOTIpCjw0Pk1vdW50LWNhY2hlIGhh
+c2ggdGFibGUgZW50cmllczogNTEyCjw2PkNQVTogVGVzdGluZyB3cml0ZSBidWZmZXIgY29oZXJl
+bmN5OiBvawo8Nj5ORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2Cjw2PmkuTVggSVJB
+TSBwb29sOiAxMjggS0JAMHhkMDg0MDAwMAo8Nj5JUkFNIFJFQURZCjw2PkNQVSBpcyBpLk1YNTEg
+UmV2aXNpb24gMy4wCjw2Pk1YQyBHUElPIGhhcmR3YXJlCjw0PlhBTlRIVVMgRlBHQSBpcnEgY29u
+dHJvbGVyIDoxOTcKPDQ+a3M4ODUxOiBtYWMoMDA6MWQ6OWU6MDA6MTc6MmYpCjw0PlhBTlRIVVMg
+RlBHQSBWRVJTSU9OOiAwLjEuMC4wCjw2PlVzaW5nIFNETUEgSS5BUEkKPDY+TVhDIERNQSBBUEkg
+aW5pdGlhbGl6ZWQKPDQ+YmlvOiBjcmVhdGUgc2xhYiA8YmlvLTA+IGF0IDAKPDU+U0NTSSBzdWJz
+eXN0ZW0gaW5pdGlhbGl6ZWQKPDc+bGliYXRhIHZlcnNpb24gMy4wMCBsb2FkZWQuCjw2PkNTUEk6
+IG14Y19zcGktMCBwcm9iZWQKPDY+bXhjX3NwaSBteGNfc3BpLjA6IHJlZ2lzdGVyaW5nIGxvb3Bi
+YWNrIGRldmljZSAnc3BpZGV2Jwo8Nj5teGNfc3BpIG14Y19zcGkuMDogcmVnaXN0ZXJpbmcgbG9v
+cGJhY2sgZGV2aWNlICdzcGlkZXYnCjw2Pm14Y19zcGkgbXhjX3NwaS4wOiByZWdpc3RlcmluZyBs
+b29wYmFjayBkZXZpY2UgJ3NwaWRldicKPDY+TVhDIEkyQyBkcml2ZXIKPDY+TVhDIEhTIEkyQyBk
+cml2ZXIKPDY+TkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAyCjw2PklQIHJvdXRlIGNh
+Y2hlIGhhc2ggdGFibGUgZW50cmllczogMjA0OCAob3JkZXI6IDEsIDgxOTIgYnl0ZXMpCjw3PlN3
+aXRjaGVkIHRvIGhpZ2ggcmVzb2x1dGlvbiBtb2RlIG9uIENQVSAwCjw2PlRDUCBlc3RhYmxpc2hl
+ZCBoYXNoIHRhYmxlIGVudHJpZXM6IDgxOTIgKG9yZGVyOiA0LCA2NTUzNiBieXRlcykKPDY+VENQ
+IGJpbmQgaGFzaCB0YWJsZSBlbnRyaWVzOiA4MTkyIChvcmRlcjogMywgMzI3NjggYnl0ZXMpCjw2
+PlRDUDogSGFzaCB0YWJsZXMgY29uZmlndXJlZCAoZXN0YWJsaXNoZWQgODE5MiBiaW5kIDgxOTIp
+Cjw2PlRDUCByZW5vIHJlZ2lzdGVyZWQKPDY+TkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWls
+eSAxCjw2PlRyeWluZyB0byB1bnBhY2sgcm9vdGZzIGltYWdlIGFzIGluaXRyYW1mcy4uLgo8Nj5y
+b290ZnMgaW1hZ2UgaXMgbm90IGluaXRyYW1mcyAobm8gY3BpbyBtYWdpYyk7IGxvb2tzIGxpa2Ug
+YW4gaW5pdHJkCjw2PkZyZWVpbmcgaW5pdHJkIG1lbW9yeTogMjYwNEsKPDY+TFBNb2RlIGRyaXZl
+ciBtb2R1bGUgbG9hZGVkCjw2Pm1zZ21uaSBoYXMgYmVlbiBzZXQgdG8gNTAxCjw2PmlvIHNjaGVk
+dWxlciBub29wIHJlZ2lzdGVyZWQgKGRlZmF1bHQpCjw0PkNsYXNzIGNyZWF0ZWQhCjw2PlRyaWdn
+ZXJlZCBHUElPIGRyaXZlci4gQm91bmRhcnkgRGV2aWNlcwo8Nj5YQU5USFVTIFNlcmlhbDogODI1
+MC8xNjU1MCBkcml2ZXIsIDEgcG9ydHMsIElSUSBzaGFyaW5nIGRpc2FibGVkCjw2PnNlcmlhbDgy
+NTAuMDogdHR5UzAgYXQgTU1JTyAweGIwMTAwMDAwIChpcnEgPSAzNTIpIGlzIGEgMTY1NTBBCjw2
+PlNlcmlhbDogTVhDIEludGVybmFsIFVBUlQgZHJpdmVyCjw2Pm14Y2ludHVhcnQuMDogdHR5bXhj
+MCBhdCBNTUlPIDB4NzNmYmMwMDAgKGlycSA9IDMxKSBpcyBhIEZyZWVzY2FsZSBpLk1YCjw2Pm14
+Y2ludHVhcnQuMTogdHR5bXhjMSBhdCBNTUlPIDB4NzNmYzAwMDAgKGlycSA9IDMyKSBpcyBhIEZy
+ZWVzY2FsZSBpLk1YCjw2Pm14Y2ludHVhcnQuMjogdHR5bXhjMiBhdCBNTUlPIDB4NzAwMGMwMDAg
+KGlycSA9IDMzKSBpcyBhIEZyZWVzY2FsZSBpLk1YCjw2PmNvbnNvbGUgaGFuZG92ZXI6IGJvb3Qg
+W3R0eW14YzJdIC0+IHJlYWwgW3R0eW14YzJdCjw2PmJyZDogbW9kdWxlIGxvYWRlZAo8Nj5sb29w
+OiBtb2R1bGUgbG9hZGVkCjwzPnBhdGFfZnNsIHBhdGFfZnNsOiByY2hhbj0yOSB3Y2hhbj0yOAo8
+Nj5zY3NpMCA6IHBhdGFfZnNsCjw2PmF0YTE6IFBBVEEgbWF4IFVETUEvMTAwIGlycSA3MAo8Nj5G
+RUMgRXRoZXJuZXQgRHJpdmVyCjwzPkZFQzogZmVjX3Byb2JlIG5hbWU6ZmVjLCBpZDowLCBuZXQg
+bmFtZTpldGgwLCBpbmRleDowCjwzPkZFQzogbWFjKDAwOjFkOjllOjAwOjE3OjJlKQo8Nj5hdGEx
+LjAwOiBDRkE6IFRSQU5TQ0VORCwgMjAxMDAyMDIsIG1heCBVRE1BLzY2Cjw2PmF0YTEuMDA6IDk5
+NDg5NiBzZWN0b3JzLCBtdWx0aSAwOiBMQkEgCjw2PmF0YTEuMDA6IGNvbmZpZ3VyZWQgZm9yIFVE
+TUEvNjYKPDU+c2NzaSAwOjA6MDowOiBEaXJlY3QtQWNjZXNzICAgICBBVEEgICAgICBUUkFOU0NF
+TkQgICAgICAgIDIwMTAgUFE6IDAgQU5TSTogNQo8NT5zZCAwOjA6MDowOiBbc2RhXSA5OTQ4OTYg
+NTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICg1MDkgTUIvNDg1IE1pQikKPDU+c2QgMDowOjA6MDog
+W3NkYV0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKPDc+c2QgMDowOjA6MDogW3NkYV0gTW9kZSBTZW5z
+ZTogMDAgM2EgMDAgMDAKPDU+c2QgMDowOjA6MDogW3NkYV0gV3JpdGUgY2FjaGU6IGRpc2FibGVk
+LCByZWFkIGNhY2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQo8Nj4gc2Rh
+OiBzZGExIHNkYTIgc2RhMyBzZGE0Cjw1PnNkIDA6MDowOjA6IFtzZGFdIEF0dGFjaGVkIFNDU0kg
+ZGlzawo8Nj5mZWNfZW5ldF9taWlfYnVzOiBwcm9iZWQKPDQ+SUVFRTE1ODg6IHB0cC10aW1lciBp
+cyB1bmF2YWlsYWJsZQo8Nj5ydGMtZHMxMzA3IDMtMDA2ODogcnRjIGNvcmU6IHJlZ2lzdGVyZWQg
+ZHMxMzQwIGFzIHJ0YzAKPDY+aTJjIC9kZXYgZW50cmllcyBkcml2ZXIKPDY+WGFudGh1cyBXYXRj
+aERvZyBEcml2ZXIgMS4yCjw0PmNsazogVW5hYmxlIHRvIGdldCByZXF1ZXN0ZWQgY2xvY2s6IHdk
+b2dfY2xrCjw2PlhBTlRIVVMgQm9vdCAtIFdET0cgUnN0IC0gU29mdCBSZXNldCAoMTAwMTAsMSkK
+PDY+WGFudGh1cyBXYXRjaGRvZyAjIDAgVGltZXI6IGluaXRpYWwgdGltZW91dCA2MCBzZWMKPDY+
+VENQIGN1YmljIHJlZ2lzdGVyZWQKPDY+TkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAx
+Nwo8Nj5WRlAgc3VwcG9ydCB2MC4zOiBpbXBsZW1lbnRvciA0MSBhcmNoaXRlY3R1cmUgMyBwYXJ0
+IDMwIHZhcmlhbnQgYyByZXYgMgo8Nj5ydGMtZHMxMzA3IDMtMDA2ODogc2V0dGluZyBzeXN0ZW0g
+Y2xvY2sgdG8gMjAwMC0wMS0wMSAwMDowMDo0NCBVVEMgKDk0NjY4NDg0NCkKPDU+UkFNRElTSzog
+Z3ppcCBpbWFnZSBmb3VuZCBhdCBibG9jayAwCjw0PlZGUzogTW91bnRlZCByb290IChleHQyIGZp
+bGVzeXN0ZW0pIG9uIGRldmljZSAxOjAuCjw2PkZyZWVpbmcgaW5pdCBtZW1vcnk6IDEwNEsKPDY+
+WEFOVEhVUyBrczg4NTFfbWxsOiBEcml2ZXIgdmVyc2lvbiAxLjAwLgo8Nj5YQU5USFVTOiBrczg4
+NTFfcHJvYmUgbmFtZTprczg4NTFfbWxsLCBpZDowLCBuZXQgbmFtZTpldGgxLCBpbmRleDowCjw2
+PmtzODg1MSBoYXJkIHJlc2V0Cjw2PmtzODg1MV9tbGwga3M4ODUxX21sbC4wOiBtZXNzYWdlIGVu
+YWJsZSBpcyAzMQo8Nj5LU19DSURFUjo4ODcyCjw2PmtzODg1MV9tbGwga3M4ODUxX21sbC4wOiB0
+aGUgc2VsZnRlc3QgcGFzc2VzCjw2PlhBTlRIVVM6IGtzX3NvZnRfcmVzZXQKPDY+WEFOVEhVUzog
+S1M4ODUxIG1hYygwMDoxZDo5ZTowMDoxNzoyZikKPDY+a3M4ODUxX21sbCBGb3VuZCBjaGlwLCBm
+YW1pbHk6IDB4ODgsIGlkOiAweDcsIHJldjogMHgxCjw2PkV0aGVybmV0IENoYW5uZWwgQm9uZGlu
+ZyBEcml2ZXI6IHYzLjUuMCAoTm92ZW1iZXIgNCwgMjAwOCkKPDY+Ym9uZGluZzogTUlJIGxpbmsg
+bW9uaXRvcmluZyBzZXQgdG8gMTAwIG1zCjw2PnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGludGVy
+ZmFjZSBkcml2ZXIgdXNiZnMKPDY+dXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50ZXJmYWNlIGRy
+aXZlciBodWIKPDY+dXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgZGV2aWNlIGRyaXZlciB1c2IKPDY+
+ZWhjaV9oY2Q6IFVTQiAyLjAgJ0VuaGFuY2VkJyBIb3N0IENvbnRyb2xsZXIgKEVIQ0kpIERyaXZl
+cgo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4wOiBGcmVlc2NhbGUgT24tQ2hpcCBFSENJIEhvc3QgQ29u
+dHJvbGxlcgo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4wOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBh
+c3NpZ25lZCBidXMgbnVtYmVyIDEKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMDogaXJxIDE4LCBpbyBi
+YXNlIDB4NzNmODAwMDAKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMDogVVNCIDIuMCBzdGFydGVkLCBF
+SENJIDEuMDAKPDY+dXNiIHVzYjE6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9p
+Y2UKPDY+aHViIDEtMDoxLjA6IFVTQiBodWIgZm91bmQKPDY+aHViIDEtMDoxLjA6IDEgcG9ydCBk
+ZXRlY3RlZAo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4xOiBGcmVlc2NhbGUgT24tQ2hpcCBFSENJIEhv
+c3QgQ29udHJvbGxlcgo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4xOiBuZXcgVVNCIGJ1cyByZWdpc3Rl
+cmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDIKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMTogaXJxIDE0
+LCBpbyBiYXNlIDB4NzNmODAyMDAKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMTogVVNCIDIuMCBzdGFy
+dGVkLCBFSENJIDEuMDAKPDY+dXNiIHVzYjI6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20g
+MSBjaG9pY2UKPDY+aHViIDItMDoxLjA6IFVTQiBodWIgZm91bmQKPDY+aHViIDItMDoxLjA6IDEg
+cG9ydCBkZXRlY3RlZAo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4yOiBGcmVlc2NhbGUgT24tQ2hpcCBF
+SENJIEhvc3QgQ29udHJvbGxlcgo8Nj5mc2wtZWhjaSBmc2wtZWhjaS4yOiBuZXcgVVNCIGJ1cyBy
+ZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDMKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMjog
+aXJxIDE2LCBpbyBiYXNlIDB4NzNmODA0MDAKPDY+ZnNsLWVoY2kgZnNsLWVoY2kuMjogVVNCIDIu
+MCBzdGFydGVkLCBFSENJIDEuMDAKPDY+dXNiIHVzYjM6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2Vu
+IGZyb20gMSBjaG9pY2UKPDY+aHViIDMtMDoxLjA6IFVTQiBodWIgZm91bmQKPDY+aHViIDMtMDox
+LjA6IDEgcG9ydCBkZXRlY3RlZAo8Nj5Jbml0aWFsaXppbmcgVVNCIE1hc3MgU3RvcmFnZSBkcml2
+ZXIuLi4KPDY+dXNiIDItMTogbmV3IGZ1bGwgc3BlZWQgVVNCIGRldmljZSB1c2luZyBmc2wtZWhj
+aSBhbmQgYWRkcmVzcyAyCjw2PnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGludGVyZmFjZSBkcml2
+ZXIgdXNiLXN0b3JhZ2UKPDY+VVNCIE1hc3MgU3RvcmFnZSBzdXBwb3J0IHJlZ2lzdGVyZWQuCjw2
+PnVzYiAyLTE6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKPDY+aHViIDIt
+MToxLjA6IFVTQiBodWIgZm91bmQKPDY+aHViIDItMToxLjA6IDQgcG9ydHMgZGV0ZWN0ZWQKPDY+
+dXNiIDItMS4xOiBuZXcgZnVsbCBzcGVlZCBVU0IgZGV2aWNlIHVzaW5nIGZzbC1laGNpIGFuZCBh
+ZGRyZXNzIDMKPDY+a2pvdXJuYWxkIHN0YXJ0aW5nLiAgQ29tbWl0IGludGVydmFsIDUgc2Vjb25k
+cwo8ND5FWFQzLWZzIHdhcm5pbmc6IG1heGltYWwgbW91bnQgY291bnQgcmVhY2hlZCwgcnVubmlu
+ZyBlMmZzY2sgaXMgcmVjb21tZW5kZWQKPDY+RVhUMyBGUyBvbiBzZGEzLCBpbnRlcm5hbCBqb3Vy
+bmFsCjw2PkVYVDMtZnM6IHJlY292ZXJ5IGNvbXBsZXRlLgo8Nj5FWFQzLWZzOiBtb3VudGVkIGZp
+bGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRhdGEgbW9kZS4KPDY+dXNiIDItMS4xOiBjb25maWd1cmF0
+aW9uICMxIGNob3NlbiBmcm9tIDEgY2hvaWNlCjw2PmV0aDA6IEZyZWVzY2FsZSBGRUMgUEhZIGRy
+aXZlciBbR2VuZXJpYyBQSFldIChtaWlfYnVzOnBoeV9hZGRyPTA6MDAsIGlycT0tMSkKPDQ+ZXhw
+aW9fc2V0X3R5cGVfaXJxIElSUUZfVFJJR0dFUl9MT1cKPDY+WEFOVEhVUzoga3NfdXBkYXRlX2xp
+bmtfc3RhdHVzCjw2PnVzYiAyLTEuMjogbmV3IGZ1bGwgc3BlZWQgVVNCIGRldmljZSB1c2luZyBm
+c2wtZWhjaSBhbmQgYWRkcmVzcyA0Cjw2PnVzYiAyLTEuMjogY29uZmlndXJhdGlvbiAjMSBjaG9z
+ZW4gZnJvbSAxIGNob2ljZQo8Nj51c2IgMi0xLjM6IG5ldyBmdWxsIHNwZWVkIFVTQiBkZXZpY2Ug
+dXNpbmcgZnNsLWVoY2kgYW5kIGFkZHJlc3MgNQo8Nj51c2IgMi0xLjM6IGNvbmZpZ3VyYXRpb24g
+IzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKPDY+UEhZOiAwOjAwIC0gTGluayBpcyBVcCAtIDEwMC9G
+dWxsCjw2PmV0aDA6IEZyZWVzY2FsZSBGRUMgUEhZIGRyaXZlciBbR2VuZXJpYyBQSFldIChtaWlf
+YnVzOnBoeV9hZGRyPTA6MDAsIGlycT0tMSkKPDY+Ym9uZGluZzogYm9uZDA6IG1ha2luZyBpbnRl
+cmZhY2UgZXRoMCB0aGUgbmV3IGFjdGl2ZSBvbmUuCjw2PmJvbmRpbmc6IGJvbmQwOiBmaXJzdCBh
+Y3RpdmUgaW50ZXJmYWNlIHVwIQo8Nj5ib25kaW5nOiBib25kMDogZW5zbGF2aW5nIGV0aDAgYXMg
+YW4gYWN0aXZlIGludGVyZmFjZSB3aXRoIGFuIHVwIGxpbmsuCjw2PmtzX25ldF9zdG9wCjw2Pmtz
+ODg1MV9tbGwga3M4ODUxX21sbC4wOiBldGgxOiBzaHV0dGluZyBkb3duCjw0PmV4cGlvX3NldF90
+eXBlX2lycSBJUlFGX1RSSUdHRVJfTE9XCjw2PlhBTlRIVVM6IGtzX3VwZGF0ZV9saW5rX3N0YXR1
+cwo8Nj5YQU5USFVTOiBLUzg4NTEgbWFjKDAwOjFkOjllOjAwOjE3OjJlKQo8Nj5ib25kaW5nOiBi
+b25kMDogZW5zbGF2aW5nIGV0aDEgYXMgYSBiYWNrdXAgaW50ZXJmYWNlIHdpdGggYSBkb3duIGxp
+bmsuCjw2Pmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1pdCBpbnRlcnZhbCA1IHNlY29uZHMKPDQ+
+RVhUMy1mcyB3YXJuaW5nOiBtYXhpbWFsIG1vdW50IGNvdW50IHJlYWNoZWQsIHJ1bm5pbmcgZTJm
+c2NrIGlzIHJlY29tbWVuZGVkCjw2PkVYVDMgRlMgb24gc2RhMiwgaW50ZXJuYWwgam91cm5hbAo8
+Nj5FWFQzLWZzOiByZWNvdmVyeSBjb21wbGV0ZS4KPDY+RVhUMy1mczogbW91bnRlZCBmaWxlc3lz
+dGVtIHdpdGggb3JkZXJlZCBkYXRhIG1vZGUuCjw2Pmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1p
+dCBpbnRlcnZhbCA1IHNlY29uZHMKPDQ+RVhUMy1mcyB3YXJuaW5nOiBtYXhpbWFsIG1vdW50IGNv
+dW50IHJlYWNoZWQsIHJ1bm5pbmcgZTJmc2NrIGlzIHJlY29tbWVuZGVkCjw2PkVYVDMgRlMgb24g
+c2RhNCwgaW50ZXJuYWwgam91cm5hbAo8Nj5FWFQzLWZzOiByZWNvdmVyeSBjb21wbGV0ZS4KPDY+
+RVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3JkZXJlZCBkYXRhIG1vZGUuCjw2PlBI
+WTogMDowMCAtIExpbmsgaXMgVXAgLSAxMDAvRnVsbAo8Nj51c2Jjb3JlOiByZWdpc3RlcmVkIG5l
+dyBpbnRlcmZhY2UgZHJpdmVyIHNuZC11c2ItYXVkaW8KPDQ+YXhpb2RydjogbW9kdWxlIGxpY2Vu
+c2UgJ1Byb3ByaWV0YXJ5JyB0YWludHMga2VybmVsLgo8ND5EaXNhYmxpbmcgbG9jayBkZWJ1Z2dp
+bmcgZHVlIHRvIGtlcm5lbCB0YWludAo8Nj5pbzogcmVnaXN0ZXJlZCB3aXRoIG1ham9yIDI1MCBh
+bmQgZGVsYXkgMTAwMAo=
+
+--_002_66A26A9AA227D947AF088537F041526E1FF44FVSVREX10MB1pocate_--
