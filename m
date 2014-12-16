@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 348CC1A04BC
+ by lists.ozlabs.org (Postfix) with ESMTP id 348901A04B7
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 02:03:52 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH 09/11] powerpc/8xx: dont save CR in SCRATCH registers
-Message-Id: <20141216150340.108641A5E05@localhost.localdomain>
-Date: Tue, 16 Dec 2014 16:03:39 +0100 (CET)
+Subject: [PATCH 04/11] powerpc/8xx: Take benefit of aligned PGDIR
+Message-Id: <20141216150338.978F71A5E04@localhost.localdomain>
+Date: Tue, 16 Dec 2014 16:03:38 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,128 +19,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CR only needs to be preserved when checking if we are handling a kernel address.
-So we can preserve CR in a register:
-- In ITLBMiss, check is done only when CONFIG_MODULES is defined. Otherwise we
-don't need to do anything at all with CR.
-- If CONFIG_8xx_CPU6 is defined, we have r3 available for saving CR
-- Otherwise, we use r10, then we reload SRR0/MD_EPN into r10 when CR is restored
+L1 base address is now aligned so we can insert L1 index into r11 directly and
+then preserve r10
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S | 53 +++++++++++++++++++++++++++++-------------
- 1 file changed, 37 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index c89aed9..a073918 100644
+index 2c329f1..ae05f28 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -308,14 +308,10 @@ SystemCall:
- #endif
- 
- InstructionTLBMiss:
-+	EXCEPTION_PROLOG_0
- #ifdef CONFIG_8xx_CPU6
- 	mtspr	SPRN_DAR, r3
- #endif
--	EXCEPTION_PROLOG_0
--	mfcr	r10
--	mtspr	SPRN_SPRG_SCRATCH2, r10
--	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
--	DO_8xx_CPU15(r11, r10)
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
-@@ -323,14 +319,33 @@ InstructionTLBMiss:
- #ifdef CONFIG_MODULES
- 	/* Only modules will cause ITLB Misses as we always
- 	 * pin the first 8MB of kernel memory */
-+#ifdef CONFIG_8xx_CPU6
-+	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
-+	DO_8xx_CPU15(r11, r10)
-+	mfcr	r3
- 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
-+#else
-+	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
-+	DO_8xx_CPU15(r10, r11)
-+	mfcr	r10
-+	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
- #endif
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
--#ifdef CONFIG_MODULES
- 	beq	3f
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+@@ -326,16 +326,15 @@ InstructionTLBMiss:
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
  3:
-+#ifdef CONFIG_8xx_CPU6
-+	mtcr	r3
-+#else
-+	mtcr	r10
-+	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
  #endif
-+#else /* CONFIG_MODULES */
-+	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
-+	DO_8xx_CPU15(r11, r10)
-+	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
-+#endif /* CONFIG_MODULES */
-+
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
-@@ -362,29 +377,37 @@ InstructionTLBMiss:
- 	mfspr	r3, SPRN_DAR
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- #endif
--	mfspr	r10, SPRN_SPRG_SCRATCH2
--	mtcr	r10
- 	EXCEPTION_EPILOG_0
- 	rfi
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
  
- 	. = 0x1200
- DataStoreTLBMiss:
--#ifdef CONFIG_8xx_CPU6
--	mtspr	SPRN_DAR, r3
--#endif
- 	EXCEPTION_PROLOG_0
--	mfcr	r10
--	mtspr	SPRN_SPRG_SCRATCH2, r10
--	mfspr	r10, SPRN_MD_EPN
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	lwzx	r10, r10, r11	/* Get the pte */
  
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
+ #ifdef CONFIG_SWAP
+@@ -380,13 +379,12 @@ DataStoreTLBMiss:
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+ 3:
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 
+ 	/* We have a pte table, so load fetch the pte from the table.
  	 */
-+#ifdef CONFIG_8xx_CPU6
-+	mtspr	SPRN_DAR, r3
-+	mfcr	r3
-+	mfspr	r10, SPRN_MD_EPN
- 	andis.	r11, r10, 0x8000
-+#else
-+	mfcr	r10
-+	mfspr	r11, SPRN_MD_EPN
-+	andis.	r11, r11, 0x8000
-+#endif
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
- 	beq	3f
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
-+#ifdef CONFIG_8xx_CPU6
-+	mtcr	r3
-+#else
-+	mtcr	r10
-+	mfspr	r10, SPRN_MD_EPN
-+#endif
-+
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
-@@ -441,8 +464,6 @@ DataStoreTLBMiss:
- 	mfspr	r3, SPRN_DAR
- #endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
--	mfspr	r10, SPRN_SPRG_SCRATCH2
--	mtcr	r10
- 	EXCEPTION_EPILOG_0
- 	rfi
- 
+-	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
+ 	/* Extract level 2 index */
+ 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
+@@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq-	3f		/* Branch if user space */
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+-	/* Extract level 1 index */
+-3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+-	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-	lwzx	r11, r10, r11	/* Get the pte */
++	/* Insert level 1 index */
++3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 2 index */
++	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+-	mfspr	r10, SPRN_SRR0
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
+ 	lwz	r11,0(r11)
+ /* Check if it really is a dcbx instruction. */
 -- 
 2.1.0
