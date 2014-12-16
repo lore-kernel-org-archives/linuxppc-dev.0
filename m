@@ -1,26 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-f43.google.com (mail-la0-f43.google.com
+ [209.85.215.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 753771A00FD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 10:32:06 +1100 (AEDT)
-Message-ID: <1418686323.3241.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 7/7] CXL: Unmap MMIO regions when detaching a context
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Date: Tue, 16 Dec 2014 10:32:03 +1100
-In-Reply-To: <1418613792-sup-5165@delenn.ozlabs.ibm.com>
-References: <1418026681-14787-1-git-send-email-imunsie@au.ibm.com>
- <1418026681-14787-7-git-send-email-imunsie@au.ibm.com>
- <1418613792-sup-5165@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, mikey <mikey@neuling.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
- jk <jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 740F41A0185
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 23:00:26 +1100 (AEDT)
+Received: by mail-la0-f43.google.com with SMTP id s18so11244791lam.16
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 04:00:23 -0800 (PST)
+Message-ID: <54901ED3.30207@linux.com>
+Date: Tue, 16 Dec 2014 15:00:19 +0300
+From: Alexander Popov <alex.popov@linux.com>
+Reply-To: alex.popov@linux.com
+MIME-Version: 1.0
+To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: Re: Disabled LocalPlus Controller (LPC) clock on MPC512x
+References: <5475BE5A.4090503@linux.com> <547D98DF.9000708@sirius-es.it>
+In-Reply-To: <547D98DF.9000708@sirius-es.it>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-15 at 14:32 +1100, Ian Munsie wrote:
-> Excerpts from Ian Munsie's message of 2014-12-08 19:18:01 +1100:
-> > From: Ian Munsie <imunsie@au1.ibm.com>
-> > 
-> > If we need to force detach a context (e.g. due to EEH or simply force
-> > unbinding the driver) we should prevent the userspace contexts from
-> > being able to access the Problem State Area MMIO region further, which
-> > they may have mapped with mmap().
-> > 
-> > This patch unmaps any mapped MMIO regions when detaching a userspace
-> > context.
-> 
-> Might want to drop this one for now - Philippe found that it sometimes
-> causes an issue when multiple contexts are using the afu. Seems that
-> unmap_mapping_range() unmapped a bit more than I expected.
+02.12.2014 13:47, Matteo Facchinetti пишет:
+> On 26/11/2014 12:49, Alexander Popov wrote:
+>> Hello.
+> Hi.
 
-Sorry, it's already in next.
+Thanks for your reply, Matteo.
+I've looked deeper and have more information about the crash.
 
-https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/commit/?h=next&id=b123429e6a9e8d03aacf888d23262835f0081448
+>> My Freescale TWR-MPC5125 board instantly reboots if I touch
+>> any physical address on the LocalPlus Bus (LPB) for the first time
+>> when Linux has already booted.
+>>
+>> This effect is reproduced by using /dev/mem or loading a kernel module
+>> which works with any peripherals on LPB.
+>>
+>> It took me some time to find out that such crash is caused by
+>> clk_disable_unused() in drivers/clk/clk.c, which disables
+>> LocalPlus Controller (LPC) clock if I don't touch LPB addresses in the
+>> previous initcalls.
 
-Send me a revert or a fixup.
+My first diagnosis was not correct: clk_disable_unused() doesn't disable
+LPC clock because in arch/powerpc/platforms/512x/clock-commonclk.c
+we call:
+	clk_prepare_enable(clks[MPC512x_CLK_LPC]);
 
-cheers
+But clk_disable_unused() disables NFC clock as unused which seems to be
+a real reason of board crash.
+
+>> So starting Linux with clk_ignore_unused bootparam
+>> or inserting dummy LPB reading to some initcall is a temporary fix.
+
+In fact clk_ignore_unused bootparam helps to avoid disabling NFC clock.
+The board crash is reproduced again if I perform the following steps:
+1. disable NFC clock in uboot by clearing NFC_EN bit in SCCR1 register,
+2. boot Linux with clk_ignore_unused,
+3. touch any LPB address.
+
+At the same time disabling NFC clock and reading from LPB certainly
+in uboot doesn't make MPC5125 reset instantly. So I can't reproduce
+the crash in uboot. It looks like we do something wrong in Linux.
+
+>    - may be good to enable MPC512x_CLK_LPC only when localbus is enabled
+> by the dts
+>    - if enabled, MPC512x_CLK_LPC have to setup with CLK_IGNORE_UNUSED
+> flag because never get claimed by any driver.
+
+This approach didn't help to fix the crash because in fact
+clk_disable_unused() doesn't disable LPC clock as I wrote above.
+
+> I put in CC "Gerhard Sittig" also beacuse it might be interesting to
+> know his point of view as the author of mpc512x common clock driver.
+
+Surely. Thanks.
+
+Best regards,
+Alexander
