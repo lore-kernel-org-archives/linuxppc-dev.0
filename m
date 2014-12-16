@@ -1,24 +1,15 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f43.google.com (mail-la0-f43.google.com
- [209.85.215.43])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 740F41A0185
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 23:00:26 +1100 (AEDT)
-Received: by mail-la0-f43.google.com with SMTP id s18so11244791lam.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2014 04:00:23 -0800 (PST)
-Message-ID: <54901ED3.30207@linux.com>
-Date: Tue, 16 Dec 2014 15:00:19 +0300
-From: Alexander Popov <alex.popov@linux.com>
-Reply-To: alex.popov@linux.com
-MIME-Version: 1.0
-To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-Subject: Re: Disabled LocalPlus Controller (LPC) clock on MPC512x
-References: <5475BE5A.4090503@linux.com> <547D98DF.9000708@sirius-es.it>
-In-Reply-To: <547D98DF.9000708@sirius-es.it>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id ED8781A0184
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 02:03:47 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH 06/11] powerpc/8xx: Remove duplicated code in set_context()
+Message-Id: <20141216150339.097E61A5E05@localhost.localdomain>
+Date: Tue, 16 Dec 2014 16:03:39 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-02.12.2014 13:47, Matteo Facchinetti пишет:
-> On 26/11/2014 12:49, Alexander Popov wrote:
->> Hello.
-> Hi.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Thanks for your reply, Matteo.
-I've looked deeper and have more information about the crash.
+---
+ arch/powerpc/kernel/head_8xx.S | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
->> My Freescale TWR-MPC5125 board instantly reboots if I touch
->> any physical address on the LocalPlus Bus (LPB) for the first time
->> when Linux has already booted.
->>
->> This effect is reproduced by using /dev/mem or loading a kernel module
->> which works with any peripherals on LPB.
->>
->> It took me some time to find out that such crash is caused by
->> clk_disable_unused() in drivers/clk/clk.c, which disables
->> LocalPlus Controller (LPC) clock if I don't touch LPB addresses in the
->> previous initcalls.
-
-My first diagnosis was not correct: clk_disable_unused() doesn't disable
-LPC clock because in arch/powerpc/platforms/512x/clock-commonclk.c
-we call:
-	clk_prepare_enable(clks[MPC512x_CLK_LPC]);
-
-But clk_disable_unused() disables NFC clock as unused which seems to be
-a real reason of board crash.
-
->> So starting Linux with clk_ignore_unused bootparam
->> or inserting dummy LPB reading to some initcall is a temporary fix.
-
-In fact clk_ignore_unused bootparam helps to avoid disabling NFC clock.
-The board crash is reproduced again if I perform the following steps:
-1. disable NFC clock in uboot by clearing NFC_EN bit in SCCR1 register,
-2. boot Linux with clk_ignore_unused,
-3. touch any LPB address.
-
-At the same time disabling NFC clock and reading from LPB certainly
-in uboot doesn't make MPC5125 reset instantly. So I can't reproduce
-the crash in uboot. It looks like we do something wrong in Linux.
-
->    - may be good to enable MPC512x_CLK_LPC only when localbus is enabled
-> by the dts
->    - if enabled, MPC512x_CLK_LPC have to setup with CLK_IGNORE_UNUSED
-> flag because never get claimed by any driver.
-
-This approach didn't help to fix the crash because in fact
-clk_disable_unused() doesn't disable LPC clock as I wrote above.
-
-> I put in CC "Gerhard Sittig" also beacuse it might be interesting to
-> know his point of view as the author of mpc512x common clock driver.
-
-Surely. Thanks.
-
-Best regards,
-Alexander
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index aa45225..b227902e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -848,23 +848,21 @@ _GLOBAL(set_context)
+ 
+ 	li	r5, (swapper_pg_dir-PAGE_OFFSET)@l
+ 	sub	r4, r4, r5
++	tophys	(r4, r4)
+ #ifdef CONFIG_8xx_CPU6
+ 	lis	r6, cpu6_errata_word@h
+ 	ori	r6, r6, cpu6_errata_word@l
+-	tophys	(r4, r4)
+ 	li	r7, 0x3f80
+ 	stw	r7, 12(r6)
+ 	lwz	r7, 12(r6)
++#endif
+         mtspr   SPRN_M_TW, r4               /* Update MMU base address */
++#ifdef CONFIG_8xx_CPU6
+ 	li	r7, 0x3380
+ 	stw	r7, 12(r6)
+ 	lwz	r7, 12(r6)
+-        mtspr   SPRN_M_CASID, r3             /* Update context */
+-#else
+-        mtspr   SPRN_M_CASID,r3		/* Update context */
+-	tophys	(r4, r4)
+-	mtspr	SPRN_M_TW, r4		/* and pgd */
+ #endif
++        mtspr   SPRN_M_CASID, r3             /* Update context */
+ 	SYNC
+ 	blr
+ 
+-- 
+2.1.0
