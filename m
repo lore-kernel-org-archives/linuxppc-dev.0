@@ -1,19 +1,37 @@
-Return-Path: <michael.tessier@axiontech.ca>
-Received: from mail.axiontech.ca (unknown [207.164.255.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CB281A0109
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 01:06:34 +1100 (AEDT)
-From: Michael Tessier <michael.tessier@axiontech.ca>
-To: Peter Chen <Peter.Chen@freescale.com>
-Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-Date: Wed, 17 Dec 2014 14:06:07 +0000
-Message-ID: <66A26A9AA227D947AF088537F041526E1FF598@VSVR-EX10-MB1.pocatec.com>
-References: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
- <BN3PR0301MB0849131A4DE4D5E0E425C769816D0@BN3PR0301MB0849.namprd03.prod.outlook.com>
-In-Reply-To: <BN3PR0301MB0849131A4DE4D5E0E425C769816D0@BN3PR0301MB0849.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4E73F1A058D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:38:06 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Wed, 17 Dec 2014 16:38:02 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id B198917E9A2E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:31:19 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBHFUsHA59113682
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:30:54 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBHFUrSJ011808
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 10:30:54 -0500
+Subject: [PATCH v2 3/4] powerpc/vphn: move VPHN parsing logic to a separate
+ file
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 Dec 2014 10:42:58 +0100
+Message-ID: <20141217094246.16957.59244.stgit@bahia.local>
+In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
+References: <20141217094007.16957.70423.stgit@bahia.local>
 MIME-Version: 1.0
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,79 +41,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>=20
->> My configuration:
->> -----------------
->>=20
->> Host: Freescale i.MX512 with ARM Cortex A8 (USB 2.0 host controller)=20
->> Linux
->> kernel: 2.6.31, using EHCI USB driver
->> Hub: 4-PORT USB 1.1 HUB (Texas Instruments PN: tusb2046b)
->> Devices: 4 USB 1.1 audio codecs (Texas Instruments PN: pcm2901)
->>=20
->> Note: each codec is being used in R/W access, so with 4 codecs, I have
->> 4 playback and 4 capture streams.
->>=20
->> My problem:
->> -----------
->>=20
->> I have usb urb leaks when connecting more than 1 codec to the USB 1.1 Hu=
-b.
->> (the result is that some of the audio data is not transferred, part of=20
->> the sound is simply missing) No problem when using only 1 of the 4=20
->> codecs connected to the hub; When I connect a second codec, the sound=20
->> quality starts to degrade. With
->> 3 codecs, we just cannot recognize a speach.
->>=20
->> Tests and observations:
->> -----------------------
->>=20
->> Since I have 3 usb ports available on the i.MX512, I tried to connect
->> 3 codecs directly on USB ports: the sound is perfect on each of the thre=
-e ports.
->>=20
->> I bought a consumer USB 2.0 Hub: no problem when using 3 codecs=20
->> connected to that Hub, however, the audio will completly stop on all=20
->> channels when connecting the 4th codec.
->>=20
->> I checked the communication between the Hub (USB 1.1) and the Host=20
->> controller (USB 2.0) with a scope and concluded that the communication=20
->> speed is 1.5 MBytes/s has expected (so the communication is downgraded=20
->> to USB 1.1, since codecs and hub are USB
->> 1.1 devices).
->>=20
->> Also, I know that there is physically enough bandwidth to transfer the=20
->> data for two reasons:
->> 1) I have an older CPU with a USB 1.1 host controller (using the OHCI=20
->> driver), using the same hub and the same codecs: works like a champ,=20
->> using less than 50% of the available bandwidth (observed with a
->> scope)
->> 2) 1 audio stream is 32khz-mono, 16 bits =3D 64 kB/s,
->> 4 codecs =3D 8 streams(R/W) x 64 kB/s =3D 512 kB/s (out of 1.5MB/s)
->>=20
->> I noticed that my sound problem starts happening with only 2 codecs
->> (4 streams, 256 kB/s). I first thought that it was a bandwidth=20
->> limitation, so I decided to connect only 1 codec using more bandwidth.
->> I configured it to 48khz-stereo (16-bits), using 384 kB/s for both=20
->> read and write
->> streams: no problem. With that configuration, the scope shows about=20
->> 30% of total bandwidth usage (300us used out of 1ms periods). Then, I=20
->> added a second codec (48khz-stereo-16bits): very strange, now the=20
->> total bandwidth usage felt down to about 200us, which seems to keep=20
->> the same, whatever the number of codec I add (I also tried 3 and=20
->> 4...). So it looks like the scheduler is not able to properly allocate=20
->> Isochronous time slots when more than one device is connected to the
->> hub. However, without the hub, it works perfectly.
->>=20
->
-> I am wonder if it is similar problem I met when using multiple interrupt =
-transfers, when you find you lose the data, try to run 'top' to show cpu ut=
-ilization, if > it is close to 100%, it means the ehci can't queue request =
-in time, so the host can't send IN token in time.
->
-> Using a USB bus analyzer can also verify it.
->
-> Peter
+The goal behind this patch is to be able to write userland tests for the
+VPHN parsing code.
 
-Thanks Peter, I did it, the CPU usage varies between 0% and 4% so this is n=
-ot the case here.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/Makefile |    1 +
+ arch/powerpc/mm/numa.c   |   61 ++--------------------------------------------
+ arch/powerpc/mm/vphn.c   |   50 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/vphn.h   |   16 ++++++++++++
+ 4 files changed, 70 insertions(+), 58 deletions(-)
+ create mode 100644 arch/powerpc/mm/vphn.c
+ create mode 100644 arch/powerpc/mm/vphn.h
+
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 438dcd3..9c8770b 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_40x)		+= 40x_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
+ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
++obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
+ obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+ obj-y				+= hugetlbpage.o
+ ifeq ($(CONFIG_HUGETLB_PAGE),y)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 2e36a6f..008af17 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1177,6 +1177,9 @@ u64 memory_hotplug_max(void)
+ 
+ /* Virtual Processor Home Node (VPHN) support */
+ #ifdef CONFIG_PPC_SPLPAR
++
++#include "vphn.h"
++
+ struct topology_update_data {
+ 	struct topology_update_data *next;
+ 	unsigned int cpu;
+@@ -1247,64 +1250,6 @@ static int update_cpu_associativity_changes_mask(void)
+ 	return cpumask_weight(changes);
+ }
+ 
+-/* The H_HOME_NODE_ASSOCIATIVITY h_call returns 6 64-bit registers.
+- */
+-#define VPHN_REGISTER_COUNT 6
+-
+-/*
+- * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
+- * the complete property we have to add the length in the first cell.
+- */
+-#define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u32) + 1)
+-
+-/*
+- * Convert the associativity domain numbers returned from the hypervisor
+- * to the sequence they would appear in the ibm,associativity property.
+- */
+-static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
+-{
+-	__be64 be_packed[VPHN_REGISTER_COUNT];
+-	int i, nr_assoc_doms = 0;
+-	const __be16 *field = (const __be16 *) be_packed;
+-
+-#define VPHN_FIELD_UNUSED	(0xffff)
+-#define VPHN_FIELD_MSB		(0x8000)
+-#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
+-
+-	/* Let's recreate the original stream. */
+-	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
+-		be_packed[i] = cpu_to_be64(packed[i]);
+-
+-	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
+-		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
+-			/* All significant fields processed, and remaining
+-			 * fields contain the reserved value of all 1's.
+-			 * Just store them.
+-			 */
+-			unpacked[i] = *((__be32 *)field);
+-			field += 2;
+-		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
+-			/* Data is in the lower 15 bits of this field */
+-			unpacked[i] = cpu_to_be32(
+-				be16_to_cpup(field) & VPHN_FIELD_MASK);
+-			field++;
+-			nr_assoc_doms++;
+-		} else {
+-			/* Data is in the lower 15 bits of this field
+-			 * concatenated with the next 16 bit field
+-			 */
+-			unpacked[i] = *((__be32 *)field);
+-			field += 2;
+-			nr_assoc_doms++;
+-		}
+-	}
+-
+-	/* The first cell contains the length of the property */
+-	unpacked[0] = cpu_to_be32(nr_assoc_doms);
+-
+-	return nr_assoc_doms;
+-}
+-
+ /*
+  * Retrieve the new associativity information for a virtual processor's
+  * home node.
+diff --git a/arch/powerpc/mm/vphn.c b/arch/powerpc/mm/vphn.c
+new file mode 100644
+index 0000000..c49ed51
+--- /dev/null
++++ b/arch/powerpc/mm/vphn.c
+@@ -0,0 +1,50 @@
++#include <asm/byteorder.h>
++#include "vphn.h"
++
++/*
++ * Convert the associativity domain numbers returned from the hypervisor
++ * to the sequence they would appear in the ibm,associativity property.
++ */
++int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
++{
++	__be64 be_packed[VPHN_REGISTER_COUNT];
++	int i, nr_assoc_doms = 0;
++	const __be16 *field = (const __be16 *) be_packed;
++
++#define VPHN_FIELD_UNUSED	(0xffff)
++#define VPHN_FIELD_MSB		(0x8000)
++#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
++
++	/* Let's recreate the original stream. */
++	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
++		be_packed[i] = cpu_to_be64(packed[i]);
++
++	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
++		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
++			/* All significant fields processed, and remaining
++			 * fields contain the reserved value of all 1's.
++			 * Just store them.
++			 */
++			unpacked[i] = *((__be32 *)field);
++			field += 2;
++		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
++			/* Data is in the lower 15 bits of this field */
++			unpacked[i] = cpu_to_be32(
++				be16_to_cpup(field) & VPHN_FIELD_MASK);
++			field++;
++			nr_assoc_doms++;
++		} else {
++			/* Data is in the lower 15 bits of this field
++			 * concatenated with the next 16 bit field
++			 */
++			unpacked[i] = *((__be32 *)field);
++			field += 2;
++			nr_assoc_doms++;
++		}
++	}
++
++	/* The first cell contains the length of the property */
++	unpacked[0] = cpu_to_be32(nr_assoc_doms);
++
++	return nr_assoc_doms;
++}
+diff --git a/arch/powerpc/mm/vphn.h b/arch/powerpc/mm/vphn.h
+new file mode 100644
+index 0000000..96af9a4
+--- /dev/null
++++ b/arch/powerpc/mm/vphn.h
+@@ -0,0 +1,16 @@
++#ifndef _ARCH_POWERPC_MM_VPHN_H_
++#define _ARCH_POWERPC_MM_VPHN_H_
++
++/* The H_HOME_NODE_ASSOCIATIVITY h_call returns 6 64-bit registers.
++ */
++#define VPHN_REGISTER_COUNT 6
++
++/*
++ * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
++ * the complete property we have to add the length in the first cell.
++ */
++#define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u32) + 1)
++
++extern int vphn_unpack_associativity(const long *packed, __be32 *unpacked);
++
++#endif
