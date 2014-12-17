@@ -1,17 +1,37 @@
-Return-Path: <stern+5493f9d4@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by lists.ozlabs.org (Postfix) with SMTP id 7F13D1A0C5F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:47:35 +1100 (AEDT)
-Date: Wed, 17 Dec 2014 11:40:53 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Michael Tessier <michael.tessier@axiontech.ca>
-Subject: Re: PROBLEM: USB isochronous urb leak on EHCI driver
-In-Reply-To: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
-Message-ID: <Pine.LNX.4.44L0.1412171119590.2947-100000@netrider.rowland.org>
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 61C401A0E55
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:48:50 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Wed, 17 Dec 2014 16:48:46 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id D6C1417E7D98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:31:29 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBHFUsmx39190558
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:30:54 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBHARXIp014038
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 05:27:33 -0500
+Subject: [PATCH v2 2/4] powerpc/vphn: move endianness fixing to
+ vphn_unpack_associativity()
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 Dec 2014 10:42:40 +0100
+Message-ID: <20141217094126.16957.20713.stgit@bahia.local>
+In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
+References: <20141217094007.16957.70423.stgit@bahia.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,140 +41,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 15 Dec 2014, Michael Tessier wrote:
+The first argument to vphn_unpack_associativity() is a const long *, but the
+parsing code expects __be64 values actually. Let's move the endian fixing
+down for consistency.
 
-> Hi,
-> 
-> I am dealing with a USB EHCI driver bug. Here is the info:
-> 
-> My configuration:
-> -----------------
-> 
-> Host: Freescale i.MX512 with ARM Cortex A8 (USB 2.0 host controller)
-> Linux kernel: 2.6.31, using EHCI USB driver
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+---
 
-As mentioned by other people, the age of that kernel makes any bug
-report completely irrelevant.  It's hard to count the number of
-non-trivial changes that have been made to the isochronous code in 
-ehci-hcd since 2.6.31, but there have been quite a few.
+ v2: only move the endian fixing. The logic is reworked in another patch.
 
-> Hub: 4-PORT USB 1.1 HUB (Texas Instruments PN: tusb2046b)
-> Devices: 4 USB 1.1 audio codecs (Texas Instruments PN: pcm2901)
-> 
-> Note: each codec is being used in R/W access, so with 4 codecs, I have
-> 4 playback and 4 capture streams.
-> 
-> My problem:
-> -----------
-> 
-> I have usb urb leaks when connecting more than 1 codec to the USB 1.1
-> Hub.
+ arch/powerpc/mm/numa.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-What do you mean by "urb leak"?  Normally, people use the word "leak"  
-to refer to memory that is dynamically allocated and never deallocated,
-but you seem to mean something else.
-
-> (the result is that some of the audio data is not transferred,
-> part of the sound is simply missing) No problem when using only 1
-> of the 4 codecs connected to the hub; When I connect a second codec,
-> the sound quality starts to degrade. With 3 codecs, we just cannot
-> recognize a speach.
-> 
-> Tests and observations:
-> -----------------------
-> 
-> Since I have 3 usb ports available on the i.MX512, I tried to connect
-> 3 codecs directly on USB ports: the sound is perfect on each of the
-> three ports.
-> 
-> I bought a consumer USB 2.0 Hub: no problem when using 3 codecs
-> connected to that Hub, however, the audio will completly stop on all
-> channels when connecting the 4th codec.
-
-Above you said the sound started to degrade when the second codec was 
-connected; here you say there is no problem when using 3 of them.  
-Which is it?  Do you mean that the high-speed hub works better than the 
-full-speed hub?
-
-> I checked the communication between the Hub (USB 1.1) and the Host
-> controller (USB 2.0) with a scope and concluded that the
-> communication speed is 1.5 MBytes/s has expected (so the 
-> communication is downgraded to USB 1.1, since codecs and hub are USB
-> 1.1 devices).
-> 
-> Also, I know that there is physically enough bandwidth to
-> transfer the data for two reasons:
-> 1) I have an older CPU with a USB 1.1 host controller (using the OHCI
-> driver), using the same hub and the same codecs: works like a champ,
-> using less than 50% of the available bandwidth (observed with a
-> scope)
-> 2) 1 audio stream is 32khz-mono, 16 bits = 64 kB/s,
-> 4 codecs = 8 streams(R/W) x 64 kB/s = 512 kB/s (out of 1.5MB/s)
-
-The amount of bandwidth available is usually not as much of an issue as
-the ability of the scheduling alogorithm to divide the bandwidth among
-the streams.  The algorithm is not very smart and it often runs into a
-wall even when lots of physical bandwidth is still available.
-
-> I noticed that my sound problem starts happening with only 2 codecs
-> (4 streams, 256 kB/s). I first thought that it was a bandwidth
-> limitation, so I decided to connect only 1 codec using more bandwidth.
-> I configured it to 48khz-stereo (16-bits), using 384 kB/s for both
-> read and write streams: no problem. With that configuration, the 
-> scope shows about 30% of total bandwidth usage (300us used out of 1ms
-> periods). Then, I added a second codec (48khz-stereo-16bits): very
-> strange, now the total bandwidth usage felt down to about 200us, which
-> seems to keep the same, whatever the number of codec I add (I also
-> tried 3 and 4...). So it looks like the scheduler is not able to
-> properly allocate Isochronous time slots when more than one device is
-> connected to the hub. However, without the hub, it works perfectly.
-
-How does your hardware connect the host controller to a full-speed 
-device?  Is there an internal hub (Intel motherboards have used this 
-approach)?  Is there a companion USB-1.1 controller (older motherboards 
-from Intel and other companys have used this approach)?  Does the EHCI 
-controller have a built-in Transaction Translator (some SOC systems use 
-this approach)?
-
-> Another interresting fact is that at application level, the Read and
-> Write operations are returning the good amount of bytes read/written.
-> This is not the case at kernel level: I noticed that function
-> "usb_submit_urb" (from /drivers/usb/core/urb.c) will only tranfer
-> part of the "urbs" when the sound is degraded. I tried to figure out
-> where the leak comes from without success. Also, there are no error
-> messages from kernel so everything appears to work well, excepted
-> that part of the sound is missing!
-> 
-> I can't change my hardware (this is in the hand of customers), so
-> the only possible solution for me is to correct the software.
-> 
-> I tried to change my ehci driver with the one from kernel 2.6.39.4
-> but did not work, same problem.
-> 
-> Question:
-> ---------
-> 
-> Before attempting to upgrade to an earlier kernel driver (this is
-
-"upgrade to an earlier kernel driver" is a contradiction in terms.  
-Moving to an earlier driver would be a _downgrade_.
-
-> a fairly big amount of work), I would really like to know if this
-> problem would still be in the 3.x kernels. Has anyone seen that
-> issue in 3.x kernels?
-
-It depends a lot on the system hardware.  Many people are using USB
-audio in 3.x kernels with no problem.  On the other hand, some people
-have reported a bug (quite different from yours) so recently that the
-patch to fix it has not yet been merged.
-
-> I am pretty new to USB driver debugging, so any ideas of where/how
-> to find solutions will be appreciated. Thank you very much in advance
-> for the support. Also don't hesitate to redirect me if I'm not at the
-> right place to ask these questions. I can also provide some code if
-> someone need it to help.
-
-Your first step should be to use an up-to-date kernel, as recommended 
-by other people.
-
-Alan Stern
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 2a83e48..2e36a6f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1263,13 +1263,18 @@ static int update_cpu_associativity_changes_mask(void)
+  */
+ static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
+ {
++	__be64 be_packed[VPHN_REGISTER_COUNT];
+ 	int i, nr_assoc_doms = 0;
+-	const __be16 *field = (const __be16 *) packed;
++	const __be16 *field = (const __be16 *) be_packed;
+ 
+ #define VPHN_FIELD_UNUSED	(0xffff)
+ #define VPHN_FIELD_MSB		(0x8000)
+ #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
+ 
++	/* Let's recreate the original stream. */
++	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
++		be_packed[i] = cpu_to_be64(packed[i]);
++
+ 	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
+ 		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
+ 			/* All significant fields processed, and remaining
+@@ -1310,11 +1315,8 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
+ 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+ 	u64 flags = 1;
+ 	int hwcpu = get_hard_smp_processor_id(cpu);
+-	int i;
+ 
+ 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
+-	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
+-		retbuf[i] = cpu_to_be64(retbuf[i]);
+ 	vphn_unpack_associativity(retbuf, associativity);
+ 
+ 	return rc;
