@@ -1,22 +1,16 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 915941A050D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 14:45:00 +1100 (AEDT)
-Date: Wed, 17 Dec 2014 14:44:59 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 1/3] powerpc: Don't use local named register variable in
- current_thread_info
-Message-ID: <20141217144459.09701a76@kryten>
-In-Reply-To: <5490D981.7040905@suse.de>
-References: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>
- <5490D981.7040905@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ulrich.weigand@de.ibm.com, paulus@samba.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49A291A04EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 20:14:35 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH v2 0/2] powerpc32: handle inverted _PAGE_RW bit outside of TLB
+ handlers
+Message-Id: <20141217091431.AD47B1A5E0F@localhost.localdomain>
+Date: Wed, 17 Dec 2014 10:14:31 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alex,
+Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
+This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
 
-> Git bisect managed to point me to this commit as the offender for
-> OOPSes on e5500 and e6500 (and maybe the G4 as well, not sure).
-> 
-> Doing a git revert of this commit on top of linus/master makes things
-> work fine for me again.
+Patchset:
+1) powerpc32: adds handling of _PAGE_RO
+2) powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
 
-Ouch, sorry for that, I'll work to reproduce. What gcc version are you
-using?
+All changes have been successfully tested on MPC885
 
-Anton
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+---
+v2 is a complete rework compared to v1
+
+ arch/powerpc/include/asm/pgtable-ppc32.h | 11 ++++++-----
+ arch/powerpc/include/asm/pgtable.h       | 10 +++++++---
+ arch/powerpc/include/asm/pte-8xx.h       |  7 +++----
+ arch/powerpc/include/asm/pte-common.h    | 27 ++++++++++++++++++---------
+ arch/powerpc/kernel/head_8xx.S           |  3 ---
+ arch/powerpc/mm/gup.c                    |  2 ++
+ arch/powerpc/mm/mem.c                    |  2 +-
+ arch/powerpc/mm/pgtable_32.c             | 24 ++++++++++++++++++++----
+ 8 files changed, 57 insertions(+), 29 deletions(-)
