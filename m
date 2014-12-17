@@ -1,21 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Peter.Chen@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA3171A017E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 12:16:55 +1100 (AEDT)
-Message-ID: <5490D981.7040905@suse.de>
-Date: Wed, 17 Dec 2014 02:16:49 +0100
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCEBF1A04D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 13:21:32 +1100 (AEDT)
+From: Peter Chen <Peter.Chen@freescale.com>
+To: Michael Tessier <michael.tessier@axiontech.ca>
+Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
+Date: Wed, 17 Dec 2014 02:21:24 +0000
+Message-ID: <BN3PR0301MB0849131A4DE4D5E0E425C769816D0@BN3PR0301MB0849.namprd03.prod.outlook.com>
+References: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
+In-Reply-To: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, ulrich.weigand@de.ibm.com
-Subject: Re: [PATCH 1/3] powerpc: Don't use local named register variable
- in current_thread_info
-References: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>
-In-Reply-To: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>
-Content-Type: text/plain; charset=utf-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,73 +25,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31.10.14 04:47, Anton Blanchard wrote:
-> LLVM doesn't support local named register variables and is unlikely
-> to. current_thread_info is using one, fix it by moving it out and
-> calling it __current_r1().
-> 
-> I gave it a bit of an obscure name because we don't want anyone else
-> using it - they should use current_stack_pointer(). This specific
-> case is performance critical and we can't afford to call a function
-> to get it. Furthermore it isn't important to know exactly where in
-> the stack we are since we mask the lower bits.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+=20
+>=20
+> My configuration:
+> -----------------
+>=20
+> Host: Freescale i.MX512 with ARM Cortex A8 (USB 2.0 host controller) Linu=
+x
+> kernel: 2.6.31, using EHCI USB driver
+> Hub: 4-PORT USB 1.1 HUB (Texas Instruments PN: tusb2046b)
+> Devices: 4 USB 1.1 audio codecs (Texas Instruments PN: pcm2901)
+>=20
+> Note: each codec is being used in R/W access, so with 4 codecs, I have
+> 4 playback and 4 capture streams.
+>=20
+> My problem:
+> -----------
+>=20
+> I have usb urb leaks when connecting more than 1 codec to the USB 1.1 Hub=
+.
+> (the result is that some of the audio data is not transferred, part of th=
+e sound is
+> simply missing) No problem when using only 1 of the 4 codecs connected to=
+ the
+> hub; When I connect a second codec, the sound quality starts to degrade. =
+With
+> 3 codecs, we just cannot recognize a speach.
+>=20
+> Tests and observations:
+> -----------------------
+>=20
+> Since I have 3 usb ports available on the i.MX512, I tried to connect
+> 3 codecs directly on USB ports: the sound is perfect on each of the three=
+ ports.
+>=20
+> I bought a consumer USB 2.0 Hub: no problem when using 3 codecs connected
+> to that Hub, however, the audio will completly stop on all channels when
+> connecting the 4th codec.
+>=20
+> I checked the communication between the Hub (USB 1.1) and the Host
+> controller (USB 2.0) with a scope and concluded that the communication sp=
+eed
+> is 1.5 MBytes/s has expected (so the communication is downgraded to USB 1=
+.1,
+> since codecs and hub are USB
+> 1.1 devices).
+>=20
+> Also, I know that there is physically enough bandwidth to transfer the da=
+ta for
+> two reasons:
+> 1) I have an older CPU with a USB 1.1 host controller (using the OHCI dri=
+ver),
+> using the same hub and the same codecs: works like a champ, using less th=
+an
+> 50% of the available bandwidth (observed with a
+> scope)
+> 2) 1 audio stream is 32khz-mono, 16 bits =3D 64 kB/s,
+> 4 codecs =3D 8 streams(R/W) x 64 kB/s =3D 512 kB/s (out of 1.5MB/s)
+>=20
+> I noticed that my sound problem starts happening with only 2 codecs
+> (4 streams, 256 kB/s). I first thought that it was a bandwidth limitation=
+, so I
+> decided to connect only 1 codec using more bandwidth.
+> I configured it to 48khz-stereo (16-bits), using 384 kB/s for both read a=
+nd write
+> streams: no problem. With that configuration, the scope shows about 30% o=
+f
+> total bandwidth usage (300us used out of 1ms periods). Then, I added a se=
+cond
+> codec (48khz-stereo-16bits): very strange, now the total bandwidth usage =
+felt
+> down to about 200us, which seems to keep the same, whatever the number of
+> codec I add (I also tried 3 and 4...). So it looks like the scheduler is =
+not able to
+> properly allocate Isochronous time slots when more than one device is
+> connected to the hub. However, without the hub, it works perfectly.
+>=20
 
-Git bisect managed to point me to this commit as the offender for OOPSes
-on e5500 and e6500 (and maybe the G4 as well, not sure).
+I am wonder if it is similar problem I met when using multiple interrupt tr=
+ansfers,
+when you find you lose the data, try to run 'top' to show cpu utilization, =
+if it is
+close to 100%, it means the ehci can't queue request in time, so the host c=
+an't send IN
+token in time.
 
-Doing a git revert of this commit on top of linus/master makes things
-work fine for me again.
+Using a USB bus analyzer can also verify it.
 
+Peter
 
-Alex
-
-Oops: Kernel access of bad area, sig: 11 [#2]
-SMP NR_CPUS=16 CoreNet Generic
-Modules linked in:
-CPU: 1 PID: 339 Comm: kworker/1:1 Tainted: G      D
-3.18.0-09423-g988adfd #1
-Workqueue: rpciod .rpc_async_schedule
-task: c0000001f6397500 ti: c0000001f6638000 task.ti: c0000001f6638000
-NIP: c0000000004817a4 LR: c0000000004817a4 CTR: 0000000000000000
-REGS: c0000001f663b0e0 TRAP: 0300   Tainted: G      D
-(3.18.0-09423-g988adfd)
-MSR: 0000000080029000 <CE,EE,ME>  CR: 24ad2e42  XER: 00000000
-DEAR: 202031303438355f ESR: 0000000000000000 SOFTE: 1
-GPR00: c0000000004817a4 c0000001f663b360 c000000000988028 000000007f24333d
-GPR04: 5ff5738c1f2ebfb1 0000000000000000 0000000000000000 00000000000008f8
-GPR08: c000000000480ae8 2020313034383537 36204b4220617320 6469726563740a31
-GPR12: 3937302d30312d30 c00000000fff8780 c00000000007f988 c0000001f64c1600
-GPR16: 0000000000000000 0000000000000000 0000000000000000 00000000000005dc
-GPR20: c0000000009b8028 c00000007e034200 0000000000000548 c000000000000000
-GPR24: c0000001f663b4b0 00000000b225831e 0000000000000000 0000000000000080
-GPR28: 0000000000000548 00000000000008f8 0000000000000548 0000000000000094
-NIP [c0000000004817a4] .__skb_checksum+0x194/0x378
-LR [c0000000004817a4] .__skb_checksum+0x194/0x378
-Call Trace:
-[c0000001f663b360] [c0000000004817a4] .__skb_checksum+0x194/0x378
-(unreliable)
-[c0000001f663b440] [c0000000004819b4] .skb_checksum+0x2c/0x3c
-[c0000001f663b4c0] [c0000000004fd0a8] .udp4_hwcsum+0xa8/0x16c
-[c0000001f663b560] [c0000000004fd440] .udp_send_skb+0x2d4/0x370
-[c0000001f663b600] [c0000000004fd51c] .udp_push_pending_frames+0x40/0x94
-[c0000001f663b680] [c0000000004fec08] .udp_sendpage+0x150/0x1b4
-[c0000001f663b770] [c00000000050ae54] .inet_sendpage+0xa0/0x120
-[c0000001f663b810] [c00000000059c8cc] .xs_sendpages+0x2d0/0x30c
-[c0000001f663b8d0] [c00000000059cae4] .xs_udp_send_request+0x58/0x120
-[c0000001f663b970] [c000000000598f04] .xprt_transmit+0x80/0x36c
-[c0000001f663ba20] [c0000000005942d8] .call_transmit+0x19c/0x254
-[c0000001f663bab0] [c00000000059ff64] .__rpc_execute+0xbc/0x3c0
-[c0000001f663bb90] [c0000000000797f8] .process_one_work+0x1c0/0x474
-[c0000001f663bc40] [c00000000007a518] .worker_thread+0x17c/0x54c
-[c0000001f663bd30] [c00000000007fa8c] .kthread+0x104/0x124
-[c0000001f663be30] [c000000000000884] .ret_from_kernel_thread+0x58/0xd4
-Instruction dump:
-7d1f3a14 7c6a1850 e9580000 7fbd4050 786334e4 e90a0000 7c63ba14 f8490028
-7c63ea14 7d0903a6 e84a0008 4e800421 <e8490028> 7c641b78 78270464 e9580008
----[ end trace 51b7414695b0cafe ]---
-
-note: kworker/1:1[339] exited with preempt_count 1
-Unable to handle kernel paging request for data at address
-0xffffffffffffffd8
+> Another interresting fact is that at application level, the Read and Writ=
+e
+> operations are returning the good amount of bytes read/written.
+> This is not the case at kernel level: I noticed that function "usb_submit=
+_urb"
+> (from /drivers/usb/core/urb.c) will only tranfer part of the "urbs" when =
+the
+> sound is degraded. I tried to figure out where the leak comes from withou=
+t
+> success. Also, there are no error messages from kernel so everything appe=
+ars
+> to work well, excepted that part of the sound is missing!
+>=20
+> I can't change my hardware (this is in the hand of customers), so the onl=
+y
+> possible solution for me is to correct the software.
+>=20
+> I tried to change my ehci driver with the one from kernel 2.6.39.4 but di=
+d not
+> work, same problem.
+>=20
+> Question:
+> ---------
+>=20
+> Before attempting to upgrade to an earlier kernel driver (this is a fairl=
+y big
+> amount of work), I would really like to know if this problem would still =
+be in the
+> 3.x kernels. Has anyone seen that issue in 3.x kernels?
+>=20
+> I am pretty new to USB driver debugging, so any ideas of where/how to fin=
+d
+> solutions will be appreciated. Thank you very much in advance for the sup=
+port.
+> Also don't hesitate to redirect me if I'm not at the right place to ask t=
+hese
+> questions. I can also provide some code if someone need it to help.
+>=20
+> Attached is a dump of my "dmesg" after startup.
+>=20
+> Michael Tessier
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
