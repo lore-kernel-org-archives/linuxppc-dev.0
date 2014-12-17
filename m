@@ -2,34 +2,31 @@ Return-Path: <gkurz@linux.vnet.ibm.com>
 Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E73F1A058D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:38:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D55EA1A02E3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:42:08 +1100 (AEDT)
 Received: from /spool/local
  by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 17 Dec 2014 16:38:02 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id B198917E9A2E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:31:19 +0000 (GMT)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBHFUsHA59113682
+ Wed, 17 Dec 2014 16:42:05 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7989817E76CA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:31:29 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBHFUsoC48693402
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:30:54 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBHFUrSJ011808
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 10:30:54 -0500
-Subject: [PATCH v2 3/4] powerpc/vphn: move VPHN parsing logic to a separate
- file
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBHFUrKc027360
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 08:30:53 -0700
+Subject: [PATCH v2 0/4] VPHN parsing fixes
 From: Greg Kurz <gkurz@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Dec 2014 10:42:58 +0100
-Message-ID: <20141217094246.16957.59244.stgit@bahia.local>
-In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
-References: <20141217094007.16957.70423.stgit@bahia.local>
+Date: Wed, 17 Dec 2014 10:40:46 +0100
+Message-ID: <20141217094007.16957.70423.stgit@bahia.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,186 +38,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The goal behind this patch is to be able to write userland tests for the
-VPHN parsing code.
+Hi,
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+This series addresses remarks from Ben and Michael (see individual patches).
+The most notable changes are:
+- the parsing code being pull out into a separate file in patch 3/4. This
+  allows to write userland tests like the one below.
+- a full rewrite of the parsing logic in patch 4/4
+
+--
+#include <stdio.h>
+#include <byteswap.h>
+
+typedef unsigned long u64;
+typedef unsigned int u32;
+typedef unsigned short u16;
+typedef enum { false = 0, true } bool;
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define cpu_to_be32(x)		bswap_32(x)
+#define be32_to_cpu(x)		bswap_32(x)
+#define be16_to_cpup(x)		bswap_16(*x)
+#define cpu_to_be64(x)		bswap_64(x)
+#else
+#define cpu_to_be32(x)		(x)
+#define be32_to_cpu(x)		(x)
+#define be16_to_cpup(x)		(*x)
+#define cpu_to_be64(x)		(x)
+#endif
+
+#define pr_debug(...) printf(__VA_ARGS__)
+
+#include "vphn.c"
+
+void print_packed(const long *packed)
+{
+	char *p = (char*) packed;
+	int i;
+
+	printf("\nRegisters:\n");
+	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
+		printf("0x%016lx\n", packed[i]);
+
+	printf("\nMemory layout:\n");
+	for (i = 0; i < 6; i++) {
+		printf("0x %02hhx %02hhx %02hhx %02hhx"
+		       " %02hhx %02hhx %02hhx %02hhx\n",
+		       *(p + 0), *(p + 1), *(p + 2), *(p + 3),
+		       *(p + 4), *(p + 5), *(p + 6), *(p + 7));
+		p += 8;
+	}
+
+	putchar('\n');
+}
+
+void print_unpacked(const __be32 *unpacked)
+{
+	int i;
+
+	printf("\nVPHN associativity:\n");
+	for (i = 0; i <= be32_to_cpu(unpacked[0]); i++)
+		printf("0x%08x\n", be32_to_cpu(unpacked[i]));
+
+	putchar('\n');
+}
+
+int main(int argc, char **argv)
+{
+	int i;
+	struct {
+		const char *descr;
+		long packed[VPHN_REGISTER_COUNT];
+	} data[] = {
+		{
+			"16-bit and 32-bit",
+			0x8001800280038004,
+			0x8005800680078008,
+			0x000000090000000a,
+			0x0000000b0000000c,
+			0xffffffffffffffff,
+			0xffffffffffffffff
+		},
+		{
+			"filled with 16-bit",
+			0x8001800280038004,
+			0x8005800680078008,
+			0x8009800a800b800c,
+			0x800d800e800f8010,
+			0x8011801280138014,
+			0x8015801680178018,
+		},
+		{
+			"filled with 32-bit",
+			0x0000000100000002,
+			0x0000000300000004,
+			0x0000000500000006,
+			0x0000000700000008,
+			0x000000090000000a,
+			0x0000000b0000000c,
+		},
+		{
+			"32-bit has all ones in 16 lower bits",
+			0x0001ffff80028003,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+		},
+		{
+			"32-bit accross two 64-bit registers",
+			0x8001000000020000,
+			0x0003000000048005,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+			0xffffffffffffffff,
+		},
+		{
+			"Truncated last 32-bit",
+			0x0000000100000002,
+			0x0000000300000004,
+			0x0000000500000006,
+			0x0000000700000008,
+			0x000000090000000a,
+			0x0000000b800c0bad,
+		},
+	};
+
+	for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+		__be32 unpacked[VPHN_ASSOC_BUFSIZE] = { 0 };
+		printf("\n==================================================\n");
+		printf("\nSet #%d: %s\n", i, data[i].descr);
+		printf("\n==================================================\n");
+		print_packed(data[i].packed);
+		vphn_unpack_associativity(data[i].packed, unpacked);
+		print_unpacked(unpacked);
+	}
+
+	return 0;
+}
+
 ---
+
+Greg Kurz (4):
+      powerpc/vphn: clarify the H_HOME_NODE_ASSOCIATIVITY API
+      powerpc/vphn: move endianness fixing to vphn_unpack_associativity()
+      powerpc/vphn: move VPHN parsing logic to a separate file
+      powerpc/vphn: parsing code rewrite
+
+
  arch/powerpc/mm/Makefile |    1 +
- arch/powerpc/mm/numa.c   |   61 ++--------------------------------------------
- arch/powerpc/mm/vphn.c   |   50 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/vphn.h   |   16 ++++++++++++
- 4 files changed, 70 insertions(+), 58 deletions(-)
+ arch/powerpc/mm/numa.c   |   55 ++----------------------------------
+ arch/powerpc/mm/vphn.c   |   70 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/vphn.h   |   16 +++++++++++
+ 4 files changed, 90 insertions(+), 52 deletions(-)
  create mode 100644 arch/powerpc/mm/vphn.c
  create mode 100644 arch/powerpc/mm/vphn.h
 
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 438dcd3..9c8770b 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_40x)		+= 40x_mmu.o
- obj-$(CONFIG_44x)		+= 44x_mmu.o
- obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke_mmu.o
- obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
-+obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
- obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- obj-y				+= hugetlbpage.o
- ifeq ($(CONFIG_HUGETLB_PAGE),y)
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 2e36a6f..008af17 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1177,6 +1177,9 @@ u64 memory_hotplug_max(void)
- 
- /* Virtual Processor Home Node (VPHN) support */
- #ifdef CONFIG_PPC_SPLPAR
-+
-+#include "vphn.h"
-+
- struct topology_update_data {
- 	struct topology_update_data *next;
- 	unsigned int cpu;
-@@ -1247,64 +1250,6 @@ static int update_cpu_associativity_changes_mask(void)
- 	return cpumask_weight(changes);
- }
- 
--/* The H_HOME_NODE_ASSOCIATIVITY h_call returns 6 64-bit registers.
-- */
--#define VPHN_REGISTER_COUNT 6
--
--/*
-- * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
-- * the complete property we have to add the length in the first cell.
-- */
--#define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u32) + 1)
--
--/*
-- * Convert the associativity domain numbers returned from the hypervisor
-- * to the sequence they would appear in the ibm,associativity property.
-- */
--static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
--{
--	__be64 be_packed[VPHN_REGISTER_COUNT];
--	int i, nr_assoc_doms = 0;
--	const __be16 *field = (const __be16 *) be_packed;
--
--#define VPHN_FIELD_UNUSED	(0xffff)
--#define VPHN_FIELD_MSB		(0x8000)
--#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
--
--	/* Let's recreate the original stream. */
--	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
--		be_packed[i] = cpu_to_be64(packed[i]);
--
--	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
--		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
--			/* All significant fields processed, and remaining
--			 * fields contain the reserved value of all 1's.
--			 * Just store them.
--			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
--		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
--			/* Data is in the lower 15 bits of this field */
--			unpacked[i] = cpu_to_be32(
--				be16_to_cpup(field) & VPHN_FIELD_MASK);
--			field++;
--			nr_assoc_doms++;
--		} else {
--			/* Data is in the lower 15 bits of this field
--			 * concatenated with the next 16 bit field
--			 */
--			unpacked[i] = *((__be32 *)field);
--			field += 2;
--			nr_assoc_doms++;
--		}
--	}
--
--	/* The first cell contains the length of the property */
--	unpacked[0] = cpu_to_be32(nr_assoc_doms);
--
--	return nr_assoc_doms;
--}
--
- /*
-  * Retrieve the new associativity information for a virtual processor's
-  * home node.
-diff --git a/arch/powerpc/mm/vphn.c b/arch/powerpc/mm/vphn.c
-new file mode 100644
-index 0000000..c49ed51
---- /dev/null
-+++ b/arch/powerpc/mm/vphn.c
-@@ -0,0 +1,50 @@
-+#include <asm/byteorder.h>
-+#include "vphn.h"
-+
-+/*
-+ * Convert the associativity domain numbers returned from the hypervisor
-+ * to the sequence they would appear in the ibm,associativity property.
-+ */
-+int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
-+{
-+	__be64 be_packed[VPHN_REGISTER_COUNT];
-+	int i, nr_assoc_doms = 0;
-+	const __be16 *field = (const __be16 *) be_packed;
-+
-+#define VPHN_FIELD_UNUSED	(0xffff)
-+#define VPHN_FIELD_MSB		(0x8000)
-+#define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
-+
-+	/* Let's recreate the original stream. */
-+	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
-+		be_packed[i] = cpu_to_be64(packed[i]);
-+
-+	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
-+		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
-+			/* All significant fields processed, and remaining
-+			 * fields contain the reserved value of all 1's.
-+			 * Just store them.
-+			 */
-+			unpacked[i] = *((__be32 *)field);
-+			field += 2;
-+		} else if (be16_to_cpup(field) & VPHN_FIELD_MSB) {
-+			/* Data is in the lower 15 bits of this field */
-+			unpacked[i] = cpu_to_be32(
-+				be16_to_cpup(field) & VPHN_FIELD_MASK);
-+			field++;
-+			nr_assoc_doms++;
-+		} else {
-+			/* Data is in the lower 15 bits of this field
-+			 * concatenated with the next 16 bit field
-+			 */
-+			unpacked[i] = *((__be32 *)field);
-+			field += 2;
-+			nr_assoc_doms++;
-+		}
-+	}
-+
-+	/* The first cell contains the length of the property */
-+	unpacked[0] = cpu_to_be32(nr_assoc_doms);
-+
-+	return nr_assoc_doms;
-+}
-diff --git a/arch/powerpc/mm/vphn.h b/arch/powerpc/mm/vphn.h
-new file mode 100644
-index 0000000..96af9a4
---- /dev/null
-+++ b/arch/powerpc/mm/vphn.h
-@@ -0,0 +1,16 @@
-+#ifndef _ARCH_POWERPC_MM_VPHN_H_
-+#define _ARCH_POWERPC_MM_VPHN_H_
-+
-+/* The H_HOME_NODE_ASSOCIATIVITY h_call returns 6 64-bit registers.
-+ */
-+#define VPHN_REGISTER_COUNT 6
-+
-+/*
-+ * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
-+ * the complete property we have to add the length in the first cell.
-+ */
-+#define VPHN_ASSOC_BUFSIZE (VPHN_REGISTER_COUNT*sizeof(u64)/sizeof(u32) + 1)
-+
-+extern int vphn_unpack_associativity(const long *packed, __be32 *unpacked);
-+
-+#endif
+--
+Greg
