@@ -1,22 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5B091A04D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 11:03:27 +1100 (AEDT)
-Message-ID: <1418774597.17248.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] powerpc/nvram: move generic code for nvram and
- pstore
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Wed, 17 Dec 2014 11:03:17 +1100
-In-Reply-To: <20141216180530.7778.23702.stgit@localhost.localdomain>
-References: <20141216180442.7778.38272.stgit@localhost.localdomain>
- <20141216180530.7778.23702.stgit@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 67E5A1A04E6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 11:52:56 +1100 (AEDT)
+Message-ID: <1418777556.27103.7.camel@kernel.crashing.org>
+Subject: Re: [PATCH 13/18] powerpc/uaccess: fix sparse errors
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Wed, 17 Dec 2014 11:52:36 +1100
+In-Reply-To: <20141216164746.GB21876@redhat.com>
+References: <1418575877-21488-1-git-send-email-mst@redhat.com>
+ <1418575877-21488-14-git-send-email-mst@redhat.com>
+ <20141216164746.GB21876@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-16 at 23:35 +0530, Hari Bathini wrote:
-> With minor checks, we can move most of the code for nvram
-> under pseries to a common place to be re-used by other
-> powerpc platforms like powernv. This patch moves such
-> common code to arch/powerpc/kernel/nvram_64.c file.
+On Tue, 2014-12-16 at 18:47 +0200, Michael S. Tsirkin wrote:
+> On Sun, Dec 14, 2014 at 06:52:51PM +0200, Michael S. Tsirkin wrote:
+> > virtio wants to read bitwise types from userspace using get_user.  At the
+> > moment this triggers sparse errors, since the value is passed through an
+> > integer.
+> > 
+> > Fix that up using __force.
+> > 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> 
+> Ping.
+> Do powerpc maintainers consider fixing sparse errors
+> applicable for 3.19?
+> If yes, can you pls merge this patch?
 
-Sharing the code is great.
+Relax :-) Our patches are tracked in Patchwork and such fixes aren't
+necessarily constrained by the merge window. Michael will probably
+pick it up but don't expect systematic replies to patches in 2 days ...
 
-But, you need to keep in mind that it is very common for us to build kernels
-with both POWERNV=y and PSERIES=y.
+Also, when sending a series like that where one of us only gets
+CCed on one of the patch, it helps to make it clear whether you
+only expect an ack or whether you expect us to take the patch.
 
-So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
-that are optional on pseries. Not things that we *shouldn't* be doing on
-powernv.
-
-For example the logic in nvram_init_oops_partition() looks like it might do the
-wrong thing for PSERIES=y POWERNV=y.
-
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index b390f55..a033fe9 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -343,6 +343,8 @@ extern int early_init_dt_scan_rtas(unsigned long node,
->  extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
->  
->  #ifdef CONFIG_PPC_PSERIES
-> +extern unsigned long last_rtas_event;
-> +extern int clobbering_unread_rtas_event(void);
-
-You should add an empty version of this for !PSERIES, so you don't have to
-ifdef all the call sites.
-
-cheers
+Cheers,
+Ben.
+> > ---
+> >  arch/powerpc/include/asm/uaccess.h | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> > index 9485b43..a0c071d 100644
+> > --- a/arch/powerpc/include/asm/uaccess.h
+> > +++ b/arch/powerpc/include/asm/uaccess.h
+> > @@ -284,7 +284,7 @@ do {								\
+> >  	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+> >  		might_fault();					\
+> >  	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+> > -	(x) = (__typeof__(*(ptr)))__gu_val;			\
+> > +	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+> >  	__gu_err;						\
+> >  })
+> >  #endif /* __powerpc64__ */
+> > @@ -297,7 +297,7 @@ do {								\
+> >  	might_fault();							\
+> >  	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
+> >  		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+> > -	(x) = (__typeof__(*(ptr)))__gu_val;				\
+> > +	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+> >  	__gu_err;							\
+> >  })
+> >  
+> > @@ -308,7 +308,7 @@ do {								\
+> >  	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+> >  	__chk_user_ptr(ptr);					\
+> >  	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+> > -	(x) = (__typeof__(*(ptr)))__gu_val;			\
+> > +	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+> >  	__gu_err;						\
+> >  })
+> >  
+> > -- 
+> > MST
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
