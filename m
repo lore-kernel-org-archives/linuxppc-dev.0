@@ -1,37 +1,44 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E01D21A09EC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 05:10:40 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 61C401A0E55
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 03:48:50 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 91A60140081
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2014 05:10:31 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 17 Dec 2014 16:48:46 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id D6C1417E7D98
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:31:29 +0000 (GMT)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBHFUsmx39190558
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 15:30:54 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBHARXIp014038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 05:27:33 -0500
-Subject: [PATCH v2 2/4] powerpc/vphn: move endianness fixing to
- vphn_unpack_associativity()
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Dec 2014 10:42:40 +0100
-Message-ID: <20141217094126.16957.20713.stgit@bahia.local>
-In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
-References: <20141217094007.16957.70423.stgit@bahia.local>
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 18 Dec 2014 04:07:29 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D4AA72CF0CED
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2014 22:10:53 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBHBArDj36241578
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2014 22:10:53 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBHBArRh020706
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2014 22:10:53 +1100
+Message-ID: <549164B5.5000406@linux.vnet.ibm.com>
+Date: Wed, 17 Dec 2014 16:40:45 +0530
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/3] powerpc/nvram: move generic code for nvram and
+ pstore
+References: <20141216180442.7778.38272.stgit@localhost.localdomain>
+ <20141216180530.7778.23702.stgit@localhost.localdomain>
+ <1418774597.17248.1.camel@ellerman.id.au>
+In-Reply-To: <1418774597.17248.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,51 +48,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first argument to vphn_unpack_associativity() is a const long *, but the
-parsing code expects __be64 values actually. Let's move the endian fixing
-down for consistency.
+On 12/17/2014 05:33 AM, Michael Ellerman wrote:
+> On Tue, 2014-12-16 at 23:35 +0530, Hari Bathini wrote:
+>> With minor checks, we can move most of the code for nvram
+>> under pseries to a common place to be re-used by other
+>> powerpc platforms like powernv. This patch moves such
+>> common code to arch/powerpc/kernel/nvram_64.c file.
+> Sharing the code is great.
+>
+> But, you need to keep in mind that it is very common for us to build kernels
+> with both POWERNV=y and PSERIES=y.
+>
+> So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
+> that are optional on pseries. Not things that we *shouldn't* be doing on
+> powernv.
+>
+> For example the logic in nvram_init_oops_partition() looks like it might do the
+> wrong thing for PSERIES=y POWERNV=y.
 
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
+True. It might do wrong thing when an incorrect value is passed by the 
+caller.
+But since the caller is platform specific code 
+[pseries_nvram_init_log_partitions() or
+opal_nvram_init_log_partitions() routine], with appropriate parameter 
+passed,
+I haven't seen any issues while testing.
 
- v2: only move the endian fixing. The logic is reworked in another patch.
 
- arch/powerpc/mm/numa.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+>> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+>> index b390f55..a033fe9 100644
+>> --- a/arch/powerpc/include/asm/rtas.h
+>> +++ b/arch/powerpc/include/asm/rtas.h
+>> @@ -343,6 +343,8 @@ extern int early_init_dt_scan_rtas(unsigned long node,
+>>   extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+>>   
+>>   #ifdef CONFIG_PPC_PSERIES
+>> +extern unsigned long last_rtas_event;
+>> +extern int clobbering_unread_rtas_event(void);
+> You should add an empty version of this for !PSERIES, so you don't have to
+> ifdef all the call sites.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 2a83e48..2e36a6f 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1263,13 +1263,18 @@ static int update_cpu_associativity_changes_mask(void)
-  */
- static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
- {
-+	__be64 be_packed[VPHN_REGISTER_COUNT];
- 	int i, nr_assoc_doms = 0;
--	const __be16 *field = (const __be16 *) packed;
-+	const __be16 *field = (const __be16 *) be_packed;
- 
- #define VPHN_FIELD_UNUSED	(0xffff)
- #define VPHN_FIELD_MSB		(0x8000)
- #define VPHN_FIELD_MASK		(~VPHN_FIELD_MSB)
- 
-+	/* Let's recreate the original stream. */
-+	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
-+		be_packed[i] = cpu_to_be64(packed[i]);
-+
- 	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
- 		if (be16_to_cpup(field) == VPHN_FIELD_UNUSED) {
- 			/* All significant fields processed, and remaining
-@@ -1310,11 +1315,8 @@ static long hcall_vphn(unsigned long cpu, __be32 *associativity)
- 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
- 	u64 flags = 1;
- 	int hwcpu = get_hard_smp_processor_id(cpu);
--	int i;
- 
- 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, hwcpu);
--	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
--		retbuf[i] = cpu_to_be64(retbuf[i]);
- 	vphn_unpack_associativity(retbuf, associativity);
- 
- 	return rc;
+Sure. Will update accordingly..
+
+Thanks
+Hari
+
+> cheers
+>
+>
