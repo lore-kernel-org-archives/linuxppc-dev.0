@@ -1,22 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04A831A0549
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 20:27:39 +1100 (AEDT)
-Message-ID: <54914C85.30107@suse.de>
-Date: Wed, 17 Dec 2014 10:27:33 +0100
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE1431A051C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2014 21:54:21 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 13/18] powerpc/uaccess: fix sparse errors
+Date: Wed, 17 Dec 2014 11:53:56 +0100
+Message-ID: <3268591.VzqP3kr6UD@wuerfel>
+In-Reply-To: <1418777556.27103.7.camel@kernel.crashing.org>
+References: <1418575877-21488-1-git-send-email-mst@redhat.com>
+ <20141216164746.GB21876@redhat.com>
+ <1418777556.27103.7.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/3] powerpc: Don't use local named register variable
- in current_thread_info
-References: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>	<5490D981.7040905@suse.de>
- <20141217144459.09701a76@kryten>
-In-Reply-To: <20141217144459.09701a76@kryten>
-Content-Type: text/plain; charset=windows-1252
-Cc: ulrich.weigand@de.ibm.com, paulus@samba.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: linux-arch@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 17.12.14 04:44, Anton Blanchard wrote:
-> Hi Alex,
+On Wednesday 17 December 2014 11:52:36 Benjamin Herrenschmidt wrote:
+> On Tue, 2014-12-16 at 18:47 +0200, Michael S. Tsirkin wrote:
+> > On Sun, Dec 14, 2014 at 06:52:51PM +0200, Michael S. Tsirkin wrote:
+> > > virtio wants to read bitwise types from userspace using get_user.  At the
+> > > moment this triggers sparse errors, since the value is passed through an
+> > > integer.
+> > > 
+> > > Fix that up using __force.
+> > > 
+> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > 
+> > Ping.
+> > Do powerpc maintainers consider fixing sparse errors
+> > applicable for 3.19?
+> > If yes, can you pls merge this patch?
 > 
->> Git bisect managed to point me to this commit as the offender for
->> OOPSes on e5500 and e6500 (and maybe the G4 as well, not sure).
->>
->> Doing a git revert of this commit on top of linus/master makes things
->> work fine for me again.
+> Relax  Our patches are tracked in Patchwork and such fixes aren't
+> necessarily constrained by the merge window. Michael will probably
+> pick it up but don't expect systematic replies to patches in 2 days ...
 > 
-> Ouch, sorry for that, I'll work to reproduce. What gcc version are you
-> using?
+> Also, when sending a series like that where one of us only gets
+> CCed on one of the patch, it helps to make it clear whether you
+> only expect an ack or whether you expect us to take the patch.
 
-I'm running
+Michael initially asked how these patches should merged, and as I
+discussed with him on IRC, I wouldn't take them through the asm-generic
+tree for 3.19 at this point, but I offered to take the ones that
+are not picked up by arch maintainers through that tree for 3.20.
 
-  gcc (SUSE Linux) 4.7.2 20130108 [gcc-4_7-branch revision 195012]
+I also recommend to him to clarify this with maintainers of the
+architectures he cares about most so they can decide whether to pick
+it up or not, which triggered the message above.
 
-which is basically the one from openSUSE 12.3 for ppc64.
-
-I've also uploaded 2 builds, one with the patch applied (broken) and one
-without (works):
-
-  http://csgraf.de/agraf/current_thread_info/vmlinux.broken.xz
-  http://csgraf.de/agraf/current_thread_info/vmlinux.works.xz
-
-Interestingly enough I did not see this on IBM POWER systems, but maybe
-that's because most of them compile their own kernels with local,
-different compilers in my test runs and the only one that does base on
-the same compiler doesn't run on nfsroot.
-
-My iBook G4 target is affected by this as well and reverting this patch
-also makes it work again. Maybe we're just running over some stack?
-
-
-Alex
+	Arnd
