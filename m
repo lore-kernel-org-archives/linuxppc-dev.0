@@ -1,21 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rusty@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7489C1A0A07
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 13:22:58 +1100 (AEDT)
-Message-ID: <1418869363.5581.123.camel@freescale.com>
-Subject: Re: [v2 PATCH 2/2] powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
-From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 17 Dec 2014 20:22:43 -0600
-In-Reply-To: <20141217091432.072901A5E12@localhost.localdomain>
-References: <20141217091432.072901A5E12@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C4C81A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 15:23:27 +1100 (AEDT)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Madhavan Srinivasan' <maddy@linux.vnet.ibm.com>,
+ "mpe\@ellerman.id.au" <mpe@ellerman.id.au>
+Subject: RE: [RFC PATCH 0/2] powerpc: CR based local atomic operation
+ implementation
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9FFB90@AcuExch.aculab.com>
+References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
+ <547831DC.6000703@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FE4A9@AcuExch.aculab.com>
+ <547C8ADD.1050905@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1C9FFB90@AcuExch.aculab.com>
+Date: Thu, 18 Dec 2014 14:48:17 +1030
+Message-ID: <87k31ptwty.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-12-17 at 10:14 +0100, Christophe Leroy wrote:
-> On powerpc 8xx, in TLB entries, 0x400 bit is set to 1 for read-only pages
-> and is set to 0 for RW pages. So we should use _PAGE_RO instead of _PAGE_RW
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> 
-> ---
-> v2 is a complete rework compared to v1
-> 
->  arch/powerpc/include/asm/pte-8xx.h | 7 +++----
->  arch/powerpc/kernel/head_8xx.S     | 3 ---
->  2 files changed, 3 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-> index daa4616..4f5583e 100644
-> --- a/arch/powerpc/include/asm/pte-8xx.h
-> +++ b/arch/powerpc/include/asm/pte-8xx.h
-> @@ -46,7 +46,7 @@
->   * require a TLB exception handler change.  It is assumed unused bits
->   * are always zero.
->   */
-> -#define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
-> +#define _PAGE_RO	0x0400	/* lsb PP bits */
+David Laight <David.Laight@ACULAB.COM> writes:
+> From: Madhavan Srinivasan [mailto:maddy@linux.vnet.ibm.com]
+> ...
+>> >>> I also wonder if it is possible to inspect the interrupted
+>> >>> code to determine the start/end of the RAS block.
+>> >>> (Easiest if you assume that there is a single 'write' instruction
+>> >>> as the last entry in the block.)
+>> >>>
+>> >> So each local_* function also have code in the __ex_table section. IIUC,
+>> >> __ex_table contains two address. So if the return address found in the
+>> >> first column of the _ex_table, use the corresponding address in the
+>> >> second column to continue from.
+>> >
+>> > That really doesn't scale.
+>> > I don't know how many 1000 address pairs you table will have (and the
+>> > ones in each loadable module), but the search isn't going to be cheap.
+>> >
+>> > If these sequences are restartable then they can only have one write
+>> > to memory.
+>> >
+>> 
+>> May be, but i see these issues incase of insts decode path,
+>> 
+>> 1) Decoding instruction may also cause a fault (in case of module) and
+>> handling a fault at this stage toward the exit path of interrupt exit
+>> makes me nervous
+>
+> It shouldn't be possible to unload a module that is interrupted by
+> a hardware interrupt.
+> An 'invalid' loadable module can cause an oops/panic anyway.
 
-It looks like pte_update() needs to be updated to match.
+Yes, the module won't fault (vmalloc memory can be lazily mapped, but
+we've already copied the module into there, so it won't happen).
 
->  #define _PAGE_USER	0x0800	/* msb PP bits */
->  /* set when neither _PAGE_USER nor _PAGE_RW are set */
+>> 2) resulting code with lot of condition and branch (for opcode decode)
+>> will be lot messy and may be an issue incase of maintenance,
+>
+> You don't need to decode the instructions.
+> Just look for the two specific instructions used as markers.
+> This is only really possible with fixed-size instructions.
+>
+> It might also be that the 'interrupt entry' path is easier to
+> modify than the 'interrupt exit' one (fewer code paths) and
+> you just need to modify the 'pc' in the stack frame.
+> You are only interested in interrupts from kernel space.
 
-Also update this comment.
+It's an overoptimization for case that statistically never happens.
+You won't even be able to measure the difference.
 
->  #define _PAGE_KNLRO	0x0200
-> @@ -62,9 +62,8 @@
->  #define PTE_ATOMIC_UPDATES	1
->  
->  /* We need to add _PAGE_SHARED to kernel pages */
-> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
-> -#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
-> -#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO)
-> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_RO | _PAGE_KNLRO)
->  
->  #endif /* __KERNEL__ */
->  #endif /*  _ASM_POWERPC_PTE_8xx_H */
+The question of bloat remains, but that's also easily measured.  In
+practice, I'd guess less than 1k.
 
-Where did _PAGE_KERNEL_RW go?
-
--Scott
+Cheers,
+Rusty.
