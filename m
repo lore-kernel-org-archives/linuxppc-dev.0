@@ -1,17 +1,17 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EF9B1A0932
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 13:14:40 +1100 (AEDT)
-Message-ID: <1418868868.5581.121.camel@freescale.com>
-Subject: Re: [v2 PATCH 1/2] powerpc32: adds handling of _PAGE_RO
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7489C1A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 13:22:58 +1100 (AEDT)
+Message-ID: <1418869363.5581.123.camel@freescale.com>
+Subject: Re: [v2 PATCH 2/2] powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
 From: Scott Wood <scottwood@freescale.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 17 Dec 2014 20:14:28 -0600
-In-Reply-To: <20141217091431.D3F761A5E0D@localhost.localdomain>
-References: <20141217091431.D3F761A5E0D@localhost.localdomain>
+Date: Wed, 17 Dec 2014 20:22:43 -0600
+In-Reply-To: <20141217091432.072901A5E12@localhost.localdomain>
+References: <20141217091432.072901A5E12@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
@@ -26,59 +26,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2014-12-17 at 10:14 +0100, Christophe Leroy wrote:
-> Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
-> This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
+> On powerpc 8xx, in TLB entries, 0x400 bit is set to 1 for read-only pages
+> and is set to 0 for RW pages. So we should use _PAGE_RO instead of _PAGE_RW
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
 > ---
 > v2 is a complete rework compared to v1
 > 
->  arch/powerpc/include/asm/pgtable-ppc32.h | 11 ++++++-----
->  arch/powerpc/include/asm/pgtable.h       | 10 +++++++---
->  arch/powerpc/include/asm/pte-common.h    | 27 ++++++++++++++++++---------
->  arch/powerpc/mm/gup.c                    |  2 ++
->  arch/powerpc/mm/mem.c                    |  2 +-
->  arch/powerpc/mm/pgtable_32.c             | 24 ++++++++++++++++++++----
->  6 files changed, 54 insertions(+), 22 deletions(-)
+>  arch/powerpc/include/asm/pte-8xx.h | 7 +++----
+>  arch/powerpc/kernel/head_8xx.S     | 3 ---
+>  2 files changed, 3 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-> index 543bb8e..64ed9e1 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> @@ -125,7 +125,7 @@ extern int icache_44x_need_flush;
->  #ifndef __ASSEMBLY__
+> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
+> index daa4616..4f5583e 100644
+> --- a/arch/powerpc/include/asm/pte-8xx.h
+> +++ b/arch/powerpc/include/asm/pte-8xx.h
+> @@ -46,7 +46,7 @@
+>   * require a TLB exception handler change.  It is assumed unused bits
+>   * are always zero.
+>   */
+> -#define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
+> +#define _PAGE_RO	0x0400	/* lsb PP bits */
+
+It looks like pte_update() needs to be updated to match.
+
+>  #define _PAGE_USER	0x0800	/* msb PP bits */
+>  /* set when neither _PAGE_USER nor _PAGE_RW are set */
+
+Also update this comment.
+
+>  #define _PAGE_KNLRO	0x0200
+> @@ -62,9 +62,8 @@
+>  #define PTE_ATOMIC_UPDATES	1
 >  
->  #define pte_clear(mm, addr, ptep) \
-> -	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
-> +	do { pte_update(ptep, ~_PAGE_HASHPTE, _PAGE_RO); } while (0)
+>  /* We need to add _PAGE_SHARED to kernel pages */
+> -#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
+> -#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
+> -#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+> +#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO)
+> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_RO | _PAGE_KNLRO)
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /*  _ASM_POWERPC_PTE_8xx_H */
 
-Is this really necessary?  It's already clearing the valid bit.
-
-Likewise in several other places that set or check for _PAGE_RO on pages
-for which no access is permitted.
-
-> @@ -287,8 +287,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
->  static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
->  {
->  	unsigned long bits = pte_val(entry) &
-> -		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-> -	pte_update(ptep, 0, bits);
-> +		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_RO |
-> +		 _PAGE_EXEC);
-> +	pte_update(ptep, _PAGE_RO, bits);
->  }
-
-You're unconditionally clearing _PAGE_RO, and apparently relying on the
-undocumented behavior of pte_update() to clear "clr" before setting
-"set".
-
-Instead I'd write this as:
-
-	unsigned long set = pte_val(entry) &
-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-	unsigned long clr = pte_val(entry) & _PAGE_RO;
-
-	pte_update(ptep, clr, set);
+Where did _PAGE_KERNEL_RW go?
 
 -Scott
