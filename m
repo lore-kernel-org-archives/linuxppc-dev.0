@@ -1,28 +1,21 @@
-Return-Path: <rusty@ozlabs.org>
+Return-Path: <anton@samba.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C4C81A0A07
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 15:23:27 +1100 (AEDT)
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Laight <David.Laight@ACULAB.COM>,
- 'Madhavan Srinivasan' <maddy@linux.vnet.ibm.com>,
- "mpe\@ellerman.id.au" <mpe@ellerman.id.au>
-Subject: RE: [RFC PATCH 0/2] powerpc: CR based local atomic operation
- implementation
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1C9FFB90@AcuExch.aculab.com>
-References: <1417090721-25298-1-git-send-email-maddy@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D1C9FDC8B@AcuExch.aculab.com>
- <547831DC.6000703@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D1C9FE4A9@AcuExch.aculab.com>
- <547C8ADD.1050905@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D1C9FFB90@AcuExch.aculab.com>
-Date: Thu, 18 Dec 2014 14:48:17 +1030
-Message-ID: <87k31ptwty.fsf@rustcorp.com.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 56C671A0A69
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 16:10:45 +1100 (AEDT)
+Date: Thu, 18 Dec 2014 16:10:43 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [1/5] powerpc: Fix handling of DSCR related facility
+ unavailable exception
+Message-ID: <20141218161043.52b5367c@kryten>
+In-Reply-To: <5486F607.6010706@linux.vnet.ibm.com>
+References: <20141209101117.1CEC9140100@ozlabs.org>
+ <5486F607.6010706@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Laight <David.Laight@ACULAB.COM> writes:
-> From: Madhavan Srinivasan [mailto:maddy@linux.vnet.ibm.com]
-> ...
->> >>> I also wonder if it is possible to inspect the interrupted
->> >>> code to determine the start/end of the RAS block.
->> >>> (Easiest if you assume that there is a single 'write' instruction
->> >>> as the last entry in the block.)
->> >>>
->> >> So each local_* function also have code in the __ex_table section. IIUC,
->> >> __ex_table contains two address. So if the return address found in the
->> >> first column of the _ex_table, use the corresponding address in the
->> >> second column to continue from.
->> >
->> > That really doesn't scale.
->> > I don't know how many 1000 address pairs you table will have (and the
->> > ones in each loadable module), but the search isn't going to be cheap.
->> >
->> > If these sequences are restartable then they can only have one write
->> > to memory.
->> >
->> 
->> May be, but i see these issues incase of insts decode path,
->> 
->> 1) Decoding instruction may also cause a fault (in case of module) and
->> handling a fault at this stage toward the exit path of interrupt exit
->> makes me nervous
->
-> It shouldn't be possible to unload a module that is interrupted by
-> a hardware interrupt.
-> An 'invalid' loadable module can cause an oops/panic anyway.
+Hi Anshuman,
 
-Yes, the module won't fault (vmalloc memory can be lazily mapped, but
-we've already copied the module into there, so it won't happen).
+> Yeah I wanted to convert all these tests which are related to DSCR
+> into individual self tests for powerpc. All these test cases have
+> Anton Blanchard and IBM's copyright on it but they are licensed with
+> GPL V2. Not sure whether Anton needs to okay this before I can modify
+> them for self tests, put his (Anton's) signed-off-by and then post it
+> in the mailing list.
+> 
+> (1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+> (2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+> (3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
+> (4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
+> (5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
 
->> 2) resulting code with lot of condition and branch (for opcode decode)
->> will be lot messy and may be an issue incase of maintenance,
->
-> You don't need to decode the instructions.
-> Just look for the two specific instructions used as markers.
-> This is only really possible with fixed-size instructions.
->
-> It might also be that the 'interrupt entry' path is easier to
-> modify than the 'interrupt exit' one (fewer code paths) and
-> you just need to modify the 'pc' in the stack frame.
-> You are only interested in interrupts from kernel space.
+I'm happy for the testcases to be modified and merged into the kernel!
 
-It's an overoptimization for case that statistically never happens.
-You won't even be able to measure the difference.
+When you submit them I'll give them a once over and attach my
+Signed-off-by.
 
-The question of bloat remains, but that's also easily measured.  In
-practice, I'd guess less than 1k.
-
-Cheers,
-Rusty.
+Thanks,
+Anton
