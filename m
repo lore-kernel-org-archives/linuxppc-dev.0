@@ -1,18 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4252F1A00BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 12:06:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1EF9B1A0932
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 13:14:40 +1100 (AEDT)
+Message-ID: <1418868868.5581.121.camel@freescale.com>
+Subject: Re: [v2 PATCH 1/2] powerpc32: adds handling of _PAGE_RO
 From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/mpc85xx: Add ranges to etsec2 nodes
-Date: Wed, 17 Dec 2014 19:06:31 -0600
-Message-ID: <1418864791-32526-1-git-send-email-scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 17 Dec 2014 20:14:28 -0600
+In-Reply-To: <20141217091431.D3F761A5E0D@localhost.localdomain>
+References: <20141217091431.D3F761A5E0D@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, Alexander Graf <agraf@suse.de>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 746c9e9f92dd "of/base: Fix PowerPC address parsing hack" limited
-the applicability of the workaround whereby a missing ranges is treated
-as an empty ranges.  This workaround was hiding a bug in the etsec2
-device tree nodes, which have children with reg, but did not have
-ranges.
+On Wed, 2014-12-17 at 10:14 +0100, Christophe Leroy wrote:
+> Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
+> This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> ---
+> v2 is a complete rework compared to v1
+> 
+>  arch/powerpc/include/asm/pgtable-ppc32.h | 11 ++++++-----
+>  arch/powerpc/include/asm/pgtable.h       | 10 +++++++---
+>  arch/powerpc/include/asm/pte-common.h    | 27 ++++++++++++++++++---------
+>  arch/powerpc/mm/gup.c                    |  2 ++
+>  arch/powerpc/mm/mem.c                    |  2 +-
+>  arch/powerpc/mm/pgtable_32.c             | 24 ++++++++++++++++++++----
+>  6 files changed, 54 insertions(+), 22 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+> index 543bb8e..64ed9e1 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -125,7 +125,7 @@ extern int icache_44x_need_flush;
+>  #ifndef __ASSEMBLY__
+>  
+>  #define pte_clear(mm, addr, ptep) \
+> -	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
+> +	do { pte_update(ptep, ~_PAGE_HASHPTE, _PAGE_RO); } while (0)
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Reported-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi | 1 +
- 3 files changed, 3 insertions(+)
+Is this really necessary?  It's already clearing the valid bit.
 
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
-index 1382fec..7fcb1ac 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
-@@ -50,6 +50,7 @@ ethernet@b0000 {
- 	fsl,num_tx_queues = <0x8>;
- 	fsl,magic-packet;
- 	local-mac-address = [ 00 00 00 00 00 00 ];
-+	ranges;
- 
- 	queue-group@b0000 {
- 		#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
-index 221cd2e..9f25427 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi
-@@ -50,6 +50,7 @@ ethernet@b1000 {
- 	fsl,num_tx_queues = <0x8>;
- 	fsl,magic-packet;
- 	local-mac-address = [ 00 00 00 00 00 00 ];
-+	ranges;
- 
- 	queue-group@b1000 {
- 		#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi b/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
-index 61456c3..cd7c318 100644
---- a/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi
-@@ -49,6 +49,7 @@ ethernet@b2000 {
- 	fsl,num_tx_queues = <0x8>;
- 	fsl,magic-packet;
- 	local-mac-address = [ 00 00 00 00 00 00 ];
-+	ranges;
- 
- 	queue-group@b2000 {
- 		#address-cells = <1>;
--- 
-2.1.0
+Likewise in several other places that set or check for _PAGE_RO on pages
+for which no access is permitted.
+
+> @@ -287,8 +287,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>  static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+>  {
+>  	unsigned long bits = pte_val(entry) &
+> -		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+> -	pte_update(ptep, 0, bits);
+> +		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_RO |
+> +		 _PAGE_EXEC);
+> +	pte_update(ptep, _PAGE_RO, bits);
+>  }
+
+You're unconditionally clearing _PAGE_RO, and apparently relying on the
+undocumented behavior of pte_update() to clear "clr" before setting
+"set".
+
+Instead I'd write this as:
+
+	unsigned long set = pte_val(entry) &
+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+	unsigned long clr = pte_val(entry) & _PAGE_RO;
+
+	pte_update(ptep, clr, set);
+
+-Scott
