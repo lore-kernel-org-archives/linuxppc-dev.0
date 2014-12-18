@@ -1,22 +1,24 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <Shaohui.Xie@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0109.outbound.protection.outlook.com [157.56.111.109])
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07BD21A0B58
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 22:23:23 +1100 (AEDT)
-Message-ID: <1418901787.5581.131.camel@freescale.com>
-Subject: Re: [v2 PATCH 1/2] powerpc32: adds handling of _PAGE_RO
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Thu, 18 Dec 2014 05:23:07 -0600
-In-Reply-To: <54927E1E.1030407@c-s.fr>
-References: <20141217091431.D3F761A5E0D@localhost.localdomain>
- <1418868868.5581.121.camel@freescale.com> <54927E1E.1030407@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29D1A1A0B82
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2014 23:53:40 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+Date: Thu, 18 Dec 2014 12:53:33 +0000
+Message-ID: <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>,
+ "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-12-18 at 08:11 +0100, leroy christophe wrote:
-> Le 18/12/2014 03:14, Scott Wood a écrit :
-> > On Wed, 2014-12-17 at 10:14 +0100, Christophe Leroy wrote:
-> >> Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
-> >> This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
-> >>
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>
-> >> ---
-> >> v2 is a complete rework compared to v1
-> >>
-> >>   arch/powerpc/include/asm/pgtable-ppc32.h | 11 ++++++-----
-> >>   arch/powerpc/include/asm/pgtable.h       | 10 +++++++---
-> >>   arch/powerpc/include/asm/pte-common.h    | 27 ++++++++++++++++++---------
-> >>   arch/powerpc/mm/gup.c                    |  2 ++
-> >>   arch/powerpc/mm/mem.c                    |  2 +-
-> >>   arch/powerpc/mm/pgtable_32.c             | 24 ++++++++++++++++++++----
-> >>   6 files changed, 54 insertions(+), 22 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-> >> index 543bb8e..64ed9e1 100644
-> >> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> >> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> >> @@ -125,7 +125,7 @@ extern int icache_44x_need_flush;
-> >>   #ifndef __ASSEMBLY__
-> >>   
-> >>   #define pte_clear(mm, addr, ptep) \
-> >> -	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
-> >> +	do { pte_update(ptep, ~_PAGE_HASHPTE, _PAGE_RO); } while (0)
-> > Is this really necessary?  It's already clearing the valid bit.
-> >
-> > Likewise in several other places that set or check for _PAGE_RO on pages
-> > for which no access is permitted.
-> >
-> >> @@ -287,8 +287,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
-> >>   static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
-> >>   {
-> >>   	unsigned long bits = pte_val(entry) &
-> >> -		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-> >> -	pte_update(ptep, 0, bits);
-> >> +		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_RO |
-> >> +		 _PAGE_EXEC);
-> >> +	pte_update(ptep, _PAGE_RO, bits);
-> >>   }
-> > You're unconditionally clearing _PAGE_RO, and apparently relying on the
-> > undocumented behavior of pte_update() to clear "clr" before setting
-> > "set".
-> >
-> > Instead I'd write this as:
-> >
-> > 	unsigned long set = pte_val(entry) &
-> > 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-> > 	unsigned long clr = pte_val(entry) & _PAGE_RO;
-> Don't you mean ?
-> 
-> 	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
-> 
-> Because, we want to clear _PAGE_RO when _PAGE_RO is not set in entry.
-
-Yes, sorry.
-
--Scott
+UGluZy4NCg0KQmVzdCBSZWdhcmRzLCANClNoYW9odWkgWGllDQo+IC0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+IEZyb206IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiBTZW50OiBXZWRuZXNkYXks
+IE5vdmVtYmVyIDI2LCAyMDE0IDEwOjExIEFNDQo+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBD
+YzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
+b3JnOyBNZWR2ZSBFbWlsaWFuLQ0KPiBFTU1FRFZFMTsgTGliZXJtYW4gSWdhbC1CMzE5NTANCj4g
+U3ViamVjdDogUkU6IFtQQVRDSF0gW3YyXSBwb3dlci9mc2w6IGFkZCBNRElPIGR0IGJpbmRpbmcg
+Zm9yIEZNYW4NCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBX
+b29kIFNjb3R0LUIwNzQyMQ0KPiA+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMjYsIDIwMTQg
+OTo1MCBBTQ0KPiA+IFRvOiBzaGgueGllQGdtYWlsLmNvbQ0KPiA+IENjOiBsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IE1lZHZlDQo+ID4g
+RW1pbGlhbi1FTU1FRFZFMTsgTGliZXJtYW4gSWdhbC1CMzE5NTA7IFhpZSBTaGFvaHVpLUIyMTk4
+OQ0KPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFt2Ml0gcG93ZXIvZnNsOiBhZGQgTURJTyBkdCBi
+aW5kaW5nIGZvciBGTWFuDQo+ID4NCj4gPiBPbiBGcmksIDIwMTQtMTEtMTQgYXQgMTc6NTMgKzA4
+MDAsIHNoaC54aWVAZ21haWwuY29tIHdyb3RlOg0KPiA+ID4gRnJvbTogU2hhb2h1aSBYaWUgPFNo
+YW9odWkuWGllQGZyZWVzY2FsZS5jb20+DQo+ID4gPg0KPiA+ID4gVGhpcyBiaW5kaW5nIGlzIGZv
+ciBGTWFuIE1ESU8sIGl0IGNvdmVycyBGTWFuIHYyICYgRk1hbiB2My4NCj4gPiA+DQo+ID4gPiBT
+aWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4g
+PiA+IC0tLQ0KPiA+ID4gY2hhbmdlcyBpbiBWMjoNCj4gPiA+IGFkZHJlc3NlZCBjb21tZW50cyBm
+cm9tIFNjb3R0IGluIFYxLg0KPiA+ID4NCj4gPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9w
+b3dlcnBjL2ZzbC9mbWFuLnR4dCAgICAgICB8IDY5DQo+ID4gKysrKysrKysrKysrKysrKysrKysr
+Kw0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA2OSBpbnNlcnRpb25zKCspDQo+ID4gPg0KPiA+ID4g
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2Zz
+bC9mbWFuLnR4dA0KPiA+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93
+ZXJwYy9mc2wvZm1hbi50eHQNCj4gPiA+IGluZGV4IGVkZWVhMTYuLjE1MjNhODcgMTAwNjQ0DQo+
+ID4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wv
+Zm1hbi50eHQNCj4gPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9w
+b3dlcnBjL2ZzbC9mbWFuLnR4dA0KPiA+ID4gQEAgLTcsNiArNyw3IEBAIENPTlRFTlRTDQo+ID4g
+PiAgICAtIEZNYW4gTVVSQU0gTm9kZQ0KPiA+ID4gICAgLSBGTWFuIGRUU0VDL1hHRUMvbUVNQUMg
+Tm9kZQ0KPiA+ID4gICAgLSBGTWFuIElFRUUgMTU4OCBOb2RlDQo+ID4gPiArICAtIEZNYW4gTURJ
+TyBOb2RlDQo+ID4gPiAgICAtIEV4YW1wbGUNCj4gPiA+DQo+ID4gPg0KPiA+ID4gPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0NCj4gPiA+ID09ID09PT09PT0gQEAgLTM1Nyw2ICszNTgsNjggQEAgcHRwLXRpbWVyQGZlMDAw
+IHsgIH07DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+ID4gPiA9PQ0KPiA+ID4g
+PT09PT09PQ0KPiA+ID4gK0ZNYW4gTURJTyBOb2RlDQo+ID4gPiArDQo+ID4gPiArREVTQ1JJUFRJ
+T04NCj4gPiA+ICsNCj4gPiA+ICtUaGUgTURJTyBpcyBhIGJ1cyB0byB3aGljaCB0aGUgUEhZIGRl
+dmljZXMgYXJlIGNvbm5lY3RlZC4NCj4gPiA+ICsNCj4gPiA+ICtQUk9QRVJUSUVTDQo+ID4gPiAr
+DQo+ID4gPiArLSBjb21wYXRpYmxlDQo+ID4gPiArCQlVc2FnZTogcmVxdWlyZWQNCj4gPiA+ICsJ
+CVZhbHVlIHR5cGU6IDxzdHJpbmdsaXN0Pg0KPiA+ID4gKwkJRGVmaW5pdGlvbjogQSBzdGFuZGFy
+ZCBwcm9wZXJ0eS4NCj4gPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4tbWRpbyIgZm9yIDEg
+R2IvcyBNRElPIGZyb20gRk1hbiB2Mi4NCj4gPiA+ICsJCU11c3QgaW5jbHVkZSAiZnNsLGZtYW4t
+eG1kaW8iIGZvciAxMCBHYi9zIE1ESU8gZnJvbSBGTWFuIHYyLg0KPiA+ID4gKwkJTXVzdCBpbmNs
+dWRlICJmc2wsZm1hbi1tZW1hYy1tZGlvIiBmb3IgMS8xMCBHYi9zIE1ESU8gZnJvbQ0KPiA+ID4g
+KwkJRk1hbiB2My4NCj4gPiA+ICsNCj4gPiA+ICstIHJlZw0KPiA+ID4gKwkJVXNhZ2U6IHJlcXVp
+cmVkDQo+ID4gPiArCQlWYWx1ZSB0eXBlOiA8cHJvcC1lbmNvZGVkLWFycmF5Pg0KPiA+ID4gKwkJ
+RGVmaW5pdGlvbjogQSBzdGFuZGFyZCBwcm9wZXJ0eS4NCj4gPiA+ICsNCj4gPiA+ICstIGJ1cy1m
+cmVxdWVuY3kNCj4gPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0KPiA+ID4gKwkJVmFsdWUgdHlwZTog
+PHUzMj4NCj4gPiA+ICsJCURlZmluaXRpb246IFNwZWNpZmllcyBleHRlcm5hbCBNRElPIGJ1cyBj
+bG9jayBzcGVlZCB3aGljaCBpcw0KPiA+ID4gKwkJZGlmZmVyZW50IGZyb20gTURJTyBzdGFuZGFy
+ZCAyLjVNSHouIFNob3VsZCBiZSBkZWZpbmVkIGZvcg0KPiA+IFNvQ3MNCj4gPiA+ICsJCW9uIHdo
+aWNoIHRoZSBzdGFuZGFyZCBvbmUgY2Fubm90IHdvcmsuDQo+ID4gPiArDQo+ID4gPiArLSBpbnRl
+cnJ1cHRzDQo+ID4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiA+ICsJCVZhbHVlIHR5cGU6IDxw
+cm9wLWVuY29kZWQtYXJyYXk+DQo+ID4gPiArCQlEZWZpbml0aW9uOiBFdmVudCBpbnRlcnJ1cHQg
+b2YgZXh0ZXJuYWwgTURJTyBjb250cm9sbGVyLg0KPiA+ID4gKwkJMSBHYi9zIE1ESU8gYW5kIDEw
+IEdiL3MgTURJTyBoYXMgb25lIGludGVycnVwdCByZXNwZWN0aXZlbHkuDQo+ID4gPiArDQo+ID4g
+PiArLSBmc2wsZm1hbi1pbnRlcm5hbC1tZGlvDQo+ID4gPiArCQlVc2FnZTogcmVxdWlyZWQgZm9y
+IGludGVybmFsIE1ESU8NCj4gPiA+ICsJCVZhbHVlIHR5cGU6IGJvb2xlYW4NCj4gPiA+ICsJCURl
+ZmluaXRpb246IEZtYW4gaGFzIGludGVybmFsIE1ESU8gZm9yIGludGVybmFsIFBDUyhQaHlzaWNh
+bA0KPiA+ID4gKwkJQ29kaW5nIFN1YmxheWVyKSBQSFlzIGFuZCBleHRlcm5hbCBNRElPIGZvciBl
+eHRlcm5hbCBQSFlzLg0KPiA+ID4gKwkJVGhlIHNldHRpbmdzIGFuZCBwcm9ncmFtbWluZyByb3V0
+aW5lcyBmb3IgaW50ZXJuYWwvZXh0ZXJuYWwNCj4gPiA+ICsJCU1ESU8gYXJlIGRpZmZlcmVudC4g
+TXVzdCBiZSBpbmNsdWRlZCBmb3IgaW50ZXJuYWwgTURJTy4NCj4gPiA+ICsNCj4gPiA+ICtFWEFN
+UExFDQo+ID4gPiArDQo+ID4gPiArRXhhbXBsZSBmb3IgRk1hbiB2MiBleHRlcm5hbCBNRElPOg0K
+PiA+ID4gKw0KPiA+ID4gK21kaW9AZjEwMDAgew0KPiA+ID4gKwljb21wYXRpYmxlID0gImZzbCxm
+bWFuLXhtZGlvIjsNCj4gPiA+ICsJcmVnID0gPDB4ZjEwMDAgMHgxMDAwPjsNCj4gPiA+ICsJYnVz
+LWZyZXF1ZW5jeSA9IDwyMDAwMD47DQo+ID4gPiArfTsNCj4gPg0KPiA+IFNvIHRoZSBidXMgZnJl
+cXVlbmN5IGlzIG9ubHkgMjAgS0h6PyAgT3IgaXMgdGhlIHVuaXQgc3VwcG9zZWQgdG8gYmUNCj4g
+PiBzb21ldGhpbmcgb3RoZXIgdGhhbiBIej8NCj4gW1MuSF0gaXQncyBvbmx5IGFuIGV4YW1wbGUs
+IGl0IGNvdWxkIGJlIGRpZmZlcmVudCBvbiByZWFsIFNvQ3MsIGJ1dCB0aGV5IGFsd2F5cw0KPiBs
+b3dlciB0aGFuIHRoZSBzdGFuZGFyZCBvbmUsIFRoZSBzdGFuZGFyZCBvbmUgaXMgMi41TUh6LCBJ
+IGhhdmUgdG8gdXNlIEh6IGZvciBpdC4NCj4gDQo+IFRoYW5rcyENCj4gU2hhb2h1aQ0K
