@@ -1,28 +1,48 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <emachado@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 771CA1A04CD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 03:22:04 +1100 (AEDT)
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 569301A099E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 06:28:54 +1100 (AEDT)
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D31A51400A0
- for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2014 03:22:02 +1100 (AEDT)
-Date: Fri, 19 Dec 2014 17:21:46 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] macintosh: therm_pm72: delete deprecated driver
-Message-ID: <20141219162146.GA3632@katana>
-References: <1415238358-2453-1-git-send-email-wsa@the-dreams.de>
- <1415240376.4925.2.camel@kernel.crashing.org>
- <20141106092551.GA1333@katana>
- <1415267404.4925.15.camel@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 1EF101400F1
+ for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2014 06:28:51 +1100 (AEDT)
+Received: from /spool/local
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <emachado@linux.vnet.ibm.com>;
+ Fri, 19 Dec 2014 17:28:45 -0200
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 442C21DC0060
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2014 14:27:46 -0500 (EST)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBJJSLua56230062
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2014 17:28:21 -0200
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBJJScWj008038
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2014 17:28:40 -0200
+Message-ID: <54947C64.4030206@linux.vnet.ibm.com>
+Date: Fri, 19 Dec 2014 17:28:36 -0200
+From: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
-In-Reply-To: <1415267404.4925.15.camel@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
+In-Reply-To: <548578A8.5020901@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
+ Ulrich Weigand <uweigand@de.ibm.com>, shuahkh@osg.samsung.com,
+ akpm@linux-foundation.org, oleg@redhat.com, dhowells@redhat.com,
+ kirjanov@gmail.com, davej@redhat.com, tglx@linutronix.de,
+ sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +52,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/08/2014 08:08 AM, Anshuman Khandual wrote:
+> On 12/03/2014 12:18 PM, Anshuman Khandual wrote:
+>> On 12/03/2014 10:52 AM, Michael Ellerman wrote:
+>>> On Tue, 2014-02-12 at 07:56:45 UTC, Anshuman Khandual wrote:
+>>>> This patch adds four new ELF core note sections for powerpc
+>>>> transactional memory and one new ELF core note section for
+>>>> powerpc general miscellaneous debug registers. These addition
+>>>> of new ELF core note sections extends the existing ELF ABI
+>>>> without affecting it in any manner.
+>>>>
+>>>> Acked-by: Andrew Morton <akpm@linux-foundation.org>
+>>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>>> ---
+>>>>  include/uapi/linux/elf.h | 5 +++++
+>>>>  1 file changed, 5 insertions(+)
+>>>>
+>>>> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+>>>> index ea9bf25..2260fc0 100644
+>>>> --- a/include/uapi/linux/elf.h
+>>>> +++ b/include/uapi/linux/elf.h
+>>>> @@ -379,6 +379,11 @@ typedef struct elf64_shdr {
+>>>>  #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
+>>>>  #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
+>>>>  #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
+>>>> +#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
+>>>> +#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
+>>>> +#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
+>>>> +#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
+>>>> +#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
+>>>
+>>> This is a really terrible name, "MISC".
+>>>
+>>> Having said that, I guess it's accurate. We have a whole bunch of regs that
+>>> have accrued over recent years that aren't accessible via ptrace.
+>>>
+>>> It seems to me if we're adding a misc regset we should be adding everything we
+>>> might want to it that is currenty architected.
+>>
+>> But I believe they also need to be part of the thread_struct structure to be
+>> accessible from ptrace.
+> 
+> Currently we dont context save/restore the PMC count registers (PMC1-PMC6)
+> during the process context switch. So the values of PMC1..PMC6 are not
+> thread specific in the structure. To be able to access them in ptrace
+> when the tracee has stopped, we need to context save these counters
+> in the thread struct. Shall we do that ? Then we can add them to the
+> MISC regset bucket irrespective of whats the value we get in there when
+> we probe through ptrace.
+> 
+> The same goes for MMCRA, CFAR registers as well.
+> 
+>>  
+>>>
+>>> But currently you only include the PPR, TAR & DSCR.
+>>
+>> Yeah, thats what we started with.
+>>
+>>>
+>>> Looking at Power ISA v2.07, I see the following that could be included:
+>>>
+>>>   MMCR2
+>>>   MMCRA
+>>>   PMC1
+>>>   PMC2
+>>>   PMC3
+>>>   PMC4
+>>>   PMC5
+>>>   PMC6
+>>>   MMCR0
+>>>   EBBHR
+>>>   EBBRR
+>>>   BESCR
+>>>   SIAR
+>>>   SDAR
+>>>   CFAR?
+>>
+>> MMCRA, PMC[1..6], EBBHR, BESCR, EBBRR, CFAR are not part of the thread struct.
+> 
+> Sorry. EBBRR, EBBHR, BESCR registers are part of the thread struct.
+> 
+>>
+>>>
+>>> Those are all new in 2.07 except for CFAR.
+>>>
+>>> There might be more I missed, that was just a quick scan.
+>>>
+>>> Some are only accessible when EBB is in use, maybe those could be a separate
+>>> regset.
+>>
+>> Yeah we can have one more regset for EBB specific registers.
+> 
+> Should the new EBB specific regset include only EBBRR, EBBHR, BESCR registers
+> or should it also include SIAR, SDAR, SIER, MMCR0, MMCR2 registers as well. I
+> was thinking about putting these five registers into the MISC bucket instead.
+> But from the perf code, it looks like these five registers are also related to
+> the EBB context as well.
+> 
+> Some clarity on these points would really help.
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Thu, Nov 06, 2014 at 08:50:04PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-11-06 at 10:25 +0100, Wolfram Sang wrote:
-> > On Thu, Nov 06, 2014 at 01:19:36PM +1100, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2014-11-06 at 02:45 +0100, Wolfram Sang wrote:
-> > > > The new driver is around for more than 2 years now, so the old one =
-can
-> > > > go. Getting rid of it helps the removal of the legacy .attach_adapt=
-er
-> > > > callback of the I2C subsystem.
-> > > >=20
-> > > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> > >=20
-> > > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >=20
-> > Thanks! I can take it via my I2C tree, but I'd think it makes more sense
-> > if you take it via ppc? What do you prefer?
->=20
-> Either works. These days Michael Ellerman handles the day to day
-> maintainance of the powerpc tree so it's his choice but if you need this
-> as a dependency on your subsequent API removal it's probably better that
-> you take it.
+from the provided testcase using ptrace interface, reviewing with the help
+of Ulrich, it looks OK from GDB perspective, with the exception of a few
+concerns:
 
-So, I haven't seen this coming in via ppc. I am going to send another
-pull request to Linus tomorrow and will include it unless somebody
-objects soon.
+The patchset seems to change the "original" ptrace requests (i.e.
+PTRACE_GETREGS/GETFPREGS/GETVRREGS...) to return the "transactional" state, and
+adds new register sets to return the "checkpointed" state. Considering that
+whenever you get a debugger interception inside a transactional block, the
+transaction will abort, we're wondering if it wouldn't make more sense to
+display the 'checkpointed' state as the normal registers since this is where the
+execution will continue from.
 
+Also, we've noticed that the 'misc' regset contains registers from different ISA
+versions (dscr and ppr appear in ISA 2.05, tar is from 2.07). I'm not sure if
+there is a way to detect presence/validity of such registers, but perhaps it
+might be a good idea to separate registers from different ISAs in different
+regsets.
 
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Regarding the inclusion of other registers along with the EBB-related ones, I'm
+sorry but I'm not familiar with them.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUlFCaAAoJEBQN5MwUoCm2cxwP/0hreVNbRZVYWTeEwXRl6PMe
-mTVz5+uiVZgH4hk1iqlTTMMkf5o4rvG4M2Bk5o1a8nOKl1DeURiif+PFO4QffjEd
-HmDQJb81+AV0eDuh056RlWGvJrzCNPjaayH/TdPKkGBGMn2qfF1i/DUJXv733oTk
-ncc36SNXH8GGHoPfPUj7AfCK7j7Z1/F2OJA5WMScirG4dsl3pY+7qduBuvwVvmS5
-/F1hXnHsautcKaoob5GfYVArns9v3x9sRLHS5qdRopnJzWqeAVExBwQGDOuJJEw/
-hHJ6lH6REn1FUjQ2bUX1BBREFDFUnQsYfgPn6iH6JyfdFsTPDba/uRy1UPePZyd5
-rHkHAcsqKBc2sZpu9gEuzB4XsiUJUZOoyZAf77fZ4/XMwTEtFhxC04b9z4lD/ou2
-5bU25iBGwYDPvwl/7aB+y9Vi34ytHe2qOndOEvEipdZD2MGEln47avz06+L/Qizi
-6MPqTbAfyIUhP32kJYI87N+6S2z47EaOgjdUQd6RnTt0pu8vBVJuzNxbo1awBXWg
-gTEre7AwXP4wTRz5RgvgjMz0hSCyr9VG9EEhBkBVKdtnOr/i2v5GYJS2GDNAZXzR
-1NRsw5h2IC0sHjFj99RLFxq8PgJmta9Pmg3wDZTqHEdmXKdficdS4ZRWi5fpyrsB
-I8ZeXmLx6gcJLR8v+6KM
-=wMth
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+Thanks and regards,
+--
+Edjunior
