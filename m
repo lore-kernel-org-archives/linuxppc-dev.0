@@ -1,26 +1,23 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7FD81A0BCA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2014 18:38:22 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-Date: Fri, 19 Dec 2014 07:23:26 +0000
-Message-ID: <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
- <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1418940078.5581.143.camel@freescale.com>
-In-Reply-To: <1418940078.5581.143.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59D001A02CA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2014 20:16:45 +1100 (AEDT)
+Message-ID: <1418980604.30631.1.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-3.19-2 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 19 Dec 2014 20:16:44 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-/sqi0TfDFCdNGi9tnwki"
+Mime-Version: 1.0
+Cc: sukadev@linux.vnet.ibm.com, paul@paul-moore.com, mst@redhat.com,
+ rgb@redhat.com, wsa@the-dreams.de, linux-kernel@vger.kernel.org,
+ paulus@samba.org, anton@samba.org, shreyas@linux.vnet.ibm.com,
+ neelegup@linux.vnet.ibm.com, gkurz@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +27,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBGcmlkYXksIERlY2VtYmVyIDE5LCAyMDE0IDY6MDEgQU0NCj4gVG86IFhpZSBTaGFv
-aHVpLUIyMTk4OQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRy
-ZWVAdmdlci5rZXJuZWwub3JnOyBNZWR2ZSBFbWlsaWFuLQ0KPiBFTU1FRFZFMTsgTGliZXJtYW4g
-SWdhbC1CMzE5NTANCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gW3YyXSBwb3dlci9mc2w6IGFkZCBN
-RElPIGR0IGJpbmRpbmcgZm9yIEZNYW4NCj4gDQo+IE9uIFRodSwgMjAxNC0xMi0xOCBhdCAwNjo1
-MyAtMDYwMCwgWGllIFNoYW9odWktQjIxOTg5IHdyb3RlOg0KPiA+IFBpbmcuDQo+ID4NCj4gPiBC
-ZXN0IFJlZ2FyZHMsDQo+ID4gU2hhb2h1aSBYaWUNCj4gDQo+IEkgY2FuJ3QgcHV0IHBhdGNoZXMg
-aW4gbXkgLW5leHQgdW50aWwgdGhlIG1lcmdlIHdpbmRvdyBjbG9zZXMuDQo+IA0KPiA+ID4gPiA+
-ICtFWEFNUExFDQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICtFeGFtcGxlIGZvciBGTWFuIHYyIGV4
-dGVybmFsIE1ESU86DQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICttZGlvQGYxMDAwIHsNCj4gPiA+
-ID4gPiArCWNvbXBhdGlibGUgPSAiZnNsLGZtYW4teG1kaW8iOw0KPiA+ID4gPiA+ICsJcmVnID0g
-PDB4ZjEwMDAgMHgxMDAwPjsNCj4gPiA+ID4gPiArCWJ1cy1mcmVxdWVuY3kgPSA8MjAwMDA+Ow0K
-PiA+ID4gPiA+ICt9Ow0KPiA+ID4gPg0KPiA+ID4gPiBTbyB0aGUgYnVzIGZyZXF1ZW5jeSBpcyBv
-bmx5IDIwIEtIej8gIE9yIGlzIHRoZSB1bml0IHN1cHBvc2VkIHRvDQo+ID4gPiA+IGJlIHNvbWV0
-aGluZyBvdGhlciB0aGFuIEh6Pw0KPiA+ID4gW1MuSF0gaXQncyBvbmx5IGFuIGV4YW1wbGUsIGl0
-IGNvdWxkIGJlIGRpZmZlcmVudCBvbiByZWFsIFNvQ3MsIGJ1dA0KPiA+ID4gdGhleSBhbHdheXMg
-bG93ZXIgdGhhbiB0aGUgc3RhbmRhcmQgb25lLCBUaGUgc3RhbmRhcmQgb25lIGlzIDIuNU1Ieiwg
-SSBoYXZlDQo+IHRvIHVzZSBIeiBmb3IgaXQuDQo+IA0KPiBJcyB0aGVyZSBhbnkgU29DIGZvciB3
-aGljaCAyMCBrSHogaXMgdGhlIHJpZ2h0IGZyZXF1ZW5jeT8gIEkganVzdCB3YW50IHRvIG1ha2UN
-Cj4gc3VyZSB0aGUgZXhhbXBsZSBpcyByZWFsaXN0aWMuDQpbUy5IXSB0aGUgY2xvY2sgZGl2aWRl
-ciBoYXMgYSBsaW1pdGF0aW9uIHRoYXQgdGhlIE1BWCB2YWx1ZSBpdCBjYW4gZ2V0IG9uIEZtYW4g
-djIgaXMgMjU1ICgweGZmLCA4IGJpdHMpLA0KT24gRm1hbiB2MyBpcyA1MTEoMHgxZmYsIDkgYml0
-cykuDQoNClNvIHRoZSBsb3dlc3QgZnJlcXVlbmN5IG9uIEZtYW4gdjIgaXM6IEZtYW5fY2xvY2sg
-LyAoMiAqIDI1NSksDQpPbiBGbWFuIHYzIGlzOiBGbWFuX2Nsb2NrIC8gKCgyICogNTExKSArIDEp
-Lg0KDQpUYWtlIGRlZmF1bHQgRm1hbiBmcmVxdWVuY3kgc2V0dGluZyBmcm9tIFNESzEuNyBhcyBl
-eGFtcGxlLCB0aGUgbG93ZXN0IGNsb2NrIHVzZWQgZm9yIEZtYW4gdjIgaXMgNTgxTUh6LA0KVGhl
-IGxvd2VzdCBjbG9jayBmb3IgRm1hbiB2MyBpcyA2MDBNSHouDQoNClRoZW4gdGhlIGxvd2VzdCBi
-dXMgZnJlcXVlbmN5IGNhbiBnZXQgaXM6DQpGbWFuIHYyOiB+MTE0MEtIeg0KRm1hbiB2MzogfjU4
-N0tIeg0KDQoyMEtIeiBpcyBub3QgcHJhY3RpY2UsIHdlIGRvbid0IGhhdmUgYSBzdWdnZXN0ZWQg
-dmFsdWUgaW4gZXJyYXRhIGRvY3VtZW50Lg0KRm9yIHRoaXMgZXhhbXBsZSwgc2hvdWxkIEkgcG9z
-dCBhIG5ldyB2ZXJzaW9uIHdpdGggYSB2YWx1ZSBsaWtlIDEyMDBLSHo/DQoNClRoYW5rcyENClNo
-YW9odWkNCg==
+
+--=-/sqi0TfDFCdNGi9tnwki
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Linus,
+
+Please pull the second batch of powerpc updates for 3.19:
+
+The following changes since commit 56548fc0e86cb9156af7a7e1f15ba78f251dafaf=
+:
+
+  powerpc/powernv: Return to cpu offline loop when finished in KVM guest (2=
+014-12-08 13:16:31 +1100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+3.19-2
+
+for you to fetch changes up to d70a54e2d08510a99b1f10eceeae6f2f7086e226:
+
+  powerpc/powernv: Ignore smt-enabled on Power8 and later (2014-12-18 19:59=
+:21 +1100)
+
+----------------------------------------------------------------
+powerpc updates for 3.19 batch 2
+
+The highlight is the series that reworks the idle management on powernv, wh=
+ich
+allows us to use deeper idle states on those machines.
+
+There's the fix from Anton for the "BUG at kernel/smpboot.c:134!" problem.
+
+An i2c driver for powernv. This is acked by Wolfram Sang, and he asked that=
+ we
+take it through the powerpc tree.
+
+A fix for audit from rgb at Red Hat, acked by Paul Moore who is one of the =
+audit
+maintainers.
+
+A patch from Ben to export the symbol map of our OPAL firmware as a sysfs f=
+ile,
+so that tools can use it.
+
+Also some CXL fixes, a couple of powerpc perf fixes, a fix for smt-enabled,=
+ and
+the patch to add __force to get_user() so we can use bitwise types.
+----------------------------------------------------------------
+
+Anton Blanchard (1):
+      powerpc: Secondary CPUs must set cpu_callin_map after setting active =
+and online
+
+Benjamin Herrenschmidt (1):
+      powerpc/powernv: Expose OPAL firmware symbol map
+
+Greg Kurz (1):
+      powerpc/powernv: Ignore smt-enabled on Power8 and later
+
+Ian Munsie (3):
+      cxl: Change contexts_lock to a mutex to fix sleep while atomic bug
+      cxl: Add timeout to process element commands
+      cxl: Unmap MMIO regions when detaching a context
+
+Michael S. Tsirkin (1):
+      powerpc/uaccess: Allow get_user() with bitwise types
+
+Neelesh Gupta (1):
+      i2c: Driver to expose PowerNV platform i2c busses
+
+Paul Mackerras (1):
+      powerpc/powernv: Switch off MMU before entering nap/sleep/rvwinkle mo=
+de
+
+Richard Guy Briggs (1):
+      powerpc: add little endian flag to syscall_get_arch()
+
+Shreyas B. Prabhu (3):
+      powerpc/powernv: Enable Offline CPUs to enter deep idle states
+      powernv/cpuidle: Redesign idle states management
+      powernv/powerpc: Add winkle support for offline cpus
+
+Sukadev Bhattiprolu (1):
+      power/perf/hv-24x7: Use kmem_cache_free() instead of kfree
+
+sukadev@linux.vnet.ibm.com (1):
+      powerpc/perf/hv-24x7: Use per-cpu page buffer
+
+ Documentation/devicetree/bindings/i2c/i2c-opal.txt |  37 +++
+ arch/powerpc/include/asm/cpuidle.h                 |  20 ++
+ arch/powerpc/include/asm/opal.h                    |  42 +++
+ arch/powerpc/include/asm/paca.h                    |  10 +
+ arch/powerpc/include/asm/ppc-opcode.h              |   2 +
+ arch/powerpc/include/asm/processor.h               |   3 +-
+ arch/powerpc/include/asm/reg.h                     |   4 +
+ arch/powerpc/include/asm/syscall.h                 |   6 +-
+ arch/powerpc/include/asm/uaccess.h                 |   6 +-
+ arch/powerpc/kernel/asm-offsets.c                  |  11 +
+ arch/powerpc/kernel/exceptions-64s.S               |  35 ++-
+ arch/powerpc/kernel/idle_power7.S                  | 344 +++++++++++++++++=
++---
+ arch/powerpc/kernel/smp.c                          |   9 +-
+ arch/powerpc/perf/hv-24x7.c                        |  23 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |  39 +++
+ arch/powerpc/platforms/powernv/opal.c              |  50 ++-
+ arch/powerpc/platforms/powernv/powernv.h           |   2 +
+ arch/powerpc/platforms/powernv/setup.c             | 166 ++++++++++
+ arch/powerpc/platforms/powernv/smp.c               |  29 +-
+ arch/powerpc/platforms/powernv/subcore.c           |  34 ++
+ arch/powerpc/platforms/powernv/subcore.h           |   9 +-
+ drivers/cpuidle/cpuidle-powernv.c                  |  10 +-
+ drivers/i2c/busses/Kconfig                         |  11 +
+ drivers/i2c/busses/Makefile                        |   1 +
+ drivers/i2c/busses/i2c-opal.c                      | 294 +++++++++++++++++=
++
+ drivers/misc/cxl/context.c                         |  26 +-
+ drivers/misc/cxl/cxl.h                             |   9 +-
+ drivers/misc/cxl/file.c                            |   6 +-
+ drivers/misc/cxl/native.c                          |  12 +-
+ drivers/misc/cxl/pci.c                             |   2 +-
+ drivers/misc/cxl/sysfs.c                           |  10 +-
+ include/uapi/linux/audit.h                         |   2 +
+ 32 files changed, 1156 insertions(+), 108 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/i2c/i2c-opal.txt
+ create mode 100644 arch/powerpc/include/asm/cpuidle.h
+ create mode 100644 drivers/i2c/busses/i2c-opal.c
+
+
+--=-/sqi0TfDFCdNGi9tnwki
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJUk+z8AAoJEFHr6jzI4aWAAPEQAJmFf013Konzwul1a6XCmlcy
+TaSd5UfXa2FVrmjuTykSyyCEOhmYPdqPNg6Rl40t3iXHvOhV3nvMDCqwa3sxPFtp
+v4c8RclQR4Gvj1vNbDzivp1WleWlOvleE06DdCqx1xTgAm8zoOl3h4xMKQ8fERXR
+0ZmYw834AsyfkxpHnUi41XFvCaHDw5fVctfVD5IZ+1kGB8PungFvpEx51OZAY5td
+u6UWcEowi4etnsbFHTzyWhOd2jAbh1rftUbpqrDJWACb0KlAXNmh8JBGVLj06JSN
+Ztxg3MOm3H21U3++LmxC5OwFMVIZoOf7Rb+HY7+3atz6q0HXayL3ug8DUjJHwKp+
+XLIvN8qi1g03nzopp0so9T0eRK1TXaw7uNH+5QAalLsaU1PnUZb8pgz/qPNXKRp+
+xfXIZnnsbSIWewR/jPeu1xz299e36l5LfEkrrF4BFXncg+52gmbhSiqcILBZUYJV
+4sL+ph3u+ATsAupV2v6Rp9XSSchJt/MuiqukWpy461o0OaG2ank9t+Pqqd30X2QH
+7IjcKlTK4gDAROEcl8M18lD/QwQVJ+OxEz0U1i8zNo7h5hJzuMegw3lWyhc/B1zS
+yV0NbiuhOBmGmUX7jSqGKW6dIKJXf7j5XX7kXOoHu4zc5dYziCdaSPOENPWBma/a
+lUKmPhXzxQn4scRN5mhZ
+=sPzf
+-----END PGP SIGNATURE-----
+
+--=-/sqi0TfDFCdNGi9tnwki--
