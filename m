@@ -1,23 +1,27 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-yh0-x232.google.com (mail-yh0-x232.google.com
- [IPv6:2607:f8b0:4002:c01::232])
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DFA7F1A05DE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 03:47:04 +1100 (AEDT)
-Received: by mail-yh0-f50.google.com with SMTP id 29so1349644yhl.37
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 08:47:01 -0800 (PST)
-From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, David Herrmann <dh.herrmann@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Fabian Frederick <fabf@skynet.be>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powerpc: Wire up sys_execveat() syscall
-Date: Sat, 20 Dec 2014 11:47:18 -0500
-Message-Id: <1419094041-14536-1-git-send-email-bobby.prani@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B69941A065E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 04:09:33 +1100 (AEDT)
+Received: by mail-ig0-f181.google.com with SMTP id l13so2350330iga.14
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 09:09:31 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20141219034918.GX24110@csclub.uwaterloo.ca>
+References: <20141219034918.GX24110@csclub.uwaterloo.ca>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Sat, 20 Dec 2014 09:08:51 -0800
+Message-ID: <CAGVrzcbCCV_AL48R3iTGQqvdAM6NWuC1yDW5P+eh7rExE3fcow@mail.gmail.com>
+Subject: Re: net: ucc: tbi phy detection broken by
+ 058112c7efc9ef43bb511c137293dddbe6e42908
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=UTF-8
+Cc: netdev <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,103 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wire up sys_execveat(). This passes the selftests for the system call.
+2014-12-18 19:49 GMT-08:00 Lennart Sorensen <lsorense@csclub.uwaterloo.ca>:
+> I have been trying to move an 8360 based system from a 3.0 kernel to a
+> 3.12 (on the way to 3.14 with ipipe/xenomai) kernel and encountered an
+> oops in the ucc_geth driver when using RTBI mode on one of the ucc
+> ports.  I haven't managed to find any commits to of_mdio or ucc_geth or
+> fsl_pq_mdio that would appear to address this problem, so I believe it
+> is still present in the latest kernel, but have not confirmed that with
+> testing yet.
+>
+> Commit 058112c7efc9ef43bb511c137293dddbe6e42908 appears to have broken
+> ucc support for tbi phy detection.
+>
+> With the patch in place, I am unable to get the mdio bus to create phy
+> devices for the tbi phy in the ucc on an 8360e, and the ucc_geth driver
+> causes a kernel oops, while with the patch reverted, it does create them
+> and the driver comes up and works.
+>
+> The tbi phy is needed when using a ucc in RTBI, TBI or SGMII mode.
+>
+> I am not convinced that the tbi phy really behaves quite like a real phy,
+> which may be why get_phy_device does not work with it.  Perhaps there
+> is a better way to deal with the tbi phy on the ucc for this purpose.
 
-Check success of execveat(3, '../execveat', 0)... [OK]
-Check success of execveat(5, 'execveat', 0)... [OK]
-Check success of execveat(6, 'execveat', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
-Check success of execveat(99, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
-Check success of execveat(8, '', 4096)... [OK]
-Check success of execveat(17, '', 4096)... [OK]
-Check success of execveat(9, '', 4096)... [OK]
-Check success of execveat(14, '', 4096)... [OK]
-Check success of execveat(14, '', 4096)... [OK]
-Check success of execveat(15, '', 4096)... [OK]
-Check failure of execveat(8, '', 0) with ENOENT... [OK]
-Check failure of execveat(8, '(null)', 4096) with EFAULT... [OK]
-Check success of execveat(5, 'execveat.symlink', 0)... [OK]
-Check success of execveat(6, 'execveat.symlink', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...xec/execveat.symlink', 0)... [OK]
-Check success of execveat(10, '', 4096)... [OK]
-Check success of execveat(10, '', 4352)... [OK]
-Check failure of execveat(5, 'execveat.symlink', 256) with ELOOP... [OK]
-Check failure of execveat(6, 'execveat.symlink', 256) with ELOOP... [OK]
-Check failure of execveat(-100, '/home/pranith/linux/tools/testing/selftests/exec/execveat.symlink', 256) with ELOOP... [OK]
-Check success of execveat(3, '../script', 0)... [OK]
-Check success of execveat(5, 'script', 0)... [OK]
-Check success of execveat(6, 'script', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...elftests/exec/script', 0)... [OK]
-Check success of execveat(13, '', 4096)... [OK]
-Check success of execveat(13, '', 4352)... [OK]
-Check failure of execveat(18, '', 4096) with ENOENT... [OK]
-Check failure of execveat(7, 'script', 0) with ENOENT... [OK]
-Check success of execveat(16, '', 4096)... [OK]
-Check success of execveat(16, '', 4096)... [OK]
-Check success of execveat(4, '../script', 0)... [OK]
-Check success of execveat(4, 'script', 0)... [OK]
-Check success of execveat(4, '../script', 0)... [OK]
-Check failure of execveat(4, 'script', 0) with ENOENT... [OK]
-Check failure of execveat(5, 'execveat', 65535) with EINVAL... [OK]
-Check failure of execveat(5, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(6, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(-100, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(5, '', 4096) with EACCES... [OK]
-Check failure of execveat(5, 'Makefile', 0) with EACCES... [OK]
-Check failure of execveat(11, '', 4096) with EACCES... [OK]
-Check failure of execveat(12, '', 4096) with EACCES... [OK]
-Check failure of execveat(99, '', 4096) with EBADF... [OK]
-Check failure of execveat(99, 'execveat', 0) with EBADF... [OK]
-Check failure of execveat(8, 'execveat', 0) with ENOTDIR... [OK]
-Invoke copy of 'execveat' via filename of length 4093:
-Check success of execveat(19, '', 4096)... [OK]
-Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
-Invoke copy of 'script' via filename of length 4093:
-Check success of execveat(20, '', 4096)... [OK]
-/bin/sh: 0: Can't open /dev/fd/5/xxxxxxx(... a long line of x's and y's, 0)... [OK]
-Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
+There are some comments in ucc_geth that also lead me to believe this
+is a just a hack instead of a real Ethernet PHY device. Part of what I
+think got broken is because of this comment:
 
-Tested on a 32-bit powerpc system.
+/* Initialize TBI PHY interface for communicating with the
+ * SERDES lynx PHY on the chip.  We communicate with this PHY
+ * through the MDIO bus on each controller, treating it as a
+ * "normal" PHY at the address found in the UTBIPA register.  We assume
+ * that the UTBIPA register is valid.  Either the MDIO bus code will set
+ * it to a value that doesn't conflict with other PHYs on the bus, or the
+ * value doesn't matter, as there are no other PHYs on the bus.
+ */
 
-Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+In particular this one:
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index ce9577d..778844a 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -366,3 +366,4 @@ SYSCALL_SPU(seccomp)
- SYSCALL_SPU(getrandom)
- SYSCALL_SPU(memfd_create)
- SYSCALL_SPU(bpf)
-+SYSCALL_SPU(execveat)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index e0da021..36b79c3 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		362
-+#define __NR_syscalls		363
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index f55351f..ef5b5b1 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -384,5 +384,6 @@
- #define __NR_getrandom		359
- #define __NR_memfd_create	360
- #define __NR_bpf		361
-+#define __NR_execveat		362
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+"Either the MDIO bus code will set
+ * it to a value that doesn't conflict with other PHYs on the bus, or the
+ * value doesn't matter, as there are no other PHYs on the bus."
+
+and what Sebastian removed did exactly that, we used the special MDIO
+broadcast address 0 to provide this "whatever". If this is such a
+requirement from the ucc_geth driver and TBI PHYs, maybe we should
+have this hack somewhere in the actual MDIO driver used by the
+ucc_geth driver instead, or set a flag/read the PHY connection mode
+and do this in drivers/of/of_mdio.c
+
+>
+> Certainly as it is, this patch has caused a regression though, although
+> probably not very many systems with ucc ports actually use one of the
+> affected modes so the damage isn't that great.
+>
+> --
+> Len Sorensen
+
+
+
 -- 
-2.1.3
+Florian
