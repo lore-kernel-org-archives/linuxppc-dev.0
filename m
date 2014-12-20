@@ -1,20 +1,23 @@
-Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yh0-x232.google.com (mail-yh0-x232.google.com
+ [IPv6:2607:f8b0:4002:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 230291A0672
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 03:11:01 +1100 (AEDT)
-Received: by mail-wi0-f179.google.com with SMTP id ex7so4500254wid.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 08:10:57 -0800 (PST)
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-To: Ian Munsie <imunsie@au1.ibm.com>,
-	Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] misc: cxl: sysfs.c:  Remove unused function
-Date: Sat, 20 Dec 2014 17:13:44 +0100
-Message-Id: <1419092024-6701-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DFA7F1A05DE
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 03:47:04 +1100 (AEDT)
+Received: by mail-yh0-f50.google.com with SMTP id 29so1349644yhl.37
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 08:47:01 -0800 (PST)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anton Blanchard <anton@samba.org>, David Herrmann <dh.herrmann@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Fabian Frederick <fabf@skynet.be>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] powerpc: Wire up sys_execveat() syscall
+Date: Sat, 20 Dec 2014 11:47:18 -0500
+Message-Id: <1419094041-14536-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +27,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the function mmio_size_show() that is not used anywhere.
+Wire up sys_execveat(). This passes the selftests for the system call.
 
-This was partially found by using a static code analysis program called cppcheck.
+Check success of execveat(3, '../execveat', 0)... [OK]
+Check success of execveat(5, 'execveat', 0)... [OK]
+Check success of execveat(6, 'execveat', 0)... [OK]
+Check success of execveat(-100, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
+Check success of execveat(99, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
+Check success of execveat(8, '', 4096)... [OK]
+Check success of execveat(17, '', 4096)... [OK]
+Check success of execveat(9, '', 4096)... [OK]
+Check success of execveat(14, '', 4096)... [OK]
+Check success of execveat(14, '', 4096)... [OK]
+Check success of execveat(15, '', 4096)... [OK]
+Check failure of execveat(8, '', 0) with ENOENT... [OK]
+Check failure of execveat(8, '(null)', 4096) with EFAULT... [OK]
+Check success of execveat(5, 'execveat.symlink', 0)... [OK]
+Check success of execveat(6, 'execveat.symlink', 0)... [OK]
+Check success of execveat(-100, '/home/pranith/linux/...xec/execveat.symlink', 0)... [OK]
+Check success of execveat(10, '', 4096)... [OK]
+Check success of execveat(10, '', 4352)... [OK]
+Check failure of execveat(5, 'execveat.symlink', 256) with ELOOP... [OK]
+Check failure of execveat(6, 'execveat.symlink', 256) with ELOOP... [OK]
+Check failure of execveat(-100, '/home/pranith/linux/tools/testing/selftests/exec/execveat.symlink', 256) with ELOOP... [OK]
+Check success of execveat(3, '../script', 0)... [OK]
+Check success of execveat(5, 'script', 0)... [OK]
+Check success of execveat(6, 'script', 0)... [OK]
+Check success of execveat(-100, '/home/pranith/linux/...elftests/exec/script', 0)... [OK]
+Check success of execveat(13, '', 4096)... [OK]
+Check success of execveat(13, '', 4352)... [OK]
+Check failure of execveat(18, '', 4096) with ENOENT... [OK]
+Check failure of execveat(7, 'script', 0) with ENOENT... [OK]
+Check success of execveat(16, '', 4096)... [OK]
+Check success of execveat(16, '', 4096)... [OK]
+Check success of execveat(4, '../script', 0)... [OK]
+Check success of execveat(4, 'script', 0)... [OK]
+Check success of execveat(4, '../script', 0)... [OK]
+Check failure of execveat(4, 'script', 0) with ENOENT... [OK]
+Check failure of execveat(5, 'execveat', 65535) with EINVAL... [OK]
+Check failure of execveat(5, 'no-such-file', 0) with ENOENT... [OK]
+Check failure of execveat(6, 'no-such-file', 0) with ENOENT... [OK]
+Check failure of execveat(-100, 'no-such-file', 0) with ENOENT... [OK]
+Check failure of execveat(5, '', 4096) with EACCES... [OK]
+Check failure of execveat(5, 'Makefile', 0) with EACCES... [OK]
+Check failure of execveat(11, '', 4096) with EACCES... [OK]
+Check failure of execveat(12, '', 4096) with EACCES... [OK]
+Check failure of execveat(99, '', 4096) with EBADF... [OK]
+Check failure of execveat(99, 'execveat', 0) with EBADF... [OK]
+Check failure of execveat(8, 'execveat', 0) with ENOTDIR... [OK]
+Invoke copy of 'execveat' via filename of length 4093:
+Check success of execveat(19, '', 4096)... [OK]
+Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
+Invoke copy of 'script' via filename of length 4093:
+Check success of execveat(20, '', 4096)... [OK]
+/bin/sh: 0: Can't open /dev/fd/5/xxxxxxx(... a long line of x's and y's, 0)... [OK]
+Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Tested on a 32-bit powerpc system.
+
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
 ---
- drivers/misc/cxl/sysfs.c |   11 -----------
- 1 file changed, 11 deletions(-)
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index ce7ec06..0431ec3 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -102,17 +102,6 @@ static struct device_attribute afu_master_attrs[] = {
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index ce9577d..778844a 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -366,3 +366,4 @@ SYSCALL_SPU(seccomp)
+ SYSCALL_SPU(getrandom)
+ SYSCALL_SPU(memfd_create)
+ SYSCALL_SPU(bpf)
++SYSCALL_SPU(execveat)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index e0da021..36b79c3 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
  
- /*********  AFU attributes  **************************************************/
  
--static ssize_t mmio_size_show(struct device *device,
--			      struct device_attribute *attr,
--			      char *buf)
--{
--	struct cxl_afu *afu = to_cxl_afu(device);
--
--	if (afu->pp_size)
--		return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->pp_size);
--	return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->adapter->ps_size);
--}
--
- static ssize_t reset_store_afu(struct device *device,
- 			       struct device_attribute *attr,
- 			       const char *buf, size_t count)
+-#define __NR_syscalls		362
++#define __NR_syscalls		363
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index f55351f..ef5b5b1 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -384,5 +384,6 @@
+ #define __NR_getrandom		359
+ #define __NR_memfd_create	360
+ #define __NR_bpf		361
++#define __NR_execveat		362
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-1.7.10.4
+2.1.3
