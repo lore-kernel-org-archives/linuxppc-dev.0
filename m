@@ -1,17 +1,26 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F8AA1A0C77
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 08:16:04 +1100 (AEDT)
-From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 28/28] macintosh: drop owner assignment from platform_drivers
-Date: Sun, 21 Dec 2014 22:14:49 +0100
-Message-Id: <1419196495-9626-29-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
-References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <wsa@the-dreams.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8BAEA1A04F6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 09:56:37 +1100 (AEDT)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1A29B1400B7
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2014 09:56:36 +1100 (AEDT)
+Message-ID: <5497501E.9040806@suse.de>
+Date: Sun, 21 Dec 2014 23:56:30 +0100
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@linux-m68k.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: powernv: Return to cpu offline loop when finished
+ in KVM guest
+References: <20141203034840.GA612@iris.ozlabs.ibm.com>
+ <878ui13xbe.fsf@igel.home>
+In-Reply-To: <878ui13xbe.fsf@igel.home>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,55 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This platform_driver does not need to set an owner, it will be populated by the
-driver core.
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
----
-Generated with coccinelle. SmPL file is in the introductory msg. The big
-cleanup was pulled in this merge window. This series catches the bits fallen
-through. The patches shall go in via the subsystem trees.
+On 21.12.14 15:13, Andreas Schwab wrote:
+> arch/powerpc/kvm/built-in.o: In function `kvm_no_guest':
+> arch/powerpc/kvm/book3s_hv_rmhandlers.o:(.text+0x724): undefined reference to `power7_wakeup_loss'
 
- drivers/macintosh/windfarm_pm112.c | 1 -
- drivers/macintosh/windfarm_pm72.c  | 1 -
- drivers/macintosh/windfarm_rm31.c  | 1 -
- 3 files changed, 3 deletions(-)
+Ugh. We just removed support for 970 HV mode, but that obviously doesn't
+mean you can't compile in support for HV mode without enabling p7.
 
-diff --git a/drivers/macintosh/windfarm_pm112.c b/drivers/macintosh/windfarm_pm112.c
-index 3024685e4cca..96d16fca68b2 100644
---- a/drivers/macintosh/windfarm_pm112.c
-+++ b/drivers/macintosh/windfarm_pm112.c
-@@ -668,7 +668,6 @@ static struct platform_driver wf_pm112_driver = {
- 	.remove = wf_pm112_remove,
- 	.driver = {
- 		.name = "windfarm",
--		.owner	= THIS_MODULE,
- 	},
- };
- 
-diff --git a/drivers/macintosh/windfarm_pm72.c b/drivers/macintosh/windfarm_pm72.c
-index 2f506b9d5a52..e88cfb36a74d 100644
---- a/drivers/macintosh/windfarm_pm72.c
-+++ b/drivers/macintosh/windfarm_pm72.c
-@@ -789,7 +789,6 @@ static struct platform_driver wf_pm72_driver = {
- 	.remove	= wf_pm72_remove,
- 	.driver	= {
- 		.name = "windfarm",
--		.owner	= THIS_MODULE,
- 	},
- };
- 
-diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
-index 82fc86a90c1a..bdfcb8a8bfbb 100644
---- a/drivers/macintosh/windfarm_rm31.c
-+++ b/drivers/macintosh/windfarm_rm31.c
-@@ -682,7 +682,6 @@ static struct platform_driver wf_rm31_driver = {
- 	.remove	= wf_rm31_remove,
- 	.driver	= {
- 		.name = "windfarm",
--		.owner	= THIS_MODULE,
- 	},
- };
- 
--- 
-2.1.3
+Paul, what would you think of a patch that makes BOOK3S_HV depend on
+PPC_POWERNV?
+
+
+Alex
