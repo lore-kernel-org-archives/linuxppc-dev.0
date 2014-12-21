@@ -1,22 +1,27 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
- [IPv6:2607:f8b0:4002:c07::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4017A1A0BF0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 00:59:13 +1100 (AEDT)
-Received: by mail-yk0-f172.google.com with SMTP id 131so1616549ykp.17
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 05:59:11 -0800 (PST)
-From: Pranith Kumar <bobby.prani@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, David Herrmann <dh.herrmann@gmail.com>,
- Fabian Frederick <fabf@skynet.be>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 1/1] powerpc: Wire up sys_execveat() syscall
-Date: Sun, 21 Dec 2014 08:59:32 -0500
-Message-Id: <1419170375-27759-1-git-send-email-bobby.prani@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0A721A0C1A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 01:23:05 +1100 (AEDT)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4876114007D
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2014 01:23:04 +1100 (AEDT)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: powernv: Return to cpu offline loop when
+ finished in KVM guest
+References: <20141203034840.GA612@iris.ozlabs.ibm.com>
+Date: Sun, 21 Dec 2014 15:13:41 +0100
+In-Reply-To: <20141203034840.GA612@iris.ozlabs.ibm.com> (Paul Mackerras's
+ message of "Wed, 3 Dec 2014 14:48:40 +1100")
+Message-ID: <878ui13xbe.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,103 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wire up sys_execveat(). This passes the selftests for the system call.
+arch/powerpc/kvm/built-in.o: In function `kvm_no_guest':
+arch/powerpc/kvm/book3s_hv_rmhandlers.o:(.text+0x724): undefined reference to `power7_wakeup_loss'
 
-Check success of execveat(3, '../execveat', 0)... [OK]
-Check success of execveat(5, 'execveat', 0)... [OK]
-Check success of execveat(6, 'execveat', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
-Check success of execveat(99, '/home/pranith/linux/...ftests/exec/execveat', 0)... [OK]
-Check success of execveat(8, '', 4096)... [OK]
-Check success of execveat(17, '', 4096)... [OK]
-Check success of execveat(9, '', 4096)... [OK]
-Check success of execveat(14, '', 4096)... [OK]
-Check success of execveat(14, '', 4096)... [OK]
-Check success of execveat(15, '', 4096)... [OK]
-Check failure of execveat(8, '', 0) with ENOENT... [OK]
-Check failure of execveat(8, '(null)', 4096) with EFAULT... [OK]
-Check success of execveat(5, 'execveat.symlink', 0)... [OK]
-Check success of execveat(6, 'execveat.symlink', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...xec/execveat.symlink', 0)... [OK]
-Check success of execveat(10, '', 4096)... [OK]
-Check success of execveat(10, '', 4352)... [OK]
-Check failure of execveat(5, 'execveat.symlink', 256) with ELOOP... [OK]
-Check failure of execveat(6, 'execveat.symlink', 256) with ELOOP... [OK]
-Check failure of execveat(-100, '/home/pranith/linux/tools/testing/selftests/exec/execveat.symlink', 256) with ELOOP... [OK]
-Check success of execveat(3, '../script', 0)... [OK]
-Check success of execveat(5, 'script', 0)... [OK]
-Check success of execveat(6, 'script', 0)... [OK]
-Check success of execveat(-100, '/home/pranith/linux/...elftests/exec/script', 0)... [OK]
-Check success of execveat(13, '', 4096)... [OK]
-Check success of execveat(13, '', 4352)... [OK]
-Check failure of execveat(18, '', 4096) with ENOENT... [OK]
-Check failure of execveat(7, 'script', 0) with ENOENT... [OK]
-Check success of execveat(16, '', 4096)... [OK]
-Check success of execveat(16, '', 4096)... [OK]
-Check success of execveat(4, '../script', 0)... [OK]
-Check success of execveat(4, 'script', 0)... [OK]
-Check success of execveat(4, '../script', 0)... [OK]
-Check failure of execveat(4, 'script', 0) with ENOENT... [OK]
-Check failure of execveat(5, 'execveat', 65535) with EINVAL... [OK]
-Check failure of execveat(5, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(6, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(-100, 'no-such-file', 0) with ENOENT... [OK]
-Check failure of execveat(5, '', 4096) with EACCES... [OK]
-Check failure of execveat(5, 'Makefile', 0) with EACCES... [OK]
-Check failure of execveat(11, '', 4096) with EACCES... [OK]
-Check failure of execveat(12, '', 4096) with EACCES... [OK]
-Check failure of execveat(99, '', 4096) with EBADF... [OK]
-Check failure of execveat(99, 'execveat', 0) with EBADF... [OK]
-Check failure of execveat(8, 'execveat', 0) with ENOTDIR... [OK]
-Invoke copy of 'execveat' via filename of length 4093:
-Check success of execveat(19, '', 4096)... [OK]
-Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
-Invoke copy of 'script' via filename of length 4093:
-Check success of execveat(20, '', 4096)... [OK]
-/bin/sh: 0: Can't open /dev/fd/5/xxxxxxx(... a long line of x's and y's, 0)... [OK]
-Check success of execveat(5, 'xxxxxxxxxxxxxxxxxxxx...yyyyyyyyyyyyyyyyyyyy', 0)... [OK]
+Andreas.
 
-Tested on a 32-bit powerpc system.
-
-Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index ce9577d..91062ee 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -366,3 +366,4 @@ SYSCALL_SPU(seccomp)
- SYSCALL_SPU(getrandom)
- SYSCALL_SPU(memfd_create)
- SYSCALL_SPU(bpf)
-+COMPAT_SYS(execveat)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index e0da021..36b79c3 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		362
-+#define __NR_syscalls		363
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index f55351f..ef5b5b1 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -384,5 +384,6 @@
- #define __NR_getrandom		359
- #define __NR_memfd_create	360
- #define __NR_bpf		361
-+#define __NR_execveat		362
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-1.9.1
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
