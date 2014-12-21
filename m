@@ -1,24 +1,27 @@
-Return-Path: <rickard.strandqvist@spectrumdigital.se>
-Received: from mail-la0-f47.google.com (mail-la0-f47.google.com
- [209.85.215.47])
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-vc0-x233.google.com (mail-vc0-x233.google.com
+ [IPv6:2607:f8b0:400c:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAC0E1A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 23:46:41 +1100 (AEDT)
-Received: by mail-la0-f47.google.com with SMTP id hz20so2898261lab.34
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 04:46:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4AE5F1A0BE4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 00:57:43 +1100 (AEDT)
+Received: by mail-vc0-f179.google.com with SMTP id le20so1243891vcb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 05:57:40 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1419134735.27324.41.camel@neuling.org>
-References: <1419092024-6701-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <1419134735.27324.41.camel@neuling.org>
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 21 Dec 2014 13:46:16 +0100
-Message-ID: <CAFo99ga9TYf5hnwOcoRPKsTHhhknoz6_axzP7spe0mvd=YPMLw@mail.gmail.com>
-Subject: Re: [PATCH] misc: cxl: sysfs.c: Remove unused function
-To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20141221205604.5a280c9d@canb.auug.org.au>
+References: <1419094041-14536-1-git-send-email-bobby.prani@gmail.com>
+ <20141221205604.5a280c9d@canb.auug.org.au>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Sun, 21 Dec 2014 08:57:10 -0500
+Message-ID: <CAJhHMCCnS6cEuATp-jScDpAjv7fgMm_v=gu650gE=UNK7GupQA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Wire up sys_execveat() syscall
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Fabian Frederick <fabf@skynet.be>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ David Herrmann <dh.herrmann@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014-12-21 5:05 GMT+01:00 Michael Neuling <mikey@neuling.org>:
->> Remove the function mmio_size_show() that is not used anywhere.
+On Sun, Dec 21, 2014 at 4:56 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Pranith,
 >
-> Did you compile check this patch?
->
->   drivers/misc/cxl/sysfs.c:291:74: error: =E2=80=98mmio_size_show=E2=80=
-=99 undeclared here (not in a function)
->
-> It's used here:
->         static struct device_attribute afu_attrs[] =3D {
->                 __ATTR_RO(mmio_size),
->
->> This was partially found by using a static code analysis program called =
-cppcheck.
->
-> Thanks for letting me know which tool to avoid :-)
->
-> Mikey
->
->
+> On Sat, 20 Dec 2014 11:47:18 -0500 Pranith Kumar <bobby.prani@gmail.com> wrote:
 >>
->> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.=
-se>
->> ---
->>  drivers/misc/cxl/sysfs.c |   11 -----------
->>  1 file changed, 11 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
->> index ce7ec06..0431ec3 100644
->> --- a/drivers/misc/cxl/sysfs.c
->> +++ b/drivers/misc/cxl/sysfs.c
->> @@ -102,17 +102,6 @@ static struct device_attribute afu_master_attrs[] =
-=3D {
->>
->>  /*********  AFU attributes  *******************************************=
-*******/
->>
->> -static ssize_t mmio_size_show(struct device *device,
->> -                           struct device_attribute *attr,
->> -                           char *buf)
->> -{
->> -     struct cxl_afu *afu =3D to_cxl_afu(device);
->> -
->> -     if (afu->pp_size)
->> -             return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->pp_size);
->> -     return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->adapter->ps_size);
->> -}
->> -
->>  static ssize_t reset_store_afu(struct device *device,
->>                              struct device_attribute *attr,
->>                              const char *buf, size_t count)
+>> Wire up sys_execveat(). This passes the selftests for the system call.
+>
+> Thanks for this, but ...
+>
+>> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+>> index ce9577d..778844a 100644
+>> --- a/arch/powerpc/include/asm/systbl.h
+>> +++ b/arch/powerpc/include/asm/systbl.h
+>> @@ -366,3 +366,4 @@ SYSCALL_SPU(seccomp)
+>>  SYSCALL_SPU(getrandom)
+>>  SYSCALL_SPU(memfd_create)
+>>  SYSCALL_SPU(bpf)
+>> +SYSCALL_SPU(execveat)
+>
+> Given that it passes pointers into the kernel and looking at the execve
+> system call, I assume that it should be COMPAT_SYS().
 >
 
-
-Hi
-
-Sorry about that.
-
-Strange because I compile everything as allyesconfig, allmodconfig and
-allnoconfig.
-
-Kind regards
-Rickard Strandqvist
+Yes, you are right. I will send in an updated patch. Thanks!
+-- 
+Pranith
