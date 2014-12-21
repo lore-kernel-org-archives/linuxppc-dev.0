@@ -1,21 +1,20 @@
-Return-Path: <rickard_strandqvist@spectrumdigital.se>
-Received: from mail-wi0-f176.google.com (mail-wi0-f176.google.com
- [209.85.212.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A6D4F1A065B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 09:39:49 +1100 (AEDT)
-Received: by mail-wi0-f176.google.com with SMTP id ex7so5039544wid.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2014 14:39:45 -0800 (PST)
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] arch: powerpc: platforms: embedded6xx: mpc7448_hpc2.c: Remove
- some unused functions
-Date: Sat, 20 Dec 2014 23:42:32 +0100
-Message-Id: <1419115353-12374-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BF1751A084F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Dec 2014 15:05:35 +1100 (AEDT)
+Message-ID: <1419134735.27324.41.camel@neuling.org>
+Subject: Re: [PATCH] misc: cxl: sysfs.c:  Remove unused function
+From: Michael Neuling <mikey@neuling.org>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sun, 21 Dec 2014 15:05:35 +1100
+In-Reply-To: <1419092024-6701-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1419092024-6701-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Removes some functions that are not used anywhere:
-mpc7448_hpc2_halt() mpc7448_hpc2_power_off()
+> Remove the function mmio_size_show() that is not used anywhere.
 
-This was partially found by using a static code analysis program called cppcheck.
+Did you compile check this patch?
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   11 -----------
- 1 file changed, 11 deletions(-)
+  drivers/misc/cxl/sysfs.c:291:74: error: =E2=80=98mmio_size_show=E2=80=99 =
+undeclared here (not in a function)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index beeaf4a..df4ad95 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -156,17 +156,6 @@ void mpc7448_hpc2_restart(char *cmd)
- 	for (;;) ;		/* Spin until reset happens */
- }
- 
--void mpc7448_hpc2_power_off(void)
--{
--	local_irq_disable();
--	for (;;) ;		/* No way to shut power off with software */
--}
--
--void mpc7448_hpc2_halt(void)
--{
--	mpc7448_hpc2_power_off();
--}
--
- /*
-  * Called very early, device-tree isn't unflattened
-  */
--- 
-1.7.10.4
+It's used here:
+        static struct device_attribute afu_attrs[] =3D {
+        	__ATTR_RO(mmio_size),
+
+> This was partially found by using a static code analysis program called c=
+ppcheck.
+
+Thanks for letting me know which tool to avoid :-)
+
+Mikey
+
+
+>=20
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.s=
+e>
+> ---
+>  drivers/misc/cxl/sysfs.c |   11 -----------
+>  1 file changed, 11 deletions(-)
+>=20
+> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+> index ce7ec06..0431ec3 100644
+> --- a/drivers/misc/cxl/sysfs.c
+> +++ b/drivers/misc/cxl/sysfs.c
+> @@ -102,17 +102,6 @@ static struct device_attribute afu_master_attrs[] =
+=3D {
+> =20
+>  /*********  AFU attributes  ********************************************=
+******/
+> =20
+> -static ssize_t mmio_size_show(struct device *device,
+> -			      struct device_attribute *attr,
+> -			      char *buf)
+> -{
+> -	struct cxl_afu *afu =3D to_cxl_afu(device);
+> -
+> -	if (afu->pp_size)
+> -		return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->pp_size);
+> -	return scnprintf(buf, PAGE_SIZE, "%llu\n", afu->adapter->ps_size);
+> -}
+> -
+>  static ssize_t reset_store_afu(struct device *device,
+>  			       struct device_attribute *attr,
+>  			       const char *buf, size_t count)
