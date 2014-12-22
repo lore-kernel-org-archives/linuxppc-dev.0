@@ -1,27 +1,23 @@
-Return-Path: <rickard.strandqvist@spectrumdigital.se>
-Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
- [209.85.217.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96C971A011B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 09:11:49 +1100 (AEDT)
-Received: by mail-lb0-f173.google.com with SMTP id z12so4504311lbi.32
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 14:11:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D89101A0C95
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 09:48:26 +1100 (AEDT)
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129]) by ozlabs.org (Postfix) with ESMTP id 811841400D2
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2014 09:48:26 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Paul Bolle <pebolle@tiscali.nl>, Jiri Kosina <trivial@kernel.org>
+Subject: Re: [PATCH] [TRIVIAL] IBM Akebono: Remove select of IBM_EMAC_RGMII_WOL
+Date: Tue, 23 Dec 2014 09:48:23 +1100
+Message-ID: <2224792.Nmvmc626jj@mexican>
+In-Reply-To: <1419243273.30945.19.camel@x220>
+References: <1415008333.20372.26.camel@x220> <1419243273.30945.19.camel@x220>
 MIME-Version: 1.0
-In-Reply-To: <54985686.7080609@freebsd.org>
-References: <1419087601-4889-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <1419269161.3786.4.camel@infradead.org> <54985686.7080609@freebsd.org>
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Mon, 22 Dec 2014 23:11:24 +0100
-Message-ID: <CAFo99gZsG5P6FGLqo02vyCueg4iuSpZqRU5a0BvzvtMhcRs0hw@mail.gmail.com>
-Subject: Re: [PATCH] arch: powerpc: platforms: ps3: repository.c: Remove
- unused function
-To: Nathan Whitehorn <nwhitehorn@freebsd.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: cbe-oss-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>,
- Andre Heider <a.heider@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Valentin Rothberg <valentinrothberg@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014-12-22 18:36 GMT+01:00 Nathan Whitehorn <nwhitehorn@freebsd.org>:
->
-> On 12/22/14 09:26, Geoff Levand wrote:
->>
->> On Sat, 2014-12-20 at 16:00 +0100, Rickard Strandqvist wrote:
->>>
->>> Remove the function ps3_repository_write_highmem_info() that is not used
->>> anywhere.
->>
->> NAK
->>
->> ps3_repository_write_highmem_info() is needed by otheros++.  What we
->> need is a kernel patch to add the highmem info to the repository once it
->> is known.
->>
->> These ps3_repository_write_highmem routines are also the only
->> documentation the freeBSD port has as to how the highmem info is (should
->> be) saved in the repository.
->>
->> -Geoff
->>
->>
->
-> Yes, we really need this for FreeBSD since that port uses the repository
-> directly instead of FDT. Thanks for noticing this. We could adapt FreeBSD to
-> use FDT (this is the only non-device-tree PowerPC port), but there hasn't
-> been any reason to do that thus far given the availability of the repository
-> information.
-> -Nathan
+Hi Paul,
 
+These days I've been made maintainer of the PPC4XX tree so maybe adding Acked-
+by: Alistair Popple <alistair@popple.id.au> might help?
 
+Jiri, if you would rather this go via the main PPC tree please let us know and 
+we'll see if Michael Ellerman (added to CC) would be willing to take it (he 
+has taken over most of the day to day maintenance of the PPC tree). Thanks!
 
-Hi
+Regards,
 
-Too bad that did not have the benefit of the patch, but it looks like
-something good come because of it anyhow.
+Alistair
 
-Kind regards
-Rickard Strandqvist
+On Mon, 22 Dec 2014 11:14:33 Paul Bolle wrote:
+> Hi Jiri,
+> 
+> On Mon, 2014-11-03 at 10:52 +0100, Paul Bolle wrote:
+> > Commit 2a2c74b2efcb ("IBM Akebono: Add the Akebono platform") added a
+> > select of IBM_EMAC_RGMII_WOL. But that Kconfig symbol isn't (yet) part
+> > of the tree. So this select has been a nop since that commit was
+> > included in v3.16-rc1.
+> > 
+> > The code to add this symbol is not included in next-20141103. So let's
+> > remove this select. It can be readded when that symbol is actually added
+> > to the tree.
+> > 
+> > Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> > Cc: Alistair Popple <alistair@popple.id.au>
+> > ---
+> > Untested. Done on top of next-20141103.
+> > 
+> > Third time's a charm? First raised in
+> > https://lkml.org/lkml/2014/5/1/106 . Reminder sent in
+> > https://lkml.org/lkml/2014/9/4/645 . I'm not aware of any news on this
+> > front, so this trivial patch seems reasonable now.
+> > 
+> > A patch to readd this select could be added - if people still care about
+> > it, that is - in the series that adds this symbol. A web search suggests
+> > Alistair takes care of that series, so Alistair gets a Cc: here.
+> 
+> This select of IBM_EMAC_RGMII_WOL still shows up in next-20141221 and
+> v3.19-rc1. Did you have a chance to look at this patch?
+> 
+> >  arch/powerpc/platforms/44x/Kconfig | 1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/44x/Kconfig
+> > b/arch/powerpc/platforms/44x/Kconfig index d2ac1c116454..5538e57c36c1
+> > 100644
+> > --- a/arch/powerpc/platforms/44x/Kconfig
+> > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > @@ -214,7 +214,6 @@ config AKEBONO
+> > 
+> >  	select ETHERNET
+> >  	select NET_VENDOR_IBM
+> >  	select IBM_EMAC_EMAC4
+> > 
+> > -	select IBM_EMAC_RGMII_WOL
+> > 
+> >  	select USB if USB_SUPPORT
+> >  	select USB_OHCI_HCD_PLATFORM if USB_OHCI_HCD
+> >  	select USB_EHCI_HCD_PLATFORM if USB_EHCI_HCD
+> 
+> Thanks,
+> 
+> 
+> Paul Bolle
