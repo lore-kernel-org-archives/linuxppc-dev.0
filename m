@@ -1,33 +1,32 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBB4A1A0BF2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 18:50:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D51F1A0D59
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 18:50:06 +1100 (AEDT)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 02:50:01 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 78C3938C8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:49:59 -0500 (EST)
+ Mon, 22 Dec 2014 00:50:04 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A3F7C6E8028
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:41:54 -0500 (EST)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBM7nxjY23462060
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 07:49:59 GMT
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBM7o0d926869820
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 07:50:00 GMT
 Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBM7nwXb024113
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:49:59 -0500
+ sBM7nxlZ024159
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:50:00 -0500
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v6 2/4] tools/perf: extend format_alias() to include event
- parameters
-Date: Sun, 21 Dec 2014 23:49:25 -0800
-Message-Id: <1419234567-22784-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v6 3/4] perf Documentation: add event parameters
+Date: Sun, 21 Dec 2014 23:49:26 -0800
+Message-Id: <1419234567-22784-4-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, dev@codyps.com,
@@ -43,76 +42,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
-This causes `perf list pmu` to show parameters for parameterized events
-like:
+Event parameters are a basic way for partial events to be specified in
+sysfs with per-event names given to the fields that need to be filled in
+when using a particular event.
 
-  pmu/event_name,param1=?,param2=?/ [Kernel PMU event]
-
-An example:
-
-  hv_24x7/HPM_TLBIE__PHYS_CORE,core=?/ [Kernel PMU event]
+It is intended for supporting cases where the single 'cpu' parameter is
+insufficient. For example, POWER 8 has events for physical
+sockets/cores/cpus that are accessible from with virtual machines. To
+keep using the single 'cpu' parameter we'd need to perform a mapping
+between Linux's cpus and the physical machine's cpus (in this case
+Linux is running under a hypervisor). This isn't possible because
+bindings between our cpus and physical cpus may not be fixed, and we
+probably won't have a "cpu" on each physical cpu.
 
 Changelog[v6]
-	[Jir Olsa, Sukadev Bhattiprolu] Drop the '$' sign and go back to
-	just printing whatevever sysfs provides (which is '=?') to identify
-	required parameters. sysfs also now uses parameters like 'core'
-	and 'vcpu' rather than 'starting_index'.
+	Update event description to explain how required parameters
+	are displayed.
 
-Changelog[v5]
-	[Jiri Olsa, Peter Zijlstra] Use '$' to prefix parameterized events.
-
-Changelog[v4]
-	[Jiri Olsa] If the parameter for an event in sysfs is 'param=val',
-	have perf-list show the event as 'param=?' rather than 'val=?'.
-
+CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 CC: Haren Myneni <hbabu@us.ibm.com>
 CC: Cody P Schafer <dev@codyps.com>
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- tools/perf/util/pmu.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-bus-event_source-devices-events | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index cb516dd..d208fef 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -810,10 +810,35 @@ void perf_pmu__set_format(unsigned long *bits, long from, long to)
- 		set_bit(b, bits);
- }
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+index 20979f8..47ad2a1 100644
+--- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+@@ -52,12 +52,18 @@ Description:	Per-pmu performance monitoring events specific to the running syste
+ 			event=0x2abc
+ 			event=0x423,inv,cmask=0x3
+ 			domain=0x1,offset=0x8,starting_index=0xffff
++			domain=0x1,offset=0x8,core=?
  
-+static int sub_non_neg(int a, int b)
-+{
-+	if (b > a)
-+		return 0;
-+	return a - b;
-+}
-+
- static char *format_alias(char *buf, int len, struct perf_pmu *pmu,
- 			  struct perf_pmu_alias *alias)
- {
--	snprintf(buf, len, "%s/%s/", pmu->name, alias->name);
-+	struct parse_events_term *term;
-+	int used = snprintf(buf, len, "%s/%s", pmu->name, alias->name);
-+
-+	list_for_each_entry(term, &alias->terms, list)
-+		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
-+			used += snprintf(buf + used, sub_non_neg(len, used),
-+					",%s=%s", term->config,
-+					term->val.str);
-+
-+	if (sub_non_neg(len, used) > 0) {
-+		buf[used] = '/';
-+		used++;
-+	}
-+	if (sub_non_neg(len, used) > 0) {
-+		buf[used] = '\0';
-+		used++;
-+	} else
-+		buf[len - 1] = '\0';
-+
- 	return buf;
- }
+ 		Each of the assignments indicates a value to be assigned to a
+ 		particular set of bits (as defined by the format file
+ 		corresponding to the <term>) in the perf_event structure passed
+ 		to the perf_open syscall.
  
++		In the case of the last example, a value replacing "?" would
++		need to be provided by the user selecting the particular event.
++		This is referred to as "event parameterization". All
++		non-numerical values indicate an event parameter.
++
+ What: /sys/bus/event_source/devices/<pmu>/events/<event>.unit
+ Date: 2014/02/24
+ Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
 -- 
 1.8.3.1
