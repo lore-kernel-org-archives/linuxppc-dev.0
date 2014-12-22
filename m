@@ -1,22 +1,16 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACB3C1A0D69
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 01:43:52 +1100 (AEDT)
-Date: Mon, 22 Dec 2014 15:43:15 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 4/4] tools/perf: Document parameterized and symbolic
- events
-Message-ID: <20141222144315.GC29096@krava.brq.redhat.com>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-5-git-send-email-sukadev@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1419234567-22784-5-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
+Return-Path: <geoff@infradead.org>
+Message-ID: <1419269161.3786.4.camel@infradead.org>
+Subject: Re: [PATCH] arch: powerpc: platforms: ps3: repository.c:  Remove
+ unused function
+From: Geoff Levand <geoff@infradead.org>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Andre
+ Heider <a.heider@gmail.com>, Nathan Whitehorn <nwhitehorn@freebsd.org>
+Date: Mon, 22 Dec 2014 09:26:01 -0800
+In-Reply-To: <1419087601-4889-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1419087601-4889-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,81 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 21, 2014 at 11:49:27PM -0800, Sukadev Bhattiprolu wrote:
-> From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> 
-> Changelog[v6]:
-> 	- [Sukadev Bhattiprolu]: Update documentation of perf-list and
-> 	  perf-record; Added documentation for perf-stat.
-> 
-> CC: Haren Myneni <hbabu@us.ibm.com>
-> CC: Cody P Schafer <dev@codyps.com>
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  tools/perf/Documentation/perf-list.txt   | 13 +++++++++++++
->  tools/perf/Documentation/perf-record.txt | 12 ++++++++++++
->  tools/perf/Documentation/perf-stat.txt   | 20 ++++++++++++++++----
->  3 files changed, 41 insertions(+), 4 deletions(-)
-> 
-> diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
-> index cbb4f74..d8be6fa 100644
-> --- a/tools/perf/Documentation/perf-list.txt
-> +++ b/tools/perf/Documentation/perf-list.txt
-> @@ -89,6 +89,19 @@ raw encoding of 0x1A8 can be used:
->  You should refer to the processor specific documentation for getting these
->  details. Some of them are referenced in the SEE ALSO section below.
->  
-> +PARAMETERIZED EVENTS
-> +--------------------
-> +
-> +Some pmu events listed by 'perf-list' will be displayed with '$x' in them. For
-> +example:
+On Sat, 2014-12-20 at 16:00 +0100, Rickard Strandqvist wrote:
+> Remove the function ps3_repository_write_highmem_info() that is not used anywhere.
 
-s/$x/?/                                                         ^^^^
+NAK
 
-> +
-> +  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
-> +
-> +This means that when provided as an event, a value for '?' must
-> +also be supplied. For example:
-> +
-> +  perf stat -C 0 -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
-> +
->  OPTIONS
->  -------
->  
-> diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-> index af9a54e..acdcf3b 100644
-> --- a/tools/perf/Documentation/perf-record.txt
-> +++ b/tools/perf/Documentation/perf-record.txt
-> @@ -33,6 +33,18 @@ OPTIONS
->          - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
->  	  hexadecimal event descriptor.
+ps3_repository_write_highmem_info() is needed by otheros++.  What we
+need is a kernel patch to add the highmem info to the repository once it
+is known.
 
-SNIP
+These ps3_repository_write_highmem routines are also the only
+documentation the freeBSD port has as to how the highmem info is (should
+be) saved in the repository.
 
-> +
-> +	- a symbolically formed event like 'pmu/config=M,config1=N,config3=K/'
-> +
-> +          where M, N, K are numbers (in decimal, hex, octal format). Acceptable
-> +          values for each of 'config', 'config1' and 'config2' are defined by
-> +          corresponding entries in /sys/bus/event_sources/devices/<pmu>/format/*
-> +          param1 and param2 are defined as formats for the PMU in:
-> +	  /sys/bus/event_sources/devices/<pmu>/format/*
-
-   ^^^^ misaligned tab
-
-> +
->          - a hardware breakpoint event in the form of '\mem:addr[:access]'
->            where addr is the address in memory you want to break in.
->            Access is the memory access type (read, write, execute) it can
-> diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
-> index 29ee857..04e150d 100644
-> --- a/tools/perf/Documentation/perf-stat.txt
-> +++ b/tools/perf/Documentation/perf-stat.txt
-> @@ -25,10 +25,22 @@ OPTIONS
->  
-
-thanks,
-jirka
+-Geoff
