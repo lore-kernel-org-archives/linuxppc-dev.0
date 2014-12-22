@@ -1,16 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C11361A0145
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 20:42:26 +1100 (AEDT)
-Message-ID: <1419241330.5581.162.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BCB661A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 20:52:01 +1100 (AEDT)
+Message-ID: <5497E645.7010500@Freescale.com>
+Date: Mon, 22 Dec 2014 03:37:09 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@Freescale.com>
 Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Mon, 22 Dec 2014 03:42:10 -0600
-In-Reply-To: <5497E645.7010500@Freescale.com>
 References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
  <1416966592.15957.172.camel@freescale.com>
  <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
@@ -19,9 +19,8 @@ References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
  <1419030955.5581.154.camel@freescale.com>
  <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
  <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
- <5497E645.7010500@Freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+In-Reply-To: <1419237176.5581.159.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
@@ -35,37 +34,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-22 at 03:37 -0600, Emil Medve wrote:
-> Hello Scott,
-> 
-> 
-> On 12/22/2014 02:32 AM, Scott Wood wrote:
-> > On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
-> >> For the purpose of an example in the binding document, I suggest we just
-> >> stick with the IEEE standard frequency.
-> > 
-> > The whole reason for this property existing in the device tree is
-> > non-standard frequencies.
-> 
-> While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
-> support frequencies well beyond the standard. Specifying a lower then
-> the standard frequency for the benefit of some errata is just one side
-> of this property
+Hello Scott,
 
-The erratum was (until now) the only claimed reason for it.  If there
-are other reasons why one would specify a different frequency (in
-particular, that relate to hardware description), please elaborate.
 
-> >> We can continue this conversation about errata handling when we submit
-> >> the code relevant to this binding (and the FMan v3 support)
-> > 
-> > It affects the binding, so let's discuss it now please.
+On 12/22/2014 02:32 AM, Scott Wood wrote:
+> On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
+>> Hello Shao-Hui,
+>>
+>>
+>> On 12/21/2014 08:31 PM, Xie Shaohui-B21989 wrote:
+>>>> On Fri, 2014-12-19 at 01:23 -0600, Xie Shaohui-B21989 wrote:
+>>>>>> -----Original Message-----
+>>>>>> From: Wood Scott-B07421
+>>>>>> Sent: Friday, December 19, 2014 6:01 AM
+>>>>>> To: Xie Shaohui-B21989
+>>>>>> Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Medve
+>>>>>> Emilian- EMMEDVE1; Liberman Igal-B31950
+>>>>>> Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+>>>>>>
+>>>>>> On Thu, 2014-12-18 at 06:53 -0600, Xie Shaohui-B21989 wrote:
+>>>>>>> Ping.
+>>>>>>>
+>>>>>>> Best Regards,
+>>>>>>> Shaohui Xie
+>>>>>>
+>>>>>> I can't put patches in my -next until the merge window closes.
+>>>>>>
+>>>>>>>>>> +EXAMPLE
+>>>>>>>>>> +
+>>>>>>>>>> +Example for FMan v2 external MDIO:
+>>>>>>>>>> +
+>>>>>>>>>> +mdio@f1000 {
+>>>>>>>>>> +	compatible = "fsl,fman-xmdio";
+>>>>>>>>>> +	reg = <0xf1000 0x1000>;
+>>>>>>>>>> +	bus-frequency = <20000>;
+>>>>>>>>>> +};
+>>>>>>>>>
+>>>>>>>>> So the bus frequency is only 20 KHz?  Or is the unit supposed
+>>>>>>>>> to be something other than Hz?
+>>>>>>>> [S.H] it's only an example, it could be different on real SoCs,
+>>>>>>>> but they always lower than the standard one, The standard one is
+>>>>>>>> 2.5MHz, I have
+>>>>>> to use Hz for it.
+>>>>>>
+>>>>>> Is there any SoC for which 20 kHz is the right frequency?  I just
+>>>>>> want to make sure the example is realistic.
+>>>>> [S.H] the clock divider has a limitation that the MAX value it can get
+>>>>> on Fman v2 is 255 (0xff, 8 bits), On Fman v3 is 511(0x1ff, 9 bits).
+>>>>>
+>>>>> So the lowest frequency on Fman v2 is: Fman_clock / (2 * 255), On Fman
+>>>>> v3 is: Fman_clock / ((2 * 511) + 1).
+>>>>>
+>>>>> Take default Fman frequency setting from SDK1.7 as example, the lowest
+>>>>> clock used for Fman v2 is 581MHz, The lowest clock for Fman v3 is 600MHz.
+>>>>>
+>>>>> Then the lowest bus frequency can get is:
+>>>>> Fman v2: ~1140KHz
+>>>>> Fman v3: ~587KHz
+>>>>>
+>>>>> 20KHz is not practice, we don't have a suggested value in errata document.
+>>>>> For this example, should I post a new version with a value like 1200KHz?
+>>>>
+>>>> This is different from how you described the problem before.  If the limitation
+>>>> is on the divider, rather than the absolute bus frequency, then specifiy the max
+>>>> divider.  Or better, since according to the above this correlates with fman
+>>>> version, just have the driver know what the max divider is for each fman version.
+>>> [S.H] The problem is not the divider has limitation, the problem is a different bus frequency 
+>>> Is needed which is lower than the standard, but due to the divider limitation, the lowest
+>>> bus frequency also has limitation. i.e. we need to use the divider to get a lower frequency,
+>>> but how much lower the value could be is restricted by the divider limitation.
 > 
-> I think this specific (unpublished yet) errata has less bearing on the
-> binding then you might believe. This is mostly about providing a
-> common/default frequency supported by all the devices on some board
+> This is difficult to follow -- are you saying the erratum requires a
+> speed that is not achievable?
+> 
+>> For the purpose of an example in the binding document, I suggest we just
+>> stick with the IEEE standard frequency.
+> 
+> The whole reason for this property existing in the device tree is
+> non-standard frequencies.
 
-What reason other than an erratum would there be for the standard
-frequency not being supported?
+While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
+support frequencies well beyond the standard. Specifying a lower then
+the standard frequency for the benefit of some errata is just one side
+of this property
 
--Scott
+>> We can continue this conversation about errata handling when we submit
+>> the code relevant to this binding (and the FMan v3 support)
+> 
+> It affects the binding, so let's discuss it now please.
+
+I think this specific (unpublished yet) errata has less bearing on the
+binding then you might believe. This is mostly about providing a
+common/default frequency supported by all the devices on some board
+
+Anyway, the above thread about bits and lowest frequency limitation(s)
+is not really a problem/limitation. The range of frequencies (dividers)
+supported by both controller versions in all the supported SoC(s) allows
+responding to this (FMan v3 only) errata just fine
+
+
+Cheers,
