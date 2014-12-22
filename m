@@ -1,19 +1,31 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 266B81A0D4B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 20:14:44 +1100 (AEDT)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <benh@kernel.crashing.org>, <scottwood@freescale.com>, <anton@samba.org>
-Subject: [PATCH] powerpc/smp: Fix Non-boot cpus cannot be bring up.
-Date: Mon, 22 Dec 2014 14:38:40 +0800
-Message-ID: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C11361A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 20:42:26 +1100 (AEDT)
+Message-ID: <1419241330.5581.162.camel@freescale.com>
+Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Mon, 22 Dec 2014 03:42:10 -0600
+In-Reply-To: <5497E645.7010500@Freescale.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+ <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1418940078.5581.143.camel@freescale.com>
+ <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1419030955.5581.154.camel@freescale.com>
+ <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
+ <5497E645.7010500@Freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
+ Igal-B31950 <Igal.Liberman@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On Mon, 2014-12-22 at 03:37 -0600, Emil Medve wrote:
+> Hello Scott,
+> 
+> 
+> On 12/22/2014 02:32 AM, Scott Wood wrote:
+> > On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
+> >> For the purpose of an example in the binding document, I suggest we just
+> >> stick with the IEEE standard frequency.
+> > 
+> > The whole reason for this property existing in the device tree is
+> > non-standard frequencies.
+> 
+> While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
+> support frequencies well beyond the standard. Specifying a lower then
+> the standard frequency for the benefit of some errata is just one side
+> of this property
 
-Kernel cannot bring up Non-boot cpus always get "Processor xx is stuck".
-this issue bring by http://patchwork.ozlabs.org/patch/418912/ (powerpc:
-Secondary CPUs must set cpu_callin_map after setting active and online)
-We need to take timebase after bootup cpu give the timebase firstly.
+The erratum was (until now) the only claimed reason for it.  If there
+are other reasons why one would specify a different frequency (in
+particular, that relate to hardware description), please elaborate.
 
-When start_secondary, non-boot cpus set cpu_callin_map for boot cpu
-after that boot cpu will give the timebase for non-boot cpu. Otherwise
-non-boot cpus will fall in dead loop to waiting bootup cpu to give
-imebase.
+> >> We can continue this conversation about errata handling when we submit
+> >> the code relevant to this binding (and the FMan v3 support)
+> > 
+> > It affects the binding, so let's discuss it now please.
+> 
+> I think this specific (unpublished yet) errata has less bearing on the
+> binding then you might believe. This is mostly about providing a
+> common/default frequency supported by all the devices on some board
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+What reason other than an erratum would there be for the standard
+frequency not being supported?
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 8ec017c..9e29836 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -703,10 +703,6 @@ void start_secondary(void *unused)
- 
- 	if (smp_ops->setup_cpu)
- 		smp_ops->setup_cpu(cpu);
--	if (smp_ops->take_timebase)
--		smp_ops->take_timebase();
--
--	secondary_cpu_time_init();
- 
- #ifdef CONFIG_PPC64
- 	if (system_state == SYSTEM_RUNNING)
-@@ -746,6 +742,16 @@ void start_secondary(void *unused)
- 	smp_wmb();
- 	cpu_callin_map[cpu] = 1;
- 
-+	/*
-+	 * We need to take timebase after bootup cpu give the timebase.
-+	 * Base on cpu_callin_map move to here, so we also need move
-+	 * take_timebase. Because bootup cpu waiting for cpu_callin_map
-+	 * be set after that give_timebase can be executed.
-+	 */
-+	if (smp_ops->take_timebase)
-+		smp_ops->take_timebase();
-+	secondary_cpu_time_init();
-+
- 	local_irq_enable();
- 
- 	cpu_startup_entry(CPUHP_ONLINE);
--- 
-2.1.0.27.g96db324
+-Scott
