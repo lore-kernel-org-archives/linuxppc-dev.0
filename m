@@ -1,15 +1,19 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 77EFA1A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 21:14:53 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Subject: [PATCH v3 2/2] powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
-Message-Id: <20141222101450.D7DD11A5E15@localhost.localdomain>
-Date: Mon, 22 Dec 2014 11:14:50 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTP id B73651A0CFF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 21:25:41 +1100 (AEDT)
+Message-ID: <5497F1A3.7060004@c-s.fr>
+Date: Mon, 22 Dec 2014 11:25:39 +0100
+From: leroy christophe <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v2 PATCH 1/2] powerpc32: adds handling of _PAGE_RO
+References: <20141217091431.D3F761A5E0D@localhost.localdomain>
+ <1418868868.5581.121.camel@freescale.com>
+In-Reply-To: <1418868868.5581.121.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,78 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc 8xx, in TLB entries, 0x400 bit is set to 1 for read-only pages
-and is set to 0 for RW pages. So we should use _PAGE_RO instead of _PAGE_RW
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Le 18/12/2014 03:14, Scott Wood a écrit :
+> On Wed, 2014-12-17 at 10:14 +0100, Christophe Leroy wrote:
+>> Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
+>> This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>
+>> ---
+>> v2 is a complete rework compared to v1
+>>
+>>   arch/powerpc/include/asm/pgtable-ppc32.h | 11 ++++++-----
+>>   arch/powerpc/include/asm/pgtable.h       | 10 +++++++---
+>>   arch/powerpc/include/asm/pte-common.h    | 27 ++++++++++++++++++---------
+>>   arch/powerpc/mm/gup.c                    |  2 ++
+>>   arch/powerpc/mm/mem.c                    |  2 +-
+>>   arch/powerpc/mm/pgtable_32.c             | 24 ++++++++++++++++++++----
+>>   6 files changed, 54 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+>> index 543bb8e..64ed9e1 100644
+>> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+>> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+>> @@ -125,7 +125,7 @@ extern int icache_44x_need_flush;
+>>   #ifndef __ASSEMBLY__
+>>   
+>>   #define pte_clear(mm, addr, ptep) \
+>> -	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
+>> +	do { pte_update(ptep, ~_PAGE_HASHPTE, _PAGE_RO); } while (0)
+> Is this really necessary?  It's already clearing the valid bit.
+>
+> Likewise in several other places that set or check for _PAGE_RO on pages
+> for which no access is permitted.
+>
+>
+You are right, this is not needed. I needed it because I had defined 
+pte_none() as requiring _PAGE_RO set. But we can keep value 0 as 
+pte_none. Taken into account in v3
 
----
-v2 is a complete rework compared to v1
-v3: fixing pte_update() and comments
-
- arch/powerpc/include/asm/pgtable-ppc32.h | 5 +++--
- arch/powerpc/include/asm/pte-8xx.h       | 9 ++++-----
- arch/powerpc/kernel/head_8xx.S           | 3 ---
- 3 files changed, 7 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index caf094a..b4e0c3b 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -178,9 +178,10 @@ static inline unsigned long pte_update(pte_t *p,
- 	andc	%1,%0,%5\n\
- 	or	%1,%1,%6\n\
- 	/* 0x200 == Extended encoding, bit 22 */ \
--	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
-+	/* Bit 22 has to be 1 when _PAGE_USER is unset and _PAGE_RO is set */ \
- 	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
--	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
-+	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RO */ \
-+	xori	%3,%3,0x200\n \
- 	or	%1,%3,%1\n\
- 	xori	%1,%1,0x200\n"
- "	stwcx.	%1,0,%4\n\
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index daa4616..eb6edb4 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -46,9 +46,9 @@
-  * require a TLB exception handler change.  It is assumed unused bits
-  * are always zero.
-  */
--#define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
-+#define _PAGE_RO	0x0400	/* lsb PP bits */
- #define _PAGE_USER	0x0800	/* msb PP bits */
--/* set when neither _PAGE_USER nor _PAGE_RW are set */
-+/* set when _PAGE_USER is unset and _PAGE_RO is set */
- #define _PAGE_KNLRO	0x0200
- 
- #define _PMD_PRESENT	0x0001
-@@ -62,9 +62,8 @@
- #define PTE_ATOMIC_UPDATES	1
- 
- /* We need to add _PAGE_SHARED to kernel pages */
--#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
--#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
--#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-+#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO)
-+#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_RO | _PAGE_KNLRO)
- 
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_PTE_8xx_H */
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3d4b8ee..807b0db 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -441,9 +441,6 @@ DataStoreTLBMiss:
- 	and	r11, r11, r10
- 	rlwimi	r10, r11, 0, _PAGE_PRESENT
- #endif
--	/* invert RW */
--	xori	r10, r10, _PAGE_RW
--
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 22 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
--- 
-2.1.0
+Christophe
