@@ -2,32 +2,33 @@ Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E622B1A0C62
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACBAD1A0C71
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:05 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 15:55:02 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id EE16C2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100 (EST)
+ Mon, 22 Dec 2014 15:55:04 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1E6852BB005D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:03 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBM5sxi739387338
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBM5t1O632047226
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:01 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBM5sxD3020672
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100
+ sBM5t2H1020812
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:02 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V10 08/17] powrepc/pci: Refactor pci_dn
-Date: Mon, 22 Dec 2014 13:54:28 +0800
-Message-Id: <1419227677-12312-9-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V10 10/17] powerpc/powernv: Use pci_dn in PCI config accessor
+Date: Mon, 22 Dec 2014 13:54:30 +0800
+Message-Id: <1419227677-12312-11-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,401 +38,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-pci_dn is the extension of PCI device node and it's created from
-device node. Unfortunately, VFs that are enabled dynamically by
-PF's driver and they don't have corresponding device nodes, and
-pci_dn. The patch refactors pci_dn to support VFs:
-
-   * pci_dn is organized as a hierarchy tree. VF's pci_dn is put
-     to the child list of pci_dn of PF's bridge. pci_dn of other
-     device put to the child list of pci_dn of its upstream bridge.
-
-   * VF's pci_dn is expected to be created dynamically when PF
-     enabling VFs. VF's pci_dn will be destroyed when PF disabling
-     VFs. pci_dn of other device is still created from device node
-     as before.
-
-   * For one particular PCI device (VF or not), its pci_dn can be
-     found from pdev->dev.archdata.firmware_data, PCI_DN(devnode),
-     or parent's list. The fast path (fetching pci_dn through PCI
-     device instance) is populated during early fixup time.
+The PCI config accessors rely on device node. Unfortunately, VFs
+don't have corresponding device nodes. So we have to switch to
+pci_dn for PCI config access.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/device.h         |    3 +
- arch/powerpc/include/asm/pci-bridge.h     |   14 +-
- arch/powerpc/kernel/pci_dn.c              |  240 ++++++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci-ioda.c |   15 ++
- 4 files changed, 267 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   14 +++++-
+ arch/powerpc/platforms/powernv/pci.c         |   69 ++++++++++----------------
+ arch/powerpc/platforms/powernv/pci.h         |    4 +-
+ 3 files changed, 40 insertions(+), 47 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 38faede..29992cd 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -34,6 +34,9 @@ struct dev_archdata {
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
- #endif
-+#ifdef CONFIG_PPC64
-+	void			*firmware_data;
-+#endif
- #ifdef CONFIG_EEH
- 	struct eeh_dev		*edev;
- #endif
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 725247b..74efea9 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -89,6 +89,7 @@ struct pci_controller {
- 
- #ifdef CONFIG_PPC64
- 	unsigned long buid;
-+	void *firmware_data;
- #endif	/* CONFIG_PPC64 */
- 
- 	void *private_data;
-@@ -150,9 +151,13 @@ static inline int isa_vaddr_is_ioport(void __iomem *address)
- struct iommu_table;
- 
- struct pci_dn {
-+	int     flags;
-+#define PCI_DN_FLAG_IOV_VF     0x01
-+
- 	int	busno;			/* pci bus number */
- 	int	devfn;			/* pci device and function number */
- 
-+	struct  pci_dn *parent;
- 	struct  pci_controller *phb;	/* for pci devices */
- 	struct	iommu_table *iommu_table;	/* for phb's or bridges */
- 	struct	device_node *node;	/* back-pointer to the device_node */
-@@ -167,14 +172,19 @@ struct pci_dn {
- #ifdef CONFIG_PPC_POWERNV
- 	int	pe_number;
- #endif
-+	struct list_head child_list;
-+	struct list_head list;
- };
- 
- /* Get the pointer to a device_node's pci_dn */
- #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
- 
-+extern struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
-+					   int devfn);
- extern struct pci_dn *pci_get_pdn(struct pci_dev *pdev);
--
--extern void * update_dn_pci_info(struct device_node *dn, void *data);
-+extern struct pci_dn *add_dev_pci_info(struct pci_dev *pdev);
-+extern void remove_dev_pci_info(struct pci_dev *pdev);
-+extern void *update_dn_pci_info(struct device_node *dn, void *data);
- 
- static inline int pci_device_from_OF_node(struct device_node *np,
- 					  u8 *bus, u8 *devfn)
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 1f61fab..c99fb80 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -32,12 +32,222 @@
- #include <asm/ppc-pci.h>
- #include <asm/firmware.h>
- 
-+/*
-+ * The function is used to find the firmware data of one
-+ * specific PCI device, which is attached to the indicated
-+ * PCI bus. For VFs, their firmware data is linked to that
-+ * one of PF's bridge. For other devices, their firmware
-+ * data is linked to that of their bridge.
-+ */
-+static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
-+{
-+	struct pci_bus *pbus;
-+	struct device_node *dn;
-+	struct pci_dn *pdn;
-+
-+	/*
-+	 * We probably have virtual bus which doesn't
-+	 * have associated bridge.
-+	 */
-+	pbus = bus;
-+	while (pbus) {
-+		if (pci_is_root_bus(pbus) || pbus->self)
-+			break;
-+
-+		pbus = pbus->parent;
-+	}
-+
-+	/*
-+	 * Except virtual bus, all PCI buses should
-+	 * have device nodes.
-+	 */
-+	dn = pci_bus_to_OF_node(pbus);
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+
-+	return pdn;
-+}
-+
-+struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
-+				    int devfn)
-+{
-+	struct device_node *dn = NULL;
-+	struct pci_dn *parent, *pdn;
-+	struct pci_dev *pdev = NULL;
-+
-+	/* Fast path: fetch from PCI device */
-+	list_for_each_entry(pdev, &bus->devices, bus_list) {
-+		if (pdev->devfn == devfn) {
-+			if (pdev->dev.archdata.firmware_data)
-+				return pdev->dev.archdata.firmware_data;
-+
-+			dn = pci_device_to_OF_node(pdev);
-+			break;
-+		}
-+	}
-+
-+	/* Fast path: fetch from device node */
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+	if (pdn)
-+		return pdn;
-+
-+	/* Slow path: fetch from firmware data hierarchy */
-+	parent = pci_bus_to_pdn(bus);
-+	if (!parent)
-+		return NULL;
-+
-+	list_for_each_entry(pdn, &parent->child_list, list) {
-+		if (pdn->busno == bus->number &&
-+                    pdn->devfn == devfn)
-+                        return pdn;
-+        }
-+
-+	return NULL;
-+}
-+
- struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 1d19e79..c63b6c1 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -419,21 +419,31 @@ static inline bool powernv_eeh_cfg_blocked(struct device_node *dn)
+ static int powernv_eeh_read_config(struct device_node *dn,
+ 				   int where, int size, u32 *val)
  {
--	struct device_node *dn = pci_device_to_OF_node(pdev);
--	if (!dn)
-+	struct device_node *dn;
-+	struct pci_dn *parent, *pdn;
++	struct pci_dn *pdn = PCI_DN(dn);
 +
-+	/* Search device directly */
-+	if (pdev->dev.archdata.firmware_data)
-+		return pdev->dev.archdata.firmware_data;
++	if (!pdn)
++		return PCIBIOS_DEVICE_NOT_FOUND;
 +
-+	/* Check device node */
-+	dn = pci_device_to_OF_node(pdev);
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+	if (pdn)
-+		return pdn;
-+
-+	/*
-+	 * VFs don't have device nodes. We hook their
-+	 * firmware data to PF's bridge.
-+	 */
-+	parent = pci_bus_to_pdn(pdev->bus);
-+	if (!parent)
-+		return NULL;
-+
-+	list_for_each_entry(pdn, &parent->child_list, list) {
-+		if (pdn->busno == pdev->bus->number &&
-+		    pdn->devfn == pdev->devfn)
-+			return pdn;
-+	}
-+
-+	return NULL;
-+}
-+
-+static struct pci_dn *add_one_dev_pci_info(struct pci_dn *parent,
-+					   struct pci_dev *pdev,
-+					   int busno, int devfn)
-+{
-+	struct pci_dn *pdn;
-+
-+	/* Except PHB, we always have parent firmware data */
-+	if (!parent)
-+		return NULL;
-+
-+	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
-+	if (!pdn) {
-+		pr_warn("%s: Out of memory !\n", __func__);
-+		return NULL;
-+	}
-+
-+	pdn->phb = parent->phb;
-+	pdn->parent = parent;
-+	pdn->busno = busno;
-+	pdn->devfn = devfn;
-+#ifdef CONFIG_PPC_POWERNV
-+	pdn->pe_number = IODA_INVALID_PE;
-+#endif
-+	INIT_LIST_HEAD(&pdn->child_list);
-+	INIT_LIST_HEAD(&pdn->list);
-+	list_add_tail(&pdn->list, &parent->child_list);
-+
-+	/*
-+	 * If we already have PCI device instance, lets
-+	 * bind them.
-+	 */
-+	if (pdev)
-+		pdev->dev.archdata.firmware_data = pdn;
-+
-+	return pdn;
-+}
-+
-+struct pci_dn *add_dev_pci_info(struct pci_dev *pdev)
-+{
-+#ifdef CONFIG_PCI_IOV
-+	struct pci_dn *parent, *pdn;
-+	int i;
-+
-+	/* Only support IOV for now */
-+	if (!pdev->is_physfn)
-+		return pci_get_pdn(pdev);
-+
-+	/* Check if VFs have been populated */
-+	pdn = pci_get_pdn(pdev);
-+	if (!pdn || (pdn->flags & PCI_DN_FLAG_IOV_VF))
-+		return NULL;
-+
-+	pdn->flags |= PCI_DN_FLAG_IOV_VF;
-+	parent = pci_bus_to_pdn(pdev->bus);
-+	if (!parent)
- 		return NULL;
--	return PCI_DN(dn);
-+
-+	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
-+		pdn = add_one_dev_pci_info(parent, NULL,
-+					   pci_iov_virtfn_bus(pdev, i),
-+					   pci_iov_virtfn_devfn(pdev, i));
-+		if (!pdn) {
-+			pr_warn("%s: Cannot create firmware data "
-+				"for VF#%d of %s\n",
-+				__func__, i, pci_name(pdev));
-+			return NULL;
-+		}
-+	}
-+#endif
-+
-+	return pci_get_pdn(pdev);
-+}
-+
-+void remove_dev_pci_info(struct pci_dev *pdev)
-+{
-+#ifdef CONFIG_PCI_IOV
-+	struct pci_dn *parent;
-+	struct pci_dn *pdn, *tmp;
-+	int i;
-+
-+	/* Only support IOV PF for now */
-+	if (!pdev->is_physfn)
-+		return;
-+
-+	/* Check if VFs have been populated */
-+	pdn = pci_get_pdn(pdev);
-+	if (!pdn || !(pdn->flags & PCI_DN_FLAG_IOV_VF))
-+		return;
-+
-+	pdn->flags &= ~PCI_DN_FLAG_IOV_VF;
-+	parent = pci_bus_to_pdn(pdev->bus);
-+	if (!parent)
-+		return;
-+
-+	/*
-+	 * We might introduce flag to pci_dn in future
-+	 * so that we can release VF's firmware data in
-+	 * a batch mode.
-+	 */
-+	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
-+		list_for_each_entry_safe(pdn, tmp,
-+			&parent->child_list, list) {
-+			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
-+			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
-+				continue;
-+
-+			if (!list_empty(&pdn->list))
-+				list_del(&pdn->list);
-+			kfree(pdn);
-+		}
-+	}
-+#endif
+ 	if (powernv_eeh_cfg_blocked(dn)) {
+ 		*val = 0xFFFFFFFF;
+ 		return PCIBIOS_SET_FAILED;
+ 	}
+ 
+-	return pnv_pci_cfg_read(dn, where, size, val);
++	return pnv_pci_cfg_read(pdn, where, size, val);
  }
  
- /*
-@@ -49,6 +259,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
- 	struct pci_controller *phb = data;
- 	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
- 	const __be32 *regs;
-+	struct device_node *parent;
+ static int powernv_eeh_write_config(struct device_node *dn,
+ 				    int where, int size, u32 val)
+ {
++	struct pci_dn *pdn = PCI_DN(dn);
++
++	if (!pdn)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
+ 	if (powernv_eeh_cfg_blocked(dn))
+ 		return PCIBIOS_SET_FAILED;
+ 
+-	return pnv_pci_cfg_write(dn, where, size, val);
++	return pnv_pci_cfg_write(pdn, where, size, val);
+ }
+ 
+ /**
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 4945e87..b7d4b9d 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -366,9 +366,9 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ 	spin_unlock_irqrestore(&phb->lock, flags);
+ }
+ 
+-static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+-				     struct device_node *dn)
++static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+ {
++	struct pnv_phb *phb = pdn->phb->private_data;
+ 	u8	fstate;
+ 	__be16	pcierr;
+ 	int	pe_no;
+@@ -379,7 +379,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+ 	 * setup that yet. So all ER errors should be mapped to
+ 	 * reserved PE.
+ 	 */
+-	pe_no = PCI_DN(dn)->pe_number;
++	pe_no = pdn->pe_number;
+ 	if (pe_no == IODA_INVALID_PE) {
+ 		if (phb->type == PNV_PHB_P5IOC2)
+ 			pe_no = 0;
+@@ -407,8 +407,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+ 	}
+ 
+ 	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
+-		(PCI_DN(dn)->busno << 8) | (PCI_DN(dn)->devfn),
+-		pe_no, fstate);
++		(pdn->busno << 8) | (pdn->devfn), pe_no, fstate);
+ 
+ 	/* Clear the frozen state if applicable */
+ 	if (fstate == OPAL_EEH_STOPPED_MMIO_FREEZE ||
+@@ -425,10 +424,9 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
+ 	}
+ }
+ 
+-int pnv_pci_cfg_read(struct device_node *dn,
++int pnv_pci_cfg_read(struct pci_dn *pdn,
+ 		     int where, int size, u32 *val)
+ {
+-	struct pci_dn *pdn = PCI_DN(dn);
+ 	struct pnv_phb *phb = pdn->phb->private_data;
+ 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
+ 	s64 rc;
+@@ -462,10 +460,9 @@ int pnv_pci_cfg_read(struct device_node *dn,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-int pnv_pci_cfg_write(struct device_node *dn,
++int pnv_pci_cfg_write(struct pci_dn *pdn,
+ 		      int where, int size, u32 val)
+ {
+-	struct pci_dn *pdn = PCI_DN(dn);
+ 	struct pnv_phb *phb = pdn->phb->private_data;
+ 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
+ 
+@@ -489,18 +486,17 @@ int pnv_pci_cfg_write(struct device_node *dn,
+ }
+ 
+ #if CONFIG_EEH
+-static bool pnv_pci_cfg_check(struct pci_controller *hose,
+-			      struct device_node *dn)
++static bool pnv_pci_cfg_check(struct pci_dn *pdn)
+ {
+ 	struct eeh_dev *edev = NULL;
+-	struct pnv_phb *phb = hose->private_data;
++	struct pnv_phb *phb = pdn->phb->private_data;
+ 
+ 	/* EEH not enabled ? */
+ 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
+ 		return true;
+ 
+ 	/* PE reset or device removed ? */
+-	edev = of_node_to_eeh_dev(dn);
++	edev = pdn->edev;
+ 	if (edev) {
+ 		if (edev->pe &&
+ 		    (edev->pe->state & EEH_PE_CFG_BLOCKED))
+@@ -513,8 +509,7 @@ static bool pnv_pci_cfg_check(struct pci_controller *hose,
+ 	return true;
+ }
+ #else
+-static inline pnv_pci_cfg_check(struct pci_controller *hose,
+-				struct device_node *dn)
++static inline pnv_pci_cfg_check(struct pci_dn *pdn)
+ {
+ 	return true;
+ }
+@@ -524,32 +519,26 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 			       unsigned int devfn,
+ 			       int where, int size, u32 *val)
+ {
+-	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
  	struct pci_dn *pdn;
+ 	struct pnv_phb *phb;
+-	bool found = false;
+ 	int ret;
  
- 	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
-@@ -70,6 +281,15 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	*val = 0xFFFFFFFF;
+-	for (dn = busdn->child; dn; dn = dn->sibling) {
+-		pdn = PCI_DN(dn);
+-		if (pdn && pdn->devfn == devfn) {
+-			phb = pdn->phb->private_data;
+-			found = true;
+-			break;
+-		}
+-	}
++	pdn = pci_get_pdn_by_devfn(bus, devfn);
++	if (!pdn)
++		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
++	if (!pnv_pci_cfg_check(pdn))
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	ret = pnv_pci_cfg_read(dn, where, size, val);
+-	if (phb->flags & PNV_PHB_FLAG_EEH) {
++	ret = pnv_pci_cfg_read(pdn, where, size, val);
++	phb = pdn->phb->private_data;
++	if (phb->flags & PNV_PHB_FLAG_EEH && pdn->edev) {
+ 		if (*val == EEH_IO_ERROR_VALUE(size) &&
+-		    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
++		    eeh_dev_check_failure(pdn->edev))
+                         return PCIBIOS_DEVICE_NOT_FOUND;
+ 	} else {
+-		pnv_pci_config_check_eeh(phb, dn);
++		pnv_pci_config_check_eeh(pdn);
  	}
  
- 	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
-+
-+	/* Attach to parent node */
-+	INIT_LIST_HEAD(&pdn->child_list);
-+	INIT_LIST_HEAD(&pdn->list);
-+	parent = of_get_parent(dn);
-+	pdn->parent = parent ? PCI_DN(parent) : NULL;
-+	if (pdn->parent)
-+		list_add_tail(&pdn->list, &pdn->parent->child_list);
-+
- 	return NULL;
- }
- 
-@@ -150,6 +370,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
- 	if (pdn) {
- 		pdn->devfn = pdn->busno = -1;
- 		pdn->phb = phb;
-+		phb->firmware_data = pdn;
- 	}
- 
- 	/* Update dn->phb ptrs for new phb and children devices */
-@@ -173,3 +394,16 @@ void __init pci_devs_phb_init(void)
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
- }
-+
-+static void pci_dev_pdn_setup(struct pci_dev *pdev)
-+{
-+	struct pci_dn *pdn;
-+
-+	if (pdev->dev.archdata.firmware_data)
-+		return;
-+
-+	/* Setup the fast path */
-+	pdn = pci_get_pdn(pdev);
-+	pdev->dev.archdata.firmware_data = pdn;
-+}
-+DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fac88ed..9faa5ec 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -949,6 +949,21 @@ static void pnv_pci_ioda_setup_PEs(void)
- 	}
- }
- 
-+#ifdef CONFIG_PCI_IOV
-+int pcibios_sriov_disable(struct pci_dev *pdev)
-+{
-+	/* Release firmware data */
-+	remove_dev_pci_info(pdev);
-+	return 0;
-+}
-+
-+int pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
-+{
-+	add_dev_pci_info(pdev);
-+	return 0;
-+}
-+#endif /* CONFIG_PCI_IOV */
-+
- static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev)
+ 	return ret;
+@@ -559,27 +548,21 @@ static int pnv_pci_write_config(struct pci_bus *bus,
+ 				unsigned int devfn,
+ 				int where, int size, u32 val)
  {
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
+-	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
+ 	struct pci_dn *pdn;
+ 	struct pnv_phb *phb;
+-	bool found = false;
+ 	int ret;
+ 
+-	for (dn = busdn->child; dn; dn = dn->sibling) {
+-		pdn = PCI_DN(dn);
+-		if (pdn && pdn->devfn == devfn) {
+-			phb = pdn->phb->private_data;
+-			found = true;
+-			break;
+-		}
+-	}
++	pdn = pci_get_pdn_by_devfn(bus, devfn);
++	if (!pdn)
++		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
++	if (!pnv_pci_cfg_check(pdn))
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	ret = pnv_pci_cfg_write(dn, where, size, val);
++	ret = pnv_pci_cfg_write(pdn, where, size, val);
++	phb = pdn->phb->private_data;
+ 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
+-		pnv_pci_config_check_eeh(phb, dn);
++		pnv_pci_config_check_eeh(pdn);
+ 
+ 	return ret;
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 6c02ff8..e5b75b2 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -219,9 +219,9 @@ extern struct pnv_eeh_ops ioda_eeh_ops;
+ 
+ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+ 				unsigned char *log_buff);
+-int pnv_pci_cfg_read(struct device_node *dn,
++int pnv_pci_cfg_read(struct pci_dn *pdn,
+ 		     int where, int size, u32 *val);
+-int pnv_pci_cfg_write(struct device_node *dn,
++int pnv_pci_cfg_write(struct pci_dn *pdn,
+ 		      int where, int size, u32 val);
+ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 				      void *tce_mem, u64 tce_size,
 -- 
 1.7.9.5
