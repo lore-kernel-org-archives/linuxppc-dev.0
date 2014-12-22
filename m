@@ -1,32 +1,32 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D51F1A0D59
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 18:50:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BBDC1A0CCD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 18:50:07 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 00:50:04 -0700
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A3F7C6E8028
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:41:54 -0500 (EST)
+ Mon, 22 Dec 2014 02:50:05 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0E37838C8046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:50:02 -0500 (EST)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBM7o0d926869820
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 07:50:00 GMT
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBM7o2pF22282300
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 07:50:02 GMT
 Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBM7nxlZ024159
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:50:00 -0500
+ sBM7o0xA024258
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 02:50:01 -0500
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v6 3/4] perf Documentation: add event parameters
-Date: Sun, 21 Dec 2014 23:49:26 -0800
-Message-Id: <1419234567-22784-4-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v6 4/4] tools/perf: Document parameterized and symbolic events
+Date: Sun, 21 Dec 2014 23:49:27 -0800
+Message-Id: <1419234567-22784-5-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, dev@codyps.com,
@@ -42,53 +42,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
-Event parameters are a basic way for partial events to be specified in
-sysfs with per-event names given to the fields that need to be filled in
-when using a particular event.
+Changelog[v6]:
+	- [Sukadev Bhattiprolu]: Update documentation of perf-list and
+	  perf-record; Added documentation for perf-stat.
 
-It is intended for supporting cases where the single 'cpu' parameter is
-insufficient. For example, POWER 8 has events for physical
-sockets/cores/cpus that are accessible from with virtual machines. To
-keep using the single 'cpu' parameter we'd need to perform a mapping
-between Linux's cpus and the physical machine's cpus (in this case
-Linux is running under a hypervisor). This isn't possible because
-bindings between our cpus and physical cpus may not be fixed, and we
-probably won't have a "cpu" on each physical cpu.
-
-Changelog[v6]
-	Update event description to explain how required parameters
-	are displayed.
-
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 CC: Haren Myneni <hbabu@us.ibm.com>
 CC: Cody P Schafer <dev@codyps.com>
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-bus-event_source-devices-events | 6 ++++++
- 1 file changed, 6 insertions(+)
+ tools/perf/Documentation/perf-list.txt   | 13 +++++++++++++
+ tools/perf/Documentation/perf-record.txt | 12 ++++++++++++
+ tools/perf/Documentation/perf-stat.txt   | 20 ++++++++++++++++----
+ 3 files changed, 41 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-index 20979f8..47ad2a1 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-@@ -52,12 +52,18 @@ Description:	Per-pmu performance monitoring events specific to the running syste
- 			event=0x2abc
- 			event=0x423,inv,cmask=0x3
- 			domain=0x1,offset=0x8,starting_index=0xffff
-+			domain=0x1,offset=0x8,core=?
+diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
+index cbb4f74..d8be6fa 100644
+--- a/tools/perf/Documentation/perf-list.txt
++++ b/tools/perf/Documentation/perf-list.txt
+@@ -89,6 +89,19 @@ raw encoding of 0x1A8 can be used:
+ You should refer to the processor specific documentation for getting these
+ details. Some of them are referenced in the SEE ALSO section below.
  
- 		Each of the assignments indicates a value to be assigned to a
- 		particular set of bits (as defined by the format file
- 		corresponding to the <term>) in the perf_event structure passed
- 		to the perf_open syscall.
- 
-+		In the case of the last example, a value replacing "?" would
-+		need to be provided by the user selecting the particular event.
-+		This is referred to as "event parameterization". All
-+		non-numerical values indicate an event parameter.
++PARAMETERIZED EVENTS
++--------------------
 +
- What: /sys/bus/event_source/devices/<pmu>/events/<event>.unit
- Date: 2014/02/24
- Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Some pmu events listed by 'perf-list' will be displayed with '$x' in them. For
++example:
++
++  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
++
++This means that when provided as an event, a value for '?' must
++also be supplied. For example:
++
++  perf stat -C 0 -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
++
+ OPTIONS
+ -------
+ 
+diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
+index af9a54e..acdcf3b 100644
+--- a/tools/perf/Documentation/perf-record.txt
++++ b/tools/perf/Documentation/perf-record.txt
+@@ -33,6 +33,18 @@ OPTIONS
+         - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
+ 	  hexadecimal event descriptor.
+ 
++	- a symbolically formed PMU event like 'pmu/param1=0x3,param2/' where
++	  'param1', 'param2', etc are defined as formats for the PMU in
++	  /sys/bus/event_sources/devices/<pmu>/format/*.
++
++	- a symbolically formed event like 'pmu/config=M,config1=N,config3=K/'
++
++          where M, N, K are numbers (in decimal, hex, octal format). Acceptable
++          values for each of 'config', 'config1' and 'config2' are defined by
++          corresponding entries in /sys/bus/event_sources/devices/<pmu>/format/*
++          param1 and param2 are defined as formats for the PMU in:
++	  /sys/bus/event_sources/devices/<pmu>/format/*
++
+         - a hardware breakpoint event in the form of '\mem:addr[:access]'
+           where addr is the address in memory you want to break in.
+           Access is the memory access type (read, write, execute) it can
+diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
+index 29ee857..04e150d 100644
+--- a/tools/perf/Documentation/perf-stat.txt
++++ b/tools/perf/Documentation/perf-stat.txt
+@@ -25,10 +25,22 @@ OPTIONS
+ 
+ -e::
+ --event=::
+-	Select the PMU event. Selection can be a symbolic event name
+-	(use 'perf list' to list all events) or a raw PMU
+-	event (eventsel+umask) in the form of rNNN where NNN is a
+-	 hexadecimal event descriptor.
++	Select the PMU event. Selection can be:
++
++	- a symbolic event name (use 'perf list' to list all events)
++
++	- a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
++	  hexadecimal event descriptor.
++
++	- a symbolically formed event like 'pmu/param1=0x3,param2/' where
++	  param1 and param2 are defined as formats for the PMU in
++	  /sys/bus/event_sources/devices/<pmu>/format/*
++
++	- a symbolically formed event like 'pmu/config=M,config1=N,config2=K/'
++	  where M, N, K are numbers (in decimal, hex, octal format).
++	  Acceptable values for each of 'config', 'config1' and 'config2'
++	  parameters are defined by corresponding entries in
++	  /sys/bus/event_sources/devices/<pmu>/format/*
+ 
+ -i::
+ --no-inherit::
 -- 
 1.8.3.1
