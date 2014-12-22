@@ -1,18 +1,31 @@
-Return-Path: <shh.xie@gmail.com>
+Return-Path: <Emilian.Medve@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0074.outbound.protection.outlook.com [157.56.110.74])
+ (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA4CF1A0D3A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 21:55:35 +1100 (AEDT)
-From: <shh.xie@gmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 1/2] powerpc/config: enable mdio buses muxing via gpio
-Date: Mon, 22 Dec 2014 17:19:47 +0800
-Message-ID: <1419239987-29516-1-git-send-email-shh.xie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B831F1A0D48
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 22:08:51 +1100 (AEDT)
+Message-ID: <5497FBAB.4010206@Freescale.com>
+Date: Mon, 22 Dec 2014 05:08:27 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Andy Fleming <afleming@gmail.com>, Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@Freescale.com>
+Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+ <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1418940078.5581.143.camel@freescale.com>
+ <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1419030955.5581.154.camel@freescale.com>
+ <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
+ <5497E645.7010500@Freescale.com> <1419241330.5581.162.camel@freescale.com>
+In-Reply-To: <1419241330.5581.162.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
+ Igal-B31950 <Igal.Liberman@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Fleming <afleming@gmail.com>
+Hello Scott,
 
-Signed-off-by: Andy Fleming <afleming@gmail.com>
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
- arch/powerpc/configs/corenet32_smp_defconfig | 2 ++
- arch/powerpc/configs/corenet64_smp_defconfig | 2 ++
- 2 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 611efe9..7525835 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -103,6 +103,8 @@ CONFIG_E1000E=y
- CONFIG_VITESSE_PHY=y
- CONFIG_AT803X_PHY=y
- CONFIG_FIXED_PHY=y
-+CONFIG_MDIO_BUS_MUX=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index be24a18..f915fe4 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -80,6 +80,8 @@ CONFIG_SATA_SIL24=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
- CONFIG_E1000E=y
-+CONFIG_MDIO_BUS_MUX=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
--- 
-1.8.4.1
+On 12/22/2014 03:42 AM, Scott Wood wrote:
+> On Mon, 2014-12-22 at 03:37 -0600, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> On 12/22/2014 02:32 AM, Scott Wood wrote:
+>>> On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
+>>>> For the purpose of an example in the binding document, I suggest we just
+>>>> stick with the IEEE standard frequency.
+>>>
+>>> The whole reason for this property existing in the device tree is
+>>> non-standard frequencies.
+>>
+>> While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
+>> support frequencies well beyond the standard. Specifying a lower then
+>> the standard frequency for the benefit of some errata is just one side
+>> of this property
+> 
+> The erratum was (until now) the only claimed reason for it.  If there
+> are other reasons why one would specify a different frequency (in
+> particular, that relate to hardware description), please elaborate.
+
+>From memory, the 1 Gb/s Vitesse PHY(s) we have on some of our DS boards
+support 12.5 MHz. I can dig out more specs for specifics on other PHY(s)
+
+2.5 MHz is slow and even more so for high speed interfaces. With both
+polling and interrupts (both MDIO and/or PHY) we've noticed (or blamed)
+in the past some Ethernet performance issues on this very slowness
+
+As of right now I'm not aware of another way to specify/coordinate the
+MDC speed so setting a default (common denominator) in the DT that is
+different then the IEEE standard seems ok
+
+>>>> We can continue this conversation about errata handling when we submit
+>>>> the code relevant to this binding (and the FMan v3 support)
+>>>
+>>> It affects the binding, so let's discuss it now please.
+>>
+>> I think this specific (unpublished yet) errata has less bearing on the
+>> binding then you might believe. This is mostly about providing a
+>> common/default frequency supported by all the devices on some board
+> 
+> What reason other than an erratum would there be for the standard
+> frequency not being supported?
+
+This is not about not supporting the standard frequency. This is about
+the default frequency being different then the standard
+
+
+Cheers,
