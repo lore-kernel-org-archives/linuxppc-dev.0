@@ -1,28 +1,20 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D846C1A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 13:31:40 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-Date: Mon, 22 Dec 2014 02:31:33 +0000
-Message-ID: <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
- <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1418940078.5581.143.camel@freescale.com>
- <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1419030955.5581.154.camel@freescale.com>
-In-Reply-To: <1419030955.5581.154.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B8661A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 13:56:43 +1100 (AEDT)
+In-Reply-To: <1419115353-12374-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: arch: powerpc: platforms: embedded6xx: mpc7448_hpc2.c: Remove
+ some unused functions
+Message-Id: <20141222025643.53D8A1400E7@ozlabs.org>
+Date: Mon, 22 Dec 2014 13:56:43 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiBGcmksIDIwMTQtMTItMTkgYXQgMDE6MjMgLTA2MDAsIFhpZSBTaGFvaHVpLUIyMTk4OSB3
-cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29k
-IFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogRnJpZGF5LCBEZWNlbWJlciAxOSwgMjAxNCA2OjAx
-IEFNDQo+ID4gPiBUbzogWGllIFNoYW9odWktQjIxOTg5DQo+ID4gPiBDYzogbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBNZWR2ZQ0KPiA+
-ID4gRW1pbGlhbi0gRU1NRURWRTE7IExpYmVybWFuIElnYWwtQjMxOTUwDQo+ID4gPiBTdWJqZWN0
-OiBSZTogW1BBVENIXSBbdjJdIHBvd2VyL2ZzbDogYWRkIE1ESU8gZHQgYmluZGluZyBmb3IgRk1h
-bg0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAxNC0xMi0xOCBhdCAwNjo1MyAtMDYwMCwgWGllIFNo
-YW9odWktQjIxOTg5IHdyb3RlOg0KPiA+ID4gPiBQaW5nLg0KPiA+ID4gPg0KPiA+ID4gPiBCZXN0
-IFJlZ2FyZHMsDQo+ID4gPiA+IFNoYW9odWkgWGllDQo+ID4gPg0KPiA+ID4gSSBjYW4ndCBwdXQg
-cGF0Y2hlcyBpbiBteSAtbmV4dCB1bnRpbCB0aGUgbWVyZ2Ugd2luZG93IGNsb3Nlcy4NCj4gPiA+
-DQo+ID4gPiA+ID4gPiA+ICtFWEFNUExFDQo+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4g
-K0V4YW1wbGUgZm9yIEZNYW4gdjIgZXh0ZXJuYWwgTURJTzoNCj4gPiA+ID4gPiA+ID4gKw0KPiA+
-ID4gPiA+ID4gPiArbWRpb0BmMTAwMCB7DQo+ID4gPiA+ID4gPiA+ICsJY29tcGF0aWJsZSA9ICJm
-c2wsZm1hbi14bWRpbyI7DQo+ID4gPiA+ID4gPiA+ICsJcmVnID0gPDB4ZjEwMDAgMHgxMDAwPjsN
-Cj4gPiA+ID4gPiA+ID4gKwlidXMtZnJlcXVlbmN5ID0gPDIwMDAwPjsNCj4gPiA+ID4gPiA+ID4g
-K307DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gU28gdGhlIGJ1cyBmcmVxdWVuY3kgaXMgb25s
-eSAyMCBLSHo/ICBPciBpcyB0aGUgdW5pdCBzdXBwb3NlZA0KPiA+ID4gPiA+ID4gdG8gYmUgc29t
-ZXRoaW5nIG90aGVyIHRoYW4gSHo/DQo+ID4gPiA+ID4gW1MuSF0gaXQncyBvbmx5IGFuIGV4YW1w
-bGUsIGl0IGNvdWxkIGJlIGRpZmZlcmVudCBvbiByZWFsIFNvQ3MsDQo+ID4gPiA+ID4gYnV0IHRo
-ZXkgYWx3YXlzIGxvd2VyIHRoYW4gdGhlIHN0YW5kYXJkIG9uZSwgVGhlIHN0YW5kYXJkIG9uZSBp
-cw0KPiA+ID4gPiA+IDIuNU1IeiwgSSBoYXZlDQo+ID4gPiB0byB1c2UgSHogZm9yIGl0Lg0KPiA+
-ID4NCj4gPiA+IElzIHRoZXJlIGFueSBTb0MgZm9yIHdoaWNoIDIwIGtIeiBpcyB0aGUgcmlnaHQg
-ZnJlcXVlbmN5PyAgSSBqdXN0DQo+ID4gPiB3YW50IHRvIG1ha2Ugc3VyZSB0aGUgZXhhbXBsZSBp
-cyByZWFsaXN0aWMuDQo+ID4gW1MuSF0gdGhlIGNsb2NrIGRpdmlkZXIgaGFzIGEgbGltaXRhdGlv
-biB0aGF0IHRoZSBNQVggdmFsdWUgaXQgY2FuIGdldA0KPiA+IG9uIEZtYW4gdjIgaXMgMjU1ICgw
-eGZmLCA4IGJpdHMpLCBPbiBGbWFuIHYzIGlzIDUxMSgweDFmZiwgOSBiaXRzKS4NCj4gPg0KPiA+
-IFNvIHRoZSBsb3dlc3QgZnJlcXVlbmN5IG9uIEZtYW4gdjIgaXM6IEZtYW5fY2xvY2sgLyAoMiAq
-IDI1NSksIE9uIEZtYW4NCj4gPiB2MyBpczogRm1hbl9jbG9jayAvICgoMiAqIDUxMSkgKyAxKS4N
-Cj4gPg0KPiA+IFRha2UgZGVmYXVsdCBGbWFuIGZyZXF1ZW5jeSBzZXR0aW5nIGZyb20gU0RLMS43
-IGFzIGV4YW1wbGUsIHRoZSBsb3dlc3QNCj4gPiBjbG9jayB1c2VkIGZvciBGbWFuIHYyIGlzIDU4
-MU1IeiwgVGhlIGxvd2VzdCBjbG9jayBmb3IgRm1hbiB2MyBpcyA2MDBNSHouDQo+ID4NCj4gPiBU
-aGVuIHRoZSBsb3dlc3QgYnVzIGZyZXF1ZW5jeSBjYW4gZ2V0IGlzOg0KPiA+IEZtYW4gdjI6IH4x
-MTQwS0h6DQo+ID4gRm1hbiB2MzogfjU4N0tIeg0KPiA+DQo+ID4gMjBLSHogaXMgbm90IHByYWN0
-aWNlLCB3ZSBkb24ndCBoYXZlIGEgc3VnZ2VzdGVkIHZhbHVlIGluIGVycmF0YSBkb2N1bWVudC4N
-Cj4gPiBGb3IgdGhpcyBleGFtcGxlLCBzaG91bGQgSSBwb3N0IGEgbmV3IHZlcnNpb24gd2l0aCBh
-IHZhbHVlIGxpa2UgMTIwMEtIej8NCj4gDQo+IFRoaXMgaXMgZGlmZmVyZW50IGZyb20gaG93IHlv
-dSBkZXNjcmliZWQgdGhlIHByb2JsZW0gYmVmb3JlLiAgSWYgdGhlIGxpbWl0YXRpb24NCj4gaXMg
-b24gdGhlIGRpdmlkZXIsIHJhdGhlciB0aGFuIHRoZSBhYnNvbHV0ZSBidXMgZnJlcXVlbmN5LCB0
-aGVuIHNwZWNpZml5IHRoZSBtYXgNCj4gZGl2aWRlci4gIE9yIGJldHRlciwgc2luY2UgYWNjb3Jk
-aW5nIHRvIHRoZSBhYm92ZSB0aGlzIGNvcnJlbGF0ZXMgd2l0aCBmbWFuDQo+IHZlcnNpb24sIGp1
-c3QgaGF2ZSB0aGUgZHJpdmVyIGtub3cgd2hhdCB0aGUgbWF4IGRpdmlkZXIgaXMgZm9yIGVhY2gg
-Zm1hbiB2ZXJzaW9uLg0KW1MuSF0gVGhlIHByb2JsZW0gaXMgbm90IHRoZSBkaXZpZGVyIGhhcyBs
-aW1pdGF0aW9uLCB0aGUgcHJvYmxlbSBpcyBhIGRpZmZlcmVudCBidXMgZnJlcXVlbmN5IA0KSXMg
-bmVlZGVkIHdoaWNoIGlzIGxvd2VyIHRoYW4gdGhlIHN0YW5kYXJkLCBidXQgZHVlIHRvIHRoZSBk
-aXZpZGVyIGxpbWl0YXRpb24sIHRoZSBsb3dlc3QNCmJ1cyBmcmVxdWVuY3kgYWxzbyBoYXMgbGlt
-aXRhdGlvbi4gaS5lLiB3ZSBuZWVkIHRvIHVzZSB0aGUgZGl2aWRlciB0byBnZXQgYSBsb3dlciBm
-cmVxdWVuY3ksDQpidXQgaG93IG11Y2ggbG93ZXIgdGhlIHZhbHVlIGNvdWxkIGJlIGlzIHJlc3Ry
-aWN0ZWQgYnkgdGhlIGRpdmlkZXIgbGltaXRhdGlvbi4NCg0KVGhhbmtzIQ0KU2hhb2h1aQ0K
+On Sat, 2014-20-12 at 22:42:32 UTC, Rickard Strandqvist wrote:
+> Removes some functions that are not used anywhere:
+> mpc7448_hpc2_halt() mpc7448_hpc2_power_off()
+
+The other option would be to wire it up.
+
+But the default implementations do more or less the same thing.
+
+As far as I can see these were introduced in c5d56332fd6c "[POWERPC] Add
+general support for mpc7448hpc2 (Taiga) platform" and never used.
+
+cheers
