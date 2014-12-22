@@ -1,20 +1,22 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1FDFC1A0D60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 01:33:30 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [git pull] Please pull mpe/linux.git powerpc-3.19-2 tag
-References: <1418980604.30631.1.camel@ellerman.id.au>
-Date: Mon, 22 Dec 2014 15:33:16 +0100
-In-Reply-To: <1418980604.30631.1.camel@ellerman.id.au> (Michael Ellerman's
- message of "Fri, 19 Dec 2014 20:16:44 +1100")
-Message-ID: <87r3vrbvpv.fsf@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F16EC1A0D60
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 01:37:48 +1100 (AEDT)
+Date: Mon, 22 Dec 2014 15:37:10 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
+Message-ID: <20141222143710.GA29096@krava.brq.redhat.com>
+References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On Sun, Dec 21, 2014 at 11:49:24PM -0800, Sukadev Bhattiprolu wrote:
 
-> Anton Blanchard (1):
->       powerpc: Secondary CPUs must set cpu_callin_map after setting active and online
+SNIP
 
-This breaks booting on the PowerMac7,3.  It takes forever to boot to
-user space (~5 minutes instead of ~4 seconds), and then I see these
-processes in top:
+> +	}
+>  
+>  	switch (format->value) {
+>  	case PERF_PMU_FORMAT_VALUE_CONFIG:
+> @@ -592,11 +629,16 @@ static int pmu_config_term(struct list_head *formats,
+>  	}
+>  
+>  	/*
+> -	 * XXX If we ever decide to go with string values for
+> -	 * non-hardcoded terms, here's the place to translate
+> -	 * them into value.
+> +	 * Either directly use a numeric term, or try to translate string terms
+> +	 * using event parameters.
+>  	 */
+> -	pmu_format_value(format->bits, term->val.num, vp, zero);
+> +	if (term->type_val == PARSE_EVENTS__TERM_TYPE_NUM)
+> +		val = term->val.num;
+> +	else
+> +		if (pmu_resolve_param_term(term, head_terms, &val))
+> +			return -EINVAL;
+> +
 
-   37 root      20   0       0      0      0 D 0.000 0.000   0:00.00 kwindfarm
-   10 root      rt   0       0      0      0 R 0.000 0.000   0:00.00 migration/1
-   11 root      20   0       0      0      0 R 0.000 0.000   0:00.00 ksoftirqd/1
+I'm ok with the change logic, but I'm missing here check for the 'term'
+string value to be '?', so we force subst terms to have '?' as value..
+I believe thats what we decided in the previous set discussion, right?
 
-(The latter two processes don't accumulate any cpu time, but they are
-constantly in run state.)
+I guess the it'd be nice to parse it directly in the bison code like
+below (could be done later), but I'd be ok with simple check on this
+place for now.
 
-Andreas.
+thanks,
+jirka
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+---
+diff --git a/tools/perf/util/parse-events.y b/tools/perf/util/parse-events.y
+index 93c4c9fbc922..7e021c64d5cc 100644
+--- a/tools/perf/util/parse-events.y
++++ b/tools/perf/util/parse-events.y
+@@ -484,6 +484,14 @@ PE_TERM '=' PE_VALUE
+ 	$$ = term;
+ }
+ |
++PE_TERM '=' PE_SUBST
++{
++	struct parse_events_term *term;
++
++	ABORT_ON(parse_events_term__subst(&term, (int)$1, NULL, NULL));
++	$$ = term;
++}
++|
+ PE_TERM
+ {
+ 	struct parse_events_term *term;
