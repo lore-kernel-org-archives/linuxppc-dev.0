@@ -1,41 +1,32 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0147.outbound.protection.outlook.com [157.56.110.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03FF41A0C58
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 06:46:01 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 12:45:59 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 179941FF001B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 12:34:42 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBMJjvcX50200610
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 12:45:57 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBMJjvJL015470
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 12:45:57 -0700
-Date: Mon, 22 Dec 2014 11:45:27 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v6 4/4] tools/perf: Document parameterized and symbolic
- events
-Message-ID: <20141222194527.GA23294@us.ibm.com>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-5-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141222144315.GC29096@krava.brq.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06D5B1A0C95
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 08:26:06 +1100 (AEDT)
+Message-ID: <1419283551.5581.172.camel@freescale.com>
+Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Mon, 22 Dec 2014 15:25:51 -0600
+In-Reply-To: <5497FBAB.4010206@Freescale.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+ <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1418940078.5581.143.camel@freescale.com>
+ <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1419030955.5581.154.camel@freescale.com>
+ <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
+ <5497E645.7010500@Freescale.com> <1419241330.5581.162.camel@freescale.com>
+ <5497FBAB.4010206@Freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141222144315.GC29096@krava.brq.redhat.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
+ Igal-B31950 <Igal.Liberman@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,114 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Olsa [jolsa@redhat.com] wrote:
+On Mon, 2014-12-22 at 05:08 -0600, Emil Medve wrote:
+> Hello Scott,
+> 
+> 
+> On 12/22/2014 03:42 AM, Scott Wood wrote:
+> > On Mon, 2014-12-22 at 03:37 -0600, Emil Medve wrote:
+> >> Hello Scott,
+> >>
+> >>
+> >> On 12/22/2014 02:32 AM, Scott Wood wrote:
+> >>> On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
+> >>>> For the purpose of an example in the binding document, I suggest we just
+> >>>> stick with the IEEE standard frequency.
+> >>>
+> >>> The whole reason for this property existing in the device tree is
+> >>> non-standard frequencies.
+> >>
+> >> While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
+> >> support frequencies well beyond the standard. Specifying a lower then
+> >> the standard frequency for the benefit of some errata is just one side
+> >> of this property
+> > 
+> > The erratum was (until now) the only claimed reason for it.  If there
+> > are other reasons why one would specify a different frequency (in
+> > particular, that relate to hardware description), please elaborate.
+> 
+> From memory, the 1 Gb/s Vitesse PHY(s) we have on some of our DS boards
+> support 12.5 MHz. I can dig out more specs for specifics on other PHY(s)
+> 
+> 2.5 MHz is slow and even more so for high speed interfaces. With both
+> polling and interrupts (both MDIO and/or PHY) we've noticed (or blamed)
+> in the past some Ethernet performance issues on this very slowness
+> 
+> As of right now I'm not aware of another way to specify/coordinate the
+> MDC speed so setting a default (common denominator) in the DT that is
+> different then the IEEE standard seems ok
+>
+> >>>> We can continue this conversation about errata handling when we submit
+> >>>> the code relevant to this binding (and the FMan v3 support)
+> >>>
+> >>> It affects the binding, so let's discuss it now please.
+> >>
+> >> I think this specific (unpublished yet) errata has less bearing on the
+> >> binding then you might believe. This is mostly about providing a
+> >> common/default frequency supported by all the devices on some board
+> > 
+> > What reason other than an erratum would there be for the standard
+> > frequency not being supported?
+> 
+> This is not about not supporting the standard frequency. This is about
+> the default frequency being different then the standard
 
-| > +          values for each of 'config', 'config1' and 'config2' are defined by
-| > +          corresponding entries in /sys/bus/event_sources/devices/<pmu>/format/*
-| > +          param1 and param2 are defined as formats for the PMU in:
-| > +	  /sys/bus/event_sources/devices/<pmu>/format/*
-| 
-|    ^^^^ misaligned tab
+OK, though rather than talk about defaults I'd phrase it as indicating
+that a higher frequency than standard is supported, or that a lower
+frequency than standard is required.
 
-Thanks, Fixed the typos and alignment below.
----
->From 1fdb5012081903172c11a41f9edb0d51525ba500 Mon Sep 17 00:00:00 2001
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-Date: Wed, 24 Sep 2014 12:27:23 -0700
-Subject: [PATCH v6 4/4] tools/perf: Document parameterized and symbolic events
-
-Changelog[v6]:
-	- [Sukadev Bhattiprolu]: Update documentation of perf-list and
-	  perf-record; Added documentation for perf-stat.
-	- [Jiri Olsa] Fix some typos/formatting
-
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/Documentation/perf-list.txt   | 13 +++++++++++++
- tools/perf/Documentation/perf-record.txt | 12 ++++++++++++
- tools/perf/Documentation/perf-stat.txt   | 20 ++++++++++++++++----
- 3 files changed, 41 insertions(+), 4 deletions(-)
-
-diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
-index cbb4f74..3e2aec9 100644
---- a/tools/perf/Documentation/perf-list.txt
-+++ b/tools/perf/Documentation/perf-list.txt
-@@ -89,6 +89,19 @@ raw encoding of 0x1A8 can be used:
- You should refer to the processor specific documentation for getting these
- details. Some of them are referenced in the SEE ALSO section below.
- 
-+PARAMETERIZED EVENTS
-+--------------------
-+
-+Some pmu events listed by 'perf-list' will be displayed with '?' in them. For
-+example:
-+
-+  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
-+
-+This means that when provided as an event, a value for '?' must
-+also be supplied. For example:
-+
-+  perf stat -C 0 -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
-+
- OPTIONS
- -------
- 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index af9a54e..7d8df2e 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -33,6 +33,18 @@ OPTIONS
-         - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
- 	  hexadecimal event descriptor.
- 
-+	- a symbolically formed PMU event like 'pmu/param1=0x3,param2/' where
-+	  'param1', 'param2', etc are defined as formats for the PMU in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*.
-+
-+	- a symbolically formed event like 'pmu/config=M,config1=N,config3=K/'
-+
-+          where M, N, K are numbers (in decimal, hex, octal format). Acceptable
-+          values for each of 'config', 'config1' and 'config2' are defined by
-+          corresponding entries in /sys/bus/event_sources/devices/<pmu>/format/*
-+          param1 and param2 are defined as formats for the PMU in:
-+          /sys/bus/event_sources/devices/<pmu>/format/*
-+
-         - a hardware breakpoint event in the form of '\mem:addr[:access]'
-           where addr is the address in memory you want to break in.
-           Access is the memory access type (read, write, execute) it can
-diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
-index 29ee857..04e150d 100644
---- a/tools/perf/Documentation/perf-stat.txt
-+++ b/tools/perf/Documentation/perf-stat.txt
-@@ -25,10 +25,22 @@ OPTIONS
- 
- -e::
- --event=::
--	Select the PMU event. Selection can be a symbolic event name
--	(use 'perf list' to list all events) or a raw PMU
--	event (eventsel+umask) in the form of rNNN where NNN is a
--	 hexadecimal event descriptor.
-+	Select the PMU event. Selection can be:
-+
-+	- a symbolic event name (use 'perf list' to list all events)
-+
-+	- a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
-+	  hexadecimal event descriptor.
-+
-+	- a symbolically formed event like 'pmu/param1=0x3,param2/' where
-+	  param1 and param2 are defined as formats for the PMU in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*
-+
-+	- a symbolically formed event like 'pmu/config=M,config1=N,config2=K/'
-+	  where M, N, K are numbers (in decimal, hex, octal format).
-+	  Acceptable values for each of 'config', 'config1' and 'config2'
-+	  parameters are defined by corresponding entries in
-+	  /sys/bus/event_sources/devices/<pmu>/format/*
- 
- -i::
- --no-inherit::
--- 
-1.8.3.1
+-Scott
