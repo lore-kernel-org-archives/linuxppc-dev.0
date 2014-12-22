@@ -1,32 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0147.outbound.protection.outlook.com [157.56.110.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rickard.strandqvist@spectrumdigital.se>
+Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
+ [209.85.217.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06D5B1A0C95
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 08:26:06 +1100 (AEDT)
-Message-ID: <1419283551.5581.172.camel@freescale.com>
-Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Mon, 22 Dec 2014 15:25:51 -0600
-In-Reply-To: <5497FBAB.4010206@Freescale.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
- <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1418940078.5581.143.camel@freescale.com>
- <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1419030955.5581.154.camel@freescale.com>
- <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
- <5497E645.7010500@Freescale.com> <1419241330.5581.162.camel@freescale.com>
- <5497FBAB.4010206@Freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 96C971A011B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 09:11:49 +1100 (AEDT)
+Received: by mail-lb0-f173.google.com with SMTP id z12so4504311lbi.32
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 14:11:45 -0800 (PST)
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
- Igal-B31950 <Igal.Liberman@Freescale.com>
+In-Reply-To: <54985686.7080609@freebsd.org>
+References: <1419087601-4889-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+ <1419269161.3786.4.camel@infradead.org> <54985686.7080609@freebsd.org>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Mon, 22 Dec 2014 23:11:24 +0100
+Message-ID: <CAFo99gZsG5P6FGLqo02vyCueg4iuSpZqRU5a0BvzvtMhcRs0hw@mail.gmail.com>
+Subject: Re: [PATCH] arch: powerpc: platforms: ps3: repository.c: Remove
+ unused function
+To: Nathan Whitehorn <nwhitehorn@freebsd.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: cbe-oss-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>,
+ Andre Heider <a.heider@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,60 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-22 at 05:08 -0600, Emil Medve wrote:
-> Hello Scott,
-> 
-> 
-> On 12/22/2014 03:42 AM, Scott Wood wrote:
-> > On Mon, 2014-12-22 at 03:37 -0600, Emil Medve wrote:
-> >> Hello Scott,
-> >>
-> >>
-> >> On 12/22/2014 02:32 AM, Scott Wood wrote:
-> >>> On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
-> >>>> For the purpose of an example in the binding document, I suggest we just
-> >>>> stick with the IEEE standard frequency.
-> >>>
-> >>> The whole reason for this property existing in the device tree is
-> >>> non-standard frequencies.
-> >>
-> >> While the standard claims 2.5 MHz, most MDIO controllers and PHY devices
-> >> support frequencies well beyond the standard. Specifying a lower then
-> >> the standard frequency for the benefit of some errata is just one side
-> >> of this property
-> > 
-> > The erratum was (until now) the only claimed reason for it.  If there
-> > are other reasons why one would specify a different frequency (in
-> > particular, that relate to hardware description), please elaborate.
-> 
-> From memory, the 1 Gb/s Vitesse PHY(s) we have on some of our DS boards
-> support 12.5 MHz. I can dig out more specs for specifics on other PHY(s)
-> 
-> 2.5 MHz is slow and even more so for high speed interfaces. With both
-> polling and interrupts (both MDIO and/or PHY) we've noticed (or blamed)
-> in the past some Ethernet performance issues on this very slowness
-> 
-> As of right now I'm not aware of another way to specify/coordinate the
-> MDC speed so setting a default (common denominator) in the DT that is
-> different then the IEEE standard seems ok
+2014-12-22 18:36 GMT+01:00 Nathan Whitehorn <nwhitehorn@freebsd.org>:
 >
-> >>>> We can continue this conversation about errata handling when we submit
-> >>>> the code relevant to this binding (and the FMan v3 support)
-> >>>
-> >>> It affects the binding, so let's discuss it now please.
-> >>
-> >> I think this specific (unpublished yet) errata has less bearing on the
-> >> binding then you might believe. This is mostly about providing a
-> >> common/default frequency supported by all the devices on some board
-> > 
-> > What reason other than an erratum would there be for the standard
-> > frequency not being supported?
-> 
-> This is not about not supporting the standard frequency. This is about
-> the default frequency being different then the standard
+> On 12/22/14 09:26, Geoff Levand wrote:
+>>
+>> On Sat, 2014-12-20 at 16:00 +0100, Rickard Strandqvist wrote:
+>>>
+>>> Remove the function ps3_repository_write_highmem_info() that is not used
+>>> anywhere.
+>>
+>> NAK
+>>
+>> ps3_repository_write_highmem_info() is needed by otheros++.  What we
+>> need is a kernel patch to add the highmem info to the repository once it
+>> is known.
+>>
+>> These ps3_repository_write_highmem routines are also the only
+>> documentation the freeBSD port has as to how the highmem info is (should
+>> be) saved in the repository.
+>>
+>> -Geoff
+>>
+>>
+>
+> Yes, we really need this for FreeBSD since that port uses the repository
+> directly instead of FDT. Thanks for noticing this. We could adapt FreeBSD to
+> use FDT (this is the only non-device-tree PowerPC port), but there hasn't
+> been any reason to do that thus far given the availability of the repository
+> information.
+> -Nathan
 
-OK, though rather than talk about defaults I'd phrase it as indicating
-that a higher frequency than standard is supported, or that a lower
-frequency than standard is required.
 
--Scott
+
+Hi
+
+Too bad that did not have the benefit of the patch, but it looks like
+something good come because of it anyhow.
+
+Kind regards
+Rickard Strandqvist
