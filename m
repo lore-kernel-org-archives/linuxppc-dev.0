@@ -2,34 +2,32 @@ Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F4F61A0D0E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E622B1A0C62
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:02 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 15:54:59 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 82A2C2BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:56 +1100 (EST)
+ Mon, 22 Dec 2014 15:55:02 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id EE16C2CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBM5suE134603144
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:56 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBM5sxi739387338
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBM5stow020611
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:56 +1100
+ sBM5sxD3020672
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:54:59 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V10 06/17] powerpc/pci: Add PCI resource alignment
- documentation
-Date: Mon, 22 Dec 2014 13:54:26 +0800
-Message-Id: <1419227677-12312-7-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V10 08/17] powrepc/pci: Refactor pci_dn
+Date: Mon, 22 Dec 2014 13:54:28 +0800
+Message-Id: <1419227677-12312-9-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,239 +37,401 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to enable SRIOV on PowerNV platform, the PF's IOV BAR needs to be
-adjusted:
-    1. size expaned
-    2. aligned to M64BT size
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-This patch documents this change on the reason and how.
+pci_dn is the extension of PCI device node and it's created from
+device node. Unfortunately, VFs that are enabled dynamically by
+PF's driver and they don't have corresponding device nodes, and
+pci_dn. The patch refactors pci_dn to support VFs:
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+   * pci_dn is organized as a hierarchy tree. VF's pci_dn is put
+     to the child list of pci_dn of PF's bridge. pci_dn of other
+     device put to the child list of pci_dn of its upstream bridge.
+
+   * VF's pci_dn is expected to be created dynamically when PF
+     enabling VFs. VF's pci_dn will be destroyed when PF disabling
+     VFs. pci_dn of other device is still created from device node
+     as before.
+
+   * For one particular PCI device (VF or not), its pci_dn can be
+     found from pdev->dev.archdata.firmware_data, PCI_DN(devnode),
+     or parent's list. The fast path (fetching pci_dn through PCI
+     device instance) is populated during early fixup time.
+
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- .../powerpc/pci_iov_resource_on_powernv.txt        |  215 ++++++++++++++++++++
- 1 file changed, 215 insertions(+)
- create mode 100644 Documentation/powerpc/pci_iov_resource_on_powernv.txt
+ arch/powerpc/include/asm/device.h         |    3 +
+ arch/powerpc/include/asm/pci-bridge.h     |   14 +-
+ arch/powerpc/kernel/pci_dn.c              |  240 ++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c |   15 ++
+ 4 files changed, 267 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/powerpc/pci_iov_resource_on_powernv.txt b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
-new file mode 100644
-index 0000000..10d4ac2
---- /dev/null
-+++ b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
-@@ -0,0 +1,215 @@
-+Wei Yang <weiyang@linux.vnet.ibm.com>
-+Benjamin Herrenschmidt <benh@au1.ibm.com>
-+26 Aug 2014
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 38faede..29992cd 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -34,6 +34,9 @@ struct dev_archdata {
+ #ifdef CONFIG_SWIOTLB
+ 	dma_addr_t		max_direct_dma_addr;
+ #endif
++#ifdef CONFIG_PPC64
++	void			*firmware_data;
++#endif
+ #ifdef CONFIG_EEH
+ 	struct eeh_dev		*edev;
+ #endif
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 725247b..74efea9 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -89,6 +89,7 @@ struct pci_controller {
+ 
+ #ifdef CONFIG_PPC64
+ 	unsigned long buid;
++	void *firmware_data;
+ #endif	/* CONFIG_PPC64 */
+ 
+ 	void *private_data;
+@@ -150,9 +151,13 @@ static inline int isa_vaddr_is_ioport(void __iomem *address)
+ struct iommu_table;
+ 
+ struct pci_dn {
++	int     flags;
++#define PCI_DN_FLAG_IOV_VF     0x01
 +
-+This document describes the requirement from hardware for PCI MMIO resource
-+sizing and assignment on PowerNV platform and how generic PCI code handle this
-+requirement. The first two sections describes the concept to PE and the
-+implementation on P8 (IODA2)
+ 	int	busno;			/* pci bus number */
+ 	int	devfn;			/* pci device and function number */
+ 
++	struct  pci_dn *parent;
+ 	struct  pci_controller *phb;	/* for pci devices */
+ 	struct	iommu_table *iommu_table;	/* for phb's or bridges */
+ 	struct	device_node *node;	/* back-pointer to the device_node */
+@@ -167,14 +172,19 @@ struct pci_dn {
+ #ifdef CONFIG_PPC_POWERNV
+ 	int	pe_number;
+ #endif
++	struct list_head child_list;
++	struct list_head list;
+ };
+ 
+ /* Get the pointer to a device_node's pci_dn */
+ #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
+ 
++extern struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
++					   int devfn);
+ extern struct pci_dn *pci_get_pdn(struct pci_dev *pdev);
+-
+-extern void * update_dn_pci_info(struct device_node *dn, void *data);
++extern struct pci_dn *add_dev_pci_info(struct pci_dev *pdev);
++extern void remove_dev_pci_info(struct pci_dev *pdev);
++extern void *update_dn_pci_info(struct device_node *dn, void *data);
+ 
+ static inline int pci_device_from_OF_node(struct device_node *np,
+ 					  u8 *bus, u8 *devfn)
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 1f61fab..c99fb80 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -32,12 +32,222 @@
+ #include <asm/ppc-pci.h>
+ #include <asm/firmware.h>
+ 
++/*
++ * The function is used to find the firmware data of one
++ * specific PCI device, which is attached to the indicated
++ * PCI bus. For VFs, their firmware data is linked to that
++ * one of PF's bridge. For other devices, their firmware
++ * data is linked to that of their bridge.
++ */
++static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
++{
++	struct pci_bus *pbus;
++	struct device_node *dn;
++	struct pci_dn *pdn;
 +
-+1. General Introduction on the Purpose of PE
-+PE stands for Partitionable Endpoint.
++	/*
++	 * We probably have virtual bus which doesn't
++	 * have associated bridge.
++	 */
++	pbus = bus;
++	while (pbus) {
++		if (pci_is_root_bus(pbus) || pbus->self)
++			break;
 +
-+The concept of PE is a way to group the various resources associated
-+with a device or a set of device to provide isolation between partitions
-+(ie. filtering of DMA, MSIs etc...) and to provide a mechanism to freeze
-+a device that is causing errors in order to limit the possibility of
-+propagation of bad data.
++		pbus = pbus->parent;
++	}
 +
-+There is thus, in HW, a table of PE states that contains a pair of
-+"frozen" state bits (one for MMIO and one for DMA, they get set together
-+but can be cleared independently) for each PE.
++	/*
++	 * Except virtual bus, all PCI buses should
++	 * have device nodes.
++	 */
++	dn = pci_bus_to_OF_node(pbus);
++	pdn = dn ? PCI_DN(dn) : NULL;
 +
-+When a PE is frozen, all stores in any direction are dropped and all loads
-+return all 1's value. MSIs are also blocked. There's a bit more state that
-+captures things like the details of the error that caused the freeze etc...
-+but that's not critical.
++	return pdn;
++}
 +
-+The interesting part is how the various type of PCIe transactions (MMIO,
-+DMA,...) are matched to their corresponding PEs.
++struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
++				    int devfn)
++{
++	struct device_node *dn = NULL;
++	struct pci_dn *parent, *pdn;
++	struct pci_dev *pdev = NULL;
 +
-+Following section provides a rough description of what we have on P8 (IODA2).
-+Keep in mind that this is all per PHB (host bridge). Each PHB is a completely
-+separate HW entity which replicates the entire logic, so has its own set
-+of PEs etc...
++	/* Fast path: fetch from PCI device */
++	list_for_each_entry(pdev, &bus->devices, bus_list) {
++		if (pdev->devfn == devfn) {
++			if (pdev->dev.archdata.firmware_data)
++				return pdev->dev.archdata.firmware_data;
 +
-+2. Implementation of PE on P8 (IODA2)
-+First, P8 has 256 PEs per PHB.
++			dn = pci_device_to_OF_node(pdev);
++			break;
++		}
++	}
 +
-+ * Inbound
++	/* Fast path: fetch from device node */
++	pdn = dn ? PCI_DN(dn) : NULL;
++	if (pdn)
++		return pdn;
 +
-+For DMA, MSIs and inbound PCIe error messages, we have a table (in memory but
-+accessed in HW by the chip) that provides a direct correspondence between
-+a PCIe RID (bus/dev/fn) with a "PE" number. We call this the RTT.
++	/* Slow path: fetch from firmware data hierarchy */
++	parent = pci_bus_to_pdn(bus);
++	if (!parent)
++		return NULL;
 +
-+ - For DMA we then provide an entire address space for each PE that can contains
-+two "windows", depending on the value of PCI bit 59. Each window can then be
-+configured to be remapped via a "TCE table" (iommu translation table), which has
-+various configurable characteristics which we can describe another day.
++	list_for_each_entry(pdn, &parent->child_list, list) {
++		if (pdn->busno == bus->number &&
++                    pdn->devfn == devfn)
++                        return pdn;
++        }
 +
-+ - For MSIs, we have two windows in the address space (one at the top of the 32-bit
-+space and one much higher) which, via a combination of the address and MSI value,
-+will result in one of the 2048 interrupts per bridge being triggered. There's
-+a PE value in the interrupt controller descriptor table as well which is compared
-+with the PE obtained from the RTT to "authorize" the device to emit that specific
-+interrupt.
++	return NULL;
++}
 +
-+ - Error messages just use the RTT.
+ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+ {
+-	struct device_node *dn = pci_device_to_OF_node(pdev);
+-	if (!dn)
++	struct device_node *dn;
++	struct pci_dn *parent, *pdn;
 +
-+ * Outbound. That's where the tricky part is.
++	/* Search device directly */
++	if (pdev->dev.archdata.firmware_data)
++		return pdev->dev.archdata.firmware_data;
 +
-+The PHB basically has a concept of "windows" from the CPU address space to the
-+PCI address space. There is one M32 window and 16 M64 windows. They have different
-+characteristics. First what they have in common: they are configured to forward a
-+configurable portion of the CPU address space to the PCIe bus and must be naturally
-+aligned power of two in size. The rest is different:
++	/* Check device node */
++	dn = pci_device_to_OF_node(pdev);
++	pdn = dn ? PCI_DN(dn) : NULL;
++	if (pdn)
++		return pdn;
 +
-+  - The M32 window:
++	/*
++	 * VFs don't have device nodes. We hook their
++	 * firmware data to PF's bridge.
++	 */
++	parent = pci_bus_to_pdn(pdev->bus);
++	if (!parent)
++		return NULL;
 +
-+    * It is limited to 4G in size
++	list_for_each_entry(pdn, &parent->child_list, list) {
++		if (pdn->busno == pdev->bus->number &&
++		    pdn->devfn == pdev->devfn)
++			return pdn;
++	}
 +
-+    * It drops the top bits of the address (above the size) and replaces them with
-+a configurable value. This is typically used to generate 32-bit PCIe accesses. We
-+configure that window at boot from FW and don't touch it from Linux, it's usually
-+set to forward a 2G portion of address space from the CPU to PCIe
-+0x8000_0000..0xffff_ffff. (Note: The top 64K are actually reserved for MSIs but
-+this is not a problem at this point, we just need to ensure Linux doesn't assign
-+anything there, the M32 logic ignores that however and will forward in that space
-+if we try).
++	return NULL;
++}
 +
-+    * It is divided into 256 segments of equal size. A table in the chip provides
-+for each of these 256 segments a PE#. That allows to essentially assign portions
-+of the MMIO space to PEs on a segment granularity. For a 2G window, this is 8M.
++static struct pci_dn *add_one_dev_pci_info(struct pci_dn *parent,
++					   struct pci_dev *pdev,
++					   int busno, int devfn)
++{
++	struct pci_dn *pdn;
 +
-+Now, this is the "main" window we use in Linux today (excluding SR-IOV). We
-+basically use the trick of forcing the bridge MMIO windows onto a segment
-+alignment/granularity so that the space behind a bridge can be assigned to a PE.
++	/* Except PHB, we always have parent firmware data */
++	if (!parent)
++		return NULL;
 +
-+Ideally we would like to be able to have individual functions in PE's but that
-+would mean using a completely different address allocation scheme where individual
-+function BARs can be "grouped" to fit in one or more segments....
++	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
++	if (!pdn) {
++		pr_warn("%s: Out of memory !\n", __func__);
++		return NULL;
++	}
 +
-+ - The M64 windows.
++	pdn->phb = parent->phb;
++	pdn->parent = parent;
++	pdn->busno = busno;
++	pdn->devfn = devfn;
++#ifdef CONFIG_PPC_POWERNV
++	pdn->pe_number = IODA_INVALID_PE;
++#endif
++	INIT_LIST_HEAD(&pdn->child_list);
++	INIT_LIST_HEAD(&pdn->list);
++	list_add_tail(&pdn->list, &parent->child_list);
 +
-+   * Their smallest size is 1M
++	/*
++	 * If we already have PCI device instance, lets
++	 * bind them.
++	 */
++	if (pdev)
++		pdev->dev.archdata.firmware_data = pdn;
 +
-+   * They do not translate addresses (the address on PCIe is the same as the
-+address on the PowerBus. There is a way to also set the top 14 bits which are
-+not conveyed by PowerBus but we don't use this).
++	return pdn;
++}
 +
-+   * They can be configured to be segmented or not. When segmented, they have
-+256 segments, however they are not remapped. The segment number *is* the PE
-+number. When no segmented, the PE number can be specified for the entire
-+window.
++struct pci_dn *add_dev_pci_info(struct pci_dev *pdev)
++{
++#ifdef CONFIG_PCI_IOV
++	struct pci_dn *parent, *pdn;
++	int i;
 +
-+   * They support overlaps in which case there is a well defined ordering of
-+matching (I don't remember off hand which of the lower or higher numbered
-+window takes priority but basically it's well defined).
++	/* Only support IOV for now */
++	if (!pdev->is_physfn)
++		return pci_get_pdn(pdev);
 +
-+We have code (fairly new compared to the M32 stuff) that exploits that for
-+large BARs in 64-bit space:
++	/* Check if VFs have been populated */
++	pdn = pci_get_pdn(pdev);
++	if (!pdn || (pdn->flags & PCI_DN_FLAG_IOV_VF))
++		return NULL;
 +
-+We create a single big M64 that covers the entire region of address space that
-+has been assigned by FW for the PHB (about 64G, ignore the space for the M32,
-+it comes out of a different "reserve"). We configure that window as segmented.
++	pdn->flags |= PCI_DN_FLAG_IOV_VF;
++	parent = pci_bus_to_pdn(pdev->bus);
++	if (!parent)
+ 		return NULL;
+-	return PCI_DN(dn);
 +
-+Then we do the same thing as with M32, using the bridge aligment trick, to
-+match to those giant segments.
++	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
++		pdn = add_one_dev_pci_info(parent, NULL,
++					   pci_iov_virtfn_bus(pdev, i),
++					   pci_iov_virtfn_devfn(pdev, i));
++		if (!pdn) {
++			pr_warn("%s: Cannot create firmware data "
++				"for VF#%d of %s\n",
++				__func__, i, pci_name(pdev));
++			return NULL;
++		}
++	}
++#endif
 +
-+Since we cannot remap, we have two additional constraints:
++	return pci_get_pdn(pdev);
++}
 +
-+  - We do the PE# allocation *after* the 64-bit space has been assigned since
-+the segments used will derive directly the PE#, we then "update" the M32 PE#
-+for the devices that use both 32-bit and 64-bit spaces or assign the remaining
-+PE# to 32-bit only devices.
++void remove_dev_pci_info(struct pci_dev *pdev)
++{
++#ifdef CONFIG_PCI_IOV
++	struct pci_dn *parent;
++	struct pci_dn *pdn, *tmp;
++	int i;
 +
-+  - We cannot "group" segments in HW so if a device ends up using more than
-+one segment, we end up with more than one PE#. There is a HW mechanism to
-+make the freeze state cascade to "companion" PEs but that only work for PCIe
-+error messages (typically used so that if you freeze a switch, it freezes all
-+its children). So we do it in SW. We lose a bit of effectiveness of EEH in that
-+case, but that's the best we found. So when any of the PEs freezes, we freeze
-+the other ones for that "domain". We thus introduce the concept of "master PE"
-+which is the one used for DMA, MSIs etc... and "secondary PEs" that are used
-+for the remaining M64 segments.
++	/* Only support IOV PF for now */
++	if (!pdev->is_physfn)
++		return;
 +
-+We would like to investigate using additional M64's in "single PE" mode to
-+overlay over specific BARs to work around some of that, for example for devices
-+with very large BARs (some GPUs), it would make sense, but we haven't done it
-+yet.
++	/* Check if VFs have been populated */
++	pdn = pci_get_pdn(pdev);
++	if (!pdn || !(pdn->flags & PCI_DN_FLAG_IOV_VF))
++		return;
 +
-+Finally, the plan to use M64 for SR-IOV, which will be described more in next
-+two sections. So for a given IOV BAR, we need to effectively reserve the
-+entire 256 segments (256 * IOV BAR size) and then "position" the BAR to start at
-+the beginning of a free range of segments/PEs inside that M64.
++	pdn->flags &= ~PCI_DN_FLAG_IOV_VF;
++	parent = pci_bus_to_pdn(pdev->bus);
++	if (!parent)
++		return;
 +
-+The goal is of course to be able to give a separate PE for each VF...
++	/*
++	 * We might introduce flag to pci_dn in future
++	 * so that we can release VF's firmware data in
++	 * a batch mode.
++	 */
++	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
++		list_for_each_entry_safe(pdn, tmp,
++			&parent->child_list, list) {
++			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
++			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
++				continue;
 +
-+3. Hardware requirement on PowerNV platform for SRIOV
-+On PowerNV platform, IODA2 version, it has 16 M64 BARs, which is used to map
-+MMIO range to PE#. Each M64 BAR would cover one MMIO range and this range is
-+divided by *total_pe* number evenly with one piece corresponding to one PE.
++			if (!list_empty(&pdn->list))
++				list_del(&pdn->list);
++			kfree(pdn);
++		}
++	}
++#endif
+ }
+ 
+ /*
+@@ -49,6 +259,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	struct pci_controller *phb = data;
+ 	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
+ 	const __be32 *regs;
++	struct device_node *parent;
+ 	struct pci_dn *pdn;
+ 
+ 	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
+@@ -70,6 +281,15 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	}
+ 
+ 	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
 +
-+We decide to leverage this M64 BAR to map VFs to their individual PE, since
-+for SRIOV VFs their BAR share the same size.
++	/* Attach to parent node */
++	INIT_LIST_HEAD(&pdn->child_list);
++	INIT_LIST_HEAD(&pdn->list);
++	parent = of_get_parent(dn);
++	pdn->parent = parent ? PCI_DN(parent) : NULL;
++	if (pdn->parent)
++		list_add_tail(&pdn->list, &pdn->parent->child_list);
 +
-+By doing so, it introduces another problem. The *total_pe* number usually is
-+bigger than the total_VFs. If we map one IOV BAR directly to one M64 BAR, some
-+part in M64 BAR will map to another devices MMIO range.
+ 	return NULL;
+ }
+ 
+@@ -150,6 +370,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 	if (pdn) {
+ 		pdn->devfn = pdn->busno = -1;
+ 		pdn->phb = phb;
++		phb->firmware_data = pdn;
+ 	}
+ 
+ 	/* Update dn->phb ptrs for new phb and children devices */
+@@ -173,3 +394,16 @@ void __init pci_devs_phb_init(void)
+ 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+ 		pci_devs_phb_init_dynamic(phb);
+ }
 +
-+     0      1                     total_VFs - 1
-+     +------+------+-     -+------+------+
-+     |      |      |  ...  |      |      |
-+     +------+------+-     -+------+------+
++static void pci_dev_pdn_setup(struct pci_dev *pdev)
++{
++	struct pci_dn *pdn;
 +
-+                           IOV BAR
-+     0      1                     total_VFs - 1          total_pe - 1
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
++	if (pdev->dev.archdata.firmware_data)
++		return;
 +
-+                           M64 BAR
++	/* Setup the fast path */
++	pdn = pci_get_pdn(pdev);
++	pdev->dev.archdata.firmware_data = pdn;
++}
++DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index fac88ed..9faa5ec 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -949,6 +949,21 @@ static void pnv_pci_ioda_setup_PEs(void)
+ 	}
+ }
+ 
++#ifdef CONFIG_PCI_IOV
++int pcibios_sriov_disable(struct pci_dev *pdev)
++{
++	/* Release firmware data */
++	remove_dev_pci_info(pdev);
++	return 0;
++}
 +
-+		Figure 1.0 Direct map IOV BAR
++int pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
++{
++	add_dev_pci_info(pdev);
++	return 0;
++}
++#endif /* CONFIG_PCI_IOV */
 +
-+As Figure 1.0 indicates, the range [total_VFs, total_pe - 1] in M64 BAR may
-+map to some MMIO range on other device.
-+
-+The solution currently we have is to expand the IOV BAR to *total_pe* number.
-+
-+     0      1                     total_VFs - 1          total_pe - 1
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
-+
-+                           IOV BAR
-+     0      1                     total_VFs - 1          total_pe - 1
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
-+
-+                           M64 BAR
-+
-+		Figure 1.1 Map expanded IOV BAR
-+
-+By expanding the IOV BAR, this ensures the whole M64 range will not effect
-+others.
-+
-+4. How generic PCI code handle it
-+Till now, it looks good to make it work, while another problem comes. The M64
-+BAR start address needs to be size aligned, while the original generic PCI
-+code assign the IOV BAR with individual VF BAR size aligned.
-+
-+Since usually one SRIOV VF BAR size is the same as its PF size, the original
-+generic PCI code will not count in the IOV BAR alignment. (The alignment is
-+the same as its PF.) With the change from PowerNV platform, this changes. The
-+alignment of the IOV BAR is now the total size, then we need to count in it.
-+
-+From:
-+	alignment(IOV BAR) = size(VF BAR) = size(PF BAR)
-+To:
-+	alignment(IOV BAR) = size(IOV BAR)
-+
-+In commit(PCI: Take additional IOV BAR alignment in sizing and assigning), it
-+has add_align to track the alignment from IOV BAR and use it to meet the
-+requirement.
+ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev)
+ {
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
 -- 
 1.7.9.5
