@@ -1,30 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x22d.google.com (mail-la0-x22d.google.com
+ [IPv6:2a00:1450:4010:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 121421A0CA2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 19:33:12 +1100 (AEDT)
-Message-ID: <1419237176.5581.159.camel@freescale.com>
-Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Mon, 22 Dec 2014 02:32:56 -0600
-In-Reply-To: <5497D466.9090804@Freescale.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
- <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1418940078.5581.143.camel@freescale.com>
- <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1419030955.5581.154.camel@freescale.com>
- <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <5497D466.9090804@Freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1EDDF1A0429
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 19:42:23 +1100 (AEDT)
+Received: by mail-la0-f45.google.com with SMTP id gq15so3627143lab.32
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 00:42:18 -0800 (PST)
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1419237118-9712-1-git-send-email-geert@linux-m68k.org>
+References: <1419237118-9712-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 22 Dec 2014 09:42:18 +0100
+Message-ID: <CAMuHMdU0ym7PLkEcdmDnxvDVBn879QWkOm=-zUXFaQMh2FHfrQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.19-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Miao Steven <realmz6@gmail.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>, Liberman
- Igal-B31950 <Igal.Liberman@Freescale.com>
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>, Cris <linux-cris-kernel@axis.com>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,84 +31,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-22 at 02:20 -0600, Emil Medve wrote:
-> Hello Shao-Hui,
-> 
-> 
-> On 12/21/2014 08:31 PM, Xie Shaohui-B21989 wrote:
-> >> On Fri, 2014-12-19 at 01:23 -0600, Xie Shaohui-B21989 wrote:
-> >>>> -----Original Message-----
-> >>>> From: Wood Scott-B07421
-> >>>> Sent: Friday, December 19, 2014 6:01 AM
-> >>>> To: Xie Shaohui-B21989
-> >>>> Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Medve
-> >>>> Emilian- EMMEDVE1; Liberman Igal-B31950
-> >>>> Subject: Re: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-> >>>>
-> >>>> On Thu, 2014-12-18 at 06:53 -0600, Xie Shaohui-B21989 wrote:
-> >>>>> Ping.
-> >>>>>
-> >>>>> Best Regards,
-> >>>>> Shaohui Xie
-> >>>>
-> >>>> I can't put patches in my -next until the merge window closes.
-> >>>>
-> >>>>>>>> +EXAMPLE
-> >>>>>>>> +
-> >>>>>>>> +Example for FMan v2 external MDIO:
-> >>>>>>>> +
-> >>>>>>>> +mdio@f1000 {
-> >>>>>>>> +	compatible = "fsl,fman-xmdio";
-> >>>>>>>> +	reg = <0xf1000 0x1000>;
-> >>>>>>>> +	bus-frequency = <20000>;
-> >>>>>>>> +};
-> >>>>>>>
-> >>>>>>> So the bus frequency is only 20 KHz?  Or is the unit supposed
-> >>>>>>> to be something other than Hz?
-> >>>>>> [S.H] it's only an example, it could be different on real SoCs,
-> >>>>>> but they always lower than the standard one, The standard one is
-> >>>>>> 2.5MHz, I have
-> >>>> to use Hz for it.
-> >>>>
-> >>>> Is there any SoC for which 20 kHz is the right frequency?  I just
-> >>>> want to make sure the example is realistic.
-> >>> [S.H] the clock divider has a limitation that the MAX value it can get
-> >>> on Fman v2 is 255 (0xff, 8 bits), On Fman v3 is 511(0x1ff, 9 bits).
-> >>>
-> >>> So the lowest frequency on Fman v2 is: Fman_clock / (2 * 255), On Fman
-> >>> v3 is: Fman_clock / ((2 * 511) + 1).
-> >>>
-> >>> Take default Fman frequency setting from SDK1.7 as example, the lowest
-> >>> clock used for Fman v2 is 581MHz, The lowest clock for Fman v3 is 600MHz.
-> >>>
-> >>> Then the lowest bus frequency can get is:
-> >>> Fman v2: ~1140KHz
-> >>> Fman v3: ~587KHz
-> >>>
-> >>> 20KHz is not practice, we don't have a suggested value in errata document.
-> >>> For this example, should I post a new version with a value like 1200KHz?
-> >>
-> >> This is different from how you described the problem before.  If the limitation
-> >> is on the divider, rather than the absolute bus frequency, then specifiy the max
-> >> divider.  Or better, since according to the above this correlates with fman
-> >> version, just have the driver know what the max divider is for each fman version.
-> > [S.H] The problem is not the divider has limitation, the problem is a different bus frequency 
-> > Is needed which is lower than the standard, but due to the divider limitation, the lowest
-> > bus frequency also has limitation. i.e. we need to use the divider to get a lower frequency,
-> > but how much lower the value could be is restricted by the divider limitation.
+On Mon, Dec 22, 2014 at 9:31 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v3.19-rc1[1] compared to v3.18[2].
+>
+> Summarized:
+>   - build errors: +24/-16
 
-This is difficult to follow -- are you saying the erratum requires a
-speed that is not achievable?
+  + /home/kisskb/slave/src/arch/powerpc/xmon/xmon.c: error: unused
+variable 'badaddr' [-Werror=unused-variable]:  => 1185:13
+  + /home/kisskb/slave/src/arch/powerpc/xmon/xmon.c: error: unused
+variable 'mode' [-Werror=unused-variable]:  => 1183:6
 
-> For the purpose of an example in the binding document, I suggest we just
-> stick with the IEEE standard frequency.
+powerpc-randconfig
 
-The whole reason for this property existing in the device tree is
-non-standard frequencies.
+  + /home/kisskb/slave/src/arch/sh/boards/mach-se/7343/irq.c: error:
+too few arguments to function 'ioread16':  => 44:2
+  + /home/kisskb/slave/src/arch/sh/boards/mach-se/7343/irq.c: error:
+too few arguments to function 'iowrite16':  => 123:2
 
-> We can continue this conversation about errata handling when we submit
-> the code relevant to this binding (and the FMan v3 support)
+sh4/se7343_defconfig
 
-It affects the binding, so let's discuss it now please.
+  + /home/kisskb/slave/src/arch/sh/boards/mach-se/7722/irq.c: error:
+too few arguments to function 'ioread16':  => 43:2
+  + /home/kisskb/slave/src/arch/sh/boards/mach-se/7722/irq.c: error:
+too few arguments to function 'iowrite16':  => 116:2
 
--Scott
+sh4/se7722_defconfig
+
+  + /home/kisskb/slave/src/drivers/usb/musb/blackfin.c: error:
+'bfin_writel' undeclared here (not in a function):  => 476:13
+
+bfin/BF527-EZKIT-V2_defconfig
+
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_BABBLE_CTL' undeclared here (not in a function):  => 67:17
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_CONFIGDATA' undeclared here (not in a function):  => 62:18
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_EPINFO' undeclared here (not in a function):  => 74:14
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_RAMINFO' undeclared here (not in a function):  => 75:15
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_RXFIFOADD' undeclared here (not in a function):  => 71:17
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_RXFIFOSZ' undeclared here (not in a function):  => 69:16
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_TXFIFOADD' undeclared here (not in a function):  => 70:17
+  + /home/kisskb/slave/src/drivers/usb/musb/musb_debugfs.c: error:
+'MUSB_TXFIFOSZ' undeclared here (not in a function):  => 68:16
+
+bfin/BF527-EZKIT_defconfig
+bfin/BF527-EZKIT-V2_defconfig
+bfin/BF548-EZKIT_defconfig
+bfin/CM-BF548_defconfig
+bfin/CM-BF527_defconfig
+
+  + /home/kisskb/slave/src/include/linux/irq.h: error: conflicting
+types for 'ioread16':  => 856:19
+  + /home/kisskb/slave/src/include/linux/irq.h: error: conflicting
+types for 'iowrite16':  => 847:20
+
+sh4/se7343_defconfig
+sh4/se7722_defconfig
+
+  + error: "csum_partial_copy_nocheck" [net/ipv6/ipv6.ko] undefined!:  => N/A
+
+cris/cris-allmodconfig
+
+  + error: No rule to make target include/config/auto.conf:  => N/A
+
+arm/arm-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/8241/ (262 out of 262 configs)
+> [2] http://kisskb.ellerman.id.au/kisskb/head/8168/ (262 out of 262 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
