@@ -1,31 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C8F131A0D47
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E7F4D1A0CF3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:11 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 22 Dec 2014 15:55:10 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E12532CE8064
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:07 +1100 (EST)
+ Mon, 22 Dec 2014 15:55:11 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 99ED23578064
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:09 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBM5t76Y38338612
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:07 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBM5t9LY34472016
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:09 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBM5t7uM021048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:07 +1100
+ sBM5t83Y021104
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Dec 2014 16:55:09 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V10 13/17] powerpc/powernv: Implement
- pcibios_iov_resource_alignment() on powernv
-Date: Mon, 22 Dec 2014 13:54:33 +0800
-Message-Id: <1419227677-12312-14-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V10 14/17] powerpc/powernv: Shift VF resource with an offset
+Date: Mon, 22 Dec 2014 13:54:34 +0800
+Message-Id: <1419227677-12312-15-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -39,99 +38,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements the pcibios_iov_resource_alignment() on powernv
-platform.
+On PowrNV platform, resource position in M64 implies the PE# the resource
+belongs to. In some particular case, adjustment of a resource is necessary to
+locate it to a correct position in M64.
 
-On PowerNV platform, there are 3 cases for the IOV BAR:
-1. initial state, the IOV BAR size is multiple times of VF BAR size
-2. after expanded, the IOV BAR size is expanded to meet the M64 segment size
-3. sizing stage, the IOV BAR is truncated to 0
-
-pnv_pci_iov_resource_alignment() handle these three cases respectively.
+This patch introduces a function to shift the 'real' PF IOV BAR address
+according to an offset.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h        |    3 +++
- arch/powerpc/kernel/pci-common.c          |   14 ++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c |   20 ++++++++++++++++++++
- 3 files changed, 37 insertions(+)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   31 +++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 965547c..12e8eb8 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -252,6 +252,9 @@ struct machdep_calls {
- 
- #ifdef CONFIG_PCI_IOV
- 	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
-+	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *,
-+			                                    int resno,
-+							    resource_size_t align);
- #endif /* CONFIG_PCI_IOV */
- 
- 	/* Called to shutdown machine specific hardware not already controlled
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 832b7e1..8751dfb 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -130,6 +130,20 @@ void pcibios_reset_secondary_bus(struct pci_dev *dev)
- 	pci_reset_secondary_bus(dev);
- }
- 
-+#ifdef CONFIG_PCI_IOV
-+resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev,
-+						 int resno,
-+						 resource_size_t align)
-+{
-+	if (ppc_md.pcibios_iov_resource_alignment)
-+		return ppc_md.pcibios_iov_resource_alignment(pdev,
-+							       resno,
-+							       align);
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PCI_IOV */
-+
- static resource_size_t pcibios_io_size(const struct pci_controller *hose)
- {
- #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index a9e61fa..512dc48 100644
+index 512dc48..f5aa1ef 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1952,6 +1952,25 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
- 	return phb->ioda.io_segsize;
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/crash_dump.h>
++#include <linux/pci_regs.h>
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
+@@ -749,6 +750,36 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
+ 	return 10;
  }
  
 +#ifdef CONFIG_PCI_IOV
-+static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
-+							    int resno,
-+							    resource_size_t align)
++static void pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
 +{
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
-+	resource_size_t iov_align;
++	struct pci_dn *pdn = pci_get_pdn(dev);
++	int i;
++	struct resource *res;
++	resource_size_t size;
 +
-+	iov_align = resource_size(&pdev->resource[resno]);
-+	if (iov_align)
-+		return iov_align;
++	if (!dev->is_physfn)
++		return;
 +
-+	if (pdn->max_vfs)
-+		return pdn->max_vfs * align;
++	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++) {
++		res = &dev->resource[i];
++		if (!res->flags || !res->parent)
++			continue;
 +
-+	return align;
++		if (!pnv_pci_is_mem_pref_64(res->flags))
++			continue;
++
++		dev_info(&dev->dev, " Shifting VF BAR %pR to\n", res);
++		size = pci_iov_resource_size(dev, i);
++		res->start += size*offset;
++
++		dev_info(&dev->dev, "                 %pR\n", res);
++		pci_update_resource(dev, i);
++	}
++	pdn->max_vfs -= offset;
 +}
 +#endif /* CONFIG_PCI_IOV */
 +
- /* Prevent enabling devices for which we couldn't properly
-  * assign a PE
-  */
-@@ -2154,6 +2173,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
- #ifdef CONFIG_PCI_IOV
- 	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_sriov;
-+	ppc_md.pcibios_iov_resource_alignment = pnv_pci_iov_resource_alignment;
- #endif /* CONFIG_PCI_IOV */
- 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
- 
+ #if 0
+ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
+ {
 -- 
 1.7.9.5
