@@ -1,31 +1,19 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <der.herr@hofr.at>
+Received: from www.osadl.org (www.osadl.org [62.245.132.105])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E8161A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 00:49:49 +1100 (AEDT)
-Date: Tue, 23 Dec 2014 14:49:40 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Valentin Longchamp <valentin.longchamp@keymile.com>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-Message-ID: <20141223134940.GA1925@katana>
-References: <1414537731.23458.120.camel@snotra.buserror.net>
- <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
- <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
- <1416274083.15957.96.camel@freescale.com>
- <20141125181347.GC9716@katana>
- <1416966097.15957.171.camel@freescale.com>
- <54899FB4.9010207@keymile.com> <54996CB5.8030808@keymile.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
-In-Reply-To: <54996CB5.8030808@keymile.com>
-Cc: Linux device trees <devicetree@vger.kernel.org>,
- danielle.costantino@gmail.com, "Boschung,
- Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A048D1A0655
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 05:02:06 +1100 (AEDT)
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] cleanup on stack DECLARE_COMPLETIONs
+Date: Tue, 23 Dec 2014 18:34:08 +0100
+Message-Id: <1419356048-22405-1-git-send-email-der.herr@hofr.at>
+Cc: Dimitri Sivanich <sivanich@sgi.com>, linux-scsi@vger.kernel.org,
+ linux-usb@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
+ Nicholas Mc Guire <der.herr@hofr.at>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ "Juergen E. Fischer" <fischer@norbit.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+fixups for incorrect use of DECLARE_COMPLETION. see also commit
+6e9a4738 ("completions: lockdep annotate on stack completions")
+The only somewhat special case being
+drivers/misc/sgi-gru/grukservices.c:quicktest2
+which had a static qualifier in the original DECLARE_COMPLETION()
+but that seems to be wrong (why should the completion persisted between
+successive calls ?) so the conversion to DECLARE_COMPLETION_ONSTACK
+was also applied and the static qualifier removed.
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Not sure if this is suitable in this form or if it should go out as
+5 seperate patches ? 
 
-On Tue, Dec 23, 2014 at 02:23:01PM +0100, Valentin Longchamp wrote:
-> Wolfgang, Scott,
+This was only code reviewed and compile tested
 
-Wolfram, please.
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+---
+ drivers/macintosh/ams/ams-pmu.c       |    4 ++--
+ drivers/misc/sgi-gru/grukservices.c   |    2 +-
+ drivers/scsi/aha152x.c                |    2 +-
+ drivers/usb/gadget/udc/fsl_qe_udc.c   |    2 +-
+ drivers/usb/gadget/udc/fsl_udc_core.c |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
 
-> > What is then the agreement here ? Add a clock-div to the device trees ?=
- Or do
-> > something similar to  mpc_i2c_get_sec_cfg_8xxx() ?
-> >=20
-> > I think the clock-div property is better according to Freescale's AN 29=
-19
-> > section 3.1 Source clock. All the source clocks are fixed (with a clock=
--div of 2
-> > in case of mpc8536/43/45/47/48/67/68/72, plus p2020) except for the mpc=
-8533/44
-> > where it can be 2 or 3, and that's what mpc_i2c_get_sec_cfg_8xxx() dete=
-rmines.
-> >=20
-> > So mpc_i2c_get_sec_cfg_8xxx() should remain the exception and the other
-> > prescaler values should be derived from an additional clock-div that mu=
-st be
-> > added in the respective device trees (at least for the qoriq devices, b=
-ecause
-> > for instance mpc8543 already has the correct prescaler thanks to
-> > mpc_i2c_data_8543 from i2c-mpc.c).
-> >=20
->=20
-> Do you have an opinion on the above ?
+diff --git a/drivers/macintosh/ams/ams-pmu.c b/drivers/macintosh/ams/ams-pmu.c
+index 4f61b3e..c2b178f 100644
+--- a/drivers/macintosh/ams/ams-pmu.c
++++ b/drivers/macintosh/ams/ams-pmu.c
+@@ -52,7 +52,7 @@ static void ams_pmu_req_complete(struct adb_request *req)
+ static void ams_pmu_set_register(u8 reg, u8 value)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
 
-I don't mind. I'll leave it to PowerPC experts to judge if a new binding
-is apropriate or reading SVR is the way to go. If it is going to be a
-new binding, then please look around before if there is already
-something similar around...
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 4, ams_pmu_cmd, 0x00, reg, value))
+@@ -65,7 +65,7 @@ static void ams_pmu_set_register(u8 reg, u8 value)
+ static u8 ams_pmu_get_register(u8 reg)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
 
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 3, ams_pmu_cmd, 0x01, reg))
+diff --git a/drivers/misc/sgi-gru/grukservices.c b/drivers/misc/sgi-gru/grukservices.c
+index 913de07..4e412fe 100644
+--- a/drivers/misc/sgi-gru/grukservices.c
++++ b/drivers/misc/sgi-gru/grukservices.c
+@@ -1044,7 +1044,7 @@ done:
 
---1yeeQ81UyVL57Vl7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ static int quicktest2(unsigned long arg)
+ {
+-	static DECLARE_COMPLETION(cmp);
++	DECLARE_COMPLETION_ONSTACK(cmp);
+ 	unsigned long han;
+ 	int blade_id = 0;
+ 	int numcb = 4;
+diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
+index 2b960b3..b16afb9 100644
+--- a/drivers/scsi/aha152x.c
++++ b/drivers/scsi/aha152x.c
+@@ -1055,7 +1055,7 @@ static int aha152x_abort(Scsi_Cmnd *SCpnt)
+ static int aha152x_device_reset(Scsi_Cmnd * SCpnt)
+ {
+ 	struct Scsi_Host *shpnt = SCpnt->device->host;
+-	DECLARE_COMPLETION(done);
++	DECLARE_COMPLETION_ONSTACK(done);
+ 	int ret, issued, disconnected;
+ 	unsigned char old_cmd_len = SCpnt->cmd_len;
+ 	unsigned long flags;
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+index 795c99c..e0822f1 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.c
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+@@ -2630,7 +2630,7 @@ static int qe_udc_remove(struct platform_device *ofdev)
+ 	struct qe_udc *udc = platform_get_drvdata(ofdev);
+ 	struct qe_ep *ep;
+ 	unsigned int size;
+-	DECLARE_COMPLETION(done);
++	DECLARE_COMPLETION_ONSTACK(done);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+ 	usb_del_gadget_udc(&udc->gadget);
 
-iQIcBAEBAgAGBQJUmXL0AAoJEBQN5MwUoCm2CcgQAKV5sdN8lTA+hbf/QsQO7ubF
-Ia+rTM8zopsChRAA1VwAj9qU3LSUnSxHraT+2+lOxr1UwERvacMRcTpEWzWHDABM
-8O+K/QDu+FhAsarFvcBs/qgUrSRka9nesPYIs6DGVo0ggK5dN9ZEvsJCyrJIvbRa
-dOCZbVHKhAfrXHSuGr5UrLuHwOvdGZr6L0giCxNM00riU1RxFYKnNnNXH6JVhfDG
-ztjUjelgpUiPW0pMikpcfSxI/KTFxe81j4wIM7tD+foaSPusBEsTpFPdVvkZWvRH
-MV6YQPPO30lLh7jjZp7T5RAvrsRsJ9kiM3OvADnWwGGXvaGtRMvvEN8RBr2Do/MF
-HJux3tdV1m6aVcyUZqQZXEkOikNsBKvbPSl+oS4tpmoH3x2JeXq3eyVfh3/ovwK2
-EXqgTvhXKRecm3Rj7qjsqfUO09KTZnxrqVBcntViSh3IbF/06qpp9q5ago4tH9vp
-aTipo6RUpVRgk8dUCY+j/sbBXJ7G9abHWeZqZCxYUtpJYuDUQwytqNosZA7me0YY
-mCtqgXoOsoXzdV9TLh4pQRscMhInDGiAN50HsxLonrx2IobNWr30GCZanoMxeh2m
-noKZAvY13Tedl6fWpjIuJ9Pyx9Dcd3nQnvRoXrWrdObqJfZh4pQhcBgE1/ii3SSt
-eY4WVC0kuiry2wHpZr/B
-=qYRd
------END PGP SIGNATURE-----
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index 2df8074..c3830ad 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -2529,7 +2529,7 @@ static int __exit fsl_udc_remove(struct platform_device *pdev)
+ 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	struct fsl_usb2_platform_data *pdata = dev_get_platdata(&pdev->dev);
 
---1yeeQ81UyVL57Vl7--
+-	DECLARE_COMPLETION(done);
++	DECLARE_COMPLETION_ONSTACK(done);
+
+ 	if (!udc_controller)
+ 		return -ENODEV;
+--
+1.7.10.4
