@@ -1,21 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1419313945.30550.9.camel@ellerman.id.au>
-Subject: Re: [PATCH] arch: powerpc: platforms: ps3: repository.c:  Remove
- unused function
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Geoff Levand <geoff@infradead.org>
-Date: Tue, 23 Dec 2014 16:52:25 +1100
-In-Reply-To: <1419302677.4364.100.camel@smoke>
-References: <1419087601-4889-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <1419269161.3786.4.camel@infradead.org>
- <1419294380.30550.1.camel@ellerman.id.au> <1419302677.4364.100.camel@smoke>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- Andre Heider <a.heider@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Nathan Whitehorn <nwhitehorn@freebsd.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D6BB1A0C6E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 17:53:41 +1100 (AEDT)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: RE: [PATCH] powerpc/smp: Fix Non-boot cpus cannot be bring up.
+Date: Tue, 23 Dec 2014 06:53:27 +0000
+Message-ID: <BN1PR03MB188437314CA1097121C86669D570@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
+ <1419296441.30550.3.camel@ellerman.id.au>
+ <BN1PR03MB1889A560297773EE7E2342B9D570@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1419313550.30550.7.camel@ellerman.id.au>
+In-Reply-To: <1419313550.30550.7.camel@ellerman.id.au>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +29,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-22 at 18:44 -0800, Geoff Levand wrote:
-> Hi Michael,
-> 
-> On Tue, 2014-12-23 at 11:26 +1100, Michael Ellerman wrote:
-> > On Mon, 2014-12-22 at 09:26 -0800, Geoff Levand wrote:
-> > > ps3_repository_write_highmem_info() is needed by otheros++.  What we
-> > > need is a kernel patch to add the highmem info to the repository once it
-> > > is known.
-> > 
-> > OK so where's that patch?
-> 
-> I put one in my ps3-linux repo.  I'll post it after I do some more
-> testing.
-
-Great, thanks.
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTWljaGFlbCBFbGxlcm1h
+biBbbWFpbHRvOm1wZUBlbGxlcm1hbi5pZC5hdV0NCj4gU2VudDogVHVlc2RheSwgRGVjZW1iZXIg
+MjMsIDIwMTQgMTo0NiBQTQ0KPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBiZW5o
+QGtlcm5lbC5jcmFzaGluZy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOyBhbnRvbkBzYW1iYS5vcmc7
+IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+XSBwb3dlcnBjL3NtcDogRml4IE5vbi1ib290IGNwdXMgY2Fubm90IGJlIGJyaW5nIHVwLg0KPiAN
+Cj4gT24gVHVlLCAyMDE0LTEyLTIzIGF0IDAyOjQxICswMDAwLCBEb25nc2hlbmcuV2FuZ0BmcmVl
+c2NhbGUuY29tIHdyb3RlOg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+
+IEZyb206IE1pY2hhZWwgRWxsZXJtYW4gW21haWx0bzptcGVAZWxsZXJtYW4uaWQuYXVdDQo+ID4g
+PiBTZW50OiBUdWVzZGF5LCBEZWNlbWJlciAyMywgMjAxNCA5OjAxIEFNDQo+ID4gPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiBDYzogYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBX
+b29kIFNjb3R0LUIwNzQyMTsgYW50b25Ac2FtYmEub3JnOw0KPiA+ID4gbGludXhwcGMtIGRldkBs
+aXN0cy5vemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjL3NtcDog
+Rml4IE5vbi1ib290IGNwdXMgY2Fubm90IGJlIGJyaW5nIHVwLg0KPiA+ID4NCj4gPiA+IE9uIE1v
+biwgMjAxNC0xMi0yMiBhdCAxNDozOCArMDgwMCwgRG9uZ3NoZW5nIFdhbmcgd3JvdGU6DQo+ID4g
+PiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0K
+PiA+ID4gPg0KPiA+ID4gPiBLZXJuZWwgY2Fubm90IGJyaW5nIHVwIE5vbi1ib290IGNwdXMgYWx3
+YXlzIGdldCAiUHJvY2Vzc29yIHh4IGlzIHN0dWNrIi4NCj4gPiA+ID4gdGhpcyBpc3N1ZSBicmlu
+ZyBieSBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNDE4OTEyLyAocG93ZXJwYzoN
+Cj4gPiA+ID4gU2Vjb25kYXJ5IENQVXMgbXVzdCBzZXQgY3B1X2NhbGxpbl9tYXAgYWZ0ZXIgc2V0
+dGluZyBhY3RpdmUgYW5kDQo+ID4gPiA+IG9ubGluZSkgV2UgbmVlZCB0byB0YWtlIHRpbWViYXNl
+IGFmdGVyIGJvb3R1cCBjcHUgZ2l2ZSB0aGUgdGltZWJhc2UNCj4gZmlyc3RseS4NCj4gPiA+ID4N
+Cj4gPiA+ID4gV2hlbiBzdGFydF9zZWNvbmRhcnksIG5vbi1ib290IGNwdXMgc2V0IGNwdV9jYWxs
+aW5fbWFwIGZvciBib290DQo+ID4gPiA+IGNwdSBhZnRlciB0aGF0IGJvb3QgY3B1IHdpbGwgZ2l2
+ZSB0aGUgdGltZWJhc2UgZm9yIG5vbi1ib290IGNwdS4NCj4gPiA+ID4gT3RoZXJ3aXNlIG5vbi1i
+b290IGNwdXMgd2lsbCBmYWxsIGluIGRlYWQgbG9vcCB0byB3YWl0aW5nIGJvb3R1cA0KPiA+ID4g
+PiBjcHUgdG8gZ2l2ZSBpbWViYXNlLg0KPiA+ID4NCj4gPiA+IFJpZ2h0Lg0KPiA+ID4NCj4gPiA+
+IEhvd2V2ZXIsIGRvZXNuJ3QgdGhpcyBpbnRyb2R1Y2UgdGhlIHBvc3NpYmlsaXR5IHRoYXQgdGhl
+IHNlY29uZGFyeQ0KPiA+ID4gY3B1IGlzIHVwIGFuZCBtYXJrZWQgb25saW5lIGJ1dCBoYXMgYW4g
+dW5zeW5jaHJvbmlzZWQgY2xvY2s/DQo+IA0KPiA+IFllcywgcmlnaHQuIEJ1dCBGcmVlc2NhbGUg
+cGxhdGZvcm0gYm9vdC1jcHUgd2lsbCBmcmVlemUgdGhlIFRCIHVudGlsDQo+ID4gc2Vjb25kYXJ5
+IGNwdSB0YWtlIHRoZSB0aW1lIGJhc2UsIHNvIHRoZSBjbG9jayBpcyBzeW5jaHJvbml6ZWQuDQo+
+IA0KPiBJdCBkb2VzIHRoZSBmcmVlemUgaW4gZ2l2ZV90aW1lYmFzZSgpIGRvZXNuJ3QgaXQ/DQo+
+IA0KPiBTbyB0aGVyZSdzIHN0aWxsIGEgd2luZG93IHRoZXJlIHdoZXJlIHRoZSBzZWNvbmRhcnkg
+aXMgdXAgJiBvbmxpbmUgYnV0IGhhc24ndA0KPiBoYWQgaXQncyB0aW1lYmFzZSBzeW5jaHJvbmlz
+ZWQsIGFuZCB0aGUgcHJpbWFyeSBoYXNuJ3QgZnJvemVuIHRoZSB0aW1lYmFzZSB5ZXQuDQo+IFNv
+IHRoYXQgbWFrZXMgbWUgbmVydm91cy4NCj4gDQo+ID4gRm9yIGdlbmVyaWMgUG93ZXJQQyBtYXli
+ZSBoYXMgdGhpcyBpc3N1ZS4gU28gZm9yIHNhZmUgSSB0aGluayB3ZSBuZWVkDQo+ID4gdG8gc2V0
+IGNwdSBvbmxpbmUgYWZ0ZXIgc3luY2hyb25pemVkIGNsb2NrLg0KPiA+DQo+ID4gSSB3aWxsIHVw
+ZGF0ZSBteSBwYXRjaCBpZiB5b3UgYWdyZWUgdGhpcyB3YXkuDQo+ID4gKyAgICAgICBpZiAoc21w
+X29wcy0+dGFrZV90aW1lYmFzZSkNCj4gPiArICAgICAgICAgICAgICAgc21wX29wcy0+dGFrZV90
+aW1lYmFzZSgpOw0KPiA+ICsgICAgICAgc2Vjb25kYXJ5X2NwdV90aW1lX2luaXQoKTsNCj4gPiAr
+DQo+ID4gTW92ZSBzZXRfY3B1X29ubGluZSB0byBoZXJlLg0KPiA+ICsgICAgICAgc2V0X2NwdV9v
+bmxpbmUoY3B1LCB0cnVlKTsNCj4gDQo+IEJ1dCB0aGF0IHJldmVyc2VzIHRoZSBlZmZlY3Qgb2Yg
+dGhlIG9yaWdpbmFsIHBhdGNoLCB3aGljaCB3YXMgdGhhdCB3ZSBoYXZlIHRvDQo+IHNldCBvbmxp
+bmUgKmJlZm9yZSogd2Ugc2V0IHRoZSBjYWxsaW4gbWFwLg0KPiANCj4gDQo+IExvb2tpbmcgaGFy
+ZGVyIGF0IEFudG9uJ3MgcGF0Y2ggSSdtIG5vdCBzdXJlIGl0J3MgcmlnaHQgYW55d2F5Lg0KPiAN
+Cj4gVGhlIGlzc3VlIGhlIHdhcyB0cnlpbmcgdG8gZml4IHdhcyB0aGF0IHRoZSBjcHUgd2FzIG9u
+bGluZSBidXQgbm90IGFjdGl2ZSwgd2hpY2gNCj4gY29uZnVzZWQgdGhlIHNjaGVkdWxlci4NCj4g
+DQo+IEkgdGhpbmsgQW50b24gbWlzc2VkIHRoYXQgd2UgaGF2ZSBhIGxvb3AgdGhhdCB3YWl0cyBm
+b3Igb25saW5lIGF0IHRoZSBib3R0b20gb2YNCj4gX19jcHVfdXAoKToNCj4gDQo+IAkvKiBXYWl0
+IHVudGlsIGNwdSBwdXRzIGl0c2VsZiBpbiB0aGUgb25saW5lIG1hcCAqLw0KPiAJd2hpbGUgKCFj
+cHVfb25saW5lKGNwdSkpDQo+IAkJY3B1X3JlbGF4KCk7DQo+IA0KPiANCj4gSGUgbXVzdCBoYXZl
+IHNlZW4gYSBjYXNlIHdoZXJlIHRoYXQgcG9wcGVkIGR1ZSB0byB0aGUgY3B1IGJlaW5nIG9ubGlu
+ZSwgYnV0IHRoZQ0KPiBjcHUgd2Fzbid0IHlldCBhY3RpdmUuDQo+IA0KPiBIaXMgcGF0Y2ggZml4
+ZWQgdGhlIHByb2JsZW0gYnkgZW5zdXJpbmcgdGhlIHByZXZpb3VzIGxvb3AgdGhhdCB3YWl0cyBm
+b3INCj4gY3B1X2NhbGxpbl9tYXAgZG9lc24ndCBmaW5pc2ggdW50aWwgYWN0aXZlICYgb25saW5l
+IGFyZSBzZXQsIG1ha2luZyB0aGUgd2hpbGUNCj4gbG9vcCBhYm92ZSBhIG5vcC4NCj4gDQo+IFNv
+IEkgdGhpbmsgd2Ugc2hvdWxkIHByb2JhYmx5IHJldmVydCBBbnRvbidzIHBhdGNoIGFuZCBpbnN0
+ZWFkIGNoYW5nZSB0aGF0IHdoaWxlDQo+IGxvb3AgdG86DQo+IA0KPiAJLyogV2FpdCB1bnRpbCBj
+cHUgaXMgb25saW5lIEFORCBhY3RpdmUgKi8NCj4gCXdoaWxlICghY3B1X29ubGluZShjcHUpIHx8
+ICFjcHVfYWN0aXZlKGNwdSkpDQo+IAkJY3B1X3JlbGF4KCk7DQo+IA0KVW1tLi4gU29ycnkgYWJv
+dXQgdGhhdC4uLkkgZm9yZ290IEFudG9uJ3MgcGF0Y2guDQoNCkJ1dCBzZXRfY3B1X29ubGluZSBh
+bHNvIHNldCBjcHVfYWN0aXZlX2JpdHMsIEkgdGhpbmsgdGhpcyBqdWRnbWVudCBjYW5ub3QgZml4
+IEFudG9uJ3MgaXNzdWUuDQpJdCBpcyBhY3R1YWxseSB0aGUgZWZmZWN0cyBvZiB0aGUgb3JpZ2lu
+YWwgaXMgdGhlIHNhbWUuDQoNClJlZ3JhZHMsDQotRG9uZ3NoZW5nDQoNCg==
