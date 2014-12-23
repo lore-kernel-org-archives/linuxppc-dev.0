@@ -1,24 +1,21 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 898891A0A50
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 20:55:40 +1100 (AEDT)
-Date: Tue, 23 Dec 2014 10:55:06 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
-Message-ID: <20141223095506.GB22265@krava.brq.redhat.com>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141222143710.GA29096@krava.brq.redhat.com>
- <20141222193045.GA19784@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141222193045.GA19784@us.ibm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E7DA71A0E47
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 20:56:12 +1100 (AEDT)
+Message-ID: <1419328553.27103.66.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/smp: Fix Non-boot cpus cannot be bring up.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 23 Dec 2014 10:55:53 +0100
+In-Reply-To: <1419296441.30550.3.camel@ellerman.id.au>
+References: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
+ <1419296441.30550.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Dongsheng Wang <dongsheng.wang@freescale.com>, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 22, 2014 at 11:30:45AM -0800, Sukadev Bhattiprolu wrote:
-> Jiri Olsa [jolsa@redhat.com] wrote:
-> | On Sun, Dec 21, 2014 at 11:49:24PM -0800, Sukadev Bhattiprolu wrote:
-> | 
-> | SNIP
-> | 
-> | > +	}
-> | >  
-> | >  	switch (format->value) {
-> | >  	case PERF_PMU_FORMAT_VALUE_CONFIG:
-> | > @@ -592,11 +629,16 @@ static int pmu_config_term(struct list_head *formats,
-> | >  	}
-> | >  
-> | >  	/*
-> | > -	 * XXX If we ever decide to go with string values for
-> | > -	 * non-hardcoded terms, here's the place to translate
-> | > -	 * them into value.
-> | > +	 * Either directly use a numeric term, or try to translate string terms
-> | > +	 * using event parameters.
-> | >  	 */
-> | > -	pmu_format_value(format->bits, term->val.num, vp, zero);
-> | > +	if (term->type_val == PARSE_EVENTS__TERM_TYPE_NUM)
-> | > +		val = term->val.num;
-> | > +	else
-> | > +		if (pmu_resolve_param_term(term, head_terms, &val))
-> | > +			return -EINVAL;
-> | > +
-> | 
-> | I'm ok with the change logic, but I'm missing here check for the 'term'
-> | string value to be '?', so we force subst terms to have '?' as value..
-> | I believe thats what we decided in the previous set discussion, right?
+On Tue, 2014-12-23 at 12:00 +1100, Michael Ellerman wrote:
+> On Mon, 2014-12-22 at 14:38 +0800, Dongsheng Wang wrote:
+> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > 
+> > Kernel cannot bring up Non-boot cpus always get "Processor xx is stuck".
+> > this issue bring by http://patchwork.ozlabs.org/patch/418912/ (powerpc:
+> > Secondary CPUs must set cpu_callin_map after setting active and online)
+> > We need to take timebase after bootup cpu give the timebase firstly.
+> > 
+> > When start_secondary, non-boot cpus set cpu_callin_map for boot cpu
+> > after that boot cpu will give the timebase for non-boot cpu. Otherwise
+> > non-boot cpus will fall in dead loop to waiting bootup cpu to give
+> > imebase.
 > 
-> The =? is not a user input, so I did not think of validating that.
+> Right.
 > 
-> perf tool expects kernel/sysfs to show entries like 'core=?'. Are you
-> saying that we should error out if kernel mistakenly displays 'core=$val'
-> or 'core=?val' ? 
+> However, doesn't this introduce the possibility that the secondary cpu is up
+> and marked online but has an unsynchronised clock?
 
-I think the we should at least try to have interface unambiguous
-from the beginning
+As long as it doesn't execute anything (and at that point it shouldn't
+have interrupts enabled) it should be ok. The TB cannot be observed
+outside of that CPU.
 
-> If a required parameter is missing, we catch that in pmu_resolve_param_term().
-> If a bogus parameter is specified we catch that above in pmu_config_term().
-
-but the value of that param is unspecified, and if we later want to
-add another type of string values we would be screwed.. as I described
-in the previous reply for your other patch.
-
-jirka
+Cheers,
+Ben.
