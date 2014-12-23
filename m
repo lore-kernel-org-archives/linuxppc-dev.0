@@ -1,34 +1,19 @@
-Return-Path: <Shaohui.Xie@freescale.com>
+Return-Path: <shh.xie@gmail.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (mail-bl2on0097.outbound.protection.outlook.com [65.55.169.97])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCB671A050B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 19:17:20 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
-Date: Tue, 23 Dec 2014 08:17:06 +0000
-Message-ID: <DM2PR0301MB0864B0B8C1648A0ED8B0EB9AE2570@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
- <1416966592.15957.172.camel@freescale.com>
- <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1418940078.5581.143.camel@freescale.com>
- <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1419030955.5581.154.camel@freescale.com>
- <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
- <5497E645.7010500@Freescale.com> <1419241330.5581.162.camel@freescale.com>
- <5497FBAB.4010206@Freescale.com> <1419283551.5581.172.camel@freescale.com>
- <DM2PR0301MB08642FFDB6207DE205731547E2570@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <1419322085.5581.182.camel@freescale.com>
-In-Reply-To: <1419322085.5581.182.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB8DD1A04D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 20:02:01 +1100 (AEDT)
+From: <shh.xie@gmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+Date: Tue, 23 Dec 2014 15:57:46 +0800
+Message-ID: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Emilian Medve <Emilian.Medve@freescale.com>,
- "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,32 +23,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBUdWVzZGF5LCBEZWNlbWJlciAyMywgMjAxNCA0OjA4IFBNDQo+IFRvOiBYaWUgU2hh
-b2h1aS1CMjE5ODkNCj4gQ2M6IE1lZHZlIEVtaWxpYW4tRU1NRURWRTE7IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTGliZXJtYW4g
-SWdhbC1CMzE5NTANCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gW3YyXSBwb3dlci9mc2w6IGFkZCBN
-RElPIGR0IGJpbmRpbmcgZm9yIEZNYW4NCj4gDQo+IE9uIFR1ZSwgMjAxNC0xMi0yMyBhdCAwMToz
-NSAtMDYwMCwgWGllIFNoYW9odWktQjIxOTg5IHdyb3RlOg0KPiA+ICstIGJ1cy1mcmVxdWVuY3kN
-Cj4gPiArCQlVc2FnZTogb3B0aW9uYWwNCj4gPiArCQlWYWx1ZSB0eXBlOiA8dTMyPg0KPiA+ICsJ
-CURlZmluaXRpb246IFNwZWNpZmllcyBleHRlcm5hbCBNRElPIGJ1cyBjbG9jayBzcGVlZCB3aGlj
-aCBpcw0KPiA+ICsJCWRpZmZlcmVudCBmcm9tIE1ESU8gc3RhbmRhcmQgMi41TUh6LiBTaG91bGQg
-YmUgZGVmaW5lZCBmb3INCj4gU29Dcw0KPiA+ICsJCW9uIHdoaWNoIHRoZSBzdGFuZGFyZCBvbmUg
-Y2Fubm90IHdvcmsuDQo+ID4NCj4gPiBXaGF0IHNob3VsZCBJIHJlcGhyYXNlIGl0PyBSZXBsYWNl
-IHRoZSBsYXN0IHNlbnRlbmNlIHdpdGggIlNob3VsZCBiZQ0KPiA+IGRlZmluZWQgRm9yIFNvQ3Mg
-b24gd2hpY2ggYSBsb3dlciBmcmVxdWVuY3kgdGhhbiB0aGUgc3RhbmRhcmQgaXMNCj4gcmVxdWly
-ZWQuIj8NCj4gDQo+IE5laXRoZXIgb2YgdGhlc2Ugd29yayB3aXRoIEVtaWwncyBzY2VuYXJpbyBv
-ZiBhIHN5c3RlbSB0aGF0IGFsbG93cyBhDQo+IGZhc3Rlci10aGFuLXN0YW5kYXJkIHNwZWVkLg0K
-PiANCj4gSG93IGFib3V0OiAiRGVmaW5pdGlvbjogU3BlY2lmaWVzIHRoZSBleHRlcm5hbCBNRElP
-IGJ1cyBjbG9jayBzcGVlZCB0byBiZQ0KPiB1c2VkLCBpZiBkaWZmZXJlbnQgZnJvbSB0aGUgc3Rh
-bmRhcmQgMi41IE1Iei4gIFRoaXMgbWF5IGJlIGR1ZSB0byB0aGUNCj4gc3RhbmRhcmQgc3BlZWQg
-YmVpbmcgdW5zdXBwb3J0ZWQgKGUuZy4gZHVlIHRvIGEgaGFyZHdhcmUgcHJvYmxlbSksIG9yIHRv
-DQo+IGFkdmVydGlzZSB0aGF0IGFsbCByZWxldmFudCBjb21wb25lbnRzIGluIHRoZSBzeXN0ZW0g
-c3VwcG9ydCBhIGZhc3Rlcg0KPiBzcGVlZC4iDQpbUy5IXSBPSy4gSSdsbCB1c2UgdGhpcyBpbiBW
-My4NCg0KPiANCj4gPiBIb3cgYWJvdXQgdGhlIHZhbHVlIHVzZWQgaW4gZXhhbXBsZT8NCj4gPiBT
-aG91bGQgMi41TUh6IGJlIHVzZWQgb3IgYSBsb3dlciBvbmU/DQo+IA0KPiBJZiB5b3UgZG9uJ3Qg
-aGF2ZSBhIHJlYWxpc3RpYyBleGFtcGxlIHRvIHVzZSwgZG9uJ3QgcHV0IGl0IGluIHRoZSBleGFt
-cGxlDQo+IGF0IGFsbC4gIDIuNU1IeiBpcyB0aGUgd29yc3QgZXhhbXBsZSB0byB1c2UgYmVjYXVz
-ZSB0aGF0J3MgdGhlIGRlZmF1bHQNCj4gYW5kIHRoZXJlJ2QgYmUgbm8gcmVhc29uIHRvIHVzZSB0
-aGUgcHJvcGVydHkgYXQgYWxsLg0KW1MuSF0gT0suIFRoZSBWMyB3aWxsIG5vdCBoYXZlIHRoaXMg
-aW4gZXhhbXBsZS4NCg0KVGhhbmsgeW91IGFsbCBmb3IgcmV2aWV3aW5nIQ0KU2hhb2h1aQ0K
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+
+This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+changes in v3:
+rephrase the 'Definition' of property 'bus-frequency', don't include the
+property in example.
+
+changes in v2:
+addressed comments from Scott in V1.
+
+ .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
+ 1 file changed, 69 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+index edeea16..737aa4c 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+@@ -7,6 +7,7 @@ CONTENTS
+   - FMan MURAM Node
+   - FMan dTSEC/XGEC/mEMAC Node
+   - FMan IEEE 1588 Node
++  - FMan MDIO Node
+   - Example
+ 
+ =============================================================================
+@@ -357,6 +358,69 @@ ptp-timer@fe000 {
+ };
+ 
+ =============================================================================
++FMan MDIO Node
++
++DESCRIPTION
++
++The MDIO is a bus to which the PHY devices are connected.
++
++PROPERTIES
++
++- compatible
++		Usage: required
++		Value type: <stringlist>
++		Definition: A standard property.
++		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
++		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
++		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
++		FMan v3.
++
++- reg
++		Usage: required
++		Value type: <prop-encoded-array>
++		Definition: A standard property.
++
++- bus-frequency
++		Usage: optional
++		Value type: <u32>
++		Definition: Specifies the external MDIO bus clock speed to
++		be used, if different from the standard 2.5 MHz.
++		This may be due to the standard speed being unsupported (e.g.
++		due to a hardware problem), or to advertise that all relevant
++		components in the system support a faster speed.
++
++- interrupts
++		Usage: optional
++		Value type: <prop-encoded-array>
++		Definition: Event interrupt of external MDIO controller.
++		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
++
++- fsl,fman-internal-mdio
++		Usage: required for internal MDIO
++		Value type: boolean
++		Definition: Fman has internal MDIO for internal PCS(Physical
++		Coding Sublayer) PHYs and external MDIO for external PHYs.
++		The settings and programming routines for internal/external
++		MDIO are different. Must be included for internal MDIO.
++
++EXAMPLE
++
++Example for FMan v2 external MDIO:
++
++mdio@f1000 {
++	compatible = "fsl,fman-xmdio";
++	reg = <0xf1000 0x1000>;
++};
++
++Example for FMan v3 internal MDIO:
++
++mdio@f1000 {
++	compatible = "fsl,fman-memac-mdio";
++	reg = <0xf1000 0x1000>;
++	fsl,fman-internal-mdio;
++};
++
++=============================================================================
+ Example
+ 
+ fman@400000 {
+@@ -531,4 +595,9 @@ fman@400000 {
+ 		compatible = "fsl,fman-ptp-timer";
+ 		reg = <0xfe000 0x1000>;
+ 	};
++
++	mdio@f1000 {
++		compatible = "fsl,fman-xmdio";
++		reg = <0xf1000 0x1000>;
++	};
+ };
+-- 
+1.8.4.1
