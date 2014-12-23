@@ -1,18 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 80A911A09C3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 18:12:42 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/kvm: Create proper names for the kvm_host_state PMU
- fields
-Date: Tue, 23 Dec 2014 18:12:33 +1100
-Message-Id: <1419318753-4396-1-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <53BE67EA.8000206@suse.de>
-References: <53BE67EA.8000206@suse.de>
-Cc: agraf@suse.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 085201A0A68
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 18:49:26 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Emilian Medve
+ <Emilian.Medve@freescale.com>
+Subject: RE: [PATCH] [v2] power/fsl: add MDIO dt binding for FMan
+Date: Tue, 23 Dec 2014 07:35:01 +0000
+Message-ID: <DM2PR0301MB08642FFDB6207DE205731547E2570@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1415958800-9867-1-git-send-email-shh.xie@gmail.com>
+ <1416966592.15957.172.camel@freescale.com>
+ <DM2PR0301MB08641FB289DBA17AD59FBEA0E26A0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1418940078.5581.143.camel@freescale.com>
+ <DM2PR0301MB0864AA31CD1A7438F476020FE26B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1419030955.5581.154.camel@freescale.com>
+ <DM2PR0301MB086427C10254A0A749CD1326E2560@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <5497D466.9090804@Freescale.com> <1419237176.5581.159.camel@freescale.com>
+ <5497E645.7010500@Freescale.com> <1419241330.5581.162.camel@freescale.com>
+ <5497FBAB.4010206@Freescale.com> <1419283551.5581.172.camel@freescale.com>
+In-Reply-To: <1419283551.5581.172.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,157 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have two arrays in kvm_host_state that contain register values for
-the PMU. Currently we only create an asm-offsets symbol for the base of
-the arrays, and do the array offset in the assembly code.
-
-Creating an asm-offsets symbol for each field individually makes the
-code much nicer to read, particularly for the MMCRx/SIxR/SDAR fields, and
-might have helped us notice the recent double restore bug we had in this
-code.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kernel/asm-offsets.c       | 15 +++++++++++++--
- arch/powerpc/kvm/book3s_hv_interrupts.S | 26 +++++++++++++-------------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 28 ++++++++++++++--------------
- 3 files changed, 40 insertions(+), 29 deletions(-)
-
-
-Looks like this fell through the cracks between the powerpc & kvm trees.
-
-It needed a rework to go on top of the 970 HV removal, this is the result. I'll
-put it in the powerpc tree.
-
-cheers
-
-
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e624f9646350..4717859fdd04 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -644,8 +644,19 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_SAVED_XIRR, saved_xirr);
- 	HSTATE_FIELD(HSTATE_HOST_IPI, host_ipi);
- 	HSTATE_FIELD(HSTATE_PTID, ptid);
--	HSTATE_FIELD(HSTATE_MMCR, host_mmcr);
--	HSTATE_FIELD(HSTATE_PMC, host_pmc);
-+	HSTATE_FIELD(HSTATE_MMCR0, host_mmcr[0]);
-+	HSTATE_FIELD(HSTATE_MMCR1, host_mmcr[1]);
-+	HSTATE_FIELD(HSTATE_MMCRA, host_mmcr[2]);
-+	HSTATE_FIELD(HSTATE_SIAR, host_mmcr[3]);
-+	HSTATE_FIELD(HSTATE_SDAR, host_mmcr[4]);
-+	HSTATE_FIELD(HSTATE_MMCR2, host_mmcr[5]);
-+	HSTATE_FIELD(HSTATE_SIER, host_mmcr[6]);
-+	HSTATE_FIELD(HSTATE_PMC1, host_pmc[0]);
-+	HSTATE_FIELD(HSTATE_PMC2, host_pmc[1]);
-+	HSTATE_FIELD(HSTATE_PMC3, host_pmc[2]);
-+	HSTATE_FIELD(HSTATE_PMC4, host_pmc[3]);
-+	HSTATE_FIELD(HSTATE_PMC5, host_pmc[4]);
-+	HSTATE_FIELD(HSTATE_PMC6, host_pmc[5]);
- 	HSTATE_FIELD(HSTATE_PURR, host_purr);
- 	HSTATE_FIELD(HSTATE_SPURR, host_spurr);
- 	HSTATE_FIELD(HSTATE_DSCR, host_dscr);
-diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
-index 36540a99d178..0fdc4a28970b 100644
---- a/arch/powerpc/kvm/book3s_hv_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
-@@ -93,15 +93,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mfspr	r5, SPRN_MMCR1
- 	mfspr	r9, SPRN_SIAR
- 	mfspr	r10, SPRN_SDAR
--	std	r7, HSTATE_MMCR(r13)
--	std	r5, HSTATE_MMCR + 8(r13)
--	std	r6, HSTATE_MMCR + 16(r13)
--	std	r9, HSTATE_MMCR + 24(r13)
--	std	r10, HSTATE_MMCR + 32(r13)
-+	std	r7, HSTATE_MMCR0(r13)
-+	std	r5, HSTATE_MMCR1(r13)
-+	std	r6, HSTATE_MMCRA(r13)
-+	std	r9, HSTATE_SIAR(r13)
-+	std	r10, HSTATE_SDAR(r13)
- BEGIN_FTR_SECTION
- 	mfspr	r9, SPRN_SIER
--	std	r8, HSTATE_MMCR + 40(r13)
--	std	r9, HSTATE_MMCR + 48(r13)
-+	std	r8, HSTATE_MMCR2(r13)
-+	std	r9, HSTATE_SIER(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mfspr	r3, SPRN_PMC1
- 	mfspr	r5, SPRN_PMC2
-@@ -109,12 +109,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mfspr	r7, SPRN_PMC4
- 	mfspr	r8, SPRN_PMC5
- 	mfspr	r9, SPRN_PMC6
--	stw	r3, HSTATE_PMC(r13)
--	stw	r5, HSTATE_PMC + 4(r13)
--	stw	r6, HSTATE_PMC + 8(r13)
--	stw	r7, HSTATE_PMC + 12(r13)
--	stw	r8, HSTATE_PMC + 16(r13)
--	stw	r9, HSTATE_PMC + 20(r13)
-+	stw	r3, HSTATE_PMC1(r13)
-+	stw	r5, HSTATE_PMC2(r13)
-+	stw	r6, HSTATE_PMC3(r13)
-+	stw	r7, HSTATE_PMC4(r13)
-+	stw	r8, HSTATE_PMC5(r13)
-+	stw	r9, HSTATE_PMC6(r13)
- 31:
- 
- 	/*
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 10554df13852..bb94e6f20c81 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -83,35 +83,35 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	cmpwi	r4, 0
- 	beq	23f			/* skip if not */
- BEGIN_FTR_SECTION
--	ld	r3, HSTATE_MMCR(r13)
-+	ld	r3, HSTATE_MMCR0(r13)
- 	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
- 	cmpwi	r4, MMCR0_PMAO
- 	beql	kvmppc_fix_pmao
- END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
--	lwz	r3, HSTATE_PMC(r13)
--	lwz	r4, HSTATE_PMC + 4(r13)
--	lwz	r5, HSTATE_PMC + 8(r13)
--	lwz	r6, HSTATE_PMC + 12(r13)
--	lwz	r8, HSTATE_PMC + 16(r13)
--	lwz	r9, HSTATE_PMC + 20(r13)
-+	lwz	r3, HSTATE_PMC1(r13)
-+	lwz	r4, HSTATE_PMC2(r13)
-+	lwz	r5, HSTATE_PMC3(r13)
-+	lwz	r6, HSTATE_PMC4(r13)
-+	lwz	r8, HSTATE_PMC5(r13)
-+	lwz	r9, HSTATE_PMC6(r13)
- 	mtspr	SPRN_PMC1, r3
- 	mtspr	SPRN_PMC2, r4
- 	mtspr	SPRN_PMC3, r5
- 	mtspr	SPRN_PMC4, r6
- 	mtspr	SPRN_PMC5, r8
- 	mtspr	SPRN_PMC6, r9
--	ld	r3, HSTATE_MMCR(r13)
--	ld	r4, HSTATE_MMCR + 8(r13)
--	ld	r5, HSTATE_MMCR + 16(r13)
--	ld	r6, HSTATE_MMCR + 24(r13)
--	ld	r7, HSTATE_MMCR + 32(r13)
-+	ld	r3, HSTATE_MMCR0(r13)
-+	ld	r4, HSTATE_MMCR1(r13)
-+	ld	r5, HSTATE_MMCRA(r13)
-+	ld	r6, HSTATE_SIAR(r13)
-+	ld	r7, HSTATE_SDAR(r13)
- 	mtspr	SPRN_MMCR1, r4
- 	mtspr	SPRN_MMCRA, r5
- 	mtspr	SPRN_SIAR, r6
- 	mtspr	SPRN_SDAR, r7
- BEGIN_FTR_SECTION
--	ld	r8, HSTATE_MMCR + 40(r13)
--	ld	r9, HSTATE_MMCR + 48(r13)
-+	ld	r8, HSTATE_MMCR2(r13)
-+	ld	r9, HSTATE_SIER(r13)
- 	mtspr	SPRN_MMCR2, r8
- 	mtspr	SPRN_SIER, r9
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--- 
-2.1.0
+DQoNCkJlc3QgUmVnYXJkcywgDQpTaGFvaHVpIFhpZQ0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVHVlc2RheSwgRGVj
+ZW1iZXIgMjMsIDIwMTQgNToyNiBBTQ0KPiBUbzogTWVkdmUgRW1pbGlhbi1FTU1FRFZFMQ0KPiBD
+YzogWGllIFNoYW9odWktQjIxOTg5OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4g
+ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IExpYmVybWFuIElnYWwtQjMxOTUwDQo+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0hdIFt2Ml0gcG93ZXIvZnNsOiBhZGQgTURJTyBkdCBiaW5kaW5nIGZvciBG
+TWFuDQo+IA0KPiBPbiBNb24sIDIwMTQtMTItMjIgYXQgMDU6MDggLTA2MDAsIEVtaWwgTWVkdmUg
+d3JvdGU6DQo+ID4gSGVsbG8gU2NvdHQsDQo+ID4NCj4gPg0KPiA+IE9uIDEyLzIyLzIwMTQgMDM6
+NDIgQU0sIFNjb3R0IFdvb2Qgd3JvdGU6DQo+ID4gPiBPbiBNb24sIDIwMTQtMTItMjIgYXQgMDM6
+MzcgLTA2MDAsIEVtaWwgTWVkdmUgd3JvdGU6DQo+ID4gPj4gSGVsbG8gU2NvdHQsDQo+ID4gPj4N
+Cj4gPiA+Pg0KPiA+ID4+IE9uIDEyLzIyLzIwMTQgMDI6MzIgQU0sIFNjb3R0IFdvb2Qgd3JvdGU6
+DQo+ID4gPj4+IE9uIE1vbiwgMjAxNC0xMi0yMiBhdCAwMjoyMCAtMDYwMCwgRW1pbCBNZWR2ZSB3
+cm90ZToNCj4gPiA+Pj4+IEZvciB0aGUgcHVycG9zZSBvZiBhbiBleGFtcGxlIGluIHRoZSBiaW5k
+aW5nIGRvY3VtZW50LCBJIHN1Z2dlc3QNCj4gPiA+Pj4+IHdlIGp1c3Qgc3RpY2sgd2l0aCB0aGUg
+SUVFRSBzdGFuZGFyZCBmcmVxdWVuY3kuDQo+ID4gPj4+DQo+ID4gPj4+IFRoZSB3aG9sZSByZWFz
+b24gZm9yIHRoaXMgcHJvcGVydHkgZXhpc3RpbmcgaW4gdGhlIGRldmljZSB0cmVlIGlzDQo+ID4g
+Pj4+IG5vbi1zdGFuZGFyZCBmcmVxdWVuY2llcy4NCj4gPiA+Pg0KPiA+ID4+IFdoaWxlIHRoZSBz
+dGFuZGFyZCBjbGFpbXMgMi41IE1IeiwgbW9zdCBNRElPIGNvbnRyb2xsZXJzIGFuZCBQSFkNCj4g
+PiA+PiBkZXZpY2VzIHN1cHBvcnQgZnJlcXVlbmNpZXMgd2VsbCBiZXlvbmQgdGhlIHN0YW5kYXJk
+LiBTcGVjaWZ5aW5nIGENCj4gPiA+PiBsb3dlciB0aGVuIHRoZSBzdGFuZGFyZCBmcmVxdWVuY3kg
+Zm9yIHRoZSBiZW5lZml0IG9mIHNvbWUgZXJyYXRhIGlzDQo+ID4gPj4ganVzdCBvbmUgc2lkZSBv
+ZiB0aGlzIHByb3BlcnR5DQo+ID4gPg0KPiA+ID4gVGhlIGVycmF0dW0gd2FzICh1bnRpbCBub3cp
+IHRoZSBvbmx5IGNsYWltZWQgcmVhc29uIGZvciBpdC4gIElmDQo+ID4gPiB0aGVyZSBhcmUgb3Ro
+ZXIgcmVhc29ucyB3aHkgb25lIHdvdWxkIHNwZWNpZnkgYSBkaWZmZXJlbnQgZnJlcXVlbmN5DQo+
+ID4gPiAoaW4gcGFydGljdWxhciwgdGhhdCByZWxhdGUgdG8gaGFyZHdhcmUgZGVzY3JpcHRpb24p
+LCBwbGVhc2UNCj4gZWxhYm9yYXRlLg0KPiA+DQo+ID4gRnJvbSBtZW1vcnksIHRoZSAxIEdiL3Mg
+Vml0ZXNzZSBQSFkocykgd2UgaGF2ZSBvbiBzb21lIG9mIG91ciBEUw0KPiA+IGJvYXJkcyBzdXBw
+b3J0IDEyLjUgTUh6LiBJIGNhbiBkaWcgb3V0IG1vcmUgc3BlY3MgZm9yIHNwZWNpZmljcyBvbg0K
+PiA+IG90aGVyIFBIWShzKQ0KPiA+DQo+ID4gMi41IE1IeiBpcyBzbG93IGFuZCBldmVuIG1vcmUg
+c28gZm9yIGhpZ2ggc3BlZWQgaW50ZXJmYWNlcy4gV2l0aCBib3RoDQo+ID4gcG9sbGluZyBhbmQg
+aW50ZXJydXB0cyAoYm90aCBNRElPIGFuZC9vciBQSFkpIHdlJ3ZlIG5vdGljZWQgKG9yDQo+ID4g
+YmxhbWVkKSBpbiB0aGUgcGFzdCBzb21lIEV0aGVybmV0IHBlcmZvcm1hbmNlIGlzc3VlcyBvbiB0
+aGlzIHZlcnkNCj4gPiBzbG93bmVzcw0KPiA+DQo+ID4gQXMgb2YgcmlnaHQgbm93IEknbSBub3Qg
+YXdhcmUgb2YgYW5vdGhlciB3YXkgdG8gc3BlY2lmeS9jb29yZGluYXRlIHRoZQ0KPiA+IE1EQyBz
+cGVlZCBzbyBzZXR0aW5nIGEgZGVmYXVsdCAoY29tbW9uIGRlbm9taW5hdG9yKSBpbiB0aGUgRFQg
+dGhhdCBpcw0KPiA+IGRpZmZlcmVudCB0aGVuIHRoZSBJRUVFIHN0YW5kYXJkIHNlZW1zIG9rDQo+
+ID4NCj4gPiA+Pj4+IFdlIGNhbiBjb250aW51ZSB0aGlzIGNvbnZlcnNhdGlvbiBhYm91dCBlcnJh
+dGEgaGFuZGxpbmcgd2hlbiB3ZQ0KPiA+ID4+Pj4gc3VibWl0IHRoZSBjb2RlIHJlbGV2YW50IHRv
+IHRoaXMgYmluZGluZyAoYW5kIHRoZSBGTWFuIHYzDQo+ID4gPj4+PiBzdXBwb3J0KQ0KPiA+ID4+
+Pg0KPiA+ID4+PiBJdCBhZmZlY3RzIHRoZSBiaW5kaW5nLCBzbyBsZXQncyBkaXNjdXNzIGl0IG5v
+dyBwbGVhc2UuDQo+ID4gPj4NCj4gPiA+PiBJIHRoaW5rIHRoaXMgc3BlY2lmaWMgKHVucHVibGlz
+aGVkIHlldCkgZXJyYXRhIGhhcyBsZXNzIGJlYXJpbmcgb24NCj4gPiA+PiB0aGUgYmluZGluZyB0
+aGVuIHlvdSBtaWdodCBiZWxpZXZlLiBUaGlzIGlzIG1vc3RseSBhYm91dCBwcm92aWRpbmcNCj4g
+PiA+PiBhIGNvbW1vbi9kZWZhdWx0IGZyZXF1ZW5jeSBzdXBwb3J0ZWQgYnkgYWxsIHRoZSBkZXZp
+Y2VzIG9uIHNvbWUNCj4gPiA+PiBib2FyZA0KPiA+ID4NCj4gPiA+IFdoYXQgcmVhc29uIG90aGVy
+IHRoYW4gYW4gZXJyYXR1bSB3b3VsZCB0aGVyZSBiZSBmb3IgdGhlIHN0YW5kYXJkDQo+ID4gPiBm
+cmVxdWVuY3kgbm90IGJlaW5nIHN1cHBvcnRlZD8NCj4gPg0KPiA+IFRoaXMgaXMgbm90IGFib3V0
+IG5vdCBzdXBwb3J0aW5nIHRoZSBzdGFuZGFyZCBmcmVxdWVuY3kuIFRoaXMgaXMgYWJvdXQNCj4g
+PiB0aGUgZGVmYXVsdCBmcmVxdWVuY3kgYmVpbmcgZGlmZmVyZW50IHRoZW4gdGhlIHN0YW5kYXJk
+DQo+IA0KPiBPSywgdGhvdWdoIHJhdGhlciB0aGFuIHRhbGsgYWJvdXQgZGVmYXVsdHMgSSdkIHBo
+cmFzZSBpdCBhcyBpbmRpY2F0aW5nDQo+IHRoYXQgYSBoaWdoZXIgZnJlcXVlbmN5IHRoYW4gc3Rh
+bmRhcmQgaXMgc3VwcG9ydGVkLCBvciB0aGF0IGEgbG93ZXINCj4gZnJlcXVlbmN5IHRoYW4gc3Rh
+bmRhcmQgaXMgcmVxdWlyZWQuDQpbUy5IXSBiZWxvdyBpcyB0aGUgc3RhdGVtZW50IGluIHYyOg0K
+DQorLSBidXMtZnJlcXVlbmN5DQorCQlVc2FnZTogb3B0aW9uYWwNCisJCVZhbHVlIHR5cGU6IDx1
+MzI+DQorCQlEZWZpbml0aW9uOiBTcGVjaWZpZXMgZXh0ZXJuYWwgTURJTyBidXMgY2xvY2sgc3Bl
+ZWQgd2hpY2ggaXMNCisJCWRpZmZlcmVudCBmcm9tIE1ESU8gc3RhbmRhcmQgMi41TUh6LiBTaG91
+bGQgYmUgZGVmaW5lZCBmb3IgU29Dcw0KKwkJb24gd2hpY2ggdGhlIHN0YW5kYXJkIG9uZSBjYW5u
+b3Qgd29yay4NCg0KV2hhdCBzaG91bGQgSSByZXBocmFzZSBpdD8gUmVwbGFjZSB0aGUgbGFzdCBz
+ZW50ZW5jZSB3aXRoICJTaG91bGQgYmUgZGVmaW5lZA0KRm9yIFNvQ3Mgb24gd2hpY2ggYSBsb3dl
+ciBmcmVxdWVuY3kgdGhhbiB0aGUgc3RhbmRhcmQgaXMgcmVxdWlyZWQuIj8NCg0KSG93IGFib3V0
+IHRoZSB2YWx1ZSB1c2VkIGluIGV4YW1wbGU/DQpTaG91bGQgMi41TUh6IGJlIHVzZWQgb3IgYSBs
+b3dlciBvbmU/DQoNClRoYW5rcyENClNoYW9odWkNCg==
