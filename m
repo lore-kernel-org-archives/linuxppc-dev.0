@@ -1,42 +1,38 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA1401A0C8D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 22:58:27 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 12E021A0DB6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 07:00:11 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 7AB62140081
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:58:25 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 23 Dec 2014 13:00:09 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3D00638C8046
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 15:00:06 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBNK06KQ16777332
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 20:00:06 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBNK04bF017374
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2014 15:00:05 -0500
-Date: Tue, 23 Dec 2014 11:59:34 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v6 3/4] perf Documentation: add event parameters
-Message-ID: <20141223195934.GB26952@us.ibm.com>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-4-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141222143943.GB29096@krava.brq.redhat.com>
- <20141222193436.GB19784@us.ibm.com>
- <20141223095121.GA22265@krava.brq.redhat.com>
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 24 Dec 2014 21:58:24 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 782D02CE8062
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:58:21 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBOBwK2q14811230
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:58:21 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBOBwJtl006704
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:58:20 +1100
+Subject: [PATCH v3 0/3] powerpc/pstore: Add pstore support for nvram partitions
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Wed, 24 Dec 2014 17:28:11 +0530
+Message-ID: <20141224115729.25731.20371.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141223095121.GA22265@krava.brq.redhat.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,58 +42,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From bfc20fd2161060cc51f3f24aa91663da39e97750 Mon Sep 17 00:00:00 2001
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-Date: Wed, 24 Sep 2014 12:27:22 -0700
-Subject: [PATCH 3/4] perf Documentation: add event parameters
+This patch series adds pstore support on powernv platform to
+read different nvram partitions and write compressed data to
+oops-log nvram partition. As pseries platform already has
+pstore support, this series moves most of the common code
+for pseries and powernv platforms to a common file. Tested
+the patches successfully on both pseries and powernv
+platforms.
 
-Event parameters are a basic way for partial events to be specified in
-sysfs with per-event names given to the fields that need to be filled in
-when using a particular event.
+Changes from v2:
+Added an empty version of clobbering_unread_rtas_event()
+routine for !PSERIES, to avoid ifdef at the call sites
 
-It is intended for supporting cases where the single 'cpu' parameter is
-insufficient. For example, POWER 8 has events for physical
-sockets/cores/cpus that are accessible from with virtual machines. To
-keep using the single 'cpu' parameter we'd need to perform a mapping
-between Linux's cpus and the physical machine's cpus (in this case
-Linux is running under a hypervisor). This isn't possible because
-bindings between our cpus and physical cpus may not be fixed, and we
-probably won't have a "cpu" on each physical cpu.
-
-Changelog[v6]
-	Update event description to explain how required parameters
-	are displayed.
-
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-bus-event_source-devices-events | 6 ++++++
- 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-index 20979f8..505f080 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-@@ -52,12 +52,18 @@ Description:	Per-pmu performance monitoring events specific to the running syste
- 			event=0x2abc
- 			event=0x423,inv,cmask=0x3
- 			domain=0x1,offset=0x8,starting_index=0xffff
-+			domain=0x1,offset=0x8,core=?
- 
- 		Each of the assignments indicates a value to be assigned to a
- 		particular set of bits (as defined by the format file
- 		corresponding to the <term>) in the perf_event structure passed
- 		to the perf_open syscall.
- 
-+		In the case of the last example, a value replacing "?" would
-+		need to be provided by the user selecting the particular event.
-+		This is referred to as "event parameterization". Event
-+		parameters have the format 'param=?'.
-+
- What: /sys/bus/event_source/devices/<pmu>/events/<event>.unit
- Date: 2014/02/24
- Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
--- 
-1.8.3.1
+Hari Bathini (3):
+      powerpc/nvram: move generic code for nvram and pstore
+      pstore: Add pstore type id for firmware partition
+      pstore: add pstore support on powernv
+
+
+ arch/powerpc/include/asm/nvram.h            |   50 ++
+ arch/powerpc/include/asm/rtas.h             |    4 
+ arch/powerpc/kernel/nvram_64.c              |  677 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-nvram.c |   10 
+ arch/powerpc/platforms/pseries/nvram.c      |  665 ---------------------------
+ fs/pstore/inode.c                           |    3 
+ include/linux/pstore.h                      |    1 
+ 7 files changed, 749 insertions(+), 661 deletions(-)
+
+--
+- Hari
