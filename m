@@ -1,40 +1,19 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <matorola@gmail.com>
+Received: from mail-lb0-x234.google.com (mail-lb0-x234.google.com
+ [IPv6:2a00:1450:4010:c04::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0E331A0D74
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 22:59:11 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 368C81400B7
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:59:11 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Wed, 24 Dec 2014 21:59:11 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D88432CE8054
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:59:08 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBOBx86X37224478
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:59:08 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBOBx7JP007148
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2014 22:59:08 +1100
-Subject: [PATCH v3 3/3] pstore: add pstore support on powernv
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 24 Dec 2014 17:28:58 +0530
-Message-ID: <20141224115858.25731.16392.stgit@localhost.localdomain>
-In-Reply-To: <20141224115729.25731.20371.stgit@localhost.localdomain>
-References: <20141224115729.25731.20371.stgit@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69CC21A0C6B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Dec 2014 08:41:18 +1100 (AEDT)
+Received: by mail-lb0-f180.google.com with SMTP id l4so7279480lbv.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 13:41:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 25 Dec 2014 00:41:13 +0300
+Message-ID: <CADxRZqxWL3wc1pJM3013utvW5=eNh_Z5pfU1+XiO2wOruOvk5Q@mail.gmail.com>
+Subject: unable to boot kernel on power6
+From: Anatoly Pugachev <matorola@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=089e011615f28acfa8050afd2618
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,92 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch extends pstore, a generic interface to platform dependent
-persistent storage, support for powernv  platform to capture certain
-useful information, during dying moments. Such support is already in
-place for  pseries platform.  This patch re-uses most of that code.
+--089e011615f28acfa8050afd2618
+Content-Type: text/plain; charset=UTF-8
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/nvram_64.c              |   25 +++++++++++++++++++++++--
- arch/powerpc/platforms/powernv/opal-nvram.c |   10 ++++++++++
- 2 files changed, 33 insertions(+), 2 deletions(-)
+Hello!
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 42e5c6a..293da88 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -127,6 +127,14 @@ static size_t oops_data_sz;
- static struct z_stream_s stream;
- 
- #ifdef CONFIG_PSTORE
-+#ifdef CONFIG_PPC_POWERNV
-+static struct nvram_os_partition skiboot_partition = {
-+	.name = "ibm,skiboot",
-+	.index = -1,
-+	.os_partition = false
-+};
-+#endif
-+
- #ifdef CONFIG_PPC_PSERIES
- static struct nvram_os_partition of_config_partition = {
- 	.name = "of-config",
-@@ -477,6 +485,16 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 		time->tv_nsec = 0;
- 		break;
- #endif
-+#ifdef CONFIG_PPC_POWERNV
-+	case PSTORE_TYPE_PPC_OPAL:
-+		sig = NVRAM_SIG_FW;
-+		part = &skiboot_partition;
-+		*type = PSTORE_TYPE_PPC_OPAL;
-+		*id = PSTORE_TYPE_PPC_OPAL;
-+		time->tv_sec = 0;
-+		time->tv_nsec = 0;
-+		break;
-+#endif
- 	default:
- 		return 0;
- 	}
-@@ -552,8 +570,11 @@ static int nvram_pstore_init(void)
- {
- 	int rc = 0;
- 
--	nvram_type_ids[2] = PSTORE_TYPE_PPC_RTAS;
--	nvram_type_ids[3] = PSTORE_TYPE_PPC_OF;
-+	if (machine_is(pseries)) {
-+		nvram_type_ids[2] = PSTORE_TYPE_PPC_RTAS;
-+		nvram_type_ids[3] = PSTORE_TYPE_PPC_OF;
-+	} else
-+		nvram_type_ids[2] = PSTORE_TYPE_PPC_OPAL;
- 
- 	nvram_pstore_info.buf = oops_data;
- 	nvram_pstore_info.bufsize = oops_data_sz;
-diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
-index f9896fd..9db4398 100644
---- a/arch/powerpc/platforms/powernv/opal-nvram.c
-+++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-@@ -16,6 +16,7 @@
- #include <linux/of.h>
- 
- #include <asm/opal.h>
-+#include <asm/nvram.h>
- #include <asm/machdep.h>
- 
- static unsigned int nvram_size;
-@@ -62,6 +63,15 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
- 	return count;
- }
- 
-+static int __init opal_nvram_init_log_partitions(void)
-+{
-+	/* Scan nvram for partitions */
-+	nvram_scan_partitions();
-+	nvram_init_oops_partition(0);
-+	return 0;
-+}
-+machine_arch_initcall(powernv, opal_nvram_init_log_partitions);
-+
- void __init opal_nvram_init(void)
- {
- 	struct device_node *np;
+Can someone from powerpc kernel guys look at
+https://bugzilla.redhat.com/show_bug.cgi?id=1093163
+
+It can not load kernel on power6 JS22 (type 7998) blade, starting from 3.11
+kernel (but 3.9.x actually bootable).
+
+Thanks.
+
+PS: not sure, is it worth investigating since it's power6 (old hardware).
+
+--089e011615f28acfa8050afd2618
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hello!<br><br>Can someone from powerpc kernel guys look at=
+ <a href=3D"https://bugzilla.redhat.com/show_bug.cgi?id=3D1093163">https://=
+bugzilla.redhat.com/show_bug.cgi?id=3D1093163</a><br><br>It can not load ke=
+rnel on power6 JS22 (type 7998) blade, starting from 3.11 kernel (but 3.9.x=
+ actually bootable).<br><br>Thanks.<br><br>PS: not sure, is it worth invest=
+igating since it&#39;s power6 (old hardware).</div>
+
+--089e011615f28acfa8050afd2618--
