@@ -1,19 +1,22 @@
-Return-Path: <matorola@gmail.com>
-Received: from mail-lb0-x234.google.com (mail-lb0-x234.google.com
- [IPv6:2a00:1450:4010:c04::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 69CC21A0C6B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Dec 2014 08:41:18 +1100 (AEDT)
-Received: by mail-lb0-f180.google.com with SMTP id l4so7279480lbv.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2014 13:41:13 -0800 (PST)
-MIME-Version: 1.0
-Date: Thu, 25 Dec 2014 00:41:13 +0300
-Message-ID: <CADxRZqxWL3wc1pJM3013utvW5=eNh_Z5pfU1+XiO2wOruOvk5Q@mail.gmail.com>
-Subject: unable to boot kernel on power6
-From: Anatoly Pugachev <matorola@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=089e011615f28acfa8050afd2618
+Return-Path: <yamada.m@jp.panasonic.com>
+Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
+ by lists.ozlabs.org (Postfix) with ESMTP id BE3A01A0C61
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Dec 2014 16:40:54 +1100 (AEDT)
+From: Masahiro Yamada <yamada.m@jp.panasonic.com>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH 0/6] kbuild: refactor Makefiles related with cc-version
+Date: Thu, 25 Dec 2014 14:31:22 +0900
+Message-Id: <1419485488-22336-1-git-send-email-yamada.m@jp.panasonic.com>
+Cc: Michal Marek <mmarek@suse.cz>, Jonathan Corbet <corbet@lwn.net>,
+ Andi Kleen <ak@linux.intel.com>, Robert Richter <rrichter@cavium.com>,
+ linux-parisc@vger.kernel.org, linux-doc@vger.kernel.org,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Masahiro Yamada <yamada.m@jp.panasonic.com>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e011615f28acfa8050afd2618
-Content-Type: text/plain; charset=UTF-8
 
-Hello!
 
-Can someone from powerpc kernel guys look at
-https://bugzilla.redhat.com/show_bug.cgi?id=1093163
 
-It can not load kernel on power6 JS22 (type 7998) blade, starting from 3.11
-kernel (but 3.9.x actually bootable).
+Masahiro Yamada (6):
+  kbuild: fix cc-ifversion macro
+  kbuild: do not add $(call ...) to invoke cc-version or cc-fullversion
+  kbuild,gcov: remove unnecessary workaround
+  kbuild,gcov: simplify kernel/gcov/Makefile
+  kbuild: allow cc-ifversion to have the argument for false condition
+  kbuild,gcov: simplify kernel/gcov/Makefile more
 
-Thanks.
+ Documentation/kbuild/makefiles.txt |  9 +++++----
+ arch/parisc/Makefile               |  2 +-
+ arch/powerpc/Makefile              |  6 +++---
+ arch/x86/Makefile.um               |  2 +-
+ kernel/gcov/Makefile               | 36 +++++-------------------------------
+ scripts/Kbuild.include             |  7 ++-----
+ 6 files changed, 17 insertions(+), 45 deletions(-)
 
-PS: not sure, is it worth investigating since it's power6 (old hardware).
-
---089e011615f28acfa8050afd2618
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hello!<br><br>Can someone from powerpc kernel guys look at=
- <a href=3D"https://bugzilla.redhat.com/show_bug.cgi?id=3D1093163">https://=
-bugzilla.redhat.com/show_bug.cgi?id=3D1093163</a><br><br>It can not load ke=
-rnel on power6 JS22 (type 7998) blade, starting from 3.11 kernel (but 3.9.x=
- actually bootable).<br><br>Thanks.<br><br>PS: not sure, is it worth invest=
-igating since it&#39;s power6 (old hardware).</div>
-
---089e011615f28acfa8050afd2618--
+-- 
+1.9.1
