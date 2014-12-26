@@ -1,22 +1,17 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f171.google.com (mail-yk0-f171.google.com
- [209.85.160.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C1711A0C6E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Dec 2014 20:35:09 +1100 (AEDT)
-Received: by mail-yk0-f171.google.com with SMTP id 142so4478485ykq.30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Dec 2014 01:35:06 -0800 (PST)
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri6.pp.htv.fi (filtteri6.pp.htv.fi [213.243.153.189])
+ by lists.ozlabs.org (Postfix) with ESMTP id 873851A0C44
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Dec 2014 23:09:53 +1100 (AEDT)
+Date: Fri, 26 Dec 2014 14:09:43 +0200
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: Re: [PATCH] powerpc/smp: Fix Non-boot cpus cannot be bring up.
+Message-ID: <20141226120943.GC582@fuloong-minipc.musicnaut.iki.fi>
+References: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CADxRZqxWL3wc1pJM3013utvW5=eNh_Z5pfU1+XiO2wOruOvk5Q@mail.gmail.com>
-References: <CADxRZqxWL3wc1pJM3013utvW5=eNh_Z5pfU1+XiO2wOruOvk5Q@mail.gmail.com>
-Date: Thu, 25 Dec 2014 13:35:06 +0400
-Message-ID: <CAOJe8K1yqHSuNR-_uswvtOSmvzM9JsKUFEKHwyyzZnif4MGHaw@mail.gmail.com>
-Subject: Re: unable to boot kernel on power6
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Anatoly Pugachev <matorola@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/25/14, Anatoly Pugachev <matorola@gmail.com> wrote:
-> Hello!
->
-> Can someone from powerpc kernel guys look at
-> https://bugzilla.redhat.com/show_bug.cgi?id=1093163
->
-> It can not load kernel on power6 JS22 (type 7998) blade, starting from 3.11
-> kernel (but 3.9.x actually bootable).
+Hi,
 
-Try to boot from cd /usb instead of trying to boot through the network
+On Mon, Dec 22, 2014 at 02:38:40PM +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> Kernel cannot bring up Non-boot cpus always get "Processor xx is stuck".
+> this issue bring by http://patchwork.ozlabs.org/patch/418912/ (powerpc:
+> Secondary CPUs must set cpu_callin_map after setting active and online)
+> We need to take timebase after bootup cpu give the timebase firstly.
+> 
+> When start_secondary, non-boot cpus set cpu_callin_map for boot cpu
+> after that boot cpu will give the timebase for non-boot cpu. Otherwise
+> non-boot cpus will fall in dead loop to waiting bootup cpu to give
+> imebase.
+> 
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-> Thanks.
->
-> PS: not sure, is it worth investigating since it's power6 (old hardware).
->
+This fixes v3.19-rc1 boot on G5 Xserve.
+
+Tested-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+
+A.
