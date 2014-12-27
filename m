@@ -1,29 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17CF51A08C2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2014 13:43:57 +1100 (AEDT)
-Message-ID: <1419648220.5581.192.camel@freescale.com>
-Subject: Re: [PATCH] i2c-qoriq: modified compatibility for correct prescaler
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Date: Fri, 26 Dec 2014 20:43:40 -0600
-In-Reply-To: <20141223134940.GA1925@katana>
-References: <1414537731.23458.120.camel@snotra.buserror.net>
- <5450AC85.40302@keymile.com> <20141113003418.GE2062@katana>
- <5465B285.7070005@keymile.com> <20141114082832.GA2180@katana>
- <1416274083.15957.96.camel@freescale.com> <20141125181347.GC9716@katana>
- <1416966097.15957.171.camel@freescale.com> <54899FB4.9010207@keymile.com>
- <54996CB5.8030808@keymile.com> <20141223134940.GA1925@katana>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
- Linux device trees <devicetree@vger.kernel.org>, danielle.costantino@gmail.com,
- "Boschung, Rainer" <Rainer.Boschung@keymile.com>, "Brunck,
- Holger" <Holger.Brunck@keymile.com>, Linux I2C <linux-i2c@vger.kernel.org>,
- Linux PowerPC Kernel <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 195521A019C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Dec 2014 04:17:15 +1100 (AEDT)
+Received: by mail-yk0-f180.google.com with SMTP id 9so5549042ykp.39
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2014 09:17:12 -0800 (PST)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux390@de.ibm.com (supporter:S390), Lai Jiangshan <laijs@cn.fujitsu.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
+ Andy Fleming <afleming@freescale.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>,
+ Daniel Walter <dwalter@google.com>,
+ Jens Freimann <jfrei@linux.vnet.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list),
+ linux-s390@vger.kernel.org (open list:S390)
+Subject: [PATCH] srcu: Isolate srcu sections using CONFIG_SRCU
+Date: Sat, 27 Dec 2014 12:17:43 -0500
+Message-Id: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,34 +38,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-23 at 14:49 +0100, Wolfram Sang wrote:
-> On Tue, Dec 23, 2014 at 02:23:01PM +0100, Valentin Longchamp wrote:
-> > Wolfgang, Scott,
-> 
-> Wolfram, please.
-> 
-> > > What is then the agreement here ? Add a clock-div to the device trees ? Or do
-> > > something similar to  mpc_i2c_get_sec_cfg_8xxx() ?
-> > > 
-> > > I think the clock-div property is better according to Freescale's AN 2919
-> > > section 3.1 Source clock. All the source clocks are fixed (with a clock-div of 2
-> > > in case of mpc8536/43/45/47/48/67/68/72, plus p2020) except for the mpc8533/44
-> > > where it can be 2 or 3, and that's what mpc_i2c_get_sec_cfg_8xxx() determines.
-> > > 
-> > > So mpc_i2c_get_sec_cfg_8xxx() should remain the exception and the other
-> > > prescaler values should be derived from an additional clock-div that must be
-> > > added in the respective device trees (at least for the qoriq devices, because
-> > > for instance mpc8543 already has the correct prescaler thanks to
-> > > mpc_i2c_data_8543 from i2c-mpc.c).
-> > > 
-> > 
-> > Do you have an opinion on the above ?
-> 
-> I don't mind. I'll leave it to PowerPC experts to judge if a new binding
-> is apropriate or reading SVR is the way to go. If it is going to be a
-> new binding, then please look around before if there is already
-> something similar around...
+Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
+is a compile time failure if srcu is used when not enabled. This was decided to
+be better than waiting until link time for a failure to occur.
 
-I'd rather use SVR so things work with existing device trees.
+There are places which include kvm headers and utilize kvm data structures
+without checking if KVM is enabled. In two such archs(s390, ppc64), the current
+patch makes the uses of KVM conditional on KVM being enabled. The other option,
+which is to enable KVM unconditionally seemed a bit too much as we could easily
+figure out KVM only parts and enclose them in ifdefs.
 
--Scott
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+---
+ arch/powerpc/kernel/setup_64.c |  7 ++++++-
+ arch/s390/kernel/asm-offsets.c |  7 ++++++-
+ include/linux/notifier.h       | 47 ++++++++++++++++++++++++------------------
+ include/linux/srcu.h           |  6 +++++-
+ 4 files changed, 44 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 4f3cfe1..f55302f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -65,10 +65,13 @@
+ #include <asm/kexec.h>
+ #include <asm/mmu_context.h>
+ #include <asm/code-patching.h>
+-#include <asm/kvm_ppc.h>
+ #include <asm/hugetlb.h>
+ #include <asm/epapr_hcalls.h>
+ 
++#if IS_ENABLED(CONFIG_KVM)
++#include <asm/kvm_ppc.h>
++#endif
++
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+ #else
+@@ -286,8 +289,10 @@ void __init early_setup(unsigned long dt_ptr)
+ 	 */
+ 	cpu_ready_for_interrupts();
+ 
++#if IS_ENABLED(CONFIG_KVM)
+ 	/* Reserve large chunks of memory for use by CMA for KVM */
+ 	kvm_cma_reserve();
++#endif
+ 
+ 	/*
+ 	 * Reserve any gigantic pages requested on the command line.
+diff --git a/arch/s390/kernel/asm-offsets.c b/arch/s390/kernel/asm-offsets.c
+index ef279a1..2813a3c 100644
+--- a/arch/s390/kernel/asm-offsets.c
++++ b/arch/s390/kernel/asm-offsets.c
+@@ -7,12 +7,15 @@
+ #define ASM_OFFSETS_C
+ 
+ #include <linux/kbuild.h>
+-#include <linux/kvm_host.h>
+ #include <linux/sched.h>
+ #include <asm/idle.h>
+ #include <asm/vdso.h>
+ #include <asm/pgtable.h>
+ 
++#if IS_ENABLED(CONFIG_KVM)
++#include <linux/kvm_host.h>
++#endif
++
+ /*
+  * Make sure that the compiler is new enough. We want a compiler that
+  * is known to work with the "Q" assembler constraint.
+@@ -182,8 +185,10 @@ int main(void)
+ 	DEFINE(__LC_PGM_TDB, offsetof(struct _lowcore, pgm_tdb));
+ 	DEFINE(__THREAD_trap_tdb, offsetof(struct task_struct, thread.trap_tdb));
+ 	DEFINE(__GMAP_ASCE, offsetof(struct gmap, asce));
++#if IS_ENABLED(CONFIG_KVM)
+ 	DEFINE(__SIE_PROG0C, offsetof(struct kvm_s390_sie_block, prog0c));
+ 	DEFINE(__SIE_PROG20, offsetof(struct kvm_s390_sie_block, prog20));
++#endif /* CONFIG_KVM */
+ #endif /* CONFIG_32BIT */
+ 	return 0;
+ }
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index d14a4c3..fe4f02a 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -47,6 +47,8 @@
+  * runtime initialization.
+  */
+ 
++struct notifier_block;
++
+ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
+ 			unsigned long action, void *data);
+ 
+@@ -70,12 +72,6 @@ struct raw_notifier_head {
+ 	struct notifier_block __rcu *head;
+ };
+ 
+-struct srcu_notifier_head {
+-	struct mutex mutex;
+-	struct srcu_struct srcu;
+-	struct notifier_block __rcu *head;
+-};
+-
+ #define ATOMIC_INIT_NOTIFIER_HEAD(name) do {	\
+ 		spin_lock_init(&(name)->lock);	\
+ 		(name)->head = NULL;		\
+@@ -88,11 +84,6 @@ struct srcu_notifier_head {
+ 		(name)->head = NULL;		\
+ 	} while (0)
+ 
+-/* srcu_notifier_heads must be initialized and cleaned up dynamically */
+-extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+-#define srcu_cleanup_notifier_head(name)	\
+-		cleanup_srcu_struct(&(name)->srcu);
+-
+ #define ATOMIC_NOTIFIER_INIT(name) {				\
+ 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
+ 		.head = NULL }
+@@ -101,7 +92,6 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+ 		.head = NULL }
+ #define RAW_NOTIFIER_INIT(name)	{				\
+ 		.head = NULL }
+-/* srcu_notifier_heads cannot be initialized statically */
+ 
+ #define ATOMIC_NOTIFIER_HEAD(name)				\
+ 	struct atomic_notifier_head name =			\
+@@ -121,8 +111,6 @@ extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
+ 		struct notifier_block *nb);
+ extern int raw_notifier_chain_register(struct raw_notifier_head *nh,
+ 		struct notifier_block *nb);
+-extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
+-		struct notifier_block *nb);
+ 
+ extern int blocking_notifier_chain_cond_register(
+ 		struct blocking_notifier_head *nh,
+@@ -134,8 +122,6 @@ extern int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
+ 		struct notifier_block *nb);
+ extern int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
+ 		struct notifier_block *nb);
+-extern int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
+-		struct notifier_block *nb);
+ 
+ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ 		unsigned long val, void *v);
+@@ -149,10 +135,6 @@ extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
+ 		unsigned long val, void *v);
+ extern int __raw_notifier_call_chain(struct raw_notifier_head *nh,
+ 	unsigned long val, void *v, int nr_to_call, int *nr_calls);
+-extern int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+-		unsigned long val, void *v);
+-extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+-	unsigned long val, void *v, int nr_to_call, int *nr_calls);
+ 
+ #define NOTIFY_DONE		0x0000		/* Don't care */
+ #define NOTIFY_OK		0x0001		/* Suits me */
+@@ -211,5 +193,30 @@ static inline int notifier_to_errno(int ret)
+ 
+ extern struct blocking_notifier_head reboot_notifier_list;
+ 
++#ifdef CONFIG_SRCU
++
++struct srcu_notifier_head {
++	struct mutex mutex;
++	struct srcu_struct srcu;
++	struct notifier_block __rcu *head;
++};
++
++/* srcu_notifier_heads must be initialized and cleaned up dynamically
++ * srcu_notifier_heads cannot be initialized statically
++ */
++extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
++#define srcu_cleanup_notifier_head(name) cleanup_srcu_struct(&(name)->srcu)
++
++extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
++		struct notifier_block *nb);
++extern int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
++		struct notifier_block *nb);
++extern int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
++		unsigned long val, void *v);
++extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
++	unsigned long val, void *v, int nr_to_call, int *nr_calls);
++
++#endif /* CONFIG_SRCU */
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_NOTIFIER_H */
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index 9cfd962..ed9c389 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -26,6 +26,8 @@
+  *
+  */
+ 
++#ifdef CONFIG_SRCU
++
+ #ifndef _LINUX_SRCU_H
+ #define _LINUX_SRCU_H
+ 
+@@ -249,4 +251,6 @@ static inline void smp_mb__after_srcu_read_unlock(void)
+ 	/* __srcu_read_unlock has smp_mb() internally so nothing to do here. */
+ }
+ 
+-#endif
++#endif /* _LINUX_SRCU_H */
++
++#endif /* CONFIG_SRCU */
+-- 
+1.9.1
