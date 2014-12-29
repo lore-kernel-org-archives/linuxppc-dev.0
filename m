@@ -1,24 +1,34 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
- [IPv6:2a00:1450:4010:c04::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0141.outbound.protection.outlook.com [65.55.169.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0651A018A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 07:22:45 +1100 (AEDT)
-Received: by mail-lb0-f176.google.com with SMTP id p9so11283494lbv.21
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 12:22:41 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C7031A018A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 10:05:22 +1100 (AEDT)
+Message-ID: <1419894305.4961.2.camel@freescale.com>
+Subject: Re: [PATCH] srcu: Isolate srcu sections using CONFIG_SRCU
+From: Scott Wood <scottwood@freescale.com>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Date: Mon, 29 Dec 2014 17:05:05 -0600
+In-Reply-To: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
+References: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1419883144-13523-1-git-send-email-geert@linux-m68k.org>
-References: <1419883144-13523-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 29 Dec 2014 21:22:41 +0100
-Message-ID: <CAMuHMdXccHA6Zzv-avucH3e5CpguUT-nAAHQ=E+V-rdVLiEV7g@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.19-rc2
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: the arch/x86 maintainers <x86@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "open list:S390" <linux-s390@vger.kernel.org>, Lai
+ Jiangshan <laijs@cn.fujitsu.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, "open list:LINUX FOR
+ POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Josh Triplett <josh@joshtriplett.org>, Steven
+ Rostedt <rostedt@goodmis.org>, open list <linux-kernel@vger.kernel.org>,
+ Tiejun Chen <tiejun.chen@windriver.com>,
+ Jens Freimann <jfrei@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Andy
+ Fleming <afleming@freescale.com>, Martin
+ Schwidefsky <schwidefsky@de.ibm.com>, "supporter:S390" <linux390@de.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Daniel Walter <dwalter@google.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +38,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 29, 2014 at 8:59 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.19-rc2[1]  to v3.19-rc1[3], the summaries are:
->   - build errors: +8/-5
+On Sat, 2014-12-27 at 12:17 -0500, Pranith Kumar wrote:
+> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
+> is a compile time failure if srcu is used when not enabled. This was decided to
+> be better than waiting until link time for a failure to occur.
 
-Surprise! No new R_PPC64_REL24 relocation truncations, hence not much new
-generic code was added. Bloat-o-meter on atari_defconfig agrees: +36 bytes.
+Yes, false positives and extra ifdefs are so much better. :-P
 
-  + /home/kisskb/slave/src/arch/powerpc/platforms/pseries/hotplug-memory.c:
-error: 'SECTION_SIZE_BITS' undeclared (first use in this function):
-=> 27:31
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
-'PAGES_PER_SECTION' undeclared (first use in this function):  =>
-1836:46, 1178:18
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
-'PAGE_SECTION_MASK' undeclared (first use in this function):  =>
-1177:20
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function '__nr_to_section'
-[-Werror=implicit-function-declaration]:  => 1841:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'find_memory_block_hinted'
-[-Werror=implicit-function-declaration]:  => 1848:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'pfn_to_section_nr'
-[-Werror=implicit-function-declaration]:  => 1837:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'present_section_nr'
-[-Werror=implicit-function-declaration]:  => 1838:3
+Why not just ifdef the functions/macros, and leave the types alone?  If
+you're worried about direct access to struct members, you could even
+ifdef the members away while leaving the struct itself.  It is not
+normal practice in Linux to need ifdefs around #includes.
 
-powerpc-randconfig
+> There are places which include kvm headers and utilize kvm data structures
+> without checking if KVM is enabled. In two such archs(s390, ppc64), the current
+> patch makes the uses of KVM conditional on KVM being enabled. The other option,
+> which is to enable KVM unconditionally seemed a bit too much as we could easily
+> figure out KVM only parts and enclose them in ifdefs.
 
-  + error: initramfs.c: undefined reference to `__stack_chk_guard':
-=> .init.text+0x3132)
+Maybe not so easy (mpc85xx_smp_defconfig with NOTIFY stuff turned off so
+that SRCU gets deselected):
 
-i386-randconfig
+In file included from /home/scott/fsl/git/linux/upstream/arch/powerpc/include/asm/kvm_ppc.h:30:0,
+                 from /home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/smp.c:39:
+/home/scott/fsl/git/linux/upstream/include/linux/kvm_host.h:366:21: error: field 'srcu' has incomplete type
+/home/scott/fsl/git/linux/upstream/include/linux/kvm_host.h:367:21: error: field 'irq_srcu' has incomplete type
+/home/scott/fsl/git/linux/upstream/scripts/Makefile.build:257: recipe for target 'arch/powerpc/kernel/smp.o' failed
+make[2]: *** [arch/powerpc/kernel/smp.o] Error 1
+/home/scott/fsl/git/linux/upstream/Makefile:955: recipe for target 'arch/powerpc/kernel' failed
+make[1]: *** [arch/powerpc/kernel] Error 2
+make[1]: *** Waiting for unfinished jobs....
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/8257/ (all 262 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/8241/ (all 262 configs)
+Are you sure KVM is the only SRCU user so impacted?  It's also likely
+that new such problems get introduced, because most people are going to
+have SRCU enabled and thus not notice the breakage they're adding.
 
-Gr{oetje,eeting}s,
+There's also at least one place that needs to be fixed, that currently
+expects to get other headers indirectly via srcu.h:
 
-                        Geert
+/home/scott/fsl/git/linux/upstream/lib/assoc_array.c: In function 'assoc_array_apply_edit':
+/home/scott/fsl/git/linux/upstream/lib/assoc_array.c:1425:2: error: implicit declaration of function 'call_rcu' [-Werror=implicit-function-declaration]
+cc1: some warnings being treated as errors
+/home/scott/fsl/git/linux/upstream/scripts/Makefile.build:257: recipe for target 'lib/assoc_array.o' failed
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-Scott
