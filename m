@@ -1,49 +1,17 @@
-Return-Path: <schwidefsky@de.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+Return-Path: <der.herr@hofr.at>
+Received: from www.osadl.org (www.osadl.org [62.245.132.105])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 69FE11A0120
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 21:03:42 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
- Mon, 29 Dec 2014 10:03:37 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 77141219005C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 10:03:04 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- sBTA3ZdK35782810
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 10:03:35 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- sBTA3Sdf024577
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 03:03:34 -0700
-Date: Mon, 29 Dec 2014 11:03:24 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Subject: Re: [PATCH] srcu: Isolate srcu sections using CONFIG_SRCU
-Message-ID: <20141229110324.50f1339b@mschwide>
-In-Reply-To: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
-References: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "open list:S390" <linux-s390@vger.kernel.org>,
- Lai Jiangshan <laijs@cn.fujitsu.com>, Tiejun Chen <tiejun.chen@windriver.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
- open list <linux-kernel@vger.kernel.org>, Scott Wood <scottwood@freescale.com>,
- Jens Freimann <jfrei@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Andy Fleming <afleming@freescale.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- "supporter:S390" <linux390@de.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "open
- list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Daniel Walter <dwalter@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470F31A0184
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 07:04:10 +1100 (AEDT)
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+Subject: [PATCH] macintosh: ams: cleanup on stack DECLARE_COMPLETION
+Date: Mon, 29 Dec 2014 14:59:44 -0500
+Message-Id: <1419883184-412-1-git-send-email-der.herr@hofr.at>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Nicholas Mc Guire <der.herr@hofr.at>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,32 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 27 Dec 2014 12:17:43 -0500
-Pranith Kumar <bobby.prani@gmail.com> wrote:
+fix-up for incorrect use of DECLARE_COMPLETION. see also commit
+6e9a4738 ("completions: lockdep annotate on stack completions")
 
-> @@ -65,10 +65,13 @@
->  #include <asm/kexec.h>
->  #include <asm/mmu_context.h>
->  #include <asm/code-patching.h>
-> -#include <asm/kvm_ppc.h>
->  #include <asm/hugetlb.h>
->  #include <asm/epapr_hcalls.h>
-> 
-> +#if IS_ENABLED(CONFIG_KVM)
-> +#include <asm/kvm_ppc.h>
-> +#endif
-> +
->  #ifdef DEBUG
->  #define DBG(fmt...) udbg_printf(fmt)
->  #else
+V2: split out patch for individual files and (hopefully) proper
+    labeling this time
 
-I always cringe when I see an include protected by an #ifdef.
-Is this really necessary? All that is done in asm-offsets.c is
-to calculate offsets, the code where the two offsets in question
-are used (entry64.S) does have the #ifdef for CONFIG_KVM.
+patch is against linux-next 3.19.0-rc1 -next-20141226
 
+patch was compile tested with ppc6xx_defconfig, CONFIG_SENSORS_AMS=m,
+CONFIG_SENSORS_AMS_PMU=y
+
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+---
+ drivers/macintosh/ams/ams-pmu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/macintosh/ams/ams-pmu.c b/drivers/macintosh/ams/ams-pmu.c
+index 4f61b3e..c2b178f 100644
+--- a/drivers/macintosh/ams/ams-pmu.c
++++ b/drivers/macintosh/ams/ams-pmu.c
+@@ -52,7 +52,7 @@ static void ams_pmu_req_complete(struct adb_request *req)
+ static void ams_pmu_set_register(u8 reg, u8 value)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
+ 
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 4, ams_pmu_cmd, 0x00, reg, value))
+@@ -65,7 +65,7 @@ static void ams_pmu_set_register(u8 reg, u8 value)
+ static u8 ams_pmu_get_register(u8 reg)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
+ 
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 3, ams_pmu_cmd, 0x01, reg))
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+1.7.10.4
