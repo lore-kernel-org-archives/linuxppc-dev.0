@@ -1,30 +1,19 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-vc0-x230.google.com (mail-vc0-x230.google.com
- [IPv6:2607:f8b0:400c:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D403B1A0216
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 16:47:24 +1100 (AEDT)
-Received: by mail-vc0-f176.google.com with SMTP id hq12so5505309vcb.35
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 21:47:22 -0800 (PST)
+Return-Path: <sivanich@sgi.com>
+Received: from relay.sgi.com (relay3.sgi.com [192.48.152.1])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2C6B51A00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 02:47:12 +1100 (AEDT)
+Date: Mon, 29 Dec 2014 09:38:56 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH] cleanup on stack DECLARE_COMPLETIONs
+Message-ID: <20141229153856.GA5661@sgi.com>
+References: <1419356048-22405-1-git-send-email-der.herr@hofr.at>
 MIME-Version: 1.0
-In-Reply-To: <1419843707.30395.5.camel@ellerman.id.au>
-References: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
- <1419700667-24888-2-git-send-email-bobby.prani@gmail.com>
- <1419843707.30395.5.camel@ellerman.id.au>
-From: Pranith Kumar <bobby.prani@gmail.com>
-Date: Tue, 30 Dec 2014 00:46:52 -0500
-Message-ID: <CAJhHMCDNGRxWn41Wo+4i3-Y4okpgCyiKwNFXxciZZF=T+nwmgw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: Select CONFIG_PRINTK to fix build failure
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- open list <linux-kernel@vger.kernel.org>, hegdevasant@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1419356048-22405-1-git-send-email-der.herr@hofr.at>
+Cc: linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+ Felipe Balbi <balbi@ti.com>, "James E.J. Bottomley" <JBottomley@parallels.com>,
+ "Juergen E. Fischer" <fischer@norbit.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 29, 2014 at 4:01 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Sat, 2014-12-27 at 12:17 -0500, Pranith Kumar wrote:
->> In an allnoconfig we get the following build failure:
->
-> An allnoconfig doesn't include CONFIG_PPC_POWERNV? But I think I know what you
-> mean.
->
->> arch/powerpc/platforms/built-in.o: In function `.__machine_initcall_powernv_opal_init':
->> opal.c:(.init.text+0x468): undefined reference to `.log_buf_addr_get'
->> opal.c:(.init.text+0x474): undefined reference to `.log_buf_len_get'
->> make: *** [vmlinux] Error 1
->>
->> This happens because powernv requires printk() support. Enable it in the config
->> file.
->
-> Sort of. It just requires those two routines. Or is there a stronger
-> dependency?
->
-> I think the better fix is for those two routines to be defined for
-> CONFIG_PRINTK=n, but return NULL and zero respectively.
->
-> And the opal code could skip registering the region when they return NULL/zero.
->
-> Care to do a couple of patches?
->
+On Tue, Dec 23, 2014 at 06:34:08PM +0100, Nicholas Mc Guire wrote:
+> fixups for incorrect use of DECLARE_COMPLETION. see also commit
+> 6e9a4738 ("completions: lockdep annotate on stack completions")
+> The only somewhat special case being
+> drivers/misc/sgi-gru/grukservices.c:quicktest2
+> which had a static qualifier in the original DECLARE_COMPLETION()
+> but that seems to be wrong (why should the completion persisted between
+> successive calls ?) so the conversion to DECLARE_COMPLETION_ONSTACK
+> was also applied and the static qualifier removed.
+> 
+> Not sure if this is suitable in this form or if it should go out as
+> 5 seperate patches ? 
+> 
+> This was only code reviewed and compile tested
 
-Sure, I will give it a try. Thanks for the review!
+Acking just the drivers/misc/sgi-gru/grukservices.c patch of this set.
 
+Acked-by: Dimitri Sivanich <sivanich@sgi.com>
 
--- 
-Pranith
+> 
+> Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+> ---
+>  drivers/macintosh/ams/ams-pmu.c       |    4 ++--
+>  drivers/misc/sgi-gru/grukservices.c   |    2 +-
+>  drivers/scsi/aha152x.c                |    2 +-
+>  drivers/usb/gadget/udc/fsl_qe_udc.c   |    2 +-
+>  drivers/usb/gadget/udc/fsl_udc_core.c |    2 +-
+>  5 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/macintosh/ams/ams-pmu.c b/drivers/macintosh/ams/ams-pmu.c
+> index 4f61b3e..c2b178f 100644
+> --- a/drivers/macintosh/ams/ams-pmu.c
+> +++ b/drivers/macintosh/ams/ams-pmu.c
+> @@ -52,7 +52,7 @@ static void ams_pmu_req_complete(struct adb_request *req)
+>  static void ams_pmu_set_register(u8 reg, u8 value)
+>  {
+>  	static struct adb_request req;
+> -	DECLARE_COMPLETION(req_complete);
+> +	DECLARE_COMPLETION_ONSTACK(req_complete);
+> 
+>  	req.arg = &req_complete;
+>  	if (pmu_request(&req, ams_pmu_req_complete, 4, ams_pmu_cmd, 0x00, reg, value))
+> @@ -65,7 +65,7 @@ static void ams_pmu_set_register(u8 reg, u8 value)
+>  static u8 ams_pmu_get_register(u8 reg)
+>  {
+>  	static struct adb_request req;
+> -	DECLARE_COMPLETION(req_complete);
+> +	DECLARE_COMPLETION_ONSTACK(req_complete);
+> 
+>  	req.arg = &req_complete;
+>  	if (pmu_request(&req, ams_pmu_req_complete, 3, ams_pmu_cmd, 0x01, reg))
+> diff --git a/drivers/misc/sgi-gru/grukservices.c b/drivers/misc/sgi-gru/grukservices.c
+> index 913de07..4e412fe 100644
+> --- a/drivers/misc/sgi-gru/grukservices.c
+> +++ b/drivers/misc/sgi-gru/grukservices.c
+> @@ -1044,7 +1044,7 @@ done:
+> 
+>  static int quicktest2(unsigned long arg)
+>  {
+> -	static DECLARE_COMPLETION(cmp);
+> +	DECLARE_COMPLETION_ONSTACK(cmp);
+>  	unsigned long han;
+>  	int blade_id = 0;
+>  	int numcb = 4;
+> diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
+> index 2b960b3..b16afb9 100644
+> --- a/drivers/scsi/aha152x.c
+> +++ b/drivers/scsi/aha152x.c
+> @@ -1055,7 +1055,7 @@ static int aha152x_abort(Scsi_Cmnd *SCpnt)
+>  static int aha152x_device_reset(Scsi_Cmnd * SCpnt)
+>  {
+>  	struct Scsi_Host *shpnt = SCpnt->device->host;
+> -	DECLARE_COMPLETION(done);
+> +	DECLARE_COMPLETION_ONSTACK(done);
+>  	int ret, issued, disconnected;
+>  	unsigned char old_cmd_len = SCpnt->cmd_len;
+>  	unsigned long flags;
+> diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+> index 795c99c..e0822f1 100644
+> --- a/drivers/usb/gadget/udc/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+> @@ -2630,7 +2630,7 @@ static int qe_udc_remove(struct platform_device *ofdev)
+>  	struct qe_udc *udc = platform_get_drvdata(ofdev);
+>  	struct qe_ep *ep;
+>  	unsigned int size;
+> -	DECLARE_COMPLETION(done);
+> +	DECLARE_COMPLETION_ONSTACK(done);
+> 
+>  	usb_del_gadget_udc(&udc->gadget);
+> 
+> diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+> index 2df8074..c3830ad 100644
+> --- a/drivers/usb/gadget/udc/fsl_udc_core.c
+> +++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+> @@ -2529,7 +2529,7 @@ static int __exit fsl_udc_remove(struct platform_device *pdev)
+>  	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	struct fsl_usb2_platform_data *pdata = dev_get_platdata(&pdev->dev);
+> 
+> -	DECLARE_COMPLETION(done);
+> +	DECLARE_COMPLETION_ONSTACK(done);
+> 
+>  	if (!udc_controller)
+>  		return -ENODEV;
+> --
+> 1.7.10.4
