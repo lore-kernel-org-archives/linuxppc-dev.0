@@ -1,19 +1,49 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <schwidefsky@de.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C296E1A00CA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 20:02:04 +1100 (AEDT)
-Message-ID: <1419843704.30395.4.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/smp: Fix Non-boot cpus cannot be bring up.
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-In-Reply-To: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1419230320-37558-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 29 Dec 2014 20:01:44 +1100
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, anton@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69FE11A0120
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 21:03:42 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
+ Mon, 29 Dec 2014 10:03:37 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 77141219005C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 10:03:04 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ sBTA3ZdK35782810
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 10:03:35 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ sBTA3Sdf024577
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2014 03:03:34 -0700
+Date: Mon, 29 Dec 2014 11:03:24 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Subject: Re: [PATCH] srcu: Isolate srcu sections using CONFIG_SRCU
+Message-ID: <20141229110324.50f1339b@mschwide>
+In-Reply-To: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
+References: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "open list:S390" <linux-s390@vger.kernel.org>,
+ Lai Jiangshan <laijs@cn.fujitsu.com>, Tiejun Chen <tiejun.chen@windriver.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
+ open list <linux-kernel@vger.kernel.org>, Scott Wood <scottwood@freescale.com>,
+ Jens Freimann <jfrei@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Andy Fleming <afleming@freescale.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ "supporter:S390" <linux390@de.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "open
+ list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Daniel Walter <dwalter@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +53,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-12-22 at 14:38 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On Sat, 27 Dec 2014 12:17:43 -0500
+Pranith Kumar <bobby.prani@gmail.com> wrote:
+
+> @@ -65,10 +65,13 @@
+>  #include <asm/kexec.h>
+>  #include <asm/mmu_context.h>
+>  #include <asm/code-patching.h>
+> -#include <asm/kvm_ppc.h>
+>  #include <asm/hugetlb.h>
+>  #include <asm/epapr_hcalls.h>
 > 
-> Kernel cannot bring up Non-boot cpus always get "Processor xx is stuck".
-> this issue bring by http://patchwork.ozlabs.org/patch/418912/ (powerpc:
-> Secondary CPUs must set cpu_callin_map after setting active and online)
+> +#if IS_ENABLED(CONFIG_KVM)
+> +#include <asm/kvm_ppc.h>
+> +#endif
+> +
+>  #ifdef DEBUG
+>  #define DBG(fmt...) udbg_printf(fmt)
+>  #else
 
-We've decided we're just going to revert that patch for this cycle.
+I always cringe when I see an include protected by an #ifdef.
+Is this really necessary? All that is done in asm-offsets.c is
+to calculate offsets, the code where the two offsets in question
+are used (entry64.S) does have the #ifdef for CONFIG_KVM.
 
-We'll do a better fix for next, and hopefully people will test it before it
-gets to mainline :D
+-- 
+blue skies,
+   Martin.
 
-cheers
+"Reality continues to ruin my life." - Calvin.
