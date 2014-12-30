@@ -1,20 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-vc0-x22c.google.com (mail-vc0-x22c.google.com
+ [IPv6:2607:f8b0:400c:c03::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31C361A0321
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 05:50:31 +1100 (AEDT)
-Date: Tue, 30 Dec 2014 19:50:08 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
-Message-ID: <20141230185008.GA23965@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EDB131A0321
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 05:54:39 +1100 (AEDT)
+Received: by mail-vc0-f172.google.com with SMTP id hq11so5986192vcb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 10:54:37 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20141230185008.GA23965@worktop.programming.kicks-ass.net>
 References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
  <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
+ <20141230185008.GA23965@worktop.programming.kicks-ass.net>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Tue, 30 Dec 2014 13:54:07 -0500
+Message-ID: <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
+Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
+To: Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
  Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
  Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
@@ -42,9 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
-> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
-> is a compile time failure if srcu is used when not enabled. This was decided to
-> be better than waiting until link time for a failure to occur.
+On Tue, Dec 30, 2014 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
+>> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
+>> is a compile time failure if srcu is used when not enabled. This was decided to
+>> be better than waiting until link time for a failure to occur.
+>
+> Why?
 
-Why?
+This is part of the kernel tinification efforts. The first patch was
+posted here: https://lkml.org/lkml/2014/12/4/848. This patch enables a
+compile time failure instead of a link time failure.
+
+Thanks!
+-- 
+Pranith
