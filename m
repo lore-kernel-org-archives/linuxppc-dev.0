@@ -1,40 +1,36 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7829C1A0409
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 06:07:54 +1100 (AEDT)
-Date: Tue, 30 Dec 2014 20:07:40 +0100
-From: Peter Zijlstra <peterz@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64CE61A0490
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 06:44:52 +1100 (AEDT)
+Message-ID: <1419968672.4961.4.camel@freescale.com>
+Subject: Re: [PATCH] srcu: Isolate srcu sections using CONFIG_SRCU
+From: Scott Wood <scottwood@freescale.com>
 To: Pranith Kumar <bobby.prani@gmail.com>
-Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
-Message-ID: <20141230190740.GC23965@worktop.programming.kicks-ass.net>
-References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
- <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
- <20141230185008.GA23965@worktop.programming.kicks-ass.net>
- <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
+Date: Tue, 30 Dec 2014 13:44:32 -0600
+In-Reply-To: <CAJhHMCDan+qaaZjVUucA-sUS8A3vSTYuVHg8XQv4rsHXxAzKLw@mail.gmail.com>
+References: <1419700667-24888-1-git-send-email-bobby.prani@gmail.com>
+ <20141229110324.50f1339b@mschwide>
+ <CAJhHMCDan+qaaZjVUucA-sUS8A3vSTYuVHg8XQv4rsHXxAzKLw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
- Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
- Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
- "open list:S390" <linux-s390@vger.kernel.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
+Cc: "open list:S390" <linux-s390@vger.kernel.org>,
+ Lai Jiangshan <laijs@cn.fujitsu.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>,
- Jens Freimann <jfrei@linux.vnet.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
  Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
  open list <linux-kernel@vger.kernel.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>, Jens
+ Freimann <jfrei@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Andy Fleming <afleming@freescale.com>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  "supporter:S390" <linux390@de.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Daniel Walter <dwalter@google.com>, Mathieu
+ Desnoyers <mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 30, 2014 at 01:54:07PM -0500, Pranith Kumar wrote:
-> On Tue, Dec 30, 2014 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
-> >> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
-> >> is a compile time failure if srcu is used when not enabled. This was decided to
-> >> be better than waiting until link time for a failure to occur.
+On Mon, 2014-12-29 at 23:32 -0500, Pranith Kumar wrote:
+> On Mon, Dec 29, 2014 at 5:03 AM, Martin Schwidefsky
+> <schwidefsky@de.ibm.com> wrote:
+> > On Sat, 27 Dec 2014 12:17:43 -0500
+> > Pranith Kumar <bobby.prani@gmail.com> wrote:
 > >
-> > Why?
+> >> @@ -65,10 +65,13 @@
+> >>  #include <asm/kexec.h>
+> >>  #include <asm/mmu_context.h>
+> >>  #include <asm/code-patching.h>
+> >> -#include <asm/kvm_ppc.h>
+> >>  #include <asm/hugetlb.h>
+> >>  #include <asm/epapr_hcalls.h>
+> >>
+> >> +#if IS_ENABLED(CONFIG_KVM)
+> >> +#include <asm/kvm_ppc.h>
+> >> +#endif
+> >> +
+> >>  #ifdef DEBUG
+> >>  #define DBG(fmt...) udbg_printf(fmt)
+> >>  #else
+> >
+> > I always cringe when I see an include protected by an #ifdef.
+> > Is this really necessary? All that is done in asm-offsets.c is
+> > to calculate offsets, the code where the two offsets in question
+> > are used (entry64.S) does have the #ifdef for CONFIG_KVM.
 > 
-> This is part of the kernel tinification efforts. The first patch was
-> posted here: https://lkml.org/lkml/2014/12/4/848. This patch enables a
-> compile time failure instead of a link time failure.
+> I agree that this is not the ideal way to do this. But, it has been
+> the way things were already being done. If you see
+> arch/powerpc/kernel/asm-offsets.c, there are quite some includes which
+> are within ifdefs.
 
-can't be arsed to click. again, why does it matter when it fails,
-neither stages produces a working kernel so tinification cannot be the
-purpose.
+asm-offsets.c is unusual in that respect, and I think most of those
+ifdefs could go away without breaking anything (head_booke.h is not a
+normal header file, and kvm_book3s.h should just be removed as it will
+be pulled in by kvm_ppc.h if applicable).
+
+> I've considered other alternatives (though not in-depth) and found
+> that they will require quite some refactoring. One simple idea is to
+> move this #ifdef to within kvm_ppc.h. That should make the inclusion
+> of this file a no-op in all the places where this is being included
+> without KVM being enabled. But I am not 100% sure of that approach.
+> 
+> Any suggestions are welcome.
+
+As I suggested elsewhere in the thread, why not be more fine-grained in
+what you ifdef in the srcu header?  How will that require excessive
+refactoring?
+
+Or, just stick with the linker error.
+
+I also wonder if this is worthwhile just to save around 2000 bytes.
+What other core synchronization mechanisms are optional?  What
+real-world configs will actually have this disabled?
+
+-Scott
