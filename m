@@ -1,24 +1,38 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C22311A0C74
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 22:29:42 +1100 (AEDT)
-Date: Tue, 30 Dec 2014 11:29:38 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20141230112938.GN11764@sirena.org.uk>
-References: <1419898431-11336-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31C361A0321
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 05:50:31 +1100 (AEDT)
+Date: Tue, 30 Dec 2014 19:50:08 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
+Message-ID: <20141230185008.GA23965@worktop.programming.kicks-ass.net>
+References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
+ <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="D504LSv93hbJZH+j"
-In-Reply-To: <1419898431-11336-1-git-send-email-nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_esai: Fix incorrect xDC field width of xCCR
- registers
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, festevam@gmail.com,
- Xiubo.Lee@gmail.com, timur@tabi.org, linux-kernel@vger.kernel.org,
- a_bouin@yahoo.fr, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
+ Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
+ "open list:S390" <linux-s390@vger.kernel.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Jens Freimann <jfrei@linux.vnet.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
+ Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ open list <linux-kernel@vger.kernel.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "supporter:S390" <linux390@de.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +42,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
+> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
+> is a compile time failure if srcu is used when not enabled. This was decided to
+> be better than waiting until link time for a failure to occur.
 
---D504LSv93hbJZH+j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Dec 29, 2014 at 04:13:51PM -0800, Nicolin Chen wrote:
-> The xDC field should have 5 bit width according to Reference Manual.
-> Thus this patch fixes it.
-
-Applied, thanks - I also fixed the patch author up to be him.
-
---D504LSv93hbJZH+j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUooyhAAoJECTWi3JdVIfQsscH/2tn78KxlqXHvPwBr5UzDLk+
-TQhZAiQNl57FMi65A/BbhqRNa8q+LBpwNnDHMi7rVOA8AMdsOQ4v9PxYaQZv3kb9
-nb5D5borblQZ2PUssBm3VB+veix+vH6r7gzBZJ+haYJICyN71ER2/pYcN9BWw856
-zqQQgEcEzC2g23vo/+c+1jpTHyHCfhfTiMi17dMJTsfmAXx9vG5vUY6bWye81naZ
-rG2jbiFv/3JoHyoVt6NsETa2MVTsvDRuEcAV0YFA4QLk2MMpoaEuuWyLRpAASWTF
-y0lwDMuD6i3uIRy2qWkjdGWfXUTvogldo3D+fDDt8jjzNRZhxNN7b8+doxhtcUQ=
-=kztK
------END PGP SIGNATURE-----
-
---D504LSv93hbJZH+j--
+Why?
