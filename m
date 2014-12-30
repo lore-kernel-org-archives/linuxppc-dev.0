@@ -3,16 +3,16 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E50E01A0216
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 22:29:16 +1100 (AEDT)
-Date: Tue, 30 Dec 2014 11:28:59 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id C22311A0C74
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2014 22:29:42 +1100 (AEDT)
+Date: Tue, 30 Dec 2014 11:29:38 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20141230112859.GM11764@sirena.org.uk>
+Message-ID: <20141230112938.GN11764@sirena.org.uk>
 References: <1419898431-11336-1-git-send-email-nicoleotsuka@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="wxsv2zsxQJemov+e"
+ protocol="application/pgp-signature"; boundary="D504LSv93hbJZH+j"
 In-Reply-To: <1419898431-11336-1-git-send-email-nicoleotsuka@gmail.com>
 Subject: Re: [PATCH] ASoC: fsl_esai: Fix incorrect xDC field width of xCCR
  registers
@@ -29,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---wxsv2zsxQJemov+e
+--D504LSv93hbJZH+j
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -37,22 +37,22 @@ On Mon, Dec 29, 2014 at 04:13:51PM -0800, Nicolin Chen wrote:
 > The xDC field should have 5 bit width according to Reference Manual.
 > Thus this patch fixes it.
 
-Applied, thanks.
+Applied, thanks - I also fixed the patch author up to be him.
 
---wxsv2zsxQJemov+e
+--D504LSv93hbJZH+j
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUoox6AAoJECTWi3JdVIfQCz8H/0X2DG9RkZpqduu3gEjXZDl8
-qUeuoP1nXkh3Gv9Rft+mFvycXbwmwbWXRV81H/bwQFTDOg8JrsAxiOZw+oDBAkaA
-UsrpzTXTmt7oCSHcxYqB9Bt46krvktOfAj0ii7VynbdhPEqBjVg9dQ4Sm+EdZiPd
-kzMKLehlqDspWhIMEMlV6Nn2Tf8j1oXfIc6hcb1m5AI+VSds9uhvF9tQ1a7iaZB8
-grvP1JB9IxngnvKmmwvynfavfcVfkc+cZHVbJac0ZUeBiB0aWTLKkecO9UWq7VZ5
-8bULy361+1Ii5SnqN/d2d2IdML7WA3jn75/Wf+jWPL3crVCVCaeHd+V1pV2IYCY=
-=2NqB
+iQEcBAEBAgAGBQJUooyhAAoJECTWi3JdVIfQsscH/2tn78KxlqXHvPwBr5UzDLk+
+TQhZAiQNl57FMi65A/BbhqRNa8q+LBpwNnDHMi7rVOA8AMdsOQ4v9PxYaQZv3kb9
+nb5D5borblQZ2PUssBm3VB+veix+vH6r7gzBZJ+haYJICyN71ER2/pYcN9BWw856
+zqQQgEcEzC2g23vo/+c+1jpTHyHCfhfTiMi17dMJTsfmAXx9vG5vUY6bWye81naZ
+rG2jbiFv/3JoHyoVt6NsETa2MVTsvDRuEcAV0YFA4QLk2MMpoaEuuWyLRpAASWTF
+y0lwDMuD6i3uIRy2qWkjdGWfXUTvogldo3D+fDDt8jjzNRZhxNN7b8+doxhtcUQ=
+=kztK
 -----END PGP SIGNATURE-----
 
---wxsv2zsxQJemov+e--
+--D504LSv93hbJZH+j--
