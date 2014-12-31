@@ -1,22 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <amodra@gmail.com>
+Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
+ [IPv6:2607:f8b0:400e:c02::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD1C31A0490
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 17:02:14 +1100 (AEDT)
-Message-ID: <1420005717.4961.9.camel@freescale.com>
-Subject: Re: [PATCH] tty: 8250: Add 64byte UART support for FSL platforms
-From: Scott Wood <scottwood@freescale.com>
-To: Vijay Rai <vijay.rai@freescale.com>
-Date: Wed, 31 Dec 2014 00:01:57 -0600
-In-Reply-To: <1419932288-17562-1-git-send-email-vijay.rai@freescale.com>
-References: <1419932288-17562-1-git-send-email-vijay.rai@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CACD81A04C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 23:25:04 +1100 (AEDT)
+Received: by mail-pd0-f180.google.com with SMTP id fl12so5227358pdb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Dec 2014 04:25:00 -0800 (PST)
+Date: Wed, 31 Dec 2014 22:54:53 +1030
+From: Alan Modra <amodra@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/3] powerpc: Don't use local named register variable in
+ current_thread_info
+Message-ID: <20141231122453.GH5183@bubble.grove.modra.org>
+References: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>
+ <5490D981.7040905@suse.de>
+ <1418879514.13333.2.camel@ellerman.id.au>
+ <20141218172546.432de7f2@kryten>
 MIME-Version: 1.0
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- Priyanka Jain <Priyanka.Jain@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20141218172546.432de7f2@kryten>
+Cc: Alexander Graf <agraf@suse.de>, ulrich.weigand@de.ibm.com, paulus@samba.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +31,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-30 at 15:08 +0530, Vijay Rai wrote:
-> Some of FSL SoCs like T1040 has new version of UART controller which
-> can support 64byte FiFo.
-> To enable 64 byte support, following needs to be done:
-> -FCR[EN64] needs to be programmed to 1 to enable it.
-> -Also, when FCR[EN64]==1, RTL bits to be used as below
-> to define various Receive Trigger Levels:
->         -FCR[RTL] = 00  1 byte
->         -FCR[RTL] = 01  16 bytes
->         -FCR[RTL] = 10  32 bytes
->         -FCR[RTL] = 11  56 bytes
-> -tx_loadsz is set to 32-bytes instead of 64-bytes to implement
->  workaround of errata A-008006 which states that tx_loadsz should
->  be configured less than Maximum supported fifo bytes
-
-Why 32 and not 63?
-
-> Signed-off-by: Vijay Rai <vijay.rai@freescale.com>
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> ---
->  drivers/tty/serial/8250/8250_core.c |   20 +++++++++++++++++++-
->  include/uapi/linux/serial_core.h    |    3 ++-
->  include/uapi/linux/serial_reg.h     |    3 ++-
->  3 files changed, 23 insertions(+), 3 deletions(-)
+On Thu, Dec 18, 2014 at 05:25:46PM +1100, Anton Blanchard wrote:
+> On Thu, 18 Dec 2014 16:11:54 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
 > 
-> diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
-> index 11c6685..565748c 100644
-> --- a/drivers/tty/serial/8250/8250_core.c
-> +++ b/drivers/tty/serial/8250/8250_core.c
-> @@ -329,6 +329,14 @@ static const struct serial8250_config uart_config[] = {
->  		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
->  		.flags		= UART_CAP_FIFO | UART_CAP_AFE,
->  	},
-> +	[PORT_16550A_FSL64] = {
-> +		.name		= "16550A_FSL64",
-> +		.fifo_size	= 64,
-> +		.tx_loadsz	= 32,
+> > On Wed, 2014-12-17 at 02:16 +0100, Alexander Graf wrote:
+> > > On 31.10.14 04:47, Anton Blanchard wrote:
+> > > > LLVM doesn't support local named register variables and is
+> > > > unlikely to. current_thread_info is using one, fix it by moving
+> > > > it out and calling it __current_r1().
+> > > > 
+> > > > I gave it a bit of an obscure name because we don't want anyone
+> > > > else using it - they should use current_stack_pointer(). This
+> > > > specific case is performance critical and we can't afford to call
+> > > > a function to get it. Furthermore it isn't important to know
+> > > > exactly where in the stack we are since we mask the lower bits.
+> > > > 
+> > > > Signed-off-by: Anton Blanchard <anton@samba.org>
+> > > 
+> > > Git bisect managed to point me to this commit as the offender for
+> > > OOPSes on e5500 and e6500 (and maybe the G4 as well, not sure).
+> > > 
+> > > Doing a git revert of this commit on top of linus/master makes
+> > > things work fine for me again.
+> > > 
+> > > 
+> > > Alex
+> > > 
+> > > Oops: Kernel access of bad area, sig: 11 [#2]
+> > > SMP NR_CPUS=16 CoreNet Generic
+> > > Modules linked in:
+> > > CPU: 1 PID: 339 Comm: kworker/1:1 Tainted: G      D
+> > > 3.18.0-09423-g988adfd #1
+> > > Workqueue: rpciod .rpc_async_schedule
+> > > task: c0000001f6397500 ti: c0000001f6638000 task.ti:
+> > > c0000001f6638000 NIP: c0000000004817a4 LR: c0000000004817a4 CTR:
+> > > 0000000000000000 REGS: c0000001f663b0e0 TRAP: 0300   Tainted:
+> > > G      D (3.18.0-09423-g988adfd)
+> > > MSR: 0000000080029000 <CE,EE,ME>  CR: 24ad2e42  XER: 00000000
+> > > DEAR: 202031303438355f ESR: 0000000000000000 SOFTE: 1
+> >       = r9 + 40
+> > 
+> > > GPR00: c0000000004817a4 c0000001f663b360 c000000000988028
+> > > 000000007f24333d GPR04: 5ff5738c1f2ebfb1 0000000000000000
+> > > 0000000000000000 00000000000008f8 GPR08: c000000000480ae8
+> > > 2020313034383537 36204b4220617320 6469726563740a31 GPR12:
+> > > 3937302d30312d30 c00000000fff8780 c00000000007f988 c0000001f64c1600
+> > 
+> > GPRs 9-12 say: " 1048576 KB as direct\n1970-01-0"
+> > 
+> > Which is rarely a good sign :)
+> > 
+> > Looks like it might be part of your dmesg from setup_page_sizes().
+> > 
+> > > GPR16: 0000000000000000 0000000000000000 0000000000000000
+> > > 00000000000005dc GPR20: c0000000009b8028 c00000007e034200
+> > > 0000000000000548 c000000000000000 GPR24: c0000001f663b4b0
+> > > 00000000b225831e 0000000000000000 0000000000000080 GPR28:
+> > > 0000000000000548 00000000000008f8 0000000000000548 0000000000000094
+> > > NIP [c0000000004817a4] .__skb_checksum+0x194/0x378 LR
+> > > [c0000000004817a4] .__skb_checksum+0x194/0x378 Call Trace:
+> > > [c0000001f663b360] [c0000000004817a4] .__skb_checksum+0x194/0x378
+> > > (unreliable)
+> > > [c0000001f663b440] [c0000000004819b4] .skb_checksum+0x2c/0x3c
+> > > [c0000001f663b4c0] [c0000000004fd0a8] .udp4_hwcsum+0xa8/0x16c
+> > > [c0000001f663b560] [c0000000004fd440] .udp_send_skb+0x2d4/0x370
+> > > [c0000001f663b600]
+> > > [c0000000004fd51c] .udp_push_pending_frames+0x40/0x94
+> > > [c0000001f663b680] [c0000000004fec08] .udp_sendpage+0x150/0x1b4
+> > > [c0000001f663b770] [c00000000050ae54] .inet_sendpage+0xa0/0x120
+> > > [c0000001f663b810] [c00000000059c8cc] .xs_sendpages+0x2d0/0x30c
+> > > [c0000001f663b8d0]
+> > > [c00000000059cae4] .xs_udp_send_request+0x58/0x120
+> > > [c0000001f663b970] [c000000000598f04] .xprt_transmit+0x80/0x36c
+> > > [c0000001f663ba20] [c0000000005942d8] .call_transmit+0x19c/0x254
+> > > [c0000001f663bab0] [c00000000059ff64] .__rpc_execute+0xbc/0x3c0
+> > > [c0000001f663bb90] [c0000000000797f8] .process_one_work+0x1c0/0x474
+> > > [c0000001f663bc40] [c00000000007a518] .worker_thread+0x17c/0x54c
+> > > [c0000001f663bd30] [c00000000007fa8c] .kthread+0x104/0x124
+> > > [c0000001f663be30]
+> > > [c000000000000884] .ret_from_kernel_thread+0x58/0xd4 Instruction
+> > > dump: 7d1f3a14 7c6a1850 e9580000 7fbd4050 786334e4 e90a0000
+> > > 7c63ba14 f8490028 7c63ea14 7d0903a6 e84a0008 4e800421 <e8490028>
+> > > 7c641b78 78270464 e9580008
+> > 
+> > Which is:
+> > 
+> > add      r8, r31, r7
+> > subf     r3, r10, r3
+> > ld      r10, 0(r24)
+> > subf    r29, r29, r8
+> > rldicr   r3, r3, 6, 51
+> > ld       r8, 0(r10)
+> > add      r3, r3, r23
+> > std      r2, 40(r9)
+> > add      r3, r3, r29
+> > mtctr    r8
+> > ld       r2, 8(r10)
+> > bctrl
+> > ld       r2, 40(r9)	<---
+> > mr       r4, r3
+> > rldicr   r7, r1, 0, 49
+> > ld      r10, 8(r24)
+> > 
+> > 
+> > Which looks a bit odd. I'd expect us to be saving/restoring r2 to the
+> > stack, though maybe r9 was pointing at the stack?
+> 
+> Nice catch! This looks like a compiler bug.
 
-Put a comment here mentioning the erratum.
+Yes, it is.
 
-> diff --git a/include/uapi/linux/serial_core.h b/include/uapi/linux/serial_core.h
-> index c172180..a3b4491 100644
-> --- a/include/uapi/linux/serial_core.h
-> +++ b/include/uapi/linux/serial_core.h
-> @@ -55,7 +55,8 @@
->  #define PORT_ALTR_16550_F64 27	/* Altera 16550 UART with 64 FIFOs */
->  #define PORT_ALTR_16550_F128 28 /* Altera 16550 UART with 128 FIFOs */
->  #define PORT_RT2880	29	/* Ralink RT2880 internal UART */
-> -#define PORT_MAX_8250	29	/* max port ID */
-> +#define PORT_16550A_FSL64 30	/* Freescale 16550 UART with 64 FIFOs */
-> +#define PORT_MAX_8250	31	/* max port ID */
+> > Looking at your vmlinux.broken I don't see the same code gen.
+> 
+> For whatever reason we ended up with r10 this time:
+> 
+> 7c 2a 0b 78     mr      r10,r1
+> ...
+> f8 4a 00 28     std     r2,40(r10)
+> 7c 63 ba 14     add     r3,r3,r23
+> 7c e9 03 a6     mtctr   r7
+> 7c 63 ea 14     add     r3,r3,r29
+> 38 a0 00 00     li      r5,0
+> e8 48 00 08     ld      r2,8(r8)
+> 4e 80 04 21     bctrl
+> e8 4a 00 28     ld      r2,40(r10)
+> 
+> The indirect function call is allowed to clobber r10, gcc is doing
+> something very wrong here.
 
-Why are you adding 2 to PORT_MAX_8250 when you only add one new type?
- 
--Scott
+Right.  This is really an rs6000 backend bug.  We describe one of the
+indirect calls that go wrong here as
+
+(call_insn 108 107 109 13 (parallel [
+            (set (reg:DI 3 3)
+                (call (mem:SI (reg:DI 288) [0 *_67 S4 A8])
+                    (const_int 64 [0x40])))
+            (use (mem:DI (plus:DI (reg/f:DI 287 [ ops_44(D)->update ])
+                        (const_int 8 [0x8])) [0  S8 A8]))
+            (set (reg:DI 2 2)
+                (mem/v/c:DI (plus:DI (reg/f:DI 1 1)
+                        (const_int 40 [0x28])) [0  S8 A8]))
+            (clobber (reg:DI 65 lr))
+        ]) net/core/skbuff.c:2085 680 {*call_value_indirect_aixdi}
+	<notes and arg uses omitted for clarity>
+)
+
+Notice that the RTL contains a "parallel".  As you might guess, gcc
+treats the vector of expressions inside the square brackets of the
+parallel as happening "in parallel".  Meaning that as far as gcc is
+concerned the toc restore part (third element) happens at the same
+time as the call (first element).  So if gcc replaces (reg:DI 1) in
+the toc restore with some other register known to have the same value
+*before* the call, gcc's RTL analysis will conclude that such a
+replacement is valid.
+
+That's what happens in the cprop1 pass.  The rtl dump shows
+LOCAL COPY-PROP: Replacing reg 1 in insn 108 with reg 203
+and then it's a matter of luck just what hard register is allocated to
+pseudo-reg 203.
+
+Of course, replacing r1 with some other register is a completely
+useless thing to do, but trying to tell gcc that in our particular
+case we want this generic optimisation disabled isn't so easy.  (Well,
+it's dead easy if you want to hack cprop.c:do_local_cprop, just rip
+out
+          || (GET_CODE (PATTERN (insn)) != USE
+	      && asm_noperands (PATTERN (insn)) < 0)))
+but maybe not so easy to get such patches committed..)  Instead, the
+way I'd go about fixing this is removing the r1 reference in our toc
+save/restore RTL, ie. don't use a mem, use an unspec.
+
+-- 
+Alan Modra
+Australia Development Lab, IBM
