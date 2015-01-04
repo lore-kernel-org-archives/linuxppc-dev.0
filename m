@@ -1,40 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CBBF51A018F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Jan 2015 20:35:56 +1100 (AEDT)
-Message-ID: <1420364152.26772.0.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Date: Sun, 04 Jan 2015 20:35:52 +1100
-In-Reply-To: <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
-References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
- <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
- <20141230185008.GA23965@worktop.programming.kicks-ass.net>
- <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
- Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
- "open list:S390" <linux-s390@vger.kernel.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Jens Freimann <jfrei@linux.vnet.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- open list <linux-kernel@vger.kernel.org>, "Srivatsa S.
- Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "supporter:S390" <linux390@de.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE3B31A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 00:22:03 +1100 (AEDT)
+Message-ID: <54A93E67.8070105@users.sourceforge.net>
+Date: Sun, 04 Jan 2015 14:21:43 +0100
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+MIME-Version: 1.0
+To: Jaroslav Kysela <perex@perex.cz>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 9/13] ALSA: i2sbus: Delete an unnecessary check before the
+ function call "snd_pcm_suspend_all"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net> <54A9355F.4050102@users.sourceforge.net>
+In-Reply-To: <54A9355F.4050102@users.sourceforge.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,24 +44,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-12-30 at 13:54 -0500, Pranith Kumar wrote:
-> On Tue, Dec 30, 2014 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
-> >> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
-> >> is a compile time failure if srcu is used when not enabled. This was decided to
-> >> be better than waiting until link time for a failure to occur.
-> >
-> > Why?
-> 
-> This is part of the kernel tinification efforts. The first patch was
-> posted here: https://lkml.org/lkml/2014/12/4/848. This patch enables a
-> compile time failure instead of a link time failure.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 3 Jan 2015 20:43:01 +0100
 
-The punch line was:
+The snd_pcm_suspend_all() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
-  "so the savings are about ~2000 bytes."
+This issue was detected by using the Coccinelle software.
 
-Which is utterly not worth the effort IMO. There have got to be more attractive
-targets for tinification than this.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ sound/aoa/soundbus/i2sbus/core.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-cheers
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+index 4e2b4fb..837ba99 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -381,10 +381,8 @@ static int i2sbus_suspend(struct macio_dev* dev, pm_message_t state)
+ 
+ 	list_for_each_entry(i2sdev, &control->list, item) {
+ 		/* Notify Alsa */
+-		if (i2sdev->sound.pcm) {
+-			/* Suspend PCM streams */
+-			snd_pcm_suspend_all(i2sdev->sound.pcm);
+-		}
++		/* Suspend PCM streams */
++		snd_pcm_suspend_all(i2sdev->sound.pcm);
+ 
+ 		/* Notify codecs */
+ 		list_for_each_entry(cii, &i2sdev->sound.codec_list, list) {
+-- 
+2.2.1
