@@ -1,24 +1,40 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0128.outbound.protection.outlook.com [65.55.169.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BD931A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Jan 2015 15:59:01 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Emilian Medve <Emilian.Medve@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
- Memory-mapped device
-Date: Sun, 4 Jan 2015 04:58:53 +0000
-Message-ID: <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1419240062-29559-1-git-send-email-shh.xie@gmail.com>
- <54A65A09.6070705@Freescale.com>
-In-Reply-To: <54A65A09.6070705@Freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Andy Fleming <afleming@gmail.com>, Shruti Kanetkar <Shruti@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBBF51A018F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Jan 2015 20:35:56 +1100 (AEDT)
+Message-ID: <1420364152.26772.0.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Date: Sun, 04 Jan 2015 20:35:52 +1100
+In-Reply-To: <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
+References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
+ <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
+ <20141230185008.GA23965@worktop.programming.kicks-ass.net>
+ <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
+ Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
+ "open list:S390" <linux-s390@vger.kernel.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Jens Freimann <jfrei@linux.vnet.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
+ Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ open list <linux-kernel@vger.kernel.org>, "Srivatsa S.
+ Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "supporter:S390" <linux390@de.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +44,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8gRW1pbCwNCg0KVGhlIHBhdGNoZXMgc2VudCBieSBTaHJ1dGkgd2VyZSBtYXJrZWQgYXMg
-IkNoYW5nZXMgUmVxdWVzdGVkIiBvdmVyIDUgbW9udGhzLg0KdG8gbWUgaWYgdGhlIHBhdGNoZXMg
-ZG8gbmVlZCBjaGFuZ2VzLCB0aGUgcG9zc2libGUgY2hhbmdlcyBzZWVtcyBub3QgaW4gJ2NvbmZp
-ZycgYnV0IGluIGNvcmVuZXRfZ2VuZXJpYy5jLg0KSSdtIG5vdCBzdXJlIGlmIGl0J3MgT0sgdG8g
-YWRkIHNvbWUgY29tcGF0aWJsZXMgaW4gY29yZW5ldF9nZW5lcmljLmMuIGlmIHdlIGNhbiB1c2Ug
-dGhlIGV4aXN0aW5nIGNvbXBhdGlibGUgInNpbXBsZS1idXMiLA0KVGhlbiB3ZSB3aWxsIG9ubHkg
-bmVlZCB0byBlbmFibGUgTURJTyBtdXggb3B0aW9uIGluIGNvbmZpZyB3aXRob3V0IGFkZGluZyBj
-b21wYXRpYmxlIGluIGNvcmVuZXRfZ2VuZXJpYy5jLg0KDQpCZXN0IFJlZ2FyZHMsIA0KU2hhb2h1
-aSBYaWUNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFbWlsIE1lZHZl
-IFttYWlsdG86RW1pbGlhbi5NZWR2ZUBGcmVlc2NhbGUuY29tXQ0KPiBTZW50OiBGcmlkYXksIEph
-bnVhcnkgMDIsIDIwMTUgNDo0MyBQTQ0KPiBUbzogc2hoLnhpZUBnbWFpbC5jb207IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogQW5keSBGbGVt
-aW5nOyBYaWUgU2hhb2h1aS1CMjE5ODk7IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQNCj4gU3ViamVj
-dDogUmU6IFtQQVRDSCAyLzJdIHBvd2VycGMvY29uZmlnOiBlbmFibGUgbWRpbyBidXNlcyBtdXhp
-bmcgdmlhDQo+IE1lbW9yeS1tYXBwZWQgZGV2aWNlDQo+IA0KPiBIZWxsbyBTaGFvLUh1aSwNCj4g
-DQo+IA0KPiBPbiAxMi8yMi8yMDE0IDAzOjIxIEFNLCBzaGgueGllQGdtYWlsLmNvbSB3cm90ZToN
-Cj4gPiBGcm9tOiBBbmR5IEZsZW1pbmcgPGFmbGVtaW5nQGdtYWlsLmNvbT4NCj4gPg0KPiA+IFNp
-Z25lZC1vZmYtYnk6IEFuZHkgRmxlbWluZyA8YWZsZW1pbmdAZ21haWwuY29tPg0KPiA+IFNpZ25l
-ZC1vZmYtYnk6IFNoYW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiA+IC0t
-LQ0KPiA+ICBhcmNoL3Bvd2VycGMvY29uZmlncy9jb3JlbmV0MzJfc21wX2RlZmNvbmZpZyB8IDEg
-Kw0KPiA+IGFyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmlnIHwgMSAr
-DQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+IA0KPiBTaHJ1dGkgc3Vi
-bWl0dGVkIGEgbW9yZSBjb21wbGV0ZSB2ZXJzaW9uIG9mIHRoaXMgcGF0Y2ggaGVyZToNCj4gDQo+
-IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8zNzA4NzMNCj4gDQo+IFdlIHNob3Vs
-ZCBzdGljayB3aXRoIHRoYXQgdmVyc2lvbg0KPiANCj4gDQo+IENoZWVycywNCg==
+On Tue, 2014-12-30 at 13:54 -0500, Pranith Kumar wrote:
+> On Tue, Dec 30, 2014 at 1:50 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
+> >> Isolate the SRCU functions and data structures within CONFIG_SRCU so that there
+> >> is a compile time failure if srcu is used when not enabled. This was decided to
+> >> be better than waiting until link time for a failure to occur.
+> >
+> > Why?
+> 
+> This is part of the kernel tinification efforts. The first patch was
+> posted here: https://lkml.org/lkml/2014/12/4/848. This patch enables a
+> compile time failure instead of a link time failure.
+
+The punch line was:
+
+  "so the savings are about ~2000 bytes."
+
+Which is utterly not worth the effort IMO. There have got to be more attractive
+targets for tinification than this.
+
+cheers
