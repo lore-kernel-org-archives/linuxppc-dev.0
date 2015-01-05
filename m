@@ -1,24 +1,26 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5670D1A0AAA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 21:54:28 +1100 (AEDT)
-From: Mel Gorman <mgorman@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 10/10] mm: numa: Avoid unnecessary TLB flushes when setting
- NUMA hinting entries
-Date: Mon,  5 Jan 2015 10:54:11 +0000
-Message-Id: <1420455251-13644-11-git-send-email-mgorman@suse.de>
-In-Reply-To: <1420455251-13644-1-git-send-email-mgorman@suse.de>
-References: <1420455251-13644-1-git-send-email-mgorman@suse.de>
-Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hughd@google.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Ingo Molnar <mingo@redhat.com>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Sasha Levin <sasha.levin@oracle.com>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Kirill Shutemov <kirill.shutemov@linux.intel.com>,
- Mel Gorman <mgorman@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 628B21A0C51
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 21:57:43 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Emilian Medve <Emilian.Medve@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
+ Memory-mapped device
+Date: Mon, 5 Jan 2015 10:57:35 +0000
+Message-ID: <DM2PR0301MB0864748EDCADF83D865D0F69E2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1419240062-29559-1-git-send-email-shh.xie@gmail.com>
+ <54A65A09.6070705@Freescale.com>
+ <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <54AA595C.9090909@Freescale.com>
+In-Reply-To: <54AA595C.9090909@Freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Andy Fleming <afleming@gmail.com>, Shruti Kanetkar <Shruti@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a PTE or PMD is already marked NUMA when scanning to mark entries
-for NUMA hinting then it is not necessary to update the entry and
-incur a TLB flush penalty. Avoid the avoidhead where possible.
-
-Signed-off-by: Mel Gorman <mgorman@suse.de>
----
- mm/huge_memory.c | 14 ++++++++------
- mm/mprotect.c    |  4 ++++
- 2 files changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 8546654..f2bf521 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1524,12 +1524,14 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 			return 0;
- 		}
- 
--		ret = 1;
--		entry = pmdp_get_and_clear_notify(mm, addr, pmd);
--		entry = pmd_modify(entry, newprot);
--		ret = HPAGE_PMD_NR;
--		set_pmd_at(mm, addr, pmd, entry);
--		BUG_ON(pmd_write(entry));
-+		if (!prot_numa || !pmd_protnone(*pmd)) {
-+			ret = 1;
-+			entry = pmdp_get_and_clear_notify(mm, addr, pmd);
-+			entry = pmd_modify(entry, newprot);
-+			ret = HPAGE_PMD_NR;
-+			set_pmd_at(mm, addr, pmd, entry);
-+			BUG_ON(pmd_write(entry));
-+		}
- 		spin_unlock(ptl);
- 	}
- 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 33dfafb..109e7aa 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -86,6 +86,10 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
- 				page = vm_normal_page(vma, addr, oldpte);
- 				if (!page || PageKsm(page))
- 					continue;
-+
-+				/* Avoid TLB flush if possible */
-+				if (pte_protnone(oldpte))
-+					continue;
- 			}
- 
- 			ptent = ptep_modify_prot_start(mm, addr, pte);
--- 
-2.1.2
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFbWlsIE1lZHZlIFttYWlsdG86
+RW1pbGlhbi5NZWR2ZUBGcmVlc2NhbGUuY29tXQ0KPiBTZW50OiBNb25kYXksIEphbnVhcnkgMDUs
+IDIwMTUgNToyOSBQTQ0KPiBUbzogWGllIFNoYW9odWktQjIxOTg5OyBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IEFuZHkgRmxlbWluZzsgS2Fu
+ZXRrYXIgU2hydXRpLUI0NDQ1NA0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcG93ZXJwYy9j
+b25maWc6IGVuYWJsZSBtZGlvIGJ1c2VzIG11eGluZyB2aWENCj4gTWVtb3J5LW1hcHBlZCBkZXZp
+Y2UNCj4gDQo+IEhlbGxvIFNoYW8tSHVpLA0KPiANCj4gDQo+IE9uIDAxLzAzLzIwMTUgMTA6NTgg
+UE0sIFhpZSBTaGFvaHVpLUIyMTk4OSB3cm90ZToNCj4gPiBIZWxsbyBFbWlsLA0KPiA+DQo+ID4g
+VGhlIHBhdGNoZXMgc2VudCBieSBTaHJ1dGkgd2VyZSBtYXJrZWQgYXMgIkNoYW5nZXMgUmVxdWVz
+dGVkIiBvdmVyIDUNCj4gbW9udGhzLg0KPiA+IHRvIG1lIGlmIHRoZSBwYXRjaGVzIGRvIG5lZWQg
+Y2hhbmdlcywgdGhlIHBvc3NpYmxlIGNoYW5nZXMgc2VlbXMgbm90IGluDQo+ICdjb25maWcnIGJ1
+dCBpbiBjb3JlbmV0X2dlbmVyaWMuYy4NCj4gDQo+IEl0IHdhcyBwYXJ0IG9mIGEgc2VyaWVzIHRo
+YXQgbmVlZGVkIGNoYW5nZXMgaW4gb3RoZXIgcGF0Y2hlcw0KW1MuSF0gU28gdGhlIHBhdGNoIGl0
+c2VsZiBoYXMgbm8gaXNzdWU/IGlmIHRoYXQgaXMgdGhlIGNhc2UgbWF5YmUgdGhlIHBhdGNoIGNh
+biBiZSBzZW50DQpJbmRpdmlkdWFsbHkgc2luY2UgaXQgZG9lcyBub3QgZGVwZW5kIG9uIG90aGVy
+cz8NCg0KPiANCj4gPiBJJ20gbm90IHN1cmUgaWYgaXQncyBPSyB0byBhZGQgc29tZSBjb21wYXRp
+YmxlcyBpbiBjb3JlbmV0X2dlbmVyaWMuYy4NCj4gPiBpZiB3ZSBjYW4gdXNlIHRoZSBleGlzdGlu
+ZyBjb21wYXRpYmxlICJzaW1wbGUtYnVzIiwgVGhlbiB3ZSB3aWxsIG9ubHkNCj4gbmVlZCB0byBl
+bmFibGUgTURJTyBtdXggb3B0aW9uIGluIGNvbmZpZyB3aXRob3V0IGFkZGluZyBjb21wYXRpYmxl
+IGluDQo+IGNvcmVuZXRfZ2VuZXJpYy5jLg0KPiANCj4gVGhlIGNvbnRhaW5lciAiYnVzIiBvZiB0
+aGUgIm11eGluZyIgbm9kZXMgZG9lc24ndCBjYXJyeSB0aGUgInNpbXBsZS1idXMiDQo+IGNvbXBh
+dGlibGUgYW5kIChhcyBwZXIgdGhlIGVQQVBSIGRlZmluaXRpb24pIEknbSB1bnN1cmUgaXQgd291
+bGQgYmUNCj4gYXBwbGljYWJsZQ0KPiANCltTLkhdIEknbSBub3Qgc3VyZSBpZiB0aGUgInNpbXBs
+ZS1idXMiIGNhbiBiZSB1c2VkIGFzIGFuIGV4dGVuc2lvbiBvZiBNRElPIG11eCBjb21wYXRpYmxl
+Lg0KSSB3YXMgdGhpbmtpbmcgYW5vdGhlciBvcHRpb24sIGlmICJzaW1wbGUtYnVzIiBpcyBub3Qg
+c3VpdGFibGUgaGVyZSwgdGhlbiBmb3JnZXQgaXQuOikNCg0KVGhhbmtzIQ0KU2hhb2h1aQ0KPiA+
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBFbWlsIE1lZHZlIFttYWls
+dG86RW1pbGlhbi5NZWR2ZUBGcmVlc2NhbGUuY29tXQ0KPiA+PiBTZW50OiBGcmlkYXksIEphbnVh
+cnkgMDIsIDIwMTUgNDo0MyBQTQ0KPiA+PiBUbzogc2hoLnhpZUBnbWFpbC5jb207IGxpbnV4cHBj
+LWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kDQo+ID4+IFNjb3R0LUIwNzQyMQ0KPiA+PiBDYzog
+QW5keSBGbGVtaW5nOyBYaWUgU2hhb2h1aS1CMjE5ODk7IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQN
+Cj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIHBvd2VycGMvY29uZmlnOiBlbmFibGUgbWRp
+byBidXNlcyBtdXhpbmcgdmlhDQo+ID4+IE1lbW9yeS1tYXBwZWQgZGV2aWNlDQo+ID4+DQo+ID4+
+IEhlbGxvIFNoYW8tSHVpLA0KPiA+Pg0KPiA+Pg0KPiA+PiBPbiAxMi8yMi8yMDE0IDAzOjIxIEFN
+LCBzaGgueGllQGdtYWlsLmNvbSB3cm90ZToNCj4gPj4+IEZyb206IEFuZHkgRmxlbWluZyA8YWZs
+ZW1pbmdAZ21haWwuY29tPg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IEFuZHkgRmxlbWlu
+ZyA8YWZsZW1pbmdAZ21haWwuY29tPg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBYaWUg
+PFNoYW9odWkuWGllQGZyZWVzY2FsZS5jb20+DQo+ID4+PiAtLS0NCj4gPj4+ICBhcmNoL3Bvd2Vy
+cGMvY29uZmlncy9jb3JlbmV0MzJfc21wX2RlZmNvbmZpZyB8IDEgKw0KPiA+Pj4gYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcgfCAxICsNCj4gPj4+ICAyIGZpbGVz
+IGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKQ0KPiA+Pg0KPiA+PiBTaHJ1dGkgc3VibWl0dGVkIGEg
+bW9yZSBjb21wbGV0ZSB2ZXJzaW9uIG9mIHRoaXMgcGF0Y2ggaGVyZToNCj4gPj4NCj4gPj4gaHR0
+cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzM3MDg3Mw0KPiA+Pg0KPiA+PiBXZSBzaG91
+bGQgc3RpY2sgd2l0aCB0aGF0IHZlcnNpb24NCj4gPj4NCj4gPj4NCj4gPj4gQ2hlZXJzLA0KDQo=
