@@ -1,26 +1,18 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-la0-x22d.google.com (mail-la0-x22d.google.com
- [IPv6:2a00:1450:4010:c03::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <andi@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB5601A0A05
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 04:28:53 +1100 (AEDT)
-Received: by mail-la0-f45.google.com with SMTP id gq15so18836827lab.18
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2015 09:28:49 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32C3B1A0A50
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 04:52:44 +1100 (AEDT)
+Date: Mon, 5 Jan 2015 18:46:16 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Purcareata Bogdan <b43198@freescale.com>
+Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
+Message-ID: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-In-Reply-To: <66A26A9AA227D947AF088537F041526E2008FE@VSVR-EX10-MB1.pocatec.com>
-References: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
- <Pine.LNX.4.44L0.1412171119590.2947-100000@netrider.rowland.org>
- <66A26A9AA227D947AF088537F041526E2008FE@VSVR-EX10-MB1.pocatec.com>
-Date: Mon, 5 Jan 2015 15:28:48 -0200
-Message-ID: <CAOMZO5DESCa3BOYwv0rAkoWLgTYwDdrYkNbr_jjW30s9UfR5RA@mail.gmail.com>
-Subject: Re: PROBLEM: USB isochronous urb leak on EHCI driver
-From: Fabio Estevam <festevam@gmail.com>
-To: Michael Tessier <michael.tessier@axiontech.ca>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <54AA9C4D.3000001@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 5, 2015 at 1:12 PM, Michael Tessier
-<michael.tessier@axiontech.ca> wrote:
+Hi,
 
-> If sound is ok when using only 1 codec and becomes choppy when adding a
-> second codec, then it means that this issue is still in the 3.x kernel. This
-> answer will tell me if it is worth working on using a newer kernel or not.
-> I have to say that I'm not a linux expert, so I see the migration to a newer
-> kernel as a quite big amount of work...
+> I was curious why the mpic_cpu_read(MPIC_INFO(CPU_WHOAMI)) was there in
+> the first place and if it's still needed. If it's still required, I
+> guess a better approach is to eliminate the call only if the kernel is
+> running on the KVM guest side, where the MPIC is emulated and no longer
+> requires a readback.
 
-We have support for mx51 on the latest kernel. All you need to do is
-to describe your hardware on a device tree file. You can refer to
-arch/arm/boot/dts/imx51-babbage.dts as an example.
+"Why not?"
 
-Should be simple for you to make such test with the latest kernel.
+A mechanism being "emulated"/"virtual" or not
+may not necessarily be much of a distinction (if at all!).
+The readback might be required
+to properly fulfill all requirements
+of a full state change protocol specification,
+which might easily be the case for both RS(*) and virtual hardware.
+And especially for virtual hardware
+such a "readback" event
+might be an extremely important "end of transaction" marker
+which may often be needed for freeing of temporary resources etc.
+
+I'm talking out of my *ss without any MPIC specifics here
+(and especially not why the readback there actually is needed -
+if that doesn't happen to be the case for PCI Posting reasons or some such),
+but it's just intended as food for thought :)
+
+*) Real Silicon (rather than RL - Real Life)
+
+HTH,
+
+Andreas Mohr
