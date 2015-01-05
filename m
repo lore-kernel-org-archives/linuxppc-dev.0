@@ -1,21 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0114.outbound.protection.outlook.com [157.56.110.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F13D51A0AD3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:11:12 +1100 (AEDT)
-Message-ID: <1420481454.4961.16.camel@freescale.com>
-Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
-From: Scott Wood <scottwood@freescale.com>
-To: Andreas Mohr <andi@lisas.de>
-Date: Mon, 5 Jan 2015 12:10:54 -0600
-In-Reply-To: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
-References: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ by lists.ozlabs.org (Postfix) with ESMTP id 24FAD1A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:19:16 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 04/11] powerpc/8xx: Take benefit of aligned PGDIR
+Date: Mon, 5 Jan 2015 18:19:13 +0000
+Message-ID: <1420481953.25047.19.camel@transmode.se>
+References: <20141216150338.978F71A5E04@localhost.localdomain>
+In-Reply-To: <20141216150338.978F71A5E04@localhost.localdomain>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Purcareata Bogdan <b43198@freescale.com>,
- linux-kernel@vger.kernel.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-01-05 at 18:46 +0100, Andreas Mohr wrote:
-> Hi,
-> 
-> > I was curious why the mpic_cpu_read(MPIC_INFO(CPU_WHOAMI)) was there in
-> > the first place and if it's still needed. If it's still required, I
-> > guess a better approach is to eliminate the call only if the kernel is
-> > running on the KVM guest side, where the MPIC is emulated and no longer
-> > requires a readback.
-> 
-> "Why not?"
-> 
-> A mechanism being "emulated"/"virtual" or not
-> may not necessarily be much of a distinction (if at all!).
-> The readback might be required
-> to properly fulfill all requirements
-> of a full state change protocol specification,
-> which might easily be the case for both RS(*) and virtual hardware.
-> And especially for virtual hardware
-> such a "readback" event
-> might be an extremely important "end of transaction" marker
-> which may often be needed for freeing of temporary resources etc.
 
-I'm not convinced that it's required in real silicon (though there are
-many MPIC implementations which have their own quirks...), and I'm 100%
-sure that it's not required in the QEMU/KVM implementation of MPIC.
+On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
+> L1 base address is now aligned so we can insert L1 index into r11 directl=
+y and
+> then preserve r10
+>=20
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-It would have been nice if a code comment explained why it was doing the
-readback...  I don't see any particular need to wait for EOI completion
-here (unlike when masking).
+Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 
--Scott
+>=20
+> ---
+>  arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
+>  1 file changed, 15 insertions(+), 19 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8x=
+x.S
+> index 2c329f1..ae05f28 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -326,16 +326,15 @@ InstructionTLBMiss:
+>         ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+>  3:
+>  #endif
+> -       /* Extract level 1 index */
+> -       rlwinm  r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> -       lwzx    r11, r10, r11/* Get the level 1 entry */
+> -       rlwinm  r10, r11,0,0,19/* Extract page descriptor page address */
+> +       /* Insert level 1 index */
+> +       rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> +       lwz     r11, 0(r11)/* Get the level 1 entry */
+> =20
+>         /* Load the MI_TWC with the attributes for this "segment." */
+>         MTSPR_CPU6(SPRN_MI_TWC, r11, r3)/* Set segment attributes */
+> -       mfspr   r11, SPRN_SRR0/* Get effective address of fault */
+> +       rlwinm  r11, r11,0,0,19/* Extract page descriptor page address */
+>         /* Extract level 2 index */
+> -       rlwinm  r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+> +       rlwinm  r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+>         lwzx    r10, r10, r11/* Get the pte */
+> =20
+>  #ifdef CONFIG_SWAP
+> @@ -380,13 +379,12 @@ DataStoreTLBMiss:
+>         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
+>         ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+>  3:
+> -       /* Extract level 1 index */
+> -       rlwinm  r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> -       lwzx    r11, r10, r11/* Get the level 1 entry */
+> +       /* Insert level 1 index */
+> +       rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> +       lwz     r11, 0(r11)/* Get the level 1 entry */
+> =20
+>         /* We have a pte table, so load fetch the pte from the table.
+>                 */
+> -       mfspr   r10, SPRN_MD_EPN/* Get address of fault */
+>         /* Extract level 2 index */
+>         rlwinm  r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+>         rlwimi  r10, r11, 0, 0, 32 - PAGE_SHIFT - 1/* Add level 2 base */
+> @@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
+>         beq-    3f      /* Branch if user space */
+>         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
+>         ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+> -       /* Extract level 1 index */
+> -3:     rlwinm  r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> -       lwzx    r11, r10, r11/* Get the level 1 entry */
+> -       rlwinm  r10, r11,0,0,19/* Extract page descriptor page address */
+> -       mfspr   r11, SPRN_SRR0/* Get effective address of fault */
+> -       /* Extract level 2 index */
+> -       rlwinm  r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+> -       lwzx    r11, r10, r11/* Get the pte */
+> +       /* Insert level 1 index */
+> +3:     rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+> +       lwz     r11, 0(r11)/* Get the level 1 entry */
+> +       rlwinm  r11, r11,0,0,19/* Extract page descriptor page address */
+> +       /* Insert level 2 index */
+> +       rlwimi  r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+> +       lwz     r11, 0(r11)/* Get the pte */
+>         /* concat physical page address(r11) and page offset(r10) */
+> -       mfspr   r10, SPRN_SRR0
+>         rlwimi  r11, r10, 0, 32 - PAGE_SHIFT, 31
+>         lwz     r11,0(r11)
+>  /* Check if it really is a dcbx instruction. */=
