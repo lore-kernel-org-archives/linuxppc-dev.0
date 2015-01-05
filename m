@@ -1,26 +1,24 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A5551A0063
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 20:45:29 +1100 (AEDT)
-Message-ID: <54AA595C.9090909@Freescale.com>
-Date: Mon, 5 Jan 2015 03:29:00 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Wood
- Scott-B07421" <scottwood@Freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
- Memory-mapped device
-References: <1419240062-29559-1-git-send-email-shh.xie@gmail.com>
- <54A65A09.6070705@Freescale.com>
- <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
-In-Reply-To: <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
-Cc: Andy Fleming <afleming@gmail.com>,
- Kanetkar Shruti-B44454 <Shruti@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 459611A08C2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 21:54:20 +1100 (AEDT)
+From: Mel Gorman <mgorman@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 01/10] mm: numa: Do not dereference pmd outside of the lock
+ during NUMA hinting fault
+Date: Mon,  5 Jan 2015 10:54:02 +0000
+Message-Id: <1420455251-13644-2-git-send-email-mgorman@suse.de>
+In-Reply-To: <1420455251-13644-1-git-send-email-mgorman@suse.de>
+References: <1420455251-13644-1-git-send-email-mgorman@suse.de>
+Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hughd@google.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ Ingo Molnar <mingo@redhat.com>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Sasha Levin <sasha.levin@oracle.com>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kirill Shutemov <kirill.shutemov@linux.intel.com>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Shao-Hui,
+A transhuge NUMA hinting fault may find the page is migrating and should
+wait until migration completes. The check is race-prone because the pmd
+is deferenced outside of the page lock and while the race is tiny, it'll
+be larger if the PMD is cleared while marking PMDs for hinting fault.
+This patch closes the race.
 
+Signed-off-by: Mel Gorman <mgorman@suse.de>
+---
+ include/linux/migrate.h | 4 ----
+ mm/huge_memory.c        | 3 ++-
+ mm/migrate.c            | 6 ------
+ 3 files changed, 2 insertions(+), 11 deletions(-)
 
-On 01/03/2015 10:58 PM, Xie Shaohui-B21989 wrote:
-> Hello Emil,
-> 
-> The patches sent by Shruti were marked as "Changes Requested" over 5 months.
-> to me if the patches do need changes, the possible changes seems not in 'config' but in corenet_generic.c.
-
-It was part of a series that needed changes in other patches
-
-> I'm not sure if it's OK to add some compatibles in corenet_generic.c. if we can use the existing compatible "simple-bus",
-> Then we will only need to enable MDIO mux option in config without adding compatible in corenet_generic.c.
-
-The container "bus" of the "muxing" nodes doesn't carry the "simple-bus"
-compatible and (as per the ePAPR definition) I'm unsure it would be
-applicable
-
-
-Cheers,
-
-
-> Best Regards, 
-> Shaohui Xie
-> 
->> -----Original Message-----
->> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
->> Sent: Friday, January 02, 2015 4:43 PM
->> To: shh.xie@gmail.com; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
->> Cc: Andy Fleming; Xie Shaohui-B21989; Kanetkar Shruti-B44454
->> Subject: Re: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
->> Memory-mapped device
->>
->> Hello Shao-Hui,
->>
->>
->> On 12/22/2014 03:21 AM, shh.xie@gmail.com wrote:
->>> From: Andy Fleming <afleming@gmail.com>
->>>
->>> Signed-off-by: Andy Fleming <afleming@gmail.com>
->>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
->>> ---
->>>  arch/powerpc/configs/corenet32_smp_defconfig | 1 +
->>> arch/powerpc/configs/corenet64_smp_defconfig | 1 +
->>>  2 files changed, 2 insertions(+)
->>
->> Shruti submitted a more complete version of this patch here:
->>
->> http://patchwork.ozlabs.org/patch/370873
->>
->> We should stick with that version
->>
->>
->> Cheers,
+diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+index fab9b32..78baed5 100644
+--- a/include/linux/migrate.h
++++ b/include/linux/migrate.h
+@@ -67,7 +67,6 @@ static inline int migrate_huge_page_move_mapping(struct address_space *mapping,
+ 
+ #ifdef CONFIG_NUMA_BALANCING
+ extern bool pmd_trans_migrating(pmd_t pmd);
+-extern void wait_migrate_huge_page(struct anon_vma *anon_vma, pmd_t *pmd);
+ extern int migrate_misplaced_page(struct page *page,
+ 				  struct vm_area_struct *vma, int node);
+ extern bool migrate_ratelimited(int node);
+@@ -76,9 +75,6 @@ static inline bool pmd_trans_migrating(pmd_t pmd)
+ {
+ 	return false;
+ }
+-static inline void wait_migrate_huge_page(struct anon_vma *anon_vma, pmd_t *pmd)
+-{
+-}
+ static inline int migrate_misplaced_page(struct page *page,
+ 					 struct vm_area_struct *vma, int node)
+ {
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 817a875..a2cd021 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1283,8 +1283,9 @@ int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	 * check_same as the page may no longer be mapped.
+ 	 */
+ 	if (unlikely(pmd_trans_migrating(*pmdp))) {
++		page = pmd_page(*pmdp);
+ 		spin_unlock(ptl);
+-		wait_migrate_huge_page(vma->anon_vma, pmdp);
++		wait_on_page_locked(page);
+ 		goto out;
+ 	}
+ 
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 344cdf6..e6a5ff1 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1685,12 +1685,6 @@ bool pmd_trans_migrating(pmd_t pmd)
+ 	return PageLocked(page);
+ }
+ 
+-void wait_migrate_huge_page(struct anon_vma *anon_vma, pmd_t *pmd)
+-{
+-	struct page *page = pmd_page(*pmd);
+-	wait_on_page_locked(page);
+-}
+-
+ /*
+  * Attempt to migrate a misplaced page to the specified destination
+  * node. Caller is expected to have an elevated reference count on
+-- 
+2.1.2
