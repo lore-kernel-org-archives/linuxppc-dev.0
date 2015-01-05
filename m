@@ -1,43 +1,21 @@
-Return-Path: <josh@joshtriplett.org>
-Received: from slow1-d.mail.gandi.net (slow1-d.mail.gandi.net [217.70.178.86])
- by lists.ozlabs.org (Postfix) with ESMTP id E221C1A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 16:16:58 +1100 (AEDT)
-Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net
- [217.70.183.195])
- by slow1-d.mail.gandi.net (Postfix) with ESMTP id 5AED047BC49
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 05:58:21 +0100 (CET)
-In-Reply-To: <20150104161416.GA5280@linux.vnet.ibm.com>
-References: <1419918382-4758-1-git-send-email-bobby.prani@gmail.com>
- <1419918382-4758-2-git-send-email-bobby.prani@gmail.com>
- <20141230185008.GA23965@worktop.programming.kicks-ass.net>
- <CAJhHMCDsxOsBKphPrH8N5ymPgdN_OVSujQWQt5CB52TK2PO9cA@mail.gmail.com>
- <1420364152.26772.0.camel@ellerman.id.au>
- <20150104161416.GA5280@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Subject: Re: [PATCH v2] srcu: Isolate srcu sections using CONFIG_SRCU
-From: Josh Triplett <josh@joshtriplett.org>
-Date: Sun, 04 Jan 2015 20:57:54 -0800
-To: paulmck@linux.vnet.ibm.com,Michael Ellerman <mpe@ellerman.id.au>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Tiejun Chen <tiejun.chen@windriver.com>, Paul Mackerras <paulus@samba.org>,
- Daniel Walter <dwalter@google.com>, Ingo Molnar <mingo@kernel.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Jens Freimann <jfrei@linux.vnet.ibm.com>,
- Pranith Kumar <bobby.prani@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
- open list:S390, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zhong <zhong@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- open list <linux-kernel@vger.kernel.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "supporter:S390" <linux390@de.ibm.com>,
- <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A942C1A00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 17:10:05 +1100 (AEDT)
+Message-ID: <1420438204.3860.3.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-3.19-3 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 05 Jan 2015 17:10:04 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-ZHudLhn7xfTOOdMwvg8X"
+Mime-Version: 1.0
+Cc: hbathini@linux.vnet.ibm.com, bobby.prani@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,45 +24,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Message-ID: <EA3B4EC8-5E29-4DA3-B826-52ABA92D7710@joshtriplett.org>
 
-On January 4, 2015 8:14:16 AM PST, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
->On Sun, Jan 04, 2015 at 08:35:52PM +1100, Michael Ellerman wrote:
->> On Tue, 2014-12-30 at 13:54 -0500, Pranith Kumar wrote:
->> > On Tue, Dec 30, 2014 at 1:50 PM, Peter Zijlstra
-><peterz@infradead.org> wrote:
->> > > On Tue, Dec 30, 2014 at 12:46:22AM -0500, Pranith Kumar wrote:
->> > >> Isolate the SRCU functions and data structures within
->CONFIG_SRCU so that there
->> > >> is a compile time failure if srcu is used when not enabled. This
->was decided to
->> > >> be better than waiting until link time for a failure to occur.
->> > >
->> > > Why?
->> > 
->> > This is part of the kernel tinification efforts. The first patch
->was
->> > posted here: https://lkml.org/lkml/2014/12/4/848. This patch
->enables a
->> > compile time failure instead of a link time failure.
->> 
->> The punch line was:
->> 
->>   "so the savings are about ~2000 bytes."
->> 
->> Which is utterly not worth the effort IMO. There have got to be more
->attractive
->> targets for tinification than this.
->
->There probably are.  But if the tinification effort is to come anywhere
->near reaching its goals, it is going to need 2000-byte savings,
->especially
->on the small systems that are this effort's main target.
->
->That said, Peter's suggestion of falling back to the link-time
->diagnostic
->does simplify things a bit, and might be a good approach.
 
-Agreed on both fronts; I don't think we should add any significant complexity just to turn link errors into compile errors.
+--=-ZHudLhn7xfTOOdMwvg8X
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-- Josh Triplett
+Hi Linus,
+
+Please pull some powerpc fixes for 3.19:
+
+The following changes since commit b7392d2247cfe6771f95d256374f1a8e6a6f48d6=
+:
+
+  Linux 3.19-rc2 (2014-12-28 16:49:37 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+3.19-3
+
+for you to fetch changes up to 1be6f10f6f9caade3a053938cb80a2eed237e262:
+
+  Revert "powerpc: Secondary CPUs must set cpu_callin_map after setting act=
+ive and online" (2014-12-29 15:51:51 +1100)
+
+----------------------------------------------------------------
+powerpc fixes for 3.19
+
+Wire up sys_execveat(). Tested on 32 & 64 bit.
+
+Fix for kdump on LE systems with cpus hot unplugged.
+
+Revert Anton's fix for "kernel BUG at kernel/smpboot.c:134!", this broke ot=
+her
+platforms, we'll do a proper fix for 3.20.
+
+----------------------------------------------------------------
+Hari Bathini (1):
+      powerpc/kdump: Ignore failure in enabling big endian exception during=
+ crash
+
+Michael Ellerman (1):
+      Revert "powerpc: Secondary CPUs must set cpu_callin_map after setting=
+ active and online"
+
+Pranith Kumar (1):
+      powerpc: Wire up sys_execveat() syscall
+
+ arch/powerpc/include/asm/kexec.h       | 10 ++++++++++
+ arch/powerpc/include/asm/systbl.h      |  1 +
+ arch/powerpc/include/asm/unistd.h      |  2 +-
+ arch/powerpc/include/uapi/asm/unistd.h |  1 +
+ arch/powerpc/kernel/machine_kexec_64.c |  2 +-
+ arch/powerpc/kernel/smp.c              |  9 +--------
+ arch/powerpc/platforms/pseries/lpar.c  |  8 +++++++-
+ 7 files changed, 22 insertions(+), 11 deletions(-)
+
+
+
+--=-ZHudLhn7xfTOOdMwvg8X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJUqiq8AAoJEFHr6jzI4aWA8BUP/Ao644xK1jpCFILqVTKBeqLO
+iswiA3qVLqG6pz/2qHxQjtOe2iKOMECRCfUaMR497t3OLmhdFTSntx27AE5+OTC2
+sbO/jxsGAbxc5yvNEUjPMXBwG6M4cUAQnT63z2MmQjNQjKNvrnSv81Zca0vyN8Tz
+Jr0HZbjeQfN0atIHJQZOnLKcvW//ir0UdXyfZkOvvU2FZ6nLuTUbG5jH7hjoW8bX
+dRRj53TG81XtdpNqJE8MXVxSoB3K4UZCxEYxRtXrcv808vjorcBRPIojePHBfMl9
+B/Lny9ZD4gq5WiDcHtPTwQ+SLm9a0HH//Wp4LQIrLWU2CafEKSXniFwfJwhaiztG
+WS3SUtveUBhGdboRobjdQRkb1ZVLIs70huWWBJbCjym1mD5fFCnf55GEPSwX3LQM
+7/zT2bN9QtCHIlk6kn4EsyTMI9Q39v0VIdhDo0LW7zWskJq1YkmdLjw85ukTHt/R
+Wz6HdMM3vv07tDR/m2eDqnOSVktJ0afOMDYE6F/lrik3NOPHVxvYABEPt9HlcaJL
+8dyOojjIWA7NHtAYujmlqrrjGtW6kdh6AzqgiurGdD6JL1Kbo58UkvRUT8GkwMGf
+ygp7NIFzCjxSIoshFi3HD0sVkRCtsNeKqBhpa3lOsQQQkKxbABLHNp8B5nPw5jsn
+KkJ5mUdC4KROlToZUOOD
+=TEgk
+-----END PGP SIGNATURE-----
+
+--=-ZHudLhn7xfTOOdMwvg8X--
