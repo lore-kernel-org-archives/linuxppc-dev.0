@@ -1,15 +1,14 @@
 Return-Path: <Joakim.Tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 57A3F1A0BF2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:21:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id AFCB11A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:30:27 +1100 (AEDT)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 11/11] powerpc/8xx: Add support for TASK_SIZE greater than
- 0x80000000
-Date: Mon, 5 Jan 2015 18:21:51 +0000
-Message-ID: <1420482111.25047.22.camel@transmode.se>
-References: <20141216150340.55A031A5E07@localhost.localdomain>
-In-Reply-To: <20141216150340.55A031A5E07@localhost.localdomain>
+Subject: Re: [PATCH 09/11] powerpc/8xx: dont save CR in SCRATCH registers
+Date: Mon, 5 Jan 2015 18:30:24 +0000
+Message-ID: <1420482624.25047.25.camel@transmode.se>
+References: <20141216150340.108641A5E05@localhost.localdomain>
+In-Reply-To: <20141216150340.108641A5E05@localhost.localdomain>
 Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -27,95 +26,139 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
-> By default, TASK_SIZE is set to 0x80000000 for PPC_8xx, which is most lik=
-ely
-> sufficient for most cases. However, kernel configuration allows to set TA=
-SK_SIZE
-> to another value, so the 8xx shall handle it.
+> CR only needs to be preserved when checking if we are handling a kernel a=
+ddress.
+> So we can preserve CR in a register:
+> - In ITLBMiss, check is done only when CONFIG_MODULES is defined. Otherwi=
+se we
+> don't need to do anything at all with CR.
+> - If CONFIG_8xx_CPU6 is defined, we have r3 available for saving CR
+> - Otherwise, we use r10, then we reload SRR0/MD_EPN into r10 when CR is r=
+estored
 
-On 8xx I would be just as happy with not supporting different TASK_SIZEs, b=
-ut why not ..
-Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+I think the #ifdef CPU6 code makes for too much maintenance. Can you
+loose the #ifdef CPU6 and adjust code so it works for both cases?
 
 >=20
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 >=20
 > ---
->  arch/powerpc/kernel/head_8xx.S | 29 +++++++++++++++++++++--------
->  1 file changed, 21 insertions(+), 8 deletions(-)
+>  arch/powerpc/kernel/head_8xx.S | 53 +++++++++++++++++++++++++++++-------=
+------
+>  1 file changed, 37 insertions(+), 16 deletions(-)
 >=20
 > diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8x=
 x.S
-> index dbe110e..d380658 100644
+> index c89aed9..a073918 100644
 > --- a/arch/powerpc/kernel/head_8xx.S
 > +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -48,6 +48,19 @@
->         mtspr   spr, reg
+> @@ -308,14 +308,10 @@ SystemCall:
 >  #endif
 > =20
-> +/* Macro to test if an address is a kernel address */
-> +#if CONFIG_TASK_SIZE <=3D 0x80000000
-> +#define IS_KERNEL(tmp, addr)           \
-> +       andis.  tmp, addr, 0x8000/* Address >=3D 0x80000000 */
-> +#define BRANCH_UNLESS_KERNEL(label)    beq     label
+>  InstructionTLBMiss:
+> +       EXCEPTION_PROLOG_0
+>  #ifdef CONFIG_8xx_CPU6
+>         mtspr   SPRN_DAR, r3
+>  #endif
+> -       EXCEPTION_PROLOG_0
+> -       mfcr    r10
+> -       mtspr   SPRN_SPRG_SCRATCH2, r10
+> -       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
+> -       DO_8xx_CPU15(r11, r10)
+> =20
+>         /* If we are faulting a kernel address, we have to use the
+>                 * kernel page tables.
+> @@ -323,14 +319,33 @@ InstructionTLBMiss:
+>  #ifdef CONFIG_MODULES
+>         /* Only modules will cause ITLB Misses as we always
+>                 * pin the first 8MB of kernel memory */
+> +#ifdef CONFIG_8xx_CPU6
+> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
+> +       DO_8xx_CPU15(r11, r10)
+> +       mfcr    r3
+>         andis.  r11, r10, 0x8000/* Address >=3D 0x80000000 */
 > +#else
-> +#define IS_KERNEL(tmp, addr)           \
-> +       rlwinm  tmp, addr, 16, 16, 31;\
-> +       cmpli   cr0, tmp, PAGE_OFFSET >> 16
-> +#define BRANCH_UNLESS_KERNEL(label)    blt     label
+> +       mfspr   r11, SPRN_SRR0/* Get effective address of fault */
+> +       DO_8xx_CPU15(r10, r11)
+> +       mfcr    r10
+> +       andis.  r11, r11, 0x8000/* Address >=3D 0x80000000 */
+>  #endif
+>         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
+> -#ifdef CONFIG_MODULES
+>         beq     3f
+>         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+>  3:
+> +#ifdef CONFIG_8xx_CPU6
+> +       mtcr    r3
+> +#else
+> +       mtcr    r10
+> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
+>  #endif
+> +#else /* CONFIG_MODULES */
+> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
+> +       DO_8xx_CPU15(r11, r10)
+> +       mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
+> +#endif /* CONFIG_MODULES */
+> +
+>         /* Insert level 1 index */
+>         rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+>         lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level =
+1 entry */
+> @@ -362,29 +377,37 @@ InstructionTLBMiss:
+>         mfspr   r3, SPRN_DAR
+>         mtspr   SPRN_DAR, r11/* Tag DAR */
+>  #endif
+> -       mfspr   r10, SPRN_SPRG_SCRATCH2
+> -       mtcr    r10
+>         EXCEPTION_EPILOG_0
+>         rfi
+> =20
+>         . =3D 0x1200
+>  DataStoreTLBMiss:
+> -#ifdef CONFIG_8xx_CPU6
+> -       mtspr   SPRN_DAR, r3
+> -#endif
+>         EXCEPTION_PROLOG_0
+> -       mfcr    r10
+> -       mtspr   SPRN_SPRG_SCRATCH2, r10
+> -       mfspr   r10, SPRN_MD_EPN
+> =20
+>         /* If we are faulting a kernel address, we have to use the
+>                 * kernel page tables.
+>                 */
+> +#ifdef CONFIG_8xx_CPU6
+> +       mtspr   SPRN_DAR, r3
+> +       mfcr    r3
+> +       mfspr   r10, SPRN_MD_EPN
+>         andis.  r11, r10, 0x8000
+> +#else
+> +       mfcr    r10
+> +       mfspr   r11, SPRN_MD_EPN
+> +       andis.  r11, r11, 0x8000
+> +#endif
+>         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
+>         beq     3f
+>         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+>  3:
+> +#ifdef CONFIG_8xx_CPU6
+> +       mtcr    r3
+> +#else
+> +       mtcr    r10
+> +       mfspr   r10, SPRN_MD_EPN
 > +#endif
 > +
-> +
->  /*
->   * Value for the bits that have fixed value in RPN entries.
->   * Also used for tagging DAR for DTLBerror.
-> @@ -323,15 +336,15 @@ InstructionTLBMiss:
->         mfspr   r10, SPRN_SRR0/* Get effective address of fault */
->         DO_8xx_CPU15(r11, r10)
->         mfcr    r3
-> -       andis.  r11, r10, 0x8000/* Address >=3D 0x80000000 */
-> +       IS_KERNEL(r11, r10)
->  #else
->         mfspr   r11, SPRN_SRR0/* Get effective address of fault */
->         DO_8xx_CPU15(r10, r11)
->         mfcr    r10
-> -       andis.  r11, r11, 0x8000/* Address >=3D 0x80000000 */
-> +       IS_KERNEL(r11, r11)
->  #endif
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
-> -       beq     3f
-> +       BRANCH_UNLESS_KERNEL(3f)
->         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->  3:
->  #ifdef CONFIG_8xx_CPU6
-> @@ -390,14 +403,14 @@ DataStoreTLBMiss:
->         mtspr   SPRN_SPRG_SCRATCH2, r3
->         mfcr    r3
->         mfspr   r10, SPRN_MD_EPN
-> -       andis.  r11, r10, 0x8000
-> +       IS_KERNEL(r11, r10)
->  #else
->         mfcr    r10
->         mfspr   r11, SPRN_MD_EPN
-> -       andis.  r11, r11, 0x8000
-> +       IS_KERNEL(r11, r11)
->  #endif
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
-> -       beq     3f
-> +       BRANCH_UNLESS_KERNEL(3f)
->         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->  3:
->  #ifdef CONFIG_8xx_CPU6
-> @@ -536,9 +549,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
->         mtspr   SPRN_SPRG_SCRATCH2, r10
->         /* fetch instruction from memory. */
->         mfspr   r10, SPRN_SRR0
-> -       andis.  r11, r10, 0x8000/* Address >=3D 0x80000000 */
-> +       IS_KERNEL(r11, r10)
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
-> -       beq     3f
-> +       BRANCH_UNLESS_KERNEL(3f)
->         lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
 >         /* Insert level 1 index */
->  3:     rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
-<< 1, 29=
+>         rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
+<< 1, 29
+>         lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level =
+1 entry */
+> @@ -441,8 +464,6 @@ DataStoreTLBMiss:
+>         mfspr   r3, SPRN_DAR
+>  #endif
+>         mtspr   SPRN_DAR, r11/* Tag DAR */
+> -       mfspr   r10, SPRN_SPRG_SCRATCH2
+> -       mtcr    r10
+>         EXCEPTION_EPILOG_0
+>         rfi
+>  =
