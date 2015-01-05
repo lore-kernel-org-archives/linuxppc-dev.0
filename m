@@ -1,22 +1,21 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0127.outbound.protection.outlook.com [65.55.169.127])
+Return-Path: <vijay.rai@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B40FC1A019F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 22:21:30 +1100 (AEDT)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
-Date: Mon, 5 Jan 2015 11:21:20 +0000
-Message-ID: <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
-In-Reply-To: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25E0C1A0958
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 22:45:52 +1100 (AEDT)
+From: Vijay Rai <vijay.rai@freescale.com>
+To: <gregkh@linuxfoundation.org>, <linux-serial@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH V2] tty: 8250: Add 64byte UART support for FSL platforms
+Date: Mon, 5 Jan 2015 21:14:42 +0530
+Message-ID: <1420472682-16213-1-git-send-email-vijay.rai@freescale.com>
 MIME-Version: 1.0
-Cc: Emilian Medve <Emilian.Medve@freescale.com>
+Content-Type: text/plain
+Cc: Vijay Rai <vijay.rai@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,138 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
+Some of FSL SoCs like T1040 has new version of UART controller which
+can support 64byte FiFo.
+To enable 64 byte support, following needs to be done:
+-FCR[EN64] needs to be programmed to 1 to enable it.
+-Also, when FCR[EN64]==1, RTL bits to be used as below
+to define various Receive Trigger Levels:
+        -FCR[RTL] = 00  1 byte
+        -FCR[RTL] = 01  16 bytes
+        -FCR[RTL] = 10  32 bytes
+        -FCR[RTL] = 11  56 bytes
+-tx_loadsz is set to 63-bytes instead of 64-bytes to implement
+ workaround of errata A-008006 which states that tx_loadsz should
+ be configured less than Maximum supported fifo bytes
 
-Is this v3 OK?
+Signed-off-by: Vijay Rai <vijay.rai@freescale.com>
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+Changes from V1:
+- tx_loadsz is set to 63-bytes now earlier it was set to 36
+- Added comment mentioning the erratum A-008006
+- Updated PORT_MAX_8250 to 30
 
-Best Regards,=20
-Shaohui Xie
-> -----Original Message-----
-> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
-> Sent: Tuesday, December 23, 2014 3:58 PM
-> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood Scott=
--B07421
-> Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
-> Subject: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
->=20
-> From: Shaohui Xie <Shaohui.Xie@freescale.com>
->=20
-> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
->=20
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> ---
-> changes in v3:
-> rephrase the 'Definition' of property 'bus-frequency', don't include the
-> property in example.
->=20
-> changes in v2:
-> addressed comments from Scott in V1.
->=20
->  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++=
-++++++
->  1 file changed, 69 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> index edeea16..737aa4c 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> @@ -7,6 +7,7 @@ CONTENTS
->    - FMan MURAM Node
->    - FMan dTSEC/XGEC/mEMAC Node
->    - FMan IEEE 1588 Node
-> +  - FMan MDIO Node
->    - Example
->=20
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D
-> @@ -357,6 +358,69 @@ ptp-timer@fe000 {
->  };
->=20
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D
-> +FMan MDIO Node
-> +
-> +DESCRIPTION
-> +
-> +The MDIO is a bus to which the PHY devices are connected.
-> +
-> +PROPERTIES
-> +
-> +- compatible
-> +		Usage: required
-> +		Value type: <stringlist>
-> +		Definition: A standard property.
-> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-> +		FMan v3.
-> +
-> +- reg
-> +		Usage: required
-> +		Value type: <prop-encoded-array>
-> +		Definition: A standard property.
-> +
-> +- bus-frequency
-> +		Usage: optional
-> +		Value type: <u32>
-> +		Definition: Specifies the external MDIO bus clock speed to
-> +		be used, if different from the standard 2.5 MHz.
-> +		This may be due to the standard speed being unsupported (e.g.
-> +		due to a hardware problem), or to advertise that all relevant
-> +		components in the system support a faster speed.
-> +
-> +- interrupts
-> +		Usage: optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: Event interrupt of external MDIO controller.
-> +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
-> +
-> +- fsl,fman-internal-mdio
-> +		Usage: required for internal MDIO
-> +		Value type: boolean
-> +		Definition: Fman has internal MDIO for internal PCS(Physical
-> +		Coding Sublayer) PHYs and external MDIO for external PHYs.
-> +		The settings and programming routines for internal/external
-> +		MDIO are different. Must be included for internal MDIO.
-> +
-> +EXAMPLE
-> +
-> +Example for FMan v2 external MDIO:
-> +
-> +mdio@f1000 {
-> +	compatible =3D "fsl,fman-xmdio";
-> +	reg =3D <0xf1000 0x1000>;
-> +};
-> +
-> +Example for FMan v3 internal MDIO:
-> +
-> +mdio@f1000 {
-> +	compatible =3D "fsl,fman-memac-mdio";
-> +	reg =3D <0xf1000 0x1000>;
-> +	fsl,fman-internal-mdio;
-> +};
-> +
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +=3D=3D=3D=3D=3D=3D
->  Example
->=20
->  fman@400000 {
-> @@ -531,4 +595,9 @@ fman@400000 {
->  		compatible =3D "fsl,fman-ptp-timer";
->  		reg =3D <0xfe000 0x1000>;
->  	};
-> +
-> +	mdio@f1000 {
-> +		compatible =3D "fsl,fman-xmdio";
-> +		reg =3D <0xf1000 0x1000>;
-> +	};
->  };
-> --
-> 1.8.4.1
+ drivers/tty/serial/8250/8250_core.c |   23 ++++++++++++++++++++++-
+ include/uapi/linux/serial_core.h    |    3 ++-
+ include/uapi/linux/serial_reg.h     |    3 ++-
+ 3 files changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
+index 11c6685..221e047 100644
+--- a/drivers/tty/serial/8250/8250_core.c
++++ b/drivers/tty/serial/8250/8250_core.c
+@@ -329,6 +329,17 @@ static const struct serial8250_config uart_config[] = {
+ 		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
+ 		.flags		= UART_CAP_FIFO | UART_CAP_AFE,
+ 	},
++/* tx_loadsz is set to 63-bytes instead of 64-bytes to implement
++workaround of errata A-008006 which states that tx_loadsz should  be
++configured less than Maximum supported fifo bytes */
++	[PORT_16550A_FSL64] = {
++		.name		= "16550A_FSL64",
++		.fifo_size	= 64,
++		.tx_loadsz	= 63,
++		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10 |
++				  UART_FCR7_64BYTE,
++		.flags		= UART_CAP_FIFO,
++	},
+ };
+ 
+ /* Uart divisor latch read */
+@@ -956,7 +967,17 @@ static void autoconfig_16550a(struct uart_8250_port *up)
+ 			up->port.type = PORT_16650;
+ 			up->capabilities |= UART_CAP_EFR | UART_CAP_SLEEP;
+ 		} else {
+-			DEBUG_AUTOCONF("Motorola 8xxx DUART ");
++			serial_out(up, UART_LCR, 0);
++			serial_out(up, UART_FCR, UART_FCR_ENABLE_FIFO |
++				   UART_FCR7_64BYTE);
++			status1 = serial_in(up, UART_IIR) >> 5;
++			serial_out(up, UART_FCR, 0);
++			serial_out(up, UART_LCR, 0);
++
++			if (status1 == 7)
++				up->port.type = PORT_16550A_FSL64;
++			else
++				DEBUG_AUTOCONF("Motorola 8xxx DUART ");
+ 		}
+ 		serial_out(up, UART_EFR, 0);
+ 		return;
+diff --git a/include/uapi/linux/serial_core.h b/include/uapi/linux/serial_core.h
+index c172180..263918b 100644
+--- a/include/uapi/linux/serial_core.h
++++ b/include/uapi/linux/serial_core.h
+@@ -55,7 +55,8 @@
+ #define PORT_ALTR_16550_F64 27	/* Altera 16550 UART with 64 FIFOs */
+ #define PORT_ALTR_16550_F128 28 /* Altera 16550 UART with 128 FIFOs */
+ #define PORT_RT2880	29	/* Ralink RT2880 internal UART */
+-#define PORT_MAX_8250	29	/* max port ID */
++#define PORT_16550A_FSL64 30	/* Freescale 16550 UART with 64 FIFOs */
++#define PORT_MAX_8250	30	/* max port ID */
+ 
+ /*
+  * ARM specific type numbers.  These are not currently guaranteed
+diff --git a/include/uapi/linux/serial_reg.h b/include/uapi/linux/serial_reg.h
+index 53af3b7..00adb01 100644
+--- a/include/uapi/linux/serial_reg.h
++++ b/include/uapi/linux/serial_reg.h
+@@ -86,7 +86,8 @@
+ #define UART_FCR6_T_TRIGGER_8	0x10 /* Mask for transmit trigger set at 8 */
+ #define UART_FCR6_T_TRIGGER_24  0x20 /* Mask for transmit trigger set at 24 */
+ #define UART_FCR6_T_TRIGGER_30	0x30 /* Mask for transmit trigger set at 30 */
+-#define UART_FCR7_64BYTE	0x20 /* Go into 64 byte mode (TI16C750) */
++#define UART_FCR7_64BYTE	0x20 /* Go into 64 byte mode (TI16C750 and
++					some Freescale UARTs) */
+ 
+ #define UART_FCR_R_TRIG_SHIFT		6
+ #define UART_FCR_R_TRIG_BITS(x)		\
+-- 
+1.7.9.5
