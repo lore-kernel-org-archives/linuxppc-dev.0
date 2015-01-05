@@ -1,20 +1,21 @@
-Return-Path: <Joakim.Tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 47E871A0AD3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:33:49 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
-Date: Mon, 5 Jan 2015 18:33:46 +0000
-Message-ID: <1420482826.25047.26.camel@transmode.se>
-References: <20141216150338.D4F0A1A5E0A@localhost.localdomain>
-In-Reply-To: <20141216150338.D4F0A1A5E0A@localhost.localdomain>
-Content-Type: text/plain; charset="iso-8859-15"
+Return-Path: <andi@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAAF11A0BAF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 05:43:25 +1100 (AEDT)
+Date: Mon, 5 Jan 2015 19:43:22 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
+Message-ID: <20150105184322.GA30255@rhlx01.hs-esslingen.de>
+References: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
+ <1420481454.4961.16.camel@freescale.com>
 MIME-Version: 1.0
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1420481454.4961.16.camel@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Purcareata Bogdan <b43198@freescale.com>,
+ linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,99 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[CC related ppl]
 
-On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
-> All accessed to PGD entries are done via 0(r11).
-> By using lower part of swapper_pg_dir as load index to r11, we can remove=
- the
-> ori instruction.
->=20
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Mon, Jan 05, 2015 at 12:10:54PM -0600, Scott Wood wrote:
+> On Mon, 2015-01-05 at 18:46 +0100, Andreas Mohr wrote:
+> > Hi,
+> > 
+> > > I was curious why the mpic_cpu_read(MPIC_INFO(CPU_WHOAMI)) was there in
+> > > the first place and if it's still needed. If it's still required, I
+> > > guess a better approach is to eliminate the call only if the kernel is
+> > > running on the KVM guest side, where the MPIC is emulated and no longer
+> > > requires a readback.
+> > 
+> > "Why not?"
+> > 
+> > A mechanism being "emulated"/"virtual" or not
+> > may not necessarily be much of a distinction (if at all!).
+> > The readback might be required
+> > to properly fulfill all requirements
+> > of a full state change protocol specification,
+> > which might easily be the case for both RS(*) and virtual hardware.
+> > And especially for virtual hardware
+> > such a "readback" event
+> > might be an extremely important "end of transaction" marker
+> > which may often be needed for freeing of temporary resources etc.
+> 
+> I'm not convinced that it's required in real silicon (though there are
+> many MPIC implementations which have their own quirks...), and I'm 100%
+> sure that it's not required in the QEMU/KVM implementation of MPIC.
+> 
+> It would have been nice if a code comment explained why it was doing the
+> readback...  I don't see any particular need to wait for EOI completion
+> here (unlike when masking).
 
-Nice :)
-Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Hmm, yeah.
 
->=20
-> ---
->  arch/powerpc/kernel/head_8xx.S | 22 ++++++++++------------
->  1 file changed, 10 insertions(+), 12 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8x=
-x.S
-> index ae05f28..aa45225 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -322,13 +322,12 @@ InstructionTLBMiss:
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
->  #ifdef CONFIG_MODULES
->         beq     3f
-> -       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
-> -       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
-> +       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->  3:
->  #endif
->         /* Insert level 1 index */
->         rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
-<< 1, 29
-> -       lwz     r11, 0(r11)/* Get the level 1 entry */
-> +       lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level =
-1 entry */
-> =20
->         /* Load the MI_TWC with the attributes for this "segment." */
->         MTSPR_CPU6(SPRN_MI_TWC, r11, r3)/* Set segment attributes */
-> @@ -376,12 +375,11 @@ DataStoreTLBMiss:
->         andis.  r11, r10, 0x8000
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
->         beq     3f
-> -       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
-> -       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
-> +       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->  3:
->         /* Insert level 1 index */
->         rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
-<< 1, 29
-> -       lwz     r11, 0(r11)/* Get the level 1 entry */
-> +       lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level =
-1 entry */
-> =20
->         /* We have a pte table, so load fetch the pte from the table.
->                 */
-> @@ -510,12 +508,11 @@ FixupDAR:/* Entry point for dcbx workaround. */
->         mfspr   r10, SPRN_SRR0
->         andis.  r11, r10, 0x8000/* Address >=3D 0x80000000 */
->         mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
-> -       beq-    3f      /* Branch if user space */
-> -       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
-> -       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
-> +       beq     3f
-> +       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->         /* Insert level 1 index */
->  3:     rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) =
-<< 1, 29
-> -       lwz     r11, 0(r11)/* Get the level 1 entry */
-> +       lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level =
-1 entry */
->         rlwinm  r11, r11,0,0,19/* Extract page descriptor page address */
->         /* Insert level 2 index */
->         rlwimi  r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-> @@ -670,8 +667,7 @@ start_here:
->                 * init's THREAD like the context switch code does, but th=
-is is
->                 * easier......until someone changes init's static structu=
-res.
->                 */
-> -       lis     r6, swapper_pg_dir@h
-> -       ori     r6, r6, swapper_pg_dir@l
-> +       lis     r6, swapper_pg_dir@ha
->         tophys(r6,r6)
->  #ifdef CONFIG_8xx_CPU6
->         lis     r4, cpu6_errata_word@h
-> @@ -850,6 +846,8 @@ _GLOBAL(set_context)
->         stw     r4, 0x4(r5)
->  #endif
-> =20
-> +       li      r5, (swapper_pg_dir-PAGE_OFFSET)@l
-> +       sub     r4, r4, r5
->  #ifdef CONFIG_8xx_CPU6
->         lis     r6, cpu6_errata_word@h
->         ori     r6, r6, cpu6_errata_word@l=
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/history/history.git
+git checkout v2.6.11
+git blame ./ppc64/kernel/mpic.c
+git show 378193eb
+    [PATCH] ppc64: Rewrite the openpic driver
+
++/* Send an EOI */
++static inline void mpic_eoi(struct mpic *mpic)
++{
++       mpic_cpu_write(MPIC_CPU_EOI, 0);
++       (void)mpic_cpu_read(MPIC_CPU_WHOAMI);
++}
+
+
+-static void openpic_eoi(void)
+-{
+-       DECL_THIS_CPU;
+-
+-       CHECK_THIS_CPU;
+-       openpic_write(&OpenPIC->THIS_CPU.EOI, 0);
+-       /* Handle PCI write posting */
+-       (void)openpic_read(&OpenPIC->THIS_CPU.EOI);
+-}
+
+
+So, this does seem to be about PCI posted writes after all.
+Which begs the question whether all PIC hardware is connected via PCI bus,
+which... is not the case for emulated hardware at least, I'd think.
+
+And it's somewhat unfortunate
+that the comment in fact was removed in that commit
+(perhaps reinstate this comment in all of the various mpic.c life forms?).
+
+Andreas Mohr
