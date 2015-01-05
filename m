@@ -1,26 +1,22 @@
 Return-Path: <Shaohui.Xie@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
+ (mail-bl2on0127.outbound.protection.outlook.com [65.55.169.127])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 628B21A0C51
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 21:57:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B40FC1A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 22:21:30 +1100 (AEDT)
 From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Emilian Medve <Emilian.Medve@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Scott Wood
  <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
- Memory-mapped device
-Date: Mon, 5 Jan 2015 10:57:35 +0000
-Message-ID: <DM2PR0301MB0864748EDCADF83D865D0F69E2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1419240062-29559-1-git-send-email-shh.xie@gmail.com>
- <54A65A09.6070705@Freescale.com>
- <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
- <54AA595C.9090909@Freescale.com>
-In-Reply-To: <54AA595C.9090909@Freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Subject: RE: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+Date: Mon, 5 Jan 2015 11:21:20 +0000
+Message-ID: <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
+In-Reply-To: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Andy Fleming <afleming@gmail.com>, Shruti Kanetkar <Shruti@freescale.com>
+Cc: Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +26,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFbWlsIE1lZHZlIFttYWlsdG86
-RW1pbGlhbi5NZWR2ZUBGcmVlc2NhbGUuY29tXQ0KPiBTZW50OiBNb25kYXksIEphbnVhcnkgMDUs
-IDIwMTUgNToyOSBQTQ0KPiBUbzogWGllIFNoYW9odWktQjIxOTg5OyBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IEFuZHkgRmxlbWluZzsgS2Fu
-ZXRrYXIgU2hydXRpLUI0NDQ1NA0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcG93ZXJwYy9j
-b25maWc6IGVuYWJsZSBtZGlvIGJ1c2VzIG11eGluZyB2aWENCj4gTWVtb3J5LW1hcHBlZCBkZXZp
-Y2UNCj4gDQo+IEhlbGxvIFNoYW8tSHVpLA0KPiANCj4gDQo+IE9uIDAxLzAzLzIwMTUgMTA6NTgg
-UE0sIFhpZSBTaGFvaHVpLUIyMTk4OSB3cm90ZToNCj4gPiBIZWxsbyBFbWlsLA0KPiA+DQo+ID4g
-VGhlIHBhdGNoZXMgc2VudCBieSBTaHJ1dGkgd2VyZSBtYXJrZWQgYXMgIkNoYW5nZXMgUmVxdWVz
-dGVkIiBvdmVyIDUNCj4gbW9udGhzLg0KPiA+IHRvIG1lIGlmIHRoZSBwYXRjaGVzIGRvIG5lZWQg
-Y2hhbmdlcywgdGhlIHBvc3NpYmxlIGNoYW5nZXMgc2VlbXMgbm90IGluDQo+ICdjb25maWcnIGJ1
-dCBpbiBjb3JlbmV0X2dlbmVyaWMuYy4NCj4gDQo+IEl0IHdhcyBwYXJ0IG9mIGEgc2VyaWVzIHRo
-YXQgbmVlZGVkIGNoYW5nZXMgaW4gb3RoZXIgcGF0Y2hlcw0KW1MuSF0gU28gdGhlIHBhdGNoIGl0
-c2VsZiBoYXMgbm8gaXNzdWU/IGlmIHRoYXQgaXMgdGhlIGNhc2UgbWF5YmUgdGhlIHBhdGNoIGNh
-biBiZSBzZW50DQpJbmRpdmlkdWFsbHkgc2luY2UgaXQgZG9lcyBub3QgZGVwZW5kIG9uIG90aGVy
-cz8NCg0KPiANCj4gPiBJJ20gbm90IHN1cmUgaWYgaXQncyBPSyB0byBhZGQgc29tZSBjb21wYXRp
-YmxlcyBpbiBjb3JlbmV0X2dlbmVyaWMuYy4NCj4gPiBpZiB3ZSBjYW4gdXNlIHRoZSBleGlzdGlu
-ZyBjb21wYXRpYmxlICJzaW1wbGUtYnVzIiwgVGhlbiB3ZSB3aWxsIG9ubHkNCj4gbmVlZCB0byBl
-bmFibGUgTURJTyBtdXggb3B0aW9uIGluIGNvbmZpZyB3aXRob3V0IGFkZGluZyBjb21wYXRpYmxl
-IGluDQo+IGNvcmVuZXRfZ2VuZXJpYy5jLg0KPiANCj4gVGhlIGNvbnRhaW5lciAiYnVzIiBvZiB0
-aGUgIm11eGluZyIgbm9kZXMgZG9lc24ndCBjYXJyeSB0aGUgInNpbXBsZS1idXMiDQo+IGNvbXBh
-dGlibGUgYW5kIChhcyBwZXIgdGhlIGVQQVBSIGRlZmluaXRpb24pIEknbSB1bnN1cmUgaXQgd291
-bGQgYmUNCj4gYXBwbGljYWJsZQ0KPiANCltTLkhdIEknbSBub3Qgc3VyZSBpZiB0aGUgInNpbXBs
-ZS1idXMiIGNhbiBiZSB1c2VkIGFzIGFuIGV4dGVuc2lvbiBvZiBNRElPIG11eCBjb21wYXRpYmxl
-Lg0KSSB3YXMgdGhpbmtpbmcgYW5vdGhlciBvcHRpb24sIGlmICJzaW1wbGUtYnVzIiBpcyBub3Qg
-c3VpdGFibGUgaGVyZSwgdGhlbiBmb3JnZXQgaXQuOikNCg0KVGhhbmtzIQ0KU2hhb2h1aQ0KPiA+
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBFbWlsIE1lZHZlIFttYWls
-dG86RW1pbGlhbi5NZWR2ZUBGcmVlc2NhbGUuY29tXQ0KPiA+PiBTZW50OiBGcmlkYXksIEphbnVh
-cnkgMDIsIDIwMTUgNDo0MyBQTQ0KPiA+PiBUbzogc2hoLnhpZUBnbWFpbC5jb207IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kDQo+ID4+IFNjb3R0LUIwNzQyMQ0KPiA+PiBDYzog
-QW5keSBGbGVtaW5nOyBYaWUgU2hhb2h1aS1CMjE5ODk7IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQN
-Cj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIHBvd2VycGMvY29uZmlnOiBlbmFibGUgbWRp
-byBidXNlcyBtdXhpbmcgdmlhDQo+ID4+IE1lbW9yeS1tYXBwZWQgZGV2aWNlDQo+ID4+DQo+ID4+
-IEhlbGxvIFNoYW8tSHVpLA0KPiA+Pg0KPiA+Pg0KPiA+PiBPbiAxMi8yMi8yMDE0IDAzOjIxIEFN
-LCBzaGgueGllQGdtYWlsLmNvbSB3cm90ZToNCj4gPj4+IEZyb206IEFuZHkgRmxlbWluZyA8YWZs
-ZW1pbmdAZ21haWwuY29tPg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IEFuZHkgRmxlbWlu
-ZyA8YWZsZW1pbmdAZ21haWwuY29tPg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBYaWUg
-PFNoYW9odWkuWGllQGZyZWVzY2FsZS5jb20+DQo+ID4+PiAtLS0NCj4gPj4+ICBhcmNoL3Bvd2Vy
-cGMvY29uZmlncy9jb3JlbmV0MzJfc21wX2RlZmNvbmZpZyB8IDEgKw0KPiA+Pj4gYXJjaC9wb3dl
-cnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcgfCAxICsNCj4gPj4+ICAyIGZpbGVz
-IGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKQ0KPiA+Pg0KPiA+PiBTaHJ1dGkgc3VibWl0dGVkIGEg
-bW9yZSBjb21wbGV0ZSB2ZXJzaW9uIG9mIHRoaXMgcGF0Y2ggaGVyZToNCj4gPj4NCj4gPj4gaHR0
-cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzM3MDg3Mw0KPiA+Pg0KPiA+PiBXZSBzaG91
-bGQgc3RpY2sgd2l0aCB0aGF0IHZlcnNpb24NCj4gPj4NCj4gPj4NCj4gPj4gQ2hlZXJzLA0KDQo=
+Hello Scott,
+
+Is this v3 OK?
+
+Best Regards,=20
+Shaohui Xie
+> -----Original Message-----
+> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
+> Sent: Tuesday, December 23, 2014 3:58 PM
+> To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood Scott=
+-B07421
+> Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
+> Subject: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+>=20
+> From: Shaohui Xie <Shaohui.Xie@freescale.com>
+>=20
+> This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
+> changes in v3:
+> rephrase the 'Definition' of property 'bus-frequency', don't include the
+> property in example.
+>=20
+> changes in v2:
+> addressed comments from Scott in V1.
+>=20
+>  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++=
+++++++
+>  1 file changed, 69 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> index edeea16..737aa4c 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> @@ -7,6 +7,7 @@ CONTENTS
+>    - FMan MURAM Node
+>    - FMan dTSEC/XGEC/mEMAC Node
+>    - FMan IEEE 1588 Node
+> +  - FMan MDIO Node
+>    - Example
+>=20
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+> @@ -357,6 +358,69 @@ ptp-timer@fe000 {
+>  };
+>=20
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+> +FMan MDIO Node
+> +
+> +DESCRIPTION
+> +
+> +The MDIO is a bus to which the PHY devices are connected.
+> +
+> +PROPERTIES
+> +
+> +- compatible
+> +		Usage: required
+> +		Value type: <stringlist>
+> +		Definition: A standard property.
+> +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
+> +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
+> +		FMan v3.
+> +
+> +- reg
+> +		Usage: required
+> +		Value type: <prop-encoded-array>
+> +		Definition: A standard property.
+> +
+> +- bus-frequency
+> +		Usage: optional
+> +		Value type: <u32>
+> +		Definition: Specifies the external MDIO bus clock speed to
+> +		be used, if different from the standard 2.5 MHz.
+> +		This may be due to the standard speed being unsupported (e.g.
+> +		due to a hardware problem), or to advertise that all relevant
+> +		components in the system support a faster speed.
+> +
+> +- interrupts
+> +		Usage: optional
+> +		Value type: <prop-encoded-array>
+> +		Definition: Event interrupt of external MDIO controller.
+> +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
+> +
+> +- fsl,fman-internal-mdio
+> +		Usage: required for internal MDIO
+> +		Value type: boolean
+> +		Definition: Fman has internal MDIO for internal PCS(Physical
+> +		Coding Sublayer) PHYs and external MDIO for external PHYs.
+> +		The settings and programming routines for internal/external
+> +		MDIO are different. Must be included for internal MDIO.
+> +
+> +EXAMPLE
+> +
+> +Example for FMan v2 external MDIO:
+> +
+> +mdio@f1000 {
+> +	compatible =3D "fsl,fman-xmdio";
+> +	reg =3D <0xf1000 0x1000>;
+> +};
+> +
+> +Example for FMan v3 internal MDIO:
+> +
+> +mdio@f1000 {
+> +	compatible =3D "fsl,fman-memac-mdio";
+> +	reg =3D <0xf1000 0x1000>;
+> +	fsl,fman-internal-mdio;
+> +};
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +=3D=3D=3D=3D=3D=3D
+>  Example
+>=20
+>  fman@400000 {
+> @@ -531,4 +595,9 @@ fman@400000 {
+>  		compatible =3D "fsl,fman-ptp-timer";
+>  		reg =3D <0xfe000 0x1000>;
+>  	};
+> +
+> +	mdio@f1000 {
+> +		compatible =3D "fsl,fman-xmdio";
+> +		reg =3D <0xf1000 0x1000>;
+> +	};
+>  };
+> --
+> 1.8.4.1
