@@ -1,21 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A942C1A00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 17:10:05 +1100 (AEDT)
-Message-ID: <1420438204.3860.3.camel@ellerman.id.au>
-Subject: [git pull] Please pull mpe/linux.git powerpc-3.19-3 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 05 Jan 2015 17:10:04 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-ZHudLhn7xfTOOdMwvg8X"
-Mime-Version: 1.0
-Cc: hbathini@linux.vnet.ibm.com, bobby.prani@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A5551A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jan 2015 20:45:29 +1100 (AEDT)
+Message-ID: <54AA595C.9090909@Freescale.com>
+Date: Mon, 5 Jan 2015 03:29:00 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+To: Xie Shaohui-B21989 <Shaohui.Xie@Freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Wood
+ Scott-B07421" <scottwood@Freescale.com>
+Subject: Re: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
+ Memory-mapped device
+References: <1419240062-29559-1-git-send-email-shh.xie@gmail.com>
+ <54A65A09.6070705@Freescale.com>
+ <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+In-Reply-To: <DM2PR0301MB0864469C4DF54A6592E7AA51E25B0@DM2PR0301MB0864.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Andy Fleming <afleming@gmail.com>,
+ Kanetkar Shruti-B44454 <Shruti@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,85 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-ZHudLhn7xfTOOdMwvg8X
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Linus,
-
-Please pull some powerpc fixes for 3.19:
-
-The following changes since commit b7392d2247cfe6771f95d256374f1a8e6a6f48d6=
-:
-
-  Linux 3.19-rc2 (2014-12-28 16:49:37 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
-3.19-3
-
-for you to fetch changes up to 1be6f10f6f9caade3a053938cb80a2eed237e262:
-
-  Revert "powerpc: Secondary CPUs must set cpu_callin_map after setting act=
-ive and online" (2014-12-29 15:51:51 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 3.19
-
-Wire up sys_execveat(). Tested on 32 & 64 bit.
-
-Fix for kdump on LE systems with cpus hot unplugged.
-
-Revert Anton's fix for "kernel BUG at kernel/smpboot.c:134!", this broke ot=
-her
-platforms, we'll do a proper fix for 3.20.
-
-----------------------------------------------------------------
-Hari Bathini (1):
-      powerpc/kdump: Ignore failure in enabling big endian exception during=
- crash
-
-Michael Ellerman (1):
-      Revert "powerpc: Secondary CPUs must set cpu_callin_map after setting=
- active and online"
-
-Pranith Kumar (1):
-      powerpc: Wire up sys_execveat() syscall
-
- arch/powerpc/include/asm/kexec.h       | 10 ++++++++++
- arch/powerpc/include/asm/systbl.h      |  1 +
- arch/powerpc/include/asm/unistd.h      |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h |  1 +
- arch/powerpc/kernel/machine_kexec_64.c |  2 +-
- arch/powerpc/kernel/smp.c              |  9 +--------
- arch/powerpc/platforms/pseries/lpar.c  |  8 +++++++-
- 7 files changed, 22 insertions(+), 11 deletions(-)
+Hello Shao-Hui,
 
 
+On 01/03/2015 10:58 PM, Xie Shaohui-B21989 wrote:
+> Hello Emil,
+> 
+> The patches sent by Shruti were marked as "Changes Requested" over 5 months.
+> to me if the patches do need changes, the possible changes seems not in 'config' but in corenet_generic.c.
 
---=-ZHudLhn7xfTOOdMwvg8X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+It was part of a series that needed changes in other patches
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> I'm not sure if it's OK to add some compatibles in corenet_generic.c. if we can use the existing compatible "simple-bus",
+> Then we will only need to enable MDIO mux option in config without adding compatible in corenet_generic.c.
 
-iQIcBAABAgAGBQJUqiq8AAoJEFHr6jzI4aWA8BUP/Ao644xK1jpCFILqVTKBeqLO
-iswiA3qVLqG6pz/2qHxQjtOe2iKOMECRCfUaMR497t3OLmhdFTSntx27AE5+OTC2
-sbO/jxsGAbxc5yvNEUjPMXBwG6M4cUAQnT63z2MmQjNQjKNvrnSv81Zca0vyN8Tz
-Jr0HZbjeQfN0atIHJQZOnLKcvW//ir0UdXyfZkOvvU2FZ6nLuTUbG5jH7hjoW8bX
-dRRj53TG81XtdpNqJE8MXVxSoB3K4UZCxEYxRtXrcv808vjorcBRPIojePHBfMl9
-B/Lny9ZD4gq5WiDcHtPTwQ+SLm9a0HH//Wp4LQIrLWU2CafEKSXniFwfJwhaiztG
-WS3SUtveUBhGdboRobjdQRkb1ZVLIs70huWWBJbCjym1mD5fFCnf55GEPSwX3LQM
-7/zT2bN9QtCHIlk6kn4EsyTMI9Q39v0VIdhDo0LW7zWskJq1YkmdLjw85ukTHt/R
-Wz6HdMM3vv07tDR/m2eDqnOSVktJ0afOMDYE6F/lrik3NOPHVxvYABEPt9HlcaJL
-8dyOojjIWA7NHtAYujmlqrrjGtW6kdh6AzqgiurGdD6JL1Kbo58UkvRUT8GkwMGf
-ygp7NIFzCjxSIoshFi3HD0sVkRCtsNeKqBhpa3lOsQQQkKxbABLHNp8B5nPw5jsn
-KkJ5mUdC4KROlToZUOOD
-=TEgk
------END PGP SIGNATURE-----
+The container "bus" of the "muxing" nodes doesn't carry the "simple-bus"
+compatible and (as per the ePAPR definition) I'm unsure it would be
+applicable
 
---=-ZHudLhn7xfTOOdMwvg8X--
+
+Cheers,
+
+
+> Best Regards, 
+> Shaohui Xie
+> 
+>> -----Original Message-----
+>> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
+>> Sent: Friday, January 02, 2015 4:43 PM
+>> To: shh.xie@gmail.com; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
+>> Cc: Andy Fleming; Xie Shaohui-B21989; Kanetkar Shruti-B44454
+>> Subject: Re: [PATCH 2/2] powerpc/config: enable mdio buses muxing via
+>> Memory-mapped device
+>>
+>> Hello Shao-Hui,
+>>
+>>
+>> On 12/22/2014 03:21 AM, shh.xie@gmail.com wrote:
+>>> From: Andy Fleming <afleming@gmail.com>
+>>>
+>>> Signed-off-by: Andy Fleming <afleming@gmail.com>
+>>> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>>> ---
+>>>  arch/powerpc/configs/corenet32_smp_defconfig | 1 +
+>>> arch/powerpc/configs/corenet64_smp_defconfig | 1 +
+>>>  2 files changed, 2 insertions(+)
+>>
+>> Shruti submitted a more complete version of this patch here:
+>>
+>> http://patchwork.ozlabs.org/patch/370873
+>>
+>> We should stick with that version
+>>
+>>
+>> Cheers,
