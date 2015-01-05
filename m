@@ -1,15 +1,17 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 693B31A09F1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 02:14:56 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Subject: [PATCH] powerpc/8xx: reduce pressure on TLB due to context switches
-Message-Id: <20150105151453.E32BD1A4CF3@localhost.localdomain>
-Date: Mon,  5 Jan 2015 16:14:53 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <stern+54ad1fae@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by lists.ozlabs.org (Postfix) with SMTP id 119E81A09CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 03:00:16 +1100 (AEDT)
+Date: Mon, 5 Jan 2015 11:00:06 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Michael Tessier <michael.tessier@axiontech.ca>
+Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
+In-Reply-To: <66A26A9AA227D947AF088537F041526E2008FE@VSVR-EX10-MB1.pocatec.com>
+Message-ID: <Pine.LNX.4.44L0.1501051045470.1485-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,109 +21,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For nohash powerpc, when we run out of contexts, contexts are freed by stealing
-used contexts in-turn. When a victim has been selected, the associated TLB
-entries are freed using _tlbil_pid(). Unfortunatly, on the PPC 8xx, _tlbil_pid()
-does a tlbia, hence flushes ALL TLB entries and not only the one linked to the
-stolen context. Therefore, as implented today, at each task switch requiring a
-new context, all entries are flushed.
+On Mon, 5 Jan 2015, Michael Tessier wrote:
 
-This patch modifies the implementation so that when running out of contexts, all
-contexts get freed at once, hence dividing the number of calls to tlbia by 16.
+> > > Hi,
+> > > 
+> > > I am dealing with a USB EHCI driver bug. Here is the info:
+> > > 
+> > > My configuration:
+> > > -----------------
+> > > 
+> > > Host: Freescale i.MX512 with ARM Cortex A8 (USB 2.0 host controller) 
+> > > Linux kernel: 2.6.31, using EHCI USB driver
+> >
+> > As mentioned by other people, the age of that kernel makes any bug report completely irrelevant.  It's hard to count the number of non-trivial changes that have  > been made to the isochronous code in ehci-hcd since 2.6.31, but there have been quite a few.
+> >
+> > > Hub: 4-PORT USB 1.1 HUB (Texas Instruments PN: tusb2046b)
+> > > Devices: 4 USB 1.1 audio codecs (Texas Instruments PN: pcm2901)
+> > > 
+> > > Note: each codec is being used in R/W access, so with 4 codecs, I have
+> > > 4 playback and 4 capture streams.
+> > > 
+> > > My problem:
+> > > -----------
+> > > 
+> > > I have usb urb leaks when connecting more than 1 codec to the USB 1.1 
+> > > Hub.
+> >
+> > What do you mean by "urb leak"?  Normally, people use the word "leak"  
+> > to refer to memory that is dynamically allocated and never deallocated, but you seem to mean something else.
+> 
+> You are right. What I mean by leak is the following: At application level,
+> all my calls to "Read" or "Write" operation to the codec driver will return
+> with the correct amount of bytes read/written, with a "choppy" sound. Then
+> when looking at lower levels:
+> 
+> snd_pcm_oss_write (pcm_oss.c) 	-> OK
+> snd_pcm_lib_write (pcm_lib.c) 	-> OK
+> usb_submit_urb 	(urb.c)		-> FAIL with 3 codecs
+> 
+> The "FAIL" here indicates that the total amount of bytes transferred does
+> not correspond to what was expected. And indeed the sound is "choppy" when
+> using more than a certain amount of bandwidth. However this amount of
+> bandwidth is higher when connecting only 1 codec with different settings
+> (48khz-stereo 16-bits instead of 32 khz-mono 16-bits).So at some point it
+> looks like the bug is in the scheduler, only with several isochronous links.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Agreed.
 
----
- arch/powerpc/mm/mmu_context_nohash.c | 44 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+> > The amount of bandwidth available is usually not as much of an issue as the ability of the scheduling alogorithm to divide the bandwidth among the streams.  The
+> > algorithm is not very smart and it often runs into a wall even when lots of physical bandwidth is still available.
+> 
+> That is interresting, however, I have an older kernel running an OHCI
+> driver which is able to handle 4 codecs. Same usb hardware (codecs and
+> hub), but older kernel on a different CPU, with much less power. This makes
+> me believe that there's a solution to make it work...
 
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 928ebe7..c648677 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -52,12 +52,15 @@
- #include <asm/mmu_context.h>
- #include <asm/tlbflush.h>
- 
-+#include "mmu_decl.h"
-+
- static unsigned int first_context, last_context;
- static unsigned int next_context, nr_free_contexts;
- static unsigned long *context_map;
- static unsigned long *stale_map[NR_CPUS];
- static struct mm_struct **context_mm;
- static DEFINE_RAW_SPINLOCK(context_lock);
-+static bool no_selective_tlbil;
- 
- #define CTX_MAP_SIZE	\
- 	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
-@@ -133,6 +136,39 @@ static unsigned int steal_context_smp(unsigned int id)
- }
- #endif  /* CONFIG_SMP */
- 
-+static unsigned int steal_all_contexts(void)
-+{
-+	struct mm_struct *mm;
-+	int cpu = smp_processor_id();
-+	unsigned int id;
-+
-+	for (id = first_context; id <= last_context; id++) {
-+		/* Pick up the victim mm */
-+		mm = context_mm[id];
-+
-+		pr_hardcont(" | steal %d from 0x%p", id, mm);
-+
-+		/* Mark this mm as having no context anymore */
-+		mm->context.id = MMU_NO_CONTEXT;
-+		if (id != first_context) {
-+			context_mm[id] = NULL;
-+			__clear_bit(id, context_map);
-+#ifdef DEBUG_MAP_CONSISTENCY
-+			mm->context.active = 0;
-+#endif
-+		}
-+		__clear_bit(id, stale_map[cpu]);
-+
-+	}
-+
-+	/* Flush the TLB for all contexts */
-+	_tlbil_all();
-+
-+	nr_free_contexts = last_context - first_context;
-+
-+	return first_context;
-+}
-+
- /* Note that this will also be called on SMP if all other CPUs are
-  * offlined, which means that it may be called for cpu != 0. For
-  * this to work, we somewhat assume that CPUs that are onlined
-@@ -241,7 +277,10 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 			goto stolen;
- 		}
- #endif /* CONFIG_SMP */
--		id = steal_context_up(id);
-+		if (no_selective_tlbil)
-+			id = steal_all_contexts();
-+		else
-+			id = steal_context_up(id);
- 		goto stolen;
- 	}
- 	nr_free_contexts--;
-@@ -407,12 +446,15 @@ void __init mmu_context_init(void)
- 	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
- 		first_context = 0;
- 		last_context = 15;
-+		no_selective_tlbil = true;
- 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
- 		first_context = 1;
- 		last_context = 65535;
-+		no_selective_tlbil = false;
- 	} else {
- 		first_context = 1;
- 		last_context = 255;
-+		no_selective_tlbil = false;
- 	}
- 
- #ifdef DEBUG_CLAMP_LAST_CONTEXT
--- 
-2.1.0
+Of course there is: Install an OHCI host controller and use it to drive
+your codecs.  It should work fine.
+
+The periodic scheduling algorithm for OHCI is very different from the
+algorithm for EHCI.
+
+> > How does your hardware connect the host controller to a full-speed device?  Is there an internal hub (Intel motherboards have used this approach)?  Is there a 
+> > companion USB-1.1 controller (older motherboards from Intel and other companys have used this approach)?  Does the EHCI controller have a built-in Transaction 
+> > Translator (some SOC systems use this approach)?
+> 
+> The CPU is a Freescale i.MX512, with 3 USB 2.0 Host controllers. My hub
+> is connected to the main CPU board with a standard USB cable, so it's easy
+> to swap my 4-port hub from a USB 1.1 to a USB 2.0. My codecs are always
+> the same: USB 1.1 Texas Instruments PN# pcm2901. I don't believe there's
+> a built-in Transaction Translator. How can I check that?
+
+You can tell by seeing what shows up in the "lsusb -t" output when you
+plug in the USB-1.1 hub.  If the hub's parent is the EHCI controller 
+then there must be a built-in TT.
+
+Also, if you enable CONFIG_USB_DEBUG in your kernel then the dmesg log
+for boot-up should say whether or not the controller has a built-in TT.
+
+> > > Question:
+> > > ---------
+> > > 
+> > > Before attempting to upgrade to an earlier kernel driver (this is
+> >
+> > "upgrade to an earlier kernel driver" is a contradiction in terms.  
+> > Moving to an earlier driver would be a _downgrade_.
+> 
+> Sorry, I meant to say "newer"...
+> 
+> > > a fairly big amount of work), I would really like to know if this 
+> > > problem would still be in the 3.x kernels. Has anyone seen that issue 
+> > > in 3.x kernels?
+> >
+> > It depends a lot on the system hardware.  Many people are using USB audio in 3.x kernels with no problem.  On the other hand, some people have reported a bug 
+> > (quite different from yours) so recently that the patch to fix it has not yet been merged.
+> 
+> I understand. However, if one could test the following with a 3.x kernel:
+> - CPU with USB 2.0 Host controller (using EHCI-hcd driver)
+> - 4-port USB 1.1 Hub
+> - 4x USB codecs (configured at 32khz-mono, 16-bits audio)
+> 
+> Then try to stream audio on each of the 4 codecs at the same time (this
+> includes one Read and one Write stream on each codec, so total of 4 "Read"
+> and 4 "Write" streams. Then listen to the output...
+
+The result is likely to depend on what other USB hardware is attached.
+
+> If sound is ok when using only 1 codec and becomes choppy when adding a
+> second codec, then it means that this issue is still in the 3.x kernel. This
+> answer will tell me if it is worth working on using a newer kernel or not.
+> I have to say that I'm not a linux expert, so I see the migration to a newer
+> kernel as a quite big amount of work...
+
+Why don't you try this yourself?  It's easy to do; borrow a regular PC 
+with a USB-2 host controller, boot it from a Live-CD version of Linux, 
+plug in your hub with the codecs, and see what happens.
+
+Alan Stern
