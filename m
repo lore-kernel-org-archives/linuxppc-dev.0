@@ -1,17 +1,18 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89D081A0780
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 21:12:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A52A31A078B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 21:20:30 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powernv: Fix OPAL tracepoint code
-Date: Tue,  6 Jan 2015 21:12:08 +1100
-Message-Id: <1420539128-17010-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mmarek@suse.cz, akpm@linux-foundation.org, jbaron@akamai.com,
+ peterz@infradead.org, liuj97@gmail.com, mingo@kernel.org, mgorman@suse.de
+Subject: [PATCH 1/2] jump_label: Allow jump labels to be used in assembly
+Date: Tue,  6 Jan 2015 21:20:27 +1100
+Message-Id: <1420539628-17875-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch c49f63530bb6 ("powernv: Add OPAL tracepoints") has a spurious
-store to the stack:
+To use jump labels in assembly we need the HAVE_JUMP_LABEL define,
+so we select a fallback version if the toolchain does not support
+them.
 
-	ld      r12,opal_tracepoint_refcount@toc(r2);           \
-	std     r12,32(r1);                                     \
+Modify linux/jump_label.h so it can be included by assembly files.
+We also need to add -DCC_HAVE_ASM_GOTO to KBUILD_AFLAGS.
 
-The store was originally used to save the current tracepoint status
-so the entry and the exit tracepoints were always balanced. In the
-end I just created a separate path when tracepoints are enabled.
-
-The offset on the stack used for this store is not valid for ABIv2
-and it causes strange issues. I noticed it because OPAL console input
-was broken.
-
-Fixes: c49f63530bb6 ("powernv: Add OPAL tracepoints")
-Cc: <stable@vger.kernel.org> # v3.17+
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 -
- 1 file changed, 1 deletion(-)
+ Makefile                   |  1 +
+ include/linux/jump_label.h | 21 +++++++++++++++++----
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 54eca8b..0509bca 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -40,7 +40,6 @@ BEGIN_FTR_SECTION;						\
- 	b	1f;						\
- END_FTR_SECTION(0, 1);						\
- 	ld	r12,opal_tracepoint_refcount@toc(r2);		\
--	std	r12,32(r1);					\
- 	cmpdi	r12,0;						\
- 	bne-	LABEL;						\
- 1:
+diff --git a/Makefile b/Makefile
+index ef748e1..7b83c3f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -774,6 +774,7 @@ KBUILD_ARFLAGS := $(call ar-option,D)
+ # check for 'asm goto'
+ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-goto.sh $(CC)), y)
+ 	KBUILD_CFLAGS += -DCC_HAVE_ASM_GOTO
++	KBUILD_AFLAGS += -DCC_HAVE_ASM_GOTO
+ endif
+ 
+ include $(srctree)/scripts/Makefile.extrawarn
+diff --git a/include/linux/jump_label.h b/include/linux/jump_label.h
+index 98f923b6..f4de473 100644
+--- a/include/linux/jump_label.h
++++ b/include/linux/jump_label.h
+@@ -45,6 +45,12 @@
+  * same as using STATIC_KEY_INIT_FALSE.
+  */
+ 
++#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
++# define HAVE_JUMP_LABEL
++#endif
++
++#ifndef __ASSEMBLY__
++
+ #include <linux/types.h>
+ #include <linux/compiler.h>
+ #include <linux/bug.h>
+@@ -55,7 +61,7 @@ extern bool static_key_initialized;
+ 				    "%s used before call to jump_label_init", \
+ 				    __func__)
+ 
+-#if defined(CC_HAVE_ASM_GOTO) && defined(CONFIG_JUMP_LABEL)
++#ifdef HAVE_JUMP_LABEL
+ 
+ struct static_key {
+ 	atomic_t enabled;
+@@ -66,13 +72,18 @@ struct static_key {
+ #endif
+ };
+ 
+-# include <asm/jump_label.h>
+-# define HAVE_JUMP_LABEL
+ #else
+ struct static_key {
+ 	atomic_t enabled;
+ };
+-#endif	/* CC_HAVE_ASM_GOTO && CONFIG_JUMP_LABEL */
++#endif	/* HAVE_JUMP_LABEL */
++#endif /* __ASSEMBLY__ */
++
++#ifdef HAVE_JUMP_LABEL
++#include <asm/jump_label.h>
++#endif
++
++#ifndef __ASSEMBLY__
+ 
+ enum jump_label_type {
+ 	JUMP_LABEL_DISABLE = 0,
+@@ -203,3 +214,5 @@ static inline bool static_key_enabled(struct static_key *key)
+ }
+ 
+ #endif	/* _LINUX_JUMP_LABEL_H */
++
++#endif /* __ASSEMBLY__ */
 -- 
 2.1.0
