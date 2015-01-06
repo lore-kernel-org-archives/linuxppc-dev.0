@@ -1,25 +1,26 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.183])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420DD1A08CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 00:06:35 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Joakim Tjernlund' <Joakim.Tjernlund@transmode.se>,
- "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>
-Subject: RE: [PATCH 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
-Date: Tue, 6 Jan 2015 12:08:09 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CAC1765@AcuExch.aculab.com>
-References: <20141216150338.D4F0A1A5E0A@localhost.localdomain>
- <1420482826.25047.26.camel@transmode.se>
-In-Reply-To: <1420482826.25047.26.camel@transmode.se>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 56EBA1A08CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 00:26:44 +1100 (AEDT)
+Date: Tue, 6 Jan 2015 10:26:37 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Jiri Olsa <jolsa@redhat.com>
+Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
+Message-ID: <20150106132637.GB9975@kernel.org>
+References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20141222143710.GA29096@krava.brq.redhat.com>
+ <20141222193045.GA19784@us.ibm.com>
+ <20141223095506.GB22265@krava.brq.redhat.com>
+ <20141223195850.GA26952@us.ibm.com>
+ <20150106094220.GB19868@krava.brq.redhat.com>
 MIME-Version: 1.0
-Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150106094220.GB19868@krava.brq.redhat.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, dev@codyps.com,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiBUdWUsIDIwMTQtMTItMTYgYXQgMTY6MDMgKzAxMDAsIENocmlzdG9waGUgTGVyb3kgd3Jv
-dGU6DQo+ID4gQWxsIGFjY2Vzc2VkIHRvIFBHRCBlbnRyaWVzIGFyZSBkb25lIHZpYSAwKHIxMSku
-DQo+ID4gQnkgdXNpbmcgbG93ZXIgcGFydCBvZiBzd2FwcGVyX3BnX2RpciBhcyBsb2FkIGluZGV4
-IHRvIHIxMSwgd2UgY2FuIHJlbW92ZSB0aGUNCj4gPiBvcmkgaW5zdHJ1Y3Rpb24uDQo+ID4NCj4g
-PiBTaWduZWQtb2ZmLWJ5OiBDaHJpc3RvcGhlIExlcm95IDxjaHJpc3RvcGhlLmxlcm95QGMtcy5m
-cj4NCj4gDQo+IE5pY2UgOikNCj4gQWNrZWQtYnk6IEpvYWtpbSBUamVybmx1bmQgPGpvYWtpbS50
-amVybmx1bmRAdHJhbnNtb2RlLnNlPg0KPiANCj4gPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2Vy
-cGMva2VybmVsL2hlYWRfOHh4LlMgfCAyMiArKysrKysrKysrLS0tLS0tLS0tLS0tDQo+ID4gIDEg
-ZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCAxMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+
-IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL2hlYWRfOHh4LlMgYi9hcmNoL3Bvd2Vy
-cGMva2VybmVsL2hlYWRfOHh4LlMNCj4gPiBpbmRleCBhZTA1ZjI4Li5hYTQ1MjI1IDEwMDY0NA0K
-PiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvaGVhZF84eHguUw0KPiA+ICsrKyBiL2FyY2gv
-cG93ZXJwYy9rZXJuZWwvaGVhZF84eHguUw0KPiA+IEBAIC0zMjIsMTMgKzMyMiwxMiBAQCBJbnN0
-cnVjdGlvblRMQk1pc3M6DQo+ID4gICAgICAgICBtZnNwciAgIHIxMSwgU1BSTl9NX1RXLyogR2V0
-IGxldmVsIDEgdGFibGUgYmFzZSBhZGRyZXNzICovDQo+ID4gICNpZmRlZiBDT05GSUdfTU9EVUxF
-Uw0KPiA+ICAgICAgICAgYmVxICAgICAzZg0KPiA+IC0gICAgICAgbGlzICAgICByMTEsIChzd2Fw
-cGVyX3BnX2Rpci1QQUdFX09GRlNFVClAaA0KPiA+IC0gICAgICAgb3JpICAgICByMTEsIHIxMSwg
-KHN3YXBwZXJfcGdfZGlyLVBBR0VfT0ZGU0VUKUBsDQo+ID4gKyAgICAgICBsaXMgICAgIHIxMSwg
-KHN3YXBwZXJfcGdfZGlyLVBBR0VfT0ZGU0VUKUBoYQ0KPiA+ICAzOg0KPiA+ICAjZW5kaWYNCj4g
-PiAgICAgICAgIC8qIEluc2VydCBsZXZlbCAxIGluZGV4ICovDQo+ID4gICAgICAgICBybHdpbWkg
-IHIxMSwgcjEwLCAzMiAtICgoUEFHRV9TSElGVCAtIDIpIDw8IDEpLCAoUEFHRV9TSElGVCAtIDIp
-IDw8IDEsIDI5DQo+ID4gLSAgICAgICBsd3ogICAgIHIxMSwgMChyMTEpLyogR2V0IHRoZSBsZXZl
-bCAxIGVudHJ5ICovDQo+ID4gKyAgICAgICBsd3ogICAgIHIxMSwgKHN3YXBwZXJfcGdfZGlyLVBB
-R0VfT0ZGU0VUKUBsKHIxMSkvKiBHZXQgdGhlIGxldmVsIDEgZW50cnkgKi8NCj4gPg0KDQpPbiB0
-aGUgZmFjZSBvZiBpdCB0aGF0IGZyYWdtZW50IGRvZXNuJ3QgbG9vayByaWdodCB3aGVuIENPTkZJ
-R19NT0RVTEVTIGlzIHVuZGVmaW5lZC4NCg0KCURhdmlkDQoNCg==
+Em Tue, Jan 06, 2015 at 10:42:20AM +0100, Jiri Olsa escreveu:
+> On Tue, Dec 23, 2014 at 11:58:50AM -0800, Sukadev Bhattiprolu wrote:
+> > From a24b480ff54381a7e092597864cf615162afdd60 Mon Sep 17 00:00:00 2001
+> > From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> > Date: Wed, 24 Sep 2014 12:27:15 -0700
+> > Subject: [PATCH 1/4] tools/perf: support parsing parameterized events
+> > 
+> > Enable event specification like:
+> > 
+> > 	pmu/event_name,param1=0x1,param2=0x4/
+> > 
+> > Assuming that
+> > 
+> > 	/sys/bus/event_source/devices/pmu/events/event_name
+> > 
+> > Contains something like
+> > 
+> > 	param2=?,bar=1,param1=?
+> > 
+> > Changelog[v6]:
+> > 	[Jiri Olsa] Add a check to make sure that sysfs entries with
+> > 	parameters exactly match '=?'.
+> > 
+> > Changelog[v4]:
+> > 	[Jiri Olsa] Merge to recent perf-core and fix a small conflict.
+> > 
+> > Changelog[v3]:
+> > 	[Jiri Olsa] If the sysfs event file specifies 'param=val', make the
+> > 	usage 'hv_24x7/event,param=123/' rather than 'hv_24x7/event,val=123/'.
+> 
+> Acked-by: Jiri Olsa <jolsa@kernel.org>
+> 
+> I'm ok with whole patchset, with some nits for patch 2
+> that I've already sent out..
+> 
+> Would you mind sending v7 so we avoid confusion for Arnaldo
+> what to pick up?
+
+Yes, please, I'm trying to pick up what has accumulated over the
+holidays,
+
+- Arnaldo
