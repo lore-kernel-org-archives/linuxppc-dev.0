@@ -1,21 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 524EB1A00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 18:07:30 +1100 (AEDT)
-Message-ID: <54AB89AF.4010200@c-s.fr>
-Date: Tue, 06 Jan 2015 08:07:27 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F82E1A0762
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 20:39:49 +1100 (AEDT)
+Date: Tue, 6 Jan 2015 10:39:10 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 2/4] tools/perf: extend format_alias() to include
+ event parameters
+Message-ID: <20150106093910.GA24841@krava.brq.redhat.com>
+References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1419234567-22784-3-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 09/11] powerpc/8xx: dont save CR in SCRATCH registers
-References: <20141216150340.108641A5E05@localhost.localdomain>
- <1420482624.25047.25.camel@transmode.se>
-In-Reply-To: <1420482624.25047.25.camel@transmode.se>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1419234567-22784-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,135 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, Dec 21, 2014 at 11:49:25PM -0800, Sukadev Bhattiprolu wrote:
+> From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> 
+> This causes `perf list pmu` to show parameters for parameterized events
+> like:
+> 
+>   pmu/event_name,param1=?,param2=?/ [Kernel PMU event]
+> 
+> An example:
+> 
+>   hv_24x7/HPM_TLBIE__PHYS_CORE,core=?/ [Kernel PMU event]
+> 
+> Changelog[v6]
+> 	[Jir Olsa, Sukadev Bhattiprolu] Drop the '$' sign and go back to
+> 	just printing whatevever sysfs provides (which is '=?') to identify
+> 	required parameters. sysfs also now uses parameters like 'core'
+> 	and 'vcpu' rather than 'starting_index'.
+> 
+> Changelog[v5]
+> 	[Jiri Olsa, Peter Zijlstra] Use '$' to prefix parameterized events.
+> 
+> Changelog[v4]
+> 	[Jiri Olsa] If the parameter for an event in sysfs is 'param=val',
+> 	have perf-list show the event as 'param=?' rather than 'val=?'.
+> 
+> CC: Haren Myneni <hbabu@us.ibm.com>
+> CC: Cody P Schafer <dev@codyps.com>
+> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/pmu.c | 27 ++++++++++++++++++++++++++-
+>  1 file changed, 26 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+> index cb516dd..d208fef 100644
+> --- a/tools/perf/util/pmu.c
+> +++ b/tools/perf/util/pmu.c
+> @@ -810,10 +810,35 @@ void perf_pmu__set_format(unsigned long *bits, long from, long to)
+>  		set_bit(b, bits);
+>  }
+>  
+> +static int sub_non_neg(int a, int b)
+> +{
+> +	if (b > a)
+> +		return 0;
+> +	return a - b;
+> +}
+> +
+>  static char *format_alias(char *buf, int len, struct perf_pmu *pmu,
+>  			  struct perf_pmu_alias *alias)
+>  {
+> -	snprintf(buf, len, "%s/%s/", pmu->name, alias->name);
+> +	struct parse_events_term *term;
+> +	int used = snprintf(buf, len, "%s/%s", pmu->name, alias->name);
+> +
+> +	list_for_each_entry(term, &alias->terms, list)
+> +		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
+> +			used += snprintf(buf + used, sub_non_neg(len, used),
+> +					",%s=%s", term->config,
+> +					term->val.str);
 
-Le 05/01/2015 19:30, Joakim Tjernlund a écrit :
-> On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
->> CR only needs to be preserved when checking if we are handling a kernel address.
->> So we can preserve CR in a register:
->> - In ITLBMiss, check is done only when CONFIG_MODULES is defined. Otherwise we
->> don't need to do anything at all with CR.
->> - If CONFIG_8xx_CPU6 is defined, we have r3 available for saving CR
->> - Otherwise, we use r10, then we reload SRR0/MD_EPN into r10 when CR is restored
-> I think the #ifdef CPU6 code makes for too much maintenance. Can you
-> loose the #ifdef CPU6 and adjust code so it works for both cases?
-I wanted to take the opportunity to save one cycle, but we are wasting 
-so many cycles with CPU6 that it is propably not worth it.
-Ok, I will remove the special handling for CPU6.
+why not display PARSE_EVENTS__TERM_TYPE_NUM as well?
 
->
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>
->> ---
->>   arch/powerpc/kernel/head_8xx.S | 53 +++++++++++++++++++++++++++++-------------
->>   1 file changed, 37 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
->> index c89aed9..a073918 100644
->> --- a/arch/powerpc/kernel/head_8xx.S
->> +++ b/arch/powerpc/kernel/head_8xx.S
->> @@ -308,14 +308,10 @@ SystemCall:
->>   #endif
->>   
->>   InstructionTLBMiss:
->> +       EXCEPTION_PROLOG_0
->>   #ifdef CONFIG_8xx_CPU6
->>          mtspr   SPRN_DAR, r3
->>   #endif
->> -       EXCEPTION_PROLOG_0
->> -       mfcr    r10
->> -       mtspr   SPRN_SPRG_SCRATCH2, r10
->> -       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
->> -       DO_8xx_CPU15(r11, r10)
->>   
->>          /* If we are faulting a kernel address, we have to use the
->>                  * kernel page tables.
->> @@ -323,14 +319,33 @@ InstructionTLBMiss:
->>   #ifdef CONFIG_MODULES
->>          /* Only modules will cause ITLB Misses as we always
->>                  * pin the first 8MB of kernel memory */
->> +#ifdef CONFIG_8xx_CPU6
->> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
->> +       DO_8xx_CPU15(r11, r10)
->> +       mfcr    r3
->>          andis.  r11, r10, 0x8000/* Address >= 0x80000000 */
->> +#else
->> +       mfspr   r11, SPRN_SRR0/* Get effective address of fault */
->> +       DO_8xx_CPU15(r10, r11)
->> +       mfcr    r10
->> +       andis.  r11, r11, 0x8000/* Address >= 0x80000000 */
->>   #endif
->>          mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
->> -#ifdef CONFIG_MODULES
->>          beq     3f
->>          lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->>   3:
->> +#ifdef CONFIG_8xx_CPU6
->> +       mtcr    r3
->> +#else
->> +       mtcr    r10
->> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
->>   #endif
->> +#else /* CONFIG_MODULES */
->> +       mfspr   r10, SPRN_SRR0/* Get effective address of fault */
->> +       DO_8xx_CPU15(r11, r10)
->> +       mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
->> +#endif /* CONFIG_MODULES */
->> +
->>          /* Insert level 1 index */
->>          rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
->>          lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level 1 entry */
->> @@ -362,29 +377,37 @@ InstructionTLBMiss:
->>          mfspr   r3, SPRN_DAR
->>          mtspr   SPRN_DAR, r11/* Tag DAR */
->>   #endif
->> -       mfspr   r10, SPRN_SPRG_SCRATCH2
->> -       mtcr    r10
->>          EXCEPTION_EPILOG_0
->>          rfi
->>   
->>          . = 0x1200
->>   DataStoreTLBMiss:
->> -#ifdef CONFIG_8xx_CPU6
->> -       mtspr   SPRN_DAR, r3
->> -#endif
->>          EXCEPTION_PROLOG_0
->> -       mfcr    r10
->> -       mtspr   SPRN_SPRG_SCRATCH2, r10
->> -       mfspr   r10, SPRN_MD_EPN
->>   
->>          /* If we are faulting a kernel address, we have to use the
->>                  * kernel page tables.
->>                  */
->> +#ifdef CONFIG_8xx_CPU6
->> +       mtspr   SPRN_DAR, r3
->> +       mfcr    r3
->> +       mfspr   r10, SPRN_MD_EPN
->>          andis.  r11, r10, 0x8000
->> +#else
->> +       mfcr    r10
->> +       mfspr   r11, SPRN_MD_EPN
->> +       andis.  r11, r11, 0x8000
->> +#endif
->>          mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
->>          beq     3f
->>          lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
->>   3:
->> +#ifdef CONFIG_8xx_CPU6
->> +       mtcr    r3
->> +#else
->> +       mtcr    r10
->> +       mfspr   r10, SPRN_MD_EPN
->> +#endif
->> +
->>          /* Insert level 1 index */
->>          rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
->>          lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level 1 entry */
->> @@ -441,8 +464,6 @@ DataStoreTLBMiss:
->>          mfspr   r3, SPRN_DAR
->>   #endif
->>          mtspr   SPRN_DAR, r11/* Tag DAR */
->> -       mfspr   r10, SPRN_SPRG_SCRATCH2
->> -       mtcr    r10
->>          EXCEPTION_EPILOG_0
->>          rfi
->>   
+jirka
