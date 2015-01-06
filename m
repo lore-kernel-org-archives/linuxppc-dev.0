@@ -1,26 +1,17 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CE3B1A0766
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 20:42:57 +1100 (AEDT)
-Date: Tue, 6 Jan 2015 10:42:20 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
-Message-ID: <20150106094220.GB19868@krava.brq.redhat.com>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141222143710.GA29096@krava.brq.redhat.com>
- <20141222193045.GA19784@us.ibm.com>
- <20141223095506.GB22265@krava.brq.redhat.com>
- <20141223195850.GA26952@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141223195850.GA26952@us.ibm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 89D081A0780
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 21:12:10 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] powernv: Fix OPAL tracepoint code
+Date: Tue,  6 Jan 2015 21:12:08 +1100
+Message-Id: <1420539128-17010-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 23, 2014 at 11:58:50AM -0800, Sukadev Bhattiprolu wrote:
-> From a24b480ff54381a7e092597864cf615162afdd60 Mon Sep 17 00:00:00 2001
-> From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> Date: Wed, 24 Sep 2014 12:27:15 -0700
-> Subject: [PATCH 1/4] tools/perf: support parsing parameterized events
-> 
-> Enable event specification like:
-> 
-> 	pmu/event_name,param1=0x1,param2=0x4/
-> 
-> Assuming that
-> 
-> 	/sys/bus/event_source/devices/pmu/events/event_name
-> 
-> Contains something like
-> 
-> 	param2=?,bar=1,param1=?
-> 
-> Changelog[v6]:
-> 	[Jiri Olsa] Add a check to make sure that sysfs entries with
-> 	parameters exactly match '=?'.
-> 
-> Changelog[v4]:
-> 	[Jiri Olsa] Merge to recent perf-core and fix a small conflict.
-> 
-> Changelog[v3]:
-> 	[Jiri Olsa] If the sysfs event file specifies 'param=val', make the
-> 	usage 'hv_24x7/event,param=123/' rather than 'hv_24x7/event,val=123/'.
+Patch c49f63530bb6 ("powernv: Add OPAL tracepoints") has a spurious
+store to the stack:
 
-Acked-by: Jiri Olsa <jolsa@kernel.org>
+	ld      r12,opal_tracepoint_refcount@toc(r2);           \
+	std     r12,32(r1);                                     \
 
-I'm ok with whole patchset, with some nits for patch 2
-that I've already sent out..
+The store was originally used to save the current tracepoint status
+so the entry and the exit tracepoints were always balanced. In the
+end I just created a separate path when tracepoints are enabled.
 
-Would you mind sending v7 so we avoid confusion for Arnaldo
-what to pick up?
+The offset on the stack used for this store is not valid for ABIv2
+and it causes strange issues. I noticed it because OPAL console input
+was broken.
 
-thanks,
-jirka
+Fixes: c49f63530bb6 ("powernv: Add OPAL tracepoints")
+Cc: <stable@vger.kernel.org> # v3.17+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 54eca8b..0509bca 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -40,7 +40,6 @@ BEGIN_FTR_SECTION;						\
+ 	b	1f;						\
+ END_FTR_SECTION(0, 1);						\
+ 	ld	r12,opal_tracepoint_refcount@toc(r2);		\
+-	std	r12,32(r1);					\
+ 	cmpdi	r12,0;						\
+ 	bne-	LABEL;						\
+ 1:
+-- 
+2.1.0
