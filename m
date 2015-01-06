@@ -1,25 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.185])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70C231A083A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 00:56:44 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/2] mmc: host: arasan: Add addition of-arasan quirks and
- add IOMMU support.
-Date: Tue, 06 Jan 2015 14:55:51 +0100
-Message-ID: <3924494.iNyoV2USme@wuerfel>
-In-Reply-To: <CAOHikRCV7RaxJz-A_s6g++ueg3CDe9Jrqcog1Lc2_+KXR9QqnQ@mail.gmail.com>
-References: <1418662867-9210-1-git-send-email-stripathi@apm.com>
- <3866536.C6OiUcuGCr@wuerfel>
- <CAOHikRCV7RaxJz-A_s6g++ueg3CDe9Jrqcog1Lc2_+KXR9QqnQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDD0B1A08FF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 02:05:09 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'leroy christophe' <christophe.leroy@c-s.fr>, 'Joakim Tjernlund'
+ <Joakim.Tjernlund@transmode.se>
+Subject: RE: [PATCH 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
+Date: Tue, 6 Jan 2015 14:41:12 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CAC18C9@AcuExch.aculab.com>
+References: <20141216150338.D4F0A1A5E0A@localhost.localdomain>
+ <1420482826.25047.26.camel@transmode.se>
+ <063D6719AE5E284EB5DD2968C1650D6D1CAC1765@AcuExch.aculab.com>
+ <54ABE2CA.8030608@c-s.fr>
+In-Reply-To: <54ABE2CA.8030608@c-s.fr>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Suman Tripathi <stripathi@apm.com>, Jon Masters <jcm@redhat.com>,
- anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net, patches@apm.com,
- Don Dutile <ddutile@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 06 January 2015 17:10:29 Suman Tripathi wrote:
-> Hi Arnd,
-> > On Monday 15 December 2014 22:31:06 Suman Tripathi wrote:
-> > > @@ -162,6 +206,16 @@ static int sdhci_arasan_probe(struct
-> > > platform_device *pdev)> > > 
-> > >                 goto clk_dis_ahb;
-> > >         
-> > >         }
-> > > 
-> > > +#if defined(CONFIG_IOMMU_SUPPORT)
-> > > +       sdhci_arasan->domain = iommu_domain_alloc(&amba_bustype);
-> > > +       if (!sdhci_arasan->domain) {
-> > > +               dev_err(&pdev->dev, "Unable to allocate iommu
-> > > domain\n");
-> > > +               return PTR_ERR(sdhci_arasan->domain);
-> > > +       }
-> > > +
-> > > +       iommu_attach_device(sdhci_arasan->domain, &pdev->dev);
-> > > +#endif
-> > > +
-> > 
-> > Device drivers should never care about the implementation details
-> > of the iommu. Please change the code to use the regular dma_map_*
-> > interfaces that will work both with and without IOMMU.
->
-> After refer to iommu binding , there is a service that allows "Remap
-> address space to allow devices to access physical memory ranges that
-> they otherwise wouldn't be capable of accessing." eg : 32-bit to 64
-> bit DMA .
-> 
-> So do we have any existing driver that uses this service ? Just asking
-> for suggestions.
+From: leroy christophe
+> Le 06/01/2015 13:08, David Laight a =E9crit :
+> >> On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
+> >>> All accessed to PGD entries are done via 0(r11).
+> >>> By using lower part of swapper_pg_dir as load index to r11, we can re=
+move the
+> >>> ori instruction.
+> >>>
+> >>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> >> Nice :)
+> >> Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+> >>
+> >>> ---
+> >>>   arch/powerpc/kernel/head_8xx.S | 22 ++++++++++------------
+> >>>   1 file changed, 10 insertions(+), 12 deletions(-)
+> >>>
+> >>> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/hea=
+d_8xx.S
+> >>> index ae05f28..aa45225 100644
+> >>> --- a/arch/powerpc/kernel/head_8xx.S
+> >>> +++ b/arch/powerpc/kernel/head_8xx.S
+> >>> @@ -322,13 +322,12 @@ InstructionTLBMiss:
+> >>>          mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
+> >>>   #ifdef CONFIG_MODULES
+> >>>          beq     3f
+> >>> -       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
+> >>> -       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+> >>> +       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+> >>>   3:
+> >>>   #endif
+> >>>          /* Insert level 1 index */
+> >>>          rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT =
+- 2) << 1, 29
+> >>> -       lwz     r11, 0(r11)/* Get the level 1 entry */
+> >>> +       lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the le=
+vel 1 entry */
+> >>>
+> > On the face of it that fragment doesn't look right when CONFIG_MODULES =
+is undefined.
+> >
+> > 	David
+> >
+> I'm not sure I understand what you mean.
+>=20
+> The other part of the patch adds the following:
+> +    li    r5, (swapper_pg_dir-PAGE_OFFSET)@l
+> +    sub    r4, r4, r5
+>=20
+> r4 is the value put into SPRN_M_TW, so I don't see what may be wrong.
 
-The interface is completely transparent to device drivers, it is
-implemented as a separate 'struct dma_map_ops' that is normally
-architecture independent, and that handles all sorts of DMA remapping
-issues for the driver, including
+Ok, but it is completely non-obvious.
+You probably need to change some comments somewhere about what is held
+in SPRN_M_TW - since it is no longer the L1 base address, but that value
+offset by some 'random' amount.
 
-- address space limits
-- offsets between CPU and device addresses for the same memory
-- cache flushes
-- bus-level synchronization
-
-On arm32, we currently support six sets of dma_map_ops including
-two for IOMMU (coherent and noncoherent). On arm64, we currently
-always use swiotlb, which solves your problem by copying memory to
-bounce buffers. This is rather inefficient, and a new implementation
-is being worked on, based on the arm32 implementation to support
-IOMMUs in a generic way.
-
-	Arnd
+	David
