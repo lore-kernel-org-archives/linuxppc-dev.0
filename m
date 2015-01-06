@@ -1,17 +1,27 @@
-Return-Path: <stern+54ad1fae@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by lists.ozlabs.org (Postfix) with SMTP id 3B57A1A09CF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 05:22:11 +1100 (AEDT)
-Date: Tue, 6 Jan 2015 13:22:08 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Michael Tessier <michael.tessier@axiontech.ca>
-Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-In-Reply-To: <66A26A9AA227D947AF088537F041526E2009E5@VSVR-EX10-MB1.pocatec.com>
-Message-ID: <Pine.LNX.4.44L0.1501061316030.1602-100000@iolanthe.rowland.org>
+Return-Path: <mathieu.poirier@linaro.org>
+Received: from mail-oi0-f51.google.com (mail-oi0-f51.google.com
+ [209.85.218.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDE9A1A0944
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 03:00:46 +1100 (AEDT)
+Received: by mail-oi0-f51.google.com with SMTP id h136so19112104oig.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2015 08:00:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <CAMuHMdXXw_GiaDrtwmBSExwyYQe2t2io5j3V0fCawAc64-tXrA@mail.gmail.com>
+References: <1420536979-31149-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdXXw_GiaDrtwmBSExwyYQe2t2io5j3V0fCawAc64-tXrA@mail.gmail.com>
+Date: Tue, 6 Jan 2015 09:00:44 -0700
+Message-ID: <CANLsYkzmnFSEFH2xFmPe8oG0vCg5_Fis5-6Dak++nSUwa7jYBg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.19-rc3
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+ Pratik Patel <pratikp@codeaurora.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +31,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 6 Jan 2015, Michael Tessier wrote:
+On 6 January 2015 at 02:39, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Tue, Jan 6, 2015 at 10:36 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> JFYI, when comparing v3.19-rc3[1] to v3.19-rc2[3], the summaries are:
+>>   - build errors: +64/-9
+>
+>   + /home/kisskb/slave/src/arch/arm/mm/dma-mapping.c: error:
+> 'VM_ARM_DMA_CONSISTENT' undeclared (first use in this function):  =>
+> 1200:4, 1281:29, 1410:4
+>   + /home/kisskb/slave/src/arch/arm/mm/dma-mapping.c: error:
+> 'atomic_pool' undeclared (first use in this function):  => 1264:31
+>   + /home/kisskb/slave/src/arch/arm/mm/dma-mapping.c: error: implicit
+> declaration of function '__in_atomic_pool'
+> [-Werror=implicit-function-declaration]:  => 1274:2
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_BUFFERABLE' undeclared here (not in a function):  => 81:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_DEV_CACHED' undeclared here (not in a function):  => 117:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_DEV_NONSHARED' undeclared here (not in a function):  =>
+> 108:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_DEV_SHARED' undeclared here (not in a function):  => 103:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_DEV_WC' undeclared here (not in a function):  => 113:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'L_PTE_MT_MASK'
+> undeclared here (not in a function):  => 76:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_MINICACHE' undeclared here (not in a function):  => 94:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_UNCACHED' undeclared here (not in a function):  => 77:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_WRITEALLOC' undeclared here (not in a function):  => 99:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_WRITEBACK' undeclared here (not in a function):  => 89:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'L_PTE_MT_WRITETHROUGH' undeclared here (not in a function):  => 85:10
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'L_PTE_RDONLY'
+> undeclared here (not in a function):  => 61:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'L_PTE_SHARED'
+> undeclared here (not in a function):  => 71:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'L_PTE_USER'
+> undeclared here (not in a function):  => 56:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'L_PTE_XN'
+> undeclared here (not in a function):  => 66:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'PMD_SECT_AP_READ' undeclared here (not in a function):  => 153:13
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'PMD_SECT_AP_WRITE' undeclared here (not in a function):  => 153:32
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PMD_SECT_S'
+> undeclared here (not in a function):  => 175:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PMD_SECT_XN'
+> undeclared here (not in a function):  => 170:11
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PMD_SIZE'
+> undeclared (first use in this function):  => 279:22
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PTRS_PER_PGD'
+> undeclared (first use in this function):  => 319:23
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PTRS_PER_PMD'
+> undeclared (first use in this function):  => 278:18
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'PTRS_PER_PTE'
+> undeclared (first use in this function):  => 266:18
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: 'SECTION_SIZE'
+> undeclared (first use in this function):  => 285:7
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error:
+> 'USER_PGTABLES_CEILING' undeclared (first use in this function):  =>
+> 223:13, 311:23
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[0].mask'):  => 153:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[1].mask'):  => 157:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[1].val'):  => 158:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[2].mask'):  => 161:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[2].val'):  => 162:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[3].mask'):  => 165:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[3].val'):  => 166:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[4].mask'):  => 170:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[4].val'):  => 171:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[5].mask'):  => 175:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: (near
+> initialization for 'section_bits[5].val'):  => 176:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: implicit
+> declaration of function 'pmd_large'
+> [-Werror=implicit-function-declaration]:  => 280:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: implicit
+> declaration of function 'pmd_none'
+> [-Werror=implicit-function-declaration]:  => 280:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: implicit
+> declaration of function 'pmd_present'
+> [-Werror=implicit-function-declaration]:  => 280:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: implicit
+> declaration of function 'pte_offset_kernel'
+> [-Werror=implicit-function-declaration]:  => 262:2
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: initializer
+> element is not constant:  => 158:3, 162:3, 176:3, 170:3, 157:3, 175:3,
+> 161:3, 153:3, 171:3, 165:3, 166:3
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: invalid operands
+> to binary * (have 'unsigned int' and 'const struct prot_bits *'):  =>
+> 279:20
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: invalid operands
+> to binary / (have 'const struct prot_bits *' and 'long unsigned int'):
+>  => 311:45
+>   + /home/kisskb/slave/src/arch/arm/mm/dump.c: error: invalid operands
+> to binary | (have 'const struct prot_bits *' and 'const struct
+> prot_bits *'):  => 165:30, 153:30, 166:30, 157:30, 161:30
+>   + /home/kisskb/slave/src/arch/arm/mm/init.c: error: 'SECTION_SIZE'
+> undeclared (first use in this function):  => 733:2
+>   + /home/kisskb/slave/src/arch/arm/mm/init.c: error: 'pmdval_t'
+> undeclared here (not in a function):  => 633:12
+>   + /home/kisskb/slave/src/arch/arm/mm/init.c: error: expected
+> declaration specifiers or '...' before 'pmdval_t':  => 678:7, 677:55
+>   + /home/kisskb/slave/src/arch/arm/mm/init.c: error: implicit
+> declaration of function 'section_update'
+> [-Werror=implicit-function-declaration]:  => 733:2
+>   + /home/kisskb/slave/src/arch/arm/mm/init.c: error: unknown type
+> name 'pmdval_t':  => 625:2, 623:2, 624:2
+>
+> arm-randconfig (CONFIG_ARM_PTDUMP is broken?)
+>
+>   + /home/kisskb/slave/src/drivers/coresight/coresight-etb10.c: error:
+> implicit declaration of function 'of_get_coresight_platform_data'
+> [-Werror=implicit-function-declaration]:  => 430:3
+>   + /home/kisskb/slave/src/drivers/coresight/coresight-funnel.c:
+> error: implicit declaration of function
+> 'of_get_coresight_platform_data'
+> [-Werror=implicit-function-declaration]:  => 189:3
+>   + /home/kisskb/slave/src/drivers/coresight/coresight-replicator.c:
+> error: implicit declaration of function
+> 'of_get_coresight_platform_data'
+> [-Werror=implicit-function-declaration]:  => 72:3
+>   + /home/kisskb/slave/src/drivers/coresight/coresight-tmc.c: error:
+> implicit declaration of function 'of_get_coresight_platform_data'
+> [-Werror=implicit-function-declaration]:  => 625:3
+>   + /home/kisskb/slave/src/drivers/coresight/coresight-tpiu.c: error:
+> implicit declaration of function 'of_get_coresight_platform_data'
+> [-Werror=implicit-function-declaration]:  => 131:3
 
-> > > > > That is interresting, however, I have an older kernel running an 
-> > > > > OHCI driver which is able to handle 4 codecs. Same usb hardware 
-> > > > > (codecs and hub), but older kernel on a different CPU, with much 
-> > > > > less power. This makes me believe that there's a solution to make it work...
-> > > > 
-> > > > Of course there is: Install an OHCI host controller and use it to drive your codecs.  It should work fine.
-> 
-> What do you mean by that? The host controller is embedded in the i.MX CPU...
-> Changing the CPU is not really an option to me. Unless I am missing
-> something?
+Thanks for pointing this out - I will investigate.
 
-I didn't realize you were talking about an i.MX-based system.  On a
-computer with a free PCI slot, it's easy to add an OHCI controller.  
-iMX isn't as accomodating.
-
-If there's no way to add an extra USB controller to your system then 
-the only choice is to upgrade the driver software.
-
-Alan Stern
+>
+> arm-randconfig
+>
+>   + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error:
+> 'cached_to_uncached' undeclared (first use in this function):  =>
+> 99:17
+>   + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error: implicit
+> declaration of function 'cpu_context'
+> [-Werror=implicit-function-declaration]:  => 192:2
+>
+> sh-randconfig
+>
+>   + /home/kisskb/slave/src/kernel/bounds.c: error: -mcall-aixdesc must
+> be big endian:  => 1:0
+>   + /home/kisskb/slave/src/scripts/mod/devicetable-offsets.c: error:
+> -mcall-aixdesc must be big endian:  => 1:0
+>   + /home/kisskb/slave/src/scripts/mod/empty.c: error: -mcall-aixdesc
+> must be big endian:  => 1:0
+>   + <stdin>: error: -mcall-aixdesc must be big endian:  => 1:0
+>
+> powerpc-randconfig
+>
+>> [1] http://kisskb.ellerman.id.au/kisskb/head/8277/ (255 out of 262 configs)
+>> [3] http://kisskb.ellerman.id.au/kisskb/head/8257/ (all 262 configs)
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
