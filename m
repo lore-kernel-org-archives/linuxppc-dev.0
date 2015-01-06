@@ -1,26 +1,23 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 56EBA1A08CC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 00:26:44 +1100 (AEDT)
-Date: Tue, 6 Jan 2015 10:26:37 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
-Message-ID: <20150106132637.GB9975@kernel.org>
-References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <20141222143710.GA29096@krava.brq.redhat.com>
- <20141222193045.GA19784@us.ibm.com>
- <20141223095506.GB22265@krava.brq.redhat.com>
- <20141223195850.GA26952@us.ibm.com>
- <20150106094220.GB19868@krava.brq.redhat.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0CE911A08ED
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 00:27:41 +1100 (AEDT)
+Message-ID: <54ABE2CA.8030608@c-s.fr>
+Date: Tue, 06 Jan 2015 14:27:38 +0100
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150106094220.GB19868@krava.brq.redhat.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Joakim Tjernlund' <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
+References: <20141216150338.D4F0A1A5E0A@localhost.localdomain>
+ <1420482826.25047.26.camel@transmode.se>
+ <063D6719AE5E284EB5DD2968C1650D6D1CAC1765@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CAC1765@AcuExch.aculab.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Jan 06, 2015 at 10:42:20AM +0100, Jiri Olsa escreveu:
-> On Tue, Dec 23, 2014 at 11:58:50AM -0800, Sukadev Bhattiprolu wrote:
-> > From a24b480ff54381a7e092597864cf615162afdd60 Mon Sep 17 00:00:00 2001
-> > From: Cody P Schafer <cody@linux.vnet.ibm.com>
-> > Date: Wed, 24 Sep 2014 12:27:15 -0700
-> > Subject: [PATCH 1/4] tools/perf: support parsing parameterized events
-> > 
-> > Enable event specification like:
-> > 
-> > 	pmu/event_name,param1=0x1,param2=0x4/
-> > 
-> > Assuming that
-> > 
-> > 	/sys/bus/event_source/devices/pmu/events/event_name
-> > 
-> > Contains something like
-> > 
-> > 	param2=?,bar=1,param1=?
-> > 
-> > Changelog[v6]:
-> > 	[Jiri Olsa] Add a check to make sure that sysfs entries with
-> > 	parameters exactly match '=?'.
-> > 
-> > Changelog[v4]:
-> > 	[Jiri Olsa] Merge to recent perf-core and fix a small conflict.
-> > 
-> > Changelog[v3]:
-> > 	[Jiri Olsa] If the sysfs event file specifies 'param=val', make the
-> > 	usage 'hv_24x7/event,param=123/' rather than 'hv_24x7/event,val=123/'.
-> 
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
-> 
-> I'm ok with whole patchset, with some nits for patch 2
-> that I've already sent out..
-> 
-> Would you mind sending v7 so we avoid confusion for Arnaldo
-> what to pick up?
 
-Yes, please, I'm trying to pick up what has accumulated over the
-holidays,
+Le 06/01/2015 13:08, David Laight a écrit :
+>> On Tue, 2014-12-16 at 16:03 +0100, Christophe Leroy wrote:
+>>> All accessed to PGD entries are done via 0(r11).
+>>> By using lower part of swapper_pg_dir as load index to r11, we can remove the
+>>> ori instruction.
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Nice :)
+>> Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+>>
+>>> ---
+>>>   arch/powerpc/kernel/head_8xx.S | 22 ++++++++++------------
+>>>   1 file changed, 10 insertions(+), 12 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+>>> index ae05f28..aa45225 100644
+>>> --- a/arch/powerpc/kernel/head_8xx.S
+>>> +++ b/arch/powerpc/kernel/head_8xx.S
+>>> @@ -322,13 +322,12 @@ InstructionTLBMiss:
+>>>          mfspr   r11, SPRN_M_TW/* Get level 1 table base address */
+>>>   #ifdef CONFIG_MODULES
+>>>          beq     3f
+>>> -       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
+>>> -       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+>>> +       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+>>>   3:
+>>>   #endif
+>>>          /* Insert level 1 index */
+>>>          rlwimi  r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+>>> -       lwz     r11, 0(r11)/* Get the level 1 entry */
+>>> +       lwz     r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)/* Get the level 1 entry */
+>>>
+> On the face of it that fragment doesn't look right when CONFIG_MODULES is undefined.
+>
+> 	David
+>
+I'm not sure I understand what you mean.
 
-- Arnaldo
+The other part of the patch adds the following:
++    li    r5, (swapper_pg_dir-PAGE_OFFSET)@l
++    sub    r4, r4, r5
+
+r4 is the value put into SPRN_M_TW, so I don't see what may be wrong.
+
+Christophe
