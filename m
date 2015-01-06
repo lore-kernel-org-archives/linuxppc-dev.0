@@ -2,19 +2,22 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22B5D1A0769
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 20:40:36 +1100 (AEDT)
-Date: Tue, 6 Jan 2015 10:40:02 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CE3B1A0766
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jan 2015 20:42:57 +1100 (AEDT)
+Date: Tue, 6 Jan 2015 10:42:20 +0100
 From: Jiri Olsa <jolsa@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 2/4] tools/perf: extend format_alias() to include
- event parameters
-Message-ID: <20150106094002.GB24841@krava.brq.redhat.com>
+Subject: Re: [PATCH v6 1/4] tools/perf: support parsing parameterized events
+Message-ID: <20150106094220.GB19868@krava.brq.redhat.com>
 References: <1419234567-22784-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1419234567-22784-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1419234567-22784-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20141222143710.GA29096@krava.brq.redhat.com>
+ <20141222193045.GA19784@us.ibm.com>
+ <20141223095506.GB22265@krava.brq.redhat.com>
+ <20141223195850.GA26952@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1419234567-22784-3-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <20141223195850.GA26952@us.ibm.com>
 Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
@@ -27,67 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 21, 2014 at 11:49:25PM -0800, Sukadev Bhattiprolu wrote:
+On Tue, Dec 23, 2014 at 11:58:50AM -0800, Sukadev Bhattiprolu wrote:
+> From a24b480ff54381a7e092597864cf615162afdd60 Mon Sep 17 00:00:00 2001
 > From: Cody P Schafer <cody@linux.vnet.ibm.com>
+> Date: Wed, 24 Sep 2014 12:27:15 -0700
+> Subject: [PATCH 1/4] tools/perf: support parsing parameterized events
 > 
-> This causes `perf list pmu` to show parameters for parameterized events
-> like:
+> Enable event specification like:
 > 
->   pmu/event_name,param1=?,param2=?/ [Kernel PMU event]
+> 	pmu/event_name,param1=0x1,param2=0x4/
 > 
-> An example:
+> Assuming that
 > 
->   hv_24x7/HPM_TLBIE__PHYS_CORE,core=?/ [Kernel PMU event]
+> 	/sys/bus/event_source/devices/pmu/events/event_name
 > 
-> Changelog[v6]
-> 	[Jir Olsa, Sukadev Bhattiprolu] Drop the '$' sign and go back to
-> 	just printing whatevever sysfs provides (which is '=?') to identify
-> 	required parameters. sysfs also now uses parameters like 'core'
-> 	and 'vcpu' rather than 'starting_index'.
+> Contains something like
 > 
-> Changelog[v5]
-> 	[Jiri Olsa, Peter Zijlstra] Use '$' to prefix parameterized events.
+> 	param2=?,bar=1,param1=?
 > 
-> Changelog[v4]
-> 	[Jiri Olsa] If the parameter for an event in sysfs is 'param=val',
-> 	have perf-list show the event as 'param=?' rather than 'val=?'.
+> Changelog[v6]:
+> 	[Jiri Olsa] Add a check to make sure that sysfs entries with
+> 	parameters exactly match '=?'.
 > 
-> CC: Haren Myneni <hbabu@us.ibm.com>
-> CC: Cody P Schafer <dev@codyps.com>
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  tools/perf/util/pmu.c | 27 ++++++++++++++++++++++++++-
->  1 file changed, 26 insertions(+), 1 deletion(-)
+> Changelog[v4]:
+> 	[Jiri Olsa] Merge to recent perf-core and fix a small conflict.
 > 
-> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-> index cb516dd..d208fef 100644
-> --- a/tools/perf/util/pmu.c
-> +++ b/tools/perf/util/pmu.c
-> @@ -810,10 +810,35 @@ void perf_pmu__set_format(unsigned long *bits, long from, long to)
->  		set_bit(b, bits);
->  }
->  
-> +static int sub_non_neg(int a, int b)
-> +{
-> +	if (b > a)
-> +		return 0;
-> +	return a - b;
-> +}
-> +
->  static char *format_alias(char *buf, int len, struct perf_pmu *pmu,
->  			  struct perf_pmu_alias *alias)
->  {
-> -	snprintf(buf, len, "%s/%s/", pmu->name, alias->name);
-> +	struct parse_events_term *term;
-> +	int used = snprintf(buf, len, "%s/%s", pmu->name, alias->name);
-> +
-> +	list_for_each_entry(term, &alias->terms, list)
-> +		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
-> +			used += snprintf(buf + used, sub_non_neg(len, used),
-> +					",%s=%s", term->config,
-> +					term->val.str);
+> Changelog[v3]:
+> 	[Jiri Olsa] If the sysfs event file specifies 'param=val', make the
+> 	usage 'hv_24x7/event,param=123/' rather than 'hv_24x7/event,val=123/'.
 
-also please enclose above loop and if in {}
+Acked-by: Jiri Olsa <jolsa@kernel.org>
 
+I'm ok with whole patchset, with some nits for patch 2
+that I've already sent out..
+
+Would you mind sending v7 so we avoid confusion for Arnaldo
+what to pick up?
+
+thanks,
 jirka
