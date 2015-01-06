@@ -1,21 +1,18 @@
 Return-Path: <prvs=441ccb01c=michael.tessier@axiontech.ca>
 Received: from mail.axiontech.ca (unknown [207.164.255.36])
- by lists.ozlabs.org (Postfix) with ESMTP id EC4A11A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 03:50:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id D27B31A00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 04:38:33 +1100 (AEDT)
 From: Michael Tessier <michael.tessier@axiontech.ca>
-To: Fabio Estevam <festevam@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-Date: Tue, 6 Jan 2015 16:50:22 +0000
-Message-ID: <66A26A9AA227D947AF088537F041526E2009D3@VSVR-EX10-MB1.pocatec.com>
-References: <66A26A9AA227D947AF088537F041526E1FF44F@VSVR-EX10-MB1.pocatec.com>
- <Pine.LNX.4.44L0.1412171119590.2947-100000@netrider.rowland.org>
- <66A26A9AA227D947AF088537F041526E2008FE@VSVR-EX10-MB1.pocatec.com>
- <CAOMZO5DESCa3BOYwv0rAkoWLgTYwDdrYkNbr_jjW30s9UfR5RA@mail.gmail.com>
-In-Reply-To: <CAOMZO5DESCa3BOYwv0rAkoWLgTYwDdrYkNbr_jjW30s9UfR5RA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+Date: Tue, 6 Jan 2015 17:38:29 +0000
+Message-ID: <66A26A9AA227D947AF088537F041526E2009E5@VSVR-EX10-MB1.pocatec.com>
+References: <66A26A9AA227D947AF088537F041526E2009B9@VSVR-EX10-MB1.pocatec.com>
+ <Pine.LNX.4.44L0.1501061144320.1602-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1501061144320.1602-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alan Stern <stern@rowland.harvard.edu>,
  "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,24 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+ID4gSWYgc291bmQgaXMgb2sgd2hlbiB1c2luZyBvbmx5IDEgY29kZWMgYW5kIGJlY29tZXMg
-Y2hvcHB5IHdoZW4gYWRkaW5nIA0KPiA+IGEgc2Vjb25kIGNvZGVjLCB0aGVuIGl0IG1lYW5zIHRo
-YXQgdGhpcyBpc3N1ZSBpcyBzdGlsbCBpbiB0aGUgMy54IA0KPiA+IGtlcm5lbC4gVGhpcyBhbnN3
-ZXIgd2lsbCB0ZWxsIG1lIGlmIGl0IGlzIHdvcnRoIHdvcmtpbmcgb24gdXNpbmcgYSBuZXdlciBr
-ZXJuZWwgb3Igbm90Lg0KPiA+IEkgaGF2ZSB0byBzYXkgdGhhdCBJJ20gbm90IGEgbGludXggZXhw
-ZXJ0LCBzbyBJIHNlZSB0aGUgbWlncmF0aW9uIHRvIGEgDQo+ID4gbmV3ZXIga2VybmVsIGFzIGEg
-cXVpdGUgYmlnIGFtb3VudCBvZiB3b3JrLi4uDQo+DQo+IFdlIGhhdmUgc3VwcG9ydCBmb3IgbXg1
-MSBvbiB0aGUgbGF0ZXN0IGtlcm5lbC4gQWxsIHlvdSBuZWVkIHRvIGRvIGlzIHRvIGRlc2NyaWJl
-IHlvdXIgaGFyZHdhcmUgb24gYSBkZXZpY2UgdHJlZSBmaWxlLiBZb3UgY2FuIHJlZmVyIHRvIGFy
-Y2gvYXJtL2Jvb3QvZHRzL2lteDUxLWJhYmJhZ2UuZHRzIGFzIGFuIGV4YW1wbGUuDQo+DQo+IFNo
-b3VsZCBiZSBzaW1wbGUgZm9yIHlvdSB0byBtYWtlIHN1Y2ggdGVzdCB3aXRoIHRoZSBsYXRlc3Qg
-a2VybmVsLg0KDQpJJ2xsIHRyeSB0byBkbyBzby4gTXkgbWFpbiBjb25jZXJuIGlzIHRoYXQgZXZl
-biBpZiBpdCBoYXMgYmVlbiBjb3JyZWN0ZWQNCmluIHRoZSBsYXN0IGtlcm5lbCwgSSdtIG5vdCBm
-cmVlIHRvIGp1c3QgdXNlIHRoZSBsYXN0IGtlcm5lbDsgb3VyIGN1c3RvbWVycw0KYWxyZWFkeSBo
-YXZlIHVuaXRzIGluIHRoZWlyIGhhbmRzLCBhbmQgdGhleSBib3VnaHQgdXMgYSAiRm9ybSBGaXQg
-JiBGdW5jdGlvbiINCnBsYXR0Zm9ybS4gV2UgaGF2ZSBhIGh1Z2UgYnVuY2ggb2YgZG9jdW1lbnRh
-dGlvbiBjb21pbmcgd2l0aCBlYWNoIGRlbGl2ZXJhYmxlDQoocGFydCBvZiBhbiBJU08gcHJvY2Vz
-cywgZm9sbG93aW5nIElFRUUgc29mdHdhcmUgc3RhbmRhcmRzKS4gU28gZm9yIHRoZQ0KY29tcGFu
-eSwgbWlncmF0aW5nIHRvIHRoZSBsYXRlc3Qga2VybmVsIGlzIHRoZSBsYXN0IHJlc29ydCBiZWNh
-dXNlIG9mIHRoZQ0KYW1vdW50IG9mIHdvcmsgaXQgd291bGQgcmVxdWlyZS4gVGhhbmtzIGZvciB0
-aGUgaWRlYSwgSSdsbCBsZXQgeW91IGtub3cuDQoNCk1pY2hhZWwgVGVzc2llcg0K
+> > > > That is interresting, however, I have an older kernel running an=20
+> > > > OHCI driver which is able to handle 4 codecs. Same usb hardware=20
+> > > > (codecs and hub), but older kernel on a different CPU, with much=20
+> > > > less power. This makes me believe that there's a solution to make i=
+t work...
+> > >=20
+> > > Of course there is: Install an OHCI host controller and use it to dri=
+ve your codecs.  It should work fine.
+
+What do you mean by that? The host controller is embedded in the i.MX CPU..=
+.
+Changing the CPU is not really an option to me. Unless I am missing
+something?
+
+> > >=20
+> > > The periodic scheduling algorithm for OHCI is very different from the=
+ algorithm for EHCI.
+> >=20
+> > According to your knowledge, how much time would you think it takes to=
+=20
+> > change the EHCI driver with an OHCI one?
+>
+> I don't understand the question.
+>
+> >  And can you tell if the OHCI driver
+> > will work on my hardware given that the Host controller of the i.MX512=
+=20
+> > is a USB2.0 host controller? (OHCI was implemented for USB 1.x from=20
+> > what I
+> > understand)
+>
+> The OHCI driver works with OHCI hardware and the EHCI driver works with E=
+HCI hardware.  OHCI is USB-1.1 and EHCI is USB-2.  They are not interchange=
+able.
+
+That was what I thought first...
+
+>
+> > I tried to do so several days ago with the built-in configurator (I am=
+=20
+> > using "ltib"), but the configurator does not allow selecting the OHCI=20
+> > driver; I tried manually but it turned into compiler errors...
+>
+> It looks like the configurator is smart; it won't let you select the wron=
+g driver for your hardware.
+>
+> Alan Stern
