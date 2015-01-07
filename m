@@ -1,20 +1,23 @@
-Return-Path: <mathieu.poirier@linaro.org>
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0103.outbound.protection.outlook.com [207.46.100.103])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4D751A083A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 04:54:28 +1100 (AEDT)
-Received: by mail-pa0-f52.google.com with SMTP id eu11so31218784pac.25
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2015 09:54:26 -0800 (PST)
-From: mathieu.poirier@linaro.org
-To: geert@linux-m68k.org
-Subject: [PATCH] coresight: Fixing wrong #ifdef/#endif placement
-Date: Tue,  6 Jan 2015 10:54:12 -0700
-Message-Id: <1420566852-20816-1-git-send-email-mathieu.poirier@linaro.org>
-Cc: mathieu.poirier@linaro.org, linux-sh@vger.kernel.org,
- pratikp@codeaurora.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 633D31A07C3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 11:28:54 +1100 (AEDT)
+Message-ID: <1420590520.4961.38.camel@freescale.com>
+Subject: Re: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+From: Scott Wood <scottwood@freescale.com>
+To: Xie Shaohui-B21989 <Shaohui.Xie@freescale.com>
+Date: Tue, 6 Jan 2015 18:28:40 -0600
+In-Reply-To: <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
+ <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Medve
+ Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +27,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
+On Mon, 2015-01-05 at 05:21 -0600, Xie Shaohui-B21989 wrote:
+> Hello Scott,
+> 
+> Is this v3 OK?
+> 
+> Best Regards, 
+> Shaohui Xie
+> > -----Original Message-----
+> > From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
+> > Sent: Tuesday, December 23, 2014 3:58 PM
+> > To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood Scott-B07421
+> > Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
+> > Subject: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+> > 
+> > From: Shaohui Xie <Shaohui.Xie@freescale.com>
+> > 
+> > This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+> > 
+> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> > ---
+> > changes in v3:
+> > rephrase the 'Definition' of property 'bus-frequency', don't include the
+> > property in example.
+> > 
+> > changes in v2:
+> > addressed comments from Scott in V1.
+> > 
+> >  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
+> >  1 file changed, 69 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > index edeea16..737aa4c 100644
+> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+> > @@ -7,6 +7,7 @@ CONTENTS
+> >    - FMan MURAM Node
+> >    - FMan dTSEC/XGEC/mEMAC Node
+> >    - FMan IEEE 1588 Node
+> > +  - FMan MDIO Node
+> >    - Example
+> > 
+> >  =============================================================================
+> > @@ -357,6 +358,69 @@ ptp-timer@fe000 {
+> >  };
+> > 
+> >  =============================================================================
+> > +FMan MDIO Node
+> > +
+> > +DESCRIPTION
+> > +
+> > +The MDIO is a bus to which the PHY devices are connected.
+> > +
+> > +PROPERTIES
+> > +
+> > +- compatible
+> > +		Usage: required
+> > +		Value type: <stringlist>
+> > +		Definition: A standard property.
+> > +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
+> > +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
+> > +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
+> > +		FMan v3.
+> > +
+> > +- reg
+> > +		Usage: required
+> > +		Value type: <prop-encoded-array>
+> > +		Definition: A standard property.
+> > +
+> > +- bus-frequency
+> > +		Usage: optional
+> > +		Value type: <u32>
+> > +		Definition: Specifies the external MDIO bus clock speed to
+> > +		be used, if different from the standard 2.5 MHz.
+> > +		This may be due to the standard speed being unsupported (e.g.
+> > +		due to a hardware problem), or to advertise that all relevant
+> > +		components in the system support a faster speed.
+> > +
+> > +- interrupts
+> > +		Usage: optional
+> > +		Value type: <prop-encoded-array>
+> > +		Definition: Event interrupt of external MDIO controller.
+> > +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
 
-Fixing problem reported by:
-        https://lkml.org/lkml/2015/1/6/86
+I'm confused by "respectively" here.  Does fsl,fman-memac-mdio have two
+interrupts (one for 1 Gb/s and one for 10 Gb/s)?  If there's only (at
+most) one interrupt per MDIO controller then just delete this line.
 
-The #ifdef/#endif is wrong and prevents the stub of function
-of_get_coresight_platform_data() from being visible when
-CONFIG_OF is not defined.
+What interrupt is used for internal MDIO?  Does "optional" mean it's
+used if and only if external MDIO is used, or is it optional even with
+external MDIO?  I see it's not present in the example -- do we not have
+a real example that has the interrupt?
 
-Moving CONFIG_OF condition out of CONFIG_CORESIGHT, making
-them both independent.
-
-Signed-off-by: Mathieu Poirier <mathieu.poirier@linaro.org>
----
- include/linux/coresight.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/coresight.h b/include/linux/coresight.h
-index 5d3c54311f7a..4404033ee879 100644
---- a/include/linux/coresight.h
-+++ b/include/linux/coresight.h
-@@ -239,10 +239,6 @@ extern void coresight_disable(struct coresight_device *csdev);
- extern int coresight_is_bit_set(u32 val, int position, int value);
- extern int coresight_timeout(void __iomem *addr, u32 offset,
- 			     int position, int value);
--#ifdef CONFIG_OF
--extern struct coresight_platform_data *of_get_coresight_platform_data(
--				struct device *dev, struct device_node *node);
--#endif
- #else
- static inline struct coresight_device *
- coresight_register(struct coresight_desc *desc) { return NULL; }
-@@ -254,10 +250,14 @@ static inline int coresight_is_bit_set(u32 val, int position, int value)
- 					 { return 0; }
- static inline int coresight_timeout(void __iomem *addr, u32 offset,
- 				     int position, int value) { return 1; }
-+#endif
-+
- #ifdef CONFIG_OF
-+extern struct coresight_platform_data *of_get_coresight_platform_data(
-+				struct device *dev, struct device_node *node);
-+#else
- static inline struct coresight_platform_data *of_get_coresight_platform_data(
- 	struct device *dev, struct device_node *node) { return NULL; }
- #endif
--#endif
- 
- #endif
--- 
-1.9.1
+-Scott
