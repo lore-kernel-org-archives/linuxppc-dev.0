@@ -1,25 +1,24 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Shaohui.Xie@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0145.outbound.protection.outlook.com [65.55.169.145])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AC201A0BA8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 16:12:53 +1100 (AEDT)
-Date: Wed, 7 Jan 2015 16:12:47 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: Don't use local named register variable in
- current_thread_info
-Message-ID: <20150107161247.55591e93@kryten>
-In-Reply-To: <20141231122453.GH5183@bubble.grove.modra.org>
-References: <1414727247-31838-1-git-send-email-anton__19440.5086375356$1414727300$gmane$org@samba.org>
- <5490D981.7040905@suse.de>
- <1418879514.13333.2.camel@ellerman.id.au>
- <20141218172546.432de7f2@kryten>
- <20141231122453.GH5183@bubble.grove.modra.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 326F91A0EC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 16:29:24 +1100 (AEDT)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+Date: Wed, 7 Jan 2015 05:29:16 +0000
+Message-ID: <DM2PR0301MB08645ABD93708FFE011EF362E2460@DM2PR0301MB0864.namprd03.prod.outlook.com>
+References: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
+ <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+ <1420590520.4961.38.camel@freescale.com>
+In-Reply-To: <1420590520.4961.38.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Alexander Graf <agraf@suse.de>, ulrich.weigand@de.ibm.com, paulus@samba.org,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alan,
-
-> Right.  This is really an rs6000 backend bug.  We describe one of the
-> indirect calls that go wrong here as
-> 
-> (call_insn 108 107 109 13 (parallel [
->             (set (reg:DI 3 3)
->                 (call (mem:SI (reg:DI 288) [0 *_67 S4 A8])
->                     (const_int 64 [0x40])))
->             (use (mem:DI (plus:DI (reg/f:DI 287 [ ops_44(D)->update ])
->                         (const_int 8 [0x8])) [0  S8 A8]))
->             (set (reg:DI 2 2)
->                 (mem/v/c:DI (plus:DI (reg/f:DI 1 1)
->                         (const_int 40 [0x28])) [0  S8 A8]))
->             (clobber (reg:DI 65 lr))
->         ]) net/core/skbuff.c:2085 680 {*call_value_indirect_aixdi}
-> 	<notes and arg uses omitted for clarity>
-> )
-> 
-> Notice that the RTL contains a "parallel".  As you might guess, gcc
-> treats the vector of expressions inside the square brackets of the
-> parallel as happening "in parallel".  Meaning that as far as gcc is
-> concerned the toc restore part (third element) happens at the same
-> time as the call (first element).  So if gcc replaces (reg:DI 1) in
-> the toc restore with some other register known to have the same value
-> *before* the call, gcc's RTL analysis will conclude that such a
-> replacement is valid.
-
-Thanks for looking into this. Does that mean we were just getting lucky
-with the previous version:
-
-static inline struct thread_info *current_thread_info(void)
-{
-        register unsigned long sp asm("r1");
-
-        return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
-}
- 
-ie a static register asm instead of a global one. If so the safest fix
-for now might be to just eat the overead of a register move:
-
-static inline struct thread_info *current_thread_info(void)
-{
-        unsigned long sp;
-
-        asm("mr %0,1": "=r"(sp));
-        return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
-}
-
-Anton
+PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IHNoaC54aWVAZ21h
+aWwuY29tIFttYWlsdG86c2hoLnhpZUBnbWFpbC5jb21dDQo+ID4gPiBTZW50OiBUdWVzZGF5LCBE
+ZWNlbWJlciAyMywgMjAxNCAzOjU4IFBNDQo+ID4gPiBUbzogbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBXb29kDQo+ID4gPiBTY290dC1C
+MDc0MjENCj4gPiA+IENjOiBNZWR2ZSBFbWlsaWFuLUVNTUVEVkUxOyBYaWUgU2hhb2h1aS1CMjE5
+ODkNCj4gPiA+IFN1YmplY3Q6IFtQQVRDSF0gW3YzXSBwb3dlci9mc2w6IGFkZCBNRElPIGR0IGJp
+bmRpbmcgZm9yIEZNYW4NCj4gPiA+DQo+ID4gPiBGcm9tOiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5Y
+aWVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+DQo+ID4gPiBUaGlzIGJpbmRpbmcgaXMgZm9yIEZNYW4g
+TURJTywgaXQgY292ZXJzIEZNYW4gdjIgJiBGTWFuIHYzLg0KPiA+ID4NCj4gPiA+IFNpZ25lZC1v
+ZmYtYnk6IFNoYW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gLS0t
+DQo+ID4gPiBjaGFuZ2VzIGluIHYzOg0KPiA+ID4gcmVwaHJhc2UgdGhlICdEZWZpbml0aW9uJyBv
+ZiBwcm9wZXJ0eSAnYnVzLWZyZXF1ZW5jeScsIGRvbid0IGluY2x1ZGUNCj4gPiA+IHRoZSBwcm9w
+ZXJ0eSBpbiBleGFtcGxlLg0KPiA+ID4NCj4gPiA+IGNoYW5nZXMgaW4gdjI6DQo+ID4gPiBhZGRy
+ZXNzZWQgY29tbWVudHMgZnJvbSBTY290dCBpbiBWMS4NCj4gPiA+DQo+ID4gPiAgLi4uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvZm1hbi50eHQgICAgICAgfCA2OQ0KPiArKysrKysr
+KysrKysrKysrKysrKysrDQo+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDY5IGluc2VydGlvbnMoKykN
+Cj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL3Bvd2VycGMvZnNsL2ZtYW4udHh0DQo+ID4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9mbWFuLnR4dA0KPiA+ID4gaW5kZXggZWRlZWExNi4uNzM3
+YWE0YyAxMDA2NDQNCj4gPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9wb3dlcnBjL2ZzbC9mbWFuLnR4dA0KPiA+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2ZtYW4udHh0DQo+ID4gPiBAQCAtNyw2ICs3LDcgQEAg
+Q09OVEVOVFMNCj4gPiA+ICAgIC0gRk1hbiBNVVJBTSBOb2RlDQo+ID4gPiAgICAtIEZNYW4gZFRT
+RUMvWEdFQy9tRU1BQyBOb2RlDQo+ID4gPiAgICAtIEZNYW4gSUVFRSAxNTg4IE5vZGUNCj4gPiA+
+ICsgIC0gRk1hbiBNRElPIE5vZGUNCj4gPiA+ICAgIC0gRXhhbXBsZQ0KPiA+ID4NCj4gPiA+DQo+
+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PQ0KPiA+ID4gPT09PT09PT09IEBAIC0zNTcsNiArMzU4LDY5IEBAIHB0
+cC10aW1lckBmZTAwMCB7ICB9Ow0KPiA+ID4NCj4gPiA+DQo+ID4gPiA9PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiA+
+ID4gPT09PT09PT09DQo+ID4gPiArRk1hbiBNRElPIE5vZGUNCj4gPiA+ICsNCj4gPiA+ICtERVND
+UklQVElPTg0KPiA+ID4gKw0KPiA+ID4gK1RoZSBNRElPIGlzIGEgYnVzIHRvIHdoaWNoIHRoZSBQ
+SFkgZGV2aWNlcyBhcmUgY29ubmVjdGVkLg0KPiA+ID4gKw0KPiA+ID4gK1BST1BFUlRJRVMNCj4g
+PiA+ICsNCj4gPiA+ICstIGNvbXBhdGlibGUNCj4gPiA+ICsJCVVzYWdlOiByZXF1aXJlZA0KPiA+
+ID4gKwkJVmFsdWUgdHlwZTogPHN0cmluZ2xpc3Q+DQo+ID4gPiArCQlEZWZpbml0aW9uOiBBIHN0
+YW5kYXJkIHByb3BlcnR5Lg0KPiA+ID4gKwkJTXVzdCBpbmNsdWRlICJmc2wsZm1hbi1tZGlvIiBm
+b3IgMSBHYi9zIE1ESU8gZnJvbSBGTWFuIHYyLg0KPiA+ID4gKwkJTXVzdCBpbmNsdWRlICJmc2ws
+Zm1hbi14bWRpbyIgZm9yIDEwIEdiL3MgTURJTyBmcm9tIEZNYW4gdjIuDQo+ID4gPiArCQlNdXN0
+IGluY2x1ZGUgImZzbCxmbWFuLW1lbWFjLW1kaW8iIGZvciAxLzEwIEdiL3MgTURJTyBmcm9tDQo+
+ID4gPiArCQlGTWFuIHYzLg0KPiA+ID4gKw0KPiA+ID4gKy0gcmVnDQo+ID4gPiArCQlVc2FnZTog
+cmVxdWlyZWQNCj4gPiA+ICsJCVZhbHVlIHR5cGU6IDxwcm9wLWVuY29kZWQtYXJyYXk+DQo+ID4g
+PiArCQlEZWZpbml0aW9uOiBBIHN0YW5kYXJkIHByb3BlcnR5Lg0KPiA+ID4gKw0KPiA+ID4gKy0g
+YnVzLWZyZXF1ZW5jeQ0KPiA+ID4gKwkJVXNhZ2U6IG9wdGlvbmFsDQo+ID4gPiArCQlWYWx1ZSB0
+eXBlOiA8dTMyPg0KPiA+ID4gKwkJRGVmaW5pdGlvbjogU3BlY2lmaWVzIHRoZSBleHRlcm5hbCBN
+RElPIGJ1cyBjbG9jayBzcGVlZCB0bw0KPiA+ID4gKwkJYmUgdXNlZCwgaWYgZGlmZmVyZW50IGZy
+b20gdGhlIHN0YW5kYXJkIDIuNSBNSHouDQo+ID4gPiArCQlUaGlzIG1heSBiZSBkdWUgdG8gdGhl
+IHN0YW5kYXJkIHNwZWVkIGJlaW5nIHVuc3VwcG9ydGVkIChlLmcuDQo+ID4gPiArCQlkdWUgdG8g
+YSBoYXJkd2FyZSBwcm9ibGVtKSwgb3IgdG8gYWR2ZXJ0aXNlIHRoYXQgYWxsIHJlbGV2YW50DQo+
+ID4gPiArCQljb21wb25lbnRzIGluIHRoZSBzeXN0ZW0gc3VwcG9ydCBhIGZhc3RlciBzcGVlZC4N
+Cj4gPiA+ICsNCj4gPiA+ICstIGludGVycnVwdHMNCj4gPiA+ICsJCVVzYWdlOiBvcHRpb25hbA0K
+PiA+ID4gKwkJVmFsdWUgdHlwZTogPHByb3AtZW5jb2RlZC1hcnJheT4NCj4gPiA+ICsJCURlZmlu
+aXRpb246IEV2ZW50IGludGVycnVwdCBvZiBleHRlcm5hbCBNRElPIGNvbnRyb2xsZXIuDQo+ID4g
+PiArCQkxIEdiL3MgTURJTyBhbmQgMTAgR2IvcyBNRElPIGhhcyBvbmUgaW50ZXJydXB0IHJlc3Bl
+Y3RpdmVseS4NCj4gDQo+IEknbSBjb25mdXNlZCBieSAicmVzcGVjdGl2ZWx5IiBoZXJlLiAgRG9l
+cyBmc2wsZm1hbi1tZW1hYy1tZGlvIGhhdmUgdHdvDQo+IGludGVycnVwdHMgKG9uZSBmb3IgMSBH
+Yi9zIGFuZCBvbmUgZm9yIDEwIEdiL3MpPw0KW1MuSF0gV2UgdXNlIHR3byBNRElPIGNvbnRyb2xs
+ZXJzIGZvciBleHRlcm5hbCBQSFkgbWFuYWdlbWVudC4gT25lIGZvciAxIEdiL3MsDQpPbmUgZm9y
+IDEwIEdiL3MsIGFuZCB0d28gTURJTyBpbnRlcnJ1cHRzIGNvbm5lY3RlZCB0byBNUElDLg0KDQog
+IElmIHRoZXJlJ3Mgb25seSAoYXQNCj4gbW9zdCkgb25lIGludGVycnVwdCBwZXIgTURJTyBjb250
+cm9sbGVyIHRoZW4ganVzdCBkZWxldGUgdGhpcyBsaW5lLg0KPiANCj4gV2hhdCBpbnRlcnJ1cHQg
+aXMgdXNlZCBmb3IgaW50ZXJuYWwgTURJTz8NCltTLkhdIGludGVybmFsIE1ESU8gaGFzIG5vIGlu
+dGVycnVwdC4NCg0KICBEb2VzICJvcHRpb25hbCIgbWVhbiBpdCdzIHVzZWQgaWYgYW5kDQo+IG9u
+bHkgaWYgZXh0ZXJuYWwgTURJTyBpcyB1c2VkLCBvciBpcyBpdCBvcHRpb25hbCBldmVuIHdpdGgg
+ZXh0ZXJuYWwgTURJTz8gIEkgc2VlDQo+IGl0J3Mgbm90IHByZXNlbnQgaW4gdGhlIGV4YW1wbGUg
+LS0gZG8gd2Ugbm90IGhhdmUgYSByZWFsIGV4YW1wbGUgdGhhdCBoYXMgdGhlDQo+IGludGVycnVw
+dD8NCltTLkhdICJvcHRpb25hbCIgbWVhbnMgaXQncyBhdmFpbGFibGUgb24gaGFyZHdhcmUsIGJ1
+dCBNRElPIGRyaXZlciBkb2VzIG5vdCB1c2UgaW50ZXJydXB0LiANClNvIHdlIGRvbid0IGhhdmUg
+YSByZWFsIGV4YW1wbGUuDQoNClRoYW5rcyENClNoYW9odWkNCg==
