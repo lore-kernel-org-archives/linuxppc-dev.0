@@ -1,36 +1,19 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss-mx-na.foss.arm.com (foss-mx-na.foss.arm.com
- [217.140.108.86])
- by lists.ozlabs.org (Postfix) with ESMTP id 2E31C1A0ED0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 22:30:16 +1100 (AEDT)
-Date: Wed, 7 Jan 2015 11:30:05 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/3] jump_label: Allow asm/jump_label.h to be included in
- assembly
-Message-ID: <20150107113004.GJ7485@arm.com>
-References: <1420626958-31254-1-git-send-email-anton@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1420626958-31254-1-git-send-email-anton@samba.org>
-Cc: "peterz@infradead.org" <peterz@infradead.org>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- "paulus@samba.org" <paulus@samba.org>, "hpa@zytor.com" <hpa@zytor.com>,
- "mingo@kernel.org" <mingo@kernel.org>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "mingo@redhat.com" <mingo@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>,
- Catalin Marinas <Catalin.Marinas@arm.com>,
- "liuj97@gmail.com" <liuj97@gmail.com>,
- "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
- "jbaron@akamai.com" <jbaron@akamai.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>, "mmarek@suse.cz" <mmarek@suse.cz>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73B7B1A0EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 01:40:20 +1100 (AEDT)
+Message-ID: <1420641610.5830.29.camel@kernel.crashing.org>
+Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Purcareata Bogdan <b43198@freescale.com>
+Date: Wed, 07 Jan 2015 15:40:10 +0100
+In-Reply-To: <54AA9C4D.3000001@freescale.com>
+References: <54AA9C4D.3000001@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,65 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 07, 2015 at 10:35:56AM +0000, Anton Blanchard wrote:
-> Wrap asm/jump_label.h for all archs with #ifndef __ASSEMBLY__.
-> Since these are kernel only headers, we don't need #ifdef __KERNEL__
-> so can simplify things a bit.
+On Mon, 2015-01-05 at 16:14 +0200, Purcareata Bogdan wrote:
+> Hello,
 > 
-> If an architecture wants to use jump labels in assembly, it
-> will still need to define a macro to create the __jump_table
-> entries (see ARCH_STATIC_BRANCH in the powerpc asm/jump_label.h
-> for an example).
+> While doing some performance testing of a KVM guest on a PPC platform, I 
+> noticed that there's a read of the CPU_WHOAMI register after each MPIC 
+> EOI [1]. This has been present since the initial implementation of the 
+> MPIC driver [2]. In a KVM virtualized environment, this results in an 
+> additional kvm_exit.
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  arch/arm/include/asm/jump_label.h   | 5 ++---
->  arch/arm64/include/asm/jump_label.h | 8 ++++----
->  arch/mips/include/asm/jump_label.h  | 7 +++----
->  arch/s390/include/asm/jump_label.h  | 3 +++
->  arch/sparc/include/asm/jump_label.h | 5 ++---
->  arch/x86/include/asm/jump_label.h   | 5 ++---
->  6 files changed, 16 insertions(+), 17 deletions(-)
+> Is the read back necessary? Is it used to provide some sort of 
+> synchronization mechanism, making sure that nothing else is executed 
+> until the EOI write is finished? I eliminated the mpic_cpu_read call and 
+> run the kernel on hardware and noticed no anomaly, however I am not sure 
+> of all the implications and race conditions it might lead to.
 
-[...]
+It was done to ensure that the store to the EOI has reached the MPIC and
+been fully processed before re-enabling interrupts on the CPU. On some
+implementations, the MPIC runs quite slowly (significantly slower than
+the core) and the stores to it are asynchronous, so we had situation
+where we would restore interrupts while the MPIC hasn't yet de-asserted
+the output line.
 
-> diff --git a/arch/arm64/include/asm/jump_label.h b/arch/arm64/include/asm/jump_label.h
-> index 076a1c7..c0e5165 100644
-> --- a/arch/arm64/include/asm/jump_label.h
-> +++ b/arch/arm64/include/asm/jump_label.h
-> @@ -18,11 +18,12 @@
->   */
->  #ifndef __ASM_JUMP_LABEL_H
->  #define __ASM_JUMP_LABEL_H
-> +
-> +#ifndef __ASSEMBLY__
-> +
->  #include <linux/types.h>
->  #include <asm/insn.h>
->  
-> -#ifdef __KERNEL__
-> -
->  #define JUMP_LABEL_NOP_SIZE		AARCH64_INSN_SIZE
->  
->  static __always_inline bool arch_static_branch(struct static_key *key)
-> @@ -39,8 +40,6 @@ l_yes:
->  	return true;
->  }
->  
-> -#endif /* __KERNEL__ */
-> -
->  typedef u64 jump_label_t;
->  
->  struct jump_entry {
-> @@ -49,4 +48,5 @@ struct jump_entry {
->  	jump_label_t key;
->  };
->  
-> +#endif  /* __ASSEMBLY__ */
->  #endif	/* __ASM_JUMP_LABEL_H */
+One way to work around the performance loss for you would be to add some
+DT property to indicate to the guest that the read isn't necessary.
 
-The arm64 bit looks fine to me:
-
-  Acked-by: Will Deacon <will.deacon@arm.com>
-
-Will
+> I was curious why the mpic_cpu_read(MPIC_INFO(CPU_WHOAMI)) was there in 
+> the first place and if it's still needed. If it's still required, I 
+> guess a better approach is to eliminate the call only if the kernel is 
+> running on the KVM guest side, where the MPIC is emulated and no longer 
+> requires a readback.
+> 
+> Thank you,
+> Bogdan P.
+> 
+> [1] http://lxr.free-electrons.com/source/arch/powerpc/sysdev/mpic.c#L659
+> [2] https://lkml.org/lkml/2004/10/22/483
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
