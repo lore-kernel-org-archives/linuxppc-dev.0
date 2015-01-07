@@ -1,25 +1,36 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 886B11A0EDA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 21:36:03 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mmarek@suse.cz, akpm@linux-foundation.org, jbaron@akamai.com,
- peterz@infradead.org, liuj97@gmail.com, mingo@kernel.org, mgorman@suse.de,
- linux@arm.linux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- ralf@linux-mips.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
- rostedt@goodmis.org
-Subject: [PATCH 3/3] powerpc: Include linux/jump_label.h to get
- HAVE_JUMP_LABEL define
-Date: Wed,  7 Jan 2015 21:35:58 +1100
-Message-Id: <1420626958-31254-3-git-send-email-anton@samba.org>
-In-Reply-To: <1420626958-31254-1-git-send-email-anton@samba.org>
+Return-Path: <will.deacon@arm.com>
+Received: from foss-mx-na.foss.arm.com (foss-mx-na.foss.arm.com
+ [217.140.108.86])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2E31C1A0ED0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 22:30:16 +1100 (AEDT)
+Date: Wed, 7 Jan 2015 11:30:05 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/3] jump_label: Allow asm/jump_label.h to be included in
+ assembly
+Message-ID: <20150107113004.GJ7485@arm.com>
 References: <1420626958-31254-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1420626958-31254-1-git-send-email-anton@samba.org>
+Cc: "peterz@infradead.org" <peterz@infradead.org>,
+ "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
+ "paulus@samba.org" <paulus@samba.org>, "hpa@zytor.com" <hpa@zytor.com>,
+ "mingo@kernel.org" <mingo@kernel.org>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "mingo@redhat.com" <mingo@redhat.com>, "mgorman@suse.de" <mgorman@suse.de>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ "liuj97@gmail.com" <liuj97@gmail.com>,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>,
+ "jbaron@akamai.com" <jbaron@akamai.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>, "mmarek@suse.cz" <mmarek@suse.cz>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "ralf@linux-mips.org" <ralf@linux-mips.org>,
+ "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +40,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
-converted uses of CONFIG_JUMP_LABEL to HAVE_JUMP_LABEL in
-some assembly files.
+On Wed, Jan 07, 2015 at 10:35:56AM +0000, Anton Blanchard wrote:
+> Wrap asm/jump_label.h for all archs with #ifndef __ASSEMBLY__.
+> Since these are kernel only headers, we don't need #ifdef __KERNEL__
+> so can simplify things a bit.
+> 
+> If an architecture wants to use jump labels in assembly, it
+> will still need to define a macro to create the __jump_table
+> entries (see ARCH_STATIC_BRANCH in the powerpc asm/jump_label.h
+> for an example).
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/arm/include/asm/jump_label.h   | 5 ++---
+>  arch/arm64/include/asm/jump_label.h | 8 ++++----
+>  arch/mips/include/asm/jump_label.h  | 7 +++----
+>  arch/s390/include/asm/jump_label.h  | 3 +++
+>  arch/sparc/include/asm/jump_label.h | 5 ++---
+>  arch/x86/include/asm/jump_label.h   | 5 ++---
+>  6 files changed, 16 insertions(+), 17 deletions(-)
 
-HAVE_JUMP_LABEL is defined in linux/jump_label.h, so we need to
-include this or we always get the non jump label fallback code.
+[...]
 
-Fixes: 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
- arch/powerpc/platforms/pseries/hvCall.S        | 2 +-
- arch/powerpc/platforms/pseries/lpar.c          | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+> diff --git a/arch/arm64/include/asm/jump_label.h b/arch/arm64/include/asm/jump_label.h
+> index 076a1c7..c0e5165 100644
+> --- a/arch/arm64/include/asm/jump_label.h
+> +++ b/arch/arm64/include/asm/jump_label.h
+> @@ -18,11 +18,12 @@
+>   */
+>  #ifndef __ASM_JUMP_LABEL_H
+>  #define __ASM_JUMP_LABEL_H
+> +
+> +#ifndef __ASSEMBLY__
+> +
+>  #include <linux/types.h>
+>  #include <asm/insn.h>
+>  
+> -#ifdef __KERNEL__
+> -
+>  #define JUMP_LABEL_NOP_SIZE		AARCH64_INSN_SIZE
+>  
+>  static __always_inline bool arch_static_branch(struct static_key *key)
+> @@ -39,8 +40,6 @@ l_yes:
+>  	return true;
+>  }
+>  
+> -#endif /* __KERNEL__ */
+> -
+>  typedef u64 jump_label_t;
+>  
+>  struct jump_entry {
+> @@ -49,4 +48,5 @@ struct jump_entry {
+>  	jump_label_t key;
+>  };
+>  
+> +#endif  /* __ASSEMBLY__ */
+>  #endif	/* __ASM_JUMP_LABEL_H */
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 0509bca..fcbe899 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -9,11 +9,11 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#include <linux/jump_label.h>
- #include <asm/ppc_asm.h>
- #include <asm/hvcall.h>
- #include <asm/asm-offsets.h>
- #include <asm/opal.h>
--#include <asm/jump_label.h>
- 
- 	.section	".text"
- 
-diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
-index ccd53f9..74b5b8e 100644
---- a/arch/powerpc/platforms/pseries/hvCall.S
-+++ b/arch/powerpc/platforms/pseries/hvCall.S
-@@ -7,12 +7,12 @@
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-  */
-+#include <linux/jump_label.h>
- #include <asm/hvcall.h>
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/ptrace.h>
--#include <asm/jump_label.h>
- 
- 	.section	".text"
- 	
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 469751d..14ac1ad 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -27,6 +27,7 @@
- #include <linux/console.h>
- #include <linux/export.h>
- #include <linux/static_key.h>
-+#include <linux/jump_label.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
--- 
-2.1.0
+The arm64 bit looks fine to me:
+
+  Acked-by: Will Deacon <will.deacon@arm.com>
+
+Will
