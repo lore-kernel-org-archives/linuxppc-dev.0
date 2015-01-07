@@ -1,34 +1,43 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D72FE1A078D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 19:09:03 +1100 (AEDT)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 558ED440D6F_4ACE998B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 08:08:56 +0000 (GMT)
-Received: from mail-qa0-f44.google.com (mail-qa0-f44.google.com
- [209.85.216.44])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 5762F43E034_4ACE997F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 08:08:55 +0000 (GMT)
-Received: by mail-qa0-f44.google.com with SMTP id bm13so1759119qab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2015 00:08:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D32F1A0EC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 19:16:51 +1100 (AEDT)
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id BB99B1400B7
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 19:16:50 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 7 Jan 2015 13:46:48 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 33082E0056
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 13:47:47 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t078HOrf57671822
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2015 13:47:24 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t078GhEJ016061
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2015 13:46:43 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/book3s: Fix the MCE code to use
+ CONFIG_KVM_BOOK3S_HV_POSSIBLE
+In-Reply-To: <20150107044237.5803.85825.stgit@mars.in.ibm.com>
+References: <20150107044237.5803.85825.stgit@mars.in.ibm.com>
+Date: Wed, 07 Jan 2015 13:46:42 +0530
+Message-ID: <87iogjovit.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20141205094248.D5C9914011E@ozlabs.org>
-References: <1417767462-11584-1-git-send-email-alessio.bogani@elettra.eu>
- <20141205094248.D5C9914011E@ozlabs.org>
-Date: Wed, 7 Jan 2015 09:08:53 +0100
-Message-ID: <CAPk1OjEfx=1yfb_GUnbdNsw9Y8QfJBeMEebSKiAqDcqwm+sLhA@mail.gmail.com>
-Subject: Re: powerpc: refresh mpc85xx_defconfig using "make savedefconfig"
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +47,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
 
-On 5 December 2014 at 10:42, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Fri, 2014-05-12 at 08:17:42 UTC, Alessio Igor Bogani wrote:
->> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
->> ---
->>  arch/powerpc/configs/mpc85xx_defconfig | 57 +++++++---------------------------
->>  1 file changed, 12 insertions(+), 45 deletions(-)
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 >
-> Actually I was planning on doing this in bulk for all the powerpc defconfigs.
+> commit id 9975f5e added new config variable CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> that helps to select the relevant code in the kernel when HV and PR
+> bits are built as separate modules. As part of that commit, all the
+> instances of #ifdef CONFIG_KVM_BOOK3S_64_HV was replaced with
+> CONFIG_KVM_BOOK3S_HV_POSSIBLE. But the MCE code still depends on
+> CONFIG_KVM_BOOK3S_64_HV which is wrong. When HV bits are built as a
+> separate module the relevent MCE code gets excluded. This patch fixes
+> the MCE code to use CONFIG_KVM_BOOK3S_HV_POSSIBLE.
 >
-> Someone remind me to do it late next week once most of next has gone into
-> Linus' tree.
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index c2df815..7335857 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1408,7 +1408,7 @@ machine_check_handle_early:
+>  	bne	9f			/* continue in V mode if we are. */
+>
+>  5:
+> -#ifdef CONFIG_KVM_BOOK3S_64_HV
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>  	/*
+>  	 * We are coming from kernel context. Check if we are coming from
+>  	 * guest. if yes, then we can continue. We will fall through
 
-Is there any news about this?
+Do we also need to update the HSTATE_IN_GUEST check to avoid checking
+the PR guest mode ?ie, 
 
-Thanks!
+	lbz	r11,HSTATE_IN_GUEST(r13)
+	cmpwi	r11,0			/* Check if coming from guest */
 
-Ciao,
-Alessio
+checking for 0 is what you want there ?
+
+-aneesh
