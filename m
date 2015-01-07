@@ -1,21 +1,18 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <luis.henriques@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419431A0EC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 20:38:00 +1100 (AEDT)
-Received: by mail-pa0-f42.google.com with SMTP id et14so3809195pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2015 01:37:58 -0800 (PST)
-Message-ID: <54ACFE6D.3070308@ozlabs.ru>
-Date: Wed, 07 Jan 2015 20:37:49 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: offlining cpus breakage
-Content-Type: text/plain; charset=koi8-r
-Cc: Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBF9B1A0BA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 21:31:55 +1100 (AEDT)
+From: Luis Henriques <luis.henriques@canonical.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [3.16.y-ckt stable] Patch "powerpc/powernv: Switch off MMU before
+ entering nap/sleep/rvwinkle mode" has been added to staging queue
+Date: Wed,  7 Jan 2015 10:32:06 +0000
+Message-Id: <1420626726-29545-1-git-send-email-luis.henriques@canonical.com>
+Cc: Luis Henriques <luis.henriques@canonical.com>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, kernel-team@lists.ubuntu.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +22,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+This is a note to let you know that I have just added a patch titled
 
-"ppc64_cpu --smt=off" produces multiple error on the latest upstream kernel
-(sha1 bdec419):
+    powerpc/powernv: Switch off MMU before entering nap/sleep/rvwinkle mode
 
-NMI watchdog: BUG: soft lockup - CPU#20 stuck for 23s! [swapper/20:0]
+to the linux-3.16.y-queue branch of the 3.16.y-ckt extended stable tree 
+which can be found at:
 
-or
+ http://kernel.ubuntu.com/git?p=ubuntu/linux.git;a=shortlog;h=refs/heads/linux-3.16.y-queue
 
-INFO: rcu_sched detected stalls on CPUs/tasks: { 2 7 8 9 10 11 12 13 14 15
-16 17 18 19 20 21 22 23 2
-4 25 26 27 28 29 30 31} (detected by 6, t=2102 jiffies, g=1617, c=1616,
-q=1441)
+This patch is scheduled to be released in version 3.16.7-ckt4.
 
-and many others, all about lockups
+If you, or anyone else, feels it should not be added to this tree, please 
+reply to this email.
 
-I did bisecting and found out that reverting these helps:
+For more information about the 3.16.y-ckt tree, see
+https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable
 
-77b54e9f213f76a23736940cf94bcd765fc00f40 powernv/powerpc: Add winkle
-support for offline cpus
-7cba160ad789a3ad7e68b92bf20eaad6ed171f80 powernv/cpuidle: Redesign idle
-states management
-8eb8ac89a364305d05ad16be983b7890eb462cc3 powerpc/powernv: Enable Offline
-CPUs to enter deep idle states
+Thanks.
+-Luis
 
-btw reverting just two of them produces a compile error.
+------
 
-It is pseries_le_defconfig, POWER8 machine:
-timebase        : 512000000
-platform        : PowerNV
-model           : palmetto
-machine         : PowerNV palmetto
-firmware        : OPAL v3
+>From 8a4ec5805ab7292f0c05d9b052aa343af57e7015 Mon Sep 17 00:00:00 2001
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 10 Dec 2014 00:26:50 +0530
+Subject: powerpc/powernv: Switch off MMU before entering nap/sleep/rvwinkle
+ mode
 
+commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
 
-Please help to fix it. Thanks.
+Currently, when going idle, we set the flag indicating that we are in
+nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
+(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
+for two reasons: (a) the architecture specifies that those instructions
+must be executed with the MMU off, and in fact with only the SF, HV, ME
+and possibly RI bits set, and (b) this introduces a race, because as
+soon as we set the flag, another thread can switch the MMU to a guest
+context.  If the race is lost, this thread will typically start looping
+on relocation-on ISIs at 0xc...4400.
 
+This fixes it by setting the MSR as required by the architecture before
+setting the flag or executing the nap/sleep/rvwinkle instruction.
 
--- 
-Alexey
+[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
+---
+ arch/powerpc/include/asm/reg.h    |  2 ++
+ arch/powerpc/kernel/idle_power7.S | 18 +++++++++++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index bffd89d27301..e73cdadab785 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -118,8 +118,10 @@
+ #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
+ #ifdef __BIG_ENDIAN__
+ #define MSR_		__MSR
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
+ #else
+ #define MSR_		(__MSR | MSR_LE)
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
+ #endif
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 5cf3d367190d..a29f5b0f9d3e 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -101,7 +101,23 @@ _GLOBAL(power7_powersave_common)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
+
+-_GLOBAL(power7_enter_nap_mode)
++	/*
++	 * Go to real mode to do the nap, as required by the architecture.
++	 * Also, we need to be in real mode before setting hwthread_state,
++	 * because as soon as we do that, another thread can switch
++	 * the MMU context to the guest.
++	 */
++	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
++	li	r6, MSR_RI
++	andc	r6, r9, r6
++	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
++	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
++	mtspr	SPRN_SRR0, r7
++	mtspr	SPRN_SRR1, r5
++	rfid
++
++	.globl	power7_enter_nap_mode
++power7_enter_nap_mode:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	/* Tell KVM we're napping */
+ 	li	r4,KVM_HWTHREAD_IN_NAP
+--
+2.1.4
