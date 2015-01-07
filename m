@@ -1,30 +1,29 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47B3F1A075E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 16:33:38 +1100 (AEDT)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A2161A0ECF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 16:42:06 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 16F4714009B
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 16:33:38 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3FF57140077
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 16:42:06 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 7 Jan 2015 15:33:35 +1000
+ Wed, 7 Jan 2015 15:42:05 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH] cxl: Fix issues when unmapping contexts
-Date: Wed,  7 Jan 2015 16:33:04 +1100
-Message-Id: <1420608784-13049-1-git-send-email-imunsie@au.ibm.com>
-Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, mikey <mikey@neuling.org>,
+Subject: [PATCH] CXL: Fix device_node reference counting
+Date: Wed,  7 Jan 2015 16:41:18 +1100
+Message-Id: <1420609278-15338-1-git-send-email-imunsie@au.ibm.com>
+Cc: cbe-oss-dev <cbe-oss-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, anton <anton@samba.org>,
- imunsie <imunsie@au1.ibm.com>, jk <jk@ozlabs.org>
+ Ryan Grimm <grimm@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ anton <anton@samba.org>, imunsie <imunsie@au1.ibm.com>, jk <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,185 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+From: Ryan Grimm <grimm@linux.vnet.ibm.com>
 
-An issue was introduced with "cxl: Unmap MMIO regions when detaching a
-context" (b123429e6a9e8d03aacf888d23262835f0081448) where closing a
-context normally could also unmap the problem state area of other
-contexts currently using the AFU.
+When unbinding and rebinding the driver on a system with a card in PHB0, this
+error condition is reached after a few attempts:
 
-It was also discovered that after a context's MMIO space had been
-unmapped it would read 0s when accessing it, whereas the expected
-behaviour was for the access to fail altogether.
+ERROR: Bad of_node_put() on /pciex@3fffe40000000
+CPU: 0 PID: 3040 Comm: bash Not tainted 3.18.0-rc3-12545-g3627ffe #152
+Call Trace:
+[c000000721acb5c0] [c00000000086ef94] .dump_stack+0x84/0xb0 (unreliable)
+[c000000721acb640] [c00000000073a0a8] .of_node_release+0xd8/0xe0
+[c000000721acb6d0] [c00000000044bc44] .kobject_release+0x74/0xe0
+[c000000721acb760] [c0000000007394fc] .of_node_put+0x1c/0x30
+[c000000721acb7d0] [c000000000545cd8] .cxl_probe+0x1a98/0x1d50
+[c000000721acb900] [c0000000004845a0] .local_pci_probe+0x40/0xc0
+[c000000721acb980] [c000000000484998] .pci_device_probe+0x128/0x170
+[c000000721acba30] [c00000000052400c] .driver_probe_device+0xac/0x2a0
+[c000000721acbad0] [c000000000522468] .bind_store+0x108/0x160
+[c000000721acbb70] [c000000000521448] .drv_attr_store+0x38/0x60
+[c000000721acbbe0] [c000000000293840] .sysfs_kf_write+0x60/0xa0
+[c000000721acbc50] [c000000000292500] .kernfs_fop_write+0x140/0x1d0
+[c000000721acbcf0] [c000000000208648] .vfs_write+0xd8/0x260
+[c000000721acbd90] [c000000000208b18] .SyS_write+0x58/0x100
+[c000000721acbe30] [c000000000009258] syscall_exit+0x0/0x98
 
-In order to address these issues, this patch does two things:
+of_get_next_parent decrements parent's refcount and we need to call of_node_put
+after the iteration.  But, if while loop is not entered, of_node_put get called
+on np without an of_node_get.  So, call it before the while loop.
 
-- Forced mmap unmapping is only done when we are forcefully detaching
-  all contexts, and not in the normal detach path. Since the normal
-  context close path is tied to the file release any mmaps must have
-  already been released so we don't need to worry in that case.
-
-- The mmap path now uses a vm_operations_struct with a fault handler.
-  The fault handler ensures that the context is in started state,
-  otherwise it fails the access attempt with a SIGBUS.
-
+Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/context.c | 82 +++++++++++++++++++++++++++++++++++-----------
- drivers/misc/cxl/file.c    | 14 ++++----
- 2 files changed, 71 insertions(+), 25 deletions(-)
+ drivers/misc/cxl/pci.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 51fd6b5..d1b55fe 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -100,6 +100,46 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
- 	return 0;
- }
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 2ccd0a9..f801c28 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -319,6 +319,7 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
+ 	if (!(np = pnv_pci_to_phb_node(dev)))
+ 		return -ENODEV;
  
-+static int cxl_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct cxl_context *ctx = vma->vm_file->private_data;
-+	unsigned long address = (unsigned long)vmf->virtual_address;
-+	u64 area, offset;
-+
-+	offset = vmf->pgoff << PAGE_SHIFT;
-+
-+	pr_devel("%s: pe: %i address: 0x%lx offset: 0x%llx\n",
-+			__func__, ctx->pe, address, offset);
-+
-+	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
-+		area = ctx->afu->psn_phys;
-+		if (offset > ctx->afu->adapter->ps_size)
-+			return VM_FAULT_SIGBUS;
-+	} else {
-+		area = ctx->psn_phys;
-+		if (offset > ctx->psn_size)
-+			return VM_FAULT_SIGBUS;
-+	}
-+
-+	mutex_lock(&ctx->status_mutex);
-+
-+	if (ctx->status != STARTED) {
-+		mutex_unlock(&ctx->status_mutex);
-+		pr_devel("%s: Context not started, failing problem state access\n", __func__);
-+		return VM_FAULT_SIGBUS;
-+	}
-+
-+	vm_insert_pfn(vma, address, (area + offset) >> PAGE_SHIFT);
-+
-+	mutex_unlock(&ctx->status_mutex);
-+
-+	return VM_FAULT_NOPAGE;
-+}
-+
-+static const struct vm_operations_struct cxl_mmap_vmops = {
-+	.fault = cxl_mmap_fault,
-+};
-+
- /*
-  * Map a per-context mmio space into the given vma.
-  */
-@@ -108,26 +148,25 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
- 	u64 len = vma->vm_end - vma->vm_start;
- 	len = min(len, ctx->psn_size);
- 
--	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--		return vm_iomap_memory(vma, ctx->afu->psn_phys, ctx->afu->adapter->ps_size);
--	}
-+	if (ctx->afu->current_mode != CXL_MODE_DEDICATED) {
-+		/* make sure there is a valid per process space for this AFU */
-+		if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
-+			pr_devel("AFU doesn't support mmio space\n");
-+			return -EINVAL;
-+		}
- 
--	/* make sure there is a valid per process space for this AFU */
--	if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
--		pr_devel("AFU doesn't support mmio space\n");
--		return -EINVAL;
-+		/* Can't mmap until the AFU is enabled */
-+		if (!ctx->afu->enabled)
-+			return -EBUSY;
- 	}
- 
--	/* Can't mmap until the AFU is enabled */
--	if (!ctx->afu->enabled)
--		return -EBUSY;
--
- 	pr_devel("%s: mmio physical: %llx pe: %i master:%i\n", __func__,
- 		 ctx->psn_phys, ctx->pe , ctx->master);
- 
-+	vma->vm_flags |= VM_IO | VM_PFNMAP;
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--	return vm_iomap_memory(vma, ctx->psn_phys, len);
-+	vma->vm_ops = &cxl_mmap_vmops;
-+	return 0;
- }
- 
- /*
-@@ -150,12 +189,6 @@ static void __detach_context(struct cxl_context *ctx)
- 	afu_release_irqs(ctx);
- 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
- 	wake_up_all(&ctx->wq);
--
--	/* Release Problem State Area mapping */
--	mutex_lock(&ctx->mapping_lock);
--	if (ctx->mapping)
--		unmap_mapping_range(ctx->mapping, 0, 0, 1);
--	mutex_unlock(&ctx->mapping_lock);
- }
- 
- /*
-@@ -184,6 +217,17 @@ void cxl_context_detach_all(struct cxl_afu *afu)
- 		 * created and torn down after the IDR removed
- 		 */
- 		__detach_context(ctx);
-+
-+		/*
-+		 * We are force detaching - remove any active PSA mappings so
-+		 * userspace cannot interfere with the card if it comes back.
-+		 * Easiest way to exercise this is to unbind and rebind the
-+		 * driver via sysfs while it is in use.
-+		 */
-+		mutex_lock(&ctx->mapping_lock);
-+		if (ctx->mapping)
-+			unmap_mapping_range(ctx->mapping, 0, 0, 1);
-+		mutex_unlock(&ctx->mapping_lock);
- 	}
- 	mutex_unlock(&afu->contexts_lock);
- }
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index b09be44..4e85028 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -140,18 +140,20 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 
- 	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
- 
--	mutex_lock(&ctx->status_mutex);
--	if (ctx->status != OPENED) {
--		rc = -EIO;
--		goto out;
--	}
--
-+	/* Do this outside the status_mutex to avoid a circular dependency with
-+	 * the locking in cxl_mmap_fault() */
- 	if (copy_from_user(&work, uwork,
- 			   sizeof(struct cxl_ioctl_start_work))) {
- 		rc = -EFAULT;
- 		goto out;
- 	}
- 
-+	mutex_lock(&ctx->status_mutex);
-+	if (ctx->status != OPENED) {
-+		rc = -EIO;
-+		goto out;
-+	}
-+
- 	/*
- 	 * if any of the reserved fields are set or any of the unused
- 	 * flags are set it's invalid
++	of_node_get(np);
+ 	while (np && !(prop = of_get_property(np, "ibm,chip-id", NULL)))
+ 		np = of_get_next_parent(np);
+ 	if (!np)
 -- 
 2.1.4
