@@ -1,23 +1,23 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0103.outbound.protection.outlook.com [207.46.100.103])
+ (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 633D31A07C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 11:28:54 +1100 (AEDT)
-Message-ID: <1420590520.4961.38.camel@freescale.com>
-Subject: Re: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
+ by lists.ozlabs.org (Postfix) with ESMTPS id D099A1A0A05
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 12:21:21 +1100 (AEDT)
+Message-ID: <1420593666.4961.40.camel@freescale.com>
+Subject: Re: [PATCH v3 2/2] powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
 From: Scott Wood <scottwood@freescale.com>
-To: Xie Shaohui-B21989 <Shaohui.Xie@freescale.com>
-Date: Tue, 6 Jan 2015 18:28:40 -0600
-In-Reply-To: <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
-References: <1419321466-5575-1-git-send-email-shh.xie@gmail.com>
- <DM2PR0301MB08640979E5088618D1395CFAE2580@DM2PR0301MB0864.namprd03.prod.outlook.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Tue, 6 Jan 2015 19:21:06 -0600
+In-Reply-To: <54AB88C2.7040901@c-s.fr>
+References: <20141222101450.D7DD11A5E15@localhost.localdomain>
+ <1420481520.25047.15.camel@transmode.se> <54AB88C2.7040901@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Medve
- Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,97 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-01-05 at 05:21 -0600, Xie Shaohui-B21989 wrote:
-> Hello Scott,
-> 
-> Is this v3 OK?
-> 
-> Best Regards, 
-> Shaohui Xie
-> > -----Original Message-----
-> > From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
-> > Sent: Tuesday, December 23, 2014 3:58 PM
-> > To: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; Wood Scott-B07421
-> > Cc: Medve Emilian-EMMEDVE1; Xie Shaohui-B21989
-> > Subject: [PATCH] [v3] power/fsl: add MDIO dt binding for FMan
-> > 
-> > From: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > 
-> > This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
-> > 
-> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > ---
-> > changes in v3:
-> > rephrase the 'Definition' of property 'bus-frequency', don't include the
-> > property in example.
-> > 
-> > changes in v2:
-> > addressed comments from Scott in V1.
-> > 
-> >  .../devicetree/bindings/powerpc/fsl/fman.txt       | 69 ++++++++++++++++++++++
-> >  1 file changed, 69 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > index edeea16..737aa4c 100644
-> > --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> > @@ -7,6 +7,7 @@ CONTENTS
-> >    - FMan MURAM Node
-> >    - FMan dTSEC/XGEC/mEMAC Node
-> >    - FMan IEEE 1588 Node
-> > +  - FMan MDIO Node
-> >    - Example
-> > 
-> >  =============================================================================
-> > @@ -357,6 +358,69 @@ ptp-timer@fe000 {
-> >  };
-> > 
-> >  =============================================================================
-> > +FMan MDIO Node
-> > +
-> > +DESCRIPTION
-> > +
-> > +The MDIO is a bus to which the PHY devices are connected.
-> > +
-> > +PROPERTIES
-> > +
-> > +- compatible
-> > +		Usage: required
-> > +		Value type: <stringlist>
-> > +		Definition: A standard property.
-> > +		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-> > +		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-> > +		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-> > +		FMan v3.
-> > +
-> > +- reg
-> > +		Usage: required
-> > +		Value type: <prop-encoded-array>
-> > +		Definition: A standard property.
-> > +
-> > +- bus-frequency
-> > +		Usage: optional
-> > +		Value type: <u32>
-> > +		Definition: Specifies the external MDIO bus clock speed to
-> > +		be used, if different from the standard 2.5 MHz.
-> > +		This may be due to the standard speed being unsupported (e.g.
-> > +		due to a hardware problem), or to advertise that all relevant
-> > +		components in the system support a faster speed.
-> > +
-> > +- interrupts
-> > +		Usage: optional
-> > +		Value type: <prop-encoded-array>
-> > +		Definition: Event interrupt of external MDIO controller.
-> > +		1 Gb/s MDIO and 10 Gb/s MDIO has one interrupt respectively.
+On Tue, 2015-01-06 at 08:03 +0100, leroy christophe wrote:
+> Le 05/01/2015 19:12, Joakim Tjernlund a écrit :
+> > On Mon, 2014-12-22 at 11:14 +0100, Christophe Leroy wrote:
+> >> On powerpc 8xx, in TLB entries, 0x400 bit is set to 1 for read-only pages
+> >> and is set to 0 for RW pages. So we should use _PAGE_RO instead of _PAGE_RW
+> >>
+> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > Hi Christophe, been meaning to look over all you recent 8xx MMU/TLB patches
+> > but got so little time :(
+> >
+> > This is very cool (not sure if there will be a performance gain)  but ..
+> I think every saved cycle is worth it.
+> Before I did any modification:
+> * ITLBMiss was 28 instructions.
+> * DTLBMiss was 32 instructions.
+> Now, (No MODULES, no CPU6, no CPU15):
+> * ITLBMiss is 15 instructions
+> * DTLBMiss is 24 instructions
+> >>
+> >>
+> >> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+> >> index caf094a..b4e0c3b 100644
+> >> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> >> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> >> @@ -178,9 +178,10 @@ static inline unsigned long pte_update(pte_t *p,
+> >>          andc    %1,%0,%5\n\
+> >>          or      %1,%1,%6\n\
+> >>          /* 0x200 == Extended encoding, bit 22 */ \
+> >> -       /* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
+> >> +       /* Bit 22 has to be 1 when _PAGE_USER is unset and _PAGE_RO is set */ \
+> >>          rlwimi  %1,%1,32-2,0x200\n /* get _PAGE_USER */ \
+> >> -       rlwinm  %3,%1,32-1,0x200\n /* get _PAGE_RW */ \
+> >> +       rlwinm  %3,%1,32-1,0x200\n /* get _PAGE_RO */ \
+> >> +       xori    %3,%3,0x200\n \
+> >>          or      %1,%3,%1\n\
+> >>          xori    %1,%1,0x200\n"
+> >>   "      stwcx.  %1,0,%4\n\
+> > ... here I expected to loose the existing xori insn instead of adding one?
+> >
+> >
+> Well, I could have xored the PAGE_USER bit instead, but in that case, it 
+> is not anymore an 'or' but an 'and' that has to be performed between the 
+> bits, and then all other bits must be set to 1, or the result of the 
+> 'and' shall be inserted using 'rlwimi'. So it would be more 
+> modifications than just adding an xori, and not less instructions.
 
-I'm confused by "respectively" here.  Does fsl,fman-memac-mdio have two
-interrupts (one for 1 Gb/s and one for 10 Gb/s)?  If there's only (at
-most) one interrupt per MDIO controller then just delete this line.
-
-What interrupt is used for internal MDIO?  Does "optional" mean it's
-used if and only if external MDIO is used, or is it optional even with
-external MDIO?  I see it's not present in the example -- do we not have
-a real example that has the interrupt?
+How about "andc %3,%3,%1; rlwimi %1,%3,0,0x200" instead of the "xori,
+or, xori" sequence?
 
 -Scott
