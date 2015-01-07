@@ -1,43 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
+ [209.85.220.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D32F1A0EC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 19:16:51 +1100 (AEDT)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BB99B1400B7
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 19:16:50 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 7 Jan 2015 13:46:48 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 33082E0056
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2015 13:47:47 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t078HOrf57671822
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2015 13:47:24 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t078GhEJ016061
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2015 13:46:43 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/book3s: Fix the MCE code to use
- CONFIG_KVM_BOOK3S_HV_POSSIBLE
-In-Reply-To: <20150107044237.5803.85825.stgit@mars.in.ibm.com>
-References: <20150107044237.5803.85825.stgit@mars.in.ibm.com>
-Date: Wed, 07 Jan 2015 13:46:42 +0530
-Message-ID: <87iogjovit.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419431A0EC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Jan 2015 20:38:00 +1100 (AEDT)
+Received: by mail-pa0-f42.google.com with SMTP id et14so3809195pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2015 01:37:58 -0800 (PST)
+Message-ID: <54ACFE6D.3070308@ozlabs.ru>
+Date: Wed, 07 Jan 2015 20:37:49 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: offlining cpus breakage
+Content-Type: text/plain; charset=koi8-r
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,44 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+Hi!
 
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->
-> commit id 9975f5e added new config variable CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> that helps to select the relevant code in the kernel when HV and PR
-> bits are built as separate modules. As part of that commit, all the
-> instances of #ifdef CONFIG_KVM_BOOK3S_64_HV was replaced with
-> CONFIG_KVM_BOOK3S_HV_POSSIBLE. But the MCE code still depends on
-> CONFIG_KVM_BOOK3S_64_HV which is wrong. When HV bits are built as a
-> separate module the relevent MCE code gets excluded. This patch fixes
-> the MCE code to use CONFIG_KVM_BOOK3S_HV_POSSIBLE.
->
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/exceptions-64s.S |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index c2df815..7335857 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1408,7 +1408,7 @@ machine_check_handle_early:
->  	bne	9f			/* continue in V mode if we are. */
->
->  5:
-> -#ifdef CONFIG_KVM_BOOK3S_64_HV
-> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  	/*
->  	 * We are coming from kernel context. Check if we are coming from
->  	 * guest. if yes, then we can continue. We will fall through
+"ppc64_cpu --smt=off" produces multiple error on the latest upstream kernel
+(sha1 bdec419):
 
-Do we also need to update the HSTATE_IN_GUEST check to avoid checking
-the PR guest mode ?ie, 
+NMI watchdog: BUG: soft lockup - CPU#20 stuck for 23s! [swapper/20:0]
 
-	lbz	r11,HSTATE_IN_GUEST(r13)
-	cmpwi	r11,0			/* Check if coming from guest */
+or
 
-checking for 0 is what you want there ?
+INFO: rcu_sched detected stalls on CPUs/tasks: { 2 7 8 9 10 11 12 13 14 15
+16 17 18 19 20 21 22 23 2
+4 25 26 27 28 29 30 31} (detected by 6, t=2102 jiffies, g=1617, c=1616,
+q=1441)
 
--aneesh
+and many others, all about lockups
+
+I did bisecting and found out that reverting these helps:
+
+77b54e9f213f76a23736940cf94bcd765fc00f40 powernv/powerpc: Add winkle
+support for offline cpus
+7cba160ad789a3ad7e68b92bf20eaad6ed171f80 powernv/cpuidle: Redesign idle
+states management
+8eb8ac89a364305d05ad16be983b7890eb462cc3 powerpc/powernv: Enable Offline
+CPUs to enter deep idle states
+
+btw reverting just two of them produces a compile error.
+
+It is pseries_le_defconfig, POWER8 machine:
+timebase        : 512000000
+platform        : PowerNV
+model           : palmetto
+machine         : PowerNV palmetto
+firmware        : OPAL v3
+
+
+Please help to fix it. Thanks.
+
+
+-- 
+Alexey
