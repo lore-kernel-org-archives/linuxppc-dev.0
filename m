@@ -1,20 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7128E1A0EE6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 01:43:27 +1100 (AEDT)
-Message-ID: <1420641795.5830.31.camel@kernel.crashing.org>
-Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Mohr <andi@lisas.de>
-Date: Wed, 07 Jan 2015 15:43:15 +0100
-In-Reply-To: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
-References: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Purcareata Bogdan <b43198@freescale.com>,
- linux-kernel@vger.kernel.org
+Return-Path: <jbaron@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [72.246.2.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id F3FA01A0ED7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 02:09:23 +1100 (AEDT)
+Message-ID: <54AD4C1C.60505@akamai.com>
+Date: Wed, 07 Jan 2015 10:09:16 -0500
+From: Jason Baron <jbaron@akamai.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "mmarek@suse.cz" <mmarek@suse.cz>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "liuj97@gmail.com" <liuj97@gmail.com>,
+ "mingo@kernel.org" <mingo@kernel.org>,
+ "mgorman@suse.de" <mgorman@suse.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "ralf@linux-mips.org" <ralf@linux-mips.org>,
+ "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
+ "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/3] powerpc: Include linux/jump_label.h to get
+ HAVE_JUMP_LABEL define
+References: <1420626958-31254-1-git-send-email-anton@samba.org>
+ <1420626958-31254-3-git-send-email-anton@samba.org>
+In-Reply-To: <1420626958-31254-3-git-send-email-anton@samba.org>
+Content-Type: text/plain; charset=windows-1252
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-01-05 at 18:46 +0100, Andreas Mohr wrote:
-> Hi,
-> 
-> > I was curious why the mpic_cpu_read(MPIC_INFO(CPU_WHOAMI)) was there in
-> > the first place and if it's still needed. If it's still required, I
-> > guess a better approach is to eliminate the call only if the kernel is
-> > running on the KVM guest side, where the MPIC is emulated and no longer
-> > requires a readback.
-> 
-> "Why not?"
-> 
-> A mechanism being "emulated"/"virtual" or not
-> may not necessarily be much of a distinction (if at all!).
-> The readback might be required
-> to properly fulfill all requirements
-> of a full state change protocol specification,
-> which might easily be the case for both RS(*) and virtual hardware.
-> And especially for virtual hardware
-> such a "readback" event
-> might be an extremely important "end of transaction" marker
-> which may often be needed for freeing of temporary resources etc.
+On 01/07/2015 05:35 AM, Anton Blanchard wrote:
+> Commit 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
+> converted uses of CONFIG_JUMP_LABEL to HAVE_JUMP_LABEL in
+> some assembly files.
+>
+> HAVE_JUMP_LABEL is defined in linux/jump_label.h, so we need to
+> include this or we always get the non jump label fallback code.
+>
+> Fixes: 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
+>  arch/powerpc/platforms/pseries/hvCall.S        | 2 +-
+>  arch/powerpc/platforms/pseries/lpar.c          | 1 +
+>  3 files changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index 0509bca..fcbe899 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -9,11 +9,11 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#include <linux/jump_label.h>
+>  #include <asm/ppc_asm.h>
+>  #include <asm/hvcall.h>
+>  #include <asm/asm-offsets.h>
+>  #include <asm/opal.h>
+> -#include <asm/jump_label.h>
+>  
+>  	.section	".text"
+>  
+> diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+> index ccd53f9..74b5b8e 100644
+> --- a/arch/powerpc/platforms/pseries/hvCall.S
+> +++ b/arch/powerpc/platforms/pseries/hvCall.S
+> @@ -7,12 +7,12 @@
+>   * as published by the Free Software Foundation; either version
+>   * 2 of the License, or (at your option) any later version.
+>   */
+> +#include <linux/jump_label.h>
+>  #include <asm/hvcall.h>
+>  #include <asm/processor.h>
+>  #include <asm/ppc_asm.h>
+>  #include <asm/asm-offsets.h>
+>  #include <asm/ptrace.h>
+> -#include <asm/jump_label.h>
+>  
+>  	.section	".text"
+>  	
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+> index 469751d..14ac1ad 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/console.h>
+>  #include <linux/export.h>
+>  #include <linux/static_key.h>
+> +#include <linux/jump_label.h>
+>  #include <asm/processor.h>
+>  #include <asm/mmu.h>
+>  #include <asm/page.h>
 
-In that case it was purely something we added after trial and error to
-correct a problem, it's not specified as necessary. Basically it's about
-making the store synchronous to the MPIC logic. It's definitely not
-necessary on an emulated implementation.
+You can drop the 'static_key.h' include here since its redundant.
 
-> I'm talking out of my *ss without any MPIC specifics here
-> (and especially not why the readback there actually is needed -
-> if that doesn't happen to be the case for PCI Posting reasons or some such),
-> but it's just intended as food for thought :)
-> 
-> *) Real Silicon (rather than RL - Real Life)
-> 
-> HTH,
-> 
-> Andreas Mohr
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+
+-Jason
