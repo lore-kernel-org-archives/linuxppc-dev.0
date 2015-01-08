@@ -1,15 +1,40 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAC8D1A0F7D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 15:30:13 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Work around gcc bug in current_thread_info()
-Date: Thu,  8 Jan 2015 15:30:08 +1100
-Message-Id: <1420691408-6334-1-git-send-email-mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>, agraf@suse.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3FFBD1A0F8C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 16:28:31 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 8 Jan 2015 15:28:27 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CE75F2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 16:28:25 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t085SOiM48234556
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jan 2015 16:28:25 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t085SOHi020566
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jan 2015 16:28:24 +1100
+Received: from [9.124.35.103] (mars.in.ibm.com [9.124.35.103] (may be forged))
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t085SDf5020360
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Jan 2015 16:28:23 +1100
+Message-ID: <54AE156B.1000907@linux.vnet.ibm.com>
+Date: Thu, 08 Jan 2015 10:58:11 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/book3s: Fix the MCE code to use
+ CONFIG_KVM_BOOK3S_HV_POSSIBLE
+References: <20150107044237.5803.85825.stgit@mars.in.ibm.com>
+ <87iogjovit.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87iogjovit.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,61 +44,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit a3e5b356b3ab "powerpc: Don't use local named register variable
-in current_thread_info" Anton changed the way we did current_thread_info()
-to accommodate LLVM, and it was not meant to have any effect elsewhere.
+On 01/07/2015 01:46 PM, Aneesh Kumar K.V wrote:
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> commit id 9975f5e added new config variable CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> that helps to select the relevant code in the kernel when HV and PR
+>> bits are built as separate modules. As part of that commit, all the
+>> instances of #ifdef CONFIG_KVM_BOOK3S_64_HV was replaced with
+>> CONFIG_KVM_BOOK3S_HV_POSSIBLE. But the MCE code still depends on
+>> CONFIG_KVM_BOOK3S_64_HV which is wrong. When HV bits are built as a
+>> separate module the relevent MCE code gets excluded. This patch fixes
+>> the MCE code to use CONFIG_KVM_BOOK3S_HV_POSSIBLE.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/exceptions-64s.S |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+>> index c2df815..7335857 100644
+>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> @@ -1408,7 +1408,7 @@ machine_check_handle_early:
+>>  	bne	9f			/* continue in V mode if we are. */
+>>
+>>  5:
+>> -#ifdef CONFIG_KVM_BOOK3S_64_HV
+>> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>>  	/*
+>>  	 * We are coming from kernel context. Check if we are coming from
+>>  	 * guest. if yes, then we can continue. We will fall through
+> 
+> Do we also need to update the HSTATE_IN_GUEST check to avoid checking
+> the PR guest mode ?ie, 
 
-Unfortunately it has exposed a gcc bug, where r1 gets copied into
-another register and then gcc uses that register to restore the toc
-after a function call, even when that register is volatile and has been
-clobbered by the function call.
+Not required. If we are coming from guest (HSTATE_IN_GUEST != 0) we fall
+through do_kvm_200->kvmppc_interrupt and for PR guest it would lead us
+to kvmppc_interrupt_pr which will inject MCE in PR guest.
 
-We could revert Anton's patch, but it's not clear the original code is
-safe either, we may just have been lucky.
+Having said that I just realized that I should use #ifdef
+CONFIG_KVM_BOOK3S_64_HANDLER instead. The check holds good for both HV
+and PR guests.
 
-The cleanest solution is to just use the existing CURRENT_THREAD_INFO()
-asm macro, and call it using inline asm.
+Thanks,
+-Mahesh.
 
-Fixes: a3e5b356b3ab ("powerpc: Don't use local named register variable in current_thread_info")
-Reported-by: Alexander Graf <agraf@suse.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/thread_info.h | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index ebc4f165690a..cdafafe942e3 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -23,9 +23,9 @@
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
- 
- #ifdef CONFIG_PPC64
--#define CURRENT_THREAD_INFO(dest, sp)	clrrdi dest, sp, THREAD_SHIFT
-+#define CURRENT_THREAD_INFO(dest, sp)	stringify_in_c(clrrdi dest, sp, THREAD_SHIFT)
- #else
--#define CURRENT_THREAD_INFO(dest, sp)	rlwinm dest, sp, 0, 0, 31-THREAD_SHIFT
-+#define CURRENT_THREAD_INFO(dest, sp)	stringify_in_c(rlwinm dest, sp, 0, 0, 31-THREAD_SHIFT)
- #endif
- 
- #ifndef __ASSEMBLY__
-@@ -71,12 +71,13 @@ struct thread_info {
- #define THREAD_SIZE_ORDER	(THREAD_SHIFT - PAGE_SHIFT)
- 
- /* how to get the thread information struct from C */
--register unsigned long __current_r1 asm("r1");
- static inline struct thread_info *current_thread_info(void)
- {
--	/* gcc4, at least, is smart enough to turn this into a single
--	 * rlwinm for ppc32 and clrrdi for ppc64 */
--	return (struct thread_info *)(__current_r1 & ~(THREAD_SIZE-1));
-+	unsigned long val;
-+
-+	asm volatile(CURRENT_THREAD_INFO(%0,1) : "=r" (val));
-+
-+	return (struct thread_info *)val;
- }
- 
- #endif /* __ASSEMBLY__ */
--- 
-2.1.0
+> 
+> 	lbz	r11,HSTATE_IN_GUEST(r13)
+> 	cmpwi	r11,0			/* Check if coming from guest */
+> 
+> checking for 0 is what you want there ?
+> 
+> -aneesh
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
