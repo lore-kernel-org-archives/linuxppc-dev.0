@@ -1,21 +1,15 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AAD11A0ED2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 20:55:12 +1100 (AEDT)
-Date: Thu, 8 Jan 2015 10:54:34 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 0/4] Add support for parametrized events
-Message-ID: <20150108095434.GA16059@krava.redhat.com>
-References: <1420679633-28856-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 125FC1A0F74
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2015 21:03:57 +1100 (AEDT)
+From: Markus Stockhausen <stockhausen@collogia.de>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: How to make use of SPE instructions?
+Date: Thu, 8 Jan 2015 09:58:45 +0000
+Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F90DD25@EXCHANGE.collogia.de>
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-d799b1ca-45bb-4cd0-9eeb-d3cb1dde1d61"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1420679633-28856-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +19,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 07, 2015 at 05:13:49PM -0800, Sukadev Bhattiprolu wrote:
-> Description of "event parameters" from the documentation patch:
-> 
->     Event parameters are a basic way for partial events to be specified in
->     sysfs with per-event names given to the fields that need to be filled in
->     when using a particular event.
-> 
->     It is intended for supporting cases where the single 'cpu' parameter is
->     insufficient. For example, POWER 8 has events for physical
->     sockets/cores/cpus that are accessible from with virtual machines. To
->     keep using the single 'cpu' parameter we'd need to perform a mapping
->     between Linux's cpus and the physical machine's cpus (in this case
->     Linux is running under a hypervisor). This isn't possible because
->     bindings between our cpus and physical cpus may not be fixed, and we
->     probably won't have a "cpu" on each physical cpu.
-> 
-> Description of the sysfs contents when events are parameterized (copied from an
-> included patch):
-> 
-> 	Examples:
-> 
-> 		domain=0x1,offset=0x8,core=?
-> 
-> 	In the case of the last example, a value replacing "?" would need
-> 	to be provided by the user selecting the particular event. This is
-> 	refered to as "event parameterization". All non-numerical values
-> 	indicate an event parameter.
-> 
-> Notes on how perf-list displays parameterized events
-> 
-> 	PARAMETERIZED EVENTS
-> 	--------------------
-> 
-> 	Some pmu events listed by 'perf list' will be displayed with '$xyz' in
-> 	them. For example:
-> 
-> 	  hv_24x7/HPM_THREAD_NAP_CCYC__PHYS_CORE,core=?/
-> 
-> 	This means that when provided as an event, a value for ? must also
-> 	be supplied. For example:
-> 
-> 	  perf stat  -e \
-> 	  	'hv_24x7/HPM_THREAD_NAP_CCYC__PHYS_CORE,core=2' ...
-> 
-> Changelog[v7]
-> 	[Jiri Olsa] Nit: Add braces for clarity.
-> 	[Jiri Olsa] Add a check to make sure that sysfs entries have with
-> 	parameters exactly match '=?'.
 
-for the patchset:
+This is a multi-part message in MIME format.
 
-Acked-by: Jiri Olsa <jolsa@kernel.org>
+------=_NextPartTM-000-d799b1ca-45bb-4cd0-9eeb-d3cb1dde1d61
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-jirka
+Hello,=0A=
+=0A=
+I developed a SHA224/256 kernel crypto module with SPE instructions.=0A=
+The result looks quite promising (~ +50% speedup). Nevertheless the=0A=
+flooding of kernel messages "SPE used in kernel" makes me feel =0A=
+uncomfortable.=0A=
+=0A=
+My findings so far:=0A=
+=0A=
+- I can configure the kernel with "SPE support". =0A=
+- arch/powerpc/kernel/head_fsl_booke.S suggests that the message is=0A=
+  triggerd unconditionally whenwever we make use of SPE in kernel.=0A=
+- There exists a function enable_kernel_spe() but I don't know how=0A=
+  this could help me in my work.=0A=
+=0A=
+I guess I need some kind of "brackets" around my coding to make sure =0A=
+the upper 32 bit of the registers are stored correctly during task switch. =
+=0A=
+Or is the use of SPE instructions inside the kernel totally forbidden? Any =
+=0A=
+expert with some helpful advise?=0A=
+=0A=
+Thanks in advance.=0A=
+=0A=
+Markus=0A=
+------=_NextPartTM-000-d799b1ca-45bb-4cd0-9eeb-d3cb1dde1d61
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-d799b1ca-45bb-4cd0-9eeb-d3cb1dde1d61--
