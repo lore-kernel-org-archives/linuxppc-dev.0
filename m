@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0982C1A0F6C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jan 2015 06:18:04 +1100 (AEDT)
-Message-ID: <1420744670.5830.44.camel@kernel.crashing.org>
-Subject: Re: [RFC] PPC: MPIC: necessary readback after EOI?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 08 Jan 2015 20:17:50 +0100
-In-Reply-To: <1420650283.4961.52.camel@freescale.com>
-References: <20150105174616.GA3159@rhlx01.hs-esslingen.de>
- <1420481454.4961.16.camel@freescale.com>
- <1420641876.5830.32.camel@kernel.crashing.org>
- <1420650283.4961.52.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BBCA1A0F57
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Jan 2015 09:42:02 +1100 (AEDT)
+Message-ID: <1420756921.1211.14.camel@neuling.org>
+Subject: Re: [PATCH] cxl: remove redundant increment of hwirq
+From: Michael Neuling <mikey@neuling.org>
+To: Colin King <colin.king@canonical.com>
+Date: Fri, 09 Jan 2015 09:42:01 +1100
+In-Reply-To: <1420756607-23459-1-git-send-email-colin.king@canonical.com>
+References: <1420756607-23459-1-git-send-email-colin.king@canonical.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Purcareata Bogdan <b43198@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-07 at 11:04 -0600, Scott Wood wrote:
-> On Wed, 2015-01-07 at 15:44 +0100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2015-01-05 at 12:10 -0600, Scott Wood wrote:
-> > > It would have been nice if a code comment explained why it was doing the
-> > > readback...  I don't see any particular need to wait for EOI completion
-> > > here (unlike when masking).
-> > 
-> > The EOI is what causes the MPIC to drop it's EE output to the CPU, if the
-> > EOI is processed too slowly & asynchronously (posted write + 33Mhz MPIC)
-> > we observe cases of spurrious interrupts. We had some macs basically getting
-> > a spurrious irq for every MPIC interrupts...
-> 
-> Shouldn't reading INTACK be what causes the MPIC to drop its EE output?
+On Thu, 2015-01-08 at 22:36 +0000, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>=20
+> hwirq has not been initialized, however it is being incremented
+> and also not being referenced in a loop.  This error was detected with
+> cppcheck:
+>=20
+> [drivers/misc/cxl/irq.c:439]: (error) Uninitialized variable: hwirq
+>=20
+> Commit 80fa93fce37d ("cxl: Name interrupts in /proc/interrupt")=20
+> introduced this error.
+>=20
+> This is a simple fix that removes the redundant increment.
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Hrm, looks like I had too much wine or something, you are correct yes,
-it's the intack, so my explanation is bogus.
+Thanks.  Looks good.
 
-So we are down to possibly delaying the raising back of the CPU priority
-which is not a big deal indeed, we could probably get rid of the read
-back.
+Acked-By: Michael Neuling <mikey@neuling.org>
 
-Ben.
+> ---
+>  drivers/misc/cxl/irq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+> index c294925..68ab608 100644
+> --- a/drivers/misc/cxl/irq.c
+> +++ b/drivers/misc/cxl/irq.c
+> @@ -436,7 +436,7 @@ int afu_register_irqs(struct cxl_context *ctx, u32 co=
+unt)
+>  	 */
+>  	INIT_LIST_HEAD(&ctx->irq_names);
+>  	for (r =3D 1; r < CXL_IRQ_RANGES; r++) {
+> -		for (i =3D 0; i < ctx->irqs.range[r]; hwirq++, i++) {
+> +		for (i =3D 0; i < ctx->irqs.range[r]; i++) {
+>  			irq_name =3D kmalloc(sizeof(struct cxl_irq_name),
+>  					   GFP_KERNEL);
+>  			if (!irq_name)
