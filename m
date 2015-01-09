@@ -1,23 +1,26 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
- [IPv6:2607:f8b0:4003:c06::22d])
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lb0-f181.google.com (mail-lb0-f181.google.com
+ [209.85.217.181])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56C1E1A0EEE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2015 04:43:09 +1100 (AEDT)
-Received: by mail-oi0-f45.google.com with SMTP id x69so12886786oia.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2015 09:43:07 -0800 (PST)
-Date: Fri, 9 Jan 2015 10:43:04 -0700
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/5] powerpc/powernv: Introduce pnv_pci_poll()
-Message-ID: <20150109174304.GD6575@google.com>
-References: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1417672488-27341-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B0881A0EDE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2015 06:35:35 +1100 (AEDT)
+Received: by mail-lb0-f181.google.com with SMTP id l4so9772374lbv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2015 11:35:31 -0800 (PST)
+Message-ID: <54B02D7F.7040501@cogentembedded.com>
+Date: Fri, 09 Jan 2015 22:35:27 +0300
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417672488-27341-4-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
+Subject: Re: [RFC 02/11] i2c: add quirk checks to core
+References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
+ <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ Ludovic Desroches <ludovic.desroches@atmel.com>,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,128 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2014 at 04:54:46PM +1100, Gavin Shan wrote:
-> We might not get some PCI slot information (e.g. power status)
-> immediately by OPAL API. Instead, opal_pci_poll() need to be called
-> for the required information.
-> 
-> The patch introduces pnv_pci_poll(), which bases on original
-> ioda_eeh_poll(), to cover the above case
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Hello.
 
-Hi Gavin,
+On 01/09/2015 08:21 PM, Wolfram Sang wrote:
 
-This patch doesn't apply cleanly on v3.19-rc1.  Can you refresh this
-series, please?
+> Let the core do the checks if HW quirks prevent a transfer. Saves code
+> from drivers and adds consistency.
 
-Bjorn
-
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 > ---
->  arch/powerpc/platforms/powernv/eeh-ioda.c | 28 ++--------------------------
->  arch/powerpc/platforms/powernv/pci.c      | 19 +++++++++++++++++++
->  arch/powerpc/platforms/powernv/pci.h      |  1 +
->  3 files changed, 22 insertions(+), 26 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index cf38781..21fa033 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -490,24 +490,6 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
->  	return ioda_eeh_get_pe_state(pe);
->  }
->  
-> -static s64 ioda_eeh_poll(uint64_t id)
-> -{
-> -	s64 rc = OPAL_HARDWARE;
-> -
-> -	while (1) {
-> -		rc = opal_pci_poll(id, NULL);
-> -		if (rc <= 0)
-> -			break;
-> -
-> -		if (system_state < SYSTEM_RUNNING)
-> -			udelay(1000 * rc);
-> -		else
-> -			msleep(rc);
-> -	}
-> -
-> -	return rc;
-> -}
-> -
->  int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
->  {
->  	struct pnv_phb *phb = hose->private_data;
-> @@ -536,10 +518,7 @@ int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
->  
->  	/* Issue reset and poll until it's completed */
->  	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
-> -	if (rc > 0)
-> -		rc = ioda_eeh_poll(phb->opal_id);
-> -
-> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-> +	return pnv_pci_poll(phb->opal_id, rc, NULL);
->  }
->  
->  static int __ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
-> @@ -630,10 +609,7 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
->  	phb = hose->private_data;
->  	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
->  	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
-> -	if (rc > 0)
-> -		ioda_eeh_poll(id);
-> -
-> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-> +	return pnv_pci_poll(id, rc, NULL);
->  }
->  
->  static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 4b20f2c..6dc8ea9 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -45,6 +45,25 @@
->  #define cfg_dbg(fmt...)	do { } while(0)
->  //#define cfg_dbg(fmt...)	printk(fmt)
->  
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
+>   drivers/i2c/i2c-core.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>   1 file changed, 53 insertions(+)
+>
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index 39d25a8cb1ad..7b10a19abf5b 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -2063,6 +2063,56 @@ module_exit(i2c_exit);
+>    * ----------------------------------------------------
+>    */
+>
+> +/* Check if val is exceeding the quirk IFF quirk is non 0 */
+> +#define i2c_quirk_exceeded(val, quirk) ((quirk) && ((val) > (quirk)))
+> +
+> +static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *msg, char *err_msg)
 > +{
-> +	while (rval > 0) {
-> +		rval = opal_pci_poll(id, pval);
-> +		if (rval == OPAL_SUCCESS && pval)
-> +			rval = opal_pci_poll(id, pval);
-> +
-> +		if (rval <= 0)
-> +			break;
-> +
-> +		if (system_state < SYSTEM_RUNNING)
-> +			udelay(1000 * rval);
-> +		else
-> +			msleep(rval);
-> +	}
-> +
-> +	return rval ? -EIO : 0;
+> +	dev_err(&adap->dev, "quirk: %s (addr 0x%04x, size %u)\n", err_msg, msg->addr, msg->len);
+> +	return -EOPNOTSUPP;
 > +}
+
+    Always returning the same value doesn't make much sense. Are you trying to 
+save space on the call sites?
+
+[...]
+> @@ -2080,6 +2130,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+>   	unsigned long orig_jiffies;
+>   	int ret, try;
+>
+> +	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
+
+    So, you only check for non-zero result of this function? Perhaps it makes 
+sense to return true/false instead?
+
+> +		return -EOPNOTSUPP;
 > +
->  #ifdef CONFIG_PCI_MSI
->  static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
->  {
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 6c02ff8..396fe02 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -217,6 +217,7 @@ extern struct pci_ops pnv_pci_ops;
->  extern struct pnv_eeh_ops ioda_eeh_ops;
->  #endif
->  
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval);
->  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->  				unsigned char *log_buff);
->  int pnv_pci_cfg_read(struct device_node *dn,
-> -- 
-> 1.8.3.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+WBR, Sergei
