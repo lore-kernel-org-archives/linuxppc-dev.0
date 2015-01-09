@@ -2,13 +2,13 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCFB71A0F8C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2015 04:22:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5ABF1A0F7F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2015 04:22:27 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC 04/11] i2c: opal: make use of the new infrastructure for quirks
-Date: Fri,  9 Jan 2015 18:21:34 +0100
-Message-Id: <1420824103-24169-5-git-send-email-wsa@the-dreams.de>
+Subject: [RFC 06/11] i2c: cpm: make use of the new infrastructure for quirks
+Date: Fri,  9 Jan 2015 18:21:36 +0100
+Message-Id: <1420824103-24169-7-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
 References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
 Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
@@ -26,55 +26,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
- drivers/i2c/busses/i2c-opal.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/i2c/busses/i2c-cpm.c | 20 +++++++++-----------
+ 1 file changed, 9 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
-index 16f90b1a7508..f463eae44bf2 100644
---- a/drivers/i2c/busses/i2c-opal.c
-+++ b/drivers/i2c/busses/i2c-opal.c
-@@ -104,17 +104,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
- 		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
- 		break;
- 	case 2:
--		/* For two messages, we basically support only simple
--		 * smbus transactions of a write plus a read. We might
--		 * want to allow also two writes but we'd have to bounce
--		 * the data into a single buffer.
--		 */
--		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
--			return -EOPNOTSUPP;
--		if (msgs[0].len > 4)
--			return -EOPNOTSUPP;
--		if (msgs[0].addr != msgs[1].addr)
--			return -EOPNOTSUPP;
- 		req.type = OPAL_I2C_SM_READ;
- 		req.addr = cpu_to_be16(msgs[0].addr);
- 		req.subaddr_sz = msgs[0].len;
-@@ -210,6 +199,16 @@ static const struct i2c_algorithm i2c_opal_algo = {
- 	.functionality	= i2c_opal_func,
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index 2d466538b2e2..714bdc837769 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -308,22 +308,12 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	struct i2c_reg __iomem *i2c_reg = cpm->i2c_reg;
+ 	struct i2c_ram __iomem *i2c_ram = cpm->i2c_ram;
+ 	struct i2c_msg *pmsg;
+-	int ret, i;
++	int ret;
+ 	int tptr;
+ 	int rptr;
+ 	cbd_t __iomem *tbdf;
+ 	cbd_t __iomem *rbdf;
+ 
+-	if (num > CPM_MAXBD)
+-		return -EINVAL;
+-
+-	/* Check if we have any oversized READ requests */
+-	for (i = 0; i < num; i++) {
+-		pmsg = &msgs[i];
+-		if (pmsg->len >= CPM_MAX_READ)
+-			return -EINVAL;
+-	}
+-
+ 	/* Reset to use first buffer */
+ 	out_be16(&i2c_ram->rbptr, in_be16(&i2c_ram->rbase));
+ 	out_be16(&i2c_ram->tbptr, in_be16(&i2c_ram->tbase));
+@@ -424,10 +414,18 @@ static const struct i2c_algorithm cpm_i2c_algo = {
+ 	.functionality = cpm_i2c_func,
  };
  
-+/* For two messages, we basically support only simple
-+ * smbus transactions of a write plus a read. We might
-+ * want to allow also two writes but we'd have to bounce
-+ * the data into a single buffer.
-+ */
-+static struct i2c_adapter_quirks i2c_opal_quirks = {
-+	.flags = I2C_ADAPTER_QUIRK_COMB_WRITE_THEN_READ,
-+	.max_comb_write_len = 4,
++/* CPM_MAX_READ is also limiting writes according to the code! */
++static struct i2c_adapter_quirks cpm_i2c_quirks = {
++	.max_num_msgs = CPM_MAXBD,
++	.max_read_len = CPM_MAX_READ,
++	.max_write_len = CPM_MAX_READ,
 +};
 +
- static int i2c_opal_probe(struct platform_device *pdev)
- {
- 	struct i2c_adapter	*adapter;
-@@ -232,6 +231,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
+ static const struct i2c_adapter cpm_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "i2c-cpm",
+ 	.algo		= &cpm_i2c_algo,
++	.quirks		= &cpm_i2c_quirks,
+ };
  
- 	adapter->algo = &i2c_opal_algo;
- 	adapter->algo_data = (void *)(unsigned long)opal_id;
-+	adapter->quirks = &i2c_opal_quirks;
- 	adapter->dev.parent = &pdev->dev;
- 	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
- 	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
+ static int cpm_i2c_setup(struct cpm_i2c *cpm)
 -- 
 2.1.3
