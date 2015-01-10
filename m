@@ -1,27 +1,28 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-la0-f43.google.com (mail-la0-f43.google.com
- [209.85.215.43])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C009E1A0FA7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2015 08:05:14 +1100 (AEDT)
-Received: by mail-la0-f43.google.com with SMTP id s18so16511471lam.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2015 13:05:10 -0800 (PST)
-Message-ID: <54B04283.5070705@cogentembedded.com>
-Date: Sat, 10 Jan 2015 00:05:07 +0300
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Return-Path: <robherring2@gmail.com>
+Sender: Rob Herring <robherring2@gmail.com>
+From: Rob Herring <robh@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/16] PCI generic configuration space accessors
+Date: Fri,  9 Jan 2015 20:34:34 -0600
+Message-Id: <1420857290-8373-1-git-send-email-robh@kernel.org>
 MIME-Version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RFC 02/11] i2c: add quirk checks to core
-References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
- <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
- <54B02D7F.7040501@cogentembedded.com> <20150109204522.GB1904@katana>
-In-Reply-To: <20150109204522.GB1904@katana>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
- Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+ Will Deacon <will.deacon@arm.com>, David Howells <dhowells@redhat.com>,
+ linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Tanmay Inamdar <tinamdar@apm.com>,
+ Greg Ungerer <gerg@uclinux.org>, Alexandre Courbot <gnurou@gmail.com>,
+ linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
+ Stephen Warren <swarren@wwwdotorg.org>, Michal Simek <michal.simek@xilinx.com>,
+ linux-arm-kernel@lists.infradead.org, cbe-oss-dev@lists.ozlabs.org,
+ Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>,
+ Simon Horman <horms@verge.net.au>, Krzysztof Halasa <khalasa@piap.pl>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,61 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+This series adds common accessor functions for PCI configuration space
+accesses. This supports most PCI hosts with memory mapped configuration
+space like ECAM or hosts with memory mapped address/data registers. ECAM
+is not generically supported by this series, but could be added on top
+of this. While some hosts have standard address decoding which could be 
+common as well, the various checks on bus numbers and device numbers are 
+quite varied. It is unclear how much of that is really necessary or 
+could be common. 
 
-On 01/09/2015 11:45 PM, Wolfram Sang wrote:
+The first 4 patches are preparatory cleanup. Patch 5 introduces the
+common accessors. The remaining patches convert several PCI host
+controllers. This is in no way a complete list of host controllers. The
+conversion of more hosts should be possible. The Designware controller
+in particular should be able to be converted, but its config space
+accessors are a mess of override-able functions that I've not gotten my
+head around.
 
->>> Let the core do the checks if HW quirks prevent a transfer. Saves code
->> >from drivers and adds consistency.
+This series is available here [1].
 
->>> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
->>> ---
->>>   drivers/i2c/i2c-core.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++
->>>   1 file changed, 53 insertions(+)
->>>
->>> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
->>> index 39d25a8cb1ad..7b10a19abf5b 100644
->>> --- a/drivers/i2c/i2c-core.c
->>> +++ b/drivers/i2c/i2c-core.c
->>> @@ -2063,6 +2063,56 @@ module_exit(i2c_exit);
->>>    * ----------------------------------------------------
->>>    */
->>>
->>> +/* Check if val is exceeding the quirk IFF quirk is non 0 */
->>> +#define i2c_quirk_exceeded(val, quirk) ((quirk) && ((val) > (quirk)))
->>> +
->>> +static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *msg, char *err_msg)
->>> +{
->>> +	dev_err(&adap->dev, "quirk: %s (addr 0x%04x, size %u)\n", err_msg, msg->addr, msg->len);
->>> +	return -EOPNOTSUPP;
->>> +}
+Rob
 
->>     Always returning the same value doesn't make much sense. Are you trying
->> to save space on the call sites?
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git pci-config-access
 
-> Please elaborate. I think it does. If a quirk matches, we report that we
-> don't support this transfer.
+Rob Herring (16):
+  frv: add struct pci_ops member names to initialization
+  mips: add struct pci_ops member names to initialization
+  mn10300: add struct pci_ops member names to initialization
+  powerpc: add struct pci_ops member names to initialization
+  pci: introduce common pci config space accessors
+  ARM: cns3xxx: convert PCI to use generic config accesses
+  ARM: integrator: convert PCI to use generic config accesses
+  ARM: sa1100: convert PCI to use generic config accesses
+  ARM: ks8695: convert PCI to use generic config accesses
+  powerpc: fsl_pci: convert PCI to use generic config accesses
+  powerpc: powermac: convert PCI to use generic config accesses
+  pci/host: generic: convert to use generic config accesses
+  pci/host: rcar-gen2: convert to use generic config accesses
+  pci/host: tegra: convert to use generic config accesses
+  pci/host: xgene: convert to use generic config accesses
+  pci/host: xilinx: convert to use generic config accesses
 
-    OK, but what's the point of having this function return *int* if it always 
-returns the same value? AFAIU, you're trying to save the code space on the 
-call sites of this function by not having *return* -EOPNOTSUPP there each time?
+ arch/arm/mach-cns3xxx/pcie.c                   |  52 ++----
+ arch/arm/mach-integrator/pci_v3.c              |  61 +-------
+ arch/arm/mach-ks8695/pci.c                     |  77 +--------
+ arch/arm/mach-sa1100/pci-nanoengine.c          |  94 +----------
+ arch/frv/mb93090-mb00/pci-vdk.c                |   4 +-
+ arch/mips/pci/pci-bcm1480.c                    |   4 +-
+ arch/mips/pci/pci-octeon.c                     |   4 +-
+ arch/mips/pci/pcie-octeon.c                    |  12 +-
+ arch/mn10300/unit-asb2305/pci.c                |   4 +-
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c |   4 +-
+ arch/powerpc/platforms/powermac/pci.c          | 209 +++++--------------------
+ arch/powerpc/sysdev/fsl_pci.c                  |  46 +-----
+ drivers/pci/access.c                           |  87 ++++++++++
+ drivers/pci/host/pci-host-generic.c            |  51 +-----
+ drivers/pci/host/pci-rcar-gen2.c               |  51 +-----
+ drivers/pci/host/pci-tegra.c                   |  55 +------
+ drivers/pci/host/pci-xgene.c                   | 150 ++----------------
+ drivers/pci/host/pcie-xilinx.c                 |  88 ++---------
+ include/linux/pci.h                            |  11 ++
+ 19 files changed, 212 insertions(+), 852 deletions(-)
 
->> [...]
->>> @@ -2080,6 +2130,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
->>>   	unsigned long orig_jiffies;
->>>   	int ret, try;
->>>
->>> +	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
-
->>     So, you only check for non-zero result of this function? Perhaps it makes
->> sense to return true/false instead?
-
-> Could be done, but what would be the advantage? A lot of functions
-> return errno or 0.
-
-    It would have been OK if you were actually caring about the result, e.g. 
-returning it from __i2c_transfer(). Since you don't, IMO it would make more 
-sense to return true from i2c_check_for_quirks() (making it *bool*) iff it did 
-find/apply a quirk.
-
-WBR, Sergei
+-- 
+2.1.0
