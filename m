@@ -1,21 +1,28 @@
-Return-Path: <luis.henriques@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA20A1A0597
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 05:30:46 +1100 (AEDT)
-From: Luis Henriques <luis.henriques@canonical.com>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- kernel-team@lists.ubuntu.com
-Subject: [PATCH 3.16.y-ckt 175/216] powerpc/powernv: Switch off MMU before
- entering nap/sleep/rvwinkle mode
-Date: Mon, 12 Jan 2015 18:29:13 +0000
-Message-Id: <1421087394-2712-63-git-send-email-luis.henriques@canonical.com>
-In-Reply-To: <1421085933-32536-1-git-send-email-luis.henriques@canonical.com>
-References: <1421085933-32536-1-git-send-email-luis.henriques@canonical.com>
-Cc: Luis Henriques <luis.henriques@canonical.com>,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A3DA1A064E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 06:25:23 +1100 (AEDT)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ t0CJPKYA029986
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 19:25:21 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH 09/10] PCI,
+ powerpc: clip firmware assigned resource under parent bridge's
+Date: Mon, 12 Jan 2015 11:23:19 -0800
+Message-Id: <1421090600-9750-10-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1421090600-9750-1-git-send-email-yinghai@kernel.org>
+References: <1421090600-9750-1-git-send-email-yinghai@kernel.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Murray <amurray@embedded-bits.co.uk>,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, linux-pci@vger.kernel.org,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,83 +32,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.16.7-ckt4 -stable review patch.  If anyone has any objections, please let me know.
+Some bios put range that is not fully coverred by root bus resources.
+Try to clip them and update them in pci bridge bars.
 
-------------------
+We'd like to fix other arches instead of just x86.
 
-From: Paul Mackerras <paulus@samba.org>
-
-commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
-
-Currently, when going idle, we set the flag indicating that we are in
-nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
-(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
-for two reasons: (a) the architecture specifies that those instructions
-must be executed with the MMU off, and in fact with only the SF, HV, ME
-and possibly RI bits set, and (b) this introduces a race, because as
-soon as we set the flag, another thread can switch the MMU to a guest
-context.  If the race is lost, this thread will typically start looping
-on relocation-on ISIs at 0xc...4400.
-
-This fixes it by setting the MSR as required by the architecture before
-setting the flag or executing the nap/sleep/rvwinkle instruction.
-
-[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=85491
+Reported-by: Marek Kordik <kordikmarek@gmail.com>
+Fixes: 5b28541552ef ("PCI: Restrict 64-bit prefetchable bridge windows to 64-bit resources")
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: Andrew Murray <amurray@embedded-bits.co.uk>
 Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
 ---
- arch/powerpc/include/asm/reg.h    |  2 ++
- arch/powerpc/kernel/idle_power7.S | 18 +++++++++++++++++-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci-common.c | 43 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index bffd89d27301..e73cdadab785 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -118,8 +118,10 @@
- #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
- #ifdef __BIG_ENDIAN__
- #define MSR_		__MSR
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
- #else
- #define MSR_		(__MSR | MSR_LE)
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
- #endif
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 5cf3d367190d..a29f5b0f9d3e 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -101,7 +101,23 @@ _GLOBAL(power7_powersave_common)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 37d512d..6909546 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1148,6 +1148,7 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 	struct pci_bus *b;
+ 	int i;
+ 	struct resource *res, *pr;
++	bool changed = false;
  
--_GLOBAL(power7_enter_nap_mode)
-+	/*
-+	 * Go to real mode to do the nap, as required by the architecture.
-+	 * Also, we need to be in real mode before setting hwthread_state,
-+	 * because as soon as we do that, another thread can switch
-+	 * the MMU context to the guest.
-+	 */
-+	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
-+	li	r6, MSR_RI
-+	andc	r6, r9, r6
-+	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
-+	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
-+	mtspr	SPRN_SRR0, r7
-+	mtspr	SPRN_SRR1, r5
-+	rfid
+ 	pr_debug("PCI: Allocating bus resources for %04x:%02x...\n",
+ 		 pci_domain_nr(bus), bus->number);
+@@ -1184,6 +1185,8 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 			 pr, (pr && pr->name) ? pr->name : "nil");
+ 
+ 		if (pr && !(pr->flags & IORESOURCE_UNSET)) {
++			struct pci_dev *dev = bus->self;
 +
-+	.globl	power7_enter_nap_mode
-+power7_enter_nap_mode:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
+ 			if (request_resource(pr, res) == 0)
+ 				continue;
+ 			/*
+@@ -1193,6 +1196,16 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 			 */
+ 			if (reparent_resources(pr, res) == 0)
+ 				continue;
++
++			if (dev && i >= PCI_BRIDGE_RESOURCES &&
++			    i < PCI_NUM_RESOURCES &&
++			    (dev->class >> 8) == PCI_CLASS_BRIDGE_PCI &&
++			    pci_bus_clip_resource(dev, res)) {
++				changed = true;
++				if (pci_claim_resource(dev, i) >= 0)
++					continue;
++			}
++
+ 		}
+ 		pr_warning("PCI: Cannot allocate resource region "
+ 			   "%d of PCI bridge %d, will remap\n", i, bus->number);
+@@ -1208,6 +1221,9 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 		res->flags = 0;
+ 	}
+ 
++	if (changed)
++		pci_setup_bridge(bus);
++
+ 	list_for_each_entry(b, &bus->children, node)
+ 		pcibios_allocate_bus_resources(b);
+ }
+@@ -1225,6 +1241,13 @@ static inline void alloc_resource(struct pci_dev *dev, int idx)
+ 	pr = pci_find_parent_resource(dev, r);
+ 	if (!pr || (pr->flags & IORESOURCE_UNSET) ||
+ 	    request_resource(pr, r) < 0) {
++		/* try again with clip */
++		if (idx != PCI_ROM_RESOURCE && pci_bus_clip_resource(dev, r)) {
++			pci_update_resource(dev, idx);
++			if (pci_claim_resource(dev, idx) >= 0)
++				return;
++		}
++
+ 		printk(KERN_WARNING "PCI: Cannot allocate resource region %d"
+ 		       " of device %s, will remap\n", idx, pci_name(dev));
+ 		if (pr)
+@@ -1386,6 +1409,7 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
+ 	struct pci_bus *child_bus;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
++		bool changed = false;
+ 		int i;
+ 
+ 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+@@ -1401,8 +1425,25 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
+ 				 (unsigned long long)r->end,
+ 				 (unsigned int)r->flags);
+ 
+-			pci_claim_resource(dev, i);
++			if (pci_claim_resource(dev, i) >= 0)
++				continue;
++
++			if (dev->subordinate &&
++			    i >= PCI_BRIDGE_RESOURCES &&
++			    i < PCI_NUM_RESOURCES &&
++			    (dev->class >> 8) == PCI_CLASS_BRIDGE_PCI &&
++			    pci_bus_clip_resource(dev, r)) {
++				changed = true;
++				pci_claim_resource(dev, i);
++			} else if (i < PCI_BRIDGE_RESOURCES &&
++				   i != PCI_ROM_RESOURCE &&
++				   pci_bus_clip_resource(dev, r)) {
++					pci_update_resource(dev, i);
++					pci_claim_resource(dev, i);
++			}
+ 		}
++		if (changed)
++			pci_setup_bridge(dev->subordinate);
+ 	}
+ 
+ 	list_for_each_entry(child_bus, &bus->children, node)
 -- 
-2.1.4
+1.8.4.5
