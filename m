@@ -1,23 +1,19 @@
-Return-Path: <ludovic.desroches@atmel.com>
-Received: from eusmtp01.atmel.com (eusmtp01.atmel.com [212.144.249.242])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDD881A0631
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 21:04:39 +1100 (AEDT)
-Date: Mon, 12 Jan 2015 10:58:47 +0100
-From: Ludovic Desroches <ludovic.desroches@atmel.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RFC 02/11] i2c: add quirk checks to core
-Message-ID: <20150112095847.GD3625@ldesroches-Latitude-E6320>
-References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
- <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5DDD91A042E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 21:18:45 +1100 (AEDT)
+From: Igal.Liberman <igal.liberman@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/dts: Unify B4 mux nodes
+Date: Mon, 12 Jan 2015 08:03:57 +0200
+Message-ID: <1421042637-13970-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
- Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>,
+ Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,102 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfram,
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-On Fri, Jan 09, 2015 at 06:21:32PM +0100, Wolfram Sang wrote:
-> Let the core do the checks if HW quirks prevent a transfer. Saves code
-> from drivers and adds consistency.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> ---
->  drivers/i2c/i2c-core.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 53 insertions(+)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 39d25a8cb1ad..7b10a19abf5b 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -2063,6 +2063,56 @@ module_exit(i2c_exit);
->   * ----------------------------------------------------
->   */
->  
-> +/* Check if val is exceeding the quirk IFF quirk is non 0 */
-> +#define i2c_quirk_exceeded(val, quirk) ((quirk) && ((val) > (quirk)))
-> +
-> +static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *msg, char *err_msg)
-> +{
-> +	dev_err(&adap->dev, "quirk: %s (addr 0x%04x, size %u)\n", err_msg, msg->addr, msg->len);
-> +	return -EOPNOTSUPP;
-> +}
-> +
-> +static int i2c_check_for_quirks(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
-> +{
-> +	struct i2c_adapter_quirks *q = adap->quirks;
-> +	u16 max_read = q->max_read_len, max_write = q->max_write_len;
-> +	int max_num = q->max_num_msgs, i;
-> +
-> +	if (q->flags & I2C_ADAPTER_QUIRK_COMB_WRITE_THEN_READ)
-> +		max_num = 2;
-> +
-> +	if (i2c_quirk_exceeded(num, max_num))
-> +		return i2c_quirk_error(adap, &msgs[0], "too many messages");
-> +
-> +	if (num == 2 && q->flags & I2C_ADAPTER_QUIRK_COMB_WRITE_FIRST) {
-> +		if (msgs[0].flags & I2C_M_RD)
-> +			return i2c_quirk_error(adap, &msgs[0], "invalid first write msg");
-> +
-> +		max_write = q->max_comb_write_len;
-> +	}
-> +
-> +	if (num == 2 && q->flags & I2C_ADAPTER_QUIRK_COMB_READ_SECOND) {
-> +		if (!(msgs[1].flags & I2C_M_RD) || msgs[0].addr != msgs[1].addr)
-> +			return i2c_quirk_error(adap, &msgs[1], "invalid second read msg");
-> +
-> +		max_read = q->max_comb_read_len;
-> +	}
-> +
-> +	for (i = 0; i < num; i++) {
-> +		u16 len = msgs[i].len;
-> +
-> +		if (msgs[i].flags & I2C_M_RD) {
-> +			if (i2c_quirk_exceeded(len, max_read))
-> +				return i2c_quirk_error(adap, &msgs[i], "msg too long");
-> +		} else {
-> +			if (i2c_quirk_exceeded(len, max_write))
-> +				return i2c_quirk_error(adap, &msgs[i], "msg too long");
-> +		}
-> +	}
-> +
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+Change-Id: Ic5f28f7b492b708f00a5ff74dda723ce5e1da0ba
+---
+ arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |   15 ++-------------
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |   15 ++-------------
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |   12 ++++++++++++
+ 3 files changed, 16 insertions(+), 26 deletions(-)
 
-I am not sure it will perfectly fit at91 quirks.
-
-The hardware can handle two messages by using the internal address
-feature. The internal address size is from one byte to three bytes. Then
-the length of the first message is limited to three but we don't have
-this constraint for the second one. If we have 'write then read' no problem
-but if we have two write messages, the second one will cause a quirk
-exceeded error.
-
-Regards
-
-Ludovic
-
-> +	return 0;
-> +}
-> +
->  /**
->   * __i2c_transfer - unlocked flavor of i2c_transfer
->   * @adap: Handle to I2C bus
-> @@ -2080,6 +2130,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
->  	unsigned long orig_jiffies;
->  	int ret, try;
->  
-> +	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
-> +		return -EOPNOTSUPP;
-> +
->  	/* i2c_trace_msg gets enabled when tracepoint i2c_transfer gets
->  	 * enabled.  This is an efficient way of keeping the for-loop from
->  	 * being executed when not needed.
-> -- 
-> 2.1.3
-> 
+diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+index 86161ae..1ea8602 100644
+--- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+@@ -80,20 +80,9 @@
+ 		compatible = "fsl,b4420-device-config", "fsl,qoriq-device-config-2.0";
+ 	};
+ 
+-/include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+-		compatible = "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0";
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				<&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux0";
+-		};
++		compatible = "fsl,b4420-clockgen", "fsl,b4-clockgen",
++			      "fsl,qoriq-clockgen-2.0";
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+index 65100b9..d0a5cde 100644
+--- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+@@ -124,20 +124,9 @@
+ 		compatible = "fsl,b4860-device-config", "fsl,qoriq-device-config-2.0";
+ 	};
+ 
+-/include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+-		compatible = "fsl,b4860-clockgen", "fsl,qoriq-clockgen-2.0";
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				<&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux0";
+-		};
++		compatible = "fsl,b4860-clockgen", "fsl,b4-clockgen",
++			      "fsl,qoriq-clockgen-2.0";
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index 1a54ba7..e4e69b0 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -214,9 +214,21 @@
+ 		fsl,liodn-bits = <12>;
+ 	};
+ 
++/include/ "qoriq-clockgen2.dtsi"
+ 	clockgen: global-utilities@e1000 {
+ 		compatible = "fsl,b4-clockgen", "fsl,qoriq-clockgen-2.0";
+ 		reg = <0xe1000 0x1000>;
++
++		mux0: mux0@0 {
++			#clock-cells = <0>;
++			reg = <0x0 0x4>;
++			compatible = "fsl,qoriq-core-mux-2.0";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				<&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0", "pll0-div2", "pll0-div4",
++				"pll1", "pll1-div2", "pll1-div4";
++			clock-output-names = "cmux0";
++		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+-- 
+1.7.9.5
