@@ -1,29 +1,40 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-x229.google.com (mail-lb0-x229.google.com
- [IPv6:2a00:1450:4010:c04::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <pc@us.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CC301A05E0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 03:27:12 +1100 (AEDT)
-Received: by mail-lb0-f169.google.com with SMTP id p9so18468389lbv.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 08:27:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B4EFF1A0283
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 04:27:43 +1100 (AEDT)
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E3E041401F0
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2015 04:27:42 +1100 (AEDT)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <pc@us.ibm.com>;
+ Mon, 12 Jan 2015 12:27:39 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id DFDAF6E8046
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2015 12:19:27 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0CHRXkT27328548
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2015 17:27:34 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0CHRXrS007157
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2015 12:27:33 -0500
+Message-ID: <54B40403.1000202@us.ibm.com>
+Date: Mon, 12 Jan 2015 11:27:31 -0600
+From: Paul Clarke <pc@us.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20150112162438.GA18723@roeck-us.net>
-References: <20150112180322.003b44f2@canb.auug.org.au>
- <20150112162438.GA18723@roeck-us.net>
-Date: Mon, 12 Jan 2015 17:27:08 +0100
-Message-ID: <CAMuHMdUYEe=L=H75AOYVjinRSW=okRJNrNJVy-bY1gshdVrO7Q@mail.gmail.com>
-Subject: Re: linux-next: Tree for Jan 12 (build failures: m68k, ppc)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Clark <robdclark@gmail.com>, Linux-Next <linux-next@vger.kernel.org>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Reword the "returning from prom_init" message
+References: <1421056096-20043-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1421056096-20043-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +44,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 12, 2015 at 5:24 PM, Guenter Roeck <linux@roeck-us.net> wrote:
-> On Mon, Jan 12, 2015 at 06:03:22PM +1100, Stephen Rothwell wrote:
->> Hi all,
->>
->> Changes since 20150109:
->>
->> The usb-gadget-fixes tree gained a conflict against the usb.current tree.
->>
->> The net-next tree gained a build failure for which I reverted a commit.
->>
->> The pinctrl tree gained a build failure so I used the version from
->> next-20150109.
->>
->> The akpm tree lost a few patches that turned up elsewhere.
->>
->> Non-merge commits (relative to Linus' tree): 2202
->>  2272 files changed, 69868 insertions(+), 38441 deletions(-)
->>
+On 01/12/2015 03:48 AM, Michael Ellerman wrote:
+> We get way too many bug reports that say "the kernel is hung in
+> prom_init", which stems from the fact that the last piece of output
+> people see is "returning from prom_init".
 >
-> Build failures, seen since next-20150109:
->         m68k:allmodconfig
->         powerpc:ppc6xx_defconfig
+> The kernel is almost never hung in prom_init(), it's just that it's
+> crashed somewhere after prom_init() but prior to the console coming up.
 >
-> Due to:
->         ERROR: "__get_user_bad" [drivers/gpu/drm/drm.ko] undefined!
->         make[1]: *** [__modpost] Error 1
+> The existing message should give a clue to that, ie. "returning from"
+> indicates that prom_init() has finished, but it doesn't seem to work.
+> Let's try something different.
 >
-> Caused by commit d34f20d6e2f (drm: Atomic modeset ioctl).
+> This prints:
+>
+>    Calling quiesce...
+>    Shutting down Open Firmware, booting Linux via __start() ...
+>
+> Which hopefully makes it clear that prom_init() is not the problem, and
+> although __start() probably isn't either, it's at least the right place
+> to begin looking.
 
-Yeah, it needs a get_user() that supports 64-bit data.
+I'm very much in favor of anything that increases usability or decreases 
+confusion.
 
-Gr{oetje,eeting}s,
+I worry about confusion caused by any phrase that begins "Shutting 
+down.."  Even if accurate, I wonder if something more positive that 
+indicates that, at least at this point, things are continuing to proceed 
+along would be preferred.
 
-                        Geert
+Perhaps something like "Transferring control from Open Firmware to 
+kernel (via __start) ...".
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+(Do we know for certain that what is about to be invoked is "Linux" 
+per-se, or can it be something else that has a "__start"?)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+PC
