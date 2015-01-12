@@ -1,20 +1,21 @@
-Return-Path: <wcribbs@uslinc.com>
-Received: from gproxy1-pub.mail.unifiedlayer.com
- (gproxy1-pub.mail.unifiedlayer.com [69.89.25.95])
- by lists.ozlabs.org (Postfix) with SMTP id 4658F1A0739
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 11:37:27 +1100 (AEDT)
-Received: from [66.214.75.151] (port=61194 helo=[192.168.1.8])
- by box925.bluehost.com with esmtpsa (TLSv1:DHE-RSA-AES256-SHA:256)
- (Exim 4.82) (envelope-from <wcribbs@uslinc.com>) id 1YAT0N-0003oC-FE
- for linuxppc-dev@lists.ozlabs.org; Sun, 11 Jan 2015 17:37:15 -0700
-From: Bill Cribbs <wcribbs@uslinc.com>
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_463738C8-5A7F-49DE-B071-3F7C731D9C85"
-Subject: ppc + netfilter rx performance issues
-Message-Id: <B34CDB21-8F89-41EB-8490-9D3E5B9A2096@uslinc.com>
-Date: Sun, 11 Jan 2015 16:37:12 -0800
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 8.1 \(1993\))
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ by lists.ozlabs.org (Postfix) with ESMTP id D52AD1A064E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 17:55:36 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: "anton@samba.org" <anton@samba.org>
+Subject: Re: [PATCH 1/2] powerpc: Add 64bit optimised memcmp
+Date: Mon, 12 Jan 2015 06:55:27 +0000
+Message-ID: <1421045727.3055.101.camel@transmode.se>
+References: <1420768591-6831-1-git-send-email-anton@samba.org>
+ <063D6719AE5E284EB5DD2968C1650D6D1CAC418D@AcuExch.aculab.com>
+ <20150112115505.15d95434@kryten>
+In-Reply-To: <20150112115505.15d95434@kryten>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "David.Laight@ACULAB.COM" <David.Laight@ACULAB.COM>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +26,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---Apple-Mail=_463738C8-5A7F-49DE-B071-3F7C731D9C85
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=utf-8
+On Mon, 2015-01-12 at 11:55 +1100, Anton Blanchard wrote:
+> Hi David,
+>=20
+> > The unrolled loop (deleted) looks excessive.
+> > On a modern cpu with multiple execution units you can usually
+> > manage to get the loop overhead to execute in parallel to the
+> > actual 'work'.
+> > So I suspect that a much simpler 'word at a time' loop will be almost a=
+s fast - especially in the case where the code isn't
+> > already in the cache and the compare is relatively short.
+>=20
+> I'm always keen to keep things as simple as possible, but your loop is ov=
+er 50% slower. Once the loop hits a steady state you are going to run into =
+front end issues with instruction fetch on POWER8.
+>=20
 
-Hi Folks,
+Out of curiosity, does preincrement make any difference(or can gcc do that =
+for you nowadays)?
 
-Hope to humbly ask for some advice if this list is still active.  I=E2=80=99=
-m supporting a legacy product and looking to improve networking =
-performance.  It is a PPC460GT used as a bridge device with an ethernet =
-1Gb (marvell), that routes packets to a pci network card (using igb).
-Going in the pci interface and out tx to the network, we get a nominal =
-700Mb, however=E2=80=A6
+         a1 =3D *a;
+         b1 =3D *b;
+         while {
+                 a2 =3D *++a;
+                 b2 =3D *++b;
+                 if (a1 !=3D a2)
+                 break;
+                 a1 =3D *++a;
+                 b1 =3D *++b;
+         } while (a2 !=3D a1);
 
-RX - to the marvell we see two things:
-1. 300Mbps
-2. sys =3D 100%
+ Jocke
 
-Any ideas?  I=E2=80=99m suspicious that packets are not being handled at =
-a low level and getting copied through iptables rules to userspace.  =
-Maybe there is a way to enable DMA to the benefit of incoming packets?
-
-Linux mbu-100 2.6.33.1 #245 Fri Nov 1 17:41:21 PDT 2013 ppc GNU/Linux
-Glacier=20
-
-Thanks!
-Bill
-
-
-
-
-
-
---Apple-Mail=_463738C8-5A7F-49DE-B071-3F7C731D9C85
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=utf-8
-
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html =
-charset=3Dutf-8"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" =
-class=3D""><span style=3D"font-size: 14px;" class=3D"">Hi =
-Folks,</span><div class=3D""><span style=3D"font-size: 14px;" =
-class=3D""><br class=3D""></span></div><div class=3D""><span =
-style=3D"font-size: 14px;" class=3D"">Hope to humbly ask for some advice =
-if this list is still active. &nbsp;I=E2=80=99m supporting a legacy =
-product and looking to improve networking performance. &nbsp;It is a =
-PPC460GT used as a bridge device with an ethernet 1Gb (marvell), that =
-routes packets to a pci network card (using igb).</span></div><div =
-class=3D""><span style=3D"font-size: 14px;" class=3D"">Going in the pci =
-interface and out tx to the network, we get a nominal 700Mb, =
-however=E2=80=A6</span></div><div class=3D""><span style=3D"font-size: =
-14px;" class=3D""><br class=3D""></span></div><div class=3D""><span =
-style=3D"font-size: 14px;" class=3D"">RX - to the marvell we see two =
-things:</span></div><div class=3D""><span style=3D"font-size: 14px;" =
-class=3D"">1. 300Mbps</span></div><div class=3D""><span =
-style=3D"font-size: 14px;" class=3D"">2. sys =3D 100%</span></div><div =
-class=3D""><span style=3D"font-size: 14px;" class=3D""><br =
-class=3D""></span></div><div class=3D""><span style=3D"font-size: 14px;" =
-class=3D"">Any ideas? &nbsp;I=E2=80=99m&nbsp;suspicious that packets are =
-not being handled at a low level and getting copied through iptables =
-rules to userspace. &nbsp;Maybe there is a way to enable DMA to the =
-benefit of&nbsp;incoming packets?</span></div><div class=3D""><span =
-style=3D"font-size: 14px;" class=3D""><br class=3D""></span></div><div =
-class=3D""><span style=3D"font-family: Calibri, sans-serif; font-size: =
-14px;" class=3D"">Linux mbu-100 2.6.33.1 #245 Fri Nov 1 17:41:21 PDT =
-2013 ppc GNU/Linux</span></div><div class=3D""><span style=3D"font-family:=
- Calibri, sans-serif; font-size: 14px;" =
-class=3D"">Glacier&nbsp;</span></div><div class=3D""><span =
-style=3D"font-family: Calibri, sans-serif; font-size: 14px;" =
-class=3D""><br class=3D""></span></div><div class=3D""><span =
-style=3D"font-family: Calibri, sans-serif; font-size: 14px;" =
-class=3D"">Thanks!</span></div><div class=3D""><span style=3D"font-family:=
- Calibri, sans-serif; font-size: 14px;" class=3D"">Bill</span></div><div =
-class=3D""><br class=3D""></div><div class=3D""><br class=3D""></div><div =
-class=3D""><br class=3D""></div><div class=3D""><div class=3D""><br =
-class=3D""></div><div class=3D""><br class=3D""></div></div></body></html>=
-
---Apple-Mail=_463738C8-5A7F-49DE-B071-3F7C731D9C85--
+> Anton
+>=20
+> > Try something based on:
+> >         a1 =3D *a++;
+> >         b1 =3D *b++;
+> >         while {
+> >                 a2 =3D *a++;
+> >                 b2 =3D *b++;
+> >                 if (a1 !=3D a2)
+> >                 break;
+> >                 a1 =3D *a++;
+> >                 b1 =3D *b++;
+> >         } while (a2 !=3D a1);
+> >=20
+> >         David
+> >=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list Linuxppc-dev@lists.ozlabs.org https://lists.ozl=
+abs.org/listinfo/linuxppc-dev=
