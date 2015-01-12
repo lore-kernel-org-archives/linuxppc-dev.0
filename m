@@ -1,29 +1,21 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <luis.henriques@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 816F41A064E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 04:59:40 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YAjH9-0000x7-9S
- for linuxppc-dev@lists.ozlabs.org; Mon, 12 Jan 2015 17:59:39 +0000
-Date: Mon, 12 Jan 2015 09:59:20 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: linux-next: Tree for Jan 12 (build failures: m68k, ppc)
-Message-ID: <20150112175920.GC19868@roeck-us.net>
-References: <20150112180322.003b44f2@canb.auug.org.au>
- <20150112162438.GA18723@roeck-us.net>
- <CAMuHMdUYEe=L=H75AOYVjinRSW=okRJNrNJVy-bY1gshdVrO7Q@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAMuHMdUYEe=L=H75AOYVjinRSW=okRJNrNJVy-bY1gshdVrO7Q@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Clark <robdclark@gmail.com>, Linux-Next <linux-next@vger.kernel.org>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA20A1A0597
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 05:30:46 +1100 (AEDT)
+From: Luis Henriques <luis.henriques@canonical.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ kernel-team@lists.ubuntu.com
+Subject: [PATCH 3.16.y-ckt 175/216] powerpc/powernv: Switch off MMU before
+ entering nap/sleep/rvwinkle mode
+Date: Mon, 12 Jan 2015 18:29:13 +0000
+Message-Id: <1421087394-2712-63-git-send-email-luis.henriques@canonical.com>
+In-Reply-To: <1421085933-32536-1-git-send-email-luis.henriques@canonical.com>
+References: <1421085933-32536-1-git-send-email-luis.henriques@canonical.com>
+Cc: Luis Henriques <luis.henriques@canonical.com>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 12, 2015 at 05:27:08PM +0100, Geert Uytterhoeven wrote:
-> On Mon, Jan 12, 2015 at 5:24 PM, Guenter Roeck <linux@roeck-us.net> wrote:
-> > On Mon, Jan 12, 2015 at 06:03:22PM +1100, Stephen Rothwell wrote:
-> >> Hi all,
-> >>
-> >> Changes since 20150109:
-> >>
-> >> The usb-gadget-fixes tree gained a conflict against the usb.current tree.
-> >>
-> >> The net-next tree gained a build failure for which I reverted a commit.
-> >>
-> >> The pinctrl tree gained a build failure so I used the version from
-> >> next-20150109.
-> >>
-> >> The akpm tree lost a few patches that turned up elsewhere.
-> >>
-> >> Non-merge commits (relative to Linus' tree): 2202
-> >>  2272 files changed, 69868 insertions(+), 38441 deletions(-)
-> >>
-> >
-> > Build failures, seen since next-20150109:
-> >         m68k:allmodconfig
-> >         powerpc:ppc6xx_defconfig
-> >
-> > Due to:
-> >         ERROR: "__get_user_bad" [drivers/gpu/drm/drm.ko] undefined!
-> >         make[1]: *** [__modpost] Error 1
-> >
-> > Caused by commit d34f20d6e2f (drm: Atomic modeset ioctl).
-> 
-> Yeah, it needs a get_user() that supports 64-bit data.
-> 
-Hi Geert,
+3.16.7-ckt4 -stable review patch.  If anyone has any objections, please let me know.
 
-I assume you mean m68k, where 64 bit support for get_user has been disabled.
+------------------
 
-The problem on powerpc is different though: __get_user_nocheck()
-and __get_user_check() use
-	unsigned long __gu_val;
-followed by
-	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);
+From: Paul Mackerras <paulus@samba.org>
 
-__get_user_size() fails in
-	if (size > sizeof(x))
-		 (x) = __get_user_bad();
+commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
 
-Presumably "unsigned long" is 32 bit on 32 bit powerpc, not 64 bit.
+Currently, when going idle, we set the flag indicating that we are in
+nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
+(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
+for two reasons: (a) the architecture specifies that those instructions
+must be executed with the MMU off, and in fact with only the SF, HV, ME
+and possibly RI bits set, and (b) this introduces a race, because as
+soon as we set the flag, another thread can switch the MMU to a guest
+context.  If the race is lost, this thread will typically start looping
+on relocation-on ISIs at 0xc...4400.
 
-Overall, the explicit 64-bit use of get_user() seems to be quite unusual.
+This fixes it by setting the MSR as required by the architecture before
+setting the flag or executing the nap/sleep/rvwinkle instruction.
 
-Thanks,
-Guenter
+[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
+---
+ arch/powerpc/include/asm/reg.h    |  2 ++
+ arch/powerpc/kernel/idle_power7.S | 18 +++++++++++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index bffd89d27301..e73cdadab785 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -118,8 +118,10 @@
+ #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
+ #ifdef __BIG_ENDIAN__
+ #define MSR_		__MSR
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
+ #else
+ #define MSR_		(__MSR | MSR_LE)
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
+ #endif
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 5cf3d367190d..a29f5b0f9d3e 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -101,7 +101,23 @@ _GLOBAL(power7_powersave_common)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
+ 
+-_GLOBAL(power7_enter_nap_mode)
++	/*
++	 * Go to real mode to do the nap, as required by the architecture.
++	 * Also, we need to be in real mode before setting hwthread_state,
++	 * because as soon as we do that, another thread can switch
++	 * the MMU context to the guest.
++	 */
++	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
++	li	r6, MSR_RI
++	andc	r6, r9, r6
++	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
++	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
++	mtspr	SPRN_SRR0, r7
++	mtspr	SPRN_SRR1, r5
++	rfid
++
++	.globl	power7_enter_nap_mode
++power7_enter_nap_mode:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	/* Tell KVM we're napping */
+ 	li	r4,KVM_HWTHREAD_IN_NAP
+-- 
+2.1.4
