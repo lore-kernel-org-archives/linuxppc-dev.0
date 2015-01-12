@@ -1,21 +1,27 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id C4CDF1A0631
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 01:18:44 +1100 (AEDT)
-Date: Mon, 12 Jan 2015 11:18:38 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v7 0/4] Add support for parametrized events
-Message-ID: <20150112141838.GJ12406@kernel.org>
-References: <1420679633-28856-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150108095434.GA16059@krava.redhat.com>
+Return-Path: <matthias.bgg@gmail.com>
+Received: from mail-lb0-x233.google.com (mail-lb0-x233.google.com
+ [IPv6:2a00:1450:4010:c04::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 326AA1A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 00:15:37 +1100 (AEDT)
+Received: by mail-lb0-f179.google.com with SMTP id z11so17476865lbi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2015 05:15:32 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150108095434.GA16059@krava.redhat.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
+ <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+Date: Mon, 12 Jan 2015 14:15:32 +0100
+Message-ID: <CABuKBe++yut6ZfhPrsWXGA4fZRvum6WOuRxHucM0gBJCGuou5A@mail.gmail.com>
+Subject: Re: [RFC 02/11] i2c: add quirk checks to core
+From: Matthias Brugger <matthias.bgg@gmail.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mips@linux-mips.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,13 +31,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Thu, Jan 08, 2015 at 10:54:34AM +0100, Jiri Olsa escreveu:
-> for the patchset:
-> 
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
+2015-01-09 18:21 GMT+01:00 Wolfram Sang <wsa@the-dreams.de>:
+> Let the core do the checks if HW quirks prevent a transfer. Saves code
+> from drivers and adds consistency.
+>
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+>  drivers/i2c/i2c-core.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
+>
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index 39d25a8cb1ad..7b10a19abf5b 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -2063,6 +2063,56 @@ module_exit(i2c_exit);
+>   * ----------------------------------------------------
+>   */
+>
+> +/* Check if val is exceeding the quirk IFF quirk is non 0 */
+> +#define i2c_quirk_exceeded(val, quirk) ((quirk) && ((val) > (quirk)))
+> +
+> +static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *msg, char *err_msg)
+> +{
+> +       dev_err(&adap->dev, "quirk: %s (addr 0x%04x, size %u)\n", err_msg, msg->addr, msg->len);
+> +       return -EOPNOTSUPP;
+> +}
+> +
+> +static int i2c_check_for_quirks(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+> +{
+> +       struct i2c_adapter_quirks *q = adap->quirks;
+> +       u16 max_read = q->max_read_len, max_write = q->max_write_len;
+> +       int max_num = q->max_num_msgs, i;
+> +
+> +       if (q->flags & I2C_ADAPTER_QUIRK_COMB_WRITE_THEN_READ)
+> +               max_num = 2;
+> +
+> +       if (i2c_quirk_exceeded(num, max_num))
+> +               return i2c_quirk_error(adap, &msgs[0], "too many messages");
+> +
+> +       if (num == 2 && q->flags & I2C_ADAPTER_QUIRK_COMB_WRITE_FIRST) {
+> +               if (msgs[0].flags & I2C_M_RD)
+> +                       return i2c_quirk_error(adap, &msgs[0], "invalid first write msg");
+> +
+> +               max_write = q->max_comb_write_len;
+> +       }
+> +
+> +       if (num == 2 && q->flags & I2C_ADAPTER_QUIRK_COMB_READ_SECOND) {
+> +               if (!(msgs[1].flags & I2C_M_RD) || msgs[0].addr != msgs[1].addr)
+> +                       return i2c_quirk_error(adap, &msgs[1], "invalid second read msg");
+> +
+> +               max_read = q->max_comb_read_len;
+> +       }
+> +
+> +       for (i = 0; i < num; i++) {
+> +               u16 len = msgs[i].len;
+> +
+> +               if (msgs[i].flags & I2C_M_RD) {
+> +                       if (i2c_quirk_exceeded(len, max_read))
+> +                               return i2c_quirk_error(adap, &msgs[i], "msg too long");
+> +               } else {
+> +                       if (i2c_quirk_exceeded(len, max_write))
+> +                               return i2c_quirk_error(adap, &msgs[i], "msg too long");
+> +               }
 
-Applied to perf/core
+What about being more verbose in the error message, specifying if it
+was a read or a write message that failed?
 
-Thanks,
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+>  /**
+>   * __i2c_transfer - unlocked flavor of i2c_transfer
+>   * @adap: Handle to I2C bus
+> @@ -2080,6 +2130,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+>         unsigned long orig_jiffies;
+>         int ret, try;
+>
+> +       if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
+> +               return -EOPNOTSUPP;
+> +
+>         /* i2c_trace_msg gets enabled when tracepoint i2c_transfer gets
+>          * enabled.  This is an efficient way of keeping the for-loop from
+>          * being executed when not needed.
+> --
+> 2.1.3
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-- Arnaldo
+
+
+-- 
+motzblog.wordpress.com
