@@ -2,30 +2,29 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00CDD1A042E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 624FB1A084F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:23:00 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 13 Jan 2015 20:22:57 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CA2E33578048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:55 +1100 (EST)
+ Tue, 13 Jan 2015 20:23:00 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B1D5B2BB0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:57 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0DAMtVr46661788
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:55 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0DAMvrk49086656
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:57 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0DAMtmF021422
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:55 +1100
+ t0DAMvuL021532
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 21:22:57 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2 03/12] powerpc,
- offset: Change PACA_DSCR to PACA_DSCR_DEFAULT
-Date: Tue, 13 Jan 2015 15:52:31 +0530
-Message-Id: <1421144560-15901-4-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V2 04/12] powerpc, dscr: Added some in-code documentation
+Date: Tue, 13 Jan 2015 15:52:32 +0530
+Message-Id: <1421144560-15901-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
@@ -38,78 +37,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PACA_DSCR offset macro tracks dscr_default element in the paca
-structure. Better change the name of this macro to match that
-of the data element it tracks. Makes the code more readable.
+This patch adds some in-code documentation to the DSCR related
+code to make it more readable without having any functional
+change to it.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/asm-offsets.c       | 2 +-
- arch/powerpc/kernel/entry_64.S          | 2 +-
- arch/powerpc/kernel/tm.S                | 4 ++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/processor.h |  9 +++++++++
+ arch/powerpc/kernel/sysfs.c          | 38 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e624f96..dcfffe2 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -246,7 +246,7 @@ int main(void)
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bf117d8..28ded5d 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -295,6 +295,15 @@ struct thread_struct {
  #endif
- 	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
- 	DEFINE(PACAKEXECSTATE, offsetof(struct paca_struct, kexec_state));
--	DEFINE(PACA_DSCR, offsetof(struct paca_struct, dscr_default));
-+	DEFINE(PACA_DSCR_DEFAULT, offsetof(struct paca_struct, dscr_default));
- 	DEFINE(PACA_STARTTIME, offsetof(struct paca_struct, starttime));
- 	DEFINE(PACA_STARTTIME_USER, offsetof(struct paca_struct, starttime_user));
- 	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 194e46d..b5cd2b59 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -564,7 +564,7 @@ BEGIN_FTR_SECTION
- 	ld	r0,THREAD_DSCR(r4)
- 	cmpwi	r6,0
- 	bne	1f
--	ld	r0,PACA_DSCR(r13)
-+	ld	r0,PACA_DSCR_DEFAULT(r13)
- 1:
- BEGIN_FTR_SECTION_NESTED(70)
- 	mfspr	r8, SPRN_FSCR
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 2a324f4..dbd2c18 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -293,7 +293,7 @@ dont_backup_fp:
- 	ld	r2, STK_GOT(r1)
+ #ifdef CONFIG_PPC64
+ 	unsigned long	dscr;
++	/*
++	 * This member element dscr_inherit indicates that the process
++	 * has explicitly attempted and changed the DSCR register value
++	 * for itself. Hence kernel wont use the default CPU DSCR value
++	 * contained in the PACA structure anymore during process context
++	 * switch. Once this variable is set, this behaviour will also be
++	 * inherited to all the children of this process from that point
++	 * onwards.
++	 */
+ 	int		dscr_inherit;
+ 	unsigned long	ppr;	/* used to save/restore SMT priority */
+ #endif
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index fa1fd8a..692873b 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -496,13 +496,34 @@ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+ static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+ static DEVICE_ATTR(pir, 0400, show_pir, NULL);
  
- 	/* Load CPU's default DSCR */
--	ld	r0, PACA_DSCR(r13)
-+	ld	r0, PACA_DSCR_DEFAULT(r13)
- 	mtspr	SPRN_DSCR, r0
++/*
++ * This is the system wide DSCR register default value. Any
++ * change to this default value through the sysfs interface
++ * will update all per cpu DSCR default values across the
++ * system stored in their respective PACA structures.
++ */
+ static unsigned long dscr_default;
  
- 	blr
-@@ -473,7 +473,7 @@ restore_gprs:
- 	ld	r2, STK_GOT(r1)
++/**
++ * read_dscr() - Fetch the cpu specific DSCR default
++ * @val:	Returned cpu specific DSCR default value
++ *
++ * This function returns the per cpu DSCR default value
++ * for any cpu which is contained in it's PACA structure.
++ */
+ static void read_dscr(void *val)
+ {
+ 	*(unsigned long *)val = get_paca()->dscr_default;
+ }
  
- 	/* Load CPU's default DSCR */
--	ld	r0, PACA_DSCR(r13)
-+	ld	r0, PACA_DSCR_DEFAULT(r13)
- 	mtspr	SPRN_DSCR, r0
++
++/**
++ * write_dscr() - Update the cpu specific DSCR default
++ * @val:	New cpu specific DSCR default value to update
++ *
++ * This function updates the per cpu DSCR default value
++ * for any cpu which is contained in it's PACA structure.
++ */
+ static void write_dscr(void *val)
+ {
+ 	get_paca()->dscr_default = *(unsigned long *)val;
+@@ -520,12 +541,29 @@ static void add_write_permission_dev_attr(struct device_attribute *attr)
+ 	attr->attr.mode |= 0200;
+ }
  
- 	blr
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 10554df..109794b 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -283,7 +283,7 @@ kvm_start_guest:
- kvm_secondary_got_guest:
++/**
++ * show_dscr_default() - Fetch the system wide DSCR default
++ * @dev:	Device structure
++ * @attr:	Device attribute structure
++ * @buf:	Interface buffer
++ *
++ * This function returns the system wide DSCR default value.
++ */
+ static ssize_t show_dscr_default(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	return sprintf(buf, "%lx\n", dscr_default);
+ }
  
- 	/* Set HSTATE_DSCR(r13) to something sensible */
--	ld	r6, PACA_DSCR(r13)
-+	ld	r6, PACA_DSCR_DEFAULT(r13)
- 	std	r6, HSTATE_DSCR(r13)
- 
- 	bl	kvmppc_hv_entry
++/**
++ * store_dscr_default() - Update the system wide DSCR default
++ * @dev:	Device structure
++ * @attr:	Device attribute structure
++ * @buf:	Interface buffer
++ * @count:	Size of the update
++ *
++ * This function updates the system wide DSCR default value.
++ */
+ static ssize_t __used store_dscr_default(struct device *dev,
+ 		struct device_attribute *attr, const char *buf,
+ 		size_t count)
 -- 
 1.9.3
