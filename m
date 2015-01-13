@@ -1,23 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D7041A06D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 10:44:32 +1100 (AEDT)
-Message-ID: <1421192671.10748.4.camel@ellerman.id.au>
-Subject: Re: [PATCH V2 06/12] selftests, powerpc: Add test for system wide
- DSCR default
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3B561A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 10:50:14 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shuah Khan <shuahkh@osg.samsung.com>
-Date: Wed, 14 Jan 2015 10:44:31 +1100
-In-Reply-To: <54B5384F.9010805@osg.samsung.com>
-References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1421144560-15901-7-git-send-email-khandual@linux.vnet.ibm.com>
- <54B5384F.9010805@osg.samsung.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: mikey@neuling.org, linux-kernel@vger.kernel.org, anton@samba.org,
- linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] selftests/powerpc: Add .gitignore for powerpc selftests
+Date: Wed, 14 Jan 2015 10:49:57 +1100
+Message-Id: <1421192997-17003-1-git-send-email-mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, shuahkh@osg.samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +19,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-13 at 08:22 -0700, Shuah Khan wrote:
-> On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
-> > This patch adds a test case for the system wide DSCR default
-> > value, which when changed through it's sysfs interface must
-> > be visible to all threads reading DSCR either through the
-> > privilege state SPR or the problem state SPR. The DSCR value
-> > change should be immediate as well.
-> > 
-> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> > ---
-> >  tools/testing/selftests/powerpc/Makefile           |   2 +-
-> >  tools/testing/selftests/powerpc/dscr/Makefile      |  17 +++
-> >  tools/testing/selftests/powerpc/dscr/dscr.h        | 120 ++++++++++++++++++++
-> >  .../selftests/powerpc/dscr/dscr_default_test.c     | 121 +++++++++++++++++++++
-> >  4 files changed, 259 insertions(+), 1 deletion(-)
-> >  create mode 100644 tools/testing/selftests/powerpc/dscr/Makefile
-> >  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr.h
-> >  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_default_test.c
-> 
-> Could you please add a .gitignore for powerpc targets as we
-> discussed earlier. It can be separate patch.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ .../testing/selftests/powerpc/copyloops/.gitignore |  4 ++++
+ tools/testing/selftests/powerpc/mm/.gitignore      |  1 +
+ tools/testing/selftests/powerpc/pmu/.gitignore     |  3 +++
+ tools/testing/selftests/powerpc/pmu/ebb/.gitignore | 22 ++++++++++++++++++++++
+ .../selftests/powerpc/primitives/.gitignore        |  1 +
+ tools/testing/selftests/powerpc/tm/.gitignore      |  1 +
+ 6 files changed, 32 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/mm/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/pmu/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/primitives/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/tm/.gitignore
 
-I can do that.
- 
-> Also, I would like to see the test results reports using
-> kselftest.h - it can be separate patch in the interest of
-> getting tests in.
-
-Sorry but kselftest.h doesn't do anything useful for us.
-
-We have existing test reporting that uses the subunit protocol.
-
-I'm happy to convert that to TAP, or some other well defined output format, but
-not to something ad-hoc like kselftest.h currently provides.
-
-cheers
+diff --git a/tools/testing/selftests/powerpc/copyloops/.gitignore b/tools/testing/selftests/powerpc/copyloops/.gitignore
+new file mode 100644
+index 000000000000..25a192f62c4d
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/.gitignore
+@@ -0,0 +1,4 @@
++copyuser_64
++copyuser_power7
++memcpy_64
++memcpy_power7
+diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
+new file mode 100644
+index 000000000000..156f4e89c2f1
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/.gitignore
+@@ -0,0 +1 @@
++hugetlb_vs_thp_test
+diff --git a/tools/testing/selftests/powerpc/pmu/.gitignore b/tools/testing/selftests/powerpc/pmu/.gitignore
+new file mode 100644
+index 000000000000..e748f336eed3
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/.gitignore
+@@ -0,0 +1,3 @@
++count_instructions
++l3_bank_test
++per_event_excludes
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/.gitignore b/tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+new file mode 100644
+index 000000000000..5967ff34c167
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+@@ -0,0 +1,22 @@
++back_to_back_ebbs_test
++close_clears_pmcc_test
++cpu_event_pinned_vs_ebb_test
++cpu_event_vs_ebb_test
++cycles_test
++cycles_with_freeze_test
++cycles_with_mmcr2_test
++ebb_on_child_test
++ebb_on_willing_child_test
++ebb_vs_cpu_event_test
++event_attributes_test
++fork_cleanup_test
++instruction_count_test
++lost_exception_test
++multi_counter_test
++multi_ebb_procs_test
++no_handler_test
++pmae_handling_test
++pmc56_overflow_test
++reg_access_test
++task_event_pinned_vs_ebb_test
++task_event_vs_ebb_test
+diff --git a/tools/testing/selftests/powerpc/primitives/.gitignore b/tools/testing/selftests/powerpc/primitives/.gitignore
+new file mode 100644
+index 000000000000..4cc4e31bed1d
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/primitives/.gitignore
+@@ -0,0 +1 @@
++load_unaligned_zeropad
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+new file mode 100644
+index 000000000000..33d02cc54a3e
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -0,0 +1 @@
++tm-resched-dscr
+-- 
+2.1.0
