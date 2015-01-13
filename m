@@ -1,39 +1,35 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E8631A09A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 14:16:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 68FB71A0739
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 16:09:36 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 13 Jan 2015 13:16:19 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5CDDC2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 14:16:16 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0D3GFR437224654
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 14:16:16 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0D3GE4J020000
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 14:16:15 +1100
-Date: Tue, 13 Jan 2015 14:16:13 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 3/5] powerpc/powernv: Introduce pnv_pci_poll()
-Message-ID: <20150113031613.GA9318@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1417672488-27341-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150109174304.GD6575@google.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 13 Jan 2015 10:39:32 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2DD30E0059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 10:40:36 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0D59Rum60096698
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 10:39:29 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0D59RHK013669
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 10:39:27 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH 1/3] KVM: PPC: BOOK3S: HV: Add helpers for lock/unlock hpte
+In-Reply-To: <1413815340-22426-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1413815340-22426-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 13 Jan 2015 10:39:27 +0530
+Message-ID: <87387fclmg.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150109174304.GD6575@google.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,145 +39,247 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 09, 2015 at 10:43:04AM -0700, Bjorn Helgaas wrote:
->On Thu, Dec 04, 2014 at 04:54:46PM +1100, Gavin Shan wrote:
->> We might not get some PCI slot information (e.g. power status)
->> immediately by OPAL API. Instead, opal_pci_poll() need to be called
->> for the required information.
->> 
->> The patch introduces pnv_pci_poll(), which bases on original
->> ioda_eeh_poll(), to cover the above case
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->
->Hi Gavin,
->
->This patch doesn't apply cleanly on v3.19-rc1.  Can you refresh this
->series, please?
->
 
-Bjorn, the patchset depends on PowerPC specific changes as follows. The
-PowerPC specfic changes should go first before you can apply this patchset
-cleanly. Also, all patches depend on the firwmare changes, which is waiting
-for Ben's comments. So I guess it's not urgent to merge it for now.
+Hi,
 
-PowerPC specific patchs:
+Any update on this patch. We could drop patch 3. Any feedback on 1 and 2
+?.
 
-https://patchwork.ozlabs.org/patch/417638/
-https://patchwork.ozlabs.org/patch/417637/
-https://patchwork.ozlabs.org/patch/417636/
+-aneesh
 
-Thanks,
-Gavin
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
->Bjorn
+> This patch adds helper routine for lock and unlock hpte and use
+> the same for rest of the code. We don't change any locking rules in this
+> patch. In the next patch we switch some of the unlock usage to use
+> the api with barrier and also document the usage without barriers.
 >
->> ---
->>  arch/powerpc/platforms/powernv/eeh-ioda.c | 28 ++--------------------------
->>  arch/powerpc/platforms/powernv/pci.c      | 19 +++++++++++++++++++
->>  arch/powerpc/platforms/powernv/pci.h      |  1 +
->>  3 files changed, 22 insertions(+), 26 deletions(-)
->> 
->> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->> index cf38781..21fa033 100644
->> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->> @@ -490,24 +490,6 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
->>  	return ioda_eeh_get_pe_state(pe);
->>  }
->>  
->> -static s64 ioda_eeh_poll(uint64_t id)
->> -{
->> -	s64 rc = OPAL_HARDWARE;
->> -
->> -	while (1) {
->> -		rc = opal_pci_poll(id, NULL);
->> -		if (rc <= 0)
->> -			break;
->> -
->> -		if (system_state < SYSTEM_RUNNING)
->> -			udelay(1000 * rc);
->> -		else
->> -			msleep(rc);
->> -	}
->> -
->> -	return rc;
->> -}
->> -
->>  int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
->>  {
->>  	struct pnv_phb *phb = hose->private_data;
->> @@ -536,10 +518,7 @@ int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
->>  
->>  	/* Issue reset and poll until it's completed */
->>  	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
->> -	if (rc > 0)
->> -		rc = ioda_eeh_poll(phb->opal_id);
->> -
->> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
->> +	return pnv_pci_poll(phb->opal_id, rc, NULL);
->>  }
->>  
->>  static int __ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
->> @@ -630,10 +609,7 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
->>  	phb = hose->private_data;
->>  	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
->>  	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
->> -	if (rc > 0)
->> -		ioda_eeh_poll(id);
->> -
->> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
->> +	return pnv_pci_poll(id, rc, NULL);
->>  }
->>  
->>  static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index 4b20f2c..6dc8ea9 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -45,6 +45,25 @@
->>  #define cfg_dbg(fmt...)	do { } while(0)
->>  //#define cfg_dbg(fmt...)	printk(fmt)
->>  
->> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
->> +{
->> +	while (rval > 0) {
->> +		rval = opal_pci_poll(id, pval);
->> +		if (rval == OPAL_SUCCESS && pval)
->> +			rval = opal_pci_poll(id, pval);
->> +
->> +		if (rval <= 0)
->> +			break;
->> +
->> +		if (system_state < SYSTEM_RUNNING)
->> +			udelay(1000 * rval);
->> +		else
->> +			msleep(rval);
->> +	}
->> +
->> +	return rval ? -EIO : 0;
->> +}
->> +
->>  #ifdef CONFIG_PCI_MSI
->>  static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
->>  {
->> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->> index 6c02ff8..396fe02 100644
->> --- a/arch/powerpc/platforms/powernv/pci.h
->> +++ b/arch/powerpc/platforms/powernv/pci.h
->> @@ -217,6 +217,7 @@ extern struct pci_ops pnv_pci_ops;
->>  extern struct pnv_eeh_ops ioda_eeh_ops;
->>  #endif
->>  
->> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval);
->>  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->>  				unsigned char *log_buff);
->>  int pnv_pci_cfg_read(struct device_node *dn,
->> -- 
->> 1.8.3.2
->> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s_64.h | 14 ++++++++++++++
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c      | 25 ++++++++++---------------
+>  arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 27 ++++++++++-----------------
+>  3 files changed, 34 insertions(+), 32 deletions(-)
 >
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+> index 0aa817933e6a..ec9fb6085843 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -86,6 +86,20 @@ static inline long try_lock_hpte(__be64 *hpte, unsigned long bits)
+>  	return old == 0;
+>  }
+>  
+> +static inline void unlock_hpte(__be64 *hpte, unsigned long hpte_v)
+> +{
+> +	hpte_v &= ~HPTE_V_HVLOCK;
+> +	asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
+> +	hpte[0] = cpu_to_be64(hpte_v);
+> +}
+> +
+> +/* Without barrier */
+> +static inline void __unlock_hpte(__be64 *hpte, unsigned long hpte_v)
+> +{
+> +	hpte_v &= ~HPTE_V_HVLOCK;
+> +	hpte[0] = cpu_to_be64(hpte_v);
+> +}
+> +
+>  static inline int __hpte_actual_psize(unsigned int lp, int psize)
+>  {
+>  	int i, shift;
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index cebb86bc4a37..5ea4b2b6a157 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -475,9 +475,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+>  	v = be64_to_cpu(hptep[0]) & ~HPTE_V_HVLOCK;
+>  	gr = kvm->arch.revmap[index].guest_rpte;
+>  
+> -	/* Unlock the HPTE */
+> -	asm volatile("lwsync" : : : "memory");
+> -	hptep[0] = cpu_to_be64(v);
+> +	unlock_hpte(hptep, v);
+>  	preempt_enable();
+>  
+>  	gpte->eaddr = eaddr;
+> @@ -606,8 +604,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  	hpte[0] = be64_to_cpu(hptep[0]) & ~HPTE_V_HVLOCK;
+>  	hpte[1] = be64_to_cpu(hptep[1]);
+>  	hpte[2] = r = rev->guest_rpte;
+> -	asm volatile("lwsync" : : : "memory");
+> -	hptep[0] = cpu_to_be64(hpte[0]);
+> +	unlock_hpte(hptep, hpte[0]);
+>  	preempt_enable();
+>  
+>  	if (hpte[0] != vcpu->arch.pgfault_hpte[0] ||
+> @@ -758,7 +755,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  
+>  	hptep[1] = cpu_to_be64(r);
+>  	eieio();
+> -	hptep[0] = cpu_to_be64(hpte[0]);
+> +	__unlock_hpte(hptep, hpte[0]);
+>  	asm volatile("ptesync" : : : "memory");
+>  	preempt_enable();
+>  	if (page && hpte_is_writable(r))
+> @@ -777,7 +774,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  	return ret;
+>  
+>   out_unlock:
+> -	hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +	__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+>  	preempt_enable();
+>  	goto out_put;
+>  }
+> @@ -907,7 +904,7 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+>  			}
+>  		}
+>  		unlock_rmap(rmapp);
+> -		hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+>  	}
+>  	return 0;
+>  }
+> @@ -995,7 +992,7 @@ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
+>  			}
+>  			ret = 1;
+>  		}
+> -		hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+>  	} while ((i = j) != head);
+>  
+>  	unlock_rmap(rmapp);
+> @@ -1118,8 +1115,7 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
+>  
+>  		/* Now check and modify the HPTE */
+>  		if (!(hptep[0] & cpu_to_be64(HPTE_V_VALID))) {
+> -			/* unlock and continue */
+> -			hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +			__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+>  			continue;
+>  		}
+>  		/* need to make it temporarily absent so C is stable */
+> @@ -1139,9 +1135,9 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
+>  				npages_dirty = n;
+>  			eieio();
+>  		}
+> -		v &= ~(HPTE_V_ABSENT | HPTE_V_HVLOCK);
+> +		v &= ~HPTE_V_ABSENT;
+>  		v |= HPTE_V_VALID;
+> -		hptep[0] = cpu_to_be64(v);
+> +		__unlock_hpte(hptep, v);
+>  	} while ((i = j) != head);
+>  
+>  	unlock_rmap(rmapp);
+> @@ -1379,8 +1375,7 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
+>  			r &= ~HPTE_GR_MODIFIED;
+>  			revp->guest_rpte = r;
+>  		}
+> -		asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
+> -		hptp[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +		unlock_hpte(hptp, be64_to_cpu(hptp[0]));
+>  		preempt_enable();
+>  		if (!(valid == want_valid && (first_pass || dirty)))
+>  			ok = 0;
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 084ad54c73cd..769a5d4c0430 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -154,12 +154,6 @@ static pte_t lookup_linux_pte_and_update(pgd_t *pgdir, unsigned long hva,
+>  	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
+>  }
+>  
+> -static inline void unlock_hpte(__be64 *hpte, unsigned long hpte_v)
+> -{
+> -	asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
+> -	hpte[0] = cpu_to_be64(hpte_v);
+> -}
+> -
+>  long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>  		       long pte_index, unsigned long pteh, unsigned long ptel,
+>  		       pgd_t *pgdir, bool realmode, unsigned long *pte_idx_ret)
+> @@ -295,10 +289,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>  				u64 pte;
+>  				while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+>  					cpu_relax();
+> -				pte = be64_to_cpu(*hpte);
+> +				pte = be64_to_cpu(hpte[0]);
+>  				if (!(pte & (HPTE_V_VALID | HPTE_V_ABSENT)))
+>  					break;
+> -				*hpte &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +				__unlock_hpte(hpte, pte);
+>  				hpte += 2;
+>  			}
+>  			if (i == 8)
+> @@ -314,9 +308,9 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>  
+>  			while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+>  				cpu_relax();
+> -			pte = be64_to_cpu(*hpte);
+> +			pte = be64_to_cpu(hpte[0]);
+>  			if (pte & (HPTE_V_VALID | HPTE_V_ABSENT)) {
+> -				*hpte &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +				__unlock_hpte(hpte, pte);
+>  				return H_PTEG_FULL;
+>  			}
+>  		}
+> @@ -356,7 +350,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>  
+>  	/* Write the first HPTE dword, unlocking the HPTE and making it valid */
+>  	eieio();
+> -	hpte[0] = cpu_to_be64(pteh);
+> +	__unlock_hpte(hpte, pteh);
+>  	asm volatile("ptesync" : : : "memory");
+>  
+>  	*pte_idx_ret = pte_index;
+> @@ -487,7 +481,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+>  	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
+>  	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn) ||
+>  	    ((flags & H_ANDCOND) && (pte & avpn) != 0)) {
+> -		hpte[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +		__unlock_hpte(hpte, pte);
+>  		return H_NOT_FOUND;
+>  	}
+>  
+> @@ -623,7 +617,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+>  				be64_to_cpu(hp[0]), be64_to_cpu(hp[1]));
+>  			rcbits = rev->guest_rpte & (HPTE_R_R|HPTE_R_C);
+>  			args[j] |= rcbits << (56 - 5);
+> -			hp[0] = 0;
+> +			__unlock_hpte(hp, 0);
+>  		}
+>  	}
+>  
+> @@ -649,7 +643,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+>  	pte = be64_to_cpu(hpte[0]);
+>  	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
+>  	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn)) {
+> -		hpte[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+> +		__unlock_hpte(hpte, pte);
+>  		return H_NOT_FOUND;
+>  	}
+>  
+> @@ -700,7 +694,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+>  	}
+>  	hpte[1] = cpu_to_be64(r);
+>  	eieio();
+> -	hpte[0] = cpu_to_be64(v & ~HPTE_V_HVLOCK);
+> +	__unlock_hpte(hpte, v);
+>  	asm volatile("ptesync" : : : "memory");
+>  	return H_SUCCESS;
+>  }
+> @@ -841,8 +835,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+>  				/* Return with the HPTE still locked */
+>  				return (hash << 3) + (i >> 1);
+>  
+> -			/* Unlock and move on */
+> -			hpte[i] = cpu_to_be64(v);
+> +			__unlock_hpte(&hpte[i], v);
+>  		}
+>  
+>  		if (val & HPTE_V_SECONDARY)
+> -- 
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
