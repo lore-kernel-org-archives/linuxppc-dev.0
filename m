@@ -1,9 +1,7 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <3deced9919246f281e48f1258885937f11a4b4ee.1421109719.git.geoff@infradead.org>
-In-Reply-To: <cover.1421109719.git.geoff@infradead.org>
-References: <cover.1421109719.git.geoff@infradead.org>
+Message-Id: <cover.1421109719.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 3/6] powerpc/ps3: Write highmem info to repository
+Subject: [PATCH 0/6] *** SUBJECT HERE ***
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Tue, 13 Jan 2015 01:00:20 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
@@ -17,40 +15,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add calls to the ps3_mm_set_repository_highmem() routine when the ps3
-r1 highmem region is either created or destroyed.
+Hi Ben,
+    
+Here is a short series of updates for PS3, none are critical.  Please queue.
+These are based on v3.18.  I can rebase to something else if you like.
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
----
- arch/powerpc/platforms/ps3/mm.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+The first three patches are to have the kernel write the PS3 highmem info to
+the LV1 hypervisor registry so that the info will be available to second stage
+OS's loaded by petitboot/kexec.  FreeBSD and some Linux derivatives use this
+feature.
 
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 04c1b93..b0f3466 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -329,6 +329,7 @@ static void ps3_mm_region_destroy(struct mem_region *r)
- 		r->size = r->base = r->offset = 0;
- 		map.total = map.rm.size;
- 	}
-+	ps3_mm_set_repository_highmem(NULL);
- }
- 
- /*============================================================================*/
-@@ -1218,8 +1219,12 @@ void __init ps3_mm_init(void)
- 
- 	/* Check if we got the highmem region from an earlier boot step */
- 
--	if (ps3_mm_get_repository_highmem(&map.r1))
--		ps3_mm_region_create(&map.r1, map.total - map.rm.size);
-+	if (ps3_mm_get_repository_highmem(&map.r1)) {
-+		result = ps3_mm_region_create(&map.r1, map.total - map.rm.size);
-+
-+		if (!result)
-+			ps3_mm_set_repository_highmem(&map.r1);
-+	}
- 
- 	/* correct map.total for the real total amount of memory we use */
- 	map.total = map.rm.size + map.r1.size;
+The next two patches fix some warnings emitted by sparse.
+
+The final patch refreshes ps3_defconfig and enables the highmem info write
+feature (CONFIG_PS3_REPOSITORY_WRITE=y) introduced in the first three patches.
+
+-Geoff
+
+The following changes since commit b2776bf7149bddd1f4161f14f79520f17fc1d71d:
+
+  Linux 3.18 (2014-12-07 14:21:05 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-powerpc
+
+for you to fetch changes up to c9fc20b63c625d8d5c136f1e72d9930a6b0070df:
+
+  powerpc/ps3: Update ps3_defconfig (2014-12-23 14:56:29 -0800)
+
+----------------------------------------------------------------
+Geoff Levand (6):
+  powerpc/ps3: Add empty repository highmem routines
+  powerpc/ps3: Add ps3_mm_set_repository_highmem
+  powerpc/ps3: Write highmem info to repository
+  powerpc/ps3: Fix vuart sparse warnings
+  powerpc/ps3: Fix sys-manager-core sparse warnings
+  powerpc/ps3: Update ps3_defconfig
+
+ arch/powerpc/configs/ps3_defconfig    | 17 +++-----
+ arch/powerpc/platforms/ps3/mm.c       | 77 ++++++++++++++++++++---------------
+ arch/powerpc/platforms/ps3/platform.h | 13 ++++++
+ drivers/ps3/ps3-vuart.c               |  5 ---
+ drivers/ps3/sys-manager-core.c        |  6 +--
+ drivers/ps3/vuart.h                   | 16 ++++++++
+ 6 files changed, 83 insertions(+), 51 deletions(-)
+
 -- 
 1.9.1
