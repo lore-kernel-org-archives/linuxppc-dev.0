@@ -1,9 +1,9 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <c9fc20b63c625d8d5c136f1e72d9930a6b0070df.1421109719.git.geoff@infradead.org>
+Message-Id: <ee18686aeef86b3d0cefd9db70ee0f6283f4fb2e.1421109719.git.geoff@infradead.org>
 In-Reply-To: <cover.1421109719.git.geoff@infradead.org>
 References: <cover.1421109719.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 6/6] powerpc/ps3: Update ps3_defconfig
+Subject: [PATCH 2/6] powerpc/ps3: Add ps3_mm_set_repository_highmem
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Tue, 13 Jan 2015 01:00:20 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
@@ -17,85 +17,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Refresh ps3_defconfig and add CONFIG_PS3_REPOSITORY_WRITE=y.
+Add the new routine ps3_mm_set_repository_highmem() that saves highmem info to
+the ps3 repository.  Also, move the existing ps3_mm_get_repository_highmem()
+routine up in the source file.
+
+This inplementation of ps3_mm_set_repository_highmem() assumes the repository
+will have a single highmem region entry (at index 0).
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/configs/ps3_defconfig | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/ps3/mm.c | 68 +++++++++++++++++++++++------------------
+ 1 file changed, 38 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index 2e637c8..9836c1b 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -22,6 +22,8 @@ CONFIG_MODULE_UNLOAD=y
- # CONFIG_PPC_PSERIES is not set
- # CONFIG_PPC_PMAC is not set
- CONFIG_PPC_PS3=y
-+CONFIG_PS3_ADVANCED=y
-+CONFIG_PS3_REPOSITORY_WRITE=y
- CONFIG_PS3_DISK=y
- CONFIG_PS3_ROM=y
- CONFIG_PS3_FLASH=y
-@@ -64,11 +66,9 @@ CONFIG_BT_HCIBTUSB=m
- CONFIG_CFG80211=m
- CONFIG_CFG80211_WEXT=y
- CONFIG_MAC80211=m
--CONFIG_MAC80211_RC_PID=y
- # CONFIG_MAC80211_RC_MINSTREL is not set
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- # CONFIG_FIRMWARE_IN_KERNEL is not set
--CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65535
-@@ -76,7 +76,6 @@ CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_BLK_DEV_SR=y
- CONFIG_CHR_DEV_SG=m
--CONFIG_SCSI_MULTI_LUN=y
- # CONFIG_SCSI_LOWLEVEL is not set
- CONFIG_MD=y
- CONFIG_BLK_DEV_DM=m
-@@ -107,7 +106,6 @@ CONFIG_INPUT_EVDEV=m
- # CONFIG_LEGACY_PTYS is not set
- # CONFIG_HW_RANDOM is not set
- # CONFIG_HWMON is not set
--CONFIG_VIDEO_OUTPUT_CONTROL=m
- CONFIG_FB=y
- CONFIG_FB_PS3=y
- # CONFIG_VGA_CONSOLE is not set
-@@ -130,8 +128,6 @@ CONFIG_HID_TWINHAN=m
- CONFIG_HID_LOGITECH=m
- CONFIG_HID_LOGITECH_DJ=m
- CONFIG_HID_MICROSOFT=m
--CONFIG_HID_PS3REMOTE=m
--CONFIG_HID_SONY=m
- CONFIG_HID_SUNPLUS=m
- CONFIG_HID_SMARTJOYPLUS=m
- CONFIG_USB_HIDDEV=y
-@@ -169,18 +165,17 @@ CONFIG_NLS_CODEPAGE_437=y
- CONFIG_NLS_ISO8859_1=y
- CONFIG_CRC_CCITT=m
- CONFIG_CRC_T10DIF=y
--CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_INFO=y
- CONFIG_DEBUG_FS=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_DEBUG_MEMORY_INIT=y
-+CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_PROVE_LOCKING=y
- CONFIG_DEBUG_LOCKDEP=y
--CONFIG_DEBUG_INFO=y
--CONFIG_DEBUG_MEMORY_INIT=y
- CONFIG_DEBUG_LIST=y
- CONFIG_RCU_CPU_STALL_TIMEOUT=60
- # CONFIG_FTRACE is not set
--CONFIG_DEBUG_STACKOVERFLOW=y
--CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_GCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 0c9f643..04c1b93 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -223,6 +223,44 @@ void ps3_mm_vas_destroy(void)
+ 	}
+ }
+ 
++static int ps3_mm_get_repository_highmem(struct mem_region *r)
++{
++	int result;
++
++	/* Assume a single highmem region. */
++
++	result = ps3_repository_read_highmem_info(0, &r->base, &r->size);
++
++	if (result)
++		goto zero_region;
++
++	if (!r->base || !r->size) {
++		result = -1;
++		goto zero_region;
++	}
++
++	r->offset = r->base - map.rm.size;
++
++	DBG("%s:%d: Found high region in repository: %llxh %llxh\n",
++	    __func__, __LINE__, r->base, r->size);
++
++	return 0;
++
++zero_region:
++	DBG("%s:%d: No high region in repository.\n", __func__, __LINE__);
++
++	r->size = r->base = r->offset = 0;
++	return result;
++}
++
++static int ps3_mm_set_repository_highmem(const struct mem_region *r)
++{
++	/* Assume a single highmem region. */
++
++	return r ? ps3_repository_write_highmem_info(0, r->base, r->size) :
++		ps3_repository_write_highmem_info(0, 0, 0);
++}
++
+ /**
+  * ps3_mm_region_create - create a memory region in the vas
+  * @r: pointer to a struct mem_region to accept initialized values
+@@ -293,36 +331,6 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+ 	}
+ }
+ 
+-static int ps3_mm_get_repository_highmem(struct mem_region *r)
+-{
+-	int result;
+-
+-	/* Assume a single highmem region. */
+-
+-	result = ps3_repository_read_highmem_info(0, &r->base, &r->size);
+-
+-	if (result)
+-		goto zero_region;
+-
+-	if (!r->base || !r->size) {
+-		result = -1;
+-		goto zero_region;
+-	}
+-
+-	r->offset = r->base - map.rm.size;
+-
+-	DBG("%s:%d: Found high region in repository: %llxh %llxh\n",
+-	    __func__, __LINE__, r->base, r->size);
+-
+-	return 0;
+-
+-zero_region:
+-	DBG("%s:%d: No high region in repository.\n", __func__, __LINE__);
+-
+-	r->size = r->base = r->offset = 0;
+-	return result;
+-}
+-
+ /*============================================================================*/
+ /* dma routines                                                               */
+ /*============================================================================*/
 -- 
 1.9.1
