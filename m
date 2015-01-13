@@ -1,18 +1,18 @@
 Return-Path: <shuahkh@osg.samsung.com>
 Received: from lists.s-osg.org (lists.s-osg.org [54.187.51.154])
- by lists.ozlabs.org (Postfix) with ESMTP id 45B1B1A0D70
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 02:24:04 +1100 (AEDT)
-Message-ID: <54B53892.8060202@osg.samsung.com>
-Date: Tue, 13 Jan 2015 08:24:02 -0700
+ by lists.ozlabs.org (Postfix) with ESMTP id 323EC1A0C6A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 02:24:16 +1100 (AEDT)
+Message-ID: <54B5389E.4060409@osg.samsung.com>
+Date: Tue, 13 Jan 2015 08:24:14 -0700
 From: Shuah Khan <shuahkh@osg.samsung.com>
 MIME-Version: 1.0
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 09/12] selftests, powerpc: Add test for DSCR value
- inheritence across fork
+Subject: Re: [PATCH V2 10/12] selftests, powerpc: Add test for DSCR inheritence
+ across fork & exec
 References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1421144560-15901-10-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1421144560-15901-10-git-send-email-khandual@linux.vnet.ibm.com>
+ <1421144560-15901-11-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1421144560-15901-11-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 Cc: mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,40 +25,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
-> This patch adds a test to verify that the changed DSCR value inside
-> any process would be inherited to it's child process across the fork
-> system call.
+> This patch adds a test case to verify that the changed DSCR value
+> inside any process would be inherited to it's child across the fork
+> and exec system call.
 > 
 > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
->  tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
->  .../selftests/powerpc/dscr/dscr_inherit_test.c     | 96 ++++++++++++++++++++++
->  2 files changed, 98 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
+>  tools/testing/selftests/powerpc/dscr/Makefile      |   2 +-
+>  .../powerpc/dscr/dscr_inherit_exec_test.c          | 118 +++++++++++++++++++++
+>  2 files changed, 119 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
 > 
 > diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-> index ae865d8..81239e2 100644
+> index 81239e2..4e84309 100644
 > --- a/tools/testing/selftests/powerpc/dscr/Makefile
 > +++ b/tools/testing/selftests/powerpc/dscr/Makefile
-> @@ -1,4 +1,5 @@
-> -PROGS := dscr_default_test dscr_explicit_test dscr_user_test
-> +PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
-> +	 dscr_inherit_test
+> @@ -1,5 +1,5 @@
+>  PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
+> -	 dscr_inherit_test
+> +	 dscr_inherit_test dscr_inherit_exec_test
 >  
 >  CFLAGS := $(CFLAGS) -lpthread
 >  
-> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
+> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
 > new file mode 100644
-> index 0000000..f1add77
+> index 0000000..5ff3849
 > --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-> @@ -0,0 +1,96 @@
+> +++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+> @@ -0,0 +1,118 @@
 > +/*
-> + * POWER Data Stream Control Register (DSCR) fork test
+> + * POWER Data Stream Control Register (DSCR) fork exec test
 > + *
-> + * This testcase modifies the DSCR using mtspr, forks and then
-> + * verifies that the child process has the correct changed DSCR
-> + * value using mfspr.
+> + * This testcase modifies the DSCR using mtspr, forks & execs and
+> + * verifies that the child is using the changed DSCR using mfspr.
 > + *
 > + * When using the privilege state SPR, the instructions such as
 > + * mfspr or mtspr are priviledged and the kernel emulates them
@@ -76,20 +75,41 @@ On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
 > + */
 > +#include "dscr.h"
 > +
+> +static char prog[LEN_MAX];
+> +
+> +static void do_exec(unsigned long parent_dscr)
+> +{
+> +	unsigned long cur_dscr, cur_dscr_usr;
+> +
+> +	cur_dscr = get_dscr();
+> +	cur_dscr_usr = get_dscr_usr();
+> +
+> +	if (cur_dscr != parent_dscr) {
+> +		fprintf(stderr, "Parent DSCR %ld was not inherited "
+> +				"over exec (kernel value)\n", parent_dscr);
+> +		exit(1);
+> +	}
+> +
+> +	if (cur_dscr_usr != parent_dscr) {
+> +		fprintf(stderr, "Parent DSCR %ld was not inherited "
+> +				"over exec (user value)\n", parent_dscr);
+> +		exit(1);
+> +	}
+> +	exit(0);
+> +}
+> +
 > +int test_body(void)
 > +{
 > +	unsigned long i, dscr = 0;
 > +	pid_t pid;
 > +
-> +	srand(getpid());
-> +	set_dscr(dscr);
-> +
 > +	for (i = 0; i < COUNT; i++) {
-> +		unsigned long cur_dscr, cur_dscr_usr;
-> +
 > +		dscr++;
 > +		if (dscr > DSCR_MAX)
 > +			dscr = 0;
+> +
+> +		if (dscr == get_default_dscr())
+> +			continue;
 > +
 > +		if (i % 2 == 0)
 > +			set_dscr_usr(dscr);
@@ -126,20 +146,11 @@ On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
 > +				return 1;
 > +			}
 > +		} else {
-> +			cur_dscr = get_dscr();
-> +			if (cur_dscr != dscr) {
-> +				fprintf(stderr, "Kernel DSCR should be %ld "
-> +					"but is %ld\n", dscr, cur_dscr);
-> +				exit(1);
-> +			}
+> +			char dscr_str[16];
 > +
-> +			cur_dscr_usr = get_dscr_usr();
-> +			if (cur_dscr_usr != dscr) {
-> +				fprintf(stderr, "User DSCR should be %ld "
-> +					"but is %ld\n", dscr, cur_dscr_usr);
-> +				exit(1);
-> +			}
-> +			exit(0);
+> +			sprintf(dscr_str, "%ld", dscr);
+> +			execlp(prog, prog, "exec", dscr_str, NULL);
+> +			exit(1);
 > +		}
 > +	}
 > +	return 0;
@@ -147,7 +158,18 @@ On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
 > +
 > +int main(int argc, char *argv[])
 > +{
-> +	return test_harness(test_body, "dscr_inherit_test");
+> +	if (argc == 3 && !strcmp(argv[1], "exec")) {
+> +		unsigned long parent_dscr;
+> +
+> +		parent_dscr = atoi(argv[2]);
+> +		do_exec(parent_dscr);
+> +	} else if (argc != 1) {
+> +		fprintf(stderr, "Usage: %s\n", argv[0]);
+> +		exit(1);
+> +	}
+> +
+> +	strncpy(prog, argv[0], strlen(argv[0]));
+> +	return test_harness(test_body, "dscr_inherit_exec_test");
 > +}
 > 
 
