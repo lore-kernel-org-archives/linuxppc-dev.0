@@ -1,24 +1,18 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x233.google.com (mail-oi0-x233.google.com
- [IPv6:2607:f8b0:4003:c06::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 518991A0A23
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 05:05:09 +1100 (AEDT)
-Received: by mail-oi0-f51.google.com with SMTP id h136so3528156oig.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2015 10:05:05 -0800 (PST)
-Date: Tue, 13 Jan 2015 11:05:02 -0700
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V10 00/17] Enable SRIOV on Power8
-Message-ID: <20150113180502.GC2776@google.com>
-References: <1419227677-12312-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20141222060522.GA12285@richard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20141222060522.GA12285@richard>
-Cc: linux-pci@vger.kernel.org, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+Return-Path: <geoff@infradead.org>
+Message-ID: <1421173988.10001.32.camel@smoke>
+Subject: Re: [PATCH 3/6] powerpc/ps3: Write highmem info to repository
+From: Geoff Levand <geoff@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 13 Jan 2015 10:33:08 -0800
+In-Reply-To: <1421118298.26626.2.camel@ellerman.id.au>
+References: <cover.1421109719.git.geoff@infradead.org>
+ <3deced9919246f281e48f1258885937f11a4b4ee.1421109719.git.geoff@infradead.org>
+ <1421118298.26626.2.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
+ Hector Martin <hector@marcansoft.com>,
+ Nathan Whitehorn <nwhitehorn@freebsd.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 22, 2014 at 02:05:22PM +0800, Wei Yang wrote:
-> Bjorn,
-> 
-> This patch set is tested on 3.19-rc1 and with the offset/stride update patch.
-> 
-> I see your comment on the MEM64 issue, so if that is reverted, this
-> patch set will not work. While I think we can work in parallel, I sent it here
-> for more comment and to see whether I understand your previous comments
-> correctly.
-> 
-> I will work with Yinghai to find a way to fix the bug 85491, hope linux kernel
-> could handle both cases.
+Hi Michael,
 
-OK.  The autobuilder found some minor issues, so I'll look for a v11
-posting that fixes those.  Please pick up the changelogs from my
-pci/virtualization branch because I rewrapped them so they fit in 80
-columns when shown by "git log".
+On Tue, 2015-01-13 at 14:04 +1100, Michael Ellerman wrote:
+> On Tue, 2015-01-13 at 01:00 +0000, Geoff Levand wrote:
+> > Add calls to the ps3_mm_set_repository_highmem() routine when the ps3
+> > r1 highmem region is either created or destroyed.
+> 
+> What does this actually do? ie. from a user perspective.
 
-Bjorn
+It will allow a kexec based bootloader (petitboot for example) to
+pre-allocate a highmem region and store things like an initrd or other
+large data needed to boot an OS.  With some PS3 configurations the boot
+memory region is not large enough to fit all the boot data.
+
+There was ongoing discussion about this on the ML.  Here are two
+relevant posts:
+
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-April/097691.html
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-April/097695.html
+
+Here is the very first post which outlines the motivation, etc.:
+
+https://lists.ozlabs.org/pipermail/cbe-oss-dev/2011-August/007420.html
+
+-Geoff
