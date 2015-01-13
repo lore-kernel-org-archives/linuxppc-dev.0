@@ -1,18 +1,18 @@
 Return-Path: <shuahkh@osg.samsung.com>
 Received: from lists.s-osg.org (lists.s-osg.org [54.187.51.154])
- by lists.ozlabs.org (Postfix) with ESMTP id 323EC1A0C6A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 02:24:16 +1100 (AEDT)
-Message-ID: <54B5389E.4060409@osg.samsung.com>
-Date: Tue, 13 Jan 2015 08:24:14 -0700
+ by lists.ozlabs.org (Postfix) with ESMTP id 14F291A0D87
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 02:24:36 +1100 (AEDT)
+Message-ID: <54B538B2.8030204@osg.samsung.com>
+Date: Tue, 13 Jan 2015 08:24:34 -0700
 From: Shuah Khan <shuahkh@osg.samsung.com>
 MIME-Version: 1.0
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 10/12] selftests, powerpc: Add test for DSCR inheritence
- across fork & exec
+Subject: Re: [PATCH V2 11/12] selftests, powerpc: Add test for all DSCR sysfs
+ interfaces
 References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1421144560-15901-11-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1421144560-15901-11-git-send-email-khandual@linux.vnet.ibm.com>
+ <1421144560-15901-12-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1421144560-15901-12-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 Cc: mikey@neuling.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +25,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
-> This patch adds a test case to verify that the changed DSCR value
-> inside any process would be inherited to it's child across the fork
-> and exec system call.
+> This test continuously updates the system wide DSCR default value
+> in the sysfs interface and makes sure that the same is reflected
+> across all the sysfs interfaces for each individual CPUs present
+> on the system.
 > 
 > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > ---
->  tools/testing/selftests/powerpc/dscr/Makefile      |   2 +-
->  .../powerpc/dscr/dscr_inherit_exec_test.c          | 118 +++++++++++++++++++++
->  2 files changed, 119 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+>  tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
+>  .../selftests/powerpc/dscr/dscr_sysfs_test.c       | 89 ++++++++++++++++++++++
+>  2 files changed, 91 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
 > 
 > diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-> index 81239e2..4e84309 100644
+> index 4e84309..fada526 100644
 > --- a/tools/testing/selftests/powerpc/dscr/Makefile
 > +++ b/tools/testing/selftests/powerpc/dscr/Makefile
-> @@ -1,5 +1,5 @@
+> @@ -1,5 +1,6 @@
 >  PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
-> -	 dscr_inherit_test
-> +	 dscr_inherit_test dscr_inherit_exec_test
+> -	 dscr_inherit_test dscr_inherit_exec_test
+> +	 dscr_inherit_test dscr_inherit_exec_test		\
+> +	 dscr_sysfs_test
 >  
 >  CFLAGS := $(CFLAGS) -lpthread
 >  
-> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
 > new file mode 100644
-> index 0000000..5ff3849
+> index 0000000..3d11439
 > --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-> @@ -0,0 +1,118 @@
+> +++ b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
+> @@ -0,0 +1,89 @@
 > +/*
-> + * POWER Data Stream Control Register (DSCR) fork exec test
+> + * POWER Data Stream Control Register (DSCR) sysfs interface test
 > + *
-> + * This testcase modifies the DSCR using mtspr, forks & execs and
-> + * verifies that the child is using the changed DSCR using mfspr.
+> + * This test updates to system wide DSCR default through the sysfs interface
+> + * and then verifies that all the CPU specific DSCR defaults are updated as
+> + * well verified from their sysfs interfaces.
 > + *
-> + * When using the privilege state SPR, the instructions such as
-> + * mfspr or mtspr are priviledged and the kernel emulates them
-> + * for us. Instructions using problem state SPR can be exuecuted
-> + * directly without any emulation if the HW supports them. Else
-> + * they also get emulated by the kernel.
-> + *
-> + * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
 > + * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
 > + *
 > + * This program is free software; you can redistribute it and/or
@@ -75,82 +71,70 @@ On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
 > + */
 > +#include "dscr.h"
 > +
-> +static char prog[LEN_MAX];
-> +
-> +static void do_exec(unsigned long parent_dscr)
+> +static int check_cpu_dscr_default(char *file, unsigned long val)
 > +{
-> +	unsigned long cur_dscr, cur_dscr_usr;
+> +	char buf[10];
+> +	int fd, rc;
 > +
-> +	cur_dscr = get_dscr();
-> +	cur_dscr_usr = get_dscr_usr();
-> +
-> +	if (cur_dscr != parent_dscr) {
-> +		fprintf(stderr, "Parent DSCR %ld was not inherited "
-> +				"over exec (kernel value)\n", parent_dscr);
-> +		exit(1);
+> +	fd = open(file, O_RDWR);
+> +	if (fd == -1) {
+> +		perror("open() failed\n");
+> +		return 1;
 > +	}
 > +
-> +	if (cur_dscr_usr != parent_dscr) {
-> +		fprintf(stderr, "Parent DSCR %ld was not inherited "
-> +				"over exec (user value)\n", parent_dscr);
-> +		exit(1);
+> +	rc = read(fd, buf, sizeof(buf));
+> +	if (rc == -1) {
+> +		perror("read() failed\n");
+> +		return 1;
 > +	}
-> +	exit(0);
+> +	close(fd);
+> +
+> +	buf[rc] = '\0';
+> +	if (strtol(buf, NULL, 16) != val) {
+> +		printf("DSCR match failed: %ld (system) %ld (cpu)\n",
+> +					val, strtol(buf, NULL, 16));
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int check_all_cpu_dscr_defaults(unsigned long val)
+> +{
+> +	DIR *sysfs;
+> +	struct dirent *dp;
+> +	char file[LEN_MAX];
+> +
+> +	sysfs = opendir(CPU_PATH);
+> +	if (!sysfs) {
+> +		perror("opendir() failed\n");
+> +		return 1;
+> +	}
+> +
+> +	while ((dp = readdir(sysfs))) {
+> +		if (!(dp->d_type & DT_DIR))
+> +			continue;
+> +		if (!strcmp(dp->d_name, "cpuidle"))
+> +			continue;
+> +		if (!strstr(dp->d_name, "cpu"))
+> +			continue;
+> +
+> +		sprintf(file, "%s%s/dscr", CPU_PATH, dp->d_name);
+> +		if (check_cpu_dscr_default(file, val))
+> +			return 1;
+> +	}
+> +	closedir(sysfs);
+> +	return 0;
 > +}
 > +
 > +int test_body(void)
 > +{
-> +	unsigned long i, dscr = 0;
-> +	pid_t pid;
+> +	int i, j;
 > +
 > +	for (i = 0; i < COUNT; i++) {
-> +		dscr++;
-> +		if (dscr > DSCR_MAX)
-> +			dscr = 0;
-> +
-> +		if (dscr == get_default_dscr())
-> +			continue;
-> +
-> +		if (i % 2 == 0)
-> +			set_dscr_usr(dscr);
-> +		else
-> +			set_dscr(dscr);
-> +
-> +		/*
-> +		 * XXX: Force a context switch out so that DSCR
-> +		 * current value is copied into the thread struct
-> +		 * which is required for the child to inherit the
-> +		 * changed value.
-> +		 */
-> +		sleep(1);
-> +
-> +		pid = fork();
-> +		if (pid == -1) {
-> +			perror("fork() failed\n");
-> +			exit(1);
-> +		} else if (pid) {
-> +			int status;
-> +
-> +			if (waitpid(pid, &status, 0) == -1) {
-> +				perror("waitpid() failed\n");
-> +				exit(1);
-> +			}
-> +
-> +			if (!WIFEXITED(status)) {
-> +				fprintf(stderr, "Child didn't exit cleanly\n");
-> +				exit(1);
-> +			}
-> +
-> +			if (WEXITSTATUS(status) != 0) {
-> +				fprintf(stderr, "Child didn't exit cleanly\n");
+> +		for (j = 0; j < DSCR_MAX; j++) {
+> +			set_default_dscr(j);
+> +			if (check_all_cpu_dscr_defaults(j))
 > +				return 1;
-> +			}
-> +		} else {
-> +			char dscr_str[16];
-> +
-> +			sprintf(dscr_str, "%ld", dscr);
-> +			execlp(prog, prog, "exec", dscr_str, NULL);
-> +			exit(1);
 > +		}
 > +	}
 > +	return 0;
@@ -158,21 +142,9 @@ On 01/13/2015 03:22 AM, Anshuman Khandual wrote:
 > +
 > +int main(int argc, char *argv[])
 > +{
-> +	if (argc == 3 && !strcmp(argv[1], "exec")) {
-> +		unsigned long parent_dscr;
-> +
-> +		parent_dscr = atoi(argv[2]);
-> +		do_exec(parent_dscr);
-> +	} else if (argc != 1) {
-> +		fprintf(stderr, "Usage: %s\n", argv[0]);
-> +		exit(1);
-> +	}
-> +
-> +	strncpy(prog, argv[0], strlen(argv[0]));
-> +	return test_harness(test_body, "dscr_inherit_exec_test");
+> +	return test_harness(test_body, "dscr_sysfs_test");
 > +}
 > 
-
 Could you please add a .gitignore for powerpc targets as we
 discussed earlier. It can be separate patch.
 
@@ -186,6 +158,7 @@ Please take this through powerpc maintainer git.
 
 thanks,
 -- Shuah
+
 
 -- 
 Shuah Khan
