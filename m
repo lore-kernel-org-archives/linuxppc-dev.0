@@ -1,20 +1,37 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0144.outbound.protection.outlook.com [207.46.100.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A142F1A0C81
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 04:58:44 +1100 (AEDT)
-Message-ID: <1421258312.4961.133.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/mpic: Add DT option to skip readback after EOI
-From: Scott Wood <scottwood@freescale.com>
-To: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-Date: Wed, 14 Jan 2015 11:58:32 -0600
-In-Reply-To: <1421236622-29366-1-git-send-email-bogdan.purcareata@freescale.com>
-References: <1421236622-29366-1-git-send-email-bogdan.purcareata@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA4F11A0C34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 07:06:40 +1100 (AEDT)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 14 Jan 2015 15:06:37 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 053706E8045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 14:58:28 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0EK6Yu329687934
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 20:06:34 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0EK6YVb028660
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 15:06:34 -0500
+Message-ID: <54B6CC48.70205@linux.vnet.ibm.com>
+Date: Wed, 14 Jan 2015 14:06:32 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/2] MAINTAINERS: ibmvscsi driver maintainer change
+References: <1421109095-18613-1-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1421109095-18613-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: brking@linux.vnet.ibm.com, linux-kernel@vger.linux.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-14 at 11:57 +0000, Bogdan Purcareata wrote:
-> The readback is necessary in order to handle PCI posted
-> writes,
-
-That is unclear.
-
->  or when the MPIC is handling interrupts in a loop
-> (ppc_md.get_irq).
-
-I'm questioning this one as well -- if reading WHOAMI is sufficient to
-sync with the EOI, why wouldn't reading INTACK work as well?
-
->  Newer MPIC versions don't require this readback. Leave the option
-> configurable using a device tree entry.
+On 01/12/2015 06:31 PM, Tyrel Datwyler wrote:
+> Change maintainer of ibmvscsi driver to Tyrel Datwyler.
 > 
-> This saves a MMIO trap per interrupt.
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: Brian King <brking@linux.vnet.ibm.com>
+
+Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+> ---
+>  MAINTAINERS | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-
-You should note changes (e.g. with a [] note between signoffs) if it
-differs from the original...
-
--Scott
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 79b2e4b..a646b94 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4754,7 +4754,7 @@ S:	Supported
+>  F:	drivers/net/ethernet/ibm/ibmveth.*
+>  
+>  IBM Power Virtual SCSI Device Drivers
+> -M:	Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+>  L:	linux-scsi@vger.kernel.org
+>  S:	Supported
+>  F:	drivers/scsi/ibmvscsi/ibmvscsi*
+> 
