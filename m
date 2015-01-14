@@ -3,16 +3,16 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A31AC1A0C72
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 18:25:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C103F1A0CFC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 18:35:34 +1100 (AEDT)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3.18 028/150] powerpc/powernv: Switch off MMU before entering
+Subject: [PATCH 3.14 20/77] powerpc/powernv: Switch off MMU before entering
  nap/sleep/rvwinkle mode
-Date: Tue, 13 Jan 2015 23:21:39 -0800
-Message-Id: <20150114072057.151125275@linuxfoundation.org>
-In-Reply-To: <20150114072055.842408181@linuxfoundation.org>
-References: <20150114072055.842408181@linuxfoundation.org>
+Date: Tue, 13 Jan 2015 23:23:00 -0800
+Message-Id: <20150114072225.289127396@linuxfoundation.org>
+In-Reply-To: <20150114072224.182299947@linuxfoundation.org>
+References: <20150114072224.182299947@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
@@ -27,7 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.18-stable review patch.  If anyone has any objections, please let me know.
+3.14-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -77,7 +77,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
 --- a/arch/powerpc/kernel/idle_power7.S
 +++ b/arch/powerpc/kernel/idle_power7.S
-@@ -101,7 +101,23 @@ _GLOBAL(power7_powersave_common)
+@@ -84,7 +84,23 @@ _GLOBAL(power7_nap)
  	std	r9,_MSR(r1)
  	std	r1,PACAR1(r13)
  
