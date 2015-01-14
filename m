@@ -2,46 +2,39 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C91051A073B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 15:44:09 +1100 (AEDT)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DF2C1A0739
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 18:09:14 +1100 (AEDT)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 19A26140213
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 15:44:08 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6B79614017F
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 18:09:14 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 14 Jan 2015 10:14:07 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 557BFE0053
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 10:15:12 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0E4i33753674114
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 10:14:04 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0E4i0cX020346
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 10:14:03 +0530
-Message-ID: <54B5F410.2030002@linux.vnet.ibm.com>
-Date: Wed, 14 Jan 2015 10:14:00 +0530
+ Wed, 14 Jan 2015 17:09:13 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 21B322BB0054
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 18:09:12 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0E79Bp726607824
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 18:09:11 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0E79972005511
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 18:09:11 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-References: <20141203052204.9DA8F1400DD@ozlabs.org>
- <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
-In-Reply-To: <54A50094.5070902@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
- palves@redhat.com, Ulrich Weigand <uweigand@de.ibm.com>,
- shuahkh@osg.samsung.com, oleg@redhat.com, dhowells@redhat.com,
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH V7 1/8] elf: Add new powerpc specifc core note sections
+Date: Wed, 14 Jan 2015 12:38:43 +0530
+Message-Id: <1421219330-19984-2-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1421219330-19984-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1421219330-19984-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
+ avagin@openvz.org, Paul.Clothier@imgtec.com, peterz@infradead.org,
+ palves@redhat.com, oleg@redhat.com, davem@davemloft.net, dhowells@redhat.com,
  kirjanov@gmail.com, davej@redhat.com, akpm@linux-foundation.org,
  sukadev@linux.vnet.ibm.com, tglx@linutronix.de, sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -53,19 +46,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/01/2015 01:38 PM, Anshuman Khandual wrote:
->> > Also, we've noticed that the 'misc' regset contains registers from different ISA
->> > versions (dscr and ppr appear in ISA 2.05, tar is from 2.07). I'm not sure if
->> > there is a way to detect presence/validity of such registers, but perhaps it
->> > might be a good idea to separate registers from different ISAs in different
->> > regsets.
-> Thats right, will use feature CPU_FTR_ARCH_207S (which checks whether we are v2.07
-> compliant) to detect whether TAR register is available or not. 
-> 
+This patch adds four new ELF core note sections for powerpc
+transactional memory and one new ELF core note section for
+powerpc general miscellaneous debug registers. These addition
+of new ELF core note sections extends the existing ELF ABI
+without affecting it in any manner.
 
-Need to correct something here. Run time detection of the presence of TAR register
-through the feature bit CPU_FTR_ARCH_207S as I had mentioned before is not required.
-Right now we take care of the compile time availability of the individual registers
-the same way it is present on the thread struct. In the systems which do not have the
-TAR register, thread.tar is always going to be 0 which is exactly the same value we
-would get by excluding tar register copy after the run time detection of the feature.
+Acked-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ include/uapi/linux/elf.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index 71e1d0e..0fd9983 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -379,6 +379,11 @@ typedef struct elf64_shdr {
+ #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
+ #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
+ #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
++#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
++#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
++#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
++#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
++#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
+ #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
+ #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
+ #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
+-- 
+1.9.3
