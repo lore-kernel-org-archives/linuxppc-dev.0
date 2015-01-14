@@ -1,20 +1,45 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 965EB1A0C75
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 23:30:49 +1100 (AEDT)
-From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/mpic: Add DT option to skip readback after EOI
-Date: Wed, 14 Jan 2015 11:57:02 +0000
-Message-ID: <1421236622-29366-1-git-send-email-bogdan.purcareata@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79F991A0C81
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 05:05:44 +1100 (AEDT)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D438D14017F
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:43 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 15 Jan 2015 04:05:42 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B13D93578023
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:40 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0EI5ekB24313976
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:40 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0EI5drQ004711
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:39 +1100
+Message-ID: <54B6AFE8.4000104@linux.vnet.ibm.com>
+Date: Wed, 14 Jan 2015 23:35:28 +0530
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Bogdan
- Purcareata <bogdan.purcareata@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 1/3] powerpc/nvram: move generic code for nvram and
+ pstore
+References: <20141224115729.25731.20371.stgit@localhost.localdomain>
+ <20141224115825.25731.65673.stgit@localhost.localdomain>
+ <1421209860.10748.10.camel@ellerman.id.au>
+In-Reply-To: <1421209860.10748.10.camel@ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="------------060303090805040909010309"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,84 +49,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The readback is necessary in order to handle PCI posted
-writes, or when the MPIC is handling interrupts in a loop
-(ppc_md.get_irq). Newer MPIC versions don't require this
-readback. Leave the option configurable using a device
-tree entry.
+This is a multi-part message in MIME format.
+--------------060303090805040909010309
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This saves a MMIO trap per interrupt.
+On 01/14/2015 10:01 AM, Michael Ellerman wrote:
+> On Wed, 2014-12-24 at 17:28 +0530, Hari Bathini wrote:
+>> With minor checks, we can move most of the code for nvram
+>> under pseries to a common place to be re-used by other
+>> powerpc platforms like powernv. This patch moves such
+>> common code to arch/powerpc/kernel/nvram_64.c file.
+> As I said in my reply to the previous version:
+>
+>      ... you need to keep in mind that it is very common for us to build kernels
+>      with both POWERNV=y and PSERIES=y.
+>      
+>      So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
+>      that are optional on pseries. Not things that we *shouldn't* be doing on
+>      powernv.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
----
- Documentation/devicetree/bindings/powerpc/fsl/mpic.txt | 13 +++++++++++++
- arch/powerpc/include/asm/mpic.h                        |  2 ++
- arch/powerpc/sysdev/mpic.c                             |  8 +++++++-
- 3 files changed, 22 insertions(+), 1 deletion(-)
+we could as well do away with the PPC_PSERIES flag in a couple of places in
+arch/powerpc/kernel/nvram_64.c, but doing that will unnecessarily add
+few extra variables for !PPC_PSERIES case.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-index dc57446..9789094 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
-@@ -77,6 +77,19 @@ PROPERTIES
-           in the global feature registers.  If specified, this field will
-           override the value read from MPIC_GREG_FEATURE_LAST_SRC.
- 
-+  - mpic-eoi-no-readback
-+      Usage: optional
-+      Value type: <empty>
-+      Definition: The presence of this property specifies that the
-+          MPIC will not issue a readback when delivering the EOI for an
-+          external interrupt. The readback operation is done by reading
-+          the CPU WHOAMI register after writing to the CPU EOI register.
-+          Originally, this was required due to the fact that the MPIC
-+          operates at lower frequencies, or in scenarios where the MPIC
-+          is connected through PCI with write posting. This is not the
-+          case in an emulated environment (e.g. KVM guest), or in scenarios
-+          where interrupts are not handled in a loop of get_irq() calls.
-+
- INTERRUPT SPECIFIER DEFINITION
- 
-   Interrupt specifiers consists of 4 cells encoded as
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 754f93d..e2a4146 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -386,6 +386,8 @@ extern struct bus_type mpic_subsys;
-  * from the BRR1 register).
- */
- #define MPIC_FSL_HAS_EIMR		0x00010000
-+/* Dont bother with readback after MPIC EOI */
-+#define MPIC_EOI_NO_READBACK	0x00020000
- 
- /* MPIC HW modification ID */
- #define MPIC_REGSET_MASK		0xf0000000
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index f3e8624..431f68e 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -656,7 +656,9 @@ static inline struct mpic * mpic_from_irq_data(struct irq_data *d)
- static inline void mpic_eoi(struct mpic *mpic)
- {
- 	mpic_cpu_write(MPIC_INFO(CPU_EOI), 0);
--	(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
-+
-+	if (!(mpic->flags & MPIC_EOI_NO_READBACK))
-+		(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
- }
- 
- /*
-@@ -1290,6 +1292,10 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		flags |= MPIC_SINGLE_DEST_CPU;
- 	if (of_device_is_compatible(node, "fsl,mpic"))
- 		flags |= MPIC_FSL | MPIC_LARGE_VECTORS;
-+	if (of_get_property(node, "mpic-eoi-no-readback", NULL)) {
-+		pr_debug("mpic: no readback activated");
-+		flags |= MPIC_EOI_NO_READBACK;
-+	}
- 
- 	mpic = kzalloc(sizeof(struct mpic), GFP_KERNEL);
- 	if (mpic == NULL)
--- 
-2.1.3
+> Please explain in your commit message how you have dealt with that.
+>
+
+Sure. Will update the changelog
+
+> Also, you broke the build for every config that doesn't have
+> CONFIG_PPC_PSERIES, all 95 of them. This is pasemi_defconfig for example:
+
+My bad!clobbering_unread_rtas_event should have been static inline
+while defining under !PPC_PSERIES
+
+Thanks
+Hari
+
+>        LD      arch/powerpc/mm/built-in.o
+>      arch/powerpc/mm/init_64.o: In function `clobbering_unread_rtas_event':
+>      init_64.c:(.opd+0x48): multiple definition of `clobbering_unread_rtas_event'
+>      arch/powerpc/mm/mem.o:mem.c:(.opd+0x90): first defined here
+>      arch/powerpc/mm/init_64.o: In function `.clobbering_unread_rtas_event':
+>      init_64.c:(.text+0x80): multiple definition of `.clobbering_unread_rtas_event'
+>      arch/powerpc/mm/mem.o:mem.c:(.text+0x2c0): first defined here
+>        CC      arch/powerpc/kernel/udbg.o
+>      /home/kisskb/slave/src/scripts/Makefile.build:336: recipe for target 'arch/powerpc/mm/built-in.o' failed
+>      make[2]: *** [arch/powerpc/mm/built-in.o] Error 1
+>      /home/kisskb/slave/src/Makefile:938: recipe for target 'arch/powerpc/mm' failed
+>      make[1]: *** [arch/powerpc/mm] Error 2
+>      make[1]: *** Waiting for unfinished jobs....
+>
+>
+> cheers
+>
+>
+
+
+--------------060303090805040909010309
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">On 01/14/2015 10:01 AM, Michael
+      Ellerman wrote:<br>
+    </div>
+    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">On Wed, 2014-12-24 at 17:28 +0530, Hari Bathini wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">With minor checks, we can move most of the code for nvram
+under pseries to a common place to be re-used by other
+powerpc platforms like powernv. This patch moves such
+common code to arch/powerpc/kernel/nvram_64.c file.
+</pre>
+      </blockquote>
+      <pre wrap="">As I said in my reply to the previous version:
+
+    ... you need to keep in mind that it is very common for us to build kernels
+    with both POWERNV=y and PSERIES=y.
+    
+    So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
+    that are optional on pseries. Not things that we *shouldn't* be doing on
+    powernv.
+</pre>
+    </blockquote>
+    <br>
+    we could as well do away with the PPC_PSERIES flag in a couple of
+    places in<br>
+    arch/powerpc/kernel/nvram_64.c, but doing that will unnecessarily
+    add<br>
+    few extra variables for !PPC_PSERIES case. <br>
+    <br>
+    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">
+Please explain in your commit message how you have dealt with that.
+
+</pre>
+    </blockquote>
+    <br>
+    Sure. Will update the changelog<br>
+    <br>
+    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">
+Also, you broke the build for every config that doesn't have
+CONFIG_PPC_PSERIES, all 95 of them. This is pasemi_defconfig for example:
+</pre>
+    </blockquote>
+    <br>
+    My bad!<font face="sans-serif"> clobbering_unread_rtas_event should
+      have been static inline</font><br>
+    while defining under !PPC_PSERIES<br>
+    <br>
+    Thanks<br>
+    Hari<br>
+    <br>
+    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
+      type="cite">
+      <pre wrap="">      LD      arch/powerpc/mm/built-in.o
+    arch/powerpc/mm/init_64.o: In function `clobbering_unread_rtas_event':
+    init_64.c:(.opd+0x48): multiple definition of `clobbering_unread_rtas_event'
+    arch/powerpc/mm/mem.o:mem.c:(.opd+0x90): first defined here
+    arch/powerpc/mm/init_64.o: In function `.clobbering_unread_rtas_event':
+    init_64.c:(.text+0x80): multiple definition of `.clobbering_unread_rtas_event'
+    arch/powerpc/mm/mem.o:mem.c:(.text+0x2c0): first defined here
+      CC      arch/powerpc/kernel/udbg.o
+    /home/kisskb/slave/src/scripts/Makefile.build:336: recipe for target 'arch/powerpc/mm/built-in.o' failed
+    make[2]: *** [arch/powerpc/mm/built-in.o] Error 1
+    /home/kisskb/slave/src/Makefile:938: recipe for target 'arch/powerpc/mm' failed
+    make[1]: *** [arch/powerpc/mm] Error 2
+    make[1]: *** Waiting for unfinished jobs....
+
+
+cheers
+
+
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------060303090805040909010309--
