@@ -1,14 +1,41 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A5C81A084F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 14:48:01 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Remove old compile time disabled syscall tracing code
-Date: Wed, 14 Jan 2015 14:47:56 +1100
-Message-Id: <1421207276-1737-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0B291A084F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 14:50:16 +1100 (AEDT)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E8E24140272
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 14:50:15 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 14 Jan 2015 09:20:13 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D2C551258043
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 09:20:56 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0E3o8nw59900136
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 09:20:08 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0E3o7BC028886
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2015 09:20:08 +0530
+Message-ID: <54B5E76F.6050307@linux.vnet.ibm.com>
+Date: Wed, 14 Jan 2015 09:20:07 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuahkh@osg.samsung.com>
+Subject: Re: [PATCH] selftests/powerpc: Add .gitignore for powerpc selftests
+References: <1421192997-17003-1-git-send-email-mpe@ellerman.id.au>
+ <54B5B561.40406@osg.samsung.com> <1421201759.10748.8.camel@ellerman.id.au>
+In-Reply-To: <1421201759.10748.8.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,194 +45,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have code to do syscall tracing which is disabled at compile time by
-default. It's not been touched since the dawn of time (ie. v2.6.12).
+On 01/14/2015 07:45 AM, Michael Ellerman wrote:
+> On Tue, 2015-01-13 at 17:16 -0700, Shuah Khan wrote:
+>> Please add a commit log.
+>  
+> What does it need to say?
+> 
+>> On 01/13/2015 04:49 PM, Michael Ellerman wrote:
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>>  .../testing/selftests/powerpc/copyloops/.gitignore |  4 ++++
+>>>  tools/testing/selftests/powerpc/mm/.gitignore      |  1 +
+>>>  tools/testing/selftests/powerpc/pmu/.gitignore     |  3 +++
+>>>  tools/testing/selftests/powerpc/pmu/ebb/.gitignore | 22 ++++++++++++++++++++++
+>>>  .../selftests/powerpc/primitives/.gitignore        |  1 +
+>>>  tools/testing/selftests/powerpc/tm/.gitignore      |  1 +
+>>>  6 files changed, 32 insertions(+)
+>>>  create mode 100644 tools/testing/selftests/powerpc/copyloops/.gitignore
+>>>  create mode 100644 tools/testing/selftests/powerpc/mm/.gitignore
+>>>  create mode 100644 tools/testing/selftests/powerpc/pmu/.gitignore
+>>>  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+>>>  create mode 100644 tools/testing/selftests/powerpc/primitives/.gitignore
+>>>  create mode 100644 tools/testing/selftests/powerpc/tm/.gitignore
+>>
+>> Please create a single .gitignore for all targets right under
+>> tools/testing/selftests/powerpc instead of multiple .gitignore
+>> files.
+> 
+> Why? Having separate files makes it less likely we'll get merge conflicts
+> between different test subdirectores, it also makes it more likely someone
+> adding a test will notice they need to update the .gitignore in the same
+> directory.
 
-There are now better ways to do syscall tracing, ie. using the
-raw_syscall, or syscall tracepoints.
+Hey Michael,
 
-For the specific case of tracing syscalls at boot on a system that
-doesn't get to userspace, you can boot with:
+I had already posted a similar patch in this regard along with the ptrace
+patches last month. Thats why I mentioned in the cover letter that
+gitignore updates for all these tests will come from that patch series
+instead of from this one. 
 
-  trace_event=syscalls tp_printk=on
+https://lkml.org/lkml/2014/12/2/80
 
-Which will trace syscalls from boot, and echo all output to the console.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/entry_32.S | 77 ------------------------------------------
- arch/powerpc/kernel/entry_64.S | 13 -------
- arch/powerpc/kernel/syscalls.c | 14 --------
- 3 files changed, 104 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 10a093579191..cb8ef68a1ae5 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -33,9 +33,6 @@
- #include <asm/ftrace.h>
- #include <asm/ptrace.h>
- 
--#undef SHOW_SYSCALLS
--#undef SHOW_SYSCALLS_TASK
--
- /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-  */
-@@ -307,9 +304,6 @@ _GLOBAL(DoSyscall)
- 	lwz	r11,_CCR(r1)	/* Clear SO bit in CR */
- 	rlwinm	r11,r11,0,4,2
- 	stw	r11,_CCR(r1)
--#ifdef SHOW_SYSCALLS
--	bl	do_show_syscall
--#endif /* SHOW_SYSCALLS */
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/* Return from syscalls can (and generally will) hard enable
- 	 * interrupts. You aren't supposed to call a syscall with
-@@ -352,9 +346,6 @@ syscall_dotrace_cont:
- 	blrl			/* Call handler */
- 	.globl	ret_from_syscall
- ret_from_syscall:
--#ifdef SHOW_SYSCALLS
--	bl	do_show_syscall_exit
--#endif
- 	mr	r6,r3
- 	CURRENT_THREAD_INFO(r12, r1)
- 	/* disable interrupts so current_thread_info()->flags can't change */
-@@ -523,74 +514,6 @@ syscall_exit_work:
- 	bl	do_syscall_trace_leave
- 	b	ret_from_except_full
- 
--#ifdef SHOW_SYSCALLS
--do_show_syscall:
--#ifdef SHOW_SYSCALLS_TASK
--	lis	r11,show_syscalls_task@ha
--	lwz	r11,show_syscalls_task@l(r11)
--	cmp	0,r2,r11
--	bnelr
--#endif
--	stw	r31,GPR31(r1)
--	mflr	r31
--	lis	r3,7f@ha
--	addi	r3,r3,7f@l
--	lwz	r4,GPR0(r1)
--	lwz	r5,GPR3(r1)
--	lwz	r6,GPR4(r1)
--	lwz	r7,GPR5(r1)
--	lwz	r8,GPR6(r1)
--	lwz	r9,GPR7(r1)
--	bl	printk
--	lis	r3,77f@ha
--	addi	r3,r3,77f@l
--	lwz	r4,GPR8(r1)
--	mr	r5,r2
--	bl	printk
--	lwz	r0,GPR0(r1)
--	lwz	r3,GPR3(r1)
--	lwz	r4,GPR4(r1)
--	lwz	r5,GPR5(r1)
--	lwz	r6,GPR6(r1)
--	lwz	r7,GPR7(r1)
--	lwz	r8,GPR8(r1)
--	mtlr	r31
--	lwz	r31,GPR31(r1)
--	blr
--
--do_show_syscall_exit:
--#ifdef SHOW_SYSCALLS_TASK
--	lis	r11,show_syscalls_task@ha
--	lwz	r11,show_syscalls_task@l(r11)
--	cmp	0,r2,r11
--	bnelr
--#endif
--	stw	r31,GPR31(r1)
--	mflr	r31
--	stw	r3,RESULT(r1)	/* Save result */
--	mr	r4,r3
--	lis	r3,79f@ha
--	addi	r3,r3,79f@l
--	bl	printk
--	lwz	r3,RESULT(r1)
--	mtlr	r31
--	lwz	r31,GPR31(r1)
--	blr
--
--7:	.string	"syscall %d(%x, %x, %x, %x, %x, "
--77:	.string	"%x), current=%p\n"
--79:	.string	" -> %x\n"
--	.align	2,0
--
--#ifdef SHOW_SYSCALLS_TASK
--	.data
--	.globl	show_syscalls_task
--show_syscalls_task:
--	.long	-1
--	.text
--#endif
--#endif /* SHOW_SYSCALLS */
--
- /*
-  * The fork/clone functions need to copy the full register set into
-  * the child process. Therefore we need to save all the nonvolatile
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 194e46dcf08d..c6dcb560c295 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -49,8 +49,6 @@ exception_marker:
- 	.section	".text"
- 	.align 7
- 
--#undef SHOW_SYSCALLS
--
- 	.globl system_call_common
- system_call_common:
- 	andi.	r10,r12,MSR_PR
-@@ -142,13 +140,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	li	r10,1
- 	std	r10,SOFTE(r1)
- 
--#ifdef SHOW_SYSCALLS
--	bl	do_show_syscall
--	REST_GPR(0,r1)
--	REST_4GPRS(3,r1)
--	REST_2GPRS(7,r1)
--	addi	r9,r1,STACK_FRAME_OVERHEAD
--#endif
- 	CURRENT_THREAD_INFO(r11, r1)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
-@@ -180,10 +171,6 @@ system_call:			/* label this so stack traces look sane */
- 
- syscall_exit:
- 	std	r3,RESULT(r1)
--#ifdef SHOW_SYSCALLS
--	bl	do_show_syscall_exit
--	ld	r3,RESULT(r1)
--#endif
- 	CURRENT_THREAD_INFO(r12, r1)
- 
- 	ld	r8,_MSR(r1)
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index cd9be9aa016d..b2702e87db0d 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -121,17 +121,3 @@ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
- 	return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low,
- 			     (u64)len_high << 32 | len_low, advice);
- }
--
--void do_show_syscall(unsigned long r3, unsigned long r4, unsigned long r5,
--		     unsigned long r6, unsigned long r7, unsigned long r8,
--		     struct pt_regs *regs)
--{
--	printk("syscall %ld(%lx, %lx, %lx, %lx, %lx, %lx) regs=%p current=%p"
--	       " cpu=%d\n", regs->gpr[0], r3, r4, r5, r6, r7, r8, regs,
--	       current, smp_processor_id());
--}
--
--void do_show_syscall_exit(unsigned long r3)
--{
--	printk(" -> %lx, current=%p cpu=%d\n", r3, current, smp_processor_id());
--}
--- 
-2.1.0
+Regards
+Anshuman
