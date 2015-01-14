@@ -1,37 +1,20 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <B43198@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA4F11A0C34
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 07:06:40 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 14 Jan 2015 15:06:37 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 053706E8045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 14:58:28 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0EK6Yu329687934
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 20:06:34 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0EK6YVb028660
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 15:06:34 -0500
-Message-ID: <54B6CC48.70205@linux.vnet.ibm.com>
-Date: Wed, 14 Jan 2015 14:06:32 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 965EB1A0C75
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 23:30:49 +1100 (AEDT)
+From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/mpic: Add DT option to skip readback after EOI
+Date: Wed, 14 Jan 2015 11:57:02 +0000
+Message-ID: <1421236622-29366-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/2] MAINTAINERS: ibmvscsi driver maintainer change
-References: <1421109095-18613-1-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1421109095-18613-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: brking@linux.vnet.ibm.com, linux-kernel@vger.linux.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Bogdan
+ Purcareata <bogdan.purcareata@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2015 06:31 PM, Tyrel Datwyler wrote:
-> Change maintainer of ibmvscsi driver to Tyrel Datwyler.
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Brian King <brking@linux.vnet.ibm.com>
+The readback is necessary in order to handle PCI posted
+writes, or when the MPIC is handling interrupts in a loop
+(ppc_md.get_irq). Newer MPIC versions don't require this
+readback. Leave the option configurable using a device
+tree entry.
 
-Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+This saves a MMIO trap per interrupt.
 
-> ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 79b2e4b..a646b94 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4754,7 +4754,7 @@ S:	Supported
->  F:	drivers/net/ethernet/ibm/ibmveth.*
->  
->  IBM Power Virtual SCSI Device Drivers
-> -M:	Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->  L:	linux-scsi@vger.kernel.org
->  S:	Supported
->  F:	drivers/scsi/ibmvscsi/ibmvscsi*
-> 
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+---
+ Documentation/devicetree/bindings/powerpc/fsl/mpic.txt | 13 +++++++++++++
+ arch/powerpc/include/asm/mpic.h                        |  2 ++
+ arch/powerpc/sysdev/mpic.c                             |  8 +++++++-
+ 3 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+index dc57446..9789094 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+@@ -77,6 +77,19 @@ PROPERTIES
+           in the global feature registers.  If specified, this field will
+           override the value read from MPIC_GREG_FEATURE_LAST_SRC.
+ 
++  - mpic-eoi-no-readback
++      Usage: optional
++      Value type: <empty>
++      Definition: The presence of this property specifies that the
++          MPIC will not issue a readback when delivering the EOI for an
++          external interrupt. The readback operation is done by reading
++          the CPU WHOAMI register after writing to the CPU EOI register.
++          Originally, this was required due to the fact that the MPIC
++          operates at lower frequencies, or in scenarios where the MPIC
++          is connected through PCI with write posting. This is not the
++          case in an emulated environment (e.g. KVM guest), or in scenarios
++          where interrupts are not handled in a loop of get_irq() calls.
++
+ INTERRUPT SPECIFIER DEFINITION
+ 
+   Interrupt specifiers consists of 4 cells encoded as
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index 754f93d..e2a4146 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -386,6 +386,8 @@ extern struct bus_type mpic_subsys;
+  * from the BRR1 register).
+ */
+ #define MPIC_FSL_HAS_EIMR		0x00010000
++/* Dont bother with readback after MPIC EOI */
++#define MPIC_EOI_NO_READBACK	0x00020000
+ 
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index f3e8624..431f68e 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -656,7 +656,9 @@ static inline struct mpic * mpic_from_irq_data(struct irq_data *d)
+ static inline void mpic_eoi(struct mpic *mpic)
+ {
+ 	mpic_cpu_write(MPIC_INFO(CPU_EOI), 0);
+-	(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
++
++	if (!(mpic->flags & MPIC_EOI_NO_READBACK))
++		(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
+ }
+ 
+ /*
+@@ -1290,6 +1292,10 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		flags |= MPIC_SINGLE_DEST_CPU;
+ 	if (of_device_is_compatible(node, "fsl,mpic"))
+ 		flags |= MPIC_FSL | MPIC_LARGE_VECTORS;
++	if (of_get_property(node, "mpic-eoi-no-readback", NULL)) {
++		pr_debug("mpic: no readback activated");
++		flags |= MPIC_EOI_NO_READBACK;
++	}
+ 
+ 	mpic = kzalloc(sizeof(struct mpic), GFP_KERNEL);
+ 	if (mpic == NULL)
+-- 
+2.1.3
