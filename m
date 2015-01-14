@@ -1,45 +1,24 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mohicks@gmail.com>
+Received: from mail-qg0-x233.google.com (mail-qg0-x233.google.com
+ [IPv6:2607:f8b0:400d:c04::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79F991A0C81
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 05:05:44 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D438D14017F
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:43 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 15 Jan 2015 04:05:42 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B13D93578023
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:40 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0EI5ekB24313976
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:40 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0EI5drQ004711
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2015 05:05:39 +1100
-Message-ID: <54B6AFE8.4000104@linux.vnet.ibm.com>
-Date: Wed, 14 Jan 2015 23:35:28 +0530
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 190B41A06F7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 05:36:08 +1100 (AEDT)
+Received: by mail-qg0-f51.google.com with SMTP id i50so8278693qgf.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 10:36:05 -0800 (PST)
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 1/3] powerpc/nvram: move generic code for nvram and
- pstore
-References: <20141224115729.25731.20371.stgit@localhost.localdomain>
- <20141224115825.25731.65673.stgit@localhost.localdomain>
- <1421209860.10748.10.camel@ellerman.id.au>
-In-Reply-To: <1421209860.10748.10.camel@ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="------------060303090805040909010309"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Sender: mohicks@gmail.com
+In-Reply-To: <1421098314.4961.109.camel@freescale.com>
+References: <20150112152749.GA5450@darwin.bork.org>
+ <1421098314.4961.109.camel@freescale.com>
+Date: Wed, 14 Jan 2015 13:36:05 -0500
+Message-ID: <CAJUS3Xk0DjCvjn4RAPdsAQAuZOUp0SvWoSsxk78YO=cwRtp1PA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl: Add empty ranges to etsec2 dts files
+From: Martin Hicks <mort@bork.org>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=001a11c1f2e21de578050ca10329
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,153 +28,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060303090805040909010309
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+--001a11c1f2e21de578050ca10329
+Content-Type: text/plain; charset=UTF-8
 
-On 01/14/2015 10:01 AM, Michael Ellerman wrote:
-> On Wed, 2014-12-24 at 17:28 +0530, Hari Bathini wrote:
->> With minor checks, we can move most of the code for nvram
->> under pseries to a common place to be re-used by other
->> powerpc platforms like powernv. This patch moves such
->> common code to arch/powerpc/kernel/nvram_64.c file.
-> As I said in my reply to the previous version:
+Perfect.  I'm glad there's a patch.
+mh
+
+On Mon, Jan 12, 2015 at 4:31 PM, Scott Wood <scottwood@freescale.com> wrote:
+
+> On Mon, 2015-01-12 at 10:27 -0500, Martin Hicks wrote:
+> >
+> > With an earlier change (746c9e9f - Fix PowerPC address parsing hack),
+> ethernet
+> > has broken on Freescale boards such as the P1022.  All ranges used by the
+> > ethernet controllers are also covered by sub-devices that properly
+> > declared the used ranges.  The error shown is:
+> >
+> > fsl-gianfar: probe of soc@ffe00000:ethernet@b0000 failed with error -12
+> >
+> > Signed-off-by: Martin Hicks <mort@bork.org>
+> > ---
+> >  arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi |    1 +
+> >  arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi |    1 +
+> >  arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi |    1 +
+> >  3 files changed, 3 insertions(+)
 >
->      ... you need to keep in mind that it is very common for us to build kernels
->      with both POWERNV=y and PSERIES=y.
->      
->      So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
->      that are optional on pseries. Not things that we *shouldn't* be doing on
->      powernv.
-
-we could as well do away with the PPC_PSERIES flag in a couple of places in
-arch/powerpc/kernel/nvram_64.c, but doing that will unnecessarily add
-few extra variables for !PPC_PSERIES case.
-
-> Please explain in your commit message how you have dealt with that.
+> http://patchwork.ozlabs.org/patch/422446/
 >
-
-Sure. Will update the changelog
-
-> Also, you broke the build for every config that doesn't have
-> CONFIG_PPC_PSERIES, all 95 of them. This is pasemi_defconfig for example:
-
-My bad!clobbering_unread_rtas_event should have been static inline
-while defining under !PPC_PSERIES
-
-Thanks
-Hari
-
->        LD      arch/powerpc/mm/built-in.o
->      arch/powerpc/mm/init_64.o: In function `clobbering_unread_rtas_event':
->      init_64.c:(.opd+0x48): multiple definition of `clobbering_unread_rtas_event'
->      arch/powerpc/mm/mem.o:mem.c:(.opd+0x90): first defined here
->      arch/powerpc/mm/init_64.o: In function `.clobbering_unread_rtas_event':
->      init_64.c:(.text+0x80): multiple definition of `.clobbering_unread_rtas_event'
->      arch/powerpc/mm/mem.o:mem.c:(.text+0x2c0): first defined here
->        CC      arch/powerpc/kernel/udbg.o
->      /home/kisskb/slave/src/scripts/Makefile.build:336: recipe for target 'arch/powerpc/mm/built-in.o' failed
->      make[2]: *** [arch/powerpc/mm/built-in.o] Error 1
->      /home/kisskb/slave/src/Makefile:938: recipe for target 'arch/powerpc/mm' failed
->      make[1]: *** [arch/powerpc/mm] Error 2
->      make[1]: *** Waiting for unfinished jobs....
+> > diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+> b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+> > index 1382fec..d1a6c48 100644
+> > --- a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+> > +++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi
+> > @@ -43,6 +43,7 @@ mdio@24000 {
+> >  ethernet@b0000 {
+> >       #address-cells = <1>;
+> >       #size-cells = <1>;
+> > +     ranges = <>;
+>
+> The " = <>" is usually omitted for empty properties.
+>
+> -Scott
 >
 >
-> cheers
->
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
 
 
---------------060303090805040909010309
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
 
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 01/14/2015 10:01 AM, Michael
-      Ellerman wrote:<br>
-    </div>
-    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">On Wed, 2014-12-24 at 17:28 +0530, Hari Bathini wrote:
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">With minor checks, we can move most of the code for nvram
-under pseries to a common place to be re-used by other
-powerpc platforms like powernv. This patch moves such
-common code to arch/powerpc/kernel/nvram_64.c file.
-</pre>
-      </blockquote>
-      <pre wrap="">As I said in my reply to the previous version:
+-- 
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
 
-    ... you need to keep in mind that it is very common for us to build kernels
-    with both POWERNV=y and PSERIES=y.
-    
-    So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
-    that are optional on pseries. Not things that we *shouldn't* be doing on
-    powernv.
-</pre>
-    </blockquote>
-    <br>
-    we could as well do away with the PPC_PSERIES flag in a couple of
-    places in<br>
-    arch/powerpc/kernel/nvram_64.c, but doing that will unnecessarily
-    add<br>
-    few extra variables for !PPC_PSERIES case. <br>
-    <br>
-    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">
-Please explain in your commit message how you have dealt with that.
+--001a11c1f2e21de578050ca10329
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-</pre>
-    </blockquote>
-    <br>
-    Sure. Will update the changelog<br>
-    <br>
-    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">
-Also, you broke the build for every config that doesn't have
-CONFIG_PPC_PSERIES, all 95 of them. This is pasemi_defconfig for example:
-</pre>
-    </blockquote>
-    <br>
-    My bad!<font face="sans-serif"> clobbering_unread_rtas_event should
-      have been static inline</font><br>
-    while defining under !PPC_PSERIES<br>
-    <br>
-    Thanks<br>
-    Hari<br>
-    <br>
-    <blockquote cite="mid:1421209860.10748.10.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">      LD      arch/powerpc/mm/built-in.o
-    arch/powerpc/mm/init_64.o: In function `clobbering_unread_rtas_event':
-    init_64.c:(.opd+0x48): multiple definition of `clobbering_unread_rtas_event'
-    arch/powerpc/mm/mem.o:mem.c:(.opd+0x90): first defined here
-    arch/powerpc/mm/init_64.o: In function `.clobbering_unread_rtas_event':
-    init_64.c:(.text+0x80): multiple definition of `.clobbering_unread_rtas_event'
-    arch/powerpc/mm/mem.o:mem.c:(.text+0x2c0): first defined here
-      CC      arch/powerpc/kernel/udbg.o
-    /home/kisskb/slave/src/scripts/Makefile.build:336: recipe for target 'arch/powerpc/mm/built-in.o' failed
-    make[2]: *** [arch/powerpc/mm/built-in.o] Error 1
-    /home/kisskb/slave/src/Makefile:938: recipe for target 'arch/powerpc/mm' failed
-    make[1]: *** [arch/powerpc/mm] Error 2
-    make[1]: *** Waiting for unfinished jobs....
+<div dir=3D"ltr">Perfect.=C2=A0 I&#39;m glad there&#39;s a patch.<div>mh</d=
+iv></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On Mon, =
+Jan 12, 2015 at 4:31 PM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"mailto=
+:scottwood@freescale.com" target=3D"_blank">scottwood@freescale.com</a>&gt;=
+</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .=
+8ex;border-left:1px #ccc solid;padding-left:1ex"><span class=3D"">On Mon, 2=
+015-01-12 at 10:27 -0500, Martin Hicks wrote:<br>
+&gt;<br>
+&gt; With an earlier change (746c9e9f - Fix PowerPC address parsing hack), =
+ethernet<br>
+&gt; has broken on Freescale boards such as the P1022.=C2=A0 All ranges use=
+d by the<br>
+&gt; ethernet controllers are also covered by sub-devices that properly<br>
+&gt; declared the used ranges.=C2=A0 The error shown is:<br>
+&gt;<br>
+&gt; fsl-gianfar: probe of soc@ffe00000:ethernet@b0000 failed with error -1=
+2<br>
+&gt;<br>
+&gt; Signed-off-by: Martin Hicks &lt;<a href=3D"mailto:mort@bork.org">mort@=
+bork.org</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi |=C2=A0 =C2=A0 1 +<b=
+r>
+&gt;=C2=A0 arch/powerpc/boot/dts/fsl/pq3-etsec2-1.dtsi |=C2=A0 =C2=A0 1 +<b=
+r>
+&gt;=C2=A0 arch/powerpc/boot/dts/fsl/pq3-etsec2-2.dtsi |=C2=A0 =C2=A0 1 +<b=
+r>
+&gt;=C2=A0 3 files changed, 3 insertions(+)<br>
+<br>
+</span><a href=3D"http://patchwork.ozlabs.org/patch/422446/" target=3D"_bla=
+nk">http://patchwork.ozlabs.org/patch/422446/</a><br>
+<span class=3D""><br>
+&gt; diff --git a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi b/arch/powerp=
+c/boot/dts/fsl/pq3-etsec2-0.dtsi<br>
+&gt; index 1382fec..d1a6c48 100644<br>
+&gt; --- a/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi<br>
+&gt; +++ b/arch/powerpc/boot/dts/fsl/pq3-etsec2-0.dtsi<br>
+&gt; @@ -43,6 +43,7 @@ mdio@24000 {<br>
+&gt;=C2=A0 ethernet@b0000 {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0#address-cells =3D &lt;1&gt;;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0#size-cells =3D &lt;1&gt;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0ranges =3D &lt;&gt;;<br>
+<br>
+</span>The &quot; =3D &lt;&gt;&quot; is usually omitted for empty propertie=
+s.<br>
+<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+-Scott<br>
+</font></span><div class=3D"HOEnZb"><div class=3D"h5"><br>
+<br>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></div></div></blockquot=
+e></div><br><br clear=3D"all"><div><br></div>-- <br><div class=3D"gmail_sig=
+nature"><div dir=3D"ltr">Martin Hicks P.Eng. =C2=A0=C2=A0 =C2=A0 | =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 <a href=3D"mailto:mort@bork.org" target=3D"_blank">mor=
+t@bork.org</a><br>Bork Consulting Inc. =C2=A0 =C2=A0 | =C2=A0 +1 (613) 266-=
+2296<div></div><div></div><div></div></div></div>
+</div>
 
-
-cheers
-
-
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------060303090805040909010309--
+--001a11c1f2e21de578050ca10329--
