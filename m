@@ -1,37 +1,33 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B1B9D1A0C74
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 22:03:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78AB41A0C76
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 22:13:47 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 14 Jan 2015 16:33:10 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C72A31258056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 16:33:53 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0EB33UT19857560
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 16:33:04 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0EB30n2005496
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 16:33:01 +0530
-Message-ID: <54B64CE4.6050806@linux.vnet.ibm.com>
-Date: Wed, 14 Jan 2015 16:33:00 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: offlining cpus breakage
-References: <54ACFE6D.3070308@ozlabs.ru>
-In-Reply-To: <54ACFE6D.3070308@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+ Wed, 14 Jan 2015 06:13:44 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E000A6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 06:05:34 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0EBDf1f26017812
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 11:13:41 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0EBDfo9005424
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 06:13:41 -0500
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: powernv: winkle: Restore LPCR with LPCR_PECE1 cleared
+Date: Wed, 14 Jan 2015 16:43:21 +0530
+Message-Id: <1421234001-24886-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,65 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+LPCR_PECE1 bit controls whether decrementer interrupts are allowed to
+cause exit from power-saving mode. While waking up from winkle, restoring
+LPCR with LPCR_PECE1 set (i.e Decrementer interrupts allowed) can cause
+issue in the following scenario:
 
+- All the threads in a core are offlined. The core enters deep winkle.
+- Spurious interrupt wakes up a thread in the core. Here LPCR is restored
+  with LPCR_PECE1 bit set.
+- Since it was a spurious interrupt on a offline thread, the thread clears
+  the interrupt and goes back to winkle.
+- Here before the thread executes winkle and puts the core into deep winkle,
+  if a decrementer interrupt occurs on any of the sibling threads in the core
+  that thread wakes up. 
+- Since in offline loop we are flushing interrupt only in case of external
+  interrupt, the decrementer interrupt does not get flushed. So at this stage
+  the thread is stuck in this is loop of waking up at 0x100 due to decrementer
+  interrupt, not flushing the interrupt as only external interrupts get flushed,
+  entering winkle, waking up at 0x100 again.
 
-On Wednesday 07 January 2015 03:07 PM, Alexey Kardashevskiy wrote:
-> Hi!
-> 
-> "ppc64_cpu --smt=off" produces multiple error on the latest upstream kernel
-> (sha1 bdec419):
-> 
-> NMI watchdog: BUG: soft lockup - CPU#20 stuck for 23s! [swapper/20:0]
-> 
-> or
-> 
-> INFO: rcu_sched detected stalls on CPUs/tasks: { 2 7 8 9 10 11 12 13 14 15
-> 16 17 18 19 20 21 22 23 2
-> 4 25 26 27 28 29 30 31} (detected by 6, t=2102 jiffies, g=1617, c=1616,
-> q=1441)
-> 
-> and many others, all about lockups
-> 
-> I did bisecting and found out that reverting these helps:
-> 
-> 77b54e9f213f76a23736940cf94bcd765fc00f40 powernv/powerpc: Add winkle
-> support for offline cpus
-> 7cba160ad789a3ad7e68b92bf20eaad6ed171f80 powernv/cpuidle: Redesign idle
-> states management
-> 8eb8ac89a364305d05ad16be983b7890eb462cc3 powerpc/powernv: Enable Offline
-> CPUs to enter deep idle states
-> 
-> btw reverting just two of them produces a compile error.
-> 
-> It is pseries_le_defconfig, POWER8 machine:
-> timebase        : 512000000
-> platform        : PowerNV
-> model           : palmetto
-> machine         : PowerNV palmetto
-> firmware        : OPAL v3
-> 
-> 
+Fix this by programming PORE to restore LPCR with LPCR_PECE1 bit 
+cleared when waking up from winkle.
 
-The bug scenario is as follows:
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+This issue is separate from the issue which Alexey has reported. Fix for that is
+still pending.
 
-In fastsleep decrementer state is not maintained, thus a cpu entering
-fastsleep offloads its timer to a different cpu (lets call this
-broadcast cpu). Now in the event that this broadcast cpu is offlined, it
-assigns a new cpu with the task to handle broadcasting.
+ arch/powerpc/platforms/powernv/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If this new cpu is one of the cpus which had entered fastsleep, its
-decrementer will have been in an invalid state. This cpu has been woken
-up by a need resched ipi (to take up the task of broadcasting) as
-opposed to a broadcast ipi. The decrementer state is fixed only on a
-broadcast ipi and not on a need resched ipi. Because of this, its timers
-don't fire. Consequently it cannot wake up any cpu relying on broadcast ipi.
-
-This scenario of a cpu that takes up the task of broadcasting being in
-fastsleep is a corner case. This almost never happens on machines with
-more number of cores. This explains why Alexey was able to hit it easily
-on palmetto.
-
-We'll be posting out a fix for this soon.
-
-Thanks,
-Shreyas
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index ad0e32e..83067b1 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -298,7 +298,7 @@ int pnv_save_sprs_for_winkle(void)
+ 	 * all cpus at boot. Get these reg values of current cpu and use the
+ 	 * same accross all cpus.
+ 	 */
+-	uint64_t lpcr_val = mfspr(SPRN_LPCR);
++	uint64_t lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
+ 	uint64_t hid0_val = mfspr(SPRN_HID0);
+ 	uint64_t hid1_val = mfspr(SPRN_HID1);
+ 	uint64_t hid4_val = mfspr(SPRN_HID4);
+-- 
+1.9.3
