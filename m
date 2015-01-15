@@ -1,28 +1,39 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 130791A0D8B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 01:09:34 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YBl75-0041Ww-Um
- for linuxppc-dev@lists.ozlabs.org; Thu, 15 Jan 2015 14:09:32 +0000
-Message-ID: <54B7CA15.7000200@roeck-us.net>
-Date: Thu, 15 Jan 2015 06:09:25 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D7411A0D8B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 01:17:08 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 15 Jan 2015 14:17:05 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0DCB11B0804B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 14:17:40 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0FEH3Y853149786
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 14:17:03 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0FEH2S2020912
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 07:17:03 -0700
+Message-ID: <54B7CBDE.9040207@linux.vnet.ibm.com>
+Date: Thu, 15 Jan 2015 15:17:02 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: linux-next: Tree for Jan 12 (build failures: m68k, ppc)
-References: <20150112180322.003b44f2@canb.auug.org.au>	<20150112162438.GA18723@roeck-us.net>	<CAMuHMdUYEe=L=H75AOYVjinRSW=okRJNrNJVy-bY1gshdVrO7Q@mail.gmail.com>	<20150112175920.GC19868@roeck-us.net>
- <CAMuHMdV1k4viMKmi_8vM52iz+ry50k=Ard1ADkEGzia+yJ5e3Q@mail.gmail.com>
-In-Reply-To: <CAMuHMdV1k4viMKmi_8vM52iz+ry50k=Ard1ADkEGzia+yJ5e3Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Clark <robdclark@gmail.com>, Linux-Next <linux-next@vger.kernel.org>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] pseries/le: Fix endiannes issue in RTAS call from xmon
+References: <1416838073-16642-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1421295950.11409.3.camel@ellerman.id.au>
+In-Reply-To: <1421295950.11409.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +43,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/15/2015 02:12 AM, Geert Uytterhoeven wrote:
-> On Mon, Jan 12, 2015 at 6:59 PM, Guenter Roeck <linux@roeck-us.net> wrote:
->>>> Build failures, seen since next-20150109:
->>>>          m68k:allmodconfig
->>>>          powerpc:ppc6xx_defconfig
->
-> It looks like parisc is also suffering:
-> http://kisskb.ellerman.id.au/kisskb/buildresult/12343847/
->
->>>> Due to:
->>>>          ERROR: "__get_user_bad" [drivers/gpu/drm/drm.ko] undefined!
->>>>          make[1]: *** [__modpost] Error 1
->>>>
->>>> Caused by commit d34f20d6e2f (drm: Atomic modeset ioctl).
->>>
->>> Yeah, it needs a get_user() that supports 64-bit data.
->>>
->> Hi Geert,
+On 15/01/2015 05:25, Michael Ellerman wrote:
+> On Mon, 2014-11-24 at 15:07 +0100, Laurent Dufour wrote:
+>> On pseries system (LPAR) xmon failed to enter when running in LE mode, system
+>> is hunging. Inititating xmon will lead to such an output on the console:
 >>
->> I assume you mean m68k, where 64 bit support for get_user has been disabled.
+>> SysRq : Entering xmon
+>> cpu 0x15: Vector: 0  at [c0000003f39ffb10]
+>>     pc: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
+>>     lr: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
+>>     sp: c0000003f39ffc70
+>>    msr: 8000000000009033
+>>   current = 0xc0000003fafa7180
+>>   paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
+>>     pid   = 14617, comm = bash
+>> Bad kernel stack pointer fafb4b0 at eca7cc4
+>> cpu 0x15: Vector: 300 (Data Access) at [c000000007f07d40]
+>>     pc: 000000000eca7cc4
+>>     lr: 000000000eca7c44
+>>     sp: fafb4b0
+>>    msr: 8000000000001000
+>>    dar: 10000000
+>>  dsisr: 42000000
+>>   current = 0xc0000003fafa7180
+>>   paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
+>>     pid   = 14617, comm = bash
+>> cpu 0x15: Exception 300 (Data Access) in xmon, returning to main loop
+>> xmon: WARNING: bad recursive fault on cpu 0x15
 >>
->> The problem on powerpc is different though: __get_user_nocheck()
->> and __get_user_check() use
->>          unsigned long __gu_val;
->> followed by
->>          __get_user_size(__gu_val, __gu_addr, (size), __gu_err);
+>> The root cause is that xmon is calling RTAS to turn off the surveillance
+>> when entering xmon, and RTAS is requiring big endian parameters.
 >>
->> __get_user_size() fails in
->>          if (size > sizeof(x))
->>                   (x) = __get_user_bad();
+>> This patch is byte swapping the RTAS arguments when running in LE mode.
 >>
->> Presumably "unsigned long" is 32 bit on 32 bit powerpc, not 64 bit.
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/xmon/xmon.c | 6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
 >>
->> Overall, the explicit 64-bit use of get_user() seems to be quite unusual.
->
-> I noticed you've sent a fix for DRM.
->
-> Doh, and I was just fixing m68k...
->
+>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>> index b988b5addf86..c8efbb37d6e0 100644
+>> --- a/arch/powerpc/xmon/xmon.c
+>> +++ b/arch/powerpc/xmon/xmon.c
+>> @@ -293,10 +293,10 @@ static inline void disable_surveillance(void)
+>>  	args.token = rtas_token("set-indicator");
+>>  	if (args.token == RTAS_UNKNOWN_SERVICE)
+>>  		return;
+> 
+> I just noticed we're not handling the token correctly here. It is be32 also.
 
-Sorry, should have Cc:'d you.
+Ouch, my mistake :(
 
-Guenter
+I will drop a new patch to complete this one.
+
+Cheers.
+
+> cheers
+> 
+> 
