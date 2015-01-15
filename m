@@ -1,24 +1,14 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E7EB1A0C76
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 09:28:38 +1100 (AEDT)
-Message-ID: <1421274513.11409.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 1/3] powerpc/nvram: move generic code for nvram and
- pstore
+ by lists.ozlabs.org (Postfix) with ESMTPS id 113CB1A05EF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 12:01:44 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Thu, 15 Jan 2015 09:28:33 +1100
-In-Reply-To: <54B6AFE8.4000104@linux.vnet.ibm.com>
-References: <20141224115729.25731.20371.stgit@localhost.localdomain>
- <20141224115825.25731.65673.stgit@localhost.localdomain>
- <1421209860.10748.10.camel@ellerman.id.au>
- <54B6AFE8.4000104@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Rename _TIF_SYSCALL_T_OR_A to _TIF_SYSCALL_DOTRACE
+Date: Thu, 15 Jan 2015 12:01:42 +1100
+Message-Id: <1421283702-30677-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +18,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-14 at 23:35 +0530, Hari Bathini wrote:
-> On 01/14/2015 10:01 AM, Michael Ellerman wrote:
-> 
-> > On Wed, 2014-12-24 at 17:28 +0530, Hari Bathini wrote:
-> > > With minor checks, we can move most of the code for nvram
-> > > under pseries to a common place to be re-used by other
-> > > powerpc platforms like powernv. This patch moves such
-> > > common code to arch/powerpc/kernel/nvram_64.c file.
-> > As I said in my reply to the previous version:
-> > 
-> >     ... you need to keep in mind that it is very common for us to build kernels
-> >     with both POWERNV=y and PSERIES=y.
-> >     
-> >     So you need to make sure you're only using CONFIG_PPC_PSERIES to protect things
-> >     that are optional on pseries. Not things that we *shouldn't* be doing on
-> >     powernv.
-> 
-> we could as well do away with the PPC_PSERIES flag in a couple of
-> places in
-> arch/powerpc/kernel/nvram_64.c, but doing that will unnecessarily add
-> few extra variables for !PPC_PSERIES case. 
+Once upon a time, at least 9 years ago (< 2.6.12), _TIF_SYSCALL_T_OR_A
+meant "TRACE or AUDIT". But these days it means TRACE or AUDIT or
+SECCOMP or TRACEPOINT or NOHZ.
 
-Yep. I'm happy for them to be there, I just want you to explain in the
-changelog that you've thought about the PSERIES=y POWERNV=y case and why the
-code makes sense for that configuration.
+All of those are implemented via syscall_dotrace() so rename the flag to
+that to try and clarify things.
 
-> > Please explain in your commit message how you have dealt with that.
-> 
-> Sure. Will update the changelog
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/thread_info.h | 2 +-
+ arch/powerpc/kernel/entry_32.S         | 6 +++---
+ arch/powerpc/kernel/entry_64.S         | 6 +++---
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-Thanks.
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index ebc4f165690a..c1efa05613f0 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -124,7 +124,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
+ #define _TIF_NOHZ		(1<<TIF_NOHZ)
+-#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
++#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+ 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+ 				 _TIF_NOHZ)
  
-> > Also, you broke the build for every config that doesn't have
-> > CONFIG_PPC_PSERIES, all 95 of them. This is pasemi_defconfig for example:
-> 
-> My bad! clobbering_unread_rtas_event should have been static inline
-> while defining under !PPC_PSERIES
-
-Correct.
-
-Please make sure you test build at least some of the other configurations in
-future. I realise it's too time consuming to build all of them, but ideally for
-every config symbol you use in your patch you need to build a kernel config
-where that symbol =y and =n (and =m if it's tristate).
-
-cheers
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 10a093579191..da6379550fd2 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -337,7 +337,7 @@ _GLOBAL(DoSyscall)
+ #endif /* CONFIG_TRACE_IRQFLAGS */
+ 	CURRENT_THREAD_INFO(r10, r1)
+ 	lwz	r11,TI_FLAGS(r10)
+-	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
++	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
+ 	bne-	syscall_dotrace
+ syscall_dotrace_cont:
+ 	cmplwi	0,r0,NR_syscalls
+@@ -364,7 +364,7 @@ ret_from_syscall:
+ 	MTMSRD(r10)
+ 	lwz	r9,TI_FLAGS(r12)
+ 	li	r8,-_LAST_ERRNO
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
++	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+ 	bne-	syscall_exit_work
+ 	cmplw	0,r3,r8
+ 	blt+	syscall_exit_cont
+@@ -501,7 +501,7 @@ syscall_exit_work:
+ 	subi	r12,r12,TI_FLAGS
+ 	
+ 4:	/* Anything which requires enabling interrupts? */
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
++	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP)
+ 	beq	ret_from_except
+ 
+ 	/* Re-enable interrupts. There is no need to trace that with
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 194e46dcf08d..3291ed148bdf 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -151,7 +151,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #endif
+ 	CURRENT_THREAD_INFO(r11, r1)
+ 	ld	r10,TI_FLAGS(r11)
+-	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
++	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+ 	bne	syscall_dotrace
+ .Lsyscall_dotrace_cont:
+ 	cmpldi	0,r0,NR_syscalls
+@@ -214,7 +214,7 @@ syscall_exit:
+ 
+ 	ld	r9,TI_FLAGS(r12)
+ 	li	r11,-_LAST_ERRNO
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
++	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+ 	bne-	syscall_exit_work
+ 	cmpld	r3,r11
+ 	ld	r5,_CCR(r1)
+@@ -307,7 +307,7 @@ syscall_exit_work:
+ 
+ 4:	/* Anything else left to do? */
+ 	SET_DEFAULT_THREAD_PPR(r3, r10)		/* Set thread.ppr = 3 */
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
++	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP)
+ 	beq	ret_from_except_lite
+ 
+ 	/* Re-enable interrupts */
+-- 
+2.1.0
