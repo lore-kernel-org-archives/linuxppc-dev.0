@@ -1,21 +1,19 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0109.outbound.protection.outlook.com [65.55.169.109])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0117.outbound.protection.outlook.com [157.56.111.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 92C0C1A0E02
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:06:14 +1100 (AEDT)
-From: <Yuantian.Tang@freescale.com>
-To: <mturquette@linaro.org>
-Subject: [PATCH 2/2] clk: ppc-corenet: rename driver to clk-qoriq
-Date: Thu, 15 Jan 2015 14:03:41 +0800
-Message-ID: <1421301821-18917-2-git-send-email-Yuantian.Tang@freescale.com>
-In-Reply-To: <1421301821-18917-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1421301821-18917-1-git-send-email-Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFF151A0DC2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:07:46 +1100 (AEDT)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>, <yorksun@freescale.com>, <leoli@freescale.com>
+Subject: [PATCH] fsl/smp: add low power boot support to replace spin boot
+Date: Thu, 15 Jan 2015 14:05:30 +0800
+Message-ID: <1421301930-10035-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: b07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,126 +23,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Freescale introduced new ARM-based socs which using the compatible
-clock IP block with PowerPC-based socs'. So this driver can be used
-on both platforms.
-Updated relevant descriptions and renamed this driver to better
-represent its meaning and keep the function of driver untouched.
+U-boot put non-boot cpus into an low power state(PW10/PW20 or DOZE) when cpu
+powered up. To exit low power state kernel will send DOORBELL or MPIC-IPI
+signal to all those CPUs.
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- Documentation/devicetree/bindings/clock/qoriq-clock.txt |  5 +++--
- drivers/clk/Kconfig                                     | 10 +++++-----
- drivers/clk/Makefile                                    |  2 +-
- drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c}          |  6 +++---
- drivers/cpufreq/Kconfig.powerpc                         |  2 +-
- 5 files changed, 13 insertions(+), 12 deletions(-)
- rename drivers/clk/{clk-ppc-corenet.c => clk-qoriq.c} (98%)
+e500/e500v2 use mpic to send IPI signal.
+e500mc and later use doorbell to send IPI signal.
 
-diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-index 266ff9d..df4a259 100644
---- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-+++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-@@ -1,6 +1,6 @@
--* Clock Block on Freescale CoreNet Platforms
-+* Clock Block on Freescale QorIQ Platforms
+This feature tested on:
+POWER UP TEST:
+P1022DS(e500v2),96k times.
+P4080(e500mc),  110k times.
+T1024(e5500),   83k times.
+T4240(e6500),   150k times.
+
+CPU HOTPLUG TEST:
+P1022DS(e500v2),1.4 million times.
+P4080(e500mc),  1.8 million times.
+T1024(e5500),   1.3 million times.
+T4240(e6500),   1.1 million times.
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index 754f93d..8af6a25 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -474,6 +474,15 @@ extern int mpic_cpu_get_priority(void);
+ /* Set the current cpu priority for this cpu */
+ extern void mpic_cpu_set_priority(int prio);
  
--Freescale CoreNet chips take primary clocking input from the external
-+Freescale qoriq chips take primary clocking input from the external
- SYSCLK signal. The SYSCLK input (frequency) is multiplied using
- multiple phase locked loops (PLL) to create a variety of frequencies
- which can then be passed to a variety of internal logic, including
-@@ -29,6 +29,7 @@ Required properties:
- 	* "fsl,t4240-clockgen"
- 	* "fsl,b4420-clockgen"
- 	* "fsl,b4860-clockgen"
-+	* "fsl,ls1021a-clockgen"
- 	Chassis clock strings include:
- 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
- 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
-diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-index 3f44f29..a896fbc 100644
---- a/drivers/clk/Kconfig
-+++ b/drivers/clk/Kconfig
-@@ -101,12 +101,12 @@ config COMMON_CLK_AXI_CLKGEN
- 	  Support for the Analog Devices axi-clkgen pcore clock generator for Xilinx
- 	  FPGAs. It is commonly used in Analog Devices' reference designs.
++/* Set cpu priority */
++void mpic_set_cpu_priority(int nr, int prio);
++
++/* Set cpu EOI */
++void mpic_cpu_eoi_write(int cpu);
++
++/* CPU ACK interrupt */
++void mpic_cpu_ack(int cpu);
++
+ /* Request IPIs on primary mpic */
+ extern void mpic_request_ipis(void);
  
--config CLK_PPC_CORENET
--	bool "Clock driver for PowerPC corenet platforms"
--	depends on PPC_E500MC && OF
-+config CLK_QORIQ
-+	bool "Clock driver for Freescale QorIQ platforms"
-+	depends on (PPC_E500MC || ARM) && OF
- 	---help---
--	  This adds the clock driver support for Freescale PowerPC corenet
--	  platforms using common clock framework.
-+	  This adds the clock driver support for Freescale QorIQ platforms
-+	  using common clock framework.
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index d7c1e69..6c54632 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -193,6 +193,30 @@ static int smp_85xx_kick_cpu(int nr)
+ 	const u64 *cpu_rel_addr;
+ 	__iomem struct epapr_spin_table *spin_table;
+ 	struct device_node *np;
++
++	/*
++	 * DOORBELL:
++	 * When kernel kick one of cpus, all cpus will be wakenup. To make
++	 * sure that only the target cpu is effected, other cpus (by checking
++	 * spin_table->addr_l) should go back to low power state.
++	 *
++	 * U-boot has renumber the cpu PIR Why we need to set all of PIR to
++	 * the same value?
++	 * A: Before kernel kicking cpu, the doorbell message was not configured
++	 * for target cpu(cpu_messages->data). If we try to send a
++	 * non-configured message to target cpu, it cannot correctly receive
++	 * doorbell interrput. So SET ALL OF CPU'S PIR to the same value to
++	 * let all cpus catch the interrupt.
++	 *
++	 * Why set PIR to zero?
++	 * A: U-boot cannot know how many cpus will be kicked up(Kernel allow us
++	 * to configure NR_CPUS) and IPI is a per_cpu variable, u-boot cannot
++	 * set a appropriate PIR for every cpu, but the boot cpu(CPU0) always be
++	 * there. U-boot set PIR to zero as a default PIR ID for each CPU, so
++	 * initialize the kick_cpus to 0.
++	 */
++	u32 kick_cpus = 0;
++
+ 	int hw_cpu = get_hard_smp_processor_id(nr);
+ 	int ioremappable;
+ 	int ret = 0;
+@@ -251,8 +275,7 @@ static int smp_85xx_kick_cpu(int nr)
+ 		spin_table = phys_to_virt(*cpu_rel_addr);
  
- config COMMON_CLK_XGENE
- 	bool "Clock driver for APM XGene SoC"
-diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
-index d5fba5b..4ff94cd 100644
---- a/drivers/clk/Makefile
-+++ b/drivers/clk/Makefile
-@@ -30,7 +30,7 @@ obj-$(CONFIG_ARCH_MOXART)		+= clk-moxart.o
- obj-$(CONFIG_ARCH_NOMADIK)		+= clk-nomadik.o
- obj-$(CONFIG_ARCH_NSPIRE)		+= clk-nspire.o
- obj-$(CONFIG_COMMON_CLK_PALMAS)		+= clk-palmas.o
--obj-$(CONFIG_CLK_PPC_CORENET)		+= clk-ppc-corenet.o
-+obj-$(CONFIG_CLK_QORIQ)			+= clk-qoriq.o
- obj-$(CONFIG_COMMON_CLK_RK808)		+= clk-rk808.o
- obj-$(CONFIG_COMMON_CLK_S2MPS11)	+= clk-s2mps11.o
- obj-$(CONFIG_COMMON_CLK_SI5351)		+= clk-si5351.o
-diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-qoriq.c
-similarity index 98%
-rename from drivers/clk/clk-ppc-corenet.c
-rename to drivers/clk/clk-qoriq.c
-index 5e9bb18..f9b7eb4 100644
---- a/drivers/clk/clk-ppc-corenet.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -5,7 +5,7 @@
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-  *
-- * clock driver for Freescale PowerPC corenet SoCs.
-+ * clock driver for Freescale QorIQ SoCs.
+ 	local_irq_save(flags);
+-#ifdef CONFIG_PPC32
+-#ifdef CONFIG_HOTPLUG_CPU
++#if defined(CONFIG_PPC32) && defined(CONFIG_HOTPLUG_CPU)
+ 	/* Corresponding to generic_set_cpu_dead() */
+ 	generic_set_cpu_up(nr);
+ 
+@@ -292,11 +315,58 @@ static int smp_85xx_kick_cpu(int nr)
+ 		__secondary_hold_acknowledge = -1;
+ 	}
+ #endif
++
+ 	flush_spin_table(spin_table);
+-	out_be32(&spin_table->pir, hw_cpu);
++	/*
++	 * U-boot will wait kernel send eoi to MPIC, after EOI has send
++	 * kernel will set PIR for uboot, let uboot know EOI has send.
++	 */
++	out_be32(&spin_table->pir, 0);
++
++#ifdef CONFIG_PPC32
+ 	out_be32(&spin_table->addr_l, __pa(__early_start));
++#else
++	out_be64((u64 *)(&spin_table->addr_h),
++		 __pa(ppc_function_entry(generic_secondary_smp_init)));
++#endif
+ 	flush_spin_table(spin_table);
+ 
++	/*
++	 * e500, e500v2 need to use MPIC to send IPI signal, so we need to
++	 * open IPI firstly.
++	 */
++	if (!cpu_has_feature(CPU_FTR_DBELL)) {
++		mpic_set_cpu_priority(nr, 0);
++		kick_cpus = nr;
++	}
++
++	/* Let cpu exit low power state, and from u-boot jump to kernel */
++	arch_send_call_function_single_ipi(kick_cpus);
++
++	/*
++	 * Let we ACK interrput and Send EOI signal to finish INT server
++	 * U-boot has read EPR to ACK interrput when MPIC work in external
++	 * proxy mode. Without the external proxy facility, we need to read
++	 * MPIC ACK register.
++	 *
++	 * There just ACK interrput, we don't need to get the interrupt vector
++	 * and to handle it. Because there just IPI or DOORBELL interrupt to
++	 * make u-boot exit low power state and jump to kernel.
++	 */
++	mpic_cpu_ack(nr);
++	/* Send EOI to clear ISR bit to remove interrupt from service */
++	mpic_cpu_eoi_write(nr);
++
++	/* After wakeup CPU disable IPI, IPI will be opened in setup_cpu */
++	if (!cpu_has_feature(CPU_FTR_DBELL))
++		mpic_set_cpu_priority(nr, 0xf);
++
++	/* After EOI finish, let we release cpu */
++	flush_spin_table(spin_table);
++	out_be32(&spin_table->pir, hw_cpu);
++	flush_spin_table(spin_table);
++
++#ifdef CONFIG_PPC32
+ 	/* Wait a bit for the CPU to ack. */
+ 	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
+ 					10000, 100)) {
+@@ -308,12 +378,6 @@ static int smp_85xx_kick_cpu(int nr)
+ out:
+ #else
+ 	smp_generic_kick_cpu(nr);
+-
+-	flush_spin_table(spin_table);
+-	out_be32(&spin_table->pir, hw_cpu);
+-	out_be64((u64 *)(&spin_table->addr_h),
+-		__pa(ppc_function_entry(generic_secondary_smp_init)));
+-	flush_spin_table(spin_table);
+ #endif
+ 
+ 	local_irq_restore(flags);
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index c4648ad..b2ba47e 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -658,6 +658,21 @@ static inline void mpic_eoi(struct mpic *mpic)
+ 	(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
+ }
+ 
++void mpic_cpu_eoi_write(int cpu)
++{
++	struct mpic *mpic = mpic_primary;
++
++	_mpic_write(mpic->reg_type, &mpic->cpuregs[cpu], MPIC_INFO(CPU_EOI), 0);
++	_mpic_read(mpic->reg_type, &mpic->cpuregs[cpu], MPIC_INFO(CPU_WHOAMI));
++}
++
++void mpic_cpu_ack(int cpu)
++{
++	struct mpic *mpic = mpic_primary;
++
++	_mpic_read(mpic->reg_type, &mpic->cpuregs[cpu], MPIC_INFO(CPU_INTACK));
++}
++
+ /*
+  * Linux descriptor level callbacks
   */
- #include <linux/clk-provider.h>
- #include <linux/io.h>
-@@ -166,7 +166,7 @@ static void __init core_pll_init(struct device_node *np)
+@@ -1778,6 +1793,16 @@ void mpic_cpu_set_priority(int prio)
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), prio);
+ }
  
- 	base = of_iomap(np, 0);
- 	if (!base) {
--		pr_err("clk-ppc: iomap error\n");
-+		pr_err("clk-qoriq: iomap error\n");
- 		return;
- 	}
- 
-@@ -260,7 +260,7 @@ static void __init sysclk_init(struct device_node *node)
- 	u32 rate;
- 
- 	if (!np) {
--		pr_err("ppc-clk: could not get parent node\n");
-+		pr_err("qoriq-clk: could not get parent node\n");
- 		return;
- 	}
- 
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 72564b7..7ea2441 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -26,7 +26,7 @@ config CPU_FREQ_MAPLE
- config PPC_CORENET_CPUFREQ
- 	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
- 	depends on PPC_E500MC && OF && COMMON_CLK
--	select CLK_PPC_CORENET
-+	select CLK_QORIQ
- 	help
- 	  This adds the CPUFreq driver support for Freescale e500mc,
- 	  e5500 and e6500 series SoCs which are capable of changing
++void mpic_set_cpu_priority(int nr, int prio)
++{
++	struct mpic *mpic = mpic_primary;
++	int hw_cpu = get_hard_smp_processor_id(nr);
++
++	prio &= MPIC_CPU_TASKPRI_MASK;
++	_mpic_write(mpic->reg_type, &mpic->cpuregs[hw_cpu],
++		    MPIC_INFO(CPU_CURRENT_TASK_PRI), prio);
++}
++
+ void mpic_teardown_this_cpu(int secondary)
+ {
+ 	struct mpic *mpic = mpic_primary;
 -- 
 2.1.0.27.g96db324
