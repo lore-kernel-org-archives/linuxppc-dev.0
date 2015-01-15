@@ -1,30 +1,31 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B52A1A0D47
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1F841A0D52
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:33 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 15 Jan 2015 12:28:31 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id F40A72CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:28 +1100 (EST)
+ Thu, 15 Jan 2015 12:28:33 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 73B112BB003F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:30 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0F2SSFJ46006430
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:28 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0F2SUMd46792788
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:30 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0F2SSie019969
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:28 +1100
+ t0F2STMq020007
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:30 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V11 10/17] powerpc/powernv: Use pci_dn in PCI config accessor
-Date: Thu, 15 Jan 2015 10:28:00 +0800
-Message-Id: <1421288887-7765-11-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V11 11/17] powerpc/powernv: Allocate pe->iommu_table
+ dynamically
+Date: Thu, 15 Jan 2015 10:28:01 +0800
+Message-Id: <1421288887-7765-12-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <20150113180502.GC2776@google.com>
  <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
@@ -39,238 +40,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PCI config accessors rely on device node. Unfortunately, VFs
-don't have corresponding device nodes. So we have to switch to
-pci_dn for PCI config access.
+Current iommu_table of a PE is a static field. This will have a problem
+when iommu_free_table is called.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+This patch allocate iommu_table dynamically.
+
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c |   14 +++++-
- arch/powerpc/platforms/powernv/pci.c         |   69 ++++++++++----------------
- arch/powerpc/platforms/powernv/pci.h         |    4 +-
- 3 files changed, 40 insertions(+), 47 deletions(-)
+ arch/powerpc/include/asm/iommu.h          |    3 +++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   26 ++++++++++++++------------
+ arch/powerpc/platforms/powernv/pci.h      |    2 +-
+ 3 files changed, 18 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 1d19e79..c63b6c1 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -419,21 +419,31 @@ static inline bool powernv_eeh_cfg_blocked(struct device_node *dn)
- static int powernv_eeh_read_config(struct device_node *dn,
- 				   int where, int size, u32 *val)
- {
-+	struct pci_dn *pdn = PCI_DN(dn);
-+
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
- 	if (powernv_eeh_cfg_blocked(dn)) {
- 		*val = 0xFFFFFFFF;
- 		return PCIBIOS_SET_FAILED;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 9cfa370..5574eeb 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -78,6 +78,9 @@ struct iommu_table {
+ 	struct iommu_group *it_group;
+ #endif
+ 	void (*set_bypass)(struct iommu_table *tbl, bool enable);
++#ifdef CONFIG_PPC_POWERNV
++	void           *data;
++#endif
+ };
+ 
+ /* Pure 2^n version of get_order */
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 665f57c..31335a7 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -890,6 +890,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 		return;
  	}
  
--	return pnv_pci_cfg_read(dn, where, size, val);
-+	return pnv_pci_cfg_read(pdn, where, size, val);
- }
- 
- static int powernv_eeh_write_config(struct device_node *dn,
- 				    int where, int size, u32 val)
- {
-+	struct pci_dn *pdn = PCI_DN(dn);
++	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
++			GFP_KERNEL, hose->node);
++	pe->tce32_table->data = pe;
 +
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
- 	if (powernv_eeh_cfg_blocked(dn))
- 		return PCIBIOS_SET_FAILED;
+ 	/* Associate it with all child devices */
+ 	pnv_ioda_setup_same_PE(bus, pe);
  
--	return pnv_pci_cfg_write(dn, where, size, val);
-+	return pnv_pci_cfg_write(pdn, where, size, val);
+@@ -979,7 +983,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+ 
+ 	pe = &phb->ioda.pe_array[pdn->pe_number];
+ 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+-	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
++	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
  }
  
- /**
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 4945e87..b7d4b9d 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -366,9 +366,9 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
- 	spin_unlock_irqrestore(&phb->lock, flags);
- }
- 
--static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
--				     struct device_node *dn)
-+static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
- {
-+	struct pnv_phb *phb = pdn->phb->private_data;
- 	u8	fstate;
- 	__be16	pcierr;
- 	int	pe_no;
-@@ -379,7 +379,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	 * setup that yet. So all ER errors should be mapped to
- 	 * reserved PE.
- 	 */
--	pe_no = PCI_DN(dn)->pe_number;
-+	pe_no = pdn->pe_number;
- 	if (pe_no == IODA_INVALID_PE) {
- 		if (phb->type == PNV_PHB_P5IOC2)
- 			pe_no = 0;
-@@ -407,8 +407,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	}
- 
- 	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
--		(PCI_DN(dn)->busno << 8) | (PCI_DN(dn)->devfn),
--		pe_no, fstate);
-+		(pdn->busno << 8) | (pdn->devfn), pe_no, fstate);
- 
- 	/* Clear the frozen state if applicable */
- 	if (fstate == OPAL_EEH_STOPPED_MMIO_FREEZE ||
-@@ -425,10 +424,9 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	}
- }
- 
--int pnv_pci_cfg_read(struct device_node *dn,
-+int pnv_pci_cfg_read(struct pci_dn *pdn,
- 		     int where, int size, u32 *val)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
- 	struct pnv_phb *phb = pdn->phb->private_data;
- 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
- 	s64 rc;
-@@ -462,10 +460,9 @@ int pnv_pci_cfg_read(struct device_node *dn,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--int pnv_pci_cfg_write(struct device_node *dn,
-+int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
- 	struct pnv_phb *phb = pdn->phb->private_data;
- 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
- 
-@@ -489,18 +486,17 @@ int pnv_pci_cfg_write(struct device_node *dn,
- }
- 
- #if CONFIG_EEH
--static bool pnv_pci_cfg_check(struct pci_controller *hose,
--			      struct device_node *dn)
-+static bool pnv_pci_cfg_check(struct pci_dn *pdn)
- {
- 	struct eeh_dev *edev = NULL;
--	struct pnv_phb *phb = hose->private_data;
-+	struct pnv_phb *phb = pdn->phb->private_data;
- 
- 	/* EEH not enabled ? */
- 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
- 		return true;
- 
- 	/* PE reset or device removed ? */
--	edev = of_node_to_eeh_dev(dn);
-+	edev = pdn->edev;
- 	if (edev) {
- 		if (edev->pe &&
- 		    (edev->pe->state & EEH_PE_CFG_BLOCKED))
-@@ -513,8 +509,7 @@ static bool pnv_pci_cfg_check(struct pci_controller *hose,
- 	return true;
- }
- #else
--static inline pnv_pci_cfg_check(struct pci_controller *hose,
--				struct device_node *dn)
-+static inline pnv_pci_cfg_check(struct pci_dn *pdn)
- {
- 	return true;
- }
-@@ -524,32 +519,26 @@ static int pnv_pci_read_config(struct pci_bus *bus,
- 			       unsigned int devfn,
- 			       int where, int size, u32 *val)
- {
--	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
- 	struct pci_dn *pdn;
- 	struct pnv_phb *phb;
--	bool found = false;
- 	int ret;
- 
- 	*val = 0xFFFFFFFF;
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn) {
--			phb = pdn->phb->private_data;
--			found = true;
--			break;
--		}
--	}
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
-+	if (!pnv_pci_cfg_check(pdn))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	ret = pnv_pci_cfg_read(dn, where, size, val);
--	if (phb->flags & PNV_PHB_FLAG_EEH) {
-+	ret = pnv_pci_cfg_read(pdn, where, size, val);
-+	phb = pdn->phb->private_data;
-+	if (phb->flags & PNV_PHB_FLAG_EEH && pdn->edev) {
- 		if (*val == EEH_IO_ERROR_VALUE(size) &&
--		    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
-+		    eeh_dev_check_failure(pdn->edev))
-                         return PCIBIOS_DEVICE_NOT_FOUND;
+ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+@@ -1006,7 +1010,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
  	} else {
--		pnv_pci_config_check_eeh(phb, dn);
-+		pnv_pci_config_check_eeh(pdn);
+ 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+ 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+-		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
++		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+ 	}
+ 	*pdev->dev.dma_mask = dma_mask;
+ 	return 0;
+@@ -1043,9 +1047,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		if (add_to_iommu_group)
+ 			set_iommu_table_base_and_group(&dev->dev,
+-						       &pe->tce32_table);
++						       pe->tce32_table);
+ 		else
+-			set_iommu_table_base(&dev->dev, &pe->tce32_table);
++			set_iommu_table_base(&dev->dev, pe->tce32_table);
+ 
+ 		if (dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
+@@ -1135,8 +1139,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 				 __be64 *startp, __be64 *endp, bool rm)
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	struct pnv_phb *phb = pe->phb;
+ 
+ 	if (phb->type == PNV_PHB_IODA1)
+@@ -1202,7 +1205,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
  	}
  
- 	return ret;
-@@ -559,27 +548,21 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 				unsigned int devfn,
- 				int where, int size, u32 val)
+ 	/* Setup linux iommu table */
+-	tbl = &pe->tce32_table;
++	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+ 				  base << 28, IOMMU_PAGE_SHIFT_4K);
+ 
+@@ -1240,8 +1243,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 
+ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
  {
--	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
- 	struct pci_dn *pdn;
- 	struct pnv_phb *phb;
--	bool found = false;
- 	int ret;
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+ 	int64_t rc;
  
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn) {
--			phb = pdn->phb->private_data;
--			found = true;
--			break;
--		}
--	}
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
+@@ -1286,10 +1288,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+ 	pe->tce_bypass_base = 1ull << 59;
  
--	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
-+	if (!pnv_pci_cfg_check(pdn))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	/* Install set_bypass callback for VFIO */
+-	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
++	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
  
--	ret = pnv_pci_cfg_write(dn, where, size, val);
-+	ret = pnv_pci_cfg_write(pdn, where, size, val);
-+	phb = pdn->phb->private_data;
- 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
--		pnv_pci_config_check_eeh(phb, dn);
-+		pnv_pci_config_check_eeh(pdn);
- 
- 	return ret;
+ 	/* Enable bypass by default */
+-	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
++	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
  }
+ 
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+@@ -1337,7 +1339,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 
+ 	/* Setup linux iommu table */
+-	tbl = &pe->tce32_table;
++	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+ 			IOMMU_PAGE_SHIFT_4K);
+ 
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 6c02ff8..e5b75b2 100644
+index e5b75b2..7317777 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -219,9 +219,9 @@ extern struct pnv_eeh_ops ioda_eeh_ops;
+@@ -53,7 +53,7 @@ struct pnv_ioda_pe {
+ 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+ 	int			tce32_seg;
+ 	int			tce32_segcount;
+-	struct iommu_table	tce32_table;
++	struct iommu_table	*tce32_table;
+ 	phys_addr_t		tce_inval_reg_phys;
  
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
--int pnv_pci_cfg_read(struct device_node *dn,
-+int pnv_pci_cfg_read(struct pci_dn *pdn,
- 		     int where, int size, u32 *val);
--int pnv_pci_cfg_write(struct device_node *dn,
-+int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val);
- extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 				      void *tce_mem, u64 tce_size,
+ 	/* 64-bit TCE bypass region */
 -- 
 1.7.9.5
