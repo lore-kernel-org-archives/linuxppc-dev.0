@@ -1,30 +1,31 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48F881A0D2E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A80FF1A0D68
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:20 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 15 Jan 2015 12:28:17 +1000
+ Thu, 15 Jan 2015 12:28:20 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8D4502BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:15 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2F198357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:17 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0F2SFoN43122888
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:15 +1100
+ t0F2SGhW38142104
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:17 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0F2SEFH019612
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:15 +1100
+ t0F2SFMJ019660
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 13:28:16 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V11 02/17] PCI/IOV: add VF enable/disable hook
-Date: Thu, 15 Jan 2015 10:27:52 +0800
-Message-Id: <1421288887-7765-3-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V11 03/17] PCI: Add weak pcibios_iov_resource_alignment()
+ interface
+Date: Thu, 15 Jan 2015 10:27:53 +0800
+Message-Id: <1421288887-7765-4-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <20150113180502.GC2776@google.com>
  <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
@@ -39,74 +40,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFs are dynamically created/released when driver enable them. On some
-platforms, like PowerNV, special resources are necessary to enable VFs.
+The alignment of PF's IOV BAR is designed to be the individual size of a
+VF's BAR size. This works fine for many platforms, but on PowerNV platform
+it needs some change.
 
-This patch adds two hooks for platform initialization before creating the
-VFs.
+The original alignment works, since at sizing and assigning stage the
+requirement is from an individual VF's BAR size instead of the PF's IOV
+BAR.  This is the reason for the original code to just retrieve the
+individual VF BAR size as the alignment.
+
+On PowerNV platform, it is required to align the whole PF IOV BAR to a
+hardware segment. Based on this fact, the alignment of PF's IOV BAR should
+be calculated seperately.
+
+This patch introduces a weak pcibios_iov_resource_alignment() interface,
+which gives platform a chance to implement specific method to calculate
+the PF's IOV BAR alignment.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/iov.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/pci/iov.c   |   11 ++++++++++-
+ include/linux/pci.h |    3 +++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index e76d1a0..933d8cc 100644
+index 933d8cc..5f48201 100644
 --- a/drivers/pci/iov.c
 +++ b/drivers/pci/iov.c
-@@ -213,6 +213,11 @@ static void virtfn_remove(struct pci_dev *dev, int id, int reset)
- 	pci_dev_put(dev);
+@@ -556,6 +556,12 @@ int pci_iov_resource_bar(struct pci_dev *dev, int resno)
+ 		4 * (resno - PCI_IOV_RESOURCES);
  }
  
-+int __weak pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
++resource_size_t __weak pcibios_iov_resource_alignment(struct pci_dev *dev,
++		int resno, resource_size_t align)
 +{
-+       return 0;
++	return align;
 +}
 +
- static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ /**
+  * pci_sriov_resource_alignment - get resource alignment for VF BAR
+  * @dev: the PCI device
+@@ -570,12 +576,15 @@ resource_size_t pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
  {
- 	int rc;
-@@ -223,6 +228,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 	struct pci_dev *pdev;
- 	struct pci_sriov *iov = dev->sriov;
- 	int bars = 0;
-+	int retval;
+ 	struct resource tmp;
+ 	int reg = pci_iov_resource_bar(dev, resno);
++	resource_size_t align;
  
- 	if (!nr_virtfn)
+ 	if (!reg)
  		return 0;
-@@ -297,6 +303,12 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 	if (nr_virtfn < initial)
- 		initial = nr_virtfn;
  
-+	if ((retval = pcibios_sriov_enable(dev, initial))) {
-+		dev_err(&dev->dev, "Failure %d from pcibios_sriov_setup()\n",
-+			retval);
-+		return retval;
-+	}
+ 	__pci_read_base(dev, pci_bar_unknown, &tmp, reg);
+-	return resource_alignment(&tmp);
++	align = resource_alignment(&tmp);
 +
- 	for (i = 0; i < initial; i++) {
- 		rc = virtfn_add(dev, i, 0);
- 		if (rc)
-@@ -325,6 +337,11 @@ failed:
- 	return rc;
++	return pcibios_iov_resource_alignment(dev, resno, align);
  }
  
-+int __weak pcibios_sriov_disable(struct pci_dev *pdev, u16 vf_num)
-+{
-+       return 0;
-+}
-+
- static void sriov_disable(struct pci_dev *dev)
- {
- 	int i;
-@@ -336,6 +353,8 @@ static void sriov_disable(struct pci_dev *dev)
- 	for (i = 0; i < iov->num_VFs; i++)
- 		virtfn_remove(dev, i, 0);
+ /**
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 74ef944..ae7a7ea 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1163,6 +1163,9 @@ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
+ void pci_setup_bridge(struct pci_bus *bus);
+ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 					 unsigned long type);
++resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev,
++						 int resno,
++						 resource_size_t align);
  
-+	pcibios_sriov_disable(dev, iov->num_VFs);
-+
- 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
- 	pci_cfg_access_lock(dev);
- 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+ #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
+ #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
 -- 
 1.7.9.5
