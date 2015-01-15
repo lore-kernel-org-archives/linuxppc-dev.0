@@ -1,39 +1,23 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jgross@suse.com>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C1DD1A0D7B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 19:58:21 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Thu, 15 Jan 2015 08:58:18 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5062917D805A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:54 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0F8wF9g57278648
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:15 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0F8wE0Q016314
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 01:58:15 -0700
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/8] next: sh: Fix compile error
-Date: Thu, 15 Jan 2015 09:58:33 +0100
-Message-Id: <1421312314-72330-8-git-send-email-borntraeger@de.ibm.com>
-In-Reply-To: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E9EB1A0D44
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 20:26:53 +1100 (AEDT)
+Message-ID: <54B787D7.7040202@suse.com>
+Date: Thu, 15 Jan 2015 10:26:47 +0100
+From: =?windows-1252?Q?J=FCrgen_Gro=DF?= <jgross@suse.com>
+MIME-Version: 1.0
+To: Christian Borntraeger <borntraeger@de.ibm.com>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] x86/xen/p2m: Replace ACCESS_ONCE with READ_ONCE
 References: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
-Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, x86@kernel.org,
+ <1421312314-72330-4-git-send-email-borntraeger@de.ibm.com>
+In-Reply-To: <1421312314-72330-4-git-send-email-borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, x86@kernel.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, xen-devel@lists.xenproject.org,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,39 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Guenter Roeck <linux@roeck-us.net>
+On 01/15/2015 09:58 AM, Christian Borntraeger wrote:
+> ACCESS_ONCE does not work reliably on non-scalar types. For
+> example gcc 4.6 and 4.7 might remove the volatile tag for such
+> accesses during the SRA (scalar replacement of aggregates) step
+> (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145)
+>
+> Change the p2m code to replace ACCESS_ONCE with READ_ONCE.
+>
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-Commit a91ed664749c ("kernel: tighten rules for ACCESS ONCE") results in a
-compile failure for sh builds with CONFIG_X2TLB enabled.
+Reviewed-by: Juergen Gross <jgross@suse.com>
 
-arch/sh/mm/gup.c: In function 'gup_get_pte':
-arch/sh/mm/gup.c:20:2: error: invalid initializer
-make[1]: *** [arch/sh/mm/gup.o] Error 1
-
-Replace ACCESS_ONCE with READ_ONCE to fix the problem.
-
-Fixes: a91ed664749c ("kernel: tighten rules for ACCESS ONCE")
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
- arch/sh/mm/gup.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/sh/mm/gup.c b/arch/sh/mm/gup.c
-index 37458f3..e113bb4 100644
---- a/arch/sh/mm/gup.c
-+++ b/arch/sh/mm/gup.c
-@@ -17,7 +17,7 @@
- static inline pte_t gup_get_pte(pte_t *ptep)
- {
- #ifndef CONFIG_X2TLB
--	return ACCESS_ONCE(*ptep);
-+	return READ_ONCE(*ptep);
- #else
- 	/*
- 	 * With get_user_pages_fast, we walk down the pagetables without
--- 
-1.9.3
+> ---
+>   arch/x86/xen/p2m.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+> index edbc7a6..cb71016 100644
+> --- a/arch/x86/xen/p2m.c
+> +++ b/arch/x86/xen/p2m.c
+> @@ -554,7 +554,7 @@ static bool alloc_p2m(unsigned long pfn)
+>   		mid_mfn = NULL;
+>   	}
+>
+> -	p2m_pfn = pte_pfn(ACCESS_ONCE(*ptep));
+> +	p2m_pfn = pte_pfn(READ_ONCE(*ptep));
+>   	if (p2m_pfn == PFN_DOWN(__pa(p2m_identity)) ||
+>   	    p2m_pfn == PFN_DOWN(__pa(p2m_missing))) {
+>   		/* p2m leaf page is missing */
+>
