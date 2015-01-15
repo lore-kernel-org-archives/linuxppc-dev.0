@@ -1,32 +1,34 @@
 Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B9661A0D7F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 19:58:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5702A1A0D7D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 19:58:20 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Thu, 15 Jan 2015 08:58:15 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4DA6C17D8059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:51 +0000 (GMT)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0F8wCWT58785968
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:12 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0F8wB0R009575
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 01:58:12 -0700
+ Thu, 15 Jan 2015 08:58:16 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id EF0E21B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:50 +0000 (GMT)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0F8wEqf52953168
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 08:58:14 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0F3sLK2013689
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2015 22:54:22 -0500
 From: Christian Borntraeger <borntraeger@de.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/8] current ACCESS_ONCE patch queue
-Date: Thu, 15 Jan 2015 09:58:26 +0100
-Message-Id: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
+Subject: [PATCH 5/8] mm/gup: Replace ACCESS_ONCE with READ_ONCE
+Date: Thu, 15 Jan 2015 09:58:31 +0100
+Message-Id: <1421312314-72330-6-git-send-email-borntraeger@de.ibm.com>
+In-Reply-To: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
+References: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
 Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org,
  Christian Borntraeger <borntraeger@de.ibm.com>, x86@kernel.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, xen-devel@lists.xenproject.org,
@@ -40,37 +42,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Folks,
+ACCESS_ONCE does not work reliably on non-scalar types. For
+example gcc 4.6 and 4.7 might remove the volatile tag for such
+accesses during the SRA (scalar replacement of aggregates) step
+(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145)
 
-fyi, this is my current patch queue for the next merge window. It
-does contain a patch that will disallow ACCESS_ONCE on non-scalar
-types.
+Fixup gup_pmd_range.
 
-The tree is part of linux-next and can be found at
-git://git.kernel.org/pub/scm/linux/kernel/git/borntraeger/linux.git linux-next
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ mm/gup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Christian Borntraeger (7):
-  ppc/kvm: Replace ACCESS_ONCE with READ_ONCE
-  ppc/hugetlbfs: Replace ACCESS_ONCE with READ_ONCE
-  x86/xen/p2m: Replace ACCESS_ONCE with READ_ONCE
-  x86/spinlock: Leftover conversion ACCESS_ONCE->READ_ONCE
-  mm/gup: Replace ACCESS_ONCE with READ_ONCE
-  kernel: tighten rules for ACCESS ONCE
-  kernel: Fix sparse warning for ACCESS_ONCE
-
-Guenter Roeck (1):
-  next: sh: Fix compile error
-
- arch/powerpc/kvm/book3s_hv_rm_xics.c |  8 ++++----
- arch/powerpc/kvm/book3s_xics.c       | 16 ++++++++--------
- arch/powerpc/mm/hugetlbpage.c        |  4 ++--
- arch/sh/mm/gup.c                     |  2 +-
- arch/x86/include/asm/spinlock.h      |  2 +-
- arch/x86/xen/p2m.c                   |  2 +-
- include/linux/compiler.h             | 21 ++++++++++++++++-----
- mm/gup.c                             |  2 +-
- 8 files changed, 34 insertions(+), 23 deletions(-)
-
+diff --git a/mm/gup.c b/mm/gup.c
+index a900759..bed30efa 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -926,7 +926,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 
+ 	pmdp = pmd_offset(&pud, addr);
+ 	do {
+-		pmd_t pmd = ACCESS_ONCE(*pmdp);
++		pmd_t pmd = READ_ONCE(*pmdp);
+ 
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
 -- 
 1.9.3
