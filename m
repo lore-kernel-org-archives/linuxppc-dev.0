@@ -1,21 +1,14 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AB481A005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 12:14:28 +1100 (AEDT)
-Message-ID: <1421284467.11409.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: powernv: winkle: Restore LPCR with LPCR_PECE1
- cleared
+ by lists.ozlabs.org (Postfix) with ESMTPS id B92871A0C24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 12:24:10 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Date: Thu, 15 Jan 2015 12:14:27 +1100
-In-Reply-To: <1421234001-24886-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1421234001-24886-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Remove unused CPU_FTR_IABR
+Date: Thu, 15 Jan 2015 12:24:00 +1100
+Message-Id: <1421285040-30367-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-14 at 16:43 +0530, Shreyas B. Prabhu wrote:
-> LPCR_PECE1 bit controls whether decrementer interrupts are allowed to
-> cause exit from power-saving mode. While waking up from winkle, restoring
-> LPCR with LPCR_PECE1 set (i.e Decrementer interrupts allowed) can cause
-> issue in the following scenario:
-> 
-> - All the threads in a core are offlined. The core enters deep winkle.
-> - Spurious interrupt wakes up a thread in the core. Here LPCR is restored
->   with LPCR_PECE1 bit set.
-> - Since it was a spurious interrupt on a offline thread, the thread clears
->   the interrupt and goes back to winkle.
-> - Here before the thread executes winkle and puts the core into deep winkle,
->   if a decrementer interrupt occurs on any of the sibling threads in the core
->   that thread wakes up. 
-> - Since in offline loop we are flushing interrupt only in case of external
->   interrupt, the decrementer interrupt does not get flushed. So at this stage
->   the thread is stuck in this is loop of waking up at 0x100 due to decrementer
->   interrupt, not flushing the interrupt as only external interrupts get flushed,
->   entering winkle, waking up at 0x100 again.
-> 
-> Fix this by programming PORE to restore LPCR with LPCR_PECE1 bit 
-> cleared when waking up from winkle.
+We removed the last usage of CPU_FTR_IABR in commit 1ad7d70562ee
+"powerpc/xmon: Enable HW instruction breakpoint on POWER8".
 
-That sounds good.
+Mark it as free.
 
-But this makes the third place where we clear LPCR_PECE1, in addition to:
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/cputable.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    static int fastsleep_loop(struct cpuidle_device *dev,
-    				struct cpuidle_driver *drv,
-    				int index)
-    {
-    	...
-    
-    	new_lpcr = old_lpcr;
-    	/* Do not exit powersave upon decrementer as we've setup the timer
-    	 * offload.
-    	 */
-    	new_lpcr &= ~LPCR_PECE1;
-    
-    	mtspr(SPRN_LPCR, new_lpcr);
-
-And:
-
-    static void pnv_smp_cpu_kill_self(void)
-    {
-    	...
-    
-    	/* We don't want to take decrementer interrupts while we are offline,
-    	 * so clear LPCR:PECE1. We keep PECE2 enabled.
-    	 */
-    	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
-
-
-So perhaps we can capture that logic in one place somehow?
-
-cheers
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 22d5a7da9e68..5cf5a6d10685 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -165,7 +165,7 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
+ #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
+ #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
+-#define CPU_FTR_IABR			LONG_ASM_CONST(0x0000001000000000)
++/* Free					LONG_ASM_CONST(0x0000001000000000) */
+ #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
+ #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
+ #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
+-- 
+2.1.0
