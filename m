@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B91F61A0D74
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 15:25:51 +1100 (AEDT)
-Message-ID: <1421295950.11409.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] pseries/le: Fix endiannes issue in RTAS call from xmon
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 15 Jan 2015 15:25:50 +1100
-In-Reply-To: <1416838073-16642-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1416838073-16642-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 39F7D1A0D8B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 15:34:56 +1100 (AEDT)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ t0F4YrlR018281
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 04:34:54 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v2 09/10] PCI,
+ powerpc: clip firmware assigned resource under parent bridge's
+Date: Wed, 14 Jan 2015 20:31:36 -0800
+Message-Id: <1421296297-6371-10-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1421296297-6371-1-git-send-email-yinghai@kernel.org>
+References: <1421296297-6371-1-git-send-email-yinghai@kernel.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Murray <amurray@embedded-bits.co.uk>,
+ Sebastian Ott <sebott@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, linux-pci@vger.kernel.org,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-11-24 at 15:07 +0100, Laurent Dufour wrote:
-> On pseries system (LPAR) xmon failed to enter when running in LE mode, system
-> is hunging. Inititating xmon will lead to such an output on the console:
-> 
-> SysRq : Entering xmon
-> cpu 0x15: Vector: 0  at [c0000003f39ffb10]
->     pc: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
->     lr: c00000000007ed7c: sysrq_handle_xmon+0x5c/0x70
->     sp: c0000003f39ffc70
->    msr: 8000000000009033
->   current = 0xc0000003fafa7180
->   paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
->     pid   = 14617, comm = bash
-> Bad kernel stack pointer fafb4b0 at eca7cc4
-> cpu 0x15: Vector: 300 (Data Access) at [c000000007f07d40]
->     pc: 000000000eca7cc4
->     lr: 000000000eca7c44
->     sp: fafb4b0
->    msr: 8000000000001000
->    dar: 10000000
->  dsisr: 42000000
->   current = 0xc0000003fafa7180
->   paca    = 0xc000000007d75e80	 softe: 0	 irq_happened: 0x01
->     pid   = 14617, comm = bash
-> cpu 0x15: Exception 300 (Data Access) in xmon, returning to main loop
-> xmon: WARNING: bad recursive fault on cpu 0x15
-> 
-> The root cause is that xmon is calling RTAS to turn off the surveillance
-> when entering xmon, and RTAS is requiring big endian parameters.
-> 
-> This patch is byte swapping the RTAS arguments when running in LE mode.
-> 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/xmon/xmon.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index b988b5addf86..c8efbb37d6e0 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -293,10 +293,10 @@ static inline void disable_surveillance(void)
->  	args.token = rtas_token("set-indicator");
->  	if (args.token == RTAS_UNKNOWN_SERVICE)
->  		return;
+Some bios put range that is not fully coverred by root bus resources.
+Try to clip them and update them in pci bridge bars.
 
-I just noticed we're not handling the token correctly here. It is be32 also.
+We'd like to fix other arches instead of just x86.
 
-cheers
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=85491
+Reported-by: Marek Kordik <kordikmarek@gmail.com>
+Fixes: 5b28541552ef ("PCI: Restrict 64-bit prefetchable bridge windows to 64-bit resources")
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: Andrew Murray <amurray@embedded-bits.co.uk>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci-common.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 37d512d..2a525c9 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1184,6 +1184,8 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 			 pr, (pr && pr->name) ? pr->name : "nil");
+ 
+ 		if (pr && !(pr->flags & IORESOURCE_UNSET)) {
++			struct pci_dev *dev = bus->self;
++
+ 			if (request_resource(pr, res) == 0)
+ 				continue;
+ 			/*
+@@ -1193,6 +1195,11 @@ static void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 			 */
+ 			if (reparent_resources(pr, res) == 0)
+ 				continue;
++
++			if (dev && i < PCI_BRIDGE_RESOURCE_NUM &&
++			    pci_claim_bridge_resource(dev,
++						i + PCI_BRIDGE_RESOURCES) == 0)
++				continue;
+ 		}
+ 		pr_warning("PCI: Cannot allocate resource region "
+ 			   "%d of PCI bridge %d, will remap\n", i, bus->number);
+@@ -1401,7 +1408,10 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
+ 				 (unsigned long long)r->end,
+ 				 (unsigned int)r->flags);
+ 
+-			pci_claim_resource(dev, i);
++			if (pci_claim_resource(dev, i) == 0)
++				continue;
++
++			pci_claim_bridge_resource(dev, i);
+ 		}
+ 	}
+ 
+-- 
+1.8.4.5
