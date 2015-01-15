@@ -1,36 +1,20 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00EE81A0D5C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:18:20 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 15 Jan 2015 16:18:20 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 600922BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:18:17 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0F6IG1t18481344
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:18:17 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0F6IGpj026709
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:18:16 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Ryan Grimm <grimm@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] CXL: Add reset to sysfs
-In-reply-to: <1421299043-sup-4240@delenn.ozlabs.ibm.com>
-References: <1421290601-3293-1-git-send-email-grimm@linux.vnet.ibm.com>
- <1421290601-3293-3-git-send-email-grimm@linux.vnet.ibm.com>
- <1421299043-sup-4240@delenn.ozlabs.ibm.com>
-Date: Thu, 15 Jan 2015 17:18:16 +1100
-Message-Id: <1421302467-sup-4087@delenn.ozlabs.ibm.com>
-Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1870C1A0D5D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 17:28:35 +1100 (AEDT)
+Message-ID: <1421303314.11409.8.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-3.19-4 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 15 Jan 2015 17:28:34 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-1up06bJChQYA9ewoalpE"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ anton@samba.org, imunsie@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,26 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > @@ -806,8 +837,8 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
-> >      CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
-> >      CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
-> >      adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
-> > -    adapter->perst_loads_image = !!(image_state & CXL_VSEC_PERST_LOADS_IMAGE);
-> > -    adapter->perst_select_user = !!(image_state & CXL_VSEC_PERST_SELECT_USER);
-> > +    adapter->perst_loads_image = true;
-> > +    adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
-> ...
-> > +    if ((rc = cxl_update_image_control(adapter)))
-> > +        goto err2;
-> 
-> Thanks - that seems like a better default than what we had before,
-> should make things more stable :)
 
-In fact, would you mind pulling this part out into a separate patch? It
-seems like a serious contender to go to stable as it might help with
-cards that get into a funny state and don't come back up properly after
-a reboot (symptoms are that the adapter wide tlbia / slbia times out and
-the driver aborts initialisation).
+--=-1up06bJChQYA9ewoalpE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
--Ian
+Hi Linus,
+
+Please pull some more powerpc fixes for 3.19:
+
+The following changes since commit eaa27f34e91a14cdceed26ed6c6793ec1d186115=
+:
+
+  linux 3.19-rc4 (2015-01-11 12:44:53 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+3.19-4
+
+for you to fetch changes up to a87e810f61b49f19bd29ea564b7cd1e92e43d989:
+
+  powerpc: Work around gcc bug in current_thread_info() (2015-01-12 16:40:0=
+2 +1100)
+
+----------------------------------------------------------------
+Anton Blanchard (1):
+      powernv: Fix OPAL tracepoint code
+
+Ian Munsie (1):
+      cxl: Fix issues when unmapping contexts
+
+Michael Ellerman (1):
+      powerpc: Work around gcc bug in current_thread_info()
+
+ arch/powerpc/include/asm/thread_info.h         | 13 ++--
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 -
+ drivers/misc/cxl/context.c                     | 82 ++++++++++++++++++++--=
+----
+ drivers/misc/cxl/file.c                        | 14 +++--
+ 4 files changed, 78 insertions(+), 32 deletions(-)
+
+
+
+--=-1up06bJChQYA9ewoalpE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJUt14SAAoJEFHr6jzI4aWAG7sP/2t44f+VZh1g6Jx1EjiZotYi
+o1QSfxQ6OuEXE8tMHQtLCVKy5FqKZHZjayS/+MyrF+5TCWeXchdoCEMuxooR0O1N
+zpIvzepN+J6nGkjELRwqAI4sd5ifx37xL02Ex61NWYpTJEpatUbt12A9htEW4LSp
+pNAc8RzyCmi72yepE77+ypdnckhl+efzzp6kSI0PMILw0RLyt0TrAVMd2XQGi62U
+T8347j6LgX/HLBKDxpZhIiWqY6XNbX/yXG2SN1Zgjp2qMFPG5fF+VX4cEknSUQ5K
+/EcHXo9O1OjNTT+q3EcJq7XqTrUPdBujRQw0OhsCQfToE8LX17PucAmcB35jtsKd
+yk160kdqCEDOVLUmjVXphVCCfTIlcBuXtLS6uKYDYdAXuUEQKXs/PNMWwLNLF81t
+/zJVfy38pj5fUHBC2jy5xEpRaGXw3s3gzd3qObl3jArNzYGLlQqf99odMBfVSShG
+cqI9Yt5pfw8JE4ERjkGjibrRRg9/w24Tt/0BxbRaqEBq3empvXGwj0zDEEwDmM2n
+vJJWcaIvNH5yU6+bkUzL9P2QDHodlwAUlP3jpmM+LtxPbxss6Tro4PP+/qtPEAbg
+1ojeAGRWpymQDQb7GEQ4dW9fiWoJux2+1q+j7ZP5FPojqsDObUQX23UXvpErxgu9
+X9kk2Ihn9UdMBJXanTJW
+=QDxM
+-----END PGP SIGNATURE-----
+
+--=-1up06bJChQYA9ewoalpE--
