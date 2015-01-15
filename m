@@ -1,38 +1,23 @@
-Return-Path: <grimm@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1041A0D6F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 08:58:43 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
- Thu, 15 Jan 2015 16:58:40 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C47E6C90041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 16:49:48 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0FLwaPf27984052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 21:58:36 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0FLwaCa027886
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 16:58:36 -0500
-Message-ID: <54B8380B.3000405@linux.vnet.ibm.com>
-Date: Thu, 15 Jan 2015 16:58:35 -0500
-From: Ryan Grimm <grimm@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH 3/3] CXL: Add reset to sysfs
-References: <1421290601-3293-1-git-send-email-grimm@linux.vnet.ibm.com>
- <1421290601-3293-3-git-send-email-grimm@linux.vnet.ibm.com>
- <1421299043-sup-4240@delenn.ozlabs.ibm.com>
-In-Reply-To: <1421299043-sup-4240@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3354A1A0D70
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:19:42 +1100 (AEDT)
+Message-ID: <1421360377.23332.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] pseries/le: Fix another endiannes issue in RTAS call
+ from xmon
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2015 09:19:37 +1100
+In-Reply-To: <54B8188D.1060907@linux.vnet.ibm.com>
+References: <1421295950.11409.3.camel@ellerman.id.au>
+ <1421342627-7214-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <54B8188D.1060907@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,103 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/15/2015 12:42 AM, Ian Munsie wrote:
-> Excerpts from Ryan Grimm's message of 2015-01-15 13:56:41 +1100:
->> This allows an image to be downloaded to the flash without rebooting the
->> machine.  The driver perform a PERST, which results in FPGA image downloaded to
->> flash and the CAPP unit enters recovery.  CAPP recovery triggers an HMI, which
->> is handled by EEH in Linux.  EEH removes the driver, calls into Sapphire to
->> reinitialize the PHB, and then loads the driver.
->>
->> reset_image_select must be set to "user" and reset_load_image set to 1.  The
->> driver writes "user" to the vsec if a user image was loaded.  It writes 1 to
->> reset_load_image on initialization by default.  Other values could be used by
->> hand for debugging purposes.
->
-> That last paragraph will need to be updated if we merge those two sysfs
-> files into one. Might as well mention an example of why someone might do
-> a reset with no image selected for reload, e.g. the PSL trace arrays are
-> preserved, which can be read out through debugfs after the card comes
-> back up.
->
+On Thu, 2015-01-15 at 11:44 -0800, Tyrel Datwyler wrote:
+> On 01/15/2015 09:23 AM, Laurent Dufour wrote:
+> > The commit 3b8a3c010969 ("powerpc/pseries: Fix endiannes issue in RTAS
+> > call from xmon") was fixing an endianness issue in the call made from
+> > xmon to RTAS.
+> > 
+> > However, as Michael Ellerman noticed, this fix was not complete, the
+> > token value was not byte swapped. This lead to call an unexpected and
+> > most of the time unexisting RTAS function, which is silently ignored
+> > by RTAS.
+> 
+> Nit. Not so much that is silently ignored by RTAS as much as
+> disable_surveillance silently doesn't check the return status of the
+> RTAS call. Maybe a check is warranted and reporting of non-success.
 
-OK, fixed that up a bit.  Let me know if the commit logs and 
-documentations make sense.  There's a bit of overlap and hopefully it's 
-clear now.
+Yeah you're right, I added a printf of the result and got -3, which is also
+wrong as far as I can tell, but I didn't have the energy to chase it any
+further.
 
->> +What:           /sys/class/cxl/<card>/reset
->> +Date:           October 2014
->> +Contact:        linuxppc-dev@lists.ozlabs.org
->> +Description:    write only
->> +                Writing 1 here will issue a PERST to card.
->
-> "..., which may cause the card to reload the FPGA image depending on the
-> settings of reset_image_select."
->
->
+Because this is in xmon we want to be extra careful about what we do, but an
+xmon_printf() should be safe. I'll do that as a cleanup after this.
 
-Sure, can be explicit about that.
-
->
->> +    if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
->
-> Can you add a comment here to explain why we first do a warm reset?
->
->
->> +        dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
->> +        return rc;
->> +    }
->> +
->> +    /* Do mmio read to trigger EEH.  Retry for a few seconds. */
->
-> This seems a little unusual - can you expand this comment a little to
-> explain *why* we are using this method to trigger an EEH and reset the
-> card?
->
-
-Added better commenting to both above.
-
->> +    i = 0;
->> +        while ((val = mmio_read32be(adapter->p1_mmio) != 0xffffffff) &&
->> +        (i < 5)) {
->> +                msleep(500);
->> +        i++;
->> +        }
->> +
->> +        if (val != 0xffffffff)
->> +                dev_err(&dev->dev, "cxl: PERST failed to trigger EEH\n");
->> +
->> +    return rc;
->
-> Some of the indentation here is a bit funky - some lines are using tabs,
-> others are using spaces.
->
-
-Ouch, yep, fixed.
-
->
->> @@ -806,8 +837,8 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
->>       CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
->>       CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
->>       adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
->> -    adapter->perst_loads_image = !!(image_state & CXL_VSEC_PERST_LOADS_IMAGE);
->> -    adapter->perst_select_user = !!(image_state & CXL_VSEC_PERST_SELECT_USER);
->> +    adapter->perst_loads_image = true;
->> +    adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
-> ...
->> +    if ((rc = cxl_update_image_control(adapter)))
->> +        goto err2;
->
-> Thanks - that seems like a better default than what we had before,
-> should make things more stable :)
->
-
-Yeah for sure.
-
--Ryan
-
->
->
-> Cheers,
-> -Ian
->
+cheers
