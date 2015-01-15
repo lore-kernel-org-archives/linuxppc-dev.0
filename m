@@ -1,18 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A976F1A0D80
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:38:41 +1100 (AEDT)
-Message-ID: <1421361518.23332.3.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 535D91A0D83
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:56:24 +1100 (AEDT)
+Message-ID: <1421362570.4961.163.camel@freescale.com>
 Subject: Re: How to make use of SPE instructions?
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Scott Wood <scottwood@freescale.com>
 To: Markus Stockhausen <stockhausen@collogia.de>
-Date: Fri, 16 Jan 2015 09:38:38 +1100
+Date: Thu, 15 Jan 2015 16:56:10 -0600
 In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735F90DD25@EXCHANGE.collogia.de>
 References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F90DD25@EXCHANGE.collogia.de>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,11 +45,9 @@ On Thu, 2015-01-08 at 09:58 +0000, Markus Stockhausen wrote:
 > Or is the use of SPE instructions inside the kernel totally forbidden? Any 
 > expert with some helpful advise?
 
-I don't know about SPE specifically, hopefully someone from FSL can chime in.
+You need to disable preemption, call enable_kernel_spe(), and finish
+using SPE before you enable preemption.  This assumes that SPE is never
+used from interrupt context.  Be careful to not disable preemption for
+too long.
 
-But, IIUIC you should just be able to call enable_kernel_spe() prior to your
-code, ie. before you execute any SPE instructions. That will save any values
-userspace has left in the SPE regs, and then enable SPE for you in the kernel.
-That should get rid of the "SPE used in kernel" messages.  
-
-cheers
+-Scott
