@@ -1,41 +1,41 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A1A31A0CEC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 20:10:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 589591A0DCC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 20:43:40 +1100 (AEDT)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 16 Jan 2015 02:10:17 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E2E6A19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 02:01:26 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0G9AFIp51445764
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 02:10:15 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0G9AEcM000834
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 02:10:14 -0700
-Message-ID: <54B8D56D.3070904@linux.vnet.ibm.com>
-Date: Fri, 16 Jan 2015 14:40:05 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Fri, 16 Jan 2015 09:43:36 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 472FA219005F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:43:32 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0G9hXhF56688698
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:43:33 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0G9hWxP024393
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 02:43:33 -0700
+Message-ID: <54B8DD44.1020402@de.ibm.com>
+Date: Fri, 16 Jan 2015 10:43:32 +0100
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: offlining cpus breakage
-References: <54ACFE6D.3070308@ozlabs.ru> <54B7BEF9.8090603@linux.vnet.ibm.com>
- <54B85B3C.1030000@ozlabs.ru> <1421377482.18166.5.camel@ellerman.id.au>
- <54B8D228.4000407@linux.vnet.ibm.com>
-In-Reply-To: <54B8D228.4000407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/8] ppc/kvm: Replace ACCESS_ONCE with READ_ONCE
+References: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
+ <1421312314-72330-2-git-send-email-borntraeger@de.ibm.com>
+ <1421363369.23332.8.camel@ellerman.id.au>
+In-Reply-To: <1421363369.23332.8.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ xen-devel@lists.xenproject.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,58 +45,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/16/2015 02:26 PM, Preeti U Murthy wrote:
-> On 01/16/2015 08:34 AM, Michael Ellerman wrote:
->> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
->>> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
->>>> Hi Alexey,
->>>>
->>>> Can you let me know if the following patch fixes the issue for you ?
->>>> It did for us on one of our machines that we were investigating on.
->>>
->>> This fixes the issue for me as well, thanks!
->>>
->>> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+Am 16.01.2015 um 00:09 schrieb Michael Ellerman:
+> On Thu, 2015-01-15 at 09:58 +0100, Christian Borntraeger wrote:
+>> ACCESS_ONCE does not work reliably on non-scalar types. For
+>> example gcc 4.6 and 4.7 might remove the volatile tag for such
+>> accesses during the SRA (scalar replacement of aggregates) step
+>> (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145)
 >>
->> OK, that's great.
+>> Change the ppc/kvm code to replace ACCESS_ONCE with READ_ONCE.
 >>
->> But, I really don't think we can ask upstream to merge this patch to generic
->> code when we don't have a good explanation for why it's necessary. At least I'm
->> not going to ask anyone to do that :)
+>> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+>> ---
+>>  arch/powerpc/kvm/book3s_hv_rm_xics.c |  8 ++++----
+>>  arch/powerpc/kvm/book3s_xics.c       | 16 ++++++++--------
+>>  2 files changed, 12 insertions(+), 12 deletions(-)
 >>
->> So Pretti can you either write a 100% convincing explanation of why this patch
->> is correct in the general case, or (preferably) do some more investigating to
->> work out what Alexey's bug actually is.
+>> diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+>> index 7b066f6..7c22997 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
+>> +++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+>> @@ -152,7 +152,7 @@ static void icp_rm_down_cppr(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
+>>  	 * in virtual mode.
+>>  	 */
+>>  	do {
+>> -		old_state = new_state = ACCESS_ONCE(icp->state);
+>> +		old_state = new_state = READ_ONCE(icp->state);
 > 
-> Yes will do so. Its better to investigate where precisely is the bug.
-> This patch helped me narrow down on the buggy scenario.
+> These are all icp->state.
+> 
+> Which is a union, but it's only the size of unsigned long. So in practice there
+> shouldn't be a bug here right?
 
-On a side note, while I was tracking the race condition, I noticed that
-in the final stage of the cpu offline path, after the state of the
-hotplugged cpu is set to CPU_DEAD, we check if there were interrupts
-delivered during the soft disabled state and service them if there were.
-It makes sense to check for pending interrupts in the idle path. In the
-offline path however, this did not look right to me at first glance. Am
-I missing something ?
+This bug was that gcc lost the volatile tag when propagating aggregates to scalar types.
+So in theory a union could be affected. See the original problem
+ ( http://marc.info/?i=54611D86.4040306%40de.ibm.com ) 
+which happened on 
 
-Regards
-Preeti U Murthy
+union ipte_control {
+        unsigned long val;
+        struct {
+                unsigned long k  : 1;
+                unsigned long kh : 31;
+                unsigned long kg : 32;
+        };
+};
 
-> 
-> Regards
-> Preeti U Murthy
->>
->> cheers
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Christian
