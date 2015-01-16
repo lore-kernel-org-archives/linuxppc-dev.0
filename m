@@ -1,31 +1,31 @@
 Return-Path: <grimm@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B3A51A0E96
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:48:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DAD031A0EAB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:48:28 +1100 (AEDT)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
- Fri, 16 Jan 2015 14:48:24 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id ED9F638C8039
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:20 -0500 (EST)
+ Fri, 16 Jan 2015 14:48:26 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DCAB538C8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:23 -0500 (EST)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0GJmKbj24576070
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:48:20 GMT
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0GJmNfg26476702
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:48:23 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0GJmK3n007037
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:20 -0500
+ t0GJmN0r007086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:23 -0500
 From: Ryan Grimm <grimm@linux.vnet.ibm.com>
 To: imunsie@au1.ibm.com, mikey@neuling.org
-Subject: [PATCH 3/4] CXL: Enable CAPP recovery
-Date: Fri, 16 Jan 2015 13:48:06 -0600
-Message-Id: <1421437687-12835-3-git-send-email-grimm@linux.vnet.ibm.com>
+Subject: [PATCH 4/4] CXL: Add ability to reset the card
+Date: Fri, 16 Jan 2015 13:48:07 -0600
+Message-Id: <1421437687-12835-4-git-send-email-grimm@linux.vnet.ibm.com>
 In-Reply-To: <1421437687-12835-1-git-send-email-grimm@linux.vnet.ibm.com>
 References: <1421437687-12835-1-git-send-email-grimm@linux.vnet.ibm.com>
 Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
@@ -38,101 +38,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Turning snoops on is the last step in CAPP recovery.  Sapphire is expected to
-have reinitialized the PHB and done the previous recovery steps.
+Adds reset to sysfs which will PERST the card.  If load_image_on_perst is set
+to "user" or "factory", the PERST will cause that image to be loaded.
 
-Add mode argument to opal call to do this.  Driver can turn snoops off although
-it does not currently.
+load_image_on_perst is set to "user" for production.
+
+"none" could be used for debugging.  The PSL trace arrays are preserved which
+then can be read through debugfs.
+
+PERST also triggers CAPP recovery.  An HMI comes in, which is handled by EEH.
+EEH unbinds the driver, calls into Sapphire to reinitialize the PHB, then
+rebinds the driver.
 
 Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h           | 8 ++++++++
- arch/powerpc/include/asm/pnv-pci.h        | 2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++---
- drivers/misc/cxl/pci.c                    | 8 +++++++-
- 4 files changed, 19 insertions(+), 5 deletions(-)
+ Documentation/ABI/testing/sysfs-class-cxl |  7 ++++++
+ drivers/misc/cxl/cxl.h                    |  1 +
+ drivers/misc/cxl/pci.c                    | 37 +++++++++++++++++++++++++++++++
+ drivers/misc/cxl/sysfs.c                  | 18 +++++++++++++++
+ 4 files changed, 63 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index eb95b67..2baf8a5 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -595,6 +595,14 @@ enum {
- 	OPAL_PHB3_NUM_PEST_REGS = 256
- };
- 
-+/* CAPI modes for PHB */
-+enum {
-+	OPAL_PHB_CAPI_MODE_PCIE         = 0,
-+	OPAL_PHB_CAPI_MODE_CAPI         = 1,
-+	OPAL_PHB_CAPI_MODE_SNOOP_OFF    = 2,
-+	OPAL_PHB_CAPI_MODE_SNOOP_ON     = 3,
-+};
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index 6fcc631..db31176 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -141,3 +141,10 @@ Description:    read/write
+                 user or factory image to be loaded.
+                 Default is to reload on PERST whichever image the card has
+                 loaded.
 +
- struct OpalIoPhbErrorCommon {
- 	__be32 version;
- 	__be32 ioType;
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index f09a22f..3c00d64 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -13,7 +13,7 @@
- #include <linux/pci.h>
- #include <misc/cxl.h>
++What:           /sys/class/cxl/<card>/reset
++Date:           October 2014
++Contact:        linuxppc-dev@lists.ozlabs.org
++Description:    write only
++                Writing 1 will issue a PERST to card which may cause the card
++                to reload the FPGA depending on load_image_on_perst.
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 518c4c6..6a6a487 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -489,6 +489,7 @@ int cxl_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsig
+ void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
+ int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
+ int cxl_update_image_control(struct cxl *adapter);
++int cxl_reset(struct cxl *adapter);
  
--int pnv_phb_to_cxl(struct pci_dev *dev);
-+int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
- int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
- 			   unsigned int virq);
- int pnv_cxl_alloc_hwirqs(struct pci_dev *dev, int num);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fac88ed..5d52d6f 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1468,7 +1468,7 @@ struct device_node *pnv_pci_to_phb_node(struct pci_dev *dev)
- }
- EXPORT_SYMBOL(pnv_pci_to_phb_node);
- 
--int pnv_phb_to_cxl(struct pci_dev *dev)
-+int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
- {
- 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
- 	struct pnv_phb *phb = hose->private_data;
-@@ -1481,13 +1481,13 @@ int pnv_phb_to_cxl(struct pci_dev *dev)
- 
- 	pe_info(pe, "Switching PHB to CXL\n");
- 
--	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, 1, pe->pe_number);
-+	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode, pe->pe_number);
- 	if (rc)
- 		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
- 
- 	return rc;
- }
--EXPORT_SYMBOL(pnv_phb_to_cxl);
-+EXPORT_SYMBOL(pnv_phb_to_cxl_mode);
- 
- /* Find PHB for cxl dev and allocate MSI hwirqs?
-  * Returns the absolute hardware IRQ number
+ /* common == phyp + powernv */
+ struct cxl_process_element_common {
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 5e71ef9..b4aa4f1 100644
+index b4aa4f1..5137ee5 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -927,9 +927,15 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
- 	if ((rc = init_implementation_adapter_regs(adapter, dev)))
- 		goto err3;
+@@ -21,6 +21,7 @@
+ #include <asm/msi_bitmap.h>
+ #include <asm/pci-bridge.h> /* for struct pci_controller */
+ #include <asm/pnv-pci.h>
++#include <asm/io.h>
  
--	if ((rc = pnv_phb_to_cxl(dev)))
-+	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
- 		goto err3;
+ #include "cxl.h"
  
-+	/* If recovery happened, the last step is to turn on snooping.
-+	 * In the non-recovery case this has no effect */
-+	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON))) {
-+		goto err3;
+@@ -742,6 +743,42 @@ static void cxl_remove_afu(struct cxl_afu *afu)
+ 	device_unregister(&afu->dev);
+ }
+ 
++int cxl_reset(struct cxl *adapter)
++{
++	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
++	int rc;
++	int i;
++	u32 val;
++
++	dev_info(&dev->dev, "CXL reset\n");
++
++	for (i = 0; i < adapter->slices; i++)
++		cxl_remove_afu(adapter->afu[i]);
++
++	/* pcie_warm_reset requests a fundamental pci reset which includes a
++	 * PERST assert/deassert.  PERST triggers a loading of the image
++	 * if "user" or "factory" is selected in sysfs */
++	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
++		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
++		return rc;
 +	}
 +
- 	if ((rc = cxl_register_psl_err_irq(adapter)))
- 		goto err3;
++	/* the PERST done above fences the PHB.  So, reset depends on EEH
++	 * to unbind the driver, tell Sapphire to reinit the PHB, and rebind
++	 * the driver.  Do an mmio read explictly to ensure EEH notices the
++	 * fenced PHB.  Retry for a few seconds before giving up. */
++	i = 0;
++	while (((val = mmio_read32be(adapter->p1_mmio)) != 0xffffffff) &&
++		(i < 5)) {
++		msleep(500);
++		i++;
++	}
++
++	if (val != 0xffffffff)
++		dev_err(&dev->dev, "cxl: PERST failed to trigger EEH\n");
++
++	return rc;
++}
+ 
+ static int cxl_map_adapter_regs(struct cxl *adapter, struct pci_dev *dev)
+ {
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index ed4ad46..adf1f6d 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -56,6 +56,23 @@ static ssize_t image_loaded_show(struct device *device,
+ 	return scnprintf(buf, PAGE_SIZE, "factory\n");
+ }
+ 
++static ssize_t reset_adapter_store(struct device *device,
++				   struct device_attribute *attr,
++				   const char *buf, size_t count)
++{
++	struct cxl *adapter = to_cxl_adapter(device);
++	int rc;
++	int val;
++
++	rc = sscanf(buf, "%i", &val);
++	if ((rc != 1) || (val != 1))
++		return -EINVAL;
++
++	if ((rc = cxl_reset(adapter)))
++		return rc;
++	return count;
++}
++
+ static ssize_t load_image_on_perst_show(struct device *device,
+ 				 struct device_attribute *attr,
+ 				 char *buf)
+@@ -100,6 +117,7 @@ static struct device_attribute adapter_attrs[] = {
+ 	__ATTR_RO(base_image),
+ 	__ATTR_RO(image_loaded),
+ 	__ATTR_RW(load_image_on_perst),
++	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
+ };
+ 
  
 -- 
 1.9.1
