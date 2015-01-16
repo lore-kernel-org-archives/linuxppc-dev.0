@@ -1,24 +1,40 @@
-Return-Path: <yingjoe.chen@mediatek.com>
-Received: from mailgw01.mediatek.com (mailgw01.mediatek.com [210.61.82.183])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4001A1A0DC4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:23:47 +1100 (AEDT)
-Subject: Re: [RFC 01/11] i2c: add quirk structure to describe adapter flaws
-From: Yingjoe Chen <yingjoe.chen@mediatek.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-In-Reply-To: <1420824103-24169-2-git-send-email-wsa@the-dreams.de>
-References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
- <1420824103-24169-2-git-send-email-wsa@the-dreams.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Jan 2015 16:18:15 +0800
-Message-ID: <1421396295.11671.50.camel@mtksdaap41>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A93AE1A0D9E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:56:37 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 16 Jan 2015 01:56:35 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C794519D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 01:47:44 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0G8uV2M45940886
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 01:56:31 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0G8uUm8012986
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 01:56:31 -0700
+Message-ID: <54B8D228.4000407@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2015 14:26:08 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Xudong Chen <xudong.chen@mediatek.com>, linux-mips@linux-mips.org,
- linux-kernel@vger.kernel.org, Liguo Zhang <Liguo.Zhang@mediatek.com>,
- Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Michael Ellerman <michael@ellerman.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: offlining cpus breakage
+References: <54ACFE6D.3070308@ozlabs.ru> <54B7BEF9.8090603@linux.vnet.ibm.com>
+ <54B85B3C.1030000@ozlabs.ru> <1421377482.18166.5.camel@ellerman.id.au>
+In-Reply-To: <1421377482.18166.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +44,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-01-09 at 18:21 +0100, Wolfram Sang wrote:
-> The number of I2C adapters which are not fully I2C compatible is rising,
-> sadly. Drivers usually do handle the flaws, still the user receives only
-> some errno for a transfer which normally can be expected to work. This
-> patch introduces a formal description of flaws. One advantage is that
-> the core can check before the actual transfer if the messages could be
-> transferred at all. This is done in the next patch. Another advantage is
-> that we can pass this information to the user so the restrictions are
-> exactly known and further actions can be based on that. This will be
-> done later after some stabilization period for this description.
+On 01/16/2015 08:34 AM, Michael Ellerman wrote:
+> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
+>> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
+>>> Hi Alexey,
+>>>
+>>> Can you let me know if the following patch fixes the issue for you ?
+>>> It did for us on one of our machines that we were investigating on.
+>>
+>> This fixes the issue for me as well, thanks!
+>>
+>> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+> 
+> OK, that's great.
+> 
+> But, I really don't think we can ask upstream to merge this patch to generic
+> code when we don't have a good explanation for why it's necessary. At least I'm
+> not going to ask anyone to do that :)
+> 
+> So Pretti can you either write a 100% convincing explanation of why this patch
+> is correct in the general case, or (preferably) do some more investigating to
+> work out what Alexey's bug actually is.
 
-Hi Wolfram,
+Yes will do so. Its better to investigate where precisely is the bug.
+This patch helped me narrow down on the buggy scenario.
 
-This can describe the behavior of our current upstream driver[1], which
-only support combine write-then-read.
-
-After checking with Xudong & HW guys, it seems our HW can do more. 
-On MT8135, it can support at most 2 messages, no matter read or write,
-with the limitation that the length of the second message must <=
-31bytes.
-
-So this RFC is enough for our driver, but it would be better if we could
-also support other case.
-
-Joe.C
-
-[1]:
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-November/305468.html
+Regards
+Preeti U Murthy
+> 
+> cheers
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
