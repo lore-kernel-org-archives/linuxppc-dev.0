@@ -1,27 +1,22 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ob0-x230.google.com (mail-ob0-x230.google.com
- [IPv6:2607:f8b0:4003:c01::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0148.outbound.protection.outlook.com [207.46.100.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B4561A0D72
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 11:49:44 +1100 (AEDT)
-Received: by mail-ob0-f176.google.com with SMTP id vb8so16665834obc.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2015 16:49:41 -0800 (PST)
-Date: Thu, 15 Jan 2015 18:49:37 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 13/28] pci: host: drop owner assignment from
- platform_drivers
-Message-ID: <20150116004937.GG29776@google.com>
-References: <1419196495-9626-1-git-send-email-wsa@the-dreams.de>
- <1419196495-9626-14-git-send-email-wsa@the-dreams.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC4211A0D8F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 13:49:40 +1100 (AEDT)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: York Sun <yorksun@freescale.com>, Scott Wood <scottwood@freescale.com>,
+ "LeoLi@freescale.com" <LeoLi@freescale.com>
+Subject: RE: [PATCH] fsl/smp: add low power boot support to replace spin boot
+Date: Fri, 16 Jan 2015 02:49:34 +0000
+Message-ID: <BN1PR03MB1886339D240EE7A8E7F65129D4F0@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1421301930-10035-1-git-send-email-dongsheng.wang@freescale.com>
+ <54B7F414.2020609@freescale.com>
+In-Reply-To: <54B7F414.2020609@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1419196495-9626-14-git-send-email-wsa@the-dreams.de>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, linux-kernel@vger.kernel.org,
- Minghuan Lian <minghuan.Lian@freescale.com>, linux-pci@vger.kernel.org,
- Mingkai Hu <mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Julia]
+Thanks for your review.
 
-On Sun, Dec 21, 2014 at 10:14:34PM +0100, Wolfram Sang wrote:
-> This platform_driver does not need to set an owner, it will be populated by the
-> driver core.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> -----Original Message-----
+> From: Sun York-R58495
+> Sent: Friday, January 16, 2015 1:09 AM
+> To: Wang Dongsheng-B40534; Wood Scott-B07421; Li Yang-Leo-R58472
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] fsl/smp: add low power boot support to replace spin =
+boot
+>=20
+>=20
+>=20
+> On 01/14/2015 10:05 PM, Dongsheng Wang wrote:
+> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >
+> > U-boot put non-boot cpus into an low power state(PW10/PW20 or DOZE)
+> > when cpu powered up. To exit low power state kernel will send DOORBELL
+> > or MPIC-IPI signal to all those CPUs.
+> >
+> > e500/e500v2 use mpic to send IPI signal.
+> > e500mc and later use doorbell to send IPI signal.
+> >
+> > This feature tested on:
+> > POWER UP TEST:
+> > P1022DS(e500v2),96k times.
+> > P4080(e500mc),  110k times.
+> > T1024(e5500),   83k times.
+> > T4240(e6500),   150k times.
+> >
+> > CPU HOTPLUG TEST:
+> > P1022DS(e500v2),1.4 million times.
+> > P4080(e500mc),  1.8 million times.
+> > T1024(e5500),   1.3 million times.
+> > T4240(e6500),   1.1 million times.
+> >
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >
+>=20
+> This is a very good move. Can you explain what has been tested for 100K t=
+imes,
+> or over a million times?
+>=20
+Thanks, I tested linux boot process and cpu hotplug.
 
-I already applied the equivalent patch from Julia for v3.20, thanks!
-(I know this is my fault because it took me so long to apply Julia's
-patch.)
+For Linux boot process test:
+Each CPU can normally be started and random run an application, the applica=
+tion
+works well.
 
-> ---
-> Generated with coccinelle. SmPL file is in the introductory msg. The big
-> cleanup was pulled in this merge window. This series catches the bits fallen
-> through. The patches shall go in via the subsystem trees.
-> 
->  drivers/pci/host/pci-layerscape.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/pci/host/pci-layerscape.c b/drivers/pci/host/pci-layerscape.c
-> index 6697b1a4d4fa..68c9e5e9b0a8 100644
-> --- a/drivers/pci/host/pci-layerscape.c
-> +++ b/drivers/pci/host/pci-layerscape.c
-> @@ -167,7 +167,6 @@ MODULE_DEVICE_TABLE(of, ls_pcie_of_match);
->  static struct platform_driver ls_pcie_driver = {
->  	.driver = {
->  		.name = "layerscape-pcie",
-> -		.owner = THIS_MODULE,
->  		.of_match_table = ls_pcie_of_match,
->  	},
->  };
-> -- 
-> 2.1.3
-> 
+For cpu hotplug test:
+Just plug out and plug in for each cpu. Cpu hotplug test works well.
+
+If I missed some case please let me know.
+
+> Have you verified on older e500v2 platforms, such as MPC8572?
+>=20
+I haven't tested MPC8572 and Just test P1022DS. Because is e500 and e500v2 =
+use the same
+Low power boot codes.
+
+I will test this feature on MPC8572 platform.=20
+
+Regards,
+-Dongsheng
