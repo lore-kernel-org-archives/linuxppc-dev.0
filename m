@@ -1,23 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 722AB1A0D67
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:15:55 +1100 (AEDT)
-Message-ID: <1421377482.18166.5.camel@ellerman.id.au>
-Subject: Re: offlining cpus breakage
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <54B85B3C.1030000@ozlabs.ru>
-References: <54ACFE6D.3070308@ozlabs.ru>
- <54B7BEF9.8090603@linux.vnet.ibm.com> <54B85B3C.1030000@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Jan 2015 14:04:42 +1100
-Mime-Version: 1.0
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Shreyas
- B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D2691A0D9A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 15:15:35 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Fri, 16 Jan 2015 14:15:34 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id F2A1C2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 15:15:31 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0G4FV0R45154438
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 15:15:31 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0G4FUNr003927
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 15:15:31 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Ryan Grimm <grimm@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] CXL: Add image control to sysfs
+In-reply-to: <1421360837-40287-1-git-send-email-grimm@linux.vnet.ibm.com>
+References: <1421360837-40287-1-git-send-email-grimm@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2015 15:15:30 +1100
+Message-Id: <1421381208-sup-526@delenn.ozlabs.ibm.com>
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
-> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
-> > Hi Alexey,
-> > 
-> > Can you let me know if the following patch fixes the issue for you ?
-> > It did for us on one of our machines that we were investigating on.
-> 
-> This fixes the issue for me as well, thanks!
-> 
-> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+Hi Ryan,
 
-OK, that's great.
+Excerpts from Ryan Grimm's message of 2015-01-16 09:27:15 +1100:
+> reset_image_select identifies whether a PERST will cause the image to be
 
-But, I really don't think we can ask upstream to merge this patch to generic
-code when we don't have a good explanation for why it's necessary. At least I'm
-not going to ask anyone to do that :)
+s/reset_image_select/load_image_on_perst/
 
-So Pretti can you either write a 100% convincing explanation of why this patch
-is correct in the general case, or (preferably) do some more investigating to
-work out what Alexey's bug actually is.
+> +What:           /sys/class/cxl/<card>/load_image_on_perst
+> +Date:           December 2014
+> +Contact:        linuxppc-dev@lists.ozlabs.org
+> +Description:    read/write
+> +                Value of "none" means PERST will not cause image to be loaded
+> +                to the card.  A power cycle is required to load the image.  
 
-cheers
+git am spotted some whitespace at the end of this line.
+
+
+> +int cxl_update_image_control(struct cxl *adapter)
+
+Would you be able to pull this function out into a separate patch (can
+be first in the series so everything still compiles after each patch)
+along with the change to the image_state defaults from patch 3? It's a
+fix that I think would be good to be backported to stable, which will be
+simpler if it's in a separate patch.
+
+
+
+Otherwise, looks good :)
+
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
