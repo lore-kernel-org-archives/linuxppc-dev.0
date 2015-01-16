@@ -1,36 +1,37 @@
 Return-Path: <grimm@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 233C91A0D5A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:29:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 422E51A0E15
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:44:29 +1100 (AEDT)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
- Fri, 16 Jan 2015 12:29:35 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0622E3E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 12:23:45 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t0GJSIhf32506062
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 12:28:18 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0GJTWfS009372
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 12:29:32 -0700
-Message-ID: <54B9669B.7040300@linux.vnet.ibm.com>
-Date: Fri, 16 Jan 2015 14:29:31 -0500
+ Fri, 16 Jan 2015 14:44:27 -0500
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A75B56E8045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:36:16 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0GJiNB327459780
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:44:23 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0GJiNt7016600
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:44:23 -0500
+Message-ID: <54B96A15.1000800@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2015 14:44:21 -0500
 From: Ryan Grimm <grimm@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH 1/3] CXL: Add image control to sysfs
+Subject: Re: [PATCH 3/3] CXL: Add ability to reset the card
 References: <1421360837-40287-1-git-send-email-grimm@linux.vnet.ibm.com>
- <1421381208-sup-526@delenn.ozlabs.ibm.com>
-In-Reply-To: <1421381208-sup-526@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ <1421360837-40287-3-git-send-email-grimm@linux.vnet.ibm.com>
+ <1421381813-sup-3338@delenn.ozlabs.ibm.com>
+In-Reply-To: <1421381813-sup-3338@delenn.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,52 +42,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/15/2015 11:15 PM, Ian Munsie wrote:
+On 01/15/2015 11:27 PM, Ian Munsie wrote:
 > Hi Ryan,
 >
-> Excerpts from Ryan Grimm's message of 2015-01-16 09:27:15 +1100:
->> reset_image_select identifies whether a PERST will cause the image to be
+> Excerpts from Ryan Grimm's message of 2015-01-16 09:27:17 +1100:
+>> Adds reset to sysfs which will PERST the card.  If load_image_on_perst is set
+>> to "user" or "factory", the PERST will cause that image to be loaded.
+>>
+>> load_image_on_perst is set to "user" for production.
 >
-> s/reset_image_select/load_image_on_perst/
+> While it generally will be "user" for production, some cards may only
+> ship with only a factory image, which is then going to be the image used
+> for production.  It might be better to say that it will default to
+> whichever image the card has already loaded.
+
+K, yeah.
+
 >
-
-Ah, thanks, fixed.
-
->> +What:           /sys/class/cxl/<card>/load_image_on_perst
->> +Date:           December 2014
->> +Contact:        linuxppc-dev@lists.ozlabs.org
->> +Description:    read/write
->> +                Value of "none" means PERST will not cause image to be loaded
+>
+>>                   Value of "none" means PERST will not cause image to be loaded
+>> -                to the card.  A power cycle is required to load the image.
 >> +                to the card.  A power cycle is required to load the image.
+>> +                "none" is useful for debugging so the contents of the trace
+>> +                arrays are preserved.
+>>                   Value of "user" and "factory" means PERST will cause either the
+>> -                user or factory image to be loaded.
+>> +                user or factory image to be loaded.  "user" is default and
+>> +                should be used in production.
 >
-> git am spotted some whitespace at the end of this line.
->
->
-
-Thanks, fixed again.
-
->> +int cxl_update_image_control(struct cxl *adapter)
->
-> Would you be able to pull this function out into a separate patch (can
-> be first in the series so everything still compiles after each patch)
-> along with the change to the image_state defaults from patch 3? It's a
-> fix that I think would be good to be backported to stable, which will be
-> simpler if it's in a separate patch.
+> git am spotted some whitespace at the end of a couple of lines here
 >
 
-Good idea.  Yeah, pulling in the change from patch 3 makes sense.
-
-Sure, done.
+Fixed...darn whitespace.
 
 >
 >
-> Otherwise, looks good :)
+>> +    /* pcie_warm_reset requests a fundamental pci reset which includes a
+>> +     * PERST assert/deassert.  PERST triggers a loading of the image
+>> +     * if "user" or "factory" is selected in sysfs */
+>> +    if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
+>> +        dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
+>> +        return rc;
+>> +    }
+>> +
+>> +    /* the PERST done above fences the PHB.  So, reset depends on EEH
+>> +     * to unbind the driver, tell Sapphire to reinit the PHB, and rebind
+>> +     * the driver.  Do an mmio read explictly to ensure EEH notices the
+>> +     * fenced PHB.  Retry for a few seconds before giving up. */
+>
+> Great, thanks for adding the explanations here :)
+>
+>
+>> @@ -806,8 +843,8 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+>>       CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
+>>       CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
+>>       adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+>> -    adapter->perst_loads_image = !!(image_state & CXL_VSEC_PERST_LOADS_IMAGE);
+>> -    adapter->perst_select_user = !!(image_state & CXL_VSEC_PERST_SELECT_USER);
+>> +    adapter->perst_loads_image = true;
+>> +    adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+> <snip>
+>> +    if ((rc = cxl_update_image_control(adapter)))
+>> +        goto err2;
+>
+> Please move these two hunks into a separate patch (can be first in the
+> series) along with the cxl_update_image_control() function from patch 1
+> - I'd like to get this backported to stable, which will be simpler if it
+> is in it's own patch.
+>
+>
 
-Great, thanks for reviewing!~
+K, I completely agree.
+
+>> +static ssize_t reset_adapter_store(struct device *device,
+>> +                   struct device_attribute *attr,
+>> +                   const char *buf, size_t count)
+>> +{
+>> +    struct cxl *adapter = to_cxl_adapter(device);
+>> +    int rc;
+>> +
+>> +    if ((rc = cxl_reset(adapter)))
+>> +        return rc;
+>> +    return count;
+>> +}
+>
+> Please add a check here so the reset only occurs when a "1" is written
+> to this file to match the documentation.
+>
+
+Yeah, it's probably good to do that :)
 
 -Ryan
 
-
 >
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Cheers,
+> -Ian
 >
