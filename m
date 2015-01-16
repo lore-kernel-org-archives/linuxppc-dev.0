@@ -1,41 +1,45 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 589591A0DCC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 20:43:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 669231A0DD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 21:20:01 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Fri, 16 Jan 2015 09:43:36 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 472FA219005F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:43:32 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0G9hXhF56688698
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 09:43:33 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0G9hWxP024393
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 02:43:33 -0700
-Message-ID: <54B8DD44.1020402@de.ibm.com>
-Date: Fri, 16 Jan 2015 10:43:32 +0100
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 16 Jan 2015 10:19:57 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0FB991B08069
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 10:19:55 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0GAJtqD60424374
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 10:19:55 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0GAJtb0019853
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 05:19:55 -0500
+Message-ID: <54B8E5C9.5090006@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2015 11:19:53 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/8] ppc/kvm: Replace ACCESS_ONCE with READ_ONCE
-References: <1421312314-72330-1-git-send-email-borntraeger@de.ibm.com>
- <1421312314-72330-2-git-send-email-borntraeger@de.ibm.com>
- <1421363369.23332.8.camel@ellerman.id.au>
-In-Reply-To: <1421363369.23332.8.camel@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH] pseries/le: Fix another endiannes issue in RTAS call
+ from xmon
+References: <1421295950.11409.3.camel@ellerman.id.au>
+ <1421342627-7214-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <54B8188D.1060907@linux.vnet.ibm.com>
+ <1421360377.23332.1.camel@ellerman.id.au>
+ <54B85016.4080906@linux.vnet.ibm.com>
+ <1421377361.18166.2.camel@ellerman.id.au>
+In-Reply-To: <1421377361.18166.2.camel@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- xen-devel@lists.xenproject.org, linuxppc-dev@lists.ozlabs.org
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,49 +49,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 16.01.2015 um 00:09 schrieb Michael Ellerman:
-> On Thu, 2015-01-15 at 09:58 +0100, Christian Borntraeger wrote:
->> ACCESS_ONCE does not work reliably on non-scalar types. For
->> example gcc 4.6 and 4.7 might remove the volatile tag for such
->> accesses during the SRA (scalar replacement of aggregates) step
->> (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145)
->>
->> Change the ppc/kvm code to replace ACCESS_ONCE with READ_ONCE.
->>
->> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->> ---
->>  arch/powerpc/kvm/book3s_hv_rm_xics.c |  8 ++++----
->>  arch/powerpc/kvm/book3s_xics.c       | 16 ++++++++--------
->>  2 files changed, 12 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
->> index 7b066f6..7c22997 100644
->> --- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
->> +++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
->> @@ -152,7 +152,7 @@ static void icp_rm_down_cppr(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
->>  	 * in virtual mode.
->>  	 */
->>  	do {
->> -		old_state = new_state = ACCESS_ONCE(icp->state);
->> +		old_state = new_state = READ_ONCE(icp->state);
+On 16/01/2015 04:02, Michael Ellerman wrote:
+> On Thu, 2015-01-15 at 15:41 -0800, Tyrel Datwyler wrote:
+>> On 01/15/2015 02:19 PM, Michael Ellerman wrote:
+>> If this was on a powerkvm guest set-indicator should be present for
+>> hotplug (DLPAR) support. However, the surveillance indicator would not
+>> be implemented. I know sometimes I forget if I'm on a powervm or
+>> powerkvm guest. Just a thought.
 > 
-> These are all icp->state.
+> Right that does explain it. I went looking for the KVM kernel/qemu code that
+> implements set-indicator but couldn't find it. Presumably it's in some branch
+> other than the one I was looking at, or I was grepping for the wrong thing.
 > 
-> Which is a union, but it's only the size of unsigned long. So in practice there
-> shouldn't be a bug here right?
+> So I guess a printf there is probably not helpful, because it will fire always
+> on PowerKVM (at least at the moment).
 
-This bug was that gcc lost the volatile tag when propagating aggregates to scalar types.
-So in theory a union could be affected. See the original problem
- ( http://marc.info/?i=54611D86.4040306%40de.ibm.com ) 
-which happened on 
+FWIW, the PAPR mentions that the surveillance indicator may not be
+implemented. In that case -3 is returned.? I double checked that on my LPAR.
 
-union ipte_control {
-        unsigned long val;
-        struct {
-                unsigned long k  : 1;
-                unsigned long kh : 31;
-                unsigned long kg : 32;
-        };
-};
+One option would be to warn only if the returned value is different from
+0 and -3.
 
-Christian
+Cheers
