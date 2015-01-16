@@ -1,25 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD25C1A0D5D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:02:41 +1100 (AEDT)
-Message-ID: <1421377361.18166.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] pseries/le: Fix another endiannes issue in RTAS call
- from xmon
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 16 Jan 2015 14:02:41 +1100
-In-Reply-To: <54B85016.4080906@linux.vnet.ibm.com>
-References: <1421295950.11409.3.camel@ellerman.id.au>
- <1421342627-7214-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <54B8188D.1060907@linux.vnet.ibm.com>
- <1421360377.23332.1.camel@ellerman.id.au>
- <54B85016.4080906@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 722AB1A0D67
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:15:55 +1100 (AEDT)
+Message-ID: <1421377482.18166.5.camel@ellerman.id.au>
+Subject: Re: offlining cpus breakage
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <54B85B3C.1030000@ozlabs.ru>
+References: <54ACFE6D.3070308@ozlabs.ru>
+ <54B7BEF9.8090603@linux.vnet.ibm.com> <54B85B3C.1030000@ozlabs.ru>
 Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Jan 2015 14:04:42 +1100
 Mime-Version: 1.0
-Cc: paulus@samba.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Shreyas
+ B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-01-15 at 15:41 -0800, Tyrel Datwyler wrote:
-> On 01/15/2015 02:19 PM, Michael Ellerman wrote:
-> > On Thu, 2015-01-15 at 11:44 -0800, Tyrel Datwyler wrote:
-> >> On 01/15/2015 09:23 AM, Laurent Dufour wrote:
-> >>> The commit 3b8a3c010969 ("powerpc/pseries: Fix endiannes issue in RTAS
-> >>> call from xmon") was fixing an endianness issue in the call made from
-> >>> xmon to RTAS.
-> >>>
-> >>> However, as Michael Ellerman noticed, this fix was not complete, the
-> >>> token value was not byte swapped. This lead to call an unexpected and
-> >>> most of the time unexisting RTAS function, which is silently ignored
-> >>> by RTAS.
-> >>
-> >> Nit. Not so much that is silently ignored by RTAS as much as
-> >> disable_surveillance silently doesn't check the return status of the
-> >> RTAS call. Maybe a check is warranted and reporting of non-success.
+On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
+> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
+> > Hi Alexey,
 > > 
-> > Yeah you're right, I added a printf of the result and got -3, which is also
-> > wrong as far as I can tell, but I didn't have the energy to chase it any
-> > further.
+> > Can you let me know if the following patch fixes the issue for you ?
+> > It did for us on one of our machines that we were investigating on.
 > 
-> If this was on a powerkvm guest set-indicator should be present for
-> hotplug (DLPAR) support. However, the surveillance indicator would not
-> be implemented. I know sometimes I forget if I'm on a powervm or
-> powerkvm guest. Just a thought.
+> This fixes the issue for me as well, thanks!
+> 
+> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
 
-Right that does explain it. I went looking for the KVM kernel/qemu code that
-implements set-indicator but couldn't find it. Presumably it's in some branch
-other than the one I was looking at, or I was grepping for the wrong thing.
+OK, that's great.
 
-So I guess a printf there is probably not helpful, because it will fire always
-on PowerKVM (at least at the moment).
+But, I really don't think we can ask upstream to merge this patch to generic
+code when we don't have a good explanation for why it's necessary. At least I'm
+not going to ask anyone to do that :)
+
+So Pretti can you either write a 100% convincing explanation of why this patch
+is correct in the general case, or (preferably) do some more investigating to
+work out what Alexey's bug actually is.
 
 cheers
