@@ -1,41 +1,27 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
+ [209.85.220.45])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 371CE1A0DE5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jan 2015 00:39:34 +1100 (AEDT)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sat, 17 Jan 2015 06:39:32 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 97FE319D801C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:30:40 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0HDdf9P40501328
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:39:41 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0HDdSkV018969
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:39:28 -0700
-Message-ID: <54BA660B.7050609@linux.vnet.ibm.com>
-Date: Sat, 17 Jan 2015 19:09:23 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FD2C1A0D4A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jan 2015 06:32:41 +1100 (AEDT)
+Received: by mail-pa0-f45.google.com with SMTP id lf10so30642891pab.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 11:32:39 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: offlining cpus breakage
-References: <54ACFE6D.3070308@ozlabs.ru> <54B7BEF9.8090603@linux.vnet.ibm.com>
- <54B85B3C.1030000@ozlabs.ru> <1421377482.18166.5.camel@ellerman.id.au>
-In-Reply-To: <1421377482.18166.5.camel@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Kevin Hao <haokexin@gmail.com>, "Scott Wood" <scottwood@freescale.com>
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <20141209013415.GB20874@pek-khao-d1.corp.ad.wrs.com>
+References: <1417596833-31456-1-git-send-email-haokexin@gmail.com>
+ <1417596833-31456-2-git-send-email-haokexin@gmail.com>
+ <1417751519.334.9.camel@freescale.com>
+ <20141209013415.GB20874@pek-khao-d1.corp.ad.wrs.com>
+Message-ID: <20150117193230.22722.72503@quantum>
+Subject: Re: [PATCH v3 1/3] Revert "clk: ppc-corenet: Fix Section mismatch
+ warning"
+Date: Sat, 17 Jan 2015 11:32:30 -0800
+Cc: Yuantian Tang <Yuantian.Tang@freescale.com>, Gerhard Sittig <gsi@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, Jingchang Lu <jingchang.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,82 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/16/2015 08:34 AM, Michael Ellerman wrote:
-> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
->> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
->>> Hi Alexey,
->>>
->>> Can you let me know if the following patch fixes the issue for you ?
->>> It did for us on one of our machines that we were investigating on.
->>
->> This fixes the issue for me as well, thanks!
->>
->> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
-> 
-> OK, that's great.
-> 
-> But, I really don't think we can ask upstream to merge this patch to generic
-> code when we don't have a good explanation for why it's necessary. At least I'm
-> not going to ask anyone to do that :)
-> 
-> So Pretti can you either write a 100% convincing explanation of why this patch
-> is correct in the general case, or (preferably) do some more investigating to
-> work out what Alexey's bug actually is.
+Quoting Kevin Hao (2014-12-08 17:34:15)
+> On Thu, Dec 04, 2014 at 09:51:59PM -0600, Scott Wood wrote:
+> > This patch is going to conflict with commit a4ae8f3b0f7ac6ab3 "clk: drop
+> > owner assignment from platform_drivers" in linux-next -- or rather,
+> > you've based this on that patch, but it's not in mpe's next branch, so I
+> > get a merge conflict and there'd be another merge conflict later on to
+> > get back to the newer base.
+> > =
 
-On further investigation, I found that the issue lies in the latency of
-cpu hotplug operation, specifically the time taken for the offline cpu
-to enter powersave mode.
+> > I really think this should go via the clock tree.  That's where the
+> > breakage was introduced in the first place...
+> =
 
-The time between the beginning of the cpu hotplug operation and the
-beginning of __cpu_die() operation (which is one of the last stages of
-cpu hotplug) takes around a maximum of 40ms. Although this is not
-causing softlockups, it is quite a large duration.
+> Hi Mike,
+> =
 
-The more serious issue is the time taken for __cpu_die() operation to
-complete. The __cpu_die() operation waits for the offline cpu to set its
-state to CPU_DEAD before entering powersave state. This time varies from
-4s to a maximum of 200s! It is not this bad always but it does happen
-quite a few times. It is during these times that we observe softlockups.
-I added trace prints throughout the cpu hotplug code to measure these
-numbers. This delay is causing the softlockup and here is why.
+> Could you pick up these patches?
 
-If the cpu going offline is the one broadcasting wakeups to cpus in
-fastsleep, it queues the broadcast timer on another cpu during the
-CPU_DEAD phase. The CPU_DEAD notifiers are run only after the
-__cpu_die() operation completes, which is taking a long time as
-mentioned above. So between the time irqs are migrated off the about to
-go offline cpu and CPU_DEAD stage, no cpu can be woken up. The above
-numbers show that this can be a horridly long time. Hence the next time
-that they get woken up the unnatural idle time is detected and
-softlockup triggers.
+Kevin,
 
-The patch on this thread that I proposed covered up the problem by
-allowing the remaining cpus to freshly reevaluate their wakeups after
-the stop machine phase without having to depend on the previous
-broadcast state.So it did not matter what the previously appointed
-broadcast cpu was upto.However there are still corner cases which cannot
-get solved with this patch. And understandably because it is not
-addressing the core issue, which is how to get around the latency issue
-of cpu hotplug.
+I've taken patch #1 into clk-fixes (will be sent out later today) and
+patches #2 & #3 into clk-next towards 3.20.
 
-There can be ways in which the broadcast timer be migrated in time
-during hotplug to get around the softlockups, but the latency of the cpu
-hotplug operation looks like a serious issue. Has anybody observed or
-explicitly instrumented cpu hotplug operation before and happened to
-notice the large time duration required for its completion?
+Regards,
+Mike
 
-Ccing Paul.
+> =
 
-Thanks
-
-Regards
-Preeti U Murthy
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> Thanks,
+> Kevin
