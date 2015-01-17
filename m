@@ -1,34 +1,41 @@
-Return-Path: <grimm@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAD031A0EAB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:48:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 371CE1A0DE5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Jan 2015 00:39:34 +1100 (AEDT)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
- Fri, 16 Jan 2015 14:48:26 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DCAB538C8046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:23 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0GJmNfg26476702
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 19:48:23 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0GJmN0r007086
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2015 14:48:23 -0500
-From: Ryan Grimm <grimm@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, mikey@neuling.org
-Subject: [PATCH 4/4] CXL: Add ability to reset the card
-Date: Fri, 16 Jan 2015 13:48:07 -0600
-Message-Id: <1421437687-12835-4-git-send-email-grimm@linux.vnet.ibm.com>
-In-Reply-To: <1421437687-12835-1-git-send-email-grimm@linux.vnet.ibm.com>
-References: <1421437687-12835-1-git-send-email-grimm@linux.vnet.ibm.com>
-Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Sat, 17 Jan 2015 06:39:32 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 97FE319D801C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:30:40 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0HDdf9P40501328
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:39:41 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0HDdSkV018969
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2015 06:39:28 -0700
+Message-ID: <54BA660B.7050609@linux.vnet.ibm.com>
+Date: Sat, 17 Jan 2015 19:09:23 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: offlining cpus breakage
+References: <54ACFE6D.3070308@ozlabs.ru> <54B7BEF9.8090603@linux.vnet.ibm.com>
+ <54B85B3C.1030000@ozlabs.ru> <1421377482.18166.5.camel@ellerman.id.au>
+In-Reply-To: <1421377482.18166.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,143 +45,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds reset to sysfs which will PERST the card.  If load_image_on_perst is set
-to "user" or "factory", the PERST will cause that image to be loaded.
+On 01/16/2015 08:34 AM, Michael Ellerman wrote:
+> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
+>> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
+>>> Hi Alexey,
+>>>
+>>> Can you let me know if the following patch fixes the issue for you ?
+>>> It did for us on one of our machines that we were investigating on.
+>>
+>> This fixes the issue for me as well, thanks!
+>>
+>> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+> 
+> OK, that's great.
+> 
+> But, I really don't think we can ask upstream to merge this patch to generic
+> code when we don't have a good explanation for why it's necessary. At least I'm
+> not going to ask anyone to do that :)
+> 
+> So Pretti can you either write a 100% convincing explanation of why this patch
+> is correct in the general case, or (preferably) do some more investigating to
+> work out what Alexey's bug actually is.
 
-load_image_on_perst is set to "user" for production.
+On further investigation, I found that the issue lies in the latency of
+cpu hotplug operation, specifically the time taken for the offline cpu
+to enter powersave mode.
 
-"none" could be used for debugging.  The PSL trace arrays are preserved which
-then can be read through debugfs.
+The time between the beginning of the cpu hotplug operation and the
+beginning of __cpu_die() operation (which is one of the last stages of
+cpu hotplug) takes around a maximum of 40ms. Although this is not
+causing softlockups, it is quite a large duration.
 
-PERST also triggers CAPP recovery.  An HMI comes in, which is handled by EEH.
-EEH unbinds the driver, calls into Sapphire to reinitialize the PHB, then
-rebinds the driver.
+The more serious issue is the time taken for __cpu_die() operation to
+complete. The __cpu_die() operation waits for the offline cpu to set its
+state to CPU_DEAD before entering powersave state. This time varies from
+4s to a maximum of 200s! It is not this bad always but it does happen
+quite a few times. It is during these times that we observe softlockups.
+I added trace prints throughout the cpu hotplug code to measure these
+numbers. This delay is causing the softlockup and here is why.
 
-Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
----
- Documentation/ABI/testing/sysfs-class-cxl |  7 ++++++
- drivers/misc/cxl/cxl.h                    |  1 +
- drivers/misc/cxl/pci.c                    | 37 +++++++++++++++++++++++++++++++
- drivers/misc/cxl/sysfs.c                  | 18 +++++++++++++++
- 4 files changed, 63 insertions(+)
+If the cpu going offline is the one broadcasting wakeups to cpus in
+fastsleep, it queues the broadcast timer on another cpu during the
+CPU_DEAD phase. The CPU_DEAD notifiers are run only after the
+__cpu_die() operation completes, which is taking a long time as
+mentioned above. So between the time irqs are migrated off the about to
+go offline cpu and CPU_DEAD stage, no cpu can be woken up. The above
+numbers show that this can be a horridly long time. Hence the next time
+that they get woken up the unnatural idle time is detected and
+softlockup triggers.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-index 6fcc631..db31176 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/testing/sysfs-class-cxl
-@@ -141,3 +141,10 @@ Description:    read/write
-                 user or factory image to be loaded.
-                 Default is to reload on PERST whichever image the card has
-                 loaded.
-+
-+What:           /sys/class/cxl/<card>/reset
-+Date:           October 2014
-+Contact:        linuxppc-dev@lists.ozlabs.org
-+Description:    write only
-+                Writing 1 will issue a PERST to card which may cause the card
-+                to reload the FPGA depending on load_image_on_perst.
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 518c4c6..6a6a487 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -489,6 +489,7 @@ int cxl_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsig
- void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
- int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
- int cxl_update_image_control(struct cxl *adapter);
-+int cxl_reset(struct cxl *adapter);
- 
- /* common == phyp + powernv */
- struct cxl_process_element_common {
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index b4aa4f1..5137ee5 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -21,6 +21,7 @@
- #include <asm/msi_bitmap.h>
- #include <asm/pci-bridge.h> /* for struct pci_controller */
- #include <asm/pnv-pci.h>
-+#include <asm/io.h>
- 
- #include "cxl.h"
- 
-@@ -742,6 +743,42 @@ static void cxl_remove_afu(struct cxl_afu *afu)
- 	device_unregister(&afu->dev);
- }
- 
-+int cxl_reset(struct cxl *adapter)
-+{
-+	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
-+	int rc;
-+	int i;
-+	u32 val;
-+
-+	dev_info(&dev->dev, "CXL reset\n");
-+
-+	for (i = 0; i < adapter->slices; i++)
-+		cxl_remove_afu(adapter->afu[i]);
-+
-+	/* pcie_warm_reset requests a fundamental pci reset which includes a
-+	 * PERST assert/deassert.  PERST triggers a loading of the image
-+	 * if "user" or "factory" is selected in sysfs */
-+	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
-+		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
-+		return rc;
-+	}
-+
-+	/* the PERST done above fences the PHB.  So, reset depends on EEH
-+	 * to unbind the driver, tell Sapphire to reinit the PHB, and rebind
-+	 * the driver.  Do an mmio read explictly to ensure EEH notices the
-+	 * fenced PHB.  Retry for a few seconds before giving up. */
-+	i = 0;
-+	while (((val = mmio_read32be(adapter->p1_mmio)) != 0xffffffff) &&
-+		(i < 5)) {
-+		msleep(500);
-+		i++;
-+	}
-+
-+	if (val != 0xffffffff)
-+		dev_err(&dev->dev, "cxl: PERST failed to trigger EEH\n");
-+
-+	return rc;
-+}
- 
- static int cxl_map_adapter_regs(struct cxl *adapter, struct pci_dev *dev)
- {
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index ed4ad46..adf1f6d 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -56,6 +56,23 @@ static ssize_t image_loaded_show(struct device *device,
- 	return scnprintf(buf, PAGE_SIZE, "factory\n");
- }
- 
-+static ssize_t reset_adapter_store(struct device *device,
-+				   struct device_attribute *attr,
-+				   const char *buf, size_t count)
-+{
-+	struct cxl *adapter = to_cxl_adapter(device);
-+	int rc;
-+	int val;
-+
-+	rc = sscanf(buf, "%i", &val);
-+	if ((rc != 1) || (val != 1))
-+		return -EINVAL;
-+
-+	if ((rc = cxl_reset(adapter)))
-+		return rc;
-+	return count;
-+}
-+
- static ssize_t load_image_on_perst_show(struct device *device,
- 				 struct device_attribute *attr,
- 				 char *buf)
-@@ -100,6 +117,7 @@ static struct device_attribute adapter_attrs[] = {
- 	__ATTR_RO(base_image),
- 	__ATTR_RO(image_loaded),
- 	__ATTR_RW(load_image_on_perst),
-+	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
- };
- 
- 
--- 
-1.9.1
+The patch on this thread that I proposed covered up the problem by
+allowing the remaining cpus to freshly reevaluate their wakeups after
+the stop machine phase without having to depend on the previous
+broadcast state.So it did not matter what the previously appointed
+broadcast cpu was upto.However there are still corner cases which cannot
+get solved with this patch. And understandably because it is not
+addressing the core issue, which is how to get around the latency issue
+of cpu hotplug.
+
+There can be ways in which the broadcast timer be migrated in time
+during hotplug to get around the softlockups, but the latency of the cpu
+hotplug operation looks like a serious issue. Has anybody observed or
+explicitly instrumented cpu hotplug operation before and happened to
+notice the large time duration required for its completion?
+
+Ccing Paul.
+
+Thanks
+
+Regards
+Preeti U Murthy
+> 
+> cheers
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
