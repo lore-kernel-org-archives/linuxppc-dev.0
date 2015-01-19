@@ -1,27 +1,16 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D1521A0C6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 10:04:48 +1100 (AEDT)
-Date: Mon, 19 Jan 2015 23:04:27 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
- issues
-Message-ID: <20150119230427.GH26493@n2100.arm.linux.org.uk>
-References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
- <20150119190142.GA9451@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150119190142.GA9451@kroah.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
- Jean Delvare <jdelvare@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 00F9B1A0C7E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 10:24:29 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ hbabu@us.ibm.com, nacc@linux.vnet.ibm.com
+Subject: [PATCH 1/7] powerpc: regenerate ppc64 and pseries defconfigs
+Date: Tue, 20 Jan 2015 10:24:19 +1100
+Message-Id: <1421709865-6368-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +20,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2015 at 03:01:42AM +0800, Greg Kroah-Hartman wrote:
-> On Mon, Jan 19, 2015 at 07:55:56PM +0100, Wolfram Sang wrote:
-> > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> > index 39d25a8cb1ad..15cc5902cf89 100644
-> > --- a/drivers/i2c/i2c-core.c
-> > +++ b/drivers/i2c/i2c-core.c
-> > @@ -41,7 +41,6 @@
-> >  #include <linux/of_device.h>
-> >  #include <linux/of_irq.h>
-> >  #include <linux/clk/clk-conf.h>
-> > -#include <linux/completion.h>
-> >  #include <linux/hardirq.h>
-> >  #include <linux/irqflags.h>
-> >  #include <linux/rwsem.h>
-> > @@ -1184,8 +1183,7 @@ EXPORT_SYMBOL_GPL(i2c_new_dummy);
-> >  
-> >  static void i2c_adapter_dev_release(struct device *dev)
-> >  {
-> > -	struct i2c_adapter *adap = to_i2c_adapter(dev);
-> > -	complete(&adap->dev_released);
-> > +	/* empty, but the driver core insists we need a release function */
-> 
-> Yeah, it does, but I hate to see this in "real" code as something is
-> probably wrong with it if it happens.
-> 
-> Please move the rest of 'i2c_del_adapter' into the release function
-> (what was after the wait_for_completion() call), and then all should be
-> fine.
+Regenerate defconfigs using make savedefconfig.
 
-Are you sure about that?  Some drivers do this, eg,
+Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/configs/ppc64_defconfig      | 11 +----------
+ arch/powerpc/configs/pseries_defconfig    | 12 +++---------
+ arch/powerpc/configs/pseries_le_defconfig | 14 +++-----------
+ 3 files changed, 7 insertions(+), 30 deletions(-)
 
-        i2c_del_adapter(&drv_data->adapter);
-        free_irq(drv_data->irq, drv_data);
-
-where drv_data was allocated using devm_kzalloc(), and so will be
-released when the ->remove callback (which calls the above
-i2c_del_adapter()) returns... freeing the embedded device struct.
-
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 5830d735..f1c4342 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -1,6 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_ALTIVEC=y
+-CONFIG_VSX=y
+ CONFIG_SMP=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+@@ -42,9 +40,6 @@ CONFIG_PPC_CELLEB=y
+ CONFIG_PPC_CELL_QPACE=y
+ CONFIG_RTAS_FLASH=m
+ CONFIG_IBMEBUS=y
+-CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+-CONFIG_CPU_FREQ_GOV_USERSPACE=y
+ CONFIG_CPU_FREQ_PMAC64=y
+ CONFIG_HZ_100=y
+ CONFIG_BINFMT_MISC=m
+@@ -82,7 +77,6 @@ CONFIG_BPF_JIT=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_FD=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=m
+@@ -101,7 +95,6 @@ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+ CONFIG_BLK_DEV_SR_VENDOR=y
+ CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ CONFIG_SCSI_FC_ATTRS=y
+ CONFIG_SCSI_CXGB3_ISCSI=m
+@@ -209,7 +202,6 @@ CONFIG_RAW_DRIVER=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_AMD8111=y
+ CONFIG_I2C_PASEMI=y
+-CONFIG_VIDEO_OUTPUT_CONTROL=m
+ CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_OF=y
+@@ -326,7 +318,6 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=y
+-CONFIG_CRC_T10DIF=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+@@ -362,4 +353,4 @@ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+-CONFIG_KVM_BOOK3S_64_HV=y
++CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 1f97364..145e5b0 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -1,6 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_ALTIVEC=y
+-CONFIG_VSX=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=2048
+ CONFIG_SYSVIPC=y
+@@ -40,6 +38,7 @@ CONFIG_DTL=y
+ # CONFIG_PPC_PMAC is not set
+ CONFIG_RTAS_FLASH=m
+ CONFIG_IBMEBUS=y
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_HZ_100=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_PPC_TRANSACTIONAL_MEM=y
+@@ -47,6 +46,7 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+@@ -72,7 +72,6 @@ CONFIG_BRIDGE=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_PARPORT=m
+ CONFIG_PARPORT_PC=m
+ CONFIG_BLK_DEV_FD=m
+@@ -90,7 +89,6 @@ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+ CONFIG_BLK_DEV_SR_VENDOR=y
+ CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ CONFIG_SCSI_FC_ATTRS=y
+ CONFIG_SCSI_CXGB3_ISCSI=m
+@@ -270,7 +268,6 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=y
+-CONFIG_CRC_T10DIF=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+@@ -304,7 +301,4 @@ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+-CONFIG_KVM_BOOK3S_64_HV=y
+-CONFIG_TRANSPARENT_HUGEPAGE=y
+-CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
+-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
+index ac7ca58..4ff694c 100644
+--- a/arch/powerpc/configs/pseries_le_defconfig
++++ b/arch/powerpc/configs/pseries_le_defconfig
+@@ -1,6 +1,4 @@
+ CONFIG_PPC64=y
+-CONFIG_ALTIVEC=y
+-CONFIG_VSX=y
+ CONFIG_SMP=y
+ CONFIG_NR_CPUS=2048
+ CONFIG_CPU_LITTLE_ENDIAN=y
+@@ -41,6 +39,7 @@ CONFIG_DTL=y
+ # CONFIG_PPC_PMAC is not set
+ CONFIG_RTAS_FLASH=m
+ CONFIG_IBMEBUS=y
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_HZ_100=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_PPC_TRANSACTIONAL_MEM=y
+@@ -48,6 +47,7 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+@@ -73,7 +73,6 @@ CONFIG_BRIDGE=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_PARPORT=m
+ CONFIG_PARPORT_PC=m
+ CONFIG_BLK_DEV_FD=m
+@@ -91,7 +90,6 @@ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+ CONFIG_BLK_DEV_SR_VENDOR=y
+ CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ CONFIG_SCSI_FC_ATTRS=y
+ CONFIG_SCSI_CXGB3_ISCSI=m
+@@ -271,7 +269,6 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=y
+-CONFIG_CRC_T10DIF=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACK_USAGE=y
+@@ -300,11 +297,6 @@ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+ CONFIG_CRYPTO_LZO=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_NX=y
+-CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+-CONFIG_KVM_BOOK3S_64_HV=y
+-CONFIG_TRANSPARENT_HUGEPAGE=y
+-CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
+-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_KVM_BOOK3S_64_HV=m
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+2.1.0
