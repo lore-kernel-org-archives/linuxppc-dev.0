@@ -1,20 +1,21 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9301C1A0BF2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 08:20:34 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 03:01:42 +0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Wolfram Sang <wsa@the-dreams.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B78B1A0CEA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 08:31:00 +1100 (AEDT)
+Date: Mon, 19 Jan 2015 22:30:50 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
  issues
-Message-ID: <20150119190142.GA9451@kroah.com>
+Message-ID: <20150119213050.GA32176@katana>
 References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
+ <20150119190142.GA9451@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
+In-Reply-To: <20150119190142.GA9451@kroah.com>
 Cc: linux-mips@linux-mips.org,
  Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
  linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
@@ -29,117 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 19, 2015 at 07:55:56PM +0100, Wolfram Sang wrote:
-> Back in the days, sysfs seemed to have refcounting issues and subsystems
-> needed a completion to be safe. This is not the case anymore, so I2C can
-> get rid of this code. There is noone else besides I2C doing something
-> like this currently (checked with the attached coccinelle script which
-> checks if a release function exists and if it contains a completion).
-> 
-> I have been digging through the history of linux.git and
-> linux-history.git and found that e.g. w1 used to have such a mechanism
-> and also simply removed it later.
-> 
-> Some more info from Greg Kroah-Hartman:
-> "Having that call "wait" for the other release call to happen is really
-> old, as Jean points out, from 2003.  We have "fixed" sysfs since then to
-> detach the files from the devices easier, we used to have some nasy
-> reference count issues in that area."
-> 
-> And some testing from Jean Delvare which matches my results:
-> "However I just tested unloading an i2c bus driver while its adapter's
-> new_device attribute was opened and rmmod returned immediately. So it
-> doesn't look like accessing sysfs attributes actually takes a reference
-> to the underlying i2c_adapter."
-> 
-> Let's get rid of this code before really nobody knows/understands
-> anymore what this was for and if it has a subtle use.
-> 
-> Reported-by: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Jean Delvare <jdelvare@suse.de>
-> Cc: Julia Lawall <julia.lawall@lip6.fr>
-> ---
-> 
-> Of course, more testing is appreciated. Here is the coccinelle script:
-> 
-> ===
-> 
-> @has_type@
-> identifier d_type, rel_f;
-> @@
-> 
-> struct device_type d_type = {
-> 	.release = rel_f,
-> };
-> 
-> @has_device@
-> struct device *d;
-> identifier rel_f, p;
-> @@
-> 
-> (
-> 	p->dev.release = &rel_f;
-> |
-> 	d->release = &rel_f;
-> )
-> 
-> @find_type depends on has_type@
-> identifier has_type.rel_f, d;
-> @@
-> 
-> void rel_f(struct device *d)
-> {
-> 	...
-> *	complete(...);
-> 	...
-> }
-> 
-> @find_device depends on has_device@
-> identifier has_device.rel_f, d;
-> @@
-> 
-> void rel_f(struct device *d)
-> {
-> 	...
-> *	complete(...);
-> 	...
-> }
-> 
-> ===
-> 
->  drivers/i2c/i2c-core.c | 10 +---------
->  include/linux/i2c.h    |  1 -
->  2 files changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 39d25a8cb1ad..15cc5902cf89 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -41,7 +41,6 @@
->  #include <linux/of_device.h>
->  #include <linux/of_irq.h>
->  #include <linux/clk/clk-conf.h>
-> -#include <linux/completion.h>
->  #include <linux/hardirq.h>
->  #include <linux/irqflags.h>
->  #include <linux/rwsem.h>
-> @@ -1184,8 +1183,7 @@ EXPORT_SYMBOL_GPL(i2c_new_dummy);
->  
->  static void i2c_adapter_dev_release(struct device *dev)
->  {
-> -	struct i2c_adapter *adap = to_i2c_adapter(dev);
-> -	complete(&adap->dev_released);
-> +	/* empty, but the driver core insists we need a release function */
 
-Yeah, it does, but I hate to see this in "real" code as something is
-probably wrong with it if it happens.
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please move the rest of 'i2c_del_adapter' into the release function
-(what was after the wait_for_completion() call), and then all should be
-fine.
+> > @@ -1184,8 +1183,7 @@ EXPORT_SYMBOL_GPL(i2c_new_dummy);
+> > =20
+> >  static void i2c_adapter_dev_release(struct device *dev)
+> >  {
+> > -	struct i2c_adapter *adap =3D to_i2c_adapter(dev);
+> > -	complete(&adap->dev_released);
+> > +	/* empty, but the driver core insists we need a release function */
+>=20
+> Yeah, it does, but I hate to see this in "real" code as something is
+> probably wrong with it if it happens.
+>=20
+> Please move the rest of 'i2c_del_adapter' into the release function
+> (what was after the wait_for_completion() call), and then all should be
+> fine.
 
-thanks,
+I was about to do this as a follow-up patch. But Russell's and
+Lars-Peter's responses made this obsolete already.
 
-greg k-h
+
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUvXeKAAoJEBQN5MwUoCm2yU8P/jACuxrtfHb4yh+Tu47k8Iww
+UkgEMRwaHGpm+uvg8lvWKYJgQqUdP7M7nVgZDrzezsnyvggYs8SnixTwoL3lA7+2
+ovakYYGL/x1LTKjAzJvgkYrYs7BgZ4dAcHsG3M56YqW9pomSHnkqSoWM7eOIIH9X
+NHxHXEWbrf9oTrUjy4EN9Y04ey7zh7//27L7eetNjYcu8eISc9wi4qVJShlLS3RA
+qcrvLDo4kb4O+zPv1PxtSDXqv0OkrgmlmQoJ6vprm/6S+O4xSNcF3lkfJdp6Ud1Y
++z9zuCsn743dLw+WpmqAJKsa4aIYNF/1ut+JDIVy+Oc65jk96KDNYHecKhBswYwC
+bzdK705MkdQmpzZ9hKTvHPN0/6qinBCoSJzl6S/4WLXM42Fa5D3WwdC/oFXy9CCs
+/3Ti0XnK+hr3xAsU3UdeJBkLPA7D0NxYbs9RWyNojdyzTyx/DBilQFzZfyr+25qy
+gULtb6WDSyLSDt/HzddpRCd3Q7uG3Kb5a17xhmLdhPllVyIlsju12tRgPskZ/9BC
+/6desPhbEObHHo0l69hbRnkQPN/tNNiLHad/P6+uAS1zzmZJzqprhAgeVvnHkUaZ
+92+U7sQMYfvm0jw1IIHJf2Vv71scblJw8rXL5PHvMifaIv2pIgwrz8RFr818d2W7
+1kWMDN233l5vJQHrrd5o
+=ZCzZ
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
