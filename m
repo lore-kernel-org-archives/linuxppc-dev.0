@@ -2,15 +2,14 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A46771A0CD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 10:24:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0DE4C1A0D03
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 10:24:34 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  hbabu@us.ibm.com, nacc@linux.vnet.ibm.com
-Subject: [PATCH 3/7] powerpc: Enable CONFIG_SATA_AHCI on pseries and ppc64
- defconfigs
-Date: Tue, 20 Jan 2015 10:24:21 +1100
-Message-Id: <1421709865-6368-3-git-send-email-anton@samba.org>
+Subject: [PATCH 4/7] powerpc: Enable KSM on pseries and ppc64 defconfigs
+Date: Tue, 20 Jan 2015 10:24:22 +1100
+Message-Id: <1421709865-6368-4-git-send-email-anton@samba.org>
 In-Reply-To: <1421709865-6368-1-git-send-email-anton@samba.org>
 References: <1421709865-6368-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -23,8 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are starting to see ppc64 boxes with SATA AHCI adapters in it,
-so enable it in our defconfigs.
+KSM will only be used on areas marked for merging via madvise, and it
+is showing nice improvements on KVM workloads, so enable it by
+default.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
@@ -34,40 +34,40 @@ Signed-off-by: Anton Blanchard <anton@samba.org>
  3 files changed, 3 insertions(+)
 
 diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index d657ad3..4ef6b8ca 100644
+index 4ef6b8ca..8a5509e 100644
 --- a/arch/powerpc/configs/ppc64_defconfig
 +++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -116,6 +116,7 @@ CONFIG_SCSI_DH=m
- CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
- CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
- CONFIG_SATA_SIL24=y
- CONFIG_SATA_MV=y
- CONFIG_SATA_SVW=y
+@@ -49,6 +49,7 @@ CONFIG_KEXEC=y
+ CONFIG_CRASH_DUMP=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_KSM=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_PCCARD=y
+ CONFIG_ELECTRA_CF=y
 diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 145e5b0..ffd4bbd 100644
+index ffd4bbd..7677850 100644
 --- a/arch/powerpc/configs/pseries_defconfig
 +++ b/arch/powerpc/configs/pseries_defconfig
-@@ -109,6 +109,7 @@ CONFIG_SCSI_DH=m
- CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
- CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
- # CONFIG_ATA_SFF is not set
- CONFIG_MD=y
- CONFIG_BLK_DEV_MD=y
+@@ -46,6 +46,7 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_KSM=y
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
 diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-index 4ff694c..66db64a 100644
+index 66db64a..acb611a 100644
 --- a/arch/powerpc/configs/pseries_le_defconfig
 +++ b/arch/powerpc/configs/pseries_le_defconfig
-@@ -110,6 +110,7 @@ CONFIG_SCSI_DH=m
- CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
- CONFIG_ATA=y
-+CONFIG_SATA_AHCI=y
- # CONFIG_ATA_SFF is not set
- CONFIG_MD=y
- CONFIG_BLK_DEV_MD=y
+@@ -47,6 +47,7 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_KSM=y
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
 -- 
 2.1.0
