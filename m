@@ -1,24 +1,32 @@
-Return-Path: <mturquette@linaro.org>
-Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
- [209.85.220.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <grimm@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B99AB1A0D3D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 04:25:34 +1100 (AEDT)
-Received: by mail-pa0-f47.google.com with SMTP id kq14so39984407pab.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 09:25:32 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-To: <Yuantian.Tang@freescale.com>, 
-From: Mike Turquette <mturquette@linaro.org>
-In-Reply-To: <1421301821-18917-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1421301821-18917-1-git-send-email-Yuantian.Tang@freescale.com>
-Message-ID: <20150119172522.22722.44902@quantum>
-Subject: Re: [PATCH 1/2] clock: redefine variable clocks_per_pll as a struct
- member
-Date: Mon, 19 Jan 2015 09:25:22 -0800
-Cc: b07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C77E1A0D64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 04:53:09 +1100 (AEDT)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
+ Mon, 19 Jan 2015 10:53:07 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 198BE19D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 10:44:16 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0JHrE6V27787474
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 10:53:14 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0JHr3TS018484
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 10:53:04 -0700
+From: Ryan Grimm <grimm@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, mikey@neuling.org
+Subject: [PATCH 1/4] CXL: Use image state defaults for reloading FPGA
+Date: Mon, 19 Jan 2015 11:52:48 -0600
+Message-Id: <1421689971-34476-1-git-send-email-grimm@linux.vnet.ibm.com>
+Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,124 +36,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Yuantian.Tang@freescale.com (2015-01-14 22:03:40)
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> =
+Select defaults such that a PERST causes flash image reload.  Select which
+image based on what the card is set up to load.
 
-> redefine variable clocks_per_pll as a struct member
-> =
+CXL_VSEC_PERST_LOADS_IMAGE selects whether PERST assertion causes flash image
+load.
 
-> If there are multiple PLL clock nodes, this variable will
-> get overwritten. Redefining it as a struct member can avoid that.
-> =
+CXL_VSEC_PERST_SELECT_USER selects which image is loaded on the next PERST.
 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+cxl_update_image_control writes these bits into the VSEC.
 
-Applied to clk-next towards 3.20.
+Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
+---
 
-Regards,
-Mike
+Please consider this patch for stable.  Without these defaults, the card could
+get in a bad state and require a power cycle to the box.
 
-> ---
-> These patches are based on following three patches which are acked
-> by Scott wood <scottwood@freescale.com>:
->         1. http://patchwork.ozlabs.org/patch/417292/
->                 Revert "clk: ppc-corenet: Fix Section mismatch warning"
->         2. http://patchwork.ozlabs.org/patch/417295/
->                 powerpc: call of_clk_init() from time_init()
->         3. http://patchwork.ozlabs.org/patch/417297/
->                 clk: ppc-corenet: fix section mismatch warning
-> =
+ drivers/misc/cxl/cxl.h |  1 +
+ drivers/misc/cxl/pci.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 41 insertions(+), 2 deletions(-)
 
->  drivers/clk/clk-ppc-corenet.c | 22 +++++++++++++++-------
->  1 file changed, 15 insertions(+), 7 deletions(-)
-> =
-
-> diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-> index 57a2de4..5e9bb18 100644
-> --- a/drivers/clk/clk-ppc-corenet.c
-> +++ b/drivers/clk/clk-ppc-corenet.c
-> @@ -19,6 +19,7 @@
->  struct cmux_clk {
->         struct clk_hw hw;
->         void __iomem *reg;
-> +       unsigned int clk_per_pll;
->         u32 flags;
->  };
->  =
-
-> @@ -27,14 +28,12 @@ struct cmux_clk {
->  #define CLKSEL_ADJUST          BIT(0)
->  #define to_cmux_clk(p)         container_of(p, struct cmux_clk, hw)
->  =
-
-> -static unsigned int clocks_per_pll;
-> -
->  static int cmux_set_parent(struct clk_hw *hw, u8 idx)
->  {
->         struct cmux_clk *clk =3D to_cmux_clk(hw);
->         u32 clksel;
->  =
-
-> -       clksel =3D ((idx / clocks_per_pll) << 2) + idx % clocks_per_pll;
-> +       clksel =3D ((idx / clk->clk_per_pll) << 2) + idx % clk->clk_per_p=
-ll;
->         if (clk->flags & CLKSEL_ADJUST)
->                 clksel +=3D 8;
->         clksel =3D (clksel & 0xf) << CLKSEL_SHIFT;
-> @@ -52,7 +51,7 @@ static u8 cmux_get_parent(struct clk_hw *hw)
->         clksel =3D (clksel >> CLKSEL_SHIFT) & 0xf;
->         if (clk->flags & CLKSEL_ADJUST)
->                 clksel -=3D 8;
-> -       clksel =3D (clksel >> 2) * clocks_per_pll + clksel % 4;
-> +       clksel =3D (clksel >> 2) * clk->clk_per_pll + clksel % 4;
->  =
-
->         return clksel;
->  }
-> @@ -72,6 +71,7 @@ static void __init core_mux_init(struct device_node *np)
->         u32     offset;
->         const char *clk_name;
->         const char **parent_names;
-> +       struct of_phandle_args clkspec;
->  =
-
->         rc =3D of_property_read_u32(np, "reg", &offset);
->         if (rc) {
-> @@ -105,6 +105,17 @@ static void __init core_mux_init(struct device_node =
-*np)
->                 goto err_clk;
->         }
->  =
-
-> +       rc =3D of_parse_phandle_with_args(np, "clocks", "#clock-cells", 0,
-> +                                       &clkspec);
-> +       if (rc) {
-> +               pr_err("%s: parse clock node error\n", __func__);
-> +               goto err_clk;
-> +       }
-> +
-> +       cmux_clk->clk_per_pll =3D of_property_count_strings(clkspec.np,
-> +                       "clock-output-names");
-> +       of_node_put(clkspec.np);
-> +
->         node =3D of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen"=
-);
->         if (node && (offset >=3D 0x80))
->                 cmux_clk->flags =3D CLKSEL_ADJUST;
-> @@ -181,9 +192,6 @@ static void __init core_pll_init(struct device_node *=
-np)
->                 goto err_map;
->         }
->  =
-
-> -       /* output clock number per PLL */
-> -       clocks_per_pll =3D count;
-> -
->         subclks =3D kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
->         if (!subclks) {
->                 pr_err("%s: could not allocate subclks\n", __func__);
-> -- =
-
-> 2.1.0.27.g96db324
->=20
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 0df0438..518c4c6 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -488,6 +488,7 @@ void cxl_release_one_irq(struct cxl *adapter, int hwirq);
+ int cxl_alloc_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter, unsigned int num);
+ void cxl_release_irq_ranges(struct cxl_irq_ranges *irqs, struct cxl *adapter);
+ int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq, unsigned int virq);
++int cxl_update_image_control(struct cxl *adapter);
+ 
+ /* common == phyp + powernv */
+ struct cxl_process_element_common {
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index f801c28..5e71ef9 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -362,6 +362,41 @@ int cxl_setup_irq(struct cxl *adapter, unsigned int hwirq,
+ 	return pnv_cxl_ioda_msi_setup(dev, hwirq, virq);
+ }
+ 
++int cxl_update_image_control(struct cxl *adapter)
++{
++	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
++	int rc;
++	int vsec;
++	u8 image_state;
++
++	if (!(vsec = find_cxl_vsec(dev))) {
++		dev_err(&dev->dev, "ABORTING: CXL VSEC not found!\n");
++		return -ENODEV;
++	}
++
++	if ((rc = CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state))) {
++		dev_err(&dev->dev, "failed to read image state: %i\n", rc);
++		return rc;
++	}
++
++	if (adapter->perst_loads_image)
++		image_state |= CXL_VSEC_PERST_LOADS_IMAGE;
++	else
++		image_state &= ~CXL_VSEC_PERST_LOADS_IMAGE;
++
++	if (adapter->perst_select_user)
++		image_state |= CXL_VSEC_PERST_SELECT_USER;
++	else
++		image_state &= ~CXL_VSEC_PERST_SELECT_USER;
++
++	if ((rc = CXL_WRITE_VSEC_IMAGE_STATE(dev, vsec, image_state))) {
++		dev_err(&dev->dev, "failed to update image control: %i\n", rc);
++		return rc;
++	}
++
++	return 0;
++}
++
+ int cxl_alloc_one_irq(struct cxl *adapter)
+ {
+ 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
+@@ -771,8 +806,8 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+ 	CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
+ 	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
+ 	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+-	adapter->perst_loads_image = !!(image_state & CXL_VSEC_PERST_LOADS_IMAGE);
+-	adapter->perst_select_user = !!(image_state & CXL_VSEC_PERST_SELECT_USER);
++	adapter->perst_loads_image = true;
++	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+ 
+ 	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
+ 	CXL_READ_VSEC_AFU_DESC_OFF(dev, vsec, &afu_desc_off);
+@@ -880,6 +915,9 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
+ 	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
+ 		goto err2;
+ 
++	if ((rc = cxl_update_image_control(adapter)))
++		goto err2;
++
+ 	if ((rc = cxl_map_adapter_regs(adapter, dev)))
+ 		goto err2;
+ 
+-- 
+1.9.1
