@@ -1,14 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0E9801A0D0E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 02:44:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 624681A0D1A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:04:38 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v2] powerpc/8xx: reduce pressure on TLB due to context switches
-Message-Id: <20150119154442.8E9E11A5E85@localhost.localdomain>
-Date: Mon, 19 Jan 2015 16:44:42 +0100 (CET)
+Subject: [PATCH v4 0/2] powerpc32: handle inverted _PAGE_RW bit outside of TLB
+ handlers
+Message-Id: <20150119160435.8AF541A5E85@localhost.localdomain>
+Date: Mon, 19 Jan 2015 17:04:35 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,110 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For nohash powerpc, when we run out of contexts, contexts are freed by stealing
-used contexts in-turn. When a victim has been selected, the associated TLB
-entries are freed using _tlbil_pid(). Unfortunatly, on the PPC 8xx, _tlbil_pid()
-does a tlbia, hence flushes ALL TLB entries and not only the one linked to the
-stolen context. Therefore, as implented today, at each task switch requiring a
-new context, all entries are flushed.
+Some powerpc like the 8xx don't have a RW bit in PTE bits but a RO (Read Only) bit.
+This patch implements the handling of a _PAGE_RO flag to be used in place of _PAGE_RW
 
-This patch modifies the implementation so that when running out of contexts, all
-contexts get freed at once, hence dividing the number of calls to tlbia by 16.
+Patchset:
+1) powerpc32: adds handling of _PAGE_RO
+2) powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
+
+All changes have been successfully tested on MPC885
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-v1->v2: removed blank line and added comment
+v2 is a complete rework compared to v1
+v3 takes into account comments from Scott on v2
+v4 simplified pte_update()
 
- arch/powerpc/mm/mmu_context_nohash.c | 43 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 928ebe7..dcbc231 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -52,12 +52,15 @@
- #include <asm/mmu_context.h>
- #include <asm/tlbflush.h>
- 
-+#include "mmu_decl.h"
-+
- static unsigned int first_context, last_context;
- static unsigned int next_context, nr_free_contexts;
- static unsigned long *context_map;
- static unsigned long *stale_map[NR_CPUS];
- static struct mm_struct **context_mm;
- static DEFINE_RAW_SPINLOCK(context_lock);
-+static bool no_selective_tlbil;
- 
- #define CTX_MAP_SIZE	\
- 	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
-@@ -133,6 +136,38 @@ static unsigned int steal_context_smp(unsigned int id)
- }
- #endif  /* CONFIG_SMP */
- 
-+static unsigned int steal_all_contexts(void)
-+{
-+	struct mm_struct *mm;
-+	int cpu = smp_processor_id();
-+	unsigned int id;
-+
-+	for (id = first_context; id <= last_context; id++) {
-+		/* Pick up the victim mm */
-+		mm = context_mm[id];
-+
-+		pr_hardcont(" | steal %d from 0x%p", id, mm);
-+
-+		/* Mark this mm as having no context anymore */
-+		mm->context.id = MMU_NO_CONTEXT;
-+		if (id != first_context) {
-+			context_mm[id] = NULL;
-+			__clear_bit(id, context_map);
-+#ifdef DEBUG_MAP_CONSISTENCY
-+			mm->context.active = 0;
-+#endif
-+		}
-+		__clear_bit(id, stale_map[cpu]);
-+	}
-+
-+	/* Flush the TLB for all contexts (not to be used on SMP) */
-+	_tlbil_all();
-+
-+	nr_free_contexts = last_context - first_context;
-+
-+	return first_context;
-+}
-+
- /* Note that this will also be called on SMP if all other CPUs are
-  * offlined, which means that it may be called for cpu != 0. For
-  * this to work, we somewhat assume that CPUs that are onlined
-@@ -241,7 +276,10 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 			goto stolen;
- 		}
- #endif /* CONFIG_SMP */
--		id = steal_context_up(id);
-+		if (no_selective_tlbil)
-+			id = steal_all_contexts();
-+		else
-+			id = steal_context_up(id);
- 		goto stolen;
- 	}
- 	nr_free_contexts--;
-@@ -407,12 +445,15 @@ void __init mmu_context_init(void)
- 	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
- 		first_context = 0;
- 		last_context = 15;
-+		no_selective_tlbil = true;
- 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
- 		first_context = 1;
- 		last_context = 65535;
-+		no_selective_tlbil = false;
- 	} else {
- 		first_context = 1;
- 		last_context = 255;
-+		no_selective_tlbil = false;
- 	}
- 
- #ifdef DEBUG_CLAMP_LAST_CONTEXT
--- 
-2.1.0
+ arch/powerpc/include/asm/pgtable-ppc32.h | 12 +++++++-----
+ arch/powerpc/include/asm/pgtable.h       |  7 +++++--
+ arch/powerpc/include/asm/pte-8xx.h       |  9 ++++-----
+ arch/powerpc/include/asm/pte-common.h    | 25 +++++++++++++++++--------
+ arch/powerpc/kernel/head_8xx.S           |  3 ---
+ arch/powerpc/mm/gup.c                    |  2 ++
+ arch/powerpc/mm/pgtable_32.c             |  2 +-
+ 7 files changed, 36 insertions(+), 24 deletions(-)
