@@ -1,15 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0B49D1A0D92
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:04:45 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Subject: [PATCH v4 2/2] powerpc/8xx: use _PAGE_RO instead of _PAGE_RW
-Message-Id: <20150119160444.52D391A5E85@localhost.localdomain>
-Date: Mon, 19 Jan 2015 17:04:44 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <grimm@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 098751A0D19
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 04:03:02 +1100 (AEDT)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <grimm@linux.vnet.ibm.com>;
+ Mon, 19 Jan 2015 12:02:59 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4104F38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 12:02:56 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0JH2u6R30277826
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 17:02:56 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0JH2tdE021322
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2015 12:02:55 -0500
+Message-ID: <54BD38BC.5040305@linux.vnet.ibm.com>
+Date: Mon, 19 Jan 2015 12:02:52 -0500
+From: Ryan Grimm <grimm@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH 1/4] CXL: Use image state defaults for reloading FPGA
+References: <1421437687-12835-1-git-send-email-grimm@linux.vnet.ibm.com>
+ <1421643145-sup-9090@delenn.ozlabs.ibm.com>
+In-Reply-To: <1421643145-sup-9090@delenn.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <michaele@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,84 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc 8xx, in TLB entries, 0x400 bit is set to 1 for read-only pages
-and is set to 0 for RW pages. So we should use _PAGE_RO instead of _PAGE_RW
+On 01/19/2015 12:03 AM, Ian Munsie wrote:
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+>
+> Looks like you forgot your Signed-off-by line - mpe, do you want Ryan to
+> resend the whole patch (maybe with the below explanation included), or
+> just reply with a Signed-off-by?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+OK resending.
 
----
-v2 is a complete rework compared to v1
-v3: fixing pte_update() and comments
-v4: simplified pte_update() (andc instead of xori/or/xori)
+-Ryan
 
- arch/powerpc/include/asm/pgtable-ppc32.h | 11 +++++------
- arch/powerpc/include/asm/pte-8xx.h       |  9 ++++-----
- arch/powerpc/kernel/head_8xx.S           |  3 ---
- 3 files changed, 9 insertions(+), 14 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index e455536..b3e9a3e 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -178,12 +178,11 @@ static inline unsigned long pte_update(pte_t *p,
- 	andc	%1,%0,%5\n\
- 	or	%1,%1,%6\n\
- 	/* 0x200 == Extended encoding, bit 22 */ \
--	/* Bit 22 has to be 1 if neither _PAGE_USER nor _PAGE_RW are set */ \
--	rlwimi	%1,%1,32-2,0x200\n /* get _PAGE_USER */ \
--	rlwinm	%3,%1,32-1,0x200\n /* get _PAGE_RW */ \
--	or	%1,%3,%1\n\
--	xori	%1,%1,0x200\n"
--"	stwcx.	%1,0,%4\n\
-+	/* Bit 22 has to be 1 when _PAGE_USER is unset and _PAGE_RO is set */ \
-+	rlwimi	%1,%1,32-1,0x200\n /* get _PAGE_RO */ \
-+	rlwinm	%3,%1,32-2,0x200\n /* get _PAGE_USER */ \
-+	andc	%1,%1,%3\n\
-+	stwcx.	%1,0,%4\n\
- 	bne-	1b"
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
- 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index daa4616..eb6edb4 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -46,9 +46,9 @@
-  * require a TLB exception handler change.  It is assumed unused bits
-  * are always zero.
-  */
--#define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
-+#define _PAGE_RO	0x0400	/* lsb PP bits */
- #define _PAGE_USER	0x0800	/* msb PP bits */
--/* set when neither _PAGE_USER nor _PAGE_RW are set */
-+/* set when _PAGE_USER is unset and _PAGE_RO is set */
- #define _PAGE_KNLRO	0x0200
- 
- #define _PMD_PRESENT	0x0001
-@@ -62,9 +62,8 @@
- #define PTE_ATOMIC_UPDATES	1
- 
- /* We need to add _PAGE_SHARED to kernel pages */
--#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_KNLRO)
--#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_KNLRO)
--#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-+#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO)
-+#define _PAGE_KERNEL_ROX	(_PAGE_EXEC | _PAGE_RO | _PAGE_KNLRO)
- 
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_PTE_8xx_H */
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d380658..61ef78d 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -458,9 +458,6 @@ DataStoreTLBMiss:
- 	and	r11, r11, r10
- 	rlwimi	r10, r11, 0, _PAGE_PRESENT
- #endif
--	/* invert RW */
--	xori	r10, r10, _PAGE_RW
--
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 22 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
--- 
-2.1.0
+>
+> This would also be good to CC: Stable, as these new defaults mean that
+> the card will be fully reset when sapphire PERSTs them on reboot,
+> whereas before it was left up to the default value of this register in
+> each card, and could lead to a card getting into a bad state requiring a
+> full power cycle to recover. The symptoms we saw was the tlbia / slbia
+> we do on boot timing out and the driver init aborting.
+>
+> Cheers,
+> -Ian
+>
