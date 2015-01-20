@@ -1,29 +1,22 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-231.synserver.de (smtp-out-231.synserver.de
- [212.40.185.231])
- by lists.ozlabs.org (Postfix) with ESMTP id C1B321A0C35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 18:25:39 +1100 (AEDT)
-Message-ID: <54BE0364.7060404@metafoo.de>
-Date: Tue, 20 Jan 2015 08:27:32 +0100
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CBC81A0C58
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 18:38:38 +1100 (AEDT)
+Message-ID: <1421739503.4961.205.camel@freescale.com>
+Subject: Re: AW: How to make use of SPE instructions?
+From: Scott Wood <scottwood@freescale.com>
+To: Markus Stockhausen <stockhausen@collogia.de>
+Date: Tue, 20 Jan 2015 01:38:23 -0600
+In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9132C6@EXCHANGE.collogia.de>
+References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F90DD25@EXCHANGE.collogia.de>
+ ,<1421362570.4961.163.camel@freescale.com>
+ <12EF8D94C6F8734FB2FF37B9FBEDD1735F9132C6@EXCHANGE.collogia.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
- issues
-References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
- <20150119190142.GA9451@kroah.com>
- <20150119230427.GH26493@n2100.arm.linux.org.uk>
- <20150120014159.GA3349@kroah.com> <54BDFE30.5090303@metafoo.de>
- <20150120071256.GA18983@kroah.com>
-In-Reply-To: <20150120071256.GA18983@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-mips@linux-mips.org,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Wolfram Sang <wsa@the-dreams.de>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
- Jean Delvare <jdelvare@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,64 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/20/2015 08:12 AM, Greg Kroah-Hartman wrote:
-> On Tue, Jan 20, 2015 at 08:05:20AM +0100, Lars-Peter Clausen wrote:
->> On 01/20/2015 02:41 AM, Greg Kroah-Hartman wrote:
->>> On Mon, Jan 19, 2015 at 11:04:27PM +0000, Russell King - ARM Linux wrote:
->>>> On Tue, Jan 20, 2015 at 03:01:42AM +0800, Greg Kroah-Hartman wrote:
->>>>> On Mon, Jan 19, 2015 at 07:55:56PM +0100, Wolfram Sang wrote:
->>>>>> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
->>>>>> index 39d25a8cb1ad..15cc5902cf89 100644
->>>>>> --- a/drivers/i2c/i2c-core.c
->>>>>> +++ b/drivers/i2c/i2c-core.c
->>>>>> @@ -41,7 +41,6 @@
->>>>>>   #include <linux/of_device.h>
->>>>>>   #include <linux/of_irq.h>
->>>>>>   #include <linux/clk/clk-conf.h>
->>>>>> -#include <linux/completion.h>
->>>>>>   #include <linux/hardirq.h>
->>>>>>   #include <linux/irqflags.h>
->>>>>>   #include <linux/rwsem.h>
->>>>>> @@ -1184,8 +1183,7 @@ EXPORT_SYMBOL_GPL(i2c_new_dummy);
->>>>>>
->>>>>>   static void i2c_adapter_dev_release(struct device *dev)
->>>>>>   {
->>>>>> -	struct i2c_adapter *adap = to_i2c_adapter(dev);
->>>>>> -	complete(&adap->dev_released);
->>>>>> +	/* empty, but the driver core insists we need a release function */
->>>>>
->>>>> Yeah, it does, but I hate to see this in "real" code as something is
->>>>> probably wrong with it if it happens.
->>>>>
->>>>> Please move the rest of 'i2c_del_adapter' into the release function
->>>>> (what was after the wait_for_completion() call), and then all should be
->>>>> fine.
->>>>
->>>> Are you sure about that?  Some drivers do this, eg,
->>>>
->>>>          i2c_del_adapter(&drv_data->adapter);
->>>>          free_irq(drv_data->irq, drv_data);
->>>>
->>>> where drv_data was allocated using devm_kzalloc(), and so will be
->>>> released when the ->remove callback (which calls the above
->>>> i2c_del_adapter()) returns... freeing the embedded device struct.
->>>
->>> But that will fail today if the memory is freed in i2c_del_adapter(), so
->>> there shouldn't be any change in logic here.
->>>
->>> Or am I missing something obvious?
->>
->> The memory is not freed in i2c_del_adapter().
->
-> Right, and I'm not saying it should be, just move the existing logic
-> into the release callback, and the code flow should be the same and we
-> don't end up with an "empty" release callback.
+On Fri, 2015-01-16 at 05:27 +0000, Markus Stockhausen wrote:
+> > Von: Scott Wood [scottwood@freescale.com]
+> > Gesendet: Donnerstag, 15. Januar 2015 23:56
+> > An: Markus Stockhausen
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Betreff: Re: How to make use of SPE instructions?
+> > 
+> > On Thu, 2015-01-08 at 09:58 +0000, Markus Stockhausen wrote:
+> > > Hello,
+> > >
+> > > I developed a SHA224/256 kernel crypto module with SPE instructions.
+> > > The result looks quite promising (~ +50% speedup). Nevertheless the
+> > > flooding of kernel messages "SPE used in kernel" makes me feel
+> > > uncomfortable.
+> > >
+> > > My findings so far:
+> > >
+> > > - I can configure the kernel with "SPE support".
+> > > - arch/powerpc/kernel/head_fsl_booke.S suggests that the message is
+> > >   triggerd unconditionally whenwever we make use of SPE in kernel.
+> > - There exists a function enable_kernel_spe() but I don't know how
+> >   this could help me in my work.
+> > >
+> > > I guess I need some kind of "brackets" around my coding to make sure
+> > > the upper 32 bit of the registers are stored correctly during task switch.
+> > > Or is the use of SPE instructions inside the kernel totally forbidden? Any
+> > > expert with some helpful advise?
+> > 
+> > You need to disable preemption, call enable_kernel_spe(), and finish
+> > using SPE before you enable preemption.  This assumes that SPE is never
+> > used from interrupt context.  Be careful to not disable preemption for
+> > too long.
+> 
+> Thanks for your feedback. That did the trick. I'm currently working on
+> a (low power) 800 MHz single core P1014 CPU. That should be the
+> cheapest and slowest hardware that is available with SPE.
 
-But the code flow often is.
+Some of the mpc85xx chips can go a bit slower than that, e.g. 667 MHz is
+the bottom end of the range for MPC8544:
 
-i2c_del_adapter(&drvdata->adap);
-kfree(drvdata);
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8544E
 
-That wont work anymore if i2c_del_adapter() returns before the last reference 
-has been dropped. This needs to be restructured so that the adapter memory can 
-be freed by the release callback.
+>  My target is to use the module for calculating hash values of IPsec
+> packets. So we are talking about input data of up to ~1500 bytes. 
+> 
+> I did some tests with the tcrypt module and I get a hashing speed of
+> ~ 46MByte/s for 2K data chunks. Stock module gives 29MByte/s. In 
+> other words ~22,000 hashes per second. Overhead of the tcrypt data 
+> feeder of around 10% included. That are worst case 46us per hash and 
+> therefore 46us inside a non preemptive task.
+
+Worst case or average case?  Can chunks be larger?  How long does it
+take to do a chunk if you start with a cold cache?  Etc.
+
+> In beetween I spent some time to do the same for SHA-1. There
+> we have ~46,000 hashes per second or 21us per 2K data. That are
+> +13% compared to the already available PPC assembler module.
+> 
+> Three questions are left:
+> 
+> - Does the setup conflict with the mentioned interrupt context?
+
+You didn't say whether you're doing it from interrupt context...
+
+That said, the only current user of enable_kernel_spe() is KVM which
+disables interrupts, so it wouldn't bother me to change it to WARN_ON(!
+irqs_disabled()) other than that it would deviate from what
+enable_kernel_fp does (and that does have users that only disable
+preemption).
+
+> - Is that a reasonable time interval for disabling preemption?
+
+It's OK if the worst case is really 46 us, but if you can find a way to
+break it up a bit without affecting throughput too much, I'd do so.
+
+> - Should I send the patches to this or to the crypto list?
+
+You can CC this list for broader review, but the crypto list and
+maintainer is how changes to the crypto driver would get merged.
+
+-Scott
