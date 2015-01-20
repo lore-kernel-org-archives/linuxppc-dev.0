@@ -1,20 +1,28 @@
-Return-Path: <tom.huynh@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
+ [IPv6:2607:f8b0:4002:c07::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39D511A083B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 09:55:28 +1100 (AEDT)
-From: Tom Huynh <tom.huynh@freescale.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <cl@linux.com>, <tj@kernel.org>
-Subject: [PATCH] powerpc/perf: fix fsl_emb_pmu_start to write correct pmc value
-Date: Tue, 20 Jan 2015 16:19:50 -0600
-Message-ID: <1421792390-2400-1-git-send-email-tom.huynh@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tom Huynh <tom.huynh@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20A7A1A0BF2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 10:52:41 +1100 (AEDT)
+Received: by mail-yk0-f181.google.com with SMTP id 79so5260259ykr.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 15:52:38 -0800 (PST)
+From: Pranith Kumar <bobby.prani@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, Joel Stanley <joel@jms.id.au>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Rob Herring <robh@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 2/2] powerpc/powernv: Skip registering log region when
+ CONFIG_PRINTK=n
+Date: Tue, 20 Jan 2015 18:51:50 -0500
+Message-Id: <1421797911-23650-2-git-send-email-bobby.prani@gmail.com>
+In-Reply-To: <1421797911-23650-1-git-send-email-bobby.prani@gmail.com>
+References: <1421797911-23650-1-git-send-email-bobby.prani@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PMCs on PowerPC increases towards 0x80000000 and triggers an overflow
-interrupt when the msb is set to collect a sample. Therefore, to setup
-for the next sample collection, pmu_start should set the pmc value to
-0x80000000 - left instead of left which incorrectly delays the next
-overflow interrupt. Same as commit 9a45a9407c69 ("powerpc/perf:
-power_pmu_start restores incorrect values, breaking frequency events")
-for book3s.
+When CONFIG_PRINTK=n, log_buf_addr_get() returns NULL and log_buf_len_get()
+return 0. Check for these return values and skip registering the dump buffer.
 
-Signed-off-by: Tom Huynh <tom.huynh@freescale.com>
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+CC: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/perf/core-fsl-emb.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/opal.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
-index 4acaea0..e9fe904 100644
---- a/arch/powerpc/perf/core-fsl-emb.c
-+++ b/arch/powerpc/perf/core-fsl-emb.c
-@@ -389,6 +389,7 @@ static void fsl_emb_pmu_del(struct perf_event *event, int flags)
- static void fsl_emb_pmu_start(struct perf_event *event, int ef_flags)
- {
- 	unsigned long flags;
-+	unsigned long val;
- 	s64 left;
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index f10b9ec..1db119f0 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -667,7 +667,13 @@ static void __init opal_dump_region_init(void)
  
- 	if (event->hw.idx < 0 || !event->hw.sample_period)
-@@ -405,7 +406,10 @@ static void fsl_emb_pmu_start(struct perf_event *event, int ef_flags)
- 
- 	event->hw.state = 0;
- 	left = local64_read(&event->hw.period_left);
--	write_pmc(event->hw.idx, left);
-+	val = 0;
-+	if (left < 0x80000000L)
-+		val = 0x80000000L - left;
-+	write_pmc(event->hw.idx, val);
- 
- 	perf_event_update_userpage(event);
- 	perf_pmu_enable(event->pmu);
+ 	/* Register kernel log buffer */
+ 	addr = log_buf_addr_get();
++	if (addr == NULL)
++		return;
++
+ 	size = log_buf_len_get();
++	if (size == 0)
++		return;
++
+ 	rc = opal_register_dump_region(OPAL_DUMP_REGION_LOG_BUF,
+ 				       __pa(addr), size);
+ 	/* Don't warn if this is just an older OPAL that doesn't
 -- 
 1.9.1
