@@ -1,32 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.184])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 14E041A0DA2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:36:04 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 20 Jan 2015 17:06:02 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id BCA49E0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:07:11 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0KBZvBT30146792
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:05:57 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0KBZuaW002159
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:05:56 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
-Date: Tue, 20 Jan 2015 17:05:50 +0530
-Message-Id: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 585641A0CFB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:44:13 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'leroy christophe' <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, "scottwood@freescale.com"
+ <scottwood@freescale.com>
+Subject: RE: [PATCH v2 07/11] powerpc/8xx: macro for handling CPU15 errata
+Date: Tue, 20 Jan 2015 11:43:16 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CACF0E4@AcuExch.aculab.com>
+References: <20150120095735.A55671A5E86@localhost.localdomain>
+ <063D6719AE5E284EB5DD2968C1650D6D1CACEFD9@AcuExch.aculab.com>
+ <54BE3CD7.4040208@c-s.fr>
+In-Reply-To: <54BE3CD7.4040208@c-s.fr>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,79 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables us to understand how many hash fault we are taking
-when running benchmarks.
-
-For ex:
--bash-4.2# ./perf stat -e  powerpc:hash_fault -e page-faults /tmp/ebizzy.ppc64 -S 30  -P -n 1000
-...
-
- Performance counter stats for '/tmp/ebizzy.ppc64 -S 30 -P -n 1000':
-
-       1,10,04,075      powerpc:hash_fault
-       1,10,03,429      page-faults
-
-      30.865978991 seconds time elapsed
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/trace.h | 21 +++++++++++++++++++++
- arch/powerpc/mm/hash_utils_64.c  |  2 ++
- 2 files changed, 23 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
-index c15da6073cb8..ded56b183888 100644
---- a/arch/powerpc/include/asm/trace.h
-+++ b/arch/powerpc/include/asm/trace.h
-@@ -142,8 +142,29 @@ TRACE_EVENT_FN(opal_exit,
- 
- 	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
- );
-+
- #endif
- 
-+TRACE_EVENT(hash_fault,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long access, unsigned long trap),
-+	    TP_ARGS(addr, access, trap),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, access)
-+		    __field(unsigned long, trap)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->access = access;
-+		    __entry->trap = trap;
-+		    ),
-+
-+	    TP_printk("hash fault with addr 0x%lx and access = 0x%lx trap = 0x%lx",
-+		      __entry->addr, __entry->access, __entry->trap)
-+);
-+
- #endif /* _TRACE_POWERPC_H */
- 
- #undef TRACE_INCLUDE_PATH
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 2c2022d16059..7e88470a876f 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -57,6 +57,7 @@
- #include <asm/fadump.h>
- #include <asm/firmware.h>
- #include <asm/tm.h>
-+#include <asm/trace.h>
- 
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-@@ -1004,6 +1005,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
- 
- 	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
- 		ea, access, trap);
-+	trace_hash_fault(ea, access, trap);
- 
- 	/* Get region & vsid */
-  	switch (REGION_ID(ea)) {
--- 
-2.1.0
+RnJvbTogbGVyb3kgDQo+IExlIDIwLzAxLzIwMTUgMTI6MDksIERhdmlkIExhaWdodCBhIMOpY3Jp
+dCA6DQo+ID4gIEZyb20gQ2hyaXN0b3BoZSBMZXJveQ0KPiA+PiBIYXZpbmcgYSBtYWNybyB3aWxs
+IGhlbHAga2VlcCBjbGVhciBjb2RlLg0KPiA+IEl0IG1pZ2h0IHJlbW92ZSBhbiAjaWYgYnV0IGl0
+IGRvZXNuJ3QgcmVhbGx5IGhlbHAuDQo+ID4gQWxsIGl0IG1lYW5zIGlzIHRoYXQgYW55b25lIHJl
+YWRpbmcgdGhlIGNvZGUgaGFzIHRvIGh1bnQgZm9yDQo+ID4gdGhlIGRlZmluaXRpb24gYmVmb3Jl
+IHByb2NlZWRpbmcuDQo+ID4NCj4gPiBTb21lIGNvbW1lbnQgYWJvdXQgd2hhdCAoYW5kIHdoeSkg
+dGhlIGV4dHJhIGNvZGUgaXMgbmVlZGVkDQo+ID4gbWlnaHQgaGVscC4NCj4gVGhlIG1haW4gcmVh
+c29uIGlzIGJlY2F1c2Ugb2YgcGF0Y2ggMDkvMTEgd2hlcmUgd2UgaGF2ZSB0byBkdXBsaWNhdGUN
+Cj4gdGhpcyBjb2RlLiBJIHByZWZlciB0byBqdXN0IGR1cGxpY2F0ZSBvbmUgbGluZSByYXRoZXIg
+dGhhbiBkdXBsaWNhdGUgdGhlDQo+IHdob2xlIGNvZGUgKGVzcGVjaWFsbHkgYmVjYXVzZSBpbiB2
+MSBvZiB0aGUgUEFUQ0hzZXQsIGl0IHdhcyBkdXBsaWNhdGVkDQo+IHR3aWNlKToNCj4gDQo+IC0g
+ICAgRE9fOHh4X0NQVTE1KHIxMSwgcjEwKQ0KPiBbLi4uXQ0KPiAjaWZkZWYgQ09ORklHX01PRFVM
+RVMNCj4gWy4uLl0NCj4gKyAgICBET184eHhfQ1BVMTUocjEwLCByMTEpDQo+IFsuLi5dDQo+ICsj
+ZWxzZQ0KPiArICAgIG1mc3ByICAgIHIxMCwgU1BSTl9TUlIwICAgIC8qIEdldCBlZmZlY3RpdmUg
+YWRkcmVzcyBvZiBmYXVsdCAqLw0KPiArICAgIERPXzh4eF9DUFUxNShyMTEsIHIxMCkNCj4gDQo+
+IElzIHRoaXMgYXBwcm9hY2ggd3JvbmcgPw0KDQpJJ2QgY2FsbCBpdCBzb21ldGhpbmcgdGhhdCBp
+bmZlcnMgJ2ludmFsaWRhdGUgYWRqYWNlbnQgcGFnZXMnDQphbmQgdGhlbiBtZW50aW9uIHRoYXQg
+dGhpcyBpcyBuZWVkZWQgZHVlIHRvIGEgY3B1IGVycmF0YS4NCg0KCURhdmlkDQoNCg==
