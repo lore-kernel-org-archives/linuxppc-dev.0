@@ -1,22 +1,20 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0145.outbound.protection.outlook.com [207.46.100.145])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 348741A0BED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:24:38 +1100 (AEDT)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/dts: Update platform PLL node
-Date: Tue, 20 Jan 2015 08:51:03 +0000
-Message-ID: <DM2PR03MB3835E56F8A4080CB764E1FDE64B0@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1421042407-13921-1-git-send-email-igal.liberman@freescale.com>
- <1421739810.4961.207.camel@freescale.com>
-In-Reply-To: <1421739810.4961.207.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Emilian
- Medve <Emilian.Medve@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 763871A09F0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:28:31 +1100 (AEDT)
+Message-ID: <1421746096.4949.40.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pseries: Avoid context switch in EEH reset if
+ required
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Tue, 20 Jan 2015 10:28:16 +0100
+In-Reply-To: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FlZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkg
-MjAsIDIwMTUgOTo0NCBBTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gQ2M6IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBNZWR2ZSBFbWlsaWFuLUVNTUVEVkUxDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZHRzOiBVcGRhdGUgcGxhdGZvcm0gUExMIG5vZGUNCj4g
-DQo+IE9uIE1vbiwgMjAxNS0wMS0xMiBhdCAwODowMCArMDIwMCwgSWdhbC5MaWJlcm1hbiB3cm90
-ZToNCj4gPiBGcm9tOiBJZ2FsIExpYmVybWFuIDxJZ2FsLkxpYmVybWFuQGZyZWVzY2FsZS5jb20+
-DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2FsIExpYmVybWFuIDxJZ2FsLkxpYmVybWFuQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gQ2hhbmdlLUlkOiBJOTJkMDIwNjUxMjM3MDQxZDM3NjdhYTM1ZTkz
-NDU0Mzk3MTRmOTgzMQ0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Fv
-cmlxLWNsb2NrZ2VuMi5kdHNpIHwgICAgNiArKysrLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDQg
-aW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gDQo+IFBsZWFzZSBleHBsYWluIHRoaXMg
-bW9yZS4gIFdhcyBpdCBqdXN0IHdyb25nIGJlZm9yZT8gIElzIHRoaXMgZm9yIGEgbmV3IGNoaXA/
-ICBJZg0KPiB0aGUgbGF0dGVyLCB3aGF0IGVmZmVjdCBkb2VzIHRoaXMgaGF2ZSBvbiBleGlzdGlu
-ZyBjaGlwcz8NCj4gDQoNCkl0IHdhc24ndCB3cm9uZywgaG93ZXZlciBpdCB3YXMgbWlzc2luZyBz
-b21lIGNsb2NraW5nIG9wdGlvbnMgd2hpY2ggbWlnaHQgYmUgdXNlZCBieSBzb21lIGhhcmR3YXJl
-IGFjY2VsZXJhdG9ycyBhdmFpbGFibGUgaW4gVC9CIGRldmljZXMuDQpJIG5lZWQgdGhpcyBvcHRp
-b25zIGZvciBGTWFuLCBob3dldmVyIGl0IG1pZ2h0IGJlIHVzZWQgZm9yIG90aGVyIGFjY2VsZXJh
-dG9ycyB0b28uDQoNCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9x
-b3JpcS1jbG9ja2dlbjIuZHRzaQ0KPiA+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
-cS1jbG9ja2dlbjIuZHRzaQ0KPiA+IGluZGV4IDQ4ZTBiNmUuLjdlMWYwNzQgMTAwNjQ0DQo+ID4g
-LS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1jbG9ja2dlbjIuZHRzaQ0KPiA+
-ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtY2xvY2tnZW4yLmR0c2kNCj4g
-PiBAQCAtNDksMTQgKzQ5LDE2IEBAIGdsb2JhbC11dGlsaXRpZXNAZTEwMDAgew0KPiA+ICAJCXJl
-ZyA9IDwweDgwMCAweDQ+Ow0KPiA+ICAJCWNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWNvcmUtcGxs
-LTIuMCI7DQo+ID4gIAkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiA+IC0JCWNsb2NrLW91dHB1dC1u
-YW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiIsICJwbGwwLWRpdjQiOw0KPiA+ICsJCWNsb2NrLW91
-dHB1dC1uYW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiIsICJwbGwwLWRpdjMiLA0KPiA+ICsJCQkJ
-ICAgICAgInBsbDAtZGl2NCI7DQo+IA0KPiBZb3UncmUgY2hhbmdpbmcgdGhlIG1lYW5pbmcgb2Yg
-ZXhpc3RpbmcgY2xvY2sgaW5kZXggMi4NCj4gDQoNClllcywgaG93ZXZlciB0aGlzIHBsYXRmb3Jt
-IFBMTCBpcyBhIG5ldyB3b3JrIHdoaWNoIGlzIG5vdCB5ZXQgdXNlZCwgc28gd2UgYXJlbid0IGJy
-ZWFraW5nIGFueSAgZnVuY3Rpb25hbGl0eS4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
+On Mon, 2015-01-19 at 09:47 +1100, Gavin Shan wrote:
+> On pseries platform, the EEH reset backend pseries_eeh_reset() can
+> be called in atomic context as follows. For this case, we should
+> call udelay() instead of msleep() to avoid context switching.
+> 
+>      drivers/scsi/ipr.c::ipr_reset_slot_reset_done()
+>      drivers/pci/pci.c::pci_set_pcie_reset_state()
+>      arch/powerpc/kernel/eeh.c::pcibios_set_pcie_reset_state()
+>      arch/powerpc/platforms/pseries/eeh_pseries.c::pseries_eeh_reset()
+
+It's not acceptable to introduce multi-millisecond delays at interrupt
+time. In fact, we should generally not use udelay in such context.
+
+I understand that this is an exceptional error handling case but it's
+still not right.
+
+Are there many other users of pci_set_pcie_reset_state() at interrupt
+time ? Can we have a discussion with the PCI folks as to whether that
+should be legal or not ?
+
+I'm tempted to require that it's made illegal.
+
+Ben.
+
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Tested-by: Wen Xiong<wenxiong@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index a6c7e19..67623a3 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -503,8 +503,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
+>   */
+>  static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+>  {
+> -	int config_addr;
+> -	int ret;
+> +	int config_addr, delay, ret;
+>  
+>  	/* Figure out PE address */
+>  	config_addr = pe->config_addr;
+> @@ -528,9 +527,14 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+>  	/* We need reset hold or settlement delay */
+>  	if (option == EEH_RESET_FUNDAMENTAL ||
+>  	    option == EEH_RESET_HOT)
+> -		msleep(EEH_PE_RST_HOLD_TIME);
+> +		delay = EEH_PE_RST_HOLD_TIME;
+> +	else
+> +		delay = EEH_PE_RST_SETTLE_TIME;
+> +
+> +	if (in_atomic())
+> +		udelay(delay * 1000);
+>  	else
+> -		msleep(EEH_PE_RST_SETTLE_TIME);
+> +		msleep(delay);
+>  
+>  	return ret;
+>  }
