@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D3601A0C17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 16:45:07 +1100 (AEDT)
-In-Reply-To: <20150119113251.23984.16931.stgit@preeti.in.ibm.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, rafael.j.wysocki@intel.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9ED41A0B5B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:09:13 +1100 (AEDT)
+In-Reply-To: <20150119102647.23035.13380.stgit@preeti.in.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: cpuidle/powernv: Read target_residency value of idle states from
- DT if available
-Message-Id: <20150120054506.F13591402E0@ozlabs.org>
-Date: Tue, 20 Jan 2015 16:45:06 +1100 (AEDT)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
+Subject: Re: tick/broadcast: Make movement of broadcast hrtimer robust against
+ hotplug
+Message-Id: <20150120060913.A5EF31402DE@ozlabs.org>
+Date: Tue, 20 Jan 2015 17:09:13 +1100 (AEDT)
+Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-19-01 at 11:32:51 UTC, Preeti U Murthy wrote:
-> The device tree now exposes the residency values for different idle states. Read
-> these values instead of calculating residency from the latency values. The values
-> exposed in the DT are validated for optimal power efficiency. However to maintain
-> compatibility with the older firmware code which does not expose residency
-> values, use default values as a fallback mechanism. While at it, clump
-> the common parts of device tree parsing into one chunk.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> 
->  drivers/cpuidle/cpuidle-powernv.c |   39 ++++++++++++++++++++++++-------------
->  1 file changed, 25 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 2726663..9e732e1 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
->  	int dt_idle_states;
->  	const __be32 *idle_state_flags;
->  	const __be32 *idle_state_latency;
-> -	u32 len_flags, flags, latency_ns;
-> +	const __be32 *idle_state_residency;
-> +	u32 len_flags, flags, latency_ns, residency_ns;
->  	int i;
->  
->  	/* Currently we have snooze statically defined */
-> @@ -186,14 +187,21 @@ static int powernv_add_idle_states(void)
->  		return nr_idle_states;
->  	}
->  
-> +	idle_state_residency = of_get_property(power_mgt,
-> +			"ibm,cpu-idle-state-residency-ns", NULL);
-> +	if (!idle_state_residency) {
-> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
-> +		pr_warn("Falling back to default values\n");
-> +	}
+On Mon, 2015-19-01 at 10:26:48 UTC, Preeti U Murthy wrote:
+> Today if a cpu handling broadcasting of wakeups goes offline, it hands over
 
-This would be better done with something like:
+It's *the* cpu handling broadcasting of wakeups right? ie. there's only ever
+one at a time.
 
-	rc = of_read_property_u32(power_mgt, "ibm,cpu-idle-state-residency-ns", &residency_ns);
-	if (!rc) {
-		pr_info("cpuidle-powernv: missing ibm,cpu-idle-state-residency-ns\n");
-		residency_ns = 300000;
-	}
+> the job of broadcasting to another cpu in the CPU_DEAD phase. 
+
+I think that would be clearer as "to another cpu, when the cpu going offline
+reaches the CPU_DEAD state."
+
+Otherwise it can read as "another cpu (which is) in the CPU_DEAD phase", which
+is not what you mean - I think.
+
+> The CPU_DEAD notifiers are run only after the offline cpu sets its state as
+> CPU_DEAD. Meanwhile, the kthread doing the offline is scheduled out while
+
+The kthread which is running on a different cpu from either of the first two
+cpus you've mentioned.
+
+> waiting for this transition by queuing a timer. This is fatal because if the
+> cpu on which this kthread was running has no other work queued on it, it can
+> re-enter deep idle state, since it sees that a broadcast cpu still exists.
+> However the broadcast wakeup will never come since the cpu which was handling
+> it is offline, and this cpu never wakes up to see this because its in deep
+> idle state.
+
+Which cpu is "this cpu"? I think you mean the one running the kthread which is
+doing the offline, but it's not 100% clear.
+
+> Fix this by setting the broadcast timer to a max value so as to force the cpus
+> entering deep idle states henceforth to freshly nominate the broadcast cpu. More
+> importantly this has to be done in the CPU_DYING phase so that it is visible to
+> all cpus right after exiting stop_machine, which is when they can re-enter idle.
+> This ensures that handover of the broadcast duty falls in place on offline, without
+> having to do it explicitly.
+
+OK, I don't know the code well enough to say if that's the right fix.
+
+You say:
+
++	/* This allows fresh nomination of broadcast cpu */
++	bc->next_event.tv64 = KTIME_MAX;
+
+Is that all it does? I see that check in several places in the code.
+
+
+I assume we're expecting Thomas to merge this?
+
+If so it's probably worth mentioning that it fixes a bug we are seeing on
+machines in the wild. So it'd be nice if it went into 3.19 and/or gets sent to
+stable.
 
 cheers
