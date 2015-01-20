@@ -1,18 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A58A91A0D60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 10:24:38 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- hbabu@us.ibm.com, nacc@linux.vnet.ibm.com
-Subject: [PATCH 7/7] powerpc: enable CONFIG_NETFILTER_XT_MARK
-Date: Tue, 20 Jan 2015 10:24:25 +1100
-Message-Id: <1421709865-6368-7-git-send-email-anton@samba.org>
-In-Reply-To: <1421709865-6368-1-git-send-email-anton@samba.org>
-References: <1421709865-6368-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF5941A0CFB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 11:46:20 +1100 (AEDT)
+Message-ID: <1421714767.4961.196.camel@freescale.com>
+Subject: Re: [PATCH] fsl/smp: add low power boot support to replace spin boot
+From: Scott Wood <scottwood@freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Mon, 19 Jan 2015 18:46:07 -0600
+In-Reply-To: <1421301930-10035-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1421301930-10035-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-docker requires CONFIG_NETFILTER_XT_MARK to be enabled.
-Unfortunately that means turning on CONFIG_NETFILTER_ADVANCED.
+On Thu, 2015-01-15 at 14:05 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> U-boot put non-boot cpus into an low power state(PW10/PW20 or DOZE) when cpu
+> powered up. To exit low power state kernel will send DOORBELL or MPIC-IPI
+> signal to all those CPUs.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/configs/pseries_defconfig    | 22 +++++++++++++++++++++-
- arch/powerpc/configs/pseries_le_defconfig | 22 +++++++++++++++++++++-
- 2 files changed, 42 insertions(+), 2 deletions(-)
+U-Boot does not do this yet.  A patch was just posted to propose such a
+change.
 
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 21c284e..f70c770 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -73,7 +73,27 @@ CONFIG_INET_ESP=m
- CONFIG_INET_IPCOMP=m
- # CONFIG_IPV6 is not set
- CONFIG_NETFILTER=y
--# CONFIG_NETFILTER_ADVANCED is not set
-+CONFIG_NF_CONNTRACK=m
-+CONFIG_NF_CONNTRACK_FTP=m
-+CONFIG_NF_CONNTRACK_IRC=m
-+CONFIG_NF_CONNTRACK_SIP=m
-+CONFIG_NF_CT_NETLINK=m
-+CONFIG_NETFILTER_XT_MARK=m
-+CONFIG_NETFILTER_XT_TARGET_LOG=m
-+CONFIG_NETFILTER_XT_TARGET_NFLOG=m
-+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
-+CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=m
-+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
-+CONFIG_NETFILTER_XT_MATCH_POLICY=m
-+CONFIG_NETFILTER_XT_MATCH_STATE=m
-+CONFIG_NF_CONNTRACK_IPV4=m
-+CONFIG_NF_LOG_ARP=m
-+CONFIG_IP_NF_IPTABLES=m
-+CONFIG_IP_NF_FILTER=m
-+CONFIG_IP_NF_TARGET_REJECT=m
-+CONFIG_IP_NF_NAT=m
-+CONFIG_IP_NF_TARGET_MASQUERADE=m
-+CONFIG_IP_NF_MANGLE=m
- CONFIG_BRIDGE=m
- CONFIG_VLAN_8021Q=m
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-index 3805ade..e2b6080 100644
---- a/arch/powerpc/configs/pseries_le_defconfig
-+++ b/arch/powerpc/configs/pseries_le_defconfig
-@@ -74,7 +74,27 @@ CONFIG_INET_ESP=m
- CONFIG_INET_IPCOMP=m
- # CONFIG_IPV6 is not set
- CONFIG_NETFILTER=y
--# CONFIG_NETFILTER_ADVANCED is not set
-+CONFIG_NF_CONNTRACK=m
-+CONFIG_NF_CONNTRACK_FTP=m
-+CONFIG_NF_CONNTRACK_IRC=m
-+CONFIG_NF_CONNTRACK_SIP=m
-+CONFIG_NF_CT_NETLINK=m
-+CONFIG_NETFILTER_XT_MARK=m
-+CONFIG_NETFILTER_XT_TARGET_LOG=m
-+CONFIG_NETFILTER_XT_TARGET_NFLOG=m
-+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
-+CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=m
-+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
-+CONFIG_NETFILTER_XT_MATCH_POLICY=m
-+CONFIG_NETFILTER_XT_MATCH_STATE=m
-+CONFIG_NF_CONNTRACK_IPV4=m
-+CONFIG_NF_LOG_ARP=m
-+CONFIG_IP_NF_IPTABLES=m
-+CONFIG_IP_NF_FILTER=m
-+CONFIG_IP_NF_TARGET_REJECT=m
-+CONFIG_IP_NF_NAT=m
-+CONFIG_IP_NF_TARGET_MASQUERADE=m
-+CONFIG_IP_NF_MANGLE=m
- CONFIG_BRIDGE=m
- CONFIG_VLAN_8021Q=m
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--- 
-2.1.0
+> @@ -292,11 +315,58 @@ static int smp_85xx_kick_cpu(int nr)
+>  		__secondary_hold_acknowledge = -1;
+>  	}
+>  #endif
+> +
+>  	flush_spin_table(spin_table);
+> -	out_be32(&spin_table->pir, hw_cpu);
+> +	/*
+> +	 * U-boot will wait kernel send eoi to MPIC, after EOI has send
+> +	 * kernel will set PIR for uboot, let uboot know EOI has send.
+> +	 */
+> +	out_be32(&spin_table->pir, 0);
+
+Why is the kernel sending EOI for an interrupt U-Boot receives?  Why are
+you abusing PIR for anything other than setting the desired PIR value?
+
+What happens when you enter the kernel with secondaries having PIR = 0?
+
+> +	/* Let cpu exit low power state, and from u-boot jump to kernel */
+> +	arch_send_call_function_single_ipi(kick_cpus);
+> +
+> +	/*
+> +	 * Let we ACK interrput and Send EOI signal to finish INT server
+> +	 * U-boot has read EPR to ACK interrput when MPIC work in external
+> +	 * proxy mode. Without the external proxy facility, we need to read
+> +	 * MPIC ACK register.
+> +	 *
+> +	 * There just ACK interrput, we don't need to get the interrupt vector
+> +	 * and to handle it. Because there just IPI or DOORBELL interrupt to
+> +	 * make u-boot exit low power state and jump to kernel.
+> +	 */
+> +	mpic_cpu_ack(nr);
+
+How do you know the interrupt is ready to be acked at this point?
+
+-Scott
