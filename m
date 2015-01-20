@@ -1,22 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 709171A1114
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:28:12 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 11:00:38 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] tick/broadcast: Make movement of broadcast hrtimer
- robust against hotplug
-In-Reply-To: <20150120081121.26984.46720.stgit@preeti.in.ibm.com>
-Message-ID: <alpine.DEB.2.11.1501201049371.5526@nanos>
-References: <20150120081121.26984.46720.stgit@preeti.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D6C951A132A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:28:22 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
+ <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
+Subject: [PATCH 1/8] clk: ppc-corenet: Fix checkpatch type
+ PARENTHESIS_ALIGNMENT
+Date: Tue, 20 Jan 2015 04:09:23 -0600
+Message-ID: <1421748570-14282-2-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: aik@ozlabs.ru, linux-kernel@vger.kernel.org, anton@samba.org,
- shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Jan 2015, Preeti U Murthy wrote:
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -675,8 +675,8 @@ static void broadcast_move_bc(int deadcpu)
->  
->  	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
->  		return;
-> -	/* This moves the broadcast assignment to this cpu */
-> -	clockevents_program_event(bc, bc->next_event, 1);
-> +	/* This allows fresh nomination of broadcast cpu */
+CHECK:PARENTHESIS_ALIGNMENT: Alignment should match open parenthesis
++       rc = of_property_read_string_index(np, "clock-output-names",
++                       0, &clk_name);
 
-This comment should explain WHY this enforces the move of the
-broadcast to a different cpu. 'Allows' is rather ambiguous.
+CHECK:PARENTHESIS_ALIGNMENT: Alignment should match open parenthesis
++               pr_err("Could not register clock provider for node:%s\n",
++                        np->name);
 
-> +	bc->next_event.tv64 = KTIME_MAX;
+CHECK:PARENTHESIS_ALIGNMENT: Alignment should match open parenthesis
++               rc = of_property_read_string_index(np, "clock-output-names",
++                               i, &clk_name);
 
-Thanks,
+CHECK:PARENTHESIS_ALIGNMENT: Alignment should match open parenthesis
++               pr_err("Could not register clk provider for node:%s\n",
++                        np->name);
 
-	tglx
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
+ drivers/clk/clk-ppc-corenet.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+index bf0fe56..7cb8f23 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -110,7 +110,7 @@ static void __init core_mux_init(struct device_node *np)
+ 		cmux_clk->flags = CLKSEL_ADJUST;
+ 
+ 	rc = of_property_read_string_index(np, "clock-output-names",
+-			0, &clk_name);
++					   0, &clk_name);
+ 	if (rc) {
+ 		pr_err("%s: read clock names error\n", np->name);
+ 		goto err_clk;
+@@ -132,7 +132,7 @@ static void __init core_mux_init(struct device_node *np)
+ 	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
+ 	if (rc) {
+ 		pr_err("Could not register clock provider for node:%s\n",
+-			 np->name);
++		       np->name);
+ 		goto err_clk;
+ 	}
+ 	goto err_name;
+@@ -198,7 +198,7 @@ static void __init core_pll_init(struct device_node *np)
+ 
+ 	for (i = 0; i < count; i++) {
+ 		rc = of_property_read_string_index(np, "clock-output-names",
+-				i, &clk_name);
++						   i, &clk_name);
+ 		if (rc) {
+ 			pr_err("%s: could not get clock names\n", np->name);
+ 			goto err_cell;
+@@ -230,7 +230,7 @@ static void __init core_pll_init(struct device_node *np)
+ 	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
+ 	if (rc) {
+ 		pr_err("Could not register clk provider for node:%s\n",
+-			 np->name);
++		       np->name);
+ 		goto err_cell;
+ 	}
+ 
+-- 
+2.2.2
