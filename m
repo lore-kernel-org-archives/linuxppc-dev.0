@@ -1,22 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id A1D061A0427
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:32:42 +1100 (AEDT)
-Message-ID: <54BE3CD7.4040208@c-s.fr>
-Date: Tue, 20 Jan 2015 12:32:39 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1444F1A0427
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:35:20 +1100 (AEDT)
+Date: Tue, 20 Jan 2015 12:35:08 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
+ issues
+Message-ID: <20150120113508.GA1067@katana>
+References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
+ <20150119190142.GA9451@kroah.com>
+ <20150119230427.GH26493@n2100.arm.linux.org.uk>
+ <20150120014159.GA3349@kroah.com> <54BDFE30.5090303@metafoo.de>
+ <20150120071256.GA18983@kroah.com>
+ <20150120101752.GI26493@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "scottwood@freescale.com" <scottwood@freescale.com>
-Subject: Re: [PATCH v2 07/11] powerpc/8xx: macro for handling CPU15 errata
-References: <20150120095735.A55671A5E86@localhost.localdomain>
- <063D6719AE5E284EB5DD2968C1650D6D1CACEFD9@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CACEFD9@AcuExch.aculab.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+In-Reply-To: <20150120101752.GI26493@n2100.arm.linux.org.uk>
+Cc: linux-mips@linux-mips.org, Lars-Peter Clausen <lars@metafoo.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
+ Jean Delvare <jdelvare@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +36,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Le 20/01/2015 12:09, David Laight a écrit :
->  From Christophe Leroy
->> Having a macro will help keep clear code.
-> It might remove an #if but it doesn't really help.
-> All it means is that anyone reading the code has to hunt for
-> the definition before proceeding.
->
-> Some comment about what (and why) the extra code is needed
-> might help.
-The main reason is because of patch 09/11 where we have to duplicate 
-this code. I prefer to just duplicate one line rather than duplicate the 
-whole code (especially because in v1 of the PATCHset, it was duplicated 
-twice):
-
--    DO_8xx_CPU15(r11, r10)
-[...]
-#ifdef CONFIG_MODULES
-[...]
-+    DO_8xx_CPU15(r10, r11)
-[...]
-+#else
-+    mfspr    r10, SPRN_SRR0    /* Get effective address of fault */
-+    DO_8xx_CPU15(r11, r10)
-
-Is this approach wrong ?
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
->
-> ...
->> +
->> +#ifdef CONFIG_8xx_CPU15
->> +#define DO_8xx_CPU15(tmp, addr)	\
->> +	addi	tmp, addr, PAGE_SIZE;	\
->> +	tlbie	tmp;			\
->> +	addi	tmp, addr, PAGE_SIZE;	\
-> You've even transcribed this incorrectly.
-Oops
->
-> Clearly not tested :-)
-Indeed it's been tested, but tests can only show that the code is not 
-worth than before.
-This code is there to fix a chip errata which (almost?) never happens.
-In my production version, I have not activated this errata, and he have 
-never seen the problem on any of the more than 200 boards that have run 
-for at least 4 years.
+> > Right, and I'm not saying it should be, just move the existing logic
+> > into the release callback, and the code flow should be the same and we
+> > don't end up with an "empty" release callback.
 
-Christophe
->
-> 	David
->
->> +	tlbie	tmp
->> +#else
->> +#define DO_8xx_CPU15(tmp, addr)
->> +#endif
->> +
->>   InstructionTLBMiss:
->>   #ifdef CONFIG_8xx_CPU6
->>   	mtspr	SPRN_DAR, r3
->> @@ -304,12 +315,7 @@ InstructionTLBMiss:
->>   	EXCEPTION_PROLOG_0
->>   	mtspr	SPRN_SPRG_SCRATCH2, r10
->>   	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
->> -#ifdef CONFIG_8xx_CPU15
->> -	addi	r11, r10, PAGE_SIZE
->> -	tlbie	r11
->> -	addi	r11, r10, -PAGE_SIZE
->> -	tlbie	r11
->> -#endif
->> +	DO_8xx_CPU15(r11, r10)
->>
->>   	/* If we are faulting a kernel address, we have to use the
->>   	 * kernel page tables.
->> --
->> 2.1.0
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+But as Russell says, even if we don't have the empty callback, we still
+create the problem shown by DEBUG_KOBJECT_RELEASE which wasn't there
+before?
+
+> IMHO there are two possibilities here:
+>=20
+> 1. leave it as-is, where we ensure that the remainder of i2c_del_adapter
+>    does not complete until the release callback has been called.
+>=20
+> 2. fix it properly by taking (eg) the netdev approach to i2c_adapter,
+>    or an alternative solution which results in decoupling the lifetime
+>    of the struct device from the i2c_adapter.
+>=20
+> Either of these would be much better than removing the completion and
+> then moving a chunk of code to make it "look" safer than it actually is
+> and thereby introducing potential use-after-free bugs.
+
+I agree. As much as I'd love option 2) I don't see that on the horizon.
+So, let's keep things as they are. What probably makes sense is to
+update the comment with something like this? I took the liberty and used
+some wording from Russell:
+
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index e227dff62a85..1c89a08fae2a 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1778,11 +1778,14 @@ void i2c_del_adapter(struct i2c_adapter *adap)
+ 	/* device name is gone after device_unregister */
+ 	dev_dbg(&adap->dev, "adapter [%s] unregistered\n", adap->name);
+=20
+-	/* clean up the sysfs representation */
++	/* wait until all references to the device are gone
++	 *
++	 * FIXME: This is old code and should ideally be replaced by an
++	 * alternative which results in decoupling the lifetime of the struct
++	 * device from the i2c_adapter, like spi or netdev do.
++	 */
+ 	init_completion(&adap->dev_released);
+ 	device_unregister(&adap->dev);
+-
+-	/* wait for sysfs to drop all references */
+ 	wait_for_completion(&adap->dev_released);
+=20
+ 	/* free bus id */
+
+
+Thanks for all the input, it is very much appreciated!
+
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUvj1sAAoJEBQN5MwUoCm21voP/RGyoF9auSnOpttw4wFjoBJw
+n9t+N6mAo6eO5zpgZ748HRmP99HXZKCEnz7danIfgYddMRl4GAQe0JQdGh9lYbzM
+vbQ+tzJaWjFgyHrMpeVIRpEVs9C705Vwh1hnYA1omxTfJnhkQ4DpzePFvTsEC8R/
+CLrDCdoRLemD3Dq1Zey9lfYNuHyysbzRN+Z5ztYIrlIPQ9Jj1crPFBPR2euipsLH
+v986DrvPPCJ0vU3FjeR7DVAiWi+3ap885zNs30xiRSMYuekUeFQJUMlPAj3WvXQF
+7tIeGsvL7Cv7gckS8yq61Yf2ZyjC2zjga0/HeTKRp/bvTacF/hvKeLUyPlazJxxm
+oGWLIZYGSGau+/auJz+Af2cld3eiKjAq6nMHbQOu5cbuB5soyK/FlK1GfeFCP0AX
+84EV5UmrFdo/LkaCvvTUIJy15kIRxUjU2r/Fdlr2WLeTnAECIqFuVBlAuc4UwAi2
+B7Waf/pX7phVyuJdALXvzMiDtziMKchSyg3A1iuWnCFqicMBSJaXLVj9TONoPfYA
+MOiy4Y7a2fnvkapxu9YH8xV3Sj4TN2XCsoB9EYfYIK7kf9SA/r4/xAPGSKB1nQ41
+ZJKvC4M3dnAAsZ3VwqesFKC8oKTy/gicr+dTFSbpFPlp2314dC86Fcqxnq+AIqco
+GaRpIu/Gy9u1+9zEPxPN
+=z8hT
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
