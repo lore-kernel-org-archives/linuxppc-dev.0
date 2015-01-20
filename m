@@ -1,31 +1,32 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1444F1A0427
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:35:20 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 12:35:08 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
- issues
-Message-ID: <20150120113508.GA1067@katana>
-References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
- <20150119190142.GA9451@kroah.com>
- <20150119230427.GH26493@n2100.arm.linux.org.uk>
- <20150120014159.GA3349@kroah.com> <54BDFE30.5090303@metafoo.de>
- <20150120071256.GA18983@kroah.com>
- <20150120101752.GI26493@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-In-Reply-To: <20150120101752.GI26493@n2100.arm.linux.org.uk>
-Cc: linux-mips@linux-mips.org, Lars-Peter Clausen <lars@metafoo.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
- Jean Delvare <jdelvare@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 14E041A0DA2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:36:04 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 20 Jan 2015 17:06:02 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id BCA49E0044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:07:11 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0KBZvBT30146792
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:05:57 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0KBZuaW002159
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 17:05:56 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
+Date: Tue, 20 Jan 2015 17:05:50 +0530
+Message-Id: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,85 +36,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This enables us to understand how many hash fault we are taking
+when running benchmarks.
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For ex:
+-bash-4.2# ./perf stat -e  powerpc:hash_fault -e page-faults /tmp/ebizzy.ppc64 -S 30  -P -n 1000
+...
 
+ Performance counter stats for '/tmp/ebizzy.ppc64 -S 30 -P -n 1000':
 
-> > Right, and I'm not saying it should be, just move the existing logic
-> > into the release callback, and the code flow should be the same and we
-> > don't end up with an "empty" release callback.
+       1,10,04,075      powerpc:hash_fault
+       1,10,03,429      page-faults
 
-But as Russell says, even if we don't have the empty callback, we still
-create the problem shown by DEBUG_KOBJECT_RELEASE which wasn't there
-before?
+      30.865978991 seconds time elapsed
 
-> IMHO there are two possibilities here:
->=20
-> 1. leave it as-is, where we ensure that the remainder of i2c_del_adapter
->    does not complete until the release callback has been called.
->=20
-> 2. fix it properly by taking (eg) the netdev approach to i2c_adapter,
->    or an alternative solution which results in decoupling the lifetime
->    of the struct device from the i2c_adapter.
->=20
-> Either of these would be much better than removing the completion and
-> then moving a chunk of code to make it "look" safer than it actually is
-> and thereby introducing potential use-after-free bugs.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/trace.h | 21 +++++++++++++++++++++
+ arch/powerpc/mm/hash_utils_64.c  |  2 ++
+ 2 files changed, 23 insertions(+)
 
-I agree. As much as I'd love option 2) I don't see that on the horizon.
-So, let's keep things as they are. What probably makes sense is to
-update the comment with something like this? I took the liberty and used
-some wording from Russell:
-
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index e227dff62a85..1c89a08fae2a 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -1778,11 +1778,14 @@ void i2c_del_adapter(struct i2c_adapter *adap)
- 	/* device name is gone after device_unregister */
- 	dev_dbg(&adap->dev, "adapter [%s] unregistered\n", adap->name);
-=20
--	/* clean up the sysfs representation */
-+	/* wait until all references to the device are gone
-+	 *
-+	 * FIXME: This is old code and should ideally be replaced by an
-+	 * alternative which results in decoupling the lifetime of the struct
-+	 * device from the i2c_adapter, like spi or netdev do.
-+	 */
- 	init_completion(&adap->dev_released);
- 	device_unregister(&adap->dev);
--
--	/* wait for sysfs to drop all references */
- 	wait_for_completion(&adap->dev_released);
-=20
- 	/* free bus id */
-
-
-Thanks for all the input, it is very much appreciated!
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUvj1sAAoJEBQN5MwUoCm21voP/RGyoF9auSnOpttw4wFjoBJw
-n9t+N6mAo6eO5zpgZ748HRmP99HXZKCEnz7danIfgYddMRl4GAQe0JQdGh9lYbzM
-vbQ+tzJaWjFgyHrMpeVIRpEVs9C705Vwh1hnYA1omxTfJnhkQ4DpzePFvTsEC8R/
-CLrDCdoRLemD3Dq1Zey9lfYNuHyysbzRN+Z5ztYIrlIPQ9Jj1crPFBPR2euipsLH
-v986DrvPPCJ0vU3FjeR7DVAiWi+3ap885zNs30xiRSMYuekUeFQJUMlPAj3WvXQF
-7tIeGsvL7Cv7gckS8yq61Yf2ZyjC2zjga0/HeTKRp/bvTacF/hvKeLUyPlazJxxm
-oGWLIZYGSGau+/auJz+Af2cld3eiKjAq6nMHbQOu5cbuB5soyK/FlK1GfeFCP0AX
-84EV5UmrFdo/LkaCvvTUIJy15kIRxUjU2r/Fdlr2WLeTnAECIqFuVBlAuc4UwAi2
-B7Waf/pX7phVyuJdALXvzMiDtziMKchSyg3A1iuWnCFqicMBSJaXLVj9TONoPfYA
-MOiy4Y7a2fnvkapxu9YH8xV3Sj4TN2XCsoB9EYfYIK7kf9SA/r4/xAPGSKB1nQ41
-ZJKvC4M3dnAAsZ3VwqesFKC8oKTy/gicr+dTFSbpFPlp2314dC86Fcqxnq+AIqco
-GaRpIu/Gy9u1+9zEPxPN
-=z8hT
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
+index c15da6073cb8..ded56b183888 100644
+--- a/arch/powerpc/include/asm/trace.h
++++ b/arch/powerpc/include/asm/trace.h
+@@ -142,8 +142,29 @@ TRACE_EVENT_FN(opal_exit,
+ 
+ 	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
+ );
++
+ #endif
+ 
++TRACE_EVENT(hash_fault,
++
++	    TP_PROTO(unsigned long addr, unsigned long access, unsigned long trap),
++	    TP_ARGS(addr, access, trap),
++	    TP_STRUCT__entry(
++		    __field(unsigned long, addr)
++		    __field(unsigned long, access)
++		    __field(unsigned long, trap)
++		    ),
++
++	    TP_fast_assign(
++		    __entry->addr = addr;
++		    __entry->access = access;
++		    __entry->trap = trap;
++		    ),
++
++	    TP_printk("hash fault with addr 0x%lx and access = 0x%lx trap = 0x%lx",
++		      __entry->addr, __entry->access, __entry->trap)
++);
++
+ #endif /* _TRACE_POWERPC_H */
+ 
+ #undef TRACE_INCLUDE_PATH
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 2c2022d16059..7e88470a876f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -57,6 +57,7 @@
+ #include <asm/fadump.h>
+ #include <asm/firmware.h>
+ #include <asm/tm.h>
++#include <asm/trace.h>
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -1004,6 +1005,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 
+ 	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
+ 		ea, access, trap);
++	trace_hash_fault(ea, access, trap);
+ 
+ 	/* Get region & vsid */
+  	switch (REGION_ID(ea)) {
+-- 
+2.1.0
