@@ -1,27 +1,20 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 92F3F1A064E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 13:51:43 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 09:41:59 +0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] i2c: drop ancient protection against sysfs refcounting
- issues
-Message-ID: <20150120014159.GA3349@kroah.com>
-References: <1421693756-12917-1-git-send-email-wsa@the-dreams.de>
- <20150119190142.GA9451@kroah.com>
- <20150119230427.GH26493@n2100.arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CEC8E1A0C3D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 14:36:29 +1100 (AEDT)
+Date: Tue, 20 Jan 2015 14:36:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/7] powerpc: regenerate ppc64 and pseries defconfigs
+Message-ID: <20150120143623.369f3571@canb.auug.org.au>
+In-Reply-To: <1421709865-6368-1-git-send-email-anton@samba.org>
+References: <1421709865-6368-1-git-send-email-anton@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150119230427.GH26493@n2100.arm.linux.org.uk>
-Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
- Jean Delvare <jdelvare@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/srxNK5clAM9R8an5vlTU+qJ"; protocol="application/pgp-signature"
+Cc: nacc@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 19, 2015 at 11:04:27PM +0000, Russell King - ARM Linux wrote:
-> On Tue, Jan 20, 2015 at 03:01:42AM +0800, Greg Kroah-Hartman wrote:
-> > On Mon, Jan 19, 2015 at 07:55:56PM +0100, Wolfram Sang wrote:
-> > > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> > > index 39d25a8cb1ad..15cc5902cf89 100644
-> > > --- a/drivers/i2c/i2c-core.c
-> > > +++ b/drivers/i2c/i2c-core.c
-> > > @@ -41,7 +41,6 @@
-> > >  #include <linux/of_device.h>
-> > >  #include <linux/of_irq.h>
-> > >  #include <linux/clk/clk-conf.h>
-> > > -#include <linux/completion.h>
-> > >  #include <linux/hardirq.h>
-> > >  #include <linux/irqflags.h>
-> > >  #include <linux/rwsem.h>
-> > > @@ -1184,8 +1183,7 @@ EXPORT_SYMBOL_GPL(i2c_new_dummy);
-> > >  
-> > >  static void i2c_adapter_dev_release(struct device *dev)
-> > >  {
-> > > -	struct i2c_adapter *adap = to_i2c_adapter(dev);
-> > > -	complete(&adap->dev_released);
-> > > +	/* empty, but the driver core insists we need a release function */
-> > 
-> > Yeah, it does, but I hate to see this in "real" code as something is
-> > probably wrong with it if it happens.
-> > 
-> > Please move the rest of 'i2c_del_adapter' into the release function
-> > (what was after the wait_for_completion() call), and then all should be
-> > fine.
-> 
-> Are you sure about that?  Some drivers do this, eg,
-> 
->         i2c_del_adapter(&drv_data->adapter);
->         free_irq(drv_data->irq, drv_data);
-> 
-> where drv_data was allocated using devm_kzalloc(), and so will be
-> released when the ->remove callback (which calls the above
-> i2c_del_adapter()) returns... freeing the embedded device struct.
+--Sig_/srxNK5clAM9R8an5vlTU+qJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-But that will fail today if the memory is freed in i2c_del_adapter(), so
-there shouldn't be any change in logic here.
+Hi Anton,
 
-Or am I missing something obvious?
+On Tue, 20 Jan 2015 10:24:19 +1100 Anton Blanchard <anton@samba.org> wrote:
+>
+> Regenerate defconfigs using make savedefconfig.
 
-thanks,
+I assume that you checked that we end up with (basically) the
+same .config (as some previous (to be defined but sane) release)?  :-)
 
-greg k-h
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/srxNK5clAM9R8an5vlTU+qJ
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJUvc08AAoJEMDTa8Ir7ZwV8ZoP/RaJk7ubnZST25uAawa+7CP6
+H5exwdBCBvI53pFPcUIlPqep6VUfaRcHZAG2nCGAiG+7ndMjC1jow3orRpHm6Ynz
+SVXTUY6ZMXnwIssgxD/aqwRabiC/hudUvYz0h1j6a2QSSIuK74AkV7269fWgB12z
+PsbWn0qqTd1Ychq/462hklJVmv2BCIpbkRQnqRBeDUQETqBaUun9e5cG7oRsDJd4
+SwLLJYk+X6H25oFG7sMEsTjgKXlXoI5LiWpAB9C0Q4WXAFdO9DAI3aokgTQDiRc8
+PMoyISi0a1CzGtkw5EJlCpFCba+mVP5bV17wlEnWhaKtglRVhB4m017op7I54W5r
+kgE4iRyBuowBRZIcDmr9opjewuLvQ857HzUXl1H4GG5mQWj/7tmeSqyNwRzX2EEw
+suKwt7fJYJjKGTCmRJ/pQ1DfOvoogOE/V8CEHbSOM8bwNmSHJgNq0bKx6JSTc/H9
++kGgq8rUAVExRE0RPBgjmgdmPhQzsZCD3jsb0VV7XrogdQ/4D7caCSdCyvFyHMSA
+S9UMUY5RQas9jWo7WHrNaZBU9RAdvfIEPoBLy5s84lz8K+dJTopYyLN3aNIrEoQi
+xcCeZz/rWofuX1ws8Q3oxcOLalCEyXPcWdr1My00ayfYuf67er/DyXuYNLjxoFtF
+CDIF4ZrnnKvUQ5FzK33C
+=AQ1E
+-----END PGP SIGNATURE-----
+
+--Sig_/srxNK5clAM9R8an5vlTU+qJ--
