@@ -3,14 +3,16 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0135.outbound.protection.outlook.com [207.46.100.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D04F41A06A1
+ by lists.ozlabs.org (Postfix) with ESMTPS id E29F81A06A7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:13:24 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
  <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
-Subject: [PATCH 0/8] clk: ppc-corenet: Add support for the platform PLL
-Date: Tue, 20 Jan 2015 04:09:22 -0600
-Message-ID: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH 3/8] clk: ppc-corenet: Fix checkpatch type ALLOC_SIZEOF_STRUCT
+Date: Tue, 20 Jan 2015 04:09:25 -0600
+Message-ID: <1421748570-14282-4-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Emil Medve <Emilian.Medve@Freescale.com>
@@ -23,28 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These patches are based on:
+CHECK:ALLOC_SIZEOF_STRUCT: Prefer kzalloc(sizeof(*cmux_clk)...) over kzalloc(sizeof(struct cmux_clk)...)
++       cmux_clk = kzalloc(sizeof(struct cmux_clk), GFP_KERNEL);
 
-http://patchwork.ozlabs.org/patch/417297
-http://patchwork.ozlabs.org/patch/417295
-http://patchwork.ozlabs.org/patch/417292
+CHECK:ALLOC_SIZEOF_STRUCT: Prefer kzalloc(sizeof(*onecell_data)...) over kzalloc(sizeof(struct clk_onecell_data)...)
++       onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
 
-The first 5 patches below are checkpatch/static analysis fixes
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
+ drivers/clk/clk-ppc-corenet.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Emil Medve (8):
-  clk: ppc-corenet: Fix checkpatch type PARENTHESIS_ALIGNMENT
-  clk: ppc-corenet: Fix checkpatch type ALLOC_WITH_MULTIPLY
-  clk: ppc-corenet: Fix checkpatch type ALLOC_SIZEOF_STRUCT
-  clk: ppc-corenet: Fix checkpatch type OOM_MESSAGE
-  clk: ppc-corenet: Make local symbol 'static'
-  clk: ppc-corenet: Replace kzalloc() with kmalloc()
-  powerpc/corenet: Enable CLK_PPC_CORENET
-  clk: ppc-corenet: Add support for the platform PLL
-
- arch/powerpc/configs/corenet32_smp_defconfig |   1 +
- arch/powerpc/configs/corenet64_smp_defconfig |   1 +
- drivers/clk/clk-ppc-corenet.c                | 120 ++++++++++++++++++++++-----
- 3 files changed, 101 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+index efa74aa..a439f52 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -94,7 +94,7 @@ static void __init core_mux_init(struct device_node *np)
+ 	for (i = 0; i < count; i++)
+ 		parent_names[i] = of_clk_get_parent_name(np, i);
+ 
+-	cmux_clk = kzalloc(sizeof(struct cmux_clk), GFP_KERNEL);
++	cmux_clk = kzalloc(sizeof(*cmux_clk), GFP_KERNEL);
+ 	if (!cmux_clk) {
+ 		pr_err("%s: could not allocate cmux_clk\n", __func__);
+ 		goto err_name;
+@@ -190,7 +190,7 @@ static void __init core_pll_init(struct device_node *np)
+ 		goto err_map;
+ 	}
+ 
+-	onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
++	onecell_data = kzalloc(sizeof(*onecell_data), GFP_KERNEL);
+ 	if (!onecell_data) {
+ 		pr_err("%s: could not allocate onecell_data\n", __func__);
+ 		goto err_clks;
 -- 
 2.2.2
