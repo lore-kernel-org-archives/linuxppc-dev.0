@@ -1,25 +1,22 @@
 Return-Path: <Kim.Phillips@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0108.outbound.protection.outlook.com [157.56.111.108])
+ (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B4DBF1A0C59
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 07:42:35 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 14:02:00 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06D4F1A0E1E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 07:43:00 +1100 (AEDT)
+Date: Tue, 20 Jan 2015 14:03:49 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Johannes Weiner
- <hannes@cmpxchg.org>, Minchan Kim <minchan@kernel.org>, Joonsoo Kim
- <iamjoonsoo.kim@lge.com>, Rik van Riel <riel@redhat.com>, Josh Triplett
- <josh@joshtriplett.org>, Sasha Levin <sasha.levin@oracle.com>, Al Viro
- <viro@zeniv.linux.org.uk>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Jens Axboe <axboe@fb.com>
-Subject: [PATCH 2/2] mm: fix undefined reference to `.kernel_map_pages' on
- PPC builds
-Message-ID: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Scott Wood
+ <scottwood@freescale.com>, Wang Dongsheng <dongsheng.wang@freescale.com>,
+ Anton Blanchard <anton@samba.org>, Himangi Saraogi <himangi774@gmail.com>,
+ Aaron Sierra <asierra@xes-inc.com>
+Subject: [PATCH] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
+Message-ID: <20150120140349.a7a9885065c241b555b91717@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's possible to configure DEBUG_PAGEALLOC without PAGE_POISONING on
-ppc.  Fix building the generic kernel_map_pages() implementation in
-this case:
+Fix this:
 
-  LD      init/built-in.o
-mm/built-in.o: In function `free_pages_prepare':
-mm/page_alloc.c:770: undefined reference to `.kernel_map_pages'
-mm/built-in.o: In function `prep_new_page':
-mm/page_alloc.c:933: undefined reference to `.kernel_map_pages'
-mm/built-in.o: In function `map_pages':
-mm/compaction.c:61: undefined reference to `.kernel_map_pages'
-make: *** [vmlinux] Error 1
+  CC      arch/powerpc/sysdev/fsl_pci.o
+arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
+arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+
+when configuring FRAME_WARN, by converting the allocation from the
+stack to the heap.  We use GFP_ATOMIC since this function can be
+called with interrupts disabled.
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- mm/Makefile | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/sysdev/fsl_pci.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/mm/Makefile b/mm/Makefile
-index 4bf586e..2956467 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -46,6 +46,7 @@ obj-$(CONFIG_SLOB) += slob.o
- obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
- obj-$(CONFIG_KSM) += ksm.o
- obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
-+obj-$(CONFIG_DEBUG_PAGEALLOC) += debug-pagealloc.o
- obj-$(CONFIG_SLAB) += slab.o
- obj-$(CONFIG_SLUB) += slub.o
- obj-$(CONFIG_KMEMCHECK) += kmemcheck.o
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6455c1e..635d743 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -69,11 +69,13 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+ 		if (hose->ops->read == fsl_indirect_read_config) {
+-			struct pci_bus bus;
+-			bus.number = hose->first_busno;
+-			bus.sysdata = hose;
+-			bus.ops = hose->ops;
+-			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
++			struct pci_bus *bus;
++			bus = kmalloc(sizeof(*bus), GFP_ATOMIC);
++			bus->number = hose->first_busno;
++			bus->sysdata = hose;
++			bus->ops = hose->ops;
++			indirect_read_config(bus, 0, PCIE_LTSSM, 4, &val);
++			kfree(bus);
+ 		} else
+ 			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+ 		if (val < PCIE_LTSSM_L0)
 -- 
 2.2.2
