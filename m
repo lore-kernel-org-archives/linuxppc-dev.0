@@ -1,36 +1,22 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0145.outbound.protection.outlook.com [207.46.100.145])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D0AF1A0C5D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 19:13:03 +1100 (AEDT)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 20 Jan 2015 03:13:01 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2737E38C804F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:13:00 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0K8D02W25362590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 08:13:00 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0K8CxFY025040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:12:59 -0500
-Subject: [PATCH V2] tick/broadcast: Make movement of broadcast hrtimer
- robust against hotplug
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, tglx@linutronix.de
-Date: Tue, 20 Jan 2015 13:42:45 +0530
-Message-ID: <20150120081121.26984.46720.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 348741A0BED
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:24:38 +1100 (AEDT)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc/dts: Update platform PLL node
+Date: Tue, 20 Jan 2015 08:51:03 +0000
+Message-ID: <DM2PR03MB3835E56F8A4080CB764E1FDE64B0@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1421042407-13921-1-git-send-email-igal.liberman@freescale.com>
+ <1421739810.4961.207.camel@freescale.com>
+In-Reply-To: <1421739810.4961.207.camel@freescale.com>
 Content-Type: text/plain; charset="utf-8"
-Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- anton@samba.org, linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Emilian
+ Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,68 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Today if the cpu handling broadcasting of wakeups goes offline, the job of
-broadcasting is handed over to another cpu in the CPU_DEAD phase. The CPU_DEAD
-notifiers are run only after the offline cpu sets its state as CPU_DEAD.
-Meanwhile, the kthread doing the offline is scheduled out while waiting for
-this transition by queuing a timer. This is fatal because if the cpu on which
-this kthread was running has no other work queued on it, it can re-enter deep
-idle state, since it sees that a broadcast cpu still exists. However the broadcast
-wakeup will never come since the cpu which was handling it is offline, and the cpu
-on which the kthread doing the hotplug operation was running never wakes up to see
-this because its in deep idle state.
-
-Fix this by setting the broadcast timer to a max value so as to force the cpus
-entering deep idle states henceforth to freshly nominate the broadcast cpu. More
-importantly this has to be done in the CPU_DYING phase so that it is visible to
-all cpus right after exiting stop_machine, which is when they can re-enter idle.
-This ensures that handover of the broadcast duty falls in place on offline of the
-broadcast cpu, without having to do it explicitly.
-
-It fixes the bug reported here:
-http://linuxppc.10917.n7.nabble.com/offlining-cpus-breakage-td88619.html
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-Changes from V1: https://lkml.org/lkml/2015/1/19/168
-1. Modified the Changelog
-
- kernel/time/clockevents.c    |    2 +-
- kernel/time/tick-broadcast.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 5544990..f3907c9 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -568,6 +568,7 @@ int clockevents_notify(unsigned long reason, void *arg)
- 
- 	case CLOCK_EVT_NOTIFY_CPU_DYING:
- 		tick_handover_do_timer(arg);
-+		tick_shutdown_broadcast_oneshot(arg);
- 		break;
- 
- 	case CLOCK_EVT_NOTIFY_SUSPEND:
-@@ -580,7 +581,6 @@ int clockevents_notify(unsigned long reason, void *arg)
- 		break;
- 
- 	case CLOCK_EVT_NOTIFY_CPU_DEAD:
--		tick_shutdown_broadcast_oneshot(arg);
- 		tick_shutdown_broadcast(arg);
- 		tick_shutdown(arg);
- 		/*
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 066f0ec..e9c1d9b 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -675,8 +675,8 @@ static void broadcast_move_bc(int deadcpu)
- 
- 	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
- 		return;
--	/* This moves the broadcast assignment to this cpu */
--	clockevents_program_event(bc, bc->next_event, 1);
-+	/* This allows fresh nomination of broadcast cpu */
-+	bc->next_event.tv64 = KTIME_MAX;
- }
- 
- /*
+DQoNClJlZ2FlZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkg
+MjAsIDIwMTUgOTo0NCBBTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gQ2M6IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBNZWR2ZSBFbWlsaWFuLUVNTUVEVkUxDQo+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZHRzOiBVcGRhdGUgcGxhdGZvcm0gUExMIG5vZGUNCj4g
+DQo+IE9uIE1vbiwgMjAxNS0wMS0xMiBhdCAwODowMCArMDIwMCwgSWdhbC5MaWJlcm1hbiB3cm90
+ZToNCj4gPiBGcm9tOiBJZ2FsIExpYmVybWFuIDxJZ2FsLkxpYmVybWFuQGZyZWVzY2FsZS5jb20+
+DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2FsIExpYmVybWFuIDxJZ2FsLkxpYmVybWFuQGZy
+ZWVzY2FsZS5jb20+DQo+ID4gQ2hhbmdlLUlkOiBJOTJkMDIwNjUxMjM3MDQxZDM3NjdhYTM1ZTkz
+NDU0Mzk3MTRmOTgzMQ0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Fv
+cmlxLWNsb2NrZ2VuMi5kdHNpIHwgICAgNiArKysrLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDQg
+aW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gDQo+IFBsZWFzZSBleHBsYWluIHRoaXMg
+bW9yZS4gIFdhcyBpdCBqdXN0IHdyb25nIGJlZm9yZT8gIElzIHRoaXMgZm9yIGEgbmV3IGNoaXA/
+ICBJZg0KPiB0aGUgbGF0dGVyLCB3aGF0IGVmZmVjdCBkb2VzIHRoaXMgaGF2ZSBvbiBleGlzdGlu
+ZyBjaGlwcz8NCj4gDQoNCkl0IHdhc24ndCB3cm9uZywgaG93ZXZlciBpdCB3YXMgbWlzc2luZyBz
+b21lIGNsb2NraW5nIG9wdGlvbnMgd2hpY2ggbWlnaHQgYmUgdXNlZCBieSBzb21lIGhhcmR3YXJl
+IGFjY2VsZXJhdG9ycyBhdmFpbGFibGUgaW4gVC9CIGRldmljZXMuDQpJIG5lZWQgdGhpcyBvcHRp
+b25zIGZvciBGTWFuLCBob3dldmVyIGl0IG1pZ2h0IGJlIHVzZWQgZm9yIG90aGVyIGFjY2VsZXJh
+dG9ycyB0b28uDQoNCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9x
+b3JpcS1jbG9ja2dlbjIuZHRzaQ0KPiA+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
+cS1jbG9ja2dlbjIuZHRzaQ0KPiA+IGluZGV4IDQ4ZTBiNmUuLjdlMWYwNzQgMTAwNjQ0DQo+ID4g
+LS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1jbG9ja2dlbjIuZHRzaQ0KPiA+
+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtY2xvY2tnZW4yLmR0c2kNCj4g
+PiBAQCAtNDksMTQgKzQ5LDE2IEBAIGdsb2JhbC11dGlsaXRpZXNAZTEwMDAgew0KPiA+ICAJCXJl
+ZyA9IDwweDgwMCAweDQ+Ow0KPiA+ICAJCWNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWNvcmUtcGxs
+LTIuMCI7DQo+ID4gIAkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiA+IC0JCWNsb2NrLW91dHB1dC1u
+YW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiIsICJwbGwwLWRpdjQiOw0KPiA+ICsJCWNsb2NrLW91
+dHB1dC1uYW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiIsICJwbGwwLWRpdjMiLA0KPiA+ICsJCQkJ
+ICAgICAgInBsbDAtZGl2NCI7DQo+IA0KPiBZb3UncmUgY2hhbmdpbmcgdGhlIG1lYW5pbmcgb2Yg
+ZXhpc3RpbmcgY2xvY2sgaW5kZXggMi4NCj4gDQoNClllcywgaG93ZXZlciB0aGlzIHBsYXRmb3Jt
+IFBMTCBpcyBhIG5ldyB3b3JrIHdoaWNoIGlzIG5vdCB5ZXQgdXNlZCwgc28gd2UgYXJlbid0IGJy
+ZWFraW5nIGFueSAgZnVuY3Rpb25hbGl0eS4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
