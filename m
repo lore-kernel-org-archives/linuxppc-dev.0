@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id C5F921A0C54
+ by lists.ozlabs.org (Postfix) with ESMTP id 0334C1A0C5C
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:57:37 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v2 03/11] powerpc32: Use kmem_cache memory for PGDIR
-Message-Id: <20150120095734.4C1B01A5E88@localhost.localdomain>
+Subject: [PATCH v2 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
+Message-Id: <20150120095734.AE7751A5E8A@localhost.localdomain>
 Date: Tue, 20 Jan 2015 10:57:34 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,77 +19,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When pages are not 4K, PGDIR table is allocated with kmalloc(). In order to
-optimise TLB handlers, aligned memory is needed. kmalloc() doesn't provide
-aligned memory blocks, so lets use a kmem_cache pool instead.
+All accessed to PGD entries are done via 0(r11).
+By using lower part of swapper_pg_dir as load index to r11, we can remove the
+ori instruction.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-v2: changed to apply cleanly to linux-next (due to patch ab090dc)
+v2: fixed/added comments to explain what is the real content of M_TW
 
- arch/powerpc/include/asm/pgtable-ppc32.h |  4 ++++
- arch/powerpc/mm/pgtable_32.c             | 16 ++++++++++++++--
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 35 +++++++++++++++++++----------------
+ 1 file changed, 19 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index c718bfd..affc703 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -341,10 +341,14 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
- 
-+#ifndef CONFIG_PPC_4K_PAGES
-+void pgtable_cache_init(void);
-+#else
- /*
-  * No page table caches to initialise
-  */
- #define pgtable_cache_init()	do { } while (0)
-+#endif
- 
- extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep,
- 		      pmd_t **pmdp);
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 50fad38..c06599f 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -73,13 +73,25 @@ extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
- 
- #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
- 
-+#ifndef CONFIG_PPC_4K_PAGES
-+static struct kmem_cache *pgtable_cache;
-+
-+void pgtable_cache_init(void)
-+{
-+	pgtable_cache = kmem_cache_create("PGDIR cache", 1 << PGDIR_ORDER,
-+					  1 << PGDIR_ORDER, 0, NULL);
-+	if (pgtable_cache == NULL)
-+		panic("Couldn't allocate pgtable caches");
-+}
-+#endif
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
- 	pgd_t *ret;
- 
- 	/* pgdir take page or two with 4K pages and a page fraction otherwise */
- #ifndef CONFIG_PPC_4K_PAGES
--	ret = kzalloc(1 << PGDIR_ORDER, GFP_KERNEL);
-+	ret = kmem_cache_alloc(pgtable_cache, GFP_KERNEL | __GFP_ZERO);
- #else
- 	ret = (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
- 			PGDIR_ORDER - PAGE_SHIFT);
-@@ -90,7 +102,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- {
- #ifndef CONFIG_PPC_4K_PAGES
--	kfree((void *)pgd);
-+	kmem_cache_free(pgtable_cache, (void *)pgd);
- #else
- 	free_pages((unsigned long)pgd, PGDIR_ORDER - PAGE_SHIFT);
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index ae05f28..a485ad7 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -319,16 +319,15 @@ InstructionTLBMiss:
+ 	 * pin the first 8MB of kernel memory */
+ 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
  #endif
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
++	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ #ifdef CONFIG_MODULES
+ 	beq	3f
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
+ #endif
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+@@ -374,14 +373,13 @@ DataStoreTLBMiss:
+ 	 * kernel page tables.
+ 	 */
+ 	andis.	r11, r10, 0x8000
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
++	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	beq	3f
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 
+ 	/* We have a pte table, so load fetch the pte from the table.
+ 	 */
+@@ -509,13 +507,12 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	/* fetch instruction from memory. */
+ 	mfspr	r10, SPRN_SRR0
+ 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+-	beq-	3f		/* Branch if user space */
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
++	beq	3f
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 	/* Insert level 1 index */
+ 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Insert level 2 index */
+ 	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+@@ -670,8 +667,7 @@ start_here:
+ 	 * init's THREAD like the context switch code does, but this is
+ 	 * easier......until someone changes init's static structures.
+ 	 */
+-	lis	r6, swapper_pg_dir@h
+-	ori	r6, r6, swapper_pg_dir@l
++	lis	r6, swapper_pg_dir@ha
+ 	tophys(r6,r6)
+ #ifdef CONFIG_8xx_CPU6
+ 	lis	r4, cpu6_errata_word@h
+@@ -850,6 +846,13 @@ _GLOBAL(set_context)
+ 	stw	r4, 0x4(r5)
+ #endif
+ 
++	/* Register M_TW will contain base address of level 1 table minus the
++	 * lower part of the kernel PGDIR base address, so that all accesses to
++	 * level 1 table are done relative to lower part of kernel PGDIR base
++	 * address.
++	 */
++	li	r5, (swapper_pg_dir-PAGE_OFFSET)@l
++	sub	r4, r4, r5
+ #ifdef CONFIG_8xx_CPU6
+ 	lis	r6, cpu6_errata_word@h
+ 	ori	r6, r6, cpu6_errata_word@l
+@@ -857,7 +860,7 @@ _GLOBAL(set_context)
+ 	li	r7, 0x3f80
+ 	stw	r7, 12(r6)
+ 	lwz	r7, 12(r6)
+-        mtspr   SPRN_M_TW, r4               /* Update MMU base address */
++	mtspr	SPRN_M_TW, r4		/* Update pointeur to level 1 table */
+ 	li	r7, 0x3380
+ 	stw	r7, 12(r6)
+ 	lwz	r7, 12(r6)
 -- 
 2.1.0
