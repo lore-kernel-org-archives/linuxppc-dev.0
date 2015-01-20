@@ -1,21 +1,36 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A42171A13B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:29:03 +1100 (AEDT)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
- <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
-Subject: [PATCH 8/8] clk: ppc-corenet: Add support for the platform PLL
-Date: Tue, 20 Jan 2015 04:09:30 -0600
-Message-ID: <1421748570-14282-9-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1971A097F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:36:46 +1100 (AEDT)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Tue, 20 Jan 2015 03:36:44 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CEBD23E4003B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:36:05 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0KAarSb42008764
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:36:53 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0KAaepD004460
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 03:36:41 -0700
+Subject: [PATCH V3] tick/broadcast: Make movement of broadcast hrtimer
+ robust against hotplug
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: tglx@linutronix.de
+Date: Tue, 20 Jan 2015 16:06:30 +0530
+Message-ID: <20150120103559.8430.50933.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ michael@ellerman.id.au, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,117 +40,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change-Id: Iac11ed95f274485a86d2c11f32a3dc502bcd020f
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- drivers/clk/clk-ppc-corenet.c | 85 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+Today if the cpu handling broadcasting of wakeups goes offline, the job of
+broadcasting is handed over to another cpu in the CPU_DEAD phase. The CPU_DEAD
+notifiers are run only after the offline cpu sets its state as CPU_DEAD.
+Meanwhile, the kthread doing the offline is scheduled out while waiting for
+this transition by queuing a timer. This is fatal because if the cpu on which
+this kthread was running has no other work queued on it, it can re-enter deep
+idle state, since it sees that a broadcast cpu still exists. However the broadcast
+wakeup will never come since the cpu which was handling it is offline, and the cpu
+on which the kthread doing the hotplug operation was running never wakes up to see
+this because its in deep idle state.
 
-diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-index 91816b1..ff425e1 100644
---- a/drivers/clk/clk-ppc-corenet.c
-+++ b/drivers/clk/clk-ppc-corenet.c
-@@ -7,6 +7,9 @@
-  *
-  * clock driver for Freescale PowerPC corenet SoCs.
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/clk-provider.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-@@ -261,9 +264,91 @@ static void __init sysclk_init(struct device_node *node)
- 		of_clk_add_provider(np, of_clk_src_simple_get, clk);
+Fix this by setting the broadcast timer to a max value so as to force the cpus
+entering deep idle states henceforth to freshly nominate the broadcast cpu. More
+importantly this has to be done in the CPU_DYING phase so that it is visible to
+all cpus right after exiting stop_machine, which is when they can re-enter idle.
+This ensures that handover of the broadcast duty falls in place on offline of the
+broadcast cpu, without having to do it explicitly.
+
+It fixes the bug reported here:
+http://linuxppc.10917.n7.nabble.com/offlining-cpus-breakage-td88619.html
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+Changes from previous versions:
+1. Modification to the changelog
+2. Clarified the comments
+
+ kernel/time/clockevents.c    |    2 +-
+ kernel/time/tick-broadcast.c |    7 +++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 5544990..f3907c9 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -568,6 +568,7 @@ int clockevents_notify(unsigned long reason, void *arg)
+ 
+ 	case CLOCK_EVT_NOTIFY_CPU_DYING:
+ 		tick_handover_do_timer(arg);
++		tick_shutdown_broadcast_oneshot(arg);
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_SUSPEND:
+@@ -580,7 +581,6 @@ int clockevents_notify(unsigned long reason, void *arg)
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_CPU_DEAD:
+-		tick_shutdown_broadcast_oneshot(arg);
+ 		tick_shutdown_broadcast(arg);
+ 		tick_shutdown(arg);
+ 		/*
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index 066f0ec..f983983 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -675,8 +675,11 @@ static void broadcast_move_bc(int deadcpu)
+ 
+ 	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
+ 		return;
+-	/* This moves the broadcast assignment to this cpu */
+-	clockevents_program_event(bc, bc->next_event, 1);
++	/* Since a cpu with the earliest wakeup is nominated as the 
++	 * standby cpu, the next cpu to invoke BROADCAST_ENTER
++	 * will now automatically take up the duty of broadcasting.
++	 */
++	bc->next_event.tv64 = KTIME_MAX;
  }
  
-+static void __init pltfrm_pll_init(struct device_node *np)
-+{
-+	void __iomem *base;
-+	uint32_t mult;
-+	const char *parent_name, *clk_name;
-+	int i, _errno;
-+	struct clk_onecell_data *cod;
-+
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
-+		return;
-+	}
-+
-+	/* Get the multiple of PLL */
-+	mult = ioread32be(base);
-+
-+	iounmap(base);
-+
-+	/* Check if this PLL is disabled */
-+	if (mult & PLL_KILL) {
-+		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
-+		return;
-+	}
-+	mult = (mult & GENMASK(6, 1)) >> 1;
-+
-+	parent_name = of_clk_get_parent_name(np, 0);
-+	if (!parent_name) {
-+		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
-+		       __func__, np->name);
-+		return;
-+	}
-+
-+	i = of_property_count_strings(np, "clock-output-names");
-+	if (i < 0) {
-+		pr_err("%s(): %s: of_property_count_strings(clock-output-names) = %d\n",
-+		       __func__, np->name, i);
-+		return;
-+	}
-+
-+	cod = kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNEL);
-+	if (!cod)
-+		return;
-+	cod->clks = (struct clk **)(cod + 1);
-+	cod->clk_num = i;
-+
-+	for (i = 0; i < cod->clk_num; i++) {
-+		_errno = of_property_read_string_index(np, "clock-output-names",
-+						       i, &clk_name);
-+		if (_errno < 0) {
-+			pr_err("%s(): %s: of_property_read_string_index(clock-output-names) = %d\n",
-+			       __func__, np->name, _errno);
-+			goto return_clk_unregister;
-+		}
-+
-+		cod->clks[i] = clk_register_fixed_factor(NULL, clk_name,
-+					       parent_name, 0, mult, 1 + i);
-+		if (IS_ERR(cod->clks[i])) {
-+			pr_err("%s(): %s: clk_register_fixed_factor(%s) = %ld\n",
-+			       __func__, np->name,
-+			       clk_name, PTR_ERR(cod->clks[i]));
-+			goto return_clk_unregister;
-+		}
-+	}
-+
-+	_errno = of_clk_add_provider(np, of_clk_src_onecell_get, cod);
-+	if (_errno < 0) {
-+		pr_err("%s(): %s: of_clk_add_provider() = %d\n",
-+		       __func__, np->name, _errno);
-+		goto return_clk_unregister;
-+	}
-+
-+	return;
-+
-+return_clk_unregister:
-+	while (--i >= 0)
-+		clk_unregister(cod->clks[i]);
-+	kfree(cod);
-+}
-+
- CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
- CLK_OF_DECLARE(qoriq_sysclk_2, "fsl,qoriq-sysclk-2.0", sysclk_init);
- CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0", core_pll_init);
- CLK_OF_DECLARE(qoriq_core_pll_2, "fsl,qoriq-core-pll-2.0", core_pll_init);
- CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init);
- CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init);
-+CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0", pltfrm_pll_init);
-+CLK_OF_DECLARE(qoriq_pltfrm_pll_2, "fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
--- 
-2.2.2
+ /*
