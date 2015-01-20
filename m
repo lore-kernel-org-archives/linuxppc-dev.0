@@ -1,17 +1,22 @@
-Return-Path: <stockhausen@collogia.de>
-Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
- by lists.ozlabs.org (Postfix) with SMTP id 9A9C41A0C92
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 01:53:37 +1100 (AEDT)
-From: Markus Stockhausen <stockhausen@collogia.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: How long am I allowed to disable preemption? (was How to make use
- of SPE instructions?)
-Date: Tue, 20 Jan 2015 14:53:30 +0000
-Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F913EE6@EXCHANGE.collogia.de>
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-3fb24a4f-86bb-45d4-a74f-918f4742218e"
+Return-Path: <intermediadc@hotmail.com>
+Received: from DUB004-OMC3S6.hotmail.com (dub004-omc3s6.hotmail.com
+ [157.55.2.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 786141A0CC5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:57:34 +1100 (AEDT)
+Message-ID: <DUB117-W1231755B8D223132D571329C84B0@phx.gbl>
+Content-Type: multipart/alternative;
+ boundary="_d30c1d32-d8b7-4125-a134-93377c9735fd_"
+From: luigi burdo <intermediadc@hotmail.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: PowerMac G5 Quad Issue reporting
+Date: Tue, 20 Jan 2015 12:52:10 +0100
+In-Reply-To: <54BE3B79.9070004@linux.vnet.ibm.com>
+References: <20150120054506.F13591402E0@ozlabs.org>,
+ <54BE3B79.9070004@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,122 +26,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-This is a multi-part message in MIME format.
-
-------=_NextPartTM-000-3fb24a4f-86bb-45d4-a74f-918f4742218e
-Content-Type: text/plain; charset="us-ascii"
+--_d30c1d32-d8b7-4125-a134-93377c9735fd_
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-> Von: Scott Wood [scottwood@freescale.com]=0A=
-> Gesendet: Dienstag, 20. Januar 2015 08:38=0A=
-> An: Markus Stockhausen=0A=
-> Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org=0A=
-> Betreff: Re: AW: How to make use of SPE instructions?=0A=
-> ...=0A=
-> > I did some tests with the tcrypt module and I get a hashing speed of=0A=
-> > ~ 46MByte/s for 2K data chunks. Stock module gives 29MByte/s. In=0A=
-> > other words ~22,000 hashes per second. Overhead of the tcrypt data=0A=
-> > feeder of around 10% included. That are worst case 46us per hash and=0A=
-> > therefore 46us inside a non preemptive task.=0A=
-> ...=0A=
-> It's OK if the worst case is really 46 us, but if you can find a way to=
-=0A=
-> break it up a bit without affecting throughput too much, I'd do so.=0A=
-=0A=
-Hi Scott (and all),=0A=
-=0A=
-with your answer I'm a bit confused about disabling preemption inside the =
-=0A=
-kernel right now. I understand that the interval between preempt_disable()=
-=0A=
-and preempt_enable() should not take too long. But when I look at other=0A=
-kernel hash crypto modules I see that nobody really cares about that. Take=
-=0A=
-sha256_ssse3_update() in sha256_ssse3_glue.c for example. It runs=0A=
-=0A=
-  kernel_fpu_begin();=0A=
-  res =3D __sha256_ssse3_update(desc, data, len, partial);=0A=
-  kernel_fpu_end();=0A=
-=0A=
-The kernel_fpu_xxx() enables/disables preemption like I need to do. =0A=
-Nevertheless parameter len can be any number of bytes. Just take =0A=
-reasonable parameters of 256K of input data, a 3GHz core and 13 =0A=
-cycles/byte of SHA256 throughput. That will be a 1ms timeframe.=0A=
-=0A=
-Can I rely on that implementation, or do I have to take special care =0A=
-because I'm only programming for a single core CPU? =0A=
-=0A=
-With your advice I would place a enable/disable preemption call after =0A=
-1K of processed data. But wil that be sufficient if I only reeanble it=0A=
-for a short timeframe like this:=0A=
-=0A=
-  do {=0A=
-    disable_preemption()=0A=
-    ... calc hashes for 1K of data with 16.000 CPU cycles (or 20us) ...=0A=
-    enable_preemption()=0A=
-  while (dataleft>0);=0A=
-=0A=
-Markus=0A=
-=0A=
-------=_NextPartTM-000-3fb24a4f-86bb-45d4-a74f-918f4742218e
-Content-Type: text/plain;
-	name="InterScan_Disclaimer.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_Disclaimer.txt"
+Hello all LinuxPPc Developer=2C
+need to report a issue that im facing from kernel 3.16 and up.
 
-****************************************************************************
-Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
-irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
-vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
-Weitergabe dieser Mail ist nicht gestattet.
+The fans of powermac g5 quad start boosting like a turbo jet after the syst=
+em is=20
+been loaded and up.=20
+Usually this become after about 30-60 seconds when the system is loaded.
+This issue start with Xorg loaded or only in teminal system (gdm3 not loade=
+d)
+This issue come with system load with minimum cpu usage  5%  and less too.
+During the closing of the system (reboot) the fans goes in right silents mo=
+de.
 
-Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
-manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
-rechtsverbindliche Willenserklärung.
 
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
+I had been tested and compiled the kernel with all the modules of fan contr=
+ols for Apple G5=20
+without a positive result.
+Kernel tested 3.16.ctk2 (debian wheezy 7.8)=2C 3.18.3 and  3.19.rc5
+Im using Debian Wheezy 7.6 (up 7.8) PPC on Quad G5 (970mp) Nvidia 7800gtx a=
+nd RadeonHD 6570
 
-Vorstand:
-Kadir Akin
-Dr. Michael Höhnerbach
+Dont face this issue with old kernels version 3.10.65 and pre
+(didnt test the 3.12 and 3.14)=20
 
-Vorsitzender des Aufsichtsrates:
-Hans Kristian Langva
+Need to report to Michel D. from amd.com . The RadeonHD 6570 now is working=
+ on PowerMac G5 too
+look like the Xorg bigendian  issue related Evergreen / Northern  is been f=
+ixed =3B-)
 
-Registergericht: Amtsgericht Köln
-Registernummer: HRB 52 497
 
-This e-mail may contain confidential and/or privileged information. If you
-are not the intended recipient (or have received this e-mail in error)
-please notify the sender immediately and destroy this e-mail. Any
-unauthorized copying, disclosure or distribution of the material in this
-e-mail is strictly forbidden.
+Thanks alot for your jobs guys
+Hope soon i will able to help in X5000 hardware too=20
+PPC Rulez ... and sorry for my "perfect english"
+Luigi Burdo
+ 		 	   		  =
 
-e-mails sent over the internet may have been written under a wrong name or
-been manipulated. That is why this message sent as an e-mail is not a
-legally binding declaration of intention.
+--_d30c1d32-d8b7-4125-a134-93377c9735fd_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 12pt=3B
+font-family:Calibri
+}
+--></style></head>
+<body class=3D'hmmessage'><div dir=3D'ltr'>Hello all LinuxPPc Developer=2C<=
+br>need to report a issue that im facing from kernel 3.16 and up.<br><br>Th=
+e fans of powermac g5 quad start boosting like a turbo jet after the system=
+ is <br>been loaded and up. <br>Usually this become after about 30-60 secon=
+ds when the system is loaded.<br>This issue start with Xorg loaded or only =
+in teminal system (gdm3 not loaded)<br>This issue come with system load wit=
+h minimum cpu usage&nbsp=3B 5%&nbsp=3B and less too.<br>During the closing =
+of the system (reboot) the fans goes in right silents mode.<br><br><br>I ha=
+d been tested and compiled the kernel with all the modules of fan controls =
+for Apple G5 <br>without a positive result.<br>Kernel tested 3.16.ctk2 (deb=
+ian wheezy 7.8)=2C 3.18.3 and&nbsp=3B 3.19.rc5<br>Im using Debian Wheezy 7.=
+6 (up 7.8) PPC on Quad G5 (970mp) Nvidia 7800gtx and RadeonHD 6570<br><br>D=
+ont face this issue with old kernels version 3.10.65 and pre<br>(didnt test=
+ the 3.12 and 3.14) <br><br>Need to report to Michel D. from amd.com . The =
+RadeonHD 6570 now is working on PowerMac G5 too<br>look like the Xorg bigen=
+dian&nbsp=3B issue related Evergreen / Northern&nbsp=3B is been fixed =3B-)=
+<br><br><br>Thanks alot for your jobs guys<br>Hope soon i will able to help=
+ in X5000 hardware too <br>PPC Rulez ... and sorry for my "perfect english"=
+<br>Luigi Burdo<br> 		 	   		  </div></body>
+</html>=
 
-executive board:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-President of the supervisory board:
-Hans Kristian Langva
-
-Registry office: district court Cologne
-Register number: HRB 52 497
-
-****************************************************************************
-
-------=_NextPartTM-000-3fb24a4f-86bb-45d4-a74f-918f4742218e--
+--_d30c1d32-d8b7-4125-a134-93377c9735fd_--
