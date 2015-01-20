@@ -1,21 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD70C1A0749
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 14:39:08 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 14:39:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 2/7] powerpc: Enable on demand governor on ppc64_defconfig
-Message-ID: <20150120143902.0f092f20@canb.auug.org.au>
-In-Reply-To: <1421709865-6368-2-git-send-email-anton@samba.org>
-References: <1421709865-6368-1-git-send-email-anton@samba.org>
- <1421709865-6368-2-git-send-email-anton@samba.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/N9oYafZLp/7ROdCy6gwb1dz"; protocol="application/pgp-signature"
-Cc: nacc@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D3601A0C17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 16:45:07 +1100 (AEDT)
+In-Reply-To: <20150119113251.23984.16931.stgit@preeti.in.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, rafael.j.wysocki@intel.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: cpuidle/powernv: Read target_residency value of idle states from
+ DT if available
+Message-Id: <20150120054506.F13591402E0@ozlabs.org>
+Date: Tue, 20 Jan 2015 16:45:06 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/N9oYafZLp/7ROdCy6gwb1dz
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2015-19-01 at 11:32:51 UTC, Preeti U Murthy wrote:
+> The device tree now exposes the residency values for different idle states. Read
+> these values instead of calculating residency from the latency values. The values
+> exposed in the DT are validated for optimal power efficiency. However to maintain
+> compatibility with the older firmware code which does not expose residency
+> values, use default values as a fallback mechanism. While at it, clump
+> the common parts of device tree parsing into one chunk.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+> 
+>  drivers/cpuidle/cpuidle-powernv.c |   39 ++++++++++++++++++++++++-------------
+>  1 file changed, 25 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 2726663..9e732e1 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -162,7 +162,8 @@ static int powernv_add_idle_states(void)
+>  	int dt_idle_states;
+>  	const __be32 *idle_state_flags;
+>  	const __be32 *idle_state_latency;
+> -	u32 len_flags, flags, latency_ns;
+> +	const __be32 *idle_state_residency;
+> +	u32 len_flags, flags, latency_ns, residency_ns;
+>  	int i;
+>  
+>  	/* Currently we have snooze statically defined */
+> @@ -186,14 +187,21 @@ static int powernv_add_idle_states(void)
+>  		return nr_idle_states;
+>  	}
+>  
+> +	idle_state_residency = of_get_property(power_mgt,
+> +			"ibm,cpu-idle-state-residency-ns", NULL);
+> +	if (!idle_state_residency) {
+> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
+> +		pr_warn("Falling back to default values\n");
+> +	}
 
-Hi Anton,
+This would be better done with something like:
 
-On Tue, 20 Jan 2015 10:24:20 +1100 Anton Blanchard <anton@samba.org> wrote:
->
-> This was enabled on the pseries defconfigs recently, but missed
-> the ppc64 one.
+	rc = of_read_property_u32(power_mgt, "ibm,cpu-idle-state-residency-ns", &residency_ns);
+	if (!rc) {
+		pr_info("cpuidle-powernv: missing ibm,cpu-idle-state-residency-ns\n");
+		residency_ns = 300000;
+	}
 
-So do any of the options you enable in thelater patches need to be
-enabled for ppc64_defconfig as well?
-
-I am wondering if we could do more of these in Kconfig entries ...
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/N9oYafZLp/7ROdCy6gwb1dz
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJUvc3bAAoJEMDTa8Ir7ZwVBw4P/jpxkmXQ0pkNrhEpH3drdCe0
-AviHvDY9Bwi0gisZf94jMgY8J/4nuW6LT6ZhDtboJVOPQfH6aQ0zwO/NEzO9yHYP
-W927LKeKipGkT4HXJwKu6CFyxuo1WKX5O9GcwZhWc18t2FS0Mno9l4/7b3sVft08
-ic7UGa34ZdencqCTLt2bEkl1QM+BV3XyDcw4rc//hyaF2WN3DvW6oRAKeJ8uRZy6
-wVx+xYlap8e9t/4FCdAO41RjID14dJpdLxg+FuOU/dluPbUavVqFsPMrfH58g2zY
-UUgSxivRvCsmw02uzrSWqdsf5W8mvEd4f0W+pLlRN00gOUohbjDyICjDIuyD5GeO
-L+xenBT0qM+o2nM6eEurn6O7FI7H5XcLUUzYIj2ed+FLMqkI1NstAOgrCRMWCLGY
-zf5+xcq2O0/NuetBrOLCN5yCqoF2PLawoUr5ubQZRzIkwfzeAu6anr1JgIyog7/j
-iQiTQDLz1sTBehoywcfF0rbc8f50x2VNzkKbU5TAAHTvgFo5bj9bs//XVq89j3ao
-CJZIuVp9RkmiP2VYl7aDj3Mtf8IAk5T33hTXZBPPS285kuDaB/TmvOpttgRMDrq7
-Yo5PyHRm6hF2pheZVEGHNX/1+3vJnnZAfHLdoWHRlSBzJ9J6egK+cUbI1s1Kkn9E
-6Yd9K+Dsp3bj1HGF3NNe
-=Y1mW
------END PGP SIGNATURE-----
-
---Sig_/N9oYafZLp/7ROdCy6gwb1dz--
+cheers
