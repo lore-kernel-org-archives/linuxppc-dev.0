@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 763871A09F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:28:31 +1100 (AEDT)
-Message-ID: <1421746096.4949.40.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pseries: Avoid context switch in EEH reset if
- required
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Tue, 20 Jan 2015 10:28:16 +0100
-In-Reply-To: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id C3E081A0C53
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 20:57:37 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH v2 00/11] powerpc8xx: Further optimisation of TLB handling
+Message-Id: <20150120095733.9F3281A5E86@localhost.localdomain>
+Date: Tue, 20 Jan 2015 10:57:33 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-01-19 at 09:47 +1100, Gavin Shan wrote:
-> On pseries platform, the EEH reset backend pseries_eeh_reset() can
-> be called in atomic context as follows. For this case, we should
-> call udelay() instead of msleep() to avoid context switching.
-> 
->      drivers/scsi/ipr.c::ipr_reset_slot_reset_done()
->      drivers/pci/pci.c::pci_set_pcie_reset_state()
->      arch/powerpc/kernel/eeh.c::pcibios_set_pcie_reset_state()
->      arch/powerpc/platforms/pseries/eeh_pseries.c::pseries_eeh_reset()
+This patchset provides a further optimisation of TLB handling in the 8xx.
+Main changes are based on:
+- Using processor handling of PGD/PTE Validity bits instead of testing ourselves
+the entries validity
+- Aligning PGD address to allow direct bit manipulation
+- Not saving registers like CR when not needed
 
-It's not acceptable to introduce multi-millisecond delays at interrupt
-time. In fact, we should generally not use udelay in such context.
+It also adds support to any TASK_SIZE
 
-I understand that this is an exceptional error handling case but it's
-still not right.
+Patchset:
+01 - powerpc/8xx: remove remaining unnecessary code in FixupDAR
+02 - powerpc/8xx: remove tests on PGDIR entry validity
+03 - powerpc32: Use kmem_cache memory for PGDIR
+04 - powerpc/8xx: Take benefit of aligned PGDIR
+05 - powerpc/8xx: Optimise access to swapper_pg_dir
+06 - powerpc/8xx: Remove duplicated code in set_context()
+07 - powerpc/8xx: macro for handling CPU15 errata
+08 - powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+09 - powerpc/8xx: dont save CR in SCRATCH registers
+10 - powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+11 - powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
 
-Are there many other users of pci_set_pcie_reset_state() at interrupt
-time ? Can we have a discussion with the PCI folks as to whether that
-should be legal or not ?
+All changes have been successfully tested on MPC885
 
-I'm tempted to require that it's made illegal.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Ben.
-
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Tested-by: Wen Xiong<wenxiong@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> index a6c7e19..67623a3 100644
-> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> @@ -503,8 +503,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
->   */
->  static int pseries_eeh_reset(struct eeh_pe *pe, int option)
->  {
-> -	int config_addr;
-> -	int ret;
-> +	int config_addr, delay, ret;
->  
->  	/* Figure out PE address */
->  	config_addr = pe->config_addr;
-> @@ -528,9 +527,14 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
->  	/* We need reset hold or settlement delay */
->  	if (option == EEH_RESET_FUNDAMENTAL ||
->  	    option == EEH_RESET_HOT)
-> -		msleep(EEH_PE_RST_HOLD_TIME);
-> +		delay = EEH_PE_RST_HOLD_TIME;
-> +	else
-> +		delay = EEH_PE_RST_SETTLE_TIME;
-> +
-> +	if (in_atomic())
-> +		udelay(delay * 1000);
->  	else
-> -		msleep(EEH_PE_RST_SETTLE_TIME);
-> +		msleep(delay);
->  
->  	return ret;
->  }
+---
+ arch/powerpc/include/asm/pgtable-ppc32.h |   4 +
+ arch/powerpc/kernel/head_8xx.S           | 197 +++++++++++++++----------------
+ arch/powerpc/mm/pgtable_32.c             |  16 ++-
+ 3 files changed, 111 insertions(+), 106 deletions(-)
