@@ -1,22 +1,26 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <davej@codemonkey.org.uk>
+Received: from arcturus.aphlor.org (arcturus.ipv6.aphlor.org
+ [IPv6:2a03:9800:10:4a::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06D4F1A0E1E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 07:43:00 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 14:03:49 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Scott Wood
- <scottwood@freescale.com>, Wang Dongsheng <dongsheng.wang@freescale.com>,
- Anton Blanchard <anton@samba.org>, Himangi Saraogi <himangi774@gmail.com>,
- Aaron Sierra <asierra@xes-inc.com>
-Subject: [PATCH] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
-Message-ID: <20150120140349.a7a9885065c241b555b91717@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B95F1A02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 09:49:30 +1100 (AEDT)
+Date: Tue, 20 Jan 2015 16:40:33 -0500
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V2 06/12] selftests, powerpc: Add test for system wide
+ DSCR default
+Message-ID: <20150120214033.GA30240@codemonkey.org.uk>
+References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1421144560-15901-7-git-send-email-khandual@linux.vnet.ibm.com>
+ <54B5384F.9010805@osg.samsung.com>
+ <1421192671.10748.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1421192671.10748.4.camel@ellerman.id.au>
+Cc: mikey@neuling.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix this:
+On Wed, Jan 14, 2015 at 10:44:31AM +1100, Michael Ellerman wrote:
 
-  CC      arch/powerpc/sysdev/fsl_pci.o
-arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
-arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+ > > Also, I would like to see the test results reports using
+ > > kselftest.h - it can be separate patch in the interest of
+ > > getting tests in.
+ > 
+ > Sorry but kselftest.h doesn't do anything useful for us.
+ > 
+ > We have existing test reporting that uses the subunit protocol.
+ > 
+ > I'm happy to convert that to TAP, or some other well defined output format, but
+ > not to something ad-hoc like kselftest.h currently provides.
 
-when configuring FRAME_WARN, by converting the allocation from the
-stack to the heap.  We use GFP_ATOMIC since this function can be
-called with interrupts disabled.
+Something TAP-alike would also help reduce some of the spew from
+tests that are going to fail.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/sysdev/fsl_pci.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+eg, running execveat tests on a kernel that doesn't implement that
+syscall currently spews around 20 lines of [FAIL].  Adding something
+to the beginning of the test to set plan() accordingly if it detects
+-ENOSYS could make that output a little cleaner.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 6455c1e..635d743 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -69,11 +69,13 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
- 		if (hose->ops->read == fsl_indirect_read_config) {
--			struct pci_bus bus;
--			bus.number = hose->first_busno;
--			bus.sysdata = hose;
--			bus.ops = hose->ops;
--			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
-+			struct pci_bus *bus;
-+			bus = kmalloc(sizeof(*bus), GFP_ATOMIC);
-+			bus->number = hose->first_busno;
-+			bus->sysdata = hose;
-+			bus->ops = hose->ops;
-+			indirect_read_config(bus, 0, PCIE_LTSSM, 4, &val);
-+			kfree(bus);
- 		} else
- 			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
- 		if (val < PCIE_LTSSM_L0)
--- 
-2.2.2
+That other projects (like jenkins, bug trackers etc) could consume
+the output of the test runs would be a nice bonus.  I only recently
+started looking at kselftests and was surprised at the amount
+of variance we have in the way of printing 'Ok' '[OK]' 'ok...' etc.
+
+	Dave
