@@ -1,19 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 085B41A064A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 14:33:47 +1100 (AEDT)
-Message-ID: <1421811226.4900.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: fix endian problems with LE migration
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>
-Date: Wed, 21 Jan 2015 14:33:46 +1100
-In-Reply-To: <1421807520-12030-1-git-send-email-cyrilbur@gmail.com>
-References: <1421807520-12030-1-git-send-email-cyrilbur@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id EFDB71A0D1A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 14:46:24 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ rric@kernel.org
+Subject: [PATCH 1/2] oprofile: Add HAVE_OPROFILE_NMI_TIMER
+Date: Wed, 21 Jan 2015 14:46:22 +1100
+Message-Id: <1421811983-22788-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, oprofile-list@lists.sf.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-21 at 13:32 +1100, Cyril Bur wrote:
-> The need to handle ibm,suspend_me specially from within ppc_rtas has left an
-> endian bug exposed as rtas_ibm_suspend_me actually performs HCALLs and should
-> have its params in CPU endian.
+HAVE_PERF_EVENTS_NMI is used for two things - the oprofile NMI timer
+and the hardlockup detector.
 
-That needs a much better explanation.
+Create HAVE_OPROFILE_NMI_TIMER so an architecture can select them
+separately. On ppc64 we want to add the hardlockup detector, but not
+the oprofile NMI timer fallback.
 
-Key points:
- - ppc_rtas() is a syscall, which takes arguments in BE
- - ibm,suspend-me is not a real RTAS call and is handled specially in there
- - ibm,suspend-me is actually implemented by an hcall
- - there is currently a bug on LE, because rtas_ibm_suspend_me() takes the
-   ppc_rtas() args and feeds them directly to the hcall
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/Kconfig     | 5 ++++-
+ arch/x86/Kconfig | 1 +
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-> Have ppc_rtas send the params correctly and also interpret the result
-> correctly.
-
-That's a second bug which you should also mention above.
-
-> Removed the convoluted use of the rtas_args struct to pass params to
-> rtas_ibm_suspend_me in favour of passing what it needs directly.
-> 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> ---
-> This patch has been tested with KVM both LE and BE and on PowerVM both LE and
-> BE. Under QEMU/KVM the migration happens without touching the these code
-> pathes.
-> For PowerVM there is no obvious regression on BE and the LE code path now
-> provides the correct parameters to the hypervisor
-
-Fold that into the changelog, it's worth remembering.
-
-cheers
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 05d7a8a..3d50e42 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -30,9 +30,12 @@ config OPROFILE_EVENT_MULTIPLEX
+ config HAVE_OPROFILE
+ 	bool
+ 
++config HAVE_OPROFILE_NMI_TIMER
++	bool
++
+ config OPROFILE_NMI_TIMER
+ 	def_bool y
+-	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI
++	depends on PERF_EVENTS && HAVE_OPROFILE_NMI_TIMER
+ 
+ config KPROBES
+ 	bool "Kprobes"
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ba397bd..98d9c72 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -138,6 +138,7 @@ config X86
+ 	select HAVE_ACPI_APEI_NMI if ACPI
+ 	select ACPI_LEGACY_TABLES_LOOKUP if ACPI
+ 	select X86_FEATURE_NAMES if PROC_FS
++	select HAVE_OPROFILE_NMI_TIMER
+ 
+ config INSTRUCTION_DECODER
+ 	def_bool y
+-- 
+2.1.0
