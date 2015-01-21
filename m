@@ -1,36 +1,27 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3922C1A0E02
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:25 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 22 Jan 2015 01:33:23 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8496C3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:21 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0LFXL0446399624
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:21 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0LFXKRG008407
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:20 +1100
-Date: Wed, 21 Jan 2015 21:03:03 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, mpe@ellerman.id.au
-Subject: Re: [RFC PATCH 0/8] Fix perf probe issues on powerpc
-Message-ID: <20150121153303.GM2245@naverao1-tp.ibm.com>
-References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150121125142.GC3420@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75FF21A0E29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 04:37:02 +1100 (AEDT)
+Received: by mail-pa0-f50.google.com with SMTP id bj1so54181981pad.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 09:36:59 -0800 (PST)
+Date: Wed, 21 Jan 2015 09:36:21 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Zidan Wang <b50113@freescale.com>
+Subject: Re: [alsa-devel][PATCH 1/3] SoC: fsl_sai: add sai master mode support
+Message-ID: <20150121173619.GA1184@Asurada>
+References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
+ <1421756480-7055-2-git-send-email-zidan.wang@freescale.com>
+ <20150121060702.GB3275@Alpha> <20150121092529.GA27441@b50113>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150121125142.GC3420@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20150121092529.GA27441@b50113>
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/01/21 09:51AM, Arnaldo Carvalho de Melo wrote:
-> Em Tue, Dec 09, 2014 at 11:03:58PM +0530, Naveen N. Rao escreveu:
-> > This patchset fixes various issues with perf probe on powerpc
-> > across ABIv1 and ABIv2:
-> > - in the presence of DWARF debug-info,
-> > - in the absence of DWARF, but with the symbol table, and
-> > - in the absence of debug-info, but with kallsyms.
+On Wed, Jan 21, 2015 at 05:25:32PM +0800, Zidan Wang wrote:
+> On Tue, Jan 20, 2015 at 10:07:03PM -0800, Nicolin Chen wrote:
+> > On Tue, Jan 20, 2015 at 08:21:18PM +0800, Zidan Wang wrote:
+
+> > > +	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
+> > > +		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
+> > > +			FSL_SAI_CR2_MSEL_MASK, FSL_SAI_CR2_MSEL(sai->mclk_id));
+
+> > "tx && sai->synchronous[TX]" means the playback in synchronous
+> > mode (TX following RX). What if the recording has been already
+> > activated with an MSEL setting at this point? Then the playback
+> > stream, as a secondary stream, will overwrite MSEL of the first
+> > stream -- Record. Same would happen to the DIV configuration.
 > > 
-> > Applies cleanly on v3.18 and on -tip with minor changes to patch 6.
-> > Tested on ppc64 BE and LE.
-> > 
-> > - Naveen
-> > 
-> > Naveen N. Rao (8):
-> >   kprobes: Fix kallsyms lookup across powerpc ABIv1 and ABIv2
-> >   perf probe powerpc: Fix symbol fixup issues due to ELF type
-> >   perf probe: Improve detection of file/function name in the probe
-> >     pattern
-> >   perf probe powerpc: Handle powerpc dot symbols
-> >   perf probe powerpc: Allow matching against dot symbols
-> >   perf tools powerpc: Fix PPC64 ELF ABIv2 symbol decoding
-> >   perf probe powerpc: Use DWARF info only if necessary
-> >   perf probe powerpc: Fixup function entry if using kallsyms lookup
+> When TX following RX(or RX following TX), TX and RX works on same bit
+> clock and frame clock. They will use same MCLK source, and just need set
+> the bclk DIV for RX(or TX). The secondary stream will overwrite MSEL and
+> bclk DIV of the first stream, but it doesn't matter.
 > 
-> Naveen,
-> 
-> 	I saw several comments by Michael, have you tried to address
-> those comments and have you resubmitted this patchset?
+> For RX(or TX) sync:
+> fsl_sai_dai.symmetric_rates = 1;
+> fsl_sai_dai.symmetric_channels = 1;
+> fsl_sai_dai.symmetric_samplebits = 1;
 
-Hi Arnaldo,
-Yes. Please find v2 of this patchset here:
-http://thread.gmane.org/gmane.linux.kernel/1851128
+Ah, I forgot we have protection here. It's fine then.
 
-I request you to kindly take another look and let me know if you have 
-further questions.
+> When TX and RX both works on async mode, TX and RX may works on
+> different bit clock and frame clock. We need set MCLK source and bclk
+> DIV for TX and RX. mclk_id just save a MCLK source id, so i need to define
+> mclk_id[2] for differnet stream.
 
-Michael,
-Looking forward to your feedback.
+Yes, you need to change this part as you just realized.
 
+And one more thing for your coding style for multi-line comment:
+/*
+ * Typically use this format.
+ */
 
-Thanks!
-- Naveen
+Thanks
+Nicolin
