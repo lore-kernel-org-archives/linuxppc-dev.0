@@ -1,33 +1,36 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 939DA1A0DFA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:25:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3922C1A0E02
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:25 +1100 (AEDT)
 Received: from /spool/local
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Wed, 21 Jan 2015 13:25:17 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 9D23C352005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 10:24:16 -0500 (EST)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0LFOeiA56230074
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 13:24:41 -0200
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0LFPDjv013030
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 13:25:13 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH resend] powernv/iommu: disable IOMMU bypass with param
- iommu=nobypass
-Date: Wed, 21 Jan 2015 13:23:52 -0200
-Message-Id: <1421853832-32533-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: corbet@lwn.net, linux-doc@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- paulus@samba.org, Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 22 Jan 2015 01:33:23 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8496C3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:21 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0LFXL0446399624
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:21 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0LFXKRG008407
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 02:33:20 +1100
+Date: Wed, 21 Jan 2015 21:03:03 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, mpe@ellerman.id.au
+Subject: Re: [RFC PATCH 0/8] Fix perf probe issues on powerpc
+Message-ID: <20150121153303.GM2245@naverao1-tp.ibm.com>
+References: <cover.1418146300.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20150121125142.GC3420@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150121125142.GC3420@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,74 +40,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When IOMMU bypass is enabled, a PCI device can read and write memory
-that was not mapped by the driver without causing an EEH. That might
-cause memory corruption, for example.
+On 2015/01/21 09:51AM, Arnaldo Carvalho de Melo wrote:
+> Em Tue, Dec 09, 2014 at 11:03:58PM +0530, Naveen N. Rao escreveu:
+> > This patchset fixes various issues with perf probe on powerpc
+> > across ABIv1 and ABIv2:
+> > - in the presence of DWARF debug-info,
+> > - in the absence of DWARF, but with the symbol table, and
+> > - in the absence of debug-info, but with kallsyms.
+> > 
+> > Applies cleanly on v3.18 and on -tip with minor changes to patch 6.
+> > Tested on ppc64 BE and LE.
+> > 
+> > - Naveen
+> > 
+> > Naveen N. Rao (8):
+> >   kprobes: Fix kallsyms lookup across powerpc ABIv1 and ABIv2
+> >   perf probe powerpc: Fix symbol fixup issues due to ELF type
+> >   perf probe: Improve detection of file/function name in the probe
+> >     pattern
+> >   perf probe powerpc: Handle powerpc dot symbols
+> >   perf probe powerpc: Allow matching against dot symbols
+> >   perf tools powerpc: Fix PPC64 ELF ABIv2 symbol decoding
+> >   perf probe powerpc: Use DWARF info only if necessary
+> >   perf probe powerpc: Fixup function entry if using kallsyms lookup
+> 
+> Naveen,
+> 
+> 	I saw several comments by Michael, have you tried to address
+> those comments and have you resubmitted this patchset?
 
-When we disable bypass, DMA reads and writes to addresses not mapped by
-the IOMMU will cause an EEH, allowing us to debug such issues.
+Hi Arnaldo,
+Yes. Please find v2 of this patchset here:
+http://thread.gmane.org/gmane.linux.kernel/1851128
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- Documentation/kernel-parameters.txt       |    2 ++
- arch/powerpc/platforms/powernv/pci-ioda.c |   24 +++++++++++++++++++++++-
- 2 files changed, 25 insertions(+), 1 deletion(-)
+I request you to kindly take another look and let me know if you have 
+further questions.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 4df73da..7dedfe5 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1493,6 +1493,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 		forcesac
- 		soft
- 		pt		[x86, IA-64]
-+		nobypass	[PPC/POWERNV]
-+			Disable IOMMU bypass, using IOMMU for PCI devices.
- 
- 
- 	io7=		[HW] IO7 for Marvel based alpha systems
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fac88ed..f942a19 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -75,6 +75,27 @@ static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- #define pe_info(pe, fmt, ...)					\
- 	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
- 
-+static bool pnv_iommu_bypass_disabled __read_mostly;
-+
-+static int __init iommu_setup(char *str)
-+{
-+	if (!str)
-+		return -EINVAL;
-+	while (*str) {
-+		if (!strncmp(str, "nobypass", 8)) {
-+			pnv_iommu_bypass_disabled = true;
-+			pr_info("PowerNV: IOMMU bypass window disabled.\n");
-+		}
-+		str += strcspn(str, ",");
-+		if (*str == ',')
-+			str++;
-+	}
-+
-+	return 0;
-+}
-+
-+early_param("iommu", iommu_setup);
-+
- /*
-  * stdcix is only supposed to be used in hypervisor real mode as per
-  * the architecture spec
-@@ -1348,7 +1369,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
- 
- 	/* Also create a bypass window */
--	pnv_pci_ioda2_setup_bypass_pe(phb, pe);
-+	if (!pnv_iommu_bypass_disabled)
-+		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
- 	return;
- fail:
- 	if (pe->tce32_seg >= 0)
--- 
-1.7.10.4
+Michael,
+Looking forward to your feedback.
+
+
+Thanks!
+- Naveen
