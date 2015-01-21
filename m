@@ -1,25 +1,23 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B969F1A0C33
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:07:11 +1100 (AEDT)
-Received: by mail-pd0-f182.google.com with SMTP id z10so8338348pdj.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:07:10 -0800 (PST)
-Date: Tue, 20 Jan 2015 22:07:03 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Zidan Wang <zidan.wang@freescale.com>
-Subject: Re: [alsa-devel][PATCH 1/3] SoC: fsl_sai: add sai master mode support
-Message-ID: <20150121060702.GB3275@Alpha>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <1421756480-7055-2-git-send-email-zidan.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C9DE1A0CE5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:25:49 +1100 (AEDT)
+Message-ID: <54BF462D.6030304@Freescale.com>
+Date: Wed, 21 Jan 2015 00:24:45 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1421756480-7055-2-git-send-email-zidan.wang@freescale.com>
-Cc: alsa-devel@alsa-project.org, timur@tabi.org, Xiubo.Lee@gmail.com,
- tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
- perex@perex.cz, broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Tang Yuantian-B29983 <Yuantian.Tang@Freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Wood
+ Scott-B07421" <scottwood@Freescale.com>, "mturquette@linaro.org"
+ <mturquette@linaro.org>, "haokexin@gmail.com" <haokexin@gmail.com>
+Subject: Re: [PATCH 0/8] clk: ppc-corenet: Add support for the platform PLL
+References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+ <BY2PR03MB570918E5F02FF4A86344FDFFA480@BY2PR03MB570.namprd03.prod.outlook.com>
+In-Reply-To: <BY2PR03MB570918E5F02FF4A86344FDFFA480@BY2PR03MB570.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2015 at 08:21:18PM +0800, Zidan Wang wrote:
-> +static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
+Hello Yuan-Tian,
 
-> +	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
-> +		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-> +			FSL_SAI_CR2_MSEL_MASK, FSL_SAI_CR2_MSEL(sai->mclk_id));
-> +		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-> +			FSL_SAI_CR2_DIV_MASK, savediv - 1);
 
-Hmm...the case should be a bit more complicated here IMO.
+On 01/20/2015 07:40 PM, Tang Yuantian-B29983 wrote:
+> Hi Emil,
+> 
+> Thanks for fixing those warnings. The patch set you based on is merged.
+> I sent another two patches and one of them got merged. You probably need to rebase your patches.
+> My patch link:
+> http://patchwork.ozlabs.org/patch/429257/
 
-"tx && sai->synchronous[TX]" means the playback in synchronous
-mode (TX following RX). What if the recording has been already
-activated with an MSEL setting at this point? Then the playback
-stream, as a secondary stream, will overwrite MSEL of the first
-stream -- Record. Same would happen to the DIV configuration.
+I'll rebase on top of this and resubmit
 
-> @@ -297,6 +368,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
->  	unsigned int channels = params_channels(params);
->  	u32 word_width = snd_pcm_format_width(params_format(params));
->  	u32 val_cr4 = 0, val_cr5 = 0;
-> +	int ret;
-> +
-> +	if (!sai->is_slave_mode) {
-> +		ret = fsl_sai_set_bclk(cpu_dai, tx,
-> +			2 * word_width * params_rate(params));
-> +		if (ret)
-> +			return ret;
-> +
-> +		/* Do not enable the clock if it is already enabled */
 
-It actually doesn't matter to enable the clock again since it
-purely increaes its count. But we do need a protection for MSEL
-overwritten issue resulted from the fsl_sai_set_bclk() call.
+Cheers,
 
-> @@ -133,10 +135,13 @@ struct fsl_sai {
->  	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
->  
->  	bool is_lsb_first;
-> +	bool is_slave_mode;
->  	bool is_dsp_mode;
->  	bool sai_on_imx;
->  	bool synchronous[2];
->  
-> +	unsigned int mclk_id;
-> +	unsigned int mclk_streams;
 
-Besides, I doubt that only one property of mclk_id can content
-Asynchronous Mode -- TX and RX can fetch their clocks from
-different MCLK sources.
-
-Nicolin
+> http://patchwork.ozlabs.org/patch/429258/
+> 
+> Thanks,
+> Yuantian
+> 
+>> -----Original Message-----
+>> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
+>> Sent: Tuesday, January 20, 2015 6:09 PM
+>> To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; mturquette@linaro.org;
+>> haokexin@gmail.com; Tang Yuantian-B29983
+>> Cc: Medve Emilian-EMMEDVE1
+>> Subject: [PATCH 0/8] clk: ppc-corenet: Add support for the platform PLL
+>>
+>> These patches are based on:
+>>
+>> http://patchwork.ozlabs.org/patch/417297
+>> http://patchwork.ozlabs.org/patch/417295
+>> http://patchwork.ozlabs.org/patch/417292
+>>
+>> The first 5 patches below are checkpatch/static analysis fixes
+>>
+>> Emil Medve (8):
+>>   clk: ppc-corenet: Fix checkpatch type PARENTHESIS_ALIGNMENT
+>>   clk: ppc-corenet: Fix checkpatch type ALLOC_WITH_MULTIPLY
+>>   clk: ppc-corenet: Fix checkpatch type ALLOC_SIZEOF_STRUCT
+>>   clk: ppc-corenet: Fix checkpatch type OOM_MESSAGE
+>>   clk: ppc-corenet: Make local symbol 'static'
+>>   clk: ppc-corenet: Replace kzalloc() with kmalloc()
+>>   powerpc/corenet: Enable CLK_PPC_CORENET
+>>   clk: ppc-corenet: Add support for the platform PLL
+>>
+>>  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
+>>  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
+>>  drivers/clk/clk-ppc-corenet.c                | 120
+>> ++++++++++++++++++++++-----
+>>  3 files changed, 101 insertions(+), 21 deletions(-)
+>>
+>> --
+>> 2.2.2
