@@ -1,16 +1,16 @@
 Return-Path: <Emilian.Medve@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
+ (mail-bn1bbn0105.outbound.protection.outlook.com [157.56.111.105])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE78A1A0DB0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2EA71A0DBA
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:17:22 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
  <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
-Subject: [PATCH v2 07/10] clk: qoriq: Use pr_fmt()
-Date: Wed, 21 Jan 2015 04:03:29 -0600
-Message-ID: <1421834611-9656-8-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH v2 04/10] clk: qoriq: Fix checkpatch type OOM_MESSAGE
+Date: Wed, 21 Jan 2015 04:03:26 -0600
+Message-ID: <1421834611-9656-5-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -25,44 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently a mix of clk-qoriq/qoriq-clk and no prefix is used
+WARNING:OOM_MESSAGE: Possible unnecessary 'out of memory' message
++       if (!parent_names) {
++               pr_err("%s: could not allocate parent_names\n", __func__);
+
+WARNING:OOM_MESSAGE: Possible unnecessary 'out of memory' message
++       if (!cmux_clk) {
++               pr_err("%s: could not allocate cmux_clk\n", __func__);
+
+WARNING:OOM_MESSAGE: Possible unnecessary 'out of memory' message
++       if (!subclks) {
++               pr_err("%s: could not allocate subclks\n", __func__);
+
+WARNING:OOM_MESSAGE: Possible unnecessary 'out of memory' message
++       if (!onecell_data) {
++               pr_err("%s: could not allocate onecell_data\n", __func__);
 
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
- drivers/clk/clk-qoriq.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/clk/clk-qoriq.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 4b44825..07bdfc5 100644
+index a1cd137..e25dea9 100644
 --- a/drivers/clk/clk-qoriq.c
 +++ b/drivers/clk/clk-qoriq.c
-@@ -7,6 +7,9 @@
-  *
-  * clock driver for Freescale QorIQ SoCs.
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/clk-provider.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-@@ -163,7 +166,7 @@ static void __init core_pll_init(struct device_node *np)
- 
- 	base = of_iomap(np, 0);
- 	if (!base) {
--		pr_err("clk-qoriq: iomap error\n");
-+		pr_err("iomap error\n");
+@@ -86,19 +86,16 @@ static void __init core_mux_init(struct device_node *np)
  		return;
  	}
- 
-@@ -253,7 +256,7 @@ static void __init sysclk_init(struct device_node *node)
- 	u32 rate;
- 
- 	if (!np) {
--		pr_err("qoriq-clk: could not get parent node\n");
-+		pr_err("could not get parent node\n");
+ 	parent_names = kcalloc(count, sizeof(char *), GFP_KERNEL);
+-	if (!parent_names) {
+-		pr_err("%s: could not allocate parent_names\n", __func__);
++	if (!parent_names)
  		return;
+-	}
+ 
+ 	for (i = 0; i < count; i++)
+ 		parent_names[i] = of_clk_get_parent_name(np, i);
+ 
+ 	cmux_clk = kzalloc(sizeof(*cmux_clk), GFP_KERNEL);
+-	if (!cmux_clk) {
+-		pr_err("%s: could not allocate cmux_clk\n", __func__);
++	if (!cmux_clk)
+ 		goto err_name;
+-	}
++
+ 	cmux_clk->reg = of_iomap(np, 0);
+ 	if (!cmux_clk->reg) {
+ 		pr_err("%s: could not map register\n", __func__);
+@@ -193,16 +190,12 @@ static void __init core_pll_init(struct device_node *np)
  	}
  
+ 	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
+-	if (!subclks) {
+-		pr_err("%s: could not allocate subclks\n", __func__);
++	if (!subclks)
+ 		goto err_map;
+-	}
+ 
+ 	onecell_data = kzalloc(sizeof(*onecell_data), GFP_KERNEL);
+-	if (!onecell_data) {
+-		pr_err("%s: could not allocate onecell_data\n", __func__);
++	if (!onecell_data)
+ 		goto err_clks;
+-	}
+ 
+ 	for (i = 0; i < count; i++) {
+ 		rc = of_property_read_string_index(np, "clock-output-names",
 -- 
 2.2.1
