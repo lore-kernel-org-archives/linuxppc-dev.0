@@ -2,14 +2,16 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42EE41A0D13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 12:27:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B04EC1A0D13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 12:27:42 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  segher@kernel.crashing.org
-Subject: [PATCH 1/2] powerpc: Add 64bit optimised memcmp
-Date: Wed, 21 Jan 2015 12:27:38 +1100
-Message-Id: <1421803659-10678-1-git-send-email-anton@samba.org>
+Subject: [PATCH 2/2] powerpc: Add memcmp testcase
+Date: Wed, 21 Jan 2015 12:27:39 +1100
+Message-Id: <1421803659-10678-2-git-send-email-anton@samba.org>
+In-Reply-To: <1421803659-10678-1-git-send-email-anton@samba.org>
+References: <1421803659-10678-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,317 +22,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I noticed ksm spending quite a lot of time in memcmp on a large
-KVM box. The current memcmp loop is very unoptimised - byte at a
-time compares with no loop unrolling. We can do much much better.
-
-Optimise the loop in a few ways:
-
-- Unroll the byte at a time loop
-
-- For large (at least 32 byte) comparisons that are also 8 byte
-  aligned, use an unrolled modulo scheduled loop using 8 byte
-  loads. This is similar to our glibc memcmp.
-
-A simple microbenchmark testing 10000000 iterations of an 8192 byte
-memcmp was used to measure the performance:
-
-baseline:	29.93 s
-
-modified:	 1.70 s
-
-Just over 17x faster.
-
-v2: Incorporated some suggestions from Segher:
-
-- Use andi. instead of rdlicl.
-
-- Convert bdnzt eq, to bdnz. It's just duplicating the earlier compare
-  and was a relic from a previous version.
-
-- Don't use cr5, we have plans to use that CR field for fast local
-  atomics.
+Add a testcase for the new ppc64 memcmp.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/lib/Makefile    |   3 +-
- arch/powerpc/lib/memcmp_64.S | 233 +++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/lib/string.S    |   2 +
- 3 files changed, 237 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/lib/memcmp_64.S
+ .../testing/selftests/powerpc/stringloops/Makefile |  21 +++++
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    |   7 ++
+ .../selftests/powerpc/stringloops/memcmp_64.S      |   1 +
+ .../selftests/powerpc/stringloops/test_memcmp.c    | 103 +++++++++++++++++++++
+ 4 files changed, 132 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+ create mode 120000 tools/testing/selftests/powerpc/stringloops/memcmp_64.S
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/test_memcmp.c
 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 1b01159..5526156 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -15,7 +15,8 @@ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
- 
- obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   usercopy_64.o mem_64.o hweight_64.o \
--			   copyuser_power7.o string_64.o copypage_power7.o
-+			   copyuser_power7.o string_64.o copypage_power7.o \
-+			   memcmp_64.o
- ifeq ($(CONFIG_GENERIC_CSUM),)
- obj-y			+= checksum_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_PPC64)	+= checksum_wrappers_64.o
-diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
 new file mode 100644
-index 0000000..8953d23
+index 0000000..159a299
 --- /dev/null
-+++ b/arch/powerpc/lib/memcmp_64.S
-@@ -0,0 +1,233 @@
-+/*
-+ * Author: Anton Blanchard <anton@au.ibm.com>
-+ * Copyright 2015 IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <asm/ppc_asm.h>
++++ b/tools/testing/selftests/powerpc/stringloops/Makefile
+@@ -0,0 +1,21 @@
++# The loops are all 64-bit code
++CFLAGS += -m64
++CFLAGS += -I$(CURDIR)
++CFLAGS += -D SELFTEST
 +
-+#define off8	r6
-+#define off16	r7
-+#define off24	r8
++PROGS := test_memcmp
++EXTRA_SOURCES := memcmp_64.S ../harness.c
 +
-+#define rA	r9
-+#define rB	r10
-+#define rC	r11
-+#define rD	r27
-+#define rE	r28
-+#define rF	r29
-+#define rG	r30
-+#define rH	r31
++all: $(PROGS)
 +
-+#ifdef __LITTLE_ENDIAN__
-+#define LD	ldbrx
-+#else
-+#define LD	ldx
++$(PROGS): $(EXTRA_SOURCES)
++
++run_tests: all
++	@-for PROG in $(PROGS); do \
++		./$$PROG; \
++	done;
++
++clean:
++	rm -f $(PROGS) *.o
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+new file mode 100644
+index 0000000..11bece8
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+@@ -0,0 +1,7 @@
++#include <ppc-asm.h>
++
++#ifndef r1
++#define r1 sp
 +#endif
 +
-+_GLOBAL(memcmp)
-+	cmpdi	cr1,r5,0
++#define _GLOBAL(A) FUNC_START(test_ ## A)
+diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp_64.S b/tools/testing/selftests/powerpc/stringloops/memcmp_64.S
+new file mode 120000
+index 0000000..9bc87e4
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/memcmp_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcmp_64.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/stringloops/test_memcmp.c b/tools/testing/selftests/powerpc/stringloops/test_memcmp.c
+new file mode 100644
+index 0000000..17417dd
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/test_memcmp.c
+@@ -0,0 +1,103 @@
++#include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
++#include "../utils.h"
 +
-+	/* Use the short loop if both strings are not 8B aligned */
-+	or	r6,r3,r4
-+	andi.	r6,r6,7
++#define SIZE 256
++#define ITERATIONS 10000
 +
-+	/* Use the short loop if length is less than 32B */
-+	cmpdi	cr6,r5,31
++int test_memcmp(const void *s1, const void *s2, size_t n);
 +
-+	beq	cr1,.Lzero
-+	bne	.Lshort
-+	bgt	cr6,.Llong
++/* test all offsets and lengths */
++static void test_one(char *s1, char *s2)
++{
++	unsigned long offset, size;
 +
-+.Lshort:
-+	mtctr	r5
++	for (offset = 0; offset < SIZE; offset++) {
++		for (size = 0; size < (SIZE-offset); size++) {
++			int x, y;
++			unsigned long i;
 +
-+1:	lbz	rA,0(r3)
-+	lbz	rB,0(r4)
-+	subf.	rC,rB,rA
-+	bne	.Lnon_zero
-+	bdz	.Lzero
++			y = memcmp(s1+offset, s2+offset, size);
++			x = test_memcmp(s1+offset, s2+offset, size);
 +
-+	lbz	rA,1(r3)
-+	lbz	rB,1(r4)
-+	subf.	rC,rB,rA
-+	bne	.Lnon_zero
-+	bdz	.Lzero
++			if (((x ^ y) < 0) &&	/* Trick to compare sign */
++				((x | y) != 0)) { /* check for zero */
++				printf("memcmp returned %d, should have returned %d (offset %ld size %ld)\n", x, y, offset, size);
 +
-+	lbz	rA,2(r3)
-+	lbz	rB,2(r4)
-+	subf.	rC,rB,rA
-+	bne	.Lnon_zero
-+	bdz	.Lzero
++				for (i = offset; i < offset+size; i++)
++					printf("%02x ", s1[i]);
++				printf("\n");
 +
-+	lbz	rA,3(r3)
-+	lbz	rB,3(r4)
-+	subf.	rC,rB,rA
-+	bne	.Lnon_zero
++				for (i = offset; i < offset+size; i++)
++					printf("%02x ", s2[i]);
++				printf("\n");
++				abort();
++			}
++		}
++	}
++}
 +
-+	addi	r3,r3,4
-+	addi	r4,r4,4
++static int testcase(void)
++{
++	char *s1;
++	char *s2;
++	unsigned long i;
 +
-+	bdnz	1b
++	s1 = memalign(128, SIZE);
++	if (!s1) {
++		perror("memalign");
++		exit(1);
++	}
 +
-+.Lzero:
-+	li	r3,0
-+	blr
++	s2 = memalign(128, SIZE);
++	if (!s2) {
++		perror("memalign");
++		exit(1);
++	}
 +
-+.Lnon_zero:
-+	mr	r3,rC
-+	blr
++	srandom(1);
 +
-+.Llong:
-+	li	off8,8
-+	li	off16,16
-+	li	off24,24
++	for (i = 0; i < ITERATIONS; i++) {
++		unsigned long j;
++		unsigned long change;
 +
-+	std	r31,-8(r1)
-+	std	r30,-16(r1)
-+	std	r29,-24(r1)
-+	std	r28,-32(r1)
-+	std	r27,-40(r1)
++		for (j = 0; j < SIZE; j++)
++			s1[j] = random();
 +
-+	srdi	r0,r5,5
-+	mtctr	r0
-+	andi.	r5,r5,31
++		memcpy(s2, s1, SIZE);
 +
-+	LD	rA,0,r3
-+	LD	rB,0,r4
++		/* change one byte */
++		change = random() % SIZE;
++		s2[change] = random() & 0xff;
 +
-+	LD	rC,off8,r3
-+	LD	rD,off8,r4
++		test_one(s1, s2);
++	}
 +
-+	LD	rE,off16,r3
-+	LD	rF,off16,r4
++	srandom(1);
 +
-+	LD	rG,off24,r3
-+	LD	rH,off24,r4
-+	cmpld	cr0,rA,rB
++	for (i = 0; i < ITERATIONS; i++) {
++		unsigned long j;
++		unsigned long change;
 +
-+	addi	r3,r3,32
-+	addi	r4,r4,32
++		for (j = 0; j < SIZE; j++)
++			s1[j] = random();
 +
-+	bdz	.Lfirst32
++		memcpy(s2, s1, SIZE);
 +
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	cmpld	cr1,rC,rD
++		/* change multiple bytes, 1/8 of total */
++		for (j = 0; j < SIZE / 8; j++) {
++			change = random() % SIZE;
++			s2[change] = random() & 0xff;
++		}
 +
-+	LD	rC,off8,r3
-+	LD	rD,off8,r4
-+	cmpld	cr6,rE,rF
++		test_one(s1, s2);
++	}
 +
-+	LD	rE,off16,r3
-+	LD	rF,off16,r4
-+	cmpld	cr7,rG,rH
-+	bne	cr0,.LcmpAB
++	return 0;
++}
 +
-+	LD	rG,off24,r3
-+	LD	rH,off24,r4
-+	cmpld	cr0,rA,rB
-+	bne	cr1,.LcmpCD
-+
-+	addi	r3,r3,32
-+	addi	r4,r4,32
-+
-+	bdz	.Lsecond32
-+
-+	.balign	16
-+
-+1:	LD	rA,0,r3
-+	LD	rB,0,r4
-+	cmpld	cr1,rC,rD
-+	bne	cr6,.LcmpEF
-+
-+	LD	rC,off8,r3
-+	LD	rD,off8,r4
-+	cmpld	cr6,rE,rF
-+	bne	cr7,.LcmpGH
-+
-+	LD	rE,off16,r3
-+	LD	rF,off16,r4
-+	cmpld	cr7,rG,rH
-+	bne	cr0,.LcmpAB
-+
-+	LD	rG,off24,r3
-+	LD	rH,off24,r4
-+	cmpld	cr0,rA,rB
-+	bne	cr1,.LcmpCD
-+
-+	addi	r3,r3,32
-+	addi	r4,r4,32
-+
-+	bdnz	1b
-+
-+.Lsecond32:
-+	cmpld	cr1,rC,rD
-+	bne	cr6,.LcmpEF
-+
-+	cmpld	cr6,rE,rF
-+	bne	cr7,.LcmpGH
-+
-+	cmpld	cr7,rG,rH
-+	bne	cr0,.LcmpAB
-+
-+	bne	cr1,.LcmpCD
-+	bne	cr6,.LcmpEF
-+	bne	cr7,.LcmpGH
-+
-+.Ltail:
-+	ld	r31,-8(r1)
-+	ld	r30,-16(r1)
-+	ld	r29,-24(r1)
-+	ld	r28,-32(r1)
-+	ld	r27,-40(r1)
-+
-+	cmpdi	r5,0
-+	beq	.Lzero
-+	b	.Lshort
-+
-+.Lfirst32:
-+	cmpld	cr1,rC,rD
-+	cmpld	cr6,rE,rF
-+	cmpld	cr7,rG,rH
-+
-+	bne	cr0,.LcmpAB
-+	bne	cr1,.LcmpCD
-+	bne	cr6,.LcmpEF
-+	bne	cr7,.LcmpGH
-+
-+	b	.Ltail
-+
-+.LcmpAB:
-+	li	r3,1
-+	bgt	cr0,.Lout
-+	li	r3,-1
-+	b	.Lout
-+
-+.LcmpCD:
-+	li	r3,1
-+	bgt	cr1,.Lout
-+	li	r3,-1
-+	b	.Lout
-+
-+.LcmpEF:
-+	li	r3,1
-+	bgt	cr6,.Lout
-+	li	r3,-1
-+	b	.Lout
-+
-+.LcmpGH:
-+	li	r3,1
-+	bgt	cr7,.Lout
-+	li	r3,-1
-+
-+.Lout:
-+	ld	r31,-8(r1)
-+	ld	r30,-16(r1)
-+	ld	r29,-24(r1)
-+	ld	r28,-32(r1)
-+	ld	r27,-40(r1)
-+	blr
-diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-index 1b5a0a0..c80fb49 100644
---- a/arch/powerpc/lib/string.S
-+++ b/arch/powerpc/lib/string.S
-@@ -93,6 +93,7 @@ _GLOBAL(strlen)
- 	subf	r3,r3,r4
- 	blr
- 
-+#ifdef CONFIG_PPC32
- _GLOBAL(memcmp)
- 	PPC_LCMPI 0,r5,0
- 	beq-	2f
-@@ -106,6 +107,7 @@ _GLOBAL(memcmp)
- 	blr
- 2:	li	r3,0
- 	blr
-+#endif
- 
- _GLOBAL(memchr)
- 	PPC_LCMPI 0,r5,0
++int main(void)
++{
++	return test_harness(testcase, "memcmp");
++}
 -- 
 2.1.0
