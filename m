@@ -2,38 +2,33 @@ Return-Path: <preeti@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BFBC91A064A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:38:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9004A1A0C6C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:57:44 +1100 (AEDT)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 21 Jan 2015 03:38:44 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0AA1538C8039
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:38:41 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0LAceCx26083362
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 10:38:41 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0LAcdXU022521
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:38:40 -0500
-Message-ID: <54BF81A0.8030705@linux.vnet.ibm.com>
-Date: Wed, 21 Jan 2015 16:08:24 +0530
+ Wed, 21 Jan 2015 03:57:42 -0700
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5DC706E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:49:33 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0LAveec24051798
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 10:57:40 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0LAvdDS026793
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:57:40 -0500
+Subject: [PATCH V2] cpuidle: Add missing checks to the exit condition of
+ cpu_idle_poll()
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: tglx@linutronix.de
+Date: Wed, 21 Jan 2015 16:27:25 +0530
+Message-ID: <20150121105655.15279.59626.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] idle/tick-broadcast: Exit cpu idle poll loop when cleared
- from tick_broadcast_force_mask
-References: <20150119052754.20256.54721.stgit@preeti.in.ibm.com>
- <alpine.DEB.2.11.1501201216420.5526@nanos>
- <54BE3B0E.2050502@linux.vnet.ibm.com>
- <alpine.DEB.2.11.1501211045480.5526@nanos>
-In-Reply-To: <alpine.DEB.2.11.1501211045480.5526@nanos>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,80 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/21/2015 03:26 PM, Thomas Gleixner wrote:
-> On Tue, 20 Jan 2015, Preeti U Murthy wrote:
->> On 01/20/2015 04:51 PM, Thomas Gleixner wrote:
->>> On Mon, 19 Jan 2015, Preeti U Murthy wrote:
->>>> An idle cpu enters cpu_idle_poll() if it is set in the tick_broadcast_force_mask.
->>>> This is so that it does not incur the overhead of entering idle states when it is expected
->>>> to be woken up anytime then through a broadcast IPI. The condition that forces an exit out
->>>> of the idle polling is the check on setting of the TIF_NEED_RESCHED flag for the idle thread.
->>>>
->>>> When the broadcast IPI does arrive, it is not guarenteed that the handler sets the
->>>> TIF_NEED_RESCHED flag. Hence although the cpu is cleared in the tick_broadcast_force_mask,
->>>> it continues to loop in cpu_idle_poll unnecessarily wasting power. Hence exit the idle
->>>> poll loop if the tick_broadcast_force_mask gets cleared and enter idle states.
->>>>
->>>> Of course if the cpu has entered cpu_idle_poll() on being asked to poll explicitly,
->>>> it continues to poll till it is asked to reschedule.
->>>>
->>>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>>> ---
->>>>
->>>>  kernel/sched/idle.c |    3 ++-
->>>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
->>>> index c47fce7..aaf1c1d 100644
->>>> --- a/kernel/sched/idle.c
->>>> +++ b/kernel/sched/idle.c
->>>> @@ -47,7 +47,8 @@ static inline int cpu_idle_poll(void)
->>>>  	rcu_idle_enter();
->>>>  	trace_cpu_idle_rcuidle(0, smp_processor_id());
->>>>  	local_irq_enable();
->>>> -	while (!tif_need_resched())
->>>> +	while (!tif_need_resched() &&
->>>> +		(cpu_idle_force_poll || tick_check_broadcast_expired()))
->>>
->>> You explain the tick_check_broadcast_expired() bit, but what about the
->>> cpu_idle_force_poll part?
->>
->> The last few lines which say "Of course if the cpu has entered
->> cpu_idle_poll() on being asked to poll explicitly, it continues to poll
->> till it is asked to reschedule" explains the cpu_idle_force_poll part.
-> 
-> Well, I read it more than once and did not figure it out.
-> 
-> The paragraph describes some behaviour. Now I know it's the behaviour
-> before the patch. So maybe something like this:
-> 
->   cpu_idle_poll() is entered when cpu_idle_force_poll is set or
->   tick_check_broadcast_expired() returns true. The exit condition from
->   cpu_idle_poll() is tif_need_resched().
-> 
->   But this does not take into account that cpu_idle_force_poll and
->   tick_check_broadcast_expired() can change without setting the
->   resched flag. So a cpu can be caught in cpu_idle_poll() needlessly
->   and thereby wasting power.
-> 
->   Add an explicit check for cpu_idle_force_poll and
->   tick_check_broadcast_expired() to the exit condition of
->   cpu_idle_poll() to avoid this.
-> 
-> This explains the technical issue without confusing people with IPIs
-> and other completely irrelevant information. Hmm?
+cpu_idle_poll() is entered into when either the cpu_idle_force_poll is set or
+tick_check_broadcast_expired() returns true. The exit condition from
+cpu_idle_poll() is tif_need_resched().
 
-Yep, much simpler, thanks! I will send out the next version with this
-changelog.
+However this does not take into account scenarios where cpu_idle_force_poll
+changes or tick_check_broadcast_expired() returns false, without setting
+the resched flag. So a cpu will be caught in cpu_idle_poll() needlessly,
+thereby wasting power. Add an explicit check on cpu_idle_force_poll and
+tick_check_broadcast_expired() to the exit condition of cpu_idle_poll()
+to avoid this.
 
-Regards
-Preeti U Murthy
-> 
-> Thanks,
-> 
-> 	tglx
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+Changes from V1: Modified the Changelog
+
+ kernel/sched/idle.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index c47fce7..aaf1c1d 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -47,7 +47,8 @@ static inline int cpu_idle_poll(void)
+ 	rcu_idle_enter();
+ 	trace_cpu_idle_rcuidle(0, smp_processor_id());
+ 	local_irq_enable();
+-	while (!tif_need_resched())
++	while (!tif_need_resched() &&
++		(cpu_idle_force_poll || tick_check_broadcast_expired()))
+ 		cpu_relax();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+ 	rcu_idle_exit();
