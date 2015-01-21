@@ -1,16 +1,16 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0143.outbound.protection.outlook.com [65.55.169.143])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 701E01A0DA5
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE78A1A0DB0
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:17:22 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
  <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
-Subject: [PATCH v2 02/10] clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
-Date: Wed, 21 Jan 2015 04:03:24 -0600
-Message-ID: <1421834611-9656-3-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH v2 07/10] clk: qoriq: Use pr_fmt()
+Date: Wed, 21 Jan 2015 04:03:29 -0600
+Message-ID: <1421834611-9656-8-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -25,35 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-WARNING:ALLOC_WITH_MULTIPLY: Prefer kcalloc over kzalloc with multiply
-+       subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
+Currently a mix of clk-qoriq/qoriq-clk and no prefix is used
 
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
- drivers/clk/clk-qoriq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/clk/clk-qoriq.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 90ff685..475ce1c 100644
+index 4b44825..07bdfc5 100644
 --- a/drivers/clk/clk-qoriq.c
 +++ b/drivers/clk/clk-qoriq.c
-@@ -85,7 +85,7 @@ static void __init core_mux_init(struct device_node *np)
- 		pr_err("%s: get clock count error\n", np->name);
+@@ -7,6 +7,9 @@
+  *
+  * clock driver for Freescale QorIQ SoCs.
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/clk-provider.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+@@ -163,7 +166,7 @@ static void __init core_pll_init(struct device_node *np)
+ 
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+-		pr_err("clk-qoriq: iomap error\n");
++		pr_err("iomap error\n");
  		return;
- 	}
--	parent_names = kzalloc((sizeof(char *) * count), GFP_KERNEL);
-+	parent_names = kcalloc(count, sizeof(char *), GFP_KERNEL);
- 	if (!parent_names) {
- 		pr_err("%s: could not allocate parent_names\n", __func__);
- 		return;
-@@ -192,7 +192,7 @@ static void __init core_pll_init(struct device_node *np)
- 		goto err_map;
  	}
  
--	subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
-+	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!subclks) {
- 		pr_err("%s: could not allocate subclks\n", __func__);
- 		goto err_map;
+@@ -253,7 +256,7 @@ static void __init sysclk_init(struct device_node *node)
+ 	u32 rate;
+ 
+ 	if (!np) {
+-		pr_err("qoriq-clk: could not get parent node\n");
++		pr_err("could not get parent node\n");
+ 		return;
+ 	}
+ 
 -- 
 2.2.1
