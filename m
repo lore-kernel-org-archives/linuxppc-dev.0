@@ -1,27 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0102.outbound.protection.outlook.com [65.55.169.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 775E11A0930
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 11:07:41 +1100 (AEDT)
-Date: Tue, 20 Jan 2015 16:07:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: josh@joshtriplett.org
-Subject: Re: [PATCH 2/2] mm: fix undefined reference to `.kernel_map_pages'
- on PPC builds
-Message-Id: <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
-In-Reply-To: <20150120230150.GA14475@cloud>
-References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
- <20150120230150.GA14475@cloud>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Akinobu Mita <akinobu.mita@gmail.com>,
- Jens Axboe <axboe@fb.com>, Minchan Kim <minchan@kernel.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Johannes Weiner <hannes@cmpxchg.org>,
- Sasha Levin <sasha.levin@oracle.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7ECB1A0CE5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 11:31:48 +1100 (AEDT)
+Message-ID: <1421800292.4961.215.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
+From: Scott Wood <scottwood@freescale.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Date: Tue, 20 Jan 2015 18:31:32 -0600
+In-Reply-To: <20150120140349.a7a9885065c241b555b91717@freescale.com>
+References: <20150120140349.a7a9885065c241b555b91717@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Wang Dongsheng <dongsheng.wang@freescale.com>, linux-kernel@vger.kernel.org,
+ Himangi Saraogi <himangi774@gmail.com>, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>, Aaron Sierra <asierra@xes-inc.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,54 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Jan 2015 15:01:50 -0800 josh@joshtriplett.org wrote:
-
-> On Tue, Jan 20, 2015 at 02:02:00PM -0600, Kim Phillips wrote:
-> > It's possible to configure DEBUG_PAGEALLOC without PAGE_POISONING on
-> > ppc.  Fix building the generic kernel_map_pages() implementation in
-> > this case:
-> > 
-> >   LD      init/built-in.o
-> > mm/built-in.o: In function `free_pages_prepare':
-> > mm/page_alloc.c:770: undefined reference to `.kernel_map_pages'
-> > mm/built-in.o: In function `prep_new_page':
-> > mm/page_alloc.c:933: undefined reference to `.kernel_map_pages'
-> > mm/built-in.o: In function `map_pages':
-> > mm/compaction.c:61: undefined reference to `.kernel_map_pages'
-> > make: *** [vmlinux] Error 1
-> > 
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> > ---
-> >  mm/Makefile | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/mm/Makefile b/mm/Makefile
-> > index 4bf586e..2956467 100644
-> > --- a/mm/Makefile
-> > +++ b/mm/Makefile
-> > @@ -46,6 +46,7 @@ obj-$(CONFIG_SLOB) += slob.o
-> >  obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
-> >  obj-$(CONFIG_KSM) += ksm.o
-> >  obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
-> > +obj-$(CONFIG_DEBUG_PAGEALLOC) += debug-pagealloc.o
+On Tue, 2015-01-20 at 14:03 -0600, Kim Phillips wrote:
+> Fix this:
 > 
-> Does it work correctly to list the same object file twice?  Doesn't seem
-> like it would.  Shouldn't this do something like the following instead:
+>   CC      arch/powerpc/sysdev/fsl_pci.o
+> arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
+> arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
 > 
-> ifneq ($(CONFIG_DEBUG_PAGEALLOC)$(CONFIG_PAGE_POISONING),)
-> obj-y += debug-pagealloc.o
-> endif
+> when configuring FRAME_WARN, by converting the allocation from the
+> stack to the heap.  We use GFP_ATOMIC since this function can be
+> called with interrupts disabled.
 > 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_pci.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 6455c1e..635d743 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -69,11 +69,13 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
+>  
+>  	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+>  		if (hose->ops->read == fsl_indirect_read_config) {
+> -			struct pci_bus bus;
+> -			bus.number = hose->first_busno;
+> -			bus.sysdata = hose;
+> -			bus.ops = hose->ops;
+> -			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
+> +			struct pci_bus *bus;
+> +			bus = kmalloc(sizeof(*bus), GFP_ATOMIC);
+> +			bus->number = hose->first_busno;
 
-I expect it's a Kconfig problem.  DEBUG_PAGEALLOC should be selecting
-PAGE_POISONING.
+Missing check for allocation failure.
 
-config DEBUG_PAGEALLOC
-	bool "Debug page memory allocations"
-	depends on DEBUG_KERNEL
-	depends on !HIBERNATION || ARCH_SUPPORTS_DEBUG_PAGEALLOC && !PPC && !SPARC
-	depends on !KMEMCHECK
-	select PAGE_EXTENSION
-	select PAGE_POISONING if !ARCH_SUPPORTS_DEBUG_PAGEALLOC
+Do we not have a real struct pci_bus we can use here?  Or refactor
+indirect_read_config() to take hose and bus number instead?
 
-Culprits cc'ed!
+If putting a pci_bus struct on the stack is no longer OK, then
+fake_pci_bus() should be fixed as well.  I wonder if GCC is allocating
+separate pci_bus structs on the stack for this one and the one that
+early_read_config_dword() uses...
+
+-Scott
