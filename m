@@ -1,27 +1,21 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0133.outbound.protection.outlook.com [65.55.169.133])
+Return-Path: <B43198@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1605A1A0D86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 20:37:55 +1100 (AEDT)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Emilian Medve <Emilian.Medve@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>, "mturquette@linaro.org" <mturquette@linaro.org>,
- "haokexin@gmail.com" <haokexin@gmail.com>
-Subject: RE: [PATCH 8/8] clk: ppc-corenet: Add support for the platform PLL
-Date: Wed, 21 Jan 2015 09:37:47 +0000
-Message-ID: <DM2PR03MB574B14EA2EC892DC09FF51FFA480@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
- <1421748570-14282-9-git-send-email-Emilian.Medve@Freescale.com>
- <DM2PR03MB57442D24D55149AA78F3C8FFA480@DM2PR03MB574.namprd03.prod.outlook.com>
- <54BF6130.1070501@Freescale.com>
- <DM2PR03MB574B53C2F3BC01B56C937D3FA480@DM2PR03MB574.namprd03.prod.outlook.com>
- <54BF6B35.1080007@Freescale.com>
-In-Reply-To: <54BF6B35.1080007@Freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 52CE41A0D97
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 20:49:50 +1100 (AEDT)
+Message-ID: <54BF72D1.3000302@freescale.com>
+Date: Wed, 21 Jan 2015 11:35:13 +0200
+From: Purcareata Bogdan <b43198@freescale.com>
 MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/mpic: Add DT option to skip readback after EOI
+References: <1421236622-29366-1-git-send-email-bogdan.purcareata@freescale.com>
+ <1421258312.4961.133.camel@freescale.com>
+In-Reply-To: <1421258312.4961.133.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,216 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Emil,
+On 14.01.2015 19:58, Scott Wood wrote:
+> On Wed, 2015-01-14 at 11:57 +0000, Bogdan Purcareata wrote:
+>> The readback is necessary in order to handle PCI posted
+>> writes,
+>
+> That is unclear.
 
->From the RM and your code, I didn't see any difference between the two type=
- of PLL.
-Could you provide some use cases or feature that prove this is necessary?
+I'm going to try an venture a different explanation here.
 
-If there did have some features that current function didn't contain, can w=
-e expend the current one to include it?
+I found a good explanation in Writing PCI Drivers [1] as to why it's 
+necessary that a read is performed before returning from an EOI write:
 
-BTW: if you did need this, please update the binding as well, if any:
-Documentation/devicetree/bindings/clock/qoriq-clock.txt
+"A good example of such a case is when a driver’s Interrupt Service 
+Routine (ISR) is dealing with the Interrupt Request Register (IRR) on a 
+card. Clearing a bit in the register indicates that the interrupt has 
+been serviced. This is done by posting a write to the register. If the 
+driver posts this write and exits its ISR, it could get interrupted 
+again immediately because the write hadn’t yet reached the bit in the 
+IRR to tell it to stop trying to interrupt. One solution to this 
+potential problem is to make sure to read back the value in the IRR 
+before exiting from the ISR. Most drivers do this anyway so they can 
+handle multiple interrupts in the same ISR visit."
 
-Thanks,
-Yuantian
+This is designed to work for legacy line interrupts. I understand MSI 
+has its way to order writes on the bus, and also it won't send another 
+MSI, signaling a new interrupt, unless there's a state change in the IRR 
+on the card. When using line interrupts, the line stays asserted as long 
+as IRR is set, so the MPIC could trigger an additional interrupt if the 
+EOI write is posted and the ISR bit is cleared.
 
-> -----Original Message-----
-> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
-> Sent: Wednesday, January 21, 2015 5:03 PM
-> To: Tang Yuantian-B29983; linuxppc-dev@lists.ozlabs.org; Wood Scott-B0742=
-1;
-> mturquette@linaro.org; haokexin@gmail.com
-> Subject: Re: [PATCH 8/8] clk: ppc-corenet: Add support for the platform P=
-LL
->=20
-> Hello Yuan-Tian,
->=20
->=20
-> On 01/21/2015 02:35 AM, Tang Yuantian-B29983 wrote:
-> > Hi Emil,
-> >
-> > I don't think it is the best to add a function that is very similar to =
-existing one.
-> > If you think the function name is not appropriate, rename it.
->=20
-> It's not a naming matter. As I said, core_pll_init() assumptions and deci=
-sions
-> based on the number of clocks in the DT. My hunch is some of these assump=
-tions
-> are not necessary and/or should be explicit based on the node/device comp=
-atible.
-> Having a standalone platform PLL initialization function wasn't a unilate=
-ral lack of
-> foresight
->=20
->=20
-> Cheers,
->=20
->=20
-> > Thanks,
-> > Yuantian
-> >
-> >> -----Original Message-----
-> >> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
-> >> Sent: Wednesday, January 21, 2015 4:20 PM
-> >> To: Tang Yuantian-B29983; linuxppc-dev@lists.ozlabs.org; Wood
-> >> Scott-B07421; mturquette@linaro.org; haokexin@gmail.com
-> >> Subject: Re: [PATCH 8/8] clk: ppc-corenet: Add support for the
-> >> platform PLL
-> >>
-> >> Hello Yuan-Tian,
-> >>
-> >>
-> >> On 01/20/2015 11:42 PM, Tang Yuantian-B29983 wrote:
-> >>> Which platform are you trying to use this on?
-> >>
-> >> CoreNet chassis v1 and v2 SoC(s)
-> >>
-> >>> Can this be initialized by core pll function core_pll_init()?
-> >>> I just saw most of this function is silimar to the core_pll_init().
-> >>
-> >> Yes, the flow is similar, but core_pll_init() makes assumptions that
-> >> it shouldn't or are not relevant to the platform PLL
-> >>
-> >>
-> >> Cheers,
-> >>
-> >>
-> >>> Thanks,
-> >>> Yuantian
-> >>>
-> >>>> -----Original Message-----
-> >>>> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
-> >>>> Sent: Tuesday, January 20, 2015 6:10 PM
-> >>>> To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
-> >>>> mturquette@linaro.org; haokexin@gmail.com; Tang Yuantian-B29983
-> >>>> Cc: Medve Emilian-EMMEDVE1
-> >>>> Subject: [PATCH 8/8] clk: ppc-corenet: Add support for the platform
-> >>>> PLL
-> >>>>
-> >>>> Change-Id: Iac11ed95f274485a86d2c11f32a3dc502bcd020f
-> >>>> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> >>>> ---
-> >>>>  drivers/clk/clk-ppc-corenet.c | 85
-> >>>> +++++++++++++++++++++++++++++++++++++++++++
-> >>>>  1 file changed, 85 insertions(+)
-> >>>>
-> >>>> diff --git a/drivers/clk/clk-ppc-corenet.c
-> >>>> b/drivers/clk/clk-ppc-corenet.c index
-> >>>> 91816b1..ff425e1 100644
-> >>>> --- a/drivers/clk/clk-ppc-corenet.c
-> >>>> +++ b/drivers/clk/clk-ppc-corenet.c
-> >>>> @@ -7,6 +7,9 @@
-> >>>>   *
-> >>>>   * clock driver for Freescale PowerPC corenet SoCs.
-> >>>>   */
-> >>>> +
-> >>>> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> >>>> +
-> >>>>  #include <linux/clk-provider.h>
-> >>>>  #include <linux/io.h>
-> >>>>  #include <linux/kernel.h>
-> >>>> @@ -261,9 +264,91 @@ static void __init sysclk_init(struct
-> >>>> device_node
-> >> *node)
-> >>>>  		of_clk_add_provider(np, of_clk_src_simple_get, clk);  }
-> >>>>
-> >>>> +static void __init pltfrm_pll_init(struct device_node *np) {
-> >>>> +	void __iomem *base;
-> >>>> +	uint32_t mult;
-> >>>> +	const char *parent_name, *clk_name;
-> >>>> +	int i, _errno;
-> >>>> +	struct clk_onecell_data *cod;
-> >>>> +
-> >>>> +	base =3D of_iomap(np, 0);
-> >>>> +	if (!base) {
-> >>>> +		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
-> >>>> +		return;
-> >>>> +	}
-> >>>> +
-> >>>> +	/* Get the multiple of PLL */
-> >>>> +	mult =3D ioread32be(base);
-> >>>> +
-> >>>> +	iounmap(base);
-> >>>> +
-> >>>> +	/* Check if this PLL is disabled */
-> >>>> +	if (mult & PLL_KILL) {
-> >>>> +		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
-> >>>> +		return;
-> >>>> +	}
-> >>>> +	mult =3D (mult & GENMASK(6, 1)) >> 1;
-> >>>> +
-> >>>> +	parent_name =3D of_clk_get_parent_name(np, 0);
-> >>>> +	if (!parent_name) {
-> >>>> +		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
-> >>>> +		       __func__, np->name);
-> >>>> +		return;
-> >>>> +	}
-> >>>> +
-> >>>> +	i =3D of_property_count_strings(np, "clock-output-names");
-> >>>> +	if (i < 0) {
-> >>>> +		pr_err("%s(): %s: of_property_count_strings(clock-output-names)
-> >>>> =3D %d\n",
-> >>>> +		       __func__, np->name, i);
-> >>>> +		return;
-> >>>> +	}
-> >>>> +
-> >>>> +	cod =3D kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNE=
-L);
-> >>>> +	if (!cod)
-> >>>> +		return;
-> >>>> +	cod->clks =3D (struct clk **)(cod + 1);
-> >>>> +	cod->clk_num =3D i;
-> >>>> +
-> >>>> +	for (i =3D 0; i < cod->clk_num; i++) {
-> >>>> +		_errno =3D of_property_read_string_index(np,
-> "clock-output-names",
-> >>>> +						       i, &clk_name);
-> >>>> +		if (_errno < 0) {
-> >>>> +			pr_err("%s(): %s:
-> >>>> of_property_read_string_index(clock-output-names) =3D %d\n",
-> >>>> +			       __func__, np->name, _errno);
-> >>>> +			goto return_clk_unregister;
-> >>>> +		}
-> >>>> +
-> >>>> +		cod->clks[i] =3D clk_register_fixed_factor(NULL, clk_name,
-> >>>> +					       parent_name, 0, mult, 1 + i);
-> >>>> +		if (IS_ERR(cod->clks[i])) {
-> >>>> +			pr_err("%s(): %s: clk_register_fixed_factor(%s) =3D %ld\n",
-> >>>> +			       __func__, np->name,
-> >>>> +			       clk_name, PTR_ERR(cod->clks[i]));
-> >>>> +			goto return_clk_unregister;
-> >>>> +		}
-> >>>> +	}
-> >>>> +
-> >>>> +	_errno =3D of_clk_add_provider(np, of_clk_src_onecell_get, cod);
-> >>>> +	if (_errno < 0) {
-> >>>> +		pr_err("%s(): %s: of_clk_add_provider() =3D %d\n",
-> >>>> +		       __func__, np->name, _errno);
-> >>>> +		goto return_clk_unregister;
-> >>>> +	}
-> >>>> +
-> >>>> +	return;
-> >>>> +
-> >>>> +return_clk_unregister:
-> >>>> +	while (--i >=3D 0)
-> >>>> +		clk_unregister(cod->clks[i]);
-> >>>> +	kfree(cod);
-> >>>> +}
-> >>>> +
-> >>>>  CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0",
-> >>>> sysclk_init); CLK_OF_DECLARE(qoriq_sysclk_2,
-> >>>> "fsl,qoriq-sysclk-2.0", sysclk_init);
-> >>>> CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0",
-> >>>> core_pll_init); CLK_OF_DECLARE(qoriq_core_pll_2,
-> >>>> "fsl,qoriq-core-pll-2.0", core_pll_init);
-> >>>> CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0",
-> >>>> core_mux_init); CLK_OF_DECLARE(qoriq_core_mux_2,
-> >>>> "fsl,qoriq-core-mux-2.0", core_mux_init);
-> >>>> +CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0",
-> >>>> +pltfrm_pll_init); CLK_OF_DECLARE(qoriq_pltfrm_pll_2,
-> >>>> +"fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
-> >>>> --
-> >>>> 2.2.2
+>
+>>   or when the MPIC is handling interrupts in a loop
+>> (ppc_md.get_irq).
+>
+> I'm questioning this one as well -- if reading WHOAMI is sufficient to
+> sync with the EOI, why wouldn't reading INTACK work as well?
+
+I think I'm going to drop this part of the description. However, I don't 
+think reading INTACK is good, since it has some additional side effects 
+- interrupt pending register is cleared for edge-sensitive interrupts, 
+the in-service register is updated, and the int output signal from the 
+MPIC is negated. This is available for Freescale SoCs. This also 
+signifies entering the processing cycle of a new interrupt.
+
+Normally, the readback should be done on the EOI register - this is 
+stated in the OpenPIC specification and actually was the initial 
+implementation of the driver. However, this can't be done since, at 
+least for Freescale SoCs, the EOI register is write only.
+
+However, in the light of the above explanation related to PCI posted 
+writes, I don't see how performing a readback on the WHOAMI register, 
+which is specific to the MPIC, would have any effect in synchronizing 
+with the PCI device registers. I guess it's related to the bus 
+interconnect on the SoC.
+
+>>   Newer MPIC versions don't require this readback. Leave the option
+>> configurable using a device tree entry.
+>>
+>> This saves a MMIO trap per interrupt.
+>>
+>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+>
+> You should note changes (e.g. with a [] note between signoffs) if it
+> differs from the original...
+
+Will do, sorry for omitting this.
+
+>
+> -Scott
+
+[1] http://h21007.www2.hp.com/portal/download/files/unprot/ddk/ddg/chap8.pdf
+
+Best regards,
+Bogdan P.
