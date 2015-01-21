@@ -1,46 +1,24 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0136.outbound.protection.outlook.com [207.46.100.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF5C51A0D34
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 15:29:09 +1100 (AEDT)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 20 Jan 2015 21:29:05 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D474D3E40041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:29:06 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0L4TEHe42991636
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:29:14 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0L4T2FT017841
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 21:29:03 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Pranith Kumar <bobby.prani@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, Joel Stanley <joel@jms.id.au>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Rob Herring <robh@kernel.org>,
- "open list\:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] powerpc/powernv: Skip registering log region when
- CONFIG_PRINTK=n
-In-Reply-To: <1421797911-23650-2-git-send-email-bobby.prani@gmail.com>
-References: <1421797911-23650-1-git-send-email-bobby.prani@gmail.com>
- <1421797911-23650-2-git-send-email-bobby.prani@gmail.com>
-Date: Wed, 21 Jan 2015 15:28:52 +1100
-Message-ID: <m3sif4u58b.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29C111A0071
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 16:42:29 +1100 (AEDT)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Emilian Medve <Emilian.Medve@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+ <scottwood@freescale.com>, "mturquette@linaro.org" <mturquette@linaro.org>,
+ "haokexin@gmail.com" <haokexin@gmail.com>
+Subject: RE: [PATCH 8/8] clk: ppc-corenet: Add support for the platform PLL
+Date: Wed, 21 Jan 2015 05:42:21 +0000
+Message-ID: <DM2PR03MB57442D24D55149AA78F3C8FFA480@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1421748570-14282-9-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1421748570-14282-9-git-send-email-Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Emilian Medve <Emilian.Medve@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,50 +28,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pranith Kumar <bobby.prani@gmail.com> writes:
-> When CONFIG_PRINTK=n, log_buf_addr_get() returns NULL and log_buf_len_get()
-> return 0. Check for these return values and skip registering the dump buffer.
->
-> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-> CC: Michael Ellerman <mpe@ellerman.id.au>
+Which platform are you trying to use this on? Can this be initialized by co=
+re pll function core_pll_init()?
+I just saw most of this function is silimar to the core_pll_init().
 
-(investigating what would occur on systems with current firmware..)
+Thanks,
+Yuantian
 
-Looking at hw/fsp/fsp-mdst-table.c in skiboot it appears that we'd end
-up logging an error log about being passed the size 0 and return
-OPAL_PARAMETER back to Linux.
-
-While harmless, this is, naturally, not awesome to log an error about
-being unable to grab kernel log on crash every time you boot.
-
-Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
+> -----Original Message-----
+> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
+> Sent: Tuesday, January 20, 2015 6:10 PM
+> To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; mturquette@linaro.o=
+rg;
+> haokexin@gmail.com; Tang Yuantian-B29983
+> Cc: Medve Emilian-EMMEDVE1
+> Subject: [PATCH 8/8] clk: ppc-corenet: Add support for the platform PLL
+>=20
+> Change-Id: Iac11ed95f274485a86d2c11f32a3dc502bcd020f
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 > ---
->  arch/powerpc/platforms/powernv/opal.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index f10b9ec..1db119f0 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -667,7 +667,13 @@ static void __init opal_dump_region_init(void)
->  
->  	/* Register kernel log buffer */
->  	addr = log_buf_addr_get();
-> +	if (addr == NULL)
-> +		return;
+>  drivers/clk/clk-ppc-corenet.c | 85
+> +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 85 insertions(+)
+>=20
+> diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.=
+c index
+> 91816b1..ff425e1 100644
+> --- a/drivers/clk/clk-ppc-corenet.c
+> +++ b/drivers/clk/clk-ppc-corenet.c
+> @@ -7,6 +7,9 @@
+>   *
+>   * clock driver for Freescale PowerPC corenet SoCs.
+>   */
 > +
->  	size = log_buf_len_get();
-> +	if (size == 0)
-> +		return;
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 > +
->  	rc = opal_register_dump_region(OPAL_DUMP_REGION_LOG_BUF,
->  				       __pa(addr), size);
->  	/* Don't warn if this is just an older OPAL that doesn't
-> -- 
-> 1.9.1
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>  #include <linux/clk-provider.h>
+>  #include <linux/io.h>
+>  #include <linux/kernel.h>
+> @@ -261,9 +264,91 @@ static void __init sysclk_init(struct device_node *n=
+ode)
+>  		of_clk_add_provider(np, of_clk_src_simple_get, clk);  }
+>=20
+> +static void __init pltfrm_pll_init(struct device_node *np) {
+> +	void __iomem *base;
+> +	uint32_t mult;
+> +	const char *parent_name, *clk_name;
+> +	int i, _errno;
+> +	struct clk_onecell_data *cod;
+> +
+> +	base =3D of_iomap(np, 0);
+> +	if (!base) {
+> +		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
+> +		return;
+> +	}
+> +
+> +	/* Get the multiple of PLL */
+> +	mult =3D ioread32be(base);
+> +
+> +	iounmap(base);
+> +
+> +	/* Check if this PLL is disabled */
+> +	if (mult & PLL_KILL) {
+> +		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
+> +		return;
+> +	}
+> +	mult =3D (mult & GENMASK(6, 1)) >> 1;
+> +
+> +	parent_name =3D of_clk_get_parent_name(np, 0);
+> +	if (!parent_name) {
+> +		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
+> +		       __func__, np->name);
+> +		return;
+> +	}
+> +
+> +	i =3D of_property_count_strings(np, "clock-output-names");
+> +	if (i < 0) {
+> +		pr_err("%s(): %s: of_property_count_strings(clock-output-names)
+> =3D %d\n",
+> +		       __func__, np->name, i);
+> +		return;
+> +	}
+> +
+> +	cod =3D kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNEL);
+> +	if (!cod)
+> +		return;
+> +	cod->clks =3D (struct clk **)(cod + 1);
+> +	cod->clk_num =3D i;
+> +
+> +	for (i =3D 0; i < cod->clk_num; i++) {
+> +		_errno =3D of_property_read_string_index(np, "clock-output-names",
+> +						       i, &clk_name);
+> +		if (_errno < 0) {
+> +			pr_err("%s(): %s:
+> of_property_read_string_index(clock-output-names) =3D %d\n",
+> +			       __func__, np->name, _errno);
+> +			goto return_clk_unregister;
+> +		}
+> +
+> +		cod->clks[i] =3D clk_register_fixed_factor(NULL, clk_name,
+> +					       parent_name, 0, mult, 1 + i);
+> +		if (IS_ERR(cod->clks[i])) {
+> +			pr_err("%s(): %s: clk_register_fixed_factor(%s) =3D %ld\n",
+> +			       __func__, np->name,
+> +			       clk_name, PTR_ERR(cod->clks[i]));
+> +			goto return_clk_unregister;
+> +		}
+> +	}
+> +
+> +	_errno =3D of_clk_add_provider(np, of_clk_src_onecell_get, cod);
+> +	if (_errno < 0) {
+> +		pr_err("%s(): %s: of_clk_add_provider() =3D %d\n",
+> +		       __func__, np->name, _errno);
+> +		goto return_clk_unregister;
+> +	}
+> +
+> +	return;
+> +
+> +return_clk_unregister:
+> +	while (--i >=3D 0)
+> +		clk_unregister(cod->clks[i]);
+> +	kfree(cod);
+> +}
+> +
+>  CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
+> CLK_OF_DECLARE(qoriq_sysclk_2, "fsl,qoriq-sysclk-2.0", sysclk_init);
+> CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0", core_pll_init)=
+;
+> CLK_OF_DECLARE(qoriq_core_pll_2, "fsl,qoriq-core-pll-2.0", core_pll_init)=
+;
+> CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init)=
+;
+> CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init)=
+;
+> +CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0",
+> +pltfrm_pll_init); CLK_OF_DECLARE(qoriq_pltfrm_pll_2,
+> +"fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
+> --
+> 2.2.2
