@@ -1,20 +1,26 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by lists.ozlabs.org (Postfix) with ESMTP id 68E4D1A0D02
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:48:42 +1100 (AEDT)
-Message-ID: <54BF49B6.9020704@daenzer.net>
-Date: Wed, 21 Jan 2015 15:39:50 +0900
-From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
-MIME-Version: 1.0
-To: luigi burdo <intermediadc@hotmail.com>
-Subject: Re: PowerMac G5 Quad Issue reporting
-References: <20150120054506.F13591402E0@ozlabs.org>,
- <54BE3B79.9070004@linux.vnet.ibm.com>
- <DUB117-W1231755B8D223132D571329C84B0@phx.gbl>
-In-Reply-To: <DUB117-W1231755B8D223132D571329C84B0@phx.gbl>
-Content-Type: text/plain; charset=utf-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FE6B1A0D02
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:51:06 +1100 (AEDT)
+Message-ID: <1421823065.23864.1.camel@ellerman.id.au>
+Subject: Re: [PATCH V2 06/12] selftests, powerpc: Add test for system wide
+ DSCR default
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dave Jones <davej@codemonkey.org.uk>
+Date: Wed, 21 Jan 2015 17:51:05 +1100
+In-Reply-To: <20150120214033.GA30240@codemonkey.org.uk>
+References: <1421144560-15901-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1421144560-15901-7-git-send-email-khandual@linux.vnet.ibm.com>
+ <54B5384F.9010805@osg.samsung.com>
+ <1421192671.10748.4.camel@ellerman.id.au>
+ <20150120214033.GA30240@codemonkey.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: mikey@neuling.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20.01.2015 20:52, luigi burdo wrote:
-> Hello all LinuxPPc Developer,
-> need to report a issue that im facing from kernel 3.16 and up.
+On Tue, 2015-01-20 at 16:40 -0500, Dave Jones wrote:
+> On Wed, Jan 14, 2015 at 10:44:31AM +1100, Michael Ellerman wrote:
 > 
-> The fans of powermac g5 quad start boosting like a turbo jet after the
-> system is
-> been loaded and up.
-> Usually this become after about 30-60 seconds when the system is loaded.
+>  > > Also, I would like to see the test results reports using
+>  > > kselftest.h - it can be separate patch in the interest of
+>  > > getting tests in.
+>  > 
+>  > Sorry but kselftest.h doesn't do anything useful for us.
+>  > 
+>  > We have existing test reporting that uses the subunit protocol.
+>  > 
+>  > I'm happy to convert that to TAP, or some other well defined output format, but
+>  > not to something ad-hoc like kselftest.h currently provides.
+> 
+> Something TAP-alike would also help reduce some of the spew from
+> tests that are going to fail.
 
-You need to load the i2c_powermac kernel module.
+Possibly :)
+ 
+> eg, running execveat tests on a kernel that doesn't implement that
+> syscall currently spews around 20 lines of [FAIL].  Adding something
+> to the beginning of the test to set plan() accordingly if it detects
+> -ENOSYS could make that output a little cleaner.
 
+Yeah I'm a bit dubious about plan, it often ends up being a pain to calculate
+correctly and so it's either missing or wrong.
 
-> Need to report to Michel D. from amd.com . The RadeonHD 6570 now is
-> working on PowerMac G5 too
-> look like the Xorg bigendian  issue related Evergreen / Northern  is
-> been fixed ;-)
+The execveat test probably just needs an initial test that looks for ENOSYS and
+bails entirely. I'll write a patch.
 
-Xorg itself has always been working, only OpenGL can be problematic.
-Have you verified r600_dri.so is used for that?
+> That other projects (like jenkins, bug trackers etc) could consume
+> the output of the test runs would be a nice bonus.  I only recently
+> started looking at kselftests and was surprised at the amount
+> of variance we have in the way of printing 'Ok' '[OK]' 'ok...' etc.
 
+Variance in output is annoying, but putting up too many barriers to entry for
+new tests is even less desirable IMHO. Our preference should always be for more
+tests in the tree, and we can clean up the output/reporting later.
 
--- 
-Earthling Michel Dänzer               |               http://www.amd.com
-Libre software enthusiast             |             Mesa and X developer
+cheers
