@@ -1,18 +1,29 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0102.outbound.protection.outlook.com [65.55.169.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 952551A0DBA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 09:45:44 +1100 (AEDT)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>
-Subject: [PATCH] powerpc/dts: Remove T4240 emulator support
-Date: Wed, 21 Jan 2015 16:31:50 -0600
-Message-ID: <1421879510-30806-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 025381A0DC8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 10:39:58 +1100 (AEDT)
+Message-ID: <1421883597.30744.3.camel@neuling.org>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Thu, 22 Jan 2015 10:39:57 +1100
+In-Reply-To: <54A50094.5070902@linux.vnet.ibm.com>
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
+ <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
+ davem@davemloft.net, peterz@infradead.org,
+ Ulrich Weigand <uweigand@de.ibm.com>, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, shuahkh@osg.samsung.com, dhowells@redhat.com,
+ linuxppc-dev@ozlabs.org, kirjanov@gmail.com, tglx@linutronix.de,
+ palves@redhat.com, davej@redhat.com, akpm@linux-foundation.org,
+ sukadev@linux.vnet.ibm.com,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,300 +33,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Probably we should have not upstreamed this in the first place
+On Thu, 2015-01-01 at 13:38 +0530, Anshuman Khandual wrote:
+> On 12/20/2014 12:58 AM, Edjunior Barbosa Machado wrote:
+> > On 12/08/2014 08:08 AM, Anshuman Khandual wrote:
+> >> On 12/03/2014 12:18 PM, Anshuman Khandual wrote:
+> >>> On 12/03/2014 10:52 AM, Michael Ellerman wrote:
+> >>>> On Tue, 2014-02-12 at 07:56:45 UTC, Anshuman Khandual wrote:
+> >>>>> This patch adds four new ELF core note sections for powerpc
+> >>>>> transactional memory and one new ELF core note section for
+> >>>>> powerpc general miscellaneous debug registers. These addition
+> >>>>> of new ELF core note sections extends the existing ELF ABI
+> >>>>> without affecting it in any manner.
+> >>>>>
+> >>>>> Acked-by: Andrew Morton <akpm@linux-foundation.org>
+> >>>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> >>>>> ---
+> >>>>>  include/uapi/linux/elf.h | 5 +++++
+> >>>>>  1 file changed, 5 insertions(+)
+> >>>>>
+> >>>>> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+> >>>>> index ea9bf25..2260fc0 100644
+> >>>>> --- a/include/uapi/linux/elf.h
+> >>>>> +++ b/include/uapi/linux/elf.h
+> >>>>> @@ -379,6 +379,11 @@ typedef struct elf64_shdr {
+> >>>>>  #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
+> >>>>>  #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
+> >>>>>  #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
+> >>>>> +#define NT_PPC_TM_SPR	0x103		/* PowerPC TM special registers */
+> >>>>> +#define NT_PPC_TM_CGPR	0x104		/* PowerpC TM checkpointed GPR */
+> >>>>> +#define NT_PPC_TM_CFPR	0x105		/* PowerPC TM checkpointed FPR */
+> >>>>> +#define NT_PPC_TM_CVMX	0x106		/* PowerPC TM checkpointed VMX */
+> >>>>> +#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
+> >>>>
+> >>>> This is a really terrible name, "MISC".
+> >>>>
+> >>>> Having said that, I guess it's accurate. We have a whole bunch of re=
+gs that
+> >>>> have accrued over recent years that aren't accessible via ptrace.
+> >>>>
+> >>>> It seems to me if we're adding a misc regset we should be adding eve=
+rything we
+> >>>> might want to it that is currenty architected.
+> >>>
+> >>> But I believe they also need to be part of the thread_struct structur=
+e to be
+> >>> accessible from ptrace.
+> >>
+> >> Currently we dont context save/restore the PMC count registers (PMC1-P=
+MC6)
+> >> during the process context switch. So the values of PMC1..PMC6 are not
+> >> thread specific in the structure. To be able to access them in ptrace
+> >> when the tracee has stopped, we need to context save these counters
+> >> in the thread struct. Shall we do that ? Then we can add them to the
+> >> MISC regset bucket irrespective of whats the value we get in there whe=
+n
+> >> we probe through ptrace.
+> >>
+> >> The same goes for MMCRA, CFAR registers as well.
+> >>
+> >>> =20
+> >>>>
+> >>>> But currently you only include the PPR, TAR & DSCR.
+> >>>
+> >>> Yeah, thats what we started with.
+> >>>
+> >>>>
+> >>>> Looking at Power ISA v2.07, I see the following that could be includ=
+ed:
+> >>>>
+> >>>>   MMCR2
+> >>>>   MMCRA
+> >>>>   PMC1
+> >>>>   PMC2
+> >>>>   PMC3
+> >>>>   PMC4
+> >>>>   PMC5
+> >>>>   PMC6
+> >>>>   MMCR0
+> >>>>   EBBHR
+> >>>>   EBBRR
+> >>>>   BESCR
+> >>>>   SIAR
+> >>>>   SDAR
+> >>>>   CFAR?
+> >>>
+> >>> MMCRA, PMC[1..6], EBBHR, BESCR, EBBRR, CFAR are not part of the threa=
+d struct.
+> >>
+> >> Sorry. EBBRR, EBBHR, BESCR registers are part of the thread struct.
+> >>
+> >>>
+> >>>>
+> >>>> Those are all new in 2.07 except for CFAR.
+> >>>>
+> >>>> There might be more I missed, that was just a quick scan.
+> >>>>
+> >>>> Some are only accessible when EBB is in use, maybe those could be a =
+separate
+> >>>> regset.
+> >>>
+> >>> Yeah we can have one more regset for EBB specific registers.
+> >>
+> >> Should the new EBB specific regset include only EBBRR, EBBHR, BESCR re=
+gisters
+> >> or should it also include SIAR, SDAR, SIER, MMCR0, MMCR2 registers as =
+well. I
+> >> was thinking about putting these five registers into the MISC bucket i=
+nstead.
+> >> But from the perf code, it looks like these five registers are also re=
+lated to
+> >> the EBB context as well.
+> >>
+> >> Some clarity on these points would really help.
+> >=20
+> > Hi,
+> >=20
+> > from the provided testcase using ptrace interface, reviewing with the h=
+elp
+> > of Ulrich, it looks OK from GDB perspective, with the exception of a fe=
+w
+> > concerns:
+> >=20
+> > The patchset seems to change the "original" ptrace requests (i.e.
+> > PTRACE_GETREGS/GETFPREGS/GETVRREGS...) to return the "transactional" st=
+ate, and
+> > adds new register sets to return the "checkpointed" state. Considering =
+that
+> > whenever you get a debugger interception inside a transactional block, =
+the
+> > transaction will abort, we're wondering if it wouldn't make more sense =
+to=20
+> > display the 'checkpointed' state as the normal registers since this is =
+where the
+> > execution will continue from.
+>=20
+> Debugger interception (trace interrupt) in between any transaction block =
+will abort
+> it ? I doubt that.
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- arch/powerpc/boot/dts/t4240emu.dts | 281 -------------------------------------
- 1 file changed, 281 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/t4240emu.dts
+The trace interrupt will not abort the transaction explicitly...
 
-diff --git a/arch/powerpc/boot/dts/t4240emu.dts b/arch/powerpc/boot/dts/t4240emu.dts
-deleted file mode 100644
-index decaf35..0000000
---- a/arch/powerpc/boot/dts/t4240emu.dts
-+++ /dev/null
-@@ -1,281 +0,0 @@
--/*
-- * T4240 emulator Device Tree Source
-- *
-- * Copyright 2013 Freescale Semiconductor Inc.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions are met:
-- *     * Redistributions of source code must retain the above copyright
-- *       notice, this list of conditions and the following disclaimer.
-- *     * Redistributions in binary form must reproduce the above copyright
-- *       notice, this list of conditions and the following disclaimer in the
-- *       documentation and/or other materials provided with the distribution.
-- *     * Neither the name of Freescale Semiconductor nor the
-- *       names of its contributors may be used to endorse or promote products
-- *       derived from this software without specific prior written permission.
-- *
-- *
-- * ALTERNATIVELY, this software may be distributed under the terms of the
-- * GNU General Public License ("GPL") as published by the Free Software
-- * Foundation, either version 2 of that License or (at your option) any
-- * later version.
-- *
-- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-- * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
--
--/dts-v1/;
--
--/include/ "fsl/e6500_power_isa.dtsi"
--/ {
--	compatible = "fsl,T4240";
--	#address-cells = <2>;
--	#size-cells = <2>;
--	interrupt-parent = <&mpic>;
--
--	aliases {
--		ccsr = &soc;
--
--		serial0 = &serial0;
--		serial1 = &serial1;
--		serial2 = &serial2;
--		serial3 = &serial3;
--		dma0 = &dma0;
--		dma1 = &dma1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu0: PowerPC,e6500@0 {
--			device_type = "cpu";
--			reg = <0 1>;
--			next-level-cache = <&L2_1>;
--			fsl,portid-mapping = <0x80000000>;
--		};
--		cpu1: PowerPC,e6500@2 {
--			device_type = "cpu";
--			reg = <2 3>;
--			next-level-cache = <&L2_1>;
--			fsl,portid-mapping = <0x80000000>;
--		};
--		cpu2: PowerPC,e6500@4 {
--			device_type = "cpu";
--			reg = <4 5>;
--			next-level-cache = <&L2_1>;
--			fsl,portid-mapping = <0x80000000>;
--		};
--		cpu3: PowerPC,e6500@6 {
--			device_type = "cpu";
--			reg = <6 7>;
--			next-level-cache = <&L2_1>;
--			fsl,portid-mapping = <0x80000000>;
--		};
--
--		cpu4: PowerPC,e6500@8 {
--			device_type = "cpu";
--			reg = <8 9>;
--			next-level-cache = <&L2_2>;
--			fsl,portid-mapping = <0x40000000>;
--		};
--		cpu5: PowerPC,e6500@10 {
--			device_type = "cpu";
--			reg = <10 11>;
--			next-level-cache = <&L2_2>;
--			fsl,portid-mapping = <0x40000000>;
--		};
--		cpu6: PowerPC,e6500@12 {
--			device_type = "cpu";
--			reg = <12 13>;
--			next-level-cache = <&L2_2>;
--			fsl,portid-mapping = <0x40000000>;
--		};
--		cpu7: PowerPC,e6500@14 {
--			device_type = "cpu";
--			reg = <14 15>;
--			next-level-cache = <&L2_2>;
--			fsl,portid-mapping = <0x40000000>;
--		};
--
--		cpu8: PowerPC,e6500@16 {
--			device_type = "cpu";
--			reg = <16 17>;
--			next-level-cache = <&L2_3>;
--			fsl,portid-mapping = <0x20000000>;
--		};
--		cpu9: PowerPC,e6500@18 {
--			device_type = "cpu";
--			reg = <18 19>;
--			next-level-cache = <&L2_3>;
--			fsl,portid-mapping = <0x20000000>;
--		};
--		cpu10: PowerPC,e6500@20 {
--			device_type = "cpu";
--			reg = <20 21>;
--			next-level-cache = <&L2_3>;
--			fsl,portid-mapping = <0x20000000>;
--		};
--		cpu11: PowerPC,e6500@22 {
--			device_type = "cpu";
--			reg = <22 23>;
--			next-level-cache = <&L2_3>;
--			fsl,portid-mapping = <0x20000000>;
--		};
--	};
--};
--
--/ {
--	model = "fsl,T4240QDS";
--	compatible = "fsl,T4240EMU", "fsl,T4240QDS";
--	#address-cells = <2>;
--	#size-cells = <2>;
--	interrupt-parent = <&mpic>;
--
--	ifc: localbus@ffe124000 {
--		reg = <0xf 0xfe124000 0 0x2000>;
--		ranges = <0 0 0xf 0xe8000000 0x08000000
--			  2 0 0xf 0xff800000 0x00010000
--			  3 0 0xf 0xffdf0000 0x00008000>;
--
--		nor@0,0 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "cfi-flash";
--			reg = <0x0 0x0 0x8000000>;
--
--			bank-width = <2>;
--			device-width = <1>;
--		};
--
--	};
--
--	memory {
--		device_type = "memory";
--	};
--
--	soc: soc@ffe000000 {
--		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
--		reg = <0xf 0xfe000000 0 0x00001000>;
--
--	};
--};
--
--&ifc {
--	#address-cells = <2>;
--	#size-cells = <1>;
--	compatible = "fsl,ifc", "simple-bus";
--	interrupts = <25 2 0 0>;
--};
--
--&soc {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	device_type = "soc";
--	compatible = "simple-bus";
--
--	soc-sram-error {
--		compatible = "fsl,soc-sram-error";
--		interrupts = <16 2 1 29>;
--	};
--
--	corenet-law@0 {
--		compatible = "fsl,corenet-law";
--		reg = <0x0 0x1000>;
--		fsl,num-laws = <32>;
--	};
--
--	ddr1: memory-controller@8000 {
--		compatible = "fsl,qoriq-memory-controller-v4.7",
--				"fsl,qoriq-memory-controller";
--		reg = <0x8000 0x1000>;
--		interrupts = <16 2 1 23>;
--	};
--
--	ddr2: memory-controller@9000 {
--		compatible = "fsl,qoriq-memory-controller-v4.7",
--				"fsl,qoriq-memory-controller";
--		reg = <0x9000 0x1000>;
--		interrupts = <16 2 1 22>;
--	};
--
--	ddr3: memory-controller@a000 {
--		compatible = "fsl,qoriq-memory-controller-v4.7",
--				"fsl,qoriq-memory-controller";
--		reg = <0xa000 0x1000>;
--		interrupts = <16 2 1 21>;
--	};
--
--	cpc: l3-cache-controller@10000 {
--		compatible = "fsl,t4240-l3-cache-controller", "cache";
--		reg = <0x10000 0x1000
--		       0x11000 0x1000
--		       0x12000 0x1000>;
--		interrupts = <16 2 1 27
--			      16 2 1 26
--			      16 2 1 25>;
--	};
--
--	corenet-cf@18000 {
--		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
--		reg = <0x18000 0x1000>;
--		interrupts = <16 2 1 31>;
--		fsl,ccf-num-csdids = <32>;
--		fsl,ccf-num-snoopids = <32>;
--	};
--
--	iommu@20000 {
--		compatible = "fsl,pamu-v1.0", "fsl,pamu";
--		reg = <0x20000 0x6000>;
--		fsl,portid-mapping = <0x8000>;
--		interrupts = <
--			24 2 0 0
--			16 2 1 30>;
--	};
--
--/include/ "fsl/qoriq-mpic.dtsi"
--
--	guts: global-utilities@e0000 {
--		compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config-2.0";
--		reg = <0xe0000 0xe00>;
--		fsl,has-rstcr;
--		fsl,liodn-bits = <12>;
--	};
--
--/include/ "fsl/qoriq-clockgen2.dtsi"
--	global-utilities@e1000 {
--		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2.0";
--	};
--
--/include/ "fsl/qoriq-dma-0.dtsi"
--/include/ "fsl/qoriq-dma-1.dtsi"
--
--/include/ "fsl/qoriq-i2c-0.dtsi"
--/include/ "fsl/qoriq-i2c-1.dtsi"
--/include/ "fsl/qoriq-duart-0.dtsi"
--/include/ "fsl/qoriq-duart-1.dtsi"
--
--	L2_1: l2-cache-controller@c20000 {
--		compatible = "fsl,t4240-l2-cache-controller";
--		reg = <0xc20000 0x40000>;
--		next-level-cache = <&cpc>;
--	};
--	L2_2: l2-cache-controller@c60000 {
--		compatible = "fsl,t4240-l2-cache-controller";
--		reg = <0xc60000 0x40000>;
--		next-level-cache = <&cpc>;
--	};
--	L2_3: l2-cache-controller@ca0000 {
--		compatible = "fsl,t4240-l2-cache-controller";
--		reg = <0xca0000 0x40000>;
--		next-level-cache = <&cpc>;
--	};
--};
--- 
-2.2.2
+> The tracee process will just stop, it's context gets saved in the
+> kernel so that it can again start executing from the exact same point onw=
+ard when it
+> resumes.=20
+
+... unfortunately, this save *will* doom the transaction.  To save, a
+treclaim instruction is run which will always explicitly doom the
+transaction.
+
+> If this happens when inside any transaction block, the transaction's runn=
+ing
+> context and check pointed context will get saved. The execution will agai=
+n start from
+> the running context values instead of check pointed when the process resu=
+mes. Check
+> pointed values will be loaded back into the context when the transaction =
+finishes.
+
+Although since the transaction has been explicitly doomed, the hardware
+will *always* abort at this point and start execution from the
+checkpointed values.
+
+> Inside transaction both running and check pointed values can be probed in=
+dependently.
+
+Yep, that's the idea, although setting the running values won't change
+anything since the the translation is already doomed and will abort once
+the cpu starts executing it. =20
+
+Mikey
+
+> >=20
+> > Also, we've noticed that the 'misc' regset contains registers from diff=
+erent ISA
+> > versions (dscr and ppr appear in ISA 2.05, tar is from 2.07). I'm not s=
+ure if
+> > there is a way to detect presence/validity of such registers, but perha=
+ps it
+> > might be a good idea to separate registers from different ISAs in diffe=
+rent
+> > regsets.
+>=20
+> Thats right, will use feature CPU_FTR_ARCH_207S (which checks whether we =
+are v2.07
+> compliant) to detect whether TAR register is available or not.=20
+>=20
+> >=20
+> > Regarding the inclusion of other registers along with the EBB-related o=
+nes, I'm
+> > sorry but I'm not familiar with them.
+>=20
+> Michael Ellerman mentioned that we can look into them separately sometime=
+ later
+> not in this patch series.
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
