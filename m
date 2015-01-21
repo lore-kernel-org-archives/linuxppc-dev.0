@@ -1,29 +1,20 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7962C1A0CEF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:29:14 +1100 (AEDT)
-Received: by mail-pa0-f47.google.com with SMTP id lj1so6548753pab.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:29:12 -0800 (PST)
-Date: Tue, 20 Jan 2015 22:29:02 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [alsa-devel] [PATCH 0/3] Add master mode, tmd and right-j mode
- support
-Message-ID: <20150121062901.GA4350@Alpha>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <CAOMZO5DcpSsRi4UE8gCjT+w=OueB1pWtQPYphgeEsMNZ_EvK5w@mail.gmail.com>
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by lists.ozlabs.org (Postfix) with ESMTP id 68E4D1A0D02
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:48:42 +1100 (AEDT)
+Message-ID: <54BF49B6.9020704@daenzer.net>
+Date: Wed, 21 Jan 2015 15:39:50 +0900
+From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOMZO5DcpSsRi4UE8gCjT+w=OueB1pWtQPYphgeEsMNZ_EvK5w@mail.gmail.com>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com,
- Takashi Iwai <tiwai@suse.de>, Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Timur Tabi <timur@tabi.org>,
- Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: luigi burdo <intermediadc@hotmail.com>
+Subject: Re: PowerMac G5 Quad Issue reporting
+References: <20150120054506.F13591402E0@ozlabs.org>,
+ <54BE3B79.9070004@linux.vnet.ibm.com>
+ <DUB117-W1231755B8D223132D571329C84B0@phx.gbl>
+In-Reply-To: <DUB117-W1231755B8D223132D571329C84B0@phx.gbl>
+Content-Type: text/plain; charset=utf-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2015 at 11:15:54PM -0200, Fabio Estevam wrote:
-
-> Not related to your series, but do you have a patch for imx6sx-sdb.dts
-> that adds sai support?
+On 20.01.2015 20:52, luigi burdo wrote:
+> Hello all LinuxPPc Developer,
+> need to report a issue that im facing from kernel 3.16 and up.
 > 
-> In the FSL version they use 'fsl,sdma-event-remap' property to specify
-> the SAI sdma channels, but this is not present in mainline? How are
-> you dealing with it?
+> The fans of powermac g5 quad start boosting like a turbo jet after the
+> system is
+> been loaded and up.
+> Usually this become after about 30-60 seconds when the system is loaded.
 
-I think he must have those patches applied to his own local branch
-as I do :)
+You need to load the i2c_powermac kernel module.
 
-I was quite hesitating to send them because the SDMA one doesn't
-look flawless, plus I don't know SDMA owner's plan for upstream.
 
-Nicolin
+> Need to report to Michel D. from amd.com . The RadeonHD 6570 now is
+> working on PowerMac G5 too
+> look like the Xorg bigendian  issue related Evergreen / Northern  is
+> been fixed ;-)
+
+Xorg itself has always been working, only OpenGL can be problematic.
+Have you verified r600_dri.so is used for that?
+
+
+-- 
+Earthling Michel Dänzer               |               http://www.amd.com
+Libre software enthusiast             |             Mesa and X developer
