@@ -1,25 +1,41 @@
-Return-Path: <B50113@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 079B61A0D86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 20:40:09 +1100 (AEDT)
-Date: Wed, 21 Jan 2015 17:25:32 +0800
-From: Zidan Wang <b50113@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [alsa-devel][PATCH 1/3] SoC: fsl_sai: add sai master mode support
-Message-ID: <20150121092529.GA27441@b50113>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <1421756480-7055-2-git-send-email-zidan.wang@freescale.com>
- <20150121060702.GB3275@Alpha>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFBC91A064A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:38:46 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 21 Jan 2015 03:38:44 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 0AA1538C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:38:41 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0LAceCx26083362
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 10:38:41 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0LAcdXU022521
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 05:38:40 -0500
+Message-ID: <54BF81A0.8030705@linux.vnet.ibm.com>
+Date: Wed, 21 Jan 2015 16:08:24 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150121060702.GB3275@Alpha>
-Cc: alsa-devel@alsa-project.org, timur@tabi.org,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] idle/tick-broadcast: Exit cpu idle poll loop when cleared
+ from tick_broadcast_force_mask
+References: <20150119052754.20256.54721.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.11.1501201216420.5526@nanos>
+ <54BE3B0E.2050502@linux.vnet.ibm.com>
+ <alpine.DEB.2.11.1501211045480.5526@nanos>
+In-Reply-To: <alpine.DEB.2.11.1501211045480.5526@nanos>
+Content-Type: text/plain; charset=UTF-8
+Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +45,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2015 at 10:07:03PM -0800, Nicolin Chen wrote:
-> On Tue, Jan 20, 2015 at 08:21:18PM +0800, Zidan Wang wrote:
-> > +static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
+On 01/21/2015 03:26 PM, Thomas Gleixner wrote:
+> On Tue, 20 Jan 2015, Preeti U Murthy wrote:
+>> On 01/20/2015 04:51 PM, Thomas Gleixner wrote:
+>>> On Mon, 19 Jan 2015, Preeti U Murthy wrote:
+>>>> An idle cpu enters cpu_idle_poll() if it is set in the tick_broadcast_force_mask.
+>>>> This is so that it does not incur the overhead of entering idle states when it is expected
+>>>> to be woken up anytime then through a broadcast IPI. The condition that forces an exit out
+>>>> of the idle polling is the check on setting of the TIF_NEED_RESCHED flag for the idle thread.
+>>>>
+>>>> When the broadcast IPI does arrive, it is not guarenteed that the handler sets the
+>>>> TIF_NEED_RESCHED flag. Hence although the cpu is cleared in the tick_broadcast_force_mask,
+>>>> it continues to loop in cpu_idle_poll unnecessarily wasting power. Hence exit the idle
+>>>> poll loop if the tick_broadcast_force_mask gets cleared and enter idle states.
+>>>>
+>>>> Of course if the cpu has entered cpu_idle_poll() on being asked to poll explicitly,
+>>>> it continues to poll till it is asked to reschedule.
+>>>>
+>>>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>>> ---
+>>>>
+>>>>  kernel/sched/idle.c |    3 ++-
+>>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+>>>> index c47fce7..aaf1c1d 100644
+>>>> --- a/kernel/sched/idle.c
+>>>> +++ b/kernel/sched/idle.c
+>>>> @@ -47,7 +47,8 @@ static inline int cpu_idle_poll(void)
+>>>>  	rcu_idle_enter();
+>>>>  	trace_cpu_idle_rcuidle(0, smp_processor_id());
+>>>>  	local_irq_enable();
+>>>> -	while (!tif_need_resched())
+>>>> +	while (!tif_need_resched() &&
+>>>> +		(cpu_idle_force_poll || tick_check_broadcast_expired()))
+>>>
+>>> You explain the tick_check_broadcast_expired() bit, but what about the
+>>> cpu_idle_force_poll part?
+>>
+>> The last few lines which say "Of course if the cpu has entered
+>> cpu_idle_poll() on being asked to poll explicitly, it continues to poll
+>> till it is asked to reschedule" explains the cpu_idle_force_poll part.
 > 
-> > +	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
-> > +		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-> > +			FSL_SAI_CR2_MSEL_MASK, FSL_SAI_CR2_MSEL(sai->mclk_id));
-> > +		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-> > +			FSL_SAI_CR2_DIV_MASK, savediv - 1);
+> Well, I read it more than once and did not figure it out.
 > 
-> Hmm...the case should be a bit more complicated here IMO.
+> The paragraph describes some behaviour. Now I know it's the behaviour
+> before the patch. So maybe something like this:
 > 
-> "tx && sai->synchronous[TX]" means the playback in synchronous
-> mode (TX following RX). What if the recording has been already
-> activated with an MSEL setting at this point? Then the playback
-> stream, as a secondary stream, will overwrite MSEL of the first
-> stream -- Record. Same would happen to the DIV configuration.
+>   cpu_idle_poll() is entered when cpu_idle_force_poll is set or
+>   tick_check_broadcast_expired() returns true. The exit condition from
+>   cpu_idle_poll() is tif_need_resched().
 > 
-When TX following RX(or RX following TX), TX and RX works on same bit
-clock and frame clock. They will use same MCLK source, and just need set
-the bclk DIV for RX(or TX). The secondary stream will overwrite MSEL and
-bclk DIV of the first stream, but it doesn't matter.
+>   But this does not take into account that cpu_idle_force_poll and
+>   tick_check_broadcast_expired() can change without setting the
+>   resched flag. So a cpu can be caught in cpu_idle_poll() needlessly
+>   and thereby wasting power.
+> 
+>   Add an explicit check for cpu_idle_force_poll and
+>   tick_check_broadcast_expired() to the exit condition of
+>   cpu_idle_poll() to avoid this.
+> 
+> This explains the technical issue without confusing people with IPIs
+> and other completely irrelevant information. Hmm?
 
-For RX(or TX) sync:
-fsl_sai_dai.symmetric_rates = 1;
-fsl_sai_dai.symmetric_channels = 1;
-fsl_sai_dai.symmetric_samplebits = 1;
+Yep, much simpler, thanks! I will send out the next version with this
+changelog.
 
-When TX and RX both works on async mode, TX and RX may works on
-different bit clock and frame clock. We need set MCLK source and bclk
-DIV for TX and RX. mclk_id just save a MCLK source id, so i need to define
-mclk_id[2] for differnet stream.
-
-For TX and RX async:
-fsl_sai_dai.symmetric_rates = 0;
-fsl_sai_dai.symmetric_channels = 0;
-fsl_sai_dai.symmetric_samplebits = 0;
-
-> > @@ -297,6 +368,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
-> >  	unsigned int channels = params_channels(params);
-> >  	u32 word_width = snd_pcm_format_width(params_format(params));
-> >  	u32 val_cr4 = 0, val_cr5 = 0;
-> > +	int ret;
-> > +
-> > +	if (!sai->is_slave_mode) {
-> > +		ret = fsl_sai_set_bclk(cpu_dai, tx,
-> > +			2 * word_width * params_rate(params));
-> > +		if (ret)
-> > +			return ret;
-> > +
-> > +		/* Do not enable the clock if it is already enabled */
+Regards
+Preeti U Murthy
 > 
-> It actually doesn't matter to enable the clock again since it
-> purely increaes its count. But we do need a protection for MSEL
-> overwritten issue resulted from the fsl_sai_set_bclk() call.
+> Thanks,
 > 
-> > @@ -133,10 +135,13 @@ struct fsl_sai {
-> >  	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
-> >  
-> >  	bool is_lsb_first;
-> > +	bool is_slave_mode;
-> >  	bool is_dsp_mode;
-> >  	bool sai_on_imx;
-> >  	bool synchronous[2];
-> >  
-> > +	unsigned int mclk_id;
-> > +	unsigned int mclk_streams;
+> 	tglx
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-> Besides, I doubt that only one property of mclk_id can content
-> Asynchronous Mode -- TX and RX can fetch their clocks from
-> different MCLK sources.
-> 
-When hw_params failed before mclk enable, hw_free will also decrease 
-the clk usecount. So add mclk_streams, when clk successful enabled, 
-set corresponding bit of mclk_stream. And clear such bit after clk disabled.
-> Nicolin
