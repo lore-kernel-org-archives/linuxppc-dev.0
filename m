@@ -1,23 +1,29 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C9DE1A0CE5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:25:49 +1100 (AEDT)
-Message-ID: <54BF462D.6030304@Freescale.com>
-Date: Wed, 21 Jan 2015 00:24:45 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7962C1A0CEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 17:29:14 +1100 (AEDT)
+Received: by mail-pa0-f47.google.com with SMTP id lj1so6548753pab.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2015 22:29:12 -0800 (PST)
+Date: Tue, 20 Jan 2015 22:29:02 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [alsa-devel] [PATCH 0/3] Add master mode, tmd and right-j mode
+ support
+Message-ID: <20150121062901.GA4350@Alpha>
+References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
+ <CAOMZO5DcpSsRi4UE8gCjT+w=OueB1pWtQPYphgeEsMNZ_EvK5w@mail.gmail.com>
 MIME-Version: 1.0
-To: Tang Yuantian-B29983 <Yuantian.Tang@Freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Wood
- Scott-B07421" <scottwood@Freescale.com>, "mturquette@linaro.org"
- <mturquette@linaro.org>, "haokexin@gmail.com" <haokexin@gmail.com>
-Subject: Re: [PATCH 0/8] clk: ppc-corenet: Add support for the platform PLL
-References: <1421748570-14282-1-git-send-email-Emilian.Medve@Freescale.com>
- <BY2PR03MB570918E5F02FF4A86344FDFFA480@BY2PR03MB570.namprd03.prod.outlook.com>
-In-Reply-To: <BY2PR03MB570918E5F02FF4A86344FDFFA480@BY2PR03MB570.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOMZO5DcpSsRi4UE8gCjT+w=OueB1pWtQPYphgeEsMNZ_EvK5w@mail.gmail.com>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com,
+ Takashi Iwai <tiwai@suse.de>, Liam Girdwood <lgirdwood@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Timur Tabi <timur@tabi.org>,
+ Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Yuan-Tian,
+On Tue, Jan 20, 2015 at 11:15:54PM -0200, Fabio Estevam wrote:
 
-
-On 01/20/2015 07:40 PM, Tang Yuantian-B29983 wrote:
-> Hi Emil,
+> Not related to your series, but do you have a patch for imx6sx-sdb.dts
+> that adds sai support?
 > 
-> Thanks for fixing those warnings. The patch set you based on is merged.
-> I sent another two patches and one of them got merged. You probably need to rebase your patches.
-> My patch link:
-> http://patchwork.ozlabs.org/patch/429257/
+> In the FSL version they use 'fsl,sdma-event-remap' property to specify
+> the SAI sdma channels, but this is not present in mainline? How are
+> you dealing with it?
 
-I'll rebase on top of this and resubmit
+I think he must have those patches applied to his own local branch
+as I do :)
 
+I was quite hesitating to send them because the SDMA one doesn't
+look flawless, plus I don't know SDMA owner's plan for upstream.
 
-Cheers,
-
-
-> http://patchwork.ozlabs.org/patch/429258/
-> 
-> Thanks,
-> Yuantian
-> 
->> -----Original Message-----
->> From: Emil Medve [mailto:Emilian.Medve@Freescale.com]
->> Sent: Tuesday, January 20, 2015 6:09 PM
->> To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; mturquette@linaro.org;
->> haokexin@gmail.com; Tang Yuantian-B29983
->> Cc: Medve Emilian-EMMEDVE1
->> Subject: [PATCH 0/8] clk: ppc-corenet: Add support for the platform PLL
->>
->> These patches are based on:
->>
->> http://patchwork.ozlabs.org/patch/417297
->> http://patchwork.ozlabs.org/patch/417295
->> http://patchwork.ozlabs.org/patch/417292
->>
->> The first 5 patches below are checkpatch/static analysis fixes
->>
->> Emil Medve (8):
->>   clk: ppc-corenet: Fix checkpatch type PARENTHESIS_ALIGNMENT
->>   clk: ppc-corenet: Fix checkpatch type ALLOC_WITH_MULTIPLY
->>   clk: ppc-corenet: Fix checkpatch type ALLOC_SIZEOF_STRUCT
->>   clk: ppc-corenet: Fix checkpatch type OOM_MESSAGE
->>   clk: ppc-corenet: Make local symbol 'static'
->>   clk: ppc-corenet: Replace kzalloc() with kmalloc()
->>   powerpc/corenet: Enable CLK_PPC_CORENET
->>   clk: ppc-corenet: Add support for the platform PLL
->>
->>  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
->>  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
->>  drivers/clk/clk-ppc-corenet.c                | 120
->> ++++++++++++++++++++++-----
->>  3 files changed, 101 insertions(+), 21 deletions(-)
->>
->> --
->> 2.2.2
+Nicolin
