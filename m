@@ -1,18 +1,16 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0101.outbound.protection.outlook.com [207.46.100.101])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0144.outbound.protection.outlook.com [157.56.111.144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79D121A0DAA
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7529F1A0DA7
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:17:22 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>,
  <mturquette@linaro.org>, <haokexin@gmail.com>, <yuantian.tang@Freescale.com>
-Subject: [PATCH v2 06/10] clk: qoriq: Replace kzalloc() with kmalloc()
-Date: Wed, 21 Jan 2015 04:03:28 -0600
-Message-ID: <1421834611-9656-7-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH v2 00/10] clk: qoriq: Add support for the FMan clock
+Date: Wed, 21 Jan 2015 04:03:22 -0600
+Message-ID: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Emil Medve <Emilian.Medve@Freescale.com>
@@ -25,25 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Where the memset() is not necessary
+Based on clk-next from git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- drivers/clk/clk-qoriq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2:	Rebased as several prerequisite patches (including a file rename) got
+	applied upstream
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 07936a3..4b44825 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -193,7 +193,7 @@ static void __init core_pll_init(struct device_node *np)
- 	if (!subclks)
- 		goto err_map;
- 
--	onecell_data = kzalloc(sizeof(*onecell_data), GFP_KERNEL);
-+	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
- 	if (!onecell_data)
- 		goto err_clks;
- 
+Emil Medve (9):
+  clk: qoriq: Fix checkpatch type PARENTHESIS_ALIGNMENT
+  clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
+  clk: qoriq: Fix checkpatch type ALLOC_SIZEOF_STRUCT
+  clk: qoriq: Fix checkpatch type OOM_MESSAGE
+  clk: qoriq: Make local symbol 'static'
+  clk: qoriq: Replace kzalloc() with kmalloc()
+  clk: qoriq: Use pr_fmt()
+  powerpc/corenet: Enable CLK_QORIQ
+  clk: qoriq: Add support for the platform PLL
+
+Igal Liberman (1):
+  clk: qoriq: Add support for the FMan clock
+
+ arch/powerpc/configs/corenet32_smp_defconfig |   1 +
+ arch/powerpc/configs/corenet64_smp_defconfig |   1 +
+ drivers/clk/clk-qoriq.c                      | 378 +++++++++++++++++++++++++--
+ 3 files changed, 357 insertions(+), 23 deletions(-)
+
 -- 
 2.2.1
