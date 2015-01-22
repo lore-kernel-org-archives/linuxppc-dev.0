@@ -1,36 +1,30 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x22b.google.com (mail-oi0-x22b.google.com
- [IPv6:2607:f8b0:4003:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2DAB1A0C55
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 08:03:57 +1100 (AEDT)
-Received: by mail-oi0-f43.google.com with SMTP id z81so3465917oif.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 13:03:55 -0800 (PST)
-Date: Thu, 22 Jan 2015 15:03:44 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 00/16] PCI generic configuration space accessors
-Message-ID: <20150122210344.GE13072@google.com>
-References: <1420857290-8373-1-git-send-email-robh@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1420857290-8373-1-git-send-email-robh@kernel.org>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
- Will Deacon <will.deacon@arm.com>, David Howells <dhowells@redhat.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Tanmay Inamdar <tinamdar@apm.com>, Greg Ungerer <gerg@uclinux.org>,
- Alexandre Courbot <gnurou@gmail.com>, linux-am33-list@redhat.com,
- Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>,
- linux-arm-kernel@lists.infradead.org, cbe-oss-dev@lists.ozlabs.org,
- Arnd Bergmann <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>,
- Simon Horman <horms@verge.net.au>, Krzysztof Halasa <khalasa@piap.pl>,
- linux-tegra@vger.kernel.org,
- =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 850DF1A0DC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 08:44:09 +1100 (AEDT)
+Message-ID: <1421963049.30744.23.camel@neuling.org>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+From: Michael Neuling <mikey@neuling.org>
+To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Date: Fri, 23 Jan 2015 08:44:09 +1100
+In-Reply-To: <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <547EB253.5050307@linux.vnet.ibm.com>
+ <548578A8.5020901@linux.vnet.ibm.com> <54947C64.4030206@linux.vnet.ibm.com>
+ <54A50094.5070902@linux.vnet.ibm.com>
+ <1421883597.30744.3.camel@neuling.org>
+ <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: shuahkh@osg.samsung.com, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com,
+ sukadev@linux.vnet.ibm.com, davej@redhat.com, akpm@linux-foundation.org,
+ palves@redhat.com, Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ sam.bobroff@au1.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,81 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 09, 2015 at 08:34:34PM -0600, Rob Herring wrote:
-> This series adds common accessor functions for PCI configuration space
-> accesses. This supports most PCI hosts with memory mapped configuration
-> space like ECAM or hosts with memory mapped address/data registers. ECAM
-> is not generically supported by this series, but could be added on top
-> of this. While some hosts have standard address decoding which could be 
-> common as well, the various checks on bus numbers and device numbers are 
-> quite varied. It is unclear how much of that is really necessary or 
-> could be common. 
-> 
-> The first 4 patches are preparatory cleanup. Patch 5 introduces the
-> common accessors. The remaining patches convert several PCI host
-> controllers. This is in no way a complete list of host controllers. The
-> conversion of more hosts should be possible. The Designware controller
-> in particular should be able to be converted, but its config space
-> accessors are a mess of override-able functions that I've not gotten my
-> head around.
-> 
-> This series is available here [1].
-> 
-> Rob
-> 
-> [1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git pci-config-access
-> 
-> Rob Herring (16):
->   frv: add struct pci_ops member names to initialization
->   mips: add struct pci_ops member names to initialization
->   mn10300: add struct pci_ops member names to initialization
->   powerpc: add struct pci_ops member names to initialization
->   pci: introduce common pci config space accessors
->   ARM: cns3xxx: convert PCI to use generic config accesses
->   ARM: integrator: convert PCI to use generic config accesses
->   ARM: sa1100: convert PCI to use generic config accesses
->   ARM: ks8695: convert PCI to use generic config accesses
->   powerpc: fsl_pci: convert PCI to use generic config accesses
->   powerpc: powermac: convert PCI to use generic config accesses
->   pci/host: generic: convert to use generic config accesses
->   pci/host: rcar-gen2: convert to use generic config accesses
->   pci/host: tegra: convert to use generic config accesses
->   pci/host: xgene: convert to use generic config accesses
->   pci/host: xilinx: convert to use generic config accesses
-> 
->  arch/arm/mach-cns3xxx/pcie.c                   |  52 ++----
->  arch/arm/mach-integrator/pci_v3.c              |  61 +-------
->  arch/arm/mach-ks8695/pci.c                     |  77 +--------
->  arch/arm/mach-sa1100/pci-nanoengine.c          |  94 +----------
->  arch/frv/mb93090-mb00/pci-vdk.c                |   4 +-
->  arch/mips/pci/pci-bcm1480.c                    |   4 +-
->  arch/mips/pci/pci-octeon.c                     |   4 +-
->  arch/mips/pci/pcie-octeon.c                    |  12 +-
->  arch/mn10300/unit-asb2305/pci.c                |   4 +-
->  arch/powerpc/platforms/cell/celleb_scc_pciex.c |   4 +-
->  arch/powerpc/platforms/powermac/pci.c          | 209 +++++--------------------
->  arch/powerpc/sysdev/fsl_pci.c                  |  46 +-----
->  drivers/pci/access.c                           |  87 ++++++++++
->  drivers/pci/host/pci-host-generic.c            |  51 +-----
->  drivers/pci/host/pci-rcar-gen2.c               |  51 +-----
->  drivers/pci/host/pci-tegra.c                   |  55 +------
->  drivers/pci/host/pci-xgene.c                   | 150 ++----------------
->  drivers/pci/host/pcie-xilinx.c                 |  88 ++---------
->  include/linux/pci.h                            |  11 ++
->  19 files changed, 212 insertions(+), 852 deletions(-)
+> > > Inside transaction both running and check pointed values can be
+> > > probed independently.
+> >
+> > Yep, that's the idea, although setting the running values won't change
+> > anything since the the translation is already doomed and will abort onc=
+e
+> > the cpu starts executing it.
+>=20
+> So this looks to me like the overall effect on debugging transactional
+> code should be the same on Power and z, even if some internal details
+> are different (on z, the exception will automatically abort the
+> transaction; on p, the exception itself will not abort, but *restarting*
+> user space execution will).
 
-Really nice cleanups.  I added these with the acks so far to a pci/config
-branch for v3.20.  I'll update it with more acks if they trickle in.
+Yep
 
-You've structured it nicely so I can also just drop individual arch pieces
-if necessary.  The pieces that haven't been acked yet (hint, hint):
+> From a GDB perspective, it would therefore be preferable if the ptrace
+> interface were to behave in a similar fashion on p as on z: that is,
+> if an exception interrupting a transaction results in a ptrace intercept,
+> at this point:
 
-    arch/arm/mach-cns3xxx/pcie.c
-    arch/arm/mach-sa1100/pci-nanoengine.c
-    arch/mn10300/unit-asb2305/pci.c
-    arch/powerpc
+Agreed.
 
-In addition, nobody has acked the frv and mips parts, but they're trivial
-(they only add struct member names) that I can apply them without worrying.
+> - the "normal" ptrace register set commands should access the
+>   *checkpointed* registers (allowing both read and write access)
 
-Bjorn
+OK, this is a change from what we've been proposing with Anshuman's
+patch set but I'm happy to change it to make it consistent with other
+architectures.  It's relatively arbitrary which goes where, so I'm happy
+to change.
+
+>   -- GDB will use this to display current position (already reflecting
+>   the fact that the transaction will abort), and use it when changing
+>   register values e.g. to effect an inferior function call
+
+"Current position" depends on your perspective.  Is it the last executed
+instruction or the next executed instruction?  If it's the last executed
+instruction, then it's the running values.  If it's the next, then it's
+the check pointed. =20
+
+Anyway, I'm happy to make it the check pointed values for the sake of
+ptrace/gdb.
+
+> - a new ptrace register set should allow access (read-only) to the
+>   *running* register values
+
+This is because changing them won't ever result in a side effect? =20
+
+>   -- GDB can use this to display the position inside the transaction
+>   at the point it aborted, using new transaction-specific commands
+
+Yep.
+
+Mikey
+
+PS in the subject s/specifc/specific/
