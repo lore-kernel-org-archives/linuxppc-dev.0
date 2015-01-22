@@ -1,38 +1,21 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A5071A0E6F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 21:56:01 +1100 (AEDT)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Thu, 22 Jan 2015 08:55:58 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id D60033520062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 05:54:56 -0500 (EST)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0MAu4Bx4759776
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 08:56:05 -0200
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0MAtqJ1021467
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 08:55:52 -0200
-Date: Thu, 22 Jan 2015 08:54:33 -0200
-From: cascardo@linux.vnet.ibm.com
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH resend] powernv/iommu: disable IOMMU bypass with param
- iommu=nobypass
-Message-ID: <20150122105433.GA12440@oc0812247204.ltc.br.ibm.com>
-References: <1421853832-32533-1-git-send-email-cascardo@linux.vnet.ibm.com>
- <1421888731.4598.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AEA41A08AF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 22:02:31 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>
+Subject: [PATCH v3 2/2] powerpc/corenet: Enable muxing MDIO buses via FPGA
+Date: Thu, 22 Jan 2015 04:48:38 -0600
+Message-ID: <1421923718-21352-2-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1421923718-21352-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1421923718-21352-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1421888731.4598.1.camel@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org, paulus@samba.org,
- gwshan@linux.vnet.ibm.com, corbet@lwn.net
+Content-Type: text/plain
+Cc: kanetkar.shruti@gmail.com, Shruti Kanetkar <Shruti@Freescale.com>, Andy
+ Fleming <afleming@gmail.com>, Shaohui Xie <Shaohui.Xie@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2015 at 12:05:31PM +1100, Michael Ellerman wrote:
-> On Wed, 2015-01-21 at 13:23 -0200, Thadeu Lima de Souza Cascardo wrote:
-> > When IOMMU bypass is enabled, a PCI device can read and write memory
-> > that was not mapped by the driver without causing an EEH. That might
-> > cause memory corruption, for example.
-> > 
-> > When we disable bypass, DMA reads and writes to addresses not mapped by
-> > the IOMMU will cause an EEH, allowing us to debug such issues.
-> > 
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-> > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> > ---
-> >  Documentation/kernel-parameters.txt       |    2 ++
-> >  arch/powerpc/platforms/powernv/pci-ioda.c |   24 +++++++++++++++++++++++-
-> >  2 files changed, 25 insertions(+), 1 deletion(-)
-> 
-> Is this unchanged since v2?
-> 
+From: Shruti Kanetkar <Shruti@Freescale.com>
 
-Yes, it's unchanged, just rebased.
+Change-Id: I00c521664573808af4f9a9c06a97665db470b49a
+Signed-off-by: Andy Fleming <afleming@gmail.com>
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
+---
 
-Cascardo.
+v3:	Spearated from the FMan MDIO dt/binding patchset http://patchwork.ozlabs.org/patch/370873
+	Also supersedes http://patchwork.ozlabs.org/patch/423348
+	Update via 'savedefconfig'
+	Auto-probe devices on 'fsl,fpga-qixis'
 
-> It's marked as under review in patchwork which means I'm looking at it:
-> 
->   http://patchwork.ozlabs.org/patch/402682/
-> 
-> 
-> Please check patchwork in future.
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+arch/powerpc/configs/corenet32_smp_defconfig  | 1 +
+ arch/powerpc/configs/corenet64_smp_defconfig  | 1 +
+ arch/powerpc/platforms/85xx/corenet_generic.c | 6 ++++++
+ 3 files changed, 8 insertions(+)
+
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 5ccedc1..869270c 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -104,6 +104,7 @@ CONFIG_VITESSE_PHY=y
+ CONFIG_AT803X_PHY=y
+ CONFIG_FIXED_PHY=y
+ CONFIG_MDIO_BUS_MUX_GPIO=y
++CONFIG_MDIO_BUS_MUX_MMIOREG=y
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+ # CONFIG_INPUT_MOUSE is not set
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index ce16278..00c49b0 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -82,6 +82,7 @@ CONFIG_DUMMY=y
+ CONFIG_E1000E=y
+ CONFIG_PHYLIB=y
+ CONFIG_MDIO_BUS_MUX_GPIO=y
++CONFIG_MDIO_BUS_MUX_MMIOREG=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 0804b10..63bef30 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -91,6 +91,12 @@ static const struct of_device_id of_device_ids[] = {
+ 		.compatible	= "mdio-mux-gpio"
+ 	},
+ 	{
++		.compatible	= "fsl,fpga-ngpixis"
++	},
++	{
++		.compatible	= "fsl,fpga-qixis"
++	},
++	{
+ 		.compatible	= "fsl,srio",
+ 	},
+ 	{
+-- 
+2.2.2
