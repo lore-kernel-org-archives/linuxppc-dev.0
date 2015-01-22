@@ -1,23 +1,28 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9EB331A0E00
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:37:43 +1100 (AEDT)
-Received: by mail-pd0-f182.google.com with SMTP id z10so14905866pdj.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:37:42 -0800 (PST)
-Message-ID: <1421905054.2865.8.camel@cyril>
-Subject: Re: [PATCH] powerpc/pseries: fix endian problems with LE migration
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 22 Jan 2015 16:37:34 +1100
-In-Reply-To: <1421811226.4900.3.camel@ellerman.id.au>
-References: <1421807520-12030-1-git-send-email-cyrilbur@gmail.com>
- <1421811226.4900.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19AAB1A0E00
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:44:22 +1100 (AEDT)
+Received: by mail-pd0-f179.google.com with SMTP id v10so36158626pde.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:44:19 -0800 (PST)
+Date: Wed, 21 Jan 2015 21:44:10 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Zidan Wang <b50113@freescale.com>
+Subject: Re: [alsa-devel][PATCH 2/3] ASoC: fsl_sai: Add support for tdm slots
+ operation
+Message-ID: <20150122054409.GA7748@Asurada>
+References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
+ <1421756480-7055-3-git-send-email-zidan.wang@freescale.com>
+ <20150121180801.GA3361@Alpha> <20150122045515.GA3467@b50113>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150122045515.GA3467@b50113>
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-21 at 14:33 +1100, Michael Ellerman wrote:
-> On Wed, 2015-01-21 at 13:32 +1100, Cyril Bur wrote:
-> > The need to handle ibm,suspend_me specially from within ppc_rtas has left an
-> > endian bug exposed as rtas_ibm_suspend_me actually performs HCALLs and should
-> > have its params in CPU endian.
-> 
-> That needs a much better explanation.
-> 
-Agreed
-
-> Key points:
->  - ppc_rtas() is a syscall, which takes arguments in BE
->  - ibm,suspend-me is not a real RTAS call and is handled specially in there
->  - ibm,suspend-me is actually implemented by an hcall
->  - there is currently a bug on LE, because rtas_ibm_suspend_me() takes the
->    ppc_rtas() args and feeds them directly to the hcall
-> 
-I've tried to write that out neatly and orderly. Here's how that went:
-
-
-RTAS events require arguments be passed in big endian while hypercalls
-have their arguments passed in registers and the values should therefore
-be in CPU endian.
-
-The ibm,suspend_me 'RTAS' call makes a sequence of hypercalls to setup
-one true RTAS call. This means that ibm,suspend_me is handled specially
-in the ppc_rtas syscall.
-
-The ppc_rtas syscall has its arguments in big endian and can therefore
-pass these arguments directly to the rtas call. ibm,suspend_me is
-handled specially from within ppc_rtas (by calling rtas_ibm_suspend_me)
-which has left an endian bug on little endian systems due to the
-requirement of hypercalls. The return value from rtas_ibm_suspend me
-gets returned in cpu endian, and is left unconverted, also a bug on
-little endian systems.
-
-rtas_ibm_suspend_me does not actually make use of the rtas_args that it
-is passed. This patch removes the convoluted use of the rtas_args struct
-to pass params to rtas_ibm_suspend_me in favour of passing what it needs
-as actual arguments. This patch also ensures the two callers of
-rtas_ibm_suspend_me pass function parameters in cpu endian and in the
-case of ppc_rtas, converts the return value.
-
-migrate_store (the other caller of rtas_ibm_suspend_me) is from a sysfs
-file which deals with everything in cpu endian so this function only
-underwent cleanup.
-
-> > Have ppc_rtas send the params correctly and also interpret the result
-> > correctly.
-> 
-> That's a second bug which you should also mention above.
-> 
-> > Removed the convoluted use of the rtas_args struct to pass params to
-> > rtas_ibm_suspend_me in favour of passing what it needs directly.
+On Thu, Jan 22, 2015 at 12:55:35PM +0800, Zidan Wang wrote:
+> On Wed, Jan 21, 2015 at 10:08:03AM -0800, Nicolin Chen wrote:
+> > On Tue, Jan 20, 2015 at 08:21:19PM +0800, Zidan Wang wrote:
+> > > @@ -369,10 +380,25 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+> > >  	u32 word_width = snd_pcm_format_width(params_format(params));
+> > >  	u32 val_cr4 = 0, val_cr5 = 0;
+> > >  	int ret;
+> > > +	u32 bclk;
+> > > +
+> > > +	if (channels == 1)
+> > > +		channels = 2;
+> > > +
+> > > +	if (!sai->slots || sai->slots % channels)
+> > > +		sai->slots = channels;
+> > > +
+> > > +	sai->slots = sai->slots / channels;
+> > > +
+> > > +	if (sai->slot_width < word_width || sai->is_dsp_mode)
+> > > +		sai->slot_width = word_width;
 > > 
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > ---
-> > This patch has been tested with KVM both LE and BE and on PowerVM both LE and
-> > BE. Under QEMU/KVM the migration happens without touching the these code
-> > pathes.
-> > For PowerVM there is no obvious regression on BE and the LE code path now
-> > provides the correct parameters to the hypervisor
-> 
-> Fold that into the changelog, it's worth remembering.
-> 
-> cheers
-> 
-> 
+> > Could you pls explain a bit what's this overriding for?
+> > Or it might be better to put into a comment.
+> >
+> In machine driver, we should use snd_soc_dai_set_tdm_slot to set slots
+> and slot width. In my opinion, slots in machine driver means the slot
+> number of all channels. But in sai driver, the slots means the slot number
+> of one channel. So snd_soc_calc_bclk use fs*sample_size*channels*tdm_slots
+> to caculate bclk.
+
+Could you pls use the standard way as you described for slot number
+in machine driver instead of defining some other meanings? That one
+is really confusing, not to mention a code without any comment.
+
+You can add some extra local variables with extinguished names and
+calculate the slot number and channels you want without changing
+the original sai->slots and channels in the hw_params(). As you said,
+you only need that new slot number and channels for snd_soc_calc_bclk
+call. So you may also put this code right before the call -- a normal
+routine doesn't need to recalculate the special slots and channels,
+right?
+
+Nicolin
