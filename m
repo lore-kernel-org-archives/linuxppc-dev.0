@@ -1,27 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <B50113@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06C741A0E29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:19:19 +1100 (AEDT)
-Message-ID: <1421903958.4598.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 2/2] powerpc/powernv: Skip registering log region
- when CONFIG_PRINTK=n
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Date: Thu, 22 Jan 2015 16:19:18 +1100
-In-Reply-To: <1421893570-6920-2-git-send-email-bobby.prani@gmail.com>
-References: <1421893570-6920-1-git-send-email-bobby.prani@gmail.com>
- <1421893570-6920-2-git-send-email-bobby.prani@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Rob Herring <robh@kernel.org>, open list <linux-kernel@vger.kernel.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, "open
- list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3AAE1A0E39
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:28:55 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 13:13:46 +0800
+From: Zidan Wang <b50113@freescale.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [alsa-devel][PATCH 3/3] ASoC: fsl_sai: Add support for Right-J
+ mode
+Message-ID: <20150122051344.GA6907@b50113>
+References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
+ <1421756480-7055-4-git-send-email-zidan.wang@freescale.com>
+ <20150121185319.GA4238@Alpha>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20150121185319.GA4238@Alpha>
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-21 at 21:26 -0500, Pranith Kumar wrote:
-> When CONFIG_PRINTK=n, log_buf_addr_get() returns NULL and log_buf_len_get()
-> return 0. Check for these return values and skip registering the dump buffer.
+On Wed, Jan 21, 2015 at 10:53:20AM -0800, Nicolin Chen wrote:
+> On Tue, Jan 20, 2015 at 08:21:20PM +0800, Zidan Wang wrote:
+> > Add Right-J mode and set TCR5 FBT bit to let data right justify.
+> > 
+> > Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
 > 
-> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-> CC: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/platforms/powernv/opal.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+> > -	if (sai->is_lsb_first)
+> > +	if (sai->is_lsb_first && sai->is_right_j_mode)
+> >  		val_cr5 |= FSL_SAI_CR5_FBT(0);
+> 
+> Are you sure that FBT(0) is correct for right justified mode?
+> Because the original code is using FBT(0) for the lsb_first
+> situation and it shouldn't be right justified mode as default.
+>
+I am not sure about that. 
 
-What changed since v1? I don't see anything?
+I assume lsb_first as big endian data.
 
-cheers
+For 16 bit data format, the 2 bytes data will in high address of 4 bytes
+fifo. So the FBT is 16 for left-j and 0 for right-j. But big endian is
+bytes convert not bits convert. It makes me confuse. And send to
+community for help.
+
+> Nicolin
