@@ -1,22 +1,31 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-vc0-x22d.google.com (mail-vc0-x22d.google.com
+ [IPv6:2607:f8b0:400c:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BE9E1A0E45
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 22:31:03 +1100 (AEDT)
-Date: Thu, 22 Jan 2015 22:31:00 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Robert Richter <rric@kernel.org>
-Subject: Re: [PATCH 1/2] oprofile: Add HAVE_OPROFILE_NMI_TIMER
-Message-ID: <20150122223100.1d234565@kryten>
-In-Reply-To: <20150121182015.GA4201@rric.localhost>
-References: <1421811983-22788-1-git-send-email-anton@samba.org>
- <20150121225408.33194932@kryten>
- <20150121182015.GA4201@rric.localhost>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 02C921A0E7E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 01:35:11 +1100 (AEDT)
+Received: by mail-vc0-f173.google.com with SMTP id id10so579468vcb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 06:35:07 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: x86@kernel.org, mingo@redhat.com, paulus@samba.org, hpa@zytor.com,
- oprofile-list@lists.sf.net, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1421903958.4598.4.camel@ellerman.id.au>
+References: <1421893570-6920-1-git-send-email-bobby.prani@gmail.com>
+ <1421893570-6920-2-git-send-email-bobby.prani@gmail.com>
+ <1421903958.4598.4.camel@ellerman.id.au>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Thu, 22 Jan 2015 09:34:37 -0500
+Message-ID: <CAJhHMCDPCdeGSfGFoYcUHXQoemtmSTdsmLrS3_GOewrvNQm8kA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] powerpc/powernv: Skip registering log region when
+ CONFIG_PRINTK=n
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: Rob Herring <robh@kernel.org>, open list <linux-kernel@vger.kernel.org>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Robert,
+On Thu, Jan 22, 2015 at 12:19 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Wed, 2015-01-21 at 21:26 -0500, Pranith Kumar wrote:
+>> When CONFIG_PRINTK=n, log_buf_addr_get() returns NULL and log_buf_len_get()
+>> return 0. Check for these return values and skip registering the dump buffer.
+>>
+>> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+>> CC: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/platforms/powernv/opal.c | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>
+> What changed since v1? I don't see anything?
+>
 
-> I also don't see a reason, why you don't want to support oprofile NMI
-> timer. Is there any?
+Nothing in this patch but there is a v2 of the first patch in this
+series, so had to resend this patch with a v2.
 
-I couldn't come up with a case where it would be a benefit to us. We
-roll out PMU support for a new CPU early so that the kernel and tools
-support it when we GA. On the other hand adding oprofile NMI support
-will put pressure on us to add more test cases.
-
-> If you don't want NMI_TIMER being enabled, then (order of preference):
-> 
->  * disable it with oprofile (OPROFILE dependency needed for
->    NMI_TIMER), or
-> 
->  * make the default value for NMI_TIMER !PPC64 and add a prompt to let
->    the user select/deselect it, or
-> 
->  * disable OPROFILE_NMI_TIMER by adding a !PPC64 dependency.
-
-I'll rework and resubmit. Thanks.
-
-Anton
+Thanks!
+-- 
+Pranith
