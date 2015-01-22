@@ -1,26 +1,25 @@
-Return-Path: <B50113@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3AAE1A0E39
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:28:55 +1100 (AEDT)
-Date: Thu, 22 Jan 2015 13:13:46 +0800
-From: Zidan Wang <b50113@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [alsa-devel][PATCH 3/3] ASoC: fsl_sai: Add support for Right-J
- mode
-Message-ID: <20150122051344.GA6907@b50113>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <1421756480-7055-4-git-send-email-zidan.wang@freescale.com>
- <20150121185319.GA4238@Alpha>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150121185319.GA4238@Alpha>
-Cc: alsa-devel@alsa-project.org, timur@tabi.org,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 332101A0EA7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:29:29 +1100 (AEDT)
+Message-ID: <1421904568.4598.5.camel@ellerman.id.au>
+Subject: Re: offlining cpus breakage
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Thu, 22 Jan 2015 16:29:28 +1100
+In-Reply-To: <54B8D56D.3070904@linux.vnet.ibm.com>
+References: <54ACFE6D.3070308@ozlabs.ru>
+ <54B7BEF9.8090603@linux.vnet.ibm.com> <54B85B3C.1030000@ozlabs.ru>
+ <1421377482.18166.5.camel@ellerman.id.au>
+ <54B8D228.4000407@linux.vnet.ibm.com> <54B8D56D.3070904@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 21, 2015 at 10:53:20AM -0800, Nicolin Chen wrote:
-> On Tue, Jan 20, 2015 at 08:21:20PM +0800, Zidan Wang wrote:
-> > Add Right-J mode and set TCR5 FBT bit to let data right justify.
+On Fri, 2015-01-16 at 14:40 +0530, Preeti U Murthy wrote:
+> On 01/16/2015 02:26 PM, Preeti U Murthy wrote:
+> > On 01/16/2015 08:34 AM, Michael Ellerman wrote:
+> >> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
+> >>> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
+> >>>> Hi Alexey,
+> >>>>
+> >>>> Can you let me know if the following patch fixes the issue for you ?
+> >>>> It did for us on one of our machines that we were investigating on.
+> >>>
+> >>> This fixes the issue for me as well, thanks!
+> >>>
+> >>> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+> >>
+> >> OK, that's great.
+> >>
+> >> But, I really don't think we can ask upstream to merge this patch to generic
+> >> code when we don't have a good explanation for why it's necessary. At least I'm
+> >> not going to ask anyone to do that :)
+> >>
+> >> So Pretti can you either write a 100% convincing explanation of why this patch
+> >> is correct in the general case, or (preferably) do some more investigating to
+> >> work out what Alexey's bug actually is.
 > > 
-> > Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+> > Yes will do so. Its better to investigate where precisely is the bug.
+> > This patch helped me narrow down on the buggy scenario.
 > 
-> > -	if (sai->is_lsb_first)
-> > +	if (sai->is_lsb_first && sai->is_right_j_mode)
-> >  		val_cr5 |= FSL_SAI_CR5_FBT(0);
-> 
-> Are you sure that FBT(0) is correct for right justified mode?
-> Because the original code is using FBT(0) for the lsb_first
-> situation and it shouldn't be right justified mode as default.
->
-I am not sure about that. 
+> On a side note, while I was tracking the race condition, I noticed that
+> in the final stage of the cpu offline path, after the state of the
+> hotplugged cpu is set to CPU_DEAD, we check if there were interrupts
+> delivered during the soft disabled state and service them if there were.
+> It makes sense to check for pending interrupts in the idle path. In the
+> offline path however, this did not look right to me at first glance. Am
+> I missing something ?
 
-I assume lsb_first as big endian data.
+That does sound a bit fishy.
 
-For 16 bit data format, the 2 bytes data will in high address of 4 bytes
-fifo. So the FBT is 16 for left-j and 0 for right-j. But big endian is
-bytes convert not bits convert. It makes me confuse. And send to
-community for help.
+I guess we're just assuming that all interrupts have been migrated away prior
+to the offline?
 
-> Nicolin
+cheers
