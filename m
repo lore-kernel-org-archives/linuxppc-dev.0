@@ -1,48 +1,33 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 914531A0E52
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 09:35:40 +1100 (AEDT)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 22 Jan 2015 17:35:38 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 0BD716E8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 17:27:28 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0MMZZuZ26804454
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 22:35:35 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0MMZYvP029586
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 17:35:34 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Pranith Kumar <bobby.prani@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 2/2] powerpc/powernv: Skip registering log region when
- CONFIG_PRINTK=n
-In-Reply-To: <CAJhHMCDPCdeGSfGFoYcUHXQoemtmSTdsmLrS3_GOewrvNQm8kA@mail.gmail.com>
-References: <1421893570-6920-1-git-send-email-bobby.prani@gmail.com>
- <1421893570-6920-2-git-send-email-bobby.prani@gmail.com>
- <1421903958.4598.4.camel@ellerman.id.au>
- <CAJhHMCDPCdeGSfGFoYcUHXQoemtmSTdsmLrS3_GOewrvNQm8kA@mail.gmail.com>
-Date: Fri, 23 Jan 2015 09:35:28 +1100
-Message-ID: <m3sif2zbnz.fsf@oc8180480414.ibm.com>
+Return-Path: <robherring2@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Rob Herring <robh@kernel.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- open list <linux-kernel@vger.kernel.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+Sender: robherring2@gmail.com
+In-Reply-To: <20150122210344.GE13072@google.com>
+References: <1420857290-8373-1-git-send-email-robh@kernel.org>
+ <20150122210344.GE13072@google.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 22 Jan 2015 17:47:25 -0600
+Message-ID: <CAL_Jsq+aw0y-1rrF=RMpYKMP4zGfmqzzG5BXYYoFABtKEUpX8Q@mail.gmail.com>
+Subject: Re: [PATCH 00/16] PCI generic configuration space accessors
+To: Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux-MIPS <linux-mips@linux-mips.org>, SH-Linux <linux-sh@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>, Will Deacon <will.deacon@arm.com>,
+ David Howells <dhowells@redhat.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Tanmay Inamdar <tinamdar@apm.com>,
+ Greg Ungerer <gerg@uclinux.org>, Alexandre Courbot <gnurou@gmail.com>,
+ linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
+ Michal Simek <michal.simek@xilinx.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Warren <swarren@wwwdotorg.org>, Simon Horman <horms@verge.net.au>,
+ Krzysztof Halasa <khalasa@piap.pl>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,22 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pranith Kumar <bobby.prani@gmail.com> writes:
-> On Thu, Jan 22, 2015 at 12:19 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> On Wed, 2015-01-21 at 21:26 -0500, Pranith Kumar wrote:
->>> When CONFIG_PRINTK=n, log_buf_addr_get() returns NULL and log_buf_len_get()
->>> return 0. Check for these return values and skip registering the dump buffer.
->>>
->>> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
->>> CC: Michael Ellerman <mpe@ellerman.id.au>
->>> ---
->>>  arch/powerpc/platforms/powernv/opal.c | 6 ++++++
->>>  1 file changed, 6 insertions(+)
+On Thu, Jan 22, 2015 at 3:03 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> On Fri, Jan 09, 2015 at 08:34:34PM -0600, Rob Herring wrote:
+>> This series adds common accessor functions for PCI configuration space
+>> accesses. This supports most PCI hosts with memory mapped configuration
+>> space like ECAM or hosts with memory mapped address/data registers. ECAM
+>> is not generically supported by this series, but could be added on top
+>> of this. While some hosts have standard address decoding which could be
+>> common as well, the various checks on bus numbers and device numbers are
+>> quite varied. It is unclear how much of that is really necessary or
+>> could be common.
 >>
->> What changed since v1? I don't see anything?
->>
->
-> Nothing in this patch but there is a v2 of the first patch in this
-> series, so had to resend this patch with a v2.
+>> The first 4 patches are preparatory cleanup. Patch 5 introduces the
+>> common accessors. The remaining patches convert several PCI host
+>> controllers. This is in no way a complete list of host controllers. The
+>> conversion of more hosts should be possible. The Designware controller
+>> in particular should be able to be converted, but its config space
+>> accessors are a mess of override-able functions that I've not gotten my
+>> head around.
 
-You also missed my Reviewed-by :)
+[...]
+
+> Really nice cleanups.  I added these with the acks so far to a pci/config
+> branch for v3.20.  I'll update it with more acks if they trickle in.
+
+Thanks.
+
+> You've structured it nicely so I can also just drop individual arch pieces
+> if necessary.  The pieces that haven't been acked yet (hint, hint):
+>
+>     arch/arm/mach-cns3xxx/pcie.c
+>     arch/arm/mach-sa1100/pci-nanoengine.c
+
+Some ARM sub-arch maintainers tend to not respond on things. These are
+platforms which aren't very active and aren't going to move to
+drivers/pci/host/ anytime soon. Maybe Arnd wants to ack them.
+
+>     arch/mn10300/unit-asb2305/pci.c
+>     arch/powerpc
+>
+> In addition, nobody has acked the frv and mips parts, but they're trivial
+> (they only add struct member names) that I can apply them without worrying.
+
+You must pick-up the 4 clean-up ones or the build will break for those
+platforms. Or perhaps that will encourage some acks.
+
+I've also got some actual conversions for some MIPS platforms in my
+tree I haven't sent out yet. MIPS is fun with all the variety of
+endianness and h/w swapping capability or not.
+
+Rob
