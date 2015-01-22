@@ -1,32 +1,22 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0105.outbound.protection.outlook.com [157.56.111.105])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD6B91A0E43
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 07:47:14 +1100 (AEDT)
-Date: Thu, 22 Jan 2015 14:41:47 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH 2/2] mm: fix undefined reference to `.kernel_map_pages'
- on PPC builds
-Message-ID: <20150122144147.019eedc41f189eac44c3c4cd@freescale.com>
-In-Reply-To: <20150122014550.GA21444@js1304-P5Q-DELUXE>
-References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
- <20150120230150.GA14475@cloud>
- <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
- <CAC5umyieZn7ppXkKb45O=C=BF+iv6R_A1Dwfhro=cBJzFeovrA@mail.gmail.com>
- <20150122014550.GA21444@js1304-P5Q-DELUXE>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75CDF1A0C41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 08:01:22 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 22:00:57 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] cpuidle: Add missing checks to the exit condition of
+ cpu_idle_poll()
+In-Reply-To: <20150121105655.15279.59626.stgit@preeti.in.ibm.com>
+Message-ID: <alpine.DEB.2.11.1501222200460.5526@nanos>
+References: <20150121105655.15279.59626.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
- LKML <linux-kernel@vger.kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>,
- josh@joshtriplett.org, Jens Axboe <axboe@fb.com>,
- Minchan Kim <minchan@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Johannes Weiner <hannes@cmpxchg.org>, Sasha Levin <sasha.levin@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,81 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jan 2015 10:45:51 +0900
-Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+On Wed, 21 Jan 2015, Preeti U Murthy wrote:
 
-> On Wed, Jan 21, 2015 at 09:57:59PM +0900, Akinobu Mita wrote:
-> > 2015-01-21 9:07 GMT+09:00 Andrew Morton <akpm@linux-foundation.org>:
-> > > On Tue, 20 Jan 2015 15:01:50 -0800 josh@joshtriplett.org wrote:
-> > >
-> > >> On Tue, Jan 20, 2015 at 02:02:00PM -0600, Kim Phillips wrote:
-> > >> > It's possible to configure DEBUG_PAGEALLOC without PAGE_POISONING on
-> > >> > ppc.  Fix building the generic kernel_map_pages() implementation in
-> > >> > this case:
-> > >> >
-> > >> >   LD      init/built-in.o
-> > >> > mm/built-in.o: In function `free_pages_prepare':
-> > >> > mm/page_alloc.c:770: undefined reference to `.kernel_map_pages'
-> > >> > mm/built-in.o: In function `prep_new_page':
-> > >> > mm/page_alloc.c:933: undefined reference to `.kernel_map_pages'
-> > >> > mm/built-in.o: In function `map_pages':
-> > >> > mm/compaction.c:61: undefined reference to `.kernel_map_pages'
-> > >> > make: *** [vmlinux] Error 1
-> > 
-> > kernel_map_pages() is static inline function since commit 031bc5743f15
-> > ("mm/debug-pagealloc: make debug-pagealloc boottime configurable").
-> > 
-> > But there is old declaration in 'arch/powerpc/include/asm/cacheflush.h'.
-> > Removing it or changing s/kernel_map_pages/__kernel_map_pages/ in this
-> > header file or something can fix this problem?
-> > 
-> > The architecture which has ARCH_SUPPORTS_DEBUG_PAGEALLOC
-> > including PPC should not build mm/debug-pagealloc.o
+> cpu_idle_poll() is entered into when either the cpu_idle_force_poll is set or
+> tick_check_broadcast_expired() returns true. The exit condition from
+> cpu_idle_poll() is tif_need_resched().
 > 
-> Yes, architecture with ARCH_SUPPORTS_DEBUG_PAGEALLOC should not build
-> mm/debug-pagealloc.o. I attach the patch to remove old declaration.
-> I hope it will fix Kim's problem.
+> However this does not take into account scenarios where cpu_idle_force_poll
+> changes or tick_check_broadcast_expired() returns false, without setting
+> the resched flag. So a cpu will be caught in cpu_idle_poll() needlessly,
+> thereby wasting power. Add an explicit check on cpu_idle_force_poll and
+> tick_check_broadcast_expired() to the exit condition of cpu_idle_poll()
+> to avoid this.
 > 
-> -------------->8------------------
-> From 7cb9d1ed8a785df152cb8934e187031c8ebd1bb2 Mon Sep 17 00:00:00 2001
-> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Date: Thu, 22 Jan 2015 10:28:58 +0900
-> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other
->  archs
-> 
-> Kim Phillips reported following build failure.
-> 
->   LD      init/built-in.o
->   mm/built-in.o: In function `free_pages_prepare':
->   mm/page_alloc.c:770: undefined reference to `.kernel_map_pages'
->   mm/built-in.o: In function `prep_new_page':
->   mm/page_alloc.c:933: undefined reference to `.kernel_map_pages'
->   mm/built-in.o: In function `map_pages':
->   mm/compaction.c:61: undefined reference to `.kernel_map_pages'
->   make: *** [vmlinux] Error 1
-> 
-> Reason for this problem is that commit 031bc5743f15
-> ("mm/debug-pagealloc: make debug-pagealloc boottime configurable") forgot
-> to remove old declaration of kernel_map_pages() in some architectures.
-> This patch removes them to fix build failure.
-> 
-> Reported-by: Kim Phillips <kim.phillips@freescale.com>
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+
 > ---
-
-Thanks. Now I get this:
-
-  LD      init/built-in.o
-mm/built-in.o: In function `kernel_map_pages':
-include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-Makefile:925: recipe for target 'vmlinux' failed
-make: *** [vmlinux] Error 1
-
-but, AFAICT, that's not because this patch is invalid: it's because
-__kernel_map_pages() isn't implemented in
-arch/powerpc/mm/pgtable_64.c, i.e., for non-PPC_STD_MMU_64 PPC64
-machines.
-
-Kim
+> Changes from V1: Modified the Changelog
+> 
+>  kernel/sched/idle.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index c47fce7..aaf1c1d 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -47,7 +47,8 @@ static inline int cpu_idle_poll(void)
+>  	rcu_idle_enter();
+>  	trace_cpu_idle_rcuidle(0, smp_processor_id());
+>  	local_irq_enable();
+> -	while (!tif_need_resched())
+> +	while (!tif_need_resched() &&
+> +		(cpu_idle_force_poll || tick_check_broadcast_expired()))
+>  		cpu_relax();
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+>  	rcu_idle_exit();
+> 
+> 
