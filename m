@@ -1,20 +1,26 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0114.outbound.protection.outlook.com [157.56.110.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D72411A097F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 22:02:32 +1100 (AEDT)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@Freescale.com>
-Subject: [PATCH v3 1/2] powerpc/corenet: Enable muxing MDIO buses via GPIO
-Date: Thu, 22 Jan 2015 04:48:37 -0600
-Message-ID: <1421923718-21352-1-git-send-email-Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9ECF1A0E44
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 22:16:04 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 12:15:36 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3] tick/broadcast: Make movement of broadcast hrtimer
+ robust against hotplug
+In-Reply-To: <54C09391.9080202@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.11.1501221209260.5526@nanos>
+References: <20150120103559.8430.50933.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.11.1501211243270.5526@nanos>
+ <54C09391.9080202@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kanetkar.shruti@gmail.com, Andy Fleming <afleming@gmail.com>,
- Shruti Kanetkar <Shruti@Freescale.com>, Shaohui
- Xie <Shaohui.Xie@Freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com,
+ LKML <linux-kernel@vger.kernel.org>, michael@ellerman.id.au,
+ Peter Zijlstra <peterz@infradead.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,61 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Fleming <afleming@gmail.com>
+On Thu, 22 Jan 2015, Preeti U Murthy wrote:
+> On 01/21/2015 05:16 PM, Thomas Gleixner wrote:
+> How about when the cpu that is going offline receives a timer interrupt
+> just before setting its state to CPU_DEAD ? That is still possible right
+> given that its clock devices may not have been shutdown and it is
+> capable of receiving interrupts for a short duration. Even with the
+> above patch, is the following scenario possible ?
+> 
+>                 CPU0                                  CPU1
+> t0         Receives timer interrupt
+> 
+> t1         Sees that there are hrtimers
+>            to be serviced (hrtimers are not yet migrated)
+> 
+> t2         calls hrtimer_interrupt()
+> 
+> t3         tick_program_event()                   CPU_DEAD notifiers
+>                                                 CPU0's td->evtdev = NULL
+> 
+> t4         clockevent_program_event()
+>            references NULL tick device pointer
+> 
+> So my concern is that since the CLOCK_EVT_NOTIFY_CPU_DEAD callback
+> handles shutting down of devices besides moving tick related duties.
+> it's functions may race with the hotplug cpu still handling tick events.
 
-Change-Id: I4489db79957ad533f4ba3f04fe7d5bcb3288e981
-Signed-off-by: Andy Fleming <afleming@gmail.com>
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
----
+  __cpu_disable() is supposed to block interrupts on the dying cpu.
 
-v3:	Spearated from the FMan MDIO dt/binding patchset http://patchwork.ozlabs.org/patch/370871
-	Also supersedes http://patchwork.ozlabs.org/patch/423350
-	Update via 'savedefconfig'
+But I agree, we should make it more robust. So we want an explicit
+call for disabling the cpu local stuff and an explicit takeover of the
+broadcast duty. I'm anyway distangling the clockevents_notify() stuff,
+so it should be simple to do so.
 
- arch/powerpc/configs/corenet32_smp_defconfig  | 1 +
- arch/powerpc/configs/corenet64_smp_defconfig  | 2 ++
- arch/powerpc/platforms/85xx/corenet_generic.c | 3 +++
- 3 files changed, 6 insertions(+)
+Thanks,
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 611efe9..5ccedc1 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -103,6 +103,7 @@ CONFIG_E1000E=y
- CONFIG_VITESSE_PHY=y
- CONFIG_AT803X_PHY=y
- CONFIG_FIXED_PHY=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index be24a18..ce16278 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -80,6 +80,8 @@ CONFIG_SATA_SIL24=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
- CONFIG_E1000E=y
-+CONFIG_PHYLIB=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 1f309cc..0804b10 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -88,6 +88,9 @@ static const struct of_device_id of_device_ids[] = {
- 		.compatible	= "simple-bus"
- 	},
- 	{
-+		.compatible	= "mdio-mux-gpio"
-+	},
-+	{
- 		.compatible	= "fsl,srio",
- 	},
- 	{
--- 
-2.2.2
+	tglx
