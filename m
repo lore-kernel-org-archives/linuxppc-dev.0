@@ -1,25 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
+ [IPv6:2607:f8b0:400e:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 332101A0EA7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:29:29 +1100 (AEDT)
-Message-ID: <1421904568.4598.5.camel@ellerman.id.au>
-Subject: Re: offlining cpus breakage
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Thu, 22 Jan 2015 16:29:28 +1100
-In-Reply-To: <54B8D56D.3070904@linux.vnet.ibm.com>
-References: <54ACFE6D.3070308@ozlabs.ru>
- <54B7BEF9.8090603@linux.vnet.ibm.com> <54B85B3C.1030000@ozlabs.ru>
- <1421377482.18166.5.camel@ellerman.id.au>
- <54B8D228.4000407@linux.vnet.ibm.com> <54B8D56D.3070904@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EB331A0E00
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 16:37:43 +1100 (AEDT)
+Received: by mail-pd0-f182.google.com with SMTP id z10so14905866pdj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2015 21:37:42 -0800 (PST)
+Message-ID: <1421905054.2865.8.camel@cyril>
+Subject: Re: [PATCH] powerpc/pseries: fix endian problems with LE migration
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 22 Jan 2015 16:37:34 +1100
+In-Reply-To: <1421811226.4900.3.camel@ellerman.id.au>
+References: <1421807520-12030-1-git-send-email-cyrilbur@gmail.com>
+ <1421811226.4900.3.camel@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-01-16 at 14:40 +0530, Preeti U Murthy wrote:
-> On 01/16/2015 02:26 PM, Preeti U Murthy wrote:
-> > On 01/16/2015 08:34 AM, Michael Ellerman wrote:
-> >> On Fri, 2015-01-16 at 13:28 +1300, Alexey Kardashevskiy wrote:
-> >>> On 01/16/2015 02:22 AM, Preeti U Murthy wrote:
-> >>>> Hi Alexey,
-> >>>>
-> >>>> Can you let me know if the following patch fixes the issue for you ?
-> >>>> It did for us on one of our machines that we were investigating on.
-> >>>
-> >>> This fixes the issue for me as well, thanks!
-> >>>
-> >>> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
-> >>
-> >> OK, that's great.
-> >>
-> >> But, I really don't think we can ask upstream to merge this patch to generic
-> >> code when we don't have a good explanation for why it's necessary. At least I'm
-> >> not going to ask anyone to do that :)
-> >>
-> >> So Pretti can you either write a 100% convincing explanation of why this patch
-> >> is correct in the general case, or (preferably) do some more investigating to
-> >> work out what Alexey's bug actually is.
-> > 
-> > Yes will do so. Its better to investigate where precisely is the bug.
-> > This patch helped me narrow down on the buggy scenario.
+On Wed, 2015-01-21 at 14:33 +1100, Michael Ellerman wrote:
+> On Wed, 2015-01-21 at 13:32 +1100, Cyril Bur wrote:
+> > The need to handle ibm,suspend_me specially from within ppc_rtas has left an
+> > endian bug exposed as rtas_ibm_suspend_me actually performs HCALLs and should
+> > have its params in CPU endian.
 > 
-> On a side note, while I was tracking the race condition, I noticed that
-> in the final stage of the cpu offline path, after the state of the
-> hotplugged cpu is set to CPU_DEAD, we check if there were interrupts
-> delivered during the soft disabled state and service them if there were.
-> It makes sense to check for pending interrupts in the idle path. In the
-> offline path however, this did not look right to me at first glance. Am
-> I missing something ?
+> That needs a much better explanation.
+> 
+Agreed
 
-That does sound a bit fishy.
+> Key points:
+>  - ppc_rtas() is a syscall, which takes arguments in BE
+>  - ibm,suspend-me is not a real RTAS call and is handled specially in there
+>  - ibm,suspend-me is actually implemented by an hcall
+>  - there is currently a bug on LE, because rtas_ibm_suspend_me() takes the
+>    ppc_rtas() args and feeds them directly to the hcall
+> 
+I've tried to write that out neatly and orderly. Here's how that went:
 
-I guess we're just assuming that all interrupts have been migrated away prior
-to the offline?
 
-cheers
+RTAS events require arguments be passed in big endian while hypercalls
+have their arguments passed in registers and the values should therefore
+be in CPU endian.
+
+The ibm,suspend_me 'RTAS' call makes a sequence of hypercalls to setup
+one true RTAS call. This means that ibm,suspend_me is handled specially
+in the ppc_rtas syscall.
+
+The ppc_rtas syscall has its arguments in big endian and can therefore
+pass these arguments directly to the rtas call. ibm,suspend_me is
+handled specially from within ppc_rtas (by calling rtas_ibm_suspend_me)
+which has left an endian bug on little endian systems due to the
+requirement of hypercalls. The return value from rtas_ibm_suspend me
+gets returned in cpu endian, and is left unconverted, also a bug on
+little endian systems.
+
+rtas_ibm_suspend_me does not actually make use of the rtas_args that it
+is passed. This patch removes the convoluted use of the rtas_args struct
+to pass params to rtas_ibm_suspend_me in favour of passing what it needs
+as actual arguments. This patch also ensures the two callers of
+rtas_ibm_suspend_me pass function parameters in cpu endian and in the
+case of ppc_rtas, converts the return value.
+
+migrate_store (the other caller of rtas_ibm_suspend_me) is from a sysfs
+file which deals with everything in cpu endian so this function only
+underwent cleanup.
+
+> > Have ppc_rtas send the params correctly and also interpret the result
+> > correctly.
+> 
+> That's a second bug which you should also mention above.
+> 
+> > Removed the convoluted use of the rtas_args struct to pass params to
+> > rtas_ibm_suspend_me in favour of passing what it needs directly.
+> > 
+> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> > ---
+> > This patch has been tested with KVM both LE and BE and on PowerVM both LE and
+> > BE. Under QEMU/KVM the migration happens without touching the these code
+> > pathes.
+> > For PowerVM there is no obvious regression on BE and the LE code path now
+> > provides the correct parameters to the hypervisor
+> 
+> Fold that into the changelog, it's worth remembering.
+> 
+> cheers
+> 
+> 
