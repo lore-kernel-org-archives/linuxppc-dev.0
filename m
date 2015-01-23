@@ -1,28 +1,31 @@
-Return-Path: <B50113@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0102.outbound.protection.outlook.com [207.46.100.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2EC891A06DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:09:52 +1100 (AEDT)
-Date: Fri, 23 Jan 2015 10:55:09 +0800
-From: Zidan Wang <b50113@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: Re: [alsa-devel][PATCH 2/3] ASoC: fsl_sai: Add support for tdm slots
- operation
-Message-ID: <20150123025507.GA2382@b50113>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <1421756480-7055-3-git-send-email-zidan.wang@freescale.com>
- <20150121180801.GA3361@Alpha> <20150122045515.GA3467@b50113>
- <20150122054409.GA7748@Asurada> <20150122062004.GA7046@b50113>
- <20150122235019.GA3204@Asurada-GSX>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150122235019.GA3204@Asurada-GSX>
-Cc: alsa-devel@alsa-project.org, timur@tabi.org,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D106F1A0D99
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:26:09 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 23 Jan 2015 13:26:08 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A7CEF2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:26:05 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0N3Pvw929950170
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:26:05 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0N3PVgC000473
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:25:31 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/2] powerpc/powernv: Separate function for OPAL IRQ setup
+Date: Fri, 23 Jan 2015 14:25:05 +1100
+Message-Id: <1421983506-17034-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,75 +35,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2015 at 03:50:20PM -0800, Nicolin Chen wrote:
-> On Thu, Jan 22, 2015 at 02:20:06PM +0800, Zidan Wang wrote:
-> > > > > > @@ -369,10 +380,25 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
-> > > > > >  	u32 word_width = snd_pcm_format_width(params_format(params));
-> > > > > >  	u32 val_cr4 = 0, val_cr5 = 0;
-> > > > > >  	int ret;
-> > > > > > +	u32 bclk;
-> > > > > > +
-> > > > > > +	if (channels == 1)
-> > > > > > +		channels = 2;
-> > > > > > +
-> > > > > > +	if (!sai->slots || sai->slots % channels)
-> > > > > > +		sai->slots = channels;
-> > > > > > +
-> > > > > > +	sai->slots = sai->slots / channels;
-> > > > > > +
-> > > > > > +	if (sai->slot_width < word_width || sai->is_dsp_mode)
-> > > > > > +		sai->slot_width = word_width;
-> > > > > 
-> > > > > Could you pls explain a bit what's this overriding for?
-> > > > > Or it might be better to put into a comment.
-> > > > >
-> > > > In machine driver, we should use snd_soc_dai_set_tdm_slot to set slots
-> > > > and slot width. In my opinion, slots in machine driver means the slot
-> > > > number of all channels. But in sai driver, the slots means the slot number
-> > > > of one channel. So snd_soc_calc_bclk use fs*sample_size*channels*tdm_slots
-> > > > to caculate bclk.
-> > > 
-> > > Could you pls use the standard way as you described for slot number
-> > > in machine driver instead of defining some other meanings? That one
-> > > is really confusing, not to mention a code without any comment.
-> > > 
-> > > You can add some extra local variables with extinguished names and
-> > > calculate the slot number and channels you want without changing
-> > > the original sai->slots and channels in the hw_params(). As you said,
-> > > you only need that new slot number and channels for snd_soc_calc_bclk
-> > > call. So you may also put this code right before the call -- a normal
-> > > routine doesn't need to recalculate the special slots and channels,
-> > > right?
-> 
-> > Actually i don't kown which meaning is the standard way. Because i found
-> > in wm8993 and wm8904 codec driver, they also use slots/channels to set 
-> > tdm_slots in set_tdm_slot function.
-> 
-> The slots via machine driver should be total slot number per frame.
-> For I2S, we're passing 2 for slots parameter in our machine drivers.
-> 
-> So why not just following that pattern. You code for calculating slot
-> per channel is used to calculate bclk. But keeping slot per frame will
-> also allow you to do that, meanwhile you can drop some code to do the
-> extra calculation so as to keep it neat.
-> 
-> I suggest you to take a look at fsl_esai.c and to follow that way:
-> Override slots and slot_width if specified from machine driver.
-> 
-I will follow slot per frame pattern like fsl_esai.c, thanks very mush.
+The patch put the OPAL interrupt setup logic in opal_init() into
+seperate function opal_irq_init() for easier code maintaining. The
+patch doesn't introduce logic changes except:
 
-I have another question.
+   * Rename variable names.
+   * Release virtual IRQ upon error from request_irq().
+   * Don't cache the virtual IRQ to opal_irqs[] upon error from
+     request_irq().
 
-Can a channel have several slots? Or channel just means slot.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c | 61 +++++++++++++++++++++++------------
+ 1 file changed, 41 insertions(+), 20 deletions(-)
 
-> And another problem of your patch is the configurations for FRSZ and
-> xMR fields. For monaural case, the channels == 1, the current code
-> passes it directly to set them while your code overrides it to 2.
-> 
-> I'm not sure if you've tested the monaural case and confirmed it works.
-> But, apparently, the configurations look pretty different.
->
-I have tested the mono case, it works well.
-
-Best Regards,
-Zidan
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index f10b9ec..411975c 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -695,11 +695,49 @@ static void opal_i2c_create_devs(void)
+ 		of_platform_device_create(np, NULL, NULL);
+ }
+ 
++static void __init opal_irq_init(struct device_node *dn)
++{
++	const __be32 *irqs;
++	int i, irqlen;
++
++	/* Get interrupt property */
++	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
++	pr_debug("opal: Found %d interrupts reserved for OPAL\n",
++		 irqs ? (irqlen / 4) : 0);
++
++	/* Install interrupt handlers */
++	opal_irq_count = irqlen / 4;
++	opal_irqs = kzalloc(opal_irq_count * sizeof(unsigned int), GFP_KERNEL);
++	for (i = 0; irqs && i < opal_irq_count; i++, irqs++) {
++		unsigned int irq, virq;
++		int rc;
++
++		/* Get hardware and virtual IRQ */
++		irq = be32_to_cpup(irqs);
++		virq = irq_create_mapping(NULL, irq);
++		if (virq == NO_IRQ) {
++			pr_warn("opal: Failed to map irq 0x%x\n", irq);
++			continue;
++		}
++
++		/* Install interrupt handler */
++		rc = request_irq(virq, opal_interrupt, 0, "opal", NULL);
++		if (rc) {
++			irq_dispose_mapping(virq);
++			pr_warn("opal: Error %d requesting irq %d"
++				" (0x%x)\n", rc, virq, irq);
++			continue;
++		}
++
++		/* Cache IRQ */
++		opal_irqs[i] = virq;
++	}
++}
++
+ static int __init opal_init(void)
+ {
+ 	struct device_node *np, *consoles;
+-	const __be32 *irqs;
+-	int rc, i, irqlen;
++	int rc;
+ 
+ 	opal_node = of_find_node_by_path("/ibm,opal");
+ 	if (!opal_node) {
+@@ -725,24 +763,7 @@ static int __init opal_init(void)
+ 	opal_i2c_create_devs();
+ 
+ 	/* Find all OPAL interrupts and request them */
+-	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
+-	pr_debug("opal: Found %d interrupts reserved for OPAL\n",
+-		 irqs ? (irqlen / 4) : 0);
+-	opal_irq_count = irqlen / 4;
+-	opal_irqs = kzalloc(opal_irq_count * sizeof(unsigned int), GFP_KERNEL);
+-	for (i = 0; irqs && i < (irqlen / 4); i++, irqs++) {
+-		unsigned int hwirq = be32_to_cpup(irqs);
+-		unsigned int irq = irq_create_mapping(NULL, hwirq);
+-		if (irq == NO_IRQ) {
+-			pr_warning("opal: Failed to map irq 0x%x\n", hwirq);
+-			continue;
+-		}
+-		rc = request_irq(irq, opal_interrupt, 0, "opal", NULL);
+-		if (rc)
+-			pr_warning("opal: Error %d requesting irq %d"
+-				   " (0x%x)\n", rc, irq, hwirq);
+-		opal_irqs[i] = irq;
+-	}
++	opal_irq_init(opal_node);
+ 
+ 	/* Create "opal" kobject under /sys/firmware */
+ 	rc = opal_sysfs_init();
+-- 
+1.8.3.2
