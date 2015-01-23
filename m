@@ -1,39 +1,34 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Kim.Phillips@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 186841A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:50:36 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 23 Jan 2015 13:50:34 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B8B173578048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:50:31 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0N3oVDA19529818
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:50:31 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0N3oUXo019389
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:50:30 +1100
-Date: Fri, 23 Jan 2015 14:50:29 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Avoid context switch in EEH reset if
- required
-Message-ID: <20150123035029.GA19657@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1421746096.4949.40.camel@kernel.crashing.org>
- <20150120225607.GA12174@shangw> <20150120235338.GA5280@shangw>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 685F31A0E36
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:59:16 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 21:20:17 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH 2/2] mm: fix undefined reference to `.kernel_map_pages'
+ on PPC builds
+Message-ID: <20150122212017.4b7032d52a6c75c06d5b4728@freescale.com>
+In-Reply-To: <CAC5umyiF52cykH2_5TD0yzXb+842gywpe-+XZHEwmrDe0nYCPw@mail.gmail.com>
+References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
+ <20150120230150.GA14475@cloud>
+ <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
+ <CAC5umyieZn7ppXkKb45O=C=BF+iv6R_A1Dwfhro=cBJzFeovrA@mail.gmail.com>
+ <20150122014550.GA21444@js1304-P5Q-DELUXE>
+ <20150122144147.019eedc41f189eac44c3c4cd@freescale.com>
+ <CAC5umyiF52cykH2_5TD0yzXb+842gywpe-+XZHEwmrDe0nYCPw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150120235338.GA5280@shangw>
-Cc: wenxiong@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
+ Rik van Riel <riel@redhat.com>, linux-mm@kvack.org, josh@joshtriplett.org,
+ LKML <linux-kernel@vger.kernel.org>, Jens Axboe <axboe@fb.com>,
+ Minchan Kim <minchan@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Johannes Weiner <hannes@cmpxchg.org>, Sasha Levin <sasha.levin@oracle.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,112 +38,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 21, 2015 at 10:53:38AM +1100, Gavin Shan wrote:
->On Wed, Jan 21, 2015 at 09:56:07AM +1100, Gavin Shan wrote:
->>On Tue, Jan 20, 2015 at 10:28:16AM +0100, Benjamin Herrenschmidt wrote:
->>>On Mon, 2015-01-19 at 09:47 +1100, Gavin Shan wrote:
->>>> On pseries platform, the EEH reset backend pseries_eeh_reset() can
->>>> be called in atomic context as follows. For this case, we should
->>>> call udelay() instead of msleep() to avoid context switching.
->>>> 
->>>>      drivers/scsi/ipr.c::ipr_reset_slot_reset_done()
->>>>      drivers/pci/pci.c::pci_set_pcie_reset_state()
->>>>      arch/powerpc/kernel/eeh.c::pcibios_set_pcie_reset_state()
->>>>      arch/powerpc/platforms/pseries/eeh_pseries.c::pseries_eeh_reset()
->>>
->>>It's not acceptable to introduce multi-millisecond delays at interrupt
->>>time. In fact, we should generally not use udelay in such context.
->>>
->>>I understand that this is an exceptional error handling case but it's
->>>still not right.
->>>
->>
->>Yes, I agree it's unsafe to udelay for multi-milliseconds as the queued
->>works in atomic context is expected to be completed as soon as possible.
->>
->>>Are there many other users of pci_set_pcie_reset_state() at interrupt
->>>time ? Can we have a discussion with the PCI folks as to whether that
->>>should be legal or not ?
->>>
->>>I'm tempted to require that it's made illegal.
->>
->>Currently, there are 2 drivers calling this function: IPR and misc/genwqe.
->>Also, VFIO would call this function for IBM and Mellanox adapters in PowerKVM
->>repository. For now, IPR driver is the only one call this function in atomic
->>context. 
->>
->>Sure, I'll send one email to confirm with PCI folks. I guess it's illegal
->>to call pci_set_pcie_reset_state() in atomic context. If it's the case,
->>I'm afraid Wendy has to change IPR driver to replace the reset timer with
->>something else (e.g. workqueue).
->>
->
->Another way is to drop the hold/settle delays for pcibios_set_pcie_reset_state()
->and IPR relies on the timer interval to cover them. Wendy, could you please
->let me know if it would work for you or not?
->
->    Start reset timer;
->    Timer expires, assert the reset. Restart the timer with assert delay;
->    Timer expires, deassert the reset. Restart the timer with settle delay;
->    Timer expires, ready for subsequent works;
->
+On Fri, 23 Jan 2015 08:49:36 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Brian King is the author of pci_set_pcie_reset_state() and as he said, it was
-expected to be called in atomic context. So I'm going to come up with another
-approach as above, caller of pci_set_pcie_reset_state() should take corresponding 
-delays as what IPR driver is doing.
+> 2015-01-23 5:41 GMT+09:00 Kim Phillips <kim.phillips@freescale.com>:
+> > Thanks. Now I get this:
+> >
+> >   LD      init/built-in.o
+> > mm/built-in.o: In function `kernel_map_pages':
+> > include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> > include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> > include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> > Makefile:925: recipe for target 'vmlinux' failed
+> > make: *** [vmlinux] Error 1
+> >
+> > but, AFAICT, that's not because this patch is invalid: it's because
+> > __kernel_map_pages() isn't implemented in
+> > arch/powerpc/mm/pgtable_64.c, i.e., for non-PPC_STD_MMU_64 PPC64
+> > machines.
+> 
+> Then, in order to use generic __kernel_map_pages() in mm/debug-pagealloc.c,
+> CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC shouldn't be selected in
+> arch/powerpc/Kconfig, when CONFIG_PPC_STD_MMU_64 isn't defined.
 
-Messages from Brian for reference:
+Thanks.  I'm still build-testing this now:
 
-| The API has changed. I wrote the pci_set_pcie_reset_state API originally.
-| When this API was put in place initially, it was perfectly legal to call it
-| from an atomic context. Can you clarify why we have to have the delay in the
-| pci_set_pcie_reset_state function? Shouldn't it be the responsibility of the
-| callers to ensure a proper delay is used? This was always the case until
-| recently.
+>From 082911ee947246ff962ef21863c45ec467455c40 Mon Sep 17 00:00:00 2001
+From: Kim Phillips <kim.phillips@freescale.com>
+Date: Thu, 22 Jan 2015 20:42:40 -0600
+Subject: [PATCH v2] mm: fix undefined reference to  `.__kernel_map_pages' on FSL
+ PPC64
 
-So please ignore this patch and I'll send another one, which is implemented in
-above approach.
+arch/powerpc has __kernel_map_pages implementations in mm/pgtable_32.c, and
+mm/hash_utils_64.c, of which the former is built for PPC32, and the latter
+PPC64's without PPC_STD_MMU.  Fix arch/powerpc/Kconfig to not select
+ARCH_SUPPORTS_DEBUG_PAGEALLOC when CONFIG_PPC_STD_MMU_64 isn't defined,
+i.e., for 64-bit book3e builds to use the generic __kernel_map_pages()
+in mm/debug-pagealloc.c.
+
+  LD      init/built-in.o
+mm/built-in.o: In function `kernel_map_pages':
+include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+Makefile:925: recipe for target 'vmlinux' failed
+make: *** [vmlinux] Error 1
+
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+v2: corrected SUPPORTS_DEBUG_PAGEALLOC selection to enable
+non-STD_MMU_64 builds to use the generic __kernel_map_pages().
+
+note: depends on Joonsoo Kim's patch "mm/debug_pagealloc: fix build
+failure on ppc and some other archs" published earlier in this
+thread.
+
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a2a168e..22b0940 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -256,6 +256,7 @@ config PPC_OF_PLATFORM_PCI
+ 	default n
+ 
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
++	depends on PPC32 || PPC_STD_MMU_64
+ 	def_bool y
+ 
+ config ARCH_SUPPORTS_UPROBES
+-- 
+2.2.2
 
 Thanks,
-Gavin
 
->>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> Tested-by: Wen Xiong<wenxiong@linux.vnet.ibm.com>
->>>> ---
->>>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 12 ++++++++----
->>>>  1 file changed, 8 insertions(+), 4 deletions(-)
->>>> 
->>>> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
->>>> index a6c7e19..67623a3 100644
->>>> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->>>> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
->>>> @@ -503,8 +503,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
->>>>   */
->>>>  static int pseries_eeh_reset(struct eeh_pe *pe, int option)
->>>>  {
->>>> -	int config_addr;
->>>> -	int ret;
->>>> +	int config_addr, delay, ret;
->>>>  
->>>>  	/* Figure out PE address */
->>>>  	config_addr = pe->config_addr;
->>>> @@ -528,9 +527,14 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
->>>>  	/* We need reset hold or settlement delay */
->>>>  	if (option == EEH_RESET_FUNDAMENTAL ||
->>>>  	    option == EEH_RESET_HOT)
->>>> -		msleep(EEH_PE_RST_HOLD_TIME);
->>>> +		delay = EEH_PE_RST_HOLD_TIME;
->>>> +	else
->>>> +		delay = EEH_PE_RST_SETTLE_TIME;
->>>> +
->>>> +	if (in_atomic())
->>>> +		udelay(delay * 1000);
->>>>  	else
->>>> -		msleep(EEH_PE_RST_SETTLE_TIME);
->>>> +		msleep(delay);
->>>>  
->>>>  	return ret;
->>>>  }
->>>
->>>
+Kim
