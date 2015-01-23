@@ -1,28 +1,20 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0148.outbound.protection.outlook.com [65.55.169.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D06C91A0D34
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 12:10:30 +1100 (AEDT)
-Date: Thu, 22 Jan 2015 19:05:06 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v2] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
-Message-ID: <20150122190506.9364df535c5db777ac85f909@freescale.com>
-In-Reply-To: <1421973825.4961.253.camel@freescale.com>
-References: <20150120140349.a7a9885065c241b555b91717@freescale.com>
- <1421800292.4961.215.camel@freescale.com>
- <20150121204844.fda3d4ab23a8226b6cdfdaf6@freescale.com>
- <1421895747.4961.232.camel@freescale.com>
- <20150122182056.cc3436bd90a6cbba70da538a@freescale.com>
- <1421973825.4961.253.camel@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Wang Dongsheng <dongsheng.wang@freescale.com>, linux-kernel@vger.kernel.org,
- Himangi Saraogi <himangi774@gmail.com>, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>, Aaron Sierra <asierra@xes-inc.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31ACE1A0EA9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 13:47:19 +1100 (AEDT)
+Message-ID: <1421981238.24984.5.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: fix endian problems with LE migration
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>
+Date: Fri, 23 Jan 2015 13:47:18 +1100
+In-Reply-To: <1421905054.2865.8.camel@cyril>
+References: <1421807520-12030-1-git-send-email-cyrilbur@gmail.com>
+ <1421811226.4900.3.camel@ellerman.id.au> <1421905054.2865.8.camel@cyril>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,123 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix this:
+On Thu, 2015-01-22 at 16:37 +1100, Cyril Bur wrote:
+> On Wed, 2015-01-21 at 14:33 +1100, Michael Ellerman wrote:
+> > On Wed, 2015-01-21 at 13:32 +1100, Cyril Bur wrote:
+> > > The need to handle ibm,suspend_me specially from within ppc_rtas has left an
+> > > endian bug exposed as rtas_ibm_suspend_me actually performs HCALLs and should
+> > > have its params in CPU endian.
+> > 
+> > That needs a much better explanation.
 
-  CC      arch/powerpc/sysdev/fsl_pci.o
-arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
-arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+> I've tried to write that out neatly and orderly. Here's how that went:
 
-when configuring FRAME_WARN, by refactoring indirect_read_config()
-to take hose and bus number instead of the 1344-byte struct pci_bus.
+Yep that's much better.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
-v2: refactor indirect_read_config() instead of kmalloc'ing a struct
-pci_bus.
+Minor points of style that I like are to use "()" on functions to make it
+clear, eg. ppc_rtas(), and to put strings in quotes, eg. "ibm,suspend_me".
 
-Scott, I will look deeper into fake_pci_bus() later.
+I've fixed it up and incorporated your testing notes, end result is:
 
- arch/powerpc/include/asm/pci-bridge.h |  4 ++++
- arch/powerpc/sysdev/fsl_pci.c         | 11 ++++-------
- arch/powerpc/sysdev/indirect_pci.c    | 25 +++++++++++++++++--------
- 3 files changed, 25 insertions(+), 15 deletions(-)
+Author: cyrilbur@gmail.com <cyrilbur@gmail.com>
+Date:   Wed Jan 21 13:32:00 2015 +1100
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 725247b..546d036 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -119,6 +119,10 @@ extern void setup_indirect_pci(struct pci_controller* hose,
- extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
- 				int offset, int len, u32 *val);
- 
-+extern int __indirect_read_config(struct pci_controller *hose,
-+				  unsigned char bus_number, unsigned int devfn,
-+				  int offset, int len, u32 *val);
-+
- extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
- 				 int offset, int len, u32 val);
- 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 6455c1e..7cc215e 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -68,13 +68,10 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
- 	u32 val = 0;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
--		if (hose->ops->read == fsl_indirect_read_config) {
--			struct pci_bus bus;
--			bus.number = hose->first_busno;
--			bus.sysdata = hose;
--			bus.ops = hose->ops;
--			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
--		} else
-+		if (hose->ops->read == fsl_indirect_read_config)
-+			__indirect_read_config(hose, hose->first_busno, 0,
-+					       PCIE_LTSSM, 4, &val);
-+		else
- 			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
- 		if (val < PCIE_LTSSM_L0)
- 			return 1;
-diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
-index 1f6c570..692de9d 100644
---- a/arch/powerpc/sysdev/indirect_pci.c
-+++ b/arch/powerpc/sysdev/indirect_pci.c
-@@ -20,31 +20,31 @@
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
- 
--int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
--			 int offset, int len, u32 *val)
-+int __indirect_read_config(struct pci_controller *hose,
-+			   unsigned char bus_number, unsigned int devfn,
-+			   int offset, int len, u32 *val)
- {
--	struct pci_controller *hose = pci_bus_to_host(bus);
- 	volatile void __iomem *cfg_data;
- 	u8 cfg_type = 0;
- 	u32 bus_no, reg;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
--		if (bus->number != hose->first_busno)
-+		if (bus_number != hose->first_busno)
- 			return PCIBIOS_DEVICE_NOT_FOUND;
- 		if (devfn != 0)
- 			return PCIBIOS_DEVICE_NOT_FOUND;
- 	}
- 
- 	if (ppc_md.pci_exclude_device)
--		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+		if (ppc_md.pci_exclude_device(hose, bus_number, devfn))
- 			return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
--		if (bus->number != hose->first_busno)
-+		if (bus_number != hose->first_busno)
- 			cfg_type = 1;
- 
--	bus_no = (bus->number == hose->first_busno) ?
--			hose->self_busno : bus->number;
-+	bus_no = (bus_number == hose->first_busno) ?
-+			hose->self_busno : bus_number;
- 
- 	if (hose->indirect_type & PPC_INDIRECT_TYPE_EXT_REG)
- 		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
-@@ -77,6 +77,15 @@ int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-+int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
-+			 int offset, int len, u32 *val)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+
-+	return __indirect_read_config(hose, bus->number, devfn, offset, len,
-+				      val);
-+}
-+
- int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
- 			  int offset, int len, u32 val)
- {
--- 
-2.2.2
+    powerpc/pseries: Fix endian problems with LE migration
+    
+    RTAS events require arguments be passed in big endian while hypercalls
+    have their arguments passed in registers and the values should therefore
+    be in CPU endian.
+    
+    The "ibm,suspend_me" 'RTAS' call makes a sequence of hypercalls to setup
+    one true RTAS call. This means that "ibm,suspend_me" is handled
+    specially in the ppc_rtas() syscall.
+    
+    The ppc_rtas() syscall has its arguments in big endian and can therefore
+    pass these arguments directly to the RTAS call. "ibm,suspend_me" is
+    handled specially from within ppc_rtas() (by calling rtas_ibm_suspend_me())
+    which has left an endian bug on little endian systems due to the
+    requirement of hypercalls. The return value from rtas_ibm_suspend_me()
+    gets returned in cpu endian, and is left unconverted, also a bug on
+    little endian systems.
+    
+    rtas_ibm_suspend_me() does not actually make use of the rtas_args that
+    it is passed. This patch removes the convoluted use of the rtas_args
+    struct to pass params to rtas_ibm_suspend_me() in favour of passing what
+    it needs as actual arguments. This patch also ensures the two callers of
+    rtas_ibm_suspend_me() pass function parameters in cpu endian and in the
+    case of ppc_rtas(), converts the return value.
+    
+    migrate_store() (the other caller of rtas_ibm_suspend_me()) is from a
+    sysfs file which deals with everything in cpu endian so this function
+    only underwent cleanup.
+    
+    This patch has been tested with KVM both LE and BE and on PowerVM both
+    LE and BE. Under QEMU/KVM the migration happens without touching these
+    code pathes.
+    
+    For PowerVM there is no obvious regression on BE and the LE code path
+    now provides the correct parameters to the hypervisor.
+    
+    Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+cheers
