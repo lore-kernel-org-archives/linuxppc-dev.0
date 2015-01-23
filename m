@@ -1,29 +1,26 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Kim.Phillips@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0138.outbound.protection.outlook.com [157.56.110.138])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC69D1A0E59
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 10:50:28 +1100 (AEDT)
-Received: by mail-pd0-f179.google.com with SMTP id v10so4639267pde.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2015 15:50:27 -0800 (PST)
-Date: Thu, 22 Jan 2015 15:50:20 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Zidan Wang <b50113@freescale.com>
-Subject: Re: [alsa-devel][PATCH 2/3] ASoC: fsl_sai: Add support for tdm slots
- operation
-Message-ID: <20150122235019.GA3204@Asurada-GSX>
-References: <1421756480-7055-1-git-send-email-zidan.wang@freescale.com>
- <1421756480-7055-3-git-send-email-zidan.wang@freescale.com>
- <20150121180801.GA3361@Alpha> <20150122045515.GA3467@b50113>
- <20150122054409.GA7748@Asurada> <20150122062004.GA7046@b50113>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2FC3A1A0E72
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 11:26:21 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 18:20:56 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
+Message-ID: <20150122182056.cc3436bd90a6cbba70da538a@freescale.com>
+In-Reply-To: <1421895747.4961.232.camel@freescale.com>
+References: <20150120140349.a7a9885065c241b555b91717@freescale.com>
+ <1421800292.4961.215.camel@freescale.com>
+ <20150121204844.fda3d4ab23a8226b6cdfdaf6@freescale.com>
+ <1421895747.4961.232.camel@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150122062004.GA7046@b50113>
-Cc: alsa-devel@alsa-project.org, timur@tabi.org,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wang Dongsheng <dongsheng.wang@freescale.com>, linux-kernel@vger.kernel.org,
+ Himangi Saraogi <himangi774@gmail.com>, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>, Aaron Sierra <asierra@xes-inc.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +30,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2015 at 02:20:06PM +0800, Zidan Wang wrote:
-> > > > > @@ -369,10 +380,25 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
-> > > > >  	u32 word_width = snd_pcm_format_width(params_format(params));
-> > > > >  	u32 val_cr4 = 0, val_cr5 = 0;
-> > > > >  	int ret;
-> > > > > +	u32 bclk;
-> > > > > +
-> > > > > +	if (channels == 1)
-> > > > > +		channels = 2;
-> > > > > +
-> > > > > +	if (!sai->slots || sai->slots % channels)
-> > > > > +		sai->slots = channels;
-> > > > > +
-> > > > > +	sai->slots = sai->slots / channels;
-> > > > > +
-> > > > > +	if (sai->slot_width < word_width || sai->is_dsp_mode)
-> > > > > +		sai->slot_width = word_width;
+On Wed, 21 Jan 2015 21:02:27 -0600
+Scott Wood <scottwood@freescale.com> wrote:
+
+> On Wed, 2015-01-21 at 20:48 -0600, Kim Phillips wrote:
+> > On Tue, 20 Jan 2015 18:31:32 -0600
+> > Scott Wood <scottwood@freescale.com> wrote:
+> > 
+> > > On Tue, 2015-01-20 at 14:03 -0600, Kim Phillips wrote:
+> > > > Fix this:
 > > > > 
-> > > > Could you pls explain a bit what's this overriding for?
-> > > > Or it might be better to put into a comment.
-> > > >
-> > > In machine driver, we should use snd_soc_dai_set_tdm_slot to set slots
-> > > and slot width. In my opinion, slots in machine driver means the slot
-> > > number of all channels. But in sai driver, the slots means the slot number
-> > > of one channel. So snd_soc_calc_bclk use fs*sample_size*channels*tdm_slots
-> > > to caculate bclk.
+> > > >   CC      arch/powerpc/sysdev/fsl_pci.o
+> > > > arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
+> > > > arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+> > > > 
+> > > > when configuring FRAME_WARN, by converting the allocation from the
+> > > > stack to the heap.  We use GFP_ATOMIC since this function can be
+> > > > called with interrupts disabled.
+> > > > 
+> > > > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> > > > ---
+> > > >  arch/powerpc/sysdev/fsl_pci.c | 12 +++++++-----
+> > > >  1 file changed, 7 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> > > > index 6455c1e..635d743 100644
+> > > > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > > > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > > > @@ -69,11 +69,13 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
+> > > >  
+> > > >  	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+> > > >  		if (hose->ops->read == fsl_indirect_read_config) {
+> > > > -			struct pci_bus bus;
+> > > > -			bus.number = hose->first_busno;
+> > > > -			bus.sysdata = hose;
+> > > > -			bus.ops = hose->ops;
+> > > > -			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
+> > > > +			struct pci_bus *bus;
+> > > > +			bus = kmalloc(sizeof(*bus), GFP_ATOMIC);
+> > > > +			bus->number = hose->first_busno;
+> > > 
+> > > Missing check for allocation failure.
 > > 
-> > Could you pls use the standard way as you described for slot number
-> > in machine driver instead of defining some other meanings? That one
-> > is really confusing, not to mention a code without any comment.
+> > thanks.
 > > 
-> > You can add some extra local variables with extinguished names and
-> > calculate the slot number and channels you want without changing
-> > the original sai->slots and channels in the hw_params(). As you said,
-> > you only need that new slot number and channels for snd_soc_calc_bclk
-> > call. So you may also put this code right before the call -- a normal
-> > routine doesn't need to recalculate the special slots and channels,
-> > right?
+> > > Do we not have a real struct pci_bus we can use here?  Or refactor
+> > > indirect_read_config() to take hose and bus number instead?
+> > 
+> > indirect_read_config() can't be refactored because it is also used
+> > in the generic struct pci_ops.  Unless you mean making an
+> > __indirect_read_config that the original would call, 
+> 
+> Yes, that's what I mean.
+> 
+> > but that doesn't look that trivial given it calls pci_exclude_device with a
+> > struct pci_controller hose.
+> 
+> Check for excluded devices in indirect_read_config(), not
+> __indirect_read_config().
 
-> Actually i don't kown which meaning is the standard way. Because i found
-> in wm8993 and wm8904 codec driver, they also use slots/channels to set 
-> tdm_slots in set_tdm_slot function.
+turns out it wasn't an issue; see below for a v2.
 
-The slots via machine driver should be total slot number per frame.
-For I2S, we're passing 2 for slots parameter in our machine drivers.
+> > > If putting a pci_bus struct on the stack is no longer OK, then
+> > > fake_pci_bus() should be fixed as well.  I wonder if GCC is allocating
+> > > separate pci_bus structs on the stack for this one and the one that
+> > > early_read_config_dword() uses...
+> > 
+> > fake_pci_bus()' version is static, so it's not on the stack.
+> > 
+> > given that, maybe fsl_pcie_check_link()'s should be static too?
+> 
+> Oh.  How would you ensure that it's only called once at a time?  It
+> doesn't look like this is only called during early boot.
+> fsl_pcie_check_link() is called every time we do any config read through
+> the normal interface.  This is also a concern for the call to
+> early_read_config_dword().
 
-So why not just following that pattern. You code for calculating slot
-per channel is used to calculate bclk. But keeping slot per frame will
-also allow you to do that, meanwhile you can drop some code to do the
-extra calculation so as to keep it neat.
+I really don't know how that works: that code has been there since
+before linux was maintained in git.
 
-I suggest you to take a look at fsl_esai.c and to follow that way:
-Override slots and slot_width if specified from machine driver.
+Below is the v2.
 
-And another problem of your patch is the configurations for FRSZ and
-xMR fields. For monaural case, the channels == 1, the current code
-passes it directly to set them while your code overrides it to 2.
+Thanks,
 
-I'm not sure if you've tested the monaural case and confirmed it works.
-But, apparently, the configurations look pretty different.
+Kim.
 
-Nicolin
+>From aac5aa245949ea3dadae9ea913d67c456f558a0c Mon Sep 17 00:00:00 2001
+From: Kim Phillips <kim.phillips@freescale.com>
+Date: Tue, 20 Jan 2015 14:03:49 -0600
+Subject: [PATCH v2] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
+
+Fix this:
+
+  CC      arch/powerpc/sysdev/fsl_pci.o
+arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
+arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
+
+when configuring FRAME_WARN, by refactoring indirect_read_config()
+to take hose and bus number instead of the 1344-byte struct pci_bus.
+
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+v2: refactor indirect_read_config() instead of kmalloc'ing a struct
+pci_bus.
+
+ arch/powerpc/include/asm/pci-bridge.h |  4 ++++
+ arch/powerpc/sysdev/fsl_pci.c         | 11 ++++-------
+ arch/powerpc/sysdev/indirect_pci.c    | 25 +++++++++++++++++--------
+ 3 files changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 725247b..546d036 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -119,6 +119,10 @@ extern void setup_indirect_pci(struct pci_controller* hose,
+ extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 				int offset, int len, u32 *val);
+ 
++extern int __indirect_read_config(struct pci_controller *hose,
++				  unsigned char bus_number, unsigned int devfn,
++				  int offset, int len, u32 *val);
++
+ extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
+ 				 int offset, int len, u32 val);
+ 
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6455c1e..7cc215e 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -68,13 +68,10 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
+ 	u32 val = 0;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+-		if (hose->ops->read == fsl_indirect_read_config) {
+-			struct pci_bus bus;
+-			bus.number = hose->first_busno;
+-			bus.sysdata = hose;
+-			bus.ops = hose->ops;
+-			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
+-		} else
++		if (hose->ops->read == fsl_indirect_read_config)
++			__indirect_read_config(hose, hose->first_busno, 0,
++					       PCIE_LTSSM, 4, &val);
++		else
+ 			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+ 		if (val < PCIE_LTSSM_L0)
+ 			return 1;
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 1f6c570..692de9d 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -20,31 +20,31 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ 
+-int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+-			 int offset, int len, u32 *val)
++int __indirect_read_config(struct pci_controller *hose,
++			   unsigned char bus_number, unsigned int devfn,
++			   int offset, int len, u32 *val)
+ {
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
+ 	u32 bus_no, reg;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+-		if (bus->number != hose->first_busno)
++		if (bus_number != hose->first_busno)
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 		if (devfn != 0)
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 	}
+ 
+ 	if (ppc_md.pci_exclude_device)
+-		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
++		if (ppc_md.pci_exclude_device(hose, bus_number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
+-		if (bus->number != hose->first_busno)
++		if (bus_number != hose->first_busno)
+ 			cfg_type = 1;
+ 
+-	bus_no = (bus->number == hose->first_busno) ?
+-			hose->self_busno : bus->number;
++	bus_no = (bus_number == hose->first_busno) ?
++			hose->self_busno : bus_number;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_EXT_REG)
+ 		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
+@@ -77,6 +77,15 @@ int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
++int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++			 int offset, int len, u32 *val)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++
++	return __indirect_read_config(hose, bus->number, devfn, offset, len,
++				      val);
++}
++
+ int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
+ 			  int offset, int len, u32 val)
+ {
+-- 
+2.2.2
