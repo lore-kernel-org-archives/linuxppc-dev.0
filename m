@@ -1,20 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Kim.Phillips@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0148.outbound.protection.outlook.com [65.55.169.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5C421A0E74
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 11:47:02 +1100 (AEDT)
-Message-ID: <1421974022.24984.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/kernel: Avoid memory corruption at early stage
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Fri, 23 Jan 2015 11:47:02 +1100
-In-Reply-To: <20150122064032.GA19557@shangw>
-References: <1420695651-574-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1421907682.4598.6.camel@ellerman.id.au> <20150122064032.GA19557@shangw>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D06C91A0D34
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 12:10:30 +1100 (AEDT)
+Date: Thu, 22 Jan 2015 19:05:06 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v2] powerpc/fsl_pci: Fix pci stack build bug with FRAME_WARN
+Message-ID: <20150122190506.9364df535c5db777ac85f909@freescale.com>
+In-Reply-To: <1421973825.4961.253.camel@freescale.com>
+References: <20150120140349.a7a9885065c241b555b91717@freescale.com>
+ <1421800292.4961.215.camel@freescale.com>
+ <20150121204844.fda3d4ab23a8226b6cdfdaf6@freescale.com>
+ <1421895747.4961.232.camel@freescale.com>
+ <20150122182056.cc3436bd90a6cbba70da538a@freescale.com>
+ <1421973825.4961.253.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Wang Dongsheng <dongsheng.wang@freescale.com>, linux-kernel@vger.kernel.org,
+ Himangi Saraogi <himangi774@gmail.com>, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>, Aaron Sierra <asierra@xes-inc.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +32,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-01-22 at 17:40 +1100, Gavin Shan wrote:
-> On Thu, Jan 22, 2015 at 05:21:22PM +1100, Michael Ellerman wrote:
-> >On Thu, 2015-01-08 at 16:40 +1100, Gavin Shan wrote:
-> >> When calling to early_setup(), we picks "boot_paca" up for the
-> >> master CPU and initialize that with initialise_paca(). At the
-> >> point, SLB shadow buffer isn't populated yet. Updating the SLB
-> >> shadow buffer should corrupt what we had in physical address 0
-> >> where the trap instruction is usually stored.
-> >
-> >Ouch.
-> >
-> >Introduced in 6f4441ef7009 ("powerpc: Dynamically allocate slb_shadow from
-> >memblock") - December 2013.
-> >
-> >So it seems it doesn't cause us any harm in general.
-> >
-> >Did you actually hit a bug with it?
-> 
-> I didn't hit any bugs with it. So I guess it's unnecessary to mark it as
-> "stable". I found the issue (not bug) occasionally: starting kernel in
-> simulator, dumping the instruction at physical address 0x0 and found
-> it's not "nop".
+Fix this:
 
-Yeah OK. So we'll merge it but it doesn't need to go to stable.
+  CC      arch/powerpc/sysdev/fsl_pci.o
+arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pcie_check_link':
+arch/powerpc/sysdev/fsl_pci.c:91:1: error: the frame size of 1360 bytes is larger than 1024 bytes [-Werror=frame-larger-than=]
 
-> >> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-> >> index d6e195e..048a6ee 100644
-> >> --- a/arch/powerpc/kernel/paca.c
-> >> +++ b/arch/powerpc/kernel/paca.c
-> >> @@ -115,6 +115,9 @@ static struct slb_shadow * __init init_slb_shadow(int cpu)
-> >>  {
-> >>  	struct slb_shadow *s = &slb_shadow[cpu];
-> >>  
-> >> +	if (!slb_shadow)
-> >> +		return NULL;
-> >> +
-> >>  	s->persistent = cpu_to_be32(SLB_NUM_BOLTED);
-> >>  	s->buffer_length = cpu_to_be32(sizeof(*s));
-> >
-> >Yeah I guess that's an OK fix.
-> >
-> >We must have a valid SLB shadow before we ever call _switch(), which is much
-> >later. The only way we could hit this case for the real paca is if
-> >allocate_slb_shadows() failed to allocate, but it would have panicked if it
-> >did.
-> 
-> Perhaps I can add BUG_ON(!slb_shadow) in allocate_slb_shadows() if you agree.
+when configuring FRAME_WARN, by refactoring indirect_read_config()
+to take hose and bus number instead of the 1344-byte struct pci_bus.
 
-No need, memblock_alloc_base() already panics if it can't allocate.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+v2: refactor indirect_read_config() instead of kmalloc'ing a struct
+pci_bus.
 
-cheers
+Scott, I will look deeper into fake_pci_bus() later.
+
+ arch/powerpc/include/asm/pci-bridge.h |  4 ++++
+ arch/powerpc/sysdev/fsl_pci.c         | 11 ++++-------
+ arch/powerpc/sysdev/indirect_pci.c    | 25 +++++++++++++++++--------
+ 3 files changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 725247b..546d036 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -119,6 +119,10 @@ extern void setup_indirect_pci(struct pci_controller* hose,
+ extern int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 				int offset, int len, u32 *val);
+ 
++extern int __indirect_read_config(struct pci_controller *hose,
++				  unsigned char bus_number, unsigned int devfn,
++				  int offset, int len, u32 *val);
++
+ extern int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
+ 				 int offset, int len, u32 val);
+ 
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6455c1e..7cc215e 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -68,13 +68,10 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
+ 	u32 val = 0;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK) {
+-		if (hose->ops->read == fsl_indirect_read_config) {
+-			struct pci_bus bus;
+-			bus.number = hose->first_busno;
+-			bus.sysdata = hose;
+-			bus.ops = hose->ops;
+-			indirect_read_config(&bus, 0, PCIE_LTSSM, 4, &val);
+-		} else
++		if (hose->ops->read == fsl_indirect_read_config)
++			__indirect_read_config(hose, hose->first_busno, 0,
++					       PCIE_LTSSM, 4, &val);
++		else
+ 			early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+ 		if (val < PCIE_LTSSM_L0)
+ 			return 1;
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 1f6c570..692de9d 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -20,31 +20,31 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ 
+-int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+-			 int offset, int len, u32 *val)
++int __indirect_read_config(struct pci_controller *hose,
++			   unsigned char bus_number, unsigned int devfn,
++			   int offset, int len, u32 *val)
+ {
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	volatile void __iomem *cfg_data;
+ 	u8 cfg_type = 0;
+ 	u32 bus_no, reg;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+-		if (bus->number != hose->first_busno)
++		if (bus_number != hose->first_busno)
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 		if (devfn != 0)
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 	}
+ 
+ 	if (ppc_md.pci_exclude_device)
+-		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
++		if (ppc_md.pci_exclude_device(hose, bus_number, devfn))
+ 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_SET_CFG_TYPE)
+-		if (bus->number != hose->first_busno)
++		if (bus_number != hose->first_busno)
+ 			cfg_type = 1;
+ 
+-	bus_no = (bus->number == hose->first_busno) ?
+-			hose->self_busno : bus->number;
++	bus_no = (bus_number == hose->first_busno) ?
++			hose->self_busno : bus_number;
+ 
+ 	if (hose->indirect_type & PPC_INDIRECT_TYPE_EXT_REG)
+ 		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
+@@ -77,6 +77,15 @@ int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
++int indirect_read_config(struct pci_bus *bus, unsigned int devfn,
++			 int offset, int len, u32 *val)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++
++	return __indirect_read_config(hose, bus->number, devfn, offset, len,
++				      val);
++}
++
+ int indirect_write_config(struct pci_bus *bus, unsigned int devfn,
+ 			  int offset, int len, u32 val)
+ {
+-- 
+2.2.2
