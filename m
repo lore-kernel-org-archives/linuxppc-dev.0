@@ -1,21 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BFB281A0C6B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:02:56 +1100 (AEDT)
-Message-ID: <1421982176.24984.6.camel@ellerman.id.au>
-Subject: Re: [PATCH resend] powernv/iommu: disable IOMMU bypass with param
- iommu=nobypass
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA18E1A0C7F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2015 14:04:52 +1100 (AEDT)
+Message-ID: <1421982291.24984.8.camel@ellerman.id.au>
+Subject: Re: [PATCH v2 1/1] powerpc: refresh mpc85xx_defconfig using "make
+ savedefconfig"
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Date: Fri, 23 Jan 2015 14:02:56 +1100
-In-Reply-To: <1421853832-32533-1-git-send-email-cascardo@linux.vnet.ibm.com>
-References: <1421853832-32533-1-git-send-email-cascardo@linux.vnet.ibm.com>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Date: Fri, 23 Jan 2015 14:04:51 +1100
+In-Reply-To: <1421655056-7860-1-git-send-email-alessio.bogani@elettra.eu>
+References: <1421655056-7860-1-git-send-email-alessio.bogani@elettra.eu>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: corbet@lwn.net, linux-doc@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-21 at 13:23 -0200, Thadeu Lima de Souza Cascardo wrote:
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index fac88ed..f942a19 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -75,6 +75,27 @@ static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
->  #define pe_info(pe, fmt, ...)					\
->  	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
->  
-> +static bool pnv_iommu_bypass_disabled __read_mostly;
-> +
-> +static int __init iommu_setup(char *str)
-> +{
-> +	if (!str)
-> +		return -EINVAL;
-> +	while (*str) {
-> +		if (!strncmp(str, "nobypass", 8)) {
-> +			pnv_iommu_bypass_disabled = true;
-> +			pr_info("PowerNV: IOMMU bypass window disabled.\n");
+On Mon, 2015-01-19 at 09:10 +0100, Alessio Igor Bogani wrote:
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+> 
+> v1 -> v2
+> 	Rebased on v3.19-rc5
 
-I added a break here.
+In the end I did do a bulk update of all configs, which I think means this is
+obsolete.
 
-> +		}
-> +		str += strcspn(str, ",");
-> +		if (*str == ',')
-> +			str++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +early_param("iommu", iommu_setup);
+  https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/commit/?h=next&id=a85cade6762bf566698e625ec1a4461245e40768
 
 cheers
