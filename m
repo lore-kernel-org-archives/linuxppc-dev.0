@@ -1,28 +1,16 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews07.kpnxchange.com (cpsmtpb-ews07.kpnxchange.com
- [213.75.39.10])
- by lists.ozlabs.org (Postfix) with ESMTP id 448961A0360
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jan 2015 04:02:37 +1100 (AEDT)
-Message-ID: <1422118156.27947.7.camel@x220>
-Subject: Re: [PATCH 0/4] defconfigs: cleanup obsolete MTD configs
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Semen Protsenko <semen.protsenko@globallogic.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>
-Date: Sat, 24 Jan 2015 17:49:16 +0100
-In-Reply-To: <1422117213-3130-1-git-send-email-semen.protsenko@globallogic.com>
-References: <1422117213-3130-1-git-send-email-semen.protsenko@globallogic.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, Brian Norris <computersforpeace@gmail.com>,
- Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@gmail.com>,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linux-mtd@lists.infradead.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id D98711A0C7D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jan 2015 08:11:03 +1100 (AEDT)
+Subject: [PATCH v1 0/3] SHA256 for PPC/SPE
+From: Markus Stockhausen <stockhausen@collogia.de>
+Date: Sat, 24 Jan 2015 22:10:53 +0100
+To: <linux-crypto@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-542ff329-afb5-4472-bf3b-66ee9496f1ca"
+Message-ID: <5ad377b3-e491-4c35-8b89-de1dfd0749a6@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +20,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-01-24 at 18:33 +0200, Semen Protsenko wrote:
-> This patch series removes next obsolete MTD configs from all defconfig files:
->   - CONFIG_MTD_CHAR
->   - CONFIG_MTD_CONCAT
->   - CONFIG_MTD_DEBUG
->   - CONFIG_MTD_DEBUG_VERBOSE
->   - CONFIG_MTD_PARTITIONS
-> 
-> All those configs were removed from drivers/mtd/Kconfig earlier, but their usage
-> in defconfig files was remain unnoticed. There are at least two obvious reasons
-> to get rid of those configs:
->   1. Their usage may cause to build warnings
 
-That's news for me. I thought they are silently ignored. Do you have an
-example of such a warning?
+This is a multi-part message in MIME format.
 
->   2. Their usage may confuse someone who is grepping defconfig files to get
->      the clue what MTD configuration may look like.
-> 
-> This series is harmless for all those defconfigs and will not break anything.
-> 
-> 
-> Semen Protsenko (4):
->   defconfigs: remove CONFIG_MTD_CONCAT
->   defconfigs: remove CONFIG_MTD_PARTITIONS
->   defconfigs: remove CONFIG_MTD_CHAR
->   defconfigs: remove CONFIG_MTD_DEBUG*
-> 
->  arch/arm/configs/acs5k_defconfig                   |    3 ---
-> [...]
->  arch/unicore32/configs/unicore32_defconfig         |    2 --
->  226 files changed, 364 deletions(-)
+------=_NextPartTM-000-542ff329-afb5-4472-bf3b-66ee9496f1ca
+Content-Type: text/plain
 
-Seems like the kind of change that can only be reviewed by a script.
+[PATCH v1 0/3] SHA256 for PPC/SPE
 
-Is there any policy on keeping defconfig files up to date? Because, only
-slightly exaggerated, all the defconfig files are outdated, in minor or
-major ways, at any given moment.
+The following patches add support for SIMD accelerated SHA256 
+calculation on PPC processors with SPE instruction set. The 
+implementation takes care of the following constraints:
 
-I seem to remember Greg stating that defconfig files are on their way
-out. Did I remember that correctly?  
+- independant of processor endianess
+- fallback to generic code if called from interrupt context
+- disable preemtion only for short intervals
 
+Performance numbers from insmod tcrypt sec=3 mode=304 taken
+on e500v2 800 MHz (TP Link WDR4900)
 
-Paul Bolle
+data    per      generic     this patch  speedup  cycles
+length  update   bytes/sec   bytes/sec   factor   per byte
+------  -------  ----------  ----------  -------  --------
+    16       16   5,558,336   8,248,272	  x1.48      96.99
+    64       16  10,730,602  14,872,789   x1.38      53.79
+    64       64  12,841,621  19,268,885   x1.50      41.52
+   256       16  16,223,317  21,295,957   x1.31      37.57
+   256       64  21,135,957  30,941,696   x1.46      25,86
+   256      256	 22,664,448  35,765,845   x1.57      22,37
+  1024       16  18,608,128  23,893,674   x1.28      33.48
+  1024      256  27,427,840  43,427,498   x1.58      18.42
+  1024     1024  28,064,768  45,659,136   x1.62      17.52
+  2048       16  19,054,592  24,425,130   x1.28      32.75
+  2048      256  28,435,797  45,087,402   x1.58      17.74
+  2048     1024  29,091,157  47,395,498   x1.62      16.88
+  2048     2048  29,225,642  47,756,629   x1.63      16.75
+
+------=_NextPartTM-000-542ff329-afb5-4472-bf3b-66ee9496f1ca
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-542ff329-afb5-4472-bf3b-66ee9496f1ca--
