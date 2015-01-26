@@ -1,33 +1,23 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x22e.google.com (mail-la0-x22e.google.com
+ [IPv6:2a00:1450:4010:c03::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3121A1A05E0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 06:29:41 +1100 (AEDT)
-Date: Mon, 26 Jan 2015 13:24:14 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH 2/2] mm: fix undefined reference to `.kernel_map_pages'
- on PPC builds
-Message-ID: <20150126132414.238ece260a30b79327551206@freescale.com>
-In-Reply-To: <20150122014550.GA21444@js1304-P5Q-DELUXE>
-References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
- <20150120230150.GA14475@cloud>
- <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
- <CAC5umyieZn7ppXkKb45O=C=BF+iv6R_A1Dwfhro=cBJzFeovrA@mail.gmail.com>
- <20150122014550.GA21444@js1304-P5Q-DELUXE>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2CD01A064A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 07:50:08 +1100 (AEDT)
+Received: by mail-la0-f46.google.com with SMTP id s18so9897837lam.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 12:50:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
- LKML <linux-kernel@vger.kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>,
- josh@joshtriplett.org, Jens Axboe <axboe@fb.com>,
- Minchan Kim <minchan@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Johannes Weiner <hannes@cmpxchg.org>,
- Scott Wood <scottwood@freescale.com>, Sasha Levin <sasha.levin@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1422304140-24420-1-git-send-email-geert@linux-m68k.org>
+References: <1422304140-24420-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 26 Jan 2015 21:50:03 +0100
+Message-ID: <CAMuHMdX5YCPgpHjNDpkeQc=Kx-yY7LPBikRoNa+9zS1S-K1EUg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.19-rc6
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,37 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Jan 2015 10:45:51 +0900
-Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+On Mon, Jan 26, 2015 at 9:29 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.19-rc6[1] to v3.19-rc5[3], the summaries are:
+>   - build errors: +9/-9
 
-> From 7cb9d1ed8a785df152cb8934e187031c8ebd1bb2 Mon Sep 17 00:00:00 2001
-> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Date: Thu, 22 Jan 2015 10:28:58 +0900
-> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other
->  archs
-> 
-> Kim Phillips reported following build failure.
-> 
->   LD      init/built-in.o
->   mm/built-in.o: In function `free_pages_prepare':
->   mm/page_alloc.c:770: undefined reference to `.kernel_map_pages'
->   mm/built-in.o: In function `prep_new_page':
->   mm/page_alloc.c:933: undefined reference to `.kernel_map_pages'
->   mm/built-in.o: In function `map_pages':
->   mm/compaction.c:61: undefined reference to `.kernel_map_pages'
->   make: *** [vmlinux] Error 1
-> 
-> Reason for this problem is that commit 031bc5743f15
-> ("mm/debug-pagealloc: make debug-pagealloc boottime configurable") forgot
-> to remove old declaration of kernel_map_pages() in some architectures.
-> This patch removes them to fix build failure.
-> 
-> Reported-by: Kim Phillips <kim.phillips@freescale.com>
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> ---
+  + /home/kisskb/slave/src/arch/powerpc/kvm/book3s_pr.c: error:
+'last_sc' may be used uninitialized in this function
+[-Werror=uninitialized]:  => 1094:31
 
-Acked-by: Kim Phillips <kim.phillips@freescale.com>
+powerpc-randconfig (demoted to a warning in powerpc-allyesconfig and
+powerpc-allmodconfig)
 
-Thanks,
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
+'PAGES_PER_SECTION' undeclared (first use in this function):  =>
+1178:18, 1836:46
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
+'PAGE_SECTION_MASK' undeclared (first use in this function):  =>
+1177:20
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
+declaration of function '__nr_to_section'
+[-Werror=implicit-function-declaration]:  => 1841:3
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'find_memory_block_hinted'
+[-Werror=implicit-function-declaration]:  => 1848:3
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'pfn_to_section_nr'
+[-Werror=implicit-function-declaration]:  => 1837:3
+  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
+declaration of function 'present_section_nr'
+[-Werror=implicit-function-declaration]:  => 1838:3
 
-Kim
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/8360/ (255 out of 262 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/8329/ (255 out of 262 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
