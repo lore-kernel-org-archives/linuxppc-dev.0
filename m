@@ -1,30 +1,19 @@
 Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 2A7E31A05F5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 04:47:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 2FE711A0BF9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 04:48:12 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [GIT PULL 00/26] perf/core improvements and fixes
-Date: Mon, 26 Jan 2015 14:47:03 -0300
-Message-Id: <1422294449-12735-1-git-send-email-acme@kernel.org>
-Cc: Richard Fowles <rfowles@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Stephane Eranian <eranian@google.com>, Adrian Hunter <adrian.hunter@intel.com>,
- Paul Mackerras <paulus@samba.org>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- Jiri Olsa <jolsa@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- Borislav Petkov <bp@suse.de>, Don Zickus <dzickus@redhat.com>,
- Ramkumar Ramachandra <artagnon@gmail.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>, Joe Mario <jmario@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Kan Liang <kan.liang@intel.com>, Mike Galbraith <efault@gmx.de>,
- linux-kernel@vger.kernel.org, David Ahern <dsahern@gmail.com>,
- Cody P Schafer <cody@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 08/26] perf tools: Support parsing parameterized events
+Date: Mon, 26 Jan 2015 14:47:11 -0300
+Message-Id: <1422294449-12735-9-git-send-email-acme@kernel.org>
+In-Reply-To: <1422294449-12735-1-git-send-email-acme@kernel.org>
+References: <1422294449-12735-1-git-send-email-acme@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Cody P Schafer <dev@codyps.com>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,139 +23,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
-	Please consider pulling, it has my latest perf/urgent pull content,
-please let me know if you don't want it to be submitted like that, i.e. if
-you have any problems with my latest perf/urgent pull request and I'll try
-to address it ASAP.
+Enable event specification like:
 
-- Arnaldo
+	pmu/event_name,param1=0x1,param2=0x4/
 
-The following changes since commit 25dd9171f51c482eb7c4dc8618766ae733756e2d:
+Assuming that
 
-  perf probe: Fix probing kretprobes (2015-01-21 10:06:24 -0300)
+	/sys/bus/event_source/devices/pmu/events/event_name
 
-are available in the git repository at:
+Contains something like
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo
+	param2=?,bar=1,param1=?
 
-for you to fetch changes up to 3d199b5be53348bef84883013c484b414adf0a2e:
-
-  tools lib traceevent: Add support for IP address formats (2015-01-26 12:04:41 -0300)
-
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-User visible:
-
-- Enable sampling loads and stores simultaneously in 'perf mem' (Stephane Eranian)
-
-- 'perf diff' output improvements (Namhyung Kim)
-
-- Fix error reporting for evsel pgfault constructor (Arnaldo Carvalho de Melo)
-
-Infrastructure:
-
-- Move debugfs sterrno like method to tools/lib/ so that it may be used by
-  other tools, as 'perf probe' will be soon (Arnaldo Carvalho de Melo)
-
-- Introduce function fro deleting/removing hist_entry to avoid code duplication
-  (Arnaldo Carvalho de Melo)
-
-- Support parsing parameterized events (Cody P Schafer)
-
-- Add support for IP address formats in libtraceevent (David Ahern)
-
-- Fix typo in sample-parsing.c 'perf test' entry (Rasmus Villemoes)
-
-- Remove some unused functions from color.c (Rickard Strandqvist)
-
+Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Cody P Schafer <dev@codyps.com>
+Cc: Haren Myneni <hbabu@us.ibm.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/1420679633-28856-2-git-send-email-sukadev@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/parse-events.h |  1 +
+ tools/perf/util/pmu.c          | 74 +++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 64 insertions(+), 11 deletions(-)
 
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (9):
-      perf mem: Move the mem_operations global to struct perf_mem
-      perf tools: Remove EOL whitespaces
-      perf hists: Rename hist_entry__free to __delete
-      perf hists: Introduce function for deleting/removing hist_entry
-      tools lib fs: Adopt debugfs open strerrno method
-      tools lib fs: Pass filename to debugfs__strerror_open
-      perf trace: Fix error reporting for evsel pgfault constructor
-      tools lib fs debugfs: Introduce debugfs__strerror_open_tp
-      tools lib fs debugfs: Check if debugfs is mounted when handling ENOENT
-
-Cody P Schafer (4):
-      perf tools: Support parsing parameterized events
-      perf tools: Extend format_alias() to include event parameters
-      perf Documentation: Add event parameters
-      perf tools: Document parameterized and symbolic events
-
-David Ahern (1):
-      tools lib traceevent: Add support for IP address formats
-
-Namhyung Kim (9):
-      perf report: Get rid of report__inc_stat()
-      perf tools: Allow use of an exclusive option more than once
-      perf diff: Get rid of hists__compute_resort()
-      perf diff: Print diff result more precisely
-      perf diff: Introduce fmt_to_data_file() helper
-      perf tools: Pass struct perf_hpp_fmt to its callbacks
-      perf diff: Fix output ordering to honor next column
-      perf diff: Fix -o/--order option behavior
-      perf ui/tui: Show fatal error message only if exists
-
-Rasmus Villemoes (1):
-      perf tests: Fix typo in sample-parsing.c
-
-Rickard Strandqvist (1):
-      perf tools: Remove some unused functions from color.c
-
-Stephane Eranian (1):
-      perf mem: Enable sampling loads and stores simultaneously
-
- .../testing/sysfs-bus-event_source-devices-events  |   6 +
- tools/lib/api/fs/debugfs.c                         |  43 +++
- tools/lib/api/fs/debugfs.h                         |   3 +
- tools/lib/traceevent/event-parse.c                 | 328 +++++++++++++++++++++
- tools/perf/Documentation/perf-buildid-cache.txt    |   2 +-
- tools/perf/Documentation/perf-list.txt             |  13 +
- tools/perf/Documentation/perf-mem.txt              |   9 +-
- tools/perf/Documentation/perf-record.txt           |  12 +
- tools/perf/Documentation/perf-script.txt           |  28 +-
- tools/perf/Documentation/perf-stat.txt             |  20 +-
- tools/perf/builtin-buildid-cache.c                 |   4 +-
- tools/perf/builtin-diff.c                          | 248 ++++++++++------
- tools/perf/builtin-mem.c                           | 131 ++++++--
- tools/perf/builtin-report.c                        |  16 +-
- tools/perf/builtin-stat.c                          |   2 +-
- tools/perf/builtin-top.c                           |   2 +-
- tools/perf/builtin-trace.c                         | 106 ++++---
- tools/perf/tests/attr.py                           |   1 -
- tools/perf/tests/hists_cumulate.c                  |   2 +-
- tools/perf/tests/hists_output.c                    |   2 +-
- tools/perf/tests/make                              |   1 -
- tools/perf/tests/parse-events.c                    |   2 +-
- tools/perf/tests/sample-parsing.c                  |   2 +-
- tools/perf/ui/browsers/annotate.c                  |   3 +-
- tools/perf/ui/hist.c                               |  12 +-
- tools/perf/ui/progress.h                           |   4 +-
- tools/perf/ui/tui/helpline.c                       |   3 +
- tools/perf/ui/tui/setup.c                          |   3 +-
- tools/perf/util/annotate.c                         |   2 +-
- tools/perf/util/color.c                            | 126 --------
- tools/perf/util/color.h                            |   2 -
- tools/perf/util/evlist.c                           |  27 --
- tools/perf/util/evlist.h                           |   1 -
- tools/perf/util/hist.c                             |  48 ++-
- tools/perf/util/hist.h                             |  11 +-
- tools/perf/util/parse-events.c                     |   6 +-
- tools/perf/util/parse-events.h                     |   1 +
- tools/perf/util/parse-options.c                    |   2 +-
- tools/perf/util/pmu.c                              | 102 ++++++-
- tools/perf/util/python.c                           |   2 +-
- .../util/scripting-engines/trace-event-python.c    |   2 +-
- tools/perf/util/session.c                          |   2 +-
- tools/perf/util/sort.c                             |  37 ++-
- tools/perf/util/symbol.c                           |   2 +-
- 44 files changed, 950 insertions(+), 431 deletions(-)
+diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
+index db2cf78ff0f3..ca226cef8460 100644
+--- a/tools/perf/util/parse-events.h
++++ b/tools/perf/util/parse-events.h
+@@ -71,6 +71,7 @@ struct parse_events_term {
+ 	int type_val;
+ 	int type_term;
+ 	struct list_head list;
++	bool used;
+ };
+ 
+ struct parse_events_evlist {
+diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+index 5c9c4947cfb4..bfbecf7abd38 100644
+--- a/tools/perf/util/pmu.c
++++ b/tools/perf/util/pmu.c
+@@ -551,31 +551,68 @@ static void pmu_format_value(unsigned long *format, __u64 value, __u64 *v,
+ }
+ 
+ /*
++ * Term is a string term, and might be a param-term. Try to look up it's value
++ * in the remaining terms.
++ * - We have a term like "base-or-format-term=param-term",
++ * - We need to find the value supplied for "param-term" (with param-term named
++ *   in a config string) later on in the term list.
++ */
++static int pmu_resolve_param_term(struct parse_events_term *term,
++				  struct list_head *head_terms,
++				  __u64 *value)
++{
++	struct parse_events_term *t;
++
++	list_for_each_entry(t, head_terms, list) {
++		if (t->type_val == PARSE_EVENTS__TERM_TYPE_NUM) {
++			if (!strcmp(t->config, term->config)) {
++				t->used = true;
++				*value = t->val.num;
++				return 0;
++			}
++		}
++	}
++
++	if (verbose)
++		printf("Required parameter '%s' not specified\n", term->config);
++
++	return -1;
++}
++
++/*
+  * Setup one of config[12] attr members based on the
+  * user input data - term parameter.
+  */
+ static int pmu_config_term(struct list_head *formats,
+ 			   struct perf_event_attr *attr,
+ 			   struct parse_events_term *term,
++			   struct list_head *head_terms,
+ 			   bool zero)
+ {
+ 	struct perf_pmu_format *format;
+ 	__u64 *vp;
++	__u64 val;
++
++	/*
++	 * If this is a parameter we've already used for parameterized-eval,
++	 * skip it in normal eval.
++	 */
++	if (term->used)
++		return 0;
+ 
+ 	/*
+-	 * Support only for hardcoded and numnerial terms.
+ 	 * Hardcoded terms should be already in, so nothing
+ 	 * to be done for them.
+ 	 */
+ 	if (parse_events__is_hardcoded_term(term))
+ 		return 0;
+ 
+-	if (term->type_val != PARSE_EVENTS__TERM_TYPE_NUM)
+-		return -EINVAL;
+-
+ 	format = pmu_find_format(formats, term->config);
+-	if (!format)
++	if (!format) {
++		if (verbose)
++			printf("Invalid event/parameter '%s'\n", term->config);
+ 		return -EINVAL;
++	}
+ 
+ 	switch (format->value) {
+ 	case PERF_PMU_FORMAT_VALUE_CONFIG:
+@@ -592,11 +629,25 @@ static int pmu_config_term(struct list_head *formats,
+ 	}
+ 
+ 	/*
+-	 * XXX If we ever decide to go with string values for
+-	 * non-hardcoded terms, here's the place to translate
+-	 * them into value.
++	 * Either directly use a numeric term, or try to translate string terms
++	 * using event parameters.
+ 	 */
+-	pmu_format_value(format->bits, term->val.num, vp, zero);
++	if (term->type_val == PARSE_EVENTS__TERM_TYPE_NUM)
++		val = term->val.num;
++	else if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR) {
++		if (strcmp(term->val.str, "?")) {
++			if (verbose)
++				pr_info("Invalid sysfs entry %s=%s\n",
++						term->config, term->val.str);
++			return -EINVAL;
++		}
++
++		if (pmu_resolve_param_term(term, head_terms, &val))
++			return -EINVAL;
++	} else
++		return -EINVAL;
++
++	pmu_format_value(format->bits, val, vp, zero);
+ 	return 0;
+ }
+ 
+@@ -607,9 +658,10 @@ int perf_pmu__config_terms(struct list_head *formats,
+ {
+ 	struct parse_events_term *term;
+ 
+-	list_for_each_entry(term, head_terms, list)
+-		if (pmu_config_term(formats, attr, term, zero))
++	list_for_each_entry(term, head_terms, list) {
++		if (pmu_config_term(formats, attr, term, head_terms, zero))
+ 			return -EINVAL;
++	}
+ 
+ 	return 0;
+ }
+-- 
+1.9.3
