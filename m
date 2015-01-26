@@ -1,20 +1,27 @@
-Return-Path: <stockhausen@collogia.de>
-Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
- by lists.ozlabs.org (Postfix) with SMTP id E7CD91A0A7C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 16:20:14 +1100 (AEDT)
-From: Markus Stockhausen <stockhausen@collogia.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v1 0/3] SHA256 for PPC/SPE
-Date: Mon, 26 Jan 2015 05:19:48 +0000
-Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9154C6@EXCHANGE.collogia.de>
-References: <5ad377b3-e491-4c35-8b89-de1dfd0749a6@EXCHANGE.collogia.de>,
- <20150126001842.GA18477@gondor.apana.org.au>
-In-Reply-To: <20150126001842.GA18477@gondor.apana.org.au>
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-f0e12eca-3762-4414-b314-b7d3d6709c3e"
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+ by lists.ozlabs.org (Postfix) with ESMTP id 71DA91A0612
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:04:45 +1100 (AEDT)
+Date: Mon, 26 Jan 2015 17:38:37 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Semen Protsenko <semen.protsenko@globallogic.com>
+Subject: Re: [PATCH 0/4] defconfigs: cleanup obsolete MTD configs
+Message-ID: <20150126083837.GA16590@verge.net.au>
+References: <1422117213-3130-1-git-send-email-semen.protsenko@globallogic.com>
 MIME-Version: 1.0
-Cc: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1422117213-3130-1-git-send-email-semen.protsenko@globallogic.com>
+Cc: linux-mips@linux-mips.org, Brian Norris <computersforpeace@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linux-mtd@lists.infradead.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,128 +31,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Jan 24, 2015 at 06:33:29PM +0200, Semen Protsenko wrote:
+> This patch series removes next obsolete MTD configs from all defconfig files:
+>   - CONFIG_MTD_CHAR
+>   - CONFIG_MTD_CONCAT
+>   - CONFIG_MTD_DEBUG
+>   - CONFIG_MTD_DEBUG_VERBOSE
+>   - CONFIG_MTD_PARTITIONS
+> 
+> All those configs were removed from drivers/mtd/Kconfig earlier, but their usage
+> in defconfig files was remain unnoticed. There are at least two obvious reasons
+> to get rid of those configs:
+>   1. Their usage may cause to build warnings
+>   2. Their usage may confuse someone who is grepping defconfig files to get
+>      the clue what MTD configuration may look like.
+> 
+> This series is harmless for all those defconfigs and will not break anything.
 
-This is a multi-part message in MIME format.
+FYI, there is a plan to remove arch/arm/configs/mackerel_defconfig in v3.21.
 
-------=_NextPartTM-000-f0e12eca-3762-4414-b314-b7d3d6709c3e
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-> Von: linux-crypto-owner@vger.kernel.org [linux-crypto-owner@vger.kernel.o=
-rg]&quot; im Auftrag von &quot;Herbert Xu [herbert@gondor.apana.org.au]=0A=
-> Gesendet: Montag, 26. Januar 2015 01:18=0A=
-> An: Markus Stockhausen=0A=
-> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org=0A=
-> Betreff: Re: [PATCH v1 0/3] SHA256 for PPC/SPE=0A=
-> =0A=
-> Markus Stockhausen <stockhausen@collogia.de> wrote:=0A=
-> >=0A=
-> >  [PATCH v1 0/3] SHA256 for PPC/SPE=0A=
-> >=0A=
-> > The following patches add support for SIMD accelerated SHA256=0A=
-> > calculation on PPC processors with SPE instruction set. The=0A=
-> > implementation takes care of the following constraints:=0A=
-> >=0A=
-> > - independant of processor endianess=0A=
-> > - fallback to generic code if called from interrupt context=0A=
-> > - disable preemtion only for short intervals=0A=
-> =0A=
-> Thanks for the patch! Unfortunately the interrupt context test=0A=
-> is a bummer because that means your code won't be used by IPsec=0A=
-> at all.=0A=
-> =0A=
-> Would it be possible to relax the conditions similar to sha1_ssse3=0A=
-> on x86? If not how about going async with cryptd?=0A=
-=0A=
-@Herbert: thanks for that annotation. IPsec is the desired use case.=0A=
-Do you have a programming template for the cryptd integration?=0A=
-E.g. ghash-clmulni-intel_glue.c?=0A=
-=0A=
-@linuxppc: Intel world checks for usable FPU (SSE3, ...) in the crypto =0A=
-modules with=0A=
-=0A=
-bool irq_fpu_usable(void)=0A=
-{=0A=
-  return !in_interrupt() ||=0A=
-    interrupted_user_mode() ||=0A=
-    interrupted_kernel_fpu_idle();=0A=
-}=0A=
-=0A=
-I guess interrupted_kernel_fpu_idle() is the part that allows IPsec =0A=
-inside an interrupt to make use of the accelerated module. =0A=
-Explanation reads:=0A=
-=0A=
-* On others, we can do a kernel_fpu_begin/end() pair *ONLY* if =0A=
-* that pair does nothing at all: the thread must not have fpu (so=0A=
-* that we don't try to save the FPU state), and TS must=0A=
-* be set (so that the clts/stts pair does nothing that is=0A=
-* visible in the interrupted kernel thread).=0A=
-=0A=
-Do I have the chance to use something similiar in the PPC/SPE =0A=
-case? Or is there a simple way like saving the SPE registers=0A=
-myself?=0A=
-=0A=
-Thanks in advance.=0A=
-=0A=
-Markus=
-------=_NextPartTM-000-f0e12eca-3762-4414-b314-b7d3d6709c3e
-Content-Type: text/plain;
-	name="InterScan_Disclaimer.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_Disclaimer.txt"
-
-****************************************************************************
-Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
-irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
-vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
-Weitergabe dieser Mail ist nicht gestattet.
-
-Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
-manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
-rechtsverbindliche Willenserklärung.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-Vorstand:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-Vorsitzender des Aufsichtsrates:
-Hans Kristian Langva
-
-Registergericht: Amtsgericht Köln
-Registernummer: HRB 52 497
-
-This e-mail may contain confidential and/or privileged information. If you
-are not the intended recipient (or have received this e-mail in error)
-please notify the sender immediately and destroy this e-mail. Any
-unauthorized copying, disclosure or distribution of the material in this
-e-mail is strictly forbidden.
-
-e-mails sent over the internet may have been written under a wrong name or
-been manipulated. That is why this message sent as an e-mail is not a
-legally binding declaration of intention.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-executive board:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-President of the supervisory board:
-Hans Kristian Langva
-
-Registry office: district court Cologne
-Register number: HRB 52 497
-
-****************************************************************************
-
-------=_NextPartTM-000-f0e12eca-3762-4414-b314-b7d3d6709c3e--
+> 
+> 
+> Semen Protsenko (4):
+>   defconfigs: remove CONFIG_MTD_CONCAT
+>   defconfigs: remove CONFIG_MTD_PARTITIONS
+>   defconfigs: remove CONFIG_MTD_CHAR
+>   defconfigs: remove CONFIG_MTD_DEBUG*
+> 
+>  arch/arm/configs/acs5k_defconfig                   |    3 ---
+>  arch/arm/configs/acs5k_tiny_defconfig              |    3 ---
+>  arch/arm/configs/am200epdkit_defconfig             |    1 -
+>  arch/arm/configs/assabet_defconfig                 |    2 --
+>  arch/arm/configs/badge4_defconfig                  |    3 ---
+>  arch/arm/configs/bockw_defconfig                   |    1 -
+>  arch/arm/configs/cerfcube_defconfig                |    2 --
+>  arch/arm/configs/cm_x2xx_defconfig                 |    1 -
+>  arch/arm/configs/cm_x300_defconfig                 |    2 --
+>  arch/arm/configs/cns3420vb_defconfig               |    2 --
+>  arch/arm/configs/colibri_pxa270_defconfig          |    2 --
+>  arch/arm/configs/collie_defconfig                  |    2 --
+>  arch/arm/configs/corgi_defconfig                   |    2 --
+>  arch/arm/configs/davinci_all_defconfig             |    2 --
+>  arch/arm/configs/em_x270_defconfig                 |    1 -
+>  arch/arm/configs/ezx_defconfig                     |    1 -
+>  arch/arm/configs/h5000_defconfig                   |    1 -
+>  arch/arm/configs/hackkit_defconfig                 |    3 ---
+>  arch/arm/configs/imote2_defconfig                  |    1 -
+>  arch/arm/configs/iop13xx_defconfig                 |    1 -
+>  arch/arm/configs/iop32x_defconfig                  |    2 --
+>  arch/arm/configs/iop33x_defconfig                  |    2 --
+>  arch/arm/configs/ixp4xx_defconfig                  |    2 --
+>  arch/arm/configs/ks8695_defconfig                  |    2 --
+>  arch/arm/configs/lart_defconfig                    |    4 ----
+>  arch/arm/configs/lpc32xx_defconfig                 |    1 -
+>  arch/arm/configs/lpd270_defconfig                  |    2 --
+>  arch/arm/configs/lubbock_defconfig                 |    2 --
+>  arch/arm/configs/mackerel_defconfig                |    3 ---
+>  arch/arm/configs/magician_defconfig                |    2 --
+>  arch/arm/configs/mainstone_defconfig               |    2 --
+>  arch/arm/configs/mini2440_defconfig                |    3 ---
+>  arch/arm/configs/mv78xx0_defconfig                 |    2 --
+>  arch/arm/configs/neponset_defconfig                |    2 --
+>  arch/arm/configs/netx_defconfig                    |    2 --
+>  arch/arm/configs/nuc910_defconfig                  |    3 ---
+>  arch/arm/configs/nuc950_defconfig                  |    3 ---
+>  arch/arm/configs/nuc960_defconfig                  |    3 ---
+>  arch/arm/configs/omap1_defconfig                   |    4 ----
+>  arch/arm/configs/orion5x_defconfig                 |    1 -
+>  arch/arm/configs/pcm027_defconfig                  |    2 --
+>  arch/arm/configs/pleb_defconfig                    |    2 --
+>  arch/arm/configs/pxa255-idp_defconfig              |    2 --
+>  arch/arm/configs/pxa3xx_defconfig                  |    2 --
+>  arch/arm/configs/raumfeld_defconfig                |    3 ---
+>  arch/arm/configs/realview-smp_defconfig            |    3 ---
+>  arch/arm/configs/realview_defconfig                |    3 ---
+>  arch/arm/configs/s3c2410_defconfig                 |    1 -
+>  arch/arm/configs/shannon_defconfig                 |    2 --
+>  arch/arm/configs/simpad_defconfig                  |    3 ---
+>  arch/arm/configs/spear13xx_defconfig               |    1 -
+>  arch/arm/configs/spear3xx_defconfig                |    1 -
+>  arch/arm/configs/spear6xx_defconfig                |    1 -
+>  arch/arm/configs/spitz_defconfig                   |    2 --
+>  arch/arm/configs/tct_hammer_defconfig              |    2 --
+>  arch/arm/configs/trizeps4_defconfig                |    2 --
+>  arch/arm/configs/viper_defconfig                   |    1 -
+>  arch/arm/configs/xcep_defconfig                    |    1 -
+>  arch/arm/configs/zeus_defconfig                    |    1 -
+>  arch/avr32/configs/atngw100_defconfig              |    1 -
+>  arch/avr32/configs/atngw100_evklcd100_defconfig    |    1 -
+>  arch/avr32/configs/atngw100_evklcd101_defconfig    |    1 -
+>  arch/avr32/configs/atngw100_mrmt_defconfig         |    1 -
+>  arch/avr32/configs/atngw100mkii_defconfig          |    1 -
+>  .../avr32/configs/atngw100mkii_evklcd100_defconfig |    1 -
+>  .../avr32/configs/atngw100mkii_evklcd101_defconfig |    1 -
+>  arch/avr32/configs/atstk1002_defconfig             |    1 -
+>  arch/avr32/configs/atstk1003_defconfig             |    1 -
+>  arch/avr32/configs/atstk1004_defconfig             |    1 -
+>  arch/avr32/configs/atstk1006_defconfig             |    1 -
+>  arch/avr32/configs/favr-32_defconfig               |    1 -
+>  arch/avr32/configs/hammerhead_defconfig            |    1 -
+>  arch/avr32/configs/merisc_defconfig                |    2 --
+>  arch/avr32/configs/mimc200_defconfig               |    1 -
+>  arch/blackfin/configs/BF518F-EZBRD_defconfig       |    1 -
+>  arch/blackfin/configs/BF527-TLL6527M_defconfig     |    1 -
+>  arch/blackfin/configs/BF533-EZKIT_defconfig        |    1 -
+>  arch/blackfin/configs/BF533-STAMP_defconfig        |    1 -
+>  arch/blackfin/configs/BF537-STAMP_defconfig        |    1 -
+>  arch/blackfin/configs/BF538-EZKIT_defconfig        |    1 -
+>  arch/blackfin/configs/BF561-ACVILON_defconfig      |    1 -
+>  arch/blackfin/configs/BF561-EZKIT-SMP_defconfig    |    1 -
+>  arch/blackfin/configs/BF561-EZKIT_defconfig        |    1 -
+>  arch/blackfin/configs/CM-BF527_defconfig           |    1 -
+>  arch/blackfin/configs/CM-BF533_defconfig           |    1 -
+>  arch/blackfin/configs/CM-BF537E_defconfig          |    1 -
+>  arch/blackfin/configs/CM-BF537U_defconfig          |    1 -
+>  arch/blackfin/configs/CM-BF548_defconfig           |    1 -
+>  arch/blackfin/configs/CM-BF561_defconfig           |    1 -
+>  arch/blackfin/configs/DNP5370_defconfig            |    3 ---
+>  arch/blackfin/configs/IP0X_defconfig               |    1 -
+>  arch/blackfin/configs/PNAV-10_defconfig            |    1 -
+>  arch/blackfin/configs/SRV1_defconfig               |    1 -
+>  arch/blackfin/configs/TCM-BF518_defconfig          |    1 -
+>  arch/blackfin/configs/TCM-BF537_defconfig          |    1 -
+>  arch/m32r/configs/m32700ut.smp_defconfig           |    1 -
+>  arch/m32r/configs/m32700ut.up_defconfig            |    1 -
+>  arch/m32r/configs/mappi.smp_defconfig              |    2 --
+>  arch/m32r/configs/mappi.up_defconfig               |    2 --
+>  arch/m32r/configs/mappi3.smp_defconfig             |    2 --
+>  arch/m32r/configs/usrv_defconfig                   |    3 ---
+>  arch/m68k/configs/m5208evb_defconfig               |    1 -
+>  arch/m68k/configs/m5249evb_defconfig               |    1 -
+>  arch/m68k/configs/m5272c3_defconfig                |    1 -
+>  arch/m68k/configs/m5275evb_defconfig               |    1 -
+>  arch/m68k/configs/m5307c3_defconfig                |    1 -
+>  arch/m68k/configs/m5407c3_defconfig                |    1 -
+>  arch/m68k/configs/m5475evb_defconfig               |    1 -
+>  arch/microblaze/configs/nommu_defconfig            |    1 -
+>  arch/mips/configs/ar7_defconfig                    |    1 -
+>  arch/mips/configs/cobalt_defconfig                 |    1 -
+>  arch/mips/configs/fuloong2e_defconfig              |    1 -
+>  arch/mips/configs/gpr_defconfig                    |    1 -
+>  arch/mips/configs/jmr3927_defconfig                |    1 -
+>  arch/mips/configs/lasat_defconfig                  |    1 -
+>  arch/mips/configs/markeins_defconfig               |    1 -
+>  arch/mips/configs/msp71xx_defconfig                |    1 -
+>  arch/mips/configs/mtx1_defconfig                   |    1 -
+>  arch/mips/configs/nlm_xlp_defconfig                |    1 -
+>  arch/mips/configs/pnx8335_stb225_defconfig         |    1 -
+>  arch/mips/configs/rb532_defconfig                  |    1 -
+>  arch/mips/configs/rbtx49xx_defconfig               |    1 -
+>  arch/mn10300/configs/asb2303_defconfig             |    3 ---
+>  arch/mn10300/configs/asb2364_defconfig             |    3 ---
+>  arch/powerpc/configs/40x/acadia_defconfig          |    1 -
+>  arch/powerpc/configs/40x/ep405_defconfig           |    1 -
+>  arch/powerpc/configs/40x/kilauea_defconfig         |    1 -
+>  arch/powerpc/configs/40x/makalu_defconfig          |    1 -
+>  arch/powerpc/configs/40x/obs600_defconfig          |    1 -
+>  arch/powerpc/configs/40x/walnut_defconfig          |    1 -
+>  arch/powerpc/configs/44x/arches_defconfig          |    1 -
+>  arch/powerpc/configs/44x/bluestone_defconfig       |    1 -
+>  arch/powerpc/configs/44x/canyonlands_defconfig     |    1 -
+>  arch/powerpc/configs/44x/currituck_defconfig       |    1 -
+>  arch/powerpc/configs/44x/ebony_defconfig           |    1 -
+>  arch/powerpc/configs/44x/eiger_defconfig           |    2 --
+>  arch/powerpc/configs/44x/icon_defconfig            |    1 -
+>  arch/powerpc/configs/44x/iss476-smp_defconfig      |    1 -
+>  arch/powerpc/configs/44x/katmai_defconfig          |    1 -
+>  arch/powerpc/configs/44x/rainier_defconfig         |    1 -
+>  arch/powerpc/configs/44x/redwood_defconfig         |    2 --
+>  arch/powerpc/configs/44x/sequoia_defconfig         |    1 -
+>  arch/powerpc/configs/44x/taishan_defconfig         |    1 -
+>  arch/powerpc/configs/44x/warp_defconfig            |    1 -
+>  arch/powerpc/configs/52xx/cm5200_defconfig         |    1 -
+>  arch/powerpc/configs/52xx/motionpro_defconfig      |    2 --
+>  arch/powerpc/configs/52xx/pcm030_defconfig         |    1 -
+>  arch/powerpc/configs/52xx/tqm5200_defconfig        |    2 --
+>  arch/powerpc/configs/83xx/asp8347_defconfig        |    1 -
+>  arch/powerpc/configs/83xx/kmeter1_defconfig        |    1 -
+>  arch/powerpc/configs/83xx/mpc8313_rdb_defconfig    |    1 -
+>  arch/powerpc/configs/83xx/mpc8315_rdb_defconfig    |    1 -
+>  arch/powerpc/configs/83xx/mpc834x_itx_defconfig    |    1 -
+>  arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig  |    1 -
+>  arch/powerpc/configs/83xx/mpc836x_mds_defconfig    |    1 -
+>  arch/powerpc/configs/83xx/mpc836x_rdk_defconfig    |    1 -
+>  arch/powerpc/configs/83xx/sbc834x_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/ge_imp3a_defconfig       |    1 -
+>  arch/powerpc/configs/85xx/ksi8560_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/ppa8548_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/sbc8548_defconfig        |    1 -
+>  arch/powerpc/configs/85xx/socrates_defconfig       |    2 --
+>  arch/powerpc/configs/85xx/tqm8540_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/tqm8541_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/tqm8548_defconfig        |    1 -
+>  arch/powerpc/configs/85xx/tqm8555_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/tqm8560_defconfig        |    2 --
+>  arch/powerpc/configs/85xx/xes_mpc85xx_defconfig    |    1 -
+>  arch/powerpc/configs/86xx/gef_ppc9a_defconfig      |    2 --
+>  arch/powerpc/configs/86xx/gef_sbc310_defconfig     |    2 --
+>  arch/powerpc/configs/86xx/gef_sbc610_defconfig     |    2 --
+>  arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig   |    1 -
+>  arch/powerpc/configs/86xx/sbc8641d_defconfig       |    2 --
+>  arch/powerpc/configs/adder875_defconfig            |    1 -
+>  arch/powerpc/configs/c2k_defconfig                 |    2 --
+>  arch/powerpc/configs/corenet32_smp_defconfig       |    1 -
+>  arch/powerpc/configs/ep8248e_defconfig             |    1 -
+>  arch/powerpc/configs/ep88xc_defconfig              |    1 -
+>  arch/powerpc/configs/linkstation_defconfig         |    2 --
+>  arch/powerpc/configs/mgcoge_defconfig              |    1 -
+>  arch/powerpc/configs/mpc5200_defconfig             |    1 -
+>  arch/powerpc/configs/mpc8272_ads_defconfig         |    1 -
+>  arch/powerpc/configs/mpc83xx_defconfig             |    1 -
+>  arch/powerpc/configs/mpc85xx_defconfig             |    1 -
+>  arch/powerpc/configs/mpc85xx_smp_defconfig         |    1 -
+>  arch/powerpc/configs/mpc885_ads_defconfig          |    1 -
+>  arch/powerpc/configs/ppc40x_defconfig              |    1 -
+>  arch/powerpc/configs/ppc44x_defconfig              |    1 -
+>  arch/powerpc/configs/pq2fads_defconfig             |    1 -
+>  arch/powerpc/configs/storcenter_defconfig          |    1 -
+>  arch/powerpc/configs/tqm8xx_defconfig              |    2 --
+>  arch/sh/configs/ap325rxa_defconfig                 |    3 ---
+>  arch/sh/configs/apsh4a3a_defconfig                 |    3 ---
+>  arch/sh/configs/ecovec24_defconfig                 |    3 ---
+>  arch/sh/configs/edosk7760_defconfig                |    4 ----
+>  arch/sh/configs/espt_defconfig                     |    2 --
+>  arch/sh/configs/kfr2r09_defconfig                  |    2 --
+>  arch/sh/configs/magicpanelr2_defconfig             |    2 --
+>  arch/sh/configs/migor_defconfig                    |    3 ---
+>  arch/sh/configs/polaris_defconfig                  |    2 --
+>  arch/sh/configs/r7780mp_defconfig                  |    1 -
+>  arch/sh/configs/rsk7201_defconfig                  |    3 ---
+>  arch/sh/configs/rsk7203_defconfig                  |    3 ---
+>  arch/sh/configs/rts7751r2dplus_defconfig           |    3 ---
+>  arch/sh/configs/sdk7786_defconfig                  |    1 -
+>  arch/sh/configs/se7206_defconfig                   |    3 ---
+>  arch/sh/configs/se7343_defconfig                   |    3 ---
+>  arch/sh/configs/se7619_defconfig                   |    3 ---
+>  arch/sh/configs/se7705_defconfig                   |    2 --
+>  arch/sh/configs/se7712_defconfig                   |    3 ---
+>  arch/sh/configs/se7721_defconfig                   |    3 ---
+>  arch/sh/configs/se7724_defconfig                   |    3 ---
+>  arch/sh/configs/se7750_defconfig                   |    2 --
+>  arch/sh/configs/se7751_defconfig                   |    1 -
+>  arch/sh/configs/se7780_defconfig                   |    2 --
+>  arch/sh/configs/secureedge5410_defconfig           |    2 --
+>  arch/sh/configs/sh7710voipgw_defconfig             |    2 --
+>  arch/sh/configs/sh7757lcr_defconfig                |    1 -
+>  arch/sh/configs/sh7763rdp_defconfig                |    1 -
+>  arch/sh/configs/sh7785lcr_32bit_defconfig          |    3 ---
+>  arch/sh/configs/sh7785lcr_defconfig                |    3 ---
+>  arch/sh/configs/shmin_defconfig                    |    1 -
+>  arch/sh/configs/titan_defconfig                    |    2 --
+>  arch/sh/configs/ul2_defconfig                      |    3 ---
+>  arch/sh/configs/urquell_defconfig                  |    3 ---
+>  arch/unicore32/configs/unicore32_defconfig         |    2 --
+>  226 files changed, 364 deletions(-)
+> 
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
