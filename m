@@ -1,21 +1,43 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 743E61A08F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 13:28:52 +1100 (AEDT)
-Message-ID: <1422325718.10544.31.camel@freescale.com>
-Subject: Re: How long am I allowed to disable preemption? (was How to make
- use of SPE instructions?)
-From: Scott Wood <scottwood@freescale.com>
-To: Markus Stockhausen <stockhausen@collogia.de>
-Date: Mon, 26 Jan 2015 20:28:38 -0600
-In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735F913EE6@EXCHANGE.collogia.de>
-References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F913EE6@EXCHANGE.collogia.de>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99E991A054F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 14:31:39 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 26 Jan 2015 20:31:36 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E0CF519D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:22:45 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0R3Virw32374974
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:31:44 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0R3VYHx001263
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:31:34 -0700
+Message-ID: <54C7068B.3050108@linux.vnet.ibm.com>
+Date: Tue, 27 Jan 2015 09:01:23 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V3] tick/broadcast: Make movement of broadcast hrtimer
+ robust against hotplug
+References: <20150120103559.8430.50933.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.11.1501211243270.5526@nanos>
+ <54C09391.9080202@linux.vnet.ibm.com>
+ <alpine.DEB.2.11.1501221209260.5526@nanos>
+In-Reply-To: <alpine.DEB.2.11.1501221209260.5526@nanos>
+Content-Type: text/plain; charset=UTF-8
+Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com,
+ LKML <linux-kernel@vger.kernel.org>, michael@ellerman.id.au,
+ Peter Zijlstra <peterz@infradead.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +47,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-20 at 14:53 +0000, Markus Stockhausen wrote:
-> > Von: Scott Wood [scottwood@freescale.com]
-> > Gesendet: Dienstag, 20. Januar 2015 08:38
-> > An: Markus Stockhausen
-> > Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org
-> > Betreff: Re: AW: How to make use of SPE instructions?
-> > ...
-> > > I did some tests with the tcrypt module and I get a hashing speed of
-> > > ~ 46MByte/s for 2K data chunks. Stock module gives 29MByte/s. In
-> > > other words ~22,000 hashes per second. Overhead of the tcrypt data
-> > > feeder of around 10% included. That are worst case 46us per hash and
-> > > therefore 46us inside a non preemptive task.
-> > ...
-> > It's OK if the worst case is really 46 us, but if you can find a way to
-> > break it up a bit without affecting throughput too much, I'd do so.
+On 01/22/2015 04:45 PM, Thomas Gleixner wrote:
+> On Thu, 22 Jan 2015, Preeti U Murthy wrote:
+>> On 01/21/2015 05:16 PM, Thomas Gleixner wrote:
+>> How about when the cpu that is going offline receives a timer interrupt
+>> just before setting its state to CPU_DEAD ? That is still possible right
+>> given that its clock devices may not have been shutdown and it is
+>> capable of receiving interrupts for a short duration. Even with the
+>> above patch, is the following scenario possible ?
+>>
+>>                 CPU0                                  CPU1
+>> t0         Receives timer interrupt
+>>
+>> t1         Sees that there are hrtimers
+>>            to be serviced (hrtimers are not yet migrated)
+>>
+>> t2         calls hrtimer_interrupt()
+>>
+>> t3         tick_program_event()                   CPU_DEAD notifiers
+>>                                                 CPU0's td->evtdev = NULL
+>>
+>> t4         clockevent_program_event()
+>>            references NULL tick device pointer
+>>
+>> So my concern is that since the CLOCK_EVT_NOTIFY_CPU_DEAD callback
+>> handles shutting down of devices besides moving tick related duties.
+>> it's functions may race with the hotplug cpu still handling tick events.
 > 
-> Hi Scott (and all),
+>   __cpu_disable() is supposed to block interrupts on the dying cpu.
 > 
-> with your answer I'm a bit confused about disabling preemption inside the 
-> kernel right now. I understand that the interval between preempt_disable()
-> and preempt_enable() should not take too long. But when I look at other
-> kernel hash crypto modules I see that nobody really cares about that.
+> But I agree, we should make it more robust. So we want an explicit
+> call for disabling the cpu local stuff and an explicit takeover of the
+> broadcast duty. I'm anyway distangling the clockevents_notify() stuff,
+> so it should be simple to do so.
 
-"Some people don't care about that" doesn't imply "nobody cares about
-that".
+I noticed that tick_handover_do_timer() function also suffers from the
+issue that the patch I posted for moving the broadcast duty had, in that
+it relies on all cpus participating in stop_machine(). In a design where
+all cpus do not participate in stop_machine(), if the freshly nominated
+do_timer cpu is idle, there is no update of jiffies till that cpu gets
+back to being busy. So we must do an explicit take over of *both* the
+broadcast and do_timer duty just before the CPU_DEAD phase.
 
->  Take sha256_ssse3_update() in sha256_ssse3_glue.c for example. It runs
+Regards
+Preeti U Murthy
+
+> Thanks,
 > 
->   kernel_fpu_begin();
->   res = __sha256_ssse3_update(desc, data, len, partial);
->   kernel_fpu_end();
+> 	tglx
 > 
-> The kernel_fpu_xxx() enables/disables preemption like I need to do. 
->
-> Nevertheless parameter len can be any number of bytes. Just take 
-> reasonable parameters of 256K of input data, a 3GHz core and 13 
-> cycles/byte of SHA256 throughput. That will be a 1ms timeframe.
-
-That's bad.  Don't create more bad stuff. :-)
-
-> Can I rely on that implementation, or do I have to take special care 
-> because I'm only programming for a single core CPU? 
-
-Not sure what you mean here.
-
-> With your advice I would place a enable/disable preemption call after 
-> 1K of processed data. But wil that be sufficient if I only reeanble it
-> for a short timeframe like this:
 > 
->   do {
->     disable_preemption()
->     ... calc hashes for 1K of data with 16.000 CPU cycles (or 20us) ...
->     enable_preemption()
->   while (dataleft>0);
-
-Yes, it's sufficient.  When you enable preemption it will check to see
-whether there is a pending reschedule.
-
--Scott
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
