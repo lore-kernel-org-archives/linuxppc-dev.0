@@ -1,24 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0116.outbound.protection.outlook.com [65.55.169.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6978E1A054F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 07:20:08 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Suman Tripathi <stripathi@apm.com>
-Subject: Re: [PATCH v1 2/2] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-Date: Tue, 27 Jan 2015 21:13:51 +0100
-Message-ID: <4747424.udeKOcy6tC@wuerfel>
-In-Reply-To: <1422379260-10139-3-git-send-email-stripathi@apm.com>
-References: <1422379260-10139-1-git-send-email-stripathi@apm.com>
- <1422379260-10139-3-git-send-email-stripathi@apm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21F321A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 08:58:06 +1100 (AEDT)
+Message-ID: <1422395873.10544.61.camel@freescale.com>
+Subject: Re: [PATCH v2] powerpc/mpic: Add DT option to skip readback after EOI
+From: Scott Wood <scottwood@freescale.com>
+To: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+Date: Tue, 27 Jan 2015 15:57:53 -0600
+In-Reply-To: <1422371952-1126-1-git-send-email-bogdan.purcareata@freescale.com>
+References: <1422371952-1126-1-git-send-email-bogdan.purcareata@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com, jcm@redhat.com,
- anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net, patches@apm.com,
- ddutile@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:
-> 
-> +               sdhc0: sdhc@1c000000 {
-> +                       device_type = "sdhc";
-> +                       compatible = "arasan,sdhci-8.9a";
-> +                       reg = <0x0 0x1c000000 0x0 0x100>;
-> +                       interrupts = <0x0 0x49 0x4>;
-> +                       clock-names = "clk_xin", "clk_ahb";
-> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
-> +               };
-> +
+On Tue, 2015-01-27 at 15:19 +0000, Bogdan Purcareata wrote:
+> The readback acts as a synchronization mechanism in handling external
+> interrupts, making sure the core waits until EOI write completion. This is
+> required in certain scenarios, such as when the MPIC communicates with a PCI
+> device in posted write mode. If the device uses legacy interrupts, and the CPU
+> returns from the interrupt as soon as it fires the EOI write, there is a chance
+> to receive spurious interrupts because the line isn't deasserted yet.
 
-Here you don't provide an 'iommus' property, which means that the
-device is unable to use the iommu.
+The line was deasserted when IACK was read, before the EOI.  The issue
+is (in theory at least) the timing of the write to the device versus the
+write to EOI, not the timing of MPIC receiving the EOI versus when the
+CPU executes rfi.
 
-	Arnd
+> +  - mpic-eoi-no-readback
+> +      Usage: optional
+> +      Value type: <empty>
+> +      Definition: The presence of this property specifies that the
+> +          MPIC will not issue a readback
+
+s/will not/does not need to/
+
+At this point, given the previous discussion, does anyone object to
+removing the readback entirely?  Do we have any evidence that reading
+WHOAMI is effective at addressing whatever problem reading EOI made go
+away on the relevant platform?
+
+>  when delivering the EOI for an
+> +          external interrupt. The readback operation is done by reading
+> +          the CPU WHOAMI register after writing to the CPU EOI register.
+> +          Originally, this was required due to the fact that the MPIC
+> +          operates at lower frequencies,
+
+Why?
+
+-Scott
