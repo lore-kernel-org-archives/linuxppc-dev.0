@@ -1,38 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C587F1A05B9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 12:43:37 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 26 Jan 2015 18:43:35 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 41CE96E8047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:35:26 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0R1hXPf25296928
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 01:43:33 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0R1hWnU012062
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:43:33 -0500
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: [PATCH v7 7/7] powerpc/perf/hv-24x7: Document sysfs event description
- entries
-Date: Mon, 26 Jan 2015 17:43:10 -0800
-Message-Id: <1422322990-9030-8-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, dev@codyps.com,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 743E61A08F0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 13:28:52 +1100 (AEDT)
+Message-ID: <1422325718.10544.31.camel@freescale.com>
+Subject: Re: How long am I allowed to disable preemption? (was How to make
+ use of SPE instructions?)
+From: Scott Wood <scottwood@freescale.com>
+To: Markus Stockhausen <stockhausen@collogia.de>
+Date: Mon, 26 Jan 2015 20:28:38 -0600
+In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735F913EE6@EXCHANGE.collogia.de>
+References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F913EE6@EXCHANGE.collogia.de>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+On Tue, 2015-01-20 at 14:53 +0000, Markus Stockhausen wrote:
+> > Von: Scott Wood [scottwood@freescale.com]
+> > Gesendet: Dienstag, 20. Januar 2015 08:38
+> > An: Markus Stockhausen
+> > Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org
+> > Betreff: Re: AW: How to make use of SPE instructions?
+> > ...
+> > > I did some tests with the tcrypt module and I get a hashing speed of
+> > > ~ 46MByte/s for 2K data chunks. Stock module gives 29MByte/s. In
+> > > other words ~22,000 hashes per second. Overhead of the tcrypt data
+> > > feeder of around 10% included. That are worst case 46us per hash and
+> > > therefore 46us inside a non preemptive task.
+> > ...
+> > It's OK if the worst case is really 46 us, but if you can find a way to
+> > break it up a bit without affecting throughput too much, I'd do so.
+> 
+> Hi Scott (and all),
+> 
+> with your answer I'm a bit confused about disabling preemption inside the 
+> kernel right now. I understand that the interval between preempt_disable()
+> and preempt_enable() should not take too long. But when I look at other
+> kernel hash crypto modules I see that nobody really cares about that.
 
-Changelog[v6]
-	Update Contact info to Linux on Power Developer list
+"Some people don't care about that" doesn't imply "nobody cares about
+that".
 
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Haren Myneni <hbabu@us.ibm.com>
-CC: Cody P Schafer <dev@codyps.com>
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
----
- .../testing/sysfs-bus-event_source-devices-hv_24x7 | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+>  Take sha256_ssse3_update() in sha256_ssse3_glue.c for example. It runs
+> 
+>   kernel_fpu_begin();
+>   res = __sha256_ssse3_update(desc, data, len, partial);
+>   kernel_fpu_end();
+> 
+> The kernel_fpu_xxx() enables/disables preemption like I need to do. 
+>
+> Nevertheless parameter len can be any number of bytes. Just take 
+> reasonable parameters of 256K of input data, a 3GHz core and 13 
+> cycles/byte of SHA256 throughput. That will be a 1ms timeframe.
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-index 32f3f5f..f893337 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-@@ -21,3 +21,25 @@ Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
- 		Exposes the "version" field of the 24x7 catalog. This is also
- 		extractable from the provided binary "catalog" sysfs entry.
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/event_descs/<event-name>
-+Date:		February 2014
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
-+Description:
-+		Provides the description of a particular event as provided by
-+		the firmware. If firmware does not provide a description, no
-+		file will be created.
-+
-+		Note that the event-name lacks the domain suffix appended for
-+		events in the events/ dir.
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/event_long_descs/<event-name>
-+Date:		February 2014
-+Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
-+Description:
-+		Provides the "long" description of a particular event as
-+		provided by the firmware. If firmware does not provide a
-+		description, no file will be created.
-+
-+		Note that the event-name lacks the domain suffix appended for
-+		events in the events/ dir.
--- 
-1.8.3.1
+That's bad.  Don't create more bad stuff. :-)
+
+> Can I rely on that implementation, or do I have to take special care 
+> because I'm only programming for a single core CPU? 
+
+Not sure what you mean here.
+
+> With your advice I would place a enable/disable preemption call after 
+> 1K of processed data. But wil that be sufficient if I only reeanble it
+> for a short timeframe like this:
+> 
+>   do {
+>     disable_preemption()
+>     ... calc hashes for 1K of data with 16.000 CPU cycles (or 20us) ...
+>     enable_preemption()
+>   while (dataleft>0);
+
+Yes, it's sufficient.  When you enable preemption it will check to see
+whether there is a pending reschedule.
+
+-Scott
