@@ -1,43 +1,38 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99E991A054F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 14:31:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B98EA1A0627
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 15:02:50 +1100 (AEDT)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 26 Jan 2015 20:31:36 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E0CF519D8040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:22:45 -0700 (MST)
+ Mon, 26 Jan 2015 21:02:48 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5BC6C3E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 21:02:46 -0700 (MST)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0R3Virw32374974
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:31:44 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0R42kA032768222
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 21:02:46 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0R3VYHx001263
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:31:34 -0700
-Message-ID: <54C7068B.3050108@linux.vnet.ibm.com>
-Date: Tue, 27 Jan 2015 09:01:23 +0530
+ t0R42ju6013546
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 21:02:46 -0700
+Message-ID: <54C70DDD.9040408@linux.vnet.ibm.com>
+Date: Tue, 27 Jan 2015 09:32:37 +0530
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V3] tick/broadcast: Make movement of broadcast hrtimer
- robust against hotplug
-References: <20150120103559.8430.50933.stgit@preeti.in.ibm.com>
- <alpine.DEB.2.11.1501211243270.5526@nanos>
- <54C09391.9080202@linux.vnet.ibm.com>
- <alpine.DEB.2.11.1501221209260.5526@nanos>
-In-Reply-To: <alpine.DEB.2.11.1501221209260.5526@nanos>
-Content-Type: text/plain; charset=UTF-8
-Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com,
- LKML <linux-kernel@vger.kernel.org>, michael@ellerman.id.au,
- Peter Zijlstra <peterz@infradead.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+To: Michael Ellerman <mpe@ellerman.id.au>, rafael.j.wysocki@intel.com
+Subject: Re: cpuidle/powernv: Read target_residency value of idle states from
+ DT if available
+References: <20150123045906.D0086140297@ozlabs.org>
+In-Reply-To: <20150123045906.D0086140297@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-6
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,58 +42,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/22/2015 04:45 PM, Thomas Gleixner wrote:
-> On Thu, 22 Jan 2015, Preeti U Murthy wrote:
->> On 01/21/2015 05:16 PM, Thomas Gleixner wrote:
->> How about when the cpu that is going offline receives a timer interrupt
->> just before setting its state to CPU_DEAD ? That is still possible right
->> given that its clock devices may not have been shutdown and it is
->> capable of receiving interrupts for a short duration. Even with the
->> above patch, is the following scenario possible ?
->>
->>                 CPU0                                  CPU1
->> t0         Receives timer interrupt
->>
->> t1         Sees that there are hrtimers
->>            to be serviced (hrtimers are not yet migrated)
->>
->> t2         calls hrtimer_interrupt()
->>
->> t3         tick_program_event()                   CPU_DEAD notifiers
->>                                                 CPU0's td->evtdev = NULL
->>
->> t4         clockevent_program_event()
->>            references NULL tick device pointer
->>
->> So my concern is that since the CLOCK_EVT_NOTIFY_CPU_DEAD callback
->> handles shutting down of devices besides moving tick related duties.
->> it's functions may race with the hotplug cpu still handling tick events.
+On 01/23/2015 10:29 AM, Michael Ellerman wrote:
+> On Tue, 2015-20-01 at 11:26:49 UTC, Preeti U Murthy wrote:
+>> @@ -177,34 +178,39 @@ static int powernv_add_idle_states(void)
+>>  		return nr_idle_states;
+>>  	}
+>>  
+>> -	idle_state_latency = of_get_property(power_mgt,
+>> -			"ibm,cpu-idle-state-latencies-ns", NULL);
+>> -	if (!idle_state_latency) {
+>> +	dt_idle_states = len_flags / sizeof(u32);
+>> +
+>> +	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
+>> +	rc = of_property_read_u32(power_mgt,
+>> +			"ibm,cpu-idle-state-latencies-ns", latency_ns);
 > 
->   __cpu_disable() is supposed to block interrupts on the dying cpu.
+> That's only reading the first value.
 > 
-> But I agree, we should make it more robust. So we want an explicit
-> call for disabling the cpu local stuff and an explicit takeover of the
-> broadcast duty. I'm anyway distangling the clockevents_notify() stuff,
-> so it should be simple to do so.
+> If you want to read the full property you need the _array version.
 
-I noticed that tick_handover_do_timer() function also suffers from the
-issue that the patch I posted for moving the broadcast duty had, in that
-it relies on all cpus participating in stop_machine(). In a design where
-all cpus do not participate in stop_machine(), if the freshly nominated
-do_timer cpu is idle, there is no update of jiffies till that cpu gets
-back to being busy. So we must do an explicit take over of *both* the
-broadcast and do_timer duty just before the CPU_DEAD phase.
+Right, thanks for pointing this out.
+> 
+>> +	if (rc) {
+>>  		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
+> 
+> You missed my hint that "DT-PowerMgmt" is a weird and ugly prefix. Can you use
+> "cpuidle-powernv:" instead?
+
+Yes will change this.
+> 
+>>  
+>> -	dt_idle_states = len_flags / sizeof(u32);
+>> +	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
+>> +	rc = of_property_read_u32(power_mgt,
+>> +			"ibm,cpu-idle-state-residency-ns", residency_ns);
+>> +	if (rc) {
+>> +		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-residency-ns\n");
+>> +		pr_warn("Falling back to default values\n");
+> 
+> I don't think this is worth a warning seeing as we know there are firmwares out
+> there which do not have the property.
+> 
+>>  	for (i = 0; i < dt_idle_states; i++) {
+>>  
+>>  		flags = be32_to_cpu(idle_state_flags[i]);
+>> -
+>> -		/* Cpuidle accepts exit_latency in us and we estimate
+>> -		 * target residency to be 10x exit_latency
+>> +		/*
+>> +		 * Cpuidle accepts exit_latency and target_residency in us.
+>> +		 * Use default target_residency values if f/w does not expose it.
+>>  		 */
+>> -		latency_ns = be32_to_cpu(idle_state_latency[i]);
+>>  		if (flags & OPAL_PM_NAP_ENABLED) {
+>>  			/* Add NAP state */
+>>  			strcpy(powernv_states[nr_idle_states].name, "Nap");
+>>  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+>>  			powernv_states[nr_idle_states].flags = 0;
+>> -			powernv_states[nr_idle_states].exit_latency =
+>> -					((unsigned int)latency_ns) / 1000;
+>> -			powernv_states[nr_idle_states].target_residency =
+>> -					((unsigned int)latency_ns / 100);
+>> +			powernv_states[nr_idle_states].target_residency = 100;
+>>  			powernv_states[nr_idle_states].enter = &nap_loop;
+>> -			nr_idle_states++;
+> 
+> That looks wrong? Or do you mean to do that?
+
+Are you pointing at removing the lines that populate the exit_latency ?
+I read the latency value from the DT outside of these conditions because
+it is guaranteed to be present at this point. We return back from this
+function early on if we do not find it in the DT.
+
+If you are pointing at the lines that remove increment of
+nr_idle_states, it has to be done so towards the end of the iteration
+because we are yet to populate the exit_latency and target_residency
+outside of these conditions using this index.
 
 Regards
 Preeti U Murthy
-
-> Thanks,
 > 
-> 	tglx
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> cheers
 > 
