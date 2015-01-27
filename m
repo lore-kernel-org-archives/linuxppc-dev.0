@@ -1,33 +1,33 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E78301A073B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 12:43:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9671C1A083B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 12:43:37 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 26 Jan 2015 18:43:34 -0700
+ Mon, 26 Jan 2015 20:43:35 -0500
 Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
  [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 24BF738C8046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:43:30 -0500 (EST)
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4313FC9004A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:34:44 -0500 (EST)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
  by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0R1hUrq29163690
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 01:43:30 GMT
+ t0R1hWnh26017884
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 01:43:32 GMT
 Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0R1hSLB011742
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:43:29 -0500
+ t0R1hV41011998
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2015 20:43:32 -0500
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Paul Mackerras <paulus@samba.org>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: [PATCH v7 3/7] perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
-Date: Mon, 26 Jan 2015 17:43:06 -0800
-Message-Id: <1422322990-9030-4-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v7 6/7] powerpc/perf/hv-gpci: add the remaining gpci requests
+Date: Mon, 26 Jan 2015 17:43:09 -0800
+Message-Id: <1422322990-9030-7-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, dev@codyps.com,
@@ -41,34 +41,237 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define a lite version of the EVENT_DEFINE_RANGE_FORMAT() that avoids
-defining helper functions for the bit-field ranges.
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
+Add the remaining gpci requests that contain counters suitable for use
+by perf. Omit those that don't contain any counters (but note their
+ommision).
+
+Changelog[v6]
+
+	[Jiri Olsa, Sukadev Bhattiprolu] Replace 'starting_index' with what
+	it really means for the event. Eg if starting_index refers to a
+	partition_id for an event, allow user to specify a value for
+	partition_id rather than 'starting_index'. Also use a =? to indicate
+	required parameters: eg partition_id=?
+
+CC: Haren Myneni <hbabu@us.ibm.com>
+CC: Cody P Schafer <dev@codyps.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-common.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/perf/hv-gpci-requests.h | 187 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 186 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/hv-common.h b/arch/powerpc/perf/hv-common.h
-index 5d79cec..349aaba 100644
---- a/arch/powerpc/perf/hv-common.h
-+++ b/arch/powerpc/perf/hv-common.h
-@@ -20,6 +20,16 @@ unsigned long hv_perf_caps_get(struct hv_perf_caps *caps);
- PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
- EVENT_DEFINE_RANGE(name, attr_var, bit_start, bit_end)
+diff --git a/arch/powerpc/perf/hv-gpci-requests.h b/arch/powerpc/perf/hv-gpci-requests.h
+index 8008544..acd1764 100644
+--- a/arch/powerpc/perf/hv-gpci-requests.h
++++ b/arch/powerpc/perf/hv-gpci-requests.h
+@@ -20,7 +20,9 @@
+  *
+  * - starting_index_kind is one of the following, depending on the event:
+  *
+- *   chip_id: hardware chip id or -1 for current hw chip
++ *   hw_chip_id: hardware chip id or -1 for current hw chip
++ *   partition_id
++ *   sibling_part_id,
+  *   phys_processor_idx:
+  *   0xffffffffffffffff: or -1, which means it is irrelavant for the event
+  *
+@@ -63,6 +65,33 @@ REQUEST(__count(0,	8,	processor_time_in_timebase_cycles)
+ )
+ #include I(REQUEST_END)
  
-+/*
-+ * The EVENT_DEFINE_RANGE_FORMAT() macro above includes helper functions
-+ * for the fields (eg: event_get_starting_index()). For some fields we
-+ * need the bit-range definition, but no the helper functions. Define a
-+ * lite version of the above macro without the helpers and silence
-+ * compiler warnings unused static functions.
-+ */
-+#define EVENT_DEFINE_RANGE_FORMAT_LITE(name, attr_var, bit_start, bit_end) \
-+PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);
++#define REQUEST_NAME entitled_capped_uncapped_donated_idle_timebase_by_partition
++#define REQUEST_NUM 0x20
++#define REQUEST_IDX_KIND "sibling_part_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	8,	partition_id)
++	__count(0x8,	8,	entitled_cycles)
++	__count(0x10,	8,	consumed_capped_cycles)
++	__count(0x18,	8,	consumed_uncapped_cycles)
++	__count(0x20,	8,	cycles_donated)
++	__count(0x28,	8,	purr_idle_cycles)
++)
++#include I(REQUEST_END)
 +
- #define EVENT_DEFINE_RANGE(name, attr_var, bit_start, bit_end)	\
- static u64 event_get_##name##_max(void)					\
- {									\
++/*
++ * Not available for counter_info_version >= 0x8, use
++ * run_instruction_cycles_by_partition(0x100) instead.
++ */
++#define REQUEST_NAME run_instructions_run_cycles_by_partition
++#define REQUEST_NUM 0x30
++#define REQUEST_IDX_KIND "sibling_part_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	8,	partition_id)
++	__count(0x8,	8,	instructions_completed)
++	__count(0x10,	8,	cycles)
++)
++#include I(REQUEST_END)
++
+ #define REQUEST_NAME system_performance_capabilities
+ #define REQUEST_NUM 0x40
+ #define REQUEST_IDX_KIND "starting_index=0xffffffffffffffff"
+@@ -73,4 +102,160 @@ REQUEST(__field(0,	1,	perf_collect_privileged)
+ )
+ #include I(REQUEST_END)
+ 
++#define REQUEST_NAME processor_bus_utilization_abc_links
++#define REQUEST_NUM 0x50
++#define REQUEST_IDX_KIND "hw_chip_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	4,	hw_chip_id)
++	__array(0x4,	0xC,	reserved1)
++	__count(0x10,	8,	total_link_cycles)
++	__count(0x18,	8,	idle_cycles_for_a_link)
++	__count(0x20,	8,	idle_cycles_for_b_link)
++	__count(0x28,	8,	idle_cycles_for_c_link)
++	__array(0x30,	0x20,	reserved2)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME processor_bus_utilization_wxyz_links
++#define REQUEST_NUM 0x60
++#define REQUEST_IDX_KIND "hw_chip_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	4,	hw_chip_id)
++	__array(0x4,	0xC,	reserved1)
++	__count(0x10,	8,	total_link_cycles)
++	__count(0x18,	8,	idle_cycles_for_w_link)
++	__count(0x20,	8,	idle_cycles_for_x_link)
++	__count(0x28,	8,	idle_cycles_for_y_link)
++	__count(0x30,	8,	idle_cycles_for_z_link)
++	__array(0x38,	0x28,	reserved2)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME processor_bus_utilization_gx_links
++#define REQUEST_NUM 0x70
++#define REQUEST_IDX_KIND "hw_chip_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	4,	hw_chip_id)
++	__array(0x4,	0xC,	reserved1)
++	__count(0x10,	8,	gx0_in_address_cycles)
++	__count(0x18,	8,	gx0_in_data_cycles)
++	__count(0x20,	8,	gx0_in_retries)
++	__count(0x28,	8,	gx0_in_bus_cycles)
++	__count(0x30,	8,	gx0_in_cycles_total)
++	__count(0x38,	8,	gx0_out_address_cycles)
++	__count(0x40,	8,	gx0_out_data_cycles)
++	__count(0x48,	8,	gx0_out_retries)
++	__count(0x50,	8,	gx0_out_bus_cycles)
++	__count(0x58,	8,	gx0_out_cycles_total)
++	__count(0x60,	8,	gx1_in_address_cycles)
++	__count(0x68,	8,	gx1_in_data_cycles)
++	__count(0x70,	8,	gx1_in_retries)
++	__count(0x78,	8,	gx1_in_bus_cycles)
++	__count(0x80,	8,	gx1_in_cycles_total)
++	__count(0x88,	8,	gx1_out_address_cycles)
++	__count(0x90,	8,	gx1_out_data_cycles)
++	__count(0x98,	8,	gx1_out_retries)
++	__count(0xA0,	8,	gx1_out_bus_cycles)
++	__count(0xA8,	8,	gx1_out_cycles_total)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME processor_bus_utilization_mc_links
++#define REQUEST_NUM 0x80
++#define REQUEST_IDX_KIND "hw_chip_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	4,	hw_chip_id)
++	__array(0x4,	0xC,	reserved1)
++	__count(0x10,	8,	mc0_frames)
++	__count(0x18,	8,	mc0_reads)
++	__count(0x20,	8,	mc0_write)
++	__count(0x28,	8,	mc0_total_cycles)
++	__count(0x30,	8,	mc1_frames)
++	__count(0x38,	8,	mc1_reads)
++	__count(0x40,	8,	mc1_writes)
++	__count(0x48,	8,	mc1_total_cycles)
++)
++#include I(REQUEST_END)
++
++/* Processor_config (0x90) skipped, no counters */
++/* Current_processor_frequency (0x91) skipped, no counters */
++
++#define REQUEST_NAME processor_core_utilization
++#define REQUEST_NUM 0x94
++#define REQUEST_IDX_KIND "phys_processor_idx=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	4,	phys_processor_idx)
++	__field(0x4,	4,	hw_processor_id)
++	__count(0x8,	8,	cycles_across_any_thread)
++	__count(0x10,	8,	timebase_at_collection)
++	__count(0x18,	8,	purr_cycles)
++	__count(0x20,	8,	sum_of_cycles_across_all_threads)
++	__count(0x28,	8,	instructions_completed)
++)
++#include I(REQUEST_END)
++
++/* Processor_core_power_mode (0x95) skipped, no counters */
++/* Affinity_domain_information_by_virtual_processor (0xA0) skipped,
++ *	no counters */
++/* Affinity_domain_information_by_domain (0xB0) skipped, no counters */
++/* Affinity_domain_information_by_partition (0xB1) skipped, no counters */
++/* Physical_memory_info (0xC0) skipped, no counters */
++/* Processor_bus_topology (0xD0) skipped, no counters */
++
++#define REQUEST_NAME partition_hypervisor_queuing_times
++#define REQUEST_NUM 0xE0
++#define REQUEST_IDX_KIND "partition_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	2, partition_id)
++	__array(0x2,	6, reserved1)
++	__count(0x8,	8, time_waiting_for_entitlement)
++	__count(0x10,	8, times_waited_for_entitlement)
++	__count(0x18,	8, time_waiting_for_phys_processor)
++	__count(0x20,	8, times_waited_for_phys_processor)
++	__count(0x28,	8, dispatches_on_home_core)
++	__count(0x30,	8, dispatches_on_home_primary_affinity_domain)
++	__count(0x38,	8, dispatches_on_home_secondary_affinity_domain)
++	__count(0x40,	8, dispatches_off_home_secondary_affinity_domain)
++	__count(0x48,	8, dispatches_on_dedicated_processor_donating_cycles)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME system_hypervisor_times
++#define REQUEST_NUM 0xF0
++#define REQUEST_IDX_KIND "starting_index=0xffffffffffffffff"
++#include I(REQUEST_BEGIN)
++REQUEST(__count(0,	8,	time_spent_to_dispatch_virtual_processors)
++	__count(0x8,	8,	time_spent_processing_virtual_processor_timers)
++	__count(0x10,	8,	time_spent_managing_partitions_over_entitlement)
++	__count(0x18,	8,	time_spent_on_system_management)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME system_tlbie_count_and_time
++#define REQUEST_NUM 0xF4
++#define REQUEST_IDX_KIND "starting_index=0xffffffffffffffff"
++#include I(REQUEST_BEGIN)
++REQUEST(__count(0,	8,	tlbie_instructions_issued)
++	/*
++	 * FIXME: The spec says the offset here is 0x10, which I suspect
++	 *	  is wrong.
++	 */
++	__count(0x8,	8,	time_spent_issuing_tlbies)
++)
++#include I(REQUEST_END)
++
++#define REQUEST_NAME partition_instruction_count_and_time
++#define REQUEST_NUM 0x100
++#define REQUEST_IDX_KIND "partition_id=?"
++#include I(REQUEST_BEGIN)
++REQUEST(__field(0,	2,	partition_id)
++	__array(0x2,	0x6,	reserved1)
++	__count(0x8,	8,	instructions_performed)
++	__count(0x10,	8,	time_collected)
++)
++#include I(REQUEST_END)
++
++/* set_mmcrh (0x80001000) skipped, no counters */
++/* retrieve_hpmcx (0x80002000) skipped, no counters */
++
+ #include "req-gen/_end.h"
 -- 
 1.8.3.1
