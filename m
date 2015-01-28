@@ -1,21 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-yk0-f180.google.com (exprod5og111.obsmtp.com [64.18.0.22])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B24701A03E5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 16:04:41 +1100 (AEDT)
-Message-ID: <1422421480.2728.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] CXL: Fix device_node reference counting
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Date: Wed, 28 Jan 2015 16:04:40 +1100
-In-Reply-To: <1422417621-sup-4057@delenn.ozlabs.ibm.com>
-References: <1420609278-15338-1-git-send-email-imunsie@au.ibm.com>
- <1422417621-sup-4057@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 195EF1A0739
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:18:59 +1100 (AEDT)
+Received: by mail-yk0-f180.google.com with SMTP id 131so7979153ykp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 20:18:56 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <4747424.udeKOcy6tC@wuerfel>
+References: <1422379260-10139-1-git-send-email-stripathi@apm.com>
+ <1422379260-10139-3-git-send-email-stripathi@apm.com>
+ <4747424.udeKOcy6tC@wuerfel>
+Date: Wed, 28 Jan 2015 09:48:56 +0530
+Message-ID: <CAOHikRB4tSkJsMccqHRS8XYULaP+dS7KujeSLh+ZpTxDDOF5xQ@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+From: Suman Tripathi <stripathi@apm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: multipart/alternative; boundary=089e01634b9287a004050daeabcf
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Jon Masters <jcm@redhat.com>,
+ anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net,
+ patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +33,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-28 at 15:02 +1100, Ian Munsie wrote:
-> Excerpts from Ian Munsie's message of 2015-01-07 16:41:18 +1100:
-> > From: Ryan Grimm <grimm@linux.vnet.ibm.com>
-> > 
-> > When unbinding and rebinding the driver on a system with a card in PHB0, this
-> > error condition is reached after a few attempts:
-> 
-> Hey mpe,
-> 
-> I just wanted to check the status of this one? I can't see it in your
-> tree and wanted to make sure you didn't simply miss it.
+--089e01634b9287a004050daeabcf
+Content-Type: text/plain; charset=UTF-8
 
-It looked fishy, but I never got around to replying.
+Hi Arnd,
 
-The second sentence in the explanation should never be true:
+On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:
+>
+> +               sdhc0: sdhc@1c000000 {
+> +                       device_type = "sdhc";
+> +                       compatible = "arasan,sdhci-8.9a";
+> +                       reg = <0x0 0x1c000000 0x0 0x100>;
+> +                       interrupts = <0x0 0x49 0x4>;
+> +                       clock-names = "clk_xin", "clk_ahb";
+> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+> +               };
+> +
 
-  But, if while loop is not entered, of_node_put get called
-  on np without an of_node_get.
+Here you don't provide an 'iommus' property, which means that the
+device is unable to use the iommu.
+I added the iommus in the IOMMU AHBC patch. Anything wrong in that ? In the
+next version Also I will remove the IOMMU hacks from arasan driver
 
-You shouldn't have np unless you did an of_node_get() to get it, otherwise it's
-pointing at something you don't have a reference for and it might go away at
-any time.
 
-So the patch may fix the bug but I don't think it's correct.
+On Wed, Jan 28, 2015 at 1:43 AM, Arnd Bergmann <arnd@arndb.de> wrote:
 
-I think pnv_pci_to_phb_node() should be doing a get for you, before returning
-the pointer.
+> On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:
+> >
+> > +               sdhc0: sdhc@1c000000 {
+> > +                       device_type = "sdhc";
+> > +                       compatible = "arasan,sdhci-8.9a";
+> > +                       reg = <0x0 0x1c000000 0x0 0x100>;
+> > +                       interrupts = <0x0 0x49 0x4>;
+> > +                       clock-names = "clk_xin", "clk_ahb";
+> > +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+> > +               };
+> > +
+>
+> Here you don't provide an 'iommus' property, which means that the
+> device is unable to use the iommu.
+>
+>         Arnd
+>
 
-See as a comparison pcibios_get_phb_of_node().
 
-cheers
+
+-- 
+Thanks,
+with regards,
+Suman Tripathi
+
+--089e01634b9287a004050daeabcf
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Arnd,<div><br></div><div><span class=3D"im" style=3D"fo=
+nt-size:13px">On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:<br>=
+&gt;<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0sdhc0:=
+ sdhc@1c000000 {<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0device_type =3D &quot;sdhc&quot;;<br>&gt;=
+ +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0compatible =3D &quot;arasan,sdhci-8.9a&quot;;<br>&gt; +=C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0re=
+g =3D &lt;0x0 0x1c000000 0x0 0x100&gt;;<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0interrupts =3D &=
+lt;0x0 0x49 0x4&gt;;<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0clock-names =3D &quot;clk_xin&quot;, =
+&quot;clk_ahb&quot;;<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0clocks =3D &lt;&amp;sdioclk 0&gt;, &l=
+t;&amp;ahbclk 0&gt;;<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0};<br>&gt; +<br><br></span><span style=3D"font-size:13px">Here yo=
+u don&#39;t provide an &#39;iommus&#39; property, which means that the</spa=
+n><br style=3D"font-size:13px"><span style=3D"font-size:13px">device is una=
+ble to use the iommu.</span><div class=3D"" style=3D"font-size:13px"><div i=
+d=3D":87" class=3D"" tabindex=3D"0"><img class=3D"" src=3D"https://ssl.gsta=
+tic.com/ui/v1/icons/mail/images/cleardot.gif"></div><div id=3D":87" class=
+=3D"" tabindex=3D"0">I added the iommus in the IOMMU AHBC patch. Anything w=
+rong in that ? In the next version Also I will remove the IOMMU hacks from =
+arasan driver=C2=A0</div><div id=3D":87" class=3D"" tabindex=3D"0"><br></di=
+v></div></div></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quot=
+e">On Wed, Jan 28, 2015 at 1:43 AM, Arnd Bergmann <span dir=3D"ltr">&lt;<a =
+href=3D"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&gt;</span=
+> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bo=
+rder-left:1px #ccc solid;padding-left:1ex"><span class=3D"">On Tuesday 27 J=
+anuary 2015 22:51:00 Suman Tripathi wrote:<br>
+&gt;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0sdhc0: sdhc@1c=
+000000 {<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0device_type =3D &quot;sdhc&quot;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0compatible =3D &quot;arasan,sdhci-8.9a&quot;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0reg =3D &lt;0x0 0x1c000000 0x0 0x100&gt;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0interrupts =3D &lt;0x0 0x49 0x4&gt;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0clock-names =3D &quot;clk_xin&quot;, &quot;clk_ahb&quot;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0clocks =3D &lt;&amp;sdioclk 0&gt;, &lt;&amp;ahbclk 0&gt;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
+&gt; +<br>
+<br>
+</span>Here you don&#39;t provide an &#39;iommus&#39; property, which means=
+ that the<br>
+device is unable to use the iommu.<br>
+<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 Arnd<br>
+</font></span></blockquote></div><br><br clear=3D"all"><div><br></div>-- <b=
+r><div class=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>wi=
+th regards,</div>Suman Tripathi</div></div>
+</div>
+
+--089e01634b9287a004050daeabcf--
