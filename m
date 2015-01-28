@@ -1,23 +1,23 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 32ED31A0C20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 02:29:03 +1100 (AEDT)
-Date: Wed, 28 Jan 2015 12:29:07 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v7 0/4] Add support for parametrized events
-Message-ID: <20150128152907.GB25018@kernel.org>
-References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150127100213.GC7810@krava.brq.redhat.com>
- <1422406478.32234.0.camel@ellerman.id.au>
- <20150128103753.GA4584@krava.brq.redhat.com>
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A725E1A0C37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 05:15:21 +1100 (AEDT)
+Received: by mail-pa0-f51.google.com with SMTP id fb1so28218194pad.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:15:19 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150128103753.GA4584@krava.brq.redhat.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Emil Medve <Emilian.Medve@Freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ scottwood@Freescale.com, haokexin@gmail.com, yuantian.tang@Freescale.com
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
+Message-ID: <20150128181504.22722.30981@quantum>
+Subject: Re: [PATCH v2 00/10] clk: qoriq: Add support for the FMan clock
+Date: Wed, 28 Jan 2015 10:15:04 -0800
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Jan 28, 2015 at 11:37:53AM +0100, Jiri Olsa escreveu:
-> On Wed, Jan 28, 2015 at 11:54:38AM +1100, Michael Ellerman wrote:
-> > On Tue, 2015-01-27 at 11:02 +0100, Jiri Olsa wrote:
-> > > On Mon, Jan 26, 2015 at 05:43:03PM -0800, Sukadev Bhattiprolu wrote:
-> > > 
-> > > SNIP
-> > > 
-> > > > 
-> > > > 
-> > > > Cody P Schafer (6):
-> > > >   perf: provide sysfs_show for struct perf_pmu_events_attr
-> > > >   perf: add PMU_EVENT_ATTR_STRING() helper
-> > > >   powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
-> > > >   powerpc/perf/{hv-gpci, hv-common}: generate requests with counters
-> > > >     annotated
-> > > >   powerpc/perf/hv-gpci: add the remaining gpci requests
-> > > >   powerpc/perf/hv-24x7: Document sysfs event description entries
-> > > > 
-> > > > Sukadev Bhattiprolu (1):
-> > > >   perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
-> > > 
-> > > generic 'perf: *' patches look good to me.. cant say much about
-> > > the rest of the patchset though
-> > 
-> > Is that an ACK ?
-> 
-> ah right, sry ;-)
-> 
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
+Quoting Emil Medve (2015-01-21 02:03:22)
+> Based on clk-next from git://git.kernel.org/pub/scm/linux/kernel/git/clk/=
+linux.git
+> =
 
-Thanks, I'll try and collect the tools/ bits since Michael already took
-the other bits, right?
+> v2:     Rebased as several prerequisite patches (including a file rename)=
+ got
+>         applied upstream
+> =
 
-- Arnaldo
+> Emil Medve (9):
+>   clk: qoriq: Fix checkpatch type PARENTHESIS_ALIGNMENT
+>   clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
+>   clk: qoriq: Fix checkpatch type ALLOC_SIZEOF_STRUCT
+>   clk: qoriq: Fix checkpatch type OOM_MESSAGE
+>   clk: qoriq: Make local symbol 'static'
+>   clk: qoriq: Replace kzalloc() with kmalloc()
+>   clk: qoriq: Use pr_fmt()
+
+Patches 1-7 applied to clk-next towards 3.20. I'd prefer some
+reviewed-by's from your peers at freescale for the clock driver
+correctness.
+
+Thanks,
+Mike
+
+>   powerpc/corenet: Enable CLK_QORIQ
+>   clk: qoriq: Add support for the platform PLL
+> =
+
+> Igal Liberman (1):
+>   clk: qoriq: Add support for the FMan clock
+> =
+
+>  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
+>  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
+>  drivers/clk/clk-qoriq.c                      | 378 +++++++++++++++++++++=
+++++--
+>  3 files changed, 357 insertions(+), 23 deletions(-)
+> =
+
+> -- =
+
+> 2.2.1
