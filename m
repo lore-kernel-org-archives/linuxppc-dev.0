@@ -1,14 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-yh0-f46.google.com (exprod5og123.obsmtp.com [64.18.0.198])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 131FE1A074A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:23:04 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/powernv: Remove "opal" prefix from pr_xxx()s
-Date: Wed, 28 Jan 2015 15:23:01 +1100
-Message-Id: <1422418981-32110-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F3FD21A0D2C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:23:27 +1100 (AEDT)
+Received: by mail-yh0-f46.google.com with SMTP id c41so7789967yho.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2015 20:23:25 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CAOHikRB4tSkJsMccqHRS8XYULaP+dS7KujeSLh+ZpTxDDOF5xQ@mail.gmail.com>
+References: <1422379260-10139-1-git-send-email-stripathi@apm.com>
+ <1422379260-10139-3-git-send-email-stripathi@apm.com>
+ <4747424.udeKOcy6tC@wuerfel>
+ <CAOHikRB4tSkJsMccqHRS8XYULaP+dS7KujeSLh+ZpTxDDOF5xQ@mail.gmail.com>
+Date: Wed, 28 Jan 2015 09:53:25 +0530
+Message-ID: <CAOHikRAOVMQiOy_VrXmJU1e+8KBwOFSfX1uSKvfdbVG=Br2ocg@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+From: Suman Tripathi <stripathi@apm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Jon Masters <jcm@redhat.com>,
+ anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net,
+ patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,67 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit c8742f85125d "powerpc/powernv: Expose OPAL firmware symbol
-map" I added pr_fmt() to opal.c. This left some existing pr_xxx()s with
-duplicate "opal" prefixes, eg:
+Hi Arnd,
 
-    opal: opal: Found 0 interrupts reserved for OPAL
+I added the iommus in the IOMMU AHBC patch. Anything wrong in that ?
+In the next version Also I will remove the IOMMU hacks from arasan
+driver
 
-Fix them all up. Also make the "Not not found" message a bit more
-verbose.
+On Wed, Jan 28, 2015 at 9:48 AM, Suman Tripathi <stripathi@apm.com> wrote:
+> Hi Arnd,
+>
+> On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:
+>>
+>> +               sdhc0: sdhc@1c000000 {
+>> +                       device_type = "sdhc";
+>> +                       compatible = "arasan,sdhci-8.9a";
+>> +                       reg = <0x0 0x1c000000 0x0 0x100>;
+>> +                       interrupts = <0x0 0x49 0x4>;
+>> +                       clock-names = "clk_xin", "clk_ahb";
+>> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+>> +               };
+>> +
+>
+> Here you don't provide an 'iommus' property, which means that the
+> device is unable to use the iommu.
+> I added the iommus in the IOMMU AHBC patch. Anything wrong in that ? In the
+> next version Also I will remove the IOMMU hacks from arasan driver
+>
+>
+> On Wed, Jan 28, 2015 at 1:43 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>>
+>> On Tuesday 27 January 2015 22:51:00 Suman Tripathi wrote:
+>> >
+>> > +               sdhc0: sdhc@1c000000 {
+>> > +                       device_type = "sdhc";
+>> > +                       compatible = "arasan,sdhci-8.9a";
+>> > +                       reg = <0x0 0x1c000000 0x0 0x100>;
+>> > +                       interrupts = <0x0 0x49 0x4>;
+>> > +                       clock-names = "clk_xin", "clk_ahb";
+>> > +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+>> > +               };
+>> > +
+>>
+>> Here you don't provide an 'iommus' property, which means that the
+>> device is unable to use the iommu.
+>>
+>>         Arnd
+>
+>
+>
+>
+> --
+> Thanks,
+> with regards,
+> Suman Tripathi
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/opal.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 1db119f0f4ee..8f5bbfae9c32 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -208,7 +208,7 @@ static int __init opal_register_exception_handlers(void)
- 	 * start catching/handling HMI directly in Linux.
- 	 */
- 	if (!opal_check_token(OPAL_HANDLE_HMI)) {
--		pr_info("opal: Old firmware detected, OPAL handles HMIs.\n");
-+		pr_info("Old firmware detected, OPAL handles HMIs.\n");
- 		opal_register_exception_handler(
- 				OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
- 				0, glue);
-@@ -709,7 +709,7 @@ static int __init opal_init(void)
- 
- 	opal_node = of_find_node_by_path("/ibm,opal");
- 	if (!opal_node) {
--		pr_warn("opal: Node not found\n");
-+		pr_warn("Device node not found\n");
- 		return -ENODEV;
- 	}
- 
-@@ -732,7 +732,7 @@ static int __init opal_init(void)
- 
- 	/* Find all OPAL interrupts and request them */
- 	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
--	pr_debug("opal: Found %d interrupts reserved for OPAL\n",
-+	pr_debug("Found %d interrupts reserved for OPAL\n",
- 		 irqs ? (irqlen / 4) : 0);
- 	opal_irq_count = irqlen / 4;
- 	opal_irqs = kzalloc(opal_irq_count * sizeof(unsigned int), GFP_KERNEL);
-@@ -740,13 +740,13 @@ static int __init opal_init(void)
- 		unsigned int hwirq = be32_to_cpup(irqs);
- 		unsigned int irq = irq_create_mapping(NULL, hwirq);
- 		if (irq == NO_IRQ) {
--			pr_warning("opal: Failed to map irq 0x%x\n", hwirq);
-+			pr_warning("Failed to map irq 0x%x\n", hwirq);
- 			continue;
- 		}
- 		rc = request_irq(irq, opal_interrupt, 0, "opal", NULL);
- 		if (rc)
--			pr_warning("opal: Error %d requesting irq %d"
--				   " (0x%x)\n", rc, irq, hwirq);
-+			pr_warning("Error %d requesting irq %d (0x%x)\n",
-+				    rc, irq, hwirq);
- 		opal_irqs[i] = irq;
- 	}
- 
+
 -- 
-2.1.0
+Thanks,
+with regards,
+Suman Tripathi
