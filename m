@@ -1,22 +1,18 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0135.outbound.protection.outlook.com [157.56.110.135])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kamal@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 35C981A0902
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 08:49:18 +1100 (AEDT)
-Message-ID: <54C95910.60402@Freescale.com>
-Date: Wed, 28 Jan 2015 15:48:00 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Mike Turquette <mturquette@linaro.org>, <linuxppc-dev@lists.ozlabs.org>,
- <scottwood@Freescale.com>, <haokexin@gmail.com>,
- <yuantian.tang@Freescale.com>
-Subject: Re: [PATCH v2 00/10] clk: qoriq: Add support for the FMan clock
-References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
- <20150128181504.22722.30981@quantum>
-In-Reply-To: <20150128181504.22722.30981@quantum>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D22A11A09D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 09:20:24 +1100 (AEDT)
+From: Kamal Mostafa <kamal@canonical.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [3.13.y-ckt stable] Patch "powerpc/powernv: Switch off MMU before
+ entering nap/sleep/rvwinkle mode" has been added to staging queue
+Date: Wed, 28 Jan 2015 14:20:14 -0800
+Message-Id: <1422483614-14638-1-git-send-email-kamal@canonical.com>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Kamal Mostafa <kamal@canonical.com>, kernel-team@lists.ubuntu.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +22,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Mike,
+This is a note to let you know that I have just added a patch titled
 
+    powerpc/powernv: Switch off MMU before entering nap/sleep/rvwinkle mode
 
-On 01/28/2015 12:15 PM, Mike Turquette wrote:
-> Quoting Emil Medve (2015-01-21 02:03:22)
->> Based on clk-next from git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git
->>
->> v2:     Rebased as several prerequisite patches (including a file rename) got
->>         applied upstream
->>
->> Emil Medve (9):
->>   clk: qoriq: Fix checkpatch type PARENTHESIS_ALIGNMENT
->>   clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
->>   clk: qoriq: Fix checkpatch type ALLOC_SIZEOF_STRUCT
->>   clk: qoriq: Fix checkpatch type OOM_MESSAGE
->>   clk: qoriq: Make local symbol 'static'
->>   clk: qoriq: Replace kzalloc() with kmalloc()
->>   clk: qoriq: Use pr_fmt()
-> 
-> Patches 1-7 applied to clk-next towards 3.20
+to the linux-3.13.y-queue branch of the 3.13.y-ckt extended stable tree 
+which can be found at:
 
-Thank you
+ http://kernel.ubuntu.com/git?p=ubuntu/linux.git;a=shortlog;h=refs/heads/linux-3.13.y-queue
 
-> I'd prefer some
-> reviewed-by's from your peers at freescale for the clock driver
-> correctness.
+This patch is scheduled to be released in version 3.13.11-ckt15.
 
-That's fair
+If you, or anyone else, feels it should not be added to this tree, please 
+reply to this email.
 
->>   powerpc/corenet: Enable CLK_QORIQ
+For more information about the 3.13.y-ckt tree, see
+https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable
 
-I was thinking Scott can pick this up
+Thanks.
+-Kamal
 
->>   clk: qoriq: Add support for the platform PLL
+------
 
-I'll get Yuan-Tian to review this
+>From eb5b1395c50d3eb178e31f229ef888172844e9a9 Mon Sep 17 00:00:00 2001
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 10 Dec 2014 00:26:50 +0530
+Subject: powerpc/powernv: Switch off MMU before entering nap/sleep/rvwinkle
+ mode
 
->> Igal Liberman (1):
->>   clk: qoriq: Add support for the FMan clock
+commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
 
-Scott, I'd appreciate your help here
+Currently, when going idle, we set the flag indicating that we are in
+nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
+(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
+for two reasons: (a) the architecture specifies that those instructions
+must be executed with the MMU off, and in fact with only the SF, HV, ME
+and possibly RI bits set, and (b) this introduces a race, because as
+soon as we set the flag, another thread can switch the MMU to a guest
+context.  If the race is lost, this thread will typically start looping
+on relocation-on ISIs at 0xc...4400.
 
+This fixes it by setting the MSR as required by the architecture before
+setting the flag or executing the nap/sleep/rvwinkle instruction.
 
-Cheers,
+[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Kamal Mostafa <kamal@canonical.com>
+---
+ arch/powerpc/include/asm/reg.h    |  2 ++
+ arch/powerpc/kernel/idle_power7.S | 17 +++++++++++++++++
+ 2 files changed, 19 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 637f513..663e5c2 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -118,8 +118,10 @@
+ #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
+ #ifdef __BIG_ENDIAN__
+ #define MSR_		__MSR
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
+ #else
+ #define MSR_		(__MSR | MSR_LE)
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
+ #endif
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 847e40e..1fb7fee 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -84,6 +84,23 @@ _GLOBAL(power7_nap)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
 
->>  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
->>  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
->>  drivers/clk/clk-qoriq.c                      | 378 +++++++++++++++++++++++++--
->>  3 files changed, 357 insertions(+), 23 deletions(-)
->>
->> -- 
->> 2.2.1
++	/*
++	 * Go to real mode to do the nap, as required by the architecture.
++	 * Also, we need to be in real mode before setting hwthread_state,
++	 * because as soon as we do that, another thread can switch
++	 * the MMU context to the guest.
++	 */
++	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
++	li	r6, MSR_RI
++	andc	r6, r9, r6
++	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
++	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
++	mtspr	SPRN_SRR0, r7
++	mtspr	SPRN_SRR1, r5
++	rfid
++
++	.globl	power7_enter_nap_mode
++power7_enter_nap_mode:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	/* Tell KVM we're napping */
+ 	li	r4,KVM_HWTHREAD_IN_NAP
+--
+1.9.1
