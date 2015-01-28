@@ -1,19 +1,30 @@
-Return-Path: <shh.xie@gmail.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0075.outbound.protection.outlook.com [207.46.100.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-yk0-f178.google.com (exprod5og120.obsmtp.com [64.18.0.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B078A1A08CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 00:18:25 +1100 (AEDT)
-From: <shh.xie@gmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH][v4] power/fsl: add MDIO dt binding for FMan
-Date: Wed, 28 Jan 2015 19:54:24 +0800
-Message-ID: <1422446064-3901-1-git-send-email-shh.xie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8F781A08CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 00:22:23 +1100 (AEDT)
+Received: by mail-yk0-f178.google.com with SMTP id q200so8840580ykb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 05:22:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, Emilian.Medve@freescale.com
+In-Reply-To: <2323575.nqxsEzcHbG@wuerfel>
+References: <1422379260-10139-1-git-send-email-stripathi@apm.com>
+ <CAOHikRB4tSkJsMccqHRS8XYULaP+dS7KujeSLh+ZpTxDDOF5xQ@mail.gmail.com>
+ <CAOHikRAOVMQiOy_VrXmJU1e+8KBwOFSfX1uSKvfdbVG=Br2ocg@mail.gmail.com>
+ <2323575.nqxsEzcHbG@wuerfel>
+Date: Wed, 28 Jan 2015 18:52:20 +0530
+Message-ID: <CAOHikRDb8aVbP+5yMxxE-d4qeO3gbz2wnZGmMB7b7+eoF+pm=g@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+From: Suman Tripathi <stripathi@apm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Jon Masters <jcm@redhat.com>,
+ anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net,
+ patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,117 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
+On Wednesday 28 January 2015 09:53:25 Suman Tripathi wrote:
+>
+> I added the iommus in the IOMMU AHBC patch. Anything wrong in that ?
+> In the next version Also I will remove the IOMMU hacks from arasan
+> driver
 
-This binding is for FMan MDIO, it covers FMan v2 & FMan v3.
+Hmm, I guess you have a required ordering between the patches either
+way, which makes it hard to merge in a way that is bisectable.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-changes for V4:
-revised MDIO interrupt related statement.
+You are correct that you should not merge a patch with the iommu
+reference before adding the iommu device node, because it would
+otherwise break building the mmc tree.
 
-changes in v3:
-rephrase the 'Definition' of property 'bus-frequency', don't include the
-property in example.
+One more point is the binding for IOMMU needs to be in the same patch
+in which the IOMMU support is added. So to provide the binding info of
+the master node we require the sdhc nodes to be merged first.
 
-changes in v2:
-addressed comments from Scott in V1.
+Usually, the right answer is to merged the dts changes through the
+arm-soc tree, and then you can just add the node for the sdhc device
+after the one for the iommu device.
 
- .../devicetree/bindings/powerpc/fsl/fman.txt       | 70 ++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+On Wed, Jan 28, 2015 at 6:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wednesday 28 January 2015 09:53:25 Suman Tripathi wrote:
+>>
+>> I added the iommus in the IOMMU AHBC patch. Anything wrong in that ?
+>> In the next version Also I will remove the IOMMU hacks from arasan
+>> driver
+>
+> Hmm, I guess you have a required ordering between the patches either
+> way, which makes it hard to merge in a way that is bisectable.
+>
+> You are correct that you should not merge a patch with the iommu
+> reference before adding the iommu device node, because it would
+> otherwise break building the mmc tree.
+>
+> Usually, the right answer is to merged the dts changes through the
+> arm-soc tree, and then you can just add the node for the sdhc device
+> after the one for the iommu device.
+>
+>         Arnd
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-index edeea16..774c24f 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-@@ -7,6 +7,7 @@ CONTENTS
-   - FMan MURAM Node
-   - FMan dTSEC/XGEC/mEMAC Node
-   - FMan IEEE 1588 Node
-+  - FMan MDIO Node
-   - Example
- 
- =============================================================================
-@@ -357,6 +358,69 @@ ptp-timer@fe000 {
- };
- 
- =============================================================================
-+FMan MDIO Node
-+
-+DESCRIPTION
-+
-+The MDIO is a bus to which the PHY devices are connected.
-+
-+PROPERTIES
-+
-+- compatible
-+		Usage: required
-+		Value type: <stringlist>
-+		Definition: A standard property.
-+		Must include "fsl,fman-mdio" for 1 Gb/s MDIO from FMan v2.
-+		Must include "fsl,fman-xmdio" for 10 Gb/s MDIO from FMan v2.
-+		Must include "fsl,fman-memac-mdio" for 1/10 Gb/s MDIO from
-+		FMan v3.
-+
-+- reg
-+		Usage: required
-+		Value type: <prop-encoded-array>
-+		Definition: A standard property.
-+
-+- bus-frequency
-+		Usage: optional
-+		Value type: <u32>
-+		Definition: Specifies the external MDIO bus clock speed to
-+		be used, if different from the standard 2.5 MHz.
-+		This may be due to the standard speed being unsupported (e.g.
-+		due to a hardware problem), or to advertise that all relevant
-+		components in the system support a faster speed.
-+
-+- interrupts
-+		Usage: required
-+		Value type: <prop-encoded-array>
-+		Definition: Event interrupt of external MDIO controller.
-+
-+- fsl,fman-internal-mdio
-+		Usage: required for internal MDIO
-+		Value type: boolean
-+		Definition: Fman has internal MDIO for internal PCS(Physical
-+		Coding Sublayer) PHYs and external MDIO for external PHYs.
-+		The settings and programming routines for internal/external
-+		MDIO are different. Must be included for internal MDIO.
-+
-+EXAMPLE
-+
-+Example for FMan v2 external MDIO:
-+
-+mdio@f1000 {
-+	compatible = "fsl,fman-xmdio";
-+	reg = <0xf1000 0x1000>;
-+	interrupts = <101 2 0 0>;
-+};
-+
-+Example for FMan v3 internal MDIO:
-+
-+mdio@f1000 {
-+	compatible = "fsl,fman-memac-mdio";
-+	reg = <0xf1000 0x1000>;
-+	fsl,fman-internal-mdio;
-+};
-+
-+=============================================================================
- Example
- 
- fman@400000 {
-@@ -531,4 +595,10 @@ fman@400000 {
- 		compatible = "fsl,fman-ptp-timer";
- 		reg = <0xfe000 0x1000>;
- 	};
-+
-+	mdio@f1000 {
-+		compatible = "fsl,fman-xmdio";
-+		reg = <0xf1000 0x1000>;
-+		interrupts = <101 2 0 0>;
-+	};
- };
+
+
 -- 
-1.8.4.1
+Thanks,
+with regards,
+Suman Tripathi
