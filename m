@@ -1,17 +1,22 @@
-Return-Path: <mort@bork.org>
-Received: from darwin.bork.org (darwin.bork.org [IPv6:2001:470:1f05:998::1])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3C2A1A033B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 06:52:44 +1100 (AEDT)
-Date: Wed, 28 Jan 2015 14:52:36 -0500
-From: Martin Hicks <mort@bork.org>
-To: chris@printf.net, Anton Vorontsov <anton@enomsg.org>
-Subject: [PATCH] mmc: sdhci: Apply FSL ESDHC reset handling quirk to OF
-Message-ID: <20150128195236.GA31422@darwin.bork.org>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E6091A08B0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 07:15:46 +1100 (AEDT)
+Date: Wed, 28 Jan 2015 14:15:33 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] powerpc/mpic: Add DT option to skip readback after EOI
+Message-ID: <20150128201533.GA10436@gate.crashing.org>
+References: <1422371952-1126-1-git-send-email-bogdan.purcareata@freescale.com>
+ <1422395873.10544.61.camel@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org
+In-Reply-To: <1422395873.10544.61.camel@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jan 27, 2015 at 03:57:53PM -0600, Scott Wood wrote:
+> At this point, given the previous discussion, does anyone object to
+> removing the readback entirely?  Do we have any evidence that reading
+> WHOAMI is effective at addressing whatever problem reading EOI made go
+> away on the relevant platform?
 
-The reset code was pushed into the esdhc-imx driver, but missed being
-pushed into the FSL OF driver at the same time.  The commit that broke
-the OF ESDHC driver was 0718e59ae259f7c48155b4e852d8b0632d59028e
+What platforms were those?  Just test there!
 
-Signed-off-by: Martin Hicks <mort@bork.org>
----
- drivers/mmc/host/sdhci-of-esdhc.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 8872c85..4a654d4 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -276,6 +276,14 @@ static void esdhc_pltfm_set_bus_width(struct sdhci_host *host, int width)
- 			ESDHC_CTRL_BUSWIDTH_MASK, ctrl);
- }
- 
-+static void esdhc_reset(struct sdhci_host *host, u8 mask)
-+{
-+	sdhci_reset(host, mask);
-+
-+	sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
-+	sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
-+}
-+
- static const struct sdhci_ops sdhci_esdhc_ops = {
- 	.read_l = esdhc_readl,
- 	.read_w = esdhc_readw,
-@@ -290,7 +298,7 @@ static const struct sdhci_ops sdhci_esdhc_ops = {
- 	.platform_init = esdhc_of_platform_init,
- 	.adma_workaround = esdhci_of_adma_workaround,
- 	.set_bus_width = esdhc_pltfm_set_bus_width,
--	.reset = sdhci_reset,
-+	.reset = esdhc_reset,
- 	.set_uhs_signaling = sdhci_set_uhs_signaling,
- };
- 
--- 
-1.7.10.4
+If no one remembers, they can not (any longer) be important platforms ;-)
+Just remove the code, and if in twelve months finally someone reports a
+failure we will at least know what platform it was.
 
 
--- 
-Martin Hicks P.Eng.    |      mort@bork.org
-Bork Consulting Inc.   |  +1 (613) 266-2296
+Segher
