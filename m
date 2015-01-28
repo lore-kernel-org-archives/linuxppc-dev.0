@@ -2,23 +2,37 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EB991A03D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 11:54:39 +1100 (AEDT)
-Message-ID: <1422406478.32234.0.camel@ellerman.id.au>
-Subject: Re: [PATCH v7 0/4] Add support for parametrized events
+ by lists.ozlabs.org (Postfix) with ESMTPS id 827591A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 12:01:03 +1100 (AEDT)
+Message-ID: <1422406862.32234.1.camel@ellerman.id.au>
+Subject: Re: [PATCH v3] powerpc/mm: fix undefined reference to
+ `.__kernel_map_pages' on FSL PPC64
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jiri Olsa <jolsa@redhat.com>
-Date: Wed, 28 Jan 2015 11:54:38 +1100
-In-Reply-To: <20150127100213.GC7810@krava.brq.redhat.com>
-References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150127100213.GC7810@krava.brq.redhat.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Date: Wed, 28 Jan 2015 12:01:02 +1100
+In-Reply-To: <20150126132222.6477257be204a3332601ef11@freescale.com>
+References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
+ <20150120230150.GA14475@cloud>
+ <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
+ <CAC5umyieZn7ppXkKb45O=C=BF+iv6R_A1Dwfhro=cBJzFeovrA@mail.gmail.com>
+ <20150122014550.GA21444@js1304-P5Q-DELUXE>
+ <20150122144147.019eedc41f189eac44c3c4cd@freescale.com>
+ <CAC5umyiF52cykH2_5TD0yzXb+842gywpe-+XZHEwmrDe0nYCPw@mail.gmail.com>
+ <20150122212017.4b7032d52a6c75c06d5b4728@freescale.com>
+ <1421987091.24984.13.camel@ellerman.id.au>
+ <20150126132222.6477257be204a3332601ef11@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
+ Rik van Riel <riel@redhat.com>, josh@joshtriplett.org,
+ Minchan Kim <minchan@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Akinobu Mita <akinobu.mita@gmail.com>, Jens Axboe <axboe@fb.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Al Viro <viro@zeniv.linux.org.uk>, Johannes Weiner <hannes@cmpxchg.org>,
+ Scott Wood <scottwood@freescale.com>, Sasha Levin <sasha.levin@oracle.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +42,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-27 at 11:02 +0100, Jiri Olsa wrote:
-> On Mon, Jan 26, 2015 at 05:43:03PM -0800, Sukadev Bhattiprolu wrote:
+On Mon, 2015-01-26 at 13:22 -0600, Kim Phillips wrote:
+> arch/powerpc has __kernel_map_pages implementations in mm/pgtable_32.c, and
+> mm/hash_utils_64.c, of which the former is built for PPC32, and the latter
+> for PPC64 machines with PPC_STD_MMU.  Fix arch/powerpc/Kconfig to not select
+> ARCH_SUPPORTS_DEBUG_PAGEALLOC when CONFIG_PPC_STD_MMU_64 isn't defined,
+> i.e., for 64-bit book3e builds to use the generic __kernel_map_pages()
+> in mm/debug-pagealloc.c.
 > 
-> SNIP
+>   LD      init/built-in.o
+> mm/built-in.o: In function `kernel_map_pages':
+> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
+> Makefile:925: recipe for target 'vmlinux' failed
+> make: *** [vmlinux] Error 1
 > 
-> > 
-> > 
-> > Cody P Schafer (6):
-> >   perf: provide sysfs_show for struct perf_pmu_events_attr
-> >   perf: add PMU_EVENT_ATTR_STRING() helper
-> >   powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
-> >   powerpc/perf/{hv-gpci, hv-common}: generate requests with counters
-> >     annotated
-> >   powerpc/perf/hv-gpci: add the remaining gpci requests
-> >   powerpc/perf/hv-24x7: Document sysfs event description entries
-> > 
-> > Sukadev Bhattiprolu (1):
-> >   perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+> v3:
+> - fix wording for hash_utils_64.c implementation pointed out by
+> Michael Ellerman
+> - changed designation from 'mm:' to 'powerpc/mm:', as I think this
+> now belongs in ppc-land
 > 
-> generic 'perf: *' patches look good to me.. cant say much about
-> the rest of the patchset though
+> v2:
+> - corrected SUPPORTS_DEBUG_PAGEALLOC selection to enable
+> non-STD_MMU_64 builds to use the generic __kernel_map_pages().
 
-Is that an ACK ?
+I'd be happy to take this through the powerpc tree for 3.20, but for this:
 
-I'm happy to merge the rest through the powerpc tree, but I'd like an ACK on
-the first two from someone in perf land.
+> depends on:
+> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> Date: Thu, 22 Jan 2015 10:28:58 +0900
+> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other archs
+
+I don't have that patch in my tree.
+
+But in what way does this patch depend on that one?
+
+It looks to me like it'd be safe to take this on its own, or am I wrong?
 
 cheers
