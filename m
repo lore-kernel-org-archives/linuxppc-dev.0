@@ -1,44 +1,24 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F4801A0666
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:59:45 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 28 Jan 2015 09:59:42 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6FDE92BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:59:40 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0RNxVRw33030152
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:59:40 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0RNx6uI029394
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:59:06 +1100
-Message-ID: <1422403122.4949.123.camel@au1.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Avoid context switch in EEH reset if
- required
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>
-Date: Wed, 28 Jan 2015 10:58:42 +1100
-In-Reply-To: <54C81800.6070407@linux.vnet.ibm.com>
-References: <1421621243-21265-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1421746096.4949.40.camel@kernel.crashing.org>
- <20150120225607.GA12174@shangw> <20150120235338.GA5280@shangw>
- <20150123035029.GA19657@shangw>
- <1422093450.4949.89.camel@kernel.crashing.org>
- <54C6CF73.7000403@linux.vnet.ibm.com>
- <1422333116.4949.100.camel@au1.ibm.com>
- <54C81800.6070407@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EB991A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 11:54:39 +1100 (AEDT)
+Message-ID: <1422406478.32234.0.camel@ellerman.id.au>
+Subject: Re: [PATCH v7 0/4] Add support for parametrized events
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jiri Olsa <jolsa@redhat.com>
+Date: Wed, 28 Jan 2015 11:54:38 +1100
+In-Reply-To: <20150127100213.GC7810@krava.brq.redhat.com>
+References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150127100213.GC7810@krava.brq.redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, wenxiong@linux.vnet.ibm.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Brian J King <bjking1@us.ibm.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,24 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-27 at 16:58 -0600, Brian King wrote:
-> I'd argue we are our own worst enemy here really. The new user is EEH
-> code.
-> I don't see a huge reason that code would need to use this exact same
-> API.
+On Tue, 2015-01-27 at 11:02 +0100, Jiri Olsa wrote:
+> On Mon, Jan 26, 2015 at 05:43:03PM -0800, Sukadev Bhattiprolu wrote:
 > 
-> > In fact, even with IPR and the existing call, how do you wait for
-> the link to come
-> > back for a PERST ? That can take a while...
+> SNIP
 > 
-> Basically, I assert reset, delay for 1/2 second via a timer interrupt,
-> deassert reset,
-> delay for 2 seconds via another timer interrupt, then proceed with
-> adapter initialization.
+> > 
+> > 
+> > Cody P Schafer (6):
+> >   perf: provide sysfs_show for struct perf_pmu_events_attr
+> >   perf: add PMU_EVENT_ATTR_STRING() helper
+> >   powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
+> >   powerpc/perf/{hv-gpci, hv-common}: generate requests with counters
+> >     annotated
+> >   powerpc/perf/hv-gpci: add the remaining gpci requests
+> >   powerpc/perf/hv-24x7: Document sysfs event description entries
+> > 
+> > Sukadev Bhattiprolu (1):
+> >   perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
+> 
+> generic 'perf: *' patches look good to me.. cant say much about
+> the rest of the patchset though
 
-I'm surprised that even works properly... for example in the case of
-PERST we need to mask various error traps before asserting and unmask
-them when the link comes up (such as the surprise link down error), I
-don't see an opportunity in that scheme for FW to do that latter...
+Is that an ACK ?
 
-Ben.
+I'm happy to merge the rest through the powerpc tree, but I'd like an ACK on
+the first two from someone in perf land.
+
+cheers
