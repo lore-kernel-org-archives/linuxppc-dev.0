@@ -1,35 +1,42 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5056B1A0B55
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 16:54:45 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64C071A09EB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 16:43:15 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 28EF914027A
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 16:54:45 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 28 Jan 2015 11:13:12 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id D87B1E0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 11:14:27 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0S5h5hX33423518
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 11:13:06 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0S5h5xR030937
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 11:13:05 +0530
-Date: Wed, 28 Jan 2015 11:12:45 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- acme@kernel.org, mpe@ellerman.id.au
-Subject: Re: [PATCHv2 0/8] Fix perf probe issues on powerpc
-Message-ID: <20150128054245.GA2078@naverao1-tp.in.ibm.com>
-References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 28 Jan 2015 15:54:43 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 033652CE8054
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 16:54:42 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0S5sXXn36896900
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 16:54:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0S5s8Gx012201
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 16:54:08 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Ryan Grimm <grimm@linux.vnet.ibm.com>
+Subject: Re: [PATCH] CXL: Fix device_node reference counting
+In-reply-to: <1422421480.2728.1.camel@ellerman.id.au>
+References: <1420609278-15338-1-git-send-email-imunsie@au.ibm.com>
+ <1422417621-sup-4057@delenn.ozlabs.ibm.com>
+ <1422421480.2728.1.camel@ellerman.id.au>
+Date: Wed, 28 Jan 2015 16:53:44 +1100
+Message-Id: <1422423577-sup-6588@delenn.ozlabs.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +46,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/12/15 08:20PM, Naveen N Rao wrote:
-> This patchset fixes various issues with perf probe on powerpc across ABIv1 and
-> ABIv2:
-> - in the presence of DWARF debug-info,
-> - in the absence of DWARF, but with the symbol table, and
-> - in the absence of debug-info, but with kallsyms.
+Excerpts from Michael Ellerman's message of 2015-01-28 16:04:40 +1100:
+> > I just wanted to check the status of this one? I can't see it in your
+> > tree and wanted to make sure you didn't simply miss it.
 > 
-> Applies cleanly on -tip. Tested on ppc64 BE and LE.
+> It looked fishy, but I never got around to replying.
 > 
-> Changes from previous version:
-> Addressed various review comments from Mike Ellerman largely to generalize
-> changes. Some of the simpler patches have been retained in their previous form
-> to limit code churn, while others have been generalized by introducing arch
-> helpers. Individual patches have more details.
+> The second sentence in the explanation should never be true:
 
-Michael,
-Can you please take a quick look at this?
+Right, that was the point of the fix ;)
 
-- Naveen
- 
+> You shouldn't have np unless you did an of_node_get() to get it, otherwise it's
+> pointing at something you don't have a reference for and it might go away at
+> any time.
+> 
+> So the patch may fix the bug but I don't think it's correct.
+> 
+> I think pnv_pci_to_phb_node() should be doing a get for you, before returning
+> the pointer.
+
+Agreed - we should probably also rename it to have 'get' in the name,
+like pnv_pci_get_phb_node().
+
+> See as a comparison pcibios_get_phb_of_node().
+
+We could almost use that instead, except it's not exported for modules
+and I'm not sure if that even works with __weak functions?
+
+
+Ryan - do you want to respin this, or would you rather I take it?
+
+Cheers,
+-Ian
