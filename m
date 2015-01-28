@@ -1,39 +1,21 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kamal@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31DE81A09D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 09:24:44 +1100 (AEDT)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 28 Jan 2015 15:24:41 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AB59519D801C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:15:48 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0SMOkkj33947760
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:24:46 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0SMObDO030936
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 15:24:37 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH V2] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-In-Reply-To: <54C8B0E6.5080406@linux.vnet.ibm.com>
-References: <20150128021044.11166.81418.stgit@preeti.in.ibm.com>
- <m3wq47w9jj.fsf@oc8180480414.ibm.com> <54C8B0E6.5080406@linux.vnet.ibm.com>
-Date: Thu, 29 Jan 2015 09:24:33 +1100
-Message-ID: <m3oapiwnku.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: rafael.j.wysocki@intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E95691A0A09
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 09:28:43 +1100 (AEDT)
+From: Kamal Mostafa <kamal@canonical.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ kernel-team@lists.ubuntu.com
+Subject: [PATCH 3.13.y-ckt 127/139] powerpc/powernv: Switch off MMU before
+ entering nap/sleep/rvwinkle mode
+Date: Wed, 28 Jan 2015 14:21:10 -0800
+Message-Id: <1422483682-15393-128-git-send-email-kamal@canonical.com>
+In-Reply-To: <1422483682-15393-1-git-send-email-kamal@canonical.com>
+References: <1422483682-15393-1-git-send-email-kamal@canonical.com>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Kamal Mostafa <kamal@canonical.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Preeti U Murthy <preeti@linux.vnet.ibm.com> writes:
-> On 01/28/2015 02:45 PM, Stewart Smith wrote:
->> Preeti U Murthy <preeti@linux.vnet.ibm.com> writes:
->>> The device tree now exposes the residency values for different idle states. Read
->>> these values instead of calculating residency from the latency values. The values
->>> exposed in the DT are validated for optimal power efficiency. However to maintain
->>> compatibility with the older firmware code which does not expose residency
->>> values, use default values as a fallback mechanism. While at it, handle some
->>> cleanups.
->> 
->> From a "I just merged the patch that exports these values from firmware"
->> point of view, using them and falling back looks good.
->> 
->> (I find the hardcoding of snooze in the driver a bit odd, as is the
->
-> Snooze is the only software defined idle state, the rest are platform
-> specific. The first idle state is usually associated with some sort of a
-> polling operation and each architecture has a variant to this. This is
-> why we end up hard-coding this idle state in the driver as far as my
-> understanding goes.
+3.13.11-ckt15 -stable review patch.  If anyone has any objections, please let me know.
 
-At least in the PowerISA 2.07 I could only see that lowering priority
-would give priority to other threads in the core, I couldn't find
-anything saying that or 31,31,31 would end up saving any power... but I
-could be looking in the wrong place too.
+------------------
 
-Basically, I was wanting to check that it's actually written down and
-architected somewhere that this is the case and it isn't something too
-P7/P8 specific.
+From: Paul Mackerras <paulus@samba.org>
+
+commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
+
+Currently, when going idle, we set the flag indicating that we are in
+nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
+(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
+for two reasons: (a) the architecture specifies that those instructions
+must be executed with the MMU off, and in fact with only the SF, HV, ME
+and possibly RI bits set, and (b) this introduces a race, because as
+soon as we set the flag, another thread can switch the MMU to a guest
+context.  If the race is lost, this thread will typically start looping
+on relocation-on ISIs at 0xc...4400.
+
+This fixes it by setting the MSR as required by the architecture before
+setting the flag or executing the nap/sleep/rvwinkle instruction.
+
+[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Kamal Mostafa <kamal@canonical.com>
+---
+ arch/powerpc/include/asm/reg.h    |  2 ++
+ arch/powerpc/kernel/idle_power7.S | 17 +++++++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 637f513..663e5c2 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -118,8 +118,10 @@
+ #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
+ #ifdef __BIG_ENDIAN__
+ #define MSR_		__MSR
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
+ #else
+ #define MSR_		(__MSR | MSR_LE)
++#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
+ #endif
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 847e40e..1fb7fee 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -84,6 +84,23 @@ _GLOBAL(power7_nap)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
+ 
++	/*
++	 * Go to real mode to do the nap, as required by the architecture.
++	 * Also, we need to be in real mode before setting hwthread_state,
++	 * because as soon as we do that, another thread can switch
++	 * the MMU context to the guest.
++	 */
++	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
++	li	r6, MSR_RI
++	andc	r6, r9, r6
++	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
++	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
++	mtspr	SPRN_SRR0, r7
++	mtspr	SPRN_SRR1, r5
++	rfid
++
++	.globl	power7_enter_nap_mode
++power7_enter_nap_mode:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	/* Tell KVM we're napping */
+ 	li	r4,KVM_HWTHREAD_IN_NAP
+-- 
+1.9.1
