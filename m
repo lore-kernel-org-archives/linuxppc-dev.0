@@ -1,21 +1,22 @@
-Return-Path: <kamal@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E95691A0A09
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 09:28:43 +1100 (AEDT)
-From: Kamal Mostafa <kamal@canonical.com>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- kernel-team@lists.ubuntu.com
-Subject: [PATCH 3.13.y-ckt 127/139] powerpc/powernv: Switch off MMU before
- entering nap/sleep/rvwinkle mode
-Date: Wed, 28 Jan 2015 14:21:10 -0800
-Message-Id: <1422483682-15393-128-git-send-email-kamal@canonical.com>
-In-Reply-To: <1422483682-15393-1-git-send-email-kamal@canonical.com>
-References: <1422483682-15393-1-git-send-email-kamal@canonical.com>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Kamal Mostafa <kamal@canonical.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C7A61A0A40
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 09:59:59 +1100 (AEDT)
+Message-ID: <1422485983.10544.97.camel@freescale.com>
+Subject: Re: [PATCH v2 00/10] clk: qoriq: Add support for the FMan clock
+From: Scott Wood <scottwood@freescale.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Date: Wed, 28 Jan 2015 16:59:43 -0600
+In-Reply-To: <54C95910.60402@Freescale.com>
+References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
+ <20150128181504.22722.30981@quantum> <54C95910.60402@Freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, haokexin@gmail.com,
+ Mike Turquette <mturquette@linaro.org>, yuantian.tang@Freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.13.11-ckt15 -stable review patch.  If anyone has any objections, please let me know.
+On Wed, 2015-01-28 at 15:48 -0600, Emil Medve wrote:
+> Hello Mike,
+> 
+> 
+> On 01/28/2015 12:15 PM, Mike Turquette wrote:
+> > Quoting Emil Medve (2015-01-21 02:03:22)
+> >> Based on clk-next from git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git
+> >>
+> >> v2:     Rebased as several prerequisite patches (including a file rename) got
+> >>         applied upstream
+> >>
+> >> Emil Medve (9):
+> >>   clk: qoriq: Fix checkpatch type PARENTHESIS_ALIGNMENT
+> >>   clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
+> >>   clk: qoriq: Fix checkpatch type ALLOC_SIZEOF_STRUCT
+> >>   clk: qoriq: Fix checkpatch type OOM_MESSAGE
+> >>   clk: qoriq: Make local symbol 'static'
+> >>   clk: qoriq: Replace kzalloc() with kmalloc()
+> >>   clk: qoriq: Use pr_fmt()
+> > 
+> > Patches 1-7 applied to clk-next towards 3.20
+> 
+> Thank you
+> 
+> > I'd prefer some
+> > reviewed-by's from your peers at freescale for the clock driver
+> > correctness.
+> 
+> That's fair
+> 
+> >>   powerpc/corenet: Enable CLK_QORIQ
+> 
+> I was thinking Scott can pick this up
 
-------------------
+Not if the patch that introduces CLK_QORIQ goes in via another tree.
 
-From: Paul Mackerras <paulus@samba.org>
+> >> Igal Liberman (1):
+> >>   clk: qoriq: Add support for the FMan clock
+> 
+> Scott, I'd appreciate your help here
 
-commit 8117ac6a6c2fa0f847ff6a21a1f32c8d2c8501d0 upstream.
+>From internal discussion I believe you have some comments of your own on
+this patch...
 
-Currently, when going idle, we set the flag indicating that we are in
-nap mode (paca->kvm_hstate.hwthread_state) and then execute the nap
-(or sleep or rvwinkle) instruction, all with the MMU on.  This is bad
-for two reasons: (a) the architecture specifies that those instructions
-must be executed with the MMU off, and in fact with only the SF, HV, ME
-and possibly RI bits set, and (b) this introduces a race, because as
-soon as we set the flag, another thread can switch the MMU to a guest
-context.  If the race is lost, this thread will typically start looping
-on relocation-on ISIs at 0xc...4400.
-
-This fixes it by setting the MSR as required by the architecture before
-setting the flag or executing the nap/sleep/rvwinkle instruction.
-
-[ shreyas@linux.vnet.ibm.com: Edited to handle LE ]
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Kamal Mostafa <kamal@canonical.com>
----
- arch/powerpc/include/asm/reg.h    |  2 ++
- arch/powerpc/kernel/idle_power7.S | 17 +++++++++++++++++
- 2 files changed, 19 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 637f513..663e5c2 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -118,8 +118,10 @@
- #define __MSR		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
- #ifdef __BIG_ENDIAN__
- #define MSR_		__MSR
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV)
- #else
- #define MSR_		(__MSR | MSR_LE)
-+#define MSR_IDLE	(MSR_ME | MSR_SF | MSR_HV | MSR_LE)
- #endif
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 847e40e..1fb7fee 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -84,6 +84,23 @@ _GLOBAL(power7_nap)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
- 
-+	/*
-+	 * Go to real mode to do the nap, as required by the architecture.
-+	 * Also, we need to be in real mode before setting hwthread_state,
-+	 * because as soon as we do that, another thread can switch
-+	 * the MMU context to the guest.
-+	 */
-+	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
-+	li	r6, MSR_RI
-+	andc	r6, r9, r6
-+	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
-+	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
-+	mtspr	SPRN_SRR0, r7
-+	mtspr	SPRN_SRR1, r5
-+	rfid
-+
-+	.globl	power7_enter_nap_mode
-+power7_enter_nap_mode:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
--- 
-1.9.1
+-Scott
