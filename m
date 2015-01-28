@@ -1,17 +1,16 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82B581A0015
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 13:57:35 +1100 (AEDT)
-Date: Tue, 27 Jan 2015 18:57:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joonsoo Kim <js1304@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F16481A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 14:22:03 +1100 (AEDT)
+Message-ID: <1422415322.32234.3.camel@ellerman.id.au>
 Subject: Re: [PATCH v3] powerpc/mm: fix undefined reference to
  `.__kernel_map_pages' on FSL PPC64
-Message-Id: <20150127185711.ee819e4b.akpm@linux-foundation.org>
-In-Reply-To: <CAAmzW4M3O81wBFeZ+JEVZnjRwMNwXnPKeL62Zz96xe_6a7WZpg@mail.gmail.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 28 Jan 2015 14:22:02 +1100
+In-Reply-To: <20150127185711.ee819e4b.akpm@linux-foundation.org>
 References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
  <20150120230150.GA14475@cloud>
  <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
@@ -24,17 +23,18 @@ References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
  <20150126132222.6477257be204a3332601ef11@freescale.com>
  <1422406862.32234.1.camel@ellerman.id.au>
  <CAAmzW4M3O81wBFeZ+JEVZnjRwMNwXnPKeL62Zz96xe_6a7WZpg@mail.gmail.com>
+ <20150127185711.ee819e4b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Rik van Riel <riel@redhat.com>, Minchan Kim <minchan@kernel.org>,
+ Rik van Riel <riel@redhat.com>, Joonsoo Kim <js1304@gmail.com>,
+ Minchan Kim <minchan@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
  Akinobu Mita <akinobu.mita@gmail.com>, josh@joshtriplett.org,
  Jens Axboe <axboe@fb.com>, Linux Memory Management List <linux-mm@kvack.org>,
  Paul Mackerras <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
  Johannes Weiner <hannes@cmpxchg.org>, Scott Wood <scottwood@freescale.com>,
  Sasha Levin <sasha.levin@oracle.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,57 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Jan 2015 10:33:59 +0900 Joonsoo Kim <js1304@gmail.com> wrote:
-
-> 2015-01-28 10:01 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
-> > On Mon, 2015-01-26 at 13:22 -0600, Kim Phillips wrote:
-> >> arch/powerpc has __kernel_map_pages implementations in mm/pgtable_32.c, and
-> >> mm/hash_utils_64.c, of which the former is built for PPC32, and the latter
-> >> for PPC64 machines with PPC_STD_MMU.  Fix arch/powerpc/Kconfig to not select
-> >> ARCH_SUPPORTS_DEBUG_PAGEALLOC when CONFIG_PPC_STD_MMU_64 isn't defined,
-> >> i.e., for 64-bit book3e builds to use the generic __kernel_map_pages()
-> >> in mm/debug-pagealloc.c.
-> >>
-> >>   LD      init/built-in.o
-> >> mm/built-in.o: In function `kernel_map_pages':
-> >> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-> >> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-> >> include/linux/mm.h:2076: undefined reference to `.__kernel_map_pages'
-> >> Makefile:925: recipe for target 'vmlinux' failed
-> >> make: *** [vmlinux] Error 1
-> >>
-> >> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> >> ---
-> >> v3:
-> >> - fix wording for hash_utils_64.c implementation pointed out by
-> >> Michael Ellerman
-> >> - changed designation from 'mm:' to 'powerpc/mm:', as I think this
-> >> now belongs in ppc-land
-> >>
-> >> v2:
-> >> - corrected SUPPORTS_DEBUG_PAGEALLOC selection to enable
-> >> non-STD_MMU_64 builds to use the generic __kernel_map_pages().
-> >
-> > I'd be happy to take this through the powerpc tree for 3.20, but for this:
-> >
-> >> depends on:
-> >> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> >> Date: Thu, 22 Jan 2015 10:28:58 +0900
-> >> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other archs
-> >
-> > I don't have that patch in my tree.
-> >
-> > But in what way does this patch depend on that one?
-> >
-> > It looks to me like it'd be safe to take this on its own, or am I wrong?
-> >
+On Tue, 2015-01-27 at 18:57 -0800, Andrew Morton wrote:
+> On Wed, 28 Jan 2015 10:33:59 +0900 Joonsoo Kim <js1304@gmail.com> wrote:
 > 
-> Hello,
+> > 2015-01-28 10:01 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
+> > > On Mon, 2015-01-26 at 13:22 -0600, Kim Phillips wrote:
+> > >> arch/powerpc has __kernel_map_pages implementations in mm/pgtable_32.c, and
+> > >
+> > > I'd be happy to take this through the powerpc tree for 3.20, but for this:
+> > >
+> > >> depends on:
+> > >> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> > >> Date: Thu, 22 Jan 2015 10:28:58 +0900
+> > >> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other archs
+> > >
+> > > I don't have that patch in my tree.
+> > >
+> > > But in what way does this patch depend on that one?
+> > >
+> > > It looks to me like it'd be safe to take this on its own, or am I wrong?
+> > 
+> > Hello,
+> > 
+> > These two patches are merged to Andrew's tree now.
 > 
-> These two patches are merged to Andrew's tree now.
+> That didn't answer either of Michael's questions ;)
+> 
+> Yes, I think they're independent.  I was holding off on the powerpc
+> one, waiting to see if it popped up in linux-next via your tree.  I can
+> merge both if you like?
 
-That didn't answer either of Michael's questions ;)
+Right, I didn't think I'd seen it in your tree :)
 
-Yes, I think they're independent.  I was holding off on the powerpc
-one, waiting to see if it popped up in linux-next via your tree.  I can
-merge both if you like?
+I'm happy to take this one, saves a possible merge conflict.
+
+cheers
