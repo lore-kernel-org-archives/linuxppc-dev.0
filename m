@@ -1,23 +1,17 @@
-Return-Path: <mturquette@linaro.org>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mort@bork.org>
+Received: from darwin.bork.org (darwin.bork.org [IPv6:2001:470:1f05:998::1])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A725E1A0C37
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 05:15:21 +1100 (AEDT)
-Received: by mail-pa0-f51.google.com with SMTP id fb1so28218194pad.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 10:15:19 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3C2A1A033B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 06:52:44 +1100 (AEDT)
+Date: Wed, 28 Jan 2015 14:52:36 -0500
+From: Martin Hicks <mort@bork.org>
+To: chris@printf.net, Anton Vorontsov <anton@enomsg.org>
+Subject: [PATCH] mmc: sdhci: Apply FSL ESDHC reset handling quirk to OF
+Message-ID: <20150128195236.GA31422@darwin.bork.org>
 MIME-Version: 1.0
-To: Emil Medve <Emilian.Medve@Freescale.com>, linuxppc-dev@lists.ozlabs.org,
- scottwood@Freescale.com, haokexin@gmail.com, yuantian.tang@Freescale.com
-From: Mike Turquette <mturquette@linaro.org>
-In-Reply-To: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1421834611-9656-1-git-send-email-Emilian.Medve@Freescale.com>
-Message-ID: <20150128181504.22722.30981@quantum>
-Subject: Re: [PATCH v2 00/10] clk: qoriq: Add support for the FMan clock
-Date: Wed, 28 Jan 2015 10:15:04 -0800
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Emil Medve (2015-01-21 02:03:22)
-> Based on clk-next from git://git.kernel.org/pub/scm/linux/kernel/git/clk/=
-linux.git
-> =
 
-> v2:     Rebased as several prerequisite patches (including a file rename)=
- got
->         applied upstream
-> =
+The reset code was pushed into the esdhc-imx driver, but missed being
+pushed into the FSL OF driver at the same time.  The commit that broke
+the OF ESDHC driver was 0718e59ae259f7c48155b4e852d8b0632d59028e
 
-> Emil Medve (9):
->   clk: qoriq: Fix checkpatch type PARENTHESIS_ALIGNMENT
->   clk: qoriq: Fix checkpatch type ALLOC_WITH_MULTIPLY
->   clk: qoriq: Fix checkpatch type ALLOC_SIZEOF_STRUCT
->   clk: qoriq: Fix checkpatch type OOM_MESSAGE
->   clk: qoriq: Make local symbol 'static'
->   clk: qoriq: Replace kzalloc() with kmalloc()
->   clk: qoriq: Use pr_fmt()
+Signed-off-by: Martin Hicks <mort@bork.org>
+---
+ drivers/mmc/host/sdhci-of-esdhc.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-Patches 1-7 applied to clk-next towards 3.20. I'd prefer some
-reviewed-by's from your peers at freescale for the clock driver
-correctness.
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 8872c85..4a654d4 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -276,6 +276,14 @@ static void esdhc_pltfm_set_bus_width(struct sdhci_host *host, int width)
+ 			ESDHC_CTRL_BUSWIDTH_MASK, ctrl);
+ }
+ 
++static void esdhc_reset(struct sdhci_host *host, u8 mask)
++{
++	sdhci_reset(host, mask);
++
++	sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
++	sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
++}
++
+ static const struct sdhci_ops sdhci_esdhc_ops = {
+ 	.read_l = esdhc_readl,
+ 	.read_w = esdhc_readw,
+@@ -290,7 +298,7 @@ static const struct sdhci_ops sdhci_esdhc_ops = {
+ 	.platform_init = esdhc_of_platform_init,
+ 	.adma_workaround = esdhci_of_adma_workaround,
+ 	.set_bus_width = esdhc_pltfm_set_bus_width,
+-	.reset = sdhci_reset,
++	.reset = esdhc_reset,
+ 	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+-- 
+1.7.10.4
 
-Thanks,
-Mike
 
->   powerpc/corenet: Enable CLK_QORIQ
->   clk: qoriq: Add support for the platform PLL
-> =
-
-> Igal Liberman (1):
->   clk: qoriq: Add support for the FMan clock
-> =
-
->  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
->  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
->  drivers/clk/clk-qoriq.c                      | 378 +++++++++++++++++++++=
-++++--
->  3 files changed, 357 insertions(+), 23 deletions(-)
-> =
-
-> -- =
-
-> 2.2.1
+-- 
+Martin Hicks P.Eng.    |      mort@bork.org
+Bork Consulting Inc.   |  +1 (613) 266-2296
