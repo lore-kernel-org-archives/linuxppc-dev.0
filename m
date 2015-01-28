@@ -2,22 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C2221A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 17:07:46 +1100 (AEDT)
-Message-ID: <1422425265.11009.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] CXL: Fix device_node reference counting
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86D8C1A02B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2015 17:11:08 +1100 (AEDT)
+Message-ID: <1422425467.11009.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Date: Wed, 28 Jan 2015 17:07:45 +1100
-In-Reply-To: <1422423577-sup-6588@delenn.ozlabs.ibm.com>
-References: <1420609278-15338-1-git-send-email-imunsie@au.ibm.com>
- <1422417621-sup-4057@delenn.ozlabs.ibm.com>
- <1422421480.2728.1.camel@ellerman.id.au>
- <1422423577-sup-6588@delenn.ozlabs.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 28 Jan 2015 17:11:07 +1100
+In-Reply-To: <87d268v7xm.fsf@linux.vnet.ibm.com>
+References: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1421809627.4900.1.camel@ellerman.id.au>
+ <87d268v7xm.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-28 at 16:53 +1100, Ian Munsie wrote:
-> Excerpts from Michael Ellerman's message of 2015-01-28 16:04:40 +1100:
-> > > I just wanted to check the status of this one? I can't see it in your
-> > > tree and wanted to make sure you didn't simply miss it.
-> > 
-> > It looked fishy, but I never got around to replying.
-> > 
-> > The second sentence in the explanation should never be true:
+On Wed, 2015-01-21 at 14:15 +0530, Aneesh Kumar K.V wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
 > 
-> Right, that was the point of the fix ;)
-
-Sure, but bodging of_node_get()s all over the place is not a path to success.
-
-> > You shouldn't have np unless you did an of_node_get() to get it, otherwise it's
-> > pointing at something you don't have a reference for and it might go away at
-> > any time.
-> > 
-> > So the patch may fix the bug but I don't think it's correct.
-> > 
-> > I think pnv_pci_to_phb_node() should be doing a get for you, before returning
-> > the pointer.
+> > On Tue, 2015-01-20 at 17:05 +0530, Aneesh Kumar K.V wrote:
+> >> This enables us to understand how many hash fault we are taking
+> >> when running benchmarks.
+> >> 
+> >> For ex:
+> >> -bash-4.2# ./perf stat -e  powerpc:hash_fault -e page-faults /tmp/ebizzy.ppc64 -S 30  -P -n 1000
+> >> ...
+> >> 
+> >>  Performance counter stats for '/tmp/ebizzy.ppc64 -S 30 -P -n 1000':
+> >> 
+> >>        1,10,04,075      powerpc:hash_fault
+> >>        1,10,03,429      page-faults
+> >> 
+> >>       30.865978991 seconds time elapsed
+> >
+> > Looks good.
+> >
+> > Can you attach some test results that show it's not hurting performance when
+> > it's disabled.
 > 
-> Agreed - we should probably also rename it to have 'get' in the name,
-> like pnv_pci_get_phb_node().
+> ebizzy with -S 30 -t 1 -P gave
+> 13627 records/s -> Without patch
+> 13546 records/s -> With patch with tracepoint disabled
 
-Yep.
+OK. So that's about -0.6%. Are we happy with that? I'm not sure.
 
-> > See as a comparison pcibios_get_phb_of_node().
-> 
-> We could almost use that instead, except it's not exported for modules
-> and I'm not sure if that even works with __weak functions?
+Can you do a few more runs and see if that's a stable result.
 
-It should. It's only weak until the final link and then you get a non-weak
-version AIUI.
+> random_access_bench gave:
+> 1435.979 MB/s -> Without patch
+> 1435.29  MB/s -> With patch with tracepoint disabled
 
-Try it.
-
-And a follow up patch to have it use pci_bus_to_host() would be nice too.
+That's more like -0.05% which is in the noise.
 
 cheers
