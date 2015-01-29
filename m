@@ -1,44 +1,26 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D5C171A0BF2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 15:05:57 +1100 (AEDT)
-Message-ID: <1422504356.6621.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc/mm: fix undefined reference to
- `.__kernel_map_pages' on FSL PPC64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19CD01A0C10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 15:24:50 +1100 (AEDT)
+Message-ID: <1422505489.6621.5.camel@ellerman.id.au>
+Subject: Re: [PATCH v7 0/4] Add support for parametrized events
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Date: Thu, 29 Jan 2015 15:05:56 +1100
-In-Reply-To: <20150128141417.ba2e413fd8ccc8bfd65196e1@freescale.com>
-References: <20150120140200.aa7ba0eb28d95e456972e178@freescale.com>
- <20150120230150.GA14475@cloud>
- <20150120160738.edfe64806cc8b943beb1dfa0@linux-foundation.org>
- <CAC5umyieZn7ppXkKb45O=C=BF+iv6R_A1Dwfhro=cBJzFeovrA@mail.gmail.com>
- <20150122014550.GA21444@js1304-P5Q-DELUXE>
- <20150122144147.019eedc41f189eac44c3c4cd@freescale.com>
- <CAC5umyiF52cykH2_5TD0yzXb+842gywpe-+XZHEwmrDe0nYCPw@mail.gmail.com>
- <20150122212017.4b7032d52a6c75c06d5b4728@freescale.com>
- <1421987091.24984.13.camel@ellerman.id.au>
- <20150126132222.6477257be204a3332601ef11@freescale.com>
- <1422406862.32234.1.camel@ellerman.id.au>
- <CAAmzW4M3O81wBFeZ+JEVZnjRwMNwXnPKeL62Zz96xe_6a7WZpg@mail.gmail.com>
- <20150127185711.ee819e4b.akpm@linux-foundation.org>
- <1422415322.32234.3.camel@ellerman.id.au>
- <20150128141417.ba2e413fd8ccc8bfd65196e1@freescale.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Date: Thu, 29 Jan 2015 15:24:49 +1100
+In-Reply-To: <20150128103753.GA4584@krava.brq.redhat.com>
+References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150127100213.GC7810@krava.brq.redhat.com>
+ <1422406478.32234.0.camel@ellerman.id.au>
+ <20150128103753.GA4584@krava.brq.redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>,
- Rik van Riel <riel@redhat.com>, Joonsoo Kim <js1304@gmail.com>,
- Minchan Kim <minchan@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Akinobu Mita <akinobu.mita@gmail.com>, josh@joshtriplett.org,
- Jens Axboe <axboe@fb.com>, Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Johannes Weiner <hannes@cmpxchg.org>, Scott Wood <scottwood@freescale.com>,
- Sasha Levin <sasha.levin@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, dev@codyps.com,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,51 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-28 at 14:14 -0600, Kim Phillips wrote:
-> On Wed, 28 Jan 2015 14:22:02 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
-> 
-> > On Tue, 2015-01-27 at 18:57 -0800, Andrew Morton wrote:
-> > > On Wed, 28 Jan 2015 10:33:59 +0900 Joonsoo Kim <js1304@gmail.com> wrote:
+On Wed, 2015-01-28 at 11:37 +0100, Jiri Olsa wrote:
+> On Wed, Jan 28, 2015 at 11:54:38AM +1100, Michael Ellerman wrote:
+> > On Tue, 2015-01-27 at 11:02 +0100, Jiri Olsa wrote:
+> > > On Mon, Jan 26, 2015 at 05:43:03PM -0800, Sukadev Bhattiprolu wrote:
 > > > 
-> > > > 2015-01-28 10:01 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
-> > > > > On Mon, 2015-01-26 at 13:22 -0600, Kim Phillips wrote:
-> > > > >> arch/powerpc has __kernel_map_pages implementations in mm/pgtable_32.c, and
-> > > > >
-> > > > > I'd be happy to take this through the powerpc tree for 3.20, but for this:
-> > > > >
-> > > > >> depends on:
-> > > > >> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> > > > >> Date: Thu, 22 Jan 2015 10:28:58 +0900
-> > > > >> Subject: [PATCH] mm/debug_pagealloc: fix build failure on ppc and some other archs
-> > > > >
-> > > > > I don't have that patch in my tree.
-> > > > >
-> > > > > But in what way does this patch depend on that one?
-> > > > >
-> > > > > It looks to me like it'd be safe to take this on its own, or am I wrong?
+> > > SNIP
+> > > 
 > > > > 
-> > > > Hello,
 > > > > 
-> > > > These two patches are merged to Andrew's tree now.
+> > > > Cody P Schafer (6):
+> > > >   perf: provide sysfs_show for struct perf_pmu_events_attr
+> > > >   perf: add PMU_EVENT_ATTR_STRING() helper
+> > > >   powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
+> > > >   powerpc/perf/{hv-gpci, hv-common}: generate requests with counters
+> > > >     annotated
+> > > >   powerpc/perf/hv-gpci: add the remaining gpci requests
+> > > >   powerpc/perf/hv-24x7: Document sysfs event description entries
+> > > > 
+> > > > Sukadev Bhattiprolu (1):
+> > > >   perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
 > > > 
-> > > That didn't answer either of Michael's questions ;)
-> > > 
-> > > Yes, I think they're independent.  I was holding off on the powerpc
-> 
-> sorry - my bad, they are indeed completely independent.
- 
-No worries.
-
-> > > one, waiting to see if it popped up in linux-next via your tree.  I can
-> > > merge both if you like?
+> > > generic 'perf: *' patches look good to me.. cant say much about
+> > > the rest of the patchset though
 > > 
-> > Right, I didn't think I'd seen it in your tree :)
-> > 
-> > I'm happy to take this one, saves a possible merge conflict.
+> > Is that an ACK ?
 > 
-> I'm fine either way (I work on linux-next).
+> ah right, sry ;-)
+> 
+> Acked-by: Jiri Olsa <jolsa@kernel.org>
 
-Cool. It's in my next as of now, so should be in linux-next tomorrow (30th).
+Thanks. I'll add it to the first two patches.
 
 cheers
