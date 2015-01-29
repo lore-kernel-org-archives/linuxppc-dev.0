@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D42951A0BD5
+ by lists.ozlabs.org (Postfix) with ESMTPS id D55B51A0C2B
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:32 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 29 Jan 2015 19:22:22 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7B7E42BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:19 +1100 (EST)
+ Thu, 29 Jan 2015 19:22:18 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0CBE72CE8058
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:16 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0T9MJ1G47972438
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:19 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0T9MG2V34734290
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:16 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0T9MHHG023037
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:18 +1100
+ t0T9MExj022904
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:14 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 13/24] powerpc/pseries/lpar: Enable VFIO
-Date: Thu, 29 Jan 2015 20:21:54 +1100
-Message-Id: <1422523325-1389-14-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 09/24] powerpc/iommu: Fix IOMMU ownership control functions
+Date: Thu, 29 Jan 2015 20:21:50 +1100
+Message-Id: <1422523325-1389-10-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,141 +41,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch introduced iommu_table_ops::exchange() callback
-which effectively disabled VFIO on pseries. This implements exchange()
-for pseries/lpar so VFIO can work in nested guests.
+This adds missing locks in iommu_take_ownership()/
+iommu_release_ownership().
 
-Since exchange() callback returns an old TCE, it has to call H_GET_TCE
-for every TCE being put to the table so VFIO performance in guests
-running under PR KVM is expected to be slower than in guests running under
-HV KVM or bare metal hosts.
+This marks all pages busy in iommu_table::it_map in order to catch
+errors if there is an attempt to use this table while ownership over it
+is taken.
+
+This only clears TCE content if there is no page marked busy in it_map.
+Clearing must be done outside of the table locks as iommu_clear_tce()
+called from iommu_clear_tces_and_put_pages() does this.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
+Note: we might want to get rid of it as this patchset removes it_map
+from tables passed to VFIO.
+
 Changes:
 v5:
-* added global lock for xchg operations
-* added missing be64_to_cpu(oldtce)
+* do not store bit#0 value, it has to be set for zero-based table
+anyway
+* removed test_and_clear_bit
+* only disable bypass if succeeded
 ---
- arch/powerpc/platforms/pseries/iommu.c | 44 ++++++++++++++++++++++++++++++++--
- 1 file changed, 42 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/iommu.c | 31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index f537e6e..a903a27 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -137,14 +137,25 @@ static void tce_freemulti_pSeriesLP(struct iommu_table*, long, long);
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 952939f..407d0d6 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1024,33 +1024,48 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
  
- static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				long npages, unsigned long uaddr,
-+				unsigned long *old_tces,
- 				enum dma_data_direction direction,
- 				struct dma_attrs *attrs)
+ int iommu_take_ownership(struct iommu_table *tbl)
  {
- 	u64 rc = 0;
- 	u64 proto_tce, tce;
- 	u64 rpn;
--	int ret = 0;
-+	int ret = 0, i = 0;
- 	long tcenum_start = tcenum, npages_start = npages;
-+	static spinlock_t get_tces_lock;
-+	static bool get_tces_lock_initialized;
+-	unsigned long sz = (tbl->it_size + 7) >> 3;
++	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
++	int ret = 0;
 +
-+	if (old_tces) {
-+		if (!get_tces_lock_initialized) {
-+			spin_lock_init(&get_tces_lock);
-+			get_tces_lock_initialized = true;
-+		}
-+		spin_lock(&get_tces_lock);
-+	}
++	spin_lock_irqsave(&tbl->large_pool.lock, flags);
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_lock(&tbl->pools[i].lock);
  
- 	rpn = __pa(uaddr) >> TCE_SHIFT;
- 	proto_tce = TCE_PCI_READ;
-@@ -153,6 +164,14 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	if (tbl->it_offset == 0)
+ 		clear_bit(0, tbl->it_map);
  
- 	while (npages--) {
- 		tce = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
-+		if (old_tces) {
-+			unsigned long oldtce = 0;
-+
-+			plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12,
-+					&oldtce);
-+			old_tces[i] = be64_to_cpu(oldtce);
-+			i++;
-+		}
- 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, tce);
- 
- 		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
-@@ -173,13 +192,18 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		tcenum++;
- 		rpn++;
- 	}
-+
-+	if (old_tces)
-+		spin_unlock(&get_tces_lock);
-+
- 	return ret;
- }
- 
- static DEFINE_PER_CPU(__be64 *, tce_page);
- 
--static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+static int tce_xchg_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				     long npages, unsigned long uaddr,
-+				     unsigned long *old_tces,
- 				     enum dma_data_direction direction,
- 				     struct dma_attrs *attrs)
- {
-@@ -194,6 +218,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 
- 	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_MULTITCE)) {
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					   old_tces,
- 		                           direction, attrs);
+ 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+ 		pr_err("iommu_tce: it_map is not empty");
+-		return -EBUSY;
++		ret = -EBUSY;
++		if (tbl->it_offset == 0)
++			set_bit(0, tbl->it_map);
++	} else {
++		memset(tbl->it_map, 0xff, sz);
  	}
  
-@@ -210,6 +235,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		if (!tcep) {
- 			local_irq_restore(flags);
- 			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-+					    old_tces,
- 					    direction, attrs);
- 		}
- 		__this_cpu_write(tce_page, tcep);
-@@ -231,6 +257,10 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		for (l = 0; l < limit; l++) {
- 			tcep[l] = cpu_to_be64(proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT);
- 			rpn++;
-+			if (old_tces)
-+				plpar_tce_get((u64)tbl->it_index,
-+						(u64)(tcenum + l) << 12,
-+						&old_tces[tcenum + l]);
- 		}
+-	memset(tbl->it_map, 0xff, sz);
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_unlock(&tbl->pools[i].lock);
++	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
  
- 		rc = plpar_tce_put_indirect((u64)tbl->it_index,
-@@ -261,6 +291,15 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 	return ret;
+ 	/*
+ 	 * Disable iommu bypass, otherwise the user can DMA to all of
+ 	 * our physical memory via the bypass window instead of just
+ 	 * the pages that has been explicitly mapped into the iommu
+ 	 */
+-	if (tbl->set_bypass)
++	if (!ret && tbl->set_bypass)
+ 		tbl->set_bypass(tbl, false);
+ 
+-	return 0;
++	return ret;
  }
+ EXPORT_SYMBOL_GPL(iommu_take_ownership);
  
-+static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
-+				     long npages, unsigned long uaddr,
-+				     enum dma_data_direction direction,
-+				     struct dma_attrs *attrs)
-+{
-+	return tce_xchg_pSeriesLP(tbl, tcenum, npages, uaddr, NULL,
-+			direction, attrs);
-+}
-+
- static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
+ void iommu_release_ownership(struct iommu_table *tbl)
  {
- 	u64 rc;
-@@ -634,6 +673,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+-	unsigned long sz = (tbl->it_size + 7) >> 3;
++	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
++
++	spin_lock_irqsave(&tbl->large_pool.lock, flags);
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_lock(&tbl->pools[i].lock);
  
- struct iommu_table_ops iommu_table_lpar_multi_ops = {
- 	.set = tce_buildmulti_pSeriesLP,
-+	.exchange = tce_xchg_pSeriesLP,
- 	.clear = tce_freemulti_pSeriesLP,
- 	.get = tce_get_pSeriesLP
- };
+ 	memset(tbl->it_map, 0, sz);
+ 
+@@ -1058,6 +1073,10 @@ void iommu_release_ownership(struct iommu_table *tbl)
+ 	if (tbl->it_offset == 0)
+ 		set_bit(0, tbl->it_map);
+ 
++	for (i = 0; i < tbl->nr_pools; i++)
++		spin_unlock(&tbl->pools[i].lock);
++	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
++
+ 	/* The kernel owns the device now, we can restore the iommu bypass */
+ 	if (tbl->set_bypass)
+ 		tbl->set_bypass(tbl, true);
 -- 
 2.0.0
