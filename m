@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D55B51A0C2B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FE261A0C23
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:21 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 29 Jan 2015 19:22:18 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0CBE72CE8058
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:16 +1100 (EST)
+ Thu, 29 Jan 2015 19:22:14 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DD7C12BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:11 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0T9MG2V34734290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:16 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0T9MB0j48955508
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:11 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0T9MExj022904
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:14 +1100
+ t0T9MAYZ022675
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:10 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 09/24] powerpc/iommu: Fix IOMMU ownership control functions
-Date: Thu, 29 Jan 2015 20:21:50 +1100
-Message-Id: <1422523325-1389-10-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 04/24] vfio: powerpc/spapr: Use it_page_size
+Date: Thu, 29 Jan 2015 20:21:45 +1100
+Message-Id: <1422523325-1389-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,101 +41,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds missing locks in iommu_take_ownership()/
-iommu_release_ownership().
+This makes use of the it_page_size from the iommu_table struct
+as page size can differ.
 
-This marks all pages busy in iommu_table::it_map in order to catch
-errors if there is an attempt to use this table while ownership over it
-is taken.
-
-This only clears TCE content if there is no page marked busy in it_map.
-Clearing must be done outside of the table locks as iommu_clear_tce()
-called from iommu_clear_tces_and_put_pages() does this.
+This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
+as recently introduced IOMMU_PAGE_XXX macros do not include
+IOMMU_PAGE_SHIFT.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Note: we might want to get rid of it as this patchset removes it_map
-from tables passed to VFIO.
+ drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-Changes:
-v5:
-* do not store bit#0 value, it has to be set for zero-based table
-anyway
-* removed test_and_clear_bit
-* only disable bypass if succeeded
----
- arch/powerpc/kernel/iommu.c | 31 +++++++++++++++++++++++++------
- 1 file changed, 25 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 952939f..407d0d6 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1024,33 +1024,48 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 99b98fa..c596053 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -97,7 +97,7 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
+ 	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+ 	locked = current->mm->locked_vm + npages;
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+@@ -126,7 +126,7 @@ static void tce_iommu_disable(struct tce_container *container)
  
- int iommu_take_ownership(struct iommu_table *tbl)
- {
--	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->locked_vm -= (container->tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++			container->tbl->it_page_shift) >> PAGE_SHIFT;
+ 	up_write(&current->mm->mmap_sem);
+ }
  
- 	if (tbl->it_offset == 0)
- 		clear_bit(0, tbl->it_map);
- 
- 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
- 		pr_err("iommu_tce: it_map is not empty");
--		return -EBUSY;
-+		ret = -EBUSY;
-+		if (tbl->it_offset == 0)
-+			set_bit(0, tbl->it_map);
-+	} else {
-+		memset(tbl->it_map, 0xff, sz);
+@@ -232,7 +232,7 @@ static long tce_iommu_build(struct tce_container *container,
+ 					tce, ret);
+ 			break;
+ 		}
+-		tce += IOMMU_PAGE_SIZE_4K;
++		tce += IOMMU_PAGE_SIZE(tbl);
  	}
  
--	memset(tbl->it_map, 0xff, sz);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+ 	if (ret)
+@@ -277,8 +277,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (info.argsz < minsz)
+ 			return -EINVAL;
  
- 	/*
- 	 * Disable iommu bypass, otherwise the user can DMA to all of
- 	 * our physical memory via the bypass window instead of just
- 	 * the pages that has been explicitly mapped into the iommu
- 	 */
--	if (tbl->set_bypass)
-+	if (!ret && tbl->set_bypass)
- 		tbl->set_bypass(tbl, false);
+-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
+-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
++		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
++		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+ 		info.flags = 0;
  
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(iommu_take_ownership);
+ 		if (copy_to_user((void __user *)arg, &info, minsz))
+@@ -308,8 +308,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
  
- void iommu_release_ownership(struct iommu_table *tbl)
- {
--	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-+
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
+-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
+-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
++		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
+ 			return -EINVAL;
  
- 	memset(tbl->it_map, 0, sz);
+ 		/* iova is checked by the IOMMU API */
+@@ -324,8 +324,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 			return ret;
  
-@@ -1058,6 +1073,10 @@ void iommu_release_ownership(struct iommu_table *tbl)
- 	if (tbl->it_offset == 0)
- 		set_bit(0, tbl->it_map);
+ 		ret = tce_iommu_build(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				tce, param.size >> tbl->it_page_shift);
  
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-+
- 	/* The kernel owns the device now, we can restore the iommu bypass */
- 	if (tbl->set_bypass)
- 		tbl->set_bypass(tbl, true);
+ 		iommu_flush_tce(tbl);
+ 
+@@ -351,17 +351,17 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
+-		if (param.size & ~IOMMU_PAGE_MASK_4K)
++		if (param.size & ~IOMMU_PAGE_MASK(tbl))
+ 			return -EINVAL;
+ 
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.size >> tbl->it_page_shift);
+ 		if (ret)
+ 			return ret;
+ 
+ 		ret = tce_iommu_clear(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				param.size >> tbl->it_page_shift);
+ 		iommu_flush_tce(tbl);
+ 
+ 		return ret;
 -- 
 2.0.0
