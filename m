@@ -1,24 +1,36 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qg0-f53.google.com (mail-qg0-f53.google.com
- [209.85.192.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB2C51A0F4B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 23:19:58 +1100 (AEDT)
-Received: by mail-qg0-f53.google.com with SMTP id a108so27062975qge.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 04:19:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AECA71A0715
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 05:04:05 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Thu, 29 Jan 2015 18:04:01 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id D646117D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 18:04:03 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0TI3w2h9961982
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 18:03:58 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0TI3vqP001276
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 11:03:57 -0700
+Date: Thu, 29 Jan 2015 19:03:53 +0100
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 0/4] VPHN parsing fixes
+Message-ID: <20150129190353.401248ab@bahia.local>
+In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
+References: <20141217094007.16957.70423.stgit@bahia.local>
 MIME-Version: 1.0
-In-Reply-To: <20150128195236.GA31422@darwin.bork.org>
-References: <20150128195236.GA31422@darwin.bork.org>
-Date: Thu, 29 Jan 2015 13:19:55 +0100
-Message-ID: <CAPDyKFqwieB6h9WXHea1J1QM3yHJgMMH2-b0ym4xUfZc1iHPQw@mail.gmail.com>
-Subject: Re: [PATCH] mmc: sdhci: Apply FSL ESDHC reset handling quirk to OF
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Martin Hicks <mort@bork.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <anton@enomsg.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Chris Ball <chris@printf.net>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +40,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28 January 2015 at 20:52, Martin Hicks <mort@bork.org> wrote:
->
-> The reset code was pushed into the esdhc-imx driver, but missed being
-> pushed into the FSL OF driver at the same time.  The commit that broke
-> the OF ESDHC driver was 0718e59ae259f7c48155b4e852d8b0632d59028e
->
-> Signed-off-by: Martin Hicks <mort@bork.org>
+On Wed, 17 Dec 2014 10:40:46 +0100
+Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
+> Hi,
+> 
+> This series addresses remarks from Ben and Michael (see individual patches).
+> The most notable changes are:
+> - the parsing code being pull out into a separate file in patch 3/4. This
+>   allows to write userland tests like the one below.
+> - a full rewrite of the parsing logic in patch 4/4
+> 
 
-Martin, thanks for the patch. Though I have already queued a patch for
-this issue. It's available on my next branch.
+Ping ?
 
-Alessio Igor Bogani <alessio.bogani@elettra.eu>
-mmc: sdhci: Fix FSL ESDHC reset handling quirk
-
-Kind regards
-Uffe
-
+> --
+> #include <stdio.h>
+> #include <byteswap.h>
+> 
+> typedef unsigned long u64;
+> typedef unsigned int u32;
+> typedef unsigned short u16;
+> typedef enum { false = 0, true } bool;
+> 
+> #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+> #define cpu_to_be32(x)		bswap_32(x)
+> #define be32_to_cpu(x)		bswap_32(x)
+> #define be16_to_cpup(x)		bswap_16(*x)
+> #define cpu_to_be64(x)		bswap_64(x)
+> #else
+> #define cpu_to_be32(x)		(x)
+> #define be32_to_cpu(x)		(x)
+> #define be16_to_cpup(x)		(*x)
+> #define cpu_to_be64(x)		(x)
+> #endif
+> 
+> #define pr_debug(...) printf(__VA_ARGS__)
+> 
+> #include "vphn.c"
+> 
+> void print_packed(const long *packed)
+> {
+> 	char *p = (char*) packed;
+> 	int i;
+> 
+> 	printf("\nRegisters:\n");
+> 	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
+> 		printf("0x%016lx\n", packed[i]);
+> 
+> 	printf("\nMemory layout:\n");
+> 	for (i = 0; i < 6; i++) {
+> 		printf("0x %02hhx %02hhx %02hhx %02hhx"
+> 		       " %02hhx %02hhx %02hhx %02hhx\n",
+> 		       *(p + 0), *(p + 1), *(p + 2), *(p + 3),
+> 		       *(p + 4), *(p + 5), *(p + 6), *(p + 7));
+> 		p += 8;
+> 	}
+> 
+> 	putchar('\n');
+> }
+> 
+> void print_unpacked(const __be32 *unpacked)
+> {
+> 	int i;
+> 
+> 	printf("\nVPHN associativity:\n");
+> 	for (i = 0; i <= be32_to_cpu(unpacked[0]); i++)
+> 		printf("0x%08x\n", be32_to_cpu(unpacked[i]));
+> 
+> 	putchar('\n');
+> }
+> 
+> int main(int argc, char **argv)
+> {
+> 	int i;
+> 	struct {
+> 		const char *descr;
+> 		long packed[VPHN_REGISTER_COUNT];
+> 	} data[] = {
+> 		{
+> 			"16-bit and 32-bit",
+> 			0x8001800280038004,
+> 			0x8005800680078008,
+> 			0x000000090000000a,
+> 			0x0000000b0000000c,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff
+> 		},
+> 		{
+> 			"filled with 16-bit",
+> 			0x8001800280038004,
+> 			0x8005800680078008,
+> 			0x8009800a800b800c,
+> 			0x800d800e800f8010,
+> 			0x8011801280138014,
+> 			0x8015801680178018,
+> 		},
+> 		{
+> 			"filled with 32-bit",
+> 			0x0000000100000002,
+> 			0x0000000300000004,
+> 			0x0000000500000006,
+> 			0x0000000700000008,
+> 			0x000000090000000a,
+> 			0x0000000b0000000c,
+> 		},
+> 		{
+> 			"32-bit has all ones in 16 lower bits",
+> 			0x0001ffff80028003,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 		},
+> 		{
+> 			"32-bit accross two 64-bit registers",
+> 			0x8001000000020000,
+> 			0x0003000000048005,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 			0xffffffffffffffff,
+> 		},
+> 		{
+> 			"Truncated last 32-bit",
+> 			0x0000000100000002,
+> 			0x0000000300000004,
+> 			0x0000000500000006,
+> 			0x0000000700000008,
+> 			0x000000090000000a,
+> 			0x0000000b800c0bad,
+> 		},
+> 	};
+> 
+> 	for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+> 		__be32 unpacked[VPHN_ASSOC_BUFSIZE] = { 0 };
+> 		printf("\n==================================================\n");
+> 		printf("\nSet #%d: %s\n", i, data[i].descr);
+> 		printf("\n==================================================\n");
+> 		print_packed(data[i].packed);
+> 		vphn_unpack_associativity(data[i].packed, unpacked);
+> 		print_unpacked(unpacked);
+> 	}
+> 
+> 	return 0;
+> }
+> 
 > ---
->  drivers/mmc/host/sdhci-of-esdhc.c |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-> index 8872c85..4a654d4 100644
-> --- a/drivers/mmc/host/sdhci-of-esdhc.c
-> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-> @@ -276,6 +276,14 @@ static void esdhc_pltfm_set_bus_width(struct sdhci_host *host, int width)
->                         ESDHC_CTRL_BUSWIDTH_MASK, ctrl);
->  }
->
-> +static void esdhc_reset(struct sdhci_host *host, u8 mask)
-> +{
-> +       sdhci_reset(host, mask);
-> +
-> +       sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
-> +       sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
-> +}
-> +
->  static const struct sdhci_ops sdhci_esdhc_ops = {
->         .read_l = esdhc_readl,
->         .read_w = esdhc_readw,
-> @@ -290,7 +298,7 @@ static const struct sdhci_ops sdhci_esdhc_ops = {
->         .platform_init = esdhc_of_platform_init,
->         .adma_workaround = esdhci_of_adma_workaround,
->         .set_bus_width = esdhc_pltfm_set_bus_width,
-> -       .reset = sdhci_reset,
-> +       .reset = esdhc_reset,
->         .set_uhs_signaling = sdhci_set_uhs_signaling,
->  };
->
+> 
+> Greg Kurz (4):
+>       powerpc/vphn: clarify the H_HOME_NODE_ASSOCIATIVITY API
+>       powerpc/vphn: move endianness fixing to vphn_unpack_associativity()
+>       powerpc/vphn: move VPHN parsing logic to a separate file
+>       powerpc/vphn: parsing code rewrite
+> 
+> 
+>  arch/powerpc/mm/Makefile |    1 +
+>  arch/powerpc/mm/numa.c   |   55 ++----------------------------------
+>  arch/powerpc/mm/vphn.c   |   70 ++++++++++++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/mm/vphn.h   |   16 +++++++++++
+>  4 files changed, 90 insertions(+), 52 deletions(-)
+>  create mode 100644 arch/powerpc/mm/vphn.c
+>  create mode 100644 arch/powerpc/mm/vphn.h
+> 
 > --
-> 1.7.10.4
->
->
-> --
-> Martin Hicks P.Eng.    |      mort@bork.org
-> Bork Consulting Inc.   |  +1 (613) 266-2296
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Greg
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
