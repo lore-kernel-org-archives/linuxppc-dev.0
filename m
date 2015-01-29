@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B25BE1A0D1B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EFF51A0D33
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:37 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 29 Jan 2015 19:22:26 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 00D3A3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:23 +1100 (EST)
+ Thu, 29 Jan 2015 19:22:27 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A62E62BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:24 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0T9MMGb36765822
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:22 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0T9MOQL11665478
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:24 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0T9MLh3023203
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:21 +1100
+ t0T9MM91023269
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 20:22:23 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 18/24] powerpc/iommu: Split iommu_free_table into 2 helpers
-Date: Thu, 29 Jan 2015 20:21:59 +1100
-Message-Id: <1422523325-1389-19-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v3 20/24] powerpc/powernv: Change prototypes to receive iommu
+Date: Thu, 29 Jan 2015 20:22:01 +1100
+Message-Id: <1422523325-1389-21-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,108 +41,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The iommu_free_table helper release memory it is using (the TCE table and
-@it_map) and release the iommu_table struct as well. We might not want
-the very last step as we store iommu_table in parent structures.
+This changes few functions to receive a powerpc_iommu pointer
+rather than PE as they are going to be a part of upcoming
+powerpc_iommu_ops callback set.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/iommu.h |  1 +
- arch/powerpc/kernel/iommu.c      | 57 ++++++++++++++++++++++++----------------
- 2 files changed, 35 insertions(+), 23 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index bf26d47..cc26eca 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -122,6 +122,7 @@ static inline void *get_iommu_table_base(struct device *dev)
- 
- extern struct iommu_table *iommu_table_alloc(int node);
- /* Frees table for an individual device node */
-+extern void iommu_reset_table(struct iommu_table *tbl, const char *node_name);
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
- 
- /* Initializes an iommu_table based in values set in the passed-in
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 26feaff..5f87076 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -721,24 +721,46 @@ struct iommu_table *iommu_table_alloc(int node)
- 	return &iommu->tables[0];
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index f542819..29bd7a4 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1360,10 +1360,12 @@ static __be64 *pnv_alloc_tce_table(int nid,
+ 	return addr;
  }
  
-+void iommu_reset_table(struct iommu_table *tbl, const char *node_name)
-+{
-+	if (!tbl)
-+		return;
-+
-+	if (tbl->it_map) {
-+		unsigned long bitmap_sz;
-+		unsigned int order;
-+
-+		/*
-+		 * In case we have reserved the first bit, we should not emit
-+		 * the warning below.
-+		 */
-+		if (tbl->it_offset == 0)
-+			clear_bit(0, tbl->it_map);
-+
-+		/* verify that table contains no entries */
-+		if (!bitmap_empty(tbl->it_map, tbl->it_size))
-+			pr_warn("%s: Unexpected TCEs for %s\n", __func__,
-+					node_name);
-+
-+		/* calculate bitmap size in bytes */
-+		bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-+
-+		/* free bitmap */
-+		order = get_order(bitmap_sz);
-+		free_pages((unsigned long) tbl->it_map, order);
-+	}
-+
-+	memset(tbl, 0, sizeof(*tbl));
-+}
-+
- void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+-static long pnv_pci_ioda2_create_table(struct pnv_ioda_pe *pe,
++static long pnv_pci_ioda2_create_table(struct powerpc_iommu *iommu,
+ 		__u32 page_shift, __u32 window_shift, __u32 levels,
+ 		struct iommu_table *tbl)
  {
--	unsigned long bitmap_sz;
--	unsigned int order;
- 	struct powerpc_iommu *iommu = tbl->it_iommu;
- 
--	if (!tbl || !tbl->it_map) {
--		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
--				node_name);
-+	if (!tbl)
- 		return;
--	}
- 
--	/*
--	 * In case we have reserved the first bit, we should not emit
--	 * the warning below.
--	 */
--	if (tbl->it_offset == 0)
--		clear_bit(0, tbl->it_map);
-+	iommu_reset_table(tbl, node_name);
- 
- #ifdef CONFIG_IOMMU_API
- 	if (iommu->group) {
-@@ -747,17 +769,6 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
- 	}
- #endif
- 
--	/* verify that table contains no entries */
--	if (!bitmap_empty(tbl->it_map, tbl->it_size))
--		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
--
--	/* calculate bitmap size in bytes */
--	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
--
--	/* free bitmap */
--	order = get_order(bitmap_sz);
--	free_pages((unsigned long) tbl->it_map, order);
--
- 	/* free table */
- 	kfree(iommu);
++	struct pnv_ioda_pe *pe = container_of(iommu, struct pnv_ioda_pe,
++						iommu);
+ 	int nid = pe->phb->hose->node;
+ 	void *addr;
+ 	unsigned long tce_table_size, left;
+@@ -1419,9 +1421,11 @@ static void pnv_pci_ioda2_free_table(struct iommu_table *tbl)
+ 	iommu_reset_table(tbl, "ioda2");
  }
+ 
+-static long pnv_pci_ioda2_set_window(struct pnv_ioda_pe *pe,
++static long pnv_pci_ioda2_set_window(struct powerpc_iommu *iommu,
+ 		struct iommu_table *tbl)
+ {
++	struct pnv_ioda_pe *pe = container_of(iommu, struct pnv_ioda_pe,
++						iommu);
+ 	struct pnv_phb *phb = pe->phb;
+ 	const __be64 *swinvp;
+ 	int64_t rc;
+@@ -1554,12 +1558,11 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 
+ 	/* The PE will reserve all possible 32-bits space */
+ 	pe->tce32_seg = 0;
+-
+ 	end = (1 << ilog2(phb->ioda.m32_pci_base));
+ 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
+ 		end);
+ 
+-	rc = pnv_pci_ioda2_create_table(pe, IOMMU_PAGE_SHIFT_4K,
++	rc = pnv_pci_ioda2_create_table(&pe->iommu, IOMMU_PAGE_SHIFT_4K,
+ 			ilog2(phb->ioda.m32_pci_base),
+ 			POWERPC_IOMMU_DEFAULT_LEVELS, tbl);
+ 	if (rc) {
+@@ -1571,7 +1574,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	pe->iommu.tables[0].it_iommu = &pe->iommu;
+ 	pe->iommu.ops = &pnv_pci_ioda2_ops;
+ 
+-	rc = pnv_pci_ioda2_set_window(pe, tbl);
++	rc = pnv_pci_ioda2_set_window(&pe->iommu, tbl);
+ 	if (rc) {
+ 		pe_err(pe, "Failed to configure 32-bit TCE table,"
+ 		       " err %ld\n", rc);
 -- 
 2.0.0
