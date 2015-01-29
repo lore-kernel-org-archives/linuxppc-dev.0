@@ -1,24 +1,44 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <grimm@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F3EA1A0A40
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 10:03:43 +1100 (AEDT)
-Message-ID: <1422486205.10544.99.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc/mpic: Add DT option to skip readback after EOI
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Wed, 28 Jan 2015 17:03:25 -0600
-In-Reply-To: <20150128201533.GA10436@gate.crashing.org>
-References: <1422371952-1126-1-git-send-email-bogdan.purcareata@freescale.com>
- <1422395873.10544.61.camel@freescale.com>
- <20150128201533.GA10436@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E79DF1A0B5B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 13:15:24 +1100 (AEDT)
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 382801401EF
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2015 13:15:24 +1100 (AEDT)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <grimm@linux.vnet.ibm.com>;
+ Wed, 28 Jan 2015 19:15:22 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 262A519D8040
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 19:06:31 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t0T2FKDe20840632
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 19:15:20 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0T2FJ4R021617
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2015 19:15:20 -0700
+Message-ID: <54C997B6.5090306@linux.vnet.ibm.com>
+Date: Wed, 28 Jan 2015 21:15:18 -0500
+From: Ryan Grimm <grimm@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- linux-kernel@vger.kernel.org
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] CXL: Fix device_node reference counting
+References: <1420609278-15338-1-git-send-email-imunsie@au.ibm.com>
+ <1422417621-sup-4057@delenn.ozlabs.ibm.com>
+ <1422421480.2728.1.camel@ellerman.id.au>
+ <1422423577-sup-6588@delenn.ozlabs.ibm.com>
+In-Reply-To: <1422423577-sup-6588@delenn.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +48,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-01-28 at 14:15 -0600, Segher Boessenkool wrote:
-> On Tue, Jan 27, 2015 at 03:57:53PM -0600, Scott Wood wrote:
-> > At this point, given the previous discussion, does anyone object to
-> > removing the readback entirely?  Do we have any evidence that reading
-> > WHOAMI is effective at addressing whatever problem reading EOI made go
-> > away on the relevant platform?
-> 
-> What platforms were those?  Just test there!
+On 01/28/2015 12:53 AM, Ian Munsie wrote:
+> Excerpts from Michael Ellerman's message of 2015-01-28 16:04:40 +1100:
+>>> I just wanted to check the status of this one? I can't see it in your
+>>> tree and wanted to make sure you didn't simply miss it.
+>>
+>> It looked fishy, but I never got around to replying.
+>>
+>> The second sentence in the explanation should never be true:
+>
+> Right, that was the point of the fix ;)
+>
+>> You shouldn't have np unless you did an of_node_get() to get it, otherwise it's
+>> pointing at something you don't have a reference for and it might go away at
+>> any time.
+>>
+>> So the patch may fix the bug but I don't think it's correct.
+>>
+>> I think pnv_pci_to_phb_node() should be doing a get for you, before returning
+>> the pointer.
+>
+> Agreed - we should probably also rename it to have 'get' in the name,
+> like pnv_pci_get_phb_node().
 
-Ben said "some macs".  The only Mac I have is packed away and may not be
-the one Ben had in mind, so I can't "test there".
+Yeah, that's way better than the current patch.
 
-> If no one remembers, they can not (any longer) be important platforms ;-)
-> Just remove the code, and if in twelve months finally someone reports a
-> failure we will at least know what platform it was.
+>
+>> See as a comparison pcibios_get_phb_of_node().
+>
+> We could almost use that instead, except it's not exported for modules
+> and I'm not sure if that even works with __weak functions?
+>
+>
+> Ryan - do you want to respin this, or would you rather I take it?
 
-This is what I was trying to encourage. :-)
+Sure, I'll respin and resend as a bug fix.
 
--Scott
+-Ryan
+
+>
+> Cheers,
+> -Ian
+>
