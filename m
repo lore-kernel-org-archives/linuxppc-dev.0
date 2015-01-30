@@ -1,38 +1,30 @@
-Return-Path: <dahi@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-x229.google.com (mail-la0-x229.google.com
+ [IPv6:2a00:1450:4010:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E2F21A0DC5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 18:58:45 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
- Fri, 30 Jan 2015 07:58:41 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 422981B08061
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 07:58:43 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0U7wbaZ7274834
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 07:58:38 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0U7wbV7012147
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 00:58:37 -0700
-Date: Fri, 30 Jan 2015 08:58:35 +0100
-From: David Hildenbrand <dahi@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC,1/2] powerpc/fsl-pci: atomic get_user when pagefault_disabled
-Message-ID: <20150130085835.3d717a92@thinkpad-w530>
-In-Reply-To: <20150130051501.GA14213@home.buserror.net>
-References: <1416915806-24757-2-git-send-email-dahi@linux.vnet.ibm.com>
- <20150130051501.GA14213@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F3B91A0DC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 20:00:29 +1100 (AEDT)
+Received: by mail-la0-f41.google.com with SMTP id gm9so22644403lab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 01:00:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20150130040904.8F89D1402A7@ozlabs.org>
+References: <1421243519-6257-2-git-send-email-geert+renesas@glider.be>
+ <20150130040904.8F89D1402A7@ozlabs.org>
+Date: Fri, 30 Jan 2015 10:00:23 +0100
+Message-ID: <CAMuHMdUwQ=K7SnFvpaHzL2dCyNXGR3w-_SzFOEWb3cYCiQJfHg@mail.gmail.com>
+Subject: Re: [1/3] powerpc/pmac: Fix DT refcount imbalance in
+ pmac_pic_probe_oldstyle
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Bryan Wu <cooloney@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>,
+ Jingoo Han <jg1.han@samsung.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Richard Purdie <rpurdie@rpsys.net>, Lee Jones <lee.jones@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,47 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Tue, Nov 25, 2014 at 12:43:25PM +0100, David Hildenbrand wrote:
-> > Whenever we have pagefaults disabled, we have to use the atomic variants of
-> > (set|get)_user and copy_(from|to)_user.
-> > 
-> > Signed-off-by: David Hildenbrand <dahi@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/sysdev/fsl_pci.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> > index 65d2ed4..c0af4ef 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -1025,7 +1025,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
-> >  	if (is_in_pci_mem_space(addr)) {
-> >  		if (user_mode(regs)) {
-> >  			pagefault_disable();
-> > -			ret = get_user(regs->nip, &inst);
-> > +			ret = __get_user_inatomic(regs->nip, &inst);
-> >  			pagefault_enable();
-> >  		} else {
-> >  			ret = probe_kernel_address(regs->nip, inst);
-> 
-> Please post a non-RFC version if you're ready for this to be merged.
-> 
-> -Scott
-> 
+Hi Michael,
 
-Hi Scott,
+On Fri, Jan 30, 2015 at 5:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Wed, 2015-14-01 at 13:51:57 UTC, Geert Uytterhoeven wrote:
+>> of_find_node_by_name() calls of_node_put() on its "from" parameter,
+>> which must not be done on "master", as it's still in use, and will be
+>> released manually later.  This may cause a zero kref refcount.
+>> Use of_get_child_by_name() instead to fix this.
+>
+> But of_find_node_by_name() searches *all* nodes, not just the children of the
+> parameter.
 
-actually this patch was wrong. We are allowed to use the non-atomic variants
-during pagefault_disable(). The semantics of get_user()/set_user() then change
-- they will not sleep.
+That's correct. However, I guess the second mac-io will just be a direct child.
 
-To reenable the might_sleep checks() in might_fault() makes it necessary to
-count the levels of pagefault_disable() calls, to distinguish it from oridnary
-preempt_disable() calls. I've got another patchset out there that deals with
-this problem and is able to distinguish between them.
+> So this is a logic change AFAICS, and I have no idea what machines we'd need to
+> test on to check it.
 
-The interest in this feature just doesn't seem to be very high :)
+Originally it comes from arch/ppc/platforms/pmac_pic.c, added in 2002 in
+full-history-linux commit 5ea3254844ae344a
+("Import arch/ppc and include/asm-ppc changes from linuxppc_2_5 tree").
 
-So you can safely ignore this patch.
+I've also checked my linuxppc mail archives from 1997-2002, but couldn't find
+the actual patch and a description.
 
-David
+So I don't know on which machines it's needed.
+
+> So I think an of_node_get(master) would be safer and also fix the refcounting.
+
+If no one can confirm the above, that may indeed be the best solution.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
