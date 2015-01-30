@@ -1,18 +1,38 @@
-Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <dahi@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4D5C1A0D4C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 17:43:24 +1100 (AEDT)
-Received: by mail-pa0-f52.google.com with SMTP id kx10so48643110pab.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 22:43:22 -0800 (PST)
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powernv: Add OPAL soft-poweroff routine
-Date: Fri, 30 Jan 2015 17:13:08 +1030
-Message-Id: <1422600188-27488-1-git-send-email-joel@jms.id.au>
-Cc: jk@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E2F21A0DC5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 18:58:45 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
+ Fri, 30 Jan 2015 07:58:41 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 422981B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 07:58:43 +0000 (GMT)
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+ [9.149.37.213])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0U7wbaZ7274834
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 07:58:38 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0U7wbV7012147
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 00:58:37 -0700
+Date: Fri, 30 Jan 2015 08:58:35 +0100
+From: David Hildenbrand <dahi@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC,1/2] powerpc/fsl-pci: atomic get_user when pagefault_disabled
+Message-ID: <20150130085835.3d717a92@thinkpad-w530>
+In-Reply-To: <20150130051501.GA14213@home.buserror.net>
+References: <1416915806-24757-2-git-send-email-dahi@linux.vnet.ibm.com>
+ <20150130051501.GA14213@home.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,120 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register a notifier for a OPAL message indicating that the machine
-should prepare itself for a graceful power off.
+> On Tue, Nov 25, 2014 at 12:43:25PM +0100, David Hildenbrand wrote:
+> > Whenever we have pagefaults disabled, we have to use the atomic variants of
+> > (set|get)_user and copy_(from|to)_user.
+> > 
+> > Signed-off-by: David Hildenbrand <dahi@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/sysdev/fsl_pci.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> > index 65d2ed4..c0af4ef 100644
+> > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > @@ -1025,7 +1025,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+> >  	if (is_in_pci_mem_space(addr)) {
+> >  		if (user_mode(regs)) {
+> >  			pagefault_disable();
+> > -			ret = get_user(regs->nip, &inst);
+> > +			ret = __get_user_inatomic(regs->nip, &inst);
+> >  			pagefault_enable();
+> >  		} else {
+> >  			ret = probe_kernel_address(regs->nip, inst);
+> 
+> Please post a non-RFC version if you're ready for this to be merged.
+> 
+> -Scott
+> 
 
-OPAL will tell us if the power off is a reboot or shutdown, but for now
-we perform the same orderly_poweroff action.
+Hi Scott,
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-v2:
-  - combine the reboot and off cases, as they are the same code
+actually this patch was wrong. We are allowed to use the non-atomic variants
+during pagefault_disable(). The semantics of get_user()/set_user() then change
+- they will not sleep.
 
- arch/powerpc/include/asm/opal.h             |  2 +-
- arch/powerpc/platforms/powernv/Makefile     |  2 +-
- arch/powerpc/platforms/powernv/opal-power.c | 66 +++++++++++++++++++++++++++++
- 3 files changed, 68 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-power.c
+To reenable the might_sleep checks() in might_fault() makes it necessary to
+count the levels of pagefault_disable() calls, to distinguish it from oridnary
+preempt_disable() calls. I've got another patchset out there that deals with
+this problem and is able to distinguish between them.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ca2dd45..cdf32c0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -250,7 +250,7 @@ enum OpalMessageType {
- 					 */
- 	OPAL_MSG_MEM_ERR,
- 	OPAL_MSG_EPOW,
--	OPAL_MSG_SHUTDOWN,
-+	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_TYPE_MAX,
- };
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index f241acc..6f3c5d3 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,7 +1,7 @@
- obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
--obj-y			+= opal-msglog.o opal-hmi.o
-+obj-y			+= opal-msglog.o opal-hmi.o opal-power.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
-new file mode 100644
-index 0000000..bbc1054
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-power.c
-@@ -0,0 +1,66 @@
-+/*
-+ * PowerNV OPAL power control for graceful shutdown handling
-+ *
-+ * Copyright 2015 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/reboot.h>
-+#include <linux/notifier.h>
-+
-+#include <asm/opal.h>
-+#include <asm/machdep.h>
-+
-+#define SOFT_OFF 0x00
-+#define SOFT_REBOOT 0x01
-+
-+static int opal_power_control_event(struct notifier_block *nb,
-+				    unsigned long msg_type, void *msg)
-+{
-+	struct opal_msg *power_msg = msg;
-+	uint64_t type;
-+
-+	type = be64_to_cpu(power_msg->params[0]);
-+
-+	switch (type) {
-+	case SOFT_REBOOT:
-+		/* Fall through. The service processor is responsible for
-+		 * bringing the machine back up */
-+	case SOFT_OFF:
-+		pr_info("OPAL: poweroff requested\n");
-+		orderly_poweroff(true);
-+		break;
-+	default:
-+		pr_err("OPAL: power control type unexpected %016llx\n", type);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block opal_power_control_nb = {
-+	.notifier_call	= opal_power_control_event,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
-+static int __init opal_power_control_init(void)
-+{
-+	int ret;
-+
-+	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
-+					     &opal_power_control_nb);
-+	if (ret) {
-+		pr_err("%s: Can't register OPAL event notifier (%d)\n",
-+				__func__, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+machine_subsys_initcall(powernv, opal_power_control_init);
--- 
-2.1.4
+The interest in this feature just doesn't seem to be very high :)
+
+So you can safely ignore this patch.
+
+David
