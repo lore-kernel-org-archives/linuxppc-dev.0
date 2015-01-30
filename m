@@ -1,23 +1,39 @@
-Return-Path: <stockhausen@collogia.de>
-Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
- by lists.ozlabs.org (Postfix) with SMTP id F1ACF1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 16:37:35 +1100 (AEDT)
-From: Markus Stockhausen <stockhausen@collogia.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: AW: AW: SPE & Interrupt context (was how to make use of SPE
- instructions)
-Date: Fri, 30 Jan 2015 05:37:29 +0000
-Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F916CCB@EXCHANGE.collogia.de>
-References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F915B69@EXCHANGE.collogia.de>
- ,<1422418883.10544.73.camel@freescale.com>
- <12EF8D94C6F8734FB2FF37B9FBEDD1735F9160AA@EXCHANGE.collogia.de>,
- <1422578995.10544.138.camel@freescale.com>
-In-Reply-To: <1422578995.10544.138.camel@freescale.com>
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-631fdeb7-e224-455d-a422-bd334526e405"
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9759C1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 16:41:26 +1100 (AEDT)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 29 Jan 2015 22:41:24 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id EA1F219D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 22:32:32 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t0U5fkWH43712748
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 22:41:46 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t0U5fLBR020751
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 22:41:22 -0700
+Message-ID: <54CB197D.2040809@linux.vnet.ibm.com>
+Date: Fri, 30 Jan 2015 11:11:17 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Herbert Xu <herbert@gondor.apana.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpuidle/powernv: Enter fastsleep on checking if deep
+ idle states are allowed
+References: <20140912110131.7311.86417.stgit@preeti.in.ibm.com>
+ <1410764352.32643.2.camel@concordia> <5416A8B0.8040603@linux.vnet.ibm.com>
+In-Reply-To: <5416A8B0.8040603@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,196 +43,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 09/15/2014 02:22 PM, Preeti U Murthy wrote:
+> On 09/15/2014 12:29 PM, Michael Ellerman wrote:
+>> On Fri, 2014-09-12 at 16:31 +0530, Preeti U Murthy wrote:
+>>> Today the procfs interface /proc/sys/kernel/powersave-nap is used to control
+>>> entry into deep idle states beyond snooze. Check for the value of this
+>>> parameter before entering fastsleep. We already do this check for nap in
+>>> power7_idle().
+>>>
+>>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>  drivers/cpuidle/cpuidle-powernv.c |    6 ++++++
+>>>  1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>>> index a64be57..b8ba52e 100644
+>>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>>> @@ -69,6 +69,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>>>  	unsigned long old_lpcr = mfspr(SPRN_LPCR);
+>>>  	unsigned long new_lpcr;
+>>>  
+>>> +	/*
+>>> +	 * Verify if snooze is the only valid cpuidle state
+>>> +	 */
+>>> +	if (!(powersave_nap > 0))
+>>> +		return index;
+>>> +
+>>>  	if (unlikely(system_state < SYSTEM_RUNNING))
+>>>  		return index;
+>>
+>> Doesn't the above mean we are just going to keep trying to go into fastsleep
+>> again and again? Or does the idle code work out that it didn't work based on
+>> the fact that we didn't sleep for the right period?
+> 
+> Thats right. The idle code figures that its judgment to enter fastsleep
+> was not correct and applies a correction factor to its future decisions
+> . This correction factor is intended to influence the cpuidle governor's
+> decision on choosing an idle state for the cpu based on the history of
+> wakeups. Hence a shallower idle state will be chosen here on in the
+> above circumstance.
 
-This is a multi-part message in MIME format.
+On second thoughts, I feel that this is not the best way to disable deep
+idle states. Going down this path means the governor should identify
+that fastsleep is not being entered into and take corrective action from
+then on. If the governor is buggy, we pointlessly enter and exit
+fastsleep_loop() during long idle periods.
 
-------=_NextPartTM-000-631fdeb7-e224-455d-a422-bd334526e405
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+So a better way to disable fastsleep during runtime is through the
+disable flag in sysfs. To disable deep idle states at bootup one could
+use powersave=off kernel cmd line parameter.
 
-> Von: Scott Wood [scottwood@freescale.com]=0A=
-> Gesendet: Freitag, 30. Januar 2015 01:49=0A=
-> An: Markus Stockhausen=0A=
-> Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org; Herbert Xu=0A=
-> Betreff: Re: AW: SPE & Interrupt context (was how to make use of SPE inst=
-ructions)=0A=
-> =0A=
-> On Wed, 2015-01-28 at 05:00 +0000, Markus Stockhausen wrote:=0A=
-> > > > Von: Scott Wood [scottwood@freescale.com]=0A=
-> > > > Gesendet: Mittwoch, 28. Januar 2015 05:21=0A=
-> > > > An: Markus Stockhausen=0A=
-> > > > Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org; Herbert Xu=0A=
-> > > > Betreff: Re: SPE & Interrupt context (was how to make use of SPE in=
-structions)=0A=
-> > > >=0A=
-> > > > Hi Scott,=0A=
-> > > >=0A=
-> > > > thanks for your helpful feedback. As you might have seen I sent a f=
-irst=0A=
-> > > > patch for the sha256 kernel module that takes care about preemption=
-.=0A=
-> > > >=0A=
-> > > > Herbert Xu noticed that my module won't run in for IPsec as all=0A=
-> > > > work will be done from interrupt context. Do you have a tip how I c=
-an=0A=
-> > > > mitigate the check I implemented:=0A=
-> > > >=0A=
-> > > > static bool spe_usable(void)=0A=
-> > > > {=0A=
-> > > >   return !in_interrupt();=0A=
-> > > > }=0A=
-> > > >=0A=
-> > > > Intel guys have something like that=0A=
-> > > >=0A=
-> > > > bool irq_fpu_usable(void)=0A=
-> > > > {=0A=
-> > > >   return !in_interrupt() ||=0A=
-> > > >     interrupted_user_mode() ||=0A=
-> > > >     interrupted_kernel_fpu_idle();=0A=
-> > > > }=0A=
-> > > >=0A=
-> > > > But I have no idea how to transfer it to the PPC/SPE case.=0A=
-> > >=0A=
-> > > I'm not sure what sort of tip you're looking for, other than=0A=
-> > > implementing it myself. :-)=0A=
-> >=0A=
-> > Hi Scott,=0A=
-> >=0A=
-> > maybe I did not explain it correctly. interrupted_kernel_fpu_idle()=0A=
-> > is x86 specific. The same applies to interrupted_user_mode().=0A=
-> > I'm just searching for a similar feature in the PPC/SPE world.=0A=
-> =0A=
-> There isn't one.=0A=
-> =0A=
-> > I can see that enable_kernel_spe() does something with the=0A=
-> > MSR_SPE flag, but I have no idea  how to determine if I'm allowed=0A=
-> > to enable SPE although I'm inside an interrupt context.=0A=
-> =0A=
-> As with x86, you'd want to check whether the kernel interrupted=0A=
-> userspace.  I don't know what x86 is doing with TS, but on PPC you might=
-=0A=
-> check whether the interrupted thread had MSR_FP enabled.=0A=
-> =0A=
-> > I'm asking because from the previous posts I conclude that=0A=
-> > running SPE instructions inside an interrupt might be critical.=0A=
-> > Because of registers not being saved?=0A=
-> =0A=
-> Yes.  Currently callers of enable_kernel_spe() only need to disable=0A=
-> preemption, not interrupts.=0A=
-> =0A=
-> > Or can I just save the register contents myself and interrupt=0A=
-> > context is no longer a showstopper?=0A=
-> =0A=
-> If you only need a small number of registers that might be reasonable,=0A=
-> but if you need a bunch then you don't want to save them when you don't=
-=0A=
-> have to.=0A=
-> =0A=
-> Another option is to change enable_kernel_spe() to require interrupts to=
-=0A=
-> be disabled.=0A=
-=0A=
-Phew, that is going deeper than I expected. =0A=
-=0A=
-I'm a newbie in the topic of interrupts and FPU/SPE registers. Nevertheless=
-=0A=
-enforcing enable_kernel_spe() to only be available outside of interrupt=0A=
-context sounds too restrictive for me. Also checking for thread/CPU flags =
-=0A=
-of an interrupted process is nothing I can or want to implement. There=0A=
-might be the risk that I'm starting something that will be too complex=0A=
-for me.=0A=
-=0A=
-BUT! Given the fact that SPE registers are only extended GPRs and my=0A=
-algorithm needs just 10 of them I can live with the following design.=0A=
-=0A=
-- I must already save several non-volatile registers. Putting the 64 bit va=
-lues =0A=
-into them would require me to save their contents with evstdd instead of =
-=0A=
-stw. Of course stack alignment to 8 bytes required. So only a few alignment=
-=0A=
-instructions needed additionally during initialization.=0A=
-=0A=
-- During function cleanup I will restore the registers the same way.=0A=
-=0A=
-- In case I interrupted myself, I might have saved sensitive data of anothe=
-r =0A=
-thread on my stack. So I will zero that area after I restored the registers=
-.=0A=
-That needs an additional 10 instructions. In contrast to ~2000 instructions=
-=0A=
-for one sha256 round that should be neglectable.=0A=
-=0A=
-This little overhead will save me lots of trouble at other locations:=0A=
-=0A=
-- I can avoid checking for an interrupt context.=0A=
-=0A=
-- I don't need a fallback to the generic implementation. =0A=
-=0A=
-Thinking about it more and more I think I performance will stay the same. =
-=0A=
-Can you confirm that this will work? If yes I will send a v2 patch.=0A=
-=0A=
-Markus=0A=
-------=_NextPartTM-000-631fdeb7-e224-455d-a422-bd334526e405
-Content-Type: text/plain;
-	name="InterScan_Disclaimer.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_Disclaimer.txt"
+The functionality provided by powersave_nap and smt_snooze_delay (to
+quote another example) carried value during the days that powernv did
+not have a cpuidle driver. We retain them so as to not break userspace,
+although they do not carry value today. Any future users of these
+parameters should be avoided IMO. Hence I retract this patch.
 
-****************************************************************************
-Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
-irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
-vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
-Weitergabe dieser Mail ist nicht gestattet.
+Regards
+Preeti U Murthy
 
-Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
-manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
-rechtsverbindliche Willenserklärung.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-Vorstand:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-Vorsitzender des Aufsichtsrates:
-Hans Kristian Langva
-
-Registergericht: Amtsgericht Köln
-Registernummer: HRB 52 497
-
-This e-mail may contain confidential and/or privileged information. If you
-are not the intended recipient (or have received this e-mail in error)
-please notify the sender immediately and destroy this e-mail. Any
-unauthorized copying, disclosure or distribution of the material in this
-e-mail is strictly forbidden.
-
-e-mails sent over the internet may have been written under a wrong name or
-been manipulated. That is why this message sent as an e-mail is not a
-legally binding declaration of intention.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-executive board:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-President of the supervisory board:
-Hans Kristian Langva
-
-Registry office: district court Cologne
-Register number: HRB 52 497
-
-****************************************************************************
-
-------=_NextPartTM-000-631fdeb7-e224-455d-a422-bd334526e405--
+> 
+>>
+>> We were talking about getting rid of powersave_nap altogether, but I think we
+>> decided we couldn't, I forget.
+> 
+> Isn't this a helpful knob to disable cpuidle at runtime? Currently we
+> check the value of powersave_nap before entering both nap and fastsleep.
+> 
+> Regards
+> Preeti U Murthy
+>>
+>> cheers
+>>
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
