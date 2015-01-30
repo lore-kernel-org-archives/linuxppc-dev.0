@@ -1,18 +1,24 @@
-Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0142.outbound.protection.outlook.com [65.55.169.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 046DF1A0CED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 11:28:12 +1100 (AEDT)
-Received: by mail-pa0-f52.google.com with SMTP id kx10so44975465pab.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 16:28:09 -0800 (PST)
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powernv: Add OPAL soft-poweroff routine
-Date: Fri, 30 Jan 2015 10:57:58 +1030
-Message-Id: <1422577678-17831-1-git-send-email-joel@jms.id.au>
-Cc: jk@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C7611A0CE0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 11:50:11 +1100 (AEDT)
+Message-ID: <1422578995.10544.138.camel@freescale.com>
+Subject: Re: AW: SPE & Interrupt context (was how to make use of SPE
+ instructions)
+From: Scott Wood <scottwood@freescale.com>
+To: Markus Stockhausen <stockhausen@collogia.de>
+Date: Thu, 29 Jan 2015 18:49:55 -0600
+In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9160AA@EXCHANGE.collogia.de>
+References: <12EF8D94C6F8734FB2FF37B9FBEDD1735F915B69@EXCHANGE.collogia.de>
+ ,<1422418883.10544.73.camel@freescale.com>
+ <12EF8D94C6F8734FB2FF37B9FBEDD1735F9160AA@EXCHANGE.collogia.de>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,119 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register a notifier for a OPAL message indicating that the machine
-should prepare itself for a graceful power off.
+On Wed, 2015-01-28 at 05:00 +0000, Markus Stockhausen wrote:
+> > > Von: Scott Wood [scottwood@freescale.com]
+> > > Gesendet: Mittwoch, 28. Januar 2015 05:21
+> > > An: Markus Stockhausen
+> > > Cc: Michael Ellerman; linuxppc-dev@lists.ozlabs.org; Herbert Xu
+> > > Betreff: Re: SPE & Interrupt context (was how to make use of SPE instructions)
+> > > 
+> > > Hi Scott,
+> > >
+> > > thanks for your helpful feedback. As you might have seen I sent a first
+> > > patch for the sha256 kernel module that takes care about preemption.
+> > >
+> > > Herbert Xu noticed that my module won't run in for IPsec as all
+> > > work will be done from interrupt context. Do you have a tip how I can
+> > > mitigate the check I implemented:
+> > >
+> > > static bool spe_usable(void)
+> > > {
+> > >   return !in_interrupt();
+> > > }
+> > >
+> > > Intel guys have something like that
+> > >
+> > > bool irq_fpu_usable(void)
+> > > {
+> > >   return !in_interrupt() ||
+> > >     interrupted_user_mode() ||
+> > >     interrupted_kernel_fpu_idle();
+> > > }
+> > >
+> > > But I have no idea how to transfer it to the PPC/SPE case.
+> > 
+> > I'm not sure what sort of tip you're looking for, other than
+> > implementing it myself. :-)
+> 
+> Hi Scott,
+> 
+> maybe I did not explain it correctly. interrupted_kernel_fpu_idle()
+> is x86 specific. The same applies to interrupted_user_mode().
+> I'm just searching for a similar feature in the PPC/SPE world.
 
-OPAL will tell us if the power off is a reboot or shutdown, but for now
-we perform the same orderly_poweroff action.
+There isn't one.
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/include/asm/opal.h             |  2 +-
- arch/powerpc/platforms/powernv/Makefile     |  2 +-
- arch/powerpc/platforms/powernv/opal-power.c | 68 +++++++++++++++++++++++++++++
- 3 files changed, 70 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-power.c
+> I can see that enable_kernel_spe() does something with the
+> MSR_SPE flag, but I have no idea  how to determine if I'm allowed
+> to enable SPE although I'm inside an interrupt context.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ca2dd45..cdf32c0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -250,7 +250,7 @@ enum OpalMessageType {
- 					 */
- 	OPAL_MSG_MEM_ERR,
- 	OPAL_MSG_EPOW,
--	OPAL_MSG_SHUTDOWN,
-+	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_TYPE_MAX,
- };
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index f241acc..6f3c5d3 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,7 +1,7 @@
- obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
--obj-y			+= opal-msglog.o opal-hmi.o
-+obj-y			+= opal-msglog.o opal-hmi.o opal-power.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
-new file mode 100644
-index 0000000..c047d7e
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-power.c
-@@ -0,0 +1,68 @@
-+/*
-+ * PowerNV OPAL power control for graceful shutdown handling
-+ *
-+ * Copyright 2015 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/reboot.h>
-+#include <linux/notifier.h>
-+
-+#include <asm/opal.h>
-+#include <asm/machdep.h>
-+
-+#define SOFT_OFF 0x00
-+#define SOFT_REBOOT 0x01
-+
-+static int opal_power_control_event(struct notifier_block *nb,
-+				    unsigned long msg_type, void *msg)
-+{
-+	struct opal_msg *power_msg = msg;
-+	uint64_t type;
-+
-+	type = be64_to_cpu(power_msg->params[0]);
-+
-+	switch (type) {
-+	case SOFT_OFF:
-+		pr_info("OPAL: poweroff requested\n");
-+		orderly_poweroff(true);
-+		break;
-+	case SOFT_REBOOT:
-+		pr_info("OPAL: reboot requested\n");
-+		/* TODO: shutdown such that userspace knows it's rebooting */
-+		orderly_poweroff(true);
-+		break;
-+	default:
-+		pr_err("OPAL: power control type unexpected %016llx\n", type);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block opal_power_control_nb = {
-+	.notifier_call	= opal_power_control_event,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
-+static int __init opal_power_control_init(void)
-+{
-+	int ret;
-+
-+	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
-+					     &opal_power_control_nb);
-+	if (ret) {
-+		pr_err("%s: Can't register OPAL event notifier (%d)\n",
-+				__func__, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+machine_subsys_initcall(powernv, opal_power_control_init);
--- 
-2.1.4
+As with x86, you'd want to check whether the kernel interrupted
+userspace.  I don't know what x86 is doing with TS, but on PPC you might
+check whether the interrupted thread had MSR_FP enabled.
+
+> I'm asking because from the previous posts I conclude that 
+> running SPE instructions inside an interrupt might be critical. 
+> Because of registers not being saved?
+
+Yes.  Currently callers of enable_kernel_spe() only need to disable
+preemption, not interrupts.
+
+> Or can I just save the register contents myself and interrupt
+> context is no longer a showstopper?
+
+If you only need a small number of registers that might be reasonable,
+but if you need a bunch then you don't want to save them when you don't
+have to.
+
+Another option is to change enable_kernel_spe() to require interrupts to
+be disabled.
+
+-Scott
