@@ -1,16 +1,21 @@
-Return-Path: <stockhausen@collogia.de>
-Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
- by lists.ozlabs.org (Postfix) with SMTP id 5EC401A0E1E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 01:39:59 +1100 (AEDT)
-Subject: [PATCH v2 3/3] SHA256 for PPC/SPE - kernel config
-From: Markus Stockhausen <stockhausen@collogia.de>
-Date: Fri, 30 Jan 2015 15:39:34 +0100
-To: <linux-crypto@vger.kernel.org>
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 433DE1A0E68
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 01:52:17 +1100 (AEDT)
+Date: Fri, 30 Jan 2015 11:52:20 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v7 0/4] Add support for parametrized events
+Message-ID: <20150130145220.GD3101@kernel.org>
+References: <1422322990-9030-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1422505723.6621.6.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-8b43d047-ef44-4fa1-8fd8-b338a9d08b76"
-Message-ID: <a1b6cce2-ea7f-4789-a719-7319d776afdb@EXCHANGE.collogia.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1422505723.6621.6.camel@ellerman.id.au>
+Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ dev@codyps.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,109 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Em Thu, Jan 29, 2015 at 03:28:43PM +1100, Michael Ellerman escreveu:
+> On Mon, 2015-01-26 at 17:43 -0800, Sukadev Bhattiprolu wrote:
+> > Description of "event parameters" from the documentation patch:
+> > 
+> > Cody P Schafer (6):
+> >   perf: provide sysfs_show for struct perf_pmu_events_attr
+> >   perf: add PMU_EVENT_ATTR_STRING() helper
+> >   powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
+> >   powerpc/perf/{hv-gpci, hv-common}: generate requests with counters
+> >     annotated
+> >   powerpc/perf/hv-gpci: add the remaining gpci requests
+> >   powerpc/perf/hv-24x7: Document sysfs event description entries
+> > 
+> > Sukadev Bhattiprolu (1):
+> >   perf: define EVENT_DEFINE_RANGE_FORMAT_LITE helper
+> 
+> 
+> Hi Sukadev,
+> 
+> I realise Cody wrote most of these and you are just getting them merged, but
+> they still need to be Signed-off-by you. Most of them aren't.
+> 
+> So please resend with them all signed off by you.
+> 
+> While you're at it, please drop all the CC lines, and move the changelog
+> annotations below the --- line so they are dropped when I apply them.
+> 
+> Also add Jiri's ack to the first two patches.
 
-This is a multi-part message in MIME format.
+I'm ok taking Jiri's Ack for these and merge them, Suka, may I add your
+signed-off-by on those? (question for the record...).
 
-------=_NextPartTM-000-8b43d047-ef44-4fa1-8fd8-b338a9d08b76
-Content-Type: text/plain
-
-[PATCH v2 3/3] SHA256 for PPC/SPE - kernel config
-
-Integrate the module into the kernel config tree.
-
-Signed-off-by: Markus Stockhausen <stockhausen@collogia.de>
-
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index 2926fb9..a07e763 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -5,5 +5,7 @@
- #
+- Arnaldo
  
- obj-$(CONFIG_CRYPTO_SHA1_PPC) += sha1-powerpc.o
-+obj-$(CONFIG_CRYPTO_SHA256_PPC_SPE) += sha256-ppc-spe.o
- 
- sha1-powerpc-y := sha1-powerpc-asm.o sha1.o
-+sha256-ppc-spe-y := sha256-spe-asm.o sha256_spe_glue.o
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 87bbc9c..86d35be 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -601,6 +601,15 @@ config CRYPTO_SHA256
- 	  This code also includes SHA-224, a 224 bit hash with 112 bits
- 	  of security against collision attacks.
- 
-+config CRYPTO_SHA256_PPC_SPE
-+	tristate "SHA224 and SHA256 digest algorithm (PPC SPE)"
-+	depends on PPC && SPE
-+	select CRYPTO_SHA256
-+	select CRYPTO_HASH
-+	help
-+	  SHA224 and SHA256 secure hash standard (DFIPS 180-2)
-+	  implemented using powerpc SPE SIMD instruction set.
-+
- config CRYPTO_SHA256_SPARC64
- 	tristate "SHA224 and SHA256 digest algorithm (SPARC64)"
- 	depends on SPARC64
-
-------=_NextPartTM-000-8b43d047-ef44-4fa1-8fd8-b338a9d08b76
-Content-Type: text/plain;
-	name="InterScan_Disclaimer.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_Disclaimer.txt"
-
-****************************************************************************
-Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
-irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
-vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
-Weitergabe dieser Mail ist nicht gestattet.
-
-Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
-manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
-rechtsverbindliche Willenserklärung.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-Vorstand:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-Vorsitzender des Aufsichtsrates:
-Hans Kristian Langva
-
-Registergericht: Amtsgericht Köln
-Registernummer: HRB 52 497
-
-This e-mail may contain confidential and/or privileged information. If you
-are not the intended recipient (or have received this e-mail in error)
-please notify the sender immediately and destroy this e-mail. Any
-unauthorized copying, disclosure or distribution of the material in this
-e-mail is strictly forbidden.
-
-e-mails sent over the internet may have been written under a wrong name or
-been manipulated. That is why this message sent as an e-mail is not a
-legally binding declaration of intention.
-
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-executive board:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-President of the supervisory board:
-Hans Kristian Langva
-
-Registry office: district court Cologne
-Register number: HRB 52 497
-
-****************************************************************************
-
-------=_NextPartTM-000-8b43d047-ef44-4fa1-8fd8-b338a9d08b76--
+> You can probably trim the CC list when you repost, I think everyone's seen this
+> series enough times.
+> 
+> cheers
+> 
