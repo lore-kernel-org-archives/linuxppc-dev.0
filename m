@@ -1,36 +1,18 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <joel@jms.id.au>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AECA71A0715
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 05:04:05 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Thu, 29 Jan 2015 18:04:01 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id D646117D805A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 18:04:03 +0000 (GMT)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t0TI3w2h9961982
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 18:03:58 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t0TI3vqP001276
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 11:03:57 -0700
-Date: Thu, 29 Jan 2015 19:03:53 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 046DF1A0CED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 11:28:12 +1100 (AEDT)
+Received: by mail-pa0-f52.google.com with SMTP id kx10so44975465pab.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2015 16:28:09 -0800 (PST)
+From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/4] VPHN parsing fixes
-Message-ID: <20150129190353.401248ab@bahia.local>
-In-Reply-To: <20141217094007.16957.70423.stgit@bahia.local>
-References: <20141217094007.16957.70423.stgit@bahia.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [PATCH] powernv: Add OPAL soft-poweroff routine
+Date: Fri, 30 Jan 2015 10:57:58 +1030
+Message-Id: <1422577678-17831-1-git-send-email-joel@jms.id.au>
+Cc: jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,173 +22,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Dec 2014 10:40:46 +0100
-Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
-> Hi,
-> 
-> This series addresses remarks from Ben and Michael (see individual patches).
-> The most notable changes are:
-> - the parsing code being pull out into a separate file in patch 3/4. This
->   allows to write userland tests like the one below.
-> - a full rewrite of the parsing logic in patch 4/4
-> 
+Register a notifier for a OPAL message indicating that the machine
+should prepare itself for a graceful power off.
 
-Ping ?
+OPAL will tell us if the power off is a reboot or shutdown, but for now
+we perform the same orderly_poweroff action.
 
-> --
-> #include <stdio.h>
-> #include <byteswap.h>
-> 
-> typedef unsigned long u64;
-> typedef unsigned int u32;
-> typedef unsigned short u16;
-> typedef enum { false = 0, true } bool;
-> 
-> #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-> #define cpu_to_be32(x)		bswap_32(x)
-> #define be32_to_cpu(x)		bswap_32(x)
-> #define be16_to_cpup(x)		bswap_16(*x)
-> #define cpu_to_be64(x)		bswap_64(x)
-> #else
-> #define cpu_to_be32(x)		(x)
-> #define be32_to_cpu(x)		(x)
-> #define be16_to_cpup(x)		(*x)
-> #define cpu_to_be64(x)		(x)
-> #endif
-> 
-> #define pr_debug(...) printf(__VA_ARGS__)
-> 
-> #include "vphn.c"
-> 
-> void print_packed(const long *packed)
-> {
-> 	char *p = (char*) packed;
-> 	int i;
-> 
-> 	printf("\nRegisters:\n");
-> 	for (i = 0; i < VPHN_REGISTER_COUNT; i++)
-> 		printf("0x%016lx\n", packed[i]);
-> 
-> 	printf("\nMemory layout:\n");
-> 	for (i = 0; i < 6; i++) {
-> 		printf("0x %02hhx %02hhx %02hhx %02hhx"
-> 		       " %02hhx %02hhx %02hhx %02hhx\n",
-> 		       *(p + 0), *(p + 1), *(p + 2), *(p + 3),
-> 		       *(p + 4), *(p + 5), *(p + 6), *(p + 7));
-> 		p += 8;
-> 	}
-> 
-> 	putchar('\n');
-> }
-> 
-> void print_unpacked(const __be32 *unpacked)
-> {
-> 	int i;
-> 
-> 	printf("\nVPHN associativity:\n");
-> 	for (i = 0; i <= be32_to_cpu(unpacked[0]); i++)
-> 		printf("0x%08x\n", be32_to_cpu(unpacked[i]));
-> 
-> 	putchar('\n');
-> }
-> 
-> int main(int argc, char **argv)
-> {
-> 	int i;
-> 	struct {
-> 		const char *descr;
-> 		long packed[VPHN_REGISTER_COUNT];
-> 	} data[] = {
-> 		{
-> 			"16-bit and 32-bit",
-> 			0x8001800280038004,
-> 			0x8005800680078008,
-> 			0x000000090000000a,
-> 			0x0000000b0000000c,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff
-> 		},
-> 		{
-> 			"filled with 16-bit",
-> 			0x8001800280038004,
-> 			0x8005800680078008,
-> 			0x8009800a800b800c,
-> 			0x800d800e800f8010,
-> 			0x8011801280138014,
-> 			0x8015801680178018,
-> 		},
-> 		{
-> 			"filled with 32-bit",
-> 			0x0000000100000002,
-> 			0x0000000300000004,
-> 			0x0000000500000006,
-> 			0x0000000700000008,
-> 			0x000000090000000a,
-> 			0x0000000b0000000c,
-> 		},
-> 		{
-> 			"32-bit has all ones in 16 lower bits",
-> 			0x0001ffff80028003,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 		},
-> 		{
-> 			"32-bit accross two 64-bit registers",
-> 			0x8001000000020000,
-> 			0x0003000000048005,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 			0xffffffffffffffff,
-> 		},
-> 		{
-> 			"Truncated last 32-bit",
-> 			0x0000000100000002,
-> 			0x0000000300000004,
-> 			0x0000000500000006,
-> 			0x0000000700000008,
-> 			0x000000090000000a,
-> 			0x0000000b800c0bad,
-> 		},
-> 	};
-> 
-> 	for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
-> 		__be32 unpacked[VPHN_ASSOC_BUFSIZE] = { 0 };
-> 		printf("\n==================================================\n");
-> 		printf("\nSet #%d: %s\n", i, data[i].descr);
-> 		printf("\n==================================================\n");
-> 		print_packed(data[i].packed);
-> 		vphn_unpack_associativity(data[i].packed, unpacked);
-> 		print_unpacked(unpacked);
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> ---
-> 
-> Greg Kurz (4):
->       powerpc/vphn: clarify the H_HOME_NODE_ASSOCIATIVITY API
->       powerpc/vphn: move endianness fixing to vphn_unpack_associativity()
->       powerpc/vphn: move VPHN parsing logic to a separate file
->       powerpc/vphn: parsing code rewrite
-> 
-> 
->  arch/powerpc/mm/Makefile |    1 +
->  arch/powerpc/mm/numa.c   |   55 ++----------------------------------
->  arch/powerpc/mm/vphn.c   |   70 ++++++++++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/vphn.h   |   16 +++++++++++
->  4 files changed, 90 insertions(+), 52 deletions(-)
->  create mode 100644 arch/powerpc/mm/vphn.c
->  create mode 100644 arch/powerpc/mm/vphn.h
-> 
-> --
-> Greg
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/include/asm/opal.h             |  2 +-
+ arch/powerpc/platforms/powernv/Makefile     |  2 +-
+ arch/powerpc/platforms/powernv/opal-power.c | 68 +++++++++++++++++++++++++++++
+ 3 files changed, 70 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-power.c
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index ca2dd45..cdf32c0 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -250,7 +250,7 @@ enum OpalMessageType {
+ 					 */
+ 	OPAL_MSG_MEM_ERR,
+ 	OPAL_MSG_EPOW,
+-	OPAL_MSG_SHUTDOWN,
++	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
+ 	OPAL_MSG_HMI_EVT,
+ 	OPAL_MSG_TYPE_MAX,
+ };
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index f241acc..6f3c5d3 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -1,7 +1,7 @@
+ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+ obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+-obj-y			+= opal-msglog.o opal-hmi.o
++obj-y			+= opal-msglog.o opal-hmi.o opal-power.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+new file mode 100644
+index 0000000..c047d7e
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-power.c
+@@ -0,0 +1,68 @@
++/*
++ * PowerNV OPAL power control for graceful shutdown handling
++ *
++ * Copyright 2015 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/reboot.h>
++#include <linux/notifier.h>
++
++#include <asm/opal.h>
++#include <asm/machdep.h>
++
++#define SOFT_OFF 0x00
++#define SOFT_REBOOT 0x01
++
++static int opal_power_control_event(struct notifier_block *nb,
++				    unsigned long msg_type, void *msg)
++{
++	struct opal_msg *power_msg = msg;
++	uint64_t type;
++
++	type = be64_to_cpu(power_msg->params[0]);
++
++	switch (type) {
++	case SOFT_OFF:
++		pr_info("OPAL: poweroff requested\n");
++		orderly_poweroff(true);
++		break;
++	case SOFT_REBOOT:
++		pr_info("OPAL: reboot requested\n");
++		/* TODO: shutdown such that userspace knows it's rebooting */
++		orderly_poweroff(true);
++		break;
++	default:
++		pr_err("OPAL: power control type unexpected %016llx\n", type);
++	}
++
++	return 0;
++}
++
++static struct notifier_block opal_power_control_nb = {
++	.notifier_call	= opal_power_control_event,
++	.next		= NULL,
++	.priority	= 0,
++};
++
++static int __init opal_power_control_init(void)
++{
++	int ret;
++
++	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
++					     &opal_power_control_nb);
++	if (ret) {
++		pr_err("%s: Can't register OPAL event notifier (%d)\n",
++				__func__, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++machine_subsys_initcall(powernv, opal_power_control_init);
+-- 
+2.1.4
