@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D97E21A0D31
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 13:00:48 +1100 (AEDT)
-Date: Thu, 29 Jan 2015 20:00:31 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@freescale.com>
-Subject: Re: [v3,1/2] powerpc/corenet: Enable muxing MDIO buses via GPIO
-Message-ID: <20150130020031.GA21556@home.buserror.net>
-References: <1421923718-21352-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1421923718-21352-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: kanetkar.shruti@gmail.com, Andy Fleming <afleming@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Shruti Kanetkar <Shruti@Freescale.com>,
- Shaohui Xie <Shaohui.Xie@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BFCF1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2015 13:17:36 +1100 (AEDT)
+In-Reply-To: <1402385530-23091-1-git-send-email-zhouzhouyi@gmail.com>
+To: Zhouyi Zhou <zhouzhouyi@gmail.com>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <aik@ozlabs.ru>, <anton@samba.org>,
+ <nacc@linux.vnet.ibm.com>, <alistair@popple.id.au>,
+ <deepthi@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [1/1] powerpc/iommu: Handling null return of kzalloc_node
+Message-Id: <20150130021736.7635F1402B0@ozlabs.org>
+Date: Fri, 30 Jan 2015 13:17:36 +1100 (AEDT)
+Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>, Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2015 at 04:48:37AM -0600, Emil Medve wrote:
-> From: Andy Fleming <afleming@gmail.com>
-> 
-> Change-Id: I4489db79957ad533f4ba3f04fe7d5bcb3288e981
-> Signed-off-by: Andy Fleming <afleming@gmail.com>
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
-> ---
+On Tue, 2014-10-06 at 07:32:10 UTC, Zhouyi Zhou wrote:
+> NULL return of kzalloc_node should be handled 
 
-scott@snotra:~/fsl/git/linux/upstream$ ./scripts/checkpatch.pl v3-1-2-powerpc-corenet-Enable-muxing-MDIO-buses-via-GPIO.patch 
-ERROR: Remove Gerrit Change-Id's before submitting upstream.
-#21: 
-Change-Id: I4489db79957ad533f4ba3f04fe7d5bcb3288e981
+Yeah it should.
 
-total: 1 errors, 0 warnings, 24 lines checked
+But just returning doesn't seem like it's going to end well. We end up with a
+device that's not properly setup.
 
-v3-1-2-powerpc-corenet-Enable-muxing-MDIO-buses-via-GPIO.patch has style problems, please review.
+I think we need to rework that further so that either the error is propagated
+up the stack, or the device is left in a working but degraded state.
 
-If any of these errors are false positives, please report
-them to the maintainer, see CHECKPATCH in MAINTAINERS.
+cheers
 
--Scott
+
+ 
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 33b552f..593cd3d 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -613,7 +613,11 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+>  
+>  	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>  			   pci->phb->node);
+> -
+> +	if (!tbl) {
+> +		pr_debug(" out of memory, can't create iommu_table !\n");
+> +		return;
+> +	}
+> +
+>  	iommu_table_setparms(pci->phb, dn, tbl);
+>  	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+>  	iommu_register_group(tbl, pci_domain_nr(bus), 0);
+> @@ -659,6 +663,10 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+>  	if (!ppci->iommu_table) {
+>  		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>  				   ppci->phb->node);
+> +		if (!tbl) {
+> +			pr_debug(" out of memory, can't create iommu_table !\n");
+> +			return;
+> +		}
+>  		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+>  		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+>  		iommu_register_group(tbl, pci_domain_nr(bus), 0);
+> @@ -686,6 +694,11 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+>  		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
+>  		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>  				   phb->node);
+> +		if (!tbl) {
+> +			pr_debug(" out of memory, can't create iommu_table !\n");
+> +			return;
+> +		}
+> +
+>  		iommu_table_setparms(phb, dn, tbl);
+>  		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+>  		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
+> @@ -1102,6 +1116,10 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+>  	if (!pci->iommu_table) {
+>  		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>  				   pci->phb->node);
+> +		if (!tbl) {
+> +			pr_debug(" out of memory, can't create iommu_table !\n");
+> +			return;
+> +		}
+>  		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+>  		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+>  		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
