@@ -1,18 +1,18 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yh0-x229.google.com (mail-yh0-x229.google.com
- [IPv6:2607:f8b0:4002:c01::229])
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E099D1A0FB1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:33 +1100 (AEDT)
-Received: by mail-yh0-f41.google.com with SMTP id f73so12969655yha.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B02F1A0EB3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:38 +1100 (AEDT)
+Received: by mail-yk0-f180.google.com with SMTP id 131so19053687ykp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:36 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH 06/15] fbdev: nvidia: remove the dependency on PPC_OF
-Date: Sat, 31 Jan 2015 21:47:36 +0800
-Message-Id: <1422712065-9403-7-git-send-email-haokexin@gmail.com>
+Subject: [PATCH 07/15] fbdev: riva: remove the dependency on PPC_OF
+Date: Sat, 31 Jan 2015 21:47:37 +0800
+Message-Id: <1422712065-9403-8-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
@@ -34,67 +34,14 @@ killing PPC_OF.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/nvidia/Makefile   | 3 +--
- drivers/video/fbdev/nvidia/nv_of.c    | 3 ---
- drivers/video/fbdev/nvidia/nv_proto.h | 8 --------
- drivers/video/fbdev/nvidia/nvidia.c   | 4 ----
- 4 files changed, 1 insertion(+), 17 deletions(-)
+ drivers/video/fbdev/riva/fbdev.c | 17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/fbdev/nvidia/Makefile b/drivers/video/fbdev/nvidia/Makefile
-index ca47432113e0..917d3eb05feb 100644
---- a/drivers/video/fbdev/nvidia/Makefile
-+++ b/drivers/video/fbdev/nvidia/Makefile
-@@ -5,9 +5,8 @@
- obj-$(CONFIG_FB_NVIDIA)          += nvidiafb.o
- 
- nvidiafb-y                       := nvidia.o nv_hw.o nv_setup.o \
--			            nv_accel.o
-+			            nv_accel.o nv_of.o
- nvidiafb-$(CONFIG_FB_NVIDIA_I2C) += nv_i2c.o
- nvidiafb-$(CONFIG_FB_NVIDIA_BACKLIGHT)  += nv_backlight.o
--nvidiafb-$(CONFIG_PPC_OF)	 += nv_of.o
- 
- nvidiafb-objs                    := $(nvidiafb-y)
-diff --git a/drivers/video/fbdev/nvidia/nv_of.c b/drivers/video/fbdev/nvidia/nv_of.c
-index 3bc13df4b120..5f3e5179c25a 100644
---- a/drivers/video/fbdev/nvidia/nv_of.c
-+++ b/drivers/video/fbdev/nvidia/nv_of.c
-@@ -19,9 +19,6 @@
- 
- #include <asm/io.h>
- 
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--
- #include "nv_type.h"
- #include "nv_local.h"
- #include "nv_proto.h"
-diff --git a/drivers/video/fbdev/nvidia/nv_proto.h b/drivers/video/fbdev/nvidia/nv_proto.h
-index ff5c410355ea..878a5ce02299 100644
---- a/drivers/video/fbdev/nvidia/nv_proto.h
-+++ b/drivers/video/fbdev/nvidia/nv_proto.h
-@@ -42,16 +42,8 @@ int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
- #define nvidia_probe_i2c_connector(p, c, edid) (-1)
- #endif
- 
--#ifdef CONFIG_PPC_OF
- int nvidia_probe_of_connector(struct fb_info *info, int conn,
- 			      u8 ** out_edid);
--#else
--static inline int nvidia_probe_of_connector(struct fb_info *info, int conn,
--				      u8 ** out_edid)
--{
--	return -1;
--}
--#endif
- 
- /* in nv_accel.c */
- extern void NVResetGraphics(struct fb_info *info);
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index def041204676..4273c6ee8cf6 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -24,10 +24,6 @@
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index be73727c7227..294a80908c8c 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -44,10 +44,6 @@
  #ifdef CONFIG_MTRR
  #include <asm/mtrr.h>
  #endif
@@ -102,8 +49,44 @@ index def041204676..4273c6ee8cf6 100644
 -#include <asm/prom.h>
 -#include <asm/pci-bridge.h>
 -#endif
- #ifdef CONFIG_BOOTX_TEXT
- #include <asm/btext.h>
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ #include <asm/machdep.h>
+ #include <asm/backlight.h>
+@@ -1735,7 +1731,6 @@ static int riva_set_fbinfo(struct fb_info *info)
+ 	return (rivafb_check_var(&info->var, info));
+ }
+ 
+-#ifdef CONFIG_PPC_OF
+ static int riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
+ {
+ 	struct riva_par *par = info->par;
+@@ -1766,9 +1761,8 @@ static int riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
+ 	NVTRACE_LEAVE();
+ 	return 0;
+ }
+-#endif /* CONFIG_PPC_OF */
+ 
+-#if defined(CONFIG_FB_RIVA_I2C) && !defined(CONFIG_PPC_OF)
++#if defined(CONFIG_FB_RIVA_I2C)
+ static int riva_get_EDID_i2c(struct fb_info *info)
+ {
+ 	struct riva_par *par = info->par;
+@@ -1828,10 +1822,13 @@ static void riva_update_default_var(struct fb_var_screeninfo *var,
+ static void riva_get_EDID(struct fb_info *info, struct pci_dev *pdev)
+ {
+ 	NVTRACE_ENTER();
+-#ifdef CONFIG_PPC_OF
+-	if (!riva_get_EDID_OF(info, pdev))
++	if (riva_get_EDID_OF(info, pdev)) {
++		NVTRACE_LEAVE();
++		return;
++	}
++	if (IS_ENABLED(CONFIG_OF))
+ 		printk(PFX "could not retrieve EDID from OF\n");
+-#elif defined(CONFIG_FB_RIVA_I2C)
++#if defined(CONFIG_FB_RIVA_I2C)
+ 	if (!riva_get_EDID_i2c(info))
+ 		printk(PFX "could not retrieve EDID from DDC/I2C\n");
  #endif
 -- 
 1.9.3
