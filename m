@@ -1,22 +1,22 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yh0-x22e.google.com (mail-yh0-x22e.google.com
- [IPv6:2607:f8b0:4002:c01::22e])
+Received: from mail-yh0-x22d.google.com (mail-yh0-x22d.google.com
+ [IPv6:2607:f8b0:4002:c01::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33D2B1A10C9
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:46 +1100 (AEDT)
-Received: by mail-yh0-f46.google.com with SMTP id c41so12952446yho.5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78DA31A1107
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:49 +1100 (AEDT)
+Received: by mail-yh0-f45.google.com with SMTP id f73so12997097yha.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:47 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH 09/15] fbdev: kconfig: replace PPC_OF with PPC
-Date: Sat, 31 Jan 2015 21:47:39 +0800
-Message-Id: <1422712065-9403-10-git-send-email-haokexin@gmail.com>
+	linux-gpio@vger.kernel.org
+Subject: [PATCH 10/15] gpio: kconfig: replace PPC_OF with PPC
+Date: Sat, 31 Jan 2015 21:47:40 +0800
+Message-Id: <1422712065-9403-11-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
-Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>, Kevin Hao <haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +34,21 @@ Replace it with PPC.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/Kconfig | 2 +-
+ drivers/gpio/Kconfig | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 55161dd4b931..027f9b685b5b 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -479,7 +479,7 @@ config FB_ATARI
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index ae5cb4d517c6..c1e2ca3d9a51 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -383,7 +383,7 @@ config GPIO_XGENE_SB
  
- config FB_OF
- 	bool "Open Firmware frame buffer device support"
--	depends on (FB = y) && (PPC64 || PPC_OF) && (!PPC_PSERIES || PCI)
-+	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+ config GPIO_XILINX
+ 	tristate "Xilinx GPIO support"
+-	depends on OF_GPIO && (PPC_OF || MICROBLAZE || ARCH_ZYNQ || X86)
++	depends on OF_GPIO && (PPC || MICROBLAZE || ARCH_ZYNQ || X86)
+ 	help
+ 	  Say yes here to support the Xilinx FPGA GPIO device
+ 
 -- 
 1.9.3
