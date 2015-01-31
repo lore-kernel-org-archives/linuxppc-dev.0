@@ -1,22 +1,22 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
- [IPv6:2607:f8b0:4002:c07::22f])
+Received: from mail-yk0-x22b.google.com (mail-yk0-x22b.google.com
+ [IPv6:2607:f8b0:4002:c07::22b])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 75DFA1A1175
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:52 +1100 (AEDT)
-Received: by mail-yk0-f175.google.com with SMTP id 9so19104188ykp.6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21B171A114B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 00:48:56 +1100 (AEDT)
+Received: by mail-yk0-f171.google.com with SMTP id 10so19100229ykt.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 05:48:53 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
-	linux-mmc@vger.kernel.org
-Subject: [PATCH 11/15] mmc: kconfig: replace PPC_OF with PPC
-Date: Sat, 31 Jan 2015 21:47:41 +0800
-Message-Id: <1422712065-9403-12-git-send-email-haokexin@gmail.com>
+	linux-mtd@lists.infradead.org
+Subject: [PATCH 12/15] mtd: kconfig: replace PPC_OF with PPC
+Date: Sat, 31 Jan 2015 21:47:42 +0800
+Message-Id: <1422712065-9403-13-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hao <haokexin@gmail.com>,
- Chris Ball <chris@printf.net>
+Cc: Kevin Hao <haokexin@gmail.com>, Brian Norris <computersforpeace@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +34,21 @@ Replace it with PPC.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/mmc/host/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mtd/nand/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index f145f1558353..a18dde1078ea 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -132,7 +132,7 @@ config MMC_SDHCI_OF_ARASAN
- config MMC_SDHCI_OF_ESDHC
- 	tristate "SDHCI OF support for the Freescale eSDHC controller"
- 	depends on MMC_SDHCI_PLTFM
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 7d0150d20432..ceade0448025 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -421,7 +421,7 @@ config MTD_NAND_ORION
+ 
+ config MTD_NAND_FSL_ELBC
+ 	tristate "NAND support for Freescale eLBC controllers"
 -	depends on PPC_OF
 +	depends on PPC
- 	select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
+ 	select FSL_LBC
  	help
- 	  This selects the Freescale eSDHC controller support.
-@@ -144,7 +144,7 @@ config MMC_SDHCI_OF_ESDHC
- config MMC_SDHCI_OF_HLWD
- 	tristate "SDHCI OF support for the Nintendo Wii SDHCI controllers"
- 	depends on MMC_SDHCI_PLTFM
--	depends on PPC_OF
-+	depends on PPC
- 	select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
- 	help
- 	  This selects the Secure Digital Host Controller Interface (SDHCI)
+ 	  Various Freescale chips, including the 8313, include a NAND Flash
 -- 
 1.9.3
