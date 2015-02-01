@@ -1,27 +1,28 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qa0-x234.google.com (mail-qa0-x234.google.com
- [IPv6:2607:f8b0:400d:c00::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4051B1A0D94
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 16:52:01 +1100 (AEDT)
-Received: by mail-qa0-f52.google.com with SMTP id x12so25307799qac.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 21:51:58 -0800 (PST)
-Date: Sun, 1 Feb 2015 13:51:50 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 05/15] fbdev: imsttfb: remove the dependency on PPC_OF
-Message-ID: <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-6-git-send-email-haokexin@gmail.com>
- <20150201134433.729a2389@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BDB91A0D87
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 19:43:12 +1100 (AEDT)
+Date: Sun, 1 Feb 2015 08:42:45 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Finn Thain <fthain@telegraphics.com.au>
+Subject: Re: nvram and generic_nvram modules are problematic, was Re: [PATCH]
+ arch: m68k: mac: misc.c: Remove some unused functions
+Message-ID: <20150201084245.GF26493@n2100.arm.linux.org.uk>
+References: <1420131732-31039-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+ <alpine.LNX.2.00.1501041045020.15927@nippy.intranet>
+ <CAMuHMdXFu3n4d0dMZop186UF+QG=MtLHV=oQr+VszftpEA1kFQ@mail.gmail.com>
+ <alpine.LNX.2.00.1502011230150.32582@nippy.intranet>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
-In-Reply-To: <20150201134433.729a2389@canb.auug.org.au>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LNX.2.00.1502011230150.32582@nippy.intranet>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
+ linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, Feb 01, 2015 at 02:39:42PM +1100, Finn Thain wrote:
+> I find the ARM support in drivers/char/nvram to be surprising, not to say 
+> questionable. The /proc/driver/nvram implementation, given 
+> defined(__arm__), decodes the NVRAM contents in exactly the same format as 
+> when defined(__i386__) || defined(__x86_64__).
 
---17pEHd4RhPHOinZp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That's because it's used on the Netwinder and EBSA285 platforms, which
+are PCI-like, complete with a southbridge which makes them look like a
+PC.
 
-On Sun, Feb 01, 2015 at 01:44:33PM +1100, Stephen Rothwell wrote:
-> Hi Kevin,
->=20
-> On Sat, 31 Jan 2015 21:47:35 +0800 Kevin Hao <haokexin@gmail.com> wrote:
-> >
-> > The OF functionality has moved to a common place and be used by many
-> > archs. So we don't need to depend on PPC_OF option any more. This is
-> > a preparation for killing PPC_OF.
->=20
-> I suspect that you want to do the PPC_OF -> PPC conversion on this file
-> rather than just removing PPC_OF uses.
+> Whereas, only MIPS and 
+> PowerPC defconfigs set CONFIG_RTC_DRV_CMOS at all, and without that symbol 
+> the driver will never be built for ARM. This raises the question, does 
+> /proc/driver/nvram do anything useful on any ARM platforms?
 
-That was my first thought, but the codes protected by the PPC_OF seem not
-ppc specific and should be safe for other archs which also support OF. So I
-drop the PPC_OF completely. Did I miss something?
+Yes.
 
->=20
-> > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttf=
-b.c
-> > index aae10ce74f14..91a80bb8f988 100644
-> > --- a/drivers/video/fbdev/imsttfb.c
-> > +++ b/drivers/video/fbdev/imsttfb.c
-> > @@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
-nst struct pci_device_id *ent)
-> >  	unsigned long addr, size;
-> >  	struct imstt_par *par;
-> >  	struct fb_info *info;
-> > -#ifdef CONFIG_PPC_OF
-> >  	struct device_node *dp;
->=20
-> I see no way in this file for struct device_node to be defined
-> (especially if CONFIG_PPC is not set).  of.h may be included
-> implicitly, but that is very dependent on the architecture and CONFIG_
-> options.
-
-This do pass the build test for the non-OF archs, such as x86. But your
-concerns sound pretty reasonable, so I will explicitly include of.h.
-
->=20
-> >  	dp =3D pci_device_to_OF_node(pdev);
-> > @@ -1478,7 +1477,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
-nst struct pci_device_id *ent)
-> >  		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
-> >  	else
-> >  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
-> > -#endif /* CONFIG_PPC_OF */
->=20
-> This will emit the above error if CONFIG_OF is not set whereas in the
-> past it would not.
-
-How about change it to:
-	if (IS_ENABLED(CONFIG_OF))
-  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
-
-Thanks,
-Kevin
-
---17pEHd4RhPHOinZp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUzb72AAoJEJNY7TDerrFxHbMH/RRO1w9hO0T/7Y5rjZcfOUL4
-AAOZWs25SVSskY6Jd0cxDBMmJ61uy34BGh7F3CPtZ3ptRzdbLFDNLUdtWnNX/lSR
-SEFqKerunjZVw73kTvvH0+LBGCuw5Y/LJ5Nw0l3qpH7SZeKtYUl4AKee6Aaw8C67
-A2/hcdNH8xCw5rkeKXZbNvvPyPGvvJCF4tM6l9zMONh7efK/cI0F1UdkKCCtIWwj
-k90VWMLVWC3fYkKWpDxgotCf9lv5cce9N2dJn0CQTLwKL2JdOB9v0UpbIt++xIou
-KEGObeWt2isk4V3QVIqntsmX+jwbEAZiqpTls3Gr7JZe83ckleNdgzmmJLxv0wM=
-=0REw
------END PGP SIGNATURE-----
-
---17pEHd4RhPHOinZp--
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
