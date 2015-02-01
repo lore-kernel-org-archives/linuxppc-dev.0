@@ -1,23 +1,27 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 6487C1A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 14:50:13 +1100 (AEDT)
-Date: Sun, 1 Feb 2015 14:39:42 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: nvram and generic_nvram modules are problematic, was Re: [PATCH]
- arch: m68k: mac: misc.c: Remove some unused functions
-In-Reply-To: <CAMuHMdXFu3n4d0dMZop186UF+QG=MtLHV=oQr+VszftpEA1kFQ@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1502011230150.32582@nippy.intranet>
-References: <1420131732-31039-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <alpine.LNX.2.00.1501041045020.15927@nippy.intranet>
- <CAMuHMdXFu3n4d0dMZop186UF+QG=MtLHV=oQr+VszftpEA1kFQ@mail.gmail.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-qa0-x234.google.com (mail-qa0-x234.google.com
+ [IPv6:2607:f8b0:400d:c00::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4051B1A0D94
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Feb 2015 16:52:01 +1100 (AEDT)
+Received: by mail-qa0-f52.google.com with SMTP id x12so25307799qac.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2015 21:51:58 -0800 (PST)
+Date: Sun, 1 Feb 2015 13:51:50 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 05/15] fbdev: imsttfb: remove the dependency on PPC_OF
+Message-ID: <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-6-git-send-email-haokexin@gmail.com>
+ <20150201134433.729a2389@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
+In-Reply-To: <20150201134433.729a2389@canb.auug.org.au>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +32,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sun, 4 Jan 2015, Geert Uytterhoeven wrote:
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, Jan 4, 2015 at 8:21 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> > On Thu, 1 Jan 2015, Rickard Strandqvist wrote:
-> > > Removes some functions that are not used anywhere:
-> > > mac_pram_write() mac_pram_read()
+On Sun, Feb 01, 2015 at 01:44:33PM +1100, Stephen Rothwell wrote:
+> Hi Kevin,
+>=20
+> On Sat, 31 Jan 2015 21:47:35 +0800 Kevin Hao <haokexin@gmail.com> wrote:
 > >
-> > ... I'd rather not remove all of this code. Better to finish the 
-> > implementation.
-> 
-> Indeed.
-> 
-> > Would it be acceptable to utilize drivers/char/generic_nvram.c and 
-> > CONFIG_GENERIC_NVRAM? This is the PowerMac PRAM driver but looks 
-> > generic enough that it may not need any modification for 68k Macs.
-> 
-> Yes, that would be great.
-> 
+> > The OF functionality has moved to a common place and be used by many
+> > archs. So we don't need to depend on PPC_OF option any more. This is
+> > a preparation for killing PPC_OF.
+>=20
+> I suspect that you want to do the PPC_OF -> PPC conversion on this file
+> rather than just removing PPC_OF uses.
 
-Unfortunately, it seems to be unworkable.
+That was my first thought, but the codes protected by the PPC_OF seem not
+ppc specific and should be safe for other archs which also support OF. So I
+drop the PPC_OF completely. Did I miss something?
 
-The only user of generic_nvram is PPC32 (PPC64 could benefit though). 
-PPC32 uses the driver by defining both CONFIG_NVRAM and 
-CONFIG_GENERIC_NVRAM.
+>=20
+> > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttf=
+b.c
+> > index aae10ce74f14..91a80bb8f988 100644
+> > --- a/drivers/video/fbdev/imsttfb.c
+> > +++ b/drivers/video/fbdev/imsttfb.c
+> > @@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
+nst struct pci_device_id *ent)
+> >  	unsigned long addr, size;
+> >  	struct imstt_par *par;
+> >  	struct fb_info *info;
+> > -#ifdef CONFIG_PPC_OF
+> >  	struct device_node *dp;
+>=20
+> I see no way in this file for struct device_node to be defined
+> (especially if CONFIG_PPC is not set).  of.h may be included
+> implicitly, but that is very dependent on the architecture and CONFIG_
+> options.
 
-I tried to simplify this so that CONFIG_GENERIC_NVRAM would build 
-drivers/char/generic_nvram, while CONFIG_NVRAM would build 
-drivers/char/nvram, in order that it would become possible to have a 
-multi-platform kernel with both, either, or niether.
+This do pass the build test for the non-OF archs, such as x86. But your
+concerns sound pretty reasonable, so I will explicitly include of.h.
 
-But that approach brings new problems:
+>=20
+> >  	dp =3D pci_device_to_OF_node(pdev);
+> > @@ -1478,7 +1477,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
+nst struct pci_device_id *ent)
+> >  		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
+> >  	else
+> >  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+> > -#endif /* CONFIG_PPC_OF */
+>=20
+> This will emit the above error if CONFIG_OF is not set whereas in the
+> past it would not.
 
-- An m68k multi-platform kernel would need to contain both modules, and 
-  both modules would need MODULE_ALIAS_MISCDEV(NVRAM_MINOR). This isn't 
-  going to work. (It's likely that other platforms might also want to use 
-  generic_nvram and the same problem would apply to x86 and ARM.)
+How about change it to:
+	if (IS_ENABLED(CONFIG_OF))
+  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
 
-- The misc device code in drivers/char/nvram is duplicated in 
-  generic_nvram. To avoid this duplication, the nvram module could 
-  leverage the generic_nvram module instead. This doesn't work either.  
-  Systems like mine (Gentoo) have "alias char-major-10-144 nvram" in 
-  /etc/modprobe.d/i386.conf, which means that accessing /dev/nvram causes 
-  the wrong module to load.
+Thanks,
+Kevin
 
-In the end I concluded that the only plausible "generic" driver is 
-actually drivers/char/nvram itself. Otherwise it would be under an arch/ 
-directory and not under drivers/.
+--17pEHd4RhPHOinZp
+Content-Type: application/pgp-signature
 
-So the nvram module should be the one with 
-MODULE_ALIAS_MISCDEV(NVRAM_MAJOR), and it should work on any architecture 
-that needs to use it. (Sure enough, drivers/char/generic_nvram lacks the 
-MODULE_ALIAS.)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-So I believe that the solution is to eliminate drivers/char/generic_nvram 
-altogether, and move the architecture-specific code out of 
-drivers/char/nvram, so the nvram module can be re-used more easily. I 
-think that PPC32, PPC64 and m68k could readily re-use it.
+iQEcBAEBAgAGBQJUzb72AAoJEJNY7TDerrFxHbMH/RRO1w9hO0T/7Y5rjZcfOUL4
+AAOZWs25SVSskY6Jd0cxDBMmJ61uy34BGh7F3CPtZ3ptRzdbLFDNLUdtWnNX/lSR
+SEFqKerunjZVw73kTvvH0+LBGCuw5Y/LJ5Nw0l3qpH7SZeKtYUl4AKee6Aaw8C67
+A2/hcdNH8xCw5rkeKXZbNvvPyPGvvJCF4tM6l9zMONh7efK/cI0F1UdkKCCtIWwj
+k90VWMLVWC3fYkKWpDxgotCf9lv5cce9N2dJn0CQTLwKL2JdOB9v0UpbIt++xIou
+KEGObeWt2isk4V3QVIqntsmX+jwbEAZiqpTls3Gr7JZe83ckleNdgzmmJLxv0wM=
+=0REw
+-----END PGP SIGNATURE-----
 
-Drivers themselves all test for CONFIG_NVRAM; never CONFIG_GENERIC_NVRAM. 
-This is another indication that the generic_nvram driver is surplus to 
-requirement.
-
-The CONFIG_PROC_FS support (/proc/driver/nvram) in the drivers/char/nvram 
-module is inherently architecture-specific. I suspect that the 
-Atari-specific code should move to arch/m68k/atari/ and the x86-specific 
-code should move to arch/x86/.
-
-I find the ARM support in drivers/char/nvram to be surprising, not to say 
-questionable. The /proc/driver/nvram implementation, given 
-defined(__arm__), decodes the NVRAM contents in exactly the same format as 
-when defined(__i386__) || defined(__x86_64__). Whereas, only MIPS and 
-PowerPC defconfigs set CONFIG_RTC_DRV_CMOS at all, and without that symbol 
-the driver will never be built for ARM. This raises the question, does 
-/proc/driver/nvram do anything useful on any ARM platforms?
-
-Some guidance on this problem would be appreciated; all the approaches I 
-tried led to unsatisfactory compromises. I don't want to keep re-writing 
-these patches without a workable plan.
-
--- 
+--17pEHd4RhPHOinZp--
