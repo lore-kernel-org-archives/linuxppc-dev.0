@@ -1,27 +1,37 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qc0-x233.google.com (mail-qc0-x233.google.com
- [IPv6:2607:f8b0:400d:c01::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70F501A0A09
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 02:48:20 +1100 (AEDT)
-Received: by mail-qc0-f179.google.com with SMTP id w7so30522268qcr.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2015 07:48:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBE721A0313
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 03:12:38 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 2 Feb 2015 21:42:35 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 116241258060
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 21:43:34 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t12GCPY154460536
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 21:42:26 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t12GCOim001487
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 21:42:25 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
+In-Reply-To: <1422425467.11009.2.camel@ellerman.id.au>
+References: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1421809627.4900.1.camel@ellerman.id.au> <87d268v7xm.fsf@linux.vnet.ibm.com>
+ <1422425467.11009.2.camel@ellerman.id.au>
+Date: Mon, 02 Feb 2015 21:42:21 +0530
+Message-ID: <87y4og70nu.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1422844101.11325.4.camel@ellerman.id.au>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-2-git-send-email-haokexin@gmail.com>
- <1422844101.11325.4.camel@ellerman.id.au>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 2 Feb 2015 09:47:57 -0600
-Message-ID: <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
-Subject: Re: [PATCH 01/15] PCI: introduce pci_device_to_OF_node() for
- !CONFIG_OF
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Kevin Hao <haokexin@gmail.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +41,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 1, 2015 at 8:28 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
->> So we can avoid the ugly #ifdef in some drivers.
->>
->> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->> ---
->>  include/linux/pci.h | 2 ++
->>  1 file changed, 2 insertions(+)
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+> On Wed, 2015-01-21 at 14:15 +0530, Aneesh Kumar K.V wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> 
+>> > On Tue, 2015-01-20 at 17:05 +0530, Aneesh Kumar K.V wrote:
+>> >> This enables us to understand how many hash fault we are taking
+>> >> when running benchmarks.
+>> >> 
+>> >> For ex:
+>> >> -bash-4.2# ./perf stat -e  powerpc:hash_fault -e page-faults /tmp/ebizzy.ppc64 -S 30  -P -n 1000
+>> >> ...
+>> >> 
+>> >>  Performance counter stats for '/tmp/ebizzy.ppc64 -S 30 -P -n 1000':
+>> >> 
+>> >>        1,10,04,075      powerpc:hash_fault
+>> >>        1,10,03,429      page-faults
+>> >> 
+>> >>       30.865978991 seconds time elapsed
+>> >
+>> > Looks good.
+>> >
+>> > Can you attach some test results that show it's not hurting performance when
+>> > it's disabled.
+>> 
+>> ebizzy with -S 30 -t 1 -P gave
+>> 13627 records/s -> Without patch
+>> 13546 records/s -> With patch with tracepoint disabled
 >
+> OK. So that's about -0.6%. Are we happy with that? I'm not sure.
 >
-> Hi Bjorn,
->
-> Do you mind putting this into your next for 3.20? Or giving us an ACK for it if
-> you prefer.
+> Can you do a few more runs and see if that's a stable result.
 
-I think it makes more sense to merge this along with the other 14
-patches that remove the #ifdefs (at least, I assume that's what they
-do; I haven't seen them).
+That is within the run variance for that test. Infact I found it
+difficult to get a stable records/s with ebizzy run, even after fixing
+the random state variable and forcing single thread. I ended up doing
+a micro benchmark that allocate a large region and touch one byte per
+page.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+That resulted in
+time perf stat -e page-faults -e powerpc:hash_fault  ./a.out
 
-But please edit the subject line so it is capitalized consistently
-with the rest of the history.  And it'd be nice if the changelog were
-a complete sentence all by itself, e.g.,
+ Performance counter stats for './a.out':
 
-    PCI: Add pci_device_to_OF_node() stub for !CONFIG_OF
+         10,00,062      page-faults                                                 
+         10,00,068      powerpc:hash_fault                                          
 
-    Add a stub for pci_device_to_OF_node() so drivers don't need to use
-    #ifdef CONFIG_OF around calls to it.
+      12.414350121 seconds time elapsed
 
-Bjorn
 
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index 8323cbf93913..421eb6a9e600 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -1863,6 +1863,8 @@ static inline void pci_set_of_node(struct pci_dev *dev) { }
->>  static inline void pci_release_of_node(struct pci_dev *dev) { }
->>  static inline void pci_set_bus_of_node(struct pci_bus *bus) { }
->>  static inline void pci_release_bus_of_node(struct pci_bus *bus) { }
->> +static inline struct device_node *
->> +pci_device_to_OF_node(const struct pci_dev *pdev) { return NULL; }
->>  #endif  /* CONFIG_OF */
->>
->>  #ifdef CONFIG_EEH
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+real    0m12.558s
+user    0m0.577s
+sys     0m11.932s
+
+and with that test we have an average system time for 10 run
+Without patch
+sys: 0m11.2425
+
+With patch:
+sys: 0m11.3258
+
+ie, a -0.7% impact 
+
+If that impact is high we could possibly put that tracepoint within #ifdef
+CONFIG_DEBUG_VM ?
+
+-aneesh
