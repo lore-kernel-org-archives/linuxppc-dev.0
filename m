@@ -1,20 +1,20 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0136.outbound.protection.outlook.com [65.55.169.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BE751A0D28
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 09:02:55 +1100 (AEDT)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <scottwood@Freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
- <devicetree@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: [PATCH v3] net/fsl_pq_mdio: Document supported compatibles
-Date: Sun, 1 Feb 2015 15:58:31 -0600
-Message-ID: <1422827911-32629-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shruti Kanetkar <Kanetkar.Shruti@gmail.com>,
- Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03ED61A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 12:01:23 +1100 (AEDT)
+Message-ID: <1422838882.11325.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: remove redundant increment of hwirq
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Colin King <colin.king@canonical.com>
+Date: Mon, 02 Feb 2015 12:01:22 +1100
+In-Reply-To: <1422826808-31363-1-git-send-email-colin.king@canonical.com>
+References: <1422826808-31363-1-git-send-email-colin.king@canonical.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Shruti Kanetkar <Kanetkar.Shruti@gmail.com>
+On Sun, 2015-02-01 at 21:40 +0000, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> Recent commit 80fa93fce37d3490f
+> ("cxl: Name interrupts in /proc/interrupt") introduced a
+> redundant increment of hwirq which is not used or even
+> initialised at the point it is incremented. Detected by
+> cppcheck:
+> 
+> [drivers/misc/cxl/irq.c:439]: (error) Uninitialized
+>   variable: hwirq
+> 
+> Simple fix, remove the redundant increment.
 
-The device tree binding(s) document has fallen out of sync with the
-driver code. Update the list of supported devices to reflect current
-driver capabilities
+This looks more or less the same as the previous patch you sent? The one which
+has been in my next branch for 11 days?
 
-Change-Id: I440d8de2ee2d9c3b7b23e69b3da851cab18a4c9a
-Signed-off-by: Shruti Kanetkar <Kanetkar.Shruti@gmail.com>
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
-
-v3:	Separated from the FMan MDIO dt/binding patchset http://patchwork.ozlabs.org/patch/370870
-
- Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index be6ea896..1e97532 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -8,7 +8,16 @@ of how to define a PHY.
- Required properties:
-   - reg : Offset and length of the register set for the device
-   - compatible : Should define the compatible device type for the
--    mdio.  Currently, this is most likely to be "fsl,gianfar-mdio"
-+    mdio. Currently supported strings/devices are:
-+	- "fsl,gianfar-tbi"
-+	- "fsl,gianfar-mdio"
-+	- "fsl,etsec2-tbi"
-+	- "fsl,etsec2-mdio"
-+	- "fsl,ucc-mdio"
-+	- "fsl,fman-mdio"
-+    When device_type is "mdio", the following strings are also considered:
-+	- "gianfar"
-+	- "ucc_geth_phy"
- 
- Example:
- 
--- 
-2.2.2
+cheers
