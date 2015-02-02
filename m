@@ -1,24 +1,21 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qg0-x22c.google.com (mail-qg0-x22c.google.com
- [IPv6:2607:f8b0:400d:c04::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <asolokha@kb.kras.ru>
+Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3CEAF1A0C32
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 13:43:07 +1100 (AEDT)
-Received: by mail-qg0-f44.google.com with SMTP id l89so45760603qgf.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Feb 2015 18:43:04 -0800 (PST)
-Date: Mon, 2 Feb 2015 10:42:58 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 00/15] powerpc: kill PPC_OF
-Message-ID: <20150202024258.GB10730@pek-khao-d1.corp.ad.wrs.com>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422843937.11325.3.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B44231A0C27
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 16:07:05 +1100 (AEDT)
+Message-ID: <54CF05F4.3040406@kb.kras.ru>
+Date: Mon, 02 Feb 2015 12:07:00 +0700
+From: Arseny Solokha <asolokha@kb.kras.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
-In-Reply-To: <1422843937.11325.3.camel@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: bail out early when flushing TLB page
+References: <1422619707-30864-1-git-send-email-asolokha@kb.kras.ru>
+ <1422736026.6200.14.camel@kernel.crashing.org>
+In-Reply-To: <1422736026.6200.14.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> On Fri, 2015-01-30 at 19:08 +0700, Arseny Solokha wrote:
+>> MMU_NO_CONTEXT is conditionally defined as 0 or (unsigned int)-1. However,
+>> in __flush_tlb_page() a corresponding variable is only tested for open
+>> coded 0, which can cause NULL pointer dereference if `mm' argument was
+>> legitimately passed as such.
+>>
+>> Bail out early in case the first argument is NULL, thus eliminate confusion
+>> between different values of MMU_NO_CONTEXT and avoid disabling and then
+>> re-enabling preemption unnecessarily.
+> 
+> So the comment above isn't quite right... we don't *test* it for open
+> coded 0, we test it for MMU_NO_CONTEXT, however we *set* it to 0 for
+> NULL mm.
+> 
+> This is actually correct... on all except 8xx :-) 0 *is* the PID of the
+> kernel context, and NULL mm usually means kernel context.
 
---TRYliJ5NKNqkz5bu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> However, it's correct that this function will not deal properly with a
+> NULL mm for other reasons. It must only be called for user contexts.
+> 
+> Instead of just returning, I would WARN_ON, because if it's ever called
+> for a kernel page, then it will not do what's expected and that will
+> need fixing. Just a silent return isn't right.
 
-On Mon, Feb 02, 2015 at 01:25:37PM +1100, Michael Ellerman wrote:
-> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
-> > Hi,
-> >=20
-> > This patch series tries to kill the PPC_OF.
->=20
-> So on the whole this series looks good.
->=20
-> Getting it merged is going to be a bit of a pain though. I assume most of=
- them
-> depend on patch 1, in which case they really need to go in as one series.
+Does this also hold true for __local_flush_tlb_page()? It's called from
+local_flush_tlb_page() as follows:
 
-Agreed.
+  __local_flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr,
+  			 mmu_get_tsize(mmu_virtual_psize), 0);
 
->=20
-> So you'll just have to collect acks from all the driver/subsystem maintai=
-ners,
+However, if MMU_NO_CONTEXT is 0 and __local_flush_tlb_page() is called with mm
+set to NULL, it's effectively a no-op. What else am I missing?
 
-Will do.
+Thanks,
 
-> and then we can take it all through the powerpc tree.
+Arsény
 
-Thanks Michael.
 
-Kevin
-
---TRYliJ5NKNqkz5bu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUzuQyAAoJEJNY7TDerrFx4l8IAJpAKPZIeuBwLdNCsSNo3MgL
-i1BNExrmEuwZLr0b1ukl0r0DawXN6T4yZpn8/OhGvlXiasmphtF4QoRESjEpY8kP
-QjvTQxjFIN7zJp/ba2cluOENGoz6HQAJrxn5Z8S2Zy0JlKGWGBQZaGRhDwkrYgLx
-ManS5nGra0sQcNmCU3WDoZIRXN7881CQ9oXLPyV0DVUpv9um8QxvnpPG/AGZNPSx
-1AmlJan1qKd5MduEQG2eI5QmULgePjsdF5PUk4IdgpqgMsetZ8DLIXOVC6PJ3z/i
-hHLQERxOj8SjVmpYDvTK7/UHHpIwVh8oO9Rbsx3b2AGSB9KCtlryUGUb3QYIWqY=
-=8b/H
------END PGP SIGNATURE-----
-
---TRYliJ5NKNqkz5bu--
+> This is different from returning on MMU_NO_CONTEXT, in this case, we
+> know there's no active TLB entries for the process, and thus nothing to
+> flush.
+> 
+> Cheers,
+> Ben.
+> 
+>> Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
+>> ---
+>>  arch/powerpc/mm/tlb_nohash.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+>> index f38ea4d..ab0616b 100644
+>> --- a/arch/powerpc/mm/tlb_nohash.c
+>> +++ b/arch/powerpc/mm/tlb_nohash.c
+>> @@ -284,8 +284,11 @@ void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+>>  	struct cpumask *cpu_mask;
+>>  	unsigned int pid;
+>>  
+>> +	if (unlikely(!mm))
+>> +		return;
+>> +
+>>  	preempt_disable();
+>> -	pid = mm ? mm->context.id : 0
+> 
+> Here we test mm, if we pass NULL, that means the kernel mm which has PID
+> 0, which is not MMU_NO_CONTEXT
+>> ;
+>> +	pid = mm->context.id;
+>>  	if (unlikely(pid == MMU_NO_CONTEXT))
+>>  		goto bail;
+>>  	cpu_mask = mm_cpumask(mm);
