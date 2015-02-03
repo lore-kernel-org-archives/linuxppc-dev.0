@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 203BB1A0BC7
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A1DD1A0BC2
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:30 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v3 04/11] powerpc/8xx: Take benefit of aligned PGDIR
-Message-Id: <20150203113817.814721A5F16@localhost.localdomain>
-Date: Tue,  3 Feb 2015 12:38:17 +0100 (CET)
+Subject: [PATCH v3 00/11] powerpc8xx: Further optimisation of TLB handling
+Message-Id: <20150203113816.B4B991A5F12@localhost.localdomain>
+Date: Tue,  3 Feb 2015 12:38:16 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,84 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-L1 base address is now aligned so we can insert L1 index into r11 directly and
-then preserve r10
+This patchset provides a further optimisation of TLB handling in the 8xx.
+Main changes are based on:
+- Using processor handling of PGD/PTE Validity bits instead of testing ourselves
+the entries validity
+- Aligning PGD address to allow direct bit manipulation
+- Not saving registers like CR when not needed
+
+It also adds support to any TASK_SIZE
+
+Patchset:
+01 - powerpc/8xx: remove remaining unnecessary code in FixupDAR
+02 - powerpc/8xx: remove tests on PGDIR entry validity
+03 - powerpc32: Use kmem_cache memory for PGDIR
+04 - powerpc/8xx: Take benefit of aligned PGDIR
+05 - powerpc/8xx: Optimise access to swapper_pg_dir
+06 - powerpc/8xx: Remove duplicated code in set_context()
+07 - powerpc/8xx: macro for handling CPU15 errata
+08 - powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+09 - powerpc/8xx: dont save CR in SCRATCH registers
+10 - powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+11 - powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
+
+All changes have been successfully tested on MPC885
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-v2: no change
-v3: no change
+v3: 01-06 no change ; 07-11 changed
 
- arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 2c329f1..ae05f28 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -326,16 +326,15 @@ InstructionTLBMiss:
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
- #endif
--	/* Extract level 1 index */
--	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
--	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
-+	/* Insert level 1 index */
-+	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
- 
- 	/* Load the MI_TWC with the attributes for this "segment." */
- 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
--	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
-+	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
- 	/* Extract level 2 index */
--	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r10, r10, r11	/* Get the pte */
- 
- #ifdef CONFIG_SWAP
-@@ -380,13 +379,12 @@ DataStoreTLBMiss:
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 3:
--	/* Extract level 1 index */
--	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
-+	/* Insert level 1 index */
-+	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
- 
- 	/* We have a pte table, so load fetch the pte from the table.
- 	 */
--	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
- 	/* Extract level 2 index */
- 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
-@@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
--	/* Extract level 1 index */
--3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
--	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
--	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	/* Extract level 2 index */
--	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	lwzx	r11, r10, r11	/* Get the pte */
-+	/* Insert level 1 index */
-+3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
-+	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
-+	/* Insert level 2 index */
-+	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
--	mfspr	r10, SPRN_SRR0
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
- 	lwz	r11,0(r11)
- /* Check if it really is a dcbx instruction. */
--- 
-2.1.0
+ arch/powerpc/include/asm/pgtable-ppc32.h |   4 +
+ arch/powerpc/kernel/head_8xx.S           | 197 +++++++++++++++----------------
+ arch/powerpc/mm/pgtable_32.c             |  16 ++-
+ 3 files changed, 111 insertions(+), 106 deletions(-)
