@@ -1,23 +1,25 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5905C1A0BD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 11:14:54 +1100 (AEDT)
-Message-ID: <1422922365.22865.448.camel@redhat.com>
-Subject: Re: [PATCH v3 08/24] powerpc/spapr: vfio: Switch from iommu_table
- to new powerpc_iommu
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 02 Feb 2015 17:12:45 -0700
-In-Reply-To: <1422523325-1389-9-git-send-email-aik@ozlabs.ru>
-References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
- <1422523325-1389-9-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 958CC1A0C0C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 11:25:09 +1100 (AEDT)
+Message-ID: <1422923108.4625.2.camel@ellerman.id.au>
+Subject: Re: [PATCH 01/15] PCI: introduce pci_device_to_OF_node() for
+ !CONFIG_OF
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 03 Feb 2015 11:25:08 +1100
+In-Reply-To: <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-2-git-send-email-haokexin@gmail.com>
+ <1422844101.11325.4.camel@ellerman.id.au>
+ <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Alexander Graf <agraf@suse.de>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexander Gordeev <agordeev@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kevin Hao <haokexin@gmail.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,93 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-01-29 at 20:21 +1100, Alexey Kardashevskiy wrote:
-> Modern IBM POWERPC systems support multiple (currently two) TCE tables
-> per IOMMU group (a.k.a. PE). This adds a powerpc_iommu container
-> for TCE tables. Right now just one table is supported.
+On Mon, 2015-02-02 at 09:47 -0600, Bjorn Helgaas wrote:
+> On Sun, Feb 1, 2015 at 8:28 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
+> >> So we can avoid the ugly #ifdef in some drivers.
+> >>
+> >> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> >> ---
+> >>  include/linux/pci.h | 2 ++
+> >>  1 file changed, 2 insertions(+)
+> >
+> >
+> > Hi Bjorn,
+> >
+> > Do you mind putting this into your next for 3.20? Or giving us an ACK for it if
+> > you prefer.
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/iommu.h            |  18 ++--
->  arch/powerpc/kernel/eeh.c                   |   2 +-
->  arch/powerpc/kernel/iommu.c                 |  34 ++++----
->  arch/powerpc/platforms/powernv/pci-ioda.c   |  37 +++++---
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  16 ++--
->  arch/powerpc/platforms/powernv/pci.c        |   2 +-
->  arch/powerpc/platforms/powernv/pci.h        |   4 +-
->  arch/powerpc/platforms/pseries/iommu.c      |   9 +-
->  drivers/vfio/vfio_iommu_spapr_tce.c         | 131 ++++++++++++++++++++--------
->  9 files changed, 170 insertions(+), 83 deletions(-)
-[snip]
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 29d5708..28909e1 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -84,7 +84,7 @@ static void decrement_locked_vm(long npages)
->   */
->  struct tce_container {
->  	struct mutex lock;
-> -	struct iommu_table *tbl;
-> +	struct iommu_group *grp;
->  	bool enabled;
->  };
->  
-> @@ -104,16 +104,40 @@ static bool tce_check_page_size(struct page *page, unsigned page_shift)
->  	return false;
->  }
->  
-> +static struct iommu_table *spapr_tce_find_table(
-> +		struct tce_container *container,
-> +		phys_addr_t ioba)
-> +{
-> +	long i;
-> +	struct iommu_table *ret = NULL;
-> +	struct powerpc_iommu *iommu = iommu_group_get_iommudata(container->grp);
-> +
-> +	mutex_lock(&container->lock);
-> +	for (i = 0; i < POWERPC_IOMMU_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl = &iommu->tables[i];
-> +		unsigned long entry = ioba >> tbl->it_page_shift;
-> +		unsigned long start = tbl->it_offset;
-> +		unsigned long end = start + tbl->it_size;
-> +
-> +		if ((start <= entry) && (entry < end)) {
-> +			ret = tbl;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&container->lock);
-> +
-> +	return ret;
-> +}
-> +
->  static int tce_iommu_enable(struct tce_container *container)
->  {
->  	int ret = 0;
-> +	struct powerpc_iommu *iommu;
-> +	struct iommu_table *tbl;
->  
-> -	if (!container->tbl)
-> +	if (!container->grp)
->  		return -ENXIO;
->  
-> -	if (!current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if (container->enabled)
->  		return -EBUSY;
->  
-> @@ -142,7 +166,12 @@ static int tce_iommu_enable(struct tce_container *container)
->  	 * as this information is only available from KVM and VFIO is
->  	 * KVM agnostic.
->  	 */
-> -	ret = try_increment_locked_vm(IOMMU_TABLE_PAGES(container->tbl));
-> +	iommu = iommu_group_get_iommudata(container->grp);
-> +	if (!iommu)
-> +		return -EFAULT;
-> +
-> +	tbl = &iommu->tables[0];
+> I think it makes more sense to merge this along with the other 14
+> patches that remove the #ifdefs (at least, I assume that's what they
+> do; I haven't seen them).
 
+Yeah that is what they do.
 
-There should probably be a comment somewhere documenting that tables[0]
-is the small window and presumably [1] will be the DDW.
+The problem with doing it that way is the rest of the patches are splattered
+all across the tree, so getting them merged as a series will require a lot of
+searching for acks.
+
+If you merged this one for 3.20 we could then merge the rest of the series one
+at a time as the respective maintainers get around to it during the 3.21 cycle.
+
+I probably should have said all that in my original mail :)
+
+Anyway it's not a big deal, but that's why it'd be nice if you could take it.
+
+cheers
